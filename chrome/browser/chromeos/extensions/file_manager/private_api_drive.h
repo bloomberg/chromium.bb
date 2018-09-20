@@ -141,6 +141,11 @@ class FileManagerPrivateSearchDriveFunction
       const GURL& next_link,
       std::unique_ptr<std::vector<drive::SearchResultInfo>> result_paths);
 
+  void OnSearchDriveFs(
+      drivefs::mojom::SearchQueryPtr query,
+      drive::FileError error,
+      base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
+
   // Called when |result_paths| in OnSearch() are converted to a list of
   // entry definitions.
   void OnEntryDefinitionList(

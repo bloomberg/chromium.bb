@@ -50,6 +50,9 @@ interface DriveFs {
   // copy; its parent must be an existing directory.
   CopyFile(mojo_base.mojom.FilePath source, mojo_base.mojom.FilePath target) =>
       (FileError error);
+
+  // Start a search query with given parameters.
+  StartSearchQuery(SearchQuery& query, QueryParameters query_params);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -233,4 +236,66 @@ struct FileChange {
   };
 
   Type type;
+};
+
+// Definition of the search request sent to DriveFS.
+struct QueryParameters {
+  // Where this request should go to.
+  enum QuerySource {
+    kLocalOnly = 0,
+    kCloudOnly = 1,
+  };
+
+  // Which field should be used for sorting the results.
+  [Extensible]
+  enum SortField {
+    kNone = 0,
+    kLastModified = 1,
+    kLastViewedByMe = 2,
+    kFileSize = 3,
+  };
+
+  enum SortDirection {
+    kAscending = 0,
+    kDescending = 1,
+  };
+
+  // How many results to fetch per page.
+  int32 page_size = 100;
+
+  // Which source should be queried.
+  QuerySource query_source = kCloudOnly;
+
+  // Search for documents whose titles matches this string.
+  string? title;
+
+  // Full-text search by content. Works only with |kCloudOnly|.
+  string? text_content;
+
+  // Search for documents of this type.
+  string? mime_type;
+
+  // Results must be only from shared with me documents.
+  bool shared_with_me = false;
+
+  // Results must be only from available localy on the device. Works only
+  // with |kLocalOnly|.
+  bool available_offline = false;
+
+  // How to sort the returned results.
+  SortField sort_field = kNone;
+  SortDirection sort_direction = kAscending;
+};
+
+// Represents a search request in progress.
+interface SearchQuery {
+  // Performs query and if successful returns next portion of results. If there
+  // are no more results to fetch then |results| is empty array.
+  GetNextPage() => (FileError error, array<QueryItem>? results);
+};
+
+// Single entry in search response.
+struct QueryItem {
+  FileMetadata metadata;
+  mojo_base.mojom.FilePath path;
 };

@@ -1008,17 +1008,84 @@ bool FileManagerPrivateSearchDriveFunction::RunAsync() {
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(GetProfile());
-  if (!file_system) {
-    // |file_system| is NULL if Drive is disabled.
+  drive::DriveIntegrationService* const integration_service =
+      drive::util::GetIntegrationServiceByProfile(GetProfile());
+  if (!integration_service) {
+    // |integration_service| is NULL if Drive is disabled or not mounted.
     return false;
   }
 
-  file_system->Search(
-      params->search_params.query, GURL(params->search_params.next_feed),
-      base::Bind(&FileManagerPrivateSearchDriveFunction::OnSearch, this));
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (file_system) {
+    file_system->Search(
+        params->search_params.query, GURL(params->search_params.next_feed),
+        base::BindOnce(&FileManagerPrivateSearchDriveFunction::OnSearch, this));
+  } else {
+    // |file_system| is NULL if the backend is DriveFs.
+    auto query = drivefs::mojom::QueryParameters::New();
+    query->text_content = params->search_params.query;
+    drivefs::mojom::SearchQueryPtr search;
+    integration_service->GetDriveFsInterface()->StartSearchQuery(
+        mojo::MakeRequest(&search), std::move(query));
+    auto* raw_search = search.get();
+    raw_search->GetNextPage(
+        base::BindOnce(&FileManagerPrivateSearchDriveFunction::OnSearchDriveFs,
+                       this, std::move(search)));
+  }
+
   return true;
+}
+
+void FileManagerPrivateSearchDriveFunction::OnSearchDriveFs(
+    drivefs::mojom::SearchQueryPtr query,
+    drive::FileError error,
+    base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
+  if (error != drive::FILE_ERROR_OK || !items.has_value()) {
+    SendResponse(false);
+    return;
+  }
+
+  drive::DriveIntegrationService* integration_service =
+      drive::util::GetIntegrationServiceByProfile(GetProfile());
+  if (!integration_service) {
+    SendResponse(false);
+    return;
+  }
+
+  GURL url;
+  file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
+      GetProfile(), integration_service->GetMountPointPath(), extension_->id(),
+      &url);
+  const auto fs_root = base::StrCat({url.spec(), "/"});
+  const auto fs_name =
+      integration_service->GetMountPointPath().BaseName().value();
+  const base::FilePath root("/");
+
+  base::ListValue entries;
+  entries.GetList().reserve(items->size());
+  for (const auto& item : *items) {
+    base::FilePath path;
+    if (!root.AppendRelativePath(item->path, &path))
+      path = item->path;
+    base::DictionaryValue entry;
+    entry.SetKey("fileSystemName", base::Value(fs_name));
+    entry.SetKey("fileSystemRoot", base::Value(fs_root));
+    entry.SetKey("fileFullPath", base::Value(item->path.AsUTF8Unsafe()));
+    bool is_dir =
+        item->metadata->type == drivefs::mojom::FileMetadata::Type::kDirectory;
+    entry.SetKey("fileIsDirectory", base::Value(is_dir));
+    entries.GetList().emplace_back(std::move(entry));
+  }
+
+  auto result = std::make_unique<base::DictionaryValue>();
+  result->SetKey("entries", std::move(entries));
+
+  // Queries are capped at 100 items anyway so no need to use pagination.
+  result->SetKey("nextFeed", base::Value(""));
+
+  SetResult(std::move(result));
+  SendResponse(true);
 }
 
 void FileManagerPrivateSearchDriveFunction::OnSearch(
