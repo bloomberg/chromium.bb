@@ -16,7 +16,6 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/web_usb_histograms.h"
-#include "chrome/browser/usb/web_usb_service_impl.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
@@ -132,12 +131,12 @@ base::string16 UsbChooserController::GetOption(size_t index) const {
 }
 
 bool UsbChooserController::IsPaired(size_t index) const {
+  auto& device_info = *devices_[index].first;
   if (!chooser_context_)
     return false;
 
-  return WebUsbServiceImpl::HasDevicePermission(
-      chooser_context_.get(), requesting_origin_, embedding_origin_,
-      *devices_[index].first);
+  return chooser_context_->HasDevicePermission(requesting_origin_,
+                                               embedding_origin_, device_info);
 }
 
 void UsbChooserController::Select(const std::vector<size_t>& indices) {

@@ -25,20 +25,23 @@ namespace device {
 namespace usb {
 
 // static
-void DeviceManagerImpl::Create(
+std::unique_ptr<DeviceManagerImpl> DeviceManagerImpl::Create(
     mojom::UsbDeviceManagerRequest request) {
   DCHECK(DeviceClient::Get());
   UsbService* service = DeviceClient::Get()->GetUsbService();
   if (!service)
-    return;
+    return nullptr;
 
-  auto* device_manager_impl = new DeviceManagerImpl(service);
-  device_manager_impl->binding_ = mojo::MakeStrongBinding(
-      base::WrapUnique(device_manager_impl), std::move(request));
+  auto* device_manager = new DeviceManagerImpl(service);
+  device_manager->binding_.Bind(std::move(request));
+  return base::WrapUnique(device_manager);
 }
 
 DeviceManagerImpl::DeviceManagerImpl(UsbService* usb_service)
-    : usb_service_(usb_service), observer_(this), weak_factory_(this) {
+    : usb_service_(usb_service),
+      observer_(this),
+      binding_(this),
+      weak_factory_(this) {
   // This object owns itself and will be destroyed if the message pipe it is
   // bound to is closed, the message loop is destructed, or the UsbService is
   // shut down.
@@ -100,7 +103,9 @@ void DeviceManagerImpl::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
 }
 
 void DeviceManagerImpl::WillDestroyUsbService() {
-  binding_->Close();
+  observer_.RemoveAll();
+  binding_.Close();
+  client_.reset();
 }
 
 }  // namespace usb
