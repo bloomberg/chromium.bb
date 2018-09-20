@@ -58,9 +58,8 @@ AppListConfig::AppListConfig()
       // TODO(manucornet): Share the value with ShelfConstants and use
       // 48 when the new shelf UI is turned off.
       shelf_height_(56),
-      blur_radius_(30),
-      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()) {
-  if (is_new_style_launcher_enabled_) {
+      blur_radius_(30) {
+  if (features::IsNewStyleLauncherEnabled()) {
     grid_tile_width_ = 120;
     grid_tile_height_ = 112;
     grid_tile_spacing_ = 0;
@@ -121,14 +120,6 @@ int AppListConfig::GetPreferredIconDimension(
   }
   NOTREACHED();
   return 0;
-}
-
-int AppListConfig::GetMaxNumOfItemsPerPage(int page) const {
-  // In new style launcher, the first row of first page is no longger suggestion
-  // apps.
-  if (page == 0 && !is_new_style_launcher_enabled_)
-    return preferred_cols_ * (preferred_rows_ - 1);
-  return preferred_cols_ * preferred_rows_;
 }
 
 }  // namespace app_list

@@ -57,13 +57,14 @@ ExtensionAppItem::ExtensionAppItem(
   if (sync_item && sync_item->item_ordinal.IsValid())
     UpdateFromSync(sync_item);
   else
-    SetDefaultPositionIfApplicable(model_updater);
+    SetDefaultPositionIfApplicable();
 
   // Set model updater last to avoid being called during construction.
   set_model_updater(model_updater);
 }
 
-ExtensionAppItem::~ExtensionAppItem() = default;
+ExtensionAppItem::~ExtensionAppItem() {
+}
 
 void ExtensionAppItem::Reload() {
   const Extension* extension = GetExtension();
@@ -92,7 +93,8 @@ void ExtensionAppItem::OnIconUpdated(extensions::ChromeAppIcon* icon) {
 const Extension* ExtensionAppItem::GetExtension() const {
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile());
-  const Extension* extension = registry->GetInstalledExtension(extension_id());
+  const Extension* extension = registry->GetInstalledExtension(
+      extension_id());
   return extension;
 }
 
@@ -102,8 +104,8 @@ bool ExtensionAppItem::RunExtensionEnableFlow() {
     return false;
 
   if (!extension_enable_flow_) {
-    extension_enable_flow_ =
-        std::make_unique<ExtensionEnableFlow>(profile(), extension_id(), this);
+    extension_enable_flow_ = std::make_unique<ExtensionEnableFlow>(
+        profile(), extension_id(), this);
     extension_enable_flow_->StartForNativeWindow(nullptr);
   }
   return true;
@@ -151,7 +153,8 @@ void ExtensionAppItem::Activate(int event_flags) {
     return;
 
   extensions::RecordAppListMainLaunch(extension);
-  GetController()->ActivateApp(profile(), extension,
+  GetController()->ActivateApp(profile(),
+                               extension,
                                AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
                                event_flags);
 }
