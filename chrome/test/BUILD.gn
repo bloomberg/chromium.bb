@@ -1432,7 +1432,6 @@ test("browser_tests") {
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_model_browsertest_win.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
-        "../browser/ui/views/media_router/media_router_dialog_controller_views_browsertest.cc",
         "../browser/ui/webui/media_router/media_router_dialog_controller_webui_impl_browsertest.cc",
       ]
 
@@ -1571,6 +1570,7 @@ test("browser_tests") {
           "../browser/ui/views/hung_renderer_view_browsertest.cc",
           "../browser/ui/views/location_bar/location_bar_view_browsertest.cc",
           "../browser/ui/views/location_bar/location_icon_view_browsertest.cc",
+          "../browser/ui/views/media_router/media_router_dialog_controller_views_browsertest.cc",
           "../browser/ui/views/media_router/media_router_ui_browsertest.cc",
           "../browser/ui/views/omnibox/omnibox_popup_contents_view_browsertest.cc",
           "../browser/ui/views/page_info/page_info_bubble_view_browsertest.cc",
