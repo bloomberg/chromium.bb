@@ -1343,7 +1343,7 @@ bool Node::isEqualNode(Node* other) const {
     if (ToElement(this)->TagQName() != ToElement(other)->TagQName())
       return false;
 
-    if (!ToElement(this)->HasEquivalentAttributes(ToElement(other)))
+    if (!ToElement(this)->HasEquivalentAttributes(ToElement(*other)))
       return false;
   } else if (nodeName() != other->nodeName()) {
     return false;

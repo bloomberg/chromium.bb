@@ -138,7 +138,7 @@ bool AreIdenticalElements(const Node& first, const Node& second) {
   if (!first_element.HasTagName(second_element.TagQName()))
     return false;
 
-  if (!first_element.HasEquivalentAttributes(&second_element))
+  if (!first_element.HasEquivalentAttributes(second_element))
     return false;
 
   return HasEditableStyle(first_element) && HasEditableStyle(second_element);
