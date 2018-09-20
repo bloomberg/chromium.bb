@@ -14,8 +14,7 @@
 
 DownloadShelfContextMenuView::DownloadShelfContextMenuView(
     DownloadItemView* download_item_view)
-    // TODO(shaktisahu): Fix this. This will not work for offline item.
-    : DownloadShelfContextMenu(download_item_view->model()->download()),
+    : DownloadShelfContextMenu(download_item_view->model()),
       download_item_view_(download_item_view) {}
 
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}

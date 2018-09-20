@@ -5,7 +5,6 @@
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/download/download_item_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/content_features.h"
 #include "extensions/common/extension.h"
@@ -15,43 +14,41 @@
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
 #endif
 
-using download::DownloadItem;
-
 bool DownloadShelfContextMenu::WantsContextMenu(
-    const DownloadItemModel& download_model) {
-  return !download_model.IsDangerous() || download_model.MightBeMalicious();
+    DownloadUIModel* download_model) {
+  return !download_model->IsDangerous() || !download_model->MightBeMalicious();
 }
 
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {
   DetachFromDownloadItem();
 }
 
-DownloadShelfContextMenu::DownloadShelfContextMenu(DownloadItem* download_item)
-    : download_item_(download_item),
-      download_commands_(new DownloadCommands(download_item)) {
-  DCHECK(download_item_);
-  download_item_->AddObserver(this);
+DownloadShelfContextMenu::DownloadShelfContextMenu(DownloadUIModel* download)
+    : download_(download),
+      // TODO(shaktisahu) : Fix DownloadCommands construction.
+      download_commands_(
+          new DownloadCommands(download_->GetDownloadCommands())) {
+  DCHECK(download_);
+  download_->AddObserver(this);
 }
 
 ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
   ui::SimpleMenuModel* model = NULL;
 
-  if (!download_item_)
+  if (!download_)
     return NULL;
 
-  DownloadItemModel download_model(download_item_);
+  DCHECK(WantsContextMenu(download_));
 
-  DCHECK(WantsContextMenu(download_model));
-
-  if (download_model.IsMalicious())
+  if (download_->IsMalicious())
     model = GetMaliciousMenuModel();
-  else if (download_model.MightBeMalicious())
+  else if (download_->MightBeMalicious())
     model = GetMaybeMaliciousMenuModel();
-  else if (download_item_->GetState() == DownloadItem::COMPLETE)
+  else if (download_->GetState() == download::DownloadItem::COMPLETE)
     model = GetFinishedMenuModel();
-  else if (download_item_->GetState() == DownloadItem::INTERRUPTED)
+  else if (download_->GetState() == download::DownloadItem::INTERRUPTED)
     model = GetInterruptedMenuModel();
-  else if (download_item_->IsPaused())
+  else if (download_->IsPaused())
     model = GetInProgressPausedMenuModel();
   else
     model = GetInProgressMenuModel();
@@ -100,7 +97,7 @@ base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
 
   switch (static_cast<DownloadCommands::Command>(command_id)) {
     case DownloadCommands::OPEN_WHEN_COMPLETE:
-      if (download_item_ && !download_item_->IsDone())
+      if (download_ && !download_->IsDone())
         id = IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE;
       else
         id = IDS_DOWNLOAD_MENU_OPEN;
@@ -164,16 +161,15 @@ base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
 }
 
 void DownloadShelfContextMenu::DetachFromDownloadItem() {
-  if (!download_item_)
+  if (!download_)
     return;
 
   download_commands_.reset();
-  download_item_->RemoveObserver(this);
-  download_item_ = NULL;
+  download_->RemoveObserver(this);
+  download_ = NULL;
 }
 
-void DownloadShelfContextMenu::OnDownloadDestroyed(DownloadItem* download) {
-  DCHECK(download_item_ == download);
+void DownloadShelfContextMenu::OnDownloadDestroyed() {
   DetachFromDownloadItem();
 }
 
