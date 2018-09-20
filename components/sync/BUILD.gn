@@ -142,8 +142,6 @@ jumbo_static_library("sync") {
     "driver/sync_client.h",
     "driver/sync_driver_switches.cc",
     "driver/sync_driver_switches.h",
-    "driver/sync_error_controller.cc",
-    "driver/sync_error_controller.h",
     "driver/sync_service.cc",
     "driver/sync_service.h",
     "driver/sync_service_crypto.cc",

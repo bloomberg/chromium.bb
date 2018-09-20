@@ -68,7 +68,6 @@
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "components/sync/driver/sync_error_controller.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "third_party/skia/include/core/SkColor.h"

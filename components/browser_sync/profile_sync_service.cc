@@ -40,7 +40,6 @@
 #include "components/sync/driver/directory_data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/driver/sync_error_controller.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/driver/user_selectable_sync_type.h"
@@ -346,13 +345,6 @@ void ProfileSyncService::Initialize() {
     sync_prefs_.SetEncryptionBootstrapToken(
         sync_prefs_.GetSpareBootstrapToken());
   }
-#endif
-
-#if !defined(OS_ANDROID)
-  DCHECK(sync_error_controller_ == nullptr)
-      << "Initialize() called more than once.";
-  sync_error_controller_ = std::make_unique<syncer::SyncErrorController>(this);
-  AddObserver(sync_error_controller_.get());
 #endif
 
   memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
@@ -685,12 +677,6 @@ void ProfileSyncService::Shutdown() {
 
   ShutdownImpl(syncer::BROWSER_SHUTDOWN);
   NotifyShutdown();
-
-  if (sync_error_controller_) {
-    // Destroy the SyncErrorController when the service shuts down for good.
-    RemoveObserver(sync_error_controller_.get());
-    sync_error_controller_.reset();
-  }
 
   // All observers must be gone now: All KeyedServices should have unregistered
   // their observers already before, in their own Shutdown(), and all others

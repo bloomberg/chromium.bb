@@ -41,10 +41,5 @@ KeyedService* SyncErrorNotifierFactory::BuildServiceInstanceFor(
   if (!profile_sync_service)
     return nullptr;
 
-  syncer::SyncErrorController* sync_error_controller =
-      profile_sync_service->sync_error_controller();
-  if (!sync_error_controller)
-    return nullptr;
-
-  return new SyncErrorNotifier(sync_error_controller, profile);
+  return new SyncErrorNotifier(profile_sync_service, profile);
 }

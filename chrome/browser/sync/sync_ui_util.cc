@@ -24,7 +24,6 @@
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/sync/driver/sync_error_controller.h"
 #endif  // defined(OS_CHROMEOS)
 
 using browser_sync::ProfileSyncService;
@@ -398,9 +397,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     }
 
     // Check for a sync passphrase error.
-    const syncer::SyncErrorController* sync_error_controller =
-        service->sync_error_controller();
-    if (sync_error_controller && sync_error_controller->HasError()) {
+    if (ShouldShowPassphraseError(service)) {
       *content_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE;
       *button_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON;
       return PASSPHRASE_ERROR;
@@ -425,6 +422,11 @@ MessageType GetStatus(Profile* profile,
   ActionType action_type = NO_ACTION;
   return GetStatusInfo(profile, service, signin, WITH_HTML, nullptr, nullptr,
                        &action_type);
+}
+
+bool ShouldShowPassphraseError(const ProfileSyncService* service) {
+  return service->IsFirstSetupComplete() && service->IsPassphraseRequired() &&
+         service->IsPassphraseRequiredForDecryption();
 }
 
 }  // namespace sync_ui_util
