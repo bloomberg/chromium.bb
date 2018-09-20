@@ -129,7 +129,8 @@ bool InputMethodBase::GetClientShouldDoLearning() {
 void InputMethodBase::ShowVirtualKeyboardIfEnabled() {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnShowVirtualKeyboardIfEnabled();
-  GetInputMethodKeyboardController()->DisplayVirtualKeyboard();
+  if (auto* keyboard = GetInputMethodKeyboardController())
+    keyboard->DisplayVirtualKeyboard();
 }
 
 void InputMethodBase::AddObserver(InputMethodObserver* observer) {
@@ -142,11 +143,6 @@ void InputMethodBase::RemoveObserver(InputMethodObserver* observer) {
 
 InputMethodKeyboardController*
 InputMethodBase::GetInputMethodKeyboardController() {
-  if (!keyboard_controller_) {
-    NOTIMPLEMENTED() << "Using InputMethodKeyboardControllerStub";
-    keyboard_controller_ =
-        std::make_unique<InputMethodKeyboardControllerStub>();
-  }
   return keyboard_controller_.get();
 }
 
