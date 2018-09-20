@@ -164,6 +164,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   const NGExclusionSpace* exclusion_space_ = nullptr;
   LayoutUnit clearance_offset_;
   Vector<NGBaselineRequest> baseline_requests_;
+
+  friend class NGConstraintSpace;
 };
 
 }  // namespace blink
