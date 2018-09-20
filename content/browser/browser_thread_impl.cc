@@ -25,58 +25,6 @@ namespace content {
 
 namespace {
 
-// An implementation of SingleThreadTaskRunner to be used in conjunction
-// with BrowserThread.
-// TODO(gab): Consider replacing this with |g_globals->task_runners| -- only
-// works if none are requested before starting the threads.
-class BrowserThreadTaskRunner : public base::SingleThreadTaskRunner {
- public:
-  explicit BrowserThreadTaskRunner(BrowserThread::ID identifier)
-      : id_(identifier) {}
-
-  // SingleThreadTaskRunner implementation.
-  bool PostDelayedTask(const base::Location& from_here,
-                       base::OnceClosure task,
-                       base::TimeDelta delay) override {
-    return BrowserThread::PostDelayedTask(id_, from_here, std::move(task),
-                                          delay);
-  }
-
-  bool PostNonNestableDelayedTask(const base::Location& from_here,
-                                  base::OnceClosure task,
-                                  base::TimeDelta delay) override {
-    return BrowserThread::PostNonNestableDelayedTask(id_, from_here,
-                                                     std::move(task), delay);
-  }
-
-  bool RunsTasksInCurrentSequence() const override {
-    return BrowserThread::CurrentlyOn(id_);
-  }
-
- protected:
-  ~BrowserThreadTaskRunner() override {}
-
- private:
-  BrowserThread::ID id_;
-  DISALLOW_COPY_AND_ASSIGN(BrowserThreadTaskRunner);
-};
-
-// A separate helper is used just for the task runners, in order to avoid
-// needing to initialize the globals to create a task runner.
-struct BrowserThreadTaskRunners {
-  BrowserThreadTaskRunners() {
-    for (int i = 0; i < BrowserThread::ID_COUNT; ++i) {
-      proxies[i] =
-          new BrowserThreadTaskRunner(static_cast<BrowserThread::ID>(i));
-    }
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> proxies[BrowserThread::ID_COUNT];
-};
-
-base::LazyInstance<BrowserThreadTaskRunners>::Leaky g_task_runners =
-    LAZY_INSTANCE_INITIALIZER;
-
 // State of a given BrowserThread::ID in chronological order throughout the
 // browser process' lifetime.
 enum BrowserThreadState {
@@ -161,6 +109,58 @@ bool PostTaskHelper(BrowserThread::ID identifier,
         from_here, std::move(task), delay);
   }
 }
+
+// An implementation of SingleThreadTaskRunner to be used in conjunction with
+// BrowserThread. BrowserThreadTaskRunners are vended by
+// BrowserThread::GetTaskRunnerForThread().
+//
+// TODO(gab): Consider replacing this with |g_globals->task_runners| -- only
+// works if none are requested before starting the threads.
+class BrowserThreadTaskRunner : public base::SingleThreadTaskRunner {
+ public:
+  explicit BrowserThreadTaskRunner(BrowserThread::ID identifier)
+      : id_(identifier) {}
+
+  // SingleThreadTaskRunner implementation.
+  bool PostDelayedTask(const base::Location& from_here,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override {
+    return PostTaskHelper(id_, from_here, std::move(task), delay, true);
+  }
+
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
+    return PostTaskHelper(id_, from_here, std::move(task), delay, false);
+  }
+
+  bool RunsTasksInCurrentSequence() const override {
+    return BrowserThread::CurrentlyOn(id_);
+  }
+
+ protected:
+  ~BrowserThreadTaskRunner() override {}
+
+ private:
+  const BrowserThread::ID id_;
+  DISALLOW_COPY_AND_ASSIGN(BrowserThreadTaskRunner);
+};
+
+// A separate helper is used just for the task runners, in order to avoid
+// needing to initialize the globals to create a task runner.
+struct BrowserThreadTaskRunners {
+  BrowserThreadTaskRunners() {
+    for (int i = 0; i < BrowserThread::ID_COUNT; ++i) {
+      proxies[i] = base::MakeRefCounted<BrowserThreadTaskRunner>(
+          static_cast<BrowserThread::ID>(i));
+    }
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> proxies[BrowserThread::ID_COUNT];
+};
+
+base::LazyInstance<BrowserThreadTaskRunners>::Leaky g_task_runners =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -273,46 +273,6 @@ std::string BrowserThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
   result += actual_name;
   result += ".";
   return result;
-}
-
-bool BrowserThread::PostTask(ID identifier,
-                             const base::Location& from_here,
-                             base::OnceClosure task) {
-  return PostTaskHelper(identifier, from_here, std::move(task),
-                        base::TimeDelta(), true);
-}
-
-// static
-bool BrowserThread::PostDelayedTask(ID identifier,
-                                    const base::Location& from_here,
-                                    base::OnceClosure task,
-                                    base::TimeDelta delay) {
-  return PostTaskHelper(identifier, from_here, std::move(task), delay, true);
-}
-
-// static
-bool BrowserThread::PostNonNestableTask(ID identifier,
-                                        const base::Location& from_here,
-                                        base::OnceClosure task) {
-  return PostTaskHelper(identifier, from_here, std::move(task),
-                        base::TimeDelta(), false);
-}
-
-// static
-bool BrowserThread::PostNonNestableDelayedTask(ID identifier,
-                                               const base::Location& from_here,
-                                               base::OnceClosure task,
-                                               base::TimeDelta delay) {
-  return PostTaskHelper(identifier, from_here, std::move(task), delay, false);
-}
-
-// static
-bool BrowserThread::PostTaskAndReply(ID identifier,
-                                     const base::Location& from_here,
-                                     base::OnceClosure task,
-                                     base::OnceClosure reply) {
-  return GetTaskRunnerForThread(identifier)
-      ->PostTaskAndReply(from_here, std::move(task), std::move(reply));
 }
 
 // static

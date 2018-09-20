@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,12 +38,12 @@ class BrowserTaskExecutorTest : public testing::Test {
 
 TEST_F(BrowserTaskExecutorTest, EnsureUIThreadTraitPointsToExpectedQueue) {
   EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
+            BrowserThreadImpl::GetTaskRunnerForThread(BrowserThread::UI));
 }
 
 TEST_F(BrowserTaskExecutorTest, EnsureIOThreadTraitPointsToExpectedQueue) {
   EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+            BrowserThreadImpl::GetTaskRunnerForThread(BrowserThread::IO));
 }
 
 }  // namespace content

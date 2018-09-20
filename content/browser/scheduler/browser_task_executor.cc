@@ -4,6 +4,8 @@
 
 #include "content/browser/scheduler/browser_task_executor.h"
 
+#include "content/browser/browser_thread_impl.h"
+
 namespace content {
 namespace {
 
@@ -89,7 +91,7 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
     const BrowserTaskTraitsExtension& extension) {
   BrowserThread::ID thread_id = extension.browser_thread();
   DCHECK_LT(thread_id, BrowserThread::ID::ID_COUNT);
-  return BrowserThread::GetTaskRunnerForThread(thread_id);
+  return BrowserThreadImpl::GetTaskRunnerForThread(thread_id);
 }
 
 }  // namespace content
