@@ -1014,7 +1014,7 @@ test("browser_tests") {
       "//components/dom_distiller/content/browser",
       "//components/dom_distiller/content/renderer",
       "//components/dom_distiller/core:test_support",
-      "//components/download/quarantine",
+      "//components/download/quarantine:test_support",
       "//components/feature_engagement/test:test_support",
       "//components/offline_items_collection/core/test_support",
       "//components/optimization_guide:test_support",
