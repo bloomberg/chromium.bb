@@ -21,6 +21,7 @@
 #include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/service/variations_service_client.h"
+#include "components/variations/variations_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,6 +75,13 @@ VariationsSeed CreateTestSafeSeed() {
   study->set_default_experiment_name(kTestSafeSeedExperimentName);
   study->mutable_experiment(0)->set_name(kTestSafeSeedExperimentName);
   return seed;
+}
+
+void DisableTestingConfig() {
+  // If the testing config is in use, the seed will not be used to set up field
+  // trials. Disable the testing config to exercise CreateTrialsFromSeed().
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableFieldTrialTestingConfig);
 }
 
 #if defined(OS_ANDROID)
@@ -290,6 +298,8 @@ class FieldTrialCreatorTest : public ::testing::Test {
 };
 
 TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSeed) {
+  DisableTestingConfig();
+
   // With a valid seed, the safe seed manager should be informed of the active
   // seed state.
   const base::Time now = base::Time::Now();
@@ -323,6 +333,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSeed) {
 }
 
 TEST_F(FieldTrialCreatorTest, SetupFieldTrials_NoLastFetchTime) {
+  DisableTestingConfig();
+
   // With a valid seed on first run, the safe seed manager should be informed of
   // the active seed state. The last fetch time in this case is expected to be
   // inferred to be recent.
@@ -357,6 +369,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_NoLastFetchTime) {
 }
 
 TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ExpiredSeed) {
+  DisableTestingConfig();
+
   // With an expired seed, there should be no field trials created, and hence no
   // active state should be passed to the safe seed manager.
   testing::NiceMock<MockSafeSeedManager> safe_seed_manager(&prefs_);
@@ -386,6 +400,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ExpiredSeed) {
 }
 
 TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSafeSeed) {
+  DisableTestingConfig();
+
   // With a valid safe seed, the safe seed manager should *not* be informed of
   // the active seed state. This is an optimization to avoid saving a safe seed
   // when already running in safe mode.
@@ -417,6 +433,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSafeSeed) {
 
 TEST_F(FieldTrialCreatorTest,
        SetupFieldTrials_CorruptedSafeSeed_FallsBackToLatestSeed) {
+  DisableTestingConfig();
+
   // With a corrupted safe seed, the field trial creator should fall back to the
   // latest seed. Hence, the safe seed manager *should* be informed of the
   // active seed state.
@@ -454,6 +472,8 @@ TEST_F(FieldTrialCreatorTest,
 #if defined(OS_ANDROID)
 // This is a regression test for https://crbug.com/829527
 TEST_F(FieldTrialCreatorTest, SetupFieldTrials_LoadsCountryOnFirstRun) {
+  DisableTestingConfig();
+
   // Simulate having received a seed in Java during First Run.
   const base::Time one_day_ago =
       base::Time::Now() - base::TimeDelta::FromDays(1);
