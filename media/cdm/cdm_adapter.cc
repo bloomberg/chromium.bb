@@ -191,6 +191,8 @@ cdm::VideoCodec ToCdmVideoCodec(VideoCodec codec) {
       return cdm::kCodecH264;
     case kCodecVP9:
       return cdm::kCodecVp9;
+    case kCodecAV1:
+      return cdm::kCodecAv1;
     default:
       DVLOG(1) << "Unsupported VideoCodec " << codec;
       return cdm::kUnknownVideoCodec;
@@ -223,6 +225,12 @@ cdm::VideoCodecProfile ToCdmVideoCodecProfile(VideoCodecProfile profile) {
       return cdm::kH264ProfileHigh422;
     case H264PROFILE_HIGH444PREDICTIVEPROFILE:
       return cdm::kH264ProfileHigh444Predictive;
+    case AV1PROFILE_PROFILE_MAIN:
+      return cdm::kAv1ProfileMain;
+    case AV1PROFILE_PROFILE_HIGH:
+      return cdm::kAv1ProfileHigh;
+    case AV1PROFILE_PROFILE_PRO:
+      return cdm::kAv1ProfilePro;
     default:
       DVLOG(1) << "Unsupported VideoCodecProfile " << profile;
       return cdm::kUnknownVideoCodecProfile;
