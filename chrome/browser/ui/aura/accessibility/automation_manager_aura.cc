@@ -250,10 +250,17 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
     event_bundle.updates.push_back(focused_node_update);
   }
 
-  ui::AXEvent event;
-  event.id = aura_obj->GetUniqueId().Get();
-  event.event_type = event_type;
-  event_bundle.events.push_back(event);
+  // Fire the event on the node, but only if it's actually in the tree.
+  // Sometimes we get events fired on nodes with an ancestor that's
+  // marked invisible, for example. In those cases we should still
+  // call SerializeChanges (because the change may have affected the
+  // ancestor) but we shouldn't fire the event on the node not in the tree.
+  if (current_tree_serializer_->IsInClientTree(aura_obj)) {
+    ui::AXEvent event;
+    event.id = aura_obj->GetUniqueId().Get();
+    event.event_type = event_type;
+    event_bundle.events.push_back(event);
+  }
 
   AutomationEventRouter* router = AutomationEventRouter::GetInstance();
   router->DispatchAccessibilityEvents(event_bundle);
