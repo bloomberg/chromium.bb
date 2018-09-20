@@ -21,7 +21,6 @@
 #include "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
