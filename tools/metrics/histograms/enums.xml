@@ -5216,6 +5216,32 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="CACHE_MISS"/>
 </enum>
 
+<enum name="CacheStorageErrorStorageType">
+  <int value="0" label="kDidCreateNullCache"/>
+  <int value="1" label="kDeleteCacheFailed"/>
+  <int value="2" label="kMatchBackendClosed"/>
+  <int value="3" label="kMatchAllBackendClosed"/>
+  <int value="4" label="kWriteSideDataBackendClosed"/>
+  <int value="5" label="kBatchBackendClosed"/>
+  <int value="6" label="kBatchInvalidSpace"/>
+  <int value="7" label="kBatchDidGetUsageAndQuotaInvalidSpace"/>
+  <int value="8" label="kBatchDidGetUsageAndQuotaUndefinedOp"/>
+  <int value="9" label="kKeysBackendClosed"/>
+  <int value="10" label="kQueryCacheBackendClosed"/>
+  <int value="11" label="kQueryCacheFilterEntryFailed"/>
+  <int value="12" label="kQueryCacheDidReadMetadataNullBlobContext"/>
+  <int value="13" label="kStorageMatchAllBackendClosed"/>
+  <int value="14" label="kWriteSideDataImplBackendClosed"/>
+  <int value="15" label="kPutImplBackendClosed"/>
+  <int value="16" label="kPutDidDeleteEntryBackendClosed"/>
+  <int value="17" label="kMetadataSerializationFailed"/>
+  <int value="18" label="kPutDidWriteHeadersWrongBytes"/>
+  <int value="19" label="kPutDidWriteBlobToCacheFailed"/>
+  <int value="20" label="kDeleteImplBackendClosed"/>
+  <int value="21" label="kKeysImplBackendClosed"/>
+  <int value="22" label="kCreateBackendDidCreateFailed"/>
+</enum>
+
 <enum name="CacheStorageErrorType">
   <int value="0" label="OK"/>
   <int value="1" label="Exists Error"/>
