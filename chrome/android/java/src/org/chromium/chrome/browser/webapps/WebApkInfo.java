@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -163,10 +164,11 @@ public class WebApkInfo extends WebappInfo {
                 IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.DISPLAY_MODE));
         int orientation = orientationFromString(
                 IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.ORIENTATION));
-        long themeColor = getLongFromMetaData(bundle, WebApkMetaDataKeys.THEME_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-        long backgroundColor = getLongFromMetaData(bundle, WebApkMetaDataKeys.BACKGROUND_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+        long themeColor = WebApkMetaDataUtils.getLongFromMetaData(bundle,
+                WebApkMetaDataKeys.THEME_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+        long backgroundColor =
+                WebApkMetaDataUtils.getLongFromMetaData(bundle, WebApkMetaDataKeys.BACKGROUND_COLOR,
+                        ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
 
         int shellApkVersion =
                 IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.SHELL_APK_VERSION, 0);
@@ -361,31 +363,6 @@ public class WebApkInfo extends WebappInfo {
         } catch (Resources.NotFoundException e) {
             return null;
         }
-    }
-
-    /**
-     * Extracts long value from the WebAPK's meta data.
-     * @param metaData WebAPK meta data to extract the long from.
-     * @param name Name of the <meta-data> tag to extract the value from.
-     * @param defaultValue Value to return if long value could not be extracted.
-     * @return long value.
-     */
-    private static long getLongFromMetaData(Bundle metaData, String name, long defaultValue) {
-        String value = metaData.getString(name);
-
-        // The value should be terminated with 'L' to force the value to be a string. According to
-        // https://developer.android.com/guide/topics/manifest/meta-data-element.html numeric
-        // meta data values can only be retrieved via {@link Bundle#getInt()} and
-        // {@link Bundle#getFloat()}. We cannot use {@link Bundle#getFloat()} due to loss of
-        // precision.
-        if (value == null || !value.endsWith("L")) {
-            return defaultValue;
-        }
-        try {
-            return Long.parseLong(value.substring(0, value.length() - 1));
-        } catch (NumberFormatException e) {
-        }
-        return defaultValue;
     }
 
     /**

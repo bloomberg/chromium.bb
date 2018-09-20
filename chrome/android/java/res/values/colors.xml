@@ -162,7 +162,6 @@
 
     <!-- WebappActivity colors -->
     <color name="webapp_default_bg">@color/modern_grey_50</color>
-    <color name="webapp_splash_title_light">@android:color/white</color>
 
     <!-- Bookmark UI colors -->
     <color name="bookmark_detail_section">#7C7B79</color>
