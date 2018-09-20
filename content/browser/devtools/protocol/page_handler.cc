@@ -607,7 +607,8 @@ void PageHandler::CaptureScreenshot(
     Maybe<Page::Viewport> clip,
     Maybe<bool> from_surface,
     std::unique_ptr<CaptureScreenshotCallback> callback) {
-  if (!host_ || !host_->GetRenderWidgetHost()) {
+  if (!host_ || !host_->GetRenderWidgetHost() ||
+      !host_->GetRenderWidgetHost()->GetView()) {
     callback->sendFailure(Response::InternalError());
     return;
   }
