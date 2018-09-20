@@ -4404,12 +4404,6 @@ jumbo_split_static_library("browser") {
       "supervised_user/supervised_user_theme.h",
     ]
   }
-  if (enable_supervised_users && !is_android && !is_chromeos) {
-    sources += [
-      "supervised_user/supervised_user_creation_policy_handler.cc",
-      "supervised_user/supervised_user_creation_policy_handler.h",
-    ]
-  }
 
   if (enable_vr) {
     if (enable_gvr_services) {
