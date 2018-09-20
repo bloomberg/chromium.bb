@@ -192,10 +192,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void OnAccessibleFocus();
   void OnAccessibleBlur();
 
-  // TODO(884770): This should only be here until the double-tap-to-jump logic
-  // is moved to the controls from the overlay play button.
-  void ShowArrowAnimation(bool);
-
  private:
   // MediaControlsMediaEventListener is a component that is listening to events
   // and calling the appropriate callback on MediaControlsImpl. The object is
@@ -304,7 +300,13 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   bool ContainsRelatedTarget(Event*);
 
   void HandlePointerEvent(Event*);
+  void HandleClickEvent(Event*);
   void HandleTouchEvent(Event*);
+
+  void EnsureAnimatedArrowContainer();
+  void MaybeJump(int);
+  bool IsOnLeftSide(Event*);
+  void TapTimerFired(TimerBase*);
 
   // Internal cast related methods.
   void RemotePlaybackStateChanged();
@@ -396,6 +398,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // certain pointer events. In particular, when the user is interacting via
   // touch events, we want to ignore pointerover/pointerout/pointermove events.
   bool is_touch_interaction_ = false;
+
+  // Timer for distinguishing double-taps.
+  TaskRunnerTimer<MediaControlsImpl> tap_timer_;
 
   // Holds the currently set --overlay-play-button-width value. Used to check if
   // we need to update.

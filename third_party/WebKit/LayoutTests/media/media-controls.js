@@ -180,6 +180,16 @@ function coordinatesOutsideElement(element)
     return new Array(x, y);
 }
 
+function videoLeftEdgeCoordinates(element) {
+    const rect = element.getBoundingClientRect();
+    return [rect.left + 5, rect.top + rect.height / 2];
+}
+
+function videoRightEdgeCoordinates(element) {
+    const rect = element.getBoundingClientRect();
+    return [rect.right - 5, rect.top + rect.height / 2];
+}
+
 function mediaControlsButtonCoordinates(element, id)
 {
     var button = mediaControlsButton(element, id);
@@ -373,6 +383,12 @@ function runAfterHideMediaControlsTimerFired(func, mediaElement)
         throw "The media will end before the controls have been hidden";
 
     setTimeout(func, hideTimeoutMs);
+}
+
+function runAfterDoubleTapTimerFired(func) {
+  // 300ms timer plus 500ms slack.
+  const doubleTapTimeoutMs = 300 + 500;
+  setTimeout(func, doubleTapTimeoutMs);
 }
 
 function hasEnabledFullscreenButton(element) {
