@@ -26,22 +26,22 @@ Shift+Tab:
 DIV:console-key-navigation.js:20 Message #99
 
 Scrolling to top of viewport
-DIV#console-messages.monospace
+DIV.console-group.console-group-messages
 
 Shift+Tab:
 BUTTON:Console settings
 
 Tab:
-DIV#console-messages.monospace
+DIV.console-group.console-group-messages
 
 Setting focus in prompt:
 TEXTAREA:Code editor
 
 Shift+Tab:
-DIV#console-messages.monospace
+DIV.console-group.console-group-messages
 
 Scrolling to top of viewport
-DIV#console-messages.monospace
+DIV.console-group.console-group-messages
 
 Tab:
 TEXTAREA:Code editor
@@ -49,7 +49,7 @@ TEXTAREA:Code editor
 Running: testMoveAcrossLogsWithinViewport
 
 Force selecting index 99
-DIV#console-messages.monospace
+DIV.console-group.console-group-messages
 
 Home:
 DIV:console-key-navigation.js:20 Message #0
@@ -69,7 +69,7 @@ Force selecting index 98
 DIV:console-key-navigation.js:20 Message #98
 
 Scrolling to top of viewport
-DIV#console-messages.monospace
+DIV.console-group.console-group-messages
 
 Scrolling to bottom of viewport
 DIV:console-key-navigation.js:20 Message #98
