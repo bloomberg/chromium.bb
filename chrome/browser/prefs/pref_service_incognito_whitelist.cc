@@ -60,6 +60,9 @@ const char* const kPersistentPrefNames[] = {
 #if !defined(OS_ANDROID)
     kAnimationPolicyAllowed, kAnimationPolicyOnce, kAnimationPolicyNone,
 #endif  // !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    prefs::kAnimationPolicy,
+#endif
 
     // Bookmark preferences are common between incognito and regular mode.
     bookmarks::prefs::kBookmarkEditorExpandedNodes,
@@ -198,17 +201,6 @@ const char* const kPersistentPrefNames[] = {
 // |kPersistentPrefNames|.
 const char* const kTemporaryIncognitoWhitelist[] = {
     // chrome/common/pref_names.h
-    prefs::kEnableHyperlinkAuditing,
-
-    prefs::kEnableDoNotTrack,
-    prefs::kEnableEncryptedMedia,
-
-#if defined(OS_ANDROID)
-    prefs::kClearedBlockedSiteNotificationChannels,
-#endif
-
-    prefs::kPushMessagingAppIdentifierMap,
-
     prefs::kWebRTCMultipleRoutesEnabled,
     prefs::kWebRTCNonProxiedUdpEnabled,
     prefs::kWebRTCIPHandlingPolicy,
@@ -233,7 +225,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kDefaultAudioCaptureDevice,
     prefs::kDefaultVideoCaptureDevice,
     prefs::kMediaDeviceIdSalt,
-    prefs::kMediaStorageIdSalt,
 
     prefs::kClearPluginLSODataEnabled,
     prefs::kPepperFlashSettingsEnabled,
@@ -254,9 +245,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kAppListLocalState,
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
-    prefs::kDRMSalt,
-    prefs::kEnableDRM,
-
     prefs::kWatchdogExtensionActive,
 
 #if defined(OS_ANDROID)
@@ -265,10 +253,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 // prefs::kRestartInBackground,
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    prefs::kAnimationPolicy,
 #endif
 
     prefs::kBackgroundTracingLastUpload,
