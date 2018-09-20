@@ -26,13 +26,13 @@ import java.util.Map;
  * Autofill Assistant related UIs and forward UI events to native side.
  */
 @JNINamespace("autofill_assistant")
-public class AutofillAssistantUiController implements BottomBarController.Client {
+public class AutofillAssistantUiController implements AutofillAssistantUiDelegate.Client {
     /** Prefix for Intent extras relevant to this feature. */
     private static final String INTENT_EXTRA_PREFIX =
             "org.chromium.chrome.browser.autofill_assistant.";
 
     private final long mUiControllerAndroid;
-    private final BottomBarController mBottomBarController;
+    private final AutofillAssistantUiDelegate mUiDelegate;
 
     /**
      * Construct Autofill Assistant UI controller.
@@ -40,7 +40,6 @@ public class AutofillAssistantUiController implements BottomBarController.Client
      * @param activity The CustomTabActivity of the controller associated with.
      */
     public AutofillAssistantUiController(CustomTabActivity activity) {
-        // TODO(crbug.com/806868): Implement corresponding UI.
         Tab activityTab = activity.getActivityTab();
 
         Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
@@ -77,7 +76,12 @@ public class AutofillAssistantUiController implements BottomBarController.Client
             }
         });
 
-        mBottomBarController = new BottomBarController(activity, this);
+        mUiDelegate = new AutofillAssistantUiDelegate(activity, this);
+    }
+
+    @Override
+    public void onDismiss() {
+        nativeDestroy(mUiControllerAndroid);
     }
 
     @Override
@@ -96,29 +100,35 @@ public class AutofillAssistantUiController implements BottomBarController.Client
         return result;
     }
 
+    @Override
+    public void onClickOverlay() {
+        // TODO(crbug.com/806868): Notify native side.
+    }
+
     @CalledByNative
     private void onShowStatusMessage(String message) {
-        mBottomBarController.showStatusMessage(message);
+        mUiDelegate.showStatusMessage(message);
     }
 
     @CalledByNative
     private void onShowOverlay() {
-        // TODO(crbug.com/806868): Implement corresponding UI.
+        mUiDelegate.showOverlay();
     }
 
     @CalledByNative
     private void onHideOverlay() {
-        // TODO(crbug.com/806868): Implement corresponding UI.
+        mUiDelegate.hideOverlay();
     }
 
     @CalledByNative
     private void onUpdateScripts(String[] scriptNames, String[] scriptPaths) {
-        List<BottomBarController.ScriptHandle> scriptHandles = new ArrayList<>();
+        List<AutofillAssistantUiDelegate.ScriptHandle> scriptHandles = new ArrayList<>();
         // Note that scriptNames and scriptPaths are one-on-one matched by index.
         for (int i = 0; i < scriptNames.length; i++) {
-            scriptHandles.add(new BottomBarController.ScriptHandle(scriptNames[i], scriptPaths[i]));
+            scriptHandles.add(
+                    new AutofillAssistantUiDelegate.ScriptHandle(scriptNames[i], scriptPaths[i]));
         }
-        mBottomBarController.updateScripts(scriptHandles);
+        mUiDelegate.updateScripts(scriptHandles);
     }
 
     // native methods.
