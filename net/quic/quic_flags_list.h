@@ -240,4 +240,4 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_45, false)
 // mode is wrong for the first CHLO packet.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_has_pending_crypto_data,
-          false)
+          true)
