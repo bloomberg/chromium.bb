@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -38,9 +39,12 @@ namespace {
 std::unique_ptr<base::ListValue> GetFilesAsListStorage(
     const std::set<base::FilePath>& files) {
   auto value = std::make_unique<base::ListValue>();
-  for (const base::FilePath& path : files)
-    value->AppendString(path.value());
-
+  for (const base::FilePath& path : files) {
+    auto item = std::make_unique<base::DictionaryValue>();
+    item->SetString("dirname", path.DirName().AsEndingWithSeparator().value());
+    item->SetString("basename", path.BaseName().value());
+    value->Append(std::move(item));
+  }
   return value;
 }
 
