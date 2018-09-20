@@ -10,18 +10,17 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/web_media_stream_registry.h"
 
-using namespace blink;
-
 namespace {
 
 static const int kVideoCaptureWidth = 352;
 static const int kVideoCaptureHeight = 288;
 static const int kVideoCaptureFrameDurationMs = 33;
 
-bool IsMockMediaStreamWithVideo(const WebMediaStream& web_stream) {
+bool IsMockMediaStreamWithVideo(const blink::WebMediaStream& web_stream) {
   if (web_stream.IsNull())
     return false;
-  WebVector<WebMediaStreamTrack> video_tracks = web_stream.VideoTracks();
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+      web_stream.VideoTracks();
   return video_tracks.size() > 0;
 }
 
