@@ -5,7 +5,9 @@
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include <windows.ui.notifications.h>
 #include <wrl/client.h>
