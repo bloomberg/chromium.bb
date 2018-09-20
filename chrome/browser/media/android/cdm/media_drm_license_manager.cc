@@ -12,6 +12,7 @@
 #include "base/unguessable_token.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "url/origin.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.

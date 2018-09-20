@@ -18,6 +18,7 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/provision_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "url/gurl.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.

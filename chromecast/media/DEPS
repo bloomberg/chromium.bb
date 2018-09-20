@@ -14,4 +14,5 @@ include_rules = [
   "+ui/gfx/geometry",
   "+ui/gfx/overlay_transform.h",
   "+services/service_manager/public",
+  "+third_party/widevine/cdm/widevine_cdm_common.h",
 ]

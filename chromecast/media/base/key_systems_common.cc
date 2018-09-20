@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "media/base/key_system_names.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
