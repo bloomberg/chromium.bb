@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_adaptor.h"
@@ -33,7 +33,7 @@
 
 @interface TabGridCoordinator ()<TabPresentationDelegate,
                                  HistoryPresentationDelegate,
-                                 RecentTabsHandsetViewControllerCommand>
+                                 RecentTabsPresentationDelegate>
 // Superclass property specialized for the class that this coordinator uses.
 @property(nonatomic, weak) TabGridViewController* mainViewController;
 // Pointer to the masking view used to prevent the main view controller from
@@ -378,7 +378,7 @@
                             focusOmnibox:focusOmnibox];
 }
 
-#pragma mark - RecentTabsHandsetViewControllerCommand
+#pragma mark - RecentTabsPresentationDelegate
 
 - (void)dismissRecentTabs {
   // It is valid for tab grid to ignore this since recent tabs is embedded and

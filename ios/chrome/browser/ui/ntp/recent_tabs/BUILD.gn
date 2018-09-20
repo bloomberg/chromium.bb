@@ -7,18 +7,11 @@ source_set("recent_tabs") {
   sources = [
     "closed_tabs_observer_bridge.h",
     "closed_tabs_observer_bridge.mm",
-    "legacy_recent_tabs_table_coordinator.h",
-    "legacy_recent_tabs_table_coordinator.mm",
-    "legacy_recent_tabs_table_view_controller.h",
-    "legacy_recent_tabs_table_view_controller.mm",
-    "legacy_recent_tabs_table_view_controller_delegate.h",
     "recent_tabs_constants.h",
     "recent_tabs_constants.mm",
-    "recent_tabs_handset_coordinator.h",
-    "recent_tabs_handset_coordinator.mm",
-    "recent_tabs_handset_view_controller.h",
-    "recent_tabs_handset_view_controller.mm",
+    "recent_tabs_presentation_delegate.h",
     "recent_tabs_table_consumer.h",
+    "recent_tabs_table_view_controller_delegate.h",
     "sessions_sync_user_state.h",
     "synced_sessions.h",
     "synced_sessions.mm",
@@ -65,7 +58,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "recent_tabs_table_coordinator_unittest.mm",
+    "recent_tabs_coordinator_unittest.mm",
   ]
   deps = [
     ":recent_tabs",
@@ -80,6 +73,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/sync:test_support",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
+    "//ios/chrome/browser/ui/recent_tabs",
     "//ios/chrome/test:test_support",
     "//ios/web/public/test",
     "//testing/gtest",
