@@ -211,7 +211,7 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRegistration> registration,
       blink::mojom::BackgroundFetchError error,
-      bool background_fetch_succeeded,
+      blink::mojom::BackgroundFetchFailureReason failure_reason,
       std::vector<BackgroundFetchSettledFetch> settled_fetches,
       std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles);
 
@@ -221,7 +221,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidGetMatchingRequests(
       blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
       blink::mojom::BackgroundFetchError error,
-      bool background_fetch_succeeded,
+      blink::mojom::BackgroundFetchFailureReason failure_reason,
       std::vector<BackgroundFetchSettledFetch> settled_fetches,
       std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles);
 
