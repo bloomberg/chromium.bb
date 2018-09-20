@@ -210,6 +210,9 @@ class DeviceStatusCollector {
   bool GetAndroidStatus(
       enterprise_management::SessionStatusReportRequest* status,
       const scoped_refptr<GetStatusState>& state);  // Queues async queries!
+  bool GetCrostiniUsage(
+      enterprise_management::SessionStatusReportRequest* status,
+      Profile* profile);
 
   // Update the cached values of the reporting settings.
   void UpdateReportingSettings();

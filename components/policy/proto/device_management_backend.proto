@@ -1073,6 +1073,14 @@ message AndroidStatus {
   optional string droid_guard_info = 2;
 }
 
+message CrostiniStatus {
+  // Time stamp of last launch of a Crostini app with three day granularity,
+  // The timestamp is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 last_launch_time_window_start_timestamp = 1;
+  // The VM image version at the time of the last launch.
+  optional string last_launch_vm_image_version = 2;
+}
+
 // Report current active session (a user on one device) level status.
 message SessionStatusReportRequest {
   reserved 1, 2, 3, 6;
@@ -1094,6 +1102,9 @@ message SessionStatusReportRequest {
   // Format of the id is as specified in tz database e.g. Pacific/Honolulu. For
   // more details check third_party/icu/source/i18n/unicode/timezone.h.
   optional string time_zone = 9;
+
+  // Information about Crostini status.
+  optional CrostiniStatus crostini_status = 10;
 }
 
 // Response from DMServer to update devices' status.

@@ -1880,7 +1880,7 @@ const char kLogoutStartedLast[] = "chromeos.logout-started";
 // be an Android app).
 const char kIsBootstrappingSlave[] = "is_oobe_bootstrapping_slave";
 
-// A preference that controlles Android status reporting.
+// A boolean preference controlling Android status reporting.
 const char kReportArcStatusEnabled[] = "arc.status_reporting_enabled";
 
 // Dictionary indicating current network bandwidth throttling settings.

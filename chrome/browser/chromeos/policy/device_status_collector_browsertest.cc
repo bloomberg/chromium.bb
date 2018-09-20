@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -1305,6 +1306,7 @@ TEST_F(DeviceStatusCollectorTest, RegularUserAndroidReporting) {
                                            true);
 
   GetStatus();
+  EXPECT_TRUE(got_session_status_);
   EXPECT_EQ(kArcStatus, session_status_.android_status().status_payload());
   EXPECT_EQ(kDroidGuardInfo,
             session_status_.android_status().droid_guard_info());
@@ -1312,7 +1314,51 @@ TEST_F(DeviceStatusCollectorTest, RegularUserAndroidReporting) {
   EXPECT_EQ(account_id.GetUserEmail(), session_status_.user_dm_token());
 }
 
-TEST_F(DeviceStatusCollectorTest, NoRegularUserAndroidReportingWhenDisabled) {
+TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReporting) {
+  RestartStatusCollector(
+      base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
+      base::Bind(&GetEmptyCPUTempInfo),
+      base::Bind(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+
+  const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
+  MockRegularUserWithAffiliation(account_id, true);
+  testing_profile_->GetPrefs()->SetBoolean(
+      crostini::prefs::kReportCrostiniUsageEnabled, true);
+  testing_profile_->GetPrefs()->SetString(
+      crostini::prefs::kCrostiniLastLaunchVersion, "1.33.7");
+  testing_profile_->GetPrefs()->SetInt64(
+      crostini::prefs::kCrostiniLastLaunchTimeWindowStart, 1535760000000);
+
+  GetStatus();
+  EXPECT_TRUE(got_session_status_);
+  EXPECT_EQ(1535760000000, session_status_.crostini_status()
+                               .last_launch_time_window_start_timestamp());
+  EXPECT_EQ("1.33.7",
+            session_status_.crostini_status().last_launch_vm_image_version());
+  // In tests, GetUserDMToken returns the e-mail for easy verification.
+  EXPECT_EQ(account_id.GetUserEmail(), session_status_.user_dm_token());
+}
+
+TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReportingNoData) {
+  RestartStatusCollector(
+      base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
+      base::Bind(&GetEmptyCPUTempInfo),
+      base::Bind(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+
+  const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
+  MockRegularUserWithAffiliation(account_id, true);
+  testing_profile_->GetPrefs()->SetBoolean(
+      crostini::prefs::kReportCrostiniUsageEnabled, true);
+
+  GetStatus();
+  // Currently, only AndroidStatus and Crostini usage reporting is done for
+  // regular users. If there is no reporting in both cases, no
+  // UserSessionStatusRequest is filled at all. Note that this test case relies
+  // on the fact that kReportArcStatusEnabled is false by default.
+  EXPECT_FALSE(got_session_status_);
+}
+
+TEST_F(DeviceStatusCollectorTest, NoRegularUserReportingByDefault) {
   RestartStatusCollector(
       base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
       base::Bind(&GetEmptyCPUTempInfo),
@@ -1322,9 +1368,10 @@ TEST_F(DeviceStatusCollectorTest, NoRegularUserAndroidReportingWhenDisabled) {
   MockRegularUserWithAffiliation(account_id, true);
 
   GetStatus();
-  // Currently, only AndroidStatus reporting is done for regular users. If that
-  // is disabled, no UserSessionStatusRequest is filled at all. Note that this
-  // test case relies on the fact that kReportArcStatusEnabled is false by
+  // Currently, only AndroidStatus and Crostini usage reporting is done for
+  // regular users. If both are disabled, no UserSessionStatusRequest is filled
+  // at all. Note that this test case relies on the fact that
+  // kReportArcStatusEnabled and kReportCrostiniUsageEnabled are false by
   // default.
   EXPECT_FALSE(got_session_status_);
 }

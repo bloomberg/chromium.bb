@@ -6269,6 +6269,28 @@
       This policy only applies if Android apps are enabled.''',
     },
     {
+      'name': 'ReportCrostiniUsageEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:70-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 484,
+      'caption': '''Report information about usage of Linux apps''',
+      'tags': ['admin-sharing'],
+      'desc': '''Information about the usage of Linux apps is sent back to the
+      server.
+
+      If the policy is set to false or left unset, no usage information is
+      reported. If set to true, usage information is reported.
+
+      This policy only applies if Linux app support is enabled.''',
+    },
+    {
       'name': 'HeartbeatEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -13431,5 +13453,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 483
+  'highest_id_currently_used': 484
 }
