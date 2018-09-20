@@ -66,7 +66,7 @@ bool CSSVariableResolver::ResolveFallback(CSSParserTokenRange range,
   return ResolveTokenRange(range, options, result);
 }
 
-CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
+scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
     AtomicString name) {
   if (variables_seen_.Contains(name)) {
     cycle_start_points_.insert(name);
@@ -98,7 +98,7 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
       name, *variable_data, resolve_urls, unused_cycle_detected);
   if (!registration) {
     inherited_variables_->SetVariable(name, new_variable_data);
-    return new_variable_data.get();
+    return new_variable_data;
   }
 
   const CSSValue* parsed_value = nullptr;
@@ -117,7 +117,7 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
   }
   if (!new_variable_data)
     return registration->InitialVariableData();
-  return new_variable_data.get();
+  return new_variable_data;
 }
 
 scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
@@ -220,7 +220,7 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
     inherited_variables_ = state_.Style()->InheritedVariables();
     non_inherited_variables_ = state_.Style()->NonInheritedVariables();
   }
-  CSSVariableData* variable_data =
+  scoped_refptr<CSSVariableData> variable_data =
       is_env_variable ? ValueForEnvironmentVariable(variable_name)
                       : ValueForCustomProperty(variable_name);
 
@@ -246,7 +246,7 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
   return true;
 }
 
-CSSVariableData* CSSVariableResolver::ValueForEnvironmentVariable(
+scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForEnvironmentVariable(
     const AtomicString& name) {
   // If we are in a User Agent Shadow DOM then we should not record metrics.
   ContainerNode& scope_root = state_.GetTreeScope().RootNode();
