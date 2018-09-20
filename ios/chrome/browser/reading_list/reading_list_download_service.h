@@ -35,7 +35,7 @@ class ReadingListDownloadService
       ReadingListModel* reading_list_model,
       PrefService* prefs,
       base::FilePath chrome_profile_path,
-      net::URLRequestContextGetter* url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<dom_distiller::DistillerFactory> distiller_factory,
       std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
           distiller_page_factory);
