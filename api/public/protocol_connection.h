@@ -7,10 +7,13 @@
 
 namespace openscreen {
 
+class Error;
+class NetworkMetrics;
+
 // Represents an embedder's view of a connection between an Open Screen
 // controller and a receiver.  Both the controller and receiver will have a
-// ProtocolConnection object, although the information known about the other party
-// may not be symmetrical.
+// ProtocolConnection object, although the information known about the other
+// party may not be symmetrical.
 //
 // A ProtocolConnection supports multiple protocols defined by the Open Screen
 // standard and can be extended by embedders with additional protocols.
@@ -45,6 +48,10 @@ class ProtocolConnectionObserver {
   // underlying transport was terminated, the underying system resource was
   // closed, or data can no longer be exchanged.
   virtual void OnConnectionRemoved(const ProtocolConnection& connection) = 0;
+  // Called when metrics have been collected by the service.
+  virtual void OnMetrics(const NetworkMetrics& metrics) = 0;
+  // Called when an error has occurred.
+  virtual void OnError(const Error& error) = 0;
 
  protected:
   virtual ~ProtocolConnectionObserver() = default;

@@ -6,28 +6,10 @@
 
 namespace openscreen {
 
-ProtocolConnectionClientError::ProtocolConnectionClientError() = default;
-ProtocolConnectionClientError::ProtocolConnectionClientError(
-    Code error,
-    const std::string& message)
-  : error(error), message(message) {}
-ProtocolConnectionClientError::ProtocolConnectionClientError(
-    const ProtocolConnectionClientError& other) =
-  default;
-ProtocolConnectionClientError::~ProtocolConnectionClientError() = default;
+ProtocolConnectionClient::ProtocolConnectionClient(
+    ProtocolConnectionObserver* observer)
+    : observer_(observer) {}
 
-ProtocolConnectionClientError& ProtocolConnectionClientError::operator=(
-    const ProtocolConnectionClientError& other) = default;
-
-ProtocolConnectionClient::Metrics::Metrics() = default;
-ProtocolConnectionClient::Metrics::~Metrics() = default;
-
-ProtocolConnectionClient::Config::Config() = default;
-ProtocolConnectionClient::Config::~Config() = default;
-
-ProtocolConnectionClient::ProtocolConnectionClient(const Config& config,
-                                               Observer* observer) :
-  config_(config), observer_(observer) {}
 ProtocolConnectionClient::~ProtocolConnectionClient() = default;
 
 }  // namespace openscreen

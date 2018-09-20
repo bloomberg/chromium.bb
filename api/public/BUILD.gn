@@ -4,11 +4,15 @@
 
 source_set("api") {
   sources = [
-    "network_service_manager.h",
+    "client_config.cc",
+    "client_config.h",
+    "network_metrics.h",
     "network_service_manager.cc",
+    "network_service_manager.h",
     "protocol_connection.h",
-    "protocol_connection_client.h",
     "protocol_connection_client.cc",
+    "protocol_connection_client.h",
+    "protocol_connection_server.cc",
     "protocol_connection_server.h",
     "screen_info.cc",
     "screen_info.h",
@@ -16,6 +20,8 @@ source_set("api") {
     "screen_listener.h",
     "screen_publisher.cc",
     "screen_publisher.h",
+    "server_config.cc",
+    "server_config.h",
   ]
 
   deps = [

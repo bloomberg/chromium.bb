@@ -7,32 +7,11 @@
 
 #include <string>
 
-#include "base/macros.h"
-#include "base/time.h"
 #include "api/public/protocol_connection.h"
+#include "base/error.h"
+#include "base/macros.h"
 
 namespace openscreen {
-
-// Used to report an error from a ProtocolConnectionClient implementation.
-// NOTE: May be simpler to have a combined enum/struct for client and server.
-struct ProtocolConnectionClientError {
- public:
-  // TODO(mfoltz): Add additional error types, as implementations progress.
-  enum class Code {
-    kNone = 0,
-  };
-
-  ProtocolConnectionClientError();
-  ProtocolConnectionClientError(Code error, const std::string& message);
-  ProtocolConnectionClientError(const ProtocolConnectionClientError& other);
-  ~ProtocolConnectionClientError();
-
-  ProtocolConnectionClientError& operator=(
-      const ProtocolConnectionClientError& other);
-
-  Code error = Code::kNone;
-  std::string message;
-};
 
 // Embedder's view of the network service that initiates OSP connections to OSP
 // receivers.
@@ -42,56 +21,7 @@ struct ProtocolConnectionClientError {
 // ProtocolConnectionEndpoint when the two APIs are finalized.
 class ProtocolConnectionClient {
  public:
-  enum class State {
-    kStopped = 0,
-    kStarting,
-    kRunning,
-    kStopping
-  };
-
-  // For any embedder-specific configuration of the ProtocolConnectionClient.
-  struct Config {
-    Config();
-    ~Config();
-  };
-
-  // Holds a set of metrics, captured over a specific range of time, about the
-  // behavior of a ProtocolConnectionClient instance.
-  struct Metrics {
-    Metrics();
-    ~Metrics();
-
-    // The range of time over which the metrics were collected; end_timestamp >
-    // start_timestamp
-    timestamp_t start_timestamp = 0;
-    timestamp_t end_timestamp = 0;
-
-    // The number of packets and bytes sent over the timestamp range.
-    uint64_t num_packets_sent = 0;
-    uint64_t num_bytes_sent = 0;
-
-    // The number of packets and bytes received over the timestamp range.
-    uint64_t num_packets_received = 0;
-    uint64_t num_bytes_received = 0;
-
-    // The maximum number of connections over the timestamp range.  The
-    // latter two fields break this down by connections to ipv4 and ipv6
-    // endpoints.
-    size_t num_connections = 0;
-    size_t num_ipv4_connections = 0;
-    size_t num_ipv6_connections = 0;
-  };
-
-  class Observer : public ProtocolConnectionObserver {
-   public:
-    virtual ~Observer() = default;
-
-    // Reports an error.
-    virtual void OnError(ProtocolConnectionClientError) = 0;
-
-    // Reports metrics.
-    virtual void OnMetrics(Metrics) = 0;
-  };
+  enum class State { kStopped = 0, kStarting, kRunning, kStopping };
 
   virtual ~ProtocolConnectionClient();
 
@@ -113,15 +43,14 @@ class ProtocolConnectionClient {
   State state() const { return state_; }
 
   // Returns the last error reported by this client.
-  const ProtocolConnectionClientError& last_error() const { return last_error_; }
+  const Error& last_error() const { return last_error_; }
 
  protected:
-  explicit ProtocolConnectionClient(const Config& config, Observer* observer);
+  explicit ProtocolConnectionClient(ProtocolConnectionObserver* observer);
 
-  Config config_;
   State state_ = State::kStopped;
-  ProtocolConnectionClientError last_error_;
-  Observer* const observer_;
+  Error last_error_;
+  ProtocolConnectionObserver* const observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolConnectionClient);
 };
