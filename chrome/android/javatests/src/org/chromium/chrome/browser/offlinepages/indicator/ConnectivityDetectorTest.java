@@ -237,14 +237,18 @@ public class ConnectivityDetectorTest implements ConnectivityDetector.Observer {
     }
 
     private void checkConnectivityViaDefaultUrl() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { mConnectivityDetector.checkConnectivityViaDefaultUrl(); });
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mConnectivityDetector.setUseDefaultUrlForTesting(true);
+            mConnectivityDetector.checkConnectivityViaHttpProbe();
+        });
         Assert.assertTrue(mSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void checkConnectivityViaFallbackUrl() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { mConnectivityDetector.checkConnectivityViaFallbackUrl(); });
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mConnectivityDetector.setUseDefaultUrlForTesting(false);
+            mConnectivityDetector.checkConnectivityViaHttpProbe();
+        });
         Assert.assertTrue(mSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
