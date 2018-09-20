@@ -277,25 +277,30 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     if (UseRTLLayout())
       offset = 1.0 - offset;
     self.topToolbar.pageControl.sliderPosition = offset;
+  }
 
-    TabGridPage page = GetPageFromScrollView(scrollView);
-    if (page != _currentPage) {
-      _currentPage = page;
+  // Update _currentPage if scroll view has moved to a new page. Important to
+  // note that changing pages with a 3-finger accessibiility swipe is not
+  // registered as dragging.
+  TabGridPage page = GetPageFromScrollView(scrollView);
+  if (page != _currentPage) {
+    _currentPage = page;
+    if (scrollView.dragging || scrollView.decelerating) {
       [self broadcastIncognitoContentVisibility];
       [self configureButtonsForActiveAndCurrentPage];
       // Records when the user drags the scrollView to switch pages.
       [self recordActionSwitchingToPage:_currentPage];
-
-      // TODO(crbug.com/872303) : This is a workaround because TabRestoreService
-      // does not notify observers when entries are removed. When close all tabs
-      // removes entries, the remote tabs page in the tab grid are not updated.
-      // This ensures that the table is updated whenever scrolling to it.
-      if (_currentPage == TabGridPageRemoteTabs) {
-        [self.remoteTabsViewController loadModel];
-        [self.remoteTabsViewController.tableView reloadData];
-      }
     }
-  }
+
+    // TODO(crbug.com/872303) : This is a workaround because TabRestoreService
+    // does not notify observers when entries are removed. When close all tabs
+    // removes entries, the remote tabs page in the tab grid are not updated.
+    // This ensures that the table is updated whenever scrolling to it.
+    if (_currentPage == TabGridPageRemoteTabs) {
+      [self.remoteTabsViewController loadModel];
+      [self.remoteTabsViewController.tableView reloadData];
+    }
+    }
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
@@ -304,21 +309,18 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // scrolling.
   self.topToolbar.pageControl.userInteractionEnabled = NO;
   self.pageChangeInteraction = PageChangeInteractionScrollDrag;
-  [self updatePageViewAccessibilityVisibility];
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
                   willDecelerate:(BOOL)decelerate {
   // Re-enable the page control since the user isn't dragging anymore.
   self.topToolbar.pageControl.userInteractionEnabled = YES;
-  [self updatePageViewAccessibilityVisibility];
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
   // Mark the interaction as ended, so that scrolls that don't change page don't
   // cause other interactions to be mislabeled.
   self.pageChangeInteraction = PageChangeInteractionNone;
-  [self updatePageViewAccessibilityVisibility];
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
@@ -531,9 +533,15 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // the ivar may have been set before the scroll view could be updated. Calling
   // this method should always update the scroll view's offset if possible.
 
+  // Original current page is about to not be visible. Disable it from being
+  // focused by VoiceOver.
+  self.currentPageViewController.view.accessibilityElementsHidden = YES;
+
   // If the view isn't loaded yet, just do bookkeeping on _currentPage.
   if (!self.viewLoaded) {
     _currentPage = currentPage;
+    // Allow VoiceOver to focus on the new current page's elements.
+    self.currentPageViewController.view.accessibilityElementsHidden = NO;
     return;
   }
   CGFloat pageWidth = self.scrollView.frame.size.width;
@@ -556,6 +564,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       _currentPage = currentPage;
     }
   }
+  // Allow VoiceOver to focus on the new current page's elements.
+  self.currentPageViewController.view.accessibilityElementsHidden = NO;
+
   // TODO(crbug.com/872303) : This is a workaround because TabRestoreService
   // does not notify observers when entries are removed. When close all tabs
   // removes entries, the remote tabs page in the tab grid are not updated. This
@@ -582,7 +593,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (_scrollViewAnimatingContentOffset == scrollViewAnimatingContentOffset)
     return;
   _scrollViewAnimatingContentOffset = scrollViewAnimatingContentOffset;
-  [self updatePageViewAccessibilityVisibility];
 }
 
 // Adds the scroll view and sets constraints.
@@ -906,19 +916,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       forState:UIControlStateNormal];
   self.closeAllButton.accessibilityIdentifier =
       kTabGridCloseAllButtonIdentifier;
-}
-
-// Updates the visibility of the pages' accessibility elements.  When
-// |scrollView| is scrolling, all pages should be visible.  When stationary,
-// however, the accessibility elements of off-screen pages should be hidden.
-- (void)updatePageViewAccessibilityVisibility {
-  BOOL scrolling = self.scrollView.dragging || self.scrollView.decelerating ||
-                   self.scrollViewAnimatingContentOffset;
-  UIViewController* currentPageViewController = self.currentPageViewController;
-  for (UIViewController* pageViewController in self.pageViewControllers) {
-    pageViewController.view.accessibilityElementsHidden =
-        !scrolling && pageViewController != currentPageViewController;
-  }
 }
 
 // Shows the two toolbars and the floating button. Suitable for use in
