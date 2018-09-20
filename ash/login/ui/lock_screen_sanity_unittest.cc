@@ -127,9 +127,9 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLoginScreenClient) {
   // Password submit runs mojo.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(
-      *client,
-      AuthenticateUser_(users()[0]->basic_user_info->account_id, _, false, _));
+  EXPECT_CALL(*client,
+              AuthenticateUserWithPasswordOrPin_(
+                  users()[0]->basic_user_info->account_id, _, false, _));
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
@@ -151,12 +151,13 @@ TEST_F(LockScreenSanityTest,
   LoginPasswordView::TestApi password_test_api =
       MakeLoginPasswordTestApi(contents, AuthTarget::kPrimary);
 
-  MockLoginScreenClient::AuthenticateUserCallback callback;
+  MockLoginScreenClient::AuthenticateUserWithPasswordOrPinCallback callback;
   auto submit_password = [&]() {
     // Capture the authentication callback.
-    client->set_authenticate_user_callback_storage(&callback);
-    EXPECT_CALL(*client, AuthenticateUser_(testing::_, testing::_, testing::_,
-                                           testing::_));
+    client->set_authenticate_user_with_password_or_pin_callback_storage(
+        &callback);
+    EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(
+                             testing::_, testing::_, testing::_, testing::_));
 
     // Submit password with content 'a'. This creates a browser-process
     // authentication request stored in |callback|.

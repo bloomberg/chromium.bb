@@ -35,8 +35,10 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -437,6 +439,10 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
 
   fingerprint_view_ = new FingerprintView();
 
+  // TODO(jdufault): Implement real UI.
+  external_binary_auth_button_ = views::MdTextButton::Create(
+      this, base::ASCIIToUTF16("Authenticate with external binary"));
+
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
   // Build layout.
@@ -452,6 +458,8 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
       login_views_utils::WrapViewForPreferredSize(pin_view_);
   auto* wrapped_fingerprint_view =
       login_views_utils::WrapViewForPreferredSize(fingerprint_view_);
+  auto* wrapped_external_binary_view =
+      login_views_utils::WrapViewForPreferredSize(external_binary_auth_button_);
   auto* wrapped_padding_below_password_view =
       login_views_utils::WrapViewForPreferredSize(padding_below_password_view_);
 
@@ -461,6 +469,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   AddChildView(wrapped_disabled_auth_message_view);
   AddChildView(wrapped_pin_view);
   AddChildView(wrapped_fingerprint_view);
+  AddChildView(wrapped_external_binary_view);
   AddChildView(wrapped_user_view);
   AddChildView(wrapped_padding_below_password_view);
 
@@ -490,6 +499,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   add_view(wrapped_padding_below_password_view);
   add_view(wrapped_pin_view);
   add_view(wrapped_fingerprint_view);
+  add_view(wrapped_external_binary_view);
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
 
   // Update authentication UI.
@@ -510,6 +520,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   bool has_tap = HasAuthMethod(AUTH_TAP);
   bool force_online_sign_in = HasAuthMethod(AUTH_ONLINE_SIGN_IN);
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
+  bool has_external_binary = HasAuthMethod(AUTH_EXTERNAL_BINARY);
   bool auth_disabled = HasAuthMethod(AUTH_DISABLED);
   bool hide_auth = auth_disabled || force_online_sign_in;
 
@@ -532,6 +543,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
 
   pin_view_->SetVisible(has_pin);
   fingerprint_view_->SetVisible(has_fingerprint);
+  external_binary_auth_button_->SetVisible(has_external_binary);
 
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
   if (has_fingerprint && !has_pin) {
@@ -727,21 +739,30 @@ void LoginAuthUserView::RequestFocus() {
 
 void LoginAuthUserView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  DCHECK_EQ(online_sign_in_message_, sender);
-  OnOnlineSignInMessageTap();
+  DCHECK(sender == online_sign_in_message_ ||
+         sender == external_binary_auth_button_);
+  if (sender == online_sign_in_message_) {
+    OnOnlineSignInMessageTap();
+  } else if (sender == external_binary_auth_button_) {
+    password_view_->SetReadOnly(true);
+    Shell::Get()->login_screen_controller()->AuthenticateUserWithExternalBinary(
+        current_user()->basic_user_info->account_id,
+        base::BindOnce(&LoginAuthUserView::OnAuthComplete,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
   // Pressing enter when the password field is empty and tap-to-unlock is
   // enabled should attempt unlock.
   if (HasAuthMethod(AUTH_TAP) && password.empty()) {
-    Shell::Get()->login_screen_controller()->AttemptUnlock(
+    Shell::Get()->login_screen_controller()->AuthenticateUserWithEasyUnlock(
         current_user()->basic_user_info->account_id);
     return;
   }
 
   password_view_->SetReadOnly(true);
-  Shell::Get()->login_screen_controller()->AuthenticateUser(
+  Shell::Get()->login_screen_controller()->AuthenticateUserWithPasswordOrPin(
       current_user()->basic_user_info->account_id, base::UTF16ToUTF8(password),
       can_use_pin_,
       base::BindOnce(&LoginAuthUserView::OnAuthComplete,
@@ -766,7 +787,7 @@ void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
 
 void LoginAuthUserView::OnUserViewTap() {
   if (HasAuthMethod(AUTH_TAP)) {
-    Shell::Get()->login_screen_controller()->AttemptUnlock(
+    Shell::Get()->login_screen_controller()->AuthenticateUserWithEasyUnlock(
         current_user()->basic_user_info->account_id);
   } else if (HasAuthMethod(AUTH_ONLINE_SIGN_IN)) {
     // Tapping anywhere in the user view is the same with tapping the message.

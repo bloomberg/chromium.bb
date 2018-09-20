@@ -25,6 +25,7 @@
 #include "ash/login/ui/note_action_launch_button.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -1288,7 +1289,14 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
             mojom::FingerprintUnlockState::UNAVAILABLE) {
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
         }
+
+        // External binary based authentication is only available for unlock.
+        if (screen_type_ == LockScreen::ScreenType::kLock &&
+            base::FeatureList::IsEnabled(features::kUnlockWithExternalBinary)) {
+          to_update_auth |= LoginAuthUserView::AUTH_EXTERNAL_BINARY;
+        }
       }
+
       view->auth_user()->SetAuthMethods(to_update_auth, state->show_pin);
     } else if (view->public_account()) {
       view->public_account()->SetAuthEnabled(true /*enabled*/, animate);
