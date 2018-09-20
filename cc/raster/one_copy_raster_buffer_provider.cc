@@ -159,6 +159,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
                     max_staging_buffer_usage_in_bytes) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
+  DCHECK(!IsResourceFormatCompressed(tile_format));
 }
 
 OneCopyRasterBufferProvider::~OneCopyRasterBufferProvider() {}
@@ -478,37 +479,30 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     ri->BeginQueryEXT(query_target, staging_buffer->query_id);
   }
 
-  // Since compressed texture's cannot be pre-allocated we might have an
-  // unallocated resource in which case we need to perform a full size copy.
-  if (IsResourceFormatCompressed(staging_buffer->format)) {
-    ri->CompressedCopyTextureCHROMIUM(staging_buffer->texture_id,
-                                      mailbox_texture_id);
-  } else {
-    int bytes_per_row = viz::ResourceSizes::UncheckedWidthInBytes<int>(
-        rect_to_copy.width(), staging_buffer->format);
-    int chunk_size_in_rows =
-        std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);
-    // Align chunk size to 4. Required to support compressed texture formats.
-    chunk_size_in_rows = MathUtil::UncheckedRoundUp(chunk_size_in_rows, 4);
-    int y = 0;
-    int height = rect_to_copy.height();
-    while (y < height) {
-      // Copy at most |chunk_size_in_rows|.
-      int rows_to_copy = std::min(chunk_size_in_rows, height - y);
-      DCHECK_GT(rows_to_copy, 0);
+  int bytes_per_row = viz::ResourceSizes::UncheckedWidthInBytes<int>(
+      rect_to_copy.width(), staging_buffer->format);
+  int chunk_size_in_rows =
+      std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);
+  // Align chunk size to 4. Required to support compressed texture formats.
+  chunk_size_in_rows = MathUtil::UncheckedRoundUp(chunk_size_in_rows, 4);
+  int y = 0;
+  int height = rect_to_copy.height();
+  while (y < height) {
+    // Copy at most |chunk_size_in_rows|.
+    int rows_to_copy = std::min(chunk_size_in_rows, height - y);
+    DCHECK_GT(rows_to_copy, 0);
 
-      ri->CopySubTexture(staging_buffer->texture_id, mailbox_texture_id, 0, y,
-                         0, y, rect_to_copy.width(), rows_to_copy);
-      y += rows_to_copy;
+    ri->CopySubTexture(staging_buffer->texture_id, mailbox_texture_id, 0, y, 0,
+                       y, rect_to_copy.width(), rows_to_copy);
+    y += rows_to_copy;
 
-      // Increment |bytes_scheduled_since_last_flush_| by the amount of memory
-      // used for this copy operation.
-      bytes_scheduled_since_last_flush_ += rows_to_copy * bytes_per_row;
+    // Increment |bytes_scheduled_since_last_flush_| by the amount of memory
+    // used for this copy operation.
+    bytes_scheduled_since_last_flush_ += rows_to_copy * bytes_per_row;
 
-      if (bytes_scheduled_since_last_flush_ >= max_bytes_per_copy_operation_) {
-        ri->ShallowFlushCHROMIUM();
-        bytes_scheduled_since_last_flush_ = 0;
-      }
+    if (bytes_scheduled_since_last_flush_ >= max_bytes_per_copy_operation_) {
+      ri->ShallowFlushCHROMIUM();
+      bytes_scheduled_since_last_flush_ = 0;
     }
   }
 
