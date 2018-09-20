@@ -17,7 +17,9 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -136,6 +138,29 @@ class NavigationRecorder : public WebContentsObserver {
 
   std::unique_ptr<base::RunLoop> loop_;
   std::vector<std::string> records_;
+};
+
+// Used to wait for an observed IPC to be received.
+class BrowserMessageObserver : public content::BrowserMessageFilter {
+ public:
+  BrowserMessageObserver(uint32_t observed_message_class,
+                         uint32_t observed_message_type)
+      : content::BrowserMessageFilter(observed_message_class),
+        observed_message_type_(observed_message_type) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    if (message.type() == observed_message_type_)
+      loop.Quit();
+    return false;
+  }
+
+  void Wait() { loop.Run(); }
+
+ private:
+  ~BrowserMessageObserver() override {}
+  uint32_t observed_message_type_;
+  base::RunLoop loop;
+  DISALLOW_COPY_AND_ASSIGN(BrowserMessageObserver);
 };
 
 }  // namespace
@@ -1100,6 +1125,97 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_EQ(6u, recorder.records().size());
   EXPECT_STREQ("did-commit /infinite_load_2.html",
                recorder.records()[5].c_str());
+}
+
+// Renderer initiated back/forward navigation in beforeunload should not prevent
+// the user to navigate away from a website.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HistoryBackInBeforeUnload) {
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "onbeforeunload = function() {"
+                            "  history.pushState({}, null, '/');"
+                            "  history.back();"
+                            "};"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+}
+
+// Same as 'HistoryBackInBeforeUnload', but wraps history.back() inside
+// window.setTimeout(). Thus it is executed "outside" of its beforeunload
+// handler and thus avoid basic navigation circumventions.
+// Regression test for: https://crbug.com/879965.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       HistoryBackInBeforeUnloadAfterSetTimeout) {
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "onbeforeunload = function() {"
+                            "  history.pushState({}, null, '/');"
+                            "  setTimeout(()=>history.back());"
+                            "};"));
+  TestNavigationManager navigation(shell()->web_contents(), url_2);
+  auto ipc_observer = base::MakeRefCounted<BrowserMessageObserver>(
+      ViewMsgStart, ViewHostMsg_GoToEntryAtOffset::ID);
+  static_cast<RenderFrameHostImpl*>(shell()->web_contents()->GetMainFrame())
+      ->GetProcess()
+      ->AddFilter(ipc_observer.get());
+
+  shell()->LoadURL(url_2);
+  ipc_observer->Wait();
+  navigation.WaitForNavigationFinished();
+
+  EXPECT_TRUE(navigation.was_successful());
+}
+
+// Renderer initiated back/forward navigation can't cancel an ongoing browser
+// initiated navigation if it is not user initiated.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       HistoryBackCancelPendingNavigationNoUserGesture) {
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+
+  // 1) A pending browser initiated navigation (omnibox, ...) starts.
+  TestNavigationManager navigation(shell()->web_contents(), url_2);
+  shell()->LoadURL(url_2);
+  EXPECT_TRUE(navigation.WaitForRequestStart());
+
+  // 2) history.back() is sent but is not user initiated.
+  EXPECT_TRUE(
+      ExecuteScriptWithoutUserGesture(shell()->web_contents(),
+                                      "history.pushState({}, null, '/');"
+                                      "history.back();"));
+
+  // 3) The first pending navigation is not canceled and can continue.
+  navigation.WaitForNavigationFinished();  // Resume navigation.
+  EXPECT_TRUE(navigation.was_successful());
+}
+
+// Renderer initiated back/forward navigation can cancel an ongoing browser
+// initiated navigation if it is user initiated.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       HistoryBackCancelPendingNavigationUserGesture) {
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+
+  // 1) A pending browser initiated navigation (omnibox, ...) starts.
+  TestNavigationManager navigation(shell()->web_contents(), url_2);
+  shell()->LoadURL(url_2);
+  EXPECT_TRUE(navigation.WaitForRequestStart());
+
+  // 2) history.back() is sent and is user initiated.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "history.pushState({}, null, '/');"
+                            "history.back();"));
+
+  // 3) Check the first pending navigation has been canceled.
+  navigation.WaitForNavigationFinished();  // Resume navigation.
+  EXPECT_FALSE(navigation.was_successful());
 }
 
 }  // namespace content
