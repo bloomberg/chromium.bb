@@ -121,7 +121,8 @@ base::LazyInstance<
 class MimeHandlerViewContainerBase::PluginResourceThrottle
     : public content::URLLoaderThrottle {
  public:
-  explicit PluginResourceThrottle(MimeHandlerViewContainerBase* container)
+  explicit PluginResourceThrottle(
+      base::WeakPtr<MimeHandlerViewContainerBase> container)
       : container_(container) {}
   ~PluginResourceThrottle() override {}
 
@@ -130,6 +131,14 @@ class MimeHandlerViewContainerBase::PluginResourceThrottle
   void WillProcessResponse(const GURL& response_url,
                            network::ResourceResponseHead* response_head,
                            bool* defer) override {
+    if (!container_) {
+      // In the embedder case if the plugin element is removed right after an
+      // ongoing request is made, MimeHandlerViewContainerBase is destroyed
+      // synchronously but the WebURLLoaderImpl corresponding to this throttle
+      // goes away asynchronously when ResourceLoader::CancelTimerFired() is
+      // called (see https://crbug.com/878359).
+      return;
+    }
     network::mojom::URLLoaderPtr dummy_new_loader;
     mojo::MakeRequest(&dummy_new_loader);
     network::mojom::URLLoaderClientPtr new_client;
@@ -154,7 +163,7 @@ class MimeHandlerViewContainerBase::PluginResourceThrottle
     container_->SetEmbeddedLoader(std::move(transferrable_loader));
   }
 
-  MimeHandlerViewContainerBase* container_;
+  base::WeakPtr<MimeHandlerViewContainerBase> container_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginResourceThrottle);
 };
@@ -206,7 +215,7 @@ MimeHandlerViewContainerBase::MaybeCreatePluginThrottle(const GURL& url) {
     return nullptr;
 
   waiting_to_create_throttle_ = false;
-  return std::make_unique<PluginResourceThrottle>(this);
+  return std::make_unique<PluginResourceThrottle>(weak_factory_.GetWeakPtr());
 }
 
 void MimeHandlerViewContainerBase::PostJavaScriptMessage(
