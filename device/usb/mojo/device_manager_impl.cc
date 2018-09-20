@@ -65,8 +65,10 @@ void DeviceManagerImpl::GetDevice(const std::string& guid,
                      std::move(device_client));
 }
 
-void DeviceManagerImpl::SetClient(mojom::UsbDeviceManagerClientPtr client) {
-  client_ = std::move(client);
+void DeviceManagerImpl::SetClient(
+    mojom::UsbDeviceManagerClientAssociatedPtrInfo client) {
+  DCHECK(client);
+  client_.Bind(std::move(client));
 }
 
 void DeviceManagerImpl::OnGetDevices(

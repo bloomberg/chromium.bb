@@ -22,7 +22,8 @@
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/mojo/device_impl.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Invoke;
@@ -70,8 +71,8 @@ class MockDeviceManagerClient : public mojom::UsbDeviceManagerClient {
   MockDeviceManagerClient() : binding_(this) {}
   ~MockDeviceManagerClient() override = default;
 
-  UsbDeviceManagerClientPtr CreateInterfacePtrAndBind() {
-    UsbDeviceManagerClientPtr client;
+  mojom::UsbDeviceManagerClientAssociatedPtrInfo CreateInterfacePtrAndBind() {
+    mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
     binding_.Bind(mojo::MakeRequest(&client));
     return client;
   }
@@ -87,7 +88,7 @@ class MockDeviceManagerClient : public mojom::UsbDeviceManagerClient {
   }
 
  private:
-  mojo::Binding<mojom::UsbDeviceManagerClient> binding_;
+  mojo::AssociatedBinding<mojom::UsbDeviceManagerClient> binding_;
 };
 
 void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
