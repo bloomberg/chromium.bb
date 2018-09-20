@@ -68,13 +68,13 @@ static INLINE void acc_stat_win7_one_line_sse4_1(
 
 static INLINE void compute_stats_win7_opt_sse4_1(
     const uint8_t *dgd, const uint8_t *src, int h_start, int h_end, int v_start,
-    int v_end, int dgd_stride, int src_stride, double *M, double *H) {
+    int v_end, int dgd_stride, int src_stride, int64_t *M, int64_t *H) {
   int i, j, k, l, m, n;
   const int wiener_win = WIENER_WIN;
   const int pixel_count = (h_end - h_start) * (v_end - v_start);
   const int wiener_win2 = wiener_win * wiener_win;
   const int wiener_halfwin = (wiener_win >> 1);
-  const double avg =
+  const uint8_t avg =
       find_average(dgd, h_start, h_end, v_start, v_end, dgd_stride);
 
   int32_t M_int32[WIENER_WIN][WIENER_WIN] = { { 0 } };
@@ -107,17 +107,18 @@ static INLINE void compute_stats_win7_opt_sse4_1(
     }
   }
 
-  const double avg_square_sum = avg * avg * pixel_count;
+  const int64_t avg_square_sum = (int64_t)avg * (int64_t)avg * pixel_count;
   for (k = 0; k < wiener_win; k++) {
     for (l = 0; l < wiener_win; l++) {
       const int32_t idx0 = l * wiener_win + k;
-      M[idx0] = M_int64[k][l] + avg_square_sum - avg * (sumX + sumY[k][l]);
-      double *H_ = H + idx0 * wiener_win2;
+      M[idx0] =
+          M_int64[k][l] + (avg_square_sum - (int64_t)avg * (sumX + sumY[k][l]));
+      int64_t *H_ = H + idx0 * wiener_win2;
       int64_t *H_int_ = &H_int64[idx0][0];
       for (m = 0; m < wiener_win; m++) {
         for (n = 0; n < wiener_win; n++) {
           H_[m * wiener_win + n] = H_int_[n * 8 + m] + avg_square_sum -
-                                   avg * (sumY[k][l] + sumY[n][m]);
+                                   (int64_t)avg * (sumY[k][l] + sumY[n][m]);
         }
       }
     }
@@ -160,13 +161,13 @@ static INLINE void acc_stat_win5_one_line_sse4_1(
 
 static INLINE void compute_stats_win5_opt_sse4_1(
     const uint8_t *dgd, const uint8_t *src, int h_start, int h_end, int v_start,
-    int v_end, int dgd_stride, int src_stride, double *M, double *H) {
+    int v_end, int dgd_stride, int src_stride, int64_t *M, int64_t *H) {
   int i, j, k, l, m, n;
   const int wiener_win = WIENER_WIN_CHROMA;
   const int pixel_count = (h_end - h_start) * (v_end - v_start);
   const int wiener_win2 = wiener_win * wiener_win;
   const int wiener_halfwin = (wiener_win >> 1);
-  const double avg =
+  const uint8_t avg =
       find_average(dgd, h_start, h_end, v_start, v_end, dgd_stride);
 
   int32_t M_int32[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
@@ -199,17 +200,18 @@ static INLINE void compute_stats_win5_opt_sse4_1(
     }
   }
 
-  const double avg_square_sum = avg * avg * pixel_count;
+  const int64_t avg_square_sum = (int64_t)avg * (int64_t)avg * pixel_count;
   for (k = 0; k < wiener_win; k++) {
     for (l = 0; l < wiener_win; l++) {
       const int32_t idx0 = l * wiener_win + k;
-      M[idx0] = M_int64[k][l] + avg_square_sum - avg * (sumX + sumY[k][l]);
-      double *H_ = H + idx0 * wiener_win2;
+      M[idx0] =
+          M_int64[k][l] + (avg_square_sum - (int64_t)avg * (sumX + sumY[k][l]));
+      int64_t *H_ = H + idx0 * wiener_win2;
       int64_t *H_int_ = &H_int64[idx0][0];
       for (m = 0; m < wiener_win; m++) {
         for (n = 0; n < wiener_win; n++) {
           H_[m * wiener_win + n] = H_int_[n * 8 + m] + avg_square_sum -
-                                   avg * (sumY[k][l] + sumY[n][m]);
+                                   (int64_t)avg * (sumY[k][l] + sumY[n][m]);
         }
       }
     }
@@ -218,7 +220,7 @@ static INLINE void compute_stats_win5_opt_sse4_1(
 void av1_compute_stats_sse4_1(int wiener_win, const uint8_t *dgd,
                               const uint8_t *src, int h_start, int h_end,
                               int v_start, int v_end, int dgd_stride,
-                              int src_stride, double *M, double *H) {
+                              int src_stride, int64_t *M, int64_t *H) {
   if (wiener_win == WIENER_WIN) {
     compute_stats_win7_opt_sse4_1(dgd, src, h_start, h_end, v_start, v_end,
                                   dgd_stride, src_stride, M, H);

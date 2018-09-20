@@ -31,14 +31,13 @@ namespace {
 static void compute_stats_win_opt_c(int wiener_win, const uint8_t *dgd,
                                     const uint8_t *src, int h_start, int h_end,
                                     int v_start, int v_end, int dgd_stride,
-                                    int src_stride, double *M, double *H) {
+                                    int src_stride, int64_t *M, int64_t *H) {
   ASSERT_TRUE(wiener_win == WIENER_WIN || wiener_win == WIENER_WIN_CHROMA);
   int i, j, k, l, m, n;
   const int pixel_count = (h_end - h_start) * (v_end - v_start);
   const int wiener_win2 = wiener_win * wiener_win;
   const int wiener_halfwin = (wiener_win >> 1);
-  const double avg =
-      find_average(dgd, h_start, h_end, v_start, v_end, dgd_stride);
+  uint8_t avg = find_average(dgd, h_start, h_end, v_start, v_end, dgd_stride);
 
   std::vector<std::vector<int64_t> > M_int(wiener_win,
                                            std::vector<int64_t>(wiener_win, 0));
@@ -75,16 +74,16 @@ static void compute_stats_win_opt_c(int wiener_win, const uint8_t *dgd,
     }
   }
 
-  const double avg_square_sum = avg * avg * pixel_count;
+  const int64_t avg_square_sum = (int64_t)avg * (int64_t)avg * pixel_count;
   for (k = 0; k < wiener_win; k++) {
     for (l = 0; l < wiener_win; l++) {
       M[l * wiener_win + k] =
-          M_int[l][k] + avg_square_sum - avg * (sumX + sumY[k][l]);
+          M_int[l][k] + avg_square_sum - (int64_t)avg * (sumX + sumY[k][l]);
       for (m = 0; m < wiener_win; m++) {
         for (n = 0; n < wiener_win; n++) {
           H[(l * wiener_win + k) * wiener_win2 + m * wiener_win + n] =
               H_int[(l * wiener_win + k)][n * 8 + m] + avg_square_sum -
-              avg * (sumY[k][l] + sumY[n][m]);
+              (int64_t)avg * (sumY[k][l] + sumY[n][m]);
         }
       }
     }
@@ -93,7 +92,8 @@ static void compute_stats_win_opt_c(int wiener_win, const uint8_t *dgd,
 
 void compute_stats_opt_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
                          int h_start, int h_end, int v_start, int v_end,
-                         int dgd_stride, int src_stride, double *M, double *H) {
+                         int dgd_stride, int src_stride, int64_t *M,
+                         int64_t *H) {
   if (wiener_win == WIENER_WIN || wiener_win == WIENER_WIN_CHROMA) {
     compute_stats_win_opt_c(wiener_win, dgd, src, h_start, h_end, v_start,
                             v_end, dgd_stride, src_stride, M, H);
@@ -104,11 +104,10 @@ void compute_stats_opt_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
 }
 
 static const int kIterations = 100;
-static const double min_error = (double)(0.01);
 typedef void (*compute_stats_Func)(int wiener_win, const uint8_t *dgd,
                                    const uint8_t *src, int h_start, int h_end,
                                    int v_start, int v_end, int dgd_stride,
-                                   int src_stride, double *M, double *H);
+                                   int src_stride, int64_t *M, int64_t *H);
 
 typedef libaom_test::FuncParam<compute_stats_Func> TestFuncs;
 
@@ -134,10 +133,10 @@ void WienerTest::runWienerTest(const int32_t wiener_win, int32_t run_times) {
   const int32_t wiener_win2 = wiener_win * wiener_win;
   DECLARE_ALIGNED(32, uint8_t, dgd_buf[MAX_DATA_BLOCK * MAX_DATA_BLOCK]);
   DECLARE_ALIGNED(32, uint8_t, src_buf[MAX_DATA_BLOCK * MAX_DATA_BLOCK]);
-  DECLARE_ALIGNED(32, double, M_ref[WIENER_WIN2]);
-  DECLARE_ALIGNED(32, double, H_ref[WIENER_WIN2 * WIENER_WIN2]);
-  DECLARE_ALIGNED(32, double, M_test[WIENER_WIN2]);
-  DECLARE_ALIGNED(32, double, H_test[WIENER_WIN2 * WIENER_WIN2]);
+  DECLARE_ALIGNED(32, int64_t, M_ref[WIENER_WIN2]);
+  DECLARE_ALIGNED(32, int64_t, H_ref[WIENER_WIN2 * WIENER_WIN2]);
+  DECLARE_ALIGNED(32, int64_t, M_test[WIENER_WIN2]);
+  DECLARE_ALIGNED(32, int64_t, H_test[WIENER_WIN2 * WIENER_WIN2]);
   const int h_start = ((rng_.Rand16() % (MAX_WIENER_BLOCK / 2)) & (~7));
   int h_end =
       run_times != 1 ? 256 : ((rng_.Rand16() % MAX_WIENER_BLOCK) & (~7)) + 8;
@@ -177,19 +176,19 @@ void WienerTest::runWienerTest(const int32_t wiener_win, int32_t run_times) {
     }
     int failed = 0;
     for (int i = 0; i < wiener_win2; ++i) {
-      if (fabs(M_ref[i] - M_test[i]) > min_error) {
+      if (M_ref[i] != M_test[i]) {
         failed = 1;
-        printf("win %d M iter %d [%4d] ref %6.0f test %6.0f \n", wiener_win,
-               iter, i, M_ref[i], M_test[i]);
+        printf("win %d M iter %d [%4d] ref %6" PRId64 " test %6" PRId64 " \n",
+               wiener_win, iter, i, M_ref[i], M_test[i]);
         break;
       }
     }
     // ASSERT_EQ(failed, 0);
     for (int i = 0; i < wiener_win2 * wiener_win2; ++i) {
-      if (fabs(H_ref[i] - H_test[i]) > min_error) {
+      if (H_ref[i] != H_test[i]) {
         failed = 1;
-        printf("win %d H iter %d [%4d] ref %6.0f test %6.0f \n", wiener_win,
-               iter, i, H_ref[i], H_test[i]);
+        printf("win %d H iter %d [%4d] ref %6" PRId64 " test %6" PRId64 " \n",
+               wiener_win, iter, i, H_ref[i], H_test[i]);
         break;
       }
     }
@@ -202,10 +201,10 @@ void WienerTest::runWienerTest_ExtremeValues(const int32_t wiener_win) {
   const int32_t wiener_win2 = wiener_win * wiener_win;
   DECLARE_ALIGNED(32, uint8_t, dgd_buf[MAX_DATA_BLOCK * MAX_DATA_BLOCK]);
   DECLARE_ALIGNED(32, uint8_t, src_buf[MAX_DATA_BLOCK * MAX_DATA_BLOCK]);
-  DECLARE_ALIGNED(32, double, M_ref[WIENER_WIN2]);
-  DECLARE_ALIGNED(32, double, H_ref[WIENER_WIN2 * WIENER_WIN2]);
-  DECLARE_ALIGNED(32, double, M_test[WIENER_WIN2]);
-  DECLARE_ALIGNED(32, double, H_test[WIENER_WIN2 * WIENER_WIN2]);
+  DECLARE_ALIGNED(32, int64_t, M_ref[WIENER_WIN2]);
+  DECLARE_ALIGNED(32, int64_t, H_ref[WIENER_WIN2 * WIENER_WIN2]);
+  DECLARE_ALIGNED(32, int64_t, M_test[WIENER_WIN2]);
+  DECLARE_ALIGNED(32, int64_t, H_test[WIENER_WIN2 * WIENER_WIN2]);
   const int h_start = 16;
   const int h_end = MAX_WIENER_BLOCK;
   const int v_start = 16;
@@ -229,19 +228,19 @@ void WienerTest::runWienerTest_ExtremeValues(const int32_t wiener_win) {
 
     int failed = 0;
     for (int i = 0; i < wiener_win2; ++i) {
-      if (fabs(M_ref[i] - M_test[i]) > min_error) {
+      if (M_ref[i] != M_test[i]) {
         failed = 1;
-        printf("win %d M iter %d [%4d] ref %6.0f test %6.0f \n", wiener_win,
-               iter, i, M_ref[i], M_test[i]);
+        printf("win %d M iter %d [%4d] ref %6" PRId64 " test %6" PRId64 " \n",
+               wiener_win, iter, i, M_ref[i], M_test[i]);
         break;
       }
     }
     // ASSERT_EQ(failed, 0);
     for (int i = 0; i < wiener_win2 * wiener_win2; ++i) {
-      if (fabs(H_ref[i] - H_test[i]) > min_error) {
+      if (H_ref[i] != H_test[i]) {
         failed = 1;
-        printf("win %d H iter %d [%4d] ref %6.0f test %6.0f \n", wiener_win,
-               iter, i, H_ref[i], H_test[i]);
+        printf("win %d H iter %d [%4d] ref %6" PRId64 " test %6" PRId64 " \n",
+               wiener_win, iter, i, H_ref[i], H_test[i]);
         break;
       }
     }

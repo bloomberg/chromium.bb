@@ -25,16 +25,15 @@ static const uint8_t g_shuffle_stats_data[16] = {
   0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8,
 };
 
-static INLINE double find_average(const uint8_t *src, int h_start, int h_end,
-                                  int v_start, int v_end, int stride) {
+static INLINE uint8_t find_average(const uint8_t *src, int h_start, int h_end,
+                                   int v_start, int v_end, int stride) {
   uint64_t sum = 0;
-  double avg = 0;
-  int i, j;
-  aom_clear_system_state();
-  for (i = v_start; i < v_end; i++)
-    for (j = h_start; j < h_end; j++) sum += src[i * stride + j];
-  avg = (double)sum / ((v_end - v_start) * (h_end - h_start));
-  return avg;
+  for (int i = v_start; i < v_end; i++) {
+    for (int j = h_start; j < h_end; j++) {
+      sum += src[i * stride + j];
+    }
+  }
+  return sum / ((v_end - v_start) * (h_end - h_start));
 }
 
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi);
