@@ -13,7 +13,6 @@
 #include "content/browser/media/audio_muting_session.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -25,12 +24,13 @@ namespace content {
 // (typically renderer) and the audio service. It is operated on the UI thread.
 class CONTENT_EXPORT AudioLoopbackStreamBroker final
     : public AudioStreamBroker,
-      public media::mojom::AudioInputStreamObserver {
+      public media::mojom::AudioInputStreamObserver,
+      public AudioStreamBroker::LoopbackSink {
  public:
   AudioLoopbackStreamBroker(
       int render_process_id,
       int render_frame_id,
-      std::unique_ptr<AudioStreamBrokerFactory::LoopbackSource> source,
+      AudioStreamBroker::LoopbackSource* source,
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool mute_source,
@@ -45,12 +45,17 @@ class CONTENT_EXPORT AudioLoopbackStreamBroker final
   // media::AudioInputStreamObserver implementation.
   void DidStartRecording() final;
 
+  // AudioStreamBroker::LoopbackSink
+  void OnSourceGone() override;
+
  private:
   void StreamCreated(media::mojom::AudioInputStreamPtr stream,
                      media::mojom::ReadOnlyAudioDataPipePtr data_pipe);
   void Cleanup();
 
-  const std::unique_ptr<AudioStreamBrokerFactory::LoopbackSource> source_;
+  // Owner of the output streams to be looped back.
+  AudioStreamBroker::LoopbackSource* source_;
+
   const media::AudioParameters params_;
   const uint32_t shared_memory_count_;
 

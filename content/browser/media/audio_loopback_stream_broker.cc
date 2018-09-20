@@ -7,60 +7,22 @@
 #include <utility>
 
 #include "base/unguessable_token.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace content {
 
-AudioStreamBrokerFactory::LoopbackSource::LoopbackSource() = default;
-
-AudioStreamBrokerFactory::LoopbackSource::LoopbackSource(
-    WebContents* source_contents)
-    : WebContentsObserver(source_contents) {
-  DCHECK(source_contents);
-}
-
-AudioStreamBrokerFactory::LoopbackSource::~LoopbackSource() = default;
-
-base::UnguessableToken AudioStreamBrokerFactory::LoopbackSource::GetGroupID() {
-  if (WebContentsImpl* source_contents =
-          static_cast<WebContentsImpl*>(web_contents())) {
-    return source_contents->GetAudioStreamFactory()->group_id();
-  }
-  return base::UnguessableToken();
-}
-
-void AudioStreamBrokerFactory::LoopbackSource::OnStartCapturing() {
-  if (WebContentsImpl* source_contents =
-          static_cast<WebContentsImpl*>(web_contents())) {
-    source_contents->IncrementCapturerCount(gfx::Size());
-  }
-}
-
-void AudioStreamBrokerFactory::LoopbackSource::OnStopCapturing() {
-  if (WebContentsImpl* source_contents =
-          static_cast<WebContentsImpl*>(web_contents())) {
-    source_contents->DecrementCapturerCount();
-  }
-}
-
-void AudioStreamBrokerFactory::LoopbackSource::WebContentsDestroyed() {
-  if (on_gone_closure_)
-    std::move(on_gone_closure_).Run();
-}
-
 AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
     int render_process_id,
     int render_frame_id,
-    std::unique_ptr<AudioStreamBrokerFactory::LoopbackSource> source,
+    AudioStreamBroker::LoopbackSource* source,
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     bool mute_source,
     AudioStreamBroker::DeleterCallback deleter,
     mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
     : AudioStreamBroker(render_process_id, render_frame_id),
-      source_(std::move(source)),
+      source_(source),
       params_(params),
       shared_memory_count_(shared_memory_count),
       deleter_(std::move(deleter)),
@@ -69,13 +31,8 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(source_);
-  DCHECK(source_->GetGroupID());
   DCHECK(renderer_factory_client_);
   DCHECK(deleter_);
-
-  // Unretained is safe because |this| owns |source_|.
-  source_->set_on_gone_closure(base::BindOnce(
-      &AudioLoopbackStreamBroker::Cleanup, base::Unretained(this)));
 
   if (mute_source) {
     muter_.emplace(source_->GetGroupID());
@@ -85,9 +42,8 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
   renderer_factory_client_.set_connection_error_handler(base::BindOnce(
       &AudioLoopbackStreamBroker::Cleanup, base::Unretained(this)));
 
-  // Notify the source that we are capturing from it, to prevent its
-  // backgrounding.
-  source_->OnStartCapturing();
+  // Notify the source that we are capturing from it.
+  source_->AddLoopbackSink(this);
 
   // Notify RenderProcessHost about the input stream, so that the destination
   // renderer does not get background.
@@ -98,7 +54,8 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
 AudioLoopbackStreamBroker::~AudioLoopbackStreamBroker() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  source_->OnStopCapturing();
+  if (source_)
+    source_->RemoveLoopbackSink(this);
 
   if (auto* process_host = RenderProcessHost::FromID(render_process_id()))
     process_host->OnMediaStreamRemoved();
@@ -109,7 +66,7 @@ void AudioLoopbackStreamBroker::CreateStream(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!observer_binding_.is_bound());
   DCHECK(!client_request_);
-  DCHECK(source_->GetGroupID());
+  DCHECK(source_);
 
   if (muter_)  // Mute the source.
     muter_->Connect(factory);
@@ -133,6 +90,13 @@ void AudioLoopbackStreamBroker::CreateStream(
       params_, shared_memory_count_, source_->GetGroupID(),
       base::BindOnce(&AudioLoopbackStreamBroker::StreamCreated,
                      weak_ptr_factory_.GetWeakPtr(), std::move(stream)));
+}
+
+void AudioLoopbackStreamBroker::OnSourceGone() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // No further access to |source_| is allowed.
+  source_ = nullptr;
+  Cleanup();
 }
 
 void AudioLoopbackStreamBroker::DidStartRecording() {

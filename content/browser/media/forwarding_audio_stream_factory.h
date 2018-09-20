@@ -37,7 +37,8 @@ class WebContents;
 // This class handles stream creation operations for a WebContents.
 // This class is operated on the UI thread.
 class CONTENT_EXPORT ForwardingAudioStreamFactory final
-    : public WebContentsObserver {
+    : public WebContentsObserver,
+      public AudioStreamBroker::LoopbackSource {
  public:
   // |web_contents| is null in the browser-privileged access case, i.e., when
   // the streams created with this factory will not be consumed by a renderer.
@@ -80,7 +81,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
 
   void CreateLoopbackStream(
       RenderFrameHost* frame,
-      RenderFrameHost* frame_of_source_web_contents,
+      ForwardingAudioStreamFactory* loopback_source,
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool mute_source,
@@ -91,6 +92,11 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
 
   // Returns the current muting state.
   bool IsMuted() const;
+
+  // AudioStreamLoopback::Source implementation
+  void AddLoopbackSink(AudioStreamBroker::LoopbackSink* sink) final;
+  void RemoveLoopbackSink(AudioStreamBroker::LoopbackSink* sink) final;
+  const base::UnguessableToken& GetGroupID() final;
 
   // WebContentsObserver implementation. We observe these events so that we can
   // clean up streams belonging to a frame when that frame is destroyed.
@@ -142,6 +148,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
 
   StreamBrokerSet inputs_;
   StreamBrokerSet outputs_;
+  base::flat_set<AudioStreamBroker::LoopbackSink*> loopback_sinks_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingAudioStreamFactory);
 };
