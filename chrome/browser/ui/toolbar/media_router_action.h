@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 
 class Browser;
-class MediaRouterActionPlatformDelegate;
 class TabStripModel;
 
 namespace gfx {
@@ -86,6 +85,10 @@ class MediaRouterAction : public ToolbarActionViewController,
   void OnDialogHidden();
   void OnDialogShown();
 
+  void set_skip_close_overflow_menu_for_testing(bool val) {
+    skip_close_overflow_menu_for_testing_ = val;
+  }
+
  private:
   // Registers |this| with the MediaRouterDialogControllerImplBase associated
   // with |delegate_|'s current WebContents if |this| is not shown in overflow
@@ -104,9 +107,6 @@ class MediaRouterAction : public ToolbarActionViewController,
   // Marked virtual for tests.
   virtual media_router::MediaRouterDialogControllerImplBase*
   GetMediaRouterDialogController();
-
-  // Overridden by tests.
-  virtual MediaRouterActionPlatformDelegate* GetPlatformDelegate();
 
   // Checks if the current icon of MediaRouterAction has changed. If so,
   // updates |current_icon_|.
@@ -136,15 +136,14 @@ class MediaRouterAction : public ToolbarActionViewController,
   Browser* const browser_;
   ToolbarActionsBar* const toolbar_actions_bar_;
 
-  // The delegate to handle platform-specific implementations.
-  std::unique_ptr<MediaRouterActionPlatformDelegate> platform_delegate_;
-
   std::unique_ptr<MediaRouterContextualMenu> contextual_menu_;
 
   ScopedObserver<TabStripModel, TabStripModelObserver>
       tab_strip_model_observer_;
   ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver>
       toolbar_actions_bar_observer_;
+
+  bool skip_close_overflow_menu_for_testing_;
 
   base::WeakPtrFactory<MediaRouterAction> weak_ptr_factory_;
 
