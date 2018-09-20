@@ -335,19 +335,12 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   // Process all changes to the accessibility tree first.
   for (uint32_t index = 0; index < details.updates.size(); ++index) {
     if (!tree_->Unserialize(details.updates[index])) {
-      static auto* ax_tree_error = base::debug::AllocateCrashKeyString(
-          "ax_tree_error", base::debug::CrashKeySize::Size32);
-      static auto* ax_tree_update = base::debug::AllocateCrashKeyString(
-          "ax_tree_update", base::debug::CrashKeySize::Size64);
-      // Temporarily log some additional crash keys so we can try to
-      // figure out why we're getting bad accessibility trees here.
-      // http://crbug.com/870661
-      // Be sure to re-enable BrowserAccessibilityManagerTest.TestFatalError
-      // when done.
-      base::debug::SetCrashKeyString(ax_tree_error, tree_->error());
-      base::debug::SetCrashKeyString(ax_tree_update,
-                                     details.updates[index].ToString());
-      LOG(FATAL) << tree_->error();
+      if (delegate_) {
+        LOG(ERROR) << tree_->error();
+        delegate_->AccessibilityFatalError();
+      } else {
+        CHECK(false) << tree_->error();
+      }
       return;
     }
   }
