@@ -153,7 +153,7 @@ getCommands(void) {
 			printf("8-dot computer braille");
 			mode |= 8 * getYN();
 			printf("Partial back-translation");
-			mode |= 32 * getYN();
+			mode |= 256 * getYN();
 			break;
 		case 'l':
 			printf("Do you want to test input and output lengths");
