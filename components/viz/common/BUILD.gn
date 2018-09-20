@@ -186,7 +186,7 @@ viz_component("common") {
       "gpu/vulkan_in_process_context_provider.h",
     ]
     configs = [ "//third_party/vulkan:vulkan_config" ]
-    deps += [ "//gpu/vulkan/init" ]
+    deps += [ "//gpu/vulkan" ]
   }
 
   if (is_win) {
