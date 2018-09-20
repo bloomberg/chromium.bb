@@ -54,7 +54,7 @@ void KHRParallelShaderCompile::maxShaderCompilerThreadsKHR(GLuint count) {
   // For WebGL contexts, we don't want applications to be able to spin up huge
   // numbers of shader compliation threads. Enforce a maximum of 2 here.
   scoped.Context()->ContextGL()->MaxShaderCompilerThreadsKHR(
-      std::max(2u, count));
+      std::min(2u, count));
 }
 
 bool KHRParallelShaderCompile::Supported(WebGLRenderingContextBase* context) {
