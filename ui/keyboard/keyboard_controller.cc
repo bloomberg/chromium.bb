@@ -717,6 +717,9 @@ void KeyboardController::PopulateKeyboardContent(
   queued_container_type_ = nullptr;
 
   ChangeState(KeyboardControllerState::SHOWN);
+
+  UMA_HISTOGRAM_ENUMERATION("InputMethod.VirtualKeyboard.ContainerBehavior",
+                            GetActiveContainerType(), ContainerType::COUNT);
 }
 
 bool KeyboardController::WillHideKeyboard() const {
@@ -852,9 +855,6 @@ void KeyboardController::SetContainerType(
     std::move(callback).Run(false);
     return;
   }
-
-  UMA_HISTOGRAM_ENUMERATION("InputMethod.VirtualKeyboard.ContainerBehavior",
-                            type, ContainerType::COUNT);
 
   if (state_ == KeyboardControllerState::SHOWN) {
     // Keyboard is already shown. Hiding the keyboard at first then switching
