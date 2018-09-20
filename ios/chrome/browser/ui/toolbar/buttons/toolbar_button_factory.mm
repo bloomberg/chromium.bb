@@ -109,11 +109,8 @@
 }
 
 - (ToolbarToolsMenuButton*)toolsMenuButton {
-  ToolbarControllerStyle style = self.style == NORMAL
-                                     ? ToolbarControllerStyleLightMode
-                                     : ToolbarControllerStyleIncognitoMode;
   ToolbarToolsMenuButton* toolsMenuButton =
-      [[ToolbarToolsMenuButton alloc] initWithFrame:CGRectZero style:style];
+      [[ToolbarToolsMenuButton alloc] initWithFrame:CGRectZero];
 
   SetA11yLabelAndUiAutomationName(toolsMenuButton, IDS_IOS_TOOLBAR_SETTINGS,
                                   kToolbarToolsMenuButtonIdentifier);

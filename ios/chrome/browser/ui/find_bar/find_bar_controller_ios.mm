@@ -32,10 +32,6 @@ NSString* const kFindInPageContainerViewId = @"kFindInPageContainerViewId";
 
 namespace {
 
-// Find Bar height.
-// Right padding on iPad find bar.
-const CGFloat kFindBarIPadHeight = 62;
-
 const CGFloat kFindBarWidthRegularRegular = 375;
 const CGFloat kFindBarCornerRadiusRegularRegular = 13;
 const CGFloat kRegularRegularHorizontalMargin = 5;
@@ -131,8 +127,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   [findBarBackground addSubview:self.findBarView];
   self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
 
-  CGFloat findBarHeight =
-      IsUIRefreshPhase1Enabled() ? kAdaptiveToolbarHeight : kToolbarHeight;
+  CGFloat findBarHeight = kAdaptiveToolbarHeight;
 
   NSMutableArray* constraints = [[NSMutableArray alloc] init];
   [constraints addObjectsFromArray:@[
@@ -381,8 +376,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
   CGFloat height;
   if (@available(iOS 11, *)) {
-    height =
-        IsUIRefreshPhase1Enabled() ? kAdaptiveToolbarHeight : kToolbarHeight;
+    height = kAdaptiveToolbarHeight;
   } else {
     // Portrait:  height = findbar + statusbar.
     // Landscape: height = findbar
@@ -428,15 +422,9 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 }
 
 - (CGFloat)findBarHeight {
-  if (IsUIRefreshPhase1Enabled()) {
-    if (IsRegularXRegularSizeClass())
-      return kAdaptiveToolbarHeight;
-    return StatusBarHeight() + kAdaptiveToolbarHeight;
-  } else {
-    if (IsIPadIdiom())
-      return kFindBarIPadHeight;
-    return StatusBarHeight() + kToolbarHeight;
-  }
+  if (IsRegularXRegularSizeClass())
+    return kAdaptiveToolbarHeight;
+  return StatusBarHeight() + kAdaptiveToolbarHeight;
 }
 
 #pragma mark - UITextFieldDelegate

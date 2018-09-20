@@ -14,11 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ToolsMenuButtonObserverBridge ()
-- (void)updateButtonWithModel:(const ReadingListModel*)model;
-- (void)buttonPressed:(UIButton*)sender;
-@end
-
 @implementation ToolsMenuButtonObserverBridge {
   ToolbarToolsMenuButton* _button;
   ReadingListModel* _model;
@@ -31,35 +26,16 @@
   if (self) {
     _button = button;
     _model = readingListModel;
-    [_button addTarget:self
-                  action:@selector(buttonPressed:)
-        forControlEvents:UIControlEventTouchUpInside];
     _modelBridge = std::make_unique<ReadingListModelBridge>(self, _model);
   }
   return self;
 }
 
-- (void)updateButtonWithModel:(const ReadingListModel*)model {
-  DCHECK(model == _model);
-  BOOL readingListContainsUnseenItems = model->GetLocalUnseenFlag();
-  [_button setReadingListContainsUnseenItems:readingListContainsUnseenItems];
-}
-
-- (void)buttonPressed:(UIButton*)sender {
-  if (_model) {
-    _model->ResetLocalUnseenFlag();
-  }
-  [_button setReadingListContainsUnseenItems:NO];
-}
-
 #pragma mark - ReadingListModelBridgeObserver
 
-- (void)readingListModelLoaded:(const ReadingListModel*)model {
-  [self updateButtonWithModel:model];
-}
-
 - (void)readingListModelDidApplyChanges:(const ReadingListModel*)model {
-  [self updateButtonWithModel:model];
+}
+- (void)readingListModelLoaded:(const ReadingListModel*)model {
 }
 
 - (void)readingListModelBeingDeleted:(const ReadingListModel*)model {
