@@ -159,7 +159,8 @@ class _MobileStartupStorySet(story_module.StorySet):
 
 
 @benchmark.Info(emails=['pasko@chromium.org',
-                        'chrome-android-perf-status@chromium.org'])
+                        'chrome-android-perf-status@chromium.org'],
+                component='Speed>Metrics>SystemHealthRegressions')
 class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
   SUPPORTED_PLATFORMS = [story_module.expectations.ANDROID_NOT_WEBVIEW]
 

@@ -56,7 +56,7 @@ speedometer2,hablich@chromium.org,,,
 speedometer2-future,hablich@chromium.org,,,
 start_with_url.cold.startup_pages,"pasko@chromium.org, chrome-android-perf-status@chromium.org",,,
 start_with_url.warm.startup_pages,"pasko@chromium.org, chrome-android-perf-status@chromium.org",,,
-startup.mobile,"pasko@chromium.org, chrome-android-perf-status@chromium.org",,,
+startup.mobile,"pasko@chromium.org, chrome-android-perf-status@chromium.org",Speed>Metrics>SystemHealthRegressions,,
 supersize_archive,agrieve@chromium.org,,,
 system_health.common_desktop,"charliea@chromium.org, sullivan@chromium.org, tdresser@chromium.org, chrome-speed-metrics-dev@chromium.org",Speed>Metrics>SystemHealthRegressions,https://bit.ly/system-health-benchmarks,"2016,2018,accessibility,emerging_market,health_check,infinite_scroll,international,javascript_heavy,keyboard_input,scroll,tabs_switching,webgl"
 system_health.common_mobile,"charliea@chromium.org, sullivan@chromium.org, tdresser@chromium.org, perezju@chromium.org, chrome-speed-metrics-dev@chromium.org",Speed>Metrics>SystemHealthRegressions,https://bit.ly/system-health-benchmarks,"2016,2018,emerging_market,health_check,infinite_scroll,international,javascript_heavy"
