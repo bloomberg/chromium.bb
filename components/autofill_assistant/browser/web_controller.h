@@ -84,6 +84,15 @@ class WebController {
       const std::vector<std::vector<std::string>>& selectors_list,
       base::OnceCallback<void(const std::vector<std::string>&)> callback);
 
+  // Set the |values| of all fields in |selectors_list| and return the result
+  // through |callback|. Selectors and values are one on one matched, i.e. the
+  // value of selectors_list[i] should be set to values[i] (therefore, this
+  // method requires that selectors_list.size() == values.size()).
+  virtual void SetFieldsValue(
+      const std::vector<std::vector<std::string>>& selectors_list,
+      const std::vector<std::string>& values,
+      base::OnceCallback<void(bool)> callback);
+
  private:
   friend class WebControllerBrowserTest;
 

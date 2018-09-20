@@ -55,6 +55,12 @@ class ScriptExecutor : public ActionDelegate {
       const std::vector<std::vector<std::string>>& selectors_list,
       base::OnceCallback<void(const std::vector<std::string>&)> callback)
       override;
+  void SetFieldsValue(
+      const std::vector<std::vector<std::string>>& selectors_list,
+      const std::vector<std::string>& values,
+      base::OnceCallback<void(bool)> callback) override;
+  const autofill::AutofillProfile* GetAutofillProfile(
+      const std::string& guid) override;
   ClientMemory* GetClientMemory() override;
 
  private:
