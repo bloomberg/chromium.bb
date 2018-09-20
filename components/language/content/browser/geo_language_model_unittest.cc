@@ -9,6 +9,7 @@
 #include "base/timer/timer.h"
 #include "components/language/content/browser/geo_language_provider.h"
 #include "components/language/content/browser/test_utils.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,11 +42,13 @@ class GeoLanguageModelTest : public testing::Test {
         device::mojom::PublicIpAddressGeolocationProvider::Name_,
         base::BindRepeating(&MockIpGeoLocationProvider::Bind,
                             base::Unretained(&mock_ip_geo_location_provider_)));
+    language::GeoLanguageProvider::RegisterLocalStatePrefs(
+        local_state_.registry());
   }
 
  protected:
   void StartGeoLanguageProvider() {
-    geo_language_provider_.StartUp(std::move(connector_));
+    geo_language_provider_.StartUp(std::move(connector_), &local_state_);
   }
 
   void MoveToLocation(float latitude, float longitude) {
@@ -68,6 +71,7 @@ class GeoLanguageModelTest : public testing::Test {
   MockGeoLocation mock_geo_location_;
   MockIpGeoLocationProvider mock_ip_geo_location_provider_;
   std::unique_ptr<service_manager::Connector> connector_;
+  TestingPrefServiceSimple local_state_;
 };
 
 TEST_F(GeoLanguageModelTest, InsideIndia) {

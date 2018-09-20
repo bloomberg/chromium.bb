@@ -23,6 +23,9 @@ namespace service_manager {
 class Connector;
 }
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace language {
 // GeoLanguageProvider is responsible for providing a "local" language derived
 // from the approximate geolocation of the device based only on its public IP
@@ -31,7 +34,11 @@ namespace language {
 // * Sequencing: Must be created and used on the same sequence.
 class GeoLanguageProvider {
  public:
+  static const char kCachedGeoLanguagesPref[];
+
   static GeoLanguageProvider* GetInstance();
+
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Call this once near browser startup. Begins ongoing geo-language updates.
   // * Initializes location->language mapping in a low-priority background task.
@@ -41,7 +48,8 @@ class GeoLanguageProvider {
   // should be the result of invoking ServiceManagerConnect::Clone() on another
   // connector.
   void StartUp(
-      std::unique_ptr<service_manager::Connector> service_manager_connector);
+      std::unique_ptr<service_manager::Connector> service_manager_connector,
+      PrefService* prefs);
 
   // Returns the inferred ranked list of local languages based on the most
   // recently obtained approximate public-IP geolocation of the device.
@@ -106,6 +114,10 @@ class GeoLanguageProvider {
 
   // Sequence checker for background_task_runner_.
   SEQUENCE_CHECKER(background_sequence_checker_);
+
+  // The pref service used to cached the latest latitude/longitude pair
+  // obtained.
+  PrefService* prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(GeoLanguageProvider);
 };
