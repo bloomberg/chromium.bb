@@ -10121,7 +10121,7 @@ interface XR : EventTarget
     method constructor
     method requestDevice
     setter ondevicechange
-interface XRCoordinateSystem
+interface XRCoordinateSystem : EventTarget
     attribute @@toStringTag
     method constructor
     method getTransformTo
