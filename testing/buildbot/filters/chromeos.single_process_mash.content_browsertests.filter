@@ -20,6 +20,7 @@
 
 # MainThreadFrameObserver::Wait() times out.
 # RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-AccessibilityHitTestingBrowserTest.HitTestingWithPinchZoom
 -AutoscrollBrowserTest.AutoscrollDirectionChangeAfterFullyScrolled
 -AutoscrollBrowserTest.AutoscrollFlingGSBDeltaHints
 -AutoscrollBrowserTest.WheelScrollingWorksAfterAutoscrollCancel
@@ -31,6 +32,9 @@
 -CompositorEventAckBrowserTest.TouchStartDuringFling
 -MainThreadEventQueueBrowserTest.MouseMove
 -MainThreadEventQueueBrowserTest.TouchMove
+-PointerLockBrowserTest.PointerLockEventRouting
+-PointerLockBrowserTest.PointerLockWheelEventRouting
+-PointerLockBrowserTest.PointerLockWidgetHidden
 -RenderWidgetHostViewBrowserTestBase.CompositorWorksWhenReusingRenderer
 -ScreenOrientationOOPIFBrowserTest.ScreenOrientation
 -ScrollLatencyBrowserTest.ScrollLatencyNotRecordedIfGSUIgnored
