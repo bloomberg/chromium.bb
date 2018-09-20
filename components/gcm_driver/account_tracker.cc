@@ -82,12 +82,12 @@ void AccountTracker::OnRefreshTokenUpdatedForAccount(
 }
 
 void AccountTracker::OnRefreshTokenRemovedForAccount(
-    const AccountInfo& account_info) {
+    const std::string& account_id) {
   TRACE_EVENT1("identity", "AccountTracker::OnRefreshTokenRemovedForAccount",
-               "account_id", account_info.account_id);
+               "account_id", account_id);
 
-  DVLOG(1) << "REVOKED " << account_info.account_id;
-  UpdateSignInState(account_info.account_id, /*is_signed_in=*/false);
+  DVLOG(1) << "REVOKED " << account_id;
+  UpdateSignInState(account_id, /*is_signed_in=*/false);
 }
 
 void AccountTracker::OnPrimaryAccountSet(

@@ -101,8 +101,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
       const AccountInfo& previous_primary_account_info) override;
   void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
                                        bool is_valid) override;
-  void OnRefreshTokenRemovedForAccount(
-      const AccountInfo& account_info) override;
+  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
   void OnAccountsInCookieUpdated(
       const std::vector<AccountInfo>& accounts) override;
 

@@ -289,9 +289,9 @@ void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
 }
 
 void SyncAuthManager::OnRefreshTokenRemovedForAccount(
-    const AccountInfo& account_info) {
+    const std::string& account_id) {
   // If we're syncing to a different account, then this doesn't affect us.
-  if (account_info.account_id != sync_account_.account_info.account_id) {
+  if (account_id != sync_account_.account_info.account_id) {
     return;
   }
 

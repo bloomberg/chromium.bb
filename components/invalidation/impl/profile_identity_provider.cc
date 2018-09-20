@@ -116,8 +116,8 @@ void ProfileIdentityProvider::OnRefreshTokenUpdatedForAccount(
 }
 
 void ProfileIdentityProvider::OnRefreshTokenRemovedForAccount(
-    const AccountInfo& account_info) {
-  ProcessRefreshTokenRemovalForAccount(account_info.account_id);
+    const std::string& account_id) {
+  ProcessRefreshTokenRemovalForAccount(account_id);
 }
 
 }  // namespace invalidation
