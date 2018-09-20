@@ -53,11 +53,10 @@ std::unique_ptr<PolicyCertVerifier>
 PolicyCertService::CreatePolicyCertVerifier() {
   base::Closure callback = base::Bind(
       &PolicyCertServiceFactory::SetUsedPolicyCertificates, user_id_);
+  constexpr base::TaskTraits traits = {content::BrowserThread::UI};
   cert_verifier_ = new PolicyCertVerifier(
-      base::Bind(base::IgnoreResult(&content::BrowserThread::PostTask),
-                 content::BrowserThread::UI,
-                 FROM_HERE,
-                 callback));
+      base::Bind(base::IgnoreResult(&base::PostTaskWithTraits), FROM_HERE,
+                 traits, callback));
   // Certs are forwarded to |cert_verifier_|, thus register here after
   // |cert_verifier_| is created.
   net_conf_updater_->AddPolicyProvidedCertsObserver(this);
