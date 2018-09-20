@@ -203,10 +203,6 @@ const char kClipboardContentSettingDescription[] =
     "Enables a site-wide permission in the UI which controls access to the "
     "asynchronous clipboard web API";
 
-const char kCloseButtonsInactiveTabs[] = "Close buttons on inactive tabs";
-const char kCloseButtonsInactiveTabsDescription[] =
-    "Shows close buttons on inactive tabs in non-touch mode.";
-
 const char kCloudImportName[] = "Cloud Import";
 const char kCloudImportDescription[] = "Allows the cloud-import feature.";
 

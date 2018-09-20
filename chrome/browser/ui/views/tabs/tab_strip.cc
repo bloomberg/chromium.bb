@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -820,8 +819,7 @@ bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
     return SingleTabMode() &&
            controller_->GetNewTabButtonPosition() != AFTER_TABS;
   }
-  return touch_layout_ ||
-         !base::FeatureList::IsEnabled(features::kCloseButtonsInactiveTabs);
+  return !!touch_layout_;
 }
 
 bool TabStrip::ShouldShowCloseButtonOnHover() {
