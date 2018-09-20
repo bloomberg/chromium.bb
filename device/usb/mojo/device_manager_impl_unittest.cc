@@ -54,15 +54,22 @@ class USBDeviceManagerImplTest : public testing::Test {
   ~USBDeviceManagerImplTest() override = default;
 
  protected:
+  void TearDown() override {
+    // Clean up the device manager for next test case.
+    device_manager_instance_.reset();
+  }
+
   UsbDeviceManagerPtr ConnectToDeviceManager() {
     UsbDeviceManagerPtr device_manager;
-    DeviceManagerImpl::Create(mojo::MakeRequest(&device_manager));
+    device_manager_instance_ =
+        DeviceManagerImpl::Create(mojo::MakeRequest(&device_manager));
     return device_manager;
   }
 
   MockDeviceClient device_client_;
 
  private:
+  std::unique_ptr<DeviceManagerImpl> device_manager_instance_;
   std::unique_ptr<base::MessageLoop> message_loop_;
 };
 

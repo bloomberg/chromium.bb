@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/usb/usb_blocklist.h"
 #include "device/base/device_client.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/mojom/device.mojom.h"
@@ -72,19 +73,48 @@ base::DictionaryValue DeviceInfoToDictValue(
 
 }  // namespace
 
+void UsbChooserContext::Observer::OnDeviceAdded(
+    device::mojom::UsbDeviceInfoPtr device_info) {}
+
+void UsbChooserContext::Observer::OnDeviceRemoved(
+    device::mojom::UsbDeviceInfoPtr device_info) {}
+
+void UsbChooserContext::Observer::OnDeviceManagerConnectionError() {}
+
 UsbChooserContext::UsbChooserContext(Profile* profile)
     : ChooserContextBase(profile,
                          CONTENT_SETTINGS_TYPE_USB_GUARD,
                          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
       is_incognito_(profile->IsOffTheRecord()),
-      observer_(this),
+      client_binding_(this),
       weak_factory_(this) {
-  usb_service_ = device::DeviceClient::Get()->GetUsbService();
-  if (usb_service_)
-    observer_.Add(usb_service_);
+  // TODO(donna.wu@intel.com) set up connection with the device manager in
+  // AddObserver() after converting USB interfaces in UsbChooserController.
+  EnsureConnectionWithDeviceManager();
 }
 
-UsbChooserContext::~UsbChooserContext() {}
+void UsbChooserContext::EnsureConnectionWithDeviceManager() {
+  if (device_manager_)
+    return;
+
+  // TODO(donna.wu@intel.com): Request UsbDeviceManagerPtr from DeviceService
+  // after moving //device/usb to //services/device.
+  device_manager_instance_ = device::usb::DeviceManagerImpl::Create(
+      mojo::MakeRequest(&device_manager_));
+  device_manager_.set_connection_error_handler(
+      base::BindOnce(&UsbChooserContext::OnDeviceManagerConnectionError,
+                     base::Unretained(this)));
+
+  // Listen for added/removed device events.
+  DCHECK(!client_binding_);
+  device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
+  client_binding_.Bind(mojo::MakeRequest(&client));
+  device_manager_->SetClient(std::move(client));
+}
+
+UsbChooserContext::~UsbChooserContext() {
+  OnDeviceManagerConnectionError();
+}
 
 std::vector<std::unique_ptr<base::DictionaryValue>>
 UsbChooserContext::GetGrantedObjects(const GURL& requesting_origin,
@@ -178,6 +208,9 @@ bool UsbChooserContext::HasDevicePermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const device::mojom::UsbDeviceInfo& device_info) {
+  if (UsbBlocklist::Get().IsExcluded(device_info))
+    return false;
+
   if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
     return false;
 
@@ -222,6 +255,29 @@ bool UsbChooserContext::HasDevicePermission(
   return HasDevicePermission(requesting_origin, embedding_origin, *device_info);
 }
 
+void UsbChooserContext::GetDevices(
+    device::mojom::UsbDeviceManager::GetDevicesCallback callback) {
+  EnsureConnectionWithDeviceManager();
+  device_manager_->GetDevices(nullptr, std::move(callback));
+}
+
+void UsbChooserContext::GetDevice(
+    const std::string& guid,
+    device::mojom::UsbDeviceRequest device_request,
+    device::mojom::UsbDeviceClientPtr device_client) {
+  EnsureConnectionWithDeviceManager();
+  device_manager_->GetDevice(guid, std::move(device_request),
+                             std::move(device_client));
+}
+
+void UsbChooserContext::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void UsbChooserContext::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 base::WeakPtr<UsbChooserContext> UsbChooserContext::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -241,10 +297,41 @@ std::string UsbChooserContext::GetObjectName(
   return name;
 }
 
-void UsbChooserContext::OnDeviceRemovedCleanup(
-    scoped_refptr<UsbDevice> device) {
-  for (auto& map_entry : ephemeral_devices_)
-    map_entry.second.erase(device->guid());
+void UsbChooserContext::OnDeviceAdded(
+    device::mojom::UsbDeviceInfoPtr device_info) {
+  DCHECK(device_info);
 
-  ephemeral_dicts_.erase(device->guid());
+  // Notify all observers.
+  for (auto& observer : observer_list_)
+    observer.OnDeviceAdded(device_info->Clone());
+}
+
+void UsbChooserContext::OnDeviceRemoved(
+    device::mojom::UsbDeviceInfoPtr device_info) {
+  DCHECK(device_info);
+
+  // Notify all observers.
+  for (auto& observer : observer_list_)
+    observer.OnDeviceRemoved(device_info->Clone());
+
+  for (auto& map_entry : ephemeral_devices_)
+    map_entry.second.erase(device_info->guid);
+
+  ephemeral_dicts_.erase(device_info->guid);
+}
+
+void UsbChooserContext::OnDeviceManagerConnectionError() {
+  device_manager_.reset();
+  client_binding_.Close();
+
+  // Notify all observers.
+  for (auto& observer : observer_list_)
+    observer.OnDeviceManagerConnectionError();
+
+  ephemeral_devices_.clear();
+  ephemeral_dicts_.clear();
+}
+
+void UsbChooserContext::DestroyDeviceManagerForTesting() {
+  device_manager_instance_.reset();
 }
