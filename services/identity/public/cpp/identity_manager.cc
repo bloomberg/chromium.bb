@@ -371,7 +371,7 @@ void IdentityManager::OnRefreshTokenRevoked(const std::string& account_id) {
   pending_token_revoked_info_.reset();
 
   for (auto& observer : observer_list_) {
-    observer.OnRefreshTokenRemovedForAccount(account_info);
+    observer.OnRefreshTokenRemovedForAccount(account_id);
   }
 }
 

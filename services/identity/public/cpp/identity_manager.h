@@ -79,13 +79,15 @@ class IdentityManager : public SigninManagerBase::Observer,
         const AccountInfo& account_info,
         bool is_valid) {}
 
-    // Called when the refresh token previously associated with |account_info|
-    // has been removed.
+    // Called when the refresh token previously associated with |account_id|
+    // has been removed. At the time that this callback is invoked, there is
+    // no longer guaranteed to be any AccountInfo associated with
+    // |account_id|.
     // NOTE: On a signout event, the ordering of this callback wrt the
     // OnPrimaryAccountCleared() callback is undefined.If this lack of ordering
     // is problematic for your use case, please contact blundell@chromium.org.
     virtual void OnRefreshTokenRemovedForAccount(
-        const AccountInfo& account_info) {}
+        const std::string& account_id) {}
 
     // Called whenever the list of Gaia accounts in the cookie jar has changed.
     // |accounts| is ordered by the order of the accounts in the cookie.

@@ -229,7 +229,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   // This method uses a RepeatingCallback to simplify verification of multiple
   // removed tokens.
   void set_on_refresh_token_removed_callback(
-      base::RepeatingCallback<void(const AccountInfo&)> callback) {
+      base::RepeatingCallback<void(const std::string&)> callback) {
     on_refresh_token_removed_callback_ = std::move(callback);
   }
 
@@ -239,7 +239,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   bool validity_from_refresh_token_updated_callback() {
     return validity_from_refresh_token_updated_callback_;
   }
-  const AccountInfo& account_from_refresh_token_removed_callback() {
+  const std::string& account_from_refresh_token_removed_callback() {
     return account_from_refresh_token_removed_callback_;
   }
 
@@ -271,11 +271,10 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     if (on_refresh_token_updated_callback_)
       std::move(on_refresh_token_updated_callback_).Run();
   }
-  void OnRefreshTokenRemovedForAccount(
-      const AccountInfo& account_info) override {
-    account_from_refresh_token_removed_callback_ = account_info;
+  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
+    account_from_refresh_token_removed_callback_ = account_id;
     if (on_refresh_token_removed_callback_)
-      on_refresh_token_removed_callback_.Run(account_info);
+      on_refresh_token_removed_callback_.Run(account_id);
   }
   void OnAccountsInCookieUpdated(
       const std::vector<AccountInfo>& accounts) override {
@@ -288,14 +287,14 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   base::OnceClosure on_primary_account_set_callback_;
   base::OnceClosure on_primary_account_cleared_callback_;
   base::OnceClosure on_refresh_token_updated_callback_;
-  base::RepeatingCallback<void(const AccountInfo&)>
+  base::RepeatingCallback<void(const std::string&)>
       on_refresh_token_removed_callback_;
   base::OnceClosure on_accounts_in_cookie_updated_callback_;
   AccountInfo primary_account_from_set_callback_;
   AccountInfo primary_account_from_cleared_callback_;
   AccountInfo account_from_refresh_token_updated_callback_;
   bool validity_from_refresh_token_updated_callback_;
-  AccountInfo account_from_refresh_token_removed_callback_;
+  std::string account_from_refresh_token_removed_callback_;
   std::vector<AccountInfo> accounts_from_cookie_change_callback_;
 };
 
@@ -483,8 +482,8 @@ class IdentityManagerTest : public testing::Test {
     identity_manager_observer()->set_on_refresh_token_removed_callback(
         base::BindRepeating(
             [](base::flat_set<std::string>* observed_removals,
-               const AccountInfo& removed_account) {
-              observed_removals->insert(removed_account.email);
+               const std::string& removed_account) {
+              observed_removals->insert(removed_account);
             },
             &observed_removals));
 
@@ -517,16 +516,20 @@ class IdentityManagerTest : public testing::Test {
             former_primary_account.account_id));
         EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
             secondary_account_info.account_id));
-        EXPECT_TRUE(base::ContainsKey(observed_removals, kTestEmail));
-        EXPECT_FALSE(base::ContainsKey(observed_removals, kTestEmail2));
+        EXPECT_TRUE(base::ContainsKey(observed_removals,
+                                      former_primary_account.account_id));
+        EXPECT_FALSE(base::ContainsKey(observed_removals,
+                                       secondary_account_info.account_id));
         break;
       case RemoveTokenExpectation::kRemoveAll:
         EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
             former_primary_account.account_id));
         EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
             secondary_account_info.account_id));
-        EXPECT_TRUE(base::ContainsKey(observed_removals, kTestEmail));
-        EXPECT_TRUE(base::ContainsKey(observed_removals, kTestEmail2));
+        EXPECT_TRUE(base::ContainsKey(observed_removals,
+                                      former_primary_account.account_id));
+        EXPECT_TRUE(base::ContainsKey(observed_removals,
+                                      secondary_account_info.account_id));
         break;
     }
   }
@@ -691,7 +694,7 @@ TEST_F(IdentityManagerTest, ClearPrimaryAccount_AuthInProgress) {
 
   // Observer should not be notified of any token removals.
   identity_manager_observer()->set_on_refresh_token_removed_callback(
-      base::BindRepeating([](const AccountInfo&) { EXPECT_TRUE(false); }));
+      base::BindRepeating([](const std::string&) { EXPECT_TRUE(false); }));
 
   // No primary account to "clear", so no callback.
   identity_manager_observer()->set_on_primary_account_cleared_callback(
@@ -1333,11 +1336,8 @@ TEST_F(IdentityManagerTest, CallbackSentOnPrimaryAccountRefreshTokenRemoval) {
 
   RemoveRefreshTokenForPrimaryAccount(token_service(), identity_manager());
 
-  AccountInfo account_info =
-      identity_manager_observer()
-          ->account_from_refresh_token_removed_callback();
-  EXPECT_EQ(kTestGaiaId, account_info.gaia);
-  EXPECT_EQ(kTestEmail, account_info.email);
+  EXPECT_EQ(account_id, identity_manager_observer()
+                            ->account_from_refresh_token_removed_callback());
 }
 
 TEST_F(IdentityManagerTest,
@@ -1385,12 +1385,9 @@ TEST_F(IdentityManagerTest, CallbackSentOnSecondaryAccountRefreshTokenRemoval) {
   RemoveRefreshTokenForAccount(token_service(), identity_manager(),
                                expected_account_info.account_id);
 
-  AccountInfo account_info =
-      identity_manager_observer()
-          ->account_from_refresh_token_removed_callback();
-  EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
-  EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
-  EXPECT_EQ(expected_account_info.email, account_info.email);
+  EXPECT_EQ(expected_account_info.account_id,
+            identity_manager_observer()
+                ->account_from_refresh_token_removed_callback());
 }
 
 #if !defined(OS_CHROMEOS)
@@ -1460,12 +1457,9 @@ TEST_F(IdentityManagerTest,
   RemoveRefreshTokenForAccount(token_service(), identity_manager(),
                                expected_account_info.account_id);
 
-  AccountInfo account_info =
-      identity_manager_observer()
-          ->account_from_refresh_token_removed_callback();
-  EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
-  EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
-  EXPECT_EQ(expected_account_info.email, account_info.email);
+  EXPECT_EQ(expected_account_info.account_id,
+            identity_manager_observer()
+                ->account_from_refresh_token_removed_callback());
 }
 #endif
 
@@ -1480,7 +1474,7 @@ TEST_F(IdentityManagerTest,
 
   base::RunLoop run_loop;
   identity_manager_observer()->set_on_refresh_token_removed_callback(
-      base::BindRepeating([](const AccountInfo&) { EXPECT_TRUE(false); }));
+      base::BindRepeating([](const std::string&) { EXPECT_TRUE(false); }));
   token_service()->RevokeCredentials("dummy_account");
 
   run_loop.RunUntilIdle();
