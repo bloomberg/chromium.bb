@@ -155,8 +155,8 @@ class VaapiVideoEncodeAccelerator::H264Accelerator
   bool SubmitFrameParameters(
       AcceleratedVideoEncoder::EncodeJob* job,
       const H264Encoder::EncodeParams& encode_params,
-      const media::H264SPS& sps,
-      const media::H264PPS& pps,
+      const H264SPS& sps,
+      const H264PPS& pps,
       scoped_refptr<H264Picture> pic,
       const std::list<scoped_refptr<H264Picture>>& ref_pic_list0,
       const std::list<scoped_refptr<H264Picture>>& ref_pic_list1) override;
@@ -178,7 +178,7 @@ class VaapiVideoEncodeAccelerator::VP8Accelerator
 
   bool SubmitFrameParameters(
       AcceleratedVideoEncoder::EncodeJob* job,
-      const media::VP8Encoder::EncodeParams& encode_params,
+      const VP8Encoder::EncodeParams& encode_params,
       scoped_refptr<VP8Picture> pic,
       const Vp8ReferenceFrameVector& ref_frames) override;
 
@@ -721,9 +721,9 @@ static scoped_refptr<base::RefCountedBytes> MakeRefCountedBytes(void* ptr,
 
 bool VaapiVideoEncodeAccelerator::H264Accelerator::SubmitFrameParameters(
     AcceleratedVideoEncoder::EncodeJob* job,
-    const media::H264Encoder::EncodeParams& encode_params,
-    const media::H264SPS& sps,
-    const media::H264PPS& pps,
+    const H264Encoder::EncodeParams& encode_params,
+    const H264SPS& sps,
+    const H264PPS& pps,
     scoped_refptr<H264Picture> pic,
     const std::list<scoped_refptr<H264Picture>>& ref_pic_list0,
     const std::list<scoped_refptr<H264Picture>>& ref_pic_list1) {
@@ -942,7 +942,7 @@ VaapiVideoEncodeAccelerator::VP8Accelerator::GetPicture(
 
 bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
     AcceleratedVideoEncoder::EncodeJob* job,
-    const media::VP8Encoder::EncodeParams& encode_params,
+    const VP8Encoder::EncodeParams& encode_params,
     scoped_refptr<VP8Picture> pic,
     const Vp8ReferenceFrameVector& ref_frames) {
   VAEncSequenceParameterBufferVP8 seq_param = {};
