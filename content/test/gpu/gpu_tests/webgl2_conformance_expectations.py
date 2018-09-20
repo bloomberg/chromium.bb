@@ -400,6 +400,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl', 'intel'], bug=602688)
 
     # Passthrough command decoder / Windows / OpenGL / Intel
+    # This case causes no-over-optimization-on-uniform-array fail.
+    self.Skip('conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=884210)
     self.Flaky('conformance/glsl/variables/gl-pointcoord.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=854100)
     self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
@@ -407,12 +410,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
-    self.Fail('conformance/uniforms/' +
-        'no-over-optimization-on-uniform-array-06.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=884210)
-    self.Fail('conformance/uniforms/' +
-        'no-over-optimization-on-uniform-array-16.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance2/textures/misc/texture-npot.html',
