@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
+#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -271,7 +272,8 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
 
-    // If default termina/penguin, then do sshfs mount, else we are finished.
+    // If default termina/penguin, then do sshfs mount and reshare folders,
+    // else we are finished.
     if (vm_name_ == kCrostiniDefaultVmName &&
         container_name_ == kCrostiniDefaultContainerName) {
       crostini_manager_->GetContainerSshKeys(
@@ -348,11 +350,15 @@ class CrostiniManager::CrostiniRestarter
         vmgr->AddSshfsCrostiniVolume(mount_path);
     }
 
-    // Abort not checked until end of function.  On abort, do not call
-    // FinishRestart, but still remove observer and add volume as per above.
+    // Abort not checked until end of function.  On abort, do not continue,
+    // but still remove observer and add volume as per above.
     if (is_aborted_)
       return;
-    FinishRestart(ConciergeClientResult::SUCCESS);
+
+    // Share folders from Downloads, etc with container.
+    ShareAllPaths(profile_,
+                  base::BindOnce(&CrostiniRestarter::FinishRestart, this,
+                                 ConciergeClientResult::SUCCESS));
   }
 
   Profile* profile_;
