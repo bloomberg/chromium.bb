@@ -28,8 +28,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
-    'ClickScrollingTest.testClickingOnAnchorScrollsPage',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
