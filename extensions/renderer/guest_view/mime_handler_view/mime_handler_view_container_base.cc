@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_base.h"
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
@@ -317,18 +316,10 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
     // TODO(ekaramad): How can this happen? We should destroy the container if
     // this happens at all. The process is however different for a plugin-based
     // container.
-    base::debug::DumpWithoutCrashing();
     return;
   }
 
   auto* guest_view = GetGuestView();
-  if (!guest_view) {
-    // TODO(ekaramad): How can this happen? Is it during startup or perhaps
-    // the interface request is rejected?
-    base::debug::DumpWithoutCrashing();
-    return;
-  }
-
   // When the network service is enabled, subresource requests like plugins are
   // made directly from the renderer to the network service. So we need to
   // intercept the URLLoader and send it to the browser so that it can forward
