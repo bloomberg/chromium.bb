@@ -4,8 +4,6 @@
 
 source_set("toolbar") {
   sources = [
-    "toolbar_coordinator.h",
-    "toolbar_coordinator.mm",
     "toolbar_coordinator_delegate.h",
     "toolbar_mediator.h",
     "toolbar_mediator.mm",
@@ -60,13 +58,7 @@ source_set("toolbar") {
 
 source_set("toolbar_ui") {
   sources = [
-    "toolbar_button_updater.h",
-    "toolbar_button_updater.mm",
     "toolbar_consumer.h",
-    "toolbar_view.h",
-    "toolbar_view.mm",
-    "toolbar_view_controller.h",
-    "toolbar_view_controller.mm",
   ]
   deps = [
     "//base",
