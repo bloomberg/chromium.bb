@@ -18,7 +18,7 @@ namespace {
 // How often to report results.
 // This needs to be short enough to avoid overflow in the accumulators.
 constexpr base::TimeDelta kDefaultReportPeriod =
-    base::TimeDelta::FromMinutes(1);
+    base::TimeDelta::FromSeconds(1);
 
 // Gives the histogram for skips the highest precision just above a
 // skipped:produced ratio of 1.
@@ -342,11 +342,6 @@ void FrameMetrics::AddFrameDisplayed(base::TimeTicks source_timestamp,
   source_timestamp_prev_ = source_timestamp;
   latency_prev_ = latency;
   latencies_added_++;
-
-  bool tracing_enabled = 0;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategories, &tracing_enabled);
-  if (tracing_enabled)
-    TraceStats();
 }
 
 void FrameMetrics::Reset() {
@@ -379,6 +374,11 @@ void FrameMetrics::Reset() {
 //   different reporting periods, which could skew the results.
 void FrameMetrics::StartNewReportPeriod() {
   TRACE_EVENT0(kTraceCategories, "FrameMetrics::StartNewReportPeriod");
+
+  bool tracing_enabled = 0;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategories, &tracing_enabled);
+  if (tracing_enabled)
+    TraceStats();
 
   time_since_start_of_report_period_ = base::TimeDelta();
   frames_produced_since_start_of_report_period_ = 0;
