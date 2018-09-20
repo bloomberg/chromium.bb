@@ -14,6 +14,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -80,8 +81,9 @@ public class FeedJournalStorage implements JournalStorage {
     @Override
     public void getAllJournals(Consumer < Result < List<String>>> consumer) {
         assert mFeedJournalBridge != null;
-        mFeedJournalBridge.loadAllJournalKeys((List<String> data)
-                                                      -> consumer.accept(Result.success(data)),
+        mFeedJournalBridge.loadAllJournalKeys(
+                (String[] data)
+                        -> consumer.accept(Result.success(Arrays.asList(data))),
                 (Void ignored) -> consumer.accept(Result.failure()));
     }
 

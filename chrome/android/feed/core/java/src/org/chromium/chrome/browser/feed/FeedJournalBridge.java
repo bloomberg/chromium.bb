@@ -15,8 +15,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 
-import java.util.List;
-
 /**
  * Provides access to native implementations of journal storage.
  */
@@ -100,7 +98,7 @@ public class FeedJournalBridge {
 
     /** Asynchronously retrieve a list of all current journals' name. */
     public void loadAllJournalKeys(
-            Callback<List<String>> successCallback, Callback<Void> failureCallback) {
+            Callback<String[]> successCallback, Callback<Void> failureCallback) {
         assert mNativeFeedJournalBridge != 0;
         nativeLoadAllJournalKeys(mNativeFeedJournalBridge, successCallback, failureCallback);
     }
@@ -126,7 +124,7 @@ public class FeedJournalBridge {
     private native void nativeDoesJournalExist(long nativeFeedJournalBridge, String journalName,
             Callback<Boolean> successCallback, Callback<Void> failureCallback);
     private native void nativeLoadAllJournalKeys(long nativeFeedJournalBridge,
-            Callback<List<String>> successCallback, Callback<Void> failureCallback);
+            Callback<String[]> successCallback, Callback<Void> failureCallback);
     private native void nativeDeleteAllJournals(
             long nativeFeedJournalBridge, Callback<Boolean> callback);
 }

@@ -74,12 +74,16 @@ public class FeedProcessScopeFactory {
         sFeedScheduler = schedulerBridge;
         FeedAppLifecycleListener lifecycleListener =
                 new FeedAppLifecycleListener(new ThreadUtils());
+        FeedContentStorage contentStorage = new FeedContentStorage(profile);
+        FeedJournalStorage journalStorage = new FeedJournalStorage(profile);
         sFeedProcessScope =
                 new FeedProcessScope
                         .Builder(configHostApi, Executors.newSingleThreadExecutor(),
                                 new LoggingApiImpl(), new FeedNetworkBridge(profile),
                                 schedulerBridge, lifecycleListener, DebugBehavior.SILENT,
                                 ContextUtils.getApplicationContext())
+                        .setContentStorage(contentStorage)
+                        .setJournalStorage(journalStorage)
                         .build();
         schedulerBridge.initializeFeedDependencies(
                 sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());

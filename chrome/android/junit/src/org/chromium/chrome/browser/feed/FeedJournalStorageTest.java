@@ -76,8 +76,6 @@ public class FeedJournalStorageTest {
     @Captor
     private ArgumentCaptor<Callback<Boolean>> mBooleanSuccessCallbackArgument;
     @Captor
-            private ArgumentCaptor < Callback < List<String>>> mListOfStringSuccessCallbackArgument;
-    @Captor
     private ArgumentCaptor<Callback<String[]>> mStringArraySuccessCallbackArgument;
     @Captor
     private ArgumentCaptor<Callback<Void>> mFailureCallbackArgument;
@@ -101,16 +99,6 @@ public class FeedJournalStorageTest {
             @Override
             public Void answer(InvocationOnMock invocation) {
                 mFailureCallbackArgument.getValue().onResult(null);
-                return null;
-            }
-        };
-    }
-
-    private Answer<Void> createStringListSuccessAnswer(List<String> stringList) {
-        return new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) {
-                mListOfStringSuccessCallbackArgument.getValue().onResult(stringList);
                 return null;
             }
         };
@@ -145,13 +133,13 @@ public class FeedJournalStorageTest {
     }
 
     private void verifyListOfStringResult(
-            List<String> expectedList, boolean expectedSuccess, Result<List<String>> actualResult) {
+            String[] expectedStrings, boolean expectedSuccess, Result<List<String>> actualResult) {
         assertEquals(expectedSuccess, actualResult.isSuccessful());
         if (!expectedSuccess) return;
 
         List<String> actualList = actualResult.getValue();
-        assertEquals(expectedList.size(), actualList.size());
-        for (String expectedString : expectedList) {
+        assertEquals(expectedStrings.length, actualList.size());
+        for (String expectedString : expectedStrings) {
             assertTrue(actualList.contains(expectedString));
         }
     }
@@ -227,14 +215,14 @@ public class FeedJournalStorageTest {
     @Test
     @SmallTest
     public void getAllJournalsTest() {
-        List<String> answerStrings = Arrays.asList(JOURNAL_KEY1, JOURNAL_KEY2, JOURNAL_KEY3);
-        Answer<Void> answer = createStringListSuccessAnswer(answerStrings);
+        String[] answerStrings = {JOURNAL_KEY1, JOURNAL_KEY2, JOURNAL_KEY3};
+        Answer<Void> answer = createStringArraySuccessAnswer(answerStrings);
         doAnswer(answer).when(mBridge).loadAllJournalKeys(
-                mListOfStringSuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
+                mStringArraySuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
 
         mJournalStorage.getAllJournals(mListOfStringConsumer);
         verify(mBridge, times(1))
-                .loadAllJournalKeys(mListOfStringSuccessCallbackArgument.capture(),
+                .loadAllJournalKeys(mStringArraySuccessCallbackArgument.capture(),
                         mFailureCallbackArgument.capture());
         verify(mListOfStringConsumer, times(1)).accept(mListOfStringCaptor.capture());
         verifyListOfStringResult(answerStrings, true, mListOfStringCaptor.getValue());
@@ -246,11 +234,11 @@ public class FeedJournalStorageTest {
         List<String> answerStrings = new ArrayList<String>();
         Answer<Void> answer = createFailureAnswer();
         doAnswer(answer).when(mBridge).loadAllJournalKeys(
-                mListOfStringSuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
+                mStringArraySuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
 
         mJournalStorage.getAllJournals(mListOfStringConsumer);
         verify(mBridge, times(1))
-                .loadAllJournalKeys(mListOfStringSuccessCallbackArgument.capture(),
+                .loadAllJournalKeys(mStringArraySuccessCallbackArgument.capture(),
                         mFailureCallbackArgument.capture());
         verify(mListOfStringConsumer, times(1)).accept(mListOfStringCaptor.capture());
         assertFalse(mListOfStringCaptor.getValue().isSuccessful());
