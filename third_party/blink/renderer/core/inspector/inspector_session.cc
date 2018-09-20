@@ -49,8 +49,12 @@ InspectorSession::InspectorSession(
       v8_session_state_(kV8StateKey),
       v8_session_state_json_(&v8_session_state_, /*default_value=*/String()) {
   v8_session_state_.InitFrom(&session_state_);
+
+  // inspector->connect may result in calls to |this| against the
+  // V8Inspector::Channel interface for receiving responses / notifications,
+  // while v8_session_ is still nullptr.
   v8_session_ =
-      inspector->connect(context_group_id, this,
+      inspector->connect(context_group_id, /*channel*/ this,
                          ToV8InspectorStringView(v8_session_state_json_.Get()));
 }
 
@@ -144,7 +148,8 @@ void InspectorSession::SendProtocolResponse(int call_id,
   if (disposed_)
     return;
   flushProtocolNotifications();
-  v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
+  if (v8_session_)
+    v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
   client_->SendProtocolResponse(session_id_, call_id, message,
                                 session_state_.TakeUpdates());
 }
@@ -210,7 +215,8 @@ void InspectorSession::flushProtocolNotifications() {
     agents_[i]->FlushPendingProtocolNotifications();
   if (!notification_queue_.size())
     return;
-  v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
+  if (v8_session_)
+    v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
   for (wtf_size_t i = 0; i < notification_queue_.size(); ++i) {
     client_->SendProtocolNotification(session_id_,
                                       notification_queue_[i]->Serialize(),
