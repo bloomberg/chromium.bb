@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/common/form_data.h"
@@ -27,6 +28,31 @@ const char* const kScrollIntoViewScript =
     }\
     node.scrollIntoViewIfNeeded();\
   }";
+
+// Javascript where $1 will be replaced with the option value. Also fires a
+// "change" event to trigger any listeners. Changing the index directly does not
+// trigger this.
+const char* const kSelectOptionScript =
+    R"(function() {
+    const value = '$1'.toUpperCase();
+      var found = false;
+      for (var i = 0; i < this.options.length; ++i) {
+        const label = this.options[i].label.toUpperCase();
+        if (label.length > 0 && label.startsWith(value)) {
+          this.options.selectedIndex = i;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return { result: false };
+      }
+      const e = document.createEvent('HTMLEvents');
+      e.initEvent('change', true, true);
+      this.dispatchEvent(e);
+      return { result: true };
+    })";
+
 }  // namespace
 
 // static
@@ -488,8 +514,51 @@ void WebController::FillCardForm(const std::string& guid,
 void WebController::SelectOption(const std::vector<std::string>& selectors,
                                  const std::string& selected_option,
                                  base::OnceCallback<void(bool)> callback) {
-  // TODO(crbug.com/806868): Implement select option operation.
-  std::move(callback).Run(true);
+  FindElement(selectors,
+              base::BindOnce(&WebController::OnFindElementForSelectOption,
+                             weak_ptr_factory_.GetWeakPtr(), selected_option,
+                             std::move(callback)));
+}
+
+void WebController::OnFindElementForSelectOption(
+    const std::string& selected_option,
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<FindElementResult> element_result) {
+  const std::string object_id = element_result->object_id;
+  if (object_id.empty()) {
+    DLOG(ERROR) << "Failed to find the element to select an option.";
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  std::string select_option_script = base::ReplaceStringPlaceholders(
+      kSelectOptionScript, {selected_option}, nullptr);
+
+  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
+  argument.emplace_back(
+      runtime::CallArgument::Builder().SetObjectId(object_id).Build());
+  devtools_client_->GetRuntime()->Enable();
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetArguments(std::move(argument))
+          .SetFunctionDeclaration(std::string(select_option_script))
+          .SetReturnByValue(true)
+          .Build(),
+      base::BindOnce(&WebController::OnSelectOption,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnSelectOption(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  devtools_client_->GetRuntime()->Disable();
+  if (!result || result->HasExceptionDetails()) {
+    DLOG(ERROR) << "Failed to select option.";
+    OnResult(false, std::move(callback));
+    return;
+  }
+  OnResult(true, std::move(callback));
 }
 
 void WebController::FocusElement(const std::vector<std::string>& selectors,
@@ -512,4 +581,4 @@ void WebController::GetFieldsValue(
   std::move(callback).Run(values);
 }
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant
