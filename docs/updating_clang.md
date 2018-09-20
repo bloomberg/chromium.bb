@@ -1,5 +1,7 @@
 # Updating clang
 
+1.  Check that https://ci.chromium.org/p/chromium/g/chromium.clang/console
+    looks reasonably green.
 1.  Sync your Chromium tree to the latest revision to pick up any plugin
     changes
 1.  Run `python tools/clang/scripts/upload_revision.py NNNN`
@@ -40,9 +42,9 @@
 
     ```shell
     git cl try &&
-    git cl try -m tryserver.chromium.linux -b linux_chromium_cfi_rel_ng &&
     git cl try -m tryserver.blink -b linux_trusty_blink_rel &&
     git cl try -B luci.chromium.try -b ios-device -b mac_chromium_asan_rel_ng \
+      -b linux_chromium_cfi_rel_ng \
       -b linux_chromium_chromeos_asan_rel_ng -b linux_chromium_msan_rel_ng \
       -b linux_chromium_chromeos_msan_rel_ng -b linux-chromeos-dbg
     ```
