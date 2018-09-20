@@ -135,7 +135,7 @@ class Delegate : public SimpleMenuModel::Delegate {
     ++execute_count_;
   }
 
-  void MenuWillShow(SimpleMenuModel* /*source*/) override {
+  void OnMenuWillShow(SimpleMenuModel* /*source*/) override {
     EXPECT_FALSE(did_show_);
     EXPECT_FALSE(did_close_);
     did_show_ = true;
@@ -159,7 +159,7 @@ class Delegate : public SimpleMenuModel::Delegate {
   int execute_count_ = 0;
   mutable int enable_count_ = 0;
   // The menu on which to call |-cancelTracking| after a short delay in
-  // MenuWillShow.
+  // OnMenuWillShow.
   NSMenu* menu_to_close_ = nil;
   bool did_show_ = false;
   bool did_close_ = false;
@@ -604,7 +604,7 @@ TEST_F(MenuControllerTest, OpenClose) {
   EXPECT_FALSE([menu isMenuOpen]);
 
   // When control returns back to here, the menu will have finished running its
-  // loop and will have closed itself (see Delegate::MenuWillShow).
+  // loop and will have closed itself (see Delegate::OnMenuWillShow).
   EXPECT_TRUE(delegate.did_show_);
 
   // When the menu tells the Model it closed, the Model posts a task to notify
