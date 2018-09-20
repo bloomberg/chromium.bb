@@ -169,10 +169,21 @@ void ServiceWorkerNavigationLoader::FallbackToNetwork() {
   DCHECK_EQ(status_, Status::kNotStarted);
   DCHECK_EQ(response_type_, ResponseType::NOT_DETERMINED);
 
+  // https://crbug.com/887033
   if (debug_log_) {
     debug_log_->emplace_back(base::StringPrintf(
         "FallbackToNW:%s->%s", ResponseTypeString(response_type_),
         ResponseTypeString(ResponseType::FALLBACK_TO_NETWORK)));
+
+    if (!loader_callback_) {
+      std::string log;
+      for (const auto& entry : *debug_log_) {
+        log += entry + " ";
+      }
+      DEBUG_ALIAS_FOR_GURL(debug_url, resource_request_.url);
+      DEBUG_ALIAS_FOR_CSTR(debug_log, log.c_str(), 1024);
+      CHECK(false);
+    }
   }
 
   response_type_ = ResponseType::FALLBACK_TO_NETWORK;
