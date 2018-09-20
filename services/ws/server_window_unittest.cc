@@ -11,6 +11,7 @@
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
@@ -46,6 +47,44 @@ TEST(ServerWindow, FindTargetForWindowWithEasyResizeTargeter) {
                               /* changed_button_flags_ */ 0);
   EXPECT_NE(top_level, setup.root()->targeter()->FindTargetForEvent(
                            setup.root(), &mouse_event2));
+}
+
+TEST(ServerWindow, FindTargetForWindowWithResizeInset) {
+  WindowServiceTestSetup setup;
+
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  const gfx::Rect top_level_bounds(100, 200, 200, 200);
+  top_level->SetBounds(top_level_bounds);
+  top_level->Show();
+
+  aura::Window* child_window = setup.window_tree_test_helper()->NewWindow();
+  ASSERT_TRUE(child_window);
+  top_level->AddChild(child_window);
+  child_window->SetBounds(gfx::Rect(top_level_bounds.size()));
+  child_window->Show();
+
+  const int kInset = 4;
+  // Target an event at the resize inset area.
+  gfx::Point click_point =
+      top_level_bounds.left_center() + gfx::Vector2d(kInset / 2, 0);
+  // With no resize inset set yet, the event should go to the child window.
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, click_point, click_point,
+                             base::TimeTicks::Now(),
+                             /* flags */ 0,
+                             /* changed_button_flags_ */ 0);
+  EXPECT_EQ(child_window, setup.root()->targeter()->FindTargetForEvent(
+                              setup.root(), &mouse_event));
+
+  // With the resize inset, the event should go to the toplevel.
+  top_level->SetProperty(aura::client::kResizeHandleInset, kInset);
+  ui::MouseEvent mouse_event_2(ui::ET_MOUSE_PRESSED, click_point, click_point,
+                               base::TimeTicks::Now(),
+                               /* flags */ 0,
+                               /* changed_button_flags_ */ 0);
+  EXPECT_EQ(top_level, setup.root()->targeter()->FindTargetForEvent(
+                           setup.root(), &mouse_event_2));
 }
 
 }  // namespace ws
