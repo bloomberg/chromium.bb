@@ -193,8 +193,7 @@ using ios::material::TimingFunction;
     ]];
 
     toolsMenuButton_ =
-        [[ToolbarToolsMenuButton alloc] initWithFrame:toolsMenuButtonFrame
-                                                style:style_];
+        [[ToolbarToolsMenuButton alloc] initWithFrame:toolsMenuButtonFrame];
     [toolsMenuButton_ addTarget:self.dispatcher
                          action:@selector(showToolsMenu)
                forControlEvents:UIControlEventTouchUpInside];
