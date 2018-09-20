@@ -19,6 +19,9 @@ extern const base::Feature kResamplingScrollEvents;
 // converted to mouse move events due to a number of inconsistencies on
 // the native platforms. crbug.com/450631
 extern const base::Feature kSendMouseLeaveEvents;
+
+// Do not update hover after the layout is changed.
+extern const base::Feature kNoHoverAfterLayoutChange;
 }
 
 #endif  // UI_EVENTS_BLINK_BLINK_FEATURES_H_

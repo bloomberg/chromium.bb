@@ -126,6 +126,7 @@ target(link_target_type, "child") {
     "//third_party/ced",
     "//third_party/zlib/google:compression_utils",
     "//ui/base",
+    "//ui/events/blink",
     "//ui/events/gestures/blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
