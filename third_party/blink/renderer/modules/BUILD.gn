@@ -257,6 +257,7 @@ jumbo_source_set("unit_tests") {
     "document_metadata/copyless_paste_extractor_test.cc",
     "eventsource/event_source_parser_test.cc",
     "filesystem/dom_file_system_base_test.cc",
+    "filesystem/file_writer_test.cc",
     "indexeddb/idb_key_path_test.cc",
     "indexeddb/idb_request_test.cc",
     "indexeddb/idb_test_helper.cc",

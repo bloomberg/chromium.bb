@@ -78,7 +78,7 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
   virtual void RemovePendingCallbacks() {}
 
   // Overridden by subclasses to handle sync vs async error-handling.
-  virtual void ReportError(ErrorCallbackBase*, FileError::ErrorCode) = 0;
+  virtual void ReportError(ErrorCallbackBase*, base::File::Error error) = 0;
 
   const String& name() const { return name_; }
   mojom::blink::FileSystemType GetType() const { return type_; }
@@ -150,11 +150,11 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
                     EntryCallbacks::OnDidGetEntryCallback*,
                     ErrorCallbackBase*,
                     SynchronousType = kAsynchronous);
-  int ReadDirectory(DirectoryReaderBase*,
-                    const String& path,
-                    EntriesCallbacks::OnDidGetEntriesCallback*,
-                    ErrorCallbackBase*,
-                    SynchronousType = kAsynchronous);
+  void ReadDirectory(DirectoryReaderBase*,
+                     const String& path,
+                     EntriesCallbacks::OnDidGetEntriesCallback*,
+                     ErrorCallbackBase*,
+                     SynchronousType = kAsynchronous);
 
   void Trace(blink::Visitor*) override;
 

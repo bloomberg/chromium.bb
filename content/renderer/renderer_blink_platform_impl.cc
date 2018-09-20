@@ -47,7 +47,6 @@
 #include "content/renderer/dom_storage/local_storage_namespace.h"
 #include "content/renderer/dom_storage/session_web_storage_namespace_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
-#include "content/renderer/file_info_util.h"
 #include "content/renderer/fileapi/webfilesystem_impl.h"
 #include "content/renderer/image_capture/image_capture_frame_grabber.h"
 #include "content/renderer/indexed_db/webidbfactory_impl.h"
@@ -101,7 +100,6 @@
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/public/platform/web_blob_registry.h"
-#include "third_party/blink/public/platform/web_file_info.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
@@ -146,7 +144,6 @@ using blink::WebAudioLatencyHint;
 using blink::WebBlobRegistry;
 using blink::WebCanvasCaptureHandler;
 using blink::WebDatabaseObserver;
-using blink::WebFileInfo;
 using blink::WebFileSystem;
 using blink::WebIDBFactory;
 using blink::WebImageCaptureFrameGrabber;

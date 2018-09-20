@@ -59,6 +59,8 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
   WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 
  public:
+  enum SynchronousType { kAsynchronous, kSynchronous };
+
   static const char kSupplementName[];
 
   LocalFileSystem(LocalFrame&, std::unique_ptr<FileSystemClient>);
@@ -67,11 +69,13 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
 
   void ResolveURL(ExecutionContext*,
                   const KURL&,
-                  std::unique_ptr<AsyncFileSystemCallbacks>);
+                  std::unique_ptr<AsyncFileSystemCallbacks>,
+                  SynchronousType sync_type);
   void RequestFileSystem(ExecutionContext*,
                          mojom::blink::FileSystemType,
                          long long size,
-                         std::unique_ptr<AsyncFileSystemCallbacks>);
+                         std::unique_ptr<AsyncFileSystemCallbacks>,
+                         SynchronousType sync_type);
 
   void ChooseEntry(ScriptPromiseResolver*);
 
@@ -92,8 +96,12 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
   void FileSystemNotAllowedInternal(ExecutionContext*, CallbackWrapper*);
   void FileSystemAllowedInternal(ExecutionContext*,
                                  mojom::blink::FileSystemType,
-                                 CallbackWrapper*);
-  void ResolveURLInternal(ExecutionContext*, const KURL&, CallbackWrapper*);
+                                 CallbackWrapper*,
+                                 SynchronousType sync_type);
+  void ResolveURLInternal(ExecutionContext*,
+                          const KURL&,
+                          CallbackWrapper*,
+                          SynchronousType sync_type);
 
   const std::unique_ptr<FileSystemClient> client_;
 };

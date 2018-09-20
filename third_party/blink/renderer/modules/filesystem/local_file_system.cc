@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_client.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 #include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/content_setting_callbacks.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -56,7 +57,7 @@ namespace blink {
 namespace {
 
 void ReportFailure(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
-                   FileError::ErrorCode error) {
+                   base::File::Error error) {
   callbacks->DidFail(error);
 }
 
@@ -83,13 +84,14 @@ LocalFileSystem::~LocalFileSystem() = default;
 void LocalFileSystem::ResolveURL(
     ExecutionContext* context,
     const KURL& file_system_url,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    SynchronousType type) {
   CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
   RequestFileSystemAccessInternal(
       context,
       WTF::Bind(&LocalFileSystem::ResolveURLInternal,
                 WrapCrossThreadPersistent(this), WrapPersistent(context),
-                file_system_url, WrapPersistent(wrapper)),
+                file_system_url, WrapPersistent(wrapper), type),
       WTF::Bind(&LocalFileSystem::FileSystemNotAllowedInternal,
                 WrapCrossThreadPersistent(this), WrapPersistent(context),
                 WrapPersistent(wrapper)));
@@ -99,13 +101,14 @@ void LocalFileSystem::RequestFileSystem(
     ExecutionContext* context,
     mojom::blink::FileSystemType type,
     long long size,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    SynchronousType sync_type) {
   CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
   RequestFileSystemAccessInternal(
       context,
       WTF::Bind(&LocalFileSystem::FileSystemAllowedInternal,
                 WrapCrossThreadPersistent(this), WrapPersistent(context), type,
-                WrapPersistent(wrapper)),
+                WrapPersistent(wrapper), sync_type),
       WTF::Bind(&LocalFileSystem::FileSystemNotAllowedInternal,
                 WrapCrossThreadPersistent(this), WrapPersistent(context),
                 WrapPersistent(wrapper)));
@@ -160,13 +163,15 @@ class ChooseEntryCallbacks : public WebFileSystem::ChooseEntryCallbacks {
 
 void LocalFileSystem::ChooseEntry(ScriptPromiseResolver* resolver) {
   if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
-    resolver->Reject(FileError::CreateDOMException(FileError::kAbortErr));
+    resolver->Reject(
+        FileError::CreateDOMException(base::File::FILE_ERROR_ABORT));
     return;
   }
 
   WebFileSystem* file_system = GetFileSystem();
   if (!file_system) {
-    resolver->Reject(FileError::CreateDOMException(FileError::kAbortErr));
+    resolver->Reject(
+        FileError::CreateDOMException(base::File::FILE_ERROR_ABORT));
     return;
   }
 
@@ -205,7 +210,7 @@ void LocalFileSystem::FileSystemNotAvailable(ExecutionContext* context,
   context->GetTaskRunner(TaskType::kFileReading)
       ->PostTask(FROM_HERE,
                  WTF::Bind(&ReportFailure, WTF::Passed(callbacks->Release()),
-                           FileError::kAbortErr));
+                           base::File::FILE_ERROR_ABORT));
 }
 
 void LocalFileSystem::FileSystemNotAllowedInternal(ExecutionContext* context,
@@ -213,34 +218,42 @@ void LocalFileSystem::FileSystemNotAllowedInternal(ExecutionContext* context,
   context->GetTaskRunner(TaskType::kFileReading)
       ->PostTask(FROM_HERE,
                  WTF::Bind(&ReportFailure, WTF::Passed(callbacks->Release()),
-                           FileError::kAbortErr));
+                           base::File::FILE_ERROR_ABORT));
 }
 
 void LocalFileSystem::FileSystemAllowedInternal(
     ExecutionContext* context,
     mojom::blink::FileSystemType type,
-    CallbackWrapper* callbacks) {
-  WebFileSystem* file_system = GetFileSystem();
-  if (!file_system) {
-    FileSystemNotAvailable(context, callbacks);
-    return;
-  }
+    CallbackWrapper* callbacks,
+    SynchronousType sync_type) {
   KURL storage_partition =
       KURL(NullURL(), context->GetSecurityOrigin()->ToString());
-  file_system->OpenFileSystem(storage_partition,
-                              static_cast<WebFileSystemType>(type),
-                              callbacks->Release());
+  std::unique_ptr<AsyncFileSystemCallbacks> async_callbacks =
+      callbacks->Release();
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
+  if (sync_type == kSynchronous) {
+    dispatcher.OpenFileSystemSync(storage_partition, type,
+                                  std::move(async_callbacks));
+  } else {
+    dispatcher.OpenFileSystem(storage_partition, type,
+                              std::move(async_callbacks));
+  }
 }
 
 void LocalFileSystem::ResolveURLInternal(ExecutionContext* context,
                                          const KURL& file_system_url,
-                                         CallbackWrapper* callbacks) {
-  WebFileSystem* file_system = GetFileSystem();
-  if (!file_system) {
-    FileSystemNotAvailable(context, callbacks);
-    return;
+                                         CallbackWrapper* callbacks,
+                                         SynchronousType sync_type) {
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
+  std::unique_ptr<AsyncFileSystemCallbacks> async_callbacks =
+      callbacks->Release();
+  if (sync_type == kSynchronous) {
+    dispatcher.ResolveURLSync(file_system_url, std::move(async_callbacks));
+  } else {
+    dispatcher.ResolveURL(file_system_url, std::move(async_callbacks));
   }
-  file_system->ResolveURL(file_system_url, callbacks->Release());
 }
 
 LocalFileSystem::LocalFileSystem(LocalFrame& frame,

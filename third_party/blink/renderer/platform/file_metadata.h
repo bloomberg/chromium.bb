@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FILE_METADATA_H_
 
 #include <time.h>
+#include "base/files/file.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -53,6 +54,8 @@ class FileMetadata {
  public:
   FileMetadata()
       : modification_time(InvalidFileTime()), length(-1), type(kTypeUnknown) {}
+
+  PLATFORM_EXPORT static FileMetadata From(const base::File::Info& file_info);
 
   // The last modification time of the file, in milliseconds.
   // The value NaN means that the time is not known.
