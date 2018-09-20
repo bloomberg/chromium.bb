@@ -856,7 +856,7 @@ nouveau_bo_wait(struct nouveau_bo *bo, uint32_t access,
 	return ret;
 }
 
-int
+drm_public int
 nouveau_bo_map(struct nouveau_bo *bo, uint32_t access,
 	       struct nouveau_client *client)
 {

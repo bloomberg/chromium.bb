@@ -728,7 +728,7 @@ nouveau_pushbuf_data(struct nouveau_pushbuf *push, struct nouveau_bo *bo,
 	}
 }
 
-int
+drm_public int
 nouveau_pushbuf_refn(struct nouveau_pushbuf *push,
 		     struct nouveau_pushbuf_refn *refs, int nr)
 {
