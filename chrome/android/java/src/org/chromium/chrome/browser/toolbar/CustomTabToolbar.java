@@ -127,6 +127,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private View mLocationBarFrameLayout;
     private View mTitleUrlContainer;
     private TextView mUrlBar;
+    private View mLiteStatusView;
+    private View mLiteStatusSeparatorView;
     private UrlBarCoordinator mUrlCoordinator;
     private TextView mTitleBar;
     private TintedImageButton mSecurityButton;
@@ -166,6 +168,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         mUrlBar = (TextView) findViewById(R.id.url_bar);
         mUrlBar.setHint("");
         mUrlBar.setEnabled(false);
+        mLiteStatusView = findViewById(R.id.url_bar_lite_status);
+        mLiteStatusSeparatorView = findViewById(R.id.url_bar_lite_status_separator);
         mUrlCoordinator = new UrlBarCoordinator((UrlBar) mUrlBar);
         mUrlCoordinator.setDelegate(this);
         mUrlCoordinator.setAllowFocus(false);
@@ -440,6 +444,13 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             originStart = 0;
             originEnd = displayText.length();
         }
+
+        // The Lite Status view visibility should be updated on every new URL and only be displayed
+        // along with the URL bar.
+        final boolean liteStatusIsVisible =
+                getToolbarDataProvider().isPreview() && mUrlBar.getVisibility() == View.VISIBLE;
+        mLiteStatusView.setVisibility(liteStatusIsVisible ? View.VISIBLE : View.GONE);
+        mLiteStatusSeparatorView.setVisibility(liteStatusIsVisible ? View.VISIBLE : View.GONE);
 
         mUrlCoordinator.setUrlBarData(
                 UrlBarData.create(url, displayText, originStart, originEnd, url),

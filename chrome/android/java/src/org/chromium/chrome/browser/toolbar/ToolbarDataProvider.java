@@ -141,7 +141,7 @@ public interface ToolbarDataProvider {
     @StringRes
     default int getVerboseStatusString() {
         if (isPreview()) {
-            return R.string.location_bar_verbose_status_preview;
+            return R.string.location_bar_preview_lite_page_status;
         }
         if (isOfflinePage()) {
             return R.string.location_bar_verbose_status_offline;
