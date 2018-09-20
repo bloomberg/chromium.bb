@@ -203,8 +203,11 @@
 -ManagedWithoutPermission/ManagedWithoutPermissionPlatformKeysTest.*
 -ManagedWithPermission/ManagedWithPermissionPlatformKeysTest.*
 
-# Timeout. https://crbug.com/883884
--MediaEngagementBrowserTest.SessionNewTabNavigateSameURL
+# Needs video surface layer support. Should be fixed when renderers don't use
+# the window service for embedding.
+# https://crbug.com/884589 https://crbug.com/881574
+-MediaEngagementBrowserTest.*
+-MediaEngagementAutoplayBrowserTest.*
 
 # Full screen button tests.
 -PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
