@@ -16,11 +16,11 @@
 #error "This file requires ARC support."
 #endif
 
-// Tests for tab history popup.
-@interface TabHistoryPopupControllerTestCase : ChromeTestCase
+// Tests for the popup menus.
+@interface PopupMenuTestCase : ChromeTestCase
 @end
 
-@implementation TabHistoryPopupControllerTestCase
+@implementation PopupMenuTestCase
 
 // Test that the tab history back and forward menus contain the expected entries
 // for a series of navigations, and that tapping entries performs the
