@@ -97,7 +97,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
-#include "chrome/browser/extensions/user_script_listener.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/user_script.h"
@@ -332,13 +331,7 @@ void LogCommittedPreviewsDecision(
 
 ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate()
     : download_request_limiter_(g_browser_process->download_request_limiter()),
-      safe_browsing_(g_browser_process->safe_browsing_service())
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      ,
-      user_script_listener_(new extensions::UserScriptListener())
-#endif
-{
-}
+      safe_browsing_(g_browser_process->safe_browsing_service()) {}
 
 ChromeResourceDispatcherHostDelegate::~ChromeResourceDispatcherHostDelegate() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -490,14 +483,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
   if (first_throttle)
     throttles->push_back(base::WrapUnique(first_throttle));
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  content::ResourceThrottle* wait_for_extensions_init_throttle =
-      user_script_listener_->CreateResourceThrottle(request->url(),
-                                                    resource_type);
-  if (wait_for_extensions_init_throttle)
-    throttles->push_back(base::WrapUnique(wait_for_extensions_init_throttle));
-#endif
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info->IsPrerendering()) {

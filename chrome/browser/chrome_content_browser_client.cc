@@ -425,6 +425,8 @@
 #include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/user_script_listener.h"
+#include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
@@ -451,10 +453,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/socket_permission.h"
 #include "extensions/common/switches.h"
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/media/cast_transport_host_filter.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_MUS)
@@ -4018,6 +4016,13 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   throttles.push_back(
       std::make_unique<extensions::ExtensionNavigationThrottle>(handle));
+
+  std::unique_ptr<content::NavigationThrottle> user_script_throttle =
+      extensions::ExtensionsBrowserClient::Get()
+          ->GetUserScriptListener()
+          ->CreateNavigationThrottle(handle);
+  if (user_script_throttle)
+    throttles.push_back(std::move(user_script_throttle));
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)

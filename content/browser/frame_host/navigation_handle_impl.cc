@@ -570,6 +570,11 @@ void NavigationHandleImpl::CallResumeForTesting() {
   ResumeInternal();
 }
 
+bool NavigationHandleImpl::IsDeferredForTesting() {
+  return state_ == DEFERRING_START || state_ == DEFERRING_REDIRECT ||
+         state_ == DEFERRING_FAILURE || state_ == DEFERRING_RESPONSE;
+}
+
 bool NavigationHandleImpl::WasStartedFromContextMenu() const {
   return started_from_context_menu_;
 }

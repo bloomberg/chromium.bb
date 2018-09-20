@@ -323,6 +323,9 @@ class CONTENT_EXPORT NavigationHandle {
   // deferring NavigationThrottle do the resuming.
   virtual void CallResumeForTesting() = 0;
 
+  // Returns whether this navigation is currently deferred.
+  virtual bool IsDeferredForTesting() = 0;
+
   // The NavigationData that the embedder returned from
   // ResourceDispatcherHostDelegate::GetNavigationData during commit. This will
   // be a clone of the NavigationData.
