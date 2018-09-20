@@ -1578,9 +1578,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       state.matrix.Translate(-scroll_position.X(), -scroll_position.Y());
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
+      state.direct_compositing_reasons = CompositingReasonsForScroll(box);
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-        state.direct_compositing_reasons = CompositingReasonsForScroll(box);
         state.rendering_context_id = context_.current.rendering_context_id;
       }
       state.scroll = properties_->Scroll();
