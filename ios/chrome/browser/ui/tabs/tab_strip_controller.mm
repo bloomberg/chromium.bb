@@ -239,9 +239,7 @@ UIColor* BackgroundColor() {
   // drags.
   std::unique_ptr<ScopedFullscreenDisabler> _fullscreenDisabler;
 
-#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
   API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _buttonNewTabInteraction;
-#endif
 }
 
 @property(nonatomic, readonly, retain) TabStripView* tabStripView;
@@ -476,7 +474,6 @@ UIColor* BackgroundColor() {
                       action:@selector(recordUserMetrics:)
             forControlEvents:UIControlEventTouchUpInside];
 
-#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
     if (DragAndDropIsEnabled()) {
       if (@available(iOS 11.0, *)) {
         _buttonNewTabInteraction =
@@ -484,7 +481,6 @@ UIColor* BackgroundColor() {
         [_buttonNewTab addInteraction:_buttonNewTabInteraction];
       }
     }
-#endif
 
     [_tabStripView addSubview:_buttonNewTab];
 
