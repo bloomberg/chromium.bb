@@ -98,6 +98,21 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     std::move(done_callback).Run();
   }
 
+  void SelectOption(const std::vector<std::string>& selectors,
+                    const std::string& option) {
+    base::RunLoop run_loop;
+    web_controller_->SelectOption(
+        selectors, option,
+        base::BindOnce(&WebControllerBrowserTest::OnSelectOption,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  void OnSelectOption(base::Closure done_callback, bool result) {
+    ASSERT_TRUE(result);
+    std::move(done_callback).Run();
+  }
+
   void FindElement(const std::vector<std::string>& selectors,
                    size_t expected_index,
                    bool is_main_frame) {
@@ -265,4 +280,34 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
   )";
   EXPECT_EQ(true, content::EvalJsWithManualReply(shell(), checkVisibleScript));
 }
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#select");
+  SelectOption(selectors, "two");
+
+  const std::string javascript = R"(
+    let select = document.querySelector("#select");
+    select.options[select.selectedIndex].label;
+  )";
+  EXPECT_EQ("Two", content::EvalJs(shell(), javascript));
+
+  SelectOption(selectors, "one");
+  EXPECT_EQ("One", content::EvalJs(shell(), javascript));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIframe) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("select[name=state]");
+  SelectOption(selectors, "NY");
+
+  const std::string javascript = R"(
+    let iframe = document.querySelector("iframe").contentDocument;
+    let select = iframe.querySelector("select[name=state]");
+    select.options[select.selectedIndex].label;
+  )";
+  EXPECT_EQ("NY", content::EvalJs(shell(), javascript));
+}
+
 }  // namespace

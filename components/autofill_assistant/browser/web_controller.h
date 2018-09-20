@@ -181,6 +181,12 @@ class WebController {
       std::unique_ptr<FindElementResult> element_result);
   void OnFocusElement(base::OnceCallback<void(bool)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFindElementForSelectOption(
+      const std::string& selected_option,
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<FindElementResult> element_result);
+  void OnSelectOption(base::OnceCallback<void(bool)> callback,
+                      std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.
