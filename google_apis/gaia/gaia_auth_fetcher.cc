@@ -239,6 +239,12 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
   resource_request->url = gaia_gurl;
   original_url_ = gaia_gurl;
 
+  if (!(load_flags & net::LOAD_DO_NOT_SEND_COOKIES)) {
+    DCHECK_EQ(GaiaUrls::GetInstance()->gaia_url(), gaia_gurl.GetOrigin())
+        << gaia_gurl;
+    resource_request->site_for_cookies = GaiaUrls::GetInstance()->gaia_url();
+  }
+
   if (!body.empty())
     resource_request->method = "POST";
 
