@@ -99,6 +99,11 @@
         <iron-icon icon="cr:bluetooth"></iron-icon>
         $i18n{bluetoothPageTitle}
       </a>
+      <a href="/multidevice" hidden="[[!showMultidevice]]">
+        <iron-icon icon="settings:multidevice-better-together-suite">
+        </iron-icon>
+        $i18n{multidevicePageTitle}
+      </a>
 </if>
       <a id="people" href="/people" hidden="[[!pageVisibility.people]]">
         <iron-icon icon="cr:person"></iron-icon>
@@ -182,12 +187,6 @@
             <iron-icon icon="cr:print"></iron-icon>
             $i18n{printingPageTitle}
           </a>
-<if expr="chromeos">
-          <a href="/multidevice" hidden="[[!showMultidevice]]">
-            <iron-icon icon="settings:devices-other"></iron-icon>
-            $i18n{multidevicePageTitle}
-          </a>
-</if>
           <a href="/accessibility">
             <iron-icon icon="settings:accessibility"></iron-icon>
             $i18n{a11yPageTitle}
