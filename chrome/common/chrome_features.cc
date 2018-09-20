@@ -182,10 +182,6 @@ const base::Feature kContentFullscreen{"ContentFullscreen",
 const base::Feature kClipboardContentSetting{"ClipboardContentSetting",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether inactive tabs show their close buttons by default for non-touch mode.
-const base::Feature kCloseButtonsInactiveTabs{"CloseButtonsInactiveTabs",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};

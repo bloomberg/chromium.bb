@@ -109,9 +109,6 @@ extern const base::Feature kClickToOpenPDFPlaceholder;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kClipboardContentSetting;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kCloseButtonsInactiveTabs;
-
 #if defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kContentFullscreen;
 #endif
