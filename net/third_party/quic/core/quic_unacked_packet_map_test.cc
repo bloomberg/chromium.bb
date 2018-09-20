@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "net/third_party/quic/core/quic_unacked_packet_map.h"
+#include <limits>
 
+#include "net/third_party/quic/core/frames/quic_stream_frame.h"
+#include "net/third_party/quic/core/quic_transmission_info.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
@@ -15,6 +18,15 @@ using testing::StrictMock;
 
 namespace quic {
 namespace test {
+
+class QuicUnackedPacketMapPeer {
+ public:
+  static const QuicStreamFrame& GetAggregatedStreamFrame(
+      const QuicUnackedPacketMap& unacked_packets) {
+    return unacked_packets.aggregated_stream_frame_;
+  }
+};
+
 namespace {
 
 // Default packet length.
@@ -542,6 +554,63 @@ TEST_P(QuicUnackedPacketMapTest, AggregateContiguousAckedStreamFrames) {
   EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(1);
   unacked_packets_.MaybeAggregateAckedStreamFrame(info4,
                                                   QuicTime::Delta::Zero());
+}
+
+// Regression test for b/112930090.
+TEST_P(QuicUnackedPacketMapTest, CannotAggregateIfDataLengthOverflow) {
+  QuicByteCount kMaxAggregatedDataLength =
+      std::numeric_limits<decltype(QuicStreamFrame().data_length)>::max();
+  QuicStreamId stream_id = 2;
+
+  // acked_stream_length=512 covers the case where a frame will cause the
+  // aggregated frame length to be exactly 64K.
+  // acked_stream_length=1300 covers the case where a frame will cause the
+  // aggregated frame length to exceed 64K.
+  for (const QuicPacketLength acked_stream_length : {512, 1300}) {
+    ++stream_id;
+    QuicStreamOffset offset = 0;
+    // Expected length of the aggregated stream frame.
+    QuicByteCount aggregated_data_length = 0;
+
+    while (offset < 1e6) {
+      QuicTransmissionInfo info;
+      QuicStreamFrame stream_frame(stream_id, false, offset,
+                                   acked_stream_length);
+      info.retransmittable_frames.push_back(QuicFrame(stream_frame));
+
+      const QuicStreamFrame& aggregated_stream_frame =
+          QuicUnackedPacketMapPeer::GetAggregatedStreamFrame(unacked_packets_);
+      if (aggregated_stream_frame.data_length + acked_stream_length <=
+          kMaxAggregatedDataLength) {
+        // Verify the acked stream frame can be aggregated.
+        EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(0);
+        unacked_packets_.MaybeAggregateAckedStreamFrame(
+            info, QuicTime::Delta::Zero());
+        aggregated_data_length += acked_stream_length;
+        testing::Mock::VerifyAndClearExpectations(&notifier_);
+      } else {
+        // Verify the acked stream frame cannot be aggregated because
+        // data_length is overflow.
+        EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(1);
+        unacked_packets_.MaybeAggregateAckedStreamFrame(
+            info, QuicTime::Delta::Zero());
+        aggregated_data_length = acked_stream_length;
+        testing::Mock::VerifyAndClearExpectations(&notifier_);
+      }
+
+      EXPECT_EQ(aggregated_data_length, aggregated_stream_frame.data_length);
+      offset += acked_stream_length;
+    }
+
+    // Ack the last frame of the stream.
+    QuicTransmissionInfo info;
+    QuicStreamFrame stream_frame(stream_id, true, offset, acked_stream_length);
+    info.retransmittable_frames.push_back(QuicFrame(stream_frame));
+    EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(1);
+    unacked_packets_.MaybeAggregateAckedStreamFrame(info,
+                                                    QuicTime::Delta::Zero());
+    testing::Mock::VerifyAndClearExpectations(&notifier_);
+  }
 }
 
 TEST_P(QuicUnackedPacketMapTest, CannotAggregateAckedControlFrames) {

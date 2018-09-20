@@ -450,6 +450,12 @@ void QuicSession::SendRstStream(QuicStreamId id,
     control_frame_manager_.WriteOrBufferRstStream(id, error, bytes_written);
     connection_->OnStreamReset(id, error);
   }
+  if (GetQuicReloadableFlag(quic_fix_reset_zombie_streams) &&
+      error != QUIC_STREAM_NO_ERROR && QuicContainsKey(zombie_streams_, id)) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_reset_zombie_streams);
+    OnStreamDoneWaitingForAcks(id);
+    return;
+  }
   CloseStreamInner(id, true);
 }
 

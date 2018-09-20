@@ -1335,6 +1335,8 @@ component("net") {
       "third_party/quic/core/frames/quic_connection_close_frame.cc",
       "third_party/quic/core/frames/quic_connection_close_frame.h",
       "third_party/quic/core/frames/quic_control_frame.h",
+      "third_party/quic/core/frames/quic_crypto_frame.cc",
+      "third_party/quic/core/frames/quic_crypto_frame.h",
       "third_party/quic/core/frames/quic_frame.cc",
       "third_party/quic/core/frames/quic_frame.h",
       "third_party/quic/core/frames/quic_goaway_frame.cc",
