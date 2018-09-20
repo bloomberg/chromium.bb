@@ -703,7 +703,7 @@ bool BrowserPlugin::HandleDragStatusUpdate(blink::WebDragStatus drag_status,
 
 void BrowserPlugin::DidReceiveResponse(const blink::WebURLResponse& response) {}
 
-void BrowserPlugin::DidReceiveData(const char* data, int data_length) {
+void BrowserPlugin::DidReceiveData(const char* data, size_t data_length) {
   if (delegate_)
     delegate_->PluginDidReceiveData(data, data_length);
 }

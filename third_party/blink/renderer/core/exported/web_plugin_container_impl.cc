@@ -701,7 +701,8 @@ void WebPluginContainerImpl::DidReceiveResponse(
   web_plugin_->DidReceiveResponse(url_response);
 }
 
-void WebPluginContainerImpl::DidReceiveData(const char* data, int data_length) {
+void WebPluginContainerImpl::DidReceiveData(const char* data,
+                                            size_t data_length) {
   web_plugin_->DidReceiveData(data, data_length);
 }
 

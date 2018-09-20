@@ -81,8 +81,7 @@ void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
     size_t total_bytes = 0;
     for (std::list<std::string>::iterator it = data_.begin(); it != data_.end();
          ++it) {
-      plugin->DidReceiveData(it->c_str(),
-                             base::checked_cast<int>(it->length()));
+      plugin->DidReceiveData(it->c_str(), it->length());
       total_bytes += it->length();
     }
   }
@@ -237,7 +236,7 @@ void WebViewPlugin::DidReceiveResponse(const WebURLResponse& response) {
   response_ = response;
 }
 
-void WebViewPlugin::DidReceiveData(const char* data, int data_length) {
+void WebViewPlugin::DidReceiveData(const char* data, size_t data_length) {
   data_.push_back(std::string(data, data_length));
 }
 
