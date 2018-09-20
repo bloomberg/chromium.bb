@@ -206,6 +206,10 @@ void OmniboxResultView::OnSelected() {
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
 
+bool OmniboxResultView::IsSelected() const {
+  return model_->IsSelectedIndex(model_index_);
+}
+
 OmniboxPartState OmniboxResultView::GetThemeState() const {
   if (IsSelected()) {
     return is_hovered_ ? OmniboxPartState::HOVERED_AND_SELECTED
@@ -382,10 +386,6 @@ void OmniboxResultView::SetHovered(bool hovered) {
     Invalidate();
     SchedulePaint();
   }
-}
-
-bool OmniboxResultView::IsSelected() const {
-  return model_->IsSelectedIndex(model_index_);
 }
 
 void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition,
