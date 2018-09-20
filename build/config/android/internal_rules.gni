@@ -1708,9 +1708,9 @@ if (enable_java_templates) {
   #     Restrict compiled locale-dependent resources to a specific whitelist.
   #     NOTE: This is a list of Chromium locale names, not Android ones.
   #
-  #   exclude_xxxhdpi: (optional)
+  #   resource_blacklist_regex: (optional)
   #
-  #   xxxhdpi_whitelist: (optional)
+  #   resource_blacklist_exceptions: (optional)
   #
   #   no_xml_namespaces: (optional)
   #
@@ -1941,10 +1941,11 @@ if (enable_java_templates) {
           rebase_path(_webp_binary, root_build_dir),
         ]
       }
-      if (defined(invoker.exclude_xxxhdpi) && invoker.exclude_xxxhdpi) {
-        args += [ "--exclude-xxxhdpi" ]
-        if (defined(invoker.xxxhdpi_whitelist)) {
-          args += [ "--xxxhdpi-whitelist=${invoker.xxxhdpi_whitelist}" ]
+      if (defined(invoker.resource_blacklist_regex)) {
+        args +=
+            [ "--resource-blacklist-regex=${invoker.resource_blacklist_regex}" ]
+        if (defined(invoker.resource_blacklist_exceptions)) {
+          args += [ "--resource-blacklist-exceptions=${invoker.resource_blacklist_exceptions}" ]
         }
       }
 

@@ -1883,10 +1883,11 @@ if (enable_java_templates) {
   #     linker does relocation unpacking, so we can enable it unconditionally.
   #   aapt_locale_whitelist: If set, all locales not in this list will be
   #     stripped from resources.arsc.
-  #   exclude_xxxhdpi: Causes all drawable-xxxhdpi images to be excluded
-  #     (mipmaps are still included).
-  #   xxxhdpi_whitelist: A list of globs used when exclude_xxxhdpi=true. Files
-  #     that match this whitelist will still be included.
+  #   resource_blacklist_regex: Causes all drawable images matching the regex to
+  #     be excluded (mipmaps are still included).
+  #   resource_blacklist_exceptions: A list of globs used when
+  #     resource_blacklist_regex is set. Files that match this whitelist will
+  #     still be included.
   #   shared_resources: True if this is a runtime shared library APK, like
   #     the system_webview_apk target. Ensures that its resources can be
   #     used by the loading application process.
@@ -2153,9 +2154,9 @@ if (enable_java_templates) {
                                "shared_resources",
                                "support_zh_hk",
                                "aapt_locale_whitelist",
-                               "exclude_xxxhdpi",
+                               "resource_blacklist_regex",
+                               "resource_blacklist_exceptions",
                                "png_to_webp",
-                               "xxxhdpi_whitelist",
                                "no_xml_namespaces",
                              ])
       android_manifest = _android_manifest
@@ -2215,9 +2216,9 @@ if (enable_java_templates) {
                                [
                                  "support_zh_hk",
                                  "aapt_locale_whitelist",
-                                 "exclude_xxxhdpi",
+                                 "resource_blacklist_regex",
+                                 "resource_blacklist_exceptions",
                                  "png_to_webp",
-                                 "xxxhdpi_whitelist",
                                  "no_xml_namespaces",
                                ])
         android_manifest = _android_manifest
@@ -2882,7 +2883,6 @@ if (enable_java_templates) {
                                "emma_never_instrument",
                                "enable_chromium_linker_tests",
                                "enable_multidex",
-                               "exclude_xxxhdpi",
                                "final_apk_path",
                                "firebase_app_id",
                                "generate_buildconfig_java",
@@ -2908,6 +2908,8 @@ if (enable_java_templates) {
                                "proguard_enabled",
                                "proguard_jar_path",
                                "requires_sdk_api_level_23",
+                               "resource_blacklist_regex",
+                               "resource_blacklist_exceptions",
                                "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
                                "secondary_native_lib_placeholders",
@@ -2922,7 +2924,6 @@ if (enable_java_templates) {
                                "version_code",
                                "version_name",
                                "write_asset_list",
-                               "xxxhdpi_whitelist",
                              ])
       is_bundle_module = false
       if (defined(invoker.apk_name)) {
@@ -2985,7 +2986,6 @@ if (enable_java_templates) {
                                "emma_never_instrument",
                                "enable_chromium_linker_tests",
                                "enable_multidex",
-                               "exclude_xxxhdpi",
                                "firebase_app_id",
                                "input_jars_paths",
                                "is_base_module",
@@ -3004,6 +3004,8 @@ if (enable_java_templates) {
                                "proguard_enabled",
                                "proguard_jar_path",
                                "requires_sdk_api_level_23",
+                               "resource_blacklist_regex",
+                               "resource_blacklist_exceptions",
                                "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
                                "secondary_native_lib_placeholders",
@@ -3018,7 +3020,6 @@ if (enable_java_templates) {
                                "version_code",
                                "version_name",
                                "write_asset_list",
-                               "xxxhdpi_whitelist",
                              ])
       is_bundle_module = true
       generate_buildconfig_java = _is_base_module

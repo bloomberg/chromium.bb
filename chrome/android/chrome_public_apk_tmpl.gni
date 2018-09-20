@@ -95,18 +95,19 @@ template("chrome_public_common_apk_or_module_tmpl") {
 
   target(_target_type, target_name) {
     forward_variables_from(invoker, "*")
-    exclude_xxxhdpi = true
 
-    # Use zh-TW strings for zh-HK (https://crbug.com/780847).
-    support_zh_hk = true
+    resource_blacklist_regex = "[/-]xxxhdpi[/-]"
 
-    # Whitelist rationale in https://crbug.com/691733.
-    xxxhdpi_whitelist = [
+    # Exception rationale in https://crbug.com/691733.
+    resource_blacklist_exceptions = [
       "*shadow*",  # Combination of gradient & transparency cause pixelation.
       "*.9.*",  # Most nine-patches contain shadows.
       "*ic_file_download_white*",  # Bottom edge seems misaligned.
       "*ic_lock.*",  # Bottom edge seems misaligned.
     ]
+
+    # Use zh-TW strings for zh-HK (https://crbug.com/780847).
+    support_zh_hk = true
 
     if (defined(shared_libraries) && shared_libraries != []) {
       _native_lib_file =
