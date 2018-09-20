@@ -168,7 +168,8 @@ void DeviceImpl::OnOpen(base::WeakPtr<DeviceImpl> self,
                         OpenCallback callback,
                         scoped_refptr<UsbDeviceHandle> handle) {
   if (!self) {
-    handle->Close();
+    if (handle)
+      handle->Close();
     return;
   }
 

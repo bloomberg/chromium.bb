@@ -485,6 +485,46 @@ TEST_F(USBDeviceImplTest, Open) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(USBDeviceImplTest, OpenFailure) {
+  MockUsbDeviceClient device_client;
+  UsbDevicePtr device =
+      GetMockDeviceProxy(device_client.CreateInterfacePtrAndBind());
+
+  EXPECT_CALL(mock_device(), OpenInternal(_))
+      .WillOnce(Invoke([](UsbDevice::OpenCallback& callback) {
+        std::move(callback).Run(nullptr);
+      }));
+  EXPECT_CALL(device_client, OnDeviceOpened()).Times(0);
+  EXPECT_CALL(device_client, OnDeviceClosed()).Times(0);
+
+  base::RunLoop loop;
+  device->Open(base::BindOnce(&ExpectOpenAndThen,
+                              mojom::UsbOpenDeviceError::ACCESS_DENIED,
+                              loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(USBDeviceImplTest, OpenDelayedFailure) {
+  MockUsbDeviceClient device_client;
+  UsbDevicePtr device =
+      GetMockDeviceProxy(device_client.CreateInterfacePtrAndBind());
+
+  UsbDevice::OpenCallback saved_callback;
+  EXPECT_CALL(mock_device(), OpenInternal(_))
+      .WillOnce(Invoke([&saved_callback](UsbDevice::OpenCallback& callback) {
+        saved_callback = std::move(callback);
+      }));
+  EXPECT_CALL(device_client, OnDeviceOpened()).Times(0);
+  EXPECT_CALL(device_client, OnDeviceClosed()).Times(0);
+
+  device->Open(
+      base::BindOnce([](mojom::UsbOpenDeviceError result) { NOTREACHED(); }));
+  device.reset();
+  base::RunLoop().RunUntilIdle();
+
+  std::move(saved_callback).Run(nullptr);
+}
+
 TEST_F(USBDeviceImplTest, Close) {
   UsbDevicePtr device = GetMockDeviceProxy();
 
