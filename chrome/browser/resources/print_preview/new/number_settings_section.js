@@ -40,6 +40,16 @@ Polymer({
     hintMessage: String,
 
     disabled: Boolean,
+
+    /**
+     * Whether the error message should be displayed on the input.
+     * @private {boolean}
+     */
+    errorDisplayed_: {
+      type: Boolean,
+      reflectToAttribute: true,
+      computed: 'computeErrorDisplayed_(inputString_, inputValid)',
+    },
   },
 
   listeners: {
@@ -97,7 +107,7 @@ Polymer({
 
   /**
    * @return {boolean} Whether input value represented by inputString_ is
-   *     valid.
+   *     valid and non-empty, so that it can be used to update the setting.
    * @private
    */
   computeValid_: function() {
@@ -107,11 +117,10 @@ Polymer({
   },
 
   /**
-   * @return {string} The error message, or an empty string if there is no
-   *     error.
+   * @return {boolean} Whether the error message should be empty.
    * @private
    */
-  getHintMessage_: function() {
-    return this.inputValid || this.inputString_ == '' ? '' : this.hintMessage;
+  computeErrorDisplayed_: function() {
+    return !this.inputValid && this.inputString_ != '';
   },
 });

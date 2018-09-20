@@ -201,5 +201,15 @@ Polymer({
       this.currentValue_ = this.documentInfo.fitToPageScaling.toString();
       this.ignoreValue_ = false;
     }
-  }
+  },
+
+  /**
+   * @return {string} The label to use on the scaling input.
+   * @private
+   */
+  getScalingInputLabel_: function() {
+    return this.getSetting('fitToPage').available ?
+        '' :
+        loadTimeData.getString('scalingLabel');
+  },
 });
