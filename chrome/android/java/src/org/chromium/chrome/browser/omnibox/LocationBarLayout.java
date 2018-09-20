@@ -21,6 +21,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -406,7 +407,7 @@ public class LocationBarLayout extends FrameLayout
         mUrlCoordinator.setDelegate(this);
 
         mSuggestionItems = new ArrayList<OmniboxResultItem>();
-        mSuggestionListAdapter = new OmniboxResultsAdapter(getContext(), this, mSuggestionItems);
+        mSuggestionListAdapter = new OmniboxResultsAdapter(getContext(), mSuggestionItems);
 
         mMicButton = (TintedImageButton) findViewById(R.id.mic_button);
 
@@ -471,11 +472,8 @@ public class LocationBarLayout extends FrameLayout
         mUrlCoordinator.setUrlDirectionListener(new UrlBar.UrlDirectionListener() {
             @Override
             public void onUrlDirectionChanged(int layoutDirection) {
-                ApiCompatibilityUtils.setLayoutDirection(LocationBarLayout.this, layoutDirection);
-
-                if (mSuggestionList != null) {
-                    mSuggestionList.updateSuggestionsLayoutDirection(layoutDirection);
-                }
+                ViewCompat.setLayoutDirection(LocationBarLayout.this, layoutDirection);
+                updateSuggestionListLayoutDirection();
             }
         });
     }
@@ -958,6 +956,7 @@ public class LocationBarLayout extends FrameLayout
 
         updateButtonVisibility();
 
+        mSuggestionListAdapter.setToolbarDataProvider(toolbarDataProvider);
         mUrlCoordinator.setOnFocusChangedCallback(this::onUrlFocusChange);
     }
 
@@ -1303,6 +1302,11 @@ public class LocationBarLayout extends FrameLayout
                     public View getAnchorView() {
                         return getRootView().findViewById(R.id.toolbar);
                     }
+
+                    @Override
+                    public View getAlignmentView() {
+                        return mIsTablet ? LocationBarLayout.this : null;
+                    }
                 };
         // TODO(tedchoc): Investigate lazily building the suggestion list off of the UI thread.
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
@@ -1424,6 +1428,7 @@ public class LocationBarLayout extends FrameLayout
                 }
 
                 mSuggestionList.show();
+                updateSuggestionListLayoutDirection();
             } else if (!visible && isShowing) {
                 mSuggestionList.setVisibility(GONE);
 
@@ -1431,6 +1436,13 @@ public class LocationBarLayout extends FrameLayout
             }
         }
         maybeShowOmniboxResultsContainer();
+    }
+
+    private void updateSuggestionListLayoutDirection() {
+        if (mSuggestionList == null) return;
+        int layoutDirection = ViewCompat.getLayoutDirection(this);
+        mSuggestionList.updateSuggestionsLayoutDirection(layoutDirection);
+        mSuggestionListAdapter.setLayoutDirection(layoutDirection);
     }
 
     /**
@@ -2164,11 +2176,6 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public void setShowTitle(boolean showTitle) { }
-
-    @Override
-    public boolean mustQueryUrlBarLocationForSuggestions() {
-        return mIsTablet;
-    }
 
     @Override
     public AutocompleteController getAutocompleteController() {

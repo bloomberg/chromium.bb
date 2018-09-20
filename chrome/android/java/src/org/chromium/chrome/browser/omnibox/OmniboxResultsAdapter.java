@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.BaseAdapter;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 
 import java.util.HashSet;
 import java.util.List;
@@ -27,17 +29,16 @@ public class OmniboxResultsAdapter extends BaseAdapter {
 
     private final List<OmniboxResultItem> mSuggestionItems;
     private final Context mContext;
-    private final LocationBar mLocationBar;
+    private ToolbarDataProvider mDataProvider;
     private OmniboxSuggestionDelegate mSuggestionDelegate;
     private boolean mUseDarkColors = true;
     private Set<String> mPendingAnswerRequestUrls = new HashSet<>();
+    private int mLayoutDirection;
 
     public OmniboxResultsAdapter(
             Context context,
-            LocationBar locationBar,
             List<OmniboxResultItem> suggestionItems) {
         mContext = context;
-        mLocationBar = locationBar;
         mSuggestionItems = suggestionItems;
     }
 
@@ -66,16 +67,22 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         if (convertView instanceof SuggestionView) {
             suggestionView = (SuggestionView) convertView;
         } else {
-            suggestionView = new SuggestionView(mContext, mLocationBar);
+            suggestionView = new SuggestionView(mContext);
         }
         OmniboxResultItem item = mSuggestionItems.get(position);
         maybeFetchAnswerIcon(item);
+
         suggestionView.init(item, mSuggestionDelegate, position, mUseDarkColors);
+        ViewCompat.setLayoutDirection(suggestionView, mLayoutDirection);
+
         return suggestionView;
     }
 
     private void maybeFetchAnswerIcon(OmniboxResultItem item) {
         ThreadUtils.assertOnUiThread();
+
+        // Attempting to fetch answer data before we have a profile to request it for.
+        if (mDataProvider == null) return;
 
         // Do not refetch an answer image if it already exists.
         if (item.getAnswerImage() != null) return;
@@ -88,8 +95,8 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         if (mPendingAnswerRequestUrls.contains(url)) return;
 
         mPendingAnswerRequestUrls.add(url);
-        AnswersImage.requestAnswersImage(mLocationBar.getToolbarDataProvider().getProfile(), url,
-                new AnswersImage.AnswersImageObserver() {
+        AnswersImage.requestAnswersImage(
+                mDataProvider.getProfile(), url, new AnswersImage.AnswersImageObserver() {
                     @Override
                     public void onAnswersImageChanged(Bitmap bitmap) {
                         ThreadUtils.assertOnUiThread();
@@ -121,12 +128,27 @@ public class OmniboxResultsAdapter extends BaseAdapter {
     }
 
     /**
+     * Sets the data provider for the toolbar.
+     */
+    public void setToolbarDataProvider(ToolbarDataProvider provider) {
+        mDataProvider = provider;
+    }
+
+    /**
      * Set the selection delegate for suggestion entries in the adapter.
      *
      * @param delegate The delegate for suggestion selections.
      */
     public void setSuggestionDelegate(OmniboxSuggestionDelegate delegate) {
         mSuggestionDelegate = delegate;
+    }
+
+    /**
+     * Sets the layout direction to be used for any new suggestion views.
+     * @see View#setLayoutDirection(int)
+     */
+    public void setLayoutDirection(int layoutDirection) {
+        mLayoutDirection = layoutDirection;
     }
 
     /**

@@ -64,11 +64,6 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     }
 
     @Override
-    public boolean mustQueryUrlBarLocationForSuggestions() {
-        return true;
-    }
-
-    @Override
     public void setUrlToPageUrl() {
         // Explicitly do nothing.  The tab is invisible, so showing its URL would be confusing.
     }

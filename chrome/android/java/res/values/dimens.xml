@@ -287,13 +287,11 @@
     <!-- omnibox_suggestion_answer_line2_vertical_spacing + 2dp -->
     <dimen name="omnibox_suggestion_answer_image_vertical_spacing">5dp</dimen>
     <dimen name="omnibox_suggestion_answer_image_horizontal_spacing">4dp</dimen>
-    <dimen name="omnibox_suggestion_phone_url_bar_left_offset">10dp</dimen>
-    <dimen name="omnibox_suggestion_phone_url_bar_left_offset_rtl">10dp</dimen>
+    <dimen name="omnibox_suggestion_start_offset">18dp</dimen>
     <dimen name="omnibox_suggestion_refine_width">48dp</dimen>
     <dimen name="omnibox_suggestion_text_vertical_padding">5dp</dimen>
     <dimen name="omnibox_suggestion_multiline_text_vertical_padding">10dp</dimen>
     <dimen name="omnibox_suggestion_refine_view_modern_end_padding">4dp</dimen>
-    <dimen name="omnibox_suggestion_list_modern_offset">8dp</dimen>
 
     <!-- NTP dimensions -->
     <dimen name="tile_grid_layout_max_width">504dp</dimen>

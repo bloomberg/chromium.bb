@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
@@ -39,6 +38,7 @@ public class OmniboxSuggestionsList extends ListView {
     private final int mSuggestionAnswerHeight;
     private final int mSuggestionDefinitionHeight;
     private final View mAnchorView;
+    private final View mAlignmentView;
 
     private final int[] mTempPosition = new int[2];
     private final Rect mTempRect = new Rect();
@@ -54,6 +54,14 @@ public class OmniboxSuggestionsList extends ListView {
     public interface OmniboxSuggestionListEmbedder {
         /** Return the anchor view the suggestion list should be drawn below. */
         View getAnchorView();
+
+        /**
+         * Return the view that the omnibox suggestions should be aligned horizontally to.  The
+         * view must be a descendant of {@link #getAnchorView()}.  If null, the suggestions will
+         * be aligned to the start of {@link #getAnchorView()}.
+         */
+        @Nullable
+        View getAlignmentView();
 
         /** Return the bottom sheet for the containing UI to be used in sizing. */
         @Nullable
@@ -100,6 +108,26 @@ public class OmniboxSuggestionsList extends ListView {
                 mTempRect.top + mTempRect.bottom + getPaddingTop() + getPaddingBottom();
 
         mAnchorView = mEmbedder.getAnchorView();
+        mAlignmentView = mEmbedder.getAlignmentView();
+        if (mAlignmentView != null) {
+            adjustSidePadding();
+            mAlignmentView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    adjustSidePadding();
+                }
+            });
+        }
+    }
+
+    private void adjustSidePadding() {
+        if (mAlignmentView == null) return;
+
+        ViewUtils.getRelativeLayoutPosition(mAnchorView, mAlignmentView, mTempPosition);
+        setPadding(mTempPosition[0], getPaddingTop(),
+                mAnchorView.getWidth() - mAlignmentView.getWidth() - mTempPosition[0],
+                getPaddingBottom());
     }
 
     /**
@@ -297,7 +325,7 @@ public class OmniboxSuggestionsList extends ListView {
         for (int i = 0; i < getChildCount(); i++) {
             View childView = getChildAt(i);
             if (!(childView instanceof SuggestionView)) continue;
-            ApiCompatibilityUtils.setLayoutDirection(childView, layoutDirection);
+            ViewCompat.setLayoutDirection(childView, layoutDirection);
         }
     }
 
