@@ -9149,10 +9149,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Something went wrong
       </message>
       <message name="IDS_WEBAUTHN_ERROR_INTERNAL_UNRECOGNIZED_DESCRIPTION" desc="Description in the dialog shown when the user's could not sign in to a web site using a hardware-based authentication mechanism built in to the computer (e.g. a fingerprint reader), because they never registered the device with this website before.">
-        We couldn't verify your identity on this device
+        Your identity couldn't be verified
       </message>
       <message name="IDS_WEBAUTHN_ERROR_NO_TRANSPORTS_TITLE" desc="Title of the dialog shown when the user could not sign in to a web site, because their computer did not support any of the hardware-based authentication mechanisms desired by the web site.">
-        We couldn't verify your identity on this device
+        Your identity couldn't be verified
       </message>
       <message name="IDS_WEBAUTHN_ERROR_NO_TRANSPORTS_DESCRIPTION" desc="Description in the dialog shown when the user could not sign in to a web site, because their computer did not support any of the hardware-based authentication mechanisms desired by the web site.">
         This device doesn't support the type of security key requested by this website
