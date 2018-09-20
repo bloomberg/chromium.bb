@@ -75,8 +75,22 @@ TEST_F(SerializedMrfuAppLaunchPredictorTest, ToProto) {
   predictor.Train(kTarget1);
   predictor.Train(kTarget2);
 
-  EXPECT_EQ(predictor.ToProto().SerializeAsString(),
-            proto_.SerializeAsString());
+  // Check predictor.ToProto() is the same as proto_.
+  const SerializedMrfuAppLaunchPredictorProto proto_expected =
+      proto_.serialized_mrfu_app_launch_predictor();
+  const SerializedMrfuAppLaunchPredictorProto proto_trained =
+      predictor.ToProto().serialized_mrfu_app_launch_predictor();
+  EXPECT_EQ(proto_trained.num_of_trains(), proto_expected.num_of_trains());
+  EXPECT_EQ(proto_trained.scores().size(), proto_expected.scores().size());
+  for (const auto& pair : proto_trained.scores()) {
+    const auto find_expected = proto_expected.scores().find(pair.first);
+    EXPECT_TRUE(find_expected != proto_expected.scores().end());
+    const auto& score_expected = find_expected->second;
+    const auto& score_trained = pair.second;
+    EXPECT_EQ(score_trained.num_of_trains_at_last_update(),
+              score_expected.num_of_trains_at_last_update());
+    EXPECT_FLOAT_EQ(score_trained.last_score(), score_expected.last_score());
+  }
 }
 
 TEST_F(SerializedMrfuAppLaunchPredictorTest, FromProto) {
