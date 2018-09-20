@@ -107,7 +107,6 @@ class AppListModelUpdater {
   virtual void ContextMenuItemSelected(const std::string& id,
                                        int command_id,
                                        int event_flags) {}
-  virtual syncer::StringOrdinal GetFirstAvailablePosition() const = 0;
 
   // Methods for AppListSyncableService:
   virtual void AddItemToOemFolder(
@@ -142,12 +141,6 @@ class AppListModelUpdater {
   virtual void OnPageBreakItemDeleted(const std::string& id) = 0;
 
   virtual void SetDelegate(AppListModelUpdaterDelegate* delegate) = 0;
-
- protected:
-  // Returns the first available position in app list. |top_level_items| are
-  // items without parents.
-  static syncer::StringOrdinal GetFirstAvailablePositionInternal(
-      const std::vector<ChromeAppListItem*>& top_level_items);
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_H_

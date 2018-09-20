@@ -49,8 +49,8 @@ class FakeAppContextMenuDelegate : public app_list::AppContextMenuDelegate {
   DISALLOW_COPY_AND_ASSIGN(FakeAppContextMenuDelegate);
 };
 
-class FakeAppListControllerDelegate
-    : public test::TestAppListControllerDelegate {
+class FakeAppListControllerDelegate :
+    public test::TestAppListControllerDelegate {
  public:
   FakeAppListControllerDelegate() = default;
   ~FakeAppListControllerDelegate() override = default;
@@ -95,7 +95,7 @@ class FakeAppListControllerDelegate
 std::unique_ptr<KeyedService> MenuManagerFactory(
     content::BrowserContext* context) {
   return extensions::MenuManagerFactory::BuildServiceInstanceForTesting(
-      context);
+              context);
 }
 
 std::unique_ptr<ui::MenuModel> GetContextMenuModel(ChromeAppListItem* item) {
@@ -160,14 +160,21 @@ class AppContextMenuTest : public AppListTestBase,
  protected:
   struct MenuState {
     // Defines separator.
-    MenuState() : command_id(-1), is_enabled(true), is_checked(false) {}
+    MenuState() : command_id(-1), is_enabled(true), is_checked(false) {
+    }
 
     // Defines enabled unchecked command.
     explicit MenuState(int command_id)
-        : command_id(command_id), is_enabled(true), is_checked(false) {}
+        : command_id(command_id),
+          is_enabled(true),
+          is_checked(false) {
+    }
 
     MenuState(int command_id, bool enabled, bool checked)
-        : command_id(command_id), is_enabled(enabled), is_checked(checked) {}
+        : command_id(command_id),
+          is_enabled(enabled),
+          is_checked(checked) {
+    }
 
     int command_id;
     bool is_enabled;
@@ -179,7 +186,7 @@ class AppContextMenuTest : public AppListTestBase,
                          const MenuState& state) {
     EXPECT_EQ(state.command_id, menu_model->GetCommandIdAt(index));
     if (state.command_id == -1)
-      return;  // Don't check separator.
+      return;   // Don't check separator.
     EXPECT_EQ(state.is_enabled, menu_model->IsEnabledAt(index));
     EXPECT_EQ(state.is_checked, menu_model->IsItemCheckedAt(index));
   }
@@ -195,11 +202,17 @@ class AppContextMenuTest : public AppListTestBase,
     EXPECT_EQ(state_index, states.size());
   }
 
-  FakeAppListControllerDelegate* controller() { return controller_.get(); }
+  FakeAppListControllerDelegate* controller() {
+    return controller_.get();
+  }
 
-  FakeAppContextMenuDelegate* menu_delegate() { return menu_delegate_.get(); }
+  FakeAppContextMenuDelegate* menu_delegate() {
+    return menu_delegate_.get();
+  }
 
-  Profile* profile() { return profile_.get(); }
+  Profile* profile() {
+    return profile_.get();
+  }
 
   void AddSeparator(std::vector<MenuState>* states) {
     // TODO(newcomer): Remove this function when touchable app context menus are
@@ -233,7 +246,9 @@ class AppContextMenuTest : public AppListTestBase,
     controller_->SetAppPinnable(app_id, pinnable);
     controller_->SetCanShowAppInfo(can_show_app_info);
     controller_->SetExtensionLaunchType(profile(), app_id, launch_type);
-    app_list::ExtensionAppContextMenu menu(menu_delegate(), profile(), app_id,
+    app_list::ExtensionAppContextMenu menu(menu_delegate(),
+                                           profile(),
+                                           app_id,
                                            controller());
     menu.set_is_platform_app(platform_app);
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
@@ -299,8 +314,10 @@ class AppContextMenuTest : public AppListTestBase,
   void TestChromeApp(bool can_show_app_info) {
     controller_ = std::make_unique<FakeAppListControllerDelegate>();
     controller_->SetCanShowAppInfo(can_show_app_info);
-    app_list::ExtensionAppContextMenu menu(
-        menu_delegate(), profile(), extension_misc::kChromeAppId, controller());
+    app_list::ExtensionAppContextMenu menu(menu_delegate(),
+                                           profile(),
+                                           extension_misc::kChromeAppId,
+                                           controller());
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
@@ -330,23 +347,29 @@ TEST_P(AppContextMenuTest, ExtensionApp) {
   app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
       false);
   for (extensions::LaunchType launch_type = extensions::LAUNCH_TYPE_FIRST;
-       launch_type < extensions::NUM_LAUNCH_TYPES;
-       launch_type = static_cast<extensions::LaunchType>(launch_type + 1)) {
+      launch_type < extensions::NUM_LAUNCH_TYPES;
+      launch_type = static_cast<extensions::LaunchType>(launch_type+1)) {
     AppListControllerDelegate::Pinnable pinnable;
     for (pinnable = AppListControllerDelegate::NO_PIN;
-         pinnable <= AppListControllerDelegate::PIN_FIXED;
-         pinnable =
-             static_cast<AppListControllerDelegate::Pinnable>(pinnable + 1)) {
+        pinnable <= AppListControllerDelegate::PIN_FIXED;
+        pinnable =
+            static_cast<AppListControllerDelegate::Pinnable>(pinnable+1)) {
       for (size_t combinations = 0; combinations < (1 << 2); ++combinations) {
         TestExtensionApp(AppListTestBase::kHostedAppId,
                          (combinations & (1 << 0)) != 0,
-                         (combinations & (1 << 1)) != 0, pinnable, launch_type);
+                         (combinations & (1 << 1)) != 0,
+                         pinnable,
+                         launch_type);
         TestExtensionApp(AppListTestBase::kPackagedApp1Id,
                          (combinations & (1 << 0)) != 0,
-                         (combinations & (1 << 1)) != 0, pinnable, launch_type);
+                         (combinations & (1 << 1)) != 0,
+                         pinnable,
+                         launch_type);
         TestExtensionApp(AppListTestBase::kPackagedApp2Id,
                          (combinations & (1 << 0)) != 0,
-                         (combinations & (1 << 1)) != 0, pinnable, launch_type);
+                         (combinations & (1 << 1)) != 0,
+                         pinnable,
+                         launch_type);
       }
     }
   }
@@ -362,7 +385,8 @@ TEST_P(AppContextMenuTest, ChromeApp) {
 TEST_P(AppContextMenuTest, NonExistingExtensionApp) {
   app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
       false);
-  app_list::ExtensionAppContextMenu menu(menu_delegate(), profile(),
+  app_list::ExtensionAppContextMenu menu(menu_delegate(),
+                                         profile(),
                                          "some_non_existing_extension_app",
                                          controller());
   std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
@@ -690,8 +714,7 @@ TEST_P(AppContextMenuTest, InternalAppMenu) {
 
     controller()->SetAppPinnable(internal_app.app_id,
                                  AppListControllerDelegate::PIN_EDITABLE);
-    InternalAppItem item(profile(), nullptr /* model_updater */,
-                         nullptr /* sync_item */, internal_app);
+    InternalAppItem item(profile(), nullptr, internal_app);
     std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
     ASSERT_NE(nullptr, menu);
     EXPECT_EQ(1, menu->GetItemCount());

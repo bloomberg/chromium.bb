@@ -135,6 +135,6 @@ void CrostiniAppModelBuilder::MaybeCreateRootFolder() {
   crositini_folder->SetChromeIsFolder(true);
   crositini_folder->SetName(
       l10n_util::GetStringUTF8(IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME));
-  crositini_folder->SetDefaultPositionIfApplicable(model_updater());
+  crositini_folder->SetDefaultPositionIfApplicable();
   InsertApp(std::move(crositini_folder));
 }

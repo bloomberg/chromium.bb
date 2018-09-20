@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -371,16 +370,6 @@ void ChromeAppListModelUpdater::ContextMenuItemSelected(const std::string& id,
   ChromeAppListItem* chrome_item = FindItem(id);
   if (chrome_item)
     chrome_item->ContextMenuItemSelected(command_id, event_flags);
-}
-
-syncer::StringOrdinal ChromeAppListModelUpdater::GetFirstAvailablePosition()
-    const {
-  std::vector<ChromeAppListItem*> top_level_items;
-  for (auto& item : items_) {
-    if (item.second->folder_id().empty())
-      top_level_items.emplace_back(item.second.get());
-  }
-  return GetFirstAvailablePositionInternal(top_level_items);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
