@@ -361,13 +361,14 @@ AutoplayPolicy::Type AudioContext::GetAutoplayPolicy() const {
 }
 
 bool AudioContext::AreAutoplayRequirementsFulfilled() const {
+  DCHECK(GetDocument());
+
   switch (GetAutoplayPolicy()) {
     case AutoplayPolicy::Type::kNoUserGestureRequired:
       return true;
     case AutoplayPolicy::Type::kUserGestureRequired:
     case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
-      return Frame::HasTransientUserActivation(
-          GetDocument() ? GetDocument()->GetFrame() : nullptr);
+      return Frame::HasTransientUserActivation(GetDocument()->GetFrame());
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
       return AutoplayPolicy::IsDocumentAllowedToPlay(*GetDocument());
   }
@@ -422,7 +423,7 @@ bool AudioContext::IsAllowedToStart() const {
 }
 
 void AudioContext::RecordAutoplayMetrics() {
-  if (!autoplay_status_.has_value())
+  if (!autoplay_status_.has_value() || !GetDocument())
     return;
 
   ukm::UkmRecorder* ukm_recorder = GetDocument()->UkmRecorder();
