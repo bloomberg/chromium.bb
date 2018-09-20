@@ -18,7 +18,6 @@
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/drive_api_requests.h"
-#include "google_apis/drive/drive_switches.h"
 #include "google_apis/drive/files_list_request_runner.h"
 #include "google_apis/drive/request_sender.h"
 #include "google_apis/google_api_keys.h"
@@ -235,9 +234,7 @@ DriveAPIService::DriveAPIService(
     : oauth2_token_service_(oauth2_token_service),
       url_loader_factory_(url_loader_factory),
       blocking_task_runner_(blocking_task_runner),
-      url_generator_(base_url,
-                     base_thumbnail_url,
-                     google_apis::GetTeamDrivesIntegrationSwitch()),
+      url_generator_(base_url, base_thumbnail_url),
       custom_user_agent_(custom_user_agent),
       traffic_annotation_(traffic_annotation) {}
 
@@ -328,11 +325,7 @@ CancelCallback DriveAPIService::GetFileListInDirectory(
   // TODO(yamaguchi): Use FileListScope::CreateForTeamDrive instead of
   // kAllTeamDrives for efficiency. It'll require to add a new parameter to tell
   // which team drive the directory resource belongs to.
-  FilesListCorpora corpora =
-      (google_apis::GetTeamDrivesIntegrationSwitch() ==
-       google_apis::TEAM_DRIVES_INTEGRATION_ENABLED)
-          ? google_apis::FilesListCorpora::ALL_TEAM_DRIVES
-          : google_apis::FilesListCorpora::DEFAULT;
+  FilesListCorpora corpora = google_apis::FilesListCorpora::ALL_TEAM_DRIVES;
 
   // Because children.list method on Drive API v2 returns only the list of
   // children's references, but we need all file resource list.
@@ -356,11 +349,7 @@ CancelCallback DriveAPIService::Search(
   DCHECK(!search_query.empty());
   DCHECK(!callback.is_null());
 
-  FilesListCorpora corpora =
-      (google_apis::GetTeamDrivesIntegrationSwitch() ==
-       google_apis::TEAM_DRIVES_INTEGRATION_ENABLED)
-          ? google_apis::FilesListCorpora::ALL_TEAM_DRIVES
-          : google_apis::FilesListCorpora::DEFAULT;
+  FilesListCorpora corpora = google_apis::FilesListCorpora::ALL_TEAM_DRIVES;
 
   std::string query = util::TranslateQuery(search_query);
   if (!query.empty())

@@ -2111,9 +2111,6 @@ extern const char kUiShowCompositedLayerBordersAll[];
 extern const char kUiSlowAnimationsName[];
 extern const char kUiSlowAnimationsDescription[];
 
-extern const char kDisableTeamDrivesName[];
-extern const char kDisableTeamDrivesDescription[];
-
 extern const char kTetherName[];
 extern const char kTetherDescription[];
 
