@@ -771,10 +771,10 @@ class NativeWinEventWaiter {
   NativeWinEventWaiter(BrowserAccessibilityManager* manager,
                        const std::string& match_pattern)
       : event_recorder_(
-            AccessibilityEventRecorder::GetInstance(manager,
-                                                    base::GetCurrentProcId())),
+            AccessibilityEventRecorder::Create(manager,
+                                               base::GetCurrentProcId())),
         match_pattern_(match_pattern) {
-    event_recorder_.ListenToEvents(base::BindRepeating(
+    event_recorder_->ListenToEvents(base::BindRepeating(
         &NativeWinEventWaiter::OnEvent, base::Unretained(this)));
   }
 
@@ -787,7 +787,7 @@ class NativeWinEventWaiter {
   void Wait() { run_loop_.Run(); }
 
  private:
-  AccessibilityEventRecorder& event_recorder_;
+  std::unique_ptr<AccessibilityEventRecorder> event_recorder_;
   std::string match_pattern_;
   base::RunLoop run_loop_;
 };
