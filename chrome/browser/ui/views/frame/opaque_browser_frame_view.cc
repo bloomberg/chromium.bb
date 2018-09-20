@@ -592,8 +592,6 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
    * So we'd need to sample the background color at the right location and
    * synthesize a good shadow color. */
 
-  if (IsToolbarVisible() && IsTabStripVisible())
-    PaintToolbarTopStroke(canvas);
   PaintClientEdge(canvas);
 }
 

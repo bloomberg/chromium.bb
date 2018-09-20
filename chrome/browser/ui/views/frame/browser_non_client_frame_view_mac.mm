@@ -294,9 +294,6 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
 
   if (!GetThemeProvider()->UsingSystemTheme())
     PaintThemedFrame(canvas);
-
-  if (browser_view()->IsToolbarVisible())
-    PaintToolbarTopStroke(canvas);
 }
 
 // BrowserNonClientFrameView:

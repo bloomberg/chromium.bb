@@ -194,11 +194,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   void LayoutIncognitoButton();
 
-  // ToolbarView can't paint its own top stroke because the stroke is drawn just
-  // above its bounds, where the active tab can overwrite it to visually join
-  // with the toolbar.
-  void PaintToolbarTopStroke(gfx::Canvas* canvas) const;
-
   // views::NonClientFrameView:
   void ActivationChanged(bool active) override;
   bool DoesIntersectRect(const views::View* target,
