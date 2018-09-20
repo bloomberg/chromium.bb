@@ -354,8 +354,9 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   DCHECK(last_event_location_);
 
   float app_list_opacity = 1.f;
+  const bool last_event_top_half = IsLastEventInTopHalf(*last_event_location_);
   if (Shell::Get()->window_selector_controller()->IsSelecting()) {
-    if (IsLastEventInTopHalf(*last_event_location_)) {
+    if (last_event_top_half) {
       Shell::Get()->window_selector_controller()->ToggleOverview(
           WindowSelector::EnterExitOverviewType::kSwipeFromShelf);
     } else {
@@ -377,15 +378,11 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     return;
   }
 
-  // Update the backdrop first as the backdrop controller listens for some state
-  // changes like minimizing below which may also alter the backdrop.
-  aura::Window* backdrop_window = GetBackdropWindow(window_);
-  if (backdrop_window) {
-    backdrop_window->SetTransform(gfx::Transform());
-    backdrop_window->layer()->SetOpacity(1.f);
-  }
+  if (last_event_top_half) {
+    ScopedAnimationDisabler disable(window_);
+    wm::GetWindowState(window_)->Minimize();
+    window_->SetTransform(window_values_.initial_transform);
 
-  if (IsLastEventInTopHalf(*last_event_location_)) {
     // Minimize the hidden windows so they can be used normally with alt+tab
     // and overview. Minimize in reverse order to preserve mru ordering.
     std::reverse(hidden_windows_.begin(), hidden_windows_.end());
@@ -393,18 +390,20 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
       ScopedAnimationDisabler disable(window);
       wm::GetWindowState(window)->Minimize();
     }
-
-    // Minimize |window_| without animation. Windows in |hidden_windows_| will
-    // rename hidden so we can see the home launcher.
-    ScopedAnimationDisabler disable(window_);
-    wm::GetWindowState(window_)->Minimize();
-    window_->SetTransform(window_values_.initial_transform);
   } else {
     // Reshow all windows previously hidden.
     for (auto* window : hidden_windows_) {
       ScopedAnimationDisabler disable(window);
       window->Show();
     }
+  }
+
+  // Update the backdrop last as the backdrop controller listens for some state
+  // changes like minimizing above which may also alter the backdrop.
+  aura::Window* backdrop_window = GetBackdropWindow(window_);
+  if (backdrop_window) {
+    backdrop_window->SetTransform(gfx::Transform());
+    backdrop_window->layer()->SetOpacity(1.f);
   }
 
   RemoveObserversAndStopTracking();
