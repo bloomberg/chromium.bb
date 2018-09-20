@@ -83,6 +83,9 @@ id<GREYMatcher> ToolsMenuButton();
 // Matcher for the Share menu button.
 id<GREYMatcher> ShareButton();
 
+// Returns the GREYMatcher for the button that opens the tab switcher.
+id<GREYMatcher> TabletTabSwitcherOpenButton();
+
 // Matcher for show tabs button.
 id<GREYMatcher> ShowTabsButton();
 

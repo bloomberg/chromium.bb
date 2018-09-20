@@ -247,6 +247,10 @@ id<GREYMatcher> ShareButton() {
                     grey_sufficientlyVisible(), nil);
 }
 
+id<GREYMatcher> TabletTabSwitcherOpenButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER);
+}
+
 id<GREYMatcher> ShowTabsButton() {
   return grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
                     grey_sufficientlyVisible(), nil);
