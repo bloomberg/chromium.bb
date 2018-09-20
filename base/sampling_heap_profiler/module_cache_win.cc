@@ -19,10 +19,12 @@ namespace base {
 
 namespace {
 
-// Gets the unique build ID for a module. Windows build IDs are created by a
-// concatenation of a GUID and AGE fields found in the headers of a module. The
-// GUID is stored in the first 16 bytes and the AGE is stored in the last 4
-// bytes. Returns the empty string if the function fails to get the build ID.
+// Gets the unique build ID and the corresponding debug path for a module.
+// Windows build IDs are created by a concatenation of a GUID and AGE fields
+// found in the headers of a module. The GUID is stored in the first 16 bytes
+// and the AGE is stored in the last 4 bytes. Returns the empty string if the
+// function fails to get the build ID. The debug path (pdb file) can be found
+// in the PE file and is the build time path where the debug file was produced.
 //
 // Example:
 // dumpbin chrome.exe /headers | find "Format:"
@@ -32,23 +34,32 @@ namespace {
 // "16B2A4281DED442E9A36FCE8CBD2972610".
 //
 // Note that the AGE field is encoded in decimal, not hex.
-std::string GetBuildIDForModule(HMODULE module_handle) {
+void GetDebugInfoForModule(HMODULE module_handle,
+                           std::string* build_id,
+                           FilePath* pdb_name) {
   GUID guid;
   DWORD age;
+  LPCSTR pdb_file = nullptr;
+  size_t pdb_file_length = 0;
   if (!win::PEImage(module_handle)
-           .GetDebugId(&guid, &age, /* pdb_filename= */ nullptr,
-                       /* pdb_filename_length= */ nullptr)) {
-    return std::string();
+           .GetDebugId(&guid, &age, &pdb_file, &pdb_file_length)) {
+    return;
   }
+
+  FilePath::StringType pdb_filename;
+  if (!base::UTF8ToWide(pdb_file, pdb_file_length, &pdb_filename))
+    return;
+  *pdb_name = FilePath(std::move(pdb_filename)).BaseName();
+
   const int kGUIDSize = 39;
-  string16 build_id;
+  string16 buffer;
   int result =
-      ::StringFromGUID2(guid, WriteInto(&build_id, kGUIDSize), kGUIDSize);
+      ::StringFromGUID2(guid, WriteInto(&buffer, kGUIDSize), kGUIDSize);
   if (result != kGUIDSize)
-    return std::string();
-  RemoveChars(build_id, L"{}-", &build_id);
-  build_id += StringPrintf(L"%d", age);
-  return UTF16ToUTF8(build_id);
+    return;
+  RemoveChars(buffer, L"{}-", &buffer);
+  StringAppendF(&buffer, L"%d", age);
+  *build_id = UTF16ToUTF8(buffer);
 }
 
 }  // namespace
@@ -69,13 +80,10 @@ ModuleCache::Module ModuleCache::CreateModuleForAddress(uintptr_t address) {
 
 // static
 ModuleCache::Module ModuleCache::CreateModuleForHandle(HMODULE module_handle) {
-  wchar_t module_name[MAX_PATH];
-  DWORD result_length =
-      ::GetModuleFileName(module_handle, module_name, size(module_name));
-  if (result_length == 0)
-    return Module();
-  const std::string& module_id = GetBuildIDForModule(module_handle);
-  if (module_id.empty())
+  FilePath pdb_name;
+  std::string build_id;
+  GetDebugInfoForModule(module_handle, &build_id, &pdb_name);
+  if (build_id.empty())
     return Module();
 
   MODULEINFO module_info;
@@ -84,8 +92,8 @@ ModuleCache::Module ModuleCache::CreateModuleForHandle(HMODULE module_handle) {
     return Module();
   }
 
-  return Module(reinterpret_cast<uintptr_t>(module_info.lpBaseOfDll), module_id,
-                FilePath(module_name), module_info.SizeOfImage);
+  return Module(reinterpret_cast<uintptr_t>(module_info.lpBaseOfDll), build_id,
+                pdb_name, module_info.SizeOfImage);
 }
 
 }  // namespace base
