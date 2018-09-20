@@ -16,4 +16,7 @@ const base::Feature kResamplingScrollEvents{"ResamplingScrollEvents",
 
 const base::Feature kSendMouseLeaveEvents{"SendMouseLeaveEvents",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kNoHoverAfterLayoutChange{
+    "NoHoverAfterLayoutChange", base::FEATURE_DISABLED_BY_DEFAULT};
 }
