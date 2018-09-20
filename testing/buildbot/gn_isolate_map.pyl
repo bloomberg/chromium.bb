@@ -383,6 +383,10 @@
     "label": "//components/gcm_driver/android:components_gcm_driver_junit_tests",
     "type": "junit_test",
   },
+  "components_instance_id_junit_tests": {
+    "label": "//components/gcm_driver/instance_id/android:components_instance_id_junit_tests",
+    "type": "junit_test",
+  },
   "components_invalidation_impl_junit_tests": {
     "label": "//components/invalidation/impl:components_invalidation_impl_junit_tests",
     "type": "junit_test",
