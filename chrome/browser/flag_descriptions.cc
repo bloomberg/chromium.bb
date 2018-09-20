@@ -2958,10 +2958,6 @@ const char kContentFullscreenDescription[] =
     "Fullscreen content window detaches from main browser window and goes to "
     "a new space without moving or changing the original browser window.";
 
-const char kDialogTouchBarName[] = "Dialog Touch Bar";
-const char kDialogTouchBarDescription[] =
-    "Shows Dialog buttons on the Touch Bar.";
-
 const char kEnableWebAuthenticationTouchIdName[] =
     "Web Authentication API Touch ID support";
 const char kEnableWebAuthenticationTouchIdDescription[] =

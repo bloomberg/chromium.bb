@@ -3482,12 +3482,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kPictureInPicture)},
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
-    {"dialog-touchbar", flag_descriptions::kDialogTouchBarName,
-     flag_descriptions::kDialogTouchBarDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kDialogTouchBar)},
-#endif  // defined(OS_MACOSX)
-
 #if defined(TOOLKIT_VIEWS)
     {"enable-experimental-fullscreen-exit-ui",
      flag_descriptions::kExperimentalFullscreenExitUIName,

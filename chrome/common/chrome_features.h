@@ -86,7 +86,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kBundledConnectionHelpFeature;
 
 #if defined(OS_MACOSX)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kDialogTouchBar;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kTabStripKeyboardFocus;
 #endif  // defined(OS_MACOSX)
