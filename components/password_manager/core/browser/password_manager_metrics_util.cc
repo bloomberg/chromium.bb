@@ -201,9 +201,14 @@ void LogSubmittedFormFrame(SubmittedFormFrame frame) {
 }
 
 void LogDeleteUndecryptableLoginsReturnValue(
-    DeleteUndecryptableLoginsReturnValue return_value) {
+    DeleteCorruptedPasswordsResult result) {
   UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.DeleteUndecryptableLoginsReturnValue", return_value);
+      "PasswordManager.DeleteUndecryptableLoginsReturnValue", result);
+}
+
+void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.DeleteCorruptedPasswordsResult",
+                            result);
 }
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

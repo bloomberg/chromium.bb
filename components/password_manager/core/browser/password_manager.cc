@@ -298,7 +298,7 @@ void PasswordManager::RegisterLocalPrefs(PrefRegistrySimple* registry) {
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  registry->RegisterTimePref(prefs::kSyncUsersPasswordRecovery, base::Time());
+  registry->RegisterTimePref(prefs::kPasswordRecovery, base::Time());
 #endif
 }
 
