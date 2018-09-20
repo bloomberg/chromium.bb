@@ -75,3 +75,23 @@ message Site {
   // language preferences.
   string title = 3;
 }
+
+message GetCatalogRequest {
+  // The latest timestamp of the catalog on the client.
+  int64 created_at_millis = 1;
+
+  // The country code for the catalog that was returned.
+  string country_code = 2;
+}
+
+message GetCatalogResponse {
+  // Catalog of categories and sites that are appropriate for the client. Will
+  // be empty if the client sends a request with the latest timestamp.
+  Catalog catalog = 1;
+
+  // The latest timestamp of the catalof for the client on the server.
+  int64 created_at_millis = 2;
+
+  // The country code for the catalog that was returned.
+  string country_code = 3;
+}

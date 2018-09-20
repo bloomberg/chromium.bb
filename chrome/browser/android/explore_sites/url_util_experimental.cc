@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/explore_sites/url_util.h"
+#include "chrome/browser/android/explore_sites/url_util_experimental.h"
 
 #include <string>
 
@@ -12,9 +12,10 @@
 
 namespace explore_sites {
 
-GURL GetBaseURL() {
-  const char kBaseURLOption[] = "base_url";
-  const char kDefaultBaseUrl[] = "https://exploresites-pa.googleapis.com/v1";
+GURL GetBasePrototypeURL() {
+  const char kBaseURLOption[] = "experimental_base_url";
+  const char kDefaultBaseUrl[] =
+      "https://explore-sites-ux-research.appspot.com";
   std::string field_trial_param = base::GetFieldTrialParamValueByFeature(
       chrome::android::kExploreSites, kBaseURLOption);
   if (field_trial_param.empty())
@@ -22,21 +23,21 @@ GURL GetBaseURL() {
   return GURL(field_trial_param);
 }
 
-GURL GetCatalogURL() {
-  const char kGetCatalogPath[] = "/getcatalog";
-  std::string path(kGetCatalogPath);
+GURL GetNtpPrototypeURL() {
+  const char kNtpJsonPath[] = "/ntp.json";
+  std::string path(kNtpJsonPath);
 
-  GURL base_url(GetBaseURL());
+  GURL base_url(GetBasePrototypeURL());
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
   return base_url.ReplaceComponents(replacements);
 }
 
-GURL GetCategoriesURL() {
-  const char kNtpJsonPath[] = "/getcategories";
-  std::string path(kNtpJsonPath);
+GURL GetCatalogPrototypeURL() {
+  const char kEspPath[] = "/esp.html";
+  std::string path(kEspPath);
 
-  GURL base_url(GetBaseURL());
+  GURL base_url(GetBasePrototypeURL());
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
   return base_url.ReplaceComponents(replacements);
