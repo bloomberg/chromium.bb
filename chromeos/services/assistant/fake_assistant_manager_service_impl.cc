@@ -53,7 +53,8 @@ void FakeAssistantManagerServiceImpl::StartMetalayerInteraction(
 
 void FakeAssistantManagerServiceImpl::StartVoiceInteraction() {}
 
-void FakeAssistantManagerServiceImpl::StopActiveInteraction() {}
+void FakeAssistantManagerServiceImpl::StopActiveInteraction(
+    bool cancel_conversation) {}
 
 void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
 
