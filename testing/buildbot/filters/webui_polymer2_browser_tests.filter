@@ -191,6 +191,8 @@ CrSettingsPaymentsSectionTest.*
 CrSettingsPeoplePageChangePictureTest.*
 CrSettingsPeoplePageManageProfileTest.*
 CrSettingsPeoplePageSetupPinDialogTest.*
+CrSettingsPeoplePageSyncPageTest.*
+CrSettingsPeoplePageTest.*
 CrSettingsPersonalizationOptionsTest.*
 CrSettingsPrefsTest.*
 CrSettingsPrefUtilTest.*
