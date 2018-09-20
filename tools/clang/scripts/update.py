@@ -27,7 +27,7 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '342523'
+CLANG_REVISION = '340925'
 
 use_head_revision = bool(os.environ.get('LLVM_FORCE_HEAD_REVISION', '0')
                          in ('1', 'YES'))
@@ -35,7 +35,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=1
+CLANG_SUB_REVISION=2
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
