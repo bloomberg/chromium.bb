@@ -61,8 +61,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/switches.h"
 
-using namespace blink;
-
 namespace test_runner {
 
 TestRunnerForSpecificView::TestRunnerForSpecificView(
@@ -434,19 +432,19 @@ void TestRunnerForSpecificView::ExecCommand(gin::Arguments* args) {
   }
 
   // Note: webkit's version does not return the boolean, so neither do we.
-  web_view()->FocusedFrame()->ExecuteCommand(WebString::FromUTF8(command),
-                                             WebString::FromUTF8(value));
+  web_view()->FocusedFrame()->ExecuteCommand(
+      blink::WebString::FromUTF8(command), blink::WebString::FromUTF8(value));
 }
 
 bool TestRunnerForSpecificView::IsCommandEnabled(const std::string& command) {
   return web_view()->FocusedFrame()->IsCommandEnabled(
-      WebString::FromUTF8(command));
+      blink::WebString::FromUTF8(command));
 }
 
 bool TestRunnerForSpecificView::HasCustomPageSizeStyle(int page_index) {
   // TODO(dcheng): This class has many implicit assumptions that the frames it
   // operates on are always local.
-  WebFrame* frame = web_view()->MainFrame();
+  blink::WebFrame* frame = web_view()->MainFrame();
   if (!frame || frame->IsWebRemoteFrame())
     return false;
   return frame->ToWebLocalFrame()->HasCustomPageSizeStyle(page_index);
@@ -473,13 +471,13 @@ void TestRunnerForSpecificView::SetPageVisibility(
 void TestRunnerForSpecificView::SetTextDirection(
     const std::string& direction_name) {
   // Map a direction name to a WebTextDirection value.
-  WebTextDirection direction;
+  blink::WebTextDirection direction;
   if (direction_name == "auto")
-    direction = kWebTextDirectionDefault;
+    direction = blink::kWebTextDirectionDefault;
   else if (direction_name == "rtl")
-    direction = kWebTextDirectionRightToLeft;
+    direction = blink::kWebTextDirectionRightToLeft;
   else if (direction_name == "ltr")
-    direction = kWebTextDirectionLeftToRight;
+    direction = blink::kWebTextDirectionLeftToRight;
   else
     return;
 
@@ -559,14 +557,14 @@ void TestRunnerForSpecificView::SetDomainRelaxationForbiddenForURLScheme(
     bool forbidden,
     const std::string& scheme) {
   web_view()->SetDomainRelaxationForbidden(forbidden,
-                                           WebString::FromUTF8(scheme));
+                                           blink::WebString::FromUTF8(scheme));
 }
 
 v8::Local<v8::Value>
 TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
     int world_id,
     const std::string& script) {
-  WebScriptSource source(WebString::FromUTF8(script));
+  blink::WebScriptSource source(blink::WebString::FromUTF8(script));
   // This relies on the iframe focusing itself when it loads. This is a bit
   // sketchy, but it seems to be what other tests do.
   v8::Local<v8::Value> value =
@@ -580,7 +578,7 @@ TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
 void TestRunnerForSpecificView::EvaluateScriptInIsolatedWorld(
     int world_id,
     const std::string& script) {
-  WebScriptSource source(WebString::FromUTF8(script));
+  blink::WebScriptSource source(blink::WebString::FromUTF8(script));
   web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorld(world_id, source);
 }
 
@@ -590,9 +588,9 @@ void TestRunnerForSpecificView::SetIsolatedWorldSecurityOrigin(
   if (!(origin->IsString() || !origin->IsNull()))
     return;
 
-  WebSecurityOrigin web_origin;
+  blink::WebSecurityOrigin web_origin;
   if (origin->IsString()) {
-    web_origin = WebSecurityOrigin::CreateFromString(V8StringToWebString(
+    web_origin = blink::WebSecurityOrigin::CreateFromString(V8StringToWebString(
         blink::MainThreadIsolate(), origin.As<v8::String>()));
   }
   web_view()->FocusedFrame()->SetIsolatedWorldSecurityOrigin(world_id,
@@ -603,18 +601,19 @@ void TestRunnerForSpecificView::SetIsolatedWorldContentSecurityPolicy(
     int world_id,
     const std::string& policy) {
   web_view()->FocusedFrame()->SetIsolatedWorldContentSecurityPolicy(
-      world_id, WebString::FromUTF8(policy));
+      world_id, blink::WebString::FromUTF8(policy));
 }
 
 void TestRunner::InsertStyleSheet(const std::string& source_code) {
-  WebLocalFrame::FrameForCurrentContext()->GetDocument().InsertStyleSheet(
-      WebString::FromUTF8(source_code));
+  blink::WebLocalFrame::FrameForCurrentContext()
+      ->GetDocument()
+      .InsertStyleSheet(blink::WebString::FromUTF8(source_code));
 }
 
 bool TestRunnerForSpecificView::FindString(
     const std::string& search_text,
     const std::vector<std::string>& options_array) {
-  WebFindOptions find_options;
+  blink::WebFindOptions find_options;
   bool wrap_around = false;
   find_options.match_case = true;
   find_options.find_next = true;
@@ -630,9 +629,10 @@ bool TestRunnerForSpecificView::FindString(
       wrap_around = true;
   }
 
-  WebLocalFrame* frame = GetLocalMainFrame();
-  const bool find_result = frame->Find(0, WebString::FromUTF8(search_text),
-                                       find_options, wrap_around, nullptr);
+  blink::WebLocalFrame* frame = GetLocalMainFrame();
+  const bool find_result =
+      frame->Find(0, blink::WebString::FromUTF8(search_text), find_options,
+                  wrap_around, nullptr);
   frame->StopFindingForTesting(
       blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   return find_result;
@@ -644,8 +644,8 @@ std::string TestRunnerForSpecificView::SelectionAsMarkup() {
 
 void TestRunnerForSpecificView::SetViewSourceForFrame(const std::string& name,
                                                       bool enabled) {
-  WebFrame* target_frame =
-      GetLocalMainFrame()->FindFrameByName(WebString::FromUTF8(name));
+  blink::WebFrame* target_frame =
+      GetLocalMainFrame()->FindFrameByName(blink::WebString::FromUTF8(name));
   if (target_frame) {
     CHECK(target_frame->IsWebLocalFrame())
         << "This function requires that the target frame is a local frame.";
