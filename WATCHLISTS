@@ -1157,13 +1157,20 @@
       'filepath': 'mojo',
     },
     'multidevice': {
-      'filepath': 'ash/multidevice_setup/'\
+      'filepath': 'ash/multi_device_setup/'\
+                  '|chrome/browser/chromeos/device_sync/'\
+                  '|chrome/browser/chromeos/multidevice_setup/'\
+                  '|chrome/browser/chromeos/secure_channel/'\
                   '|chrome/browser/resources/chromeos/multidevice_setup/'\
+                  '|chrome/browser/resources/settings/multidevice_page/'\
+                  '|chrome/browser/ui/webui/chromeos/multidevice_setup/'\
+                  '|chrome/browser/ui/webui/settings/chromeos/multidevice'\
                   '|chromeos/components/proximity_auth/'\
                   '|chromeos/services/device_sync/'\
                   '|chromeos/services/multidevice_setup/'\
                   '|chromeos/services/secure_channel/'\
-                  '|components/cryptauth/'
+                  '|components/cryptauth/'\
+                  '|components/proximity_auth/logging'
     },
     'mus': {
       'filepath': 'services/ws/'\
@@ -1442,6 +1449,12 @@
       'filepath': 'content/browser/site_instance|'\
         'content/browser/browsing_instance',
     },
+    'smartlock': {
+      'filepath': 'chrome/browser/apps/platform_apps/api/easy_unlock_private/'\
+                  '|chrome/browser/chromeos/login/easy_unlock/'\
+                  '|chrome/browser/resources/easy_unlock/'\
+                  '|chromeos/components/proximity_auth/'
+    },
     'smb': {
       'filepath': 'chrome/browser/chromeos/file_system_provider'\
                   '|chrome/browser/chromeos/smb_client'\
@@ -1549,9 +1562,7 @@
     'tether': {
       'filepath': 'chrome/browser/chromeos/tether/'\
                   '|chrome/browser/ui/ash/network/tether*'\
-                  '|chromeos/components/tether/'\
-                  '|components/cryptauth/'\
-                  '|components/proximity_auth/logging'
+                  '|chromeos/components/tether/'
     },
     'textinput': {
       'filepath': 'chrome/browser/ui/input_method'\
@@ -2243,11 +2254,12 @@
     'metrics_xml_files': ['asvitkine+watch@chromium.org'],
     'midi': ['toyoshim+midi@chromium.org'],
     'mojo': ['darin@chromium.org'],
-    'multidevice': ['jhawkins+watch-multidevice@chromium.org',
+    'multidevice': ['hansberry+watch-multidevice@chromium.org',
+                    'jhawkins+watch-multidevice@chromium.org',
                     'jlklein+watch-multidevice@chromium.org',
                     'jordynass+watch-multidevice@chromium.org',
                     'khorimoto+watch-multidevice@chromium.org',
-                    'lesliewatkins+watch-multidevice@chromium.org'],
+                    'nohle+watch-multidevice@chromium.org'],
     'mus': ['rjkroege@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['binji+watch@chromium.org',
@@ -2349,6 +2361,12 @@
                       'alexmos+watch@chromium.org',
                       'creis+watch@chromium.org',
                       'nasko+codewatch@chromium.org'],
+    'smartlock': ['hansberry+watch-smartlock@chromium.org',
+                  'jhawkins+watch-smartlock@chromium.org',
+                  'jlklein+watch-smartlock@chromium.org',
+                  'jordynass+watch-smartlock@chromium.org',
+                  'khorimoto+watch-smartlock@chromium.org',
+                  'nohle+watch-smartlock@chromium.org'],
     'smb': ['cros-enterprise-lax+smbwatch@chromium.org'],
     'source_idls': ['jmedley+watch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
@@ -2382,12 +2400,12 @@
                     'mlamouri+watch-test-runner@chromium.org',
                     'einbinder+watch-test-runner@chromium.org'],
     'tests': [],
-    'tether': ['jlklein+watch-tether@chromium.org',
+    'tether': ['hansberry+watch-tether@chromium.org',
+               'jhawkins+watch-tether@chromium.org',
+               'jlklein+watch-tether@chromium.org',
+               'jordynass+watch-tether@chromium.org',
                'khorimoto+watch-tether@chromium.org',
-               'hansberry+watch-tether@chromium.org',
-               'lesliewatkins+watch-tether@chromium.org',
-               'tengs+watch-tether@chromium.org',
-               'jhawkins+watch-tether@chromium.org'],
+               'nohle+watch-tether@chromium.org'],
     'textinput': ['nona+watch@chromium.org',
                   'shuchen+watch@chromium.org',
                   'suzhe@chromium.org',
