@@ -53,6 +53,8 @@ std::string CreateLibAssistantConfig(bool disable_hotword) {
     logging.SetKey(
         "directory",
         Value(GetRootPath().Append(FILE_PATH_LITERAL("log")).value()));
+    // Empty "output_type" disables logging to stderr.
+    logging.SetKey("output_type", Value(Type::LIST));
     config.SetKey("logging", std::move(logging));
   } else {
     // Print logs to console if running in desktop mode.
