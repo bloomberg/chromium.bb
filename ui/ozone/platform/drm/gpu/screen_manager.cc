@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
@@ -32,13 +33,7 @@ namespace {
 // to the new modeset buffer |buffer|.
 void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
                        HardwareDisplayController* controller,
-                       DrmFramebuffer* buffer) {
-  DrmConsoleBuffer modeset_buffer(drm, buffer->opaque_framebuffer_id());
-  if (!modeset_buffer.Initialize()) {
-    VLOG(2) << "Failed to grab framebuffer " << buffer->opaque_framebuffer_id();
-    return;
-  }
-
+                       GbmBuffer* buffer) {
   DCHECK(!controller->crtc_controllers().empty());
   CrtcController* first_crtc = controller->crtc_controllers()[0].get();
   ScopedDrmCrtcPtr saved_crtc(drm->GetCrtc(first_crtc->crtc()));
@@ -47,7 +42,7 @@ void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
     return;
   }
 
-  uint32_t fourcc_format = buffer->framebuffer_pixel_format();
+  uint32_t fourcc_format = buffer->GetFormat();
   const auto& modifiers = controller->GetFormatModifiers(fourcc_format);
   for (const uint64_t modifier : modifiers) {
     // A value of 0 means DRM_FORMAT_MOD_NONE. If the CRTC has any other
@@ -71,15 +66,20 @@ void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
   // Don't copy anything if the sizes mismatch. This can happen when the user
   // changes modes.
   if (saved_buffer.canvas()->getBaseLayerSize() !=
-      modeset_buffer.canvas()->getBaseLayerSize()) {
+      SizeToSkISize(buffer->GetSize())) {
     VLOG(2) << "Previous buffer has a different size than modeset buffer";
     return;
   }
 
+  sk_sp<SkSurface> surface = buffer->GetSurface();
+  if (!surface) {
+    VLOG(2) << "Can't get a SkSurface from the modeset gbm buffer.";
+    return;
+  }
   SkPaint paint;
   // Copy the source buffer. Do not perform any blending.
   paint.setBlendMode(SkBlendMode::kSrc);
-  modeset_buffer.canvas()->drawImage(saved_buffer.image(), 0, 0, &paint);
+  surface->getCanvas()->drawImage(saved_buffer.image(), 0, 0, &paint);
 }
 
 CrtcController* GetCrtcController(HardwareDisplayController* controller,
@@ -400,7 +400,7 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
     LOG(ERROR) << "Failed to add framebuffer for scanout buffer";
     return DrmOverlayPlane::Error();
   }
-  FillModesetBuffer(drm, controller, framebuffer.get());
+  FillModesetBuffer(drm, controller, buffer.get());
   return DrmOverlayPlane(framebuffer, nullptr);
 }
 
