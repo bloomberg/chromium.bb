@@ -99,8 +99,8 @@ void UsbChooserContext::EnsureConnectionWithDeviceManager() {
 
   // TODO(donna.wu@intel.com): Request UsbDeviceManagerPtr from DeviceService
   // after moving //device/usb to //services/device.
-  device_manager_instance_ = device::usb::DeviceManagerImpl::Create(
-      mojo::MakeRequest(&device_manager_));
+  device_manager_instance_ = std::make_unique<device::usb::DeviceManagerImpl>();
+  device_manager_instance_->AddBinding(mojo::MakeRequest(&device_manager_));
   device_manager_.set_connection_error_handler(
       base::BindOnce(&UsbChooserContext::OnDeviceManagerConnectionError,
                      base::Unretained(this)));

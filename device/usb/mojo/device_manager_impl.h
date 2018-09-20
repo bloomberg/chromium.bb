@@ -18,7 +18,8 @@
 #include "base/scoped_observer.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace device {
 
@@ -31,14 +32,12 @@ namespace usb {
 class DeviceManagerImpl : public mojom::UsbDeviceManager,
                           public UsbService::Observer {
  public:
-  static std::unique_ptr<DeviceManagerImpl> Create(
-      mojom::UsbDeviceManagerRequest request);
-
+  DeviceManagerImpl();
   ~DeviceManagerImpl() override;
 
- private:
-  explicit DeviceManagerImpl(UsbService* usb_service);
+  void AddBinding(mojom::UsbDeviceManagerRequest request);
 
+ private:
   // DeviceManager implementation:
   void GetDevices(mojom::UsbEnumerationOptionsPtr options,
                   GetDevicesCallback callback) override;
@@ -63,8 +62,8 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
   UsbService* usb_service_;
   ScopedObserver<UsbService, UsbService::Observer> observer_;
 
-  mojo::Binding<mojom::UsbDeviceManager> binding_;
-  mojom::UsbDeviceManagerClientAssociatedPtr client_;
+  mojo::BindingSet<mojom::UsbDeviceManager> bindings_;
+  mojo::AssociatedInterfacePtrSet<mojom::UsbDeviceManagerClient> clients_;
 
   base::WeakPtrFactory<DeviceManagerImpl> weak_factory_;
 
