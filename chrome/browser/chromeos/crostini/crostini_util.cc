@@ -218,7 +218,7 @@ bool IsCrostiniAllowedForProfile(Profile* profile) {
   if (g_crostini_ui_allowed_for_testing) {
     return true;
   }
-  if (profile && (profile->IsChild() || profile->IsLegacySupervised())) {
+  if (profile && profile->IsChild()) {
     return false;
   }
   if (!profile->GetPrefs()->GetBoolean(

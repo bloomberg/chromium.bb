@@ -94,7 +94,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   bool IsUsingGAIAPictureOfProfileAtIndex(size_t index) const override;
   bool ProfileIsSupervisedAtIndex(size_t index) const override;
   bool ProfileIsChildAtIndex(size_t index) const override;
-  bool ProfileIsLegacySupervisedAtIndex(size_t index) const override;
   bool IsOmittedProfileAtIndex(size_t index) const override;
   bool ProfileIsSigninRequiredAtIndex(size_t index) const override;
   std::string GetSupervisedUserIdOfProfileAtIndex(size_t index) const override;

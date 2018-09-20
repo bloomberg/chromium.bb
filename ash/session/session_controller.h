@@ -110,9 +110,6 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // account or kid account.
   bool IsUserSupervised() const;
 
-  // Returns true if the current user is legacy supervised.
-  bool IsUserLegacySupervised() const;
-
   // Returns true if the current user is a child account.
   bool IsUserChild() const;
 

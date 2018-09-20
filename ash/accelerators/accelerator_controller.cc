@@ -715,7 +715,6 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED:
     case mojom::AssistantAllowedState::DISALLOWED_BY_FLAG:
-    case mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
     case mojom::AssistantAllowedState::DISALLOWED_BY_CHILD_USER:
     case mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO:
       // TODO(xiaohuic): show a specific toast.

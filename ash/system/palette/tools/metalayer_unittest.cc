@@ -74,7 +74,6 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
       mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE,
       mojom::AssistantAllowedState::DISALLOWED_BY_FLAG,
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER,
-      mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER,
       mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO,
   };
   const base::string16 kLoading(base::ASCIIToUTF16("loading"));

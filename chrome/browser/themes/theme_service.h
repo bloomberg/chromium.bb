@@ -295,15 +295,6 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
                                  scoped_refptr<BrowserThemePack> pack,
                                  bool new_theme);
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  // Returns true if the profile belongs to a supervised user.
-  bool IsSupervisedUser() const;
-
-  // Sets the current theme to the supervised user theme. Should only be used
-  // for supervised user profiles.
-  void SetSupervisedUserTheme();
-#endif
-
 #if defined(OS_MACOSX)
   // |nsimage_cache_| retains the images it has cached.
   typedef std::map<int, NSImage*> NSImageMap;

@@ -149,10 +149,6 @@ bool ProfileAttributesEntry::IsChild() const {
   return profile_info_cache_->ProfileIsChildAtIndex(profile_index());
 }
 
-bool ProfileAttributesEntry::IsLegacySupervised() const {
-  return profile_info_cache_->ProfileIsLegacySupervisedAtIndex(profile_index());
-}
-
 bool ProfileAttributesEntry::IsOmitted() const {
   return profile_info_cache_->IsOmittedProfileAtIndex(profile_index());
 }

@@ -71,8 +71,6 @@ class ProfileAttributesEntry {
   bool IsSupervised() const;
   // Returns true if the profile is signed in as a child account.
   bool IsChild() const;
-  // Returns true if the profile is a supervised user but not a child account.
-  bool IsLegacySupervised() const;
   bool IsOmitted() const;
   bool IsSigninRequired() const;
   // Gets the supervised user ID of the profile's signed in account, if it's a
