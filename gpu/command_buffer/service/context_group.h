@@ -236,6 +236,8 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   const GpuFeatureInfo& gpu_feature_info() const { return gpu_feature_info_; }
 
+  void ReportProgress();
+
  private:
   friend class base::RefCounted<ContextGroup>;
   ~ContextGroup();
@@ -245,7 +247,6 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   bool QueryGLFeature(GLenum pname, GLint min_required, GLint* v);
   bool QueryGLFeatureU(GLenum pname, GLint min_required, uint32_t* v);
   bool HaveContexts();
-  void ReportProgress();
 
   // It's safer to make a copy of the GpuPreferences struct rather
   // than refer to the one passed in to the constructor.
