@@ -23,7 +23,8 @@ interface DriveFs {
   // Returns the metadata for |path|. Thumbnail requests may require requesting
   // a thumbnail from the server so thumbnails are only populated for requests
   // where |want_thumbnail| is true.
-  GetMetadata(mojo_base.mojom.FilePath path, bool want_thumbnail) => (
+  GetMetadata(mojo_base.mojom.FilePath path,
+              [MinVersion=1] bool want_thumbnail) => (
       FileError error, FileMetadata? metadata);
 
   // Sets the file at |path| to pinned or unpinned depending on the value of
