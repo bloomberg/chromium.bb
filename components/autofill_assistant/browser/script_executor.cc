@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
@@ -89,6 +90,20 @@ void ScriptExecutor::GetFieldsValue(
     base::OnceCallback<void(const std::vector<std::string>&)> callback) {
   delegate_->GetWebController()->GetFieldsValue(selectors_list,
                                                 std::move(callback));
+}
+
+void ScriptExecutor::SetFieldsValue(
+    const std::vector<std::vector<std::string>>& selectors_list,
+    const std::vector<std::string>& values,
+    base::OnceCallback<void(bool)> callback) {
+  delegate_->GetWebController()->SetFieldsValue(selectors_list, values,
+                                                std::move(callback));
+}
+
+const autofill::AutofillProfile* ScriptExecutor::GetAutofillProfile(
+    const std::string& guid) {
+  // TODO(crbug.com/806868): Implement GetAutofillProfile.
+  return nullptr;
 }
 
 ClientMemory* ScriptExecutor::GetClientMemory() {

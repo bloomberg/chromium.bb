@@ -581,4 +581,13 @@ void WebController::GetFieldsValue(
   std::move(callback).Run(values);
 }
 
-}  // namespace autofill_assistant
+void WebController::SetFieldsValue(
+    const std::vector<std::vector<std::string>>& selectors_list,
+    const std::vector<std::string>& values,
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK_EQ(selectors_list.size(), values.size());
+  // TODO(crbug.com/806868): Implement set fields value operation.
+  std::move(callback).Run(true);
+}
+
+}  // namespace autofill_assistant.
