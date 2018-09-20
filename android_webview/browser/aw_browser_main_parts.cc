@@ -36,6 +36,7 @@
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/heap_profiling/supervisor.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
@@ -45,6 +46,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/variations/pref_names.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/render_frame_host.h"
@@ -66,6 +68,16 @@
 #include "ui/gl/gl_surface.h"
 
 namespace {
+
+// These prefs go in the JsonPrefStore, and will persist across runs. Other
+// prefs go in the InMemoryPrefStore, and will be lost when the process ends.
+const char* const kPersistentPrefsWhitelist[] = {
+    // Random seed value for variation's entropy providers, used to assign
+    // experiment groups.
+    metrics::prefs::kMetricsLowEntropySource,
+    // Used by CachingPermutedEntropyProvider to cache generated values.
+    variations::prefs::kVariationsPermutedEntropyCache,
+};
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {}
@@ -102,11 +114,9 @@ std::unique_ptr<PrefService> CreatePrefService(
 
   PrefServiceFactory pref_service_factory;
 
-  // These prefs go in the JsonPrefStore, and will persist across runs. Other
-  // prefs go in the InMemoryPrefStore, and will be lost when the process ends.
   std::set<std::string> persistent_prefs;
-  // TODO(crbug/866722): Add kMetricsLowEntropySource to persistent_prefs to
-  // support persistent variations experiments.
+  for (const char* const pref_name : kPersistentPrefsWhitelist)
+    persistent_prefs.insert(pref_name);
 
   // SegregatedPrefStore may be validated with a MAC (message authentication
   // code). On Android, the store is protected by app sandboxing, so validation
@@ -213,6 +223,8 @@ int AwBrowserMainParts::PreCreateThreads() {
 
   browser_policy_connector_ = std::make_unique<AwBrowserPolicyConnector>();
   pref_service_ = CreatePrefService(browser_policy_connector_.get());
+  AwMetricsServiceClient::GetInstance()->Initialize(pref_service_.get(),
+                                                    nullptr);
   aw_field_trial_creator_.SetUpFieldTrials(pref_service_.get());
 
   return service_manager::RESULT_CODE_NORMAL_EXIT;

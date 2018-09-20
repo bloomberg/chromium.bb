@@ -156,11 +156,6 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
 
   EnsureResourceContextInitialized(this);
 
-  AwMetricsServiceClient::GetInstance()->Initialize(
-      user_pref_service_.get(),
-      content::BrowserContext::GetDefaultStoragePartition(this)
-          ->GetURLRequestContext());
-
   web_restriction_provider_.reset(
       new web_restrictions::WebRestrictionsClient());
   pref_change_registrar_.Add(

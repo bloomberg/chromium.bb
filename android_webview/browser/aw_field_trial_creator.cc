@@ -26,19 +26,6 @@
 #include "components/variations/service/safe_seed_manager.h"
 
 namespace android_webview {
-namespace {
-
-// TODO(kmilka): Update to work properly in environments both with and without
-// UMA enabled.
-std::unique_ptr<const base::FieldTrial::EntropyProvider>
-CreateLowEntropyProvider(const std::string& client_id) {
-  return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
-      // Since variations are only enabled for users opted in to UMA, it is
-      // acceptable to use the SHA1EntropyProvider for randomization.
-      new variations::SHA1EntropyProvider(client_id));
-}
-
-}  // anonymous namespace
 
 AwFieldTrialCreator::AwFieldTrialCreator()
     : aw_field_trials_(std::make_unique<AwFieldTrials>()) {}
@@ -62,15 +49,19 @@ void AwFieldTrialCreator::SetUpFieldTrials(PrefService* pref_service) {
 }
 
 void AwFieldTrialCreator::DoSetUpFieldTrials(PrefService* pref_service) {
-  // If the client ID isn't available yet, don't delay startup by creating it.
-  // Instead, variations will be disabled for this run.
-  std::string client_id;
-  if (!AwMetricsServiceClient::GetPreloadedClientId(&client_id))
-    return;
+  auto* metrics_client = AwMetricsServiceClient::GetInstance();
 
+  // Chrome uses the default entropy provider here (rather than low entropy
+  // provider). The default provider needs to know whether UMA is enabled, but
+  // WebView determines UMA by querying GMS, which is very slow. So WebView
+  // always uses the low entropy provider. Both providers guarantee permanent
+  // consistency, which is the main requirement. The difference is that the low
+  // entropy provider has fewer unique experiment combinations. This is better
+  // for privacy (since experiment state doesn't identify users), but also means
+  // fewer combinations tested in the wild.
   DCHECK(!field_trial_list_);
   field_trial_list_ = std::make_unique<base::FieldTrialList>(
-      CreateLowEntropyProvider(client_id));
+      metrics_client->CreateLowEntropyProvider());
 
   variations::UIStringOverrider ui_string_overrider;
   client_ = std::make_unique<AwVariationsServiceClient>();
@@ -91,7 +82,7 @@ void AwFieldTrialCreator::DoSetUpFieldTrials(PrefService* pref_service) {
   variations_field_trial_creator_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
       switches::kDisableFeatures, unforceable_field_trials,
-      std::vector<std::string>(), CreateLowEntropyProvider(client_id),
+      std::vector<std::string>(), metrics_client->CreateLowEntropyProvider(),
       std::make_unique<base::FeatureList>(), aw_field_trials_.get(),
       &ignored_safe_seed_manager);
 }

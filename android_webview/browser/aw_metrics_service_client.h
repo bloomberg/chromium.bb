@@ -10,6 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
@@ -43,10 +44,6 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
  public:
   static AwMetricsServiceClient* GetInstance();
 
-  // If the client ID was pre-loaded on the Java side, store it in "client_id"
-  // and return true; otherwise, return false.
-  static bool GetPreloadedClientId(std::string* client_id);
-
   // Retrieve the client ID or generate one if none exists.
   static void LoadOrCreateClientId();
 
@@ -55,6 +52,9 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
   void Initialize(PrefService* pref_service,
                   net::URLRequestContextGetter* request_context);
+
+  std::unique_ptr<const base::FieldTrial::EntropyProvider>
+  CreateLowEntropyProvider();
 
   // metrics::EnabledStateProvider implementation
   bool IsConsentGiven() const override;
