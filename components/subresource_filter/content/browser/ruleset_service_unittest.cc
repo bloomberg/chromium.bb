@@ -168,16 +168,16 @@ class MockRulesetServiceDelegate : public RulesetServiceDelegate {
 
   void SimulateStartupCompleted() {
     is_after_startup_ = true;
-    for (const auto& task : after_startup_tasks_)
-      task.Run();
+    for (auto& task : after_startup_tasks_)
+      std::move(task).Run();
     after_startup_tasks_.clear();
   }
 
-  void PostAfterStartupTask(base::Closure task) override {
+  void PostAfterStartupTask(base::OnceClosure task) override {
     if (is_after_startup_)
-      task.Run();
+      std::move(task).Run();
     else
-      after_startup_tasks_.push_back(task);
+      after_startup_tasks_.push_back(std::move(task));
   }
 
   void TryOpenAndSetRulesetFile(
@@ -206,7 +206,7 @@ class MockRulesetServiceDelegate : public RulesetServiceDelegate {
   }
 
   bool is_after_startup_ = false;
-  std::vector<base::Closure> after_startup_tasks_;
+  std::vector<base::OnceClosure> after_startup_tasks_;
   std::vector<base::File> published_rulesets_;
   scoped_refptr<base::TestSimpleTaskRunner> blocking_task_runner_;
 
@@ -559,7 +559,7 @@ TEST_F(SubresourceFilterContentRulesetServiceTest,
   NotifyingMockRenderProcessHost existing_renderer(browser_context());
   ContentRulesetService service(base::ThreadTaskRunnerHandle::Get());
   MockClosureTarget publish_callback_target;
-  service.SetRulesetPublishedCallbackForTesting(base::Bind(
+  service.SetRulesetPublishedCallbackForTesting(base::BindOnce(
       &MockClosureTarget::Call, base::Unretained(&publish_callback_target)));
   EXPECT_CALL(publish_callback_target, Call()).Times(1);
   service.PublishNewRulesetVersion(std::move(file));
@@ -582,7 +582,7 @@ TEST_F(SubresourceFilterContentRulesetServiceTest, PostAfterStartupTask) {
   ContentRulesetService service(base::ThreadTaskRunnerHandle::Get());
 
   MockClosureTarget mock_closure_target;
-  service.PostAfterStartupTask(base::Bind(
+  service.PostAfterStartupTask(base::BindOnce(
       &MockClosureTarget::Call, base::Unretained(&mock_closure_target)));
 
   EXPECT_CALL(mock_closure_target, Call()).Times(1);
