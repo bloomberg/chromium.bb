@@ -100,13 +100,15 @@ BaseAudioContext::BaseAudioContext(Document* document,
       is_cleared_(false),
       is_resolving_resume_promises_(false),
       has_posted_cleanup_task_(false),
-      deferred_task_handler_(DeferredTaskHandler::Create()),
+      deferred_task_handler_(DeferredTaskHandler::Create(
+          document->GetTaskRunner(TaskType::kInternalMedia))),
       context_state_(kSuspended),
       periodic_wave_sine_(nullptr),
       periodic_wave_square_(nullptr),
       periodic_wave_sawtooth_(nullptr),
       periodic_wave_triangle_(nullptr),
-      output_position_() {}
+      output_position_(),
+      task_runner_(document->GetTaskRunner(TaskType::kInternalMedia)) {}
 
 BaseAudioContext::~BaseAudioContext() {
   {
@@ -760,12 +762,12 @@ void BaseAudioContext::HandlePostRenderTasks(const AudioBus* destination_bus) {
         was_audible_ = is_audible;
         if (is_audible) {
           PostCrossThreadTask(
-              *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+              *task_runner_, FROM_HERE,
               CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStarted,
                               WrapCrossThreadPersistent(this)));
         } else {
           PostCrossThreadTask(
-              *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+              *task_runner_, FROM_HERE,
               CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStopped,
                               WrapCrossThreadPersistent(this)));
         }
@@ -848,7 +850,7 @@ void BaseAudioContext::ScheduleMainThreadCleanup() {
   if (has_posted_cleanup_task_)
     return;
   PostCrossThreadTask(
-      *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+      *task_runner_, FROM_HERE,
       CrossThreadBind(&BaseAudioContext::PerformCleanupOnMainThread,
                       WrapCrossThreadPersistent(this)));
   has_posted_cleanup_task_ = true;
