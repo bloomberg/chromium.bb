@@ -502,7 +502,7 @@ class CORE_EXPORT Element : public ContainerNode {
   // Clones attributes only.
   void CloneAttributesFrom(const Element&);
 
-  bool HasEquivalentAttributes(const Element* other) const;
+  bool HasEquivalentAttributes(const Element& other) const;
 
   // Step 5 of https://dom.spec.whatwg.org/#concept-node-clone
   virtual void CloneNonAttributePropertiesFrom(const Element&,

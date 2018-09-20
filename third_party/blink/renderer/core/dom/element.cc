@@ -1981,15 +1981,15 @@ void Element::ParserSetAttributes(const Vector<Attribute>& attribute_vector) {
   }
 }
 
-bool Element::HasEquivalentAttributes(const Element* other) const {
+bool Element::HasEquivalentAttributes(const Element& other) const {
   SynchronizeAllAttributes();
-  other->SynchronizeAllAttributes();
-  if (GetElementData() == other->GetElementData())
+  other.SynchronizeAllAttributes();
+  if (GetElementData() == other.GetElementData())
     return true;
   if (GetElementData())
-    return GetElementData()->IsEquivalent(other->GetElementData());
-  if (other->GetElementData())
-    return other->GetElementData()->IsEquivalent(GetElementData());
+    return GetElementData()->IsEquivalent(other.GetElementData());
+  if (other.GetElementData())
+    return other.GetElementData()->IsEquivalent(GetElementData());
   return true;
 }
 
