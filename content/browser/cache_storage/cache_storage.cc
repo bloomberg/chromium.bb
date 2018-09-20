@@ -30,6 +30,7 @@
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
+#include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cache_storage_index.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
@@ -895,8 +896,9 @@ void CacheStorage::CreateCacheDidCreateCache(
                         static_cast<bool>(cache));
 
   if (!cache) {
-    std::move(callback).Run(CacheStorageCacheHandle(),
-                            CacheStorageError::kErrorStorage);
+    std::move(callback).Run(
+        CacheStorageCacheHandle(),
+        MakeErrorStorage(ErrorStorageType::kDidCreateNullCache));
     return;
   }
 
@@ -966,7 +968,8 @@ void CacheStorage::DeleteCacheDidWriteIndex(
     // Undo any changes if the index couldn't be written to disk.
     cache_index_->RestoreDoomedCache();
     cache_handle.value()->SetObserver(this);
-    std::move(callback).Run(CacheStorageError::kErrorStorage);
+    std::move(callback).Run(
+        MakeErrorStorage(ErrorStorageType::kDeleteCacheFailed));
     return;
   }
 

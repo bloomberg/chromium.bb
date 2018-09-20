@@ -20,9 +20,11 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
+#include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -921,6 +923,8 @@ TEST_P(CacheStorageCacheTestP, PutBodyDropBlobRef) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutBadMessage) {
+  base::HistogramTester histogram_tester;
+
   // Two unique puts that will collectively overflow unit64_t size of the
   // batch operation.
   blink::mojom::BatchOperationPtr operation1 =
@@ -939,6 +943,8 @@ TEST_P(CacheStorageCacheTestP, PutBadMessage) {
   operations.push_back(std::move(operation2));
   EXPECT_EQ(CacheStorageError::kErrorStorage,
             BatchOperation(std::move(operations)));
+  histogram_tester.ExpectBucketCount("ServiceWorkerCache.ErrorStorageType",
+                                     ErrorStorageType::kBatchInvalidSpace, 1);
   EXPECT_EQ("CSDH_UNEXPECTED_OPERATION", bad_message_reason_);
 
   EXPECT_FALSE(Match(body_request_));
@@ -1571,6 +1577,7 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceededSkipSideData) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutWithSideData_BadMessage) {
+  base::HistogramTester histogram_tester;
   blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
 
   const std::string expected_side_data = "SideData";
@@ -1590,6 +1597,9 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_BadMessage) {
   operations.emplace_back(std::move(operation));
   EXPECT_EQ(CacheStorageError::kErrorStorage,
             BatchOperation(std::move(operations)));
+  histogram_tester.ExpectBucketCount(
+      "ServiceWorkerCache.ErrorStorageType",
+      ErrorStorageType::kBatchDidGetUsageAndQuotaInvalidSpace, 1);
   EXPECT_EQ("CSDH_UNEXPECTED_OPERATION", bad_message_reason_);
 
   EXPECT_FALSE(Match(body_request_));
