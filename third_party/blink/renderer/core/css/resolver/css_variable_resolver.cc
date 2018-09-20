@@ -67,7 +67,8 @@ bool CSSVariableResolver::ResolveFallback(CSSParserTokenRange range,
 }
 
 scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
-    AtomicString name) {
+    AtomicString name,
+    const Options& options) {
   if (variables_seen_.Contains(name)) {
     cycle_start_points_.insert(name);
     return nullptr;
@@ -90,12 +91,16 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
 
   bool resolve_urls = ShouldResolveRelativeUrls(name, *variable_data);
 
-  if (!variable_data->NeedsVariableResolution() && !resolve_urls)
-    return variable_data;
+  if (!variable_data->NeedsVariableResolution()) {
+    if (IsVariableDisallowed(*variable_data, options, registration))
+      return nullptr;
+    if (!resolve_urls)
+      return variable_data;
+  }
 
   bool unused_cycle_detected;
   scoped_refptr<CSSVariableData> new_variable_data = ResolveCustomProperty(
-      name, *variable_data, resolve_urls, unused_cycle_detected);
+      name, *variable_data, options, resolve_urls, unused_cycle_detected);
   if (!registration) {
     inherited_variables_->SetVariable(name, new_variable_data);
     return new_variable_data;
@@ -123,6 +128,7 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
 scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
     AtomicString name,
     const CSSVariableData& variable_data,
+    const Options& options,
     bool resolve_urls,
     bool& cycle_detected) {
   DCHECK(variable_data.NeedsVariableResolution() || resolve_urls);
@@ -134,7 +140,7 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
   result.backing_strings.AppendVector(variable_data.BackingStrings());
   DCHECK(!variables_seen_.Contains(name));
   variables_seen_.insert(name);
-  bool success = ResolveTokenRange(variable_data.Tokens(), Options(), result);
+  bool success = ResolveTokenRange(variable_data.Tokens(), options, result);
   variables_seen_.erase(name);
 
   if (!success || !cycle_start_points_.IsEmpty()) {
@@ -222,13 +228,9 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
   }
   scoped_refptr<CSSVariableData> variable_data =
       is_env_variable ? ValueForEnvironmentVariable(variable_name)
-                      : ValueForCustomProperty(variable_name);
+                      : ValueForCustomProperty(variable_name, options);
 
-  const PropertyRegistration* registration =
-      registry_ ? registry_->Registration(variable_name) : nullptr;
-
-  if (!variable_data ||
-      IsVariableDisallowed(*variable_data, options, registration)) {
+  if (!variable_data) {
     // TODO(alancutter): Append the registered initial custom property value if
     // we are disallowing an animation tainted value.
     return ResolveFallback(range, options, result);
@@ -380,7 +382,7 @@ CSSVariableResolver::ResolveCustomPropertyAnimationKeyframe(
   }
 
   bool resolve_urls = false;
-  return ResolveCustomProperty(name, *keyframe.Value(), resolve_urls,
+  return ResolveCustomProperty(name, *keyframe.Value(), Options(), resolve_urls,
                                cycle_detected);
 }
 
@@ -388,16 +390,18 @@ void CSSVariableResolver::ResolveVariableDefinitions() {
   if (!inherited_variables_ && !non_inherited_variables_)
     return;
 
+  Options options;
+
   int variable_count = 0;
   if (inherited_variables_ && inherited_variables_->NeedsResolution()) {
     for (auto& variable : inherited_variables_->data_)
-      ValueForCustomProperty(variable.key);
+      ValueForCustomProperty(variable.key, options);
     inherited_variables_->ClearNeedsResolution();
     variable_count += inherited_variables_->data_.size();
   }
   if (non_inherited_variables_ && non_inherited_variables_->NeedsResolution()) {
     for (auto& variable : non_inherited_variables_->data_)
-      ValueForCustomProperty(variable.key);
+      ValueForCustomProperty(variable.key, options);
     non_inherited_variables_->ClearNeedsResolution();
     variable_count += non_inherited_variables_->data_.size();
   }
