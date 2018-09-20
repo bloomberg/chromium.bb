@@ -16837,6 +16837,7 @@ Called by update_net_error_codes.py.-->
   <int value="1277" label="WEBVIEWINTERNAL_ISSPATIALNAVIGATIONENABLED"/>
   <int value="1278" label="FILEMANAGERPRIVATEINTERNAL_GETTHUMBNAIL"/>
   <int value="1279" label="FILEMANAGERPRIVATEINTERNAL_GETCROSTINISHAREDPATHS"/>
+  <int value="1280" label="AUTOTESTPRIVATE_LAUNCHAPP"/>
 </enum>
 
 <enum name="ExtensionIconState">

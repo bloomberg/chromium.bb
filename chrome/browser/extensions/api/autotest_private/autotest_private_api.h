@@ -251,6 +251,16 @@ class AutotestPrivateIsAppShownFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateLaunchAppFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.launchApp",
+                             AUTOTESTPRIVATE_LAUNCHAPP)
+
+ private:
+  ~AutotestPrivateLaunchAppFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateSetCrostiniEnabledFunction
     : public UIThreadExtensionFunction {
  public:

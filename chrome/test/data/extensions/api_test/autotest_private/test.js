@@ -169,6 +169,14 @@ chrome.test.runTests([
             });
         });
   },
+  // This launches Chrome.
+  function launchApp() {
+    chrome.autotestPrivate.launchApp('mgndgikekgjfcpckkfioiadnlibdjbkf',
+      function() {
+        chrome.test.assertNoLastError();
+        chrome.test.succeed();
+      });
+  },
   function setCrostiniEnabled() {
     chrome.autotestPrivate.setCrostiniEnabled(true, chrome.test.callbackFail(
         'Crostini is not available for the current user'));

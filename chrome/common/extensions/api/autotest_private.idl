@@ -171,6 +171,9 @@ namespace autotestPrivate {
     // Returns true if requested app is shown in Chrome.
     static void isAppShown(DOMString appId, IsAppShownCallback callback);
 
+    // Launches an application from the launcher with the given appId.
+    static void launchApp(DOMString appId, VoidCallback callback);
+
     // Update printer. Printer with empty ID is considered new.
     static void updatePrinter(Printer printer);
 

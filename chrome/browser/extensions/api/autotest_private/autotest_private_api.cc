@@ -56,6 +56,7 @@
 #include "net/base/filename_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/screen.h"
 #include "ui/message_center/public/cpp/notification.h"
 #endif
 
@@ -710,6 +711,28 @@ ExtensionFunction::ResponseAction AutotestPrivateIsAppShownFunction::Run() {
       item && item->status == ash::ShelfItemStatus::STATUS_RUNNING;
   return RespondNow(
       OneArgument(std::make_unique<base::Value>(window_attached)));
+#else
+  return RespondNow(Error(kOnlyAvailableOnChromeOSError));
+#endif
+}
+
+AutotestPrivateLaunchAppFunction::~AutotestPrivateLaunchAppFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateLaunchAppFunction::Run() {
+  DVLOG(1) << "AutotestPrivateLaunchAppFunction";
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<api::autotest_private::LaunchApp::Params> params(
+      api::autotest_private::LaunchApp::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  ChromeLauncherController* const controller =
+      ChromeLauncherController::instance();
+  if (!controller)
+    return RespondNow(Error("Controller not available"));
+  controller->LaunchApp(ash::ShelfID(params->app_id),
+                        ash::ShelfLaunchSource::LAUNCH_FROM_APP_LIST,
+                        0, /* event_flags */
+                        display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  return RespondNow(NoArguments());
 #else
   return RespondNow(Error(kOnlyAvailableOnChromeOSError));
 #endif
