@@ -122,15 +122,22 @@ class FrameMetrics : public SkippedFrameTracker::Client {
   void Reset();
 
   // AddFrameProduced should be called every time a source produces a frame.
-  // The information added here affects the number of frames skipped.
-  // Note: If the FrameMetrics class is hooked up to an optional
-  //   SkippedFrameTracker, the client should not call this directly.
+  // |source_timestamp| is when frame time in BeginFrameArgs(i.e. when the frame
+  // is produced); |amount_produced| is the expected time interval between 2
+  // consecutive frames; |amount_skipped| is number of frame skipped before
+  // producing this frame multiplies by the interval, i.e., if 1 frame is
+  // skipped in 30 fps setting, then |amount_skipped| is 33.33ms; if 1 frame is
+  // skipped in 60FPS setting, then the |amount_skipped| is 16.67ms. Note: If
+  // the FrameMetrics class is hooked up to an optional SkippedFrameTracker, the
+  // client should not call this directly.
   void AddFrameProduced(base::TimeTicks source_timestamp,
                         base::TimeDelta amount_produced,
                         base::TimeDelta amount_skipped) override;
 
   // AddFrameDisplayed should be called whenever a frame causes damage and
-  // we know when the result became visible on the display.
+  // we know when the result became visible on the display. |source_timestamp|
+  // is when frame time in BeginFrameArgs(i.e. when the frame is produced);
+  // |display_timestamp| is when the frame is displayed on screen.
   // This will affect all latency derived metrics, including latency speed,
   // latency acceleration, and latency itself.
   // If a frame is produced but not displayed, do not call this; there was
@@ -145,11 +152,11 @@ class FrameMetrics : public SkippedFrameTracker::Client {
   // virtual for testing.
   virtual base::TimeDelta ReportPeriod();
 
-  // Starts a new reporting period that resets the various accumulators
-  // and memory of worst regions encountered, but does not destroy recent
-  // sample history in the windowed analyzers and in the derivatives
-  // for latency speed and latency acceleration. This avoids small gaps
-  // in coverage when starting a new reporting period.
+  // Starts a new reporting period after |kDefaultReportPeriod| time that resets
+  // the various accumulators and memory of worst regions encountered, but does
+  // not destroy recent sample history in the windowed analyzers and in the
+  // derivatives for latency speed and latency acceleration. This avoids small
+  // gaps in coverage when starting a new reporting period.
   void StartNewReportPeriod();
 
   FrameMetricsSettings settings_;
