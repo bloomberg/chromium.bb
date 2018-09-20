@@ -10,6 +10,7 @@ Polymer({
   properties: {
     settingsExpandedByUser: {
       type: Boolean,
+      reflectToAttribute: true,
       notify: true,
     },
 

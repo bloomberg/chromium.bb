@@ -36,7 +36,7 @@
         opacity: .65;
       }
     </style>
-    <div class="link" id="systemDialogLink"
+    <div class="link" id="systemDialogLink" actionable
          hidden$="[[!shouldShowSystemDialogLink_]]"
          on-click="onSystemDialogClick_">
       <div class="label">$i18n{systemDialogOption}</div>
@@ -50,7 +50,7 @@
           class="throbber"></div>
     </div>
 <if expr="is_macosx">
-    <div class="link" id="openPdfInPreviewLink"
+    <div class="link" id="openPdfInPreviewLink" actionable
         on-click="onOpenInPreviewClick_">
       <div class="label">$i18n{openPdfInPreviewOption}</div>
       <paper-icon-button-light actionable class="icon-external"
