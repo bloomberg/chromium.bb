@@ -428,6 +428,7 @@ class BlinkPerfDOM(_BlinkPerfBenchmark):
 
 
 @benchmark.Info(emails=['hayato@chromium.org'],
+                component='Blink>DOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfEvents(_BlinkPerfBenchmark):
   subdir = 'events'
@@ -516,6 +517,7 @@ class BlinkPerfSVG(_BlinkPerfBenchmark):
 
 
 @benchmark.Info(emails=['hayato@chromium.org'],
+                component='Blink>DOM>ShadowDOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
   subdir = 'shadow_dom'
