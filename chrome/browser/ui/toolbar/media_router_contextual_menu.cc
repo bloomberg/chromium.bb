@@ -204,7 +204,7 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
   }
 }
 
-void MediaRouterContextualMenu::MenuWillShow(ui::SimpleMenuModel* source) {
+void MediaRouterContextualMenu::OnMenuWillShow(ui::SimpleMenuModel* source) {
   observer_->OnContextMenuShown();
 }
 
