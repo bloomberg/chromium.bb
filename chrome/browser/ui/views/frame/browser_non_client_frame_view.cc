@@ -456,27 +456,6 @@ void BrowserNonClientFrameView::LayoutIncognitoButton() {
   profile_indicator_icon()->SetVisible(true);
 }
 
-void BrowserNonClientFrameView::PaintToolbarTopStroke(
-    gfx::Canvas* canvas) const {
-  if (ShouldDrawStrokes()) {
-    gfx::Rect toolbar_bounds(browser_view_->GetToolbarBounds());
-    gfx::Point toolbar_origin(toolbar_bounds.origin());
-    ConvertPointToTarget(browser_view_, this, &toolbar_origin);
-    toolbar_bounds.set_origin(toolbar_origin);
-
-    gfx::Rect tabstrip_bounds =
-        GetMirroredRect(GetBoundsForTabStrip(browser_view_->tabstrip()));
-
-    gfx::ScopedCanvas scoped_canvas(canvas);
-    canvas->ClipRect(tabstrip_bounds, SkClipOp::kDifference);
-
-    const gfx::Rect separator_rect(toolbar_bounds.x(), tabstrip_bounds.bottom(),
-                                   toolbar_bounds.width(), 0);
-    BrowserView::PaintToolbarTopSeparator(canvas, GetToolbarTopSeparatorColor(),
-                                          separator_rect);
-  }
-}
-
 void BrowserNonClientFrameView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this)

@@ -527,12 +527,6 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
                           GetThemeBackgroundXInset(),
                           GetFrameHeaderImageYInset(), SK_AlphaOPAQUE);
   }
-
-  if (browser_view()->IsToolbarVisible() &&
-      !browser_view()->toolbar()->GetPreferredSize().IsEmpty() &&
-      browser_view()->IsTabStripVisible()) {
-    PaintToolbarTopStroke(canvas);
-  }
 }
 
 void BrowserNonClientFrameViewAsh::Layout() {

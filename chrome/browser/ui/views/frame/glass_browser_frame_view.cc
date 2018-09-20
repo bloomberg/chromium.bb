@@ -491,8 +491,6 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
     PaintTitlebar(canvas);
   if (!browser_view()->IsTabStripVisible())
     return;
-  if (IsToolbarVisible())
-    PaintToolbarTopStroke(canvas);
   if (ClientBorderThickness(false) > 0)
     PaintClientEdge(canvas);
 }

@@ -1303,23 +1303,6 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // If the active tab is being dragged, it goes last.
   if (active_tab && is_dragging)
     active_tab->Paint(paint_info);
-
-  if (controller_->ShouldDrawStrokes()) {
-    // Keep the recording scales consistent for the tab strip and its children.
-    // See https://crbug.com/753911
-    ui::PaintRecorder recorder(paint_info.context(),
-                               paint_info.paint_recording_size(),
-                               paint_info.paint_recording_scale_x(),
-                               paint_info.paint_recording_scale_y(), nullptr);
-    gfx::Canvas* canvas = recorder.canvas();
-    if (active_tab && active_tab->visible()) {
-      canvas->sk_canvas()->clipRect(
-          gfx::RectToSkRect(active_tab->GetMirroredBounds()),
-          SkClipOp::kDifference);
-    }
-    BrowserView::PaintToolbarTopSeparator(canvas, GetToolbarTopSeparatorColor(),
-                                          GetLocalBounds());
-  }
 }
 
 void TabStrip::OnPaint(gfx::Canvas* canvas) {
