@@ -15,4 +15,5 @@ MaterialBookmarksFocusTest.All
 MaterialHistoryFocusTest.All
 PrintPreviewDestinationDialogInteractiveTest.FocusSearchBox
 PrintPreviewPrintHeaderInteractiveTest.FocusPrintOnReady
+PrintPreviewPagesSettingsTest.*
 SettingsUIBrowserTest.All

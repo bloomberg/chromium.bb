@@ -375,19 +375,20 @@ cr.define('settings_sections_tests', function() {
 
       // HTML to non-PDF destination -> only input shown
       initDocumentInfo(false, false);
-      const fitToPageContainer = scalingElement.$$('.checkbox');
+      const fitToPageSection =
+          scalingElement.$$('print-preview-settings-section');
       const scalingInputWrapper =
           scalingElement.$$('print-preview-number-settings-section')
               .$$('.input-wrapper');
       assertFalse(scalingElement.hidden);
-      assertTrue(fitToPageContainer.hidden);
+      assertTrue(fitToPageSection.hidden);
       assertFalse(scalingInputWrapper.hidden);
 
       // PDF to non-PDF destination -> checkbox and input shown. Check that if
       // more settings is collapsed the section is hidden.
       initDocumentInfo(true, false);
       assertFalse(scalingElement.hidden);
-      assertFalse(fitToPageContainer.hidden);
+      assertFalse(fitToPageSection.hidden);
       assertFalse(scalingInputWrapper.hidden);
 
       // PDF to PDF destination -> section disappears.
@@ -580,6 +581,11 @@ cr.define('settings_sections_tests', function() {
 
       // Set selection of pages 1 and 2.
       customRadio.click();
+
+      // Manually set |customSelected_| since focus may not work correctly on
+      // MacOS. The PageSettingsTests verify this behavior is correct on all
+      // platforms.
+      pagesElement.set('customSelected_', true);
 
       triggerInputEvent(pagesInput, '1-2');
       return test_util.eventToPromise('input-change', pagesElement)

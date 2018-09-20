@@ -44,6 +44,7 @@ Polymer({
     /** @private {number} */
     errorState_: {
       type: Number,
+      reflectToAttribute: true,
       value: PagesInputErrorState.NO_ERROR,
     },
 
@@ -281,11 +282,11 @@ Polymer({
   onCustomRadioClick_: function() {
     /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
         .inputElement.focus();
-    this.customSelected_ = true;
   },
 
   /** @private */
   onCustomInputFocus_: function() {
+    this.$.pageSettingsCustomInput.validate();
     this.customSelected_ = true;
   },
 

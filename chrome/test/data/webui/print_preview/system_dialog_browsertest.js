@@ -77,16 +77,18 @@ cr.define('system_dialog_browsertest', function() {
       assertFalse(linkContainer.disabled);
       assertFalse(link.hidden);
 
-      const pageSettings = page.$$('print-preview-pages-settings');
-      assertFalse(pageSettings.hidden);
+      const moreSettingsElement = page.$$('print-preview-more-settings');
+      moreSettingsElement.$.label.click();
+      const scalingSettings = page.$$('print-preview-scaling-settings');
+      assertFalse(scalingSettings.hidden);
       nativeLayer.resetResolver('getPreview');
 
-      // Set page settings to a bad value
-      pageSettings.$$('#custom-radio-button').click();
-      const pageSettingsInput =
-          pageSettings.$.pageSettingsCustomInput.inputElement;
-      pageSettingsInput.value = 'abc';
-      pageSettingsInput.dispatchEvent(
+      // Set scaling settings to a bad value
+      const scalingSettingsInput =
+          scalingSettings.$$('print-preview-number-settings-section')
+              .$.userValue.inputElement;
+      scalingSettingsInput.value = '0';
+      scalingSettingsInput.dispatchEvent(
           new CustomEvent('input', {composed: true, bubbles: true}));
 
       // No new preview
@@ -94,7 +96,7 @@ cr.define('system_dialog_browsertest', function() {
         assertTrue(false);
       });
 
-      return test_util.eventToPromise('input-change', pageSettings)
+      return test_util.eventToPromise('input-change', scalingSettings)
           .then(function() {
             // Expect disabled print button
             const header = page.$$('print-preview-header');

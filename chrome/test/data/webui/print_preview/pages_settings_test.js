@@ -67,17 +67,22 @@ cr.define('pages_settings_test', function() {
       pagesSection.notifyPath('documentInfo.pageCount');
       Polymer.dom.flush();
 
+      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
+      const readyForInput = pagesSection.$$('#custom-radio-button').checked ?
+          Promise.resolve() :
+          test_util.eventToPromise('focus', input);
+
       // Select custom
       pagesSection.$$('#custom-radio-button').click();
+      return readyForInput.then(() => {
+        // Set input string
+        input.value = inputString;
+        input.dispatchEvent(
+            new CustomEvent('input', {composed: true, bubbles: true}));
 
-      // Set input string
-      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
-      input.value = inputString;
-      input.dispatchEvent(
-          new CustomEvent('input', {composed: true, bubbles: true}));
-
-      // Validate results
-      return test_util.eventToPromise('input-change', pagesSection);
+        // Validate results
+        return test_util.eventToPromise('input-change', pagesSection);
+      });
     }
 
     /** @param {!Array<number>} expectedPages The expected pages value. */

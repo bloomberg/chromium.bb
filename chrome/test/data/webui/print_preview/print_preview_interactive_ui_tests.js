@@ -99,3 +99,36 @@ TEST_F(
       this.runMochaTest(
           destination_dialog_interactive_test.TestNames.FocusSearchBox);
     });
+
+PrintPreviewPagesSettingsTest = class extends PrintPreviewInteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/pages_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'pages_settings_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return pages_settings_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewPagesSettingsTest', 'ValidPageRanges', function() {
+  this.runMochaTest(pages_settings_test.TestNames.ValidPageRanges);
+});
+
+TEST_F('PrintPreviewPagesSettingsTest', 'InvalidPageRanges', function() {
+  this.runMochaTest(pages_settings_test.TestNames.InvalidPageRanges);
+});
+
+TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
+  this.runMochaTest(pages_settings_test.TestNames.NupChangesPages);
+});

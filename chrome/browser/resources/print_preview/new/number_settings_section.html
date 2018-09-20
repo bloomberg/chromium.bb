@@ -8,8 +8,12 @@
 <dom-module id="print-preview-number-settings-section">
   <template>
     <style include="print-preview-shared">
-      print-preview-settings-section {
+      :host([error-displayed_]) print-preview-settings-section {
         margin-bottom: 8px;
+      }
+
+      :host([error-displayed_]) #section-title {
+        margin-top: calc(-14px - 2 * .75rem);
       }
 
       :host {
@@ -28,20 +32,20 @@
         display: flex;
         width: 100%;
       }
+
+      :host(:not([error-displayed_])) cr-input {
+        --cr-input-error-display: none;
+      }
     </style>
-    <print-preview-settings-section
-        class="input-settings-section multirow-controls">
+    <print-preview-settings-section>
       <span slot="title" id="section-title">[[inputLabel]]</span>
       <div slot="controls" id="controls">
-        <slot name="opt-outside-content"></slot>
         <span class="input-wrapper">
           <cr-input id="userValue" type="number"
               max="[[maxValue]]" min="[[minValue]]" data-timeout-delay="250"
               disabled$="[[getDisabled_(disabled)]]" on-keydown="onKeydown_"
               on-blur="onBlur_" aria-labelled-by="section-title"
-              error-message="[[getHintMessage_(
-                  hintMessage, inputValid, inputString_)]]"
-              auto-validate>
+              error-message="[[hintMessage]]" auto-validate>
             <span slot="suffix">
               <slot name="opt-inside-content"></slot>
             </span>

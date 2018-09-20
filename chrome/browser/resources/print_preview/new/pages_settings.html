@@ -13,14 +13,24 @@
 <dom-module id="print-preview-pages-settings">
   <template>
     <style include="print-preview-shared">
-      print-preview-settings-section {
+      :host([error-state_='0']) #pageSettingsCustomInput {
+        --cr-input-error-display: none;
+      }
+
+      :host(:not([error-state_='0'])) #custom-radio-button {
+        /* Margin = -1 * error height = -1 * (16px + 2 lines * line-height) */
+        --cr-radio-button-disc: {
+          margin-top: calc(-16px - 2 * .75rem);
+        };
+      }
+
+      /* Margin = standard margin (16px) - error field margin (8px) */
+      :host(:not([error-state_='0'])) print-preview-settings-section {
         margin-bottom: 8px;
       }
 
-      #custom-radio-button {
-        --cr-radio-button-disc: {
-          margin-top: -1.5rem;
-        };
+      #pageSettingsCustomInput {
+        cursor: default;
       }
     </style>
     <print-preview-settings-section
