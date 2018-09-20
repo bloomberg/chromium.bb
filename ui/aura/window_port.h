@@ -40,7 +40,21 @@ class WindowObserver;
 // Env::CreateWindowPort() is used to create the WindowPort.
 class AURA_EXPORT WindowPort {
  public:
+  // Corresponds to the concrete implementation of this interface.
+  enum class Type {
+    // WindowPortLocal.
+    kLocal,
+
+    // WindowPortMus.
+    kMus,
+
+    // WindowPortForShutdown.
+    kShutdown,
+  };
+
   virtual ~WindowPort() {}
+
+  Type type() const { return type_; }
 
   // Called from Window::Init().
   virtual void OnPreInit(Window* window) = 0;
@@ -117,12 +131,17 @@ class AURA_EXPORT WindowPort {
   virtual bool ShouldRestackTransientChildren() = 0;
 
  protected:
+  explicit WindowPort(Type type);
+
   // Returns the WindowPort associated with a Window.
   static WindowPort* Get(Window* window);
 
   // Returns the ObserverList of a Window.
   static base::ObserverList<WindowObserver, true>::Unchecked* GetObservers(
       Window* window);
+
+ private:
+  const Type type_;
 };
 
 }  // namespace aura

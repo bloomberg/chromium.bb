@@ -11,6 +11,7 @@
 #include "services/ws/public/mojom/event_injector.mojom.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -265,9 +266,11 @@ void EventGeneratorDelegateAura::DispatchEventToPointerWatchers(
   if (!Env::GetInstance()->HasWindowTreeClient())
     return;
 
+  Window* window = static_cast<Window*>(target);
+  if (!WindowPortMus::Get(window))
+    return;
   // Route the event through WindowTreeClient as in production mus. Does nothing
   // if there are no PointerWatchers installed.
-  Window* window = static_cast<Window*>(target);
   WindowTreeClient* window_tree_client = EnvTestHelper().GetWindowTreeClient();
   WindowTreeClientPrivate(window_tree_client)
       .CallOnPointerEventObserved(window, ui::Event::Clone(event));

@@ -413,7 +413,9 @@ WindowMus* WindowTreeClient::GetWindowByServerId(ws::Id id) {
 
 bool WindowTreeClient::IsWindowKnown(aura::Window* window) {
   WindowMus* window_mus = WindowMus::Get(window);
-  return windows_.count(window_mus->server_id()) > 0;
+  // NOTE: this function explicitly checks for a null WindowMus as it may be
+  // called from global observers that may see other types.
+  return window_mus && windows_.count(window_mus->server_id()) > 0;
 }
 
 InFlightChange* WindowTreeClient::GetOldestInFlightChangeMatching(
