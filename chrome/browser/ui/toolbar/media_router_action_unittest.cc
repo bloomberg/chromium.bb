@@ -50,9 +50,7 @@ class TestMediaRouterAction : public MediaRouterAction {
  public:
   TestMediaRouterAction(Browser* browser,
                         ToolbarActionsBar* toolbar_actions_bar)
-      : MediaRouterAction(browser, toolbar_actions_bar),
-        controller_(nullptr),
-        platform_delegate_(nullptr) {}
+      : MediaRouterAction(browser, toolbar_actions_bar), controller_(nullptr) {}
   ~TestMediaRouterAction() override {}
 
   // MediaRouterAction:
@@ -79,12 +77,8 @@ class TestMediaRouterAction : public MediaRouterAction {
       override {
     return controller_;
   }
-  MediaRouterActionPlatformDelegate* GetPlatformDelegate() override {
-    return platform_delegate_;
-  }
 
   MediaRouterDialogControllerWebUIImpl* controller_;
-  MediaRouterActionPlatformDelegate* platform_delegate_;
 };
 
 class MediaRouterActionUnitTest : public MediaRouterWebUITest {
@@ -329,6 +323,9 @@ TEST_F(MediaRouterActionUnitTest, IconPressedState) {
   EXPECT_CALL(*mock_delegate, GetCurrentWebContents())
       .WillOnce(testing::Return(initiator));
   action()->SetDelegate(mock_delegate.get());
+
+  // Skip closing the overflow menu in tests.
+  action()->set_skip_close_overflow_menu_for_testing(true);
 
   EXPECT_CALL(*mock_delegate, OnPopupShown(true)).Times(1);
   action()->ExecuteAction(true);

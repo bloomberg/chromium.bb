@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
-#include "chrome/browser/ui/toolbar/media_router_action_platform_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/media_route.h"
@@ -54,9 +53,9 @@ MediaRouterAction::MediaRouterAction(Browser* browser,
       delegate_(nullptr),
       browser_(browser),
       toolbar_actions_bar_(toolbar_actions_bar),
-      platform_delegate_(MediaRouterActionPlatformDelegate::Create(browser)),
       tab_strip_model_observer_(this),
       toolbar_actions_bar_observer_(this),
+      skip_close_overflow_menu_for_testing_(false),
       weak_ptr_factory_(this) {
   DCHECK(browser_);
   DCHECK(toolbar_actions_bar_);
@@ -181,7 +180,7 @@ bool MediaRouterAction::ExecuteAction(bool by_user) {
   }
 
   GetMediaRouterDialogController()->ShowMediaRouterDialog();
-  if (GetPlatformDelegate()) {
+  if (!skip_close_overflow_menu_for_testing_) {
     // TODO(karandeepb): Instead of checking the return value of
     // CloseOverflowMenuIfOpen, just check
     // ToolbarActionsBar::IsActionVisibleOnMainBar.
@@ -284,10 +283,6 @@ MediaRouterAction::GetMediaRouterDialogController() {
   DCHECK(web_contents);
   return MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
       web_contents);
-}
-
-MediaRouterActionPlatformDelegate* MediaRouterAction::GetPlatformDelegate() {
-  return platform_delegate_.get();
 }
 
 void MediaRouterAction::MaybeUpdateIcon() {
