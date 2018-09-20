@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp;
+package org.chromium.chrome.browser.native_page;
 
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
@@ -16,8 +16,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
-import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -28,6 +26,10 @@ import java.util.TreeMap;
 
 /**
  * Takes care of creating, closing a context menu and triaging the item clicks.
+ *
+ * Menus created contains options for opening in new window, new tab, new incognito tab,
+ * download, remove, and learn more. Clients control which items are shown using
+ * {@link Delegate#isItemSupported(int)}.
  */
 public class ContextMenuManager implements OnCloseContextMenuListener {
     @IntDef({ContextMenuItemId.OPEN_IN_NEW_WINDOW, ContextMenuItemId.OPEN_IN_NEW_TAB,
@@ -45,10 +47,10 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         int LEARN_MORE = 5;
     }
 
-    private final SuggestionsNavigationDelegate mNavigationDelegate;
+    private final NativePageNavigationDelegate mNavigationDelegate;
     private final TouchEnabledDelegate mTouchEnabledDelegate;
     private final Runnable mCloseContextMenuCallback;
-    private final boolean mIsContextual;
+    private final String mUserActionPrefix;
     private boolean mContextMenuOpen;
 
     /** Defines callback to configure the context menu and respond to user interaction. */
@@ -79,20 +81,20 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     public interface TouchEnabledDelegate { void setTouchEnabled(boolean enabled); }
 
     /**
-     * @param navigationDelegate The {@link SuggestionsNavigationDelegate} for handling navigation
+     * @param navigationDelegate The {@link NativePageNavigationDelegate} for handling navigation
      *                           events.
      * @param touchEnabledDelegate The {@link TouchEnabledDelegate} for handling whether touch
      *                             events are allowed.
      * @param closeContextMenuCallback The callback for closing the context menu.
-     * @param isContextual Whether this manager is for contextual suggestions.
+     * @param userActionPrefix Prefix used to record user actions.
      */
-    public ContextMenuManager(SuggestionsNavigationDelegate navigationDelegate,
+    public ContextMenuManager(NativePageNavigationDelegate navigationDelegate,
             TouchEnabledDelegate touchEnabledDelegate, Runnable closeContextMenuCallback,
-            boolean isContextual) {
+            String userActionPrefix) {
         mNavigationDelegate = navigationDelegate;
         mTouchEnabledDelegate = touchEnabledDelegate;
         mCloseContextMenuCallback = closeContextMenuCallback;
-        mIsContextual = isContextual;
+        mUserActionPrefix = userActionPrefix;
     }
 
     /**
@@ -105,7 +107,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
      */
     public void createContextMenu(ContextMenu menu, View associatedView, Delegate delegate) {
         OnMenuItemClickListener listener =
-                new ItemClickListener(delegate, mNavigationDelegate, mIsContextual);
+                new ItemClickListener(delegate, mNavigationDelegate, mUserActionPrefix);
         boolean hasItems = false;
 
         for (@ContextMenuItemId int itemId : MenuItemLabelMatcher.STRING_MAP.keySet()) {
@@ -140,11 +142,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         mTouchEnabledDelegate.setTouchEnabled(false);
         mContextMenuOpen = true;
 
-        if (mIsContextual) {
-            RecordUserAction.record("ContextualSuggestions.ContextMenu.Shown");
-        } else {
-            RecordUserAction.record("Suggestions.ContextMenu.Shown");
-        }
+        RecordUserAction.record(mUserActionPrefix + ".ContextMenu.Shown");
     }
 
     @Override
@@ -176,8 +174,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
             case ContextMenuItemId.REMOVE:
                 return true;
             case ContextMenuItemId.LEARN_MORE:
-                // With Scroll to Load enabled, the Learn More link is moved into the Context Menu.
-                return SuggestionsConfig.scrollToLoad();
+                return true;
             default:
                 assert false;
                 return false;
@@ -203,14 +200,14 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
 
     private static class ItemClickListener implements OnMenuItemClickListener {
         private final Delegate mDelegate;
-        private final SuggestionsNavigationDelegate mNavigationDelegate;
-        private final boolean mIsContextual;
+        private final NativePageNavigationDelegate mNavigationDelegate;
+        private final String mUserActionPrefix;
 
-        ItemClickListener(Delegate delegate, SuggestionsNavigationDelegate navigationDelegate,
-                boolean isContextual) {
+        ItemClickListener(Delegate delegate, NativePageNavigationDelegate navigationDelegate,
+                String userActionPrefix) {
             mDelegate = delegate;
             mNavigationDelegate = navigationDelegate;
-            mIsContextual = isContextual;
+            mUserActionPrefix = userActionPrefix;
         }
 
         @Override
@@ -218,54 +215,28 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
             switch (item.getItemId()) {
                 case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
                     mDelegate.openItem(WindowOpenDisposition.NEW_WINDOW);
-                    if (mIsContextual) {
-                        RecordUserAction.record(
-                                "ContextualSuggestions.ContextMenu.OpenItemInNewWindow");
-                    } else {
-                        RecordUserAction.record("Suggestions.ContextMenu.OpenItemInNewWindow");
-                    }
+                    RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInNewWindow");
                     return true;
                 case ContextMenuItemId.OPEN_IN_NEW_TAB:
                     mDelegate.openItem(WindowOpenDisposition.NEW_BACKGROUND_TAB);
-                    if (mIsContextual) {
-                        RecordUserAction.record(
-                                "ContextualSuggestions.ContextMenu.OpenItemInNewTab");
-                    } else {
-                        RecordUserAction.record("Suggestions.ContextMenu.OpenItemInNewTab");
-                    }
+                    RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInNewTab");
                     return true;
                 case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
                     mDelegate.openItem(WindowOpenDisposition.OFF_THE_RECORD);
-                    if (mIsContextual) {
-                        RecordUserAction.record(
-                                "ContextualSuggestions.ContextMenu.OpenItemInIncognitoTab");
-                    } else {
-                        RecordUserAction.record("Suggestions.ContextMenu.OpenItemInIncognitoTab");
-                    }
+                    RecordUserAction.record(
+                            mUserActionPrefix + ".ContextMenu.OpenItemInIncognitoTab");
                     return true;
                 case ContextMenuItemId.SAVE_FOR_OFFLINE:
                     mDelegate.openItem(WindowOpenDisposition.SAVE_TO_DISK);
-                    if (mIsContextual) {
-                        RecordUserAction.record("ContextualSuggestions.ContextMenu.DownloadItem");
-                    } else {
-                        RecordUserAction.record("Suggestions.ContextMenu.DownloadItem");
-                    }
+                    RecordUserAction.record(mUserActionPrefix + ".ContextMenu.DownloadItem");
                     return true;
                 case ContextMenuItemId.REMOVE:
                     mDelegate.removeItem();
-                    if (mIsContextual) {
-                        RecordUserAction.record("ContextualSuggestions.ContextMenu.RemoveItem");
-                    } else {
-                        RecordUserAction.record("Suggestions.ContextMenu.RemoveItem");
-                    }
+                    RecordUserAction.record(mUserActionPrefix + ".ContextMenu.RemoveItem");
                     return true;
                 case ContextMenuItemId.LEARN_MORE:
                     mNavigationDelegate.navigateToHelpPage();
-                    if (mIsContextual) {
-                        RecordUserAction.record("ContextualSuggestions.ContextMenu.LearnMore");
-                    } else {
-                        RecordUserAction.record("Suggestions.ContextMenu.LearnMore");
-                    }
+                    RecordUserAction.record(mUserActionPrefix + ".ContextMenu.LearnMore");
                     return true;
                 default:
                     return false;
