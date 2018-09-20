@@ -4,6 +4,10 @@
 
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
 
+#include <map>
+#include <memory>
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -23,18 +27,40 @@ namespace switches {
 const char* const kAutofillAssistantServerKey = "autofill-assistant-key";
 }  // namespace switches
 
+namespace {
+
+// Builds a map from two Java arrays of strings with the same length.
+std::unique_ptr<std::map<std::string, std::string>>
+BuildParametersFromJava(JNIEnv* env, jobjectArray names, jobjectArray values) {
+  std::vector<std::string> names_vector;
+  base::android::AppendJavaStringArrayToStringVector(env, names, &names_vector);
+  std::vector<std::string> values_vector;
+  base::android::AppendJavaStringArrayToStringVector(env, values,
+                                                     &values_vector);
+  DCHECK_EQ(names_vector.size(), values_vector.size());
+  auto parameters = std::make_unique<std::map<std::string, std::string>>();
+  for (size_t i = 0; i < names_vector.size(); ++i) {
+    parameters->insert(std::make_pair(names_vector[i], values_vector[i]));
+  }
+  return parameters;
+}
+}  // namespace
+
 UiControllerAndroid::UiControllerAndroid(
     JNIEnv* env,
     jobject jcaller,
-    const JavaParamRef<jobject>& webContents)
+    const JavaParamRef<jobject>& webContents,
+    const base::android::JavaParamRef<jobjectArray>& parameterNames,
+    const base::android::JavaParamRef<jobjectArray>& parameterValues)
     : ui_delegate_(nullptr) {
   java_autofill_assistant_ui_controller_.Reset(env, jcaller);
 
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(webContents);
   DCHECK(web_contents);
-  Controller::CreateAndStartForWebContents(web_contents,
-                                           base::WrapUnique(this));
+  Controller::CreateAndStartForWebContents(
+      web_contents, base::WrapUnique(this),
+      BuildParametersFromJava(env, parameterNames, parameterValues));
   DCHECK(ui_delegate_);
 }
 
@@ -124,9 +150,11 @@ void UiControllerAndroid::Destroy(JNIEnv* env,
 static jlong JNI_AutofillAssistantUiController_Init(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& webContents) {
-  auto* ui_controller_android =
-      new autofill_assistant::UiControllerAndroid(env, jcaller, webContents);
+    const base::android::JavaParamRef<jobject>& webContents,
+    const base::android::JavaParamRef<jobjectArray>& parameterNames,
+    const base::android::JavaParamRef<jobjectArray>& parameterValues) {
+  auto* ui_controller_android = new autofill_assistant::UiControllerAndroid(
+      env, jcaller, webContents, parameterNames, parameterValues);
   return reinterpret_cast<intptr_t>(ui_controller_android);
 }
 

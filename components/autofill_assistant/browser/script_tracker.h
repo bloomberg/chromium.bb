@@ -40,7 +40,8 @@ class ScriptTracker {
   // |delegate| and |listener| should outlive this object and should not be
   // nullptr.
   ScriptTracker(ScriptExecutorDelegate* delegate,
-                ScriptTracker::Listener* listener);
+                ScriptTracker::Listener* listener,
+                std::unique_ptr<std::map<std::string, std::string>> parameters);
 
   ~ScriptTracker();
 
@@ -76,6 +77,7 @@ class ScriptTracker {
 
   ScriptExecutorDelegate* const delegate_;
   ScriptTracker::Listener* const listener_;
+  std::unique_ptr<std::map<std::string, std::string>> parameters_;
 
   // Paths and names of scripts known to be runnable.
   //

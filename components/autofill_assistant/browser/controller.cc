@@ -15,13 +15,15 @@ namespace autofill_assistant {
 // static
 void Controller::CreateAndStartForWebContents(
     content::WebContents* web_contents,
-    std::unique_ptr<Client> client) {
+    std::unique_ptr<Client> client,
+    std::unique_ptr<std::map<std::string, std::string>> parameters) {
   // Get the key early since |client| will be invalidated when moved below.
   const std::string api_key = client->GetApiKey();
   new Controller(
       web_contents, std::move(client),
       WebController::CreateForWebContents(web_contents),
-      std::make_unique<Service>(api_key, web_contents->GetBrowserContext()));
+      std::make_unique<Service>(api_key, web_contents->GetBrowserContext()),
+      std::move(parameters));
 }
 
 Service* Controller::GetService() {
@@ -40,15 +42,18 @@ ClientMemory* Controller::GetClientMemory() {
   return memory_.get();
 }
 
-Controller::Controller(content::WebContents* web_contents,
-                       std::unique_ptr<Client> client,
-                       std::unique_ptr<WebController> web_controller,
-                       std::unique_ptr<Service> service)
+Controller::Controller(
+    content::WebContents* web_contents,
+    std::unique_ptr<Client> client,
+    std::unique_ptr<WebController> web_controller,
+    std::unique_ptr<Service> service,
+    std::unique_ptr<std::map<std::string, std::string>> parameters)
     : content::WebContentsObserver(web_contents),
       client_(std::move(client)),
       web_controller_(std::move(web_controller)),
       service_(std::move(service)),
-      script_tracker_(std::make_unique<ScriptTracker>(this, this)),
+      script_tracker_(
+          std::make_unique<ScriptTracker>(this, this, std::move(parameters))),
       memory_(std::make_unique<ClientMemory>()),
       allow_autostart_(true) {
   GetUiController()->SetUiDelegate(this);

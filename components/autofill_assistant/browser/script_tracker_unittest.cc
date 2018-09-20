@@ -45,7 +45,11 @@ class ScriptTrackerTest : public testing::Test,
   }
 
  protected:
-  ScriptTrackerTest() : runnable_scripts_changed_(0), tracker_(this, this) {}
+  ScriptTrackerTest()
+      : runnable_scripts_changed_(0),
+        tracker_(this,
+                 this,
+                 std::make_unique<std::map<std::string, std::string>>()) {}
 
   // Overrides ScriptTrackerDelegate
   Service* GetService() override { return &mock_service_; }

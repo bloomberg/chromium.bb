@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.os.Bundle;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -15,7 +17,9 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
@@ -23,6 +27,10 @@ import java.util.List;
  */
 @JNINamespace("autofill_assistant")
 public class AutofillAssistantUiController implements BottomBarController.Client {
+    /** Prefix for Intent extras relevant to this feature. */
+    private static final String INTENT_EXTRA_PREFIX =
+            "org.chromium.chrome.browser.autofill_assistant.";
+
     private final long mUiControllerAndroid;
     private final BottomBarController mBottomBarController;
 
@@ -34,7 +42,15 @@ public class AutofillAssistantUiController implements BottomBarController.Client
     public AutofillAssistantUiController(CustomTabActivity activity) {
         // TODO(crbug.com/806868): Implement corresponding UI.
         Tab activityTab = activity.getActivityTab();
-        mUiControllerAndroid = nativeInit(activityTab.getWebContents());
+
+        Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
+        // TODO(crbug.com/806868): Treat parameter
+        // org.chromium.chrome.browser.autofill_assistant.ENABLED specially, and disable autofill
+        // assistant if it is false or unset.
+
+        mUiControllerAndroid = nativeInit(activityTab.getWebContents(),
+                parameters.keySet().toArray(new String[parameters.size()]),
+                parameters.values().toArray(new String[parameters.size()]));
 
         // Stop Autofill Assistant when the tab is detached from the activity.
         activityTab.addObserver(new EmptyTabObserver() {
@@ -69,6 +85,17 @@ public class AutofillAssistantUiController implements BottomBarController.Client
         nativeOnScriptSelected(mUiControllerAndroid, scriptPath);
     }
 
+    /** Returns a map containing the extras starting with {@link #INTENT_EXTRA_PREFIX}. */
+    private static Map<String, String> extractParameters(Bundle extras) {
+        Map<String, String> result = new HashMap<>();
+        for (String key : extras.keySet()) {
+            if (key.startsWith(INTENT_EXTRA_PREFIX)) {
+                result.put(key.substring(INTENT_EXTRA_PREFIX.length()), extras.get(key).toString());
+            }
+        }
+        return result;
+    }
+
     @CalledByNative
     private void onShowStatusMessage(String message) {
         mBottomBarController.showStatusMessage(message);
@@ -95,7 +122,8 @@ public class AutofillAssistantUiController implements BottomBarController.Client
     }
 
     // native methods.
-    private native long nativeInit(WebContents webContents);
+    private native long nativeInit(
+            WebContents webContents, String[] parameterNames, String[] parameterValues);
     private native void nativeDestroy(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
 }

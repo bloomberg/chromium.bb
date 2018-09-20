@@ -13,14 +13,18 @@
 
 namespace autofill_assistant {
 
-ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
-                             ScriptTracker::Listener* listener)
+ScriptTracker::ScriptTracker(
+    ScriptExecutorDelegate* delegate,
+    ScriptTracker::Listener* listener,
+    std::unique_ptr<std::map<std::string, std::string>> parameters)
     : delegate_(delegate),
       listener_(listener),
+      parameters_(std::move(parameters)),
       pending_precondition_check_count_(0),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(listener_);
+  DCHECK(parameters_);
 }
 
 ScriptTracker::~ScriptTracker() = default;
@@ -59,7 +63,7 @@ void ScriptTracker::CheckScripts() {
   } else {
     for (Script* script : scripts_to_check) {
       script->precondition->Check(
-          delegate_->GetWebController(),
+          delegate_->GetWebController(), *parameters_.get(),
           base::BindOnce(&ScriptTracker::OnPreconditionCheck,
                          weak_ptr_factory_.GetWeakPtr(), script));
     }
