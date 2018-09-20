@@ -4284,19 +4284,6 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.browser_tests.filter"
-        ],
-        "name": "single_process_mash_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 30
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_browser_tests",

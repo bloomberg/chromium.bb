@@ -724,6 +724,10 @@
     },
   },
   'single_process_mash_browser_tests': {
+    'remove_from': [
+      # Temporarily remove from ASan/LSan bot due to flakiness. crbug.com/885309
+      'Linux Chromium OS ASan LSan Tests (1)',
+    ],
     'modifications': {
       # chromium.chromiumos
       'linux-chromeos-dbg': {
