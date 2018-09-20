@@ -20,43 +20,30 @@ namespace {
 const int kBubbleColor = 0x4285F4;
 // The color of the bubble (both circular background and arrow).
 UIColor* BubbleColor() {
-  if (IsUIRefreshPhase1Enabled()) {
-    return UIColorFromRGB(kBubbleColor);
-  } else {
-    return [[MDCPalette cr_bluePalette] tint500];
-  }
+  return UIColorFromRGB(kBubbleColor);
 }
 
 // The corner radius of the bubble's background, which causes the ends of the
 // badge to be circular.
-const CGFloat kBubbleCornerRadiusNonUIRefresh = 17.0f;
-const CGFloat kBubbleCornerRadiusUIRefresh = 13.0f;
+const CGFloat kBubbleCornerRadius = 13.0f;
 // The maximum label width preserves readability, ensuring that long labels do
 // not span across wide screens.
 const CGFloat kMaxLabelWidth = 359.0f;
 // Font size for the bubble's display text.
-const CGFloat kFontSizeNonUIRefresh = 16.0f;
-const CGFloat kFontSizeUIRefresh = 15.0f;
+const CGFloat kFontSize = 15.0f;
 
 // Margin between the bubble view's bounds and its content. This margin is on
 // all sides of the bubble.
 const CGFloat kBubbleMargin = 4.0f;
 // Padding between the top and bottom the bubble's background and the top and
 // bottom of the label.
-const CGFloat kLabelVerticalPaddingUIRefresh = 15.0f;
-const CGFloat kLabelVerticalPaddingNonUIRefresh = 8.0f;
+const CGFloat kLabelVerticalPadding = 15.0f;
 // Padding between the sides of the bubble's background and the sides of the
 // label.
-// For non-UI refresh, this has the same value as |kBubbleCornerRadius| to
-// ensure that the
-// label is positioned within the non-rounded portion of the bubble.
-const CGFloat kLabelHorizontalPaddingNonUIRefresh =
-    kBubbleCornerRadiusNonUIRefresh;
-const CGFloat kLabelHorizontalPaddingUIRefresh = 20.0f;
+const CGFloat kLabelHorizontalPadding = 20.0f;
 
 // The size that the arrow will appear to have.
-const CGSize kArrowSizeNonUIRefresh = {14.0f, 10.0f};
-const CGSize kArrowSizeUIRefresh = {32, 9};
+const CGSize kArrowSize = {32, 9};
 
 // The offset of the bubble's drop shadow, which will be slightly below the
 // bubble.
@@ -114,7 +101,7 @@ const CGFloat kControlPointEnd = 0.514375;
   if (!_background) {
     UIView* background = [[UIView alloc] initWithFrame:CGRectZero];
     [background setBackgroundColor:BubbleColor()];
-    [background.layer setCornerRadius:[self bubbleCornerRadius]];
+    [background.layer setCornerRadius:kBubbleCornerRadius];
     [background setTranslatesAutoresizingMaskIntoConstraints:NO];
     _background = background;
   }
@@ -126,26 +113,25 @@ const CGFloat kControlPointEnd = 0.514375;
   // If the instance variable for the arrow has not been set up, load the arrow
   // and set the instance variable equal to the arrow.
   if (!_arrow) {
-    CGFloat width = [self arrowSize].width;
-    CGFloat height = [self arrowSize].height;
+    CGFloat width = kArrowSize.width;
+    CGFloat height = kArrowSize.height;
     UIView* arrow =
         [[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, width, height)];
     UIBezierPath* path = UIBezierPath.bezierPath;
-    if (IsUIRefreshPhase1Enabled()) {
-      CGFloat xCenter = width / 2;
-      if (self.direction == BubbleArrowDirectionUp) {
-        [path moveToPoint:CGPointMake(xCenter, 0)];
-        [path addCurveToPoint:CGPointMake(width, height)
-                controlPoint1:CGPointMake(
-                                  xCenter + xCenter * kControlPointCenter, 0)
-                controlPoint2:CGPointMake(xCenter + xCenter * kControlPointEnd,
-                                          height)];
-        [path addLineToPoint:CGPointMake(0, height)];
-        [path addCurveToPoint:CGPointMake(xCenter, 0)
-                controlPoint1:CGPointMake(xCenter - xCenter * kControlPointEnd,
-                                          height)
-                controlPoint2:CGPointMake(
-                                  xCenter - xCenter * kControlPointCenter, 0)];
+    CGFloat xCenter = width / 2;
+    if (self.direction == BubbleArrowDirectionUp) {
+      [path moveToPoint:CGPointMake(xCenter, 0)];
+      [path addCurveToPoint:CGPointMake(width, height)
+              controlPoint1:CGPointMake(xCenter + xCenter * kControlPointCenter,
+                                        0)
+              controlPoint2:CGPointMake(xCenter + xCenter * kControlPointEnd,
+                                        height)];
+      [path addLineToPoint:CGPointMake(0, height)];
+      [path addCurveToPoint:CGPointMake(xCenter, 0)
+              controlPoint1:CGPointMake(xCenter - xCenter * kControlPointEnd,
+                                        height)
+              controlPoint2:CGPointMake(xCenter - xCenter * kControlPointCenter,
+                                        0)];
       } else {
         [path moveToPoint:CGPointMake(xCenter, height)];
         [path
@@ -161,18 +147,6 @@ const CGFloat kControlPointEnd = 0.514375;
               controlPoint2:CGPointMake(xCenter - xCenter * kControlPointCenter,
                                         height)];
       }
-    } else {
-      if (self.direction == BubbleArrowDirectionUp) {
-        [path moveToPoint:CGPointMake(width / 2.0f, 0.0f)];
-        [path addLineToPoint:CGPointMake(0.0f, height)];
-        [path addLineToPoint:CGPointMake(width, height)];
-      } else {
-        DCHECK(self.direction == BubbleArrowDirectionDown);
-        [path moveToPoint:CGPointMake(width / 2.0f, height)];
-        [path addLineToPoint:CGPointMake(0.0f, 0.0f)];
-        [path addLineToPoint:CGPointMake(width, 0.0f)];
-      }
-    }
     [path closePath];
     CAShapeLayer* layer = [CAShapeLayer layer];
     [layer setPath:path.CGPath];
@@ -191,12 +165,7 @@ const CGFloat kControlPointEnd = 0.514375;
   DCHECK(text.length);
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
   [label setText:text];
-  if (IsUIRefreshPhase1Enabled()) {
-    [label setFont:[UIFont systemFontOfSize:kFontSizeUIRefresh]];
-  } else {
-    [label setFont:[[MDCTypography fontLoader]
-                       regularFontOfSize:kFontSizeNonUIRefresh]];
-  }
+  [label setFont:[UIFont systemFontOfSize:kFontSize]];
   [label setTextColor:[UIColor whiteColor]];
   [label setTextAlignment:NSTextAlignmentCenter];
   [label setNumberOfLines:0];
@@ -242,7 +211,7 @@ const CGFloat kControlPointEnd = 0.514375;
     // padding on the sides of the label.
     [self.background.widthAnchor
         constraintEqualToAnchor:self.label.widthAnchor
-                       constant:[self labelHorizontalPadding] * 2],
+                       constant:kLabelHorizontalPadding * 2],
     // Enforce the minimum width of the background view.
     [self.background.widthAnchor
         constraintGreaterThanOrEqualToConstant:[self minBubbleWidth] -
@@ -251,7 +220,7 @@ const CGFloat kControlPointEnd = 0.514375;
     // padding to the top and bottom of the label.
     [self.background.heightAnchor
         constraintEqualToAnchor:self.label.heightAnchor
-                       constant:[self labelVerticalPadding] * 2],
+                       constant:kLabelVerticalPadding * 2],
     // Center the label on the background view.
     [self.label.centerXAnchor
         constraintEqualToAnchor:self.background.centerXAnchor],
@@ -259,8 +228,8 @@ const CGFloat kControlPointEnd = 0.514375;
         constraintEqualToAnchor:self.background.centerYAnchor],
     // Enforce the arrow's size, scaling by |kArrowScaleFactor| to prevent gaps
     // between the arrow and the background view.
-    [self.arrow.widthAnchor constraintEqualToConstant:[self arrowSize].width],
-    [self.arrow.heightAnchor constraintEqualToConstant:[self arrowSize].height]
+    [self.arrow.widthAnchor constraintEqualToConstant:kArrowSize.width],
+    [self.arrow.heightAnchor constraintEqualToConstant:kArrowSize.height]
 
   ];
   return constraints;
@@ -309,9 +278,8 @@ const CGFloat kControlPointEnd = 0.514375;
   NSArray<NSLayoutConstraint*>* constraints;
   if (self.direction == BubbleArrowDirectionUp) {
     constraints = @[
-      [self.background.topAnchor
-          constraintEqualToAnchor:self.arrow.topAnchor
-                         constant:[self arrowSize].height],
+      [self.background.topAnchor constraintEqualToAnchor:self.arrow.topAnchor
+                                                constant:kArrowSize.height],
       // Ensure that the top of the arrow is aligned with the top of the bubble
       // view and add a margin above the arrow.
       [self.arrow.topAnchor constraintEqualToAnchor:self.topAnchor
@@ -322,7 +290,7 @@ const CGFloat kControlPointEnd = 0.514375;
     constraints = @[
       [self.arrow.bottomAnchor
           constraintEqualToAnchor:self.background.bottomAnchor
-                         constant:[self arrowSize].height],
+                         constant:kArrowSize.height],
       // Ensure that the bottom of the arrow is aligned with the bottom of the
       // bubble view and add a margin below the arrow.
       [self.bottomAnchor constraintEqualToAnchor:self.arrow.bottomAnchor
@@ -361,13 +329,11 @@ const CGFloat kControlPointEnd = 0.514375;
 - (CGSize)sizeThatFits:(CGSize)size {
   // The combined horizontal inset distance of the label with respect to the
   // bubble.
-  CGFloat labelHorizontalInset =
-      (kBubbleMargin + [self labelHorizontalPadding]) * 2;
+  CGFloat labelHorizontalInset = (kBubbleMargin + kLabelHorizontalPadding) * 2;
   // The combined vertical inset distance of the label with respect to the
   // bubble.
   CGFloat labelVerticalInset =
-      (kBubbleMargin + [self labelVerticalPadding]) * 2 +
-      [self arrowSize].height;
+      (kBubbleMargin + kLabelVerticalPadding) * 2 + kArrowSize.height;
   // Calculate the maximum width the label is allowed to use, and ensure that
   // the label does not exceed the maximum line width.
   CGFloat labelMaxWidth =
@@ -389,39 +355,6 @@ const CGFloat kControlPointEnd = 0.514375;
 // causes the bubble to appear center-aligned for short display text.
 - (CGFloat)minBubbleWidth {
   return bubble_util::BubbleAlignmentOffset() * 2;
-}
-
-// TODO(crbug.com/800266): Remove all those helpers.
-- (CGSize)arrowSize {
-  if (IsUIRefreshPhase1Enabled()) {
-    return kArrowSizeUIRefresh;
-  } else {
-    return kArrowSizeNonUIRefresh;
-  }
-}
-
-- (CGFloat)bubbleCornerRadius {
-  if (IsUIRefreshPhase1Enabled()) {
-    return kBubbleCornerRadiusUIRefresh;
-  } else {
-    return kBubbleCornerRadiusNonUIRefresh;
-  }
-}
-
-- (CGFloat)labelHorizontalPadding {
-  if (IsUIRefreshPhase1Enabled()) {
-    return kLabelHorizontalPaddingUIRefresh;
-  } else {
-    return kLabelHorizontalPaddingNonUIRefresh;
-  }
-}
-
-- (CGFloat)labelVerticalPadding {
-  if (IsUIRefreshPhase1Enabled()) {
-    return kLabelVerticalPaddingUIRefresh;
-  } else {
-    return kLabelVerticalPaddingNonUIRefresh;
-  }
 }
 
 @end
