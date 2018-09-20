@@ -133,13 +133,8 @@ const base::Feature kUIExperimentElideSuggestionUrlAfterHost{
 // Feature used to hide the scheme and trivial subdomains from steady state
 // URLs displayed in the Omnibox. Hidden portions are restored during editing.
 const base::Feature kUIExperimentHideSteadyStateUrlSchemeAndSubdomains{
-  "OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains",
-#if defined(OS_IOS) || defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+    "OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to jog the Omnibox textfield to align with the dropdown
 // suggestions text when the popup is opened. When this feature is disabled, the

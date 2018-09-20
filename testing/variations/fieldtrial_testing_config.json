@@ -2866,6 +2866,7 @@
                         "OmniboxNewAnswerLayout",
                         "OmniboxRichEntitySuggestions",
                         "OmniboxTailSuggestions",
+                        "OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains",
                         "ZeroSuggestRedirectToChrome",
                         "ZeroSuggestSwapTitleAndUrl"
                     ]
