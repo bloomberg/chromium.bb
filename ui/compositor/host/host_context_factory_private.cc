@@ -38,14 +38,14 @@ HostContextFactoryPrivate::HostContextFactoryPrivate(
 
 HostContextFactoryPrivate::~HostContextFactoryPrivate() = default;
 
+void HostContextFactoryPrivate::AddCompositor(Compositor* compositor) {
+  compositor_data_map_.try_emplace(compositor);
+}
+
 void HostContextFactoryPrivate::ConfigureCompositor(
-    base::WeakPtr<Compositor> compositor_weak_ptr,
+    Compositor* compositor,
     scoped_refptr<viz::ContextProvider> context_provider,
     scoped_refptr<viz::RasterContextProvider> worker_context_provider) {
-  Compositor* compositor = compositor_weak_ptr.get();
-  if (!compositor)
-    return;
-
   bool gpu_compositing =
       !is_gpu_compositing_disabled_ && !compositor->force_software_compositor();
 
@@ -101,6 +101,8 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   GetHostFrameSinkManager()->CreateRootCompositorFrameSink(
       std::move(root_params));
   compositor_data.display_private->Resize(compositor->size());
+  compositor_data.display_private->SetOutputIsSecure(
+      compositor_data.output_is_secure);
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
@@ -229,9 +231,12 @@ void HostContextFactoryPrivate::IssueExternalBeginFrame(
 void HostContextFactoryPrivate::SetOutputIsSecure(Compositor* compositor,
                                                   bool secure) {
   auto iter = compositor_data_map_.find(compositor);
-  if (iter == compositor_data_map_.end() || !iter->second.display_private)
+  if (iter == compositor_data_map_.end())
     return;
-  iter->second.display_private->SetOutputIsSecure(secure);
+  iter->second.output_is_secure = secure;
+
+  if (iter->second.display_private)
+    iter->second.display_private->SetOutputIsSecure(secure);
 }
 
 viz::FrameSinkManagerImpl* HostContextFactoryPrivate::GetFrameSinkManager() {
