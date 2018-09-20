@@ -27,7 +27,7 @@ namespace blink {
 class TestArrayBuffer;
 
 class CORE_EXPORT ArrayBufferOrArrayBufferViewOrDictionary final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   ArrayBufferOrArrayBufferViewOrDictionary();
   bool IsNull() const { return type_ == SpecificType::kNone; }

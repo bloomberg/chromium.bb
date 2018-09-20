@@ -17,7 +17,7 @@ class {{decl}};
 
 {# FIXME: Add "final" if this class doesn\'t have subclasses #}
 class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_class}}{% endif %} {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   {{cpp_class}}();
   virtual ~{{cpp_class}}();

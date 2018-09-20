@@ -48,7 +48,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   // A data struct to keep NGLayoutResult or fragment until the box tree
   // structures and child offsets are finalized.
   struct Child {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
 
     scoped_refptr<NGLayoutResult> layout_result;
     scoped_refptr<const NGPhysicalFragment> fragment;

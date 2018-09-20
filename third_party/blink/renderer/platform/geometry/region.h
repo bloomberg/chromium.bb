@@ -79,7 +79,7 @@ class PLATFORM_EXPORT Region {
 
  private:
   struct Span {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
     Span(int y, size_t segment_index) : y(y), segment_index(segment_index) {}
 
     int y;

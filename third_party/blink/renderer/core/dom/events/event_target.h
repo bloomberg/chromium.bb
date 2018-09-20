@@ -63,7 +63,7 @@ class ScriptState;
 class ServiceWorker;
 
 struct FiringEventIterator {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   FiringEventIterator(const AtomicString& event_type,
                       wtf_size_t& iterator,
                       wtf_size_t& end)

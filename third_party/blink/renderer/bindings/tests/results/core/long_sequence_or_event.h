@@ -24,7 +24,7 @@ namespace blink {
 class Event;
 
 class CORE_EXPORT LongSequenceOrEvent final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   LongSequenceOrEvent();
   bool IsNull() const { return type_ == SpecificType::kNone; }

@@ -696,7 +696,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
  public:
   struct FloatWithRect {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
     FloatWithRect(LayoutBox* f)
         : object(f), rect(f->FrameRect()), ever_had_layout(f->EverHadLayout()) {
       rect.Expand(f->MarginBoxOutsets());

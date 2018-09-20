@@ -24,7 +24,7 @@ namespace blink {
 class Element;
 
 class CORE_EXPORT BooleanOrElementSequence final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   BooleanOrElementSequence();
   bool IsNull() const { return type_ == SpecificType::kNone; }

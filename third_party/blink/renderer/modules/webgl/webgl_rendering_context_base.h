@@ -580,7 +580,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   DrawingBuffer* GetDrawingBuffer() const;
 
   class TextureUnitState {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
 
    public:
     TraceWrapperMember<WebGLTexture> texture2d_binding_;

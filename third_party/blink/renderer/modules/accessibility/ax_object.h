@@ -82,7 +82,7 @@ class AXSparseAttributeClient {
 };
 
 class IgnoredReason {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   AXIgnoredReason reason;
@@ -113,7 +113,7 @@ class NameSourceRelatedObject
 
 typedef HeapVector<Member<NameSourceRelatedObject>> AXRelatedObjectVector;
 class NameSource {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   String text;
@@ -135,7 +135,7 @@ class NameSource {
 };
 
 class DescriptionSource {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   String text;
@@ -169,7 +169,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   typedef HeapVector<Member<AXObject>> AXObjectVector;
 
   struct AXSelection {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
     // The deepest descendant in which the range starts.
     // (nullptr means the current object.)
     Persistent<AXObject> anchor_object;

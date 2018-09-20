@@ -45,7 +45,7 @@ struct MinMaxSizeInput {
 // engine should use the style, node type to determine which type of layout
 // algorithm to use to produce fragments for this node.
 class CORE_EXPORT NGLayoutInputNode {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   enum NGLayoutInputNodeType {

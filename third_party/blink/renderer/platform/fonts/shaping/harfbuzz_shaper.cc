@@ -116,7 +116,7 @@ void CheckShapeResultRange(const ShapeResult* result,
 enum ReshapeQueueItemAction { kReshapeQueueNextFont, kReshapeQueueRange };
 
 struct ReshapeQueueItem {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   ReshapeQueueItemAction action_;
   unsigned start_index_;
   unsigned num_characters_;

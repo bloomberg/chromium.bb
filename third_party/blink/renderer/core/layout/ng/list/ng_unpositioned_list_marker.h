@@ -33,7 +33,7 @@ struct NGLogicalOffset;
 // algorithm, they are set as "unpositioned", and are propagated to ancestors
 // through NGLayoutResult until they meet the corresponding list items.
 class CORE_EXPORT NGUnpositionedListMarker final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   NGUnpositionedListMarker() : marker_layout_object_(nullptr) {}

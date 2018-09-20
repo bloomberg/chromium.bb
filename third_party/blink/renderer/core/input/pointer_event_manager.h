@@ -117,7 +117,7 @@ class CORE_EXPORT PointerEventManager
                       WTF::UnsignedWithZeroKeyHashTraits<int>>
       PointerCapturingMap;
   class EventTargetAttributes {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
 
    public:
     void Trace(blink::Visitor* visitor) { visitor->Trace(target); }

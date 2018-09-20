@@ -50,7 +50,7 @@ using ShadowV0CascadeOrder = unsigned;
 const ShadowV0CascadeOrder kIgnoreCascadeOrder = 0;
 
 class MatchedRule {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   MatchedRule(const RuleData* rule_data,

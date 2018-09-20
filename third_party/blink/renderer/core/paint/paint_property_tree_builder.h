@@ -112,7 +112,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
 };
 
 struct PaintPropertyTreeBuilderContext {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   PaintPropertyTreeBuilderContext() = default;

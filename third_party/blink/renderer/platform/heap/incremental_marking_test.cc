@@ -446,7 +446,7 @@ namespace {
 // HeapVector allows for insertion of container objects that can be traced but
 // are themselves non-garbage collected.
 class NonGarbageCollectedContainer {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   NonGarbageCollectedContainer(Object* obj, int y) : obj_(obj), y_(y) {}
@@ -460,7 +460,7 @@ class NonGarbageCollectedContainer {
 };
 
 class NonGarbageCollectedContainerRoot {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   NonGarbageCollectedContainerRoot(Object* obj1, Object* obj2, int y)
@@ -920,7 +920,7 @@ TEST(IncrementalMarkingTest, HeapHashSetSwap) {
 }
 
 class StrongWeakPair : public std::pair<Member<Object>, WeakMember<Object>> {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
   typedef std::pair<Member<Object>, WeakMember<Object>> Base;
 
@@ -1111,7 +1111,7 @@ TEST(IncrementalMarkingTest, HeapHashCountedSetSwap) {
 // =============================================================================
 
 class TerminatedArrayNode {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   TerminatedArrayNode(Object* obj) : obj_(obj), is_last_in_array_(false) {}

@@ -28,7 +28,7 @@ namespace blink {
 class TestInterface2;
 
 class CORE_EXPORT TestInterface2OrUint8Array final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   TestInterface2OrUint8Array();
   bool IsNull() const { return type_ == SpecificType::kNone; }

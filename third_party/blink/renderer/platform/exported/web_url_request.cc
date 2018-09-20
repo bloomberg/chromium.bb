@@ -45,8 +45,9 @@
 namespace blink {
 
 // The purpose of this struct is to permit allocating a ResourceRequest on the
-// heap, which is otherwise disallowed by DISALLOW_NEW_EXCEPT_PLACEMENT_NEW
-// annotation on ResourceRequest.
+// heap, which is otherwise disallowed by DISALLOW_NEW annotation on
+// ResourceRequest.
+// TODO(keishi): Replace with GCWrapper<ResourceRequest>
 struct WebURLRequest::ResourceRequestContainer {
   ResourceRequestContainer() = default;
   explicit ResourceRequestContainer(const ResourceRequest& r)

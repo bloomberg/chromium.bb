@@ -270,7 +270,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
 // The space is mutated simply by adding exclusions, and various information
 // can be queried based on the exclusions.
 class CORE_EXPORT NGExclusionSpace {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   NGExclusionSpace() = default;

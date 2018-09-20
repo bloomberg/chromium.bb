@@ -61,7 +61,7 @@ class PLATFORM_EXPORT LayoutUnit;
 constexpr inline bool operator<(const LayoutUnit&, const LayoutUnit&);
 
 class LayoutUnit {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   constexpr LayoutUnit() : value_(0) {}

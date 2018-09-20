@@ -25,7 +25,7 @@ class DoubleOrString;
 class Element;
 
 class CORE_EXPORT ElementSequenceOrByteStringDoubleOrStringRecord final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   ElementSequenceOrByteStringDoubleOrStringRecord();
   bool IsNull() const { return type_ == SpecificType::kNone; }

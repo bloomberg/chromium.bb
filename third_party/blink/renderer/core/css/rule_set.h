@@ -54,7 +54,7 @@ class MediaQueryEvaluator;
 class StyleSheetContents;
 
 class MinimalRuleData {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   MinimalRuleData(StyleRule* rule, unsigned selector_index, AddRuleFlags flags)
@@ -80,7 +80,7 @@ namespace blink {
 // match for the rule. It computes some information about the wrapped selector
 // and makes it accessible cheaply.
 class CORE_EXPORT RuleData {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   RuleData(StyleRule*,

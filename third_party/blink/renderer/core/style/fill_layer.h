@@ -38,7 +38,7 @@
 namespace blink {
 
 struct FillSize {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   FillSize() : type(EFillSizeType::kSizeLength) {}
 
   FillSize(EFillSizeType t, const LengthSize& l) : type(t), size(l) {}

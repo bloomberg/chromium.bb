@@ -96,7 +96,7 @@ class PLATFORM_EXPORT VertexPair {
 };
 
 class PLATFORM_EXPORT FloatPolygonEdge final : public VertexPair {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   friend class FloatPolygon;
 
  public:

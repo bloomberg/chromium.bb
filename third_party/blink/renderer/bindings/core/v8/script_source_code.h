@@ -46,7 +46,7 @@ class ScriptResource;
 class SingleCachedMetadataHandler;
 
 class CORE_EXPORT ScriptSourceCode final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   // For inline scripts.

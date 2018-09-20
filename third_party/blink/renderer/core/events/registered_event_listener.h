@@ -39,7 +39,7 @@ class EventListenerOptions;
 // RegisteredEventListener represents 'event listener' defined in the DOM
 // standard. https://dom.spec.whatwg.org/#concept-event-listener
 class RegisteredEventListener final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   RegisteredEventListener();

@@ -26,7 +26,7 @@ class LayoutObject;
 // In this representation TextNodes are merged up into their parent inline
 // element where possible.
 class CORE_EXPORT NGInlineItem {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   enum NGInlineItemType {
