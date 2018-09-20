@@ -93,8 +93,6 @@ jumbo_source_set("renderer") {
     "dispatcher_delegate.h",
     "display_source_custom_bindings.cc",
     "display_source_custom_bindings.h",
-    "document_custom_bindings.cc",
-    "document_custom_bindings.h",
     "dom_activity_logger.cc",
     "dom_activity_logger.h",
     "easy_unlock_proximity_required_stub.cc",
