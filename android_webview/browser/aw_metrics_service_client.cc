@@ -133,15 +133,11 @@ std::string AwMetricsServiceClient::GetClientId() {
   return g_client_id.Get();
 }
 
-void AwMetricsServiceClient::Initialize(
-    PrefService* pref_service,
-    net::URLRequestContextGetter* request_context) {
+void AwMetricsServiceClient::Initialize(PrefService* pref_service) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DCHECK(pref_service_ == nullptr);  // Initialize should only happen once.
-  DCHECK(request_context_ == nullptr);
   pref_service_ = pref_service;
-  request_context_ = request_context;
 
   metrics_state_manager_ = metrics::MetricsStateManager::Create(
       pref_service_, this, base::string16(),
@@ -273,7 +269,6 @@ base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {
 
 AwMetricsServiceClient::AwMetricsServiceClient()
     : pref_service_(nullptr),
-      request_context_(nullptr),
       consent_(false),
       in_sample_(false) {}
 

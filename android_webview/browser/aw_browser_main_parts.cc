@@ -223,8 +223,7 @@ int AwBrowserMainParts::PreCreateThreads() {
 
   browser_policy_connector_ = std::make_unique<AwBrowserPolicyConnector>();
   pref_service_ = CreatePrefService(browser_policy_connector_.get());
-  AwMetricsServiceClient::GetInstance()->Initialize(pref_service_.get(),
-                                                    nullptr);
+  AwMetricsServiceClient::GetInstance()->Initialize(pref_service_.get());
   aw_field_trial_creator_.SetUpFieldTrials(pref_service_.get());
 
   return service_manager::RESULT_CODE_NORMAL_EXIT;
