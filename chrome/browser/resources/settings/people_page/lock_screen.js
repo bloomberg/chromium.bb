@@ -135,6 +135,17 @@ Polymer({
     },
 
     /**
+     * True if Multidevice Setup is enabled.
+     * @private {boolean}
+     */
+    multideviceSettingsEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableMultideviceSettings');
+      },
+    },
+
+    /**
      * Returns the proximity threshold mapping to be displayed in the
      * threshold selector dropdown menu.
      */
