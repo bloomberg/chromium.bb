@@ -119,6 +119,12 @@ void FeedContentDatabase::CommitContentMutation(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(content_mutation);
 
+  if (content_mutation->Empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), true));
+    return;
+  }
+
   PerformNextOperation(std::move(content_mutation), std::move(callback));
 }
 
