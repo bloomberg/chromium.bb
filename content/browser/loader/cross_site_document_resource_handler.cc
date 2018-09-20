@@ -26,9 +26,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/url_request/url_request.h"
@@ -590,26 +590,10 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   if (analyzer_->ShouldAllow())
     return false;
 
-  // Check if the response's site needs to have its documents protected.  By
-  // default, this will usually return false.
-  // TODO(creis): This check can go away once the logic here is made fully
-  // backward compatible and we can enforce it always, regardless of Site
-  // Isolation policy.
-  switch (SiteIsolationPolicy::IsCrossSiteDocumentBlockingEnabled()) {
-    case SiteIsolationPolicy::XSDB_ENABLED_UNCONDITIONALLY:
-      break;
-    case SiteIsolationPolicy::XSDB_ENABLED_IF_ISOLATED: {
-      url::Origin target_origin = url::Origin::Create(request()->url());
-      if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
-          !ChildProcessSecurityPolicyImpl::GetInstance()->IsIsolatedOrigin(
-              target_origin)) {
-        return false;
-      }
-      break;
-    }
-    case SiteIsolationPolicy::XSDB_DISABLED:
-      return false;
-  }
+  // --disable-web-security also disables Cross-Origin Read Blocking (CORB).
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity))
+    return false;
 
   // Only block if this is a request made from a renderer process.
   const ResourceRequestInfoImpl* info = GetRequestInfo();
