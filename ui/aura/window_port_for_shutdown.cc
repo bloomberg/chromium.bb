@@ -9,7 +9,8 @@
 
 namespace aura {
 
-WindowPortForShutdown::WindowPortForShutdown() {}
+WindowPortForShutdown::WindowPortForShutdown()
+    : WindowPort(WindowPort::Type::kShutdown) {}
 
 WindowPortForShutdown::~WindowPortForShutdown() {}
 

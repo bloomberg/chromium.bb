@@ -38,7 +38,8 @@ WindowMus* WindowMus::Get(Window* window) {
 
 WindowPortMus::WindowPortMus(WindowTreeClient* client,
                              WindowMusType window_mus_type)
-    : WindowMus(window_mus_type),
+    : WindowPort(WindowPort::Type::kMus),
+      WindowMus(window_mus_type),
       window_tree_client_(client),
       weak_ptr_factory_(this) {}
 
@@ -56,7 +57,10 @@ WindowPortMus::~WindowPortMus() {
 
 // static
 WindowPortMus* WindowPortMus::Get(Window* window) {
-  return static_cast<WindowPortMus*>(WindowPort::Get(window));
+  WindowPort* port = WindowPort::Get(window);
+  return port && port->type() == WindowPort::Type::kMus
+             ? static_cast<WindowPortMus*>(port)
+             : nullptr;
 }
 
 void WindowPortMus::SetTextInputState(ui::mojom::TextInputStatePtr state) {

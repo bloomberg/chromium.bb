@@ -63,7 +63,9 @@ class ScopedCursorHider {
 }  // namespace
 
 WindowPortLocal::WindowPortLocal(Window* window)
-    : window_(window), weak_factory_(this) {}
+    : WindowPort(WindowPort::Type::kLocal),
+      window_(window),
+      weak_factory_(this) {}
 
 WindowPortLocal::~WindowPortLocal() {
   if (frame_sink_id_.is_valid()) {
