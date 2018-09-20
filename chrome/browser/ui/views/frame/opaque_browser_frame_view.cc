@@ -111,6 +111,8 @@ class CaptionButtonBackgroundImageSource : public gfx::CanvasImageSource {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, public:
 
+const char OpaqueBrowserFrameView::kClassName[] = "OpaqueBrowserFrameView";
+
 OpaqueBrowserFrameView::OpaqueBrowserFrameView(
     BrowserFrame* frame,
     BrowserView* browser_view,
@@ -168,7 +170,8 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
 
   window_title_ = new views::Label(browser_view->GetWindowTitle());
   window_title_->SetVisible(browser_view->ShouldShowWindowTitle());
-  window_title_->SetEnabledColor(kTitleBarFeatureColor);
+  // Readability is ensured by |GetReadableFrameForegroundColor()|.
+  window_title_->SetAutoColorReadabilityEnabled(false);
   window_title_->SetSubpixelRenderingEnabled(false);
   window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   window_title_->set_id(VIEW_ID_WINDOW_TITLE);
@@ -177,11 +180,8 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
   if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
           browser_view->browser())) {
     hosted_app_button_container_ = new HostedAppButtonContainer(
-        frame, browser_view,
-        color_utils::GetReadableColor(kTitleBarFeatureColor,
-                                      GetFrameColor(kActive)),
-        color_utils::GetReadableColor(kTitleBarFeatureColor,
-                                      GetFrameColor(kInactive)));
+        frame, browser_view, GetReadableFrameForegroundColor(kActive),
+        GetReadableFrameForegroundColor(kInactive));
     hosted_app_button_container_->set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
     AddChildView(hosted_app_button_container_);
   }
@@ -383,6 +383,10 @@ void OpaqueBrowserFrameView::ActivationChanged(bool active) {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::View overrides:
 
+const char* OpaqueBrowserFrameView::GetClassName() const {
+  return kClassName;
+}
+
 void OpaqueBrowserFrameView::ChildPreferredSizeChanged(views::View* child) {
   BrowserNonClientFrameView::ChildPreferredSizeChanged(child);
   if (browser_view()->initialized() && child == hosted_app_button_container_)
@@ -561,7 +565,7 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
     return;  // Nothing is visible, so don't bother to paint.
 
   SkColor frame_color = GetFrameColor();
-  window_title_->SetBackgroundColor(frame_color);
+  window_title_->SetEnabledColor(GetReadableFrameForegroundColor(kUseCurrent));
   frame_background_->set_frame_color(frame_color);
   frame_background_->set_use_custom_frame(frame()->UseCustomFrame());
   frame_background_->set_is_active(ShouldPaintAsActive());
@@ -730,6 +734,19 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
     return true;
   return !views::ViewsDelegate::GetInstance()->WindowManagerProvidesTitleBar(
       IsMaximized());
+}
+
+SkColor OpaqueBrowserFrameView::GetReadableFrameForegroundColor(
+    ActiveState active_state) const {
+  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser_view()->browser())) {
+    base::Optional<SkColor> theme_color =
+        browser_view()->browser()->hosted_app_controller()->GetThemeColor();
+    if (theme_color)
+      return color_utils::GetThemedAssetColor(*theme_color);
+  }
+  return color_utils::GetReadableColor(kTitleBarFeatureColor,
+                                       GetFrameColor(active_state));
 }
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(
