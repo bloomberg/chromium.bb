@@ -76,12 +76,13 @@ class ScriptPreconditionTest : public testing::Test {
       return false;
 
     DirectCallback callback;
-    precondition->Check(&mock_web_controller_, callback.Get());
+    precondition->Check(&mock_web_controller_, parameters_, callback.Get());
     return callback.GetResultOrDie();
   }
 
   GURL url_;
   MockWebController mock_web_controller_;
+  std::map<std::string, std::string> parameters_;
 };
 
 TEST_F(ScriptPreconditionTest, NoConditions) {
@@ -134,6 +135,48 @@ TEST_F(ScriptPreconditionTest, BadPathPattern) {
   proto.add_path_pattern("invalid[");
 
   EXPECT_EQ(nullptr, ScriptPrecondition::FromProto(proto));
+}
+
+TEST_F(ScriptPreconditionTest, ParameterMustExist) {
+  ScriptPreconditionProto proto;
+  ScriptParameterMatchProto* match = proto.add_script_parameter_match();
+  match->set_name("param");
+  match->set_exists(true);
+
+  EXPECT_FALSE(Check(proto));
+
+  parameters_["param"] = "exists";
+
+  EXPECT_TRUE(Check(proto));
+}
+
+TEST_F(ScriptPreconditionTest, ParameterMustNotExist) {
+  ScriptPreconditionProto proto;
+  ScriptParameterMatchProto* match = proto.add_script_parameter_match();
+  match->set_name("param");
+  match->set_exists(false);
+
+  EXPECT_TRUE(Check(proto));
+
+  parameters_["param"] = "exists";
+
+  EXPECT_FALSE(Check(proto));
+}
+
+TEST_F(ScriptPreconditionTest, ParameterMustHaveValue) {
+  ScriptPreconditionProto proto;
+  ScriptParameterMatchProto* match = proto.add_script_parameter_match();
+  match->set_name("param");
+  match->set_value_equals("value");
+
+  EXPECT_FALSE(Check(proto));
+
+  parameters_["param"] = "another value";
+
+  EXPECT_FALSE(Check(proto));
+
+  parameters_["param"] = "value";
+  EXPECT_TRUE(Check(proto));
 }
 
 TEST_F(ScriptPreconditionTest, MultipleConditions) {

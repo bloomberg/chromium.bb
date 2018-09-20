@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -36,8 +37,10 @@ class Controller : public ScriptExecutorDelegate,
                    public ScriptTracker::Listener,
                    private content::WebContentsObserver {
  public:
-  static void CreateAndStartForWebContents(content::WebContents* web_contents,
-                                           std::unique_ptr<Client> client);
+  static void CreateAndStartForWebContents(
+      content::WebContents* web_contents,
+      std::unique_ptr<Client> client,
+      std::unique_ptr<std::map<std::string, std::string>> parameters);
 
   // Overrides ScriptExecutorDelegate:
   Service* GetService() override;
@@ -51,7 +54,8 @@ class Controller : public ScriptExecutorDelegate,
   Controller(content::WebContents* web_contents,
              std::unique_ptr<Client> client,
              std::unique_ptr<WebController> web_controller,
-             std::unique_ptr<Service> service);
+             std::unique_ptr<Service> service,
+             std::unique_ptr<std::map<std::string, std::string>> parameters);
   ~Controller() override;
 
   void GetOrCheckScripts(const GURL& url);

@@ -57,6 +57,20 @@ message ScriptPreconditionProto {
   repeated string path_pattern = 5;
   // Domain (exact match) excluding the last '/' character.
   repeated string domain = 6;
+  // Combined with AND: all matches must be true for precondition to hold.
+  repeated ScriptParameterMatchProto script_parameter_match = 7;
+}
+
+message ScriptParameterMatchProto {
+  // Parameter name, as found in the Intent, without prefix.
+  optional string name = 4;
+
+  // Checks whether the script parameter is present.
+  optional bool exists = 2 [default = true];
+
+  // Checks whether the script parameter has exact value. Empty or missing value
+  // is treated as wildcard - any value will pass.
+  optional string value_equals = 3;
 }
 
 enum PolicyType {

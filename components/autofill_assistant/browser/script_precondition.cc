@@ -35,25 +35,31 @@ std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
   for (const auto& pattern : proto.path_pattern()) {
     auto re = std::make_unique<re2::RE2>(pattern);
     if (re->error_code() != re2::RE2::NoError) {
-      LOG(ERROR) << "Invalid regexp in script precondition '" << pattern
-                 << "'. Will never match.";
+      LOG(ERROR) << "Invalid regexp in script precondition '" << pattern;
       return nullptr;
     }
     path_pattern.emplace_back(std::move(re));
   }
 
+  std::vector<ScriptParameterMatchProto> parameter_match;
+  for (const auto& match : proto.script_parameter_match()) {
+    parameter_match.emplace_back(match);
+  }
+
   // TODO(crbug.com/806868): Detect unknown or unsupported conditions and reject
   // them.
-  return std::make_unique<ScriptPrecondition>(elements_exist, domain_match,
-                                              std::move(path_pattern));
+  return std::make_unique<ScriptPrecondition>(
+      elements_exist, domain_match, std::move(path_pattern), parameter_match);
 }
 
 ScriptPrecondition::~ScriptPrecondition() {}
 
-void ScriptPrecondition::Check(WebController* web_controller,
-                               base::OnceCallback<void(bool)> callback) {
+void ScriptPrecondition::Check(
+    WebController* web_controller,
+    const std::map<std::string, std::string>& parameters,
+    base::OnceCallback<void(bool)> callback) {
   const GURL& url = web_controller->GetUrl();
-  if (!MatchDomain(url) || !MatchPath(url)) {
+  if (!MatchDomain(url) || !MatchPath(url) || !MatchParameters(parameters)) {
     std::move(callback).Run(false);
     return;
   }
@@ -76,10 +82,12 @@ void ScriptPrecondition::Check(WebController* web_controller,
 ScriptPrecondition::ScriptPrecondition(
     const std::vector<std::vector<std::string>>& elements_exist,
     const std::set<std::string>& domain_match,
-    std::vector<std::unique_ptr<re2::RE2>> path_pattern)
+    std::vector<std::unique_ptr<re2::RE2>> path_pattern,
+    const std::vector<ScriptParameterMatchProto>& parameter_match)
     : elements_exist_(elements_exist),
       domain_match_(domain_match),
       path_pattern_(std::move(path_pattern)),
+      parameter_match_(parameter_match),
       weak_ptr_factory_(this) {}
 
 void ScriptPrecondition::OnCheckElementExists(bool result) {
@@ -117,4 +125,24 @@ bool ScriptPrecondition::MatchPath(const GURL& url) const {
   return false;
 }
 
+bool ScriptPrecondition::MatchParameters(
+    const std::map<std::string, std::string>& parameters) const {
+  for (const auto& match : parameter_match_) {
+    auto iter = parameters.find(match.name());
+    if (match.exists()) {
+      // parameter must exist and optionally have a specific value
+      if (iter == parameters.end())
+        return false;
+
+      if (!match.value_equals().empty() && iter->second != match.value_equals())
+        return false;
+
+    } else {
+      // parameter must not exist
+      if (iter != parameters.end())
+        return false;
+    }
+  }
+  return true;
+}
 }  // namespace autofill_assistant.
