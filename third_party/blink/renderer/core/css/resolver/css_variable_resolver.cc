@@ -78,14 +78,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   const PropertyRegistration* registration =
       registry_ ? registry_->Registration(name) : nullptr;
 
-  CSSVariableData* variable_data = nullptr;
-  if (!registration || registration->Inherits()) {
-    if (inherited_variables_)
-      variable_data = inherited_variables_->GetVariable(name);
-  } else {
-    if (non_inherited_variables_)
-      variable_data = non_inherited_variables_->GetVariable(name);
-  }
+  CSSVariableData* variable_data = GetVariable(name, registration);
+
   if (!variable_data)
     return registration ? registration->InitialVariableData() : nullptr;
 
@@ -102,7 +96,7 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   scoped_refptr<CSSVariableData> new_variable_data = ResolveCustomProperty(
       name, *variable_data, options, resolve_urls, unused_cycle_detected);
   if (!registration) {
-    inherited_variables_->SetVariable(name, new_variable_data);
+    SetVariable(name, registration, new_variable_data);
     return new_variable_data;
   }
 
@@ -113,13 +107,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
     if (!parsed_value)
       new_variable_data = nullptr;
   }
-  if (registration->Inherits()) {
-    inherited_variables_->SetVariable(name, new_variable_data);
-    inherited_variables_->SetRegisteredVariable(name, parsed_value);
-  } else {
-    non_inherited_variables_->SetVariable(name, new_variable_data);
-    non_inherited_variables_->SetRegisteredVariable(name, parsed_value);
-  }
+  SetVariable(name, registration, new_variable_data);
+  SetRegisteredVariable(name, *registration, parsed_value);
   if (!new_variable_data)
     return registration->InitialVariableData();
   return new_variable_data;
@@ -200,6 +189,55 @@ bool CSSVariableResolver::IsVariableDisallowed(
           variable_data.HasFontUnits()) ||
          (registration && options.disallow_registered_root_font_units &&
           variable_data.HasRootFontUnits());
+}
+
+CSSVariableData* CSSVariableResolver::GetVariable(
+    const AtomicString& name,
+    const PropertyRegistration* registration) {
+  if (!registration || registration->Inherits()) {
+    return inherited_variables_ ? inherited_variables_->GetVariable(name)
+                                : nullptr;
+  }
+  return non_inherited_variables_ ? non_inherited_variables_->GetVariable(name)
+                                  : nullptr;
+}
+
+const CSSValue* CSSVariableResolver::GetRegisteredVariable(
+    const AtomicString& name,
+    const PropertyRegistration& registration) {
+  if (registration.Inherits()) {
+    return inherited_variables_ ? inherited_variables_->RegisteredVariable(name)
+                                : nullptr;
+  }
+  return non_inherited_variables_
+             ? non_inherited_variables_->RegisteredVariable(name)
+             : nullptr;
+}
+
+void CSSVariableResolver::SetVariable(
+    const AtomicString& name,
+    const PropertyRegistration* registration,
+    scoped_refptr<CSSVariableData> variable_data) {
+  if (!registration || registration->Inherits()) {
+    DCHECK(inherited_variables_);
+    inherited_variables_->SetVariable(name, std::move(variable_data));
+  } else {
+    DCHECK(non_inherited_variables_);
+    non_inherited_variables_->SetVariable(name, std::move(variable_data));
+  }
+}
+
+void CSSVariableResolver::SetRegisteredVariable(
+    const AtomicString& name,
+    const PropertyRegistration& registration,
+    const CSSValue* value) {
+  if (registration.Inherits()) {
+    DCHECK(inherited_variables_);
+    inherited_variables_->SetRegisteredVariable(name, value);
+  } else {
+    DCHECK(non_inherited_variables_);
+    non_inherited_variables_->SetRegisteredVariable(name, value);
+  }
 }
 
 bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
