@@ -22,7 +22,9 @@ See https://crbug.com/869308
 <div id="host4">
   <div id="child5"></div>
 </div>
-
+</div>
+<div id="host5">
+</div>
 
 <script>
 const host = document.querySelector('#host');
@@ -36,13 +38,17 @@ const child4 = document.querySelector('#child4');
 const child5 = document.querySelector('#child5');
 const shadow_root = host.attachShadow({ mode: 'open', slotting: 'manual' });
 const shadow_root1 = host4.attachShadow({ mode: 'open' });
+const shadow_root2 = host5.attachShadow({ mode: 'open', slotting: 'manual' });
 const slot1 = document.createElement('slot');
 const slot2 = document.createElement('slot');
 const slot3 = document.createElement('slot');
 const slot4 = document.createElement('slot');
+const slot5 = document.createElement('slot');
+const slot6 = document.createElement('slot');
 shadow_root.appendChild(slot1);
 shadow_root.appendChild(slot2);
 shadow_root.appendChild(slot3);
+shadow_root.appendChild(slot6);
 shadow_root1.appendChild(slot4);
 
 test(() => {
@@ -84,12 +90,47 @@ test(() => {
 }, 'Nodes should be assigned to slot only when nodes are host\'s children');
 
 test(() => {
-  slot3.assign([child1]);
-  assert_array_equals(slot3.assignedNodes(), []);
+  slot5.assign([child1]);
+  assert_array_equals(slot5.assignedNodes(), []);
 
-  shadow_root.insertBefore(slot3,slot1);
-  assert_array_equals(slot3.assignedNodes(), [child1]);
+  shadow_root.insertBefore(slot5,slot1);
+  assert_array_equals(slot5.assignedNodes(), [child1]);
 }, 'Nodes should be assigned to a slot only when the slot is in host\'s shadowtree');
+
+test(() => {
+  slot1.assign([child2]);
+  slot2.assign([child2]);
+  assert_array_equals(slot2.assignedNodes(), []);
+
+  shadow_root.insertBefore(slot2,slot1);
+  assert_array_equals(slot2.assignedNodes(), [child2]);
+}, 'A node should be assigned to a slot when the slot is inserted before the assigned slot');
+
+test(() => {
+  shadow_root.appendChild(slot1);
+  shadow_root.appendChild(slot2);
+  shadow_root.appendChild(slot6);
+  slot1.assign([child2]);
+  slot2.assign([child2]);
+  slot6.assign([child2]);
+  assert_array_equals(slot1.assignedNodes(), [child2]);
+
+  shadow_root.insertBefore(slot6,slot2);
+  slot1.remove();
+  assert_array_equals(slot6.assignedNodes(), [child2]);
+}, 'A slot should be assigned to a node even after the slot is inserted after the assigned slot, and the assigned slot are removed')
+
+  test(() => {
+  shadow_root.insertBefore(slot1,slot2);
+  slot2.assign([child3,child3]);
+  assert_array_equals(slot2.assignedNodes(), [child3]);
+
+  slot1.assign([child3]);
+  assert_array_equals(slot2.assignedNodes(), []);
+
+  shadow_root2.appendChild(slot2);
+  assert_array_equals(slot2.assignedNodes(), []);
+}, 'Same nodes should be ignored');
 
 test(() => {
   assert_array_equals(slot4.assignedElements(), [child5]);
