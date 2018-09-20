@@ -336,7 +336,14 @@ void ImageResource::AppendData(const char* data, size_t length) {
     Resource::AppendData(data, length);
 
     // Update the image immediately if needed.
-    if (GetContent()->ShouldUpdateImageImmediately()) {
+    //
+    // ImageLoader is not available when this image is loaded via ImageDocument.
+    // In this case, as the task runner is not available, update the image
+    // immediately.
+    //
+    // TODO(hajimehoshi): updating/flushing image should be throttled when
+    // necessary, so such tasks should be done on a throttleable task runner.
+    if (GetContent()->ShouldUpdateImageImmediately() || !Loader()) {
       UpdateImage(Data(), ImageResourceContent::kUpdateImage, false);
       return;
     }
@@ -346,7 +353,7 @@ void ImageResource::AppendData(const char* data, size_t length) {
     // inform the clients which causes an invalidation of this image. In other
     // words, we only invalidate this image every |kFlushDelay| seconds
     // while loading.
-    if (Loader() && !is_pending_flushing_) {
+    if (!is_pending_flushing_) {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner =
           Loader()->GetLoadingTaskRunner();
       TimeTicks now = CurrentTimeTicks();
