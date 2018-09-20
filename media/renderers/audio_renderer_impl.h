@@ -183,6 +183,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // by the value of |success|).
   void OnAudioBufferStreamInitialized(bool succes);
 
+  void FinishInitialization(PipelineStatus status);
+  void FinishFlush();
+
   // Callback functions to be called on |client_|.
   void OnPlaybackError(PipelineStatus error);
   void OnPlaybackEnded();

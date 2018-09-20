@@ -96,6 +96,7 @@ class MEDIA_EXPORT DecoderSelector {
   void ReturnNullDecoder();
   void InitializeDecryptingDemuxerStream();
   void OnDecryptingDemuxerStreamInitializeDone(PipelineStatus status);
+  void RunSelectDecoderCB();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   CreateDecodersCB create_decoders_cb_;

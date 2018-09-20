@@ -98,6 +98,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool HasEncryptedStream();
 
   void FinishInitialization(PipelineStatus status);
+  void FinishFlush();
 
   // Helper functions and callbacks for Initialize().
   void InitializeAudioRenderer();

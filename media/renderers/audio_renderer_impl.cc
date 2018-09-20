@@ -107,8 +107,8 @@ AudioRendererImpl::~AudioRendererImpl() {
   CHECK(lock_.Try());
   lock_.Release();
 
-  if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
+  if (init_cb_)
+    FinishInitialization(PIPELINE_ERROR_ABORT);
 }
 
 void AudioRendererImpl::StartTicking() {
@@ -271,10 +271,11 @@ TimeSource* AudioRendererImpl::GetTimeSource() {
 void AudioRendererImpl::Flush(const base::Closure& callback) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT_ASYNC_BEGIN0("media", "AudioRendererImpl::Flush", this);
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPlaying);
-  DCHECK(flush_cb_.is_null());
+  DCHECK(!flush_cb_);
 
   flush_cb_ = callback;
   ChangeState_Locked(kFlushing);
@@ -304,7 +305,7 @@ void AudioRendererImpl::ResetDecoderDone() {
     base::AutoLock auto_lock(lock_);
 
     DCHECK_EQ(state_, kFlushed);
-    DCHECK(!flush_cb_.is_null());
+    DCHECK(flush_cb_);
 
     received_end_of_stream_ = false;
     rendered_end_of_stream_ = false;
@@ -320,7 +321,8 @@ void AudioRendererImpl::ResetDecoderDone() {
 
   // Changes in buffering state are always posted. Flush callback must only be
   // run after buffering state has been set back to nothing.
-  task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&flush_cb_));
+  flush_cb_ = BindToCurrentLoop(flush_cb_);
+  FinishFlush();
 }
 
 void AudioRendererImpl::StartPlaying() {
@@ -346,9 +348,10 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(client);
   DCHECK(stream);
   DCHECK_EQ(stream->type(), DemuxerStream::AUDIO);
-  DCHECK(!init_cb.is_null());
+  DCHECK(init_cb);
   DCHECK(state_ == kUninitialized || state_ == kFlushed);
   DCHECK(sink_.get());
+  TRACE_EVENT_ASYNC_BEGIN0("media", "AudioRendererImpl::Initialize", this);
 
   // Trying to track down AudioClock crash, http://crbug.com/674856.
   // Initialize should never be called while Rendering is ongoing. This can lead
@@ -546,12 +549,11 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
   DVLOG(1) << __func__ << ": " << success;
   DCHECK(task_runner_->BelongsToCurrentThread());
-
   base::AutoLock auto_lock(lock_);
 
   if (!success) {
     state_ = kUninitialized;
-    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    FinishInitialization(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
@@ -559,11 +561,12 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
     DVLOG(1) << __func__ << ": Invalid audio parameters: "
              << audio_parameters_.AsHumanReadableString();
     ChangeState_Locked(kUninitialized);
+
     // TODO(flim): If the channel layout is discrete but channel count is 0, a
     // possible cause is that the input stream has > 8 channels but there is no
     // Web Audio renderer attached and no channel mixing matrices defined for
     // hardware renderers. Adding one for previewing content could be useful.
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
+    FinishInitialization(PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
 
@@ -588,7 +591,20 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
   }
 
   DCHECK(!sink_playing_);
-  base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
+  FinishInitialization(PIPELINE_OK);
+}
+
+void AudioRendererImpl::FinishInitialization(PipelineStatus status) {
+  DCHECK(init_cb_);
+  TRACE_EVENT_ASYNC_END1("media", "AudioRendererImpl::Initialize", this,
+                         "status", MediaLog::PipelineStatusToString(status));
+  base::ResetAndReturn(&init_cb_).Run(status);
+}
+
+void AudioRendererImpl::FinishFlush() {
+  DCHECK(flush_cb_);
+  TRACE_EVENT_ASYNC_END0("media", "AudioRendererImpl::Flush", this);
+  base::ResetAndReturn(&flush_cb_).Run();
 }
 
 void AudioRendererImpl::OnPlaybackError(PipelineStatus error) {
@@ -1085,7 +1101,7 @@ void AudioRendererImpl::HandleAbortedReadOrDecodeError(PipelineStatus status) {
       MEDIA_LOG(ERROR, media_log_) << "audio error during flushing, status: "
                                    << MediaLog::PipelineStatusToString(status);
       client_->OnError(status);
-      base::ResetAndReturn(&flush_cb_).Run();
+      FinishFlush();
       return;
 
     case kFlushed:
