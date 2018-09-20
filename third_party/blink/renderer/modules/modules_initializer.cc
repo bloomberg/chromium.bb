@@ -225,7 +225,7 @@ void ModulesInitializer::InitInspectorAgentSession(
   session->Append(new InspectorDOMStorageAgent(inspected_frames));
   if (allow_view_agents) {
     session->Append(InspectorDatabaseAgent::Create(page));
-    session->Append(new InspectorAccessibilityAgent(page, dom_agent));
+    session->Append(new InspectorAccessibilityAgent(inspected_frames, dom_agent));
     session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
   }
 }
