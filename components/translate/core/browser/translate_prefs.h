@@ -300,9 +300,10 @@ class TranslatePrefs {
   // kOverrideTranslateTriggerInIndia experiment made translate trigger on an
   // English page when it otherwise wouldn't have.
   void ReportForceTriggerOnEnglishPages();
-  // Decrements the pref that represents how often the
+  // Sets to -1 the pref that represents how often the
   // kOverrideTranslateTriggerInIndia experiment made translate trigger on an
-  // English page when it otherwise wouldn't have.
+  // English page when it otherwise wouldn't have. This is a special value that
+  // signals that the backoff should not happen for that user.
   void ReportAcceptedAfterForceTriggerOnEnglishPages();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
