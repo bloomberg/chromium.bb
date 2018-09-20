@@ -172,8 +172,7 @@ TEST_F(AppSearchResultRankerSerializationTest,
   EXPECT_TRUE(ranker.Rank().empty());
 }
 
-// Test is flaky. See https://crbug.com/884140
-TEST_F(AppSearchResultRankerSerializationTest, DISABLED_SaveToDiskSucceed) {
+TEST_F(AppSearchResultRankerSerializationTest, SaveToDiskSucceed) {
   // Construct ranker.
   AppSearchResultRanker ranker(temp_dir_.GetPath(), kNotAnEphemeralUser);
   // Wait for the loading to finish.
@@ -201,10 +200,15 @@ TEST_F(AppSearchResultRankerSerializationTest, DISABLED_SaveToDiskSucceed) {
   // Expect the predictor file is created.
   EXPECT_TRUE(base::PathExists(predictor_filename_));
 
-  // Expect the content to be proto_str_.
-  std::string str_written;
-  EXPECT_TRUE(base::ReadFileToString(predictor_filename_, &str_written));
-  EXPECT_EQ(str_written, proto_str_);
+  // Construct a second ranker from saved model file.
+  AppSearchResultRanker second_ranker(temp_dir_.GetPath(), kNotAnEphemeralUser);
+  // Wait for the loading to finish.
+  Wait();
+
+  // Check the second ranker is loaded correctly.
+  EXPECT_THAT(second_ranker.Rank(),
+              UnorderedElementsAre(Pair(kTarget1, FloatEq(1.0f)),
+                                   Pair(kTarget2, FloatEq(2.0f))));
 }
 
 }  // namespace app_list
