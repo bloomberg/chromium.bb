@@ -34,13 +34,14 @@ class Rect;
 
 namespace ui {
 class ContextFactory;
+class TouchEditingControllerFactory;
 }
 
 namespace views {
 
 class NativeWidget;
 class NonClientFrameView;
-class ViewsTouchEditingControllerFactory;
+class PointerWatcher;
 class View;
 class Widget;
 
@@ -206,11 +207,18 @@ class VIEWS_EXPORT ViewsDelegate {
   // opens in the opposite direction.
   virtual bool ShouldMirrorArrowsInRTL() const;
 
+  // Allows lower-level views components to use Mus-only PointerWatcher wiring.
+  // TODO(crbug.com/887725): Support PointerWatcher without mus, refactor.
+  virtual void AddPointerWatcher(PointerWatcher* pointer_watcher,
+                                 bool wants_moves);
+  virtual void RemovePointerWatcher(PointerWatcher* pointer_watcher);
+  virtual bool IsPointerWatcherSupported() const;
+
  protected:
   ViewsDelegate();
 
  private:
-  std::unique_ptr<ViewsTouchEditingControllerFactory>
+  std::unique_ptr<ui::TouchEditingControllerFactory>
       editing_controller_factory_;
 
 #if defined(USE_AURA)

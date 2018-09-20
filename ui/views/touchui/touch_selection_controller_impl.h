@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
-#define UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
+#ifndef UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
+#define UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/touch_selection/touch_selection_menu_runner.h"
+#include "ui/views/pointer_watcher.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget_observer.h"
@@ -29,17 +30,16 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
     : public ui::TouchEditingControllerDeprecated,
       public ui::TouchSelectionMenuClient,
       public WidgetObserver,
+      public PointerWatcher,
       public ui::EventHandler {
  public:
   class EditingHandleView;
 
-  // Use TextSelectionController::create().
-  explicit TouchSelectionControllerImpl(
-      ui::TouchEditable* client_view);
-
+  // Use ui::TouchEditingControllerFactory::Create() instead.
+  explicit TouchSelectionControllerImpl(ui::TouchEditable* client_view);
   ~TouchSelectionControllerImpl() override;
 
-  // TextSelectionController.
+  // ui::TouchEditingControllerDeprecated:
   void SelectionChanged() override;
   bool IsHandleDragInProgress() override;
   void HideHandles(bool quick) override;
@@ -70,19 +70,22 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // |bound| should be the clipped version of the selection bound.
   bool ShouldShowHandleFor(const gfx::SelectionBound& bound) const;
 
-  // Overridden from ui::TouchSelectionMenuClient.
+  // ui::TouchSelectionMenuClient:
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
   void RunContextMenu() override;
 
-  // Overridden from WidgetObserver. We will observe the widget backing the
-  // |client_view_| so that when its moved/resized, we can update the selection
-  // handles appropriately.
+  // WidgetObserver:
   void OnWidgetClosing(Widget* widget) override;
   void OnWidgetBoundsChanged(Widget* widget,
                              const gfx::Rect& new_bounds) override;
 
-  // Overriden from ui::EventHandler.
+  // PointerWatcher:
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              const gfx::Point& location_in_screen,
+                              gfx::NativeView target) override;
+
+  // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
@@ -112,15 +115,15 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   bool IsSelectionHandle2Visible();
   bool IsCursorHandleVisible();
   gfx::Rect GetExpectedHandleBounds(const gfx::SelectionBound& bound);
-  views::WidgetDelegateView* GetHandle1View();
-  views::WidgetDelegateView* GetHandle2View();
+  WidgetDelegateView* GetHandle1View();
+  WidgetDelegateView* GetHandle2View();
 
   ui::TouchEditable* client_view_;
-  Widget* client_widget_;
+  Widget* client_widget_ = nullptr;
   std::unique_ptr<EditingHandleView> selection_handle_1_;
   std::unique_ptr<EditingHandleView> selection_handle_2_;
   std::unique_ptr<EditingHandleView> cursor_handle_;
-  bool command_executed_;
+  bool command_executed_ = false;
   base::TimeTicks selection_start_time_;
 
   // Timer to trigger quick menu (Quick menu is not shown if the selection
@@ -129,7 +132,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   base::OneShotTimer quick_menu_timer_;
 
   // Pointer to the SelectionHandleView being dragged during a drag session.
-  EditingHandleView* dragging_handle_;
+  EditingHandleView* dragging_handle_ = nullptr;
 
   // In cursor mode, the two selection bounds are the same and correspond to
   // |cursor_handle_|; otherwise, they correspond to |selection_handle_1_| and
@@ -148,4 +151,4 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
 }  // namespace views
 
-#endif  // UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
+#endif  // UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
