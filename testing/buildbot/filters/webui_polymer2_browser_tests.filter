@@ -285,6 +285,7 @@ MultiDeviceSetupBrowserTest.*
 MultiProfileDriveFileSystemExtensionApiTest.*
 MultiProfileFilesAppBrowserTest.*
 NetInternalsTest.*
+NoBackgroundTasksTest.*
 NTP4WebUITest.*
 PasswordsAndFormsBrowserTest.*
 PrintPreviewAdvancedDialogTest.*
