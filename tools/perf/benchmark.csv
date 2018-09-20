@@ -28,7 +28,7 @@ loading.desktop,"kouhei@chromium.org, ksakamoto@chromium.org",,https://bit.ly/lo
 loading.mobile,"kouhei@chromium.org, ksakamoto@chromium.org",,https://bit.ly/loading-benchmarks,"cache_temperature_cold,cache_temperature_hot,cache_temperature_warm,easy_ttfmp,easy_tti,global,pwa,tough_ttfmp,tough_tti"
 media.desktop,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media,,"aac,audio_only,audio_video,background,beginning_to_end,busyjs,cns,h264,is_4k,is_50fps,mp3,mse,opus,pcm,seek,src,video_only,vorbis,vp8,vp9"
 media.mobile,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media,,"aac,audio_only,audio_video,background,beginning_to_end,busyjs,cns,h264,is_4k,is_50fps,mp3,mse,opus,pcm,seek,src,video_only,vorbis,vp8,vp9"
-media_perftests,crouleau@chromium.org,,,
+media_perftests,"crouleau@chromium.org, dalecurtis@chromium.org",Internals>Media,,
 memory.desktop,erikchen@chromium.org,,,
 memory.long_running_idle_gmail_background_tbmv2,ulan@chromium.org,,,
 memory.long_running_idle_gmail_tbmv2,ulan@chromium.org,,,
