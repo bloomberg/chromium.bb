@@ -412,10 +412,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                     (boolean) newValue);
         } else if (isSyncTypePreference(preference)) {
-            final boolean syncAutofillToggled = preference == mSyncAutofill;
-            final boolean preferenceChecked = (boolean) newValue;
             ThreadUtils.postOnUiThread(() -> {
-                if (syncAutofillToggled) {
+                boolean preferenceChecked = (boolean) newValue;
+                if (preference == mSyncAutofill) {
                     // If the user checks the autofill sync checkbox, then enable and check the
                     // payments integration checkbox.
                     //
@@ -423,6 +422,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
                     // the payments integration checkbox.
                     mSyncPaymentsIntegration.setEnabled(preferenceChecked);
                     mSyncPaymentsIntegration.setChecked(preferenceChecked);
+                } else if (preference == mSyncHistory) {
+                    // Disable 'Activity and interactions' if history is disabled, enable otherwise.
+                    mSyncActivityAndInteractions.setEnabled(preferenceChecked);
+                    mSyncActivityAndInteractions.setChecked(preferenceChecked);
                 }
                 updateSyncStateFromSelectedModelTypes();
             });
@@ -693,6 +696,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
                 && mProfileSyncService.getPassphraseType() == PassphraseType.CUSTOM_PASSPHRASE;
         Set<Integer> syncTypes = mProfileSyncService.getPreferredDataTypes();
         boolean syncAutofill = syncTypes.contains(ModelType.AUTOFILL);
+        boolean syncHistory = syncTypes.contains(ModelType.TYPED_URLS);
         for (CheckBoxPreference pref : mSyncAllTypes) {
             // Set the default state of each data type checkbox.
             boolean canSyncType = true;
@@ -700,7 +704,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             if (pref == mSyncPaymentsIntegration) {
                 canSyncType = syncAutofill || syncEverything;
             }
-            if (pref == mSyncActivityAndInteractions) canSyncType = !hasCustomPassphrase;
+            if (pref == mSyncActivityAndInteractions) {
+                canSyncType = syncHistory && !hasCustomPassphrase;
+            }
 
             if (syncEverything) {
                 pref.setChecked(canSyncType);
@@ -715,13 +721,13 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));
             mSyncPaymentsIntegration.setChecked(
                     syncAutofill && PersonalDataManager.isPaymentsIntegrationEnabled());
-            mSyncHistory.setChecked(syncTypes.contains(ModelType.TYPED_URLS));
+            mSyncHistory.setChecked(syncHistory);
             mSyncPasswords.setChecked(
                     passwordSyncConfigurable && syncTypes.contains(ModelType.PASSWORDS));
             mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
             mSyncSettings.setChecked(syncTypes.contains(ModelType.PREFERENCES));
-            mSyncActivityAndInteractions.setChecked(
-                    !hasCustomPassphrase && syncTypes.contains(ModelType.USER_EVENTS));
+            mSyncActivityAndInteractions.setChecked(syncHistory && !hasCustomPassphrase
+                    && syncTypes.contains(ModelType.USER_EVENTS));
         }
     }
 
