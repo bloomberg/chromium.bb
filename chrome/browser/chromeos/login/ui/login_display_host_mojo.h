@@ -98,11 +98,16 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void UpdateAddUserButtonStatus() override;
 
   // LoginScreenClient::Delegate:
-  void HandleAuthenticateUser(const AccountId& account_id,
-                              const std::string& password,
-                              bool authenticated_by_pin,
-                              AuthenticateUserCallback callback) override;
-  void HandleAttemptUnlock(const AccountId& account_id) override;
+  void HandleAuthenticateUserWithPasswordOrPin(
+      const AccountId& account_id,
+      const std::string& password,
+      bool authenticated_by_pin,
+      AuthenticateUserWithPasswordOrPinCallback callback) override;
+  void HandleAuthenticateUserWithExternalBinary(
+      const AccountId& account_id,
+      AuthenticateUserWithExternalBinaryCallback callback) override;
+  void HandleAuthenticateUserWithEasyUnlock(
+      const AccountId& account_id) override;
   void HandleHardlockPod(const AccountId& account_id) override;
   void HandleRecordClickOnLockIcon(const AccountId& account_id) override;
   void HandleOnFocusPod(const AccountId& account_id) override;
@@ -123,13 +128,14 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // State associated with a pending authentication attempt.
   struct AuthState {
-    AuthState(AccountId account_id, AuthenticateUserCallback callback);
+    AuthState(AccountId account_id,
+              AuthenticateUserWithPasswordOrPinCallback callback);
     ~AuthState();
 
     // Account that is being authenticated.
     AccountId account_id;
     // Callback that should be executed the authentication result is available.
-    AuthenticateUserCallback callback;
+    AuthenticateUserWithPasswordOrPinCallback callback;
   };
   std::unique_ptr<AuthState> pending_auth_state_;
 

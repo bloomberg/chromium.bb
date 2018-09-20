@@ -82,16 +82,16 @@ bool LoginScreenController::IsAuthenticating() const {
   return authentication_stage_ != AuthenticationStage::kIdle;
 }
 
-void LoginScreenController::AuthenticateUser(const AccountId& account_id,
-                                             const std::string& password,
-                                             bool authenticated_by_pin,
-                                             OnAuthenticateCallback callback) {
+void LoginScreenController::AuthenticateUserWithPasswordOrPin(
+    const AccountId& account_id,
+    const std::string& password,
+    bool authenticated_by_pin,
+    OnAuthenticateCallback callback) {
   // It is an error to call this function while an authentication is in
   // progress.
-  LOG_IF(ERROR, IsAuthenticating())
+  LOG_IF(FATAL, IsAuthenticating())
       << "Duplicate authentication attempt; current authentication stage is "
       << static_cast<int>(authentication_stage_);
-  CHECK(!IsAuthenticating());
 
   if (!login_screen_client_) {
     std::move(callback).Run(base::nullopt);
@@ -128,10 +128,34 @@ void LoginScreenController::AuthenticateUser(const AccountId& account_id,
                          authenticated_by_pin, std::move(callback))));
 }
 
-void LoginScreenController::AttemptUnlock(const AccountId& account_id) {
+void LoginScreenController::AuthenticateUserWithExternalBinary(
+    const AccountId& account_id,
+    OnAuthenticateCallback callback) {
+  // It is an error to call this function while an authentication is in
+  // progress.
+  LOG_IF(FATAL, IsAuthenticating())
+      << "Duplicate authentication attempt; current authentication stage is "
+      << static_cast<int>(authentication_stage_);
+
+  if (!login_screen_client_) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  authentication_stage_ = AuthenticationStage::kDoAuthenticate;
+  login_screen_client_->AuthenticateUserWithExternalBinary(
+      account_id,
+      base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void LoginScreenController::AuthenticateUserWithEasyUnlock(
+    const AccountId& account_id) {
+  // TODO(jdufault): integrate this into authenticate stage after mojom is
+  // refactored to use a callback.
   if (!login_screen_client_)
     return;
-  login_screen_client_->AttemptUnlock(account_id);
+  login_screen_client_->AuthenticateUserWithEasyUnlock(account_id);
 }
 
 void LoginScreenController::HardlockPod(const AccountId& account_id) {
@@ -495,12 +519,14 @@ void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
                                                bool authenticated_by_pin,
                                                OnAuthenticateCallback callback,
                                                const std::string& system_salt) {
+  // TODO(jdufault): Simplify this, system_salt is no longer used so fetching
+  // the system salt can be skipped.
   authentication_stage_ = AuthenticationStage::kDoAuthenticate;
 
   int dummy_value;
   bool is_pin =
       authenticated_by_pin && base::StringToInt(password, &dummy_value);
-  login_screen_client_->AuthenticateUser(
+  login_screen_client_->AuthenticateUserWithPasswordOrPin(
       account_id, password, is_pin,
       base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
                      weak_factory_.GetWeakPtr(), base::Passed(&callback)));

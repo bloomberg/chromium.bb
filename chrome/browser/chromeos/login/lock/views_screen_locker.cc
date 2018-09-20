@@ -165,11 +165,11 @@ content::WebContents* ViewsScreenLocker::GetWebContents() {
   return nullptr;
 }
 
-void ViewsScreenLocker::HandleAuthenticateUser(
+void ViewsScreenLocker::HandleAuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
     bool authenticated_by_pin,
-    AuthenticateUserCallback callback) {
+    AuthenticateUserWithPasswordOrPinCallback callback) {
   DCHECK_EQ(account_id.GetUserEmail(),
             gaia::SanitizeEmail(account_id.GetUserEmail()));
   const user_manager::User* const user =
@@ -193,7 +193,20 @@ void ViewsScreenLocker::HandleAuthenticateUser(
   UpdatePinKeyboardState(account_id);
 }
 
-void ViewsScreenLocker::HandleAttemptUnlock(const AccountId& account_id) {
+void ViewsScreenLocker::HandleAuthenticateUserWithExternalBinary(
+    const AccountId& account_id,
+    AuthenticateUserWithExternalBinaryCallback callback) {
+  // TODO/FIXME: implement the actual external binary auth check.
+  bool auth_success = false;
+  NOTIMPLEMENTED();
+
+  std::move(callback).Run(auth_success);
+  if (auth_success)
+    ScreenLocker::Hide();
+}
+
+void ViewsScreenLocker::HandleAuthenticateUserWithEasyUnlock(
+    const AccountId& account_id) {
   user_selection_screen_->AttemptEasyUnlock(account_id);
 }
 

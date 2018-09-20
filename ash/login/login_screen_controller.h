@@ -57,11 +57,13 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // LoginScreenClient (in the chrome process) will do the authentication and
   // request to show error messages in the screen if auth fails, or request to
   // clear errors if auth succeeds.
-  void AuthenticateUser(const AccountId& account_id,
-                        const std::string& password,
-                        bool authenticated_by_pin,
-                        OnAuthenticateCallback callback);
-  void AttemptUnlock(const AccountId& account_id);
+  void AuthenticateUserWithPasswordOrPin(const AccountId& account_id,
+                                         const std::string& password,
+                                         bool authenticated_by_pin,
+                                         OnAuthenticateCallback callback);
+  void AuthenticateUserWithExternalBinary(const AccountId& account_id,
+                                          OnAuthenticateCallback callback);
+  void AuthenticateUserWithEasyUnlock(const AccountId& account_id);
   void HardlockPod(const AccountId& account_id);
   void RecordClickOnLockIcon(const AccountId& account_id);
   void OnFocusPod(const AccountId& account_id);

@@ -10,8 +10,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
-using AuthenticateUserCallback =
-    ash::mojom::LoginScreenClient::AuthenticateUserCallback;
+using AuthenticateUserWithPasswordOrPinCallback =
+    ash::mojom::LoginScreenClient::AuthenticateUserWithPasswordOrPinCallback;
+using AuthenticateUserWithExternalBinaryCallback =
+    ash::mojom::LoginScreenClient::AuthenticateUserWithExternalBinaryCallback;
 
 namespace chromeos {
 class LoginAuthRecorder;
@@ -26,12 +28,16 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
    public:
     Delegate();
     virtual ~Delegate();
-    virtual void HandleAuthenticateUser(
+    virtual void HandleAuthenticateUserWithPasswordOrPin(
         const AccountId& account_id,
-        const std::string& hashed_password,
+        const std::string& password,
         bool authenticated_by_pin,
-        AuthenticateUserCallback callback) = 0;
-    virtual void HandleAttemptUnlock(const AccountId& account_id) = 0;
+        AuthenticateUserWithPasswordOrPinCallback callback) = 0;
+    virtual void HandleAuthenticateUserWithExternalBinary(
+        const AccountId& account_id,
+        AuthenticateUserWithExternalBinaryCallback callback) = 0;
+    virtual void HandleAuthenticateUserWithEasyUnlock(
+        const AccountId& account_id) = 0;
     virtual void HandleHardlockPod(const AccountId& account_id) = 0;
     virtual void HandleRecordClickOnLockIcon(const AccountId& account_id) = 0;
     virtual void HandleOnFocusPod(const AccountId& account_id) = 0;
@@ -64,11 +70,15 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   chromeos::LoginAuthRecorder* auth_recorder();
 
   // ash::mojom::LoginScreenClient:
-  void AuthenticateUser(const AccountId& account_id,
-                        const std::string& password,
-                        bool authenticated_by_pin,
-                        AuthenticateUserCallback callback) override;
-  void AttemptUnlock(const AccountId& account_id) override;
+  void AuthenticateUserWithPasswordOrPin(
+      const AccountId& account_id,
+      const std::string& password,
+      bool authenticated_by_pin,
+      AuthenticateUserWithPasswordOrPinCallback callback) override;
+  void AuthenticateUserWithExternalBinary(
+      const AccountId& account_id,
+      AuthenticateUserWithExternalBinaryCallback callback) override;
+  void AuthenticateUserWithEasyUnlock(const AccountId& account_id) override;
   void HardlockPod(const AccountId& account_id) override;
   void RecordClickOnLockIcon(const AccountId& account_id) override;
   void OnFocusPod(const AccountId& account_id) override;
