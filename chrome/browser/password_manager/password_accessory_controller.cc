@@ -376,6 +376,10 @@ std::vector<Item> PasswordAccessoryController::CreateViewItems(
   std::vector<Item> items;
   base::string16 passwords_title_str;
 
+  // Create a horizontal divider line before the title.
+  items.emplace_back(base::string16(), base::string16(), false,
+                     Item::Type::TOP_DIVIDER);
+
   // Create the title element
   passwords_title_str = l10n_util::GetStringFUTF16(
       suggestions.empty()

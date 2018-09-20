@@ -41,6 +41,10 @@ class PasswordAccessoryViewInterface {
 
       // A single, usually static and interactive suggestion.
       OPTION = 5,  // e.g. the "Manage passwords..." link.
+
+      // A horizontal, non-interactive divider used to visually divide the
+      // accessory sheet from the accessory bar.
+      TOP_DIVIDER = 6,
     };
     // The |text| is caption of the item and what will be filled if selected.
     base::string16 text;
