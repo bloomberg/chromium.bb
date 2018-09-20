@@ -64,6 +64,7 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
 
     ++cpi->num_workers;
     winterface->init(worker);
+    worker->thread_name = "aom enc worker";
 
     thread_data->cpi = cpi;
 

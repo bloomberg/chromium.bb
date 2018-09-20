@@ -3766,6 +3766,7 @@ static void decode_mt_init(AV1Decoder *pbi) {
       ++pbi->num_workers;
 
       winterface->init(worker);
+      worker->thread_name = "aom tile worker";
       if (worker_idx < num_threads - 1 && !winterface->reset(worker)) {
         aom_internal_error(&cm->error, AOM_CODEC_ERROR,
                            "Tile decoder thread creation failed");

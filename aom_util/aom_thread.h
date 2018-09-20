@@ -380,6 +380,10 @@ typedef struct AVxWorkerImpl AVxWorkerImpl;
 typedef struct {
   AVxWorkerImpl *impl_;
   AVxWorkerStatus status_;
+  // Thread name for the debugger. If not NULL, must point to a string that
+  // outlives the worker thread. For portability, use a name <= 15 characters
+  // long (not including the terminating NUL character).
+  const char *thread_name;
   AVxWorkerHook hook;  // hook to call
   void *data1;         // first argument passed to 'hook'
   void *data2;         // second argument passed to 'hook'

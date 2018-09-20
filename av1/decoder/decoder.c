@@ -126,6 +126,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   cm->error.setjmp = 0;
 
   aom_get_worker_interface()->init(&pbi->lf_worker);
+  pbi->lf_worker.thread_name = "aom lf worker";
 
   return pbi;
 }

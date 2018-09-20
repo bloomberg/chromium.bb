@@ -14,6 +14,10 @@
 // Original source:
 //  https://chromium.googlesource.com/webm/libwebp
 
+// Enable GNU extensions in glibc so that we can call pthread_setname_np().
+// This must be before any #include statements.
+#define _GNU_SOURCE
+
 #include <assert.h>
 #include <string.h>  // for memset()
 
@@ -34,6 +38,18 @@ static void execute(AVxWorker *const worker);  // Forward declaration.
 
 static THREADFN thread_loop(void *ptr) {
   AVxWorker *const worker = (AVxWorker *)ptr;
+#if defined(__GLIBC__) || defined(__BIONIC__)
+  if (worker->thread_name) {
+    // Android and recent versions of glibc on Linux have a form of
+    // pthread_setname_np().
+    // Linux requires names (with nul) fit in 16 chars, otherwise
+    // pthread_setname_np() fails with ERANGE (34).
+    char thread_name[16];
+    strncpy(thread_name, worker->thread_name, sizeof(thread_name));
+    thread_name[sizeof(thread_name) - 1] = '\0';
+    pthread_setname_np(pthread_self(), thread_name);
+  }
+#endif
   int done = 0;
   while (!done) {
     pthread_mutex_lock(&worker->impl_->mutex_);
