@@ -1,0 +1,163 @@
+# These tests currently fail with SingleProcessMash enabled.
+# Bug: crbug.com/874089
+
+
+# CopyOutputRequests not allowed. https://crbug.com/877172
+-AuraWindowVideoCaptureDeviceBrowserTest.DeliversRefreshFramesUponRequest
+-AuraWindowVideoCaptureDeviceBrowserTest.ErrorsOutWhenWindowIsDestroyed
+-AuraWindowVideoCaptureDeviceBrowserTestP.CapturesContentChanges/0
+-AuraWindowVideoCaptureDeviceBrowserTestP.CapturesContentChanges/1
+-AuraWindowVideoCaptureDeviceBrowserTest.SuspendsAndResumes
+-CaptureScreenshotTest.CaptureScreenshot
+-CaptureScreenshotTest.CaptureScreenshotJpeg
+-CaptureScreenshotTest.SetDefaultBackgroundColorOverride
+-CaptureScreenshotTest.TransparentScreenshots
+-CompositedScrollingBrowserTest.Scroll3DTransformedScroller
+
+
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+# There are different timeouts due the same root cause above.
+
+# MainThreadFrameObserver::Wait() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-AutoscrollBrowserTest.AutoscrollDirectionChangeAfterFullyScrolled
+-AutoscrollBrowserTest.AutoscrollFlingGSBDeltaHints
+-AutoscrollBrowserTest.WheelScrollingWorksAfterAutoscrollCancel
+-BrowserSideFlingBrowserTest.TouchpadFling
+-BrowserSideFlingBrowserTest.TouchscreenFling
+-CompositorEventAckBrowserTest.MouseWheel
+-CompositorEventAckBrowserTest.PassiveTouchStartBlockingTouchEnd
+-CompositorEventAckBrowserTest.TouchStart
+-CompositorEventAckBrowserTest.TouchStartDuringFling
+-MainThreadEventQueueBrowserTest.MouseMove
+-MainThreadEventQueueBrowserTest.TouchMove
+-RenderWidgetHostViewBrowserTestBase.CompositorWorksWhenReusingRenderer
+-ScreenOrientationOOPIFBrowserTest.ScreenOrientation
+-ScrollLatencyBrowserTest.ScrollLatencyNotRecordedIfGSUIgnored
+-ScrollLatencyBrowserTest.SmoothWheelScroll
+-SitePerProcessBrowserTest.*
+-SitePerProcessGestureHitTestBrowserTest.*
+-SitePerProcessHitTestBrowserTest.*
+-SitePerProcessMouseWheelHitTestBrowserTest.*
+-TouchpadPinchBrowserTest.*
+-WheelEventListenerBrowserTest.DocumentMouseWheelEventListenersPassiveByDefault
+-WheelEventListenerBrowserTest.DocumentWheelEventListenersPassiveByDefault
+
+# DevToolsVideoConsumerTest::WaitUntilFrameReceived() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-DevToolsVideoConsumerTest.SetMinAndMaxFramesChangesDimensions
+
+# SurfaceHitTestReadyNotifier::WaitForSurfaceReady() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-SitePerProcessBrowserTouchActionTest.*
+-SitePerProcessEmulatedTouchBrowserTest.*
+-SitePerProcessHighDPIHitTestBrowserTest.*
+-SitePerProcessInternalsHitTestBrowserTest.*
+-SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.*
+-TouchAccessibilityBrowserTest.TouchExplorationInCrossSiteIframe
+
+# RenderWidgetHostInputEventRouter::IsViewInMap() never true.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-RenderWidgetHostTouchEmulatorBrowserTest.TouchEmulator
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedIframe/0
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedIframe/1
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedScrollMainframe/0
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedScrollMainframe/1
+-WebContentsViewAuraTest.ContentWindowClose
+
+# RenderWidgetHostViewBrowserTest::WaitForCopySourceReady() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-GLAndSoftwareCompositing/*
+
+# RenderFrameSubmissionObserver::Wait()/WaitForAnyFrameSubmission() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-TouchActionBrowserTest.*
+-TouchInputBrowserTest.*
+
+# RenderWidgetHostViewAura::CopyFromSurface crashes.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-SnapshotBrowserTest.SingleWindowTest
+-WebContentsViewAuraTest.ReplaceStateReloadPushState
+-WebContentsViewAuraTest.ScreenshotForSwappedOutRenderViews
+
+# WebContentsVideoCaptureDeviceBrowserTest::WaitForFrameWithColor() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-WebContentsVideoCaptureDeviceBrowserTest.*
+-WebContentsVideoCaptureDeviceBrowserTestP.*
+
+
+# Flakily fails MemoryDumpManager::UnregisterDumpProviderInternal DCHECK.
+# https://crbug.com/884589
+-File/MediaTest.VideoBear12DepthVP9/0
+-File/MediaTest.VideoBearHighBitDepthVP9/0
+-File/MediaTest.VideoBearMp4Vp9/0
+-File/MediaTest.VideoBearSilentTheora/0
+-File/MediaTest.VideoBearTheora/0
+-File/MediaTest.VideoBearWebm/0
+-File/MediaTest.VideoTulipWebm/0
+-Http/MediaTest.VideoBearHighBitDepthVP9/0
+-Http/MediaTest.VideoBearMp4Vp9/0
+-Http/MediaTest.VideoBearTheora/0
+-Http/MediaTest.VideoTulipWebm/0
+-MediaRedirectTest.CanPlayHiddenWebm
+-MediaSourceTest.ConfigChangeVideo
+-MediaSourceTest.Playback_VideoAudio_WebM
+-MediaSourceTest.Playback_VideoOnly_WebM
+-MediaTest.Navigate
+-MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo_ClearToClear/0
+-MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo_ClearToEncrypted/0
+-MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo_EncryptedToClear/0
+-MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo_EncryptedToEncrypted/0
+-MSE_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
+-MSE_ClearKey/EncryptedMediaTest.Playback_AudioClearVideo_WebM/0
+-MSE_ClearKey/EncryptedMediaTest.Playback_VideoAudio_WebM/0
+-MSE_ClearKey/EncryptedMediaTest.Playback_VideoAudio_WebM_Opus/0
+-MSE_ClearKey/EncryptedMediaTest.Playback_VideoClearAudio_WebM/0
+-MSE_ClearKey/EncryptedMediaTest.Playback_VideoClearAudio_WebM_Opus/0
+-MSE_ClearKey/EncryptedMediaTest.Playback_VideoOnly_MP4_VP9/0
+-MSE_ClearKey/EncryptedMediaTest.Playback_VideoOnly_WebM/0
+-MSE_ClearKey/EncryptedMediaTest.Playback_VideoOnly_WebM_Fullsample/0
+-MSE_ClearKey/EncryptedMediaTest.Playback_VideoOnly_WebM_Subsample/0
+-MSE_ClearKey/EncryptedMediaTest.Playback_VideoOnly_WebM_Subsample/0
+-SitePerProcessAutoplayBrowserTest.PropagateUserGestureFlag
+-SRC_ClearKey/EncryptedMediaTest.Playback_AudioClearVideo_WebM/0
+-SRC_ClearKey/EncryptedMediaTest.Playback_VideoAudio_WebM/0
+-SRC_ClearKey/EncryptedMediaTest.Playback_VideoAudio_WebM_Opus/0
+-SRC_ClearKey/EncryptedMediaTest.Playback_VideoClearAudio_WebM/0
+-SRC_ClearKey/EncryptedMediaTest.Playback_VideoClearAudio_WebM_Opus/0
+-SRC_ClearKey/EncryptedMediaTest.Playback_VideoOnly_WebM/0
+-SRC_ClearKey/EncryptedMediaTest.Playback_VideoOnly_WebM_Fullsample/0
+-SRC_ClearKey/EncryptedMediaTest.Playback_VideoOnly_WebM_Subsample/0
+
+
+# DCHECK(!event->IsPointerEvent()) fail. https://crbug.com/884342
+-MouseLatencyBrowserTest.CoalescedMouseWheelsCorrectlyTerminated
+
+
+# InputEventAckWaiter::Wait() times out, or fails. https://crbug.com/884360
+# Leaving examples of the bug.
+# -SitePerProcessHighDPIHitTestBrowserTest.CursorUpdateReceivedFromCrossSiteIframe/1
+# -SitePerProcessHitTestBrowserTest.CrossProcessMouseEnterAndLeaveTest/1
+# -SitePerProcessInternalsHitTestBrowserTest.NestedLocalNonFastScrollableDivCoordsAreLocal/3
+# -SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest/1
+
+
+# Hit test fails. https://crbug.com/884366
+# Leaving an example of the bug.
+# -SitePerProcessHitTestBrowserTest.HitTestNestedFrames/1
+-SitePerProcessHitTestDataGenerationBrowserTest.*
+
+
+# ShowWidgetMessageFilter::Wait() times out. https://crbug.com/884369
+# Leaving an example of the bug.
+# -SitePerProcessHitTestBrowserTest.PopupMenuTest/1
+
+
+# TestTouchSelectionControllerClientAura::Wait() times out.
+# https://crbug.com/884389
+-TouchSelectionControllerClientAuraScaleFactorTest.*
+-TouchSelectionControllerClientAuraTest.*
+
+
+# The test times out. https://crbug.com/884393
+-WebRtcCaptureFromElementBrowserTest.VerifyCanvasCaptureOffscreenCanvasFrames

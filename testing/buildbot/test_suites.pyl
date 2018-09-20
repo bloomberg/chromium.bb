@@ -1986,6 +1986,17 @@
         '--enable-features=SingleProcessMash',
       ],
     },
+    'single_process_mash_content_browsertests': {
+      'test': 'content_browsertests',
+      'args': [
+        '--enable-features=SingleProcessMash',
+        '--override-use-software-gl-for-tests',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.content_browsertests.filter',
+      ],
+      'swarming': {
+        'shards': 5,
+      },
+    },
     'single_process_mash_exo_unittests': {
       'test': 'exo_unittests',
       'args': [
