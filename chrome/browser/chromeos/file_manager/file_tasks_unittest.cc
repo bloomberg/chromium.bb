@@ -398,8 +398,8 @@ class FileManagerFileTasksComplexTest : public testing::Test {
               std::vector<FullTaskDescriptor>* result) {
       FindAllTypesOfTasks(
           profile, entries, file_urls,
-          base::Bind(&FindAllTypesOfTasksSynchronousWrapper::OnReply,
-                     base::Unretained(this), result));
+          base::BindOnce(&FindAllTypesOfTasksSynchronousWrapper::OnReply,
+                         base::Unretained(this), result));
       run_loop_.Run();
     }
 

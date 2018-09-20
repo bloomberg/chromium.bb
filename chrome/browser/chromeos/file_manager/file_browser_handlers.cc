@@ -295,10 +295,10 @@ void FileBrowserHandlerExecutor::Execute(
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(&SetupFileAccessPermissions, file_system_context, extension_,
-                 file_urls),
-      base::Bind(&FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&SetupFileAccessPermissions, file_system_context,
+                     extension_, file_urls),
+      base::BindOnce(&FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess(
