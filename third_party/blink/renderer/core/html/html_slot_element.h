@@ -53,15 +53,16 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   const HeapVector<Member<Element>> AssignedElementsForBinding(
       const AssignedNodesOptions&);
 
-  bool IsAssignedNodeSameWithBefore(
-      HeapVector<Member<Node>>& new_assigned_nodes,
-      HeapHashSet<Member<Node>>& old_assigned_nodes);
+  HeapVector<Member<Node>> DeleteCommonAssignedNodeAndReturnAddedAssignedNode(
+      const HeapVector<Member<Node>>& new_assigned_nodes);
+
   void assign(HeapVector<Member<Node>> nodes);
   bool ContainsInAssignedNodesCandidates(Node&) const;
-  void SignalSlotChange();
   HeapHashSet<Member<Node>>& AssignedNodesCandidate() {
     return assigned_nodes_candidates_;
   }
+  void SignalSlotChange();
+  void SignalSlotChangeAfterRemoved();
 
   const HeapVector<Member<Node>> FlattenedAssignedNodes();
 

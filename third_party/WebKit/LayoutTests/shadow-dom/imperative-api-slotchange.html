@@ -41,7 +41,39 @@ async_test((test) => {
     n.s1.assign([n.c2]);
     assert_array_equals(n.s2.assignedNodes(), []);
   },1);
-}, 'slotchange event: assign a child to a host.');
+}, 'slotchange event: Assign a assigned child to another slot.');
+
+async_test((test) => {
+  let n = createTestTree(test1);
+  n.s1.assign([n.c1]);
+  n.s2.assign([n.c1]);
+
+  setTimeout(function () {
+    doneIfSlotChange([n.s1,n.s2], test);
+    n.s1.assign([])
+  },1);
+}, 'slotchange event: Deassign a child from a slot, and assigned to another slot.');
+
+async_test((test) => {
+  let n = createTestTree(test1);
+  n.s1.assign([n.c1]);
+
+  setTimeout(function () {
+    doneIfSlotChange([n.s1], test);
+
+    n.s1.assign([n.c1,n.c2]);
+  },1);
+}, 'slotchange event: Assign a new child to a slot.');
+
+async_test((test) => {
+  let n = createTestTree(test1);
+  n.s1.assign([n.c1,n.c2]);
+
+  setTimeout(function () {
+    doneIfSlotChange([n.s1], test);
+    n.s1.assign([n.c1])
+  },1);
+}, 'slotchange event: Deassign a child from a slot.');
 
 async_test((test) => {
   let n = createTestTree(test1);
@@ -66,15 +98,25 @@ async_test((test) => {
     doneIfSlotChange([n.s1], test);
     n.c1.remove();
   },1);
-}, 'slotchange event: Remove a child to a host.');
+}, 'slotchange event: Remove a child from a host.');
+
+async_test((test) => {
+  let n = createTestTree(test1);
+  let slot = document.createElement('slot');
+  slot.assign([n.c1])
+
+  setTimeout(function () {
+    doneIfSlotChange([slot], test);
+    n.shadowroot.appendChild(slot);
+  },1);
+}, 'slotchange event: Insert a slot.');
 
 async_test((test) => {
   let n = createTestTree(test1);
   n.s1.assign([n.c1]);
-  n.s2.assign([n.c1]);
 
   setTimeout(function () {
-    doneIfSlotChange([n.s2], test);
+    doneIfSlotChange([n.s1], test);
     n.s1.remove();
   },1);
 }, 'slotchange event: Remove a slot from a shadow tree.');
@@ -84,7 +126,7 @@ async_test((test) => {
   n.s1.assign([n.c1]);
   let slot = document.createElement('slot');
   slot.assign([n.c1])
-  assert_array_equals(slot.assignedNodes(), []);
+  assert_array_equals(n.s1.assignedNodes(), [n.c1]);
 
   setTimeout(function () {
     doneIfSlotChange([slot,n.s1], test);
@@ -92,4 +134,66 @@ async_test((test) => {
     assert_array_equals(n.s1.assignedNodes(), []);
   },1);
 }, 'slotchange event: Insert a slot before another slot.');
+
+async_test((test) => {
+  let n = createTestTree(test1);
+  n.s1.assign([n.c1]);
+  n.s2.assign([n.c1]);
+
+  setTimeout(function () {
+    doneIfSlotChange([n.s1,n.s2], test);
+    n.s1.remove();
+  },1);
+}, 'slotchange event: Remove a preceding slot from a shadow tree.');
+
+</script>
+ <div id="test2">
+  <div id="host1">
+    <template id="shadowroot" data-mode="open" data-slotting="manual">
+      <div id="host2">
+        <template id="shadowroot1" data-mode="open" data-slotting="manual">
+          <slot id="s3"></slot>
+          <slot id="s2"></slot>
+        </template>
+        <slot id="s1"></slot>
+      </div>
+    </template>
+    <div id="c1"></div>
+   </div>
+  </div>
+<script>
+async_test((test) => {
+  let n = createTestTree(test2);
+  n.s2.assign([n.s1]);
+  n.s3.assign([n.s1,n.c1]);
+  n.s1.assign([n.c1]);
+  assert_array_equals(n.s3.assignedNodes(), [n.s1]);
+
+  setTimeout(function () {
+    doneIfSlotChange([n.s1,n.s2,n.s3], test);
+    n.host2.insertBefore(n.s3,n.s1);
+    assert_array_equals(n.s2.assignedNodes(), [n.s1]);
+  },1);
+}, 'slotchange event: Move a slot before another slot.');
+
+async_test((test) => {
+  let n = createTestTree(test2);
+  n.s1.assign([n.c1]);
+  n.s2.assign([n.s1]);
+
+  setTimeout(function () {
+    doneIfSlotChange([n.s1,n.s2], test);
+    n.c1.remove();
+  },1);
+}, 'slotchange event: A slot is assigned to another slot.');
+
+async_test((test) => {
+  let n = createTestTree(test2);
+  n.s2.assign([n.s1]);
+
+  setTimeout(function () {
+    doneIfSlotChange([n.s2], test);
+    n.s1.remove();
+  },1);
+}, 'slotchange event: Even if distributed nodes do not change, slotchange should be fired if assigned nodes are changed.');
 </script>
