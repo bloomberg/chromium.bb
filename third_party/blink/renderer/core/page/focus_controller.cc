@@ -1368,6 +1368,9 @@ void FocusController::FindFocusCandidateInContainer(
         !IsNavigableContainer(element, direction))
       continue;
 
+    if (HasRemoteFrame(element))
+      continue;
+
     if (already_checked.Contains(element))
       continue;
 

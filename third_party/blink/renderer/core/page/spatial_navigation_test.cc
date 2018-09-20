@@ -5,8 +5,12 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
 
@@ -436,4 +440,29 @@ TEST_F(SpatialNavigationTest, TopOfPinchedViewport) {
   EXPECT_GT(origin.Y(), 0);
   EXPECT_EQ(origin, TopOfVisualViewport());
 }
+
+TEST_F(SpatialNavigationTest, HasRemoteFrame) {
+  FrameTestHelpers::WebViewHelper helper;
+  helper.InitializeAndLoad("about:blank", nullptr, nullptr, nullptr, nullptr);
+
+  WebViewImpl* webview = helper.GetWebView();
+  WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
+  FrameTestHelpers::LoadHTMLString(webview->MainFrameImpl(),
+                                   "<!DOCTYPE html>"
+                                   "<iframe id='iframe'></iframe>",
+                                   base_url);
+
+  webview->ResizeWithBrowserControls(IntSize(400, 400), 50, 0, false);
+  webview->MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhases();
+
+  Element* iframe =
+      webview->MainFrameImpl()->GetFrame()->GetDocument()->getElementById(
+          "iframe");
+  EXPECT_FALSE(HasRemoteFrame(iframe));
+
+  webview->MainFrameImpl()->FirstChild()->Swap(
+      FrameTestHelpers::CreateRemote());
+  EXPECT_TRUE(HasRemoteFrame(iframe));
+}
+
 }  // namespace blink
