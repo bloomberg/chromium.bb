@@ -69,10 +69,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
                 forControlEvents:UIControlEventTouchUpInside];
 
   NSArray* views;
-  // If Manual Fallback Phase 2 is enabled add all the views.
-  BOOL isManualFillPhase2Enabled = base::FeatureList::IsEnabled(
-      autofill::features::kAutofillManualFallbackPhaseTwo);
-  if (isManualFillPhase2Enabled) {
+  if (autofill::features::IsAutofillManualFallbackEnabled()) {
     self.cardsButton = [UIButton buttonWithType:UIButtonTypeSystem];
     UIImage* cardImage = [UIImage imageNamed:@"ic_credit_card"];
     [self.cardsButton setImage:cardImage forState:UIControlStateNormal];

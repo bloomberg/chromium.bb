@@ -142,9 +142,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     return nil;
 
   UIWindow* window;
-  BOOL isManualFillEnabled =
-      base::FeatureList::IsEnabled(autofill::features::kAutofillManualFallback);
-  if (isManualFillEnabled) {
+  if (autofill::features::IsPasswordManualFallbackEnabled()) {
     // TODO(crbug.com/845472): verify this works on iPad with split view before
     // making this the default.
     window = windows.lastObject;
