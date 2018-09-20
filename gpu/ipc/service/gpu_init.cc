@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -82,7 +82,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info,
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
 bool CanAccessNvidiaDeviceFile() {
   bool res = true;
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   if (access("/dev/nvidiactl", R_OK) != 0) {
     DVLOG(1) << "NVIDIA device file /dev/nvidiactl access denied";
     res = false;
