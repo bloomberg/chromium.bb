@@ -5449,6 +5449,7 @@ if (!is_android && !is_fuchsia) {
     sources = [
       "../app/chrome_version.rc.version",
       "../browser/sync/test/integration/enable_disable_test.cc",
+      "../browser/sync/test/integration/local_sync_test.cc",
       "../browser/sync/test/integration/migration_test.cc",
       "../browser/sync/test/integration/single_client_app_list_sync_test.cc",
       "../browser/sync/test/integration/single_client_apps_sync_test.cc",

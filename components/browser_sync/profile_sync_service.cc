@@ -994,6 +994,11 @@ void ProfileSyncService::OnEngineInitialized(
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // TODO(treib): Based on some crash reports, it seems like the user could have
+  // signed out already at this point, so many of the steps below, including
+  // datatype reconfiguration, should not be triggered.
+  DCHECK(IsEngineAllowedToStart());
+
   // The very first time the backend initializes is effectively the first time
   // we can say we successfully "synced".  LastSyncedTime will only be null in
   // this case, because the pref wasn't restored on StartUp.
@@ -1516,10 +1521,15 @@ bool ProfileSyncService::HasObserver(
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  const syncer::ModelTypeSet preferred_types =
+  syncer::ModelTypeSet preferred_types =
       Union(sync_prefs_.GetPreferredDataTypes(registered_types,
                                               user_events_separate_pref_group_),
             syncer::ControlTypes());
+  if (IsLocalSyncEnabled()) {
+    preferred_types.Remove(syncer::APP_LIST);
+    preferred_types.Remove(syncer::USER_CONSENTS);
+    preferred_types.Remove(syncer::USER_EVENTS);
+  }
   const syncer::ModelTypeSet enforced_types =
       Intersection(GetDataTypesFromPreferenceProviders(), registered_types);
   return Union(preferred_types, enforced_types);

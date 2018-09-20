@@ -96,8 +96,8 @@ void ModelTypeController::LoadModels(
   request.authenticated_account_id = configure_context.authenticated_account_id;
   request.cache_guid = configure_context.cache_guid;
 
-  CHECK(!request.authenticated_account_id.empty());
-  CHECK(!request.cache_guid.empty());
+  // Note that |request.authenticated_account_id| may be empty for local sync.
+  DCHECK(!request.cache_guid.empty());
 
   // Ask the delegate to actually start the datatype.
   delegate_->OnSyncStarting(
