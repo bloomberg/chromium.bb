@@ -3781,8 +3781,9 @@ void Element::setPointerCapture(int pointer_id,
   if (GetDocument().GetFrame()) {
     if (!GetDocument().GetFrame()->GetEventHandler().IsPointerEventActive(
             pointer_id)) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidPointerId,
-                                        "InvalidPointerId");
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotFoundError,
+          "No active pointer with the given id is found.");
     } else if (!isConnected() ||
                (GetDocument().GetPage() && GetDocument()
                                                .GetPage()
@@ -3802,8 +3803,9 @@ void Element::releasePointerCapture(int pointer_id,
   if (GetDocument().GetFrame()) {
     if (!GetDocument().GetFrame()->GetEventHandler().IsPointerEventActive(
             pointer_id)) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidPointerId,
-                                        "InvalidPointerId");
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotFoundError,
+          "No active pointer with the given id is found.");
     } else {
       GetDocument().GetFrame()->GetEventHandler().ReleasePointerCapture(
           pointer_id, this);
