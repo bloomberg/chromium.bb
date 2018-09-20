@@ -18,10 +18,6 @@
 
 namespace chrome_test_util {
 
-id<GREYMatcher> TabletTabSwitcherOpenButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER);
-}
-
 id<GREYMatcher> TabletTabSwitcherCloseButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_LEAVE_TAB_SWITCHER);
 }
