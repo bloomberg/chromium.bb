@@ -102,8 +102,8 @@ void HTMLLinkElement::ParseAttribute(
     sizes_->DidUpdateAttributeValue(params.old_value, value);
     WebVector<WebSize> web_icon_sizes =
         WebIconSizesParser::ParseIconSizes(value);
-    icon_sizes_.resize(web_icon_sizes.size());
-    for (size_t i = 0; i < web_icon_sizes.size(); ++i)
+    icon_sizes_.resize(SafeCast<wtf_size_t>(web_icon_sizes.size()));
+    for (wtf_size_t i = 0; i < icon_sizes_.size(); ++i)
       icon_sizes_[i] = web_icon_sizes[i];
     Process();
   } else if (name == mediaAttr) {

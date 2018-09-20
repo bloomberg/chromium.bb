@@ -285,14 +285,14 @@ void HTMLSlotElement::RecalcDistributedNodes() {
 
 void HTMLSlotElement::AppendDistributedNode(Node& node) {
   DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-  size_t size = distributed_nodes_.size();
+  wtf_size_t size = distributed_nodes_.size();
   distributed_nodes_.push_back(&node);
   distributed_indices_.Set(&node, size);
 }
 
 void HTMLSlotElement::AppendDistributedNodesFrom(const HTMLSlotElement& other) {
   DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-  size_t index = distributed_nodes_.size();
+  wtf_size_t index = distributed_nodes_.size();
   distributed_nodes_.AppendVector(other.distributed_nodes_);
   for (const auto& node : other.distributed_nodes_)
     distributed_indices_.Set(node.Get(), index++);
@@ -353,7 +353,7 @@ Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
   else
     DCHECK(!NeedsDistributionRecalc());
   // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
-  size_t index = assigned_nodes_.Find(&node);
+  wtf_size_t index = assigned_nodes_.Find(&node);
   DCHECK(index != WTF::kNotFound);
   if (index + 1 == assigned_nodes_.size())
     return nullptr;
@@ -367,7 +367,7 @@ Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
   else
     DCHECK(!NeedsDistributionRecalc());
   // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
-  size_t index = assigned_nodes_.Find(&node);
+  wtf_size_t index = assigned_nodes_.Find(&node);
   DCHECK(index != WTF::kNotFound);
   if (index == 0)
     return nullptr;
@@ -380,7 +380,7 @@ Node* HTMLSlotElement::DistributedNodeNextTo(const Node& node) const {
   const auto& it = distributed_indices_.find(&node);
   if (it == distributed_indices_.end())
     return nullptr;
-  size_t index = it->value;
+  wtf_size_t index = it->value;
   if (index + 1 == distributed_nodes_.size())
     return nullptr;
   return distributed_nodes_[index + 1].Get();
@@ -392,7 +392,7 @@ Node* HTMLSlotElement::DistributedNodePreviousTo(const Node& node) const {
   const auto& it = distributed_indices_.find(&node);
   if (it == distributed_indices_.end())
     return nullptr;
-  size_t index = it->value;
+  wtf_size_t index = it->value;
   if (index == 0)
     return nullptr;
   return distributed_nodes_[index - 1].Get();
@@ -589,9 +589,9 @@ void HTMLSlotElement::LazyReattachNodesByDynamicProgramming(
     const HeapVector<Member<Node>>& nodes1,
     const HeapVector<Member<Node>>& nodes2) {
   // Use dynamic programming to minimize the number of nodes being reattached.
-  using LCSTable =
-      std::array<std::array<size_t, kLCSTableSizeLimit>, kLCSTableSizeLimit>;
-  using Backtrack = std::pair<size_t, size_t>;
+  using LCSTable = std::array<std::array<wtf_size_t, kLCSTableSizeLimit>,
+                              kLCSTableSizeLimit>;
+  using Backtrack = std::pair<wtf_size_t, wtf_size_t>;
   using BacktrackTable =
       std::array<std::array<Backtrack, kLCSTableSizeLimit>, kLCSTableSizeLimit>;
 
@@ -601,8 +601,8 @@ void HTMLSlotElement::LazyReattachNodesByDynamicProgramming(
   FillLongestCommonSubsequenceDynamicProgrammingTable(
       nodes1, nodes2, *lcs_table, *backtrack_table);
 
-  size_t r = nodes1.size();
-  size_t c = nodes2.size();
+  wtf_size_t r = nodes1.size();
+  wtf_size_t c = nodes2.size();
   while (r > 0 && c > 0) {
     Backtrack backtrack = (*backtrack_table)[r][c];
     if (backtrack == std::make_pair(r - 1, c - 1)) {
@@ -616,10 +616,10 @@ void HTMLSlotElement::LazyReattachNodesByDynamicProgramming(
     std::tie(r, c) = backtrack;
   }
   if (r > 0) {
-    for (size_t i = 0; i < r; ++i)
+    for (wtf_size_t i = 0; i < r; ++i)
       nodes1[i]->LazyReattachIfAttached();
   } else if (c > 0) {
-    for (size_t i = 0; i < c; ++i)
+    for (wtf_size_t i = 0; i < c; ++i)
       nodes2[i]->LazyReattachIfAttached();
   }
 }

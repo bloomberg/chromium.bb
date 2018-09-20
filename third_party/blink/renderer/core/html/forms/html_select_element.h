@@ -250,9 +250,9 @@ class CORE_EXPORT HTMLSelectElement final
   bool ShouldOpenPopupForKeyPressEvent(const KeyboardEvent&);
   void ListBoxDefaultEventHandler(Event&);
   void SetOptionsChangedOnLayoutObject();
-  size_t SearchOptionsForValue(const String&,
-                               size_t list_index_start,
-                               size_t list_index_end) const;
+  wtf_size_t SearchOptionsForValue(const String&,
+                                   wtf_size_t list_index_start,
+                                   wtf_size_t list_index_end) const;
   void UpdateListBoxSelection(bool deselect_other_options, bool scroll = true);
   void SetIndexToSelectOnCancel(int list_index);
   void SetSuggestedOption(HTMLOptionElement*);

@@ -241,7 +241,8 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
         // Compare the converted pixels
         ColorCorrectionTestUtils::CompareColorCorrectedPixels(
             pixels_converted_manually.get(),
-            pixels_converted_in_image_data.get(), image_data->Size().Area(),
+            pixels_converted_in_image_data.get(),
+            static_cast<int>(image_data->Size().Area()),
             (canvas_pixel_formats[k] == kRGBA8CanvasPixelFormat)
                 ? kPixelFormat_8888
                 : kPixelFormat_hhhh,

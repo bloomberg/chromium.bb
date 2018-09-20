@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/html_element.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
@@ -207,7 +208,7 @@ void HTMLElement::MapLanguageAttributeToLocale(
     else if (IsHTMLBodyElement(*this))
       UseCounter::Count(GetDocument(), WebFeature::kLangAttributeOnBody);
     String html_language = value.GetString();
-    size_t first_separator = html_language.find('-');
+    wtf_size_t first_separator = html_language.find('-');
     if (first_separator != kNotFound)
       html_language = html_language.Left(first_separator);
     String ui_language = DefaultLanguage();
@@ -536,11 +537,11 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        nullptr},
   };
 
-  using AttributeToTriggerIndexMap = HashMap<QualifiedName, int>;
+  using AttributeToTriggerIndexMap = HashMap<QualifiedName, uint32_t>;
   DEFINE_STATIC_LOCAL(AttributeToTriggerIndexMap,
                       attribute_to_trigger_index_map, ());
   if (!attribute_to_trigger_index_map.size()) {
-    for (size_t i = 0; i < arraysize(attribute_triggers); ++i)
+    for (uint32_t i = 0; i < base::size(attribute_triggers); ++i)
       attribute_to_trigger_index_map.insert(attribute_triggers[i].attribute, i);
   }
 
@@ -1104,7 +1105,7 @@ static RGBA32 ParseColorStringWithCrazyLegacyRules(const String& color_string) {
   // max.
   Vector<char, kMaxColorLength + 2> digit_buffer;
 
-  size_t i = 0;
+  wtf_size_t i = 0;
   // Skip a leading #.
   if (color_string[0] == '#')
     i = 1;
@@ -1135,11 +1136,13 @@ static RGBA32 ParseColorStringWithCrazyLegacyRules(const String& color_string) {
   // Split the digits into three components, then search the last 8 digits of
   // each component.
   DCHECK_GE(digit_buffer.size(), 6u);
-  size_t component_length = digit_buffer.size() / 3;
-  size_t component_search_window_length = std::min<size_t>(component_length, 8);
-  size_t red_index = component_length - component_search_window_length;
-  size_t green_index = component_length * 2 - component_search_window_length;
-  size_t blue_index = component_length * 3 - component_search_window_length;
+  wtf_size_t component_length = digit_buffer.size() / 3;
+  wtf_size_t component_search_window_length =
+      std::min<wtf_size_t>(component_length, 8);
+  wtf_size_t red_index = component_length - component_search_window_length;
+  wtf_size_t green_index =
+      component_length * 2 - component_search_window_length;
+  wtf_size_t blue_index = component_length * 3 - component_search_window_length;
   // Skip digits until one of them is non-zero, or we've only got two digits
   // left in the component.
   while (digit_buffer[red_index] == '0' && digit_buffer[green_index] == '0' &&

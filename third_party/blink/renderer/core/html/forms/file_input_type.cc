@@ -87,7 +87,7 @@ InputTypeView* FileInputType::CreateView() {
 FileChooserFileInfoList FileInputType::FilesFromFormControlState(
     const FormControlState& state) {
   FileChooserFileInfoList files;
-  for (size_t i = 0; i < state.ValueSize(); i += 2) {
+  for (wtf_size_t i = 0; i < state.ValueSize(); i += 2) {
     if (!state[i + 1].IsEmpty())
       files.push_back(CreateFileChooserFileInfoNative(state[i], state[i + 1]));
     else
@@ -235,7 +235,7 @@ void FileInputType::SetValue(const String&,
 FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
                                         bool has_webkit_directory_attr) {
   FileList* file_list(FileList::Create());
-  size_t size = files.size();
+  wtf_size_t size = files.size();
 
   // If a directory is being selected, the UI allows a directory to be chosen
   // and the paths provided here share a root directory somewhere up the tree;
@@ -243,7 +243,7 @@ FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
   if (size && has_webkit_directory_attr) {
     // Find the common root path.
     base::FilePath root_path = files[0]->get_native_file()->file_path.DirName();
-    for (size_t i = 1; i < size; ++i) {
+    for (wtf_size_t i = 1; i < size; ++i) {
       while (files[i]->get_native_file()->file_path.value().find(
                  root_path.value()) != 0)
         root_path = root_path.DirName();
@@ -431,7 +431,7 @@ String FileInputType::DefaultToolTip(const InputTypeView&) const {
   }
 
   StringBuilder names;
-  for (size_t i = 0; i < list_size; ++i) {
+  for (wtf_size_t i = 0; i < list_size; ++i) {
     names.Append(file_list->item(i)->name());
     if (i != list_size - 1)
       names.Append('\n');

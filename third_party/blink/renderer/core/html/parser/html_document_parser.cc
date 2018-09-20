@@ -29,6 +29,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
@@ -423,7 +424,8 @@ void HTMLDocumentParser::DiscardSpeculationsAndResumeFrom(
   }
   DEFINE_STATIC_LOCAL(CustomCountHistogram, discarded_token_count_histogram,
                       ("Parser.DiscardedTokenCount", 1, 100000, 50));
-  discarded_token_count_histogram.Count(discarded_token_count);
+  discarded_token_count_histogram.Count(
+      base::saturated_cast<base::Histogram::Sample>(discarded_token_count));
 
   speculations_.clear();
   pending_csp_meta_token_ = nullptr;

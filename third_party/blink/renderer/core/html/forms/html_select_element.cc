@@ -181,7 +181,7 @@ void HTMLSelectElement::SelectMultipleOptionsByPopup(
     const Vector<int>& list_indices) {
   DCHECK(UsesMenuList());
   DCHECK(IsMultiple());
-  for (size_t i = 0; i < list_indices.size(); ++i) {
+  for (wtf_size_t i = 0; i < list_indices.size(); ++i) {
     bool add_selection_if_not_first = i > 0;
     if (HTMLOptionElement* option = OptionAtListIndex(list_indices[i]))
       UpdateSelectedState(option, add_selection_if_not_first, false);
@@ -455,7 +455,7 @@ HTMLOptionElement* HTMLSelectElement::OptionAtListIndex(int list_index) const {
   if (list_index < 0)
     return nullptr;
   const ListItems& items = GetListItems();
-  if (static_cast<size_t>(list_index) >= items.size())
+  if (static_cast<wtf_size_t>(list_index) >= items.size())
     return nullptr;
   return ToHTMLOptionElementOrNull(items[list_index]);
 }
@@ -1122,9 +1122,9 @@ bool HTMLSelectElement::DeselectItemsWithoutValidation(
 
 FormControlState HTMLSelectElement::SaveFormControlState() const {
   const ListItems& items = GetListItems();
-  size_t length = items.size();
+  wtf_size_t length = items.size();
   FormControlState state;
-  for (unsigned i = 0; i < length; ++i) {
+  for (wtf_size_t i = 0; i < length; ++i) {
     if (!IsHTMLOptionElement(*items[i]))
       continue;
     HTMLOptionElement* option = ToHTMLOptionElement(items[i]);
@@ -1138,13 +1138,13 @@ FormControlState HTMLSelectElement::SaveFormControlState() const {
   return state;
 }
 
-size_t HTMLSelectElement::SearchOptionsForValue(const String& value,
-                                                size_t list_index_start,
-                                                size_t list_index_end) const {
+wtf_size_t HTMLSelectElement::SearchOptionsForValue(
+    const String& value,
+    wtf_size_t list_index_start,
+    wtf_size_t list_index_end) const {
   const ListItems& items = GetListItems();
-  size_t loop_end_index =
-      std::min(static_cast<size_t>(items.size()), list_index_end);
-  for (size_t i = list_index_start; i < loop_end_index; ++i) {
+  wtf_size_t loop_end_index = std::min(items.size(), list_index_end);
+  for (wtf_size_t i = list_index_start; i < loop_end_index; ++i) {
     if (!IsHTMLOptionElement(items[i]))
       continue;
     if (ToHTMLOptionElement(items[i])->value() == value)
@@ -1157,7 +1157,7 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   RecalcListItems();
 
   const ListItems& items = GetListItems();
-  size_t items_size = items.size();
+  wtf_size_t items_size = items.size();
   if (items_size == 0)
     return;
 
@@ -1166,14 +1166,14 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   // The saved state should have at least one value and an index.
   DCHECK_GE(state.ValueSize(), 2u);
   if (!IsMultiple()) {
-    size_t index = state[1].ToUInt();
+    unsigned index = state[1].ToUInt();
     if (index < items_size && IsHTMLOptionElement(items[index]) &&
         ToHTMLOptionElement(items[index])->value() == state[0]) {
       ToHTMLOptionElement(items[index])->SetSelectedState(true);
       ToHTMLOptionElement(items[index])->SetDirty(true);
       last_on_change_option_ = ToHTMLOptionElement(items[index]);
     } else {
-      size_t found_index = SearchOptionsForValue(state[0], 0, items_size);
+      wtf_size_t found_index = SearchOptionsForValue(state[0], 0, items_size);
       if (found_index != kNotFound) {
         ToHTMLOptionElement(items[found_index])->SetSelectedState(true);
         ToHTMLOptionElement(items[found_index])->SetDirty(true);
@@ -1181,17 +1181,17 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
       }
     }
   } else {
-    size_t start_index = 0;
-    for (size_t i = 0; i < state.ValueSize(); i += 2) {
+    wtf_size_t start_index = 0;
+    for (wtf_size_t i = 0; i < state.ValueSize(); i += 2) {
       const String& value = state[i];
-      const size_t index = state[i + 1].ToUInt();
+      const unsigned index = state[i + 1].ToUInt();
       if (index < items_size && IsHTMLOptionElement(items[index]) &&
           ToHTMLOptionElement(items[index])->value() == value) {
         ToHTMLOptionElement(items[index])->SetSelectedState(true);
         ToHTMLOptionElement(items[index])->SetDirty(true);
         start_index = index + 1;
       } else {
-        size_t found_index =
+        wtf_size_t found_index =
             SearchOptionsForValue(value, start_index, items_size);
         if (found_index == kNotFound)
           found_index = SearchOptionsForValue(value, 0, start_index);
@@ -1467,8 +1467,8 @@ HTMLOptionElement* HTMLSelectElement::EventTargetOption(const Event& event) {
 
 int HTMLSelectElement::ListIndexForOption(const HTMLOptionElement& option) {
   const ListItems& items = GetListItems();
-  size_t length = items.size();
-  for (size_t i = 0; i < length; ++i) {
+  wtf_size_t length = items.size();
+  for (wtf_size_t i = 0; i < length; ++i) {
     if (items[i].Get() == &option)
       return i;
   }
@@ -1738,7 +1738,7 @@ void HTMLSelectElement::DefaultEventHandler(Event& event) {
 
 HTMLOptionElement* HTMLSelectElement::LastSelectedOption() const {
   const ListItems& items = GetListItems();
-  for (size_t i = items.size(); i;) {
+  for (wtf_size_t i = items.size(); i;) {
     if (HTMLOptionElement* option = OptionAtListIndex(--i)) {
       if (option->Selected())
         return option;

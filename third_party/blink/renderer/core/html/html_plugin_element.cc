@@ -100,7 +100,7 @@ void PluginParameters::AppendNameWithValue(const String& name,
 }
 
 int PluginParameters::FindStringInNames(const String& str) {
-  for (size_t i = 0; i < names_.size(); ++i) {
+  for (wtf_size_t i = 0; i < names_.size(); ++i) {
     if (DeprecatedEqualIgnoringCase(names_[i], str))
       return i;
   }
