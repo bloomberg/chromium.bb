@@ -72,7 +72,9 @@ public class FeedNewTabPage extends NewTabPage {
     private @Nullable FeedImageLoader mImageLoader;
     private @Nullable StreamLifecycleManager mStreamLifecycleManager;
     private @Nullable SectionHeaderView mSectionHeaderView;
+    private @Nullable MarginResizer mSectionHeaderViewMarginResizer;
     private @Nullable PersonalizedSigninPromoView mSigninPromoView;
+    private @Nullable MarginResizer mSignInPromoViewMarginResizer;
 
     // Used when Feed is disabled by policy.
     private @Nullable ScrollView mScrollViewForPolicy;
@@ -322,7 +324,8 @@ public class FeedNewTabPage extends NewTabPage {
         LayoutInflater inflater = LayoutInflater.from(activity);
         mSectionHeaderView = (SectionHeaderView) inflater.inflate(
                 R.layout.new_tab_page_snippets_expandable_header, null);
-        MarginResizer.createAndAttach(mSectionHeaderView, mUiConfig, mDefaultMargin, mWideMargin);
+        mSectionHeaderViewMarginResizer = MarginResizer.createAndAttach(
+                mSectionHeaderView, mUiConfig, mDefaultMargin, mWideMargin);
 
         View view = mStream.getView();
         view.setBackgroundColor(Color.WHITE);
@@ -359,7 +362,11 @@ public class FeedNewTabPage extends NewTabPage {
             mImageLoader.destroy();
             mImageLoader = null;
             mSectionHeaderView = null;
+            mSectionHeaderViewMarginResizer.detach();
+            mSectionHeaderViewMarginResizer = null;
             mSigninPromoView = null;
+            if (mSignInPromoViewMarginResizer != null) mSignInPromoViewMarginResizer.detach();
+            mSignInPromoViewMarginResizer = null;
         }
 
         mScrollViewForPolicy = new ScrollView(mTab.getActivity());
@@ -394,7 +401,8 @@ public class FeedNewTabPage extends NewTabPage {
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             lp.bottomMargin = mDefaultMargin;
             mSigninPromoView.setLayoutParams(lp);
-            MarginResizer.createAndAttach(mSigninPromoView, mUiConfig, mDefaultMargin, mWideMargin);
+            mSignInPromoViewMarginResizer = MarginResizer.createAndAttach(
+                    mSigninPromoView, mUiConfig, mDefaultMargin, mWideMargin);
         }
         return mSigninPromoView;
     }
