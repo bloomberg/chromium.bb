@@ -227,7 +227,10 @@ bool ICOImageDecoder::DecodeAtIndex(size_t index) {
     if (png_decoder->Size() != dir_entry.size_)
       return SetFailed();
 
+    png_decoder->SetMemoryAllocator(frame_buffer_cache_[index].GetAllocator());
     const auto* frame = png_decoder->DecodeFrameBufferAtIndex(0);
+    png_decoder->SetMemoryAllocator(nullptr);
+
     if (frame)
       frame_buffer_cache_[index] = *frame;
   }
