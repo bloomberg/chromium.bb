@@ -56,7 +56,7 @@ class SpellCheckTest : public testing::Test {
 
   void ReinitializeSpellCheck(const std::string& language) {
     UninitializeSpellCheck();
-    InitializeSpellCheck({language});
+    InitializeSpellCheck(language);
   }
 
   void UninitializeSpellCheck() {
@@ -66,40 +66,24 @@ class SpellCheckTest : public testing::Test {
   bool InitializeIfNeeded() {
     return spell_check()->InitializeIfNeeded();
   }
-#if defined(OS_MACOSX)
-  void InitializeSpellCheck(const std::vector<std::string>& languages) {
-    // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
-    // Instead, tests should exercise individual spelling engines.
-    for (const auto& language : languages) {
-      spell_check_->languages_.push_back(
-          std::make_unique<SpellcheckLanguage>(&embedder_provider_));
-      spell_check_->languages_.front()->platform_spelling_engine_ =
-          std::make_unique<HunspellEngine>(&embedder_provider_);
-      spell_check_->languages_.front()->Init(GetDictionaryFile(language),
-                                             language);
-    }
-  }
-#else
-  void InitializeSpellCheck(const std::vector<std::string>& languages) {
-    std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries;
-    for (const auto& language : languages) {
-      dictionaries.push_back(spellcheck::mojom::SpellCheckBDictLanguage::New(
-          GetDictionaryFile(language), language));
-    }
-    spell_check_->Initialize(std::move(dictionaries), {}, true);
-  }
-#endif
 
-  void InitializeSpellCheckWithNoDictionaries() {
-    spell_check_->Initialize({}, {}, true);
-  }
-
-  base::File GetDictionaryFile(const std::string& language) const {
+  void InitializeSpellCheck(const std::string& language) {
     base::FilePath hunspell_directory = GetHunspellDirectory();
     EXPECT_FALSE(hunspell_directory.empty());
-    return base::File(
+    base::File file(
         spellcheck::GetVersionedFileName(language, hunspell_directory),
         base::File::FLAG_OPEN | base::File::FLAG_READ);
+#if defined(OS_MACOSX)
+    // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
+    // Instead, tests should exercise individual spelling engines.
+    spell_check_->languages_.push_back(
+        std::make_unique<SpellcheckLanguage>(&embedder_provider_));
+    spell_check_->languages_.front()->platform_spelling_engine_ =
+        std::make_unique<HunspellEngine>(&embedder_provider_);
+    spell_check_->languages_.front()->Init(std::move(file), language);
+#else
+    spell_check_->AddSpellcheckLanguage(std::move(file), language);
+#endif
   }
 
   ~SpellCheckTest() override {}
@@ -1116,14 +1100,12 @@ TEST_F(SpellCheckTest, RequestSpellCheckMultipleTimesWithoutInitialization) {
     EXPECT_EQ(completion[i].completion_count_, 1U);
   EXPECT_EQ(completion[2].completion_count_, 0U);
 
-  // Last request without dictionaries will not process.
-  InitializeSpellCheckWithNoDictionaries();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(completion[2].completion_count_, 0U);
+  // Checks the last request is processed after initialization.
+  InitializeSpellCheck("en-US");
 
-  // Last request is processed after initialization with valid dictionaries.
-  InitializeSpellCheck({"en-US"});
-
+  // Calls PostDelayedSpellCheckTask instead of OnInit here for simplicity.
+  spell_check()->PostDelayedSpellCheckTask(
+      spell_check()->pending_request_param_.release());
   base::RunLoop().RunUntilIdle();
   for (int i = 0; i < 3; ++i)
     EXPECT_EQ(completion[i].completion_count_, 1U);

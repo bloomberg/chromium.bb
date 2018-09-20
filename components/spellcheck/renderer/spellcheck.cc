@@ -216,8 +216,7 @@ void SpellCheck::Initialize(
   custom_dictionary_.Init(
       std::set<std::string>(custom_words.begin(), custom_words.end()));
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  if (!InitializeIfNeeded())
-    PostDelayedSpellCheckTask(pending_request_param_.release());
+  PostDelayedSpellCheckTask(pending_request_param_.release());
 #endif
 
   spellcheck_enabled_ = enable;
