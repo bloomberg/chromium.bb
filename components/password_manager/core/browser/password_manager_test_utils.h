@@ -17,10 +17,9 @@
 namespace password_manager {
 
 // This template allows creating methods with signature conforming to
-// TestingFactoryFunction of the appropriate platform instance of
-// KeyedServiceFactory. Context is the browser context prescribed by
-// TestingFactoryFunction. Store is the PasswordStore version needed in the
-// tests which use this method.
+// TestingFactory of the appropriate platform instance of KeyedServiceFactory.
+// Context is the browser context prescribed by TestingFactory. Store is the
+// PasswordStore version needed in the tests which use this method.
 template <class Context, class Store>
 scoped_refptr<RefcountedKeyedService> BuildPasswordStore(Context* context) {
   scoped_refptr<password_manager::PasswordStore> store(new Store);
