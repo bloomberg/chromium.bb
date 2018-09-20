@@ -30,6 +30,7 @@ class UnguessableToken;
 
 namespace media {
 class AudioParameters;
+class UserInputMonitorBase;
 }
 
 namespace content {
@@ -104,6 +105,7 @@ class CONTENT_EXPORT AudioStreamBrokerFactory {
       const std::string& device_id,
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
+      media::UserInputMonitorBase* user_input_monitor,
       bool enable_agc,
       audio::mojom::AudioProcessingConfigPtr processing_config,
       AudioStreamBroker::DeleterCallback deleter,

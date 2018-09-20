@@ -13,6 +13,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "media/base/user_input_monitor.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -20,9 +21,11 @@ namespace content {
 
 ForwardingAudioStreamFactory::ForwardingAudioStreamFactory(
     WebContents* web_contents,
+    media::UserInputMonitorBase* user_input_monitor,
     std::unique_ptr<service_manager::Connector> connector,
     std::unique_ptr<AudioStreamBrokerFactory> broker_factory)
     : WebContentsObserver(web_contents),
+      user_input_monitor_(user_input_monitor),
       connector_(std::move(connector)),
       broker_factory_(std::move(broker_factory)),
       group_id_(base::UnguessableToken::Create()) {
@@ -62,7 +65,7 @@ void ForwardingAudioStreamFactory::CreateInputStream(
   inputs_
       .insert(broker_factory_->CreateAudioInputStreamBroker(
           process_id, frame_id, device_id, params, shared_memory_count,
-          enable_agc, std::move(processing_config),
+          user_input_monitor_, enable_agc, std::move(processing_config),
           base::BindOnce(&ForwardingAudioStreamFactory::RemoveInput,
                          base::Unretained(this)),
           std::move(renderer_factory_client)))
