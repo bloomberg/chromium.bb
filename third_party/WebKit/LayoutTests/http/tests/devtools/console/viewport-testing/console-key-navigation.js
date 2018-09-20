@@ -165,7 +165,7 @@
   function forceSelect(index) {
     TestRunner.addResult(`\nForce selecting index ${index}`);
     viewport._virtualSelectedIndex = index;
-    viewport.element.focus();
+    viewport._contentElement.focus();
     viewport._updateFocusedItem();
   }
 
