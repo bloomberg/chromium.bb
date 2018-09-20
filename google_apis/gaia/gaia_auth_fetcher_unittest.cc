@@ -130,12 +130,6 @@ class GaiaAuthFetcherTest : public testing::Test {
     return test_shared_loader_factory_;
   }
 
-  bool WasLastURLServed(const GURL& url) {
-    if (received_requests_.empty())
-      return false;
-    return received_requests_.back().url == url;
-  }
-
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
@@ -435,6 +429,10 @@ TEST_F(GaiaAuthFetcherTest, ListAccounts) {
       /*body=*/"", /*headers=*/"",
       GaiaUrls::GetInstance()->ListAccountsURLWithSource(std::string()),
       /*load_flags=*/0, NO_TRAFFIC_ANNOTATION_YET);
+  ASSERT_EQ(received_requests_.size(), 1U);
+  EXPECT_EQ(net::LOAD_NORMAL, received_requests_.at(0).load_flags);
+  EXPECT_EQ(GaiaUrls::GetInstance()->gaia_url(),
+            received_requests_.at(0).site_for_cookies);
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {}, data);
 }
 
