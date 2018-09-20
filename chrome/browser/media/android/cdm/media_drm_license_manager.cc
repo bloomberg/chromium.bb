@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/unguessable_token.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "media/base/android/media_drm_bridge.h"
@@ -21,7 +21,7 @@ namespace {
 // Unprovision MediaDrm in IO thread.
 void ClearMediaDrmLicensesBlocking(
     std::vector<base::UnguessableToken> origin_ids) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
 
   for (const auto& origin_id : origin_ids) {
     // MediaDrm will unprovision |origin_id| for all security level. Passing
