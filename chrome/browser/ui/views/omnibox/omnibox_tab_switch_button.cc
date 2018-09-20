@@ -159,7 +159,8 @@ void OmniboxTabSwitchButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 bool OmniboxTabSwitchButton::IsSelected() const {
-  return model_->IsButtonSelected();
+  // Is this result selected and is button selected?
+  return result_view_->IsSelected() && model_->IsButtonSelected();
 }
 
 SkPath OmniboxTabSwitchButton::GetFocusRingPath() const {
