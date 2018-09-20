@@ -655,11 +655,11 @@ bool GetMayUsePrefilledPlaceholder(
 // used to find fields that may have preffilled placeholders.
 std::unique_ptr<PasswordForm> AssemblePasswordForm(
     const autofill::FormData& form_data,
-    const SignificantFields* significant_fields,
+    const SignificantFields& significant_fields,
     autofill::ValueElementVector all_possible_passwords,
     autofill::ValueElementVector all_possible_usernames,
     const FormPredictions* form_predictions) {
-  if (!significant_fields || !significant_fields->HasPasswords())
+  if (!significant_fields.HasPasswords())
     return nullptr;
 
   // Create the PasswordForm and set data not related to specific fields.
@@ -677,10 +677,10 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->blacklisted_by_user = false;
   result->type = PasswordForm::TYPE_MANUAL;
   result->username_may_use_prefilled_placeholder =
-      GetMayUsePrefilledPlaceholder(form_predictions, *significant_fields);
+      GetMayUsePrefilledPlaceholder(form_predictions, significant_fields);
 
   // Set data related to specific fields.
-  SetFields(*significant_fields, result.get());
+  SetFields(significant_fields, result.get());
   return result;
 }
 
@@ -765,7 +765,7 @@ std::unique_ptr<PasswordForm> ParseFormData(
                             UsernameDetectionMethod::kCount);
 
   return AssemblePasswordForm(
-      form_data, significant_fields.get(), std::move(all_possible_passwords),
+      form_data, *significant_fields, std::move(all_possible_passwords),
       std::move(all_possible_usernames), form_predictions);
 }
 
