@@ -241,7 +241,7 @@ FENCE_LTE(unsigned a, unsigned b)
 	return 0;
 }
 
-void
+drm_public void
 drm_intel_bufmgr_fake_set_fence_callback(drm_intel_bufmgr *bufmgr,
 					 unsigned int (*emit) (void *priv),
 					 void (*wait) (unsigned int fence,
@@ -955,7 +955,7 @@ drm_intel_fake_bo_unreference(drm_intel_bo *bo)
  * Set the buffer as not requiring backing store, and instead get the callback
  * invoked whenever it would be set dirty.
  */
-void
+drm_public void
 drm_intel_bo_fake_disable_backing_store(drm_intel_bo *bo,
 					void (*invalidate_cb) (drm_intel_bo *bo,
 							       void *ptr),
@@ -1409,7 +1409,7 @@ drm_intel_bo_fake_post_submit(drm_intel_bo *bo)
 	bo_fake->write_domain = 0;
 }
 
-void
+drm_public void
 drm_intel_bufmgr_fake_set_exec_callback(drm_intel_bufmgr *bufmgr,
 					     int (*exec) (drm_intel_bo *bo,
 							  unsigned int used,
