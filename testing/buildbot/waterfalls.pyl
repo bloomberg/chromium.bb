@@ -3074,32 +3074,39 @@
         ]
       },
       'Mac10.10 Tests': {
+        'swarming_mixins': [
+            'mac_10.10',
+            'no_gpu',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'Mac10.11 Tests': {
+        'swarming_mixins': [
+            'mac_10.11',
+            'no_gpu',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'Mac10.12 Tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '8086:0a2e',
-              'os': 'Mac-10.12.6',
-            },
-          ],
-        },
+        'swarming_mixins': [
+            'mac_mini_10.12',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'Mac10.13 Tests': {
+        'swarming_mixins': [
+            'mac_10.13',
+            'no_gpu',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
@@ -3107,6 +3114,10 @@
         },
       },
       'Mac10.13 Tests (dbg)': {
+        'swarming_mixins': [
+            'mac_10.13',
+            'no_gpu',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_dbg_isolated_scripts',
