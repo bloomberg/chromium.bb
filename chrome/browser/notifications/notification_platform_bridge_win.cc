@@ -16,6 +16,7 @@
 #include "base/feature_list.h"
 #include "base/hash.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -348,8 +349,8 @@ class NotificationPlatformBridgeWinImpl
                                    profile_id, incognito,
                                    notification->origin_url());
     std::unique_ptr<NotificationTemplateBuilder> notification_template =
-        NotificationTemplateBuilder::Build(image_retainer_.get(), launch_id,
-                                           profile_id, *notification);
+        NotificationTemplateBuilder::Build(
+            image_retainer_->AsWeakPtr(), launch_id, profile_id, *notification);
     mswr::ComPtr<winui::Notifications::IToastNotification> toast;
     hr = GetToastNotification(*notification, *notification_template, profile_id,
                               incognito, &toast);

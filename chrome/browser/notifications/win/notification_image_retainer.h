@@ -27,7 +27,8 @@ class Image;
 // can potentially be large, this presents a problem because Chrome might then
 // be leaving chunks of dead bits lying around on user’s computers during
 // unclean shutdowns.
-class NotificationImageRetainer {
+class NotificationImageRetainer
+    : public base::SupportsWeakPtr<NotificationImageRetainer> {
  public:
   explicit NotificationImageRetainer(
       scoped_refptr<base::SequencedTaskRunner> task_runner);

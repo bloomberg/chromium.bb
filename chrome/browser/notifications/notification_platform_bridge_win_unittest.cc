@@ -14,6 +14,7 @@
 #include <wrl/implements.h>
 
 #include "base/hash.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -66,10 +67,10 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
         message_center::NotifierId(origin),
         message_center::RichNotificationData(), nullptr /* delegate */);
     notification->set_renotify(renotify);
-    MockNotificationImageRetainer image_retainer;
+    auto image_retainer = std::make_unique<MockNotificationImageRetainer>();
     std::unique_ptr<NotificationTemplateBuilder> builder =
-        NotificationTemplateBuilder::Build(&image_retainer, launch_id,
-                                           profile_id, *notification);
+        NotificationTemplateBuilder::Build(
+            image_retainer->AsWeakPtr(), launch_id, profile_id, *notification);
 
     mswr::ComPtr<winui::Notifications::IToastNotification> toast;
     HRESULT hr =
