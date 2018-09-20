@@ -13,9 +13,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
+#include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -31,8 +34,10 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/message.h"
@@ -431,6 +436,15 @@ bool CrostiniManager::IsContainerRunning(std::string vm_name,
     }
   }
   return false;
+}
+
+void CrostiniManager::UpdateLaunchMetricsForEnterpriseReporting() {
+  PrefService* const profile_prefs = profile_->GetPrefs();
+  const component_updater::ComponentUpdateService* const update_service =
+      g_browser_process->component_updater();
+  const base::Clock* const clock = base::DefaultClock::GetInstance();
+  WriteMetricsForReportingToPrefsIfEnabled(profile_prefs, update_service,
+                                           clock);
 }
 
 CrostiniManager* CrostiniManager::GetForProfile(Profile* profile) {

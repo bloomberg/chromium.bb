@@ -584,6 +584,8 @@ source_set("chromeos") {
     "crostini/crostini_registry_service_factory.h",
     "crostini/crostini_remover.cc",
     "crostini/crostini_remover.h",
+    "crostini/crostini_reporting_util.cc",
+    "crostini/crostini_reporting_util.h",
     "crostini/crostini_share_path.cc",
     "crostini/crostini_share_path.h",
     "crostini/crostini_util.cc",

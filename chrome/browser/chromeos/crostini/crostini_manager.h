@@ -369,6 +369,10 @@ class CrostiniManager : public KeyedService,
                               vm_tools::concierge::VmInfo vm_info);
   bool IsContainerRunning(std::string vm_name, std::string container_name);
 
+  // If the Crostini reporting policy is set, save the last app launch
+  // time window and the Termina version in prefs for asynchronous reporting.
+  void UpdateLaunchMetricsForEnterpriseReporting();
+
   // Clear the lists of running VMs and containers.
   // Can be called for testing to skip restart.
   void set_skip_restart_for_testing() { skip_restart_for_testing_ = true; }

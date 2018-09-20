@@ -14533,6 +14533,7 @@ Called by update_net_error_codes.py.-->
   <int value="481" label="CrostiniAllowed"/>
   <int value="482" label="DeviceUnaffiliatedCrostiniAllowed"/>
   <int value="483" label="EnterpriseHardwarePlatformAPIEnabled"/>
+  <int value="484" label="ReportCrostiniUsageEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

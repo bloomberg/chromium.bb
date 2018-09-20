@@ -446,12 +446,15 @@ void CrostiniInstallerView::ShowLoginShell() {
   DCHECK_EQ(state_, State::MOUNT_CONTAINER);
   UpdateState(State::SHOW_LOGIN_SHELL);
 
-  crostini::CrostiniManager::GetForProfile(profile_)->LaunchContainerTerminal(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-      std::vector<std::string>());
+  crostini::CrostiniManager* crostini_manager =
+      crostini::CrostiniManager::GetForProfile(profile_);
+  crostini_manager->LaunchContainerTerminal(kCrostiniDefaultVmName,
+                                            kCrostiniDefaultContainerName,
+                                            std::vector<std::string>());
 
   StepProgress();
   RecordSetupResultHistogram(SetupResult::kSuccess);
+  crostini_manager->UpdateLaunchMetricsForEnterpriseReporting();
   RecordTimeFromDeviceSetupToInstallMetric();
   GetWidget()->Close();
 }
