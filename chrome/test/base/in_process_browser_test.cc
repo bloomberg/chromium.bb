@@ -487,13 +487,18 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
   }
 
 #if defined(OS_CHROMEOS)
-  if (features::IsUsingWindowService()) {
-    aura::WindowTreeHost* host =
-        browser_ ? browser_->window()->GetNativeWindow()->GetHost() : nullptr;
+  // OobeTest and LoginCursorTest do not have the browser window but wants to
+  // interact with its UI through UIControls -- and those UI are actually for
+  // Ash (login / lock screen / oobe). Thus AshUIControls should be created for
+  // such test.
+  aura::WindowTreeHost* host = nullptr;
+  if (features::IsUsingWindowService() && browser_)
+    host = browser_->window()->GetNativeWindow()->GetHost();
+
+  if (host)
     ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(host));
-  } else {
+  else
     ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
-  }
 #endif
 
 #if !defined(OS_ANDROID)
