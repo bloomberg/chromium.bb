@@ -29,6 +29,8 @@ source_set("util") {
     "named_guide_util.mm",
     "optional_property_animator.h",
     "optional_property_animator.mm",
+    "page_animation_util.h",
+    "page_animation_util.mm",
     "pasteboard_util.h",
     "pasteboard_util.mm",
     "property_animator_group.h",
@@ -52,6 +54,7 @@ source_set("util") {
     "//base:i18n",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/common:timing",
     "//net",
     "//url",
   ]
