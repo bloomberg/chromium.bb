@@ -49,6 +49,10 @@
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 
 class AnalyserNode;
@@ -466,6 +470,8 @@ class MODULES_EXPORT BaseAudioContext
   // determine audibility on render quantum boundaries, so counting quanta is
   // all that's needed.
   size_t total_audible_renders_ = 0;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

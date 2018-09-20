@@ -35,6 +35,10 @@
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 
 class BaseAudioContext;
@@ -59,7 +63,8 @@ class AudioSummingJunction;
 class MODULES_EXPORT DeferredTaskHandler final
     : public ThreadSafeRefCounted<DeferredTaskHandler> {
  public:
-  static scoped_refptr<DeferredTaskHandler> Create();
+  static scoped_refptr<DeferredTaskHandler> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~DeferredTaskHandler();
 
   void HandleDeferredTasks();
@@ -180,7 +185,7 @@ class MODULES_EXPORT DeferredTaskHandler final
   };
 
  private:
-  DeferredTaskHandler();
+  explicit DeferredTaskHandler(scoped_refptr<base::SingleThreadTaskRunner>);
   void UpdateAutomaticPullNodes();
   void UpdateChangedChannelCountMode();
   void UpdateChangedChannelInterpretation();
@@ -226,6 +231,8 @@ class MODULES_EXPORT DeferredTaskHandler final
   // disabled.  This is updated in the audio thread (with the graph lock).  The
   // main thread will disable the outputs.
   Vector<scoped_refptr<AudioHandler>> finished_tail_processing_handlers_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Graph locking.
   RecursiveMutex context_graph_mutex_;

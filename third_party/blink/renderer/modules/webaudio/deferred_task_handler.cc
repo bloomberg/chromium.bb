@@ -261,11 +261,15 @@ void DeferredTaskHandler::UpdateChangedChannelInterpretation() {
   deferred_channel_interpretation_change_.clear();
 }
 
-DeferredTaskHandler::DeferredTaskHandler()
-    : automatic_pull_nodes_need_updating_(false), audio_thread_(0) {}
+DeferredTaskHandler::DeferredTaskHandler(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : automatic_pull_nodes_need_updating_(false),
+      task_runner_(std::move(task_runner)),
+      audio_thread_(0) {}
 
-scoped_refptr<DeferredTaskHandler> DeferredTaskHandler::Create() {
-  return base::AdoptRef(new DeferredTaskHandler());
+scoped_refptr<DeferredTaskHandler> DeferredTaskHandler::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return base::AdoptRef(new DeferredTaskHandler(std::move(task_runner)));
 }
 
 DeferredTaskHandler::~DeferredTaskHandler() {
@@ -319,7 +323,7 @@ void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
   deletable_orphan_handlers_.AppendVector(rendering_orphan_handlers_);
   rendering_orphan_handlers_.clear();
   PostCrossThreadTask(
-      *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+      *task_runner_, FROM_HERE,
       CrossThreadBind(&DeferredTaskHandler::DeleteHandlersOnMainThread,
                       scoped_refptr<DeferredTaskHandler>(this)));
 }
