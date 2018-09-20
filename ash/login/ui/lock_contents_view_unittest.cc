@@ -27,7 +27,9 @@
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
@@ -1671,6 +1673,45 @@ TEST_F(LockContentsViewUnitTest, OnUnlockAllowedForUserChanged) {
   EXPECT_TRUE(password_view->visible());
   EXPECT_TRUE(pin_view->visible());
   EXPECT_FALSE(disabled_auth_message->visible());
+}
+
+TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  SetUserCount(1);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  const AccountId& kFirstUserAccountId =
+      users()[0]->basic_user_info->account_id;
+  LockContentsView::TestApi contents_test_api(contents);
+  LoginAuthUserView::TestApi auth_test_api(
+      contents_test_api.primary_big_view()->auth_user());
+  views::View* disabled_auth_message = auth_test_api.disabled_auth_message();
+  LoginUserView* user_view = auth_test_api.user_view();
+
+  // The message is visible after disabling auth and it receives initial focus.
+  data_dispatcher()->SetAuthEnabledForUser(
+      kFirstUserAccountId, false,
+      base::Time::Now() + base::TimeDelta::FromHours(8));
+  EXPECT_TRUE(disabled_auth_message->visible());
+  EXPECT_TRUE(HasFocusInAnyChildView(disabled_auth_message));
+  // Tabbing from the message will move focus to the user view.
+  ASSERT_TRUE(TabThroughView(GetEventGenerator(), disabled_auth_message,
+                             false /*reverse*/));
+  EXPECT_TRUE(HasFocusInAnyChildView(user_view));
+  // Shift-tabbing from the user view will move focus back to the message.
+  ASSERT_TRUE(TabThroughView(GetEventGenerator(), user_view, true /*reverse*/));
+  EXPECT_TRUE(HasFocusInAnyChildView(disabled_auth_message));
+  // Additional shift-tabbing will eventually move focus to the status area.
+  ASSERT_TRUE(TabThroughView(GetEventGenerator(), disabled_auth_message,
+                             true /*reverse*/));
+  views::View* status_area =
+      RootWindowController::ForWindow(contents->GetWidget()->GetNativeWindow())
+          ->GetStatusAreaWidget()
+          ->GetContentsView();
+  EXPECT_TRUE(HasFocusInAnyChildView(status_area));
 }
 
 class LockContentsViewPowerManagerUnitTest
