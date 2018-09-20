@@ -191,8 +191,6 @@
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
-#import "ios/chrome/browser/ui/stack_view/card_view.h"
-#import "ios/chrome/browser/ui/stack_view/page_animation_util.h"
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
 #import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/foreground_tab_animation_view.h"
@@ -223,6 +221,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
+#import "ios/chrome/browser/ui/util/page_animation_util.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
@@ -805,10 +804,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Sets the frame for the headers.
 - (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
                    atOffset:(CGFloat)headerOffset;
-// Adds a CardView on top of the contentArea either taking the size of the full
-// screen or just the size of the space under the header.
-// Returns the CardView that was added.
-- (CardView*)addCardViewInFullscreen:(BOOL)fullScreen;
 
 // Showing and Dismissing child UI
 // -------------------------------
@@ -2757,32 +2752,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     if (header.view == self.tabStripView && IsUIRefreshPhase1Enabled())
       [self setNeedsStatusBarAppearanceUpdate];
   }
-}
-
-- (CardView*)addCardViewInFullscreen:(BOOL)fullScreen {
-  CGRect frame = self.contentArea.frame;
-  // Changing the origin here is unnecessary, it's set in page_animation_util.
-  if (!fullScreen) {
-    frame.size.height -= self.headerHeight;
-  } else if (self.usesFullscreenContainer) {
-    frame.size.height -= StatusBarHeight();
-  }
-
-  CGFloat shortAxis = frame.size.width;
-  CGFloat shortInset = kCardImageInsets.left + kCardImageInsets.right;
-  shortAxis -= shortInset + 2 * page_animation_util::kCardMargin;
-  CGFloat aspectRatio = frame.size.height / frame.size.width;
-  CGFloat longAxis = std::floor(aspectRatio * shortAxis);
-  CGFloat longInset = kCardImageInsets.top + kCardImageInsets.bottom;
-  CGSize cardSize = CGSizeMake(shortAxis + shortInset, longAxis + longInset);
-  CGRect cardFrame = {frame.origin, cardSize};
-
-  CardView* card =
-      [[CardView alloc] initWithFrame:cardFrame isIncognito:_isOffTheRecord];
-  card.closeButtonSide = IsPortrait() ? CardCloseButtonSide::TRAILING
-                                      : CardCloseButtonSide::LEADING;
-  [self.contentArea addSubview:card];
-  return card;
 }
 
 #pragma mark - Private Methods: Showing and Dismissing Child UI
@@ -5386,47 +5355,24 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   CGPoint origin = [self lastTapPoint];
 
-  // UI Refresh animation.
-  if (IsUIRefreshPhase1Enabled()) {
-    // The animation will have the same frame as |self|, minus the status bar,
-    // so shift it down and reduce its height accordingly.
-    CGRect frame = self.view.bounds;
-    frame.origin.y += StatusBarHeight();
-    frame.size.height -= StatusBarHeight();
-    frame = [self.contentArea convertRect:frame fromView:self.view];
-    ForegroundTabAnimationView* animatedView =
-        [[ForegroundTabAnimationView alloc] initWithFrame:frame];
-    animatedView.contentView = newPage;
-    __weak UIView* weakAnimatedView = animatedView;
-    auto completionBlock = ^() {
-      [weakAnimatedView removeFromSuperview];
-      [toolbarSnapshot removeFromSuperview];
-      commonCompletion();
-    };
-    [self.contentArea addSubview:animatedView];
-    [animatedView animateFrom:origin withCompletion:completionBlock];
-    return;
-  }
-
-  // Else, stack view-style animation.
-  [self.contentArea addSubview:newPage];
-
-  auto animationCompletion = ^{
-    [newPage removeFromSuperview];
+  // The animation will have the same frame as |self|, minus the status bar,
+  // so shift it down and reduce its height accordingly.
+  CGRect frame = self.view.bounds;
+  frame.origin.y += StatusBarHeight();
+  frame.size.height -= StatusBarHeight();
+  frame = [self.contentArea convertRect:frame fromView:self.view];
+  ForegroundTabAnimationView* animatedView =
+      [[ForegroundTabAnimationView alloc] initWithFrame:frame];
+  animatedView.contentView = newPage;
+  __weak UIView* weakAnimatedView = animatedView;
+  auto completionBlock = ^() {
+    [weakAnimatedView removeFromSuperview];
+    [toolbarSnapshot removeFromSuperview];
     commonCompletion();
-    // Restore content area frame, which was resized to fullscreen for
-    // NTP opening animation.
-    CGRect contentAreaFrame = self.view.bounds;
-    if (!self.usesFullscreenContainer) {
-      contentAreaFrame.origin.y += StatusBarHeight();
-      contentAreaFrame.size.height -= StatusBarHeight();
-    }
-    self.contentArea.frame = contentAreaFrame;
   };
-
-  page_animation_util::AnimateInPaperWithAnimationAndCompletion(
-      newPage, -newPageOffset, offset, origin, _isOffTheRecord, NULL,
-      animationCompletion);
+  [self.contentArea addSubview:animatedView];
+  [animatedView animateFrom:origin withCompletion:completionBlock];
+  return;
 }
 
 - (void)animateNewTabInBackgroundFromPoint:(CGPoint)originPoint
@@ -5454,79 +5400,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)animateNewTab:(Tab*)tab
     inBackgroundWithCompletion:(ProceduralBlock)completion {
-  if (IsUIRefreshPhase1Enabled()) {
-    self.inNewTabAnimation = NO;
-    return;
-  }
-
-  // SnapshotTabHelper::UpdateSnapshot will force a screen redraw, so take the
-  // snapshot before adding the views needed for the background animation.
-  Tab* topTab = [_model currentTab];
-  UIImage* image =
-      SnapshotTabHelper::FromWebState(topTab.webState)
-          ->UpdateSnapshot(/*with_overlays=*/true,
-                           /*visible_frame_only=*/self.isToolbarOnScreen);
-
-  // The size of the |image| above can be wrong if the snapshot fails, grab
-  // the correct size here.
-  CGRect imageFrame = CGRectZero;
-  if (self.isToolbarOnScreen) {
-    imageFrame = UIEdgeInsetsInsetRect(
-        self.contentArea.bounds,
-        [self snapshotEdgeInsetsForWebState:topTab.webState]);
-  } else {
-    imageFrame = [topTab.webState->GetView() bounds];
-    if (self.usesFullscreenContainer) {
-      imageFrame.origin.y += StatusBarHeight();
-      imageFrame.size.height -= StatusBarHeight();
-    }
-  }
-
-  // Add three layers in order on top of the contentArea for the animation:
-  // 1. The black "background" screen.
-  UIView* background = [[UIView alloc] initWithFrame:self.contentArea.bounds];
-  InstallBackgroundInView(background);
-  [self.contentArea addSubview:background];
-
-  // 2. A CardView displaying the data from the current tab.
-  CardView* topCard = [self addCardViewInFullscreen:!self.isToolbarOnScreen];
-  NSString* title = [topTab title];
-  if (![title length])
-    title = [topTab urlDisplayString];
-  [topCard setTitle:title];
-  [topCard setImage:image];
-  [topCard setFavicon:nil];
-
-  favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(topTab.webState);
-  if (faviconDriver && faviconDriver->FaviconIsValid()) {
-    gfx::Image favicon = faviconDriver->GetFavicon();
-    if (!favicon.IsEmpty())
-      [topCard setFavicon:favicon.ToUIImage()];
-  }
-
-  // 3. A new, blank CardView to represent the new tab being added.
-  // Launch the new background tab animation.
-  page_animation_util::AnimateNewBackgroundPageWithCompletion(
-      topCard, self.contentArea.frame, imageFrame, IsPortrait(), ^{
-        [background removeFromSuperview];
-        [topCard removeFromSuperview];
-        self.inNewTabAnimation = NO;
-        // Resnapshot the top card if it has its own toolbar, as the toolbar
-        // will be captured in the new tab animation, but isn't desired for
-        // the stack view snapshots.
-        id nativeController = [self nativeControllerForTab:topTab];
-        if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
-          SnapshotTabHelper::FromWebState(topTab.webState)
-              ->UpdateSnapshot(/*with_overlays=*/true,
-                               /*visible_frame_only=*/true);
-        }
-        completion();
-      });
-  // Reset the foreground tab completion block so that it can never be
-  // called more than once regardless of foreground/background tab
-  // appearances.
-  self.foregroundTabWasAddedCompletionBlock = nil;
+  self.inNewTabAnimation = NO;
 }
 
 #pragma mark - UpgradeCenterClient

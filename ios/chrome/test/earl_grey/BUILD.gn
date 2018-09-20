@@ -116,7 +116,6 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/settings/sync_utils:eg_tests",
     "//ios/chrome/browser/ui/side_swipe:eg_tests",
     "//ios/chrome/browser/ui/signin_interaction:eg_tests",
-    "//ios/chrome/browser/ui/stack_view:eg_tests",
     "//ios/chrome/browser/ui/tab_switcher:eg_tests",
     "//ios/chrome/browser/ui/tabs:eg_tests",
     "//ios/chrome/browser/ui/toolbar:eg_tests",
