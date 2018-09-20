@@ -63,7 +63,7 @@ Polymer({
 
   listeners: {
     'auth-token-changed': 'onAuthTokenChanged_',
-    'close': 'onPasswordPromptDialogClose_',
+    'close': 'onDialogClose_',
     'feature-toggle-clicked': 'onFeatureToggleClicked_',
     'forget-device-requested': 'onForgetDeviceRequested_',
   },
@@ -202,6 +202,12 @@ Polymer({
   /** @private */
   openPasswordPromptDialog_: function() {
     this.showPasswordPromptDialog_ = true;
+  },
+
+  onDialogClose_: function(event) {
+    event.stopPropagation();
+    if (event.path.some(element => element.id === 'multidevicePasswordPrompt'))
+      this.onPasswordPromptDialogClose_();
   },
 
   /** @private */
