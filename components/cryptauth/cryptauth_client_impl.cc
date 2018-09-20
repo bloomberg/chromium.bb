@@ -66,8 +66,7 @@ CryptAuthClientImpl::CryptAuthClientImpl(
       has_call_started_(false),
       weak_ptr_factory_(this) {}
 
-CryptAuthClientImpl::~CryptAuthClientImpl() {
-}
+CryptAuthClientImpl::~CryptAuthClientImpl() {}
 
 void CryptAuthClientImpl::GetMyDevices(
     const GetMyDevicesRequest& request,
@@ -286,14 +285,13 @@ void CryptAuthClientImpl::MakeApiCall(
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert("https://www.googleapis.com/auth/cryptauth");
 
-  access_token_fetcher_ =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-          "cryptauth_client", identity_manager_, scopes,
-          base::BindOnce(
-              &CryptAuthClientImpl::OnAccessTokenFetched<ResponseProto>,
-              weak_ptr_factory_.GetWeakPtr(), serialized_request,
-              response_callback),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+  access_token_fetcher_ = std::make_unique<
+      identity::PrimaryAccountAccessTokenFetcher>(
+      "cryptauth_client", identity_manager_, scopes,
+      base::BindOnce(&CryptAuthClientImpl::OnAccessTokenFetched<ResponseProto>,
+                     weak_ptr_factory_.GetWeakPtr(), serialized_request,
+                     response_callback),
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 template <class ResponseProto>
@@ -344,8 +342,7 @@ CryptAuthClientFactoryImpl::CryptAuthClientFactoryImpl(
       url_loader_factory_(std::move(url_loader_factory)),
       device_classifier_(device_classifier) {}
 
-CryptAuthClientFactoryImpl::~CryptAuthClientFactoryImpl() {
-}
+CryptAuthClientFactoryImpl::~CryptAuthClientFactoryImpl() {}
 
 std::unique_ptr<CryptAuthClient> CryptAuthClientFactoryImpl::CreateInstance() {
   return std::make_unique<CryptAuthClientImpl>(
