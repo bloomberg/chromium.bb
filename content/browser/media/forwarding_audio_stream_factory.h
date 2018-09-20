@@ -43,6 +43,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
   // the streams created with this factory will not be consumed by a renderer.
   ForwardingAudioStreamFactory(
       WebContents* web_contents,
+      media::UserInputMonitorBase* user_input_monitor,
       std::unique_ptr<service_manager::Connector> connector,
       std::unique_ptr<AudioStreamBrokerFactory> factory);
 
@@ -112,6 +113,8 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
   audio::mojom::StreamFactory* GetFactory();
   void ResetRemoteFactoryPtrIfIdle();
   void ResetRemoteFactoryPtr();
+
+  media::UserInputMonitorBase* const user_input_monitor_;
 
   const std::unique_ptr<service_manager::Connector> connector_;
   const std::unique_ptr<AudioStreamBrokerFactory> broker_factory_;

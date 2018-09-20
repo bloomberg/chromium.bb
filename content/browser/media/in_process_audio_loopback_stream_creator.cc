@@ -4,11 +4,16 @@
 
 #include "content/browser/media/in_process_audio_loopback_stream_creator.h"
 
+#include <memory>
+#include <utility>
+
+#include "content/browser/browser_main_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/audio/audio_device_description.h"
+#include "media/base/user_input_monitor.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -52,6 +57,10 @@ class StreamCreatedCallbackAdapter final
 
 InProcessAudioLoopbackStreamCreator::InProcessAudioLoopbackStreamCreator()
     : factory_(nullptr,
+               BrowserMainLoop::GetInstance()
+                   ? static_cast<media::UserInputMonitorBase*>(
+                         BrowserMainLoop::GetInstance()->user_input_monitor())
+                   : nullptr,
                content::ServiceManagerConnection::GetForProcess()
                    ->GetConnector()
                    ->Clone(),

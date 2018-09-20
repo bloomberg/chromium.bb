@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -28,12 +29,42 @@
 
 namespace content {
 
+namespace {
+
+#if defined(OS_CHROMEOS)
+enum KeyboardMicAction { kRegister, kDeregister };
+
+void UpdateKeyboardMicRegistration(KeyboardMicAction action) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&UpdateKeyboardMicRegistration, action));
+    return;
+  }
+  BrowserMainLoop* browser_main_loop = BrowserMainLoop::GetInstance();
+  // May be null in unit tests.
+  if (!browser_main_loop)
+    return;
+  switch (action) {
+    case kRegister:
+      browser_main_loop->keyboard_mic_registration()->Register();
+      return;
+    case kDeregister:
+      browser_main_loop->keyboard_mic_registration()->Deregister();
+      return;
+  }
+}
+#endif
+
+}  // namespace
+
 AudioInputStreamBroker::AudioInputStreamBroker(
     int render_process_id,
     int render_frame_id,
     const std::string& device_id,
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
+    media::UserInputMonitorBase* user_input_monitor,
     bool enable_agc,
     audio::mojom::AudioProcessingConfigPtr processing_config,
     AudioStreamBroker::DeleterCallback deleter,
@@ -42,6 +73,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
       device_id_(device_id),
       params_(params),
       shared_memory_count_(shared_memory_count),
+      user_input_monitor_(user_input_monitor),
       enable_agc_(enable_agc),
       deleter_(std::move(deleter)),
       processing_config_(std::move(processing_config)),
@@ -68,19 +100,11 @@ AudioInputStreamBroker::AudioInputStreamBroker(
     params_.set_format(media::AudioParameters::AUDIO_FAKE);
   }
 
-  BrowserMainLoop* browser_main_loop = BrowserMainLoop::GetInstance();
-  // May be null in unit tests.
-  if (!browser_main_loop)
-    return;
-
 #if defined(OS_CHROMEOS)
   if (params_.channel_layout() ==
       media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
-      browser_main_loop->keyboard_mic_registration()->Register();
+    UpdateKeyboardMicRegistration(kRegister);
   }
-#else
-  user_input_monitor_ = static_cast<media::UserInputMonitorBase*>(
-      browser_main_loop->user_input_monitor());
 #endif
 }
 
@@ -90,16 +114,14 @@ AudioInputStreamBroker::~AudioInputStreamBroker() {
 #if defined(OS_CHROMEOS)
   if (params_.channel_layout() ==
       media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
-    BrowserMainLoop* browser_main_loop = BrowserMainLoop::GetInstance();
-
-    // May be null in unit tests.
-    if (browser_main_loop)
-      browser_main_loop->keyboard_mic_registration()->Deregister();
+    UpdateKeyboardMicRegistration(kDeregister);
   }
-#else
+#endif
+
+  // This relies on CreateStream() being called synchronously right after the
+  // constructor.
   if (user_input_monitor_)
     user_input_monitor_->DisableKeyPressMonitoring();
-#endif
 
   auto* process_host = RenderProcessHost::FromID(render_process_id());
   if (process_host)

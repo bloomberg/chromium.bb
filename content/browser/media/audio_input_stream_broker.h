@@ -36,6 +36,7 @@ class CONTENT_EXPORT AudioInputStreamBroker final
       const std::string& device_id,
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
+      media::UserInputMonitorBase* user_input_monitor,
       bool enable_agc,
       audio::mojom::AudioProcessingConfigPtr processing_config,
       AudioStreamBroker::DeleterCallback deleter,
@@ -62,8 +63,8 @@ class CONTENT_EXPORT AudioInputStreamBroker final
   const std::string device_id_;
   media::AudioParameters params_;
   const uint32_t shared_memory_count_;
+  media::UserInputMonitorBase* const user_input_monitor_;
   const bool enable_agc_;
-  media::UserInputMonitorBase* user_input_monitor_ = nullptr;
 
   // Indicates that CreateStream has been called, but not StreamCreated.
   bool awaiting_created_ = false;
