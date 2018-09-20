@@ -12,14 +12,16 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
-#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/inspector_type_builder_helper.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
 
@@ -476,9 +478,9 @@ std::unique_ptr<AXValue> CreateRoleNameValue(ax::mojom::Role role) {
 }  // namespace
 
 InspectorAccessibilityAgent::InspectorAccessibilityAgent(
-    Page* page,
+    InspectedFrames* inspected_frames,
     InspectorDOMAgent* dom_agent)
-    : page_(page), dom_agent_(dom_agent) {}
+    : inspected_frames_(inspected_frames), dom_agent_(dom_agent) {}
 
 Response InspectorAccessibilityAgent::getPartialAXTree(
     Maybe<int> dom_node_id,
@@ -680,6 +682,37 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
   return node_object;
 }
 
+Response InspectorAccessibilityAgent::getFullAXTree(
+    std::unique_ptr<protocol::Array<AXNode>>* nodes) {
+  Document* document = inspected_frames_->Root()->GetDocument();
+  if (!document)
+    return Response::Error("No document.");
+  *nodes = protocol::Array<protocol::Accessibility::AXNode>::create();
+  AXContext ax_context(*document);
+  AXObjectCacheImpl& cache = ToAXObjectCacheImpl(ax_context.GetAXObjectCache());
+  Deque<AXID> ids;
+  ids.push_back(cache.Root()->AXObjectID());
+  while (!ids.empty()) {
+    AXID ax_id = ids.front();
+    ids.pop_front();
+    AXObject* ax_object = cache.ObjectFromAXID(ax_id);
+    std::unique_ptr<AXNode> node =
+        BuildProtocolAXObject(*ax_object, nullptr, false, *nodes, cache);
+
+    std::unique_ptr<protocol::Array<AXNodeId>> child_ids =
+        protocol::Array<AXNodeId>::create();
+    const AXObject::AXObjectVector& children = ax_object->Children();
+    for (unsigned i = 0; i < children.size(); i++) {
+      AXObject& child_ax_object = *children[i].Get();
+      child_ids->addItem(String::Number(child_ax_object.AXObjectID()));
+      ids.push_back(child_ax_object.AXObjectID());
+    }
+    node->setChildIds(std::move(child_ids));
+    (*nodes)->addItem(std::move(node));
+  }
+  return Response::OK();
+}
+
 void InspectorAccessibilityAgent::FillCoreProperties(
     AXObject& ax_object,
     AXObject* inspected_ax_object,
@@ -775,7 +808,7 @@ void InspectorAccessibilityAgent::AddChildren(
 }
 
 void InspectorAccessibilityAgent::Trace(blink::Visitor* visitor) {
-  visitor->Trace(page_);
+  visitor->Trace(inspected_frames_);
   visitor->Trace(dom_agent_);
   InspectorBaseAgent::Trace(visitor);
 }
