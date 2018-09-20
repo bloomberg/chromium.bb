@@ -20,7 +20,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "third_party/blink/renderer/platform/fonts/mac/core_text_variations_support.h"
+#include "third_party/blink/renderer/platform/fonts/mac/core_text_font_format_support.h"
 #endif
 
 namespace blink {
@@ -128,6 +128,10 @@ sk_sp<SkFontMgr> WebFontTypefaceFactory::FreeTypeFontManager() {
 sk_sp<SkFontMgr> WebFontTypefaceFactory::FontManagerForColrCpal() {
 #if defined(OS_WIN)
   if (!blink::DWriteRasterizerSupport::IsDWriteFactory2Available())
+    return FreeTypeFontManager();
+#endif
+#if defined(OS_MACOSX)
+  if (!CoreTextVersionSupportsColrCpal())
     return FreeTypeFontManager();
 #endif
   // TODO(https://crbug.com/882844): Check Mac OS version and use the FreeType
