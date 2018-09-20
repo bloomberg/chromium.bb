@@ -743,7 +743,7 @@ void AssistantManagerServiceImpl::UpdateDeviceSettings() {
 }
 
 void AssistantManagerServiceImpl::UpdateInternalOptions() {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
   if (!assistant_manager_internal_)
     return;
@@ -979,8 +979,12 @@ void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
 
   // When |spoken_feedback_enabled_| changes we need to update our internal
   // options to turn on/off A11Y features in LibAssistant.
-  if (assistant_manager_internal_)
-    UpdateInternalOptions();
+  if (assistant_manager_internal_) {
+    background_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AssistantManagerServiceImpl::UpdateInternalOptions,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 void AssistantManagerServiceImpl::CacheAssistantStructure(
