@@ -34,10 +34,7 @@
 
 # Most of the a11y tests are failing because they use /deep/. Should be
 # addressed as part of crbug.com/860069
--SettingsA11yManagePasswords.*
 -SettingsA11ySignOut.*
--SettingsAccessibilityTest.*
--TtsAccessibilityTest.*
 
 # ChromeOS only test failures.
 -AudioPlayerBrowserTest.ChangeTracks
@@ -313,6 +310,8 @@ PrintPreviewSettingsSelectTest.*
 PrintPreviewSystemDialogBrowserTest.*
 RestrictedFileSystemExtensionApiTest.*
 SandboxStatusUITest.*
+SettingsA11yManagePasswords.*
+SettingsAccessibilityTest.*
 SettingsAdvancedPageBrowserTest.*
 SettingsAnimationBrowserTest.*
 SettingsAutofillSectionBrowserTest.*
@@ -327,6 +326,7 @@ SigninSyncConfirmationTest.*
 SiteEngagementBrowserTest.*
 SysInternalsBrowserTest.*
 TextDefaultsTest.*
+TtsAccessibilityTest.*
 UserManagerBrowserTest.*
 VideoPlayerBrowserTest.*
 VolumeManagerTest.*
