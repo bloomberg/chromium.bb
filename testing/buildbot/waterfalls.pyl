@@ -785,6 +785,10 @@
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
         },
+        'args': [
+          '--test-launcher-batch-limit=1',
+          '--test-launcher-print-test-stdio=always',
+        ],
       },
       'ToTLinuxMSan': {
         'test_suites': {
@@ -816,6 +820,9 @@
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
         },
+        'args': [
+          '--test-launcher-print-test-stdio=always',
+        ],
       },
       'ToTWin': {
         'test_suites': {
@@ -3156,6 +3163,10 @@
         'test_suites': {
           'gtest_tests': 'sandboxed_chromium_memory_linux_gtests',
         },
+        'args': [
+          '--test-launcher-batch-limit=1',
+          '--test-launcher-print-test-stdio=always',
+        ],
       },
       'Linux CFI': {
         'test_suites': {
@@ -3166,26 +3177,42 @@
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
         },
+        'args': [
+          '--test-launcher-batch-limit=1',
+          '--test-launcher-print-test-stdio=always',
+        ],
       },
       'Linux ChromiumOS MSan Tests': {
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
         },
+        'args': [
+          '--test-launcher-print-test-stdio=always',
+        ],
       },
       'Linux MSan Tests': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
+        'args': [
+          '--test-launcher-print-test-stdio=always',
+        ],
       },
       'Linux TSan Tests': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
+        'args': [
+          '--test-launcher-print-test-stdio=always',
+        ],
       },
       'Mac ASan 64 Tests (1)': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
         },
+        'args': [
+          '--test-launcher-print-test-stdio=always',
+        ],
       },
       'win-asan': {
         'test_suites': {
