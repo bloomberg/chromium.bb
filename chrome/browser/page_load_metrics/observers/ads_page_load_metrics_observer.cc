@@ -326,12 +326,6 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
       // 2. possibly a resource from a document.written frame whose frame
       //    failure message has yet to arrive. (uncertain of this)
     }
-    if (committed_) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "PageLoad.Clients.Ads.All.ResourceTypeWhenNoFrameFound",
-          extra_request_info.resource_type, content::RESOURCE_TYPE_LAST_TYPE);
-    }
-
     return;
   }
 

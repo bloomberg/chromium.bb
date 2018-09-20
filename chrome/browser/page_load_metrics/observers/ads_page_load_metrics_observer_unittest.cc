@@ -393,8 +393,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, AllAdTypesInPage) {
                  AdType::ALL);
   histogram_tester().ExpectBucketCount(
       "PageLoad.Clients.Ads.All.ParentExistsForSubFrame", 0, 0);
-  histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.Ads.All.ResourceTypeWhenNoFrameFound", 0);
 }
 
 // Test that the cross-origin ad subframe navigation metric works as it's
@@ -478,8 +476,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrameThatRenavigates) {
                  10 /* non_ad_uncached_kb */, AdType::GOOGLE);
   histogram_tester().ExpectBucketCount(
       "PageLoad.Clients.Ads.All.ParentExistsForSubFrame", 0, 0);
-  histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.Ads.All.ResourceTypeWhenNoFrameFound", 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
@@ -514,8 +510,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
                  AdType::GOOGLE);
   histogram_tester().ExpectBucketCount(
       "PageLoad.Clients.Ads.All.ParentExistsForSubFrame", 0, 0);
-  histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.Ads.All.ResourceTypeWhenNoFrameFound", 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedNavigation) {
@@ -609,9 +603,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
                  10 /* non_ad_uncached_kb */, AdType::GOOGLE);
   histogram_tester().ExpectBucketCount(
       "PageLoad.Clients.Ads.All.ParentExistsForSubFrame", 0, 0);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.All.ResourceTypeWhenNoFrameFound",
-      content::RESOURCE_TYPE_SUB_FRAME, 1);
 }
 
 // This tests an issue that is believed to be the cause of
@@ -644,12 +635,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, FrameWithNoParent) {
 
   // Test that a resource loaded into an unknown frame doesn't cause any
   // issues.
-  histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.Ads.All.ResourceTypeWhenNoFrameFound", 0);
   LoadResource(child_of_subframe, ResourceCached::NOT_CACHED, 10);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.All.ResourceTypeWhenNoFrameFound",
-      content::RESOURCE_TYPE_SUB_FRAME, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
