@@ -19,7 +19,7 @@ class RulesetServiceDelegate {
   virtual ~RulesetServiceDelegate() = default;
 
   // Posts |task| to be executed on the UI thread after browser start-up.
-  virtual void PostAfterStartupTask(base::Closure task) = 0;
+  virtual void PostAfterStartupTask(base::OnceClosure task) = 0;
 
   // Schedules file open and use it as ruleset file. In the case of success,
   // the new and valid |base::File| is passed to |callback|. In the case of

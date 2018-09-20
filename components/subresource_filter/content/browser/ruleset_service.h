@@ -222,7 +222,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
                            NewRuleset_IndexingCrash);
 
   using WriteRulesetCallback =
-      base::Callback<void(const IndexedRulesetVersion&)>;
+      base::OnceCallback<void(const IndexedRulesetVersion&)>;
 
   // Reads the ruleset described in |unindexed_ruleset_info|, indexes it, and
   // calls WriteRuleset() to persist the indexed ruleset. Returns the resulting
@@ -266,9 +266,9 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // indexed version in preferences and invokes |success_callback| on the
   // calling thread. There is no callback on failure.
   void IndexAndStoreRuleset(const UnindexedRulesetInfo& unindexed_ruleset_info,
-                            const WriteRulesetCallback& success_callback);
+                            WriteRulesetCallback success_callback);
 
-  void OnWrittenRuleset(const WriteRulesetCallback& result_callback,
+  void OnWrittenRuleset(WriteRulesetCallback result_callback,
                         const IndexedRulesetVersion& version);
 
   void OpenAndPublishRuleset(const IndexedRulesetVersion& version);
@@ -326,10 +326,10 @@ class ContentRulesetService : public RulesetServiceDelegate,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~ContentRulesetService() override;
 
-  void SetRulesetPublishedCallbackForTesting(base::Closure callback);
+  void SetRulesetPublishedCallbackForTesting(base::OnceClosure callback);
 
   // RulesetServiceDelegate:
-  void PostAfterStartupTask(base::Closure task) override;
+  void PostAfterStartupTask(base::OnceClosure task) override;
   void TryOpenAndSetRulesetFile(
       const base::FilePath& file_path,
       int expected_checksum,
@@ -364,7 +364,7 @@ class ContentRulesetService : public RulesetServiceDelegate,
 
   content::NotificationRegistrar notification_registrar_;
   base::File ruleset_data_;
-  base::Closure ruleset_published_callback_;
+  base::OnceClosure ruleset_published_callback_;
 
   std::unique_ptr<RulesetService> ruleset_service_;
   std::unique_ptr<VerifiedRulesetDealer::Handle> ruleset_dealer_;
