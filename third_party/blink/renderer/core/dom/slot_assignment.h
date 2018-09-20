@@ -44,6 +44,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 
   bool FindHostChildBySlotName(const AtomicString& slot_name) const;
   void CallSlotChangeIfNeeded(HTMLSlotElement& slot);
+  void CallSlotChangeAfterRemoved(HTMLSlotElement& slot);
   HTMLSlotElement* FindSlotChange(HTMLSlotElement& slot, Node& child);
 
   void DeleteSlotInChildSlotMap(HTMLSlotElement& slot);
