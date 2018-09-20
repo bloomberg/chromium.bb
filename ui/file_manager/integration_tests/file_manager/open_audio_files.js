@@ -16,15 +16,36 @@
  */
 function getTrackText(audioAppId, track) {
   const titleElement = audioPlayerApp.callRemoteTestUtil(
-      'queryAllElements', audioAppId, [track + ' > .data > .data-title']);
+      'deepQueryAllElements', audioAppId,
+      [trackListQuery(track + ' > .data > .data-title')]);
   const artistElement = audioPlayerApp.callRemoteTestUtil(
-      'queryAllElements', audioAppId, [track + ' > .data > .data-artist']);
+      'deepQueryAllElements', audioAppId,
+      [trackListQuery(track + ' > .data > .data-artist')]);
   return Promise.all([titleElement, artistElement]).then((data) => {
     return {
       title: data[0][0] && data[0][0].text,
       artist: data[1][0] && data[1][0].text
     };
   });
+}
+
+/**
+ * @param {string} query Query for an element inside <track-list> element.
+ * @return {!Array<string>} deep query selector for an element inside
+ *   <track-list> polymer element.
+ */
+function trackListQuery(query) {
+  return ['audio-player', 'track-list', query];
+}
+
+/**
+ * @param {!Array<string>|string} query Query for an element inside
+ *     <control-panel> element.
+ * @return {!Array<string>} Deep query selector for an element inside
+ *   <control-panel> polymer element.
+ */
+function controlPanelQuery(query) {
+  return ['audio-player', 'control-panel'].concat(query);
 }
 
 /*
@@ -202,7 +223,7 @@ function audioOpenMultipleTracksDrive() {
     },
     // Check: track 1 should be inactive.
     function() {
-      const inactive = '.track[index="1"]:not([active])';
+      const inactive = trackListQuery('.track[index="1"]:not([active])');
       audioPlayerApp.waitForElement(audioAppId, inactive).then(this.next);
     },
     // Open another audio file from Drive.
@@ -229,7 +250,7 @@ function audioOpenMultipleTracksDrive() {
     },
     // Check: track 0 should be inactive.
     function() {
-      const inactive = '.track[index="0"]:not([active])';
+      const inactive = trackListQuery('.track[index="0"]:not([active])');
       audioPlayerApp.waitForElement(audioAppId, inactive).then(this.next);
     },
     function(element) {
@@ -329,9 +350,9 @@ function audioRepeatAllModeSingleFile(path) {
     },
     // Click the repeat button for repeat-all.
     function() {
-      const repeatButton = ['repeat-button .no-repeat'];
+      const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, repeatButton, this.next);
+          'fakeMouseClick', audioAppId, [repeatButton], this.next);
     },
     // Leap forward in time.
     function(result) {
@@ -447,16 +468,16 @@ function audioRepeatOneModeSingleFile(path) {
     },
     // Click the repeat button for repeat-all.
     function() {
-      const repeatButton = ['repeat-button .no-repeat'];
+      const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, repeatButton, this.next);
+          'fakeMouseClick', audioAppId, [repeatButton], this.next);
     },
     // Click the repeat button again for repeat-once.
     function(result) {
       chrome.test.assertTrue(result, 'Failed to click the repeat button');
-      const repeatButton = ['repeat-button .repeat-all'];
+      const repeatButton = controlPanelQuery(['repeat-button', '.repeat-all']);
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, repeatButton, this.next);
+          'fakeMouseClick', audioAppId, [repeatButton], this.next);
     },
     // Leap forward in time.
     function(result) {
@@ -517,9 +538,9 @@ function audioRepeatAllModeMultipleFile(path) {
     },
     // Click the repeat button for repeat-all.
     function() {
-      const repeatButton = ['repeat-button .no-repeat'];
+      const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, repeatButton, this.next);
+          'fakeMouseClick', audioAppId, [repeatButton], this.next);
     },
     // Leap forward in time.
     function(result) {
@@ -644,16 +665,16 @@ function audioRepeatOneModeMultipleFile(path) {
     },
     // Click the repeat button for repeat-all.
     function() {
-      const repeatButton = ['repeat-button .no-repeat'];
+      const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, repeatButton, this.next);
+          'fakeMouseClick', audioAppId, [repeatButton], this.next);
     },
     // Click the repeat button again for repeat-once.
     function(result) {
       chrome.test.assertTrue(result, 'Failed to click the repeat button');
-      const repeatButton = ['repeat-button .repeat-all'];
+      const repeatButton = controlPanelQuery(['repeat-button', '.repeat-all']);
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, repeatButton, this.next);
+          'fakeMouseClick', audioAppId, [repeatButton], this.next);
     },
     // Leap forward in time.
     function(result) {
