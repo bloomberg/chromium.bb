@@ -62,6 +62,7 @@ static_library("multidevice_setup") {
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/mojom",
     "//components/cryptauth",
+    "//components/cryptauth/proto:util",
     "//components/pref_registry",
     "//components/prefs:prefs",
     "//services/service_manager/public/cpp",
