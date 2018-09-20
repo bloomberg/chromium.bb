@@ -47,9 +47,7 @@ chrome.test.runTests([
   function testSharePathWithCrostiniNotDownloads() {
     getEntry('testing', 'test_dir').then((entry) => {
       chrome.fileManagerPrivate.sharePathWithCrostini(
-          entry,
-          chrome.test.callbackFail(
-              'Share with Linux only allowed for directories within Downloads.'));
+          entry, chrome.test.callbackFail('Path must be under Downloads'));
     });
   },
   function testGetCrostiniSharedPaths() {

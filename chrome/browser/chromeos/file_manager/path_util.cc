@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -87,6 +88,15 @@ const base::FilePath::CharType kAndroidFilesPath[] =
     FILE_PATH_LITERAL("/run/arc/sdcard/write/emulated/0");
 
 base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
+  // Check if FilesApp has a registered path already.  This happens for tests.
+  const std::string mount_point_name =
+      util::GetDownloadsMountPointName(profile);
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  base::FilePath path;
+  if (mount_points->GetRegisteredPath(mount_point_name, &path))
+    return path;
+
   // On non-ChromeOS system (test+development), the primary profile uses
   // $HOME/Downloads for ease for accessing local files for debugging.
   if (!base::SysInfo::IsRunningOnChromeOS() &&
@@ -99,6 +109,8 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
     if (user == primary_user)
       return DownloadPrefs::GetDefaultDownloadDirectory();
   }
+
+  // Return <cryptohome>/Downloads.
   return profile->GetPath().AppendASCII(kDownloadsFolderName);
 }
 

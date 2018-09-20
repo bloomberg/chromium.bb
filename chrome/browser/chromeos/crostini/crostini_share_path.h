@@ -7,44 +7,27 @@
 
 #include <vector>
 
-#include "base/macros.h"
-#include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
 
 class Profile;
 
 namespace crostini {
 
-class CrostiniSharePath {
- public:
-  // Returns the singleton instance of CrostiniSharePath.
-  static CrostiniSharePath* GetInstance();
+// Share specified absolute path with vm.
+// Callback receives success bool and failure reason string.
+void SharePath(Profile* profile,
+               std::string vm_name,
+               const base::FilePath& path,
+               base::OnceCallback<void(bool, std::string)> callback);
 
-  // Share specified path with vm.
-  void SharePath(Profile* profile,
-                 std::string vm_name,
-                 std::string path,
-                 base::OnceCallback<void(bool, std::string)> callback);
-  void OnSharePathResponse(
-      std::string path,
-      base::OnceCallback<void(bool, std::string)> callback,
-      base::Optional<vm_tools::seneschal::SharePathResponse> response) const;
+// Get list of all shared paths for the default crostini container.
+std::vector<std::string> GetSharedPaths(Profile* profile);
 
-  // Get list of all shared paths for the default crostini container.
-  std::vector<std::string> GetSharedPaths(Profile* profile);
-
- private:
-  friend struct base::DefaultSingletonTraits<CrostiniSharePath>;
-
-  CrostiniSharePath();
-  ~CrostiniSharePath();
-
-  base::WeakPtrFactory<CrostiniSharePath> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrostiniSharePath);
-};
+// Share all paths configured in prefs for the default crostini container.
+// Called at container startup.  Callback is invoked once complete.
+void ShareAllPaths(Profile* profile, base::OnceCallback<void()> callback);
 
 }  // namespace crostini
 

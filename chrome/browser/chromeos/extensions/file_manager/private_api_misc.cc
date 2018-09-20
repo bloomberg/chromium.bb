@@ -692,20 +692,8 @@ FileManagerPrivateInternalSharePathWithCrostiniFunction::Run() {
   storage::FileSystemURL cracked =
       file_system_context->CrackURL(GURL(params->url));
 
-  // TODO(joelhockey): Seneschal currently only supports sharing
-  // directories under Downloads.
-  std::string downloads_mount_name =
-      file_manager::util::GetDownloadsMountPointName(profile);
-  if (cracked.filesystem_id() != downloads_mount_name) {
-    return RespondNow(Error(
-        "Share with Linux only allowed for directories within Downloads."));
-  }
-
-  // Path must be relative under Downloads/
-  std::string share_path =
-      cracked.virtual_path().value().substr(downloads_mount_name.size() + 1);
-  crostini::CrostiniSharePath::GetInstance()->SharePath(
-      profile, kCrostiniDefaultVmName, share_path,
+  crostini::SharePath(
+      profile, kCrostiniDefaultVmName, cracked.path(),
       base::BindOnce(&FileManagerPrivateInternalSharePathWithCrostiniFunction::
                          SharePathCallback,
                      this));
@@ -723,14 +711,13 @@ ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   file_manager::util::FileDefinitionList file_definition_list;
-  auto shared_paths =
-      crostini::CrostiniSharePath::GetInstance()->GetSharedPaths(profile);
+  auto shared_paths = crostini::GetSharedPaths(profile);
   for (const std::string& path : shared_paths) {
     file_manager::util::FileDefinition file_definition;
     // All shared paths should be directories.  Even if this is not true, it
     // is fine for foreground/js/crostini.js class to think so.
     // We verify that the paths are in fact valid directories before calling
-    // seneschal/9p.
+    // seneschal/9p in CrostiniSharePath::CallSeneschalSharePath().
     file_definition.is_directory = true;
     if (file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
             profile, extension_id(), base::FilePath(path),
