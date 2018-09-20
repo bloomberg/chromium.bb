@@ -17,6 +17,12 @@ struct CORE_EXPORT MinMaxSize {
   LayoutUnit min_size;
   LayoutUnit max_size;
 
+  // Make sure that our min/max sizes are at least as large as |value|.
+  void Encompass(LayoutUnit value);
+
+  // Make sure that our min/max sizes aren't larger than |value|.
+  void Constrain(LayoutUnit value);
+
   // Interprets the sizes as a min-content/max-content pair and computes the
   // "shrink-to-fit" size based on them for the given available size.
   LayoutUnit ShrinkToFit(LayoutUnit available_size) const;
@@ -29,6 +35,7 @@ struct CORE_EXPORT MinMaxSize {
     return min_size == other.min_size && max_size == other.max_size;
   }
 
+  void operator=(LayoutUnit value) { min_size = max_size = value; }
   MinMaxSize& operator+=(const LayoutUnit);
   MinMaxSize& operator-=(const LayoutUnit);
 };
