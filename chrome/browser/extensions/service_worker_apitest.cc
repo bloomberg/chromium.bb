@@ -1362,9 +1362,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
   lazy_observer.Wait();
 }
 
-// Flaky. See https://crbug.com/844821.
 IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
-                       DISABLED_FilteredEventsAfterRestart) {
+                       FilteredEventsAfterRestart) {
   // Create a tab to a.html, expect it to navigate to b.html. The service worker
   // will see two webNavigation.onCommitted events.
   ASSERT_TRUE(StartEmbeddedTestServer());
