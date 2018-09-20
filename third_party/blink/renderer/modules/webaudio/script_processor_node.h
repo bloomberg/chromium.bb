@@ -92,8 +92,8 @@ class ScriptProcessorHandler final : public AudioHandler {
 
   // These Persistent don't make reference cycles including the owner
   // ScriptProcessorNode.
-  PersistentHeapVector<Member<AudioBuffer>> input_buffers_;
-  PersistentHeapVector<Member<AudioBuffer>> output_buffers_;
+  CrossThreadPersistent<HeapVector<Member<AudioBuffer>>> input_buffers_;
+  CrossThreadPersistent<HeapVector<Member<AudioBuffer>>> output_buffers_;
 
   size_t buffer_size_;
   unsigned buffer_read_write_index_;

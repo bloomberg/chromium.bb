@@ -1760,7 +1760,7 @@ TEST(IncrementalMarkingTest, HasInlineCapacityCollectionWithHeapCompaction) {
 TEST(IncrementalMarkingTest, SlotDestruction) {
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   HeapCompact::ScheduleCompactionGCForTesting(true);
-  Vector<MovableReference*> ref(7);
+  Vector<MovableReference*> ref(6);
 
   {
     Object* obj = Object::Create();
@@ -1769,7 +1769,6 @@ TEST(IncrementalMarkingTest, SlotDestruction) {
     PersistentHeapLinkedHashSet<Member<Object>> p_linkedhashset;
     PersistentHeapListHashSet<Member<Object>> p_listhashset;
     PersistentHeapHashCountedSet<Member<Object>> p_hashcountedset;
-    PersistentHeapVector<Member<Object>> p_vector;
     PersistentHeapDeque<Member<Object>> p_deque;
 
     p_hashset.insert(obj);
@@ -1777,7 +1776,6 @@ TEST(IncrementalMarkingTest, SlotDestruction) {
     p_linkedhashset.insert(obj);
     p_listhashset.insert(obj);
     p_hashcountedset.insert(obj);
-    p_vector.push_back(obj);
     p_deque.push_back(obj);
 
     ref[0] = reinterpret_cast<MovableReference*>(&p_hashset);
@@ -1785,8 +1783,7 @@ TEST(IncrementalMarkingTest, SlotDestruction) {
     ref[2] = reinterpret_cast<MovableReference*>(&p_linkedhashset);
     ref[3] = reinterpret_cast<MovableReference*>(&p_listhashset);
     ref[4] = reinterpret_cast<MovableReference*>(&p_hashcountedset);
-    ref[5] = reinterpret_cast<MovableReference*>(&p_vector);
-    ref[6] = reinterpret_cast<MovableReference*>(&p_deque);
+    ref[5] = reinterpret_cast<MovableReference*>(&p_deque);
 
     driver.Start();
     driver.FinishSteps();

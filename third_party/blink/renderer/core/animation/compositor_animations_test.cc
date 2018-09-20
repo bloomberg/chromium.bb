@@ -82,9 +82,9 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
 
   Timing timing_;
   CompositorAnimations::CompositorTiming compositor_timing_;
-  PersistentHeapVector<Member<StringKeyframe>> keyframe_vector2_;
+  Persistent<HeapVector<Member<StringKeyframe>>> keyframe_vector2_;
   Persistent<StringKeyframeEffectModel> keyframe_animation_effect2_;
-  PersistentHeapVector<Member<StringKeyframe>> keyframe_vector5_;
+  Persistent<HeapVector<Member<StringKeyframe>>> keyframe_vector5_;
   Persistent<StringKeyframeEffectModel> keyframe_animation_effect5_;
 
   Persistent<Element> element_;
@@ -110,11 +110,11 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
 
     keyframe_vector2_ = CreateCompositableFloatKeyframeVector(2);
     keyframe_animation_effect2_ =
-        StringKeyframeEffectModel::Create(keyframe_vector2_);
+        StringKeyframeEffectModel::Create(*keyframe_vector2_);
 
     keyframe_vector5_ = CreateCompositableFloatKeyframeVector(5);
     keyframe_animation_effect5_ =
-        StringKeyframeEffectModel::Create(keyframe_vector5_);
+        StringKeyframeEffectModel::Create(*keyframe_vector5_);
 
     GetAnimationClock().ResetTimeForTesting();
 
@@ -224,8 +224,8 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     return keyframe;
   }
 
-  PersistentHeapVector<Member<StringKeyframe>>
-  CreateCompositableFloatKeyframeVector(size_t n) {
+  HeapVector<Member<StringKeyframe>>* CreateCompositableFloatKeyframeVector(
+      size_t n) {
     Vector<double> values;
     for (size_t i = 0; i < n; i++) {
       values.push_back(static_cast<double>(i));
@@ -233,13 +233,14 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     return CreateCompositableFloatKeyframeVector(values);
   }
 
-  PersistentHeapVector<Member<StringKeyframe>>
-  CreateCompositableFloatKeyframeVector(Vector<double>& values) {
-    PersistentHeapVector<Member<StringKeyframe>> frames;
+  HeapVector<Member<StringKeyframe>>* CreateCompositableFloatKeyframeVector(
+      Vector<double>& values) {
+    HeapVector<Member<StringKeyframe>>* frames =
+        new HeapVector<Member<StringKeyframe>>();
     for (wtf_size_t i = 0; i < values.size(); i++) {
       double offset = 1.0 / (values.size() - 1) * i;
       String value = String::Number(values[i]);
-      frames.push_back(
+      frames->push_back(
           CreateReplaceOpKeyframe(CSSPropertyOpacity, value, offset));
     }
     return frames;
@@ -710,13 +711,13 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        CanStartEffectOnCompositorNonLinearTimingFunctionOnFirstOrLastFrame) {
-  keyframe_vector2_[0]->SetEasing(cubic_ease_timing_function_.get());
+  keyframe_vector2_->at(0)->SetEasing(cubic_ease_timing_function_.get());
   keyframe_animation_effect2_ =
-      StringKeyframeEffectModel::Create(keyframe_vector2_);
+      StringKeyframeEffectModel::Create(*keyframe_vector2_);
 
-  keyframe_vector5_[3]->SetEasing(cubic_ease_timing_function_.get());
+  keyframe_vector5_->at(3)->SetEasing(cubic_ease_timing_function_.get());
   keyframe_animation_effect5_ =
-      StringKeyframeEffectModel::Create(keyframe_vector5_);
+      StringKeyframeEffectModel::Create(*keyframe_vector5_);
 
   timing_.timing_function = cubic_ease_timing_function_;
   EXPECT_TRUE(
@@ -1054,78 +1055,78 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        CanStartEffectOnCompositorTimingFunctionChainedCubicMatchingOffsets) {
-  keyframe_vector2_[0]->SetEasing(cubic_ease_timing_function_.get());
+  keyframe_vector2_->at(0)->SetEasing(cubic_ease_timing_function_.get());
   keyframe_animation_effect2_ =
-      StringKeyframeEffectModel::Create(keyframe_vector2_);
+      StringKeyframeEffectModel::Create(*keyframe_vector2_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
-  keyframe_vector2_[0]->SetEasing(cubic_custom_timing_function_.get());
+  keyframe_vector2_->at(0)->SetEasing(cubic_custom_timing_function_.get());
   keyframe_animation_effect2_ =
-      StringKeyframeEffectModel::Create(keyframe_vector2_);
+      StringKeyframeEffectModel::Create(*keyframe_vector2_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
-  keyframe_vector5_[0]->SetEasing(cubic_ease_timing_function_.get());
-  keyframe_vector5_[1]->SetEasing(cubic_custom_timing_function_.get());
-  keyframe_vector5_[2]->SetEasing(cubic_custom_timing_function_.get());
-  keyframe_vector5_[3]->SetEasing(cubic_custom_timing_function_.get());
+  keyframe_vector5_->at(0)->SetEasing(cubic_ease_timing_function_.get());
+  keyframe_vector5_->at(1)->SetEasing(cubic_custom_timing_function_.get());
+  keyframe_vector5_->at(2)->SetEasing(cubic_custom_timing_function_.get());
+  keyframe_vector5_->at(3)->SetEasing(cubic_custom_timing_function_.get());
   keyframe_animation_effect5_ =
-      StringKeyframeEffectModel::Create(keyframe_vector5_);
+      StringKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
        CanStartEffectOnCompositorTimingFunctionMixedGood) {
-  keyframe_vector5_[0]->SetEasing(linear_timing_function_.get());
-  keyframe_vector5_[1]->SetEasing(cubic_ease_timing_function_.get());
-  keyframe_vector5_[2]->SetEasing(cubic_ease_timing_function_.get());
-  keyframe_vector5_[3]->SetEasing(linear_timing_function_.get());
+  keyframe_vector5_->at(0)->SetEasing(linear_timing_function_.get());
+  keyframe_vector5_->at(1)->SetEasing(cubic_ease_timing_function_.get());
+  keyframe_vector5_->at(2)->SetEasing(cubic_ease_timing_function_.get());
+  keyframe_vector5_->at(3)->SetEasing(linear_timing_function_.get());
   keyframe_animation_effect5_ =
-      StringKeyframeEffectModel::Create(keyframe_vector5_);
+      StringKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
        CanStartEffectOnCompositorTimingFunctionWithStepOrFrameOkay) {
-  keyframe_vector2_[0]->SetEasing(step_timing_function_.get());
+  keyframe_vector2_->at(0)->SetEasing(step_timing_function_.get());
   keyframe_animation_effect2_ =
-      StringKeyframeEffectModel::Create(keyframe_vector2_);
+      StringKeyframeEffectModel::Create(*keyframe_vector2_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
-  keyframe_vector2_[0]->SetEasing(frames_timing_function_.get());
+  keyframe_vector2_->at(0)->SetEasing(frames_timing_function_.get());
   keyframe_animation_effect2_ =
-      StringKeyframeEffectModel::Create(keyframe_vector2_);
+      StringKeyframeEffectModel::Create(*keyframe_vector2_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
-  keyframe_vector5_[0]->SetEasing(step_timing_function_.get());
-  keyframe_vector5_[1]->SetEasing(linear_timing_function_.get());
-  keyframe_vector5_[2]->SetEasing(cubic_ease_timing_function_.get());
-  keyframe_vector5_[3]->SetEasing(frames_timing_function_.get());
+  keyframe_vector5_->at(0)->SetEasing(step_timing_function_.get());
+  keyframe_vector5_->at(1)->SetEasing(linear_timing_function_.get());
+  keyframe_vector5_->at(2)->SetEasing(cubic_ease_timing_function_.get());
+  keyframe_vector5_->at(3)->SetEasing(frames_timing_function_.get());
   keyframe_animation_effect5_ =
-      StringKeyframeEffectModel::Create(keyframe_vector5_);
+      StringKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 
-  keyframe_vector5_[0]->SetEasing(frames_timing_function_.get());
-  keyframe_vector5_[1]->SetEasing(step_timing_function_.get());
-  keyframe_vector5_[2]->SetEasing(cubic_ease_timing_function_.get());
-  keyframe_vector5_[3]->SetEasing(linear_timing_function_.get());
+  keyframe_vector5_->at(0)->SetEasing(frames_timing_function_.get());
+  keyframe_vector5_->at(1)->SetEasing(step_timing_function_.get());
+  keyframe_vector5_->at(2)->SetEasing(cubic_ease_timing_function_.get());
+  keyframe_vector5_->at(3)->SetEasing(linear_timing_function_.get());
   keyframe_animation_effect5_ =
-      StringKeyframeEffectModel::Create(keyframe_vector5_);
+      StringKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 
-  keyframe_vector5_[0]->SetEasing(linear_timing_function_.get());
-  keyframe_vector5_[1]->SetEasing(frames_timing_function_.get());
-  keyframe_vector5_[2]->SetEasing(cubic_ease_timing_function_.get());
-  keyframe_vector5_[3]->SetEasing(step_timing_function_.get());
+  keyframe_vector5_->at(0)->SetEasing(linear_timing_function_.get());
+  keyframe_vector5_->at(1)->SetEasing(frames_timing_function_.get());
+  keyframe_vector5_->at(2)->SetEasing(cubic_ease_timing_function_.get());
+  keyframe_vector5_->at(3)->SetEasing(step_timing_function_.get());
   keyframe_animation_effect5_ =
-      StringKeyframeEffectModel::Create(keyframe_vector5_);
+      StringKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
@@ -1573,15 +1574,16 @@ TEST_F(AnimationCompositorAnimationsTest,
   layout_object->EnsureIdForTestingProxy();
   element->SetLayoutObject(layout_object);
 
-  PersistentHeapVector<Member<StringKeyframe>> key_frames;
-  key_frames.push_back(CreateDefaultKeyframe(
+  Persistent<HeapVector<Member<StringKeyframe>>> key_frames =
+      new HeapVector<Member<StringKeyframe>>;
+  key_frames->push_back(CreateDefaultKeyframe(
       CSSPropertyOpacity, EffectModel::kCompositeReplace, 0.0));
-  key_frames.push_back(CreateDefaultKeyframe(
+  key_frames->push_back(CreateDefaultKeyframe(
       CSSPropertyOpacity, EffectModel::kCompositeReplace, 1.0));
   KeyframeEffectModelBase* animation_effect1 =
-      StringKeyframeEffectModel::Create(key_frames);
+      StringKeyframeEffectModel::Create(*key_frames);
   KeyframeEffectModelBase* animation_effect2 =
-      StringKeyframeEffectModel::Create(key_frames);
+      StringKeyframeEffectModel::Create(*key_frames);
 
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);

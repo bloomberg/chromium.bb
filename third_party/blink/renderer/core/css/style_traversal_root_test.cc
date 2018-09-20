@@ -49,8 +49,9 @@ class StyleTraversalRootTest : public testing::Test {
   enum ElementIndex { kA, kB, kC, kD, kE, kF, kG, kElementCount };
   void SetUp() final {
     document_ = Document::CreateForTest();
+    elements_ = new HeapVector<Member<Element>, 7>;
     for (size_t i = 0; i < kElementCount; i++) {
-      elements_.push_back(GetDocument().CreateRawElement(HTMLNames::divTag));
+      elements_->push_back(GetDocument().CreateRawElement(HTMLNames::divTag));
     }
     GetDocument().appendChild(DivElement(kA));
     DivElement(kA)->appendChild(DivElement(kB));
@@ -70,11 +71,11 @@ class StyleTraversalRootTest : public testing::Test {
     //     `-- div#g
   }
   Document& GetDocument() { return *document_; }
-  Element* DivElement(ElementIndex index) { return elements_[index]; }
+  Element* DivElement(ElementIndex index) { return elements_->at(index); }
 
  private:
   Persistent<Document> document_;
-  PersistentHeapVector<Member<Element>, 7> elements_;
+  Persistent<HeapVector<Member<Element>, 7>> elements_;
 };
 
 TEST_F(StyleTraversalRootTest, Update_SingleRoot) {
