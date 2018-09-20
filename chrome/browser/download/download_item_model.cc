@@ -303,25 +303,20 @@ base::string16 InterruptReasonMessage(
 // DownloadItemModel
 
 DownloadItemModel::DownloadItemModel(DownloadItem* download)
-    : download_(download) {}
+    : download_(download) {
+  download_->AddObserver(this);
+}
 
-DownloadItemModel::~DownloadItemModel() {}
+DownloadItemModel::~DownloadItemModel() {
+  if (download_)
+    download_->RemoveObserver(this);
+}
 
 ContentId DownloadItemModel::GetContentId() const {
   bool off_the_record = content::DownloadItemUtils::GetBrowserContext(download_)
                             ->IsOffTheRecord();
   return ContentId(OfflineItemUtils::GetDownloadNamespace(off_the_record),
                    download_->GetGuid());
-}
-
-void DownloadItemModel::AddObserver(DownloadUIModel::Observer* observer) {
-  DownloadUIModel::AddObserver(observer);
-  download_->AddObserver(this);
-}
-
-void DownloadItemModel::RemoveObserver(DownloadUIModel::Observer* observer) {
-  DownloadUIModel::RemoveObserver(observer);
-  download_->RemoveObserver(this);
 }
 
 base::string16 DownloadItemModel::GetInterruptReasonText() const {
@@ -832,6 +827,7 @@ void DownloadItemModel::OnDownloadOpened(DownloadItem* download) {
 void DownloadItemModel::OnDownloadDestroyed(DownloadItem* download) {
   for (auto& obs : observers_)
     obs.OnDownloadDestroyed();
+  download_ = nullptr;
 }
 
 base::string16 DownloadItemModel::GetInProgressStatusString() const {

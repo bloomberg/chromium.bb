@@ -40,8 +40,8 @@ class DownloadUIModel {
     virtual ~Observer() {}
   };
 
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Returns the content id associated with this download.
   virtual ContentId GetContentId() const;
