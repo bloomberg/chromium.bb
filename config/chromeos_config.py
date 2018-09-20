@@ -2431,7 +2431,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'gale',
       'glados',
-      'grunt',
       'guado_moblab',
       'hana',
       'kevin',
@@ -2499,6 +2498,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
+      'grunt',
       'rammus', # contact:zhuohao@
   ])
 
@@ -2752,6 +2752,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     (None,            None,            'caroline-arcnext', None),            # arcnext
     ('nyan_blaze',    None,            None,               None),            # Add for Skylab test
     ('scarlet'   ,    None,            None,               None),            # scarlet (RK3399 unibuild)
+    ('grunt',         None,            None,               None),            # grunt (AMD unibuild)
   ])
   # pylint: enable=bad-continuation, bad-whitespace, line-too-long
 
