@@ -130,9 +130,9 @@ void UpdateLegacyMultiColumnFlowThread(
 }
 
 NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
-    NGBlockNode node) {
-  return NGConstraintSpaceBuilder(node.Style().GetWritingMode(),
-                                  node.InitialContainingBlockSize())
+    NGBlockNode node,
+    NGPhysicalSize icb_size) {
+  return NGConstraintSpaceBuilder(node.Style().GetWritingMode(), icb_size)
       .SetTextDirection(node.Style().Direction())
       .SetIsIntermediateLayout(true)
       .SetIsNewFormattingContext(node.CreatesNewFormattingContext())
@@ -323,9 +323,12 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     return ComputeMinMaxSizeFromLegacy(input.size_type);
   }
 
+  NGPhysicalSize icb_size = constraint_space
+                                ? constraint_space->InitialContainingBlockSize()
+                                : InitialContainingBlockSize();
   NGConstraintSpace zero_constraint_space =
-      CreateConstraintSpaceBuilderForMinMax(*this).ToConstraintSpace(
-          Style().GetWritingMode());
+      CreateConstraintSpaceBuilderForMinMax(*this, icb_size)
+          .ToConstraintSpace(Style().GetWritingMode());
 
   if (!constraint_space) {
     // Using the zero-sized constraint space when measuring for an orthogonal
@@ -378,7 +381,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
 
   // Now, redo with infinite space for max_content
   NGConstraintSpace infinite_constraint_space =
-      CreateConstraintSpaceBuilderForMinMax(*this)
+      CreateConstraintSpaceBuilderForMinMax(*this, icb_size)
           .SetAvailableSize({LayoutUnit::Max(), LayoutUnit()})
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .ToConstraintSpace(Style().GetWritingMode());
