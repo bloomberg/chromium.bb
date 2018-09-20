@@ -77,12 +77,42 @@ KEYBOARD_EXPORT bool IsKeyboardEnabled();
 KEYBOARD_EXPORT void SetKeyboardShowOverride(
     KeyboardShowOverride show_override);
 
+// Returns true if an IME extension can specify a custom input view for the
+// virtual keyboard window.
+KEYBOARD_EXPORT bool IsInputViewEnabled();
+
 // Sets whehther the keyboards is in restricted state - state where advanced
 // virtual keyboard features are disabled.
 KEYBOARD_EXPORT void SetKeyboardRestricted(bool restricted);
 
 // Returns whether the keyboard is in restricted state.
 KEYBOARD_EXPORT bool GetKeyboardRestricted();
+
+// Returns true if floating virtual keyboard feature is enabled.
+KEYBOARD_EXPORT bool IsFloatingVirtualKeyboardEnabled();
+
+// Returns true if fullscreen handwriting virtual keyboard feature is enabled.
+KEYBOARD_EXPORT bool IsFullscreenHandwritingVirtualKeyboardEnabled();
+
+// Returns true if stylus virtual keyboard feature is enabled.
+KEYBOARD_EXPORT bool IsStylusVirtualKeyboardEnabled();
+
+// Returns true if virtual keyboard md ui feature is enabled.
+KEYBOARD_EXPORT bool IsVirtualKeyboardMdUiEnabled();
+
+// Returns true if gesture typing option is enabled for virtual keyboard.
+KEYBOARD_EXPORT bool IsGestureTypingEnabled();
+
+// Returns true if gesture editing option is enabled for virtual keyboard.
+KEYBOARD_EXPORT bool IsGestureEditingEnabled();
+
+// Returns true if voice input is not disabled for the keyboard by the command
+// line switch. It's up to the client to check if there is an input device
+// available.
+KEYBOARD_EXPORT bool IsVoiceInputEnabled();
+
+// Returns true if the IME service is enabled.
+KEYBOARD_EXPORT bool IsImeServiceEnabled();
 
 // Sends a fabricated key event, where |type| is the event type, |key_value|
 // is the unicode value of the character, |key_code| is the legacy key code
@@ -96,6 +126,15 @@ KEYBOARD_EXPORT bool SendKeyEvent(std::string type,
                                   std::string key_name,
                                   int modifiers,
                                   aura::WindowTreeHost* host);
+
+// Marks that the keyboard load has started. This is used to measure the time it
+// takes to fully load the keyboard. This should be called before
+// MarkKeyboardLoadFinished.
+KEYBOARD_EXPORT void MarkKeyboardLoadStarted();
+
+// Marks that the keyboard load has ended. This finishes measuring that the
+// keyboard is loaded.
+KEYBOARD_EXPORT void MarkKeyboardLoadFinished();
 
 }  // namespace keyboard
 

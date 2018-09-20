@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -25,8 +24,8 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace input_ime = extensions::api::input_ime;
 namespace input_method_private = extensions::api::input_method_private;
@@ -204,7 +203,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     // event is only for ChromeOS and contains additional information about pen
     // inputs. We ensure that we only trigger one OnFocus event.
     if (HasListener(input_method_private::OnFocus::kEventName) &&
-        base::FeatureList::IsEnabled(features::kEnableStylusVirtualKeyboard)) {
+        keyboard::IsStylusVirtualKeyboardEnabled()) {
       input_method_private::InputContext input_context;
       input_context.context_id = context.id;
       input_context.type = input_method_private::ParseInputContextType(

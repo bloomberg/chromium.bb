@@ -378,15 +378,6 @@ class KEYBOARD_EXPORT KeyboardController
   // window).
   void EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds);
 
-  // Marks that the keyboard load has started. This is used to measure the time
-  // it takes to fully load the keyboard. This should be called before
-  // MarkKeyboardLoadFinished.
-  void MarkKeyboardLoadStarted();
-
-  // Marks that the keyboard load has ended. This finishes measuring that the
-  // keyboard is loaded.
-  void MarkKeyboardLoadFinished();
-
   std::unique_ptr<KeyboardUI> ui_;
   KeyboardLayoutDelegate* layout_delegate_ = nullptr;
   ScopedObserver<ui::InputMethod, ui::InputMethodObserver> ime_observer_;
@@ -432,9 +423,6 @@ class KEYBOARD_EXPORT KeyboardController
   base::Time time_of_last_blur_ = base::Time::UnixEpoch();
 
   DisplayUtil display_util_;
-
-  bool keyboard_load_time_logged_ = false;
-  base::Time keyboard_load_time_start_;
 
   base::WeakPtrFactory<KeyboardController> weak_factory_report_lingering_state_;
   base::WeakPtrFactory<KeyboardController> weak_factory_will_hide_;
