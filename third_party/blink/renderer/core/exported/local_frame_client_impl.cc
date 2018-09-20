@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -667,7 +668,10 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
     return false;
   if (offset < -webview->Client()->HistoryBackListCount())
     return false;
-  webview->Client()->NavigateBackForwardSoon(offset);
+
+  bool has_user_gesture =
+      Frame::HasTransientUserActivation(web_frame_->GetFrame());
+  webview->Client()->NavigateBackForwardSoon(offset, has_user_gesture);
   return true;
 }
 

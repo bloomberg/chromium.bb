@@ -173,8 +173,9 @@ class WebViewClient {
 
   // Tells the embedder to navigate back or forward in session history by
   // the given offset (relative to the current position in session
-  // history).
-  virtual void NavigateBackForwardSoon(int offset) {}
+  // history). |has_user_gesture| tells whether or not this is the consequence
+  // of a user action.
+  virtual void NavigateBackForwardSoon(int offset, bool has_user_gesture) {}
 
   // Returns the number of history items before/after the current
   // history item.
