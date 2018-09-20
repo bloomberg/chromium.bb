@@ -206,6 +206,10 @@ void VizProcessTransportFactory::CreateLayerTreeFrameSink(
       compositor->widget());
 #endif
 
+  // Create the data map entry so that we can set properties like output secure
+  // while we are waiting for the GpuChannel to be established.
+  AddCompositor(compositor.get());
+
   if (is_gpu_compositing_disabled() ||
       compositor->force_software_compositor()) {
     OnEstablishedGpuChannel(compositor, nullptr);
@@ -382,7 +386,7 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
     compositor_context = main_context_provider_;
     worker_context = worker_context_provider_;
   }
-  ConfigureCompositor(compositor_weak_ptr, std::move(compositor_context),
+  ConfigureCompositor(compositor, std::move(compositor_context),
                       std::move(worker_context));
 }
 
