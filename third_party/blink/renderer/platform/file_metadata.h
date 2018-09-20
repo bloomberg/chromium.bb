@@ -71,7 +71,6 @@ class FileMetadata {
 PLATFORM_EXPORT bool GetFileSize(const String&, long long& result);
 PLATFORM_EXPORT bool GetFileModificationTime(const String&, double& result);
 PLATFORM_EXPORT bool GetFileMetadata(const String&, FileMetadata&);
-PLATFORM_EXPORT String DirectoryName(const String&);
 PLATFORM_EXPORT KURL FilePathToURL(const String&);
 
 }  // namespace blink

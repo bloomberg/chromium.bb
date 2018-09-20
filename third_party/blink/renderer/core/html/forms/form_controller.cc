@@ -25,6 +25,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
@@ -299,8 +300,10 @@ Vector<String> SavedFormState::GetReferencedFilePaths() const {
       const FileChooserFileInfoList& selected_files =
           HTMLInputElement::FilesFromFileInputFormControlState(
               form_control_state);
-      for (const auto& file : selected_files)
-        to_return.push_back(file.path);
+      for (const auto& file : selected_files) {
+        to_return.push_back(
+            FilePathToString(file->get_native_file()->file_path));
+      }
     }
   }
   return to_return;
