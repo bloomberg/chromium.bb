@@ -227,7 +227,7 @@ radeon_cs_space_check_with_bo(struct radeon_cs *cs, struct radeon_bo *bo,
     return ret;
 }
 
-int radeon_cs_space_check(struct radeon_cs *cs)
+drm_public int radeon_cs_space_check(struct radeon_cs *cs)
 {
     struct radeon_cs_int *csi = (struct radeon_cs_int *)cs;
     return radeon_cs_check_space_internal(csi, NULL);

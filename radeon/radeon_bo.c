@@ -67,13 +67,13 @@ drm_public struct radeon_bo *radeon_bo_unref(struct radeon_bo *bo)
     return boi->bom->funcs->bo_unref(boi);
 }
 
-int radeon_bo_map(struct radeon_bo *bo, int write)
+drm_public int radeon_bo_map(struct radeon_bo *bo, int write)
 {
     struct radeon_bo_int *boi = (struct radeon_bo_int *)bo;
     return boi->bom->funcs->bo_map(boi, write);
 }
 
-int radeon_bo_unmap(struct radeon_bo *bo)
+drm_public int radeon_bo_unmap(struct radeon_bo *bo)
 {
     struct radeon_bo_int *boi = (struct radeon_bo_int *)bo;
     return boi->bom->funcs->bo_unmap(boi);
