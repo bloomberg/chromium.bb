@@ -42,7 +42,7 @@
           <div class$=
               "[[getMultiDeviceItemLabelBlockCssClass_(pageContentData)]]">
             <div id="multidevice-label">[[getLabelText_(pageContentData)]]</div>
-            <div id="mutltideviceSubLabel" class="secondary"
+            <div id="multideviceSubLabel" class="secondary"
                 inner-h-t-m-l="[[getSubLabelInnerHtml_(pageContentData)]]">
             </div>
           </div>
@@ -64,7 +64,7 @@
                 restamp>
               <paper-icon-button-light class="subpage-arrow">
                 <button aria-labelledby="multidevice-label"
-                    aria-describedby="mutltideviceSubLabel"></button>
+                    aria-describedby="multideviceSubLabel"></button>
               </paper-icon-button-light>
             </template>
             <div class="separator"></div>
@@ -97,7 +97,7 @@
       </template>
     </settings-animated-pages>
     <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
-      <settings-password-prompt-dialog id="passwordPrompt">
+      <settings-password-prompt-dialog id="multidevicePasswordPrompt">
       </settings-password-prompt-dialog>
     </template>
   </template>
