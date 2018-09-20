@@ -18,6 +18,7 @@
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 // Status of the download when it ends, for UMA report.
@@ -61,7 +62,7 @@ ReadingListDownloadService::ReadingListDownloadService(
     ReadingListModel* reading_list_model,
     PrefService* prefs,
     base::FilePath chrome_profile_path,
-    net::URLRequestContextGetter* url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<dom_distiller::DistillerFactory> distiller_factory,
     std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
         distiller_page_factory)
@@ -75,7 +76,7 @@ ReadingListDownloadService::ReadingListDownloadService(
 
   url_downloader_ = std::make_unique<URLDownloader>(
       distiller_factory_.get(), distiller_page_factory_.get(), prefs,
-      chrome_profile_path, url_request_context_getter,
+      chrome_profile_path, url_loader_factory,
       base::Bind(&ReadingListDownloadService::OnDownloadEnd,
                  base::Unretained(this)),
       base::Bind(&ReadingListDownloadService::OnDeleteEnd,
