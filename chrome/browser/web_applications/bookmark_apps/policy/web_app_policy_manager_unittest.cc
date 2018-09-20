@@ -97,6 +97,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SimulatePreviouslyInstalledApp(
+      TestPendingAppManager* pending_app_manager,
       GURL url,
       PendingAppManager::InstallSource install_source) {
     std::string id = GenerateFakeExtensionId(url);
@@ -105,6 +106,8 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
 
     ExtensionIdsMap extension_ids_map(profile()->GetPrefs());
     extension_ids_map.Insert(url, id, install_source);
+
+    pending_app_manager->SimulatePreviouslyInstalledApp(url, install_source);
   }
 
  private:
@@ -117,7 +120,7 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledAppsPrefValue) {
                                              pending_app_manager.get());
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager->installed_apps();
+  const auto& apps_to_install = pending_app_manager->install_requests();
   EXPECT_TRUE(apps_to_install.empty());
 }
 
@@ -130,7 +133,7 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledApps) {
                                              pending_app_manager.get());
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager->installed_apps();
+  const auto& apps_to_install = pending_app_manager->install_requests();
   EXPECT_TRUE(apps_to_install.empty());
 }
 
@@ -146,7 +149,7 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
                                              pending_app_manager.get());
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager->installed_apps();
+  const auto& apps_to_install = pending_app_manager->install_requests();
 
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.push_back(GetWindowedAppInfo());
@@ -165,7 +168,7 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoForcedLaunchContainer) {
                                              pending_app_manager.get());
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager->installed_apps();
+  const auto& apps_to_install = pending_app_manager->install_requests();
 
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.push_back(GetDefaultContainerAppInfo());
@@ -184,7 +187,7 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
                                              pending_app_manager.get());
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager->installed_apps();
+  const auto& apps_to_install = pending_app_manager->install_requests();
 
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.push_back(GetWindowedAppInfo());
@@ -204,13 +207,18 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
 }
 
 TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
+  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
+
   // Simulate two policy apps and a regular app that were installed in the
   // previous session.
   SimulatePreviouslyInstalledApp(
-      GURL(kWindowedUrl), PendingAppManager::InstallSource::kExternalPolicy);
+      pending_app_manager.get(), GURL(kWindowedUrl),
+      PendingAppManager::InstallSource::kExternalPolicy);
   SimulatePreviouslyInstalledApp(
-      GURL(kTabbedUrl), PendingAppManager::InstallSource::kExternalPolicy);
-  SimulatePreviouslyInstalledApp(GURL(kDefaultContainerUrl),
+      pending_app_manager.get(), GURL(kTabbedUrl),
+      PendingAppManager::InstallSource::kExternalPolicy);
+  SimulatePreviouslyInstalledApp(pending_app_manager.get(),
+                                 GURL(kDefaultContainerUrl),
                                  PendingAppManager::InstallSource::kInternal);
 
   // Push a policy with only one of the apps.
@@ -219,7 +227,6 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList,
                              std::move(first_list));
 
-  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
   WebAppPolicyManager web_app_policy_manager(profile(),
                                              pending_app_manager.get());
   base::RunLoop().RunUntilIdle();
@@ -227,11 +234,11 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   // We should only try to install the app in the policy.
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.push_back(GetWindowedAppInfo());
-  EXPECT_EQ(pending_app_manager->installed_apps(), expected_apps_to_install);
+  EXPECT_EQ(pending_app_manager->install_requests(), expected_apps_to_install);
 
   // We should try to uninstall the app that is no longer in the policy.
   EXPECT_EQ(std::vector<GURL>({GURL(kTabbedUrl)}),
-            pending_app_manager->uninstalled_apps());
+            pending_app_manager->uninstall_requests());
 }
 
 // Tests that we correctly uninstall an app that we installed in the same
@@ -250,7 +257,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
                              std::move(first_list));
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager->installed_apps();
+  const auto& apps_to_install = pending_app_manager->install_requests();
 
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.push_back(GetWindowedAppInfo());
@@ -272,7 +279,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
   EXPECT_EQ(apps_to_install, expected_apps_to_install);
 
   EXPECT_EQ(std::vector<GURL>({GURL(kTabbedUrl)}),
-            pending_app_manager->uninstalled_apps());
+            pending_app_manager->uninstall_requests());
 }
 
 }  // namespace web_app

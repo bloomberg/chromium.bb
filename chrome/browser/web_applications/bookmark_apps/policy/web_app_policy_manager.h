@@ -51,11 +51,6 @@ class WebAppPolicyManager {
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  // URLs of the apps that this class last installed. Populated with the current
-  // policy-installed apps at start up and replaced every time this class calls
-  // PendingAppManager::InstallApps().
-  std::vector<GURL> last_app_urls_;
-
   base::WeakPtrFactory<WebAppPolicyManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppPolicyManager);

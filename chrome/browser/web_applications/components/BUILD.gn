@@ -70,6 +70,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "pending_app_manager_unittest.cc",
     "web_app_helpers_unittest.cc",
     "web_app_icon_downloader_unittest.cc",
     "web_app_icon_generator_unittest.cc",
@@ -84,6 +85,7 @@ source_set("unit_tests") {
 
   deps = [
     ":components",
+    ":test_support",
     "//base/test:test_support",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/web_applications:web_app_group",

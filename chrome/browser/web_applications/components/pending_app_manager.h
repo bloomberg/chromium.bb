@@ -70,16 +70,7 @@ class PendingAppManager {
   // that it otherwise doesn't recognize.
   //
   // In practice, every kExternalXxx enum definition should correspond to
-  // exactly one place in the code where InstallUninstallApps is called.
-  //
-  // TODO(nigeltao): PendingAppManager::InstallUninstallApps will land in
-  // https://crrev.com/c/1198644 "Garbage-collect default-installed web apps"
-  // which is on hold precisely because, as written, there is no distinction
-  // between kInternal and kExternalDefault, so that
-  // WebAppProvider::OnScanForExternalWebApps (which will correspond to
-  // kExternalDefault after this commit) will inadvertently uninstall the
-  // AndroidSmsAppHelperDelegateImpl::InstallAndroidSmsApp app (which will
-  // correspond to kInternal).
+  // exactly one place in the code where SynchronizeInstalledApps is called.
   enum class InstallSource {
     // Do not remove or re-order the names, only append to the end. Their
     // integer values are persisted in the preferences.
@@ -88,13 +79,13 @@ class PendingAppManager {
     // Installed by default on the system, such as "all such-and-such make and
     // model Chromebooks should have this app installed".
     //
-    // The corresponding InstallUninstallApps call site is in
+    // The corresponding SynchronizeInstalledApps call site is in
     // WebAppProvider::OnScanForExternalWebApps.
     kExternalDefault = 1,
     // Installed by sys-admin policy, such as "all example.com employees should
     // have this app installed".
     //
-    // The corresponding InstallUninstallApps call site is in
+    // The corresponding SynchronizeInstalledApps call site is in
     // WebAppPolicyManager::RefreshPolicyInstalledApps.
     kExternalPolicy = 2,
   };
@@ -150,6 +141,21 @@ class PendingAppManager {
   virtual void UninstallApps(std::vector<GURL> apps_to_uninstall,
                              const UninstallCallback& callback) = 0;
 
+  // Returns the URLs of those apps installed from |install_source|.
+  virtual std::vector<GURL> GetInstalledAppUrls(
+      InstallSource install_source) const = 0;
+
+  // Installs |desired_apps| and uninstalls any apps in
+  // GetInstalledAppUrls(install_source) that are not in |desired_apps|'s URLs.
+  //
+  // All apps in |desired_apps| should have |install_source| as their source.
+  //
+  // Note that this returns after queueing work (installation and
+  // uninstallation) to be done. It does not wait until that work is complete.
+  void SynchronizeInstalledApps(std::vector<AppInfo> desired_apps,
+                                InstallSource install_source);
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(PendingAppManager);
 };
 

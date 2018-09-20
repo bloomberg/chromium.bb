@@ -55,7 +55,7 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp) {
       web_app::PendingAppManager::LaunchContainer::kWindow,
       web_app::PendingAppManager::InstallSource::kInternal));
   EXPECT_EQ(expected_apps_to_install,
-            test_pending_app_manager()->installed_apps());
+            test_pending_app_manager()->install_requests());
 }
 
 }  // namespace multidevice_setup
