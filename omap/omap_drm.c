@@ -128,8 +128,8 @@ drm_public void omap_device_del(struct omap_device *dev)
 	free(dev);
 }
 
-int
-drm_public omap_get_param(struct omap_device *dev, uint64_t param, uint64_t *value)
+drm_public int
+omap_get_param(struct omap_device *dev, uint64_t param, uint64_t *value)
 {
 	struct drm_omap_param req = {
 			.param = param,
@@ -146,8 +146,8 @@ drm_public omap_get_param(struct omap_device *dev, uint64_t param, uint64_t *val
 	return 0;
 }
 
-int
-drm_public omap_set_param(struct omap_device *dev, uint64_t param, uint64_t value)
+drm_public int
+omap_set_param(struct omap_device *dev, uint64_t param, uint64_t value)
 {
 	struct drm_omap_param req = {
 			.param = param,
@@ -226,8 +226,8 @@ fail:
 
 
 /* allocate a new (un-tiled) buffer object */
-struct omap_bo *
-drm_public omap_bo_new(struct omap_device *dev, uint32_t size, uint32_t flags)
+drm_public struct omap_bo *
+omap_bo_new(struct omap_device *dev, uint32_t size, uint32_t flags)
 {
 	union omap_gem_size gsize = {
 			.bytes = size,
@@ -239,8 +239,8 @@ drm_public omap_bo_new(struct omap_device *dev, uint32_t size, uint32_t flags)
 }
 
 /* allocate a new buffer object */
-struct omap_bo *
-drm_public omap_bo_new_tiled(struct omap_device *dev, uint32_t width,
+drm_public struct omap_bo *
+omap_bo_new_tiled(struct omap_device *dev, uint32_t width,
 		  uint32_t height, uint32_t flags)
 {
 	union omap_gem_size gsize = {
@@ -281,8 +281,8 @@ static int get_buffer_info(struct omap_bo *bo)
 }
 
 /* import a buffer object from DRI2 name */
-struct omap_bo *
-drm_public omap_bo_from_name(struct omap_device *dev, uint32_t name)
+drm_public struct omap_bo *
+omap_bo_from_name(struct omap_device *dev, uint32_t name)
 {
 	struct omap_bo *bo = NULL;
 	struct drm_gem_open req = {
@@ -315,8 +315,8 @@ fail:
  * fd so caller should close() the fd when it is otherwise done
  * with it (even if it is still using the 'struct omap_bo *')
  */
-struct omap_bo *
-drm_public omap_bo_from_dmabuf(struct omap_device *dev, int fd)
+drm_public struct omap_bo *
+omap_bo_from_dmabuf(struct omap_device *dev, int fd)
 {
 	struct omap_bo *bo = NULL;
 	struct drm_prime_handle req = {
