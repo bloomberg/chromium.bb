@@ -155,6 +155,8 @@ class DomainReliabilityServiceTest : public testing::Test {
         upload_reporter_string_, &browser_context_));
     monitor_ = service_->CreateMonitor(ui_task_runner, network_task_runner);
     monitor_->MoveToNetworkThread();
+    // Let the NetworkConnectionTracker registration complete.
+    thread_bundle_.RunUntilIdle();
     monitor_->InitURLRequestContext(url_request_context_getter_);
     monitor_->SetDiscardUploads(true);
   }
