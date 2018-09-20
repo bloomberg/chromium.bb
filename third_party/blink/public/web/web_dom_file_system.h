@@ -86,7 +86,7 @@ class WebDOMFileSystem {
   BLINK_EXPORT void Assign(const WebDOMFileSystem&);
 
   BLINK_EXPORT WebString GetName() const;
-  BLINK_EXPORT WebFileSystem::Type GetType() const;
+  BLINK_EXPORT WebFileSystemType GetType() const;
   BLINK_EXPORT WebURL RootURL() const;
 
   BLINK_EXPORT v8::Local<v8::Value> ToV8Value(

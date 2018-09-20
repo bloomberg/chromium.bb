@@ -744,8 +744,11 @@ void FileSystemManagerImpl::DidResolveURL(
       type == storage::FileSystemContext::RESOLVED_ENTRY_NOT_FOUND)
     result = base::File::FILE_ERROR_NOT_FOUND;
 
+  base::FilePath normalized_path(
+      storage::VirtualPath::GetNormalizedFilePath(file_path));
   std::move(callback).Run(
-      mojo::ConvertTo<blink::mojom::FileSystemInfoPtr>(info), file_path,
+      mojo::ConvertTo<blink::mojom::FileSystemInfoPtr>(info),
+      std::move(normalized_path),
       type == storage::FileSystemContext::RESOLVED_ENTRY_DIRECTORY, result);
   // For ResolveURL we do not create a new operation, so no unregister here.
 }

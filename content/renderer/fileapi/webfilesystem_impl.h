@@ -5,10 +5,6 @@
 #ifndef CONTENT_RENDERER_FILEAPI_WEBFILESYSTEM_IMPL_H_
 #define CONTENT_RENDERER_FILEAPI_WEBFILESYSTEM_IMPL_H_
 
-#include <map>
-
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/worker_thread.h"
@@ -19,13 +15,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace blink {
-class WebURL;
-class WebFileWriterClient;
-}
-
 namespace content {
 
+// TODO(adithyas): Move functionality to blink::FileSystemDispatcher and remove
+// this class.
 class WebFileSystemImpl : public blink::WebFileSystem,
                           public WorkerThread::Observer {
  public:
@@ -47,60 +40,11 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  // WebFileSystem implementation.
-  void OpenFileSystem(const blink::WebURL& storage_partition,
-                      const blink::WebFileSystemType type,
-                      blink::WebFileSystemCallbacks) override;
-  void ResolveURL(const blink::WebURL& filesystem_url,
-                  blink::WebFileSystemCallbacks) override;
-  void Move(const blink::WebURL& src_path,
-            const blink::WebURL& dest_path,
-            blink::WebFileSystemCallbacks) override;
-  void Copy(const blink::WebURL& src_path,
-            const blink::WebURL& dest_path,
-            blink::WebFileSystemCallbacks) override;
-  void Remove(const blink::WebURL& path,
-              blink::WebFileSystemCallbacks) override;
-  void RemoveRecursively(const blink::WebURL& path,
-                         blink::WebFileSystemCallbacks) override;
-  void ReadMetadata(const blink::WebURL& path,
-                    blink::WebFileSystemCallbacks) override;
-  void CreateFile(const blink::WebURL& path,
-                  bool exclusive,
-                  blink::WebFileSystemCallbacks) override;
-  void CreateDirectory(const blink::WebURL& path,
-                       bool exclusive,
-                       blink::WebFileSystemCallbacks) override;
-  void FileExists(const blink::WebURL& path,
-                  blink::WebFileSystemCallbacks) override;
-  void DirectoryExists(const blink::WebURL& path,
-                       blink::WebFileSystemCallbacks) override;
-  int ReadDirectory(const blink::WebURL& path,
-                    blink::WebFileSystemCallbacks) override;
-  void CreateFileWriter(const blink::WebURL& path,
-                        blink::WebFileWriterClient*,
-                        blink::WebFileSystemCallbacks) override;
-  void CreateFileWriter(
-      const blink::WebURL& path,
-      std::unique_ptr<CreateFileWriterCallbacks> callbacks) override;
-  void CreateSnapshotFileAndReadMetadata(
-      const blink::WebURL& path,
-      blink::WebFileSystemCallbacks) override;
-
   void ChooseEntry(blink::WebFrame* frame,
                    std::unique_ptr<ChooseEntryCallbacks>) override;
 
-  int RegisterCallbacks(const blink::WebFileSystemCallbacks& callbacks);
-  blink::WebFileSystemCallbacks GetCallbacks(int callbacks_id);
-  void UnregisterCallbacks(int callbacks_id);
-
  private:
-  typedef std::map<int, blink::WebFileSystemCallbacks> CallbacksMap;
-
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-
-  CallbacksMap callbacks_;
-  int next_callbacks_id_;
   FileSystemDispatcher file_system_dispatcher_;
 
   // Thread-affine per use of TLS in impl.

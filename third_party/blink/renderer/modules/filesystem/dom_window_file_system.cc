@@ -60,7 +60,7 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
   if (!document->GetSecurityOrigin()->CanAccessFileSystem()) {
     DOMFileSystem::ReportError(document,
                                ScriptErrorCallback::Wrap(error_callback),
-                               FileError::kSecurityErr);
+                               base::File::FILE_ERROR_SECURITY);
     return;
   } else if (document->GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(document, WebFeature::kFileAccessedFileSystem);
@@ -71,7 +71,7 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
   if (!DOMFileSystemBase::IsValidType(file_system_type)) {
     DOMFileSystem::ReportError(document,
                                ScriptErrorCallback::Wrap(error_callback),
-                               FileError::kInvalidModificationErr);
+                               base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
@@ -81,7 +81,8 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
           FileSystemCallbacks::OnDidOpenFileSystemV8Impl::Create(
               success_callback),
           ScriptErrorCallback::Wrap(error_callback), document,
-          file_system_type));
+          file_system_type),
+      LocalFileSystem::kAsynchronous);
 }
 
 void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
@@ -102,7 +103,7 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
       !security_origin->CanRequest(completed_url)) {
     DOMFileSystem::ReportError(document,
                                ScriptErrorCallback::Wrap(error_callback),
-                               FileError::kSecurityErr);
+                               base::File::FILE_ERROR_SECURITY);
     return;
   } else if (document->GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(document, WebFeature::kFileAccessedFileSystem);
@@ -111,7 +112,7 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
   if (!completed_url.IsValid()) {
     DOMFileSystem::ReportError(document,
                                ScriptErrorCallback::Wrap(error_callback),
-                               FileError::kEncodingErr);
+                               base::File::FILE_ERROR_INVALID_URL);
     return;
   }
 
@@ -119,7 +120,8 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
       document, completed_url,
       ResolveURICallbacks::Create(
           ResolveURICallbacks::OnDidGetEntryV8Impl::Create(success_callback),
-          ScriptErrorCallback::Wrap(error_callback), document));
+          ScriptErrorCallback::Wrap(error_callback), document),
+      LocalFileSystem::kAsynchronous);
 }
 
 static_assert(

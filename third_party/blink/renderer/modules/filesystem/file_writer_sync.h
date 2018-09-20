@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_SYNC_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_SYNC_H_
 
-#include "third_party/blink/public/platform/web_file_writer_client.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/filesystem/file_writer_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -42,9 +41,7 @@ namespace blink {
 class Blob;
 class ExceptionState;
 
-class FileWriterSync final : public ScriptWrappable,
-                             public FileWriterBase,
-                             public WebFileWriterClient {
+class FileWriterSync final : public ScriptWrappable, public FileWriterBase {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
 
@@ -53,21 +50,25 @@ class FileWriterSync final : public ScriptWrappable,
   ~FileWriterSync() override;
   void Trace(blink::Visitor*) override;
 
-  // FileWriterBase
   void write(Blob*, ExceptionState&);
   void seek(long long position, ExceptionState&);
   void truncate(long long length, ExceptionState&);
 
-  // WebFileWriterClient, via FileWriterBase
-  void DidWrite(long long bytes, bool complete) override;
-  void DidTruncate() override;
-  void DidFail(WebFileError) override;
+  // FileWriterBase
+  void DidWriteImpl(int64_t bytes, bool complete) override;
+  void DidTruncateImpl() override;
+  void DidFailImpl(base::File::Error error) override;
+  void DoTruncate(const KURL& path, int64_t offset) override;
+  void DoWrite(const KURL& path,
+               const String& blob_id,
+               int64_t offset) override;
+  void DoCancel() override;
 
  private:
   FileWriterSync();
   void PrepareForWrite();
 
-  FileError::ErrorCode error_;
+  base::File::Error error_;
   bool complete_;
 };
 
