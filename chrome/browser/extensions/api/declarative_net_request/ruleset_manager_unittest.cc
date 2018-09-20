@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -24,8 +25,6 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -97,10 +96,10 @@ class RulesetManagerTest : public DNRTestBase {
     return last_loaded_extension_.get();
   }
 
-  std::unique_ptr<net::URLRequest> GetRequestForURL(const std::string url) {
-    return request_context_.CreateRequest(GURL(url), net::DEFAULT_PRIORITY,
-                                          &delegate_,
-                                          TRAFFIC_ANNOTATION_FOR_TESTS);
+  WebRequestInfo GetRequestForURL(base::StringPiece url) {
+    WebRequestInfo info;
+    info.url = GURL(url);
+    return info;
   }
 
  private:
@@ -110,8 +109,6 @@ class RulesetManagerTest : public DNRTestBase {
                              false /*notifications_disabled*/);
   }
 
-  net::TestURLRequestContext request_context_;
-  net::TestDelegate delegate_;
   scoped_refptr<const Extension> last_loaded_extension_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetManagerTest);
@@ -133,15 +130,9 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
   RulesetManager* manager = info_map()->GetRulesetManager();
   ASSERT_TRUE(manager);
 
-  std::unique_ptr<net::URLRequest> request_one =
-      GetRequestForURL("http://one.com");
-  WebRequestInfo request_one_info(request_one.get());
-  std::unique_ptr<net::URLRequest> request_two =
-      GetRequestForURL("http://two.com");
-  WebRequestInfo request_two_info(request_two.get());
-  std::unique_ptr<net::URLRequest> request_three =
-      GetRequestForURL("http://three.com");
-  WebRequestInfo request_three_info(request_three.get());
+  WebRequestInfo request_one_info = GetRequestForURL("http://one.com");
+  WebRequestInfo request_two_info = GetRequestForURL("http://two.com");
+  WebRequestInfo request_three_info = GetRequestForURL("http://three.com");
 
   auto should_block_request = [manager](const WebRequestInfo& request) {
     GURL redirect_url;
@@ -208,9 +199,7 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
   manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
                       URLPatternSet());
 
-  std::unique_ptr<net::URLRequest> request =
-      GetRequestForURL("http://example.com");
-  WebRequestInfo request_info(request.get());
+  WebRequestInfo request_info = GetRequestForURL("http://example.com");
 
   GURL redirect_url;
 
@@ -260,42 +249,35 @@ TEST_P(RulesetManagerTest, Redirect) {
   // redirected to "google.com".
   const bool is_incognito_context = false;
   GURL redirect_url1;
-  std::unique_ptr<net::URLRequest> request =
-      GetRequestForURL("http://example.com");
-  request->set_initiator(base::nullopt);
-  extensions::WebRequestInfo request_info1(request.get());
-  EXPECT_EQ(Action::REDIRECT,
-            manager->EvaluateRequest(request_info1, is_incognito_context,
-                                     &redirect_url1));
+  WebRequestInfo request = GetRequestForURL("http://example.com");
+  request.initiator = base::nullopt;
+  EXPECT_EQ(
+      Action::REDIRECT,
+      manager->EvaluateRequest(request, is_incognito_context, &redirect_url1));
   EXPECT_EQ(GURL("http://google.com"), redirect_url1);
 
   // Change the initiator to "xyz.com". It should not be redirected since we
   // don't have host permissions to the request initiator.
   GURL redirect_url2;
-  request->set_initiator(url::Origin::Create(GURL("http://xyz.com")));
-  extensions::WebRequestInfo request_info2(request.get());
-  EXPECT_EQ(Action::NONE,
-            manager->EvaluateRequest(request_info2, is_incognito_context,
-                                     &redirect_url2));
+  request.initiator = url::Origin::Create(GURL("http://xyz.com"));
+  EXPECT_EQ(Action::NONE, manager->EvaluateRequest(
+                              request, is_incognito_context, &redirect_url2));
 
   // Change the initiator to "abc.com". It should be redirected since we have
   // the required host permissions.
   GURL redirect_url3;
-  request->set_initiator(url::Origin::Create(GURL("http://abc.com")));
-  extensions::WebRequestInfo request_info3(request.get());
-  EXPECT_EQ(Action::REDIRECT,
-            manager->EvaluateRequest(request_info3, is_incognito_context,
-                                     &redirect_url3));
+  request.initiator = url::Origin::Create(GURL("http://abc.com"));
+  EXPECT_EQ(
+      Action::REDIRECT,
+      manager->EvaluateRequest(request, is_incognito_context, &redirect_url3));
   EXPECT_EQ(GURL("http://google.com"), redirect_url3);
 
   // Ensure web-socket requests are not redirected.
   GURL redirect_url4;
   request = GetRequestForURL("ws://example.com");
-  request->set_initiator(base::nullopt);
-  extensions::WebRequestInfo request_info4(request.get());
-  EXPECT_EQ(Action::NONE,
-            manager->EvaluateRequest(request_info4, is_incognito_context,
-                                     &redirect_url4));
+  request.initiator = base::nullopt;
+  EXPECT_EQ(Action::NONE, manager->EvaluateRequest(
+                              request, is_incognito_context, &redirect_url4));
 }
 
 // Tests that an extension can't block or redirect resources on the chrome-
@@ -340,38 +322,37 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
 
   // Ensure that "http://example.com" will be blocked (with blocking taking
   // priority over redirection).
-  std::unique_ptr<net::URLRequest> request =
-      GetRequestForURL("http://example.com");
+  WebRequestInfo request = GetRequestForURL("http://example.com");
   GURL redirect_url;
-  EXPECT_EQ(Action::BLOCK, manager->EvaluateRequest(
-                               WebRequestInfo(request.get()),
-                               false /*is_incognito_context*/, &redirect_url));
+  EXPECT_EQ(Action::BLOCK,
+            manager->EvaluateRequest(request, false /*is_incognito_context*/,
+                                     &redirect_url));
 
   // Ensure that the background page for |extension_1| won't be blocked or
   // redirected.
   GURL background_page_url_1 = BackgroundInfo::GetBackgroundURL(extension_1);
   EXPECT_TRUE(!background_page_url_1.is_empty());
   request = GetRequestForURL(background_page_url_1.spec());
-  EXPECT_EQ(Action::NONE, manager->EvaluateRequest(
-                              WebRequestInfo(request.get()),
-                              false /*is_incognito_context*/, &redirect_url));
+  EXPECT_EQ(Action::NONE,
+            manager->EvaluateRequest(request, false /*is_incognito_context*/,
+                                     &redirect_url));
 
   // Ensure that the background page for |extension_2| won't be blocked or
   // redirected.
   GURL background_page_url_2 = BackgroundInfo::GetBackgroundURL(extension_2);
   EXPECT_TRUE(!background_page_url_2.is_empty());
   request = GetRequestForURL(background_page_url_2.spec());
-  EXPECT_EQ(Action::NONE, manager->EvaluateRequest(
-                              WebRequestInfo(request.get()),
-                              false /*is_incognito_context*/, &redirect_url));
+  EXPECT_EQ(Action::NONE,
+            manager->EvaluateRequest(request, false /*is_incognito_context*/,
+                                     &redirect_url));
 
   // Also ensure that an arbitrary url on the chrome extension scheme is also
   // not blocked or redirected.
   request = GetRequestForURL(base::StringPrintf("%s://%s/%s", kExtensionScheme,
                                                 "extension_id", "path"));
-  EXPECT_EQ(Action::NONE, manager->EvaluateRequest(
-                              WebRequestInfo(request.get()),
-                              false /*is_incognito_context*/, &redirect_url));
+  EXPECT_EQ(Action::NONE,
+            manager->EvaluateRequest(request, false /*is_incognito_context*/,
+                                     &redirect_url));
 }
 
 TEST_P(RulesetManagerTest, PageAllowingAPI) {
@@ -508,8 +489,7 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
     SCOPED_TRACE(base::StringPrintf("Testing case number %zu with url %s",
                                     i + 1, test_case.url.c_str()));
 
-    WebRequestInfo info;
-    info.url = GURL(test_case.url);
+    WebRequestInfo info = GetRequestForURL(test_case.url);
     ASSERT_TRUE(info.url.is_valid());
     info.type = test_case.type;
 

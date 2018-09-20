@@ -229,6 +229,8 @@ std::unique_ptr<base::DictionaryValue> CreateRequestBodyData(
 }  // namespace
 
 WebRequestInfo::WebRequestInfo() = default;
+WebRequestInfo::WebRequestInfo(WebRequestInfo&& other) = default;
+WebRequestInfo& WebRequestInfo::operator=(WebRequestInfo&& other) = default;
 
 WebRequestInfo::WebRequestInfo(net::URLRequest* url_request)
     : id(url_request->identifier()),
