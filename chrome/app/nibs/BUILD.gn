@@ -9,7 +9,6 @@ assert(is_mac)
 
 translated_xibs = [
   "AppMenu.xib",
-  "HungRendererDialog.xib",
   "OneClickSigninDialog.xib",
   "SaveAccessoryView.xib",
   "TaskManager.xib",
