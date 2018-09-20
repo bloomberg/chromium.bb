@@ -117,14 +117,14 @@ def _ParseArgs(args):
           'be stripped out. List may include a combination of Android locales '
           'or Chrome locales.')
 
-  input_opts.add_argument('--exclude-xxxhdpi', action='store_true',
-                          help='Do not include xxxhdpi drawables.')
+  input_opts.add_argument('--resource-blacklist-regex', default='',
+                          help='Do not include matching drawables.')
 
   input_opts.add_argument(
-      '--xxxhdpi-whitelist',
+      '--resource-blacklist-exceptions',
       default='[]',
-      help='GN list of globs that say which xxxhdpi images to include even '
-           'when --exclude-xxxhdpi is set.')
+      help='GN list of globs that say which blacklisted images to include even '
+           'when --resource-blacklist-regex is set.')
 
   input_opts.add_argument('--png-to-webp', action='store_true',
                           help='Convert png files to webp format.')
@@ -166,7 +166,8 @@ def _ParseArgs(args):
   resource_utils.HandleCommonOptions(options)
 
   options.locale_whitelist = build_utils.ParseGnList(options.locale_whitelist)
-  options.xxxhdpi_whitelist = build_utils.ParseGnList(options.xxxhdpi_whitelist)
+  options.resource_blacklist_exceptions = build_utils.ParseGnList(
+      options.resource_blacklist_exceptions)
 
   if options.check_resources_pkg_id is not None:
     if options.check_resources_pkg_id < 0:
@@ -414,28 +415,29 @@ def _ResourceNameFromPath(path):
   return os.path.splitext(os.path.basename(path))[0]
 
 
-def _CreateKeepPredicate(resource_dirs, exclude_xxxhdpi, xxxhdpi_whitelist):
+def _CreateKeepPredicate(resource_dirs, resource_blacklist_regex,
+                         resource_blacklist_exceptions):
   """Return a predicate lambda to determine which resource files to keep."""
-  if not exclude_xxxhdpi:
+  if resource_blacklist_regex == '':
     # Do not extract dotfiles (e.g. ".gitkeep"). aapt ignores them anyways.
     return lambda path: os.path.basename(path)[0] != '.'
 
-  # Returns False only for xxxhdpi non-mipmap, non-whitelisted drawables.
+  # Returns False only for non-filtered, non-mipmap, non-whitelisted drawables.
   naive_predicate = lambda path: (
-      not re.search(r'[/-]xxxhdpi[/-]', path) or
+      not re.search(resource_blacklist_regex, path) or
       re.search(r'[/-]mipmap[/-]', path) or
-      build_utils.MatchesGlob(path, xxxhdpi_whitelist))
+      build_utils.MatchesGlob(path, resource_blacklist_exceptions))
 
-  # Build a set of all non-xxxhdpi drawables to ensure that we never exclude any
-  # xxxhdpi drawable that does not exist in other densities.
-  non_xxxhdpi_drawables = set()
+  # Build a set of all non-filtered drawables to ensure that we never exclude
+  # any drawable that does not exist in non-filtered densities.
+  non_filtered_drawables = set()
   for resource_dir in resource_dirs:
     for path in _IterFiles(resource_dir):
       if re.search(r'[/-]drawable[/-]', path) and naive_predicate(path):
-        non_xxxhdpi_drawables.add(_ResourceNameFromPath(path))
+        non_filtered_drawables.add(_ResourceNameFromPath(path))
 
   return lambda path: (naive_predicate(path) or
-                       _ResourceNameFromPath(path) not in non_xxxhdpi_drawables)
+      _ResourceNameFromPath(path) not in non_filtered_drawables)
 
 
 def _ConvertToWebP(webp_binary, png_files):
@@ -520,7 +522,8 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   renamed_paths.update(_DuplicateZhResources(dep_subdirs))
 
   keep_predicate = _CreateKeepPredicate(
-      dep_subdirs, options.exclude_xxxhdpi, options.xxxhdpi_whitelist)
+      dep_subdirs, options.resource_blacklist_regex,
+      options.resource_blacklist_exceptions)
   png_paths = []
   for directory in dep_subdirs:
     for f in _IterFiles(directory):
@@ -644,8 +647,8 @@ def main(args):
   # of them does not change what gets written to the depsfile.
   input_strings = options.extra_res_packages + [
     options.shared_resources,
-    options.exclude_xxxhdpi,
-    options.xxxhdpi_whitelist,
+    options.resource_blacklist_regex,
+    options.resource_blacklist_exceptions,
     str(options.debuggable),
     str(options.png_to_webp),
     str(options.support_zh_hk),

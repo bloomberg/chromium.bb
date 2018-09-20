@@ -33,9 +33,10 @@ template("system_webview_apk_tmpl") {
     }
     aapt_locale_whitelist = locales
 
-    # Whitelist rationale in https://crbug.com/691733.
-    exclude_xxxhdpi = true
-    xxxhdpi_whitelist = [
+    resource_blacklist_regex = "[/-]xxxhdpi[/-]"
+
+    # Exception rationale in https://crbug.com/691733.
+    resource_blacklist_exceptions = [
       "*shadow*",  # Combination of gradient & transparency cause pixelation.
       "*.9.*",  # Most nine-patches contain shadows.
     ]
