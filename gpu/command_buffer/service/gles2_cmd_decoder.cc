@@ -2372,6 +2372,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Compiles the given shader and exits command processing early.
   void CompileShaderAndExitCommandProcessingEarly(Shader* shader);
 
+  // Notify the watchdog thread of progress, preventing time-outs when a
+  // command takes a long time. May be no-op when using in-process command
+  // buffer.
+  void ReportProgress();
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -5127,6 +5132,8 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   }
   deschedule_until_finished_fences_.clear();
 
+  ReportProgress();
+
   // Unbind everything.
   state_.vertex_attrib_manager = nullptr;
   state_.default_vertex_attrib_manager = nullptr;
@@ -5160,6 +5167,8 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   srgb_converter_.reset();
   clear_framebuffer_blit_.reset();
 
+  ReportProgress();
+
   if (framebuffer_manager_.get()) {
     framebuffer_manager_->Destroy(have_context);
     if (group_->texture_manager())
@@ -5191,6 +5200,8 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     transform_feedback_manager_.reset();
   }
 
+  ReportProgress();
+
   offscreen_target_frame_buffer_.reset();
   offscreen_target_color_texture_.reset();
   offscreen_target_color_render_buffer_.reset();
@@ -5208,6 +5219,8 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   // Need to release these before releasing |group_| which may own the
   // ShaderTranslatorCache.
   DestroyShaderTranslator();
+
+  ReportProgress();
 
   // Destroy the GPU Tracer which may own some in process GPU Timings.
   if (gpu_tracer_) {
@@ -20024,6 +20037,11 @@ void GLES2DecoderImpl::CompileShaderAndExitCommandProcessingEarly(
   // command processing to allow for context preemption and GPU watchdog
   // checks.
   ExitCommandProcessingEarly();
+}
+
+void GLES2DecoderImpl::ReportProgress() {
+  if (group_)
+    group_->ReportProgress();
 }
 
 // Include the auto-generated part of this file. We split this because it means
