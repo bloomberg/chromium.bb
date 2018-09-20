@@ -119,6 +119,9 @@ class PasswordAccessoryBridge {
                         nativeOnOptionSelected(mNativeView, item.getCaption());
                     });
                     continue;
+                case ItemType.TOP_DIVIDER:
+                    items[i] = Item.createTopDivider();
+                    continue;
             }
             assert false : "Cannot create item for type '" + type[i] + "'.";
         }

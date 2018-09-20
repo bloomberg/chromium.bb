@@ -146,6 +146,13 @@ MATCHER_P(MatchesOption, text, PrintItem(text, text, false, ItemType::OPTION)) {
          arg.content_description == text && arg.itemType == ItemType::OPTION;
 }
 
+// Compares whether a given AccessoryItem is a label with the given text.
+MATCHER(IsTopDivider, "is a top divider") {
+  return arg.text.empty() && arg.is_password == false &&
+         arg.content_description.empty() &&
+         arg.itemType == ItemType::TOP_DIVIDER;
+}
+
 // Compares whether a given AccessoryItem had the given properties.
 MATCHER_P4(MatchesItem,
            text,
@@ -341,14 +348,15 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
 
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -362,7 +370,7 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
   EXPECT_CALL(
       *view(),
       OnItemsAvailable(ElementsAre(
-          MatchesLabel(passwords_title_str(kExampleDomain)),
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
           MatchesItem(no_user_str(), no_user_str(), false,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str(no_user_str()),
@@ -380,30 +388,31 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
        CreateEntry("Alf", "PWD").first, CreateEntry("Cat", "M1@u").first},
       url::Origin::Create(GURL(kExampleSite)));
 
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
 
-                  MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("PWD"), password_for_str("Alf"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("PWD"), password_for_str("Alf"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
 
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
 
-                  MatchesItem(ASCIIToUTF16("Cat"), ASCIIToUTF16("Cat"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("M1@u"), password_for_str("Cat"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("Cat"), ASCIIToUTF16("Cat"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("M1@u"), password_for_str("Cat"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
 
-                  MatchesItem(ASCIIToUTF16("Zebra"), ASCIIToUTF16("Zebra"),
-                              false, ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("M3h"), password_for_str("Zebra"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+          MatchesItem(ASCIIToUTF16("Zebra"), ASCIIToUTF16("Zebra"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("M3h"), password_for_str("Zebra"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -415,14 +424,15 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
                                        url::Origin::Create(GURL(kExampleSite)));
 
   // Pretend that any input in the same frame was focused.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -435,9 +445,9 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
 
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(
-          ElementsAre(MatchesLabel(passwords_empty_str(kExampleDomain)),
-                      IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_empty_str(kExampleDomain)),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -524,14 +534,15 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
                                        url::Origin::Create(GURL(kExampleSite)));
   // Pretend a username field was focused. This should result in non-interactive
   // suggestion.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -539,14 +550,15 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
 
   // Pretend that we focus a password field now: By triggering a refresh with
   // |is_password_field| set to true, all suggestions should become interactive.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -556,14 +568,15 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
 TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -571,14 +584,15 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
 
   controller()->SavePasswordsForOrigin({CreateEntry("Alf", "M3lm4k").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("M3lm4k"), password_for_str("Alf"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("M3lm4k"), password_for_str("Alf"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -590,14 +604,15 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
                                        url::Origin::Create(GURL(kExampleSite)));
   // Pretend a username field was focused. This should result in non-emtpy
   // suggestions.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -605,10 +620,11 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
 
   // Pretend that the focus was lost or moved to an unfillable field. Now, only
   // the empty state message should be sent.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_empty_str(kExampleDomain)),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_empty_str(kExampleDomain)),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/false,
@@ -620,14 +636,15 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   // This should result in non-emtpy suggestions.
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -640,6 +657,7 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   // Now, only the empty state message should be sent.
   EXPECT_CALL(*view(),
               OnItemsAvailable(ElementsAre(
+                  IsTopDivider(),
                   MatchesLabel(passwords_empty_str("random.other-site.org")),
                   IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(

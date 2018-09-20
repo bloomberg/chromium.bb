@@ -61,6 +61,11 @@ class PasswordAccessorySheetViewBinder {
                             LayoutInflater.from(parent.getContext())
                                     .inflate(R.layout.password_accessory_sheet_option, parent,
                                             false));
+                case ItemType.TOP_DIVIDER:
+                    return new ItemViewHolder(
+                            LayoutInflater.from(parent.getContext())
+                                    .inflate(R.layout.password_accessory_sheet_top_divider, parent,
+                                            false));
             }
             assert false : viewType;
             return null;

@@ -250,6 +250,14 @@ public class KeyboardAccessoryData {
         }
 
         /**
+         * Creates an Item of type {@link ItemType#TOP_DIVIDER}. A horizontal line meant to be
+         * displayed at the top of the accessory sheet.
+         */
+        public static Item createTopDivider() {
+            return new Item(ItemType.TOP_DIVIDER, null, null, false, null, null);
+        }
+
+        /**
          * Creates a new item.
          * @param type Type of the item (e.g. non-clickable LABEL or clickable SUGGESTION).
          * @param caption The text of the displayed item. Only plain text if |isPassword| is false.
