@@ -179,7 +179,6 @@ DownloadItemView::DownloadItemView(std::unique_ptr<DownloadUIModel> download,
 DownloadItemView::~DownloadItemView() {
   StopDownloadProgress();
   model_->RemoveObserver(this);
-  base::ThreadTaskRunnerHandle ::Get()->DeleteSoon(FROM_HERE, model_.release());
 }
 
 // Progress animation handlers.
