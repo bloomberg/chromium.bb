@@ -159,7 +159,7 @@ void UIThreadTrampolineHelper(base::OnceClosure callback) {
 // Convenience method to create a callback that can be run on any thread and
 // will post the given |callback| back to the UI thread.
 base::OnceClosure UIThreadTrampoline(base::OnceClosure callback) {
-  // We could directly bind &BrowserThread::PostTask, but that would require
+  // We could directly bind &base::PostTaskWithTraits, but that would require
   // evaluating FROM_HERE when this method is called, as opposed to when the
   // task is actually posted.
   return base::BindOnce(&UIThreadTrampolineHelper, std::move(callback));

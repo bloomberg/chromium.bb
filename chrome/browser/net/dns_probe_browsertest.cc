@@ -70,7 +70,7 @@ namespace chrome_browser_net {
 namespace {
 
 // Postable function to run a Closure on the UI thread.  Since
-// BrowserThread::PostTask returns a bool, it can't directly be posted to
+// base::PostTaskWithTraits returns a bool, it can't directly be posted to
 // another thread.
 void RunClosureOnUIThread(const base::Closure& closure) {
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, closure);

@@ -335,7 +335,7 @@ void MockDisplaySourceConnectionDelegate::Connect(
 
   // Bind sink to udp socket at this stage
   // And store udp port to udp_port_ string in order to be used
-  // In a message exchange. Then make a BrowserThread::PostTask
+  // In a message exchange. Then make a base::PostTaskWithTraits
   // on UI thread and call OnSinkConnected() to proceed with the test
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},

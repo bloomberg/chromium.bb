@@ -172,8 +172,8 @@ class BrowserProcess {
   //
   // Can be NULL close to startup and shutdown.
   //
-  // NOTE: If you want to post a task to the IO thread, use
-  // BrowserThread::PostTask (or other variants).
+  // NOTE: If you want to post a task to the IO thread, see
+  // browser_task_traits.h.
   virtual IOThread* io_thread() = 0;
 
   // Replacement for IOThread (And ChromeNetLog). It owns and manages the

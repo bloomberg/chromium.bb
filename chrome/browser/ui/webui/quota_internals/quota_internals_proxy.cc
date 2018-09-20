@@ -77,8 +77,8 @@ QuotaInternalsProxy::~QuotaInternalsProxy() {}
     if (!handler_)                                                \
       return;                                                     \
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {         \
-      BrowserThread::PostTask(                                    \
-          BrowserThread::UI, FROM_HERE,                           \
+      base::PostTaskWithTraits(                                   \
+          FROM_HERE, {BrowserThread::UI},                         \
           base::BindOnce(&QuotaInternalsProxy::func, this, arg)); \
       return;                                                     \
     }                                                             \
