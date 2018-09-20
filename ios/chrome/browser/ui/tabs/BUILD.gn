@@ -47,6 +47,8 @@ source_set("tabs") {
     "resources:tabstrip_tab_close_incognito_pressed_legacy",
     "resources:tabstrip_tab_close_legacy",
     "resources:tabstrip_tab_close_pressed_legacy",
+    "resources:tabstrip_tab_switcher_count_button",
+    "resources:tabstrip_tab_switcher_count_button_pressed",
     "resources:tabstrip_toggle_button_gradient",
     "//base",
     "//base:i18n",
