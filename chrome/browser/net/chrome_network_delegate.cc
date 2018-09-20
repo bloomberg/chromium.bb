@@ -78,6 +78,9 @@ bool g_access_to_all_files_enabled = false;
 
 bool IsAccessAllowedInternal(const base::FilePath& path,
                              const base::FilePath& profile_path) {
+  if (g_access_to_all_files_enabled)
+    return true;
+
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   return true;
 #else
@@ -296,8 +299,6 @@ bool ChromeNetworkDelegate::OnCanAccessFile(
     const net::URLRequest& request,
     const base::FilePath& original_path,
     const base::FilePath& absolute_path) const {
-  if (g_access_to_all_files_enabled)
-    return true;
   return IsAccessAllowed(original_path, absolute_path, profile_path_);
 }
 
