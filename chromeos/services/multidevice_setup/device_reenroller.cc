@@ -139,7 +139,7 @@ void DeviceReenroller::AttemptReenrollmentIfNecessary() {
 
 std::vector<cryptauth::SoftwareFeature>
 DeviceReenroller::GetSupportedFeaturesForLocalDevice() {
-  const cryptauth::RemoteDeviceRef& local_device_metadata =
+  const cryptauth::RemoteDeviceRef local_device_metadata =
       *device_sync_client_->GetLocalDeviceMetadata();
 
   base::flat_set<cryptauth::SoftwareFeature> sorted_and_deduped_set;
