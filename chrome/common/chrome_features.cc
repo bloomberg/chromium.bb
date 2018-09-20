@@ -127,10 +127,6 @@ const base::Feature kBundledConnectionHelpFeature{
     "BundledConnectionHelp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_MACOSX)
-// Enables or disables touch bar support for dialogs.
-const base::Feature kDialogTouchBar{"DialogTouchBar",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables keyboard focus for the tab strip.
 const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

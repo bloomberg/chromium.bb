@@ -1784,9 +1784,6 @@ extern const char kFullscreenToolbarRevealDescription[];
 extern const char kContentFullscreenName[];
 extern const char kContentFullscreenDescription[];
 
-extern const char kDialogTouchBarName[];
-extern const char kDialogTouchBarDescription[];
-
 extern const char kEnableWebAuthenticationTouchIdName[];
 extern const char kEnableWebAuthenticationTouchIdDescription[];
 
