@@ -3126,6 +3126,9 @@ crbug.com/846472 virtual/video-surface-layer/external/wpt/feature-policy/feature
 crbug.com/829921 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
 crbug.com/626703 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
 
+crbug.com/v8/8200 inspector-protocol/debugger/debugger-scope-skip-variables-with-empty-name.js [ Skip ]
+crbug.com/v8/8200 inspector-protocol/runtime/runtime-getProperties.js [ Skip ]
+
 crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeout ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
 crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
