@@ -25,4 +25,30 @@
       'os': 'Ubuntu-14.04',
     }
   },
+  'mac_10.10': {
+    'dimensions': {
+      'os': 'Mac-10.10',
+    }
+  },
+  'mac_10.11': {
+    'dimensions': {
+      'os': 'Mac-10.11',
+    }
+  },
+  'mac_10.13': {
+    'dimensions': {
+      'os': 'Mac-10.13',
+    }
+  },
+  'mac_mini_10.12': {
+    'dimensions': {
+      'gpu': '8086:0a2e',
+      'os': 'Mac-10.12.6',
+    }
+  },
+  'no_gpu': {
+    'dimensions': {
+      'gpu': 'none',
+    }
+  },
 }
