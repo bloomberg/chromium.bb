@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/tools_menu_button_observer_bridge.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller+protected.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/toolbar_utils.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
@@ -76,7 +75,6 @@ using ios::material::TimingFunction;
   UIButton* stackButton_;
   UIButton* shareButton_;
   NSArray* standardButtons_;
-  ToolsMenuButtonObserverBridge* toolsMenuButtonObserverBridge_;
   ToolbarControllerStyle style_;
 }
 
@@ -289,12 +287,8 @@ using ios::material::TimingFunction;
 #pragma mark - Public API
 
 - (void)setReadingListModel:(ReadingListModel*)readingListModel {
+  NOTREACHED();
   readingListModel_ = readingListModel;
-  if (readingListModel_) {
-    toolsMenuButtonObserverBridge_ =
-        [[ToolsMenuButtonObserverBridge alloc] initWithModel:readingListModel_
-                                               toolbarButton:toolsMenuButton_];
-  }
 }
 
 - (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets {

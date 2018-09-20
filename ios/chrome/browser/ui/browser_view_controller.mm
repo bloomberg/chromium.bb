@@ -3215,6 +3215,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   readingModel->AddEntry(URL, base::SysNSStringToUTF8(title),
                          reading_list::ADDED_VIA_CURRENT_APP);
 
+  [self.dispatcher triggerToolsMenuButtonAnimation];
+
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
   [self showSnackbar:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];

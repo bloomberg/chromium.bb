@@ -23,8 +23,6 @@ source_set("buttons") {
     "toolbar_tools_menu_button.h",
     "toolbar_tools_menu_button.mm",
     "toolbar_type.h",
-    "tools_menu_button_observer_bridge.h",
-    "tools_menu_button_observer_bridge.mm",
   ]
   deps = [
     "resources:toolbar_back",
@@ -37,8 +35,6 @@ source_set("buttons") {
     "resources:toolbar_stop",
     "resources:toolbar_switcher",
     "//base",
-    "//components/reading_list/core",
-    "//components/reading_list/ios",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
