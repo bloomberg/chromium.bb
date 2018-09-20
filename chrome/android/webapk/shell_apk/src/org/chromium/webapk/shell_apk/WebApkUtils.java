@@ -11,12 +11,18 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
@@ -29,6 +35,9 @@ import java.util.List;
 public class WebApkUtils {
     private static final int MINIMUM_REQUIRED_CHROME_VERSION = 57;
     private static final String TAG = "cr_WebApkUtils";
+
+    /** Percentage to darken a color by when setting the status bar color. */
+    private static final float DARKEN_COLOR_FRACTION = 0.6f;
 
     private static final float CONTRAST_LIGHT_ITEM_THRESHOLD = 3f;
 
@@ -150,6 +159,84 @@ public class WebApkUtils {
 
         int version = Integer.parseInt(versionName.substring(0, dotIndex));
         return version < MINIMUM_REQUIRED_CHROME_VERSION;
+    }
+
+    /**
+     * Calculates the contrast between the given color and white, using the algorithm provided by
+     * the WCAG v1 in http://www.w3.org/TR/WCAG20/#contrast-ratiodef.
+     */
+    private static float getContrastForColor(int color) {
+        float bgR = Color.red(color) / 255f;
+        float bgG = Color.green(color) / 255f;
+        float bgB = Color.blue(color) / 255f;
+        bgR = (bgR < 0.03928f) ? bgR / 12.92f : (float) Math.pow((bgR + 0.055f) / 1.055f, 2.4f);
+        bgG = (bgG < 0.03928f) ? bgG / 12.92f : (float) Math.pow((bgG + 0.055f) / 1.055f, 2.4f);
+        bgB = (bgB < 0.03928f) ? bgB / 12.92f : (float) Math.pow((bgB + 0.055f) / 1.055f, 2.4f);
+        float bgL = 0.2126f * bgR + 0.7152f * bgG + 0.0722f * bgB;
+        return Math.abs((1.05f) / (bgL + 0.05f));
+    }
+
+    /**
+     * Darkens the given color to use on the status bar.
+     * @param color Color which should be darkened.
+     * @return Color that should be used for Android status bar.
+     */
+    public static int getDarkenedColorForStatusBar(int color) {
+        return getDarkenedColor(color, DARKEN_COLOR_FRACTION);
+    }
+
+    /**
+     * Darken a color to a fraction of its current brightness.
+     * @param color The input color.
+     * @param darkenFraction The fraction of the current brightness the color should be.
+     * @return The new darkened color.
+     */
+    public static int getDarkenedColor(int color, float darkenFraction) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        hsv[2] *= darkenFraction;
+        return Color.HSVToColor(hsv);
+    }
+
+    /**
+     * Check whether lighter or darker foreground elements (i.e. text, drawables etc.)
+     * should be used depending on the given background color.
+     * @param backgroundColor The background color value which is being queried.
+     * @return Whether light colored elements should be used.
+     */
+    public static boolean shouldUseLightForegroundOnBackground(int backgroundColor) {
+        return getContrastForColor(backgroundColor) >= CONTRAST_LIGHT_ITEM_THRESHOLD;
+    }
+
+    /**
+     * Decodes bitmap drawable from WebAPK's resources. This should also be used for XML aliases.
+     */
+    @SuppressWarnings("deprecation")
+    public static Bitmap decodeBitmapFromDrawable(Resources resources, int resourceId) {
+        if (resourceId == 0) {
+            return null;
+        }
+        try {
+            Drawable drawable = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                drawable = resources.getDrawable(resourceId, null);
+            } else {
+                drawable = resources.getDrawable(resourceId);
+            }
+            return drawable != null ? ((BitmapDrawable) drawable).getBitmap() : null;
+        } catch (Resources.NotFoundException e) {
+            return null;
+        }
+    }
+
+    /**
+     * @see android.view.Window#setStatusBarColor(int color).
+     */
+    public static void setStatusBarColor(Window window, int statusBarColor) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(statusBarColor);
     }
 
     /**

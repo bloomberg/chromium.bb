@@ -36,10 +36,6 @@
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">28dp</dimen>
 
-    <!-- Web app dimensions -->
-    <dimen name="webapp_splash_offset">48dp</dimen>
-    <dimen name="webapp_splash_large_title_margin_bottom">8dp</dimen>
-
     <!-- Payments UI -->
     <dimen name="payments_ui_max_dialog_width">600dp</dimen>
 
