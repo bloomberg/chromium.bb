@@ -46,7 +46,7 @@ class SimpleFontData;
 // This struct should be TriviallyCopyable so that std::copy() is equivalent to
 // memcpy.
 struct HarfBuzzRunGlyphData {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
   static constexpr unsigned kCharacterIndexBits = 15;
   static constexpr unsigned kMaxCharacterIndex = (1 << kCharacterIndexBits) - 1;

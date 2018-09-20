@@ -60,7 +60,7 @@ class LayoutPoint;
 class LayoutSize;
 
 class PLATFORM_EXPORT FloatPoint {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   constexpr FloatPoint() : x_(0), y_(0) {}

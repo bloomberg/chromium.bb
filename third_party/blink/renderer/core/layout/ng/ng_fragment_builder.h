@@ -157,7 +157,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   // start and end. FragmentPair holds the information needed to compute
   // inline containing block geometry wrt enclosing container block.
   struct FragmentPair {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
     // Linebox that contains start_fragment.
     const NGPhysicalLineBoxFragment* start_linebox_fragment;
     // Offset of start_linebox from containing block.

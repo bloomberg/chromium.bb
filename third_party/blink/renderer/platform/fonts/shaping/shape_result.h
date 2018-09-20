@@ -63,7 +63,7 @@ enum class AdjustMidCluster {
 };
 
 struct ShapeResultCharacterData {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   float x_position;
   // Set for the logical first character of a cluster.
   unsigned is_cluster_base : 1;

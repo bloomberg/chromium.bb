@@ -25,7 +25,7 @@ class Node;
 class NodeList;
 
 class CORE_EXPORT NodeOrNodeList final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   NodeOrNodeList();
   bool IsNull() const { return type_ == SpecificType::kNone; }

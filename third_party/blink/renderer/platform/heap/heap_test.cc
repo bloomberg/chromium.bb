@@ -192,7 +192,7 @@ struct ThreadMarkerHash {
 typedef std::pair<Member<IntWrapper>, WeakMember<IntWrapper>> StrongWeakPair;
 
 struct PairWithWeakHandling : public StrongWeakPair {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   // Regular constructor.
@@ -1394,7 +1394,7 @@ class UseMixin : public SimpleObject, public Mixin {
 int UseMixin::trace_count_ = 0;
 
 class VectorObject {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   VectorObject() { value_ = SimpleFinalizedObject::Create(); }
@@ -1408,7 +1408,7 @@ class VectorObject {
 class VectorObjectInheritedTrace : public VectorObject {};
 
 class VectorObjectNoTrace {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   VectorObjectNoTrace() { value_ = SimpleFinalizedObject::Create(); }
@@ -1418,7 +1418,7 @@ class VectorObjectNoTrace {
 };
 
 class TerminatedArrayItem {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   TerminatedArrayItem(IntWrapper* payload)
@@ -3128,7 +3128,7 @@ TEST(HeapTest, CrossThreadPersistentSet) {
 }
 
 class NonTrivialObject final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   NonTrivialObject() = default;
@@ -4337,7 +4337,7 @@ TEST(HeapTest, EmbeddedInDeque) {
 }
 
 class InlinedVectorObject {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   InlinedVectorObject() = default;
@@ -4350,7 +4350,7 @@ class InlinedVectorObject {
 int InlinedVectorObject::destructor_calls_ = 0;
 
 class InlinedVectorObjectWithVtable {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   InlinedVectorObjectWithVtable() = default;
@@ -6179,7 +6179,7 @@ class SimpleRefValue : public RefCounted<SimpleRefValue> {
 };
 
 class PartObjectWithRef {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   PartObjectWithRef(int i) : value_(SimpleRefValue::Create(i)) {}

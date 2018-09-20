@@ -239,7 +239,7 @@ class PODRedBlackTree {
   // an internal concept; users of the tree deal only with the data
   // they store in it.
   class Node {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(Node);
 
    public:

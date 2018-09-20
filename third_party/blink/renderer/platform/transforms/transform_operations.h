@@ -39,7 +39,7 @@ class PLATFORM_EXPORT EmptyTransformOperations final {
 };
 
 class PLATFORM_EXPORT TransformOperations {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   explicit TransformOperations(bool make_identity = false);

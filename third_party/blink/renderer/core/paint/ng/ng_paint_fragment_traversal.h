@@ -16,7 +16,7 @@ class NGPaintFragment;
 
 // Used for return value of traversing fragment tree.
 struct CORE_EXPORT NGPaintFragmentWithContainerOffset {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   NGPaintFragment* fragment;
   // Offset relative to container fragment
   NGPhysicalOffset container_offset;

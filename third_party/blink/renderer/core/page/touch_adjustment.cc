@@ -49,7 +49,7 @@ constexpr float kMaxAdjustmentSizeDips = 32.f;
 // Class for remembering absolute quads of a target node and what node they
 // represent.
 class SubtargetGeometry {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   SubtargetGeometry(Node* node, const FloatQuad& quad)

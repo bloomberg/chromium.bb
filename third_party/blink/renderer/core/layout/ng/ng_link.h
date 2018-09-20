@@ -17,7 +17,7 @@ namespace blink {
 // allowing entire fragment subtrees to be reused and cached regardless
 // of placement.
 class CORE_EXPORT NGLink {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   NGLink() = default;

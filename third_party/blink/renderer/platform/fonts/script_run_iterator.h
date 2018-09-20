@@ -38,7 +38,7 @@ class PLATFORM_EXPORT ScriptRunIterator {
 
  private:
   struct BracketRec {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
     UChar32 ch;
     UScriptCode script;
   };

@@ -29,7 +29,7 @@ struct NGInlineItemsData;
 //
 // NGLineBreaker produces, and NGInlineLayoutAlgorithm consumes.
 struct CORE_EXPORT NGInlineItemResult {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   // The NGInlineItem and its index.
@@ -117,7 +117,7 @@ using NGInlineItemResults = Vector<NGInlineItemResult, 32>;
 //
 // NGLineBreaker produces, and NGInlineLayoutAlgorithm consumes.
 class CORE_EXPORT NGLineInfo {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   const NGInlineItemsData& ItemsData() const {

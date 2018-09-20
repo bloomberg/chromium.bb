@@ -45,7 +45,7 @@ class PaintLayerCompositor;
 // A GraphicsLayerPaintInfo contains all the info needed to paint a partial
 // subtree of Layers into a GraphicsLayer.
 struct GraphicsLayerPaintInfo {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   PaintLayer* paint_layer;
 
   LayoutRect composited_bounds;

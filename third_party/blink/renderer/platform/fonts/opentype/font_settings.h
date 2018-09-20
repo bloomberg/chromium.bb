@@ -20,7 +20,7 @@ uint32_t AtomicStringToFourByteTag(AtomicString tag);
 
 template <typename T>
 class FontTagValuePair {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   FontTagValuePair(const AtomicString& tag, T value)

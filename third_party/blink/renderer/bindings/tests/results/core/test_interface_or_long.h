@@ -24,7 +24,7 @@ namespace blink {
 class TestInterfaceImplementation;
 
 class CORE_EXPORT TestInterfaceOrLong final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   TestInterfaceOrLong();
   bool IsNull() const { return type_ == SpecificType::kNone; }

@@ -24,7 +24,7 @@ namespace blink {
 // This is expected to be owned by the paint artifact which also owns the
 // related drawings.
 struct PLATFORM_EXPORT PaintChunk {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
   using Id = DisplayItem::Id;
 

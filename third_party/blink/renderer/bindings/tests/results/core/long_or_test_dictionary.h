@@ -23,7 +23,7 @@
 namespace blink {
 
 class CORE_EXPORT LongOrTestDictionary final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   LongOrTestDictionary();
   bool IsNull() const { return type_ == SpecificType::kNone; }

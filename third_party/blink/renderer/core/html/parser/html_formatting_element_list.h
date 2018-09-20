@@ -48,7 +48,7 @@ class HTMLFormattingElementList {
   // between the HTMLFormattingElementList and HTMLElementStack and needs access
   // to Entry::isMarker() and Entry::replaceElement() to do so.
   class Entry {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
 
    public:
     // Inline because they're hot and Vector<T> uses them.

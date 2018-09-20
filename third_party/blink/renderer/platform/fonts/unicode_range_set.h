@@ -37,7 +37,7 @@
 namespace blink {
 
 struct PLATFORM_EXPORT UnicodeRange final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   UnicodeRange(UChar32 from, UChar32 to) : from_(from), to_(to) {}
 
   UChar32 From() const { return from_; }

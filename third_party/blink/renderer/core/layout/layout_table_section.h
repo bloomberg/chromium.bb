@@ -395,7 +395,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   bool GroupShouldRepeat() const;
 
   struct TableGridRow {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
 
    public:
     inline void SetRowLogicalHeightToRowStyleLogicalHeight();

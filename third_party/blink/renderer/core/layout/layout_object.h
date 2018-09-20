@@ -101,7 +101,7 @@ enum MarkingBehavior {
 enum ScheduleRelayoutBehavior { kScheduleRelayout, kDontScheduleRelayout };
 
 struct AnnotatedRegionValue {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   bool operator==(const AnnotatedRegionValue& o) const {
     return draggable == o.draggable && bounds == o.bounds;
   }

@@ -17,7 +17,7 @@ class NGPaintFragment;
 class PrePaintTreeWalk;
 
 struct CORE_EXPORT PaintInvalidatorContext {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   class ParentContextAccessor {

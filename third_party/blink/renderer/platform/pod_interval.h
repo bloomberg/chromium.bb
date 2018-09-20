@@ -80,7 +80,7 @@ struct ValueToString;
 
 template <class T, class UserData = void*>
 class PODInterval {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   // Constructor from endpoints. This constructor only works when the

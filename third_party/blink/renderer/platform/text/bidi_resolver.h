@@ -177,7 +177,7 @@ struct BidiStatus final {
 };
 
 class BidiEmbedding final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   BidiEmbedding(WTF::Unicode::CharDirection direction,

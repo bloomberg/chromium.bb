@@ -16,7 +16,7 @@ namespace blink {
 
 // Struct that keeps all information needed to position floats in LayoutNG.
 struct CORE_EXPORT NGUnpositionedFloat final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   NGUnpositionedFloat(NGBlockNode node, NGBlockBreakToken* token);

@@ -24,7 +24,7 @@ namespace blink {
 class DoubleOrString;
 
 class CORE_EXPORT DoubleOrStringOrDoubleOrStringSequence final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   DoubleOrStringOrDoubleOrStringSequence();
   bool IsNull() const { return type_ == SpecificType::kNone; }

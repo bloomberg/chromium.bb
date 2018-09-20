@@ -108,7 +108,7 @@ class CORE_EXPORT TextFinder final
   ~TextFinder();
 
   class FindMatch {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
 
    public:
     FindMatch(Range*, int ordinal);

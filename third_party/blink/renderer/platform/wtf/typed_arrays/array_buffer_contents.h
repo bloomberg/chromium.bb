@@ -39,7 +39,7 @@
 namespace WTF {
 
 class WTF_EXPORT ArrayBufferContents {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   using AdjustAmountOfExternalAllocatedMemoryFunction = void (*)(int64_t diff);

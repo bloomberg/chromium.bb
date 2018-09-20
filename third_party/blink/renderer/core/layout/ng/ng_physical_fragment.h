@@ -243,7 +243,7 @@ class CORE_EXPORT NGPhysicalFragment
 
 // Used for return value of traversing fragment tree.
 struct CORE_EXPORT NGPhysicalFragmentWithOffset {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
   scoped_refptr<const NGPhysicalFragment> fragment;
   NGPhysicalOffset offset_to_container_box;

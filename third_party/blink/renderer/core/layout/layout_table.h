@@ -157,7 +157,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
                 LayoutObject* before_child = nullptr) override;
 
   struct ColumnStruct {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
     explicit ColumnStruct(unsigned initial_span = 1) : span(initial_span) {}
 
     unsigned span;

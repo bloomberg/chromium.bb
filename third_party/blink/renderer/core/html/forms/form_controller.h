@@ -39,7 +39,7 @@ class HTMLFormElement;
 class SavedFormState;
 
 class FormControlState {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   FormControlState() : type_(kTypeSkip) {}

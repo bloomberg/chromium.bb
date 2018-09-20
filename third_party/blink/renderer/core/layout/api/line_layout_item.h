@@ -29,7 +29,7 @@ static LayoutObject* const kHashTableDeletedValue =
     reinterpret_cast<LayoutObject*>(-1);
 
 class LineLayoutItem {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   explicit LineLayoutItem(LayoutObject* layout_object)
