@@ -14,6 +14,11 @@
         src: url("../../third_party/ChromaCheck/chromacheck-cbdt.woff");
     }
 
+    @font-face {
+        font-family: "chromacheck-colr";
+        src: url("../../third_party/ChromaCheck/chromacheck-colr.woff");
+    }
+
     .cff2_test {
         font-family: adobevfproto, sans-serif;
     }
@@ -22,6 +27,10 @@
     }
     .cbdt_test {
         font-family: chromacheck-cbdt, sans-serif;
+    }
+
+    .colr_test {
+        font-family: chromacheck-colr, sans-serif;
     }
 
     .horizontalgrid {
@@ -40,9 +49,10 @@
  </style>
 <body>
     <div class="horizontalgrid">
-        <div class="gridcell"><p>Should show as a serif font, not as a sans-serif fallback:</p><span class="cff2_test"></span></div>
-        <div class="gridcell"><p>Should show red squares:</p><span class="sbix_test"></span></div>
-        <div class="gridcell"><p>Should show dark red squares:</p><span class="cbdt_test"></span></div>
+        <div class="gridcell"><p>Should show as a serif font, not as a sans-serif fallback (CFF2):</p><span class="cff2_test"></span></div>
+        <div class="gridcell"><p>Should show red squares (SBIX):</p><span class="sbix_test"></span></div>
+        <div class="gridcell"><p>Should show dark red squares (CBDT):</p><span class="cbdt_test"></span></div>
+        <div class="gridcell"><p>Should show red squares (COLR):</p><span class="colr_test"></span></div>
     </div>
     <script>
       function appendRotatedScale(theNode, testText) {
@@ -63,6 +73,7 @@
       appendRotatedScale(document.querySelector(".cff2_test"), "y");
       appendRotatedScale(document.querySelector(".sbix_test"), "\uE901");
       appendRotatedScale(document.querySelector(".cbdt_test"), "\uE903");
+      appendRotatedScale(document.querySelector(".colr_test"), "\uE900");
      </script>
 </body>
 </html>
