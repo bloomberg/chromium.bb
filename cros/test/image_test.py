@@ -75,6 +75,21 @@ def _GuessMimeType(magic_obj, file_name):
 class BlacklistTest(image_test_lib.ImageTestCase):
   """Verify that rootfs does not contain blacklisted items."""
 
+  BLACKLISTED_PACKAGES = (
+      'app-text/iso-codes',
+      'dev-java/icedtea',
+      'dev-java/icedtea6-bin',
+      'dev-lang/perl',
+      'dev-lang/python',
+      'media-sound/pulseaudio',
+      'x11-libs/libxklavier',
+  )
+
+  BLACKLISTED_FILES = (
+      '/usr/bin/perl',
+      '/usr/bin/python',
+  )
+
   def TestBlacklistedDirectories(self):
     dirs = [os.path.join(image_test_lib.ROOT_A, 'usr', 'share', 'locale')]
     for d in dirs:
@@ -125,6 +140,22 @@ class BlacklistTest(image_test_lib.ImageTestCase):
     magic_obj.close()
 
     self.assertFalse(failures, '\n'.join(failures))
+
+  def TestBlacklistedPackages(self):
+    """Fail if any blacklisted packages are installed."""
+    for package in self.BLACKLISTED_PACKAGES:
+      self.assertFalse(
+          portage_util.PortageqHasVersion(package, root=image_test_lib.ROOT_A))
+
+  def TestBlacklistedFiles(self):
+    """Fail if any blacklisted files exist."""
+    for path in self.BLACKLISTED_FILES:
+      full_path = os.path.join(image_test_lib.ROOT_A, path.lstrip(os.sep))
+      # TODO(saklein) Convert ImageTestCase to extend cros_build_lib.unittest
+      # and change to an assertNotExists. Currently produces an error importing
+      # mox on at least some builders.
+      self.assertFalse(os.path.exists(full_path),
+                       'Path exists but should not: %s' % full_path)
 
   def TestValidInterpreter(self):
     """Fail if a script's interpreter is not found, or not executable.
