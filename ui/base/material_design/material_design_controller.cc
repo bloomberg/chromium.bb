@@ -39,19 +39,6 @@
 namespace ui {
 namespace {
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
-
-// Whether Material Refresh should be used by default.
-// Material refresh is controlled by both --top-chrome-md and this feature.
-// --top-chrome-md should take precedence over what this feature may indicate.
-bool IsMaterialRefreshEnabled() {
-  static constexpr base::Feature kMaterialRefreshEnabledFeature = {
-      "MaterialRefresh", base::FEATURE_ENABLED_BY_DEFAULT};
-  return base::FeatureList::IsEnabled(kMaterialRefreshEnabledFeature);
-}
-
-#endif
-
 #if defined(OS_CHROMEOS)
 
 // Whether to use touchable UI.
@@ -60,18 +47,11 @@ const base::Feature kTouchOptimizedUi = {"TouchOptimizedUi",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 MaterialDesignController::Mode GetDefaultTouchDeviceMode() {
-  bool material_refresh_enabled = IsMaterialRefreshEnabled();
   bool touch_optimized_ui_enabled =
       base::FeatureList::IsEnabled(kTouchOptimizedUi);
-  if (material_refresh_enabled) {
-    return touch_optimized_ui_enabled
-               ? MaterialDesignController::MATERIAL_TOUCH_REFRESH
-               : MaterialDesignController::MATERIAL_REFRESH;
-  }
-
   return touch_optimized_ui_enabled
-             ? MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED
-             : MaterialDesignController::MATERIAL_HYBRID;
+             ? MaterialDesignController::MATERIAL_TOUCH_REFRESH
+             : MaterialDesignController::MATERIAL_REFRESH;
 }
 
 bool HasTouchscreen() {
@@ -200,11 +180,11 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
   if (HasTouchscreen())
     return GetDefaultTouchDeviceMode();
 
-  return IsMaterialRefreshEnabled() ? MATERIAL_REFRESH : MATERIAL_NORMAL;
+  return MATERIAL_REFRESH;
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) || defined(OS_LINUX)
-  return IsMaterialRefreshEnabled() ? MATERIAL_REFRESH : MATERIAL_NORMAL;
+  return MATERIAL_REFRESH;
 #elif defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
   return features::IsViewsBrowserCocoa() ? MATERIAL_NORMAL : MATERIAL_REFRESH;
 #else
