@@ -14,6 +14,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/triggers/suspicious_site_trigger.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -66,11 +67,15 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
 #if defined(SAFE_BROWSING_DB_LOCAL)
             safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE,
 #endif
-            safe_browsing::SB_THREAT_TYPE_BILLING,
             safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
             safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
             safe_browsing::SB_THREAT_TYPE_URL_UNWANTED
       })) {
+  if (base::FeatureList::IsEnabled(safe_browsing::kBillingInterstitial)) {
+    SBThreatTypeSet billing =
+        CreateSBThreatTypeSet({safe_browsing::SB_THREAT_TYPE_BILLING});
+    threat_types_.insert(billing.begin(), billing.end());
+  }
 }
 
 UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;

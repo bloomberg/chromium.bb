@@ -254,9 +254,8 @@ bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
           base::BindOnce(&ClientRequest::OnRequestDoneWeak, req->GetWeakPtr()));
   api_handler->StartURLCheck(
       std::move(callback), url,
-      CreateSBThreatTypeSet({SB_THREAT_TYPE_BILLING,
-                             SB_THREAT_TYPE_SUBRESOURCE_FILTER,
-                             SB_THREAT_TYPE_URL_PHISHING}));
+      CreateSBThreatTypeSet(
+          {SB_THREAT_TYPE_SUBRESOURCE_FILTER, SB_THREAT_TYPE_URL_PHISHING}));
 
   current_requests_.push_back(req.release());
 
