@@ -110,7 +110,6 @@
 #include "device/gamepad/public/cpp/gamepad_features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
-#include "google_apis/drive/drive_switches.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_features.h"
@@ -3161,9 +3160,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchCalibrationSetting)},
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_CHROMEOS)
-    {"disable-team-drives", flag_descriptions::kDisableTeamDrivesName,
-     flag_descriptions::kDisableTeamDrivesDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(google_apis::kDisableTeamDrives)},
     {"file-manager-touch-mode", flag_descriptions::kFileManagerTouchModeName,
      flag_descriptions::kFileManagerTouchModeDescription, kOsCrOS,
      ENABLE_DISABLE_VALUE_TYPE(

@@ -3456,11 +3456,6 @@ const char kSysInternalsDescription[] =
     "If enabled, user can monitor system information at "
     "chrome://sys-internals.";
 
-const char kDisableTeamDrivesName[] = "Disable Team Drives Integration";
-const char kDisableTeamDrivesDescription[] =
-    "If disabled, files under Team Drives will no longer appear in the Files "
-    "app.";
-
 const char kTetherName[] = "Instant Tethering";
 const char kTetherDescription[] =
     "Enables Instant Tethering. Instant Tethering allows your nearby Google "

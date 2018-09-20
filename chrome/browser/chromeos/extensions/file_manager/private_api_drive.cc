@@ -42,7 +42,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/drive_api_url_generator.h"
-#include "google_apis/drive/drive_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/fileapi/file_system_info.h"
@@ -131,8 +130,7 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
       DriveApiUrlGenerator url_generator(
           (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
           (GURL(google_apis::DriveApiUrlGenerator::
-                    kBaseThumbnailUrlForProduction)),
-          google_apis::GetTeamDrivesIntegrationSwitch());
+                    kBaseThumbnailUrlForProduction)));
       properties->thumbnail_url = std::make_unique<std::string>(
           url_generator
               .GetThumbnailUrl(entry_proto.resource_id(), 500 /* width */,
@@ -1427,8 +1425,8 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGetResourceEntry(
 
   DriveApiUrlGenerator url_generator(
       (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
-      (GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction)),
-      google_apis::GetTeamDrivesIntegrationSwitch());
+      (GURL(
+          google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction)));
   OnGotDownloadUrl(url_generator.GenerateDownloadFileUrl(entry->resource_id()));
 }
 

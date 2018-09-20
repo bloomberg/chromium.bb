@@ -55,13 +55,6 @@ function VolumeInfoImpl(
    */
   this.prefixEntry_ = null;
 
-  /** @type {Promise<boolean>} */
-  this.isTeamDrivesEnabledPromise_ = new Promise(resolve => {
-    chrome.commandLinePrivate.hasSwitch('disable-team-drives', enabled => {
-      resolve(!enabled);
-    });
-  });
-
   /** @type {Object<!FakeEntry>} */
   this.fakeEntries_ = {};
 
@@ -251,24 +244,19 @@ VolumeInfoImpl.resolveFileSystemUrl_ = function(url) {
  * @return {!Promise<void>}
  */
 VolumeInfoImpl.prototype.resolveTeamDrivesRoot_ = function() {
-  return this.isTeamDrivesEnabledPromise_.then(enabled => {
-    if (!enabled) {
-      return;
-    }
-    return VolumeInfoImpl
-        .resolveFileSystemUrl_(
-            this.fileSystem_.root.toURL() +
-            VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME)
-        .then(
-            teamDrivesRoot => {
-              this.teamDriveDisplayRoot_ = teamDrivesRoot;
-            },
-            error => {
-              if (error.name != 'NotFoundError') {
-                throw error;
-              }
-            });
-  });
+  return VolumeInfoImpl
+      .resolveFileSystemUrl_(
+          this.fileSystem_.root.toURL() +
+          VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME)
+      .then(
+          teamDrivesRoot => {
+            this.teamDriveDisplayRoot_ = teamDrivesRoot;
+          },
+          error => {
+            if (error.name != 'NotFoundError') {
+              throw error;
+            }
+          });
 };
 
 /**
