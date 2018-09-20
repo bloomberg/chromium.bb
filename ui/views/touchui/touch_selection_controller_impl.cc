@@ -1,10 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client.h"
@@ -19,6 +18,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -74,14 +74,14 @@ const int kSelectionHandleBarBottomAllowance = 3;
 
 // Creates a widget to host SelectionHandleView.
 views::Widget* CreateTouchSelectionPopupWidget(
-    gfx::NativeView context,
+    gfx::NativeView parent,
     views::WidgetDelegate* widget_delegate) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = context;
+  params.parent = parent;
   params.delegate = widget_delegate;
   widget->Init(params);
   return widget;
@@ -210,17 +210,17 @@ using EditingHandleView = TouchSelectionControllerImpl::EditingHandleView;
 
 // A View that displays the text selection handle.
 class TouchSelectionControllerImpl::EditingHandleView
-    : public views::WidgetDelegateView {
+    : public WidgetDelegateView {
  public:
   EditingHandleView(TouchSelectionControllerImpl* controller,
-                    gfx::NativeView context,
+                    gfx::NativeView parent,
                     bool is_cursor_handle)
       : controller_(controller),
         image_(GetCenterHandleImage()),
         is_cursor_handle_(is_cursor_handle),
         draw_invisible_(false),
         weak_ptr_factory_(this) {
-    widget_.reset(CreateTouchSelectionPopupWidget(context, this));
+    widget_.reset(CreateTouchSelectionPopupWidget(parent, this));
 
     targeter_ = new aura::WindowTargeter();
     aura::Window* window = widget_->GetNativeWindow();
@@ -240,12 +240,12 @@ class TouchSelectionControllerImpl::EditingHandleView
     return selection_bound_.type();
   }
 
-  // Overridden from views::WidgetDelegateView:
+  // WidgetDelegateView:
   void DeleteDelegate() override {
     // We are owned and deleted by TouchSelectionControllerImpl.
   }
 
-  // Overridden from views::View:
+  // View:
   void OnPaint(gfx::Canvas* canvas) override {
     if (draw_invisible_)
       return;
@@ -405,23 +405,20 @@ class TouchSelectionControllerImpl::EditingHandleView
 TouchSelectionControllerImpl::TouchSelectionControllerImpl(
     ui::TouchEditable* client_view)
     : client_view_(client_view),
-      client_widget_(nullptr),
-      selection_handle_1_(new EditingHandleView(this,
-                                                client_view->GetNativeView(),
-                                                false)),
-      selection_handle_2_(new EditingHandleView(this,
-                                                client_view->GetNativeView(),
-                                                false)),
-      cursor_handle_(new EditingHandleView(this,
-                                           client_view->GetNativeView(),
-                                           true)),
-      command_executed_(false),
-      dragging_handle_(nullptr) {
+      selection_handle_1_(
+          new EditingHandleView(this, client_view->GetNativeView(), false)),
+      selection_handle_2_(
+          new EditingHandleView(this, client_view->GetNativeView(), false)),
+      cursor_handle_(
+          new EditingHandleView(this, client_view->GetNativeView(), true)) {
   selection_start_time_ = base::TimeTicks::Now();
   aura::Window* client_window = client_view_->GetNativeView();
   client_widget_ = Widget::GetTopLevelWidgetForNativeView(client_window);
+  // Observe client widget moves and resizes to update the selection handles.
   if (client_widget_)
     client_widget_->AddObserver(this);
+  if (ViewsDelegate::GetInstance()->IsPointerWatcherSupported())
+    ViewsDelegate::GetInstance()->AddPointerWatcher(this, true);
   aura::Env::GetInstance()->AddPreTargetHandler(this);
 }
 
@@ -430,6 +427,8 @@ TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
                         command_executed_);
   HideQuickMenu();
   aura::Env::GetInstance()->RemovePreTargetHandler(this);
+  if (ViewsDelegate::GetInstance()->IsPointerWatcherSupported())
+    ViewsDelegate::GetInstance()->RemovePointerWatcher(this);
   if (client_widget_)
     client_widget_->RemoveObserver(this);
 }
@@ -627,6 +626,18 @@ void TouchSelectionControllerImpl::OnWidgetBoundsChanged(
   SelectionChanged();
 }
 
+void TouchSelectionControllerImpl::OnPointerEventObserved(
+    const ui::PointerEvent& event,
+    const gfx::Point& location_in_screen,
+    gfx::NativeView target) {
+  // Disregard CursorClient::IsMouseEventsEnabled, it is disabled for touch
+  // events in this client, but not re-enabled for mouse events sent elsewhere.
+  if (event.pointer_details().pointer_type ==
+      ui::EventPointerType::POINTER_TYPE_MOUSE) {
+    client_view_->DestroyTouchSelection();
+  }
+}
+
 void TouchSelectionControllerImpl::OnKeyEvent(ui::KeyEvent* event) {
   client_view_->DestroyTouchSelection();
 }
@@ -751,11 +762,11 @@ gfx::Rect TouchSelectionControllerImpl::GetExpectedHandleBounds(
   return GetSelectionWidgetBounds(bound);
 }
 
-views::WidgetDelegateView* TouchSelectionControllerImpl::GetHandle1View() {
+WidgetDelegateView* TouchSelectionControllerImpl::GetHandle1View() {
   return selection_handle_1_.get();
 }
 
-views::WidgetDelegateView* TouchSelectionControllerImpl::GetHandle2View() {
+WidgetDelegateView* TouchSelectionControllerImpl::GetHandle2View() {
   return selection_handle_2_.get();
 }
 

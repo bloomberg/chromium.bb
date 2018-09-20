@@ -48,8 +48,7 @@ ViewsDelegate* ViewsDelegate::GetInstance() {
 void ViewsDelegate::SaveWindowPlacement(const Widget* widget,
                                         const std::string& window_name,
                                         const gfx::Rect& bounds,
-                                        ui::WindowShowState show_state) {
-}
+                                        ui::WindowShowState show_state) {}
 
 bool ViewsDelegate::GetSavedWindowPlacement(
     const Widget* widget,
@@ -66,8 +65,7 @@ void ViewsDelegate::NotifyMenuItemFocused(const base::string16& menu_name,
                                           const base::string16& menu_item_name,
                                           int item_index,
                                           int item_count,
-                                          bool has_submenu) {
-}
+                                          bool has_submenu) {}
 
 ViewsDelegate::ProcessMenuAcceleratorResult
 ViewsDelegate::ProcessAcceleratorWhileMenuShowing(
@@ -98,11 +96,9 @@ NonClientFrameView* ViewsDelegate::CreateDefaultNonClientFrameView(
   return nullptr;
 }
 
-void ViewsDelegate::AddRef() {
-}
+void ViewsDelegate::AddRef() {}
 
-void ViewsDelegate::ReleaseRef() {
-}
+void ViewsDelegate::ReleaseRef() {}
 
 void ViewsDelegate::OnBeforeWidgetInit(
     Widget::InitParams* params,
@@ -138,6 +134,18 @@ int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
 
 bool ViewsDelegate::ShouldMirrorArrowsInRTL() const {
   return true;
+}
+
+void ViewsDelegate::AddPointerWatcher(PointerWatcher*, bool) {
+  NOTREACHED();
+}
+
+void ViewsDelegate::RemovePointerWatcher(PointerWatcher*) {
+  NOTREACHED();
+}
+
+bool ViewsDelegate::IsPointerWatcherSupported() const {
+  return false;
 }
 
 }  // namespace views
