@@ -136,7 +136,7 @@
 
 # NetworkChangeNotifier() Not implemented.
 # https://crbug.com/882610
--ChromeBrowserMainBrowserTest.VariationsServiceStartsRequestOnNetworkChange/0
+-ChromeBrowserMainBrowserTest.VariationsServiceStartsRequestOnNetworkChange
 -NetworkConnectionTrackerBrowserTest.SimulateNetworkServiceCrash
 
 # Time out in StoragePartitionImpl::InitNetworkContext(). Might be related to
