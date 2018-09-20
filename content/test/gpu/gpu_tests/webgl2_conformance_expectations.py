@@ -233,7 +233,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl', 'passthrough'], bug=830046)
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
         ['win', 'nvidia', 'opengl', 'no_passthrough'], bug=832238)
-
+    self.Flaky('deqp/data/gles3/shaders/conversions.html',
+        ['win', 'nvidia', 'opengl', 'passthrough'], bug=887578)
     self.Flaky('deqp/functional/gles3/transformfeedback/*',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
 
