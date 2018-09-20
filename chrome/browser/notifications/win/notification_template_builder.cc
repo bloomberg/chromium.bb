@@ -82,7 +82,7 @@ const char* NotificationTemplateBuilder::context_menu_label_override_ = nullptr;
 
 // static
 std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
-    NotificationImageRetainer* notification_image_retainer,
+    base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
     const NotificationLaunchId& launch_id,
     const std::string& profile_id,
     const message_center::Notification& notification) {
@@ -144,7 +144,7 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
 }
 
 NotificationTemplateBuilder::NotificationTemplateBuilder(
-    NotificationImageRetainer* notification_image_retainer,
+    base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
     const std::string& profile_id)
     : xml_writer_(std::make_unique<XmlWriter>()),
       image_retainer_(notification_image_retainer),
@@ -266,6 +266,9 @@ void NotificationTemplateBuilder::WriteImageElement(
     const GURL& origin,
     const std::string& placement,
     const std::string& hint_crop) {
+  // Although image_retainer_ is a WeakPtr, it should never be nullptr here.
+  DCHECK(image_retainer_);
+
   base::FilePath path =
       image_retainer_->RegisterTemporaryImage(image, profile_id_, origin);
   if (!path.empty()) {
@@ -357,6 +360,9 @@ void NotificationTemplateBuilder::WriteActionElement(
   xml_writer_->AddAttribute(kArguments, copied_launch_id.Serialize());
 
   if (!button.icon.IsEmpty()) {
+    // Although image_retainer_ is a WeakPtr, it should never be nullptr here.
+    DCHECK(image_retainer_);
+
     base::FilePath path = image_retainer_->RegisterTemporaryImage(
         button.icon, profile_id_, origin);
     if (!path.empty())

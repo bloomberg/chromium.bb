@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_common.h"
 
@@ -46,7 +47,7 @@ class NotificationTemplateBuilder {
  public:
   // Builds the notification template for the given |notification|.
   static std::unique_ptr<NotificationTemplateBuilder> Build(
-      NotificationImageRetainer* notification_image_retainer,
+      base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
       const NotificationLaunchId& launch_id,
       const std::string& profile_id,
       const message_center::Notification& notification);
@@ -65,7 +66,7 @@ class NotificationTemplateBuilder {
   enum class TextType { NORMAL, ATTRIBUTION };
 
   NotificationTemplateBuilder(
-      NotificationImageRetainer* notification_image_retainer,
+      base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
       const std::string& profile_id);
 
   // Formats the |origin| for display in the notification template.
@@ -143,8 +144,8 @@ class NotificationTemplateBuilder {
   // The XML writer to which the template will be written.
   std::unique_ptr<XmlWriter> xml_writer_;
 
-  // The image retainer. Weak, not owned by us.
-  NotificationImageRetainer* image_retainer_;
+  // The image retainer.
+  base::WeakPtr<NotificationImageRetainer> image_retainer_;
 
   // The id of the profile the notification is intended for.
   std::string profile_id_;
