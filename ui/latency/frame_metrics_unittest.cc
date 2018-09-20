@@ -842,9 +842,9 @@ void FrameMetricsTest::StartNewReportPeriodAvoidsOverflowTest(
 TEST_F(FrameMetricsTest, StartNewReportPeriodAvoidsOverflowForSkips) {
   base::TimeDelta produced = base::TimeDelta::FromMicroseconds(1);
   base::TimeDelta latency = base::TimeDelta::FromMilliseconds(1);
-  base::TimeDelta skipped = base::TimeDelta::FromSeconds(66);
+  base::TimeDelta skipped = base::TimeDelta::FromSeconds(2);
 
-  frame_metrics->UseDefaultReportPeriodScaled(4);
+  frame_metrics->UseDefaultReportPeriodScaled(7);
   StartNewReportPeriodAvoidsOverflowTest(produced, skipped, latency, latency,
                                          kSkipSaturationMin,
                                          &FrameMetricsTest::SkipAnalysis);
