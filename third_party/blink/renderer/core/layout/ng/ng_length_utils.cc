@@ -316,11 +316,11 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     computed_sizes = *min_and_max;
   } else {
     if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
-      computed_sizes.min_size = computed_sizes.max_size = ResolveInlineLength(
+      computed_sizes = ResolveInlineLength(
           space, style, min_and_max, inline_size,
           LengthResolveType::kContentSize, LengthResolvePhase::kIntrinsic);
     } else {
-      computed_sizes.min_size = computed_sizes.max_size = ResolveBlockLength(
+      computed_sizes = ResolveBlockLength(
           space, style, inline_size, content_size,
           LengthResolveType::kContentSize, LengthResolvePhase::kIntrinsic);
     }
@@ -339,8 +339,7 @@ MinMaxSize ComputeMinAndMaxContentContribution(
                              LengthResolveType::kMaxSize,
                              LengthResolvePhase::kIntrinsic);
   }
-  computed_sizes.min_size = std::min(computed_sizes.min_size, max);
-  computed_sizes.max_size = std::min(computed_sizes.max_size, max);
+  computed_sizes.Constrain(max);
 
   Length min_length = writing_mode == WritingMode::kHorizontalTb
                           ? style.MinWidth()
@@ -355,8 +354,7 @@ MinMaxSize ComputeMinAndMaxContentContribution(
                              LengthResolveType::kMinSize,
                              LengthResolvePhase::kIntrinsic);
   }
-  computed_sizes.min_size = std::max(computed_sizes.min_size, min);
-  computed_sizes.max_size = std::max(computed_sizes.max_size, min);
+  computed_sizes.Encompass(min);
 
   return computed_sizes;
 }
