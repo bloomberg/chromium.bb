@@ -1392,7 +1392,7 @@ public class CustomTabActivity extends ChromeActivity {
 
     /** Sets the initial background color for the Tab, shown before the page content is ready. */
     private void prepareTabBackground(final Tab tab) {
-        if (!IntentHandler.isIntentChromeOrFirstParty(getIntent())) return;
+        if (!IntentHandler.notSecureIsIntentChromeOrFirstParty(getIntent())) return;
 
         int backgroundColor = mIntentDataProvider.getInitialBackgroundColor();
         if (backgroundColor == Color.TRANSPARENT) return;
@@ -1464,7 +1464,7 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     protected boolean requiresFirstRunToBeCompleted(Intent intent) {
         // Custom Tabs can be used to open Chrome help pages before the ToS has been accepted.
-        if (IntentHandler.isIntentChromeOrFirstParty(intent)
+        if (IntentHandler.notSecureIsIntentChromeOrFirstParty(intent)
                 && IntentUtils.safeGetIntExtra(intent, CustomTabIntentDataProvider.EXTRA_UI_TYPE,
                            CustomTabIntentDataProvider.CustomTabsUiType.DEFAULT)
                         == CustomTabIntentDataProvider.CustomTabsUiType.INFO_PAGE) {
