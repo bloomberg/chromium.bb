@@ -136,10 +136,6 @@ bool FakeProfile::IsChild() const {
   return false;
 }
 
-bool FakeProfile::IsLegacySupervised() const {
-  return false;
-}
-
 ExtensionSpecialStoragePolicy* FakeProfile::GetExtensionSpecialStoragePolicy() {
   return nullptr;
 }

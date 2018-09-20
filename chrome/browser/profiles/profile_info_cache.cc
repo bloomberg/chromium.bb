@@ -325,10 +325,6 @@ bool ProfileInfoCache::ProfileIsChildAtIndex(size_t index) const {
 #endif
 }
 
-bool ProfileInfoCache::ProfileIsLegacySupervisedAtIndex(size_t index) const {
-  return ProfileIsSupervisedAtIndex(index) && !ProfileIsChildAtIndex(index);
-}
-
 bool ProfileInfoCache::IsOmittedProfileAtIndex(size_t index) const {
   bool value = false;
   GetInfoForProfileAtIndex(index)->GetBoolean(kIsOmittedFromProfileListKey,

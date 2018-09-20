@@ -1489,8 +1489,7 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
   Profile* last_used_profile = GetProfileByPath(last_used_profile_path);
   if (last_used_profile_path != profile_dir &&
       last_used_profile_path != guest_profile_path &&
-      last_used_profile != nullptr &&
-      !last_used_profile->IsLegacySupervised()) {
+      last_used_profile != nullptr) {
     FinishDeletingProfile(profile_dir, last_used_profile_path);
     return;
   }
@@ -1501,7 +1500,6 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
     base::FilePath cur_path = profile->GetPath();
     if (cur_path != profile_dir &&
         cur_path != guest_profile_path &&
-        !profile->IsLegacySupervised() &&
         !IsProfileDirectoryMarkedForDeletion(cur_path)) {
       OnNewActiveProfileLoaded(profile_dir, cur_path, std::move(callback),
                                profile, Profile::CREATE_STATUS_INITIALIZED);
@@ -1516,19 +1514,17 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
       storage.GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
     base::FilePath cur_path = entry->GetPath();
-    // Make sure that this profile is not pending deletion, and is not
-    // legacy-supervised.
+    // Make sure that this profile is not pending deletion.
     if (cur_path != profile_dir &&
         cur_path != guest_profile_path &&
-        !entry->IsLegacySupervised() &&
         !IsProfileDirectoryMarkedForDeletion(cur_path)) {
       fallback_profile_path = cur_path;
       break;
     }
   }
 
-  // If we're deleting the last (non-legacy-supervised) profile, then create a
-  // new profile in its place. Load existing profile otherwise.
+  // If we're deleting the last profile, then create a new profile in its place.
+  // Load existing profile otherwise.
   std::string new_avatar_url;
   base::string16 new_profile_name;
   if (fallback_profile_path.empty()) {
@@ -1872,7 +1868,6 @@ void ProfileManager::ScheduleForcedEphemeralProfileForDeletion(
     base::FilePath entry_path = entry->GetPath();
     if (entry_path == profile_dir ||
         entry_path == GetGuestProfilePath() ||
-        entry->IsLegacySupervised() ||
         IsProfileDirectoryMarkedForDeletion(entry_path))
       continue;
     // Check if |entry| preferable over |found_entry|.

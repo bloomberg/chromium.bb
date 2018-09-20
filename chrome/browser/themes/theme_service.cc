@@ -333,12 +333,6 @@ void ThemeService::RevertToTheme(const Extension* extension) {
 void ThemeService::UseDefaultTheme() {
   if (ready_)
     base::RecordAction(UserMetricsAction("Themes_Reset"));
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  if (IsSupervisedUser()) {
-    SetSupervisedUserTheme();
-    return;
-  }
-#endif
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
   // IncreasedContrastThemeSupplier is designed for the Refresh UI only.
   if (native_theme && native_theme->UsesHighContrastColors() &&
@@ -603,14 +597,6 @@ void ThemeService::LoadThemePrefs() {
 
   std::string current_id = GetThemeID();
   if (current_id == kDefaultThemeID) {
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    // Supervised users have a different default theme.
-    if (IsSupervisedUser()) {
-      SetSupervisedUserTheme();
-      set_ready();
-      return;
-    }
-#endif
     if (ShouldInitWithSystemTheme())
       UseSystemTheme();
     else
@@ -995,15 +981,3 @@ void ThemeService::OnThemeBuiltFromExtension(
   }
   building_extension_id_.clear();
 }
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-bool ThemeService::IsSupervisedUser() const {
-  // Do not treat child users as supervised users, so they get the same theme as the parent account
-  // instead of getting the default theme.
-  return profile_->IsLegacySupervised();
-}
-
-void ThemeService::SetSupervisedUserTheme() {
-  SetCustomDefaultTheme(new SupervisedUserTheme);
-}
-#endif

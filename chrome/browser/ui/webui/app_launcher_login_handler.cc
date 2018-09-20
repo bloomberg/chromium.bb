@@ -198,7 +198,7 @@ void AppLauncherLoginHandler::UpdateLogin() {
     // Chromeos does not show this status header.
     SigninManager* signin = SigninManagerFactory::GetForProfile(
         profile->GetOriginalProfile());
-    if (!profile->IsLegacySupervised() && signin->IsSigninAllowed()) {
+    if (signin->IsSigninAllowed()) {
       base::string16 signed_in_link = l10n_util::GetStringUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
       signed_in_link =
