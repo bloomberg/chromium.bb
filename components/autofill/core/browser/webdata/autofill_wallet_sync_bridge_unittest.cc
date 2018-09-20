@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
+#include "components/autofill/core/browser/webdata/mock_autofill_webdata_backend.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/entity_data.h"
@@ -75,27 +76,6 @@ const char kCustomerDataSyncTag[] = "deadbeef";
 
 const char kLocaleString[] = "en-US";
 const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
-
-// TODO(jkrcal): Extract this class out and reuse it for all autofill bridges.
-class MockAutofillBackend : public AutofillWebDataBackend {
- public:
-  MockAutofillBackend() {}
-  ~MockAutofillBackend() override {}
-
-  MOCK_METHOD0(GetDatabase, WebDatabase*());
-  MOCK_METHOD1(
-      AddObserver,
-      void(autofill::AutofillWebDataServiceObserverOnDBSequence* observer));
-  MOCK_METHOD1(
-      RemoveObserver,
-      void(autofill::AutofillWebDataServiceObserverOnDBSequence* observer));
-  MOCK_METHOD0(RemoveExpiredFormElements, void());
-  MOCK_METHOD0(NotifyOfMultipleAutofillChanges, void());
-  MOCK_METHOD1(NotifyThatSyncHasStarted, void(ModelType model_type));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillBackend);
-};
 
 void ExtractAutofillWalletSpecificsFromDataBatch(
     std::unique_ptr<DataBatch> batch,
@@ -267,7 +247,7 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
 
   AutofillTable* table() { return &table_; }
 
-  MockAutofillBackend* backend() { return &backend_; }
+  MockAutofillWebDataBackend* backend() { return &backend_; }
 
   virtual bool UseFullSync() { return true; }
 
@@ -275,7 +255,7 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
   autofill::TestAutofillClock test_clock_;
   ScopedTempDir temp_dir_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  NiceMock<MockAutofillBackend> backend_;
+  NiceMock<MockAutofillWebDataBackend> backend_;
   AutofillTable table_;
   WebDatabase db_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;

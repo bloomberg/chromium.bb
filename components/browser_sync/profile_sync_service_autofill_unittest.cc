@@ -157,9 +157,9 @@ class WebDatabaseFake : public WebDatabase {
   }
 };
 
-class MockAutofillBackend : public autofill::AutofillWebDataBackend {
+class FakeAutofillBackend : public autofill::AutofillWebDataBackend {
  public:
-  MockAutofillBackend(
+  FakeAutofillBackend(
       WebDatabase* web_database,
       const base::RepeatingClosure& on_changed,
       const base::RepeatingCallback<void(syncer::ModelType)>& on_sync_started,
@@ -169,7 +169,7 @@ class MockAutofillBackend : public autofill::AutofillWebDataBackend {
         on_sync_started_(on_sync_started),
         ui_task_runner_(ui_task_runner) {}
 
-  ~MockAutofillBackend() override {}
+  ~FakeAutofillBackend() override {}
   WebDatabase* GetDatabase() override { return web_database_; }
   void AddObserver(
       autofill::AutofillWebDataServiceObserverOnDBSequence* observer) override {
@@ -290,7 +290,7 @@ class WebDataServiceFake : public AutofillWebDataService {
       const base::RepeatingCallback<void(syncer::ModelType)>& on_sync_started) {
     ASSERT_TRUE(db_task_runner_->RunsTasksInCurrentSequence());
     // These services are deleted in DestroySyncableService().
-    backend_ = std::make_unique<MockAutofillBackend>(
+    backend_ = std::make_unique<FakeAutofillBackend>(
         GetDatabase(), on_changed_callback, on_sync_started,
         ui_task_runner_.get());
     AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(

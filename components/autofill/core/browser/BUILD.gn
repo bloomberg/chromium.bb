@@ -342,6 +342,8 @@ jumbo_static_library("test_support") {
     "test_sync_service.h",
     "webdata/autofill_sync_bridge_test_util.cc",
     "webdata/autofill_sync_bridge_test_util.h",
+    "webdata/mock_autofill_webdata_backend.cc",
+    "webdata/mock_autofill_webdata_backend.h",
   ]
 
   public_deps = [
