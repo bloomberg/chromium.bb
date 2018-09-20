@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/sync/driver/sync_service.h"
@@ -98,6 +99,9 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
     LOG(WARNING) << "Could not initialize password store.";
     return nullptr;
   }
+  password_manager_util::DeleteBlacklistedDuplicates(
+      store, ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
+      60);
   return store;
 }
 
