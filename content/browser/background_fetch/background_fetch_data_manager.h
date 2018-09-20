@@ -65,7 +65,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       std::vector<background_fetch::BackgroundFetchInitializationData>)>;
   using SettledFetchesCallback = base::OnceCallback<void(
       blink::mojom::BackgroundFetchError,
-      bool /* background_fetch_succeeded */,
+      blink::mojom::BackgroundFetchFailureReason,
       std::vector<BackgroundFetchSettledFetch>,
       std::vector<std::unique_ptr<storage::BlobDataHandle>>)>;
   using GetRegistrationCallback =

@@ -466,10 +466,14 @@ void BackgroundFetchContext::DidGetSettledFetches(
     const BackgroundFetchRegistrationId& registration_id,
     std::unique_ptr<BackgroundFetchRegistration> registration,
     blink::mojom::BackgroundFetchError error,
-    bool background_fetch_succeeded,
+    FailureReason failure_reason,
     std::vector<BackgroundFetchSettledFetch> settled_fetches,
     std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(failure_reason == FailureReason::NONE ||
+         failure_reason == FailureReason::FETCH_ERROR ||
+         failure_reason == FailureReason::SERVICE_WORKER_UNAVAILABLE ||
+         failure_reason == FailureReason::BAD_STATUS);
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
     CleanupRegistration(registration_id, {} /* fetches */,
@@ -480,41 +484,49 @@ void BackgroundFetchContext::DidGetSettledFetches(
 
   DCHECK(job_controllers_.count(registration_id.unique_id()));
 
-  if (job_controllers_[registration_id.unique_id()]->total_downloads() !=
-      static_cast<int>(settled_fetches.size())) {
-    // Something went wrong, and some information was lost.
-    background_fetch_succeeded = false;
-  }
-
   // The `backgroundfetchsuccess` event will be invoked when all requests in the
   // registration have completed successfully. In all other cases, the
   // `backgroundfetchfail` event will be invoked instead.
-  if (background_fetch_succeeded) {
-    registration->result = blink::mojom::BackgroundFetchResult::SUCCESS;
-    event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
-        registration_id, std::move(registration),
-        base::BindOnce(
-            &BackgroundFetchContext::CleanupRegistration,
-            weak_factory_.GetWeakPtr(), registration_id,
-            // The blob uuid is sent as part of |settled_fetches|. Bind
-            // |blob_data_handles| to the callback to keep them alive
-            // until the waitUntil event is resolved.
-            std::move(blob_data_handles),
-            blink::mojom::BackgroundFetchResult::SUCCESS,
-            true /* preserve_info_to_dispatch_click_event */));
-  } else {
-    registration->result = blink::mojom::BackgroundFetchResult::FAILURE;
-    event_dispatcher_.DispatchBackgroundFetchFailEvent(
-        registration_id, std::move(registration),
-        base::BindOnce(
-            &BackgroundFetchContext::CleanupRegistration,
-            weak_factory_.GetWeakPtr(), registration_id,
-            // The blob uuid is sent as part of |settled_fetches|. Bind
-            // |blob_data_handles| to the callback to keep them alive
-            // until the waitUntil event is resolved.
-            std::move(blob_data_handles),
-            blink::mojom::BackgroundFetchResult::FAILURE,
-            true /* preserve_info_to_dispatch_click_event */));
+  if (registration->failure_reason == FailureReason::NONE &&
+      failure_reason != FailureReason::NONE) {
+    registration->failure_reason = failure_reason;
+  }
+
+  switch (registration->failure_reason) {
+    case FailureReason::NONE:
+      registration->result = blink::mojom::BackgroundFetchResult::SUCCESS;
+      event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
+          registration_id, std::move(registration),
+          base::BindOnce(
+              &BackgroundFetchContext::CleanupRegistration,
+              weak_factory_.GetWeakPtr(), registration_id,
+              // The blob uuid is sent as part of |settled_fetches|. Bind
+              // |blob_data_handles| to the callback to keep them alive
+              // until the waitUntil event is resolved.
+              std::move(blob_data_handles),
+              blink::mojom::BackgroundFetchResult::SUCCESS,
+              true /* preserve_info_to_dispatch_click_event */));
+      return;
+    case FailureReason::CANCELLED_FROM_UI:
+    case FailureReason::CANCELLED_BY_DEVELOPER:
+    case FailureReason::BAD_STATUS:
+    case FailureReason::FETCH_ERROR:
+    case FailureReason::SERVICE_WORKER_UNAVAILABLE:
+    case FailureReason::QUOTA_EXCEEDED:
+    case FailureReason::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
+      registration->result = blink::mojom::BackgroundFetchResult::FAILURE;
+      event_dispatcher_.DispatchBackgroundFetchFailEvent(
+          registration_id, std::move(registration),
+          base::BindOnce(
+              &BackgroundFetchContext::CleanupRegistration,
+              weak_factory_.GetWeakPtr(), registration_id,
+              // The blob uuid is sent as part of |settled_fetches|. Bind
+              // |blob_data_handles| to the callback to keep them alive
+              // until the waitUntil event is resolved.
+              std::move(blob_data_handles),
+              blink::mojom::BackgroundFetchResult::FAILURE,
+              true /* preserve_info_to_dispatch_click_event */));
+      return;
   }
 }
 
@@ -589,7 +601,7 @@ void BackgroundFetchContext::MatchRequests(
 void BackgroundFetchContext::DidGetMatchingRequests(
     blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
     blink::mojom::BackgroundFetchError error,
-    bool background_fetch_succeeded,
+    FailureReason failure_reason,
     std::vector<BackgroundFetchSettledFetch> settled_fetches,
     std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

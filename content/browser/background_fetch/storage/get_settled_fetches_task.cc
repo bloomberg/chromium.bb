@@ -9,6 +9,7 @@
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "services/network/public/cpp/cors/cors.h"
 
 namespace content {
 
@@ -69,7 +70,7 @@ void GetSettledFetchesTask::DidGetCompletedRequests(
       SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
       break;
     case DatabaseStatus::kNotFound:
-      background_fetch_succeeded_ = false;
+      failure_reason_ = blink::mojom::BackgroundFetchFailureReason::FETCH_ERROR;
       error_ = blink::mojom::BackgroundFetchError::INVALID_ID;
       break;
   }
@@ -81,12 +82,11 @@ void GetSettledFetchesTask::DidGetCompletedRequests(
             serialized_completed_request)) {
       // Service worker database has been corrupted. Abandon fetches.
       SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
-      background_fetch_succeeded_ = false;
+      failure_reason_ = blink::mojom::BackgroundFetchFailureReason::
+          SERVICE_WORKER_UNAVAILABLE;
       AbandonFetches(registration_id_.service_worker_registration_id());
       break;
     }
-    if (!completed_requests_.back().succeeded())
-      background_fetch_succeeded_ = false;
   }
   std::move(done_closure).Run();
 }
@@ -235,7 +235,7 @@ void GetSettledFetchesTask::DidMatchAllResponsesForRequest(
 void GetSettledFetchesTask::FillUncachedResponse(
     BackgroundFetchSettledFetch* settled_fetch,
     base::OnceClosure callback) {
-  background_fetch_succeeded_ = false;
+  failure_reason_ = blink::mojom::BackgroundFetchFailureReason::FETCH_ERROR;
 
   // TODO(rayankans): Fill unmatched response with error reports.
   DCHECK(!settled_fetch->response);
@@ -252,8 +252,24 @@ void GetSettledFetchesTask::FinishWithError(
   if (HasStorageError())
     error = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
   ReportStorageError();
+
+  if (error == blink::mojom::BackgroundFetchError::NONE) {
+    for (const auto& settled_fetch : settled_fetches_) {
+      if (!settled_fetch.response->status_code) {
+        // A status_code of 0 means no headers were returned.
+        failure_reason_ =
+            blink::mojom::BackgroundFetchFailureReason::FETCH_ERROR;
+        break;
+      }
+      if (!network::cors::IsOkStatus(settled_fetch.response->status_code)) {
+        failure_reason_ =
+            blink::mojom::BackgroundFetchFailureReason::BAD_STATUS;
+        break;
+      }
+    }
+  }
   std::move(settled_fetches_callback_)
-      .Run(error, background_fetch_succeeded_, std::move(settled_fetches_),
+      .Run(error, failure_reason_, std::move(settled_fetches_),
            {} /* blob_data_handles */);
   Finished();  // Destroys |this|.
 }
