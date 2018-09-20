@@ -20,7 +20,6 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "base/run_loop.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
@@ -52,27 +51,6 @@ class LockScreenAppFocuser {
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenAppFocuser);
 };
-
-// Keeps tabbing through |view| until the view loses focus.
-// The number of generated tab events will be limited - if the focus is still
-// within the view by the time the limit is hit, this will return false.
-bool TabThroughView(ui::test::EventGenerator* event_generator,
-                    views::View* view,
-                    bool reverse) {
-  if (!HasFocusInAnyChildView(view)) {
-    ADD_FAILURE() << "View not focused initially.";
-    return false;
-  }
-
-  for (int i = 0; i < 50; ++i) {
-    event_generator->PressKey(ui::KeyboardCode::VKEY_TAB,
-                              reverse ? ui::EF_SHIFT_DOWN : 0);
-    if (!HasFocusInAnyChildView(view))
-      return true;
-  }
-
-  return false;
-}
 
 testing::AssertionResult VerifyFocused(views::View* view) {
   if (!view->GetWidget()->IsActive())
