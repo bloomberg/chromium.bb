@@ -198,6 +198,15 @@ bool IsRectOffscreen(const Node* node, WebFocusType direction) {
   return !visual_viewport.Intersects(rect);
 }
 
+bool HasRemoteFrame(const Node* node) {
+  if (!node)
+    return false;
+
+  return node->IsFrameOwnerElement() &&
+         ToHTMLFrameOwnerElement(node)->ContentFrame() &&
+         ToHTMLFrameOwnerElement(node)->ContentFrame()->IsRemoteFrame();
+}
+
 bool ScrollInDirection(LocalFrame* frame, WebFocusType direction) {
   DCHECK(frame);
 
