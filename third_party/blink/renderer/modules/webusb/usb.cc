@@ -292,7 +292,7 @@ void USB::EnsureServiceConnection() {
 
   DCHECK(!client_binding_.is_bound());
 
-  device::mojom::blink::UsbDeviceManagerClientPtr client;
+  device::mojom::blink::UsbDeviceManagerClientAssociatedPtrInfo client;
   client_binding_.Bind(mojo::MakeRequest(&client));
   service_->SetClient(std::move(client));
 }

@@ -61,7 +61,8 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
   void GetPermission(
       std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
       GetPermissionCallback callback) override;
-  void SetClient(device::mojom::UsbDeviceManagerClientPtr client) override;
+  void SetClient(
+      device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client) override;
 
   void OnGetDevices(
       GetDevicesCallback callback,
@@ -85,7 +86,8 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
 
   // Used to bind with Blink.
   mojo::BindingSet<blink::mojom::WebUsbService> bindings_;
-  mojo::InterfacePtrSet<device::mojom::UsbDeviceManagerClient> clients_;
+  mojo::AssociatedInterfacePtrSet<device::mojom::UsbDeviceManagerClient>
+      clients_;
 
   // Binding used to connect with USB devices for opened/closed events.
   mojo::BindingSet<device::mojom::UsbDeviceClient> device_client_bindings_;
