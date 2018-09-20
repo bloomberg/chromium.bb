@@ -59,6 +59,9 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void assign(HeapVector<Member<Node>> nodes);
   bool ContainsInAssignedNodesCandidates(Node&) const;
   void SignalSlotChange();
+  HeapHashSet<Member<Node>>& AssignedNodesCandidate() {
+    return assigned_nodes_candidates_;
+  }
 
   const HeapVector<Member<Node>> FlattenedAssignedNodes();
 

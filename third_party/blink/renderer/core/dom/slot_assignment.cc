@@ -61,6 +61,8 @@ void SlotAssignment::DidRemoveSlot(HTMLSlotElement& slot) {
   if (owner_->IsManualSlotting()) {
     DCHECK(!needs_collect_slots_);
     CallSlotChangeIfNeeded(slot);
+    DeleteSlotInChildSlotMap(slot);
+
     needs_collect_slots_ = true;
     // TODO(crbug.com/869308):Avoid calling Slots in order not to hit the
     // DCHECK(!needs_collect_slots_)
@@ -132,6 +134,9 @@ void SlotAssignment::DidAddSlotInternalInManualMode(HTMLSlotElement& slot) {
       if (change_slot != slot)
         change_slot->SignalSlotChange();
     }
+  }
+  for (auto node : slot.AssignedNodesCandidate()) {
+    InsertSlotInChildSlotMap(slot, *node);
   }
 }
 
@@ -266,12 +271,9 @@ void SlotAssignment::RecalcAssignment() {
     HTMLSlotElement* slot = nullptr;
     if (!is_user_agent) {
       if (owner_->IsManualSlotting()) {
-        for (auto a_slot : Slots()) {
-          if (a_slot->ContainsInAssignedNodesCandidates(child)) {
-            slot = a_slot;
-            break;
-          }
-        }
+        auto it = node_to_assigned_slot_candidate_in_tree_order_.find(&child);
+        if (it != node_to_assigned_slot_candidate_in_tree_order_.end())
+          slot = *it.Get()->value.begin();
       } else {
         slot = FindSlotByName(child.SlotName());
       }
@@ -418,11 +420,57 @@ void SlotAssignment::CallSlotChangeIfNeeded(HTMLSlotElement& slot) {
   }
 }
 
-HTMLSlotElement* SlotAssignment::FindFirstAssignedSlot(Node& node) {
-  for (auto slot : Slots()) {
-    if (slot->ContainsInAssignedNodesCandidates(node))
-      return slot;
+void SlotAssignment::DeleteSlotInChildSlotMap(HTMLSlotElement& slot) {
+  for (auto itr = slot.AssignedNodesCandidate().begin();
+       itr != slot.AssignedNodesCandidate().end(); ++itr) {
+    auto it_child = node_to_assigned_slot_candidate_in_tree_order_.find(*itr);
+    if (it_child != node_to_assigned_slot_candidate_in_tree_order_.end()) {
+      HeapVector<Member<HTMLSlotElement>>& assigned_slots =
+          it_child.Get()->value;
+      auto position = assigned_slots.Find(slot);
+      if (assigned_slots.size() == 1) {
+        node_to_assigned_slot_candidate_in_tree_order_.erase(it_child);
+        continue;
+      }
+      it_child.Get()->value.EraseAt(position);
+    }
   }
+}
+
+void SlotAssignment::InsertSlotInChildSlotMap(HTMLSlotElement& new_slot,
+                                              Node& child) {
+  auto child_it = node_to_assigned_slot_candidate_in_tree_order_.find(&child);
+  if (child_it == node_to_assigned_slot_candidate_in_tree_order_.end()) {
+    HeapVector<Member<HTMLSlotElement>> assigned_slot_;
+    assigned_slot_.push_back(new_slot);
+    node_to_assigned_slot_candidate_in_tree_order_.Set(&child, assigned_slot_);
+  } else {
+    // Find the correct spot for the slot, and the assigned_slots's contents
+    // line up in tree order, so that the first assigned slot in tree order
+    // can be found for each child.
+    unsigned int assigned_slot_order = 0;
+    HeapVector<Member<HTMLSlotElement>>& assigned_slots = child_it.Get()->value;
+    for (auto slot : Slots()) {
+      if (slot == new_slot) {
+        if (slot != assigned_slots[assigned_slot_order])
+          assigned_slots.insert(assigned_slot_order, new_slot);
+        break;
+      }
+      if (slot == assigned_slots[assigned_slot_order]) {
+        assigned_slot_order++;
+        if (assigned_slot_order == assigned_slots.size()) {
+          assigned_slots.push_back(new_slot);
+          break;
+        }
+      }
+    }
+  }
+}
+
+HTMLSlotElement* SlotAssignment::FindFirstAssignedSlot(Node& node) {
+  auto it = node_to_assigned_slot_candidate_in_tree_order_.find(&node);
+  if (it != node_to_assigned_slot_candidate_in_tree_order_.end())
+    return *it.Get()->value.begin();
   return nullptr;
 }
 
@@ -452,6 +500,7 @@ void SlotAssignment::Trace(blink::Visitor* visitor) {
   visitor->Trace(slots_);
   visitor->Trace(slot_map_);
   visitor->Trace(owner_);
+  visitor->Trace(node_to_assigned_slot_candidate_in_tree_order_);
 }
 
 }  // namespace blink

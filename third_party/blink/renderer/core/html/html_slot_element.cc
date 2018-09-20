@@ -208,6 +208,7 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
             ? SlotChangeType::kSuppressSlotChangeEvent
             : SlotChangeType::kSignalSlotChangeEvent;
     DidSlotChange(slot_change_type);
+    ContainingShadowRoot()->GetSlotAssignment().DeleteSlotInChildSlotMap(*this);
   }
   assigned_nodes_candidates_.clear();
   for (Member<Node> child : nodes) {
@@ -218,6 +219,10 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
     // TODO(crbug.com/869308): Don't call SetNeedsAssignmentRecalc if we can
     // detect all possible slotchange surely
     ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
+    for (auto child : nodes) {
+      ContainingShadowRoot()->GetSlotAssignment().InsertSlotInChildSlotMap(
+          *this, *child);
+    }
   }
 }
 
