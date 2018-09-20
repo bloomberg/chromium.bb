@@ -75,7 +75,6 @@ class LocalDeviceInfoProvider;
 class ModelTypeControllerDelegate;
 class NetworkResources;
 class SyncableService;
-class SyncErrorController;
 class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
 struct CommitCounters;
@@ -439,13 +438,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   bool encryption_pending() const;
 
-  syncer::SyncErrorController* sync_error_controller() {
-    return sync_error_controller_.get();
-  }
-  const syncer::SyncErrorController* sync_error_controller() const {
-    return sync_error_controller_.get();
-  }
-
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   void Shutdown() override;
@@ -733,9 +725,6 @@ class ProfileSyncService : public syncer::SyncService,
   // This is the last |SyncProtocolError| we received from the server that had
   // an action set on it.
   syncer::SyncProtocolError last_actionable_error_;
-
-  // Exposes sync errors to the UI.
-  std::unique_ptr<syncer::SyncErrorController> sync_error_controller_;
 
   // Tracks the set of failed data types (those that encounter an error
   // or must delay loading for some reason).

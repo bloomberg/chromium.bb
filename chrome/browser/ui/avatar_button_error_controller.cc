@@ -6,10 +6,8 @@
 
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/signin/core/browser/signin_error_controller.h"
-
-using syncer::SyncErrorController;
 
 AvatarButtonErrorController::AvatarButtonErrorController(
     AvatarButtonErrorControllerDelegate* delegate,
@@ -67,19 +65,18 @@ AvatarButtonErrorController::SyncErrorObserver::SyncErrorObserver(
     Profile* profile,
     AvatarButtonErrorController* avatar_button_error_controller)
     : profile_(profile),
-      avatar_button_error_controller_(avatar_button_error_controller) {
-  SyncErrorController* sync_error_controller = GetSyncErrorControllerIfNeeded();
-  if (sync_error_controller)
-    sync_error_controller->AddObserver(this);
+      avatar_button_error_controller_(avatar_button_error_controller),
+      sync_observer_(this) {
+  browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (sync_service)
+    sync_observer_.Add(sync_service);
 }
 
-AvatarButtonErrorController::SyncErrorObserver::~SyncErrorObserver() {
-  SyncErrorController* sync_error_controller = GetSyncErrorControllerIfNeeded();
-  if (sync_error_controller)
-    sync_error_controller->RemoveObserver(this);
-}
+AvatarButtonErrorController::SyncErrorObserver::~SyncErrorObserver() = default;
 
-void AvatarButtonErrorController::SyncErrorObserver::OnErrorChanged() {
+void AvatarButtonErrorController::SyncErrorObserver::OnStateChanged(
+    syncer::SyncService* sync_service) {
   avatar_button_error_controller_->UpdateSyncError(HasSyncError());
 }
 
@@ -87,21 +84,12 @@ bool AvatarButtonErrorController::SyncErrorObserver::HasSyncError() {
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service) {
-    SyncErrorController* sync_error_controller =
-        sync_service->sync_error_controller();
     syncer::SyncStatus status;
     sync_service->QueryDetailedSyncStatus(&status);
     return sync_service->HasUnrecoverableError() ||
            status.sync_protocol_error.action == syncer::UPGRADE_CLIENT ||
-           (sync_error_controller && sync_error_controller->HasError()) ||
+           sync_ui_util::ShouldShowPassphraseError(sync_service) ||
            sync_service->IsSyncConfirmationNeeded();
   }
   return false;
-}
-
-SyncErrorController* AvatarButtonErrorController::SyncErrorObserver::
-    GetSyncErrorControllerIfNeeded() {
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  return sync_service ? sync_service->sync_error_controller() : nullptr;
 }
