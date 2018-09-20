@@ -166,11 +166,11 @@ customBackgrounds.NOTIFICATION_TIMEOUT = 10000;
 customBackgrounds.selectedTile = null;
 
 /**
- * Number of tiles that will be preloaded.
+ * Number of rows in the custom background dialog to preload.
  * @type {number}
  * @const
  */
-customBackgrounds.FIRST_N_TILES = 9;
+customBackgrounds.ROWS_TO_PRELOAD = 3;
 
 /* Type of collection that is being browsed, needed in order
  * to return from the image dialog.
@@ -361,6 +361,24 @@ customBackgrounds.createAlbumPlusTile = function() {
   return tile;
 };
 
+/**
+ * Get the number of tiles in a row according to current window width.
+ * @return {number} the number of tiles per row
+ */
+customBackgrounds.getTilesWide = function() {
+  // Browser window can only fit two columns. Should match "#bg-sel-menu" width.
+  if ($(customBackgrounds.IDS.MENU).offsetWidth < 517) {
+    return 2;
+  }
+  // Browser window can only fit one column. Should match @media (max-width:
+  // 520px) "#bg-sel-menu" width.
+  else if ($(customBackgrounds.IDS.MENU).offsetWidth < 352) {
+    return 1;
+  }
+
+  return 3;
+};
+
 /* Get the next tile when the arrow keys are used to navigate the grid.
  * Returns null if the tile doesn't exist.
  * @param {int} deltaX Change in the x direction.
@@ -368,18 +386,7 @@ customBackgrounds.createAlbumPlusTile = function() {
  * @param {string} current Number of the current tile.
  */
 customBackgrounds.getNextTile = function(deltaX, deltaY, current) {
-  var tilesWide = 3;
-
-  // Browser window can only fit two columns. Should match #bg-sel-menu width.
-  if ($(customBackgrounds.IDS.MENU).offsetWidth < 516) {
-    tilesWide = 2;
-  }
-
-  // Browser window can only fit one column. Should match @media (max-width:
-  // 520px) #bg-sel-menu width.
-  if ($(customBackgrounds.IDS.MENU).offsetWidth < 352) {
-    tilesWide = 1;
-  }
+  let tilesWide = customBackgrounds.getTilesWide();
 
   var targetNum = parseInt(current) + deltaX + (deltaY * tilesWide);
 
@@ -602,6 +609,8 @@ customBackgrounds.removeSelectedState = function(tile) {
  *                 dialog.
  */
 customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
+  const firstNTile = customBackgrounds.ROWS_TO_PRELOAD
+      * customBackgrounds.getTilesWide();
   var menu = $(customBackgrounds.IDS.MENU);
   var tileContainer = $(customBackgrounds.IDS.TILES);
   var sourceIsChromeBackgrounds =
@@ -667,10 +676,8 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     tile.dataset.tile_num = i;
     tile.tabIndex = -1;
 
-    //TODO(crbug.com/876814): Dynamically determine N based on the current
-    // window size
-    // Load the first FIRST_N_TILES tiles.
-    if (i < customBackgrounds.FIRST_N_TILES)
+    // Load the first |ROWS_TO_PRELOAD| rows of tiles.
+    if (i < firstNTile)
       preLoadTiles.push(tile);
     else
       postLoadTiles.push(tile);
@@ -750,7 +757,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   let tileGetsLoaded = 0;
   for (let tile of preLoadTiles) {
     loadTile(tile, imageData, () => {
-      // After the |FIRST_N_TILES| finish loading, the rest of the tiles start
+      // After the preloaded tiles finish loading, the rest of the tiles start
       // loading.
       if (++tileGetsLoaded === preLoadTiles.length) {
         postLoadTiles.forEach((tile) => loadTile(tile, imageData));
