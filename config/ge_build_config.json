@@ -1936,7 +1936,7 @@
             "bvt-cq",
             "bvt-perbuild"
           ],
-          "cq_test_enabled": false,
+          "cq_test_enabled": true,
           "release_builder_test_pool": "bvt"
         },
         {
