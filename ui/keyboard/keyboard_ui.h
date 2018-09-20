@@ -52,6 +52,10 @@ class KEYBOARD_EXPORT KeyboardUI {
   // the visibility change.
   virtual void HideKeyboardWindow();
 
+  // Ensures caret in current work area (not occluded by virtual keyboard
+  // window).
+  virtual void EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds);
+
   // KeyboardController owns the KeyboardUI instance so KeyboardUI subclasses
   // should not take ownership of the |controller|. |controller| can be null
   // when KeyboardController is destroying.
