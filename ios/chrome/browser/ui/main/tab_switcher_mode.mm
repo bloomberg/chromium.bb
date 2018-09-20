@@ -11,11 +11,5 @@
 #endif
 
 TabSwitcherMode GetTabSwitcherMode() {
-  if (IsUIRefreshPhase1Enabled()) {
-    return TabSwitcherMode::GRID;
-  } else if (IsIPadIdiom()) {
-    return TabSwitcherMode::TABLET_SWITCHER;
-  } else {
-    return TabSwitcherMode::STACK;
-  }
+  return TabSwitcherMode::GRID;
 }

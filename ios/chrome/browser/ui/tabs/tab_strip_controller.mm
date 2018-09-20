@@ -1111,17 +1111,10 @@ UIColor* BackgroundColor() {
   DCHECK(!_tabSwitcherButton);
   UIImage* tabSwitcherButtonIcon;
   UIImage* tabSwitcherButtonIconPressed;
-  if (IsUIRefreshPhase1Enabled()) {
-    tabSwitcherButtonIcon =
-        [UIImage imageNamed:@"tabswitcher_tab_switcher_count_button"];
-    tabSwitcherButtonIconPressed =
-        [UIImage imageNamed:@"tabswitcher_tab_switcher_count_button_pressed"];
-  } else {
-    tabSwitcherButtonIcon =
-        [UIImage imageNamed:@"tabswitcher_tab_switcher_button"];
-    tabSwitcherButtonIcon = [tabSwitcherButtonIcon
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  }
+  tabSwitcherButtonIcon =
+      [UIImage imageNamed:@"tabstrip_tab_switcher_count_button"];
+  tabSwitcherButtonIconPressed =
+      [UIImage imageNamed:@"tabstrip_tab_switcher_count_button_pressed"];
 
   int tabSwitcherButtonIdsAccessibilityLabel =
       IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER;

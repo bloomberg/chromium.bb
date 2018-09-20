@@ -123,17 +123,14 @@
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/main_coordinator.h"
 #import "ios/chrome/browser/ui/main/main_feature_flags.h"
-#import "ios/chrome/browser/ui/main/tab_switcher_mode.h"
+#import "ios/chrome/browser/ui/main/tab_switcher.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/orientation_limiting_navigation_controller.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_navigation_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
-#import "ios/chrome/browser/ui/stack_view/stack_view_controller.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_controller.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_transition_context.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -873,19 +870,10 @@ enum class ShowTabSwitcherSnapshotResult {
 
 - (void)deleteIncognitoBrowserState {
   BOOL otrBVCIsCurrent = (self.currentBVC == self.otrBVC);
-  TabSwitcherMode mode = GetTabSwitcherMode();
 
-  // If the stack view is in use, and the current BVC is the otr BVC, then the
-  // user should be in the tab switcher (the stack view).
-  DCHECK(mode != TabSwitcherMode::STACK ||
-         (!otrBVCIsCurrent || _tabSwitcherIsActive));
-
-  // Always clear the OTR tab model for the tablet and grid switchers.
-  // Notify the _tabSwitcher that its otrBVC will be destroyed.
-  if (mode == TabSwitcherMode::TABLET_SWITCHER ||
-      mode == TabSwitcherMode::GRID || _tabSwitcherIsActive) {
-    [_tabSwitcher setOtrTabModel:nil];
-  }
+  // Clear the OTR tab model and notify the _tabSwitcher that its otrBVC will
+  // be destroyed.
+  [_tabSwitcher setOtrTabModel:nil];
 
   [_browserViewWrangler deleteIncognitoTabModelState];
 
@@ -895,10 +883,7 @@ enum class ShowTabSwitcherSnapshotResult {
 
   // Always set the new otr tab model for the tablet or grid switcher.
   // Notify the _tabSwitcher with the new otrBVC.
-  if (mode == TabSwitcherMode::TABLET_SWITCHER ||
-      mode == TabSwitcherMode::GRID || _tabSwitcherIsActive) {
-    [_tabSwitcher setOtrTabModel:self.otrTabModel];
-  }
+  [_tabSwitcher setOtrTabModel:self.otrTabModel];
 }
 
 - (void)activateBVCAndMakeCurrentBVCPrimary {
@@ -932,16 +917,12 @@ enum class ShowTabSwitcherSnapshotResult {
   }
   if (!_mainCoordinator) {
     // Lazily create the main coordinator.
-    if (GetTabSwitcherMode() == TabSwitcherMode::GRID) {
-      TabGridCoordinator* tabGridCoordinator =
-          [[TabGridCoordinator alloc] initWithWindow:self.window
-                          applicationCommandEndpoint:self];
-      tabGridCoordinator.regularTabModel = self.mainTabModel;
-      tabGridCoordinator.incognitoTabModel = self.otrTabModel;
-      _mainCoordinator = tabGridCoordinator;
-    } else {
-      _mainCoordinator = [[MainCoordinator alloc] initWithWindow:self.window];
-    }
+    TabGridCoordinator* tabGridCoordinator =
+        [[TabGridCoordinator alloc] initWithWindow:self.window
+                        applicationCommandEndpoint:self];
+    tabGridCoordinator.regularTabModel = self.mainTabModel;
+    tabGridCoordinator.incognitoTabModel = self.otrTabModel;
+    _mainCoordinator = tabGridCoordinator;
   }
   return _mainCoordinator;
 }
@@ -1295,15 +1276,13 @@ enum class ShowTabSwitcherSnapshotResult {
 
   // Lazy init of mainCoordinator.
   [self.mainCoordinator start];
-  if (GetTabSwitcherMode() == TabSwitcherMode::GRID) {
-    TabGridCoordinator* tabGridCoordinator =
-        base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
-    _tabSwitcher = tabGridCoordinator.tabSwitcher;
-    // Call -restoreInternalState so that the grid shows the correct panel.
-    [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel
-                                           otrTabModel:self.otrTabModel
-                                        activeTabModel:self.currentTabModel];
-  }
+  TabGridCoordinator* tabGridCoordinator =
+      base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
+  _tabSwitcher = tabGridCoordinator.tabSwitcher;
+  // Call -restoreInternalState so that the grid shows the correct panel.
+  [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel
+                                         otrTabModel:self.otrTabModel
+                                      activeTabModel:self.currentTabModel];
 
   // Decide if the First Run UI needs to run.
   BOOL firstRun = (FirstRun::IsChromeFirstRun() ||
@@ -1474,8 +1453,6 @@ enum class ShowTabSwitcherSnapshotResult {
 }
 
 - (void)prepareTabSwitcher {
-  if (GetTabSwitcherMode() != TabSwitcherMode::GRID)
-    return;
   if ([self.viewControllerSwapper
           respondsToSelector:(@selector(prepareToShowTabSwitcher:))]) {
     [self.viewControllerSwapper prepareToShowTabSwitcher:_tabSwitcher];
@@ -1875,16 +1852,10 @@ enum class ShowTabSwitcherSnapshotResult {
     return;
   }
 
-  if (GetTabSwitcherMode() == TabSwitcherMode::TABLET_SWITCHER) {
+  if ([self.currentTabModel count] == 0U) {
     [self showTabSwitcher];
   } else {
-    if (!IsUIRefreshPhase1Enabled())
-      self.currentBVC = self.mainBVC;
-    if ([self.currentTabModel count] == 0U) {
-      [self showTabSwitcher];
-    } else if (IsUIRefreshPhase1Enabled()) {
-      self.currentBVC = self.mainBVC;
-    }
+    self.currentBVC = self.mainBVC;
   }
 }
 
@@ -2023,35 +1994,14 @@ enum class ShowTabSwitcherSnapshotResult {
                               snapshotResult);
   }
 
-  if (!_tabSwitcher) {
-    _tabSwitcher = [self newTabSwitcher];
-  } else {
-    // Tab switcher implementations may need to rebuild state before being
-    // displayed.
-    [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel
-                                           otrTabModel:self.otrTabModel
-                                        activeTabModel:self.currentTabModel];
-  }
+  DCHECK(_tabSwitcher);
+  // Tab switcher implementations may need to rebuild state before being
+  // displayed.
+  [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel
+                                         otrTabModel:self.otrTabModel
+                                      activeTabModel:self.currentTabModel];
   _tabSwitcherIsActive = YES;
   [_tabSwitcher setDelegate:self];
-  switch (GetTabSwitcherMode()) {
-    case TabSwitcherMode::TABLET_SWITCHER: {
-      TabSwitcherTransitionContext* transitionContext =
-          [TabSwitcherTransitionContext
-              tabSwitcherTransitionContextWithCurrent:currentBVC
-                                              mainBVC:self.mainBVC
-                                               otrBVC:self.otrBVC];
-      [_tabSwitcher setTransitionContext:transitionContext];
-      break;
-    }
-    case TabSwitcherMode::STACK:
-      // User interaction is disabled when the stack controller is dismissed.
-      [[_tabSwitcher viewController].view setUserInteractionEnabled:YES];
-      break;
-    case TabSwitcherMode::GRID:
-      // Nothing to do in this case
-      break;
-  }
 
   [self.viewControllerSwapper
       showTabSwitcher:_tabSwitcher
@@ -2148,12 +2098,6 @@ enum class ShowTabSwitcherSnapshotResult {
   DCHECK(tabModel == self.mainTabModel || tabModel == self.otrTabModel);
 
   _dismissingTabSwitcher = YES;
-  // Prevent wayward touches from wreaking havoc while the stack view is being
-  // dismissed.
-  if (GetTabSwitcherMode() == TabSwitcherMode::STACK) {
-    [[_tabSwitcher viewController].view setUserInteractionEnabled:NO];
-  }
-
   BrowserViewController* targetBVC =
       (tabModel == self.mainTabModel) ? self.mainBVC : self.otrBVC;
   self.currentBVC = targetBVC;
@@ -2202,11 +2146,6 @@ enum class ShowTabSwitcherSnapshotResult {
   self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
   if (action) {
     action();
-  }
-
-  // The tab grid is long-lived and its delegate should not be reset.
-  if (!IsUIRefreshPhase1Enabled()) {
-    [_tabSwitcher setDelegate:nil];
   }
 
   _tabSwitcherIsActive = NO;
@@ -2502,17 +2441,12 @@ enum class ShowTabSwitcherSnapshotResult {
     DCHECK([self isTabSwitcherActive]);
     // This will dismiss the SSO view controller.
     [self dismissSigninInteractionCoordinator];
-    if (GetTabSwitcherMode() == TabSwitcherMode::GRID) {
-      // History coordinator can be started on top of the tab grid. This is not
-      // true of the other tab switchers.
-      DCHECK(self.mainCoordinator);
-      TabGridCoordinator* tabGridCoordinator =
-          base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
-      [tabGridCoordinator stopChildCoordinatorsWithCompletion:completion];
-    } else if (completion) {
-      // Run completion separately if not in tab grid.
-      completion();
-    }
+    // History coordinator can be started on top of the tab grid. This is not
+    // true of the other tab switchers.
+    DCHECK(self.mainCoordinator);
+    TabGridCoordinator* tabGridCoordinator =
+        base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
+    [tabGridCoordinator stopChildCoordinatorsWithCompletion:completion];
   };
 
   // As a top level rule, if the settings are showing, they need to be
@@ -2713,31 +2647,6 @@ enum class ShowTabSwitcherSnapshotResult {
 - (void)setUpCurrentBVCForTesting {
   [self.otrTabModel closeAllTabs];
   [self.mainTabModel closeAllTabs];
-}
-
-#pragma mark - Experimental flag
-
-// Creates and returns a tab switcher object according to the tab switcher stye.
-- (id<TabSwitcher>)newTabSwitcher {
-  switch (GetTabSwitcherMode()) {
-    case TabSwitcherMode::GRID:
-      NOTREACHED() << "When the tab grid is enabled, the tab switcher should"
-                   << " have been assigned during app startup.";
-      return nil;
-    case TabSwitcherMode::TABLET_SWITCHER:
-      return [[TabSwitcherController alloc]
-                initWithBrowserState:_mainBrowserState
-                        mainTabModel:self.mainTabModel
-                         otrTabModel:self.otrTabModel
-                      activeTabModel:self.currentTabModel
-          applicationCommandEndpoint:self];
-    case TabSwitcherMode::STACK:
-      return
-          [[StackViewController alloc] initWithMainTabModel:self.mainTabModel
-                                                otrTabModel:self.otrTabModel
-                                             activeTabModel:self.currentTabModel
-                                 applicationCommandEndpoint:self];
-    }
 }
 
 #pragma mark - GoogleServicesNavigationCoordinatorDelegate
