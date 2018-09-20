@@ -68,20 +68,3 @@ source_set("unit_tests") {
     "//ui/gfx",
   ]
 }
-
-source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "tab_history_popup_controller_egtest.mm",
-  ]
-  deps = [
-    ":history_popup",
-    "//base",
-    "//components/strings",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/web/public/test",
-    "//ios/web/public/test/http_server",
-  ]
-}
