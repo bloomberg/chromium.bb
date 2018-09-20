@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/download/quarantine/quarantine.h"
+
 #include <errno.h>
 #include <stddef.h>
 #include <sys/types.h>
@@ -16,8 +18,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
-#include "components/download/quarantine/quarantine.h"
-#include "components/download/quarantine/quarantine_constants_linux.h"
+#include "components/download/quarantine/common_linux.h"
+#include "components/download/quarantine/test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
