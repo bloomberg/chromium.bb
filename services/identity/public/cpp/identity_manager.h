@@ -83,6 +83,10 @@ class IdentityManager : public SigninManagerBase::Observer,
     // has been removed. At the time that this callback is invoked, there is
     // no longer guaranteed to be any AccountInfo associated with
     // |account_id|.
+    // NOTE: It is not guaranteed that a call to
+    // OnRefreshTokenUpdatedForAccount() has previously occurred for this
+    // account due to corner cases.
+    // TODO(https://crbug.com/884731): Eliminate these corner cases.
     // NOTE: On a signout event, the ordering of this callback wrt the
     // OnPrimaryAccountCleared() callback is undefined.If this lack of ordering
     // is problematic for your use case, please contact blundell@chromium.org.
