@@ -708,6 +708,9 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_MigrationSuccess) {
   AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
                     test::NextYear().c_str(), "1", "guid1");
 
+  // Verify that it exists in the local database.
+  EXPECT_TRUE(personal_data_.GetCreditCardByNumber("4111111111111111"));
+
   // Get the migratable credit cards.
   local_card_migration_manager_->GetMigratableCreditCards();
 
@@ -727,6 +730,9 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_MigrationSuccess) {
   EXPECT_EQ(local_card_migration_manager_->migratable_credit_cards_[0]
                 .migration_status(),
             autofill::MigratableCreditCard::SUCCESS_ON_UPLOAD);
+
+  // Local card should *not* be present as it is migrated already.
+  EXPECT_FALSE(personal_data_.GetCreditCardByNumber("4111111111111111"));
 }
 
 // Verify that given the parsed response from the payments client, the migration
@@ -743,6 +749,9 @@ TEST_F(LocalCardMigrationManagerTest,
   // migration on settings page.
   AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
                     test::NextYear().c_str(), "1", "guid1");
+
+  // Verify that it exists in local database.
+  EXPECT_TRUE(personal_data_.GetCreditCardByNumber("4111111111111111"));
 
   // Get the migratable credit cards.
   local_card_migration_manager_->GetMigratableCreditCards();
@@ -764,6 +773,9 @@ TEST_F(LocalCardMigrationManagerTest,
   EXPECT_EQ(local_card_migration_manager_->migratable_credit_cards_[0]
                 .migration_status(),
             autofill::MigratableCreditCard::FAILURE_ON_UPLOAD);
+
+  // Local card should be present as it is not migrated.
+  EXPECT_TRUE(personal_data_.GetCreditCardByNumber("4111111111111111"));
 }
 
 // Verify that given the parsed response from the payments client, the migration
@@ -780,6 +792,9 @@ TEST_F(LocalCardMigrationManagerTest,
   // migration on settings page.
   AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
                     test::NextYear().c_str(), "1", "guid1");
+
+  // Verify that it exists in local database.
+  EXPECT_TRUE(personal_data_.GetCreditCardByNumber("4111111111111111"));
 
   // Get the migratable credit cards.
   local_card_migration_manager_->GetMigratableCreditCards();
@@ -801,6 +816,9 @@ TEST_F(LocalCardMigrationManagerTest,
   EXPECT_EQ(local_card_migration_manager_->migratable_credit_cards_[0]
                 .migration_status(),
             autofill::MigratableCreditCard::FAILURE_ON_UPLOAD);
+
+  // Local card should be present as it is not migrated.
+  EXPECT_TRUE(personal_data_.GetCreditCardByNumber("4111111111111111"));
 }
 
 // Verify selected cards are correctly passed to manager.
