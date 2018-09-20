@@ -5354,6 +5354,8 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/retry_verifier.h",
       "../browser/sync/test/integration/search_engines_helper.cc",
       "../browser/sync/test/integration/search_engines_helper.h",
+      "../browser/sync/test/integration/secondary_account_helper.cc",
+      "../browser/sync/test/integration/secondary_account_helper.h",
       "../browser/sync/test/integration/session_hierarchy_match_checker.cc",
       "../browser/sync/test/integration/session_hierarchy_match_checker.h",
       "../browser/sync/test/integration/sessions_helper.cc",
