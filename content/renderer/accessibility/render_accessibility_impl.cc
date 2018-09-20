@@ -667,14 +667,16 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ax::mojom::Action::kShowContextMenu:
       target.ShowContextMenu();
       break;
-    case ax::mojom::Action::kCustomAction:
-    case ax::mojom::Action::kReplaceSelectedText:
     case ax::mojom::Action::kScrollBackward:
     case ax::mojom::Action::kScrollForward:
     case ax::mojom::Action::kScrollUp:
     case ax::mojom::Action::kScrollDown:
     case ax::mojom::Action::kScrollLeft:
     case ax::mojom::Action::kScrollRight:
+      Scroll(target, data.action);
+      break;
+    case ax::mojom::Action::kCustomAction:
+    case ax::mojom::Action::kReplaceSelectedText:
     case ax::mojom::Action::kNone:
       NOTREACHED();
       break;
@@ -813,6 +815,65 @@ void RenderAccessibilityImpl::AddPluginTreeToUpdate(
 
   if (plugin_tree_source_->GetTreeData(&update->tree_data))
     update->has_tree_data = true;
+}
+
+void RenderAccessibilityImpl::Scroll(const WebAXObject& target,
+                                     ax::mojom::Action scroll_action) {
+  WebAXObject offset_container;
+  WebFloatRect bounds;
+  SkMatrix44 container_transform;
+  target.GetRelativeBounds(offset_container, bounds, container_transform);
+
+  if (bounds.IsEmpty())
+    return;
+
+  WebPoint initial = target.GetScrollOffset();
+  WebPoint min = target.MinimumScrollOffset();
+  WebPoint max = target.MaximumScrollOffset();
+
+  // TODO(zhelfins): This 4/5ths came from the Android implementation, revisit
+  // to find the appropriate modifier to keep enough context onscreen after
+  // scrolling.
+  int page_x = std::max((int)(bounds.width * 4 / 5), 1);
+  int page_y = std::max((int)(bounds.height * 4 / 5), 1);
+
+  // Forward/backward defaults to down/up unless it can only be scrolled
+  // horizontally.
+  if (scroll_action == ax::mojom::Action::kScrollForward)
+    scroll_action = max.y > min.y ? ax::mojom::Action::kScrollDown
+                                  : ax::mojom::Action::kScrollRight;
+  if (scroll_action == ax::mojom::Action::kScrollBackward)
+    scroll_action = max.y > min.y ? ax::mojom::Action::kScrollUp
+                                  : ax::mojom::Action::kScrollLeft;
+
+  int x = initial.x;
+  int y = initial.y;
+  switch (scroll_action) {
+    case ax::mojom::Action::kScrollUp:
+      if (initial.y == min.y)
+        return;
+      y = std::max(initial.y - page_y, min.y);
+      break;
+    case ax::mojom::Action::kScrollDown:
+      if (initial.y == max.y)
+        return;
+      y = std::min(initial.y + page_y, max.y);
+      break;
+    case ax::mojom::Action::kScrollLeft:
+      if (initial.x == min.x)
+        return;
+      x = std::max(initial.x - page_x, min.x);
+      break;
+    case ax::mojom::Action::kScrollRight:
+      if (initial.x == max.x)
+        return;
+      x = std::min(initial.x + page_x, max.x);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  target.SetScrollOffset(WebPoint(x, y));
 }
 
 void RenderAccessibilityImpl::ScrollPlugin(int id_to_make_visible) {

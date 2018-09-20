@@ -132,6 +132,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnLoadInlineTextBoxes(const blink::WebAXObject& obj);
   void OnGetImageData(const blink::WebAXObject& obj, const gfx::Size& max_size);
   void AddPluginTreeToUpdate(AXContentTreeUpdate* update);
+  void Scroll(const blink::WebAXObject& target,
+              ax::mojom::Action scroll_action);
   void ScrollPlugin(int id_to_make_visible);
   ax::mojom::EventFrom GetEventFrom();
   void ScheduleSendAccessibilityEventsIfNeeded();
