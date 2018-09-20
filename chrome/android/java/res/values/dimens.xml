@@ -390,6 +390,7 @@
     <dimen name="custom_tabs_toolbar_horizontal_margin_no_close">8dp</dimen>
     <dimen name="toolbar_icon_height">24dp</dimen>
     <dimen name="min_toolbar_icon_side_padding">6dp</dimen>
+    <dimen name="custom_tabs_url_lite_separator_margin">3dp</dimen>
     <dimen name="custom_tabs_url_text_size">12sp</dimen>
     <dimen name="custom_tabs_title_text_size">16sp</dimen>
     <dimen name="custom_tabs_bottom_bar_max_height">120dp</dimen>
