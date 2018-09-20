@@ -51390,6 +51390,7 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Success CBDT/CBLC color font"/>
   <int value="4" label="Success CFF2 outline font"/>
   <int value="5" label="Success Sbix color font"/>
+  <int value="6" label="Success COLR/CPAL color font"/>
 </enum>
 
 <enum name="WebFontInterventionResult">
