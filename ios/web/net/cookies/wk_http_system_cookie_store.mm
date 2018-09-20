@@ -15,8 +15,6 @@
 #include "net/cookies/canonical_cookie.h"
 #include "url/gurl.h"
 
-#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -252,6 +250,3 @@ void WKHTTPSystemCookieStore::RunSystemCookieCallbackForCookies(
 }
 
 }  // namespace web
-
-#endif  // defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >=
-        //__IPHONE_11_0)

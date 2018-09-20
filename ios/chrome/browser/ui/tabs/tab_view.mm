@@ -87,9 +87,7 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
 
   MDCActivityIndicator* _activityIndicator;
 
-#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
   API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _dropInteraction;
-#endif
 }
 @end
 
@@ -146,7 +144,6 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
                   action:@selector(tabWasTapped)
         forControlEvents:UIControlEventTouchUpInside];
 
-#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
     if (DragAndDropIsEnabled()) {
       if (@available(iOS 11, *)) {
         _dropInteraction =
@@ -154,7 +151,6 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
         [self addInteraction:_dropInteraction];
       }
     }
-#endif
   }
   return self;
 }

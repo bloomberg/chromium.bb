@@ -185,11 +185,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentElideSuggestionUrlAfterHost)},
-#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
     {"drag_and_drop", flag_descriptions::kDragAndDropName,
      flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDragAndDrop)},
-#endif
     {"tab_switcher_presents_bvc",
      flag_descriptions::kTabSwitcherPresentsBVCName,
      flag_descriptions::kTabSwitcherPresentsBVCDescription, flags_ui::kOsIos,
