@@ -137,15 +137,16 @@ void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
     // TODO(qiangchen): Analyze audio constraints to make a duplicating or
     // diverting decision. It would give web developer more flexibility.
 
-    RenderFrameHost* source_host = RenderFrameHost::FromID(
-        capture_id.render_process_id, capture_id.main_render_frame_id);
-    if (!source_host) {
+    ForwardingAudioStreamFactory* loopback_source =
+        ForwardingAudioStreamFactory::ForFrame((RenderFrameHost::FromID(
+            capture_id.render_process_id, capture_id.main_render_frame_id)));
+    if (!loopback_source) {
       // The source of the capture has already been destroyed, so fail early.
       return;
     }
 
     factory->CreateLoopbackStream(
-        render_frame_host_, source_host, audio_params, shared_memory_count,
+        render_frame_host_, loopback_source, audio_params, shared_memory_count,
         capture_id.disable_local_echo, std::move(client));
 
     if (device.type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)

@@ -41,7 +41,7 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
   std::unique_ptr<AudioStreamBroker> CreateAudioLoopbackStreamBroker(
       int render_process_id,
       int render_frame_id,
-      std::unique_ptr<LoopbackSource> source,
+      AudioStreamBroker::LoopbackSource* source,
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool mute_source,
@@ -49,9 +49,8 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
       mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
       final {
     return std::make_unique<AudioLoopbackStreamBroker>(
-        render_process_id, render_frame_id, std::move(source), params,
-        shared_memory_count, mute_source, std::move(deleter),
-        std::move(renderer_factory_client));
+        render_process_id, render_frame_id, source, params, shared_memory_count,
+        mute_source, std::move(deleter), std::move(renderer_factory_client));
   }
 
   std::unique_ptr<AudioStreamBroker> CreateAudioOutputStreamBroker(
@@ -71,6 +70,12 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
 };
 
 }  // namespace
+
+AudioStreamBroker::LoopbackSink::LoopbackSink() = default;
+AudioStreamBroker::LoopbackSink::~LoopbackSink() = default;
+
+AudioStreamBroker::LoopbackSource::LoopbackSource() = default;
+AudioStreamBroker::LoopbackSource::~LoopbackSource() = default;
 
 AudioStreamBroker::AudioStreamBroker(int render_process_id, int render_frame_id)
     : render_process_id_(render_process_id),

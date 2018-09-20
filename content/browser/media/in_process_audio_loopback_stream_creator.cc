@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/user_input_monitor.h"
@@ -79,19 +79,15 @@ void InProcessAudioLoopbackStreamCreator::CreateLoopbackStream(
     uint32_t total_segments,
     const StreamCreatedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHost* loopback_source_frame = nullptr;
-  if (loopback_source) {
-    loopback_source_frame = loopback_source->GetMainFrame();
-    DCHECK(loopback_source_frame);
-  }
   mojom::RendererAudioInputStreamFactoryClientPtr client;
   mojo::MakeStrongBinding(
       std::make_unique<StreamCreatedCallbackAdapter>(callback),
       mojo::MakeRequest(&client));
-  if (loopback_source_frame) {
-    factory_.CreateLoopbackStream(nullptr, loopback_source_frame, params,
-                                  total_segments, true /* mute_source */,
-                                  std::move(client));
+  if (loopback_source) {
+    factory_.CreateLoopbackStream(
+        nullptr,
+        static_cast<WebContentsImpl*>(loopback_source)->GetAudioStreamFactory(),
+        params, total_segments, true /* mute_source */, std::move(client));
   } else {
     // A null |frame_of_source_web_contents| requests system-wide loopback.
     factory_.CreateInputStream(

@@ -35,6 +35,8 @@ ForwardingAudioStreamFactory::ForwardingAudioStreamFactory(
 
 ForwardingAudioStreamFactory::~ForwardingAudioStreamFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  for (AudioStreamBroker::LoopbackSink* sink : loopback_sinks_)
+    sink->OnSourceGone();
 }
 
 // static
@@ -109,43 +111,30 @@ void ForwardingAudioStreamFactory::CreateOutputStream(
 
 void ForwardingAudioStreamFactory::CreateLoopbackStream(
     RenderFrameHost* frame,
-    RenderFrameHost* frame_of_source_web_contents,
+    ForwardingAudioStreamFactory* loopback_source,
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     bool mute_source,
     mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(frame_of_source_web_contents);
+  DCHECK(loopback_source);
 
   TRACE_EVENT_BEGIN1("audio", "CreateLoopbackStream", "group",
                      group_id_.GetLowForSerialization());
-
-  WebContents* source_contents =
-      WebContents::FromRenderFrameHost(frame_of_source_web_contents);
-  if (!source_contents) {
-    TRACE_EVENT_END1("audio", "CreateLoopbackStream", "source",
-                     "failed to find source");
-    return;
-  }
 
   const int process_id = frame ? frame->GetProcess()->GetID() : -1;
   const int frame_id = frame ? frame->GetRoutingID() : -1;
   inputs_
       .insert(broker_factory_->CreateAudioLoopbackStreamBroker(
-          process_id, frame_id,
-          std::make_unique<AudioStreamBrokerFactory::LoopbackSource>(
-              source_contents),
-          params, shared_memory_count, mute_source,
+          process_id, frame_id, loopback_source, params, shared_memory_count,
+          mute_source,
           base::BindOnce(&ForwardingAudioStreamFactory::RemoveInput,
                          base::Unretained(this)),
           std::move(renderer_factory_client)))
       .first->get()
       ->CreateStream(GetFactory());
   TRACE_EVENT_END1("audio", "CreateLoopbackStream", "source",
-                   static_cast<WebContentsImpl*>(source_contents)
-                       ->GetAudioStreamFactory()
-                       ->group_id()
-                       .GetLowForSerialization());
+                   loopback_source->group_id().GetLowForSerialization());
 }
 
 void ForwardingAudioStreamFactory::SetMuted(bool muted) {
@@ -167,6 +156,24 @@ void ForwardingAudioStreamFactory::SetMuted(bool muted) {
 bool ForwardingAudioStreamFactory::IsMuted() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return !!muter_;
+}
+
+void ForwardingAudioStreamFactory::AddLoopbackSink(
+    AudioStreamBroker::LoopbackSink* sink) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  loopback_sinks_.insert(sink);
+  web_contents()->IncrementCapturerCount(gfx::Size());
+}
+
+void ForwardingAudioStreamFactory::RemoveLoopbackSink(
+    AudioStreamBroker::LoopbackSink* sink) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  loopback_sinks_.erase(sink);
+  web_contents()->DecrementCapturerCount();
+}
+
+const base::UnguessableToken& ForwardingAudioStreamFactory::GetGroupID() {
+  return group_id_;
 }
 
 void ForwardingAudioStreamFactory::FrameDeleted(
