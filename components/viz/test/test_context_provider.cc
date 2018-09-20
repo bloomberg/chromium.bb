@@ -18,7 +18,6 @@
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
-#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -111,29 +110,6 @@ class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
   DISALLOW_COPY_AND_ASSIGN(TestGLES2InterfaceForContextProvider);
 };
 
-class TestSharedImageInterface : public gpu::SharedImageInterface {
- public:
-  ~TestSharedImageInterface() override = default;
-
-  gpu::Mailbox CreateSharedImage(ResourceFormat format,
-                                 const gfx::Size& size,
-                                 const gfx::ColorSpace& color_space,
-                                 uint32_t usage) override {
-    return gpu::Mailbox::Generate();
-  }
-
-  void DestroySharedImage(const gpu::SyncToken& sync_token,
-                          const gpu::Mailbox& mailbox) override {}
-
-  gpu::SyncToken GenUnverifiedSyncToken() override {
-    return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
-                          gpu::CommandBufferId(), ++release_id_);
-  }
-
- private:
-  uint64_t release_id_ = 0;
-};
-
 }  // namespace
 
 // static
@@ -203,7 +179,6 @@ TestContextProvider::TestContextProvider(
     bool support_locking)
     : support_(std::move(support)),
       context_gl_(std::move(gl)),
-      shared_image_interface_(std::make_unique<TestSharedImageInterface>()),
       support_locking_(support_locking),
       weak_ptr_factory_(this) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -294,10 +269,6 @@ class GrContext* TestContextProvider::GrContext() {
     gr_context_->get()->abandonContext();
 
   return gr_context_->get();
-}
-
-gpu::SharedImageInterface* TestContextProvider::SharedImageInterface() {
-  return shared_image_interface_.get();
 }
 
 ContextCacheController* TestContextProvider::CacheController() {

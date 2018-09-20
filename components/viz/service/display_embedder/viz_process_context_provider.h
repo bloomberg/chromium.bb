@@ -62,7 +62,6 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
-  gpu::SharedImageInterface* SharedImageInterface() override;
   ContextCacheController* CacheController() override;
   base::Lock* GetLock() override;
   const gpu::Capabilities& ContextCapabilities() const override;
