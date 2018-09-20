@@ -169,7 +169,6 @@
 #import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
@@ -3194,26 +3193,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 #pragma mark - Private Methods: Recent Tabs
 
 - (void)createRecentTabsCoordinator {
-  if (experimental_flags::IsRecentTabsUIRebootEnabled()) {
-    // New RecentTabs UIReboot coordinator. Always use the regular BrowserState
-    // since the incognito one doesn't have a SignIn manager.
-    RecentTabsCoordinator* recentTabsCoordinator =
-        [[RecentTabsCoordinator alloc]
-            initWithBaseViewController:self
-                          browserState:_browserState
-                                           ->GetOriginalChromeBrowserState()];
-    recentTabsCoordinator.loader = self;
-    recentTabsCoordinator.dispatcher = self.dispatcher;
-    self.recentTabsCoordinator = recentTabsCoordinator;
-  } else {
-    // Legacy RecentTabs coordinator.
-    RecentTabsHandsetCoordinator* recentTabsCoordinator =
-        [[RecentTabsHandsetCoordinator alloc] initWithBaseViewController:self];
-    recentTabsCoordinator.loader = self;
-    recentTabsCoordinator.dispatcher = self.dispatcher;
-    recentTabsCoordinator.browserState = _browserState;
-    self.recentTabsCoordinator = recentTabsCoordinator;
-  }
+  // Always use the regular BrowserState since the incognito one doesn't have a
+  // SignIn manager.
+  RecentTabsCoordinator* recentTabsCoordinator = [[RecentTabsCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:_browserState
+                                     ->GetOriginalChromeBrowserState()];
+  recentTabsCoordinator.loader = self;
+  recentTabsCoordinator.dispatcher = self.dispatcher;
+  self.recentTabsCoordinator = recentTabsCoordinator;
 }
 
 #pragma mark - ** Protocol Implementations and Helpers **

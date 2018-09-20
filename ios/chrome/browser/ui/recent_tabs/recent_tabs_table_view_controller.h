@@ -13,8 +13,8 @@ class ChromeBrowserState;
 }
 
 @protocol ApplicationCommands;
-@protocol LegacyRecentTabsTableViewControllerDelegate;
-@protocol RecentTabsHandsetViewControllerCommand;
+@protocol RecentTabsTableViewControllerDelegate;
+@protocol RecentTabsPresentationDelegate;
 @protocol UrlLoader;
 @protocol RecentTabsImageDataSource;
 
@@ -28,11 +28,10 @@ class ChromeBrowserState;
 @property(nonatomic, weak) id<UrlLoader> loader;
 
 // RecentTabsTableViewControllerDelegate delegate.
-@property(nonatomic, weak) id<LegacyRecentTabsTableViewControllerDelegate>
-    delegate;
+@property(nonatomic, weak) id<RecentTabsTableViewControllerDelegate> delegate;
 
 // Delegate to present the tab UI.
-@property(nonatomic, weak) id<RecentTabsHandsetViewControllerCommand>
+@property(nonatomic, weak) id<RecentTabsPresentationDelegate>
     presentationDelegate;
 
 // Data source for images.

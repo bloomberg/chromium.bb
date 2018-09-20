@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_coordinator.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 
 #import <UIKit/UIKit.h>
 
@@ -19,7 +19,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/sessions_sync_user_state.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -121,14 +121,11 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
         .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
     EXPECT_CALL(*sync_service, GetOpenTabsUIDelegate())
         .WillRepeatedly(Return(nullptr));
-
-    mock_table_view_controller_ = [OCMockObject
-        niceMockForClass:[LegacyRecentTabsTableViewController class]];
   }
 
   void TearDown() override {
-    [controller_ stop];
-    controller_ = nil;
+    [coordinator_ stop];
+    coordinator_ = nil;
 
     BlockCleanupTest::TearDown();
   }
@@ -177,11 +174,10 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
                 chrome_browser_state_.get()));
     EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
     EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));
-    controller_ = [[LegacyRecentTabsTableCoordinator alloc]
-        initWithController:(LegacyRecentTabsTableViewController*)
-                               mock_table_view_controller_
-              browserState:chrome_browser_state_.get()];
-    [controller_ start];
+    coordinator_ = [[RecentTabsCoordinator alloc]
+        initWithBaseViewController:nil
+                      browserState:chrome_browser_state_.get()];
+    [coordinator_ start];
   }
 
  protected:
@@ -193,46 +189,32 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
   std::unique_ptr<OpenTabsUIDelegateMock> open_tabs_ui_delegate_;
 
   // Must be declared *after* |chrome_browser_state_| so it can outlive it.
-  OCMockObject* mock_table_view_controller_;
-  LegacyRecentTabsTableCoordinator* controller_;
+  RecentTabsCoordinator* coordinator_;
 };
 
 TEST_F(RecentTabsTableCoordinatorTest, TestConstructorDestructor) {
   CreateController();
-  EXPECT_TRUE(controller_);
+  EXPECT_TRUE(coordinator_);
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedOut) {
-  [[mock_table_view_controller_ expect]
-      refreshUserState:SessionsSyncUserState::USER_SIGNED_OUT];
   SetupSyncState(NO, NO, NO);
   CreateController();
-  EXPECT_OCMOCK_VERIFY(mock_table_view_controller_);
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncOff) {
-  [[mock_table_view_controller_ expect]
-      refreshUserState:SessionsSyncUserState::USER_SIGNED_IN_SYNC_OFF];
   SetupSyncState(YES, NO, NO);
   CreateController();
-  EXPECT_OCMOCK_VERIFY(mock_table_view_controller_);
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncInProgress) {
-  [[mock_table_view_controller_ expect]
-      refreshUserState:SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS];
   SetupSyncState(YES, YES, NO);
   CreateController();
-  EXPECT_OCMOCK_VERIFY(mock_table_view_controller_);
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncOnWithSessions) {
-  [[mock_table_view_controller_ expect]
-      refreshUserState:SessionsSyncUserState::
-                           USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS];
   SetupSyncState(YES, YES, YES);
   CreateController();
-  EXPECT_OCMOCK_VERIFY(mock_table_view_controller_);
 }
 
 }  // namespace
