@@ -22,6 +22,7 @@
 namespace blink {
 
 class LayoutBox;
+class NGConstraintSpaceBuilder;
 
 enum NGFragmentationType {
   kFragmentNone,
@@ -284,25 +285,10 @@ class CORE_EXPORT NGConstraintSpace final {
  private:
   friend class NGConstraintSpaceBuilder;
   // Default constructor.
-  NGConstraintSpace(WritingMode,
-                    TextDirection,
-                    NGLogicalSize available_size,
-                    NGLogicalSize percentage_resolution_size,
-                    NGLogicalSize replace_percentage_resolution_size,
-                    LayoutUnit parent_percentage_resolution_inline_size,
-                    NGPhysicalSize initial_containing_block_size,
-                    LayoutUnit fragmentainer_block_size,
-                    LayoutUnit fragmentainer_space_at_bfc_start,
-                    NGFragmentationType block_direction_fragmentation_type,
-                    NGTableCellChildLayoutPhase,
-                    NGFloatTypes adjoining_floats,
-                    const NGMarginStrut& margin_strut,
-                    const NGBfcOffset& bfc_offset,
-                    const base::Optional<LayoutUnit>& floats_bfc_block_offset,
-                    const NGExclusionSpace& exclusion_space,
-                    LayoutUnit clearance_offset,
-                    Vector<NGBaselineRequest>& baseline_requests,
-                    unsigned flags);
+  // is_new_fc is technically redundant, but simplifies the code here a bit.
+  NGConstraintSpace(WritingMode out_writing_mode,
+                    bool is_new_fc,
+                    NGConstraintSpaceBuilder& builder);
 
   bool HasFlag(ConstraintSpaceFlags mask) const {
     return flags_ & static_cast<unsigned>(mask);
