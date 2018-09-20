@@ -57,6 +57,14 @@ const std::string kHash1(GenerateTagHash(kTag1));
 const std::string kHash2(GenerateTagHash(kTag2));
 const std::string kHash3(GenerateTagHash(kTag3));
 
+enum class ExpectedSyncPositioningScheme {
+  UNIQUE_POSITION = 0,
+  POSITION_IN_PARENT = 1,
+  INSERT_AFTER_ITEM_ID = 2,
+  MISSING = 3,
+  kMaxValue = MISSING
+};
+
 EntitySpecifics GenerateSpecifics(const std::string& tag,
                                   const std::string& value) {
   EntitySpecifics specifics;
@@ -1355,6 +1363,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
 
   FakeEncryptor encryptor;
   Cryptographer cryptographer(&encryptor);
+  base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
@@ -1370,6 +1379,12 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   EXPECT_FALSE(data.is_deleted());
   EXPECT_EQ(kTag1, data.specifics.preference().name());
   EXPECT_EQ(kValue1, data.specifics.preference().value());
+
+  histogram_tester.ExpectUniqueSample(
+      "Sync.Entities.PositioningScheme",
+      /*sample=*/
+      ExpectedSyncPositioningScheme::UNIQUE_POSITION,
+      /*count=*/1);
 }
 
 TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
@@ -1384,6 +1399,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
   UpdateResponseData response_data;
   FakeEncryptor encryptor;
   Cryptographer cryptographer(&encryptor);
+  base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
@@ -1391,6 +1407,12 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
   const EntityData& data = response_data.entity.value();
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
+
+  histogram_tester.ExpectUniqueSample(
+      "Sync.Entities.PositioningScheme",
+      /*sample=*/
+      ExpectedSyncPositioningScheme::POSITION_IN_PARENT,
+      /*count=*/1);
 }
 
 TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
@@ -1405,6 +1427,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
   UpdateResponseData response_data;
   FakeEncryptor encryptor;
   Cryptographer cryptographer(&encryptor);
+  base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
@@ -1412,6 +1435,63 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
   const EntityData& data = response_data.entity.value();
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
+  histogram_tester.ExpectUniqueSample(
+      "Sync.Entities.PositioningScheme",
+      /*sample=*/
+      ExpectedSyncPositioningScheme::INSERT_AFTER_ITEM_ID,
+      /*count=*/1);
+}
+
+TEST_F(ModelTypeWorkerTest,
+       PopulateUpdateResponseDataWithBookmarkMissingPosition) {
+  InitializeCommitOnly();
+  sync_pb::SyncEntity entity;
+
+  entity.set_client_defined_unique_tag("CLIENT_TAG");
+  entity.set_server_defined_unique_tag("SERVER_TAG");
+  EntitySpecifics specifics;
+  specifics.mutable_bookmark()->set_url("http://www.url.com");
+
+  entity.mutable_specifics()->CopyFrom(specifics);
+
+  UpdateResponseData response_data;
+  FakeEncryptor encryptor;
+  Cryptographer cryptographer(&encryptor);
+  base::HistogramTester histogram_tester;
+
+  EXPECT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
+                                                        &response_data));
+  const EntityData& data = response_data.entity.value();
+  EXPECT_FALSE(
+      syncer::UniquePosition::FromProto(data.unique_position).IsValid());
+  histogram_tester.ExpectUniqueSample("Sync.Entities.PositioningScheme",
+                                      /*sample=*/
+                                      ExpectedSyncPositioningScheme::MISSING,
+                                      /*count=*/1);
+}
+
+TEST_F(ModelTypeWorkerTest,
+       PopulateUpdateResponseDataWithNonBookmarkHasNoPosition) {
+  InitializeCommitOnly();
+  sync_pb::SyncEntity entity;
+
+  EntitySpecifics specifics;
+  entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
+
+  UpdateResponseData response_data;
+  FakeEncryptor encryptor;
+  Cryptographer cryptographer(&encryptor);
+  base::HistogramTester histogram_tester;
+
+  EXPECT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
+                                                        &response_data));
+  const EntityData& data = response_data.entity.value();
+  EXPECT_FALSE(
+      syncer::UniquePosition::FromProto(data.unique_position).IsValid());
+  histogram_tester.ExpectTotalCount("Sync.Entities.PositioningScheme",
+                                    /*count=*/0);
 }
 
 class GetLocalChangesRequestTest : public testing::Test {

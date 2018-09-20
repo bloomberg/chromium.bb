@@ -47637,6 +47637,13 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Not sync password hash change event"/>
 </enum>
 
+<enum name="SyncPositioningScheme">
+  <int value="0" label="UNIQUE_POSITION"/>
+  <int value="1" label="POSITION_IN_PARENT"/>
+  <int value="2" label="INSERT_AFTER_ITEM_ID"/>
+  <int value="3" label="MISSING"/>
+</enum>
+
 <enum name="SyncPromoAction">
   <int value="0" label="The promo was shown to the user"/>
   <int value="1" label="The user clicked the promo to sign in"/>

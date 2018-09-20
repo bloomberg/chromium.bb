@@ -16,6 +16,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -29,6 +30,8 @@
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 
+namespace syncer {
+
 namespace {
 
 bool ContainsDuplicate(std::vector<std::string> values) {
@@ -36,9 +39,19 @@ bool ContainsDuplicate(std::vector<std::string> values) {
   return std::adjacent_find(values.begin(), values.end()) != values.end();
 }
 
-}  // namespace
+// Enumeration of possible values for the positioning schemes used in Sync
+// entities. Used in UMA metrics. Do not re-order or delete these entries; they
+// are used in a UMA histogram. Please edit SyncPositioningScheme in enums.xml
+// if a value is added.
+enum class SyncPositioningScheme {
+  UNIQUE_POSITION = 0,
+  POSITION_IN_PARENT = 1,
+  INSERT_AFTER_ITEM_ID = 2,
+  MISSING = 3,
+  kMaxValue = MISSING
+};
 
-namespace syncer {
+}  // namespace
 
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
@@ -190,9 +203,12 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data.parent_id = update_entity.parent_id_string();
 
   // Handle deprecated positioning fields. Relevant only for bookmarks.
-  // TODO(crbug.com/516866): Add coressponding UMA metrics for each case below.
+  bool has_position_scheme = false;
+  SyncPositioningScheme syncPositioningScheme;
   if (update_entity.has_unique_position()) {
     data.unique_position = update_entity.unique_position();
+    has_position_scheme = true;
+    syncPositioningScheme = SyncPositioningScheme::UNIQUE_POSITION;
   } else if (update_entity.has_position_in_parent() ||
              update_entity.has_insert_after_item_id()) {
     bool missing_originator_fields = false;
@@ -210,18 +226,28 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
                   /*client_tag=*/update_entity.originator_cache_guid() +
                       update_entity.originator_client_item_id());
 
-    if (update_entity.has_originator_cache_guid()) {
+    if (update_entity.has_position_in_parent()) {
       data.unique_position =
           UniquePosition::FromInt64(update_entity.position_in_parent(), suffix)
               .ToProto();
-
+      has_position_scheme = true;
+      syncPositioningScheme = SyncPositioningScheme::POSITION_IN_PARENT;
     } else {
       // If update_entity has insert_after_item_id, use 0 index.
+      DCHECK(update_entity.has_insert_after_item_id());
       data.unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
+      has_position_scheme = true;
+      syncPositioningScheme = SyncPositioningScheme::INSERT_AFTER_ITEM_ID;
     }
   } else if (SyncerProtoUtil::ShouldMaintainPosition(update_entity) &&
              !update_entity.deleted()) {
     DLOG(ERROR) << "Missing required position information in update.";
+    has_position_scheme = true;
+    syncPositioningScheme = SyncPositioningScheme::MISSING;
+  }
+  if (has_position_scheme) {
+    UMA_HISTOGRAM_ENUMERATION("Sync.Entities.PositioningScheme",
+                              syncPositioningScheme);
   }
 
   data.server_defined_unique_tag = update_entity.server_defined_unique_tag();
