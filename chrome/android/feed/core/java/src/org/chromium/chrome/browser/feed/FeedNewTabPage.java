@@ -34,8 +34,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
+import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
-import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
@@ -229,9 +229,8 @@ public class FeedNewTabPage extends NewTabPage {
         // is reparented.
         // TODO(twellington): Move this somewhere it can be shared with NewTabPageView?
         Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
-        mContextMenuManager =
-                new ContextMenuManager(mNewTabPageManager.getNavigationDelegate(), mMediator,
-                        closeContextMenuCallback, false);
+        mContextMenuManager = new ContextMenuManager(mNewTabPageManager.getNavigationDelegate(),
+                mMediator, closeContextMenuCallback, NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         mNewTabPageLayout.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,

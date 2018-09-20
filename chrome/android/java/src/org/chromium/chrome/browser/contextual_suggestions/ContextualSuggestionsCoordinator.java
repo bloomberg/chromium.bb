@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.preferences.ContextualSuggestionsPreference;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
-import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -110,7 +109,7 @@ public class ContextualSuggestionsCoordinator {
             return;
         }
 
-        SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegateImpl(
+        SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegate(
                 mActivity, mProfile, mBottomSheetController.getBottomSheet(), mTabModelSelector);
         SuggestionsUiDelegateImpl uiDelegate = new SuggestionsUiDelegateImpl(suggestionsSource,
                 new ContextualSuggestionsEventReporter(mTabModelSelector, suggestionsSource),

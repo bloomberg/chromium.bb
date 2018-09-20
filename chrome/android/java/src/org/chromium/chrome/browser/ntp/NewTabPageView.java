@@ -18,6 +18,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
@@ -126,7 +127,8 @@ public class NewTabPageView extends FrameLayout {
         // is reparented.
         Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
         mContextMenuManager = new ContextMenuManager(mManager.getNavigationDelegate(),
-                mRecyclerView::setTouchEnabled, closeContextMenuCallback, false);
+                mRecyclerView::setTouchEnabled, closeContextMenuCallback,
+                NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         mNewTabPageLayout.initialize(manager, tab, tileGroupDelegate, searchProviderHasLogo,
