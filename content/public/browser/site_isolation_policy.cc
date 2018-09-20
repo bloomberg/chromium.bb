@@ -47,47 +47,16 @@ bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
 }
 
 // static
-SiteIsolationPolicy::CrossSiteDocumentBlockingEnabledState
-SiteIsolationPolicy::IsCrossSiteDocumentBlockingEnabled() {
-  // --disable-web-security also disables cross-origin response blocking (CORB).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebSecurity)) {
-    return XSDB_DISABLED;
-  }
-
-  if (base::FeatureList::IsEnabled(
-          ::features::kCrossSiteDocumentBlockingAlways)) {
-    return XSDB_ENABLED_UNCONDITIONALLY;
-  }
-
-  if (base::FeatureList::IsEnabled(
-          ::features::kCrossSiteDocumentBlockingIfIsolating)) {
-    return XSDB_ENABLED_IF_ISOLATED;
-  }
-
-  return XSDB_DISABLED;
-}
-
-// static
 void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
     network::mojom::URLLoaderFactoryParams* params) {
-  switch (IsCrossSiteDocumentBlockingEnabled()) {
-    case SiteIsolationPolicy::XSDB_ENABLED_UNCONDITIONALLY:
-      params->is_corb_enabled = true;
-      break;
-    case SiteIsolationPolicy::XSDB_ENABLED_IF_ISOLATED: {
-      // TODO(lukasza): Take isolate-origins into account as well.
-      params->is_corb_enabled = UseDedicatedProcessesForAllSites();
-      break;
-    }
-    case SiteIsolationPolicy::XSDB_DISABLED:
-      params->is_corb_enabled = false;
-      break;
+  // --disable-web-security also disables Cross-Origin Read Blocking (CORB).
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity)) {
+    params->is_corb_enabled = false;
+    return;
   }
 
-  if (!params->is_corb_enabled)
-    return;
-
+  params->is_corb_enabled = true;
   params->corb_detachable_resource_type = RESOURCE_TYPE_PREFETCH;
   params->corb_excluded_resource_type = RESOURCE_TYPE_PLUGIN_RESOURCE;
 

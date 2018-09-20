@@ -936,40 +936,6 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
   EXPECT_EQ("error: TypeError: Failed to fetch", response);
 }
 
-class CrossSiteDocumentBlockingKillSwitchTest
-    : public CrossSiteDocumentBlockingTest {
- public:
-  CrossSiteDocumentBlockingKillSwitchTest() {
-    // Simulate flipping both of the kill switches.
-    std::vector<base::Feature> disabled_features = {
-        features::kCrossSiteDocumentBlockingAlways,
-        features::kCrossSiteDocumentBlockingIfIsolating,
-    };
-    scoped_feature_list_.InitWithFeatures({}, disabled_features);
-  }
-
-  ~CrossSiteDocumentBlockingKillSwitchTest() override {}
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingKillSwitchTest);
-};
-
-// After the kill switch is flipped, there should be no document blocking.
-IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingKillSwitchTest,
-                       NoBlockingWithKillSwitch) {
-  // Load a page that issues illegal cross-site document requests to bar.com.
-  embedded_test_server()->StartAcceptingConnections();
-  GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
-  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
-
-  bool was_blocked;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), "sendRequest(\"valid.html\");", &was_blocked));
-  EXPECT_FALSE(was_blocked);
-}
-
 // Test class to verify that --disable-web-security turns off CORB.  This
 // inherits from CrossSiteDocumentBlockingTest, so it runs in SitePerProcess.
 class CrossSiteDocumentBlockingDisableWebSecurityTest
@@ -988,37 +954,6 @@ class CrossSiteDocumentBlockingDisableWebSecurityTest
 };
 
 IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingDisableWebSecurityTest,
-                       DisableBlocking) {
-  // Load a page that issues illegal cross-site document requests.
-  embedded_test_server()->StartAcceptingConnections();
-  GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
-  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
-
-  bool was_blocked;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), "sendRequest(\"valid.html\");", &was_blocked));
-  EXPECT_FALSE(was_blocked);
-}
-
-// Test class to verify that kCrossSiteDocumentBlockingAlways does not take
-// precedence over --disable-web-security.  This inherits from
-// CrossSiteDocumentBlockingTest, so it runs in SitePerProcess.
-class CrossSiteDocumentBlockingDisableVsFeatureTest
-    : public CrossSiteDocumentBlockingDisableWebSecurityTest {
- public:
-  CrossSiteDocumentBlockingDisableVsFeatureTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kCrossSiteDocumentBlockingAlways);
-  }
-  ~CrossSiteDocumentBlockingDisableVsFeatureTest() override {}
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingDisableVsFeatureTest);
-};
-
-IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingDisableVsFeatureTest,
                        DisableBlocking) {
   // Load a page that issues illegal cross-site document requests.
   embedded_test_server()->StartAcceptingConnections();
