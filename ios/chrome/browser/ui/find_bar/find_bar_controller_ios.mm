@@ -14,9 +14,7 @@
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/find_bar/find_bar_ui_element.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_view.h"
-#import "ios/chrome/browser/ui/find_bar/legacy_find_bar_view.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
@@ -46,9 +44,6 @@ const CGFloat kRegularRegularHorizontalMargin = 5;
 // shadowed.
 const CGFloat kShadowMargin = 196;
 
-// Padding added by the invisible background.
-const CGFloat kBackgroundPadding = 6;
-
 // Find Bar animation drop down duration.
 const CGFloat kAnimationDuration = 0.15;
 
@@ -69,8 +64,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 // bar to the right of |parentView| and below |toolbarView|.
 - (void)showIPadFindBarViewInParentView:(UIView*)parentView
                        usingToolbarView:(UIView*)toolbarView
-                         alignWithFrame:(CGRect)alignmentFrame
-                                  frame:(CGRect)targetFrame
                              selectText:(BOOL)selectText
                                animated:(BOOL)animated;
 // Animate find bar over iPhone toolbar.
@@ -93,7 +86,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 @property(nonatomic, readwrite, strong) UIView* view;
 // The view containing all the buttons and textfields that is common between
 // iPhone and iPad.
-@property(nonatomic, strong) UIView<FindBarUIElement>* findBarView;
+@property(nonatomic, strong) FindBarView* findBarView;
 // Typing delay timer.
 @property(nonatomic, strong) NSTimer* delayTimer;
 // Yes if incognito.
@@ -128,35 +121,12 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 - (UIView*)constructFindBarView {
   UIView* findBarBackground = nil;
 
-  if (IsUIRefreshPhase1Enabled()) {
-    findBarBackground = [[UIView alloc] initWithFrame:CGRectZero];
-    findBarBackground.backgroundColor =
-        self.isIncognito ? UIColorFromRGB(kIncognitoToolbarBackgroundColor)
-                         : UIColorFromRGB(kToolbarBackgroundColor);
-    self.findBarView =
-        [[FindBarView alloc] initWithDarkAppearance:self.isIncognito];
-  } else {
-    if (IsIPadIdiom()) {
-      // Future self.view. Contains only |contentView|. Is an image view that is
-      // typecast elsewhere but always is exposed as a UIView.
-      findBarBackground =
-          [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 345, 62)];
-      findBarBackground.backgroundColor = [UIColor clearColor];
-      findBarBackground.userInteractionEnabled = YES;
-    } else {
-      findBarBackground =
-          [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 56)];
-      if (self.isIncognito) {
-        findBarBackground.backgroundColor =
-            [UIColor colorWithWhite:115 / 255.0 alpha:1];
-      } else {
-        findBarBackground.backgroundColor = [UIColor whiteColor];
-      }
-    }
-
-    self.findBarView = [[LegacyFindBarView alloc]
-        initWithDarkAppearance:self.isIncognito && !IsIPadIdiom()];
-  }
+  findBarBackground = [[UIView alloc] initWithFrame:CGRectZero];
+  findBarBackground.backgroundColor =
+      self.isIncognito ? UIColorFromRGB(kIncognitoToolbarBackgroundColor)
+                       : UIColorFromRGB(kToolbarBackgroundColor);
+  self.findBarView =
+      [[FindBarView alloc] initWithDarkAppearance:self.isIncognito];
 
   [findBarBackground addSubview:self.findBarView];
   self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -173,16 +143,9 @@ const NSTimeInterval kSearchShortDelay = 0.100;
     [self.findBarView.heightAnchor constraintEqualToConstant:findBarHeight]
   ]];
 
-  if (IsIPadIdiom() && !IsUIRefreshPhase1Enabled()) {
-    [constraints
-        addObject:[self.findBarView.centerYAnchor
-                      constraintEqualToAnchor:findBarBackground.centerYAnchor
-                                     constant:-2]];
-  } else {
-    [constraints
-        addObject:[self.findBarView.bottomAnchor
-                      constraintEqualToAnchor:findBarBackground.bottomAnchor]];
-  }
+  [constraints
+      addObject:[self.findBarView.bottomAnchor
+                    constraintEqualToAnchor:findBarBackground.bottomAnchor]];
 
   [NSLayoutConstraint activateConstraints:constraints];
 
@@ -301,8 +264,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   } else {
     [self showIPadFindBarViewInParentView:parentView
                          usingToolbarView:toolbarView
-                           alignWithFrame:alignmentFrame
-                                    frame:findBarFrame
                                selectText:selectText
                                  animated:animated];
   }
@@ -319,29 +280,17 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   self.delayTimer = nil;
 
   if (animate) {
-    if (IsUIRefreshPhase1Enabled()) {
-      CGRect oldFrame = self.view.frame;
-      self.view.layer.anchorPoint = CGPointMake(0.5, 0);
-      self.view.frame = oldFrame;
-      [UIView animateWithDuration:kAnimationDuration
-          animations:^{
-            self.view.transform = CGAffineTransformMakeScale(1, 0.05);
-            self.view.alpha = 0;
-          }
-          completion:^(BOOL finished) {
-            [self teardownView];
-          }];
-    } else {
-      [UIView animateWithDuration:kAnimationDuration
-          animations:^{
-            CGRect frame = self.view.frame;
-            frame.size.height = 0;
-            self.view.frame = frame;
-          }
-          completion:^(BOOL finished) {
-            [self teardownView];
-          }];
-    }
+    CGRect oldFrame = self.view.frame;
+    self.view.layer.anchorPoint = CGPointMake(0.5, 0);
+    self.view.frame = oldFrame;
+    [UIView animateWithDuration:kAnimationDuration
+        animations:^{
+          self.view.transform = CGAffineTransformMakeScale(1, 0.05);
+          self.view.alpha = 0;
+        }
+        completion:^(BOOL finished) {
+          [self teardownView];
+        }];
   } else {
     [self teardownView];
   }
@@ -361,121 +310,55 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 }
 
 // Animate find bar to iPad top right.
-// TODO(crbug.com/879136): Remove code of legacy view and unnecessary args once
-// UIRefreshPhase1 is 100% enabled.
 - (void)showIPadFindBarViewInParentView:(UIView*)parentView
                        usingToolbarView:(UIView*)toolbarView
-                         alignWithFrame:(CGRect)omniboxFrame
-                                  frame:(CGRect)targetFrame
                              selectText:(BOOL)selectText
                                animated:(BOOL)animated {
   DCHECK(IsIPadIdiom());
   self.view = [self constructFindBarView];
   self.view.accessibilityIdentifier = kFindInPageContainerViewId;
 
-  if (IsUIRefreshPhase1Enabled()) {
-    self.view.translatesAutoresizingMaskIntoConstraints = NO;
-    self.view.layer.cornerRadius = kFindBarCornerRadiusRegularRegular;
-    [parentView addSubview:self.view];
+  self.view.translatesAutoresizingMaskIntoConstraints = NO;
+  self.view.layer.cornerRadius = kFindBarCornerRadiusRegularRegular;
+  [parentView addSubview:self.view];
 
-    UIImageView* shadow = [[UIImageView alloc]
-        initWithImage:StretchableImageNamed(@"menu_shadow")];
-    shadow.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:shadow];
+  UIImageView* shadow =
+      [[UIImageView alloc] initWithImage:StretchableImageNamed(@"menu_shadow")];
+  shadow.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view addSubview:shadow];
 
-    CGFloat parentWidth = CGRectGetWidth(parentView.bounds);
-    CGFloat width = MIN(parentWidth - 2 * kRegularRegularHorizontalMargin,
-                        kFindBarWidthRegularRegular);
-    [NSLayoutConstraint activateConstraints:@[
-      // Anchors findbar below |toolbarView|.
-      [self.view.topAnchor constraintEqualToAnchor:toolbarView.bottomAnchor],
-      // Aligns findbar with the right side of |parentView|.
-      [self.view.trailingAnchor
-          constraintEqualToAnchor:parentView.trailingAnchor
-                         constant:-kRegularRegularHorizontalMargin],
-      [self.view.widthAnchor constraintEqualToConstant:width],
-      [self.view.heightAnchor constraintEqualToConstant:kAdaptiveToolbarHeight],
-    ]];
-    // Layouts |shadow| around |self.view|.
-    AddSameConstraintsToSidesWithInsets(
-        shadow, self.view,
-        LayoutSides::kTop | LayoutSides::kLeading | LayoutSides::kBottom |
-            LayoutSides::kTrailing,
-        {-kShadowMargin, -kShadowMargin, -kShadowMargin, -kShadowMargin});
+  CGFloat parentWidth = CGRectGetWidth(parentView.bounds);
+  CGFloat width = MIN(parentWidth - 2 * kRegularRegularHorizontalMargin,
+                      kFindBarWidthRegularRegular);
+  [NSLayoutConstraint activateConstraints:@[
+    // Anchors findbar below |toolbarView|.
+    [self.view.topAnchor constraintEqualToAnchor:toolbarView.bottomAnchor],
+    // Aligns findbar with the right side of |parentView|.
+    [self.view.trailingAnchor
+        constraintEqualToAnchor:parentView.trailingAnchor
+                       constant:-kRegularRegularHorizontalMargin],
+    [self.view.widthAnchor constraintEqualToConstant:width],
+    [self.view.heightAnchor constraintEqualToConstant:kAdaptiveToolbarHeight],
+  ]];
+  // Layouts |shadow| around |self.view|.
+  AddSameConstraintsToSidesWithInsets(
+      shadow, self.view,
+      LayoutSides::kTop | LayoutSides::kLeading | LayoutSides::kBottom |
+          LayoutSides::kTrailing,
+      {-kShadowMargin, -kShadowMargin, -kShadowMargin, -kShadowMargin});
 
-    self.view.alpha = 0;
-    self.view.transform = CGAffineTransformMakeScale(1, 0.05);
-    CGFloat duration = animated ? kAnimationDuration : 0;
-    [UIView animateWithDuration:duration
-        animations:^() {
-          self.view.alpha = 1;
-          self.view.transform = CGAffineTransformIdentity;
-        }
-        completion:^(BOOL finished) {
-          if (selectText)
-            [self selectAllText];
-        }];
-  } else {
-    self.view.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-    UIEdgeInsets backgroundInsets = UIEdgeInsetsMake(6, 9, 10, 8);
-    UIImage* bgImage = [UIImage imageNamed:@"find_bg"];
-    bgImage = [bgImage resizableImageWithCapInsets:backgroundInsets];
-    UIImageView* bgView = (UIImageView*)self.view;
-    [bgView setImage:bgImage];
-
-    UIView* view = self.view;
-    CGRect frame = view.frame;
-    frame.origin.y = targetFrame.origin.y;
-    frame.size.height = 0;
-    frame.size.width =
-        MIN(CGRectGetWidth(parentView.bounds), CGRectGetWidth(frame));
-    CGFloat containerWidth = parentView.bounds.size.width;
-
-    // On iPad, there are three possible frames for the Search bar:
-    // 1. In Regular width size class, it is short, right-aligned to the
-    // omnibox's
-    //   right edge.
-    // 2. In Compact size class, if the short bar width is less than the
-    // omnibox,
-    //   stretch and align the search bar to the omnibox.
-    // 3. Finally, if the short bar width is more than the omnibox, fill the
-    //   container view from edge to edge, ignoring the omnibox.
-    if (view.cr_widthSizeClass == REGULAR) {
-      if (base::i18n::IsRTL()) {
-        frame.origin.x = CGRectGetMinX(omniboxFrame) - kBackgroundPadding;
-      } else {
-        frame.origin.x = CGRectGetMinX(omniboxFrame) +
-                         CGRectGetWidth(omniboxFrame) - frame.size.width +
-                         kBackgroundPadding;
+  self.view.alpha = 0;
+  self.view.transform = CGAffineTransformMakeScale(1, 0.05);
+  CGFloat duration = animated ? kAnimationDuration : 0;
+  [UIView animateWithDuration:duration
+      animations:^() {
+        self.view.alpha = 1;
+        self.view.transform = CGAffineTransformIdentity;
       }
-    } else {
-      // Compact size class.
-      CGRect visibleFrame = CGRectInset(frame, kBackgroundPadding, 0);
-      if (omniboxFrame.size.width > visibleFrame.size.width) {
-        visibleFrame.origin.x = omniboxFrame.origin.x;
-        visibleFrame.size.width = omniboxFrame.size.width;
-        frame = CGRectInset(visibleFrame, -kBackgroundPadding, 0);
-      } else {
-        frame.origin.x = 0;
-        frame.size.width = containerWidth;
-      }
-    }
-
-    view.frame = frame;
-    [parentView addSubview:view];
-
-    CGFloat duration = (animated) ? kAnimationDuration : 0;
-    [UIView animateWithDuration:duration
-        animations:^{
-          CGRect frame = view.frame;
-          frame.size.height = [self findBarHeight];
-          view.frame = frame;
-        }
-        completion:^(BOOL finished) {
-          if (selectText)
-            [self selectAllText];
-        }];
-  }
+      completion:^(BOOL finished) {
+        if (selectText)
+          [self selectAllText];
+      }];
 }
 
 // Animate find bar over iPhone toolbar.
