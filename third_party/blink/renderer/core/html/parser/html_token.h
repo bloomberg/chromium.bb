@@ -359,7 +359,7 @@ class HTMLToken {
     current_attribute_->AppendToValue(character);
   }
 
-  void AppendToAttributeValue(size_t i, const String& value) {
+  void AppendToAttributeValue(wtf_size_t i, const String& value) {
     DCHECK(!value.IsEmpty());
     DCHECK(type_ == kStartTag || type_ == kEndTag);
     attributes_[i].AppendToValue(value);
@@ -379,7 +379,7 @@ class HTMLToken {
   }
 
   // Used by the XSSAuditor to nuke XSS-laden attributes.
-  void EraseValueOfAttribute(size_t i) {
+  void EraseValueOfAttribute(wtf_size_t i) {
     DCHECK(type_ == kStartTag || type_ == kEndTag);
     attributes_[i].ClearValue();
   }

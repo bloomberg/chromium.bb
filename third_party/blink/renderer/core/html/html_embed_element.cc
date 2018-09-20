@@ -104,7 +104,7 @@ void HTMLEmbedElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == typeAttr) {
     SetServiceType(params.new_value.LowerASCII());
-    size_t pos = service_type_.Find(";");
+    wtf_size_t pos = service_type_.Find(";");
     if (pos != kNotFound)
       SetServiceType(service_type_.Left(pos));
     if (GetLayoutObject()) {

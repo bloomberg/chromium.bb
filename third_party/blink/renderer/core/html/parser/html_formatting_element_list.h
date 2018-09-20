@@ -102,7 +102,7 @@ class HTMLFormattingElementList {
   };
 
   bool IsEmpty() const { return !size(); }
-  size_t size() const { return entries_.size(); }
+  wtf_size_t size() const { return entries_.size(); }
 
   Element* ClosestElementInScopeWithName(const AtomicString&);
 
@@ -118,8 +118,8 @@ class HTMLFormattingElementList {
   // clearToLastMarker also clears the marker (per the HTML5 spec).
   void ClearToLastMarker();
 
-  const Entry& at(size_t i) const { return entries_[i]; }
-  Entry& at(size_t i) { return entries_[i]; }
+  const Entry& at(wtf_size_t i) const { return entries_[i]; }
+  Entry& at(wtf_size_t i) { return entries_[i]; }
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(entries_); }
 

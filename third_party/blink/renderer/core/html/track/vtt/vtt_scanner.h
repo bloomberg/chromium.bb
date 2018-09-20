@@ -68,7 +68,7 @@ class CORE_EXPORT VTTScanner {
     Position end() const { return end_; }
 
     bool IsEmpty() const { return start_ == end_; }
-    size_t length() const;
+    wtf_size_t length() const;
 
    private:
     Position start_;
@@ -88,7 +88,7 @@ class CORE_EXPORT VTTScanner {
   // Scan the character |c|.
   bool Scan(char);
   // Scan the first |charactersCount| characters of the string |characters|.
-  bool Scan(const LChar* characters, size_t characters_count);
+  bool Scan(const LChar* characters, wtf_size_t characters_count);
 
   // Scan the literal |characters|.
   template <unsigned charactersCount>
@@ -166,11 +166,11 @@ class CORE_EXPORT VTTScanner {
   DISALLOW_COPY_AND_ASSIGN(VTTScanner);
 };
 
-inline size_t VTTScanner::Run::length() const {
+inline wtf_size_t VTTScanner::Run::length() const {
   if (is8_bit_)
-    return end_ - start_;
-  return reinterpret_cast<const UChar*>(end_) -
-         reinterpret_cast<const UChar*>(start_);
+    return static_cast<wtf_size_t>(end_ - start_);
+  return static_cast<wtf_size_t>(reinterpret_cast<const UChar*>(end_) -
+                                 reinterpret_cast<const UChar*>(start_));
 }
 
 template <unsigned charactersCount>

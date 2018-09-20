@@ -1484,9 +1484,9 @@ inline bool HTMLTokenizer::IsAppropriateEndTag() {
   if (buffered_end_tag_name_.size() != appropriate_end_tag_name_.size())
     return false;
 
-  size_t num_characters = buffered_end_tag_name_.size();
+  wtf_size_t num_characters = buffered_end_tag_name_.size();
 
-  for (size_t i = 0; i < num_characters; i++) {
+  for (wtf_size_t i = 0; i < num_characters; i++) {
     if (buffered_end_tag_name_[i] != appropriate_end_tag_name_[i])
       return false;
   }

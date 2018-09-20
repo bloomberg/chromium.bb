@@ -86,7 +86,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
       HeapVector<TraceWrapperMember<CustomElementDefinition>>;
   DefinitionList definitions_;
 
-  using NameIdMap = HashMap<AtomicString, size_t>;
+  using NameIdMap = HashMap<AtomicString, CustomElementDefinition::Id>;
   NameIdMap name_id_map_;
 
   Member<const LocalDOMWindow> owner_;

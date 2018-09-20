@@ -180,7 +180,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   // For Non-IncrmentalShadowDOM. IncremntalShadowDOM never use these members.
   HeapVector<Member<Node>> distributed_nodes_;
   HeapVector<Member<Node>> old_distributed_nodes_;
-  HeapHashMap<Member<const Node>, size_t> distributed_indices_;
+  HeapHashMap<Member<const Node>, wtf_size_t> distributed_indices_;
 
   // TODO(hayato): Move this to more appropriate directory (e.g. platform/wtf)
   // if there are more than one usages.
@@ -190,21 +190,21 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
       const Container& seq2,
       LCSTable& lcs_table,
       BacktrackTable& backtrack_table) {
-    const size_t rows = seq1.size();
-    const size_t columns = seq2.size();
+    const wtf_size_t rows = SafeCast<wtf_size_t>(seq1.size());
+    const wtf_size_t columns = SafeCast<wtf_size_t>(seq2.size());
 
     DCHECK_GT(lcs_table.size(), rows);
     DCHECK_GT(lcs_table[0].size(), columns);
     DCHECK_GT(backtrack_table.size(), rows);
     DCHECK_GT(backtrack_table[0].size(), columns);
 
-    for (size_t r = 0; r <= rows; ++r)
+    for (wtf_size_t r = 0; r <= rows; ++r)
       lcs_table[r][0] = 0;
-    for (size_t c = 0; c <= columns; ++c)
+    for (wtf_size_t c = 0; c <= columns; ++c)
       lcs_table[0][c] = 0;
 
-    for (size_t r = 1; r <= rows; ++r) {
-      for (size_t c = 1; c <= columns; ++c) {
+    for (wtf_size_t r = 1; r <= rows; ++r) {
+      for (wtf_size_t c = 1; c <= columns; ++c) {
         if (seq1[r - 1] == seq2[c - 1]) {
           lcs_table[r][c] = lcs_table[r - 1][c - 1] + 1;
           backtrack_table[r][c] = std::make_pair(r - 1, c - 1);

@@ -138,7 +138,7 @@ class CORE_EXPORT HTMLTokenizer {
   // that terminates a script element.
   String BufferedCharacters() const;
 
-  size_t NumberOfBufferedCharacters() const {
+  wtf_size_t NumberOfBufferedCharacters() const {
     // Notice that we add 2 to the length of the m_temporaryBuffer to
     // account for the "</" characters, which are effecitvely buffered in
     // the tokenizer's state machine.
