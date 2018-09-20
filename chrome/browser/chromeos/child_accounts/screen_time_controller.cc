@@ -104,14 +104,35 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
   const base::DictionaryValue* time_limit =
       pref_service_->GetDictionary(prefs::kUsageTimeLimit);
+
+  // Refresh the screen time usage when needed.
+  // |first_screen_start_time_| is retrieved from prefs::kFirstScreenStartTime
+  // which stores the timestamp of last screen time reset.
+  base::TimeDelta used_time = GetScreenTimeDuration();
+  base::Time reset_time = usage_time_limit::GetExpectedResetTime(
+      time_limit->CreateDeepCopy(), now, &time_zone);
+  if (reset_time - first_screen_start_time_ >= base::TimeDelta::FromDays(1)) {
+    VLOG(1) << "Reset screen time now.";
+    RefreshScreenLimit();
+    used_time = base::TimeDelta::FromMinutes(0);
+  } else {
+    VLOG(1) << "Scheduling screen reset timer in " << reset_time - now;
+    reset_screen_time_timer_.Start(
+        FROM_HERE, reset_time - now,
+        base::BindRepeating(&ScreenTimeController::CheckTimeLimit,
+                            base::Unretained(this),
+                            "reset_screen_time_timer_"));
+  }
+
   usage_time_limit::State state = usage_time_limit::GetState(
-      time_limit->CreateDeepCopy(), GetScreenTimeDuration(),
-      first_screen_start_time_, now, &time_zone, last_state);
+      time_limit->CreateDeepCopy(), used_time, first_screen_start_time_, now,
+      &time_zone, last_state);
   SaveCurrentStateToPref(state);
 
   // Show/hide time limits message based on the policy enforcement.
   UpdateTimeLimitsMessage(
       state.is_locked, state.is_locked ? state.next_unlock_time : base::Time());
+  VLOG(1) << "Screen should be locked is set to " << state.is_locked;
 
   if (state.is_locked) {
     DCHECK(!state.next_unlock_time.is_null());
@@ -160,19 +181,6 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
         FROM_HERE, state.next_state_change_time - now,
         base::BindRepeating(&ScreenTimeController::CheckTimeLimit,
                             base::Unretained(this), "next_state_timer_"));
-  }
-
-  // Schedule timer to refresh the screen time usage.
-  base::Time reset_time = usage_time_limit::GetExpectedResetTime(
-      time_limit->CreateDeepCopy(), now, &time_zone);
-  if (reset_time <= now) {
-    RefreshScreenLimit();
-  } else {
-    VLOG(1) << "Scheduling screen reset timer in " << reset_time - now;
-    reset_screen_time_timer_.Start(
-        FROM_HERE, reset_time - now,
-        base::BindRepeating(&ScreenTimeController::RefreshScreenLimit,
-                            base::Unretained(this)));
   }
 }
 
