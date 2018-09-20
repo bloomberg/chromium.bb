@@ -172,11 +172,11 @@ void PageActionIconView::OnThemeChanged() {
 void PageActionIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   image()->SetPaintToLayer();
   image()->layer()->SetFillsBoundsOpaquely(false);
-  views::InkDropHostView::AddInkDropLayer(ink_drop_layer);
+  IconLabelBubbleView::AddInkDropLayer(ink_drop_layer);
 }
 
 void PageActionIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  views::InkDropHostView::RemoveInkDropLayer(ink_drop_layer);
+  IconLabelBubbleView::RemoveInkDropLayer(ink_drop_layer);
   image()->DestroyLayer();
 }
 
