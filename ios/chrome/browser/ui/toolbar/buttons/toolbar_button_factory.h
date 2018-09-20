@@ -46,6 +46,7 @@
 // Tab Grid ToolbarButton.
 - (ToolbarTabGridButton*)tabGridButton;
 // StackView ToolbarButton.
+// TODO(crbug.com/800266): Remove this.
 - (ToolbarButton*)stackViewButton;
 // Tools Menu ToolbarButton.
 - (ToolbarToolsMenuButton*)toolsMenuButton;
@@ -58,8 +59,10 @@
 // Bookmark ToolbarButton.
 - (ToolbarButton*)bookmarkButton;
 // VoiceSearch ToolbarButton.
+// TODO(crbug.com/800266): Remove this.
 - (ToolbarButton*)voiceSearchButton;
 // ContractToolbar ToolbarButton.
+// TODO(crbug.com/800266): Remove this.
 - (ToolbarButton*)contractButton;
 // ToolbarButton to focus the omnibox.
 - (ToolbarButton*)omniboxButton;
@@ -71,8 +74,10 @@
 
 // Returns images for Voice Search in an array representing the NORMAL/PRESSED
 // state
+// TODO(crbug.com/800266): Remove this.
 - (NSArray<UIImage*>*)voiceSearchImages;
 // Returns images for TTS in an array representing the NORMAL/PRESSED states.
+// TODO(crbug.com/800266): Remove this.
 - (NSArray<UIImage*>*)TTSImages;
 
 @end

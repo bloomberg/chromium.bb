@@ -30,19 +30,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// State of the button, used as index.
-typedef NS_ENUM(NSInteger, ToolbarButtonState) {
-  DEFAULT = 0,
-  PRESSED = 1,
-  DISABLED = 2,
-  TOOLBAR_STATE_COUNT
-};
-
-// Number of style used for the buttons.
-const int styleCount = 2;
-}  // namespace
-
 @implementation ToolbarButtonFactory
 
 @synthesize toolbarConfiguration = _toolbarConfiguration;
@@ -62,35 +49,10 @@ const int styleCount = 2;
 #pragma mark - Buttons
 
 - (ToolbarButton*)backButton {
-  int backButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_THREE_STATE(BACK);
-  ToolbarButton* backButton = nil;
-  if (IsUIRefreshPhase1Enabled()) {
-    backButton = [ToolbarButton
-        toolbarButtonWithImage:[[UIImage imageNamed:@"toolbar_back"]
-                                   imageFlippedForRightToLeftLayoutDirection]];
-    [self configureButton:backButton width:kAdaptiveToolbarButtonWidth];
-  } else {
-    backButton = [ToolbarButton
-        toolbarButtonWithImageForNormalState:NativeReversableImage(
-                                                 backButtonImages[self.style]
-                                                                 [DEFAULT],
-                                                 YES)
-                    imageForHighlightedState:NativeReversableImage(
-                                                 backButtonImages[self.style]
-                                                                 [PRESSED],
-                                                 YES)
-                       imageForDisabledState:NativeReversableImage(
-                                                 backButtonImages[self.style]
-                                                                 [DISABLED],
-                                                 YES)];
-    [self configureButton:backButton width:kToolbarButtonWidth];
-    if (!IsIPadIdiom()) {
-      backButton.imageEdgeInsets =
-          UIEdgeInsetsMakeDirected(0, 0, 0, kBackButtonImageInset);
-    }
-  }
-  DCHECK(backButton);
+  ToolbarButton* backButton = [ToolbarButton
+      toolbarButtonWithImage:[[UIImage imageNamed:@"toolbar_back"]
+                                 imageFlippedForRightToLeftLayoutDirection]];
+  [self configureButton:backButton width:kAdaptiveToolbarButtonWidth];
   backButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_BACK);
   [backButton addTarget:self.dispatcher
                  action:@selector(goBack)
@@ -101,37 +63,12 @@ const int styleCount = 2;
 
 // Returns a forward button without visibility mask configured.
 - (ToolbarButton*)forwardButton {
-  int forwardButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_THREE_STATE(FORWARD);
-  ToolbarButton* forwardButton = nil;
-  if (IsUIRefreshPhase1Enabled()) {
-    forwardButton = [ToolbarButton
-        toolbarButtonWithImage:[[UIImage imageNamed:@"toolbar_forward"]
-                                   imageFlippedForRightToLeftLayoutDirection]];
-    [self configureButton:forwardButton width:kAdaptiveToolbarButtonWidth];
-  } else {
-    forwardButton = [ToolbarButton
-        toolbarButtonWithImageForNormalState:NativeReversableImage(
-                                                 forwardButtonImages[self.style]
-                                                                    [DEFAULT],
-                                                 YES)
-                    imageForHighlightedState:NativeReversableImage(
-                                                 forwardButtonImages[self.style]
-                                                                    [PRESSED],
-                                                 YES)
-                       imageForDisabledState:NativeReversableImage(
-                                                 forwardButtonImages[self.style]
-                                                                    [DISABLED],
-                                                 YES)];
-    [self configureButton:forwardButton width:kToolbarButtonWidth];
-    if (!IsIPadIdiom()) {
-      forwardButton.imageEdgeInsets =
-          UIEdgeInsetsMakeDirected(0, kForwardButtonImageInset, 0, 0);
-    }
-  }
+  ToolbarButton* forwardButton = [ToolbarButton
+      toolbarButtonWithImage:[[UIImage imageNamed:@"toolbar_forward"]
+                                 imageFlippedForRightToLeftLayoutDirection]];
+  [self configureButton:forwardButton width:kAdaptiveToolbarButtonWidth];
   forwardButton.visibilityMask =
       self.visibilityConfiguration.forwardButtonVisibility;
-  DCHECK(forwardButton);
   forwardButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_ACCNAME_FORWARD);
   [forwardButton addTarget:self.dispatcher
@@ -141,7 +78,6 @@ const int styleCount = 2;
 }
 
 - (ToolbarTabGridButton*)tabGridButton {
-  DCHECK(IsUIRefreshPhase1Enabled());
   ToolbarTabGridButton* tabGridButton = [ToolbarTabGridButton
       toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_switcher"]];
   [self configureButton:tabGridButton width:kAdaptiveToolbarButtonWidth];
@@ -168,46 +104,8 @@ const int styleCount = 2;
 }
 
 - (ToolbarButton*)stackViewButton {
-  DCHECK(!IsUIRefreshPhase1Enabled());
-  int stackViewButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_THREE_STATE(OVERVIEW);
-  ToolbarButton* stackViewButton = [ToolbarButton
-      toolbarButtonWithImageForNormalState:NativeImage(
-                                               stackViewButtonImages[self.style]
-                                                                    [DEFAULT])
-                  imageForHighlightedState:NativeImage(
-                                               stackViewButtonImages[self.style]
-                                                                    [PRESSED])
-                     imageForDisabledState:
-                         NativeImage(
-                             stackViewButtonImages[self.style][DISABLED])];
-  [self configureButton:stackViewButton width:kToolbarButtonWidth];
-  [stackViewButton
-      setTitleColor:[self.toolbarConfiguration buttonTitleNormalColor]
-           forState:UIControlStateNormal];
-  [stackViewButton
-      setTitleColor:[self.toolbarConfiguration buttonTitleHighlightedColor]
-           forState:UIControlStateHighlighted];
-  SetA11yLabelAndUiAutomationName(stackViewButton, IDS_IOS_TOOLBAR_SHOW_TABS,
-                                  kToolbarStackButtonIdentifier);
-
-  // TODO(crbug.com/799601): Delete this once its not needed.
-  if (base::FeatureList::IsEnabled(kMemexTabSwitcher)) {
-    [stackViewButton addTarget:self.dispatcher
-                        action:@selector(navigateToMemexTabSwitcher)
-              forControlEvents:UIControlEventTouchUpInside];
-  } else {
-    [stackViewButton addTarget:self.dispatcher
-                        action:@selector(prepareTabSwitcher)
-              forControlEvents:UIControlEventTouchDown];
-    [stackViewButton addTarget:self.dispatcher
-                        action:@selector(displayTabSwitcher)
-              forControlEvents:UIControlEventTouchUpInside];
-  }
-
-  stackViewButton.visibilityMask =
-      self.visibilityConfiguration.tabGridButtonVisibility;
-  return stackViewButton;
+  NOTREACHED();
+  return nil;
 }
 
 - (ToolbarToolsMenuButton*)toolsMenuButton {
@@ -219,50 +117,22 @@ const int styleCount = 2;
 
   SetA11yLabelAndUiAutomationName(toolsMenuButton, IDS_IOS_TOOLBAR_SETTINGS,
                                   kToolbarToolsMenuButtonIdentifier);
-  if (IsUIRefreshPhase1Enabled()) {
-    [self configureButton:toolsMenuButton width:kAdaptiveToolbarButtonWidth];
-    [toolsMenuButton.heightAnchor
-        constraintEqualToConstant:kAdaptiveToolbarButtonWidth]
-        .active = YES;
-  } else {
-    [self configureButton:toolsMenuButton width:kToolsMenuButtonWidth];
-  }
-  if (IsUIRefreshPhase1Enabled()) {
-    [toolsMenuButton addTarget:self.dispatcher
-                        action:@selector(showToolsMenuPopup)
-              forControlEvents:UIControlEventTouchUpInside];
-  } else {
-    [toolsMenuButton addTarget:self.dispatcher
-                        action:@selector(showToolsMenu)
-              forControlEvents:UIControlEventTouchUpInside];
-  }
+  [self configureButton:toolsMenuButton width:kAdaptiveToolbarButtonWidth];
+  [toolsMenuButton.heightAnchor
+      constraintEqualToConstant:kAdaptiveToolbarButtonWidth]
+      .active = YES;
+  [toolsMenuButton addTarget:self.dispatcher
+                      action:@selector(showToolsMenuPopup)
+            forControlEvents:UIControlEventTouchUpInside];
   toolsMenuButton.visibilityMask =
       self.visibilityConfiguration.toolsMenuButtonVisibility;
   return toolsMenuButton;
 }
 
 - (ToolbarButton*)shareButton {
-  int shareButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_THREE_STATE(SHARE);
-  ToolbarButton* shareButton = nil;
-  if (IsUIRefreshPhase1Enabled()) {
-    shareButton = [ToolbarButton
-        toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_share"]];
-    [self configureButton:shareButton width:kAdaptiveToolbarButtonWidth];
-  } else {
-    shareButton = [ToolbarButton
-        toolbarButtonWithImageForNormalState:NativeImage(
-                                                 shareButtonImages[self.style]
-                                                                  [DEFAULT])
-                    imageForHighlightedState:NativeImage(
-                                                 shareButtonImages[self.style]
-                                                                  [PRESSED])
-                       imageForDisabledState:NativeImage(
-                                                 shareButtonImages[self.style]
-                                                                  [DISABLED])];
-    [self configureButton:shareButton width:kToolbarButtonWidth];
-  }
-  DCHECK(shareButton);
+  ToolbarButton* shareButton = [ToolbarButton
+      toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_share"]];
+  [self configureButton:shareButton width:kAdaptiveToolbarButtonWidth];
   SetA11yLabelAndUiAutomationName(shareButton, IDS_IOS_TOOLS_MENU_SHARE,
                                   kToolbarShareButtonIdentifier);
   shareButton.titleLabel.text = @"Share";
@@ -275,31 +145,10 @@ const int styleCount = 2;
 }
 
 - (ToolbarButton*)reloadButton {
-  int reloadButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_THREE_STATE(RELOAD);
-  ToolbarButton* reloadButton = nil;
-  if (IsUIRefreshPhase1Enabled()) {
-    reloadButton = [ToolbarButton
-        toolbarButtonWithImage:[[UIImage imageNamed:@"toolbar_reload"]
-                                   imageFlippedForRightToLeftLayoutDirection]];
-    [self configureButton:reloadButton width:kAdaptiveToolbarButtonWidth];
-  } else {
-    reloadButton = [ToolbarButton
-        toolbarButtonWithImageForNormalState:NativeReversableImage(
-                                                 reloadButtonImages[self.style]
-                                                                   [DEFAULT],
-                                                 YES)
-                    imageForHighlightedState:NativeReversableImage(
-                                                 reloadButtonImages[self.style]
-                                                                   [PRESSED],
-                                                 YES)
-                       imageForDisabledState:NativeReversableImage(
-                                                 reloadButtonImages[self.style]
-                                                                   [DISABLED],
-                                                 YES)];
-    [self configureButton:reloadButton width:kToolbarButtonWidth];
-  }
-  DCHECK(reloadButton);
+  ToolbarButton* reloadButton = [ToolbarButton
+      toolbarButtonWithImage:[[UIImage imageNamed:@"toolbar_reload"]
+                                 imageFlippedForRightToLeftLayoutDirection]];
+  [self configureButton:reloadButton width:kAdaptiveToolbarButtonWidth];
   reloadButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_ACCNAME_RELOAD);
   [reloadButton addTarget:self.dispatcher
@@ -311,27 +160,9 @@ const int styleCount = 2;
 }
 
 - (ToolbarButton*)stopButton {
-  int stopButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_THREE_STATE(STOP);
-  ToolbarButton* stopButton = nil;
-  if (IsUIRefreshPhase1Enabled()) {
-    stopButton = [ToolbarButton
-        toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_stop"]];
-    [self configureButton:stopButton width:kAdaptiveToolbarButtonWidth];
-  } else {
-    stopButton = [ToolbarButton
-        toolbarButtonWithImageForNormalState:NativeImage(
-                                                 stopButtonImages[self.style]
-                                                                 [DEFAULT])
-                    imageForHighlightedState:NativeImage(
-                                                 stopButtonImages[self.style]
-                                                                 [PRESSED])
-                       imageForDisabledState:NativeImage(
-                                                 stopButtonImages[self.style]
-                                                                 [DISABLED])];
-    [self configureButton:stopButton width:kToolbarButtonWidth];
-  }
-  DCHECK(stopButton);
+  ToolbarButton* stopButton = [ToolbarButton
+      toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_stop"]];
+  [self configureButton:stopButton width:kAdaptiveToolbarButtonWidth];
   stopButton.accessibilityLabel = l10n_util::GetNSString(IDS_IOS_ACCNAME_STOP);
   [stopButton addTarget:self.dispatcher
                  action:@selector(stopLoading)
@@ -341,25 +172,11 @@ const int styleCount = 2;
 }
 
 - (ToolbarButton*)bookmarkButton {
-  int bookmarkButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_TWO_STATE(STAR);
-  ToolbarButton* bookmarkButton = nil;
-  if (IsUIRefreshPhase1Enabled()) {
-    bookmarkButton = [ToolbarButton
-        toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_bookmark"]];
-    [bookmarkButton setImage:[UIImage imageNamed:@"toolbar_bookmark_active"]
-                    forState:ControlStateSpotlighted];
-    [self configureButton:bookmarkButton width:kAdaptiveToolbarButtonWidth];
-  } else {
-    bookmarkButton = [ToolbarButton
-        toolbarButtonWithImageForNormalState:
-            NativeImage(bookmarkButtonImages[self.style][DEFAULT])
-                    imageForHighlightedState:
-                        NativeImage(bookmarkButtonImages[self.style][PRESSED])
-                       imageForDisabledState:nil];
-    [self configureButton:bookmarkButton width:kToolbarButtonWidth];
-  }
-  DCHECK(bookmarkButton);
+  ToolbarButton* bookmarkButton = [ToolbarButton
+      toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_bookmark"]];
+  [bookmarkButton setImage:[UIImage imageNamed:@"toolbar_bookmark_active"]
+                  forState:ControlStateSpotlighted];
+  [self configureButton:bookmarkButton width:kAdaptiveToolbarButtonWidth];
   bookmarkButton.adjustsImageWhenHighlighted = NO;
   [bookmarkButton
       setImage:[bookmarkButton imageForState:UIControlStateHighlighted]
@@ -375,42 +192,13 @@ const int styleCount = 2;
 }
 
 - (ToolbarButton*)voiceSearchButton {
-  NSArray<UIImage*>* images = [self voiceSearchImages];
-  ToolbarButton* voiceSearchButton =
-      [ToolbarButton toolbarButtonWithImageForNormalState:images[0]
-                                 imageForHighlightedState:images[1]
-                                    imageForDisabledState:nil];
-  voiceSearchButton.accessibilityLabel =
-      l10n_util::GetNSString(IDS_IOS_ACCNAME_VOICE_SEARCH);
-  [self configureButton:voiceSearchButton width:kToolbarButtonWidth];
-  voiceSearchButton.enabled = NO;
-  voiceSearchButton.visibilityMask =
-      self.visibilityConfiguration.voiceSearchButtonVisibility;
-  return voiceSearchButton;
+  NOTREACHED();
+  return nil;
 }
 
 - (ToolbarButton*)contractButton {
-  NSString* collapseName = _style ? @"collapse_incognito" : @"collapse";
-  NSString* collapsePressedName =
-      _style ? @"collapse_pressed_incognito" : @"collapse_pressed";
-  ToolbarButton* contractButton = [ToolbarButton
-      toolbarButtonWithImageForNormalState:[UIImage imageNamed:collapseName]
-                  imageForHighlightedState:[UIImage
-                                               imageNamed:collapsePressedName]
-                     imageForDisabledState:nil];
-  contractButton.accessibilityLabel = l10n_util::GetNSString(IDS_CANCEL);
-  contractButton.accessibilityIdentifier =
-      kToolbarCancelOmniboxEditButtonIdentifier;
-  contractButton.alpha = 0;
-  contractButton.hidden = YES;
-  [self configureButton:contractButton width:kToolbarButtonWidth];
-  [contractButton addTarget:self.dispatcher
-                     action:@selector(cancelOmniboxEdit)
-           forControlEvents:UIControlEventTouchUpInside];
-
-  contractButton.visibilityMask =
-      self.visibilityConfiguration.contractButtonVisibility;
-  return contractButton;
+  NOTREACHED();
+  return nil;
 }
 
 - (ToolbarButton*)omniboxButton {
@@ -435,24 +223,8 @@ const int styleCount = 2;
 }
 
 - (ToolbarButton*)locationBarLeadingButton {
-  ToolbarButton* locationBarLeadingButton;
-  if (self.style == INCOGNITO) {
-    locationBarLeadingButton = [ToolbarButton
-        toolbarButtonWithImageForNormalState:
-            [UIImage imageNamed:@"incognito_marker_typing"]
-                    imageForHighlightedState:nil
-                       imageForDisabledState:
-                           [UIImage imageNamed:@"incognito_marker_typing"]];
-    locationBarLeadingButton.enabled = NO;
-    [self configureButton:locationBarLeadingButton
-                    width:kLeadingLocationBarButtonWidth];
-    locationBarLeadingButton.imageEdgeInsets =
-        UIEdgeInsetsMakeDirected(0, kLeadingLocationBarButtonImageInset, 0, 0);
-  }
-  locationBarLeadingButton.visibilityMask =
-      self.visibilityConfiguration.locationBarLeadingButtonVisibility;
-
-  return locationBarLeadingButton;
+  NOTREACHED();
+  return nil;
 }
 
 - (UIButton*)cancelButton {
@@ -491,25 +263,18 @@ const int styleCount = 2;
       [button.widthAnchor constraintEqualToConstant:width];
   constraint.priority = UILayoutPriorityRequired - 1;
   constraint.active = YES;
-  if (IsUIRefreshPhase1Enabled()) {
-    button.configuration = self.toolbarConfiguration;
-    button.exclusiveTouch = YES;
-  }
+  button.configuration = self.toolbarConfiguration;
+  button.exclusiveTouch = YES;
 }
 
 - (NSArray<UIImage*>*)voiceSearchImages {
-  // The voice search images can be overridden by the branded image provider.
-  return ios::GetChromeBrowserProvider()
-      ->GetBrandedImageProvider()
-      ->GetToolbarVoiceSearchButtonImages(self.style == INCOGNITO);
+  NOTREACHED();
+  return nil;
 }
 
 - (NSArray<UIImage*>*)TTSImages {
-  int TTSImages[styleCount][TOOLBAR_STATE_COUNT] = TOOLBAR_IDR_TWO_STATE(TTS);
-  return [NSArray arrayWithObjects:NativeImage(TTSImages[self.style][DEFAULT]),
-                                   NativeImage(TTSImages[self.style][PRESSED]),
-                                   nil];
+  NOTREACHED();
+  return nil;
 }
-
 
 @end
