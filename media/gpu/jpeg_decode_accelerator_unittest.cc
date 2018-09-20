@@ -87,25 +87,30 @@ struct ParsedJpegImage {
     return image;
   }
 
-  static std::unique_ptr<ParsedJpegImage> CreateBlackImage(int width,
-                                                           int height) {
+  static std::unique_ptr<ParsedJpegImage> CreateBlackImage(
+      int width,
+      int height,
+      SkJpegEncoder::Downsample downsample = SkJpegEncoder::Downsample::k420) {
+    // Generate a black image with the specified resolution.
+    constexpr size_t kBytesPerPixel = 4;
+    const std::vector<unsigned char> input_buffer(width * height *
+                                                  kBytesPerPixel);
+    const SkImageInfo info = SkImageInfo::Make(
+        width, height, kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
+    const SkPixmap src(info, input_buffer.data(), width * kBytesPerPixel);
+
+    // Encode the generated image in the JPEG format, the output buffer will be
+    // automatically resized while encoding.
+    constexpr int kJpegQuality = 100;
+    std::vector<unsigned char> encoded;
+    LOG_ASSERT(gfx::JPEGCodec::Encode(src, kJpegQuality, downsample, &encoded));
+
     base::FilePath filename;
     LOG_ASSERT(base::GetTempDir(&filename));
     filename =
         filename.Append(base::StringPrintf("black-%dx%d.jpg", width, height));
 
     auto image = std::make_unique<ParsedJpegImage>(filename);
-
-    constexpr size_t kBytesPerPixel = 4;
-    constexpr int kJpegQuality = 100;
-    const std::vector<unsigned char> input_buffer(width * height *
-                                                  kBytesPerPixel);
-    std::vector<unsigned char> encoded;
-    const SkImageInfo info = SkImageInfo::Make(
-        width, height, kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
-    const SkPixmap src(info, input_buffer.data(), width * kBytesPerPixel);
-    LOG_ASSERT(gfx::JPEGCodec::Encode(src, kJpegQuality, &encoded));
-
     image->data_str.append(encoded.begin(), encoded.end());
     image->InitializeSizes(width, height);
     return image;
@@ -125,6 +130,7 @@ struct ParsedJpegImage {
     // least one odd dimension.
     coded_size.SetSize((visible_size.width() + 1) & ~1,
                        (visible_size.height() + 1) & ~1);
+    // The JPEG decoder will always return the decoded frame in I420 format.
     output_size = VideoFrame::AllocationSize(PIXEL_FORMAT_I420, coded_size);
   }
 
@@ -172,6 +178,9 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   // Used for testing some drivers which will align the output resolution to a
   // multiple of 16. 640x360 will be aligned to 640x368.
   std::unique_ptr<ParsedJpegImage> image_data_640x360_black_;
+  // Generated black images used to test different JPEG sampling formats.
+  std::unique_ptr<ParsedJpegImage> image_data_640x368_422_black_;
+  std::unique_ptr<ParsedJpegImage> image_data_640x368_444_black_;
   // Parsed data of "peach_pi-1280x720.jpg".
   std::unique_ptr<ParsedJpegImage> image_data_1280x720_default_;
   // Parsed data of failure image.
@@ -191,6 +200,10 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
   image_data_1280x720_black_ = ParsedJpegImage::CreateBlackImage(1280, 720);
   image_data_640x368_black_ = ParsedJpegImage::CreateBlackImage(640, 368);
   image_data_640x360_black_ = ParsedJpegImage::CreateBlackImage(640, 360);
+  image_data_640x368_422_black_ = ParsedJpegImage::CreateBlackImage(
+      640, 368, SkJpegEncoder::Downsample::k422);
+  image_data_640x368_444_black_ = ParsedJpegImage::CreateBlackImage(
+      640, 368, SkJpegEncoder::Downsample::k444);
 
   image_data_1280x720_default_ = ParsedJpegImage::CreateFromFile(
       GetOriginalOrTestDataFilePath(kDefaultJpegFilename));
@@ -483,12 +496,14 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
   dup_handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
   BitstreamBuffer bitstream_buffer(bitstream_buffer_id, dup_handle,
                                    image_file->data_str.size());
+
   hw_out_frame_ = VideoFrame::WrapExternalSharedMemory(
       PIXEL_FORMAT_I420, image_file->coded_size,
       gfx::Rect(image_file->visible_size), image_file->visible_size,
       static_cast<uint8_t*>(hw_out_shm_->memory()), image_file->output_size,
       hw_out_shm_->handle(), 0, base::TimeDelta());
   LOG_ASSERT(hw_out_frame_.get());
+
   decoder_->Decode(bitstream_buffer, hw_out_frame_);
 }
 
@@ -769,6 +784,16 @@ TEST_F(JpegDecodeAcceleratorTest, CodedSizeAlignment) {
   const std::vector<ParsedJpegImage*> images = {
       g_env->image_data_640x360_black_.get()};
   const std::vector<ClientState> expected_status = {CS_DECODE_PASS};
+  TestDecode(images, expected_status);
+}
+
+// Tests whether different JPEG sampling formats will be decoded correctly.
+TEST_F(JpegDecodeAcceleratorTest, SamplingFormatChange) {
+  const std::vector<ParsedJpegImage*> images = {
+      g_env->image_data_640x368_black_.get(),
+      g_env->image_data_640x368_422_black_.get(),
+      g_env->image_data_640x368_444_black_.get()};
+  const std::vector<ClientState> expected_status(images.size(), CS_DECODE_PASS);
   TestDecode(images, expected_status);
 }
 

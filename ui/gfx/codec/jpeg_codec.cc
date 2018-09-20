@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/encode/SkJpegEncoder.h"
 #include "ui/gfx/codec/vector_wstream.h"
 
 extern "C" {
@@ -47,15 +46,23 @@ void ErrorExit(jpeg_common_struct* cinfo) {
 
 // Encoder ---------------------------------------------------------------------
 
-bool JPEGCodec::Encode(const SkPixmap& src,
+bool JPEGCodec::Encode(const SkPixmap& input,
                        int quality,
+                       SkJpegEncoder::Downsample downsample,
                        std::vector<unsigned char>* output) {
   output->clear();
   VectorWStream dst(output);
 
   SkJpegEncoder::Options options;
   options.fQuality = quality;
-  return SkJpegEncoder::Encode(&dst, src, options);
+  options.fDownsample = downsample;
+  return SkJpegEncoder::Encode(&dst, input, options);
+}
+
+bool JPEGCodec::Encode(const SkPixmap& input,
+                       int quality,
+                       std::vector<unsigned char>* output) {
+  return Encode(input, quality, SkJpegEncoder::Downsample::k420, output);
 }
 
 bool JPEGCodec::Encode(const SkBitmap& src,
