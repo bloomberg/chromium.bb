@@ -382,8 +382,9 @@ class BlinkPerfBindings(_BlinkPerfBenchmark):
     return 'blink_perf.bindings'
 
 
-@benchmark.Info(emails=['futhark@chromium.org'],
-                documentation_url='https://bit.ly/blink-perf-benchmarks')
+@benchmark.Info(emails=['futhark@chromium.org', 'andruud@chromium.org'],
+                documentation_url='https://bit.ly/blink-perf-benchmarks',
+                component='Blink>CSS')
 class BlinkPerfCSS(_BlinkPerfBenchmark):
   subdir = 'css'
 

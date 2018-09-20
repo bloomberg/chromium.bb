@@ -5,7 +5,7 @@ angle_perftests,"jmadill@chromium.org, chrome-gpu-perf-owners@chromium.org",Inte
 blink_perf.accessibility,dmazzoni@chromium.org,['Blink>Accessibility'],https://bit.ly/blink-perf-benchmarks,
 blink_perf.bindings,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",,https://bit.ly/blink-perf-benchmarks,
 blink_perf.canvas,fserb@chromium.org,,https://bit.ly/blink-perf-benchmarks,
-blink_perf.css,futhark@chromium.org,,https://bit.ly/blink-perf-benchmarks,
+blink_perf.css,"futhark@chromium.org, andruud@chromium.org",Blink>CSS,https://bit.ly/blink-perf-benchmarks,
 blink_perf.dom,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",,https://bit.ly/blink-perf-benchmarks,
 blink_perf.events,hayato@chromium.org,Blink>DOM,https://bit.ly/blink-perf-benchmarks,
 blink_perf.image_decoder,cblume@chromium.org,,https://bit.ly/blink-perf-benchmarks,
