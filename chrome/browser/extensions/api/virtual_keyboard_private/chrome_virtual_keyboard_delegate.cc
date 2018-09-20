@@ -291,7 +291,13 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "imeservice", base::FeatureList::IsEnabled(
                         chromeos::features::kImeServiceConnectable)));
 
-  auto config = keyboard::KeyboardController::Get()->keyboard_config();
+  keyboard::KeyboardController::KeyboardConfig config;
+  // KeyboardController::Get() may be null in Mash. TODO(stevenjb): Fix this.
+  // https://crbug.com/843332.
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller)
+    config = keyboard_controller->keyboard_config();
+
   // TODO(oka): Change this to use config.voice_input.
   features->AppendString(GenerateFeatureFlag(
       "voiceinput", has_audio_input_devices && config.voice_input &&
