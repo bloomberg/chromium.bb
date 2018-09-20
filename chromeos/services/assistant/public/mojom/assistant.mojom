@@ -26,9 +26,10 @@ interface Assistant {
   // Starts a new Assistant voice interaction.
   StartVoiceInteraction();
 
-  // Stops the active Assistant interaction. If there is no active interaction,
-  // this method is a no-op.
-  StopActiveInteraction();
+  // Stops the active Assistant interaction and cancel the conversation if
+  // |cancel_conversation|. If there is no active interaction, this method
+  // is a no-op.
+  StopActiveInteraction(bool cancel_conversation);
 
   // Send text query to assistant. Result will be returned through registered
   // |AssistantInteractionSubscriber|.

@@ -103,7 +103,7 @@ class AssistantInteractionController
   void StartScreenContextInteraction();
   void StartTextInteraction(const std::string text);
   void StartVoiceInteraction();
-  void StopActiveInteraction();
+  void StopActiveInteraction(bool cancel_conversation);
 
   void OpenUrl(const GURL& url);
 

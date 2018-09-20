@@ -131,7 +131,7 @@ void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
       // navigate away from the main stage.
       if (ui_mode == AssistantUiMode::kWebUi &&
           model_.pending_query().type() == AssistantQueryType::kVoice) {
-        StopActiveInteraction();
+        StopActiveInteraction(false);
       }
       break;
     case InputModality::kKeyboard:
@@ -148,7 +148,7 @@ void AssistantInteractionController::OnUiVisibilityChanged(
     case AssistantVisibility::kClosed:
       // When the UI is closed we need to stop any active interaction. We also
       // reset the interaction state and restore the default input modality.
-      StopActiveInteraction();
+      StopActiveInteraction(true);
       model_.ClearInteraction();
       model_.SetInputModality(InputModality::kKeyboard);
       break;
@@ -157,7 +157,7 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       // don't listen to the user while not visible. We also restore the default
       // input modality for the next launch.
       if (model_.pending_query().type() == AssistantQueryType::kVoice) {
-        StopActiveInteraction();
+        StopActiveInteraction(false);
       }
       model_.SetInputModality(InputModality::kKeyboard);
       break;
@@ -224,7 +224,7 @@ void AssistantInteractionController::OnInputModalityChanged(
   // automatically interrupt any pre-existing activity. Stopping the active
   // interaction here for voice input modality would actually have the undesired
   // effect of stopping the voice interaction.
-  StopActiveInteraction();
+  StopActiveInteraction(false);
 }
 
 void AssistantInteractionController::OnInteractionStarted(
@@ -441,7 +441,7 @@ void AssistantInteractionController::OnDialogPlateButtonPressed(
       StartVoiceInteraction();
       break;
     case MicState::kOpen:
-      StopActiveInteraction();
+      StopActiveInteraction(false);
       break;
   }
 }
@@ -454,7 +454,7 @@ void AssistantInteractionController::OnDialogPlateContentsCommitted(
 
 void AssistantInteractionController::StartMetalayerInteraction(
     const gfx::Rect& region) {
-  StopActiveInteraction();
+  StopActiveInteraction(false);
 
   model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
       l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN)));
@@ -463,7 +463,7 @@ void AssistantInteractionController::StartMetalayerInteraction(
 }
 
 void AssistantInteractionController::StartScreenContextInteraction() {
-  StopActiveInteraction();
+  StopActiveInteraction(false);
 
   model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
       l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN)));
@@ -474,7 +474,7 @@ void AssistantInteractionController::StartScreenContextInteraction() {
 
 void AssistantInteractionController::StartTextInteraction(
     const std::string text) {
-  StopActiveInteraction();
+  StopActiveInteraction(false);
 
   model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(text));
 
@@ -482,14 +482,15 @@ void AssistantInteractionController::StartTextInteraction(
 }
 
 void AssistantInteractionController::StartVoiceInteraction() {
-  StopActiveInteraction();
+  StopActiveInteraction(false);
 
   model_.SetPendingQuery(std::make_unique<AssistantVoiceQuery>());
 
   assistant_->StartVoiceInteraction();
 }
 
-void AssistantInteractionController::StopActiveInteraction() {
+void AssistantInteractionController::StopActiveInteraction(
+    bool cancel_conversation) {
   // Even though the interaction state will be asynchronously set to inactive
   // via a call to OnInteractionFinished(Resolution), we explicitly set it to
   // inactive here to prevent processing any additional UI related service
@@ -497,7 +498,7 @@ void AssistantInteractionController::StopActiveInteraction() {
   model_.SetInteractionState(InteractionState::kInactive);
   model_.ClearPendingQuery();
 
-  assistant_->StopActiveInteraction();
+  assistant_->StopActiveInteraction(cancel_conversation);
 
   // Because we are stopping an interaction in progress, we discard any pending
   // response for it that is cached to prevent it from being finalized when the

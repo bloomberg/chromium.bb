@@ -83,7 +83,7 @@ class AssistantManagerServiceImpl
   void StartCachedScreenContextInteraction() override;
   void StartMetalayerInteraction(const gfx::Rect& region) override;
   void StartVoiceInteraction() override;
-  void StopActiveInteraction() override;
+  void StopActiveInteraction(bool cancel_conversation) override;
   void SendTextQuery(const std::string& query) override;
   void AddAssistantInteractionSubscriber(
       mojom::AssistantInteractionSubscriberPtr subscriber) override;

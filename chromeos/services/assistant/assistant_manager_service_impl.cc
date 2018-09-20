@@ -217,9 +217,11 @@ void AssistantManagerServiceImpl::StartVoiceInteraction() {
   assistant_manager_->StartAssistantInteraction();
 }
 
-void AssistantManagerServiceImpl::StopActiveInteraction() {
+void AssistantManagerServiceImpl::StopActiveInteraction(
+    bool cancel_conversation) {
   platform_api_->SetMicState(false);
-  assistant_manager_->StopAssistantInteraction();
+  assistant_manager_internal_->StopAssistantInteractionInternal(
+      cancel_conversation);
 }
 
 void AssistantManagerServiceImpl::StartCachedScreenContextInteraction() {
