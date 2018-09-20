@@ -2128,16 +2128,24 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
 }
 
 #if USE_SYMM_MULTI_LAYER
+// TODO(debargha): Temporarily disable the allocation startegy that
+// uses the macros below, since it seems to cause a slowdown.
+// INvestigate and either re-enable or remove.
+#define NEW_MULTI_LVL_BOOST_VBR_ALLOC 0
+
+#if NEW_MULTI_LVL_BOOST_VBR_ALLOC
 #define LEAF_REDUCTION_FACTOR 0.75f
 #define LVL_3_BOOST_FACTOR 0.8f
 #define LVL_2_BOOST_FACTOR 0.3f
 
-static float_t lvl_budget_factor[MAX_PYRAMID_LVL - 1][MAX_PYRAMID_LVL - 1] = {
+static float_t lvl_budget_factor[MAX_PYRAMID_LVL][MAX_PYRAMID_LVL - 1] = {
+  { 0, 0, 0 },
   { 1, 0, 0 },
   { LVL_3_BOOST_FACTOR, 0, 0 },  // Leaking budget works better
   { LVL_3_BOOST_FACTOR, (1 - LVL_3_BOOST_FACTOR) * LVL_2_BOOST_FACTOR,
     (1 - LVL_3_BOOST_FACTOR) * (1 - LVL_2_BOOST_FACTOR) }
 };
+#endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
 #endif  // USE_SYMM_MULTI_LAYER
 static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
                                    double group_error, int gf_arf_bits) {
@@ -2236,16 +2244,18 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 
       gf_group->bit_allocation[arf_pos] = target_frame_size;
 #if MULTI_LVL_BOOST_VBR_CQ
-      const int pyr_h = gf_group->pyramid_height - 2;
       const int this_lvl = gf_group->pyramid_level[arf_pos];
       const int dist2top = gf_group->pyramid_height - 1 - this_lvl;
-
+#if NEW_MULTI_LVL_BOOST_VBR_ALLOC
       const float_t budget =
           LEAF_REDUCTION_FACTOR * gf_group->pyramid_lvl_nodes[0];
-      const float_t lvl_boost = budget * lvl_budget_factor[pyr_h][dist2top] /
-                                gf_group->pyramid_lvl_nodes[this_lvl];
-
+      const float_t lvl_boost =
+          budget * lvl_budget_factor[gf_group->pyramid_height - 1][dist2top] /
+          gf_group->pyramid_lvl_nodes[this_lvl];
       gf_group->bit_allocation[arf_pos] += (int)(target_frame_size * lvl_boost);
+#else
+      gf_group->bit_allocation[arf_pos] += (target_frame_size >> dist2top);
+#endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
 #endif  // MULTI_LVL_BOOST_VBR_CQ
 #endif  // USE_SYMM_MULTI_LAYER
     } else {
@@ -2254,8 +2264,12 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
       gf_group->bit_allocation[frame_index] = target_frame_size;
 #if MULTI_LVL_BOOST_VBR_CQ
       if (cpi->new_bwdref_update_rule) {
+#if NEW_MULTI_LVL_BOOST_VBR_ALLOC
         gf_group->bit_allocation[frame_index] -=
             (int)(target_frame_size * LEAF_REDUCTION_FACTOR);
+#else
+        gf_group->bit_allocation[frame_index] -= (target_frame_size >> 1);
+#endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
       }
 #endif  // MULTI_LVL_BOOST_VBR_CQ
     }
