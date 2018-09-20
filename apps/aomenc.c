@@ -1470,9 +1470,11 @@ static void open_output_file(struct stream_state *stream,
 #if CONFIG_WEBM_IO
   if (stream->config.write_webm) {
     stream->webm_ctx.stream = stream->file;
-    write_webm_file_header(&stream->webm_ctx, &stream->encoder, cfg,
-                           stream->config.stereo_fmt, global->codec->fourcc,
-                           pixel_aspect_ratio);
+    if (write_webm_file_header(&stream->webm_ctx, &stream->encoder, cfg,
+                               stream->config.stereo_fmt, global->codec->fourcc,
+                               pixel_aspect_ratio) != 0) {
+      fatal("WebM writer initialization failed.");
+    }
   }
 #else
   (void)pixel_aspect_ratio;
@@ -1491,7 +1493,9 @@ static void close_output_file(struct stream_state *stream,
 
 #if CONFIG_WEBM_IO
   if (stream->config.write_webm) {
-    write_webm_file_footer(&stream->webm_ctx);
+    if (write_webm_file_footer(&stream->webm_ctx) != 0) {
+      fatal("WebM writer finalization failed.");
+    }
   }
 #endif
 
@@ -1714,7 +1718,9 @@ static void get_cx_data(struct stream_state *stream,
         update_rate_histogram(stream->rate_hist, cfg, pkt);
 #if CONFIG_WEBM_IO
         if (stream->config.write_webm) {
-          write_webm_block(&stream->webm_ctx, cfg, pkt);
+          if (write_webm_block(&stream->webm_ctx, cfg, pkt) != 0) {
+            fatal("WebM writer failed.");
+          }
         }
 #endif
         if (!stream->config.write_webm) {
