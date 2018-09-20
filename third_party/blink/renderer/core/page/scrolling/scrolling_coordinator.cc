@@ -577,7 +577,10 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
           &ScrollingCoordinator::DidScroll, WrapWeakPersistent(this)));
     }
 
-    cc_layer->SetBounds(static_cast<gfx::Size>(scroll_contents_size));
+    // This call has to go through the GraphicsLayer method to preserve
+    // invalidation code there.
+    scrollable_area->LayerForScrolling()->SetSize(
+        static_cast<gfx::Size>(scroll_contents_size));
   }
   if (ScrollbarLayerGroup* scrollbar_layer_group =
           GetScrollbarLayerGroup(scrollable_area, kHorizontalScrollbar)) {

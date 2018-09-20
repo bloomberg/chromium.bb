@@ -1143,7 +1143,7 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
   }
 
   squashing_layer_->SetPosition(FloatPoint(squash_layer_bounds.Location()));
-  squashing_layer_->SetSize(squash_layer_bounds.Size());
+  squashing_layer_->SetSize(gfx::Size(squash_layer_bounds.Size()));
   // We can't squashing_layer_->SetOffsetFromLayoutObject().
   // Squashing layer has special paint and invalidation logic that already
   // compensated for compositing bounds, setting it here would end up
@@ -1318,7 +1318,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
     const IntRect& local_compositing_bounds,
     const IntPoint& graphics_layer_parent_location) {
   FloatPoint old_position(graphics_layer_->GetPosition());
-  IntSize old_size = graphics_layer_->Size();
+  IntSize old_size(graphics_layer_->Size());
   FloatPoint new_position = FloatPoint(relative_compositing_bounds.Location() -
                                        graphics_layer_parent_location);
   IntSize new_size = relative_compositing_bounds.Size();
@@ -1341,7 +1341,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
       ToIntSize(local_compositing_bounds.Location()));
 
   if (old_size != new_size)
-    graphics_layer_->SetSize(new_size);
+    graphics_layer_->SetSize(gfx::Size(new_size));
 
   // m_graphicsLayer is the corresponding GraphicsLayer for this PaintLayer and
   // its non-compositing descendants. So, the visibility flag for
@@ -1450,7 +1450,7 @@ void CompositedLayerMapping::UpdateAncestorClippingLayerGeometry(
 
   ancestor_clipping_layer_->SetPosition(FloatPoint(
       snapped_clip_rect.Location() - graphics_layer_parent_location));
-  ancestor_clipping_layer_->SetSize(snapped_clip_rect.Size());
+  ancestor_clipping_layer_->SetSize(gfx::Size(snapped_clip_rect.Size()));
 
   // backgroundRect is relative to compositingContainer, so subtract
   // snappedOffsetFromCompositedAncestor.X/snappedOffsetFromCompositedAncestor.Y
@@ -1554,7 +1554,7 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
   const IntRect border_box =
       owning_layer_.GetLayoutBox()->PixelSnappedBorderBoxRect(
           owning_layer_.SubpixelAccumulation());
-  overflow_controls_host_layer_->SetSize(border_box.Size());
+  overflow_controls_host_layer_->SetSize(gfx::Size(border_box.Size()));
   overflow_controls_host_layer_->SetMasksToBounds(true);
   overflow_controls_host_layer_->SetBackfaceVisibility(
       owning_layer_.GetLayoutObject().StyleRef().BackfaceVisibility() ==
@@ -1571,7 +1571,7 @@ void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {
     // so use the PaddingBoxRect.
     IntRect clipping_box = PixelSnappedIntRect(
         ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect());
-    child_containment_layer_->SetSize(clipping_box.Size());
+    child_containment_layer_->SetSize(gfx::Size(clipping_box.Size()));
     child_containment_layer_->SetOffsetFromLayoutObject(
         ToIntSize(clipping_box.Location()));
     IntPoint parent_location(
@@ -1582,7 +1582,7 @@ void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {
     IntRect clipping_box = PixelSnappedIntRect(
         ToLayoutBox(GetLayoutObject())
             .ClippingRect(LayoutPoint(SubpixelAccumulation())));
-    child_containment_layer_->SetSize(clipping_box.Size());
+    child_containment_layer_->SetSize(gfx::Size(clipping_box.Size()));
     child_containment_layer_->SetOffsetFromLayoutObject(
         ToIntSize(clipping_box.Location()));
     IntPoint parent_location(
@@ -1609,7 +1609,7 @@ void CompositedLayerMapping::UpdateChildTransformLayerGeometry() {
   const IntRect border_box =
       ToLayoutBox(owning_layer_.GetLayoutObject())
           .PixelSnappedBorderBoxRect(SubpixelAccumulation());
-  child_transform_layer_->SetSize(border_box.Size());
+  child_transform_layer_->SetSize(gfx::Size(border_box.Size()));
   child_transform_layer_->SetOffsetFromLayoutObject(
       ToIntSize(border_box.Location()));
   IntPoint parent_location(
@@ -1684,7 +1684,7 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
       FloatPoint(overflow_clip_rect.Location() + local_content_offset));
 
   auto old_scroll_container_size = scrolling_layer_->Size();
-  scrolling_layer_->SetSize(overflow_clip_rect.Size());
+  scrolling_layer_->SetSize(gfx::Size(overflow_clip_rect.Size()));
   bool scroll_container_size_changed =
       old_scroll_container_size != scrolling_layer_->Size();
 
@@ -1717,7 +1717,7 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
   // The scroll offset change is compared using floating point so that
   // fractional scroll offset change can be propagated to compositor.
   if (scrolling_contents_offset != scrolling_contents_offset_ ||
-      scroll_size != scrolling_contents_layer_->Size() ||
+      gfx::Size(scroll_size) != scrolling_contents_layer_->Size() ||
       scroll_container_size_changed) {
     auto* scrolling_coordinator = owning_layer_.GetScrollingCoordinator();
     scrolling_coordinator->ScrollableAreaScrollLayerDidChange(scrollable_area);
@@ -1725,7 +1725,7 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
   }
   scrolling_contents_offset_ = scrolling_contents_offset;
 
-  scrolling_contents_layer_->SetSize(scroll_size);
+  scrolling_contents_layer_->SetSize(gfx::Size(scroll_size));
 
   scrolling_contents_layer_->SetOffsetFromLayoutObject(
       overflow_clip_rect.Location() - scrollable_area->ScrollOrigin());
@@ -1774,13 +1774,13 @@ void CompositedLayerMapping::UpdateForegroundLayerGeometry() {
   // Should be equivalent to local_compositing_bounds.
   IntRect compositing_bounds(
       IntPoint(graphics_layer_->OffsetFromLayoutObject()),
-      graphics_layer_->Size());
+      IntSize(graphics_layer_->Size()));
   if (scrolling_layer_) {
     // Override compositing bounds to include full overflow if composited
     // scrolling is used.
     compositing_bounds =
         IntRect(IntPoint(scrolling_contents_layer_->OffsetFromLayoutObject()),
-                scrolling_contents_layer_->Size());
+                IntSize(scrolling_contents_layer_->Size()));
   } else if (child_containment_layer_) {
     // If we have a clipping layer, shrink compositing bounds to the clip rect.
     // Note: this is technically incorrect because non-composited positive
@@ -1789,17 +1789,17 @@ void CompositedLayerMapping::UpdateForegroundLayerGeometry() {
     // escape clips, thus shrinking the layer won't cause bug.
     IntRect clipping_box(
         IntPoint(child_containment_layer_->OffsetFromLayoutObject()),
-        child_containment_layer_->Size());
+        IntSize(child_containment_layer_->Size()));
     compositing_bounds.Intersect(clipping_box);
   }
 
   IntRect old_compositing_bounds(
       IntPoint(foreground_layer_->OffsetFromLayoutObject()),
-      foreground_layer_->Size());
+      IntSize(foreground_layer_->Size()));
   if (compositing_bounds != old_compositing_bounds) {
     foreground_layer_->SetOffsetFromLayoutObject(
         ToIntSize(compositing_bounds.Location()));
-    foreground_layer_->SetSize(compositing_bounds.Size());
+    foreground_layer_->SetSize(gfx::Size(compositing_bounds.Size()));
     foreground_layer_->SetNeedsDisplay();
   }
   IntPoint parent_location(ParentForSublayers()->OffsetFromLayoutObject());
@@ -1813,8 +1813,8 @@ void CompositedLayerMapping::UpdateDecorationOutlineLayerGeometry(
     return;
   const auto& decoration_size = relative_compositing_bounds_size;
   decoration_outline_layer_->SetPosition(FloatPoint());
-  if (decoration_size != decoration_outline_layer_->Size()) {
-    decoration_outline_layer_->SetSize(decoration_size);
+  if (gfx::Size(decoration_size) != decoration_outline_layer_->Size()) {
+    decoration_outline_layer_->SetSize(gfx::Size(decoration_size));
     decoration_outline_layer_->SetNeedsDisplay();
   }
   decoration_outline_layer_->SetOffsetFromLayoutObject(
@@ -2218,7 +2218,7 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
       IntRect frame_rect = h_bar->FrameRect();
       layer->SetPosition(FloatPoint(frame_rect.Location()));
       layer->SetOffsetFromLayoutObject(ToIntSize(frame_rect.Location()));
-      layer->SetSize(frame_rect.Size());
+      layer->SetSize(gfx::Size(frame_rect.Size()));
       if (layer->HasContentsLayer())
         layer->SetContentsRect(IntRect(IntPoint(), frame_rect.Size()));
     }
@@ -2231,7 +2231,7 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
       IntRect frame_rect = v_bar->FrameRect();
       layer->SetPosition(FloatPoint(frame_rect.Location()));
       layer->SetOffsetFromLayoutObject(ToIntSize(frame_rect.Location()));
-      layer->SetSize(frame_rect.Size());
+      layer->SetSize(gfx::Size(frame_rect.Size()));
       if (layer->HasContentsLayer())
         layer->SetContentsRect(IntRect(IntPoint(), frame_rect.Size()));
     }
@@ -2244,7 +2244,7 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
     layer->SetPosition(FloatPoint(scroll_corner_and_resizer.Location()));
     layer->SetOffsetFromLayoutObject(
         ToIntSize(scroll_corner_and_resizer.Location()));
-    layer->SetSize(scroll_corner_and_resizer.Size());
+    layer->SetSize(gfx::Size(scroll_corner_and_resizer.Size()));
     layer->SetDrawsContent(!scroll_corner_and_resizer.IsEmpty());
   }
 }
@@ -3214,7 +3214,7 @@ static const int kPixelDistanceToRecord = 4000;
 
 IntRect CompositedLayerMapping::RecomputeInterestRect(
     const GraphicsLayer* graphics_layer) const {
-  IntRect graphics_layer_bounds(IntPoint(), graphics_layer->Size());
+  IntRect graphics_layer_bounds(IntPoint(), IntSize(graphics_layer->Size()));
 
   FloatSize offset_from_anchor_layout_object;
   const LayoutBoxModelObject* anchor_layout_object;
@@ -3370,7 +3370,8 @@ IntRect CompositedLayerMapping::ComputeInterestRect(
     const GraphicsLayer* graphics_layer,
     const IntRect& previous_interest_rect) const {
   // Use the previous interest rect if it covers the whole layer.
-  IntRect whole_layer_rect = IntRect(IntPoint(), graphics_layer->Size());
+  IntRect whole_layer_rect =
+      IntRect(IntPoint(), IntSize(graphics_layer->Size()));
   if (!NeedsRepaint(*graphics_layer) &&
       previous_interest_rect == whole_layer_rect)
     return previous_interest_rect;
@@ -3382,8 +3383,9 @@ IntRect CompositedLayerMapping::ComputeInterestRect(
 
   IntRect new_interest_rect = RecomputeInterestRect(graphics_layer);
   if (NeedsRepaint(*graphics_layer) ||
-      InterestRectChangedEnoughToRepaint(
-          previous_interest_rect, new_interest_rect, graphics_layer->Size()))
+      InterestRectChangedEnoughToRepaint(previous_interest_rect,
+                                         new_interest_rect,
+                                         IntSize(graphics_layer->Size())))
     return new_interest_rect;
   return previous_interest_rect;
 }

@@ -593,7 +593,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         paint_layer_.GetCompositedLayerMapping()->MaskLayer();
     ClipRect layer_rect = LayoutRect(
         LayoutPoint(LayoutSize(mask_layer->OffsetFromLayoutObject())),
-        LayoutSize(mask_layer->Size()));
+        LayoutSize(IntSize(mask_layer->Size())));
     FillMaskingFragment(context, layer_rect, *mask_layer);
   }
 

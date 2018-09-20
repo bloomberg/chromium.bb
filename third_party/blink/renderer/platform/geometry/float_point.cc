@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkPoint.h"
-#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
 namespace blink {
@@ -54,9 +53,6 @@ FloatPoint::FloatPoint(const LayoutPoint& p)
 
 FloatPoint::FloatPoint(const LayoutSize& size)
     : x_(size.Width().ToFloat()), y_(size.Height().ToFloat()) {}
-
-FloatPoint::FloatPoint(const gfx::PointF& point)
-    : x_(point.x()), y_(point.y()) {}
 
 float FloatPoint::SlopeAngleRadians() const {
   return atan2f(y_, x_);

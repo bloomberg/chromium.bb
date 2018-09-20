@@ -2722,9 +2722,10 @@ static void CollectDrawableLayersForLayerListRecursively(
     // extraneous layers are still attached. In future we will disable all
     // those layer hierarchy code so we won't need this line.
     layer->CcLayer()->RemoveAllChildren();
-    RecordForeignLayer(
-        context, *layer, DisplayItem::kForeignLayerWrapper, layer->CcLayer(),
-        FloatPoint(layer->GetOffsetFromTransformNode()), layer->Size());
+    RecordForeignLayer(context, *layer, DisplayItem::kForeignLayerWrapper,
+                       layer->CcLayer(),
+                       FloatPoint(layer->GetOffsetFromTransformNode()),
+                       IntSize(layer->Size()));
   }
 
   if (scoped_refptr<cc::Layer> contents_layer = layer->ContentsLayer()) {

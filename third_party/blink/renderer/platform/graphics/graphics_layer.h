@@ -143,8 +143,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetTransformOrigin(const FloatPoint3D&);
 
   // The size of the layer.
-  const IntSize& Size() const { return size_; }
-  void SetSize(const IntSize&);
+  const gfx::Size& Size() const;
+  void SetSize(const gfx::Size&);
 
   const TransformationMatrix& Transform() const { return transform_; }
   void SetTransform(const TransformationMatrix&);
@@ -368,8 +368,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   // Offset from the owning layoutObject
   IntSize offset_from_layout_object_;
-
-  IntSize size_;
 
   TransformationMatrix transform_;
   FloatPoint3D transform_origin_;

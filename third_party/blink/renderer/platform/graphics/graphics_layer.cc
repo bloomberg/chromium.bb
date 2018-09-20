@@ -130,10 +130,8 @@ GraphicsLayer::~GraphicsLayer() {
 }
 
 LayoutRect GraphicsLayer::VisualRect() const {
-  LayoutRect bounds = LayoutRect(LayoutPoint(), LayoutSize(Size()));
   DCHECK(layer_state_);
-  bounds.MoveBy(layer_state_->offset);
-  return bounds;
+  return LayoutRect(layer_state_->offset, LayoutSize(Size()));
 }
 
 void GraphicsLayer::SetHasWillChangeTransformHint(
@@ -329,7 +327,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
 
   DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
   // Generate raster invalidations for SPv1.
-  IntRect layer_bounds(layer_state_->offset, Size());
+  IntRect layer_bounds(layer_state_->offset, IntSize(Size()));
   EnsureRasterInvalidator().Generate(
       GetPaintController().GetPaintArtifactShared(), layer_bounds,
       layer_state_->state, VisualRectSubpixelOffset(), this);
@@ -456,8 +454,9 @@ void GraphicsLayer::UpdateContentsRect() {
   }
 
   if (contents_clipping_mask_layer_) {
-    if (contents_clipping_mask_layer_->Size() != contents_rect_.Size()) {
-      contents_clipping_mask_layer_->SetSize(contents_rect_.Size());
+    if (IntSize(contents_clipping_mask_layer_->Size()) !=
+        contents_rect_.Size()) {
+      contents_clipping_mask_layer_->SetSize(gfx::Size(contents_rect_.Size()));
       contents_clipping_mask_layer_->SetNeedsDisplay();
     }
     contents_clipping_mask_layer_->SetPosition(FloatPoint());
@@ -632,22 +631,19 @@ const gfx::PointF& GraphicsLayer::GetPosition() const {
   return CcLayer()->position();
 }
 
-void GraphicsLayer::SetSize(const IntSize& size) {
-  // We are receiving negative sizes here that cause assertions to fail in the
-  // compositor. Clamp them to 0 to avoid those assertions.
-  // FIXME: This should be an DCHECK instead, as negative sizes should not exist
-  // in WebCore.
-  auto clamped_size = size;
-  clamped_size.ClampNegativeToZero();
+const gfx::Size& GraphicsLayer::Size() const {
+  return layer_->bounds();
+}
 
-  if (clamped_size == size_)
+void GraphicsLayer::SetSize(const gfx::Size& size) {
+  DCHECK(size.width() >= 0 && size.height() >= 0);
+
+  if (size == layer_->bounds())
     return;
-
-  size_ = clamped_size;
 
   Invalidate(PaintInvalidationReason::kIncremental);  // as DisplayItemClient.
 
-  layer_->SetBounds(static_cast<gfx::Size>(size_));
+  layer_->SetBounds(size);
   // Note that we don't resize m_contentsLayer. It's up the caller to do that.
 }
 
@@ -820,7 +816,7 @@ void GraphicsLayer::SetNeedsDisplay() {
   if (raster_invalidator_)
     raster_invalidator_->ClearOldStates();
 
-  TrackRasterInvalidation(*this, IntRect(IntPoint(), size_),
+  TrackRasterInvalidation(*this, IntRect(IntPoint(), IntSize(Size())),
                           PaintInvalidationReason::kFullLayer);
 }
 
@@ -990,7 +986,7 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   if (client_.ShouldThrottleRendering())
     return sk_sp<PaintRecord>(new PaintRecord);
 
-  FloatRect bounds(IntRect(IntPoint(), Size()));
+  FloatRect bounds((IntRect(IntPoint(), IntSize(Size()))));
   GraphicsContext graphics_context(GetPaintController());
   graphics_context.BeginRecording(bounds);
   DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();

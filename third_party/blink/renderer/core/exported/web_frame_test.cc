@@ -1984,8 +1984,8 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
                    ->GetFrameView()
                    ->GetLayoutSize()
                    .Height());
-  EXPECT_EQ(0.0, scroll_container->Size().Width());
-  EXPECT_EQ(0.0, scroll_container->Size().Height());
+  EXPECT_EQ(0.0, scroll_container->Size().width());
+  EXPECT_EQ(0.0, scroll_container->Size().height());
 
   web_view_helper.Resize(WebSize(viewport_width, 0));
   EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
@@ -1998,8 +1998,8 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
                    ->GetFrameView()
                    ->GetLayoutSize()
                    .Height());
-  EXPECT_EQ(viewport_width, scroll_container->Size().Width());
-  EXPECT_EQ(0.0, scroll_container->Size().Height());
+  EXPECT_EQ(viewport_width, scroll_container->Size().width());
+  EXPECT_EQ(0.0, scroll_container->Size().height());
 
   // The flag ForceZeroLayoutHeight will cause the following resize of viewport
   // height to be ignored by the outer viewport (the container layer of
@@ -2020,12 +2020,12 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
                    ->GetFrameView()
                    ->GetLayoutSize()
                    .Height());
-  EXPECT_EQ(viewport_width, scroll_container->Size().Width());
-  EXPECT_EQ(viewport_height, scroll_container->Size().Height());
+  EXPECT_EQ(viewport_width, scroll_container->Size().width());
+  EXPECT_EQ(viewport_height, scroll_container->Size().height());
 
   LocalFrame* frame = web_view_helper.LocalMainFrame()->GetFrame();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
-  EXPECT_EQ(viewport_height, visual_viewport.ContainerLayer()->Size().Height());
+  EXPECT_EQ(viewport_height, visual_viewport.ContainerLayer()->Size().height());
   EXPECT_TRUE(visual_viewport.ContainerLayer()->CcLayer()->masks_to_bounds());
   EXPECT_FALSE(scroll_container->CcLayer()->masks_to_bounds());
 }
@@ -11097,8 +11097,8 @@ TEST_F(WebFrameTest, RootLayerMinimumHeight) {
 
   EXPECT_EQ(kViewportHeight,
             compositor->RootLayer()->BoundingBoxForCompositing().Height());
-  EXPECT_EQ(kViewportHeight, compositor->RootGraphicsLayer()->Size().Height());
-  EXPECT_EQ(kViewportHeight, compositor->RootGraphicsLayer()->Size().Height());
+  EXPECT_EQ(kViewportHeight, compositor->RootGraphicsLayer()->Size().height());
+  EXPECT_EQ(kViewportHeight, compositor->RootGraphicsLayer()->Size().height());
 
   const RasterInvalidationTracking* invalidation_tracking =
       document->GetLayoutView()

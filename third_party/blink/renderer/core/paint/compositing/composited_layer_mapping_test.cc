@@ -1698,8 +1698,8 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
   ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
   auto layer_size = child_mapping->AncestorClippingMaskLayer()->Size();
-  EXPECT_EQ(120, layer_size.Width());
-  EXPECT_EQ(120, layer_size.Height());
+  EXPECT_EQ(120, layer_size.width());
+  EXPECT_EQ(120, layer_size.height());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -1779,8 +1779,8 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
   ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
   auto layer_size = child_mapping->AncestorClippingMaskLayer()->Size();
-  EXPECT_EQ(120, layer_size.Width());
-  EXPECT_EQ(120, layer_size.Height());
+  EXPECT_EQ(120, layer_size.width());
+  EXPECT_EQ(120, layer_size.height());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -1819,8 +1819,8 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
   ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
   auto layer_size = child_mapping->AncestorClippingMaskLayer()->Size();
-  EXPECT_EQ(160, layer_size.Width());
-  EXPECT_EQ(160, layer_size.Height());
+  EXPECT_EQ(160, layer_size.width());
+  EXPECT_EQ(160, layer_size.height());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -2559,13 +2559,13 @@ TEST_F(CompositedLayerMappingTest, ForegroundLayerSizing) {
                       ->Layer()
                       ->GetCompositedLayerMapping();
   ASSERT_TRUE(mapping);
-  EXPECT_EQ(IntSize(120, 120), mapping->MainGraphicsLayer()->Size());
+  EXPECT_EQ(gfx::Size(120, 120), mapping->MainGraphicsLayer()->Size());
   ASSERT_TRUE(mapping->ClippingLayer());
   EXPECT_EQ(gfx::PointF(10, 10), mapping->ClippingLayer()->GetPosition());
-  EXPECT_EQ(IntSize(100, 100), mapping->ClippingLayer()->Size());
+  EXPECT_EQ(gfx::Size(100, 100), mapping->ClippingLayer()->Size());
   ASSERT_TRUE(mapping->ForegroundLayer());
   EXPECT_EQ(gfx::PointF(0, 0), mapping->ForegroundLayer()->GetPosition());
-  EXPECT_EQ(IntSize(100, 100), mapping->ForegroundLayer()->Size());
+  EXPECT_EQ(gfx::Size(100, 100), mapping->ForegroundLayer()->Size());
 }
 
 TEST_F(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {
@@ -2607,8 +2607,8 @@ TEST_F(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {
   ASSERT_TRUE(mapping);
   ASSERT_TRUE(mapping->ScrollingLayer());
   ASSERT_TRUE(mapping->ScrollingContentsLayer());
-  EXPECT_EQ(mapping->ScrollingLayer()->Size().Height(),
-            mapping->ScrollingContentsLayer()->Size().Height());
+  EXPECT_EQ(mapping->ScrollingLayer()->Size().height(),
+            mapping->ScrollingContentsLayer()->Size().height());
 }
 
 TEST_F(CompositedLayerMappingTest, SquashingScroll) {
