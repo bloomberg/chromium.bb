@@ -4,6 +4,7 @@
 
 #include "chrome/chrome_cleaner/zip_archiver/test_zip_archiver_util.h"
 
+#include <limits>
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -110,8 +111,10 @@ void ZipArchiverTestFile::ExpectValidZipFile(
   unz_file_info64 file_info;
   const size_t filename_length = strlen(filename_in_zip.c_str());
   std::vector<char> filename(filename_length + 1);
+  ASSERT_GT(std::numeric_limits<Cr_z_uLong>::max(), filename.size());
   EXPECT_EQ(unzGetCurrentFileInfo64(
-                unzip_object, &file_info, filename.data(), filename.size(),
+                unzip_object, &file_info, filename.data(),
+                static_cast<Cr_z_uLong>(filename.size()),
                 /*extraField=*/nullptr, /*extraFieldBufferSize=*/0,
                 /*szComment=*/nullptr, /*commentBufferSize=*/0),
             UNZ_OK);
