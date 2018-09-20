@@ -18,6 +18,7 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {

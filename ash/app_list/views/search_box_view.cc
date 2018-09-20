@@ -36,6 +36,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
@@ -148,9 +149,8 @@ void SearchBoxView::UpdateKeyboardVisibility() {
     return;
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
   if (!keyboard_controller->enabled() ||
-      is_search_box_active() == keyboard_controller->IsKeyboardVisible()) {
+      is_search_box_active() == keyboard::IsKeyboardVisible())
     return;
-  }
 
   if (is_search_box_active()) {
     keyboard_controller->ShowKeyboard(false);

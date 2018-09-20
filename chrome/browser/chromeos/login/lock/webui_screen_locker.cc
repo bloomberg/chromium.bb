@@ -46,6 +46,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace {

@@ -15,6 +15,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_resource_util.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 
 namespace keyboard {
@@ -39,12 +40,6 @@ class KeyboardEndToEndTest : public chromeos::TextInputTestBase {
   }
 
  protected:
-  bool IsKeyboardVisible() {
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
-    return keyboard_controller->enabled() &&
-           keyboard_controller->IsKeyboardVisible();
-  }
-
   // Initialized in |SetUpOnMainThread|.
   content::WebContents* web_contents;
 
