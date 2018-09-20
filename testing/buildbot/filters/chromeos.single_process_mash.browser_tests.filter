@@ -198,9 +198,6 @@
 # Lock screen tests.
 -LockScreenNoteTakingTest.Launch
 
-# Login screen tests.
--LoginScreenPolicyTest.DisableSupervisedUsers
-
 # PRE steps crash on shutdown.
 # FATAL:ref_counted.h(85)] Check failed: CalledOnValidSequence()
 -ManagedWithoutPermission/ManagedWithoutPermissionPlatformKeysTest.*
