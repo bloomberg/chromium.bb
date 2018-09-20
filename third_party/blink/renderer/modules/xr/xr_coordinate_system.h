@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_COORDINATE_SYSTEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_COORDINATE_SYSTEM_H_
 
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -15,7 +16,7 @@ namespace blink {
 class TransformationMatrix;
 class XRSession;
 
-class XRCoordinateSystem : public ScriptWrappable {
+class XRCoordinateSystem : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -24,7 +25,11 @@ class XRCoordinateSystem : public ScriptWrappable {
 
   DOMFloat32Array* getTransformTo(XRCoordinateSystem*) const;
 
-  XRSession* session() { return session_; }
+  XRSession* session() const { return session_; }
+
+  // EventTarget overrides.
+  ExecutionContext* GetExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
 
   virtual std::unique_ptr<TransformationMatrix> TransformBasePose(
       const TransformationMatrix& base_pose) = 0;
