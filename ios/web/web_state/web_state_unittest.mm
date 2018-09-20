@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
@@ -391,6 +392,9 @@ TEST_P(WebStateTest, RestoreLargeSession) {
 
   histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
   histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 100, 1);
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    histogram_tester_.ExpectTotalCount(kRestoreNavigationTime, 1);
+  }
 }
 
 // Tests that if a saved session is provided when creating a new WebState, it is
