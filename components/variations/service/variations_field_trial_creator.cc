@@ -489,18 +489,22 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
       command_line->GetSwitchValueASCII(kEnableFeatures),
       command_line->GetSwitchValueASCII(kDisableFeatures));
 
+  bool used_testing_config = false;
 #if defined(FIELDTRIAL_TESTING_ENABLED)
   if (!command_line->HasSwitch(switches::kDisableFieldTrialTestingConfig) &&
       !command_line->HasSwitch(::switches::kForceFieldTrials) &&
       !command_line->HasSwitch(switches::kVariationsServerURL)) {
     AssociateDefaultFieldTrialConfig(feature_list.get(), GetPlatform());
+    used_testing_config = true;
   }
 #endif  // defined(FIELDTRIAL_TESTING_ENABLED)
+  bool used_seed = false;
+  if (!used_testing_config) {
+    used_seed = CreateTrialsFromSeed(std::move(low_entropy_provider),
+                                     feature_list.get(), safe_seed_manager);
+  }
 
-  bool has_seed = CreateTrialsFromSeed(std::move(low_entropy_provider),
-                                       feature_list.get(), safe_seed_manager);
-
-  platform_field_trials->SetupFeatureControllingFieldTrials(has_seed,
+  platform_field_trials->SetupFeatureControllingFieldTrials(used_seed,
                                                             feature_list.get());
 
   base::FeatureList::SetInstance(std::move(feature_list));
@@ -508,7 +512,7 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   // This must be called after |local_state_| is initialized.
   platform_field_trials->SetupFieldTrials();
 
-  return has_seed;
+  return used_seed;
 }
 
 VariationsSeedStore* VariationsFieldTrialCreator::GetSeedStore() {
