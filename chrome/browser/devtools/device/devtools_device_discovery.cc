@@ -15,8 +15,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
@@ -43,10 +45,8 @@ const char kPageReloadCommand[] = "{'method': 'Page.reload', id: 1}";
 const char kWebViewSocketPrefix[] = "webview_devtools_remote";
 
 static void ScheduleTaskDefault(const base::Closure& task) {
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      task,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI}, task,
       base::TimeDelta::FromMilliseconds(kPollingIntervalMs));
 }
 

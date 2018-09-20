@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
@@ -60,6 +61,7 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_test_job.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -331,8 +333,8 @@ class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
   void SetUpOnMainThread() override {
     ArcAuthServiceTest::SetUpOnMainThread();
     interceptor_ = std::make_unique<policy::TestRequestInterceptor>(
-        "localhost", content::BrowserThread::GetTaskRunnerForThread(
-                         content::BrowserThread::IO));
+        "localhost", base::CreateSingleThreadTaskRunnerWithTraits(
+                         {content::BrowserThread::IO}));
     SetUpPolicyClient();
   }
 

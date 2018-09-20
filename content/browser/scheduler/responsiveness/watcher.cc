@@ -5,9 +5,11 @@
 #include "content/browser/scheduler/responsiveness/watcher.h"
 
 #include "base/pending_task.h"
+#include "base/task/post_task.h"
 #include "content/browser/scheduler/responsiveness/calculator.h"
 #include "content/browser/scheduler/responsiveness/message_loop_observer.h"
 #include "content/browser/scheduler/responsiveness/native_event_observer.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -34,8 +36,8 @@ void Watcher::SetUp() {
 
   RegisterMessageLoopObserverUI();
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&Watcher::SetUpOnIOThread, base::Unretained(this),
                      calculator_.get()));
 }
@@ -49,8 +51,8 @@ void Watcher::Destroy() {
   message_loop_observer_ui_.reset();
   native_event_observer_ui_.reset();
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&Watcher::TearDownOnIOThread, base::Unretained(this)));
 }
 
@@ -108,8 +110,8 @@ void Watcher::TearDownOnIOThread() {
   message_loop_observer_io_.reset();
 
   calculator_io_ = nullptr;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&Watcher::TearDownOnUIThread, base::Unretained(this)));
 }
 

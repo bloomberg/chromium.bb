@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
@@ -24,6 +25,7 @@
 #include "components/safe_browsing/db/whitelist_checker_client.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -532,14 +534,14 @@ void PasswordProtectionService::FillUserPopulation(
 void PasswordProtectionService::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindRepeating(
           &PasswordProtectionService::RemoveContentSettingsOnURLsDeleted,
           GetWeakPtr(), deletion_info.IsAllHistory(),
           deletion_info.deleted_rows()));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindRepeating(&PasswordProtectionService::
                               RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
                           GetWeakPtr(), deletion_info.IsAllHistory(),

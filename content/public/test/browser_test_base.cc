@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -28,6 +29,7 @@
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -92,7 +94,7 @@ void DumpStackTraceSignalHandler(int signal) {
 void RunTaskOnRendererThread(const base::Closure& task,
                              const base::Closure& quit_task) {
   task.Run();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_task);
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_task);
 }
 
 void TraceStopTracingComplete(const base::Closure& quit,

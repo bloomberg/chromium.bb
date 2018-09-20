@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/optional.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
@@ -25,6 +26,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/user_manager/known_user.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "net/cert/pem_tokenizer.h"
@@ -207,8 +209,8 @@ void EnrollmentPolicyObserver::HandleEnrollmentId(
 
 void EnrollmentPolicyObserver::RescheduleGetEnrollmentId() {
   if (++num_retries_ < retry_limit_) {
-    content::BrowserThread::PostDelayedTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&EnrollmentPolicyObserver::GetEnrollmentId,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(retry_delay_));
@@ -224,8 +226,8 @@ void EnrollmentPolicyObserver::HandleGetCertificateFailure(
     // EID we will have after a device wipe, and should upload that.
     GetEnrollmentId();
   } else if (++num_retries_ < retry_limit_) {
-    content::BrowserThread::PostDelayedTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&EnrollmentPolicyObserver::Start,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(retry_delay_));

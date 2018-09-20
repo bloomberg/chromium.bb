@@ -16,6 +16,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/devtools/devtools_interceptor_controller.h"
@@ -35,6 +36,7 @@
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/content_browser_client.h"
@@ -208,8 +210,8 @@ class CookieRetriever : public base::RefCountedThreadSafe<CookieRetriever> {
     for (const auto& pair : cookies_)
       master_cookie_list.push_back(pair.second);
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CookieRetriever::SendCookiesResponseOnUI, this,
                        master_cookie_list));
   }
@@ -286,8 +288,8 @@ void ClearedCookiesOnIO(std::unique_ptr<ClearBrowserCookiesCallback> callback,
                         uint32_t num_deleted) {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ClearBrowserCookiesCallback::sendSuccess,
                      std::move(callback)));
 }
@@ -304,7 +306,7 @@ void ClearCookiesOnIO(net::URLRequestContextGetter* context_getter,
 
 void DeletedCookiesOnIO(base::OnceClosure callback, uint32_t num_deleted) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, std::move(callback));
 }
 
 std::vector<net::CanonicalCookie> FilterCookies(
@@ -368,9 +370,9 @@ void DeleteCookiesOnIO(net::URLRequestContextGetter* context_getter,
 
 void CookieSetOnIO(std::unique_ptr<SetCookieCallback> callback, bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&SetCookieCallback::sendSuccess,
-                                         std::move(callback), success));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&SetCookieCallback::sendSuccess,
+                                          std::move(callback), success));
 }
 
 void DeleteFilteredCookies(network::mojom::CookieManager* cookie_manager,
@@ -455,8 +457,8 @@ void SetCookieOnIO(net::URLRequestContextGetter* context_getter,
 
 void CookiesSetOnIO(std::unique_ptr<SetCookiesCallback> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&SetCookiesCallback::sendSuccess, std::move(callback)));
 }
 
@@ -930,8 +932,8 @@ class BackgroundSyncRestorer {
     scoped_refptr<BackgroundSyncContext> sync_context =
         static_cast<StoragePartitionImpl*>(storage_partition_)
             ->GetBackgroundSyncContext();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &SetServiceWorkerOfflineOnIO, sync_context,
             base::RetainedRef(static_cast<ServiceWorkerContextWrapper*>(
@@ -1076,8 +1078,8 @@ void NetworkHandler::ClearBrowserCookies(
   }
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ClearCookiesOnIO,
             base::Unretained(storage_partition_->GetURLRequestContext()),
@@ -1104,8 +1106,8 @@ void NetworkHandler::GetCookies(Maybe<Array<String>> protocol_urls,
     scoped_refptr<CookieRetriever> retriever =
         new CookieRetriever(std::move(callback));
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &CookieRetriever::RetrieveCookiesOnIO, retriever,
             base::Unretained(storage_partition_->GetURLRequestContext()),
@@ -1128,8 +1130,8 @@ void NetworkHandler::GetAllCookies(
     scoped_refptr<CookieRetriever> retriever =
         new CookieRetriever(std::move(callback));
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &CookieRetriever::RetrieveAllCookiesOnIO, retriever,
             base::Unretained(storage_partition_->GetURLRequestContext())));
@@ -1178,8 +1180,8 @@ void NetworkHandler::SetCookie(const std::string& name,
   }
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &SetCookieOnIO,
             base::Unretained(storage_partition_->GetURLRequestContext()),
@@ -1218,8 +1220,8 @@ void NetworkHandler::SetCookies(
   }
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &SetCookiesOnIO,
             base::Unretained(storage_partition_->GetURLRequestContext()),
@@ -1270,8 +1272,8 @@ void NetworkHandler::DeleteCookies(
   }
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &DeleteCookiesOnIO,
             base::Unretained(storage_partition_->GetURLRequestContext()), name,

@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -26,6 +27,7 @@
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/leveldb/leveldb_factory.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/url_request/url_request_test_util.h"
@@ -246,7 +248,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
   IndexedDBBackingStoreTest()
       : url_request_context_getter_(
             base::MakeRefCounted<net::TestURLRequestContextGetter>(
-                BrowserThread::GetTaskRunnerForThread(BrowserThread::UI))),
+                base::CreateSingleThreadTaskRunnerWithTraits(
+                    {BrowserThread::UI}))),
         special_storage_policy_(
             base::MakeRefCounted<MockSpecialStoragePolicy>()),
         quota_manager_proxy_(

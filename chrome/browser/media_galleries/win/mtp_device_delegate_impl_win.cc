@@ -21,6 +21,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/media_galleries/win/snapshot_file_details.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "components/storage_monitor/storage_monitor.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/common/fileapi/file_system_util.h"
 
@@ -324,18 +326,13 @@ void CreateMTPDeviceAsyncDelegate(
   DCHECK(!device_location.empty());
   base::string16* pnp_device_id = new base::string16;
   base::string16* storage_object_id = new base::string16;
-  content::BrowserThread::PostTaskAndReplyWithResult<bool>(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GetStorageInfoOnUIThread,
-                 device_location,
+  base::PostTaskWithTraitsAndReplyWithResult<bool>(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::Bind(&GetStorageInfoOnUIThread, device_location,
                  base::Unretained(pnp_device_id),
                  base::Unretained(storage_object_id)),
-      base::Bind(&OnGetStorageInfoCreateDelegate,
-                 device_location,
-                 callback,
-                 base::Owned(pnp_device_id),
-                 base::Owned(storage_object_id)));
+      base::Bind(&OnGetStorageInfoCreateDelegate, device_location, callback,
+                 base::Owned(pnp_device_id), base::Owned(storage_object_id)));
 }
 
 // MTPDeviceDelegateImplWin ---------------------------------------------------

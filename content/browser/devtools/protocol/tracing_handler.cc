@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -37,6 +38,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
@@ -134,8 +136,8 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&DevToolsStreamEndpoint::ReceiveTraceChunk, this,
                          std::move(chunk)));
       return;
@@ -147,8 +149,8 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
   void ReceiveTraceFinalContents(
       std::unique_ptr<const base::DictionaryValue> metadata) override {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&DevToolsStreamEndpoint::ReceiveTraceFinalContents,
                          this, std::move(metadata)));
       return;
@@ -406,8 +408,8 @@ void TracingHandler::Start(Maybe<std::string> categories,
   }
 
   // GPU process id can only be retrieved on IO thread. Do some thread hopping.
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO, FROM_HERE, base::BindOnce([]() {
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
         GpuProcessHost* gpu_process_host =
             GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                                 /* force_create */ false);

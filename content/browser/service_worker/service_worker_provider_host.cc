@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/interface_provider_filtering.h"
@@ -29,6 +30,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
@@ -1294,8 +1296,8 @@ void ServiceWorkerProviderHost::GetInterface(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(kDocumentMainThreadId, render_thread_id_);
   DCHECK(IsProviderForServiceWorker());
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &GetInterfaceImpl, interface_name, std::move(interface_pipe),
           running_hosted_version_->script_origin(), render_process_id_));

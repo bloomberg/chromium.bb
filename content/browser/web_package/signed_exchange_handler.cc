@@ -5,6 +5,7 @@
 #include "content/browser/web_package/signed_exchange_handler.h"
 
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -18,6 +19,7 @@
 #include "content/browser/web_package/signed_exchange_prologue.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -70,8 +72,8 @@ void OnVerifyCertUI(VerifyCallback callback,
                     int32_t error_code,
                     const net::CertVerifyResult& cv_result,
                     const net::ct::CTVerifyResult& ct_result) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(callback), error_code, cv_result, ct_result));
 }
 
@@ -451,8 +453,8 @@ void SignedExchangeHandler::OnCertReceived(
   //   property, or
   const std::string& stapled_ocsp_response = unverified_cert_chain_->ocsp();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&VerifyCert, certificate, url, stapled_ocsp_response,
                      sct_list_from_cert_cbor, frame_tree_node_id_getter_,
                      base::BindOnce(&SignedExchangeHandler::OnVerifyCert,

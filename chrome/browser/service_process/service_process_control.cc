@@ -27,6 +27,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/service_process_util.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -302,9 +303,9 @@ bool ServiceProcessControl::GetHistograms(
   // Run timeout task to make sure |histograms_callback| is called.
   histograms_timeout_callback_.Reset(base::Bind(
       &ServiceProcessControl::RunHistogramsCallback, base::Unretained(this)));
-  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-                                 histograms_timeout_callback_.callback(),
-                                 timeout);
+  base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                                  histograms_timeout_callback_.callback(),
+                                  timeout);
 
   histograms_callback_ = histograms_callback;
   return true;
@@ -359,8 +360,8 @@ void ServiceProcessControl::Launcher::DoDetectLaunched() {
   if (launched_ || (retry_count_ >= kMaxLaunchDetectRetries) ||
       process_.WaitForExitWithTimeout(base::TimeDelta(), &exit_code)) {
     process_.Close();
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::Bind(&Launcher::Notify, this));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::Bind(&Launcher::Notify, this));
     return;
   }
   retry_count_++;
@@ -381,12 +382,11 @@ void ServiceProcessControl::Launcher::DoRun() {
 #endif
   process_ = base::LaunchProcess(*cmd_line_, options);
   if (process_.IsValid()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&Launcher::DoDetectLaunched, this));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::Bind(&Launcher::DoDetectLaunched, this));
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::Bind(&Launcher::Notify, this));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::Bind(&Launcher::Notify, this));
   }
 }
 #endif  // !OS_MACOSX

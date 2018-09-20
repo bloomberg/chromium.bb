@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -25,6 +26,7 @@
 #include "components/viz/common/features.h"
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/gpu_utils.h"
@@ -235,8 +237,8 @@ void OnVideoMemoryUsageStats(
     const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
         callback,
     const gpu::VideoMemoryUsageStats& stats) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, stats));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback, stats));
 }
 
 void RequestVideoMemoryUsageStats(
@@ -253,8 +255,8 @@ void UpdateGpuInfoOnIO(const gpu::GPUInfo& gpu_info) {
   // This function is called on the IO thread, but GPUInfo on GpuDataManagerImpl
   // should be updated on the UI thread (since it can call into functions that
   // expect to run in the UI thread, e.g. ContentClient::SetGpuInfo()).
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           [](const gpu::GPUInfo& gpu_info) {
             TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
@@ -404,8 +406,9 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
         base::BindOnce(&UpdateGpuInfoOnIO));
   });
 
-  BrowserThread::PostDelayedTask(BrowserThread::IO, FROM_HERE, std::move(task),
-                                 base::TimeDelta::FromMilliseconds(15000));
+  base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                                  std::move(task),
+                                  base::TimeDelta::FromMilliseconds(15000));
 #endif
 }
 

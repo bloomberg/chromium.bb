@@ -4,8 +4,10 @@
 
 #include "chrome/browser/storage/storage_info_fetcher.h"
 
+#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -29,9 +31,10 @@ void StorageInfoFetcher::FetchStorageInfo(const FetchCallback& fetch_callback) {
 
   // QuotaManager must be called on IO thread, but the callback must then be
   // called on the UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&StorageInfoFetcher::GetUsageInfo, this,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::Bind(
+          &StorageInfoFetcher::GetUsageInfo, this,
           base::Bind(&StorageInfoFetcher::OnGetUsageInfoInternal, this)));
 }
 
@@ -44,15 +47,12 @@ void StorageInfoFetcher::ClearStorage(const std::string& host,
   clear_callback_ = clear_callback;
   type_to_delete_ = type;
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&storage::QuotaManager::DeleteHostData,
-                 quota_manager_,
-                 host,
-                 type,
-                 storage::QuotaClient::kAllClientsMask,
-                 base::Bind(&StorageInfoFetcher::OnUsageClearedInternal,
-                            this)));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::Bind(
+          &storage::QuotaManager::DeleteHostData, quota_manager_, host, type,
+          storage::QuotaClient::kAllClientsMask,
+          base::Bind(&StorageInfoFetcher::OnUsageClearedInternal, this)));
 }
 
 void StorageInfoFetcher::GetUsageInfo(storage::GetUsageInfoCallback callback) {
@@ -65,8 +65,8 @@ void StorageInfoFetcher::OnGetUsageInfoInternal(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   entries_.insert(entries_.begin(), entries.begin(), entries.end());
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::Bind(&StorageInfoFetcher::OnFetchCompleted, this));
 }
 
@@ -84,8 +84,8 @@ void StorageInfoFetcher::OnUsageClearedInternal(
 
   quota_manager_->ResetUsageTracker(type_to_delete_);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::Bind(&StorageInfoFetcher::OnClearCompleted, this, code));
 }
 

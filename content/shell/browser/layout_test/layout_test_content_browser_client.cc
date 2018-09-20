@@ -6,7 +6,9 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
+#include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/overlay_window.h"
@@ -159,8 +161,8 @@ void LayoutTestContentBrowserClient::ExposeInterfacesToRenderer(
     blink::AssociatedInterfaceRegistry* associated_registry,
     RenderProcessHost* render_process_host) {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI);
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI});
   registry->AddInterface(
       base::BindRepeating(&LayoutTestBluetoothFakeAdapterSetterImpl::Create),
       ui_task_runner);

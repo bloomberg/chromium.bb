@@ -13,9 +13,11 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
@@ -159,13 +161,14 @@ void ProfileAuthDataTransferer::BeginTransfer() {
   // finishes.
   if (!transfer_auth_cookies_and_channel_ids_on_first_login_ &&
       !transfer_saml_auth_cookies_on_subsequent_login_) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, completion_callback_);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             completion_callback_);
     // Null the callback so that when Finish is called, the callback won't be
     // called again.
     completion_callback_.Reset();
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ProfileAuthDataTransferer::BeginTransferOnIOThread,
                      base::Unretained(this)));
 }
@@ -321,7 +324,8 @@ void ProfileAuthDataTransferer::MaybeTransferCookiesAndChannelIDs() {
 void ProfileAuthDataTransferer::Finish() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!completion_callback_.is_null())
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, completion_callback_);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             completion_callback_);
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 

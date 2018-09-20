@@ -16,6 +16,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -26,6 +27,7 @@
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/fileapi/file_system_chooser.h"
 #include "content/common/fileapi/webblob_messages.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -596,11 +598,12 @@ void FileSystemManagerImpl::ChooseEntry(int32_t render_frame_id,
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&FileSystemChooser::CreateAndShow, process_id_,
-                     render_frame_id, std::move(callback),
-                     BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(
+          &FileSystemChooser::CreateAndShow, process_id_, render_frame_id,
+          std::move(callback),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
 }
 
 void FileSystemManagerImpl::Cancel(
@@ -818,8 +821,8 @@ void FileSystemManagerImpl::GetPlatformPathOnFileThread(
     GetPlatformPathCallback callback) {
   base::FilePath platform_path;
   SyncGetPlatformPath(context, process_id, path, &platform_path);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FileSystemManagerImpl::DidGetPlatformPath,
                      file_system_manager, std::move(callback), platform_path));
 }

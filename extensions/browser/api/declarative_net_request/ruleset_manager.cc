@@ -12,7 +12,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
@@ -111,8 +113,8 @@ void ClearRendererCacheOnNavigation() {
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     ClearRendererCacheOnUI();
   } else {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::BindOnce(&ClearRendererCacheOnUI));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&ClearRendererCacheOnUI));
   }
 }
 

@@ -19,6 +19,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/gcm_profile_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
@@ -58,8 +59,8 @@ void RequestProxyResolvingSocketFactory(
     Profile* profile,
     base::WeakPtr<gcm::GCMProfileService> service,
     network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, profile,
                      service, std::move(request)));
 }
@@ -79,14 +80,14 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       IdentityManagerFactory::GetForProfile(profile),
       std::unique_ptr<gcm::GCMClientFactory>(new gcm::FakeGCMClientFactory(
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::UI),
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO))),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO),
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::UI}),
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::IO}))),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO}),
       blocking_task_runner);
 }
 

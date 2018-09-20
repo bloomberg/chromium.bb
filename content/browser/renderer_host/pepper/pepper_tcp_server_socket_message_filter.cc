@@ -10,10 +10,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/ip_address.h"
@@ -82,10 +84,10 @@ PepperTCPServerSocketMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {
     case PpapiHostMsg_TCPServerSocket_Listen::ID:
-      return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+      return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
     case PpapiHostMsg_TCPServerSocket_Accept::ID:
     case PpapiHostMsg_TCPServerSocket_StopListening::ID:
-      return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+      return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
   }
   return nullptr;
 }
@@ -122,8 +124,8 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgListen(
     return PP_ERROR_NOACCESS;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperTCPServerSocketMessageFilter::DoListen, this,
                      context->MakeReplyMessageContext(), addr, backlog));
   return PP_OK_COMPLETIONPENDING;

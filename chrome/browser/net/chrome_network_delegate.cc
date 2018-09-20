@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -34,6 +35,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -269,8 +271,8 @@ bool ChromeNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
                                             bool allowed_from_caller) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::CookiesRead,
                        info->GetWebContentsGetterForRequest(), request.url(),
                        request.site_for_cookies(), cookie_list,
@@ -285,8 +287,8 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                                            bool allowed_from_caller) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::CookieChanged,
                        info->GetWebContentsGetterForRequest(), request.url(),
                        request.site_for_cookies(), cookie,

@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -24,6 +25,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/network_delegate.h"
 #include "net/url_request/url_request_redirect_job.h"
@@ -361,9 +363,9 @@ void ProtocolHandlerRegistry::ClearDefault(const std::string& scheme) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   default_handlers_.erase(scheme);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&IOThreadDelegate::ClearDefault,
-                                         io_thread_delegate_, scheme));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(&IOThreadDelegate::ClearDefault,
+                                          io_thread_delegate_, scheme));
   Save();
   NotifyChanged();
 }
@@ -623,8 +625,8 @@ void ProtocolHandlerRegistry::RemoveHandler(
       // NOTE We pass a copy because SetDefault() modifies handlers.
       SetDefault(ProtocolHandler(handlers[0]));
     } else {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&IOThreadDelegate::ClearDefault, io_thread_delegate_,
                          q->second.protocol()));
 
@@ -659,8 +661,8 @@ void ProtocolHandlerRegistry::Enable() {
     return;
   }
   enabled_ = true;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&IOThreadDelegate::Enable, io_thread_delegate_));
 
   ProtocolHandlerMap::const_iterator p;
@@ -677,8 +679,8 @@ void ProtocolHandlerRegistry::Disable() {
     return;
   }
   enabled_ = false;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&IOThreadDelegate::Disable, io_thread_delegate_));
 
   ProtocolHandlerMap::const_iterator p;
@@ -760,9 +762,9 @@ void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
   default_handlers_.erase(handler.protocol());
   default_handlers_.insert(std::make_pair(handler.protocol(), handler));
   PromoteHandler(handler);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&IOThreadDelegate::SetDefault,
-                                         io_thread_delegate_, handler));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(&IOThreadDelegate::SetDefault,
+                                          io_thread_delegate_, handler));
 }
 
 void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {

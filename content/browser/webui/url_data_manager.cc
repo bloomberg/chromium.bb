@@ -15,11 +15,13 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/url_data_source_impl.h"
 #include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 
@@ -70,18 +72,19 @@ URLDataManager::~URLDataManager() {
 
 void URLDataManager::AddDataSource(URLDataSourceImpl* source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&AddDataSourceOnIOThread,
-                                         browser_context_->GetResourceContext(),
-                                         base::WrapRefCounted(source)));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&AddDataSourceOnIOThread,
+                     browser_context_->GetResourceContext(),
+                     base::WrapRefCounted(source)));
 }
 
 void URLDataManager::UpdateWebUIDataSource(
     const std::string& source_name,
     std::unique_ptr<base::DictionaryValue> update) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&UpdateWebUIDataSourceOnIOThread,
                      browser_context_->GetResourceContext(), source_name,
                      base::Owned(update.release())));
@@ -122,8 +125,9 @@ void URLDataManager::DeleteDataSource(const URLDataSourceImpl* data_source) {
   }
   if (schedule_delete) {
     // Schedule a task to delete the DataSource back on the UI thread.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&URLDataManager::DeleteDataSources));
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&URLDataManager::DeleteDataSources));
   }
 }
 

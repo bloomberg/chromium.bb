@@ -32,6 +32,7 @@
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
@@ -503,7 +504,7 @@ void WidevineCdmComponentInstallerPolicy::UpdateCdmPath(
     return;
   }
 
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&RegisterWidevineCdmWithChrome, cdm_version,

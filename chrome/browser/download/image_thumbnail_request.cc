@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 
@@ -111,8 +112,7 @@ void ImageThumbnailRequest::OnLoadComplete(const std::string& data) {
 
 void ImageThumbnailRequest::FinishRequest(const SkBitmap& thumbnail) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback_), thumbnail));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::BindOnce(std::move(callback_), thumbnail));
   delete this;
 }

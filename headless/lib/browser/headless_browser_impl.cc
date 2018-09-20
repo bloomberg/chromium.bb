@@ -12,8 +12,10 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/app/content_main.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/web_contents.h"
@@ -93,8 +95,8 @@ HeadlessBrowserImpl::CreateBrowserContextBuilder() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 HeadlessBrowserImpl::BrowserMainThread() const {
-  return content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::UI);
+  return base::CreateSingleThreadTaskRunnerWithTraits(
+      {content::BrowserThread::UI});
 }
 
 void HeadlessBrowserImpl::Shutdown() {

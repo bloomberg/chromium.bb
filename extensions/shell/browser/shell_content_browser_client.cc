@@ -11,9 +11,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/task/post_task.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -169,13 +171,11 @@ void ShellContentBrowserClient::SiteInstanceGotProcess(
                site_instance->GetProcess()->GetID(),
                site_instance->GetId());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::Bind(&InfoMap::RegisterExtensionProcess,
                  browser_main_parts_->extension_system()->info_map(),
-                 extension->id(),
-                 site_instance->GetProcess()->GetID(),
+                 extension->id(), site_instance->GetProcess()->GetID(),
                  site_instance->GetId()));
 }
 
@@ -195,13 +195,11 @@ void ShellContentBrowserClient::SiteInstanceDeleting(
                site_instance->GetProcess()->GetID(),
                site_instance->GetId());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::Bind(&InfoMap::UnregisterExtensionProcess,
                  browser_main_parts_->extension_system()->info_map(),
-                 extension->id(),
-                 site_instance->GetProcess()->GetID(),
+                 extension->id(), site_instance->GetProcess()->GetID(),
                  site_instance->GetId()));
 }
 

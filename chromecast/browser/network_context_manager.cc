@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -28,8 +30,8 @@ NetworkContextManager::NetworkContextManager(
   // The NetworkContext must be initialized on the browser's IO thread. Posting
   // this task from the constructor ensures that |network_context_| will
   // be initialized for subsequent calls to BindRequestOnIOThread().
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&NetworkContextManager::InitializeOnIoThread,
                      weak_factory_.GetWeakPtr()));
 }
@@ -63,8 +65,8 @@ void NetworkContextManager::BindRequestOnIOThread(
 network::mojom::URLLoaderFactoryPtr
 NetworkContextManager::GetURLLoaderFactory() {
   network::mojom::URLLoaderFactoryPtr loader_factory;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&NetworkContextManager::BindRequestOnIOThread,
                      weak_factory_.GetWeakPtr(),
                      mojo::MakeRequest(&loader_factory)));

@@ -16,9 +16,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/devtools/device/usb/android_rsa.h"
 #include "chrome/browser/devtools/device/usb/android_usb_socket.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "device/base/device_client.h"
@@ -93,8 +95,8 @@ void CountAndroidDevices(const base::Callback<void(int)>& callback,
     }
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, device_count));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback, device_count));
 }
 
 uint32_t Checksum(const std::string& data) {
@@ -340,16 +342,16 @@ void AndroidUsbDevice::Enumerate(crypto::RSAPrivateKey* rsa_key,
   // Collect devices with closed handles.
   for (AndroidUsbDevice* device : g_devices.Get()) {
     if (device->usb_handle_.get()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&AndroidUsbDevice::TerminateIfReleased, device,
                          device->usb_handle_));
     }
   }
 
   // Then look for the new devices.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&EnumerateOnUIThread, rsa_key, callback,
                      base::ThreadTaskRunnerHandle::Get()));
 }
@@ -671,8 +673,8 @@ void AndroidUsbDevice::Terminate() {
   }
   DCHECK(sockets_.empty());
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ReleaseInterface, usb_handle, interface_id_));
 }
 

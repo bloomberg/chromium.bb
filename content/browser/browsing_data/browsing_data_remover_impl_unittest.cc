@@ -24,10 +24,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/browsing_data/browsing_data_remover_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -174,8 +176,8 @@ class StoragePartitionRemovalTestStoragePartition
     storage_partition_removal_data_.remove_end = end;
     storage_partition_removal_data_.origin_matcher = origin_matcher;
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &StoragePartitionRemovalTestStoragePartition::AsyncRunCallback,
             base::Unretained(this), std::move(callback)));
@@ -198,8 +200,8 @@ class StoragePartitionRemovalTestStoragePartition
     storage_partition_removal_data_.cookie_deletion_filter =
         std::move(cookie_deletion_filter);
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &StoragePartitionRemovalTestStoragePartition::AsyncRunCallback,
             base::Unretained(this), std::move(callback)));

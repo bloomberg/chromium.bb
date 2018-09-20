@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -83,6 +84,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/webdata_services/web_data_service_wrapper.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
@@ -177,7 +179,7 @@ class TestExtensionURLRequestContextGetter
   }
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override {
-    return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
   }
 
  protected:
@@ -217,8 +219,8 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(
           BookmarkSyncServiceFactory::GetForProfile(profile))));
   bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
                        profile->GetIOTaskRunner(),
-                       content::BrowserThread::GetTaskRunnerForThread(
-                           content::BrowserThread::UI));
+                       base::CreateSingleThreadTaskRunnerWithTraits(
+                           {content::BrowserThread::UI}));
   return std::move(bookmark_model);
 }
 
@@ -233,7 +235,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(
   const base::FilePath& context_path = context->GetPath();
   return std::make_unique<WebDataServiceWrapper>(
       context_path, g_browser_process->GetApplicationLocale(),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
       sync_start_util::GetFlareForSyncableService(context_path),
       base::BindRepeating(&TestProfileErrorCallback));
 }
@@ -970,7 +972,7 @@ net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   return new net::TestURLRequestContextGetter(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 }
 
 net::URLRequestContextGetter*

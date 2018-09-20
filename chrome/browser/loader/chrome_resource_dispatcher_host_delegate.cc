@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -61,6 +62,7 @@
 #include "components/previews/core/previews_user_data.h"
 #include "components/safe_browsing/features.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/notification_service.h"
@@ -352,10 +354,11 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   // TODO(petewil): Unify the safe browsing request and the metrics observer
   // request if possible so we only have to cross to the main thread once.
   // http://crbug.com/712312.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&NotifyUIThreadOfRequestStarted,
-                                         info->GetWebContentsGetterForRequest(),
-                                         info->GetResourceType()));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&NotifyUIThreadOfRequestStarted,
+                     info->GetWebContentsGetterForRequest(),
+                     info->GetResourceType()));
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 #if defined(OS_CHROMEOS)
@@ -517,8 +520,8 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
       stream_target_info_.find(request);
   CHECK(ix != stream_target_info_.end());
   bool embedded = info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
           request->GetExpectedContentSize(), ix->second.extension_id,
@@ -670,8 +673,8 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
   auto load_timing_info = std::make_unique<net::LoadTimingInfo>();
   url_request->GetLoadTimingInfo(load_timing_info.get());
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &NotifyUIThreadOfRequestComplete,
           info->GetWebContentsGetterForRequest(),
@@ -681,8 +684,7 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
           url_request->was_cached(), std::move(data_reduction_proxy_data),
           net_error, url_request->GetTotalReceivedBytes(),
           url_request->GetRawBodyBytes(), original_content_length,
-          url_request->creation_time(),
-          std::move(load_timing_info)));
+          url_request->creation_time(), std::move(load_timing_info)));
 }
 
 content::PreviewsState

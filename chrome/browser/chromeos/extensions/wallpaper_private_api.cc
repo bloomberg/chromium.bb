@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -33,6 +34,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -282,8 +284,8 @@ void WallpaperPrivateGetStringsFunction::OnWallpaperInfoReturned(
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateGetSyncSettingFunction::Run() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&WallpaperPrivateGetSyncSettingFunction::
                          CheckProfileSyncServiceStatus,
                      this));
@@ -324,8 +326,8 @@ void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
   // the first time configuration). In this case GetActiveDataTypes() returns an
   // empty set. So re-check the status later.
   retry_number_++;
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&WallpaperPrivateGetSyncSettingFunction::
                          CheckProfileSyncServiceStatus,
                      this),
@@ -576,19 +578,19 @@ void WallpaperPrivateGetThumbnailFunction::Get(const base::FilePath& path) {
   std::string data;
   if (GetData(path, &data)) {
     if (data.empty()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&WallpaperPrivateGetThumbnailFunction::FileNotLoaded,
                          this));
     } else {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&WallpaperPrivateGetThumbnailFunction::FileLoaded,
                          this, data));
     }
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WallpaperPrivateGetThumbnailFunction::Failure, this,
                        path.BaseName().value()));
   }
@@ -630,12 +632,12 @@ void WallpaperPrivateSaveThumbnailFunction::Save(
   WallpaperFunctionBase::AssertCalledOnWallpaperSequence(
       WallpaperFunctionBase::GetNonBlockingTaskRunner());
   if (SaveData(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS, file_name, data)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WallpaperPrivateSaveThumbnailFunction::Success, this));
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WallpaperPrivateSaveThumbnailFunction::Failure, this,
                        file_name));
   }

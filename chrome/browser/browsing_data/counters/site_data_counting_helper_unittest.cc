@@ -10,11 +10,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -55,8 +57,8 @@ class SiteDataCountingHelperTest : public testing::Test {
     DCHECK(success);
     if (--tasks_ > 0)
       return;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SiteDataCountingHelperTest::DoneCallback,
                        base::Unretained(this)));
   }
@@ -74,8 +76,8 @@ class SiteDataCountingHelperTest : public testing::Test {
         content::BrowserContext::GetDefaultStoragePartition(profile());
     net::URLRequestContextGetter* rq_context =
         partition->GetURLRequestContext();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SiteDataCountingHelperTest::CreateCookiesOnIOThread,
                        base::Unretained(this), base::WrapRefCounted(rq_context),
                        creation_time, urls));

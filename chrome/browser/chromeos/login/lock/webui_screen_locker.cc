@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -31,6 +32,7 @@
 #include "components/login/base_screen_handler_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -348,26 +350,24 @@ void WebUIScreenLocker::OnWidgetDestroying(views::Widget* widget) {
 void WebUIScreenLocker::LidEventReceived(PowerManagerClient::LidState state,
                                          const base::TimeTicks& time) {
   if (state == PowerManagerClient::LidState::OPEN) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&WebUIScreenLocker::FocusUserPod,
-                       weak_factory_.GetWeakPtr()));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&WebUIScreenLocker::FocusUserPod,
+                                            weak_factory_.GetWeakPtr()));
   }
 }
 
 void WebUIScreenLocker::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WebUIScreenLocker::ResetAndFocusUserPod,
                      weak_factory_.GetWeakPtr()));
 }
 
 void WebUIScreenLocker::SuspendDone(const base::TimeDelta& sleep_duration) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&WebUIScreenLocker::FocusUserPod,
-                     weak_factory_.GetWeakPtr()));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::BindOnce(&WebUIScreenLocker::FocusUserPod,
+                                          weak_factory_.GetWeakPtr()));
 }
 
 void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {

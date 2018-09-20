@@ -11,10 +11,12 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/trace_uploader.h"
 #include "content/public/browser/tracing_controller.h"
@@ -81,9 +83,9 @@ class TracingControllerTestEndpoint
     scoped_refptr<base::RefCountedString> chunk_ptr =
         base::RefCountedString::TakeString(&trace_);
 
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(done_callback_, std::move(metadata),
-                                           base::RetainedRef(chunk_ptr)));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(done_callback_, std::move(metadata),
+                                            base::RetainedRef(chunk_ptr)));
   }
 
  protected:

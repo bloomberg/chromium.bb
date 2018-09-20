@@ -9,8 +9,10 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "crypto/ec_private_key.h"
@@ -40,8 +42,8 @@ void MessagePropertyProvider::GetChannelID(
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
       storage_partition->GetURLRequestContext();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&MessagePropertyProvider::GetChannelIDOnIOThread,
                      base::ThreadTaskRunnerHandle::Get(),
                      request_context_getter, source_url.host(), reply));

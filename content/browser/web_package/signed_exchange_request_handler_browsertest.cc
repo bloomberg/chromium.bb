@@ -6,12 +6,14 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -131,8 +133,8 @@ class SignedExchangeRequestHandlerBrowserTest : public CertVerifierBrowserTest {
       }
       interceptor_data_path_map_[url] = data_path;
     } else {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&InstallMockInterceptors, url, data_path));
     }
   }

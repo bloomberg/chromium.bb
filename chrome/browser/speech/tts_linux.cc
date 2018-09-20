@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/speech/tts_platform.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "library_loaders/libspeechd.h"
@@ -317,9 +318,8 @@ void TtsPlatformImplLinux::NotificationCallback(
   // be in a separate thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     current_notification_ = type;
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::Bind(&TtsPlatformImplLinux::OnSpeechEvent,
                    base::Unretained(TtsPlatformImplLinux::GetInstance()),
                    type));
@@ -338,10 +338,11 @@ void TtsPlatformImplLinux::IndexMarkCallback(size_t msg_id,
   // be in a separate thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     current_notification_ = state;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::Bind(&TtsPlatformImplLinux::OnSpeechEvent,
-        base::Unretained(TtsPlatformImplLinux::GetInstance()),
-        state));
+                   base::Unretained(TtsPlatformImplLinux::GetInstance()),
+                   state));
   }
 }
 

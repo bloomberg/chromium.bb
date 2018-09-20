@@ -7,10 +7,12 @@
 #include "base/location.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browsing_data/conditional_cache_deletion_helper.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -73,8 +75,8 @@ void StoragePartitionHttpCacheDataRemover::Remove(
   DCHECK(!done_callback.is_null());
   done_callback_ = std::move(done_callback);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &StoragePartitionHttpCacheDataRemover::ClearHttpCacheOnIOThread,
           base::Unretained(this)));
@@ -193,8 +195,8 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         next_cache_state_ = CacheState::NONE;
 
         // Notify the UI thread that we are done.
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
             base::BindOnce(
                 &StoragePartitionHttpCacheDataRemover::ClearedHttpCache,
                 base::Unretained(this)));

@@ -24,6 +24,7 @@
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/child_process_launcher.h"
@@ -39,6 +40,7 @@
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/renderer_host.mojom.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
@@ -649,7 +651,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
     registry->AddInterface(
         base::Bind(&InterfaceGetter<CallbackType>::GetInterfaceOnUIThread,
                    instance_weak_factory_->GetWeakPtr(), callback),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
   }
 
   // Callback to unblock process shutdown after waiting for unload handlers to

@@ -11,9 +11,11 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/task/post_task.h"
 #include "components/google/core/common/google_util.h"
 #include "components/security_interstitials/core/urls.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
@@ -73,8 +75,8 @@ void JNI_AwContentsStatics_ClearClientCertPreferences(
     const JavaParamRef<jclass>&,
     const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&NotifyClientCertificatesChanged),
       base::BindOnce(&ClientCertificatesCleared,
                      ScopedJavaGlobalRef<jobject>(env, callback)));

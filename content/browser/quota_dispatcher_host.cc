@@ -11,6 +11,8 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -51,8 +53,8 @@ void QuotaDispatcherHost::CreateForWorker(
   // one provided by QuotaDispatcher.
 
   // Bind on the IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BindConnectorOnIOThread, host->GetID(), MSG_ROUTING_NONE,
           base::RetainedRef(host->GetStoragePartition()->GetQuotaManager()),
@@ -65,8 +67,8 @@ void QuotaDispatcherHost::CreateForFrame(
     int render_frame_id,
     blink::mojom::QuotaDispatcherHostRequest request) {
   // Bind on the IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BindConnectorOnIOThread, host->GetID(), render_frame_id,
           base::RetainedRef(host->GetStoragePartition()->GetQuotaManager()),

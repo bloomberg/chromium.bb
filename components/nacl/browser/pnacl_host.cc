@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_translation_cache.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -198,8 +199,8 @@ void PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir,
     if (!file.IsValid())
       PLOG(ERROR) << "Temp file open failed: " << file.error_details();
   }
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(cb, std::move(file)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(cb, std::move(file)));
 }
 
 void PnaclHost::CreateTemporaryFile(TempFileCallback cb) {
@@ -226,8 +227,8 @@ void PnaclHost::GetNexeFd(int render_process_id,
   }
   if (cache_state_ != CacheReady) {
     // If the backend hasn't yet initialized, try the request again later.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PnaclHost::GetNexeFd, base::Unretained(this),
                        render_process_id, render_view_id, pp_instance,
                        is_incognito, cache_info, cb),
@@ -575,8 +576,8 @@ void PnaclHost::RendererClosing(int render_process_id) {
         RequeryMatchingTranslations(key);
     }
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PnaclHost::DeInitIfSafe, base::Unretained(this)));
 }
 
@@ -591,8 +592,8 @@ void PnaclHost::ClearTranslationCacheEntriesBetween(
   }
   if (cache_state_ == CacheInitializing) {
     // If the backend hasn't yet initialized, try the request again later.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PnaclHost::ClearTranslationCacheEntriesBetween,
                        base::Unretained(this), initial_time, end_time,
                        callback),
@@ -610,13 +611,13 @@ void PnaclHost::ClearTranslationCacheEntriesBetween(
 
 void PnaclHost::OnEntriesDoomed(const base::Closure& callback, int net_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, callback);
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, callback);
   pending_backend_operations_--;
   // When clearing the cache, the UI is blocked on all the cache-clearing
   // operations, and freeing the backend actually blocks the IO thread. So
   // instead of calling DeInitIfSafe directly, post it for later.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PnaclHost::DeInitIfSafe, base::Unretained(this)));
 }
 

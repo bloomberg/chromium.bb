@@ -25,6 +25,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
@@ -102,6 +103,7 @@
 #include "components/variations/variations_switches.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -381,8 +383,8 @@ void SetHSTSForHostName(Profile* profile) {
     return;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(SetHSTSForHostNameOnIO,
                      base::RetainedRef(profile->GetRequestContext()), hostname,
                      expiry, include_subdomains));
@@ -518,8 +520,8 @@ std::unique_ptr<net::test_server::HttpResponse> WaitForJsonRequest(
   std::unique_ptr<base::Value> value = json_reader.ReadToValue(request.content);
   EXPECT_TRUE(value);
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   quit_closure);
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           quit_closure);
 
   if (hung_response)
     return std::make_unique<net::test_server::HungResponse>();
@@ -982,9 +984,8 @@ class SSLUITestBase : public InProcessBrowserTest,
 
   void RunOnIOThreadBlocking(base::OnceClosure task) {
     base::RunLoop run_loop;
-    content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
-                                             FROM_HERE, std::move(task),
-                                             run_loop.QuitClosure());
+    base::PostTaskWithTraitsAndReply(FROM_HERE, {content::BrowserThread::IO},
+                                     std::move(task), run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -5103,14 +5104,14 @@ class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest,
           features::kSSLCommittedInterstitials);
     }
     host_resolver()->AddRule("*", "127.0.0.1");
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&SetUpHttpNameMismatchPingInterceptorOnIOThread));
   }
 
   void TearDownOnMainThread() override {
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::BindOnce(&CleanUpOnIOThread));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                             base::BindOnce(&CleanUpOnIOThread));
     CertVerifierBrowserTest::TearDownOnMainThread();
   }
 
@@ -7077,8 +7078,8 @@ void SetShouldNotRequireCTForTesting() {
     return;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&net::TransportSecurityState::SetShouldRequireCTForTesting,
                      base::Owned(new bool(false))));
 }
@@ -7751,8 +7752,8 @@ class RecurrentInterstitialBrowserTest
   }
 
   void TearDownOnMainThread() override {
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::BindOnce(&CleanUpOnIOThread));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                             base::BindOnce(&CleanUpOnIOThread));
     CertVerifierBrowserTest::TearDownOnMainThread();
   }
 

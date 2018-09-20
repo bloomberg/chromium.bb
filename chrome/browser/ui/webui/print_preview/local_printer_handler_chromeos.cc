@@ -27,6 +27,7 @@
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/printing/common/printer_capabilities.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/backend/printing_restrictions.h"
@@ -110,8 +111,8 @@ void LocalPrinterHandlerChromeos::GetDefaultPrinter(DefaultPrinterCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // TODO(crbug.com/660898): Add default printers to ChromeOS.
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::BindOnce(std::move(cb), ""));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::BindOnce(std::move(cb), ""));
 }
 
 void LocalPrinterHandlerChromeos::StartGetPrinters(
@@ -145,8 +146,8 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
       printers_manager_->GetPrinter(printer_name);
   if (!printer) {
     // If the printer was removed, the lookup will fail.
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::BindOnce(std::move(cb), nullptr));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(std::move(cb), nullptr));
     return;
   }
 

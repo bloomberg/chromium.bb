@@ -57,6 +57,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
@@ -503,8 +504,8 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
       }
       UMA_HISTOGRAM_ENUMERATION("Download.DangerousFile.Reason",
                                 SB_NOT_AVAILABLE, DANGEROUS_FILE_REASON_MAX);
-      content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                       internal_complete_callback);
+      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                               internal_complete_callback);
       return false;
     }
   } else if (!state->is_complete()) {

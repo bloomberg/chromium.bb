@@ -8,7 +8,9 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
@@ -64,8 +66,8 @@ void RenderProcessProbeImpl::RegisterAliveRenderProcessesOnUIThread() {
 
   is_gathering_ = true;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &RenderProcessProbeImpl::
               CollectRenderProcessMetricsAndStartMemoryDumpOnIOThread,
@@ -193,8 +195,8 @@ void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
   UMA_HISTOGRAM_TIMES("ResourceCoordinator.Measurement.Duration",
                       batch->batch_ended_time - batch->batch_started_time);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&RenderProcessProbeImpl::FinishCollectionOnUIThread,
                      base::Unretained(this), std::move(batch)));
 }

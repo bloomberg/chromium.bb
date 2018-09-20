@@ -13,10 +13,12 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -160,14 +162,14 @@ PepperTCPSocketMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_TCPSocket_Connect::ID:
     case PpapiHostMsg_TCPSocket_ConnectWithNetAddress::ID:
     case PpapiHostMsg_TCPSocket_Listen::ID:
-      return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+      return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
     case PpapiHostMsg_TCPSocket_SSLHandshake::ID:
     case PpapiHostMsg_TCPSocket_Read::ID:
     case PpapiHostMsg_TCPSocket_Write::ID:
     case PpapiHostMsg_TCPSocket_Accept::ID:
     case PpapiHostMsg_TCPSocket_Close::ID:
     case PpapiHostMsg_TCPSocket_SetOption::ID:
-      return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+      return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
   }
   return nullptr;
 }
@@ -220,8 +222,8 @@ void PepperTCPSocketMessageFilter::OnComplete(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   binding_.Close();
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperTCPSocketMessageFilter::OnResolveCompleted, this,
                      result, std::move(resolved_addresses)));
 
@@ -247,8 +249,8 @@ int32_t PepperTCPSocketMessageFilter::OnMsgBind(
 
   bind_input_addr_ = net_addr;
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperTCPSocketMessageFilter::DoBind, this,
                      context->MakeReplyMessageContext(), net_addr));
   return PP_OK_COMPLETIONPENDING;
@@ -295,8 +297,8 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
   storage_partition->GetNetworkContext()->ResolveHost(
       net::HostPortPair(host, port), nullptr, std::move(client_ptr));
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperTCPSocketMessageFilter::HostResolvingStarted, this,
                      context->MakeReplyMessageContext()));
   return PP_OK_COMPLETIONPENDING;
@@ -318,8 +320,8 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnectWithNetAddress(
     return PP_ERROR_NOACCESS;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperTCPSocketMessageFilter::DoConnectWithNetAddress,
                      this, context->MakeReplyMessageContext(), net_addr));
   return PP_OK_COMPLETIONPENDING;
@@ -463,8 +465,8 @@ int32_t PepperTCPSocketMessageFilter::OnMsgListen(
     return PP_ERROR_NOACCESS;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperTCPSocketMessageFilter::DoListen, this,
                      context->MakeReplyMessageContext(), backlog));
   return PP_OK_COMPLETIONPENDING;
@@ -964,8 +966,8 @@ void PepperTCPSocketMessageFilter::OpenFirewallHole(
   pepper_socket_utils::FirewallHoleOpenCallback callback =
       base::Bind(&PepperTCPSocketMessageFilter::OnFirewallHoleOpened, this,
                  context, pp_result);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&pepper_socket_utils::OpenTCPFirewallHole, local_addr,
                      callback));
 }
@@ -977,8 +979,8 @@ void PepperTCPSocketMessageFilter::OnFirewallHoleOpened(
   LOG_IF(WARNING, !hole.get()) << "Firewall hole could not be opened.";
   firewall_hole_.reset(hole.release());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperTCPSocketMessageFilter::OnListenCompleted, this,
                      context, result));
 }

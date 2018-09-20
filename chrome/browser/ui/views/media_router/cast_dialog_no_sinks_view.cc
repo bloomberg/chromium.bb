@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/string16.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -38,8 +40,8 @@ CastDialogNoSinksView::CastDialogNoSinksView(Browser* browser)
   AddChildView(looking_for_sinks_view_);
 
   constexpr int kThrobberDurationInSeconds = 3;
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CastDialogNoSinksView::ShowHelpIconView,
                      weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kThrobberDurationInSeconds));

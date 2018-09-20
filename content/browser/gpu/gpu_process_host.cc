@@ -25,6 +25,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -49,6 +50,7 @@
 #include "content/common/memory_coordinator.mojom.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_utils.h"
@@ -443,8 +445,8 @@ void BindDiscardableMemoryRequestOnUI(
     return;
   }
 #endif
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BindDiscardableMemoryRequestOnIO, std::move(request),
           BrowserMainLoop::GetInstance()->discardable_shared_memory_manager()));
@@ -462,7 +464,8 @@ void CreateMemoryCoordinatorHandleForGpuProcess(
 class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
  public:
   explicit ConnectionFilterImpl(int gpu_process_id) {
-    auto task_runner = BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+    auto task_runner =
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
     registry_.AddInterface(base::Bind(&FieldTrialRecorder::Create),
                            task_runner);
 #if defined(OS_ANDROID)
@@ -554,8 +557,8 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
 // static
 void GpuProcessHost::GetHasGpuProcess(base::OnceCallback<void(bool)> callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&GpuProcessHost::GetHasGpuProcess, std::move(callback)));
     return;
   }
@@ -578,8 +581,8 @@ void GpuProcessHost::CallOnIO(
 #if !defined(OS_WIN)
   DCHECK_NE(kind, GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED);
 #endif
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&RunCallbackOnIO, kind, force_create, callback));
 }
 
@@ -768,8 +771,8 @@ GpuProcessHost::~GpuProcessHost() {
   if (block_offscreen_contexts && gpu_host_)
     gpu_host_->BlockLiveOffscreenContexts();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
 }
 
@@ -825,7 +828,7 @@ bool GpuProcessHost::Init() {
   params.deadline_to_synchronize_surfaces =
       switches::GetDeadlineToSynchronizeSurfaces();
   params.main_thread_task_runner =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
   gpu_host_ = std::make_unique<viz::GpuHostImpl>(
       this, process_->child_channel(), std::move(params));
 
@@ -958,8 +961,8 @@ void GpuProcessHost::DisableGpuCompositing() {
 #if !defined(OS_ANDROID)
   // TODO(crbug.com/819474): The switch from GPU to software compositing should
   // be handled here instead of by ImageTransportFactory.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::BindOnce([]() {
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI}, base::BindOnce([]() {
         if (auto* factory = ImageTransportFactory::GetInstance())
           factory->DisableGpuCompositing();
       }));
@@ -978,8 +981,8 @@ void GpuProcessHost::RecordLogMessage(int32_t severity,
 
 void GpuProcessHost::BindDiscardableMemoryRequest(
     discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BindDiscardableMemoryRequestOnUI, std::move(request)));
 }
 

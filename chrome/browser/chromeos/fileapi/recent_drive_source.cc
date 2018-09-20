@@ -9,9 +9,11 @@
 
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
@@ -30,8 +32,8 @@ void OnGetMetadataOnIOThread(
     const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, result, info));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback, result, info));
 }
 
 void GetMetadataOnIOThread(
@@ -115,8 +117,8 @@ void RecentDriveSource::OnSearchMetadata(
             params_.value().origin(), storage::kFileSystemTypeExternal,
             virtual_path);
     ++num_inflight_stats_;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &GetMetadataOnIOThread,
             base::WrapRefCounted(params_.value().file_system_context()), url,

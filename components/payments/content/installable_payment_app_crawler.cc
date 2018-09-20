@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/payment_app_provider.h"
@@ -62,8 +64,8 @@ void InstallablePaymentAppCrawler::Start(
 
   if (manifests_to_download.empty()) {
     // Post the result back asynchronously.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &InstallablePaymentAppCrawler::FinishCrawlingPaymentAppsIfReady,
             weak_ptr_factory_.GetWeakPtr()));

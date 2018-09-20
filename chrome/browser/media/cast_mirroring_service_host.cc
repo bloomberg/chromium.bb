@@ -15,6 +15,7 @@
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 #include "components/mirroring/mojom/constants.mojom.h"
 #include "content/public/browser/audio_loopback_stream_creator.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/network_service_instance.h"
@@ -206,8 +207,8 @@ void CastMirroringServiceHost::Start(
 
 void CastMirroringServiceHost::GetVideoCaptureHost(
     media::mojom::VideoCaptureHostRequest request) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CreateVideoCaptureHostOnIO, source_media_id_.ToString(),
                      ConvertVideoStreamType(source_media_id_.type),
                      std::move(request)));

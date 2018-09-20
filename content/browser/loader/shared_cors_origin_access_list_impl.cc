@@ -5,6 +5,8 @@
 #include "content/browser/loader/shared_cors_origin_access_list_impl.h"
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -17,8 +19,8 @@ void SharedCorsOriginAccessListImpl::SetAllowListForOrigin(
     std::vector<network::mojom::CorsOriginPatternPtr> patterns,
     base::OnceClosure closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &SharedCorsOriginAccessListImpl::SetAllowListForOriginOnIOThread,
           base::RetainedRef(this), source_origin, std::move(patterns)),
@@ -30,8 +32,8 @@ void SharedCorsOriginAccessListImpl::SetBlockListForOrigin(
     std::vector<network::mojom::CorsOriginPatternPtr> patterns,
     base::OnceClosure closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &SharedCorsOriginAccessListImpl::SetBlockListForOriginOnIOThread,
           base::RetainedRef(this), source_origin, std::move(patterns)),

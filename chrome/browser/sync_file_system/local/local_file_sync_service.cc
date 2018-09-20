@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/file_change.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -345,8 +347,10 @@ LocalFileSyncService::LocalFileSyncService(Profile* profile,
       sync_context_(new LocalFileSyncContext(
           profile_->GetPath(),
           env_override,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get())),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
+              .get(),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
+              .get())),
       local_change_processor_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   sync_context_->AddOriginChangeObserver(this);

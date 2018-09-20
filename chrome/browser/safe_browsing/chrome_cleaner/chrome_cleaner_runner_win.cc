@@ -22,6 +22,7 @@
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -181,7 +182,7 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread() {
   // ChromePromptImpl tasks will need to run on the IO thread. There is no
   // need to synchronize its creation, since the client end will wait for this
   // initialization to be done before sending requests.
-  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+  base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&ChromeCleanerRunner::CreateChromePromptImpl,
                                 base::RetainedRef(this),

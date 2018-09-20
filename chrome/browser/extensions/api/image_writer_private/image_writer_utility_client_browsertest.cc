@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -204,8 +205,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     success_ = cancel_;
 
     quit_called_ = true;
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     quit_closure_);
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             quit_closure_);
   }
 
   void Shutdown() {
@@ -214,8 +215,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     image_writer_utility_client_->Shutdown();
 
     quit_called_ = true;
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     quit_closure_);
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             quit_closure_);
   }
 
   static void FillFile(const base::FilePath& path, char pattern) {

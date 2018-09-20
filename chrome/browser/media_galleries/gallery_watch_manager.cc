@@ -25,6 +25,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
 
@@ -122,8 +123,8 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
   // This can occur if the GalleryWatchManager attempts to watch the same path
   // again before recieving the callback. It's benign.
   if (base::ContainsKey(watchers_, path)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(callback, false));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(callback, false));
     return;
   }
 
@@ -136,8 +137,8 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
   if (success)
     watchers_[path] = std::move(watcher);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, success));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback, success));
 }
 
 void GalleryWatchManager::FileWatchManager::RemoveFileWatch(
@@ -162,8 +163,8 @@ void GalleryWatchManager::FileWatchManager::OnFilePathChanged(
 
   if (error)
     RemoveFileWatch(path);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback_, path, error));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback_, path, error));
 }
 
 GalleryWatchManager::WatchOwner::WatchOwner(BrowserContext* browser_context,
@@ -437,8 +438,8 @@ void GalleryWatchManager::OnFilePathChanged(const base::FilePath& path,
           notification_info->second.last_notify_time +
           base::TimeDelta::FromSeconds(kMinNotificationDelayInSeconds) -
           base::Time::Now();
-      BrowserThread::PostDelayedTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostDelayedTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&GalleryWatchManager::OnFilePathChanged,
                          weak_factory_.GetWeakPtr(), path, error),
           delay_to_next_valid_time);

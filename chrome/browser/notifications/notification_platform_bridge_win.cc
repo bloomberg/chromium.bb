@@ -42,6 +42,7 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -559,8 +560,8 @@ class NotificationPlatformBridgeWinImpl
       displayed_notifications->insert(launch_id.notification_id());
     }
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(std::move(callback), std::move(displayed_notifications),
                        /*supports_synchronization=*/true));
   }
@@ -603,9 +604,9 @@ class NotificationPlatformBridgeWinImpl
 
     LogSetReadyCallbackStatus(static_cast<SetReadyCallbackStatus>(status));
 
-    bool success = content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(std::move(callback), enabled));
+    bool success =
+        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                                 base::BindOnce(std::move(callback), enabled));
     DCHECK(success);
   }
 
@@ -620,8 +621,8 @@ class NotificationPlatformBridgeWinImpl
       return;
     }
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ForwardNotificationOperationOnUiThread, operation,
                        launch_id.notification_type(), launch_id.origin_url(),
                        launch_id.notification_id(), launch_id.profile_id(),

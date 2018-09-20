@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -26,6 +27,7 @@
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/browser_test.h"
@@ -194,8 +196,8 @@ class SigninProfileAppsPolicyTestBase : public DevicePolicyCrosBrowserTest {
   // Enables URL request mocks for making the test data files (extensions'
   // update manifests and packages) available under corresponding URLs.
   static void EnableUrlRequestMocks() {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 

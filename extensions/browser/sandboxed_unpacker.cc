@@ -23,9 +23,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/services/unzip/public/cpp/unzip.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -213,8 +215,8 @@ std::set<base::FilePath> GetMessageCatalogPathsToBeSanitized(
 
 SandboxedUnpackerClient::SandboxedUnpackerClient()
     : RefCountedDeleteOnSequence<SandboxedUnpackerClient>(
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::UI)) {
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

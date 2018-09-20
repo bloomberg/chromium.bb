@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -48,6 +49,7 @@
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -1661,9 +1663,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // is relevant. By the time the reply is executed it is guaranteed that the
   // migration is completed.
   base::RunLoop run_loop;
-  content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
-                                           FROM_HERE, base::BindOnce([]() {}),
-                                           run_loop.QuitClosure());
+  base::PostTaskWithTraitsAndReply(FROM_HERE, {content::BrowserThread::IO},
+                                   base::BindOnce([]() {}),
+                                   run_loop.QuitClosure());
   run_loop.Run();
 
   // Migration updates should touch the password store.

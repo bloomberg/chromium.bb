@@ -13,7 +13,9 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -227,7 +229,7 @@ SharedResourcesDataSource::TaskRunnerForRequestPath(
       idr == IDR_WEBUI_CSS_TEXT_DEFAULTS_MD) {
     // Use UI thread to load CSS since its construction touches non-thread-safe
     // gfx::Font names in ui::ResourceBundle.
-    return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
   }
 
   return nullptr;

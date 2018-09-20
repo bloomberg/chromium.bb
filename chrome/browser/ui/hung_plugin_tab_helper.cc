@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/process/process.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/hang_monitor/hang_crash_dump.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/plugin_service.h"
@@ -192,9 +194,8 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
   PluginStateMap::iterator found = hung_plugins_.find(child_id);
   DCHECK(found != hung_plugins_.end());
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&KillPluginOnIOThread, child_id));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                           base::BindOnce(&KillPluginOnIOThread, child_id));
   CloseBar(found->second.get());
 }
 

@@ -50,6 +50,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_quality_observer_factory.h"
 #include "content/public/browser/network_service_instance.h"
@@ -205,21 +206,21 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
 void UpdateMetricsUsagePrefsOnUIThread(const std::string& service_name,
                                        int message_size,
                                        bool is_cellular) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(
-                              [](const std::string& service_name,
-                                 int message_size, bool is_cellular) {
-                                // Some unit tests use IOThread but do not
-                                // initialize MetricsService. In that case it's
-                                // fine to skip the update.
-                                auto* metrics_service =
-                                    g_browser_process->metrics_service();
-                                if (metrics_service) {
-                                  metrics_service->UpdateMetricsUsagePrefs(
-                                      service_name, message_size, is_cellular);
-                                }
-                              },
-                              service_name, message_size, is_cellular));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(
+                               [](const std::string& service_name,
+                                  int message_size, bool is_cellular) {
+                                 // Some unit tests use IOThread but do not
+                                 // initialize MetricsService. In that case it's
+                                 // fine to skip the update.
+                                 auto* metrics_service =
+                                     g_browser_process->metrics_service();
+                                 if (metrics_service) {
+                                   metrics_service->UpdateMetricsUsagePrefs(
+                                       service_name, message_size, is_cellular);
+                                 }
+                               },
+                               service_name, message_size, is_cellular));
 }
 
 }  // namespace
@@ -247,7 +248,7 @@ SystemURLRequestContextGetter::SystemURLRequestContextGetter(
     IOThread* io_thread)
     : io_thread_(io_thread),
       network_task_runner_(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)) {}
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})) {}
 
 SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
@@ -283,7 +284,7 @@ IOThread::IOThread(
       is_quic_allowed_on_init_(true),
       weak_factory_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
 
   BrowserThread::SetIOThreadDelegate(this);
 
@@ -354,9 +355,8 @@ void IOThread::Init() {
 #if defined(OS_MACOSX)
   // Start observing Keychain events. This needs to be done on the UI thread,
   // as Keychain services requires a CFRunLoop.
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&ObserveKeychainEvents));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::Bind(&ObserveKeychainEvents));
 #endif
 
   ConstructSystemRequestContext();

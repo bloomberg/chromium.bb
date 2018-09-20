@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -43,8 +44,8 @@ void CheckForUserRemovedLoginItemOnWorkerThread() {
   base::AssertBlockingAllowed();
   if (!base::mac::CheckLoginItemStatus(NULL)) {
     // There's no LoginItem, so set the kUserRemovedLoginItem pref.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(SetUserRemovedLoginItemPrefOnUIThread));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::Bind(SetUserRemovedLoginItemPrefOnUIThread));
   }
 }
 
@@ -59,8 +60,8 @@ void EnableLaunchOnStartupOnWorkerThread(bool need_migration) {
       if (is_hidden) {
       // We already have a hidden login item, so set the kChromeCreatedLoginItem
       // flag.
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::Bind(SetCreatedLoginItemPrefOnUIThread));
+      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                               base::Bind(SetCreatedLoginItemPrefOnUIThread));
       }
       // LoginItem already exists - just exit.
       return;
@@ -75,8 +76,8 @@ void EnableLaunchOnStartupOnWorkerThread(bool need_migration) {
     // before our callback is run, but the user can manually disable
     // "Open At Login" via the dock if this happens.
     base::mac::AddToLoginItems(true);  // Hide on startup.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(SetCreatedLoginItemPrefOnUIThread));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::Bind(SetCreatedLoginItemPrefOnUIThread));
   }
 }
 

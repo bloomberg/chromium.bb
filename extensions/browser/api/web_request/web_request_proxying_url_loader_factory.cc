@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/url_utils.h"
@@ -363,10 +365,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
     WebRequestAPI::AuthRequestCallback callback,
     int error_code) {
   if (error_code != net::OK) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(std::move(callback), base::nullopt,
-                       true /* should_cancel */));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(std::move(callback), base::nullopt,
+                                            true /* should_cancel */));
     return;
   }
 
@@ -421,8 +422,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       return;
   }
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   std::move(completion));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           std::move(completion));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -658,10 +659,9 @@ void WebRequestProxyingURLLoaderFactory::HandleAuthRequest(
     WebRequestAPI::AuthRequestCallback callback) {
   auto it = network_request_id_to_web_request_id_.find(request_id);
   if (it == network_request_id_to_web_request_id_.end()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(std::move(callback), base::nullopt,
-                       true /* should_cancel */));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(std::move(callback), base::nullopt,
+                                            true /* should_cancel */));
     return;
   }
 

@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_split.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -37,6 +38,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
@@ -518,9 +520,8 @@ void SystemNetworkContextManager::DisableQuic() {
   if (!io_thread)
     return;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DisableQuicOnIOThread, io_thread));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                           base::BindOnce(&DisableQuicOnIOThread, io_thread));
 }
 
 void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(

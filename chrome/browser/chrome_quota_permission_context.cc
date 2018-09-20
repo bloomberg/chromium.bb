@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
@@ -166,8 +168,8 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   }
 
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ChromeQuotaPermissionContext::RequestQuotaPermission,
                        this, params, render_process_id, callback));
     return;
@@ -214,8 +216,8 @@ void ChromeQuotaPermissionContext::DispatchCallbackOnIOThread(
   DCHECK_EQ(false, callback.is_null());
 
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &ChromeQuotaPermissionContext::DispatchCallbackOnIOThread, this,
             callback, response));

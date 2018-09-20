@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
@@ -20,6 +21,7 @@
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/url_loader_factory_bundle.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -38,8 +40,8 @@ namespace {
 void AllowFileSystemOnIOThreadResponse(base::OnceCallback<void(bool)> callback,
                                        bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(std::move(callback), result));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(std::move(callback), result));
 }
 
 void AllowFileSystemOnIOThread(const GURL& url,
@@ -286,8 +288,8 @@ void SharedWorkerHost::Start(
   // sent, it can be used, so add it to ServiceWorkerObjectHost.
   if (remote_object.is_valid()) {
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
             subresource_loader_params->controller_service_worker_object_host,
@@ -319,8 +321,8 @@ void SharedWorkerHost::CreateNetworkFactory(
 void SharedWorkerHost::AllowFileSystem(
     const GURL& url,
     base::OnceCallback<void(bool)> callback) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AllowFileSystemOnIOThread, url,
                      RenderProcessHost::FromID(process_id_)
                          ->GetBrowserContext()
@@ -331,8 +333,8 @@ void SharedWorkerHost::AllowFileSystem(
 void SharedWorkerHost::AllowIndexedDB(const GURL& url,
                                       const base::string16& name,
                                       base::OnceCallback<void(bool)> callback) {
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AllowIndexedDBOnIOThread, url, name,
                      RenderProcessHost::FromID(process_id_)
                          ->GetBrowserContext()

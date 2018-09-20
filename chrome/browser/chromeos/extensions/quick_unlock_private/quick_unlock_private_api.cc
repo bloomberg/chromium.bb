@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
@@ -25,6 +26,7 @@
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 
@@ -244,8 +246,8 @@ QuickUnlockPrivateGetAuthTokenFunction::Run() {
   // is needed.
   AddRef();
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&chromeos::ExtendedAuthenticator::AuthenticateToCheck,
                      extended_authenticator_.get(), user_context,
                      base::Closure()));

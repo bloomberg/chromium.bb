@@ -5,9 +5,11 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_request_core.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_request_headers.h"
@@ -52,8 +54,8 @@ class DownloadRequestCoreTest : public testing::Test {
 
   void SetUp() override {
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::UI));
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {content::BrowserThread::UI}));
   }
 
   void TearDown() override {

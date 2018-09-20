@@ -4,10 +4,12 @@
 
 #include "content/browser/memory/memory_coordinator_impl.h"
 
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -45,8 +47,8 @@ IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, HandleAdded) {
   // Query the GPU process ID from the IO thread.
   int gpu_process_id = -1;
   base::WaitableEvent io_event;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&GetGpuProcessIDOnIO, &gpu_process_id, &io_event));
   io_event.Wait();
   ASSERT_NE(gpu_process_id, -1);

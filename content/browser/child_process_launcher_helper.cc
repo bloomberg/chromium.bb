@@ -13,6 +13,7 @@
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
 #include "content/browser/child_process_launcher.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -151,8 +152,8 @@ void ChildProcessLauncherHelper::PostLaunchOnLauncherThread(
     }
   }
 
-  BrowserThread::PostTask(
-      client_thread_id_, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {client_thread_id_},
       base::BindOnce(&ChildProcessLauncherHelper::PostLaunchOnClientThread,
                      this, std::move(process), launch_result));
 }

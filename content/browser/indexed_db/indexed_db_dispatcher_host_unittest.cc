@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_offset_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
@@ -20,6 +21,7 @@
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/mock_mojo_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_mojo_indexed_db_database_callbacks.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -159,7 +161,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
         quota_manager_(base::MakeRefCounted<MockQuotaManager>(
             false /*is_incognito*/,
             browser_context_.GetPath(),
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
             special_storage_policy_)),
         context_impl_(base::MakeRefCounted<IndexedDBContextImpl>(
             CreateAndReturnTempDir(&temp_dir_),
@@ -168,7 +170,8 @@ class IndexedDBDispatcherHostTest : public testing::Test {
         host_(new IndexedDBDispatcherHost(
             kFakeProcessId,
             base::MakeRefCounted<net::TestURLRequestContextGetter>(
-                BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
+                base::CreateSingleThreadTaskRunnerWithTraits(
+                    {BrowserThread::IO})),
             context_impl_,
             ChromeBlobStorageContext::GetFor(&browser_context_))) {
     quota_manager_->SetQuota(

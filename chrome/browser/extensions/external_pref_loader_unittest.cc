@@ -5,11 +5,13 @@
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,8 +88,8 @@ class TestExternalPrefLoader : public ExternalPrefLoader {
         load_callback_(std::move(load_callback)) {}
 
   void LoadOnFileThread() override {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     std::move(load_callback_));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             std::move(load_callback_));
   }
 
  private:

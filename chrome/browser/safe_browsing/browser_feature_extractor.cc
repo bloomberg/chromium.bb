@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -26,6 +27,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -268,8 +270,8 @@ void BrowserFeatureExtractor::ExtractMalwareFeatures(
   std::unique_ptr<ClientMalwareRequest> req(request);
 
   // IP blacklist lookups have to happen on the IO thread.
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FilterBenignIpsOnIOThread, host_->database_manager(),
                      ips_ptr),
       base::BindOnce(&BrowserFeatureExtractor::FinishExtractMalwareFeatures,

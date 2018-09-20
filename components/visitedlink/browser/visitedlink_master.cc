@@ -25,6 +25,7 @@
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/visitedlink/browser/visitedlink_event_listener.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -620,8 +621,8 @@ void VisitedLinkMaster::LoadFromFile(
   scoped_refptr<LoadFromFileResult> load_from_file_result;
   bool success = LoadApartFromFile(filename, &load_from_file_result);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(callback, success, load_from_file_result));
 }
 
@@ -1144,8 +1145,8 @@ void VisitedLinkMaster::TableBuilder::OnComplete(bool success) {
 
   // Marshal to the main thread to notify the VisitedLinkMaster that the
   // rebuild is complete.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&TableBuilder::OnCompleteMainThread, this));
 }
 

@@ -27,6 +27,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -47,6 +48,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/notification_details.h"
@@ -379,8 +381,8 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
   if (proxy_) {
     proxy_->OnWebUIDeleted();
     // Notify the handler on the IO thread that the renderer is gone.
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(&IOThreadImpl::Detach, proxy_));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::BindOnce(&IOThreadImpl::Detach, proxy_));
   }
 }
 
@@ -604,8 +606,8 @@ void NetInternalsMessageHandler::IOThreadImpl::CallbackHelper(
   base::ListValue* list_copy =
       (list && list->GetSize()) ? list->DeepCopy() : nullptr;
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(method, io_thread, base::Owned(list_copy)));
 }
 
@@ -978,7 +980,7 @@ void NetInternalsMessageHandler::ImportONCFileToNSSDB(
     error += network_error;
 
   chromeos::onc::CertificateImporterImpl cert_importer(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), nssdb);
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}), nssdb);
   auto certs =
       std::make_unique<chromeos::onc::OncParsedCertificates>(certificates);
   if (certs->has_error())
@@ -1094,8 +1096,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnSetCaptureMode(
 // can be called from ANY THREAD.
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     const net::NetLogEntry& entry) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&IOThreadImpl::AddEntryToQueue, this, entry.ToValue()));
 }
 
@@ -1112,9 +1114,9 @@ void NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand(
     return;
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&IOThreadImpl::SendJavascriptCommand,
-                                         this, command, std::move(arg)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&IOThreadImpl::SendJavascriptCommand,
+                                          this, command, std::move(arg)));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(
@@ -1122,8 +1124,8 @@ void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!pending_entries_) {
     pending_entries_.reset(new base::ListValue());
-    BrowserThread::PostDelayedTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&IOThreadImpl::PostPendingEntries, this),
         base::TimeDelta::FromMilliseconds(kNetLogEventDelayMilliseconds));
   }

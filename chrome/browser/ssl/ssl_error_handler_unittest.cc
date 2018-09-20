@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -28,6 +29,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/net_errors.h"
@@ -120,8 +122,8 @@ const char kCertWithoutOrganizationOrCommonName[] =
 std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
     const base::Closure& quit_closure,
     const net::test_server::HttpRequest& request) {
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   quit_closure);
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           quit_closure);
   return std::make_unique<net::test_server::HungResponse>();
 }
 
@@ -615,8 +617,8 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop run_loop;
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info;
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(CreateURLLoaderFactory, &url_loader_factory_info),
         run_loop.QuitClosure());
     run_loop.Run();

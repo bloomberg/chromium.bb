@@ -4,8 +4,10 @@
 
 #include "chrome/browser/net/proxy_service_factory.h"
 
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -35,7 +37,7 @@ ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
   // include command line and configuration policy).
 
   base_service = net::ProxyResolutionService::CreateSystemProxyConfigService(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
 #endif  // !defined(OS_CHROMEOS)
 
   return tracker->CreateTrackingProxyConfigService(std::move(base_service));

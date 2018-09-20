@@ -4,7 +4,9 @@
 
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
 
+#include "base/task/post_task.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -61,8 +63,8 @@ void ChromeExtensionWebRequestEventRouterDelegate::NotifyWebRequestWithheld(
     int render_frame_id,
     const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&NotifyWebRequestWithheldOnUI, render_process_id,
                      render_frame_id, extension_id));
 }

@@ -12,6 +12,8 @@
 #include "base/android/jni_string.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
@@ -82,8 +84,8 @@ GetOriginsTask::~GetOriginsTask() {}
 
 void GetOriginsTask::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&QuotaManager::GetOriginsModifiedSince, quota_manager_,
                      blink::mojom::StorageType::kTemporary,
                      base::Time() /* Since beginning of time. */,
@@ -126,8 +128,8 @@ void GetOriginsTask::OnUsageAndQuotaObtained(
 void GetOriginsTask::CheckDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (num_callbacks_received_ == num_callbacks_to_wait_) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&GetOriginsTask::DoneOnUIThread, this));
   } else if (num_callbacks_received_ > num_callbacks_to_wait_) {
     NOTREACHED();
@@ -144,7 +146,7 @@ void RunOnUIThread(base::OnceClosure task) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     std::move(task).Run();
   } else {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(task));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, std::move(task));
   }
 }
 
@@ -286,8 +288,9 @@ void OnUsageAndQuotaObtained(
     usage = 0;
     quota = 0;
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(std::move(ui_callback), usage, quota));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(std::move(ui_callback), usage, quota));
 }
 
 }  // namespace
@@ -314,8 +317,8 @@ void AwQuotaManagerBridge::GetUsageAndQuotaForOriginOnUiThread(
       base::BindOnce(&AwQuotaManagerBridge::QuotaUsageCallbackImpl,
                      weak_factory_.GetWeakPtr(), callback_id, is_quota);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &QuotaManager::GetUsageAndQuota, GetQuotaManager(), GURL(origin),
           blink::mojom::StorageType::kTemporary,

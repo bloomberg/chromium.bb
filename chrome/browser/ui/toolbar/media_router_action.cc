@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -164,8 +166,8 @@ void MediaRouterAction::OnContextMenuClosed() {
   // destroyed before the command execution.
   // TODO(takumif): Using task sequence to order operations is fragile. Consider
   // other ways to do so when we move the icon to the trusted area.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&MediaRouterAction::DestroyContextMenu,
                      weak_ptr_factory_.GetWeakPtr()));
 }

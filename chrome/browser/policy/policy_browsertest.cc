@@ -169,6 +169,7 @@
 #include "components/variations/variations_params_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/download_manager.h"
@@ -407,15 +408,15 @@ class MakeRequestFail {
   // Sets up the filter on IO thread such that requests to |host| fail.
   explicit MakeRequestFail(const std::string& host) : host_(host) {
     base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
-                                    base::BindOnce(MakeRequestFailOnIO, host_),
-                                    run_loop.QuitClosure());
+    base::PostTaskWithTraitsAndReply(FROM_HERE, {BrowserThread::IO},
+                                     base::BindOnce(MakeRequestFailOnIO, host_),
+                                     run_loop.QuitClosure());
     run_loop.Run();
   }
   ~MakeRequestFail() {
     base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(UndoMakeRequestFailOnIO, host_), run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -787,8 +788,8 @@ class PolicyTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(chrome_browser_net::SetUrlRequestMocksEnabled, true));
     if (extension_service()->updater()) {
       extension_service()->updater()->SetExtensionCacheForTesting(
@@ -828,8 +829,8 @@ class PolicyTest : public InProcessBrowserTest {
       return;
     }
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &net::TransportSecurityState::SetShouldRequireCTForTesting,
             required));
@@ -844,8 +845,8 @@ class PolicyTest : public InProcessBrowserTest {
     void OnScreenshotCompleted(
         ui::ScreenshotResult screenshot_result,
         const base::FilePath& screenshot_path) override {
-      BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
-                                      base::DoNothing(), std::move(done_));
+      base::PostTaskWithTraitsAndReply(FROM_HERE, {BrowserThread::IO},
+                                       base::DoNothing(), std::move(done_));
     }
 
     ~QuitMessageLoopAfterScreenshot() override {}
@@ -3953,8 +3954,8 @@ class RestoreOnStartupPolicyTest
   }
 
   void SetUpOnMainThread() override {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(RedirectHostsToTestData, kRestoredURLs,
                        arraysize(kRestoredURLs)));
   }
@@ -4379,8 +4380,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   ConfigurePolicyMap(&policies, key::kAudioCaptureAllowed, NULL, NULL);
   UpdateProviderPolicy(policies);
 
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
           base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -4412,8 +4413,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        key::kAudioCaptureAllowedUrls, allow_pattern[i]);
     UpdateProviderPolicy(policies);
 
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
             base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -4437,8 +4438,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   ConfigurePolicyMap(&policies, key::kVideoCaptureAllowed, NULL, NULL);
   UpdateProviderPolicy(policies);
 
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
           base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -4470,8 +4471,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        key::kVideoCaptureAllowedUrls, allow_pattern[i]);
     UpdateProviderPolicy(policies);
 
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
             base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -5370,8 +5371,8 @@ void ComponentUpdaterPolicyTest::UpdateComponent(
 }
 
 void ComponentUpdaterPolicyTest::CallAsync(TestCaseAction action) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(action, base::Unretained(this)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(action, base::Unretained(this)));
 }
 
 void ComponentUpdaterPolicyTest::OnDemandComplete(update_client::Error error) {

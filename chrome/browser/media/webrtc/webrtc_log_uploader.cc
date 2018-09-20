@@ -22,6 +22,7 @@
 #include "components/webrtc_logging/browser/log_cleanup.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
 #include "components/webrtc_logging/common/partial_circular_buffer.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -166,8 +167,8 @@ void WebRtcLogUploader::PrepareMultipartPostData(
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&WebRtcLogUploader::UploadCompressedLog,
                      base::Unretained(this), upload_done_data,
                      std::move(post_data)));
@@ -186,8 +187,8 @@ void WebRtcLogUploader::UploadStoredLog(
   std::string compressed_log;
   if (!base::ReadFileToString(native_log_path, &compressed_log)) {
     DPLOG(WARNING) << "Could not read WebRTC log file.";
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(upload_data.callback, false, "", "Log doesn't exist."));
     return;
   }
@@ -278,20 +279,21 @@ void WebRtcLogUploader::LoggingStoppedDoStore(
                     pickle.size());
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(done_callback, true, ""));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(done_callback, true, ""));
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&WebRtcLogUploader::DecreaseLogCount,
-                                         base::Unretained(this)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(&WebRtcLogUploader::DecreaseLogCount,
+                                          base::Unretained(this)));
 }
 
 void WebRtcLogUploader::StartShutdown() {
   DCHECK_CALLED_ON_VALID_THREAD(create_thread_checker_);
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&WebRtcLogUploader::ShutdownOnIOThread,
-                                         base::Unretained(this)));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&WebRtcLogUploader::ShutdownOnIOThread,
+                     base::Unretained(this)));
 }
 
 void WebRtcLogUploader::OnSimpleLoaderComplete(
@@ -603,8 +605,8 @@ void WebRtcLogUploader::NotifyUploadDone(
     int response_code,
     const std::string& report_id,
     const WebRtcLogUploadDoneData& upload_done_data) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&WebRtcLoggingHandlerHost::UploadLogDone,
                      upload_done_data.host));
   if (!upload_done_data.callback.is_null()) {
@@ -614,8 +616,8 @@ void WebRtcLogUploader::NotifyUploadDone(
       error_message = "Uploading failed, response code: " +
                       base::IntToString(response_code);
     }
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(upload_done_data.callback, success,
-                                           report_id, error_message));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(upload_done_data.callback, success,
+                                            report_id, error_message));
   }
 }

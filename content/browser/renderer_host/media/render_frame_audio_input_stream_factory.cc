@@ -7,12 +7,14 @@
 #include <string>
 #include <utility>
 
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
@@ -36,8 +38,8 @@ void LookUpDeviceAndRespondIfFound(
       audio_input_device_manager->GetOpenedDeviceById(session_id);
   if (device) {
     // Copies device.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(std::move(response), *device));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(std::move(response), *device));
   }
 }
 
@@ -59,8 +61,8 @@ void TranslateDeviceId(const std::string& device_id,
     if (MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
             salt_and_origin.device_id_salt, salt_and_origin.origin, device_id,
             device_info.device_id)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(std::move(cb), device_info.device_id));
       break;
     }
@@ -97,8 +99,8 @@ void RenderFrameAudioInputStreamFactory::CreateStream(
                        "RenderFrameAudioInputStreamFactory::CreateStream",
                        TRACE_EVENT_SCOPE_THREAD, "session id", session_id);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &LookUpDeviceAndRespondIfFound, audio_input_device_manager_,
           session_id,
@@ -191,8 +193,8 @@ void RenderFrameAudioInputStreamFactory::AssociateInputAndOutputForAec(
   } else {
     auto* media_stream_manager =
         BrowserMainLoop::GetInstance()->media_stream_manager();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             EnumerateOutputDevices, media_stream_manager,
             base::BindRepeating(

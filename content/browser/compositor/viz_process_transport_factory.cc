@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
@@ -26,6 +27,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/gpu_stream_constants.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -170,8 +172,8 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
                 std::move(request), std::move(client));
           }
         };
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(connect_on_io_thread,
                        std::move(frame_sink_manager_request),
                        frame_sink_manager_client.PassInterface()));

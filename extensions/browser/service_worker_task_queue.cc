@@ -4,7 +4,9 @@
 
 #include "extensions/browser/service_worker_task_queue.h"
 
+#include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_worker_context.h"
@@ -100,8 +102,8 @@ void ServiceWorkerTaskQueue::DidStartWorkerForPatternOnIO(
     int process_id,
     int thread_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForPattern,
                      task_queue, std::move(task), extension_id, version_id,
                      process_id, thread_id));
@@ -250,8 +252,8 @@ void ServiceWorkerTaskQueue::RunTaskAfterStartWorker(
       partition->GetServiceWorkerContext();
 
   content::ServiceWorkerContext::RunTask(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO}),
       FROM_HERE, service_worker_context,
       base::BindOnce(
           &ServiceWorkerTaskQueue::StartServiceWorkerOnIOToRunTask,

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -23,6 +24,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -2815,10 +2817,9 @@ class CursorMessageFilter : public content::BrowserMessageFilter {
 
   bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == ViewHostMsg_SetCursor::ID) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&CursorMessageFilter::OnSetCursor, this,
-                         message.routing_id()));
+      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                               base::BindOnce(&CursorMessageFilter::OnSetCursor,
+                                              this, message.routing_id()));
     }
     return false;
   }

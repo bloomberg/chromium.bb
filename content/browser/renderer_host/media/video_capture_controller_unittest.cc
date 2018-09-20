@@ -19,12 +19,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/mock_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/base/video_frame_metadata.h"
@@ -162,7 +164,7 @@ class VideoCaptureControllerTest
         media::VideoCaptureBufferType::kSharedMemory,
         std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
             controller_->GetWeakPtrForIOThread(),
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
+            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
         buffer_pool_, media::VideoCaptureJpegDecoderFactoryCB()));
   }
 

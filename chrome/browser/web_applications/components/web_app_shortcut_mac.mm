@@ -44,6 +44,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/crx_file/id_util.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #import "skia/ext/skia_utils_mac.h"
@@ -399,8 +400,8 @@ bool UpdateAppShortcutsSubdirLocalizedName(
       base::mac::FilePathToNSString(localized.Append(locale + ".strings"));
   [strings_dict writeToFile:strings_path atomically:YES];
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &GetImageResourcesOnUIThread,
           base::BindOnce(&SetWorkspaceIconOnWorkerThread, apps_directory)));

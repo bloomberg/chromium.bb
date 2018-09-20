@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/quota/open_file_handle.h"
@@ -120,8 +122,8 @@ void QuotaReservation::GotReservedQuota(const ReserveQuotaCallback& callback,
     file_sizes[it->first] = it->second->GetMaxWrittenOffset();
 
   if (file_system_context_.get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(callback, quota_reservation_->remaining_quota(),
                        file_sizes));
   } else {

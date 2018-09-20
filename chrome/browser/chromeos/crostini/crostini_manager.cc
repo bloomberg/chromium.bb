@@ -33,6 +33,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/message.h"
 #include "extensions/browser/extension_registry.h"
@@ -98,8 +99,8 @@ class CrostiniManager::CrostiniRestarter
     is_running_ = true;
     // Skip to the end immediately if testing.
     if (crostini_manager_->skip_restart_for_testing()) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&CrostiniRestarter::SetUpLxdContainerUserFinished,
                          base::WrapRefCounted(this),
                          ConciergeClientResult::SUCCESS));
@@ -495,8 +496,8 @@ void CrostiniManager::InstallTerminaComponent(CrostiniResultCallback callback) {
       g_browser_process->platform_part()->cros_component_manager();
   if (!cros_component_manager) {
     // Running in a unit test. We still PostTask to prevent races.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&CrostiniManager::OnInstallTerminaComponent,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        true, component_manager_load_error_for_testing_,

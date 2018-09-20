@@ -46,6 +46,7 @@
 #include "content/common/net/record_load_histograms.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_utils.h"
@@ -498,8 +499,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     // TODO(arthursonzogni): Detect when the ResourceDispatcherHost didn't
     // create a URLLoader. When it doesn't, do not send OnRequestStarted().
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NavigationURLLoaderImpl::OnRequestStarted, owner_,
                        base::TimeTicks::Now()));
   }
@@ -902,8 +903,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         network::mojom::URLLoaderFactoryPtr& non_network_factory =
             non_network_url_loader_factories_[resource_request_->url.scheme()];
         if (!non_network_factory.is_bound()) {
-          BrowserThread::PostTask(
-              BrowserThread::UI, FROM_HERE,
+          base::PostTaskWithTraits(
+              FROM_HERE, {BrowserThread::UI},
               base::BindOnce(&NavigationURLLoaderImpl ::
                                  BindNonNetworkURLLoaderFactoryRequest,
                              owner_, frame_tree_node_id_,
@@ -1169,8 +1170,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // TODO(davidben): This copy could be avoided if ResourceResponse weren't
     // reference counted and the loader stack passed unique ownership of the
     // response. https://crbug.com/416050
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NavigationURLLoaderImpl::OnReceiveResponse, owner_,
                        response->DeepCopy(),
                        std::move(url_loader_client_endpoints),
@@ -1208,8 +1209,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // TODO(davidben): This copy could be avoided if ResourceResponse weren't
     // reference counted and the loader stack passed unique ownership of the
     // response. https://crbug.com/416050
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NavigationURLLoaderImpl::OnReceiveRedirect, owner_,
                        redirect_info, response->DeepCopy()));
   }
@@ -1247,8 +1248,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
     status_ = status;
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NavigationURLLoaderImpl::OnComplete, owner_, status));
   }
 
@@ -1467,8 +1468,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         /* proxied_url_loader_factory_info */ nullptr, std::set<std::string>(),
         /* bypass_redirect_checks */ false, weak_factory_.GetWeakPtr());
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &URLLoaderRequestController::StartWithoutNetworkService,
             base::Unretained(request_controller_.get()),
@@ -1548,8 +1549,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       std::move(proxied_factory_request), std::move(proxied_factory_info),
       std::move(known_schemes), bypass_redirect_checks,
       weak_factory_.GetWeakPtr());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &URLLoaderRequestController::Start,
           base::Unretained(request_controller_.get()),
@@ -1569,8 +1570,8 @@ void NavigationURLLoaderImpl::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLLoaderRequestController::FollowRedirect,
                      base::Unretained(request_controller_.get()),
                      modified_request_headers));

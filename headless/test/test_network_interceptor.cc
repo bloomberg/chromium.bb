@@ -5,6 +5,8 @@
 #include "headless/test/test_network_interceptor.h"
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -88,9 +90,9 @@ class TestNetworkInterceptor::Impl {
   }
 
   Response* FindResponse(const std::string& method, const std::string& url) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&TestNetworkInterceptor::LogRequest,
-                                           interceptor_, method, url));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&TestNetworkInterceptor::LogRequest,
+                                            interceptor_, method, url));
     auto it = response_map_.find(StripFragment(url));
     return it == response_map_.end() ? nullptr : it->second.get();
   }
@@ -177,8 +179,8 @@ TestNetworkInterceptor::~TestNetworkInterceptor() {
 
 void TestNetworkInterceptor::InsertResponse(std::string url,
                                             Response response) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::InsertResponse, base::Unretained(impl_.get()),
                      std::move(url), std::move(response)));
 }

@@ -34,6 +34,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
@@ -41,6 +42,7 @@
 #include "components/history/core/browser/download_database.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "extensions/buildflags/buildflags.h"
@@ -525,8 +527,8 @@ void DownloadHistory::ScheduleRemoveDownload(uint32_t download_id) {
   // For database efficiency, batch removals together if they happen all at
   // once.
   if (removing_ids_.empty()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&DownloadHistory::RemoveDownloadsBatch,
                        weak_ptr_factory_.GetWeakPtr()));
   }

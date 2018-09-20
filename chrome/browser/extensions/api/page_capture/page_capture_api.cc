@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_details.h"
@@ -72,8 +73,8 @@ PageCaptureSaveAsMHTMLFunction::PageCaptureSaveAsMHTMLFunction() {
 
 PageCaptureSaveAsMHTMLFunction::~PageCaptureSaveAsMHTMLFunction() {
   if (mhtml_file_.get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ClearFileReferenceOnIOThread, std::move(mhtml_file_)));
   }
 }
@@ -159,8 +160,8 @@ void PageCaptureSaveAsMHTMLFunction::ResolvePermissionRequest(
 void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
   base::AssertBlockingAllowed();
   bool success = base::CreateTemporaryFile(&mhtml_path_);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnIO,
                      this, success));
 }
@@ -185,8 +186,8 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnIO(bool success) {
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
             .get());
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnUI,
                      this, success));
 }

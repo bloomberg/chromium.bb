@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
@@ -34,7 +36,8 @@ using content::BrowserThread;
 ThreadWatcher::ThreadWatcher(const WatchingParams& params)
     : thread_id_(params.thread_id),
       thread_name_(params.thread_name),
-      watched_runner_(BrowserThread::GetTaskRunnerForThread(params.thread_id)),
+      watched_runner_(
+          base::CreateSingleThreadTaskRunnerWithTraits({params.thread_id})),
       sleep_time_(params.sleep_time),
       unresponsive_time_(params.unresponsive_time),
       ping_time_(base::TimeTicks::Now()),
@@ -511,8 +514,8 @@ void ThreadWatcherList::InitializeAndStartWatching(
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
   // Disarm the startup timebomb, even if stop has been called.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&DisarmStartupTimeBomb));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&DisarmStartupTimeBomb));
 
   // This method is deferred in relationship to its StopWatchingAll()
   // counterpart. If a previous initialization has already happened, or if

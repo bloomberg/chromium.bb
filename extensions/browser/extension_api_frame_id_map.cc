@@ -9,6 +9,8 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -287,8 +289,8 @@ void ExtensionApiFrameIdMap::GetFrameDataOnIO(
   // The key was seen for the first time (or the frame has been removed).
   // Hop to the UI thread to look up the extension API frame ID.
   callbacks_map_[key].callbacks.push_back(callback);
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {content::BrowserThread::UI},
       base::Bind(&ExtensionApiFrameIdMap::LookupFrameDataOnUI,
                  base::Unretained(this), key, true /* is_from_io */),
       base::Bind(&ExtensionApiFrameIdMap::ReceivedFrameDataOnIO,

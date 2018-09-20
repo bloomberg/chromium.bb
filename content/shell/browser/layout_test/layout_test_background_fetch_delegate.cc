@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/download/content/factory/download_service_factory.h"
 #include "components/download/public/background_service/clients.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -213,7 +215,8 @@ void LayoutTestBackgroundFetchDelegate::DownloadUrl(
               browser_context_, std::move(clients),
               GetNetworkConnectionTracker(), base::FilePath(),
               BrowserContext::GetBlobStorageContext(browser_context_),
-              BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+              base::CreateSingleThreadTaskRunnerWithTraits(
+                  {BrowserThread::IO})));
     }
   }
 

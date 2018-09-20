@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -27,6 +28,7 @@
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/resource_context.h"
@@ -180,16 +182,16 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       profile_->GetPrefs());
   io_data_->safe_browsing_enabled()->MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   io_data_->safe_browsing_whitelist_domains()->Init(
       prefs::kSafeBrowsingWhitelistDomains, profile_->GetPrefs());
   io_data_->safe_browsing_whitelist_domains()->MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 #if BUILDFLAG(ENABLE_PLUGINS)
   io_data_->always_open_pdf_externally()->Init(
       prefs::kPluginsAlwaysOpenPdfExternally, profile_->GetPrefs());
   io_data_->always_open_pdf_externally()->MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 #endif
   io_data_->InitializeOnUIThread(profile_);
 }

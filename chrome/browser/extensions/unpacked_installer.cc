@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync/model/string_ordinal.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -304,8 +305,8 @@ void UnpackedInstaller::GetAbsolutePath() {
 
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&UnpackedInstaller::CheckExtensionFileAccess, this));
 }
 
@@ -329,15 +330,15 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
 
   std::string error;
   if (!LoadExtension(Manifest::UNPACKED, flags, &error)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError, this,
                        error));
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&UnpackedInstaller::StartInstallChecks, this));
 }
 

@@ -10,6 +10,7 @@
 #include "base/task_runner_util.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/socket_permission_request.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -52,13 +53,10 @@ PepperNetworkMonitorHost::PepperNetworkMonitorHost(BrowserPpapiHostImpl* host,
   host->GetRenderFrameIDsForInstance(
       instance, &render_process_id, &render_frame_id);
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&CanUseNetworkMonitor,
-                 host->external_plugin(),
-                 render_process_id,
-                 render_frame_id),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
+      base::Bind(&CanUseNetworkMonitor, host->external_plugin(),
+                 render_process_id, render_frame_id),
       base::Bind(&PepperNetworkMonitorHost::OnPermissionCheckResult,
                  weak_factory_.GetWeakPtr()));
 }

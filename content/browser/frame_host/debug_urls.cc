@@ -11,10 +11,12 @@
 #include "base/debug/profiler.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
@@ -162,9 +164,9 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   if (url == kChromeUIDelayedBrowserUIHang) {
     // Webdriver-safe url to hang the ui thread. Webdriver waits for the onload
     // event in javascript which needs a little more time to fire.
-    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-                                   base::BindOnce(&HangCurrentThread),
-                                   base::TimeDelta::FromSeconds(2));
+    base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                                    base::BindOnce(&HangCurrentThread),
+                                    base::TimeDelta::FromSeconds(2));
     return true;
   }
 
@@ -211,8 +213,8 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   }
 
   if (url == kChromeUIPpapiFlashCrashURL || url == kChromeUIPpapiFlashHangURL) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(&HandlePpapiFlashDebugURL, url));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::BindOnce(&HandlePpapiFlashDebugURL, url));
     return true;
   }
 

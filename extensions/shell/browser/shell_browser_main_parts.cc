@@ -8,6 +8,7 @@
 
 #include "apps/browser_context_keyed_service_factories.h"
 #include "base/command_line.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/nacl/common/buildflags.h"
@@ -15,6 +16,7 @@
 #include "components/sessions/core/session_id_generator.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/update_client/update_query_params.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -235,8 +237,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Track the task so it can be canceled if app_shell shuts down very quickly,
   // such as in browser tests.
   task_tracker_.PostTask(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(), FROM_HERE,
-      base::Bind(nacl::NaClProcessHost::EarlyStartup));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}).get(),
+      FROM_HERE, base::Bind(nacl::NaClProcessHost::EarlyStartup));
 #endif
 
   content::ShellDevToolsManagerDelegate::StartHttpHandler(

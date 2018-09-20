@@ -9,12 +9,14 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -194,11 +196,10 @@ ChromeURLRequestContextGetter::CreateAndInit(
   // run and complete before the constructor returns, which would reduce the
   // reference count from 1 to 0 on completion, and delete the object
   // immediately.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ChromeURLRequestContextGetter::Init,
-                     url_request_context_getter,
-                     base::Passed(std::move(factory))));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                           base::BindOnce(&ChromeURLRequestContextGetter::Init,
+                                          url_request_context_getter,
+                                          base::Passed(std::move(factory))));
   return url_request_context_getter;
 }
 
@@ -227,7 +228,7 @@ void ChromeURLRequestContextGetter::NotifyContextShuttingDown() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 ChromeURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+  return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
 }
 
 // static

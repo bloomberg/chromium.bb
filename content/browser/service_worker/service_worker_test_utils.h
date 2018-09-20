@@ -11,8 +11,10 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/post_task.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +40,7 @@ void ReceiveResult(BrowserThread::ID run_quit_thread,
                    Arg actual) {
   *out = actual;
   if (!quit.is_null())
-    BrowserThread::PostTask(run_quit_thread, FROM_HERE, std::move(quit));
+    base::PostTaskWithTraits(FROM_HERE, {run_quit_thread}, std::move(quit));
 }
 
 template <typename Arg>

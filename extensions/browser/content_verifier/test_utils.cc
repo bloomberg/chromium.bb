@@ -5,6 +5,8 @@
 #include "extensions/browser/content_verifier/test_utils.h"
 
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
@@ -98,8 +100,8 @@ void TestContentVerifyJobObserver::JobFinished(
     const base::FilePath& relative_path,
     ContentVerifyJob::FailureReason failure_reason) {
   if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
-    content::BrowserThread::PostTask(
-        creation_thread_, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {creation_thread_},
         base::BindOnce(&TestContentVerifyJobObserver::JobFinished,
                        base::Unretained(this), extension_id, relative_path,
                        failure_reason));
@@ -189,8 +191,8 @@ void VerifierObserver::WaitForFetchComplete(const ExtensionId& extension_id) {
 void VerifierObserver::OnFetchComplete(const ExtensionId& extension_id,
                                        bool success) {
   if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
-    content::BrowserThread::PostTask(
-        creation_thread_, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {creation_thread_},
         base::BindOnce(&VerifierObserver::OnFetchComplete,
                        base::Unretained(this), extension_id, success));
     return;

@@ -17,9 +17,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -1282,8 +1284,8 @@ void ClearCacheOnNavigation() {
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     ClearCacheOnNavigationOnUI();
   } else {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&ClearCacheOnNavigationOnUI));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::Bind(&ClearCacheOnNavigationOnUI));
   }
 }
 

@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 using autofill::PasswordForm;
@@ -483,8 +484,8 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
 // deprecated.
 NativeBackendGnome::NativeBackendGnome(LocalProfileId id)
     : app_string_(GetProfileSpecificAppString(id)),
-      main_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI)),
+      main_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI})),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::WithBaseSyncPrimitives(),
            base::TaskPriority::USER_VISIBLE})) {}

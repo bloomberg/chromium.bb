@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/arc_oemcrypto_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/common/protected_buffer_manager.mojom.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_service_registry.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -141,7 +143,7 @@ void ArcOemCryptoBridge::ConnectToDaemon(
   // We need to get the GPU interface on the IO thread, then after that is
   // done it will run the Mojo call on our thread.
   base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+      base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
           .get(),
       FROM_HERE, base::BindOnce(&GetGpuBufferManagerOnIOThread),
       base::BindOnce(&ArcOemCryptoBridge::FinishConnectingToDaemon,

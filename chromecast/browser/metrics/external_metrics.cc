@@ -26,6 +26,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/serialization/metric_sample.h"
 #include "components/metrics/serialization/serialization_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromecast {
@@ -102,8 +103,8 @@ void ExternalMetrics::ProcessExternalEvents(const base::Closure& cb) {
 }
 
 void ExternalMetrics::RecordCrash(const std::string& crash_kind) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CastStabilityMetricsProvider::LogExternalCrash,
                      base::Unretained(stability_provider_), crash_kind));
 }

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
@@ -26,6 +27,7 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
@@ -182,8 +184,8 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
     if (!worker_id_ || !devtools_enabled_)
       return;
     while (!devtools_callbacks.empty()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(std::move(devtools_callbacks.front()), *worker_id_,
                          devtools_request_id_));
       devtools_callbacks.pop();

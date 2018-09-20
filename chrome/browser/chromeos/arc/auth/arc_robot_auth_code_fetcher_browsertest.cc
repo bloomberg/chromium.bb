@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
@@ -23,6 +24,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
@@ -79,8 +81,8 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     interceptor_ = std::make_unique<policy::TestRequestInterceptor>(
-        "localhost", content::BrowserThread::GetTaskRunnerForThread(
-                         content::BrowserThread::IO));
+        "localhost", base::CreateSingleThreadTaskRunnerWithTraits(
+                         {content::BrowserThread::IO}));
 
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());

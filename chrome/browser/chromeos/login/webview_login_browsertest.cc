@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -37,6 +38,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
@@ -411,8 +413,8 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
     {
       bool system_slot_constructed_successfully = false;
       base::RunLoop loop;
-      content::BrowserThread::PostTaskAndReply(
-          content::BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraitsAndReply(
+          FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(&WebviewClientCertsLoginTest::SetUpTestSystemSlotOnIO,
                          base::Unretained(this),
                          &system_slot_constructed_successfully),
@@ -554,8 +556,8 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
       return;
 
     base::RunLoop loop;
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&WebviewClientCertsLoginTest::TearDownTestSystemSlotOnIO,
                        base::Unretained(this)),
         loop.QuitClosure());

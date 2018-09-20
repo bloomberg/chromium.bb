@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "components/safe_browsing/db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -20,8 +22,8 @@ namespace safe_browsing {
 
 SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager()
     : base::RefCountedDeleteOnSequence<SafeBrowsingDatabaseManager>(
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO)),
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::IO})),
       enabled_(false) {}
 
 SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {

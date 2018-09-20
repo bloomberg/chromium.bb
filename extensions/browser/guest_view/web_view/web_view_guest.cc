@@ -16,12 +16,14 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -238,14 +240,10 @@ void WebViewGuest::CleanUp(content::BrowserContext* browser_context,
   }
 
   // Clean up web request event listeners for the WebView.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &RemoveWebViewEventListenersOnIOThread,
-          browser_context,
-          embedder_process_id,
-          view_instance_id));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::Bind(&RemoveWebViewEventListenersOnIOThread, browser_context,
+                 embedder_process_id, view_instance_id));
 
   // Clean up content scripts for the WebView.
   auto* csm = WebViewContentScriptManager::Get(browser_context);
@@ -968,8 +966,8 @@ void WebViewGuest::PushWebViewStateToIOThread() {
   web_view_info.content_script_ids = manager->GetContentScriptIDSet(
       web_view_info.embedder_process_id, web_view_info.instance_id);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::Bind(&WebViewRendererState::AddGuest,
                  base::Unretained(WebViewRendererState::GetInstance()),
                  web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
@@ -980,8 +978,8 @@ void WebViewGuest::PushWebViewStateToIOThread() {
 // static
 void WebViewGuest::RemoveWebViewStateFromIOThread(
     WebContents* web_contents) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::Bind(&WebViewRendererState::RemoveGuest,
                  base::Unretained(WebViewRendererState::GetInstance()),
                  web_contents->GetRenderViewHost()->GetProcess()->GetID(),

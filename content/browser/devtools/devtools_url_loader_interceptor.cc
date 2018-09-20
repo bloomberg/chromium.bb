@@ -6,11 +6,13 @@
 #include "base/base64.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/download_utils_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -70,8 +72,8 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
     callbacks_.push_back(std::move(callback));
     if (data_complete_) {
       DCHECK_EQ(1UL, callbacks_.size());
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&BodyReader::DispatchBodyOnUI, std::move(callbacks_),
                          encoded_body_));
     }
@@ -81,8 +83,8 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
   const std::string& body() const { return body_; }
 
   void CancelWithError(std::string error) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&BodyReader::DispatchErrorOnUI, std::move(callbacks_),
                        std::move(error)));
   }
@@ -124,9 +126,10 @@ void BodyReader::OnDataComplete() {
   body_pipe_drainer_.reset();
   // TODO(caseq): only encode if necessary.
   base::Base64Encode(body_, &encoded_body_);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&BodyReader::DispatchBodyOnUI,
-                                         std::move(callbacks_), encoded_body_));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&BodyReader::DispatchBodyOnUI, std::move(callbacks_),
+                     encoded_body_));
   std::move(download_complete_callback_).Run();
 }
 
@@ -387,8 +390,8 @@ class DevToolsURLLoaderInterceptor::Impl
     auto it = jobs_.find(id);
     if (it != jobs_.end())
       return it->second;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &Callback::sendFailure, std::move(*callback),
             protocol::Response::InvalidParams("Invalid InterceptionId.")));
@@ -458,8 +461,8 @@ DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
       is_download_(is_download),
       interceptor_(std::move(interceptor)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&DevToolsURLLoaderFactoryProxy::StartOnIO,
                      base::Unretained(this), std::move(loader_request),
                      std::move(target_factory_info)));
@@ -543,7 +546,8 @@ DevToolsURLLoaderInterceptor::DevToolsURLLoaderInterceptor(
       enabled_(false),
       impl_(new DevToolsURLLoaderInterceptor::Impl(std::move(callback)),
             base::OnTaskRunnerDeleter(
-                BrowserThread::GetTaskRunnerForThread(BrowserThread::IO))),
+                base::CreateSingleThreadTaskRunnerWithTraits(
+                    {BrowserThread::IO}))),
       weak_impl_(impl_->AsWeakPtr()) {}
 
 DevToolsURLLoaderInterceptor::~DevToolsURLLoaderInterceptor() {
@@ -571,8 +575,8 @@ void DevToolsURLLoaderInterceptor::SetPatterns(
     enabled_ = !!patterns.size();
     UpdateSubresourceLoaderFactories();
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::SetPatterns, base::Unretained(impl_.get()),
                      std::move(patterns)));
 }
@@ -580,8 +584,8 @@ void DevToolsURLLoaderInterceptor::SetPatterns(
 void DevToolsURLLoaderInterceptor::GetResponseBody(
     const std::string& interception_id,
     std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::GetResponseBody, base::Unretained(impl_.get()),
                      interception_id, std::move(callback)));
 }
@@ -589,8 +593,8 @@ void DevToolsURLLoaderInterceptor::GetResponseBody(
 void DevToolsURLLoaderInterceptor::TakeResponseBodyPipe(
     const std::string& interception_id,
     DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback callback) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::TakeResponseBodyPipe, base::Unretained(impl_.get()),
                      interception_id, std::move(callback)));
 }
@@ -599,8 +603,8 @@ void DevToolsURLLoaderInterceptor::ContinueInterceptedRequest(
     const std::string& interception_id,
     std::unique_ptr<Modifications> modifications,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::ContinueInterceptedRequest,
                      base::Unretained(impl_.get()), interception_id,
                      std::move(modifications), std::move(callback)));
@@ -699,8 +703,8 @@ void InterceptionJob::GetResponseBody(
     std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
   std::string error_reason;
   if (!CanGetResponseBody(&error_reason)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&GetResponseBodyForInterceptionCallback::sendFailure,
                        std::move(callback),
                        Response::Error(std::move(error_reason))));
@@ -719,8 +723,8 @@ void InterceptionJob::TakeResponseBodyPipe(
     TakeResponseBodyPipeCallback callback) {
   std::string error_reason;
   if (!CanGetResponseBody(&error_reason)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback),
                        Response::Error(std::move(error_reason)),
                        mojo::ScopedDataPipeConsumerHandle(), std::string()));
@@ -745,7 +749,7 @@ void InterceptionJob::ContinueInterceptedRequest(
                                std::move(callback))
               : base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
                                std::move(callback), std::move(response));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(task));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, std::move(task));
 }
 
 void InterceptionJob::Detach() {
@@ -1094,8 +1098,8 @@ std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
 void InterceptionJob::NotifyClient(
     std::unique_ptr<InterceptedRequestInfo> request_info) {
   waiting_for_resolution_ = true;
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(interceptor_->request_intercepted_callback_,
                      std::move(request_info)));
 }
@@ -1247,8 +1251,8 @@ void InterceptionJob::OnStartLoadingResponseBody(
   if (pending_response_body_pipe_callback_) {
     DCHECK_EQ(State::kResponseTaken, state_);
     DCHECK(!body_reader_);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(pending_response_body_pipe_callback_),
                        Response::OK(), std::move(body),
                        response_metadata_->head.mime_type));

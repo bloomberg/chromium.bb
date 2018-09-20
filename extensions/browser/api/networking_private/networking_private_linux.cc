@@ -13,7 +13,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "components/onc/onc_constants.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -1216,8 +1218,8 @@ void NetworkingPrivateLinux::PostOnNetworksChangedToUIThread(
     std::unique_ptr<GuidList> guid_list) {
   AssertOnDBusThread();
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::Bind(&NetworkingPrivateLinux::OnNetworksChangedEventTask,
                  base::Unretained(this), base::Passed(&guid_list)));
 }

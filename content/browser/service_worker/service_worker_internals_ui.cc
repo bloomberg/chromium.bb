@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
@@ -24,6 +25,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -52,9 +54,9 @@ void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
                                int callback_id,
                                blink::ServiceWorkerStatusCode status) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(OperationCompleteCallback, internals,
-                                           callback_id, status));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(OperationCompleteCallback,
+                                            internals, callback_id, status));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -209,8 +211,8 @@ void DidGetStoredRegistrationsOnIOThread(
     blink::ServiceWorkerStatusCode status,
     const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(callback, context->GetAllLiveRegistrationInfo(),
                      context->GetAllLiveVersionInfo(), stored_registrations));
 }
@@ -422,8 +424,8 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
         std::move(new_observer);
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           GetRegistrationsOnIOThread, context,
           base::Bind(DidGetRegistrations, AsWeakPtr(), partition_id,
@@ -567,8 +569,8 @@ void ServiceWorkerInternalsUI::StopWorkerWithId(
     int64_t version_id,
     StatusCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ServiceWorkerInternalsUI::StopWorkerWithId,
                        base::Unretained(this), context, version_id,
                        std::move(callback)));
@@ -593,8 +595,8 @@ void ServiceWorkerInternalsUI::UnregisterWithScope(
     const GURL& scope,
     ServiceWorkerInternalsUI::StatusCallback callback) const {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ServiceWorkerInternalsUI::UnregisterWithScope,
                        base::Unretained(this), context, scope,
                        std::move(callback)));

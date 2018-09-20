@@ -62,6 +62,7 @@
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
@@ -180,19 +181,20 @@ void ProfileImplIOData::Handle::Init(
 
   io_data_->set_previews_decider_impl(
       std::make_unique<previews::PreviewsDeciderImpl>(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
           base::DefaultClock::GetInstance()));
   PreviewsServiceFactory::GetForProfile(profile_)->Initialize(
       io_data_->previews_decider_impl(),
       g_browser_process->optimization_guide_service(),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), profile_path);
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+      profile_path);
 
   io_data_->set_data_reduction_proxy_io_data(
       CreateDataReductionProxyChromeIOData(
           g_browser_process->io_thread()->net_log(), profile_->GetPrefs(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
 
 #if defined(OS_CHROMEOS)
   io_data_->data_reduction_proxy_io_data()
@@ -245,7 +247,7 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
           content::BrowserContext::GetDefaultStoragePartition(profile_)
               ->GetURLLoaderFactoryForBrowserProcess(),
           std::move(store),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
           db_task_runner);
 
   content::NotificationService::current()->Notify(
@@ -366,16 +368,16 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       pref_service);
   io_data_->safe_browsing_enabled()->MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   io_data_->safe_browsing_whitelist_domains()->Init(
       prefs::kSafeBrowsingWhitelistDomains, pref_service);
   io_data_->safe_browsing_whitelist_domains()->MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 #if BUILDFLAG(ENABLE_PLUGINS)
   io_data_->always_open_pdf_externally()->Init(
       prefs::kPluginsAlwaysOpenPdfExternally, pref_service);
   io_data_->always_open_pdf_externally()->MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 #endif
   io_data_->InitializeOnUIThread(profile_);
 }

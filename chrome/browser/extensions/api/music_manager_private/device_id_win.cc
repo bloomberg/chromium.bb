@@ -25,6 +25,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "rlz/buildflags/buildflags.h"
 
@@ -178,10 +179,8 @@ void GetMacAddress(const IsValidMacAddressCallback& is_valid_mac_address,
     LOG(ERROR) << "Could not find appropriate MAC address.";
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, mac_address));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::Bind(callback, mac_address));
 }
 
 std::string GetRlzMachineId() {

@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -24,6 +25,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/url_loader_factory_bundle.mojom.h"
 #include "content/common/url_schemes.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/child_process_host.h"
@@ -148,8 +150,8 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_renderer;
 
   if (!process_manager) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             std::move(callback), blink::ServiceWorkerStatusCode::kErrorAbort,
             std::move(params), std::move(process_info),
@@ -165,8 +167,8 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
           params->embedded_worker_id, params->scope, params->script_url,
           can_use_existing_process, process_info.get());
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(std::move(callback), status, std::move(params),
                        std::move(process_info), std::move(devtools_proxy),
                        std::move(factory_bundle_for_browser),
@@ -248,8 +250,8 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
       process_manager->browser_context(), std::move(watcher_ptr));
 
   // Continue to OnSetupCompleted on the IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(callback), status, std::move(params),
                      std::move(process_info), std::move(devtools_proxy),
                      std::move(factory_bundle_for_browser),
@@ -288,32 +290,32 @@ class EmbeddedWorkerInstance::DevToolsProxy {
 
   ~DevToolsProxy() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(NotifyWorkerDestroyedOnUI,
-                                           process_id_, agent_route_id_));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(NotifyWorkerDestroyedOnUI,
+                                            process_id_, agent_route_id_));
   }
 
   void NotifyWorkerReadyForInspection(
       blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(NotifyWorkerReadyForInspectionOnUI, process_id_,
                        agent_route_id_, std::move(devtools_agent_ptr_info)));
   }
 
   void NotifyWorkerVersionInstalled() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(NotifyWorkerVersionInstalledOnUI,
-                                           process_id_, agent_route_id_));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(NotifyWorkerVersionInstalledOnUI,
+                                            process_id_, agent_route_id_));
   }
 
   void NotifyWorkerVersionDoomed() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(NotifyWorkerVersionDoomedOnUI,
-                                           process_id_, agent_route_id_));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(NotifyWorkerVersionDoomedOnUI,
+                                            process_id_, agent_route_id_));
   }
 
   bool ShouldNotifyWorkerStopIgnored() const {
@@ -349,8 +351,8 @@ class EmbeddedWorkerInstance::WorkerProcessHandle {
 
   ~WorkerProcessHandle() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&ServiceWorkerProcessManager::ReleaseWorkerProcess,
                        process_manager_, embedded_worker_id_));
   }
@@ -414,8 +416,8 @@ class EmbeddedWorkerInstance::StartTask {
         break;
       case ProcessAllocationState::ALLOCATING:
         // Abort half-baked process allocation on the UI thread.
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&ServiceWorkerProcessManager::ReleaseWorkerProcess,
                            instance_->context_->process_manager()->AsWeakPtr(),
                            instance_->embedded_worker_id()));
@@ -475,8 +477,8 @@ class EmbeddedWorkerInstance::StartTask {
 
     // Hop to the UI thread for process allocation and setup. We will continue
     // on the IO thread in StartTask::OnSetupCompleted().
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &SetupOnUIThread, process_manager, can_use_existing_process,
             std::move(params), std::move(request_), context.get(), context,

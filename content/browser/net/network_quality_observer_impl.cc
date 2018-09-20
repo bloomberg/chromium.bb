@@ -5,8 +5,10 @@
 #include "content/browser/net/network_quality_observer_impl.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -152,8 +154,8 @@ NetworkQualityObserverImpl::NetworkQualityObserverImpl(
   network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
 
   ui_thread_observer_ = std::make_unique<UiThreadObserver>();
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&UiThreadObserver::InitOnUIThread,
                      base::Unretained(ui_thread_observer_.get())));
 }
@@ -183,8 +185,8 @@ void NetworkQualityObserverImpl::OnEffectiveConnectionTypeChanged(
 
   last_notified_type_ = type;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&UiThreadObserver::OnEffectiveConnectionTypeChanged,
                      base::Unretained(ui_thread_observer_.get()),
                      last_notified_type_));
@@ -223,8 +225,8 @@ void NetworkQualityObserverImpl::OnRTTOrThroughputEstimatesComputed(
   last_notified_network_quality_ = net::nqe::internal::NetworkQuality(
       http_rtt, transport_rtt, downstream_throughput_kbps);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&UiThreadObserver::OnRTTOrThroughputEstimatesComputed,
                      base::Unretained(ui_thread_observer_.get()),
                      last_notified_network_quality_));

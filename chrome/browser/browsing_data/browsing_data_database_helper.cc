@@ -13,8 +13,10 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/completion_callback.h"
@@ -161,8 +163,8 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
         DatabaseInfo(identifier, info.name, info.description, 0, base::Time()));
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(std::move(callback), result));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(std::move(callback), result));
 }
 
 void CannedBrowsingDataDatabaseHelper::DeleteDatabase(

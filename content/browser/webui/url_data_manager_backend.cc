@@ -28,6 +28,7 @@
 #include "content/browser/webui/url_data_source_impl.h"
 #include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -195,8 +196,8 @@ void URLRequestChromeJob::Start() {
   // TODO(caseq): Fix the race condition and remove this thread hop in
   // https://crbug.com/616641.
   if (url.SchemeIs(kChromeDevToolsScheme)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&URLRequestChromeJob::DelayStartForDevTools,
                        weak_factory_.GetWeakPtr()));
     return;
@@ -338,8 +339,8 @@ int URLRequestChromeJob::PostReadTask(scoped_refptr<net::IOBuffer> buf,
 
 void URLRequestChromeJob::DelayStartForDevTools(
     const base::WeakPtr<URLRequestChromeJob>& job) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLRequestChromeJob::StartAsync, job));
 }
 

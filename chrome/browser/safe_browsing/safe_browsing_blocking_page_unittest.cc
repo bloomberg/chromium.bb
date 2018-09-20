@@ -5,6 +5,7 @@
 #include <list>
 
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -29,6 +30,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/unified_consent_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
@@ -245,8 +247,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 
     system_request_context_getter_ =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::IO));
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::IO}));
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         system_request_context_getter_.get());
 
@@ -376,8 +378,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     resource->callback =
         base::Bind(&SafeBrowsingBlockingPageTest::OnBlockingPageComplete,
                    base::Unretained(this));
-    resource->callback_thread = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::IO);
+    resource->callback_thread = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::IO});
     resource->url = url;
     resource->is_subresource = is_subresource;
     resource->threat_type = type;
@@ -1036,8 +1038,8 @@ class SafeBrowsingBlockingQuietPageTest
 
     system_request_context_getter_ =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::IO));
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::IO}));
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         system_request_context_getter_.get());
 
@@ -1111,8 +1113,8 @@ class SafeBrowsingBlockingQuietPageTest
     resource->callback =
         base::Bind(&SafeBrowsingBlockingQuietPageTest::OnBlockingPageComplete,
                    base::Unretained(this));
-    resource->callback_thread = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::IO);
+    resource->callback_thread = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::IO});
     resource->url = url;
     resource->is_subresource = is_subresource;
     resource->threat_type = type;
