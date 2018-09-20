@@ -116,7 +116,7 @@ void PostContextProviderToCallback(
              blink::WebSubmitterConfigurationCallback cb) {
             auto* rti = content::RenderThreadImpl::current();
             auto context_provider = rti->GetVideoFrameCompositorContextProvider(
-                unwanted_context_provider);
+                std::move(unwanted_context_provider));
             std::move(cb).Run(!rti->IsGpuCompositingDisabled(),
                               std::move(context_provider));
           },
