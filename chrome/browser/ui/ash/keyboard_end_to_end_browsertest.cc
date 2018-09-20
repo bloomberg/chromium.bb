@@ -192,6 +192,143 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest, DeleteInputHidesKeyboard) {
   ASSERT_TRUE(WaitUntilHidden());
 }
 
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       NavigateToNewPageWithoutInputFieldHidesKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  ASSERT_TRUE(WaitUntilHidden());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       NavigateToNewPageWithAutoFocusShowsKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      ui_test_utils::GetTestUrl(base::FilePath("chromeos/virtual_keyboard"),
+                                base::FilePath("autofocus.html")));
+
+  ASSERT_TRUE(WaitUntilShown());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       NavigateToNewPageWithBlurredInputFieldHidesKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      ui_test_utils::GetTestUrl(base::FilePath("chromeos/virtual_keyboard"),
+                                base::FilePath("form.html")));
+
+  ASSERT_TRUE(WaitUntilHidden());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       OpenNewTabWhenKeyboardIsHiddenDoesNotShowKeyboard) {
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  EXPECT_FALSE(IsKeyboardShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       OpenNewTabWhenKeyboardIsShownDoesNotHideKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  // Opening a new tab will auto-focus onto the omnibox, so the keyboard does
+  // not hide.
+  EXPECT_FALSE(IsKeyboardHiding());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       CloseOneTabOfManyDoesNotHideKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  // Closing the current tab will bring the background tab's omnibox to focus,
+  // so the keyboard does not hide.
+  web_contents->Close();
+
+  EXPECT_FALSE(IsKeyboardHiding());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       SwitchToTabWithBlurredInputHidesKeyboard) {
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      ui_test_utils::GetTestUrl(base::FilePath("chromeos/virtual_keyboard"),
+                                base::FilePath("form.html")),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  browser()->tab_strip_model()->ActivateTabAt(1, true /* user_gesture */);
+
+  ASSERT_TRUE(WaitUntilHidden());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    KeyboardEndToEndFormTest,
+    SwitchToTabWithFocusedInputWhenKeyboardIsHiddenShowsKeyboard) {
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      ui_test_utils::GetTestUrl(base::FilePath("chromeos/virtual_keyboard"),
+                                base::FilePath("form.html")),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  browser()->tab_strip_model()->ActivateTabAt(1, true /* user_gesture */);
+
+  ASSERT_TRUE(WaitUntilHidden());
+
+  browser()->tab_strip_model()->ActivateTabAt(0, true /* user_gesture */);
+
+  ASSERT_TRUE(WaitUntilShown());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    KeyboardEndToEndFormTest,
+    SwitchToTabWithFocusedInputWhenKeyboardIsShownDoesNotHideKeyboard) {
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      ui_test_utils::GetTestUrl(base::FilePath("chromeos/virtual_keyboard"),
+                                base::FilePath("form.html")),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  browser()->tab_strip_model()->ActivateTabAt(1, true /* user_gesture */);
+
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  browser()->tab_strip_model()->ActivateTabAt(0, true /* user_gesture */);
+
+  EXPECT_FALSE(IsKeyboardHiding());
+}
+
 class KeyboardEndToEndFocusTest : public KeyboardEndToEndTest {
  public:
   KeyboardEndToEndFocusTest()
