@@ -10,11 +10,6 @@ source_set("toolbar") {
   ]
   deps = [
     ":toolbar_ui",
-    "resources:collapse",
-    "resources:collapse_incognito",
-    "resources:collapse_pressed",
-    "resources:collapse_pressed_incognito",
-    "resources:incognito_marker_typing",
     "resources:toolbar_dark_newtab",
     "resources:toolbar_dark_newtab_active",
     "resources:toolbar_dark_newtab_incognito",

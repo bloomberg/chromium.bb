@@ -15,6 +15,7 @@
 // 0 is used when the resource for a given combination does not exist.
 
 // clang-format off
+// TODO(crbug.com/800266): Remove those macros and the associated images.
 #define TOOLBAR_IDR_THREE_STATE(name) \
   { { IDR_IOS_TOOLBAR_LIGHT_ ## name, \
       IDR_IOS_TOOLBAR_LIGHT_ ## name ## _PRESSED, \
