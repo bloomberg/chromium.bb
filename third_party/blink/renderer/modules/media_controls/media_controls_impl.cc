@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element_controls_list.h"
@@ -140,6 +141,12 @@ constexpr float kSizingLargeOverlayPlayButtonSizeRatio = 0.11;
 // Used for setting overlay play button width CSS variable.
 constexpr double kMinOverlayPlayButtonWidth = 48;
 const char kOverlayPlayButtonWidthCSSVar[] = "--overlay-play-button-width";
+
+// The delay between two taps to be recognized as a double tap gesture.
+constexpr WTF::TimeDelta kDoubleTapDelay = TimeDelta::FromMilliseconds(300);
+
+// The number of seconds to jump when double tapping.
+constexpr int kNumberOfSecondsToJump = 10;
 
 bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
   // Unconditionally allow the user to exit fullscreen if we are in it
@@ -392,7 +399,11 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
           media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
           &MediaControlsImpl::ElementSizeChangedTimerFired),
-      keep_showing_until_timer_fires_(false) {
+      keep_showing_until_timer_fires_(false),
+      tap_timer_(
+          media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
+          this,
+          &MediaControlsImpl::TapTimerFired) {
   // On touch devices, start with the assumption that the user will interact via
   // touch events.
   Settings* settings = media_element.GetDocument().GetSettings();
@@ -1434,19 +1445,6 @@ void MediaControlsImpl::OnAccessibleFocus() {
   MaybeShow();
 }
 
-void MediaControlsImpl::ShowArrowAnimation(bool is_right) {
-  if (!animated_arrow_container_element_) {
-    animated_arrow_container_element_ =
-        new MediaControlAnimatedArrowContainerElement(*this);
-    ParserAppendChild(animated_arrow_container_element_);
-  }
-  MediaControlAnimatedArrowContainerElement::ArrowDirection direction =
-      (is_right)
-          ? MediaControlAnimatedArrowContainerElement::ArrowDirection::kRight
-          : MediaControlAnimatedArrowContainerElement::ArrowDirection::kLeft;
-  animated_arrow_container_element_->ShowArrowAnimation(direction);
-}
-
 void MediaControlsImpl::OnAccessibleBlur() {
   panel_->SetKeepDisplayedForAccessibility(false);
 
@@ -1488,6 +1486,9 @@ void MediaControlsImpl::DefaultEventHandler(Event& event) {
       !is_touch_interaction_) {
     HandlePointerEvent(&event);
   }
+
+  if (event.type() == EventTypeNames::click && !is_touch_interaction_)
+    HandleClickEvent(&event);
 
   // If the user is interacting with the controls via the keyboard, don't hide
   // the controls. This will fire when the user tabs between controls (focusin)
@@ -1546,10 +1547,46 @@ void MediaControlsImpl::HandlePointerEvent(Event* event) {
   }
 }
 
+void MediaControlsImpl::HandleClickEvent(Event* event) {
+  if (!IsModern() || ContainsRelatedTarget(event) || !IsFullscreenEnabled())
+    return;
+
+  if (tap_timer_.IsActive()) {
+    tap_timer_.Stop();
+
+    // Toggle fullscreen.
+    if (MediaElement().IsFullscreen())
+      ExitFullscreen();
+    else
+      EnterFullscreen();
+  } else {
+    tap_timer_.StartOneShot(kDoubleTapDelay, FROM_HERE);
+  }
+}
+
 void MediaControlsImpl::HandleTouchEvent(Event* event) {
   if (IsModern()) {
     is_mouse_over_controls_ = false;
     is_touch_interaction_ = true;
+
+    if (event->type() == EventTypeNames::click &&
+        !ContainsRelatedTarget(event)) {
+      event->SetDefaultHandled();
+
+      if (tap_timer_.IsActive()) {
+        // Cancel the visibility toggle event.
+        tap_timer_.Stop();
+
+        if (IsOnLeftSide(event)) {
+          MaybeJump(kNumberOfSecondsToJump * -1);
+        } else {
+          MaybeJump(kNumberOfSecondsToJump);
+        }
+      } else {
+        tap_timer_.StartOneShot(kDoubleTapDelay, FROM_HERE);
+      }
+    }
+    return;
   }
 
   if (event->type() == EventTypeNames::gesturetap &&
@@ -1565,6 +1602,47 @@ void MediaControlsImpl::HandleTouchEvent(Event* event) {
       StartHideMediaControlsTimer();
     }
   }
+}
+
+void MediaControlsImpl::EnsureAnimatedArrowContainer() {
+  if (!animated_arrow_container_element_) {
+    animated_arrow_container_element_ =
+        new MediaControlAnimatedArrowContainerElement(*this);
+    ParserAppendChild(animated_arrow_container_element_);
+  }
+}
+
+void MediaControlsImpl::MaybeJump(int seconds) {
+  // Update the current time.
+  double new_time = std::max(0.0, MediaElement().currentTime() + seconds);
+  new_time = std::min(new_time, MediaElement().duration());
+  MediaElement().setCurrentTime(new_time);
+
+  // Show the arrow animation.
+  EnsureAnimatedArrowContainer();
+  MediaControlAnimatedArrowContainerElement::ArrowDirection direction =
+      (seconds > 0)
+          ? MediaControlAnimatedArrowContainerElement::ArrowDirection::kRight
+          : MediaControlAnimatedArrowContainerElement::ArrowDirection::kLeft;
+  animated_arrow_container_element_->ShowArrowAnimation(direction);
+}
+
+bool MediaControlsImpl::IsOnLeftSide(Event* event) {
+  if (!event->IsMouseEvent())
+    return false;
+
+  MouseEvent* mouse_event = ToMouseEvent(event);
+  if (!mouse_event->HasPosition())
+    return false;
+
+  DOMRect* rect = getBoundingClientRect();
+  double middle = rect->x() + (rect->width() / 2);
+  return mouse_event->clientX() < middle;
+}
+
+void MediaControlsImpl::TapTimerFired(TimerBase*) {
+  if (is_touch_interaction_)
+    MaybeToggleControlsFromTap();
 }
 
 void MediaControlsImpl::HideMediaControlsTimerFired(TimerBase*) {

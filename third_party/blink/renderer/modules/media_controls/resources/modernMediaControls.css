@@ -364,19 +364,22 @@ video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-p
 
 video::-webkit-media-controls-overlay-play-button {
   -webkit-appearance: -internal-media-control;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: calc((var(--overlay-play-button-width) / -2) - 20px /* Padding */);
+  margin-top: calc((
+      (var(--overlay-play-button-width, 48px)
+          + 24px /* timeline height + padding-bottom */)
+      / -2) - 20px /* overlay play button padding */);
   min-height: 0;
-  width: 100%;
-  box-sizing: border-box;
+  width: fit-content;
   overflow: hidden;
   background: transparent;
-  margin-bottom: -48px;
-  position: relative;
   opacity: 1;
   transition: opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+  padding: 20px;
+  border: 0;
 }
 
 /**
@@ -419,19 +422,6 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
 
 video::-webkit-media-controls.state-playing:not(.audio-only) input[pseudo="-webkit-media-controls-play-button" i] {
   background-image: -webkit-image-set(url(ic_pause_white.svg) 1x);
-}
-
-video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-overlay-play-button" i] {
-  margin-bottom: -48px;
-}
-
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-overlay-play-button" i] {
-  margin-bottom: -64px;
-}
-
-/* TODO(https://crbug.com/857120): remove these rules and the sizing-large CSS class. */
-video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-overlay-play-button" i] {
-  margin-bottom: -64px;
 }
 
 /**
