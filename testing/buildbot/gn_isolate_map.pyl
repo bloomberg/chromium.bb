@@ -655,11 +655,6 @@
       "--snapshot-output-dir=${ISOLATED_OUTDIR}",
     ],
   },
-  "ios_chrome_adaptive_toolbar_egtests": {
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_adaptive_toolbar_egtests",
-    "type": "raw",
-    "args": [],
-  },
   "ios_chrome_bookmarks_egtests": {
     "label": "//ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests",
     "type": "raw",

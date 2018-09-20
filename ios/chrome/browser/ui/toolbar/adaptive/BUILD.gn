@@ -137,14 +137,3 @@ source_set("unit_tests") {
     "//third_party/ocmock",
   ]
 }
-
-source_set("hooks") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "adaptive_toolbar_eg_tests_hook.mm",
-  ]
-  deps = [
-    "//ios/chrome/app:tests_hook",
-  ]
-}

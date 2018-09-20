@@ -4,10 +4,6 @@
   ],
   "tests": [
     {
-      "app": "ios_chrome_adaptive_toolbar_egtests",
-      "xctest": true
-    },
-    {
       "app": "ios_chrome_bookmarks_egtests",
       "xctest": true
     },

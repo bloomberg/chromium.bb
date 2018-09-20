@@ -7,7 +7,6 @@ import("//ios/chrome/test/earl_grey/chrome_ios_eg_test.gni")
 group("all_tests") {
   testonly = true
   deps = [
-    ":ios_chrome_adaptive_toolbar_egtests",
     ":ios_chrome_autofill_automation_egtests",
     ":ios_chrome_autofill_egtests",
     ":ios_chrome_bookmarks_egtests",
@@ -41,14 +40,6 @@ chrome_ios_eg_test("ios_chrome_integration_egtests") {
     "//ios/chrome/browser/passwords:eg_tests",
     "//ios/chrome/browser/prerender:eg_tests",
   ]
-}
-
-chrome_ios_eg_test("ios_chrome_adaptive_toolbar_egtests") {
-  deps = [
-    ":test_support",
-    "//ios/chrome/browser/ui/toolbar/adaptive:eg_tests",
-  ]
-  hooks_target = "//ios/chrome/browser/ui/toolbar/adaptive:hooks"
 }
 
 chrome_ios_eg_test("ios_chrome_autofill_egtests") {
@@ -128,6 +119,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/tab_switcher:eg_tests",
     "//ios/chrome/browser/ui/tabs:eg_tests",
     "//ios/chrome/browser/ui/toolbar:eg_tests",
+    "//ios/chrome/browser/ui/toolbar/adaptive:eg_tests",
     "//ios/chrome/browser/ui/tools_menu:eg_tests",
     "//ios/chrome/browser/ui/webui:eg_tests",
   ]
