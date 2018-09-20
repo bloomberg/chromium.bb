@@ -33,6 +33,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
 #include "device/base/features.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/fido/attestation_statement.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_get_assertion_request.h"
@@ -420,6 +421,12 @@ base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags() {
   base::flat_set<device::FidoTransportProtocol> transports;
   transports.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
   transports.insert(device::FidoTransportProtocol::kInternal);
+
+  // TODO(crbug.com/885165): We should not directly access the BLE stack here.
+  // It is used by //device/fido, so its availability should be checked there.
+  if (!device::BluetoothAdapterFactory::Get().IsLowEnergySupported())
+    return transports;
+
   if (base::FeatureList::IsEnabled(features::kWebAuthBle)) {
     transports.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
   }
