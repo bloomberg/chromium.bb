@@ -127,8 +127,12 @@ void WebUsbServiceImpl::GetPermission(
 }
 
 void WebUsbServiceImpl::SetClient(
-    device::mojom::UsbDeviceManagerClientPtr client) {
-  clients_.AddPtr(std::move(client));
+    device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client) {
+  DCHECK(client);
+
+  device::mojom::UsbDeviceManagerClientAssociatedPtr client_ptr;
+  client_ptr.Bind(std::move(client));
+  clients_.AddPtr(std::move(client_ptr));
 }
 
 void WebUsbServiceImpl::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {

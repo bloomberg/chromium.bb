@@ -23,7 +23,7 @@
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/mojom/device.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -34,7 +34,7 @@ using blink::mojom::WebUsbServicePtr;
 using device::mojom::UsbDeviceInfo;
 using device::mojom::UsbDeviceInfoPtr;
 using device::mojom::UsbDeviceManagerClient;
-using device::mojom::UsbDeviceManagerClientPtr;
+using device::mojom::UsbDeviceManagerClientAssociatedPtrInfo;
 using device::MockUsbDevice;
 using device::UsbDevice;
 
@@ -87,8 +87,8 @@ class MockDeviceManagerClient : public UsbDeviceManagerClient {
   MockDeviceManagerClient() : binding_(this) {}
   ~MockDeviceManagerClient() override = default;
 
-  UsbDeviceManagerClientPtr CreateInterfacePtrAndBind() {
-    UsbDeviceManagerClientPtr client;
+  UsbDeviceManagerClientAssociatedPtrInfo CreateInterfacePtrAndBind() {
+    UsbDeviceManagerClientAssociatedPtrInfo client;
     binding_.Bind(mojo::MakeRequest(&client));
     return client;
   }
@@ -104,7 +104,7 @@ class MockDeviceManagerClient : public UsbDeviceManagerClient {
   }
 
  private:
-  mojo::Binding<UsbDeviceManagerClient> binding_;
+  mojo::AssociatedBinding<UsbDeviceManagerClient> binding_;
 };
 
 void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,

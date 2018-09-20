@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 
 #include "device/usb/public/mojom/device_manager.mojom-blink.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
@@ -84,7 +84,8 @@ class USB final : public EventTargetWithInlineData,
   mojom::blink::WebUsbServicePtr service_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_devices_requests_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_permission_requests_;
-  mojo::Binding<device::mojom::blink::UsbDeviceManagerClient> client_binding_;
+  mojo::AssociatedBinding<device::mojom::blink::UsbDeviceManagerClient>
+      client_binding_;
   HeapHashMap<String, WeakMember<USBDevice>> device_cache_;
 };
 
