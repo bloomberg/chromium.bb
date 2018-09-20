@@ -207,7 +207,6 @@
 #import "ios/chrome/browser/ui/toolbar/adaptive/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/toolbar_coordinator_adaptor.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
@@ -576,9 +575,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for the QR scanner.
   QRScannerLegacyCoordinator* _qrScannerCoordinator;
 
-  // Coordinator for Tab History Popup.
-  LegacyTabHistoryCoordinator* _tabHistoryCoordinator;
-
   // Coordinator for displaying Sad Tab.
   SadTabLegacyCoordinator* _sadTabCoordinator;
 
@@ -592,9 +588,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   SnackbarCoordinator* _snackbarCoordinator;
 
   ToolbarCoordinatorAdaptor* _toolbarCoordinatorAdaptor;
-
-  // Coordinator for the toolbar.
-  ToolbarCoordinator* _toolbarCoordinator;
 
   // The toolbar UI updater for the toolbar managed by |_toolbarCoordinator|.
   LegacyToolbarUIUpdater* _toolbarUIUpdater;
@@ -710,8 +703,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong) BubblePresenter* bubblePresenter;
 
 // Primary toolbar.
-@property(nonatomic, strong) id<PrimaryToolbarCoordinator>
-    primaryToolbarCoordinator;
+@property(nonatomic, strong)
+    PrimaryToolbarCoordinator* primaryToolbarCoordinator;
 // Secondary toolbar.
 @property(nonatomic, strong)
     AdaptiveToolbarCoordinator* secondaryToolbarCoordinator;
@@ -1455,7 +1448,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Disconnect child coordinators.
   [_activityServiceCoordinator disconnect];
   [_qrScannerCoordinator disconnect];
-  [_tabHistoryCoordinator disconnect];
   [self.popupMenuCoordinator stop];
   [_pageInfoCoordinator disconnect];
   [_externalSearchCoordinator disconnect];
@@ -1598,12 +1590,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_paymentRequestManager cancelRequest];
   [_printController dismissAnimated:YES];
   _printController = nil;
-  if (IsUIRefreshPhase1Enabled()) {
-    [self.dispatcher dismissPopupMenuAnimated:NO];
-  } else {
-    [self.dispatcher dismissToolsMenu];
-    [_tabHistoryCoordinator dismissHistoryPopup];
-  }
+  [self.dispatcher dismissPopupMenuAnimated:NO];
   [_contextMenuCoordinator stop];
   [self dismissRateThisAppDialog];
 
@@ -1649,8 +1636,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _isShutdown = YES;
   [self.tabStripCoordinator stop];
   self.tabStripCoordinator = nil;
-  [_toolbarCoordinator stop];
-  _toolbarCoordinator = nil;
   [self.primaryToolbarCoordinator stop];
   self.primaryToolbarCoordinator = nil;
   [self.secondaryToolbarCoordinator stop];
@@ -1890,7 +1875,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       _voiceSearchController->SetDispatcher(nil);
     _readingListCoordinator = nil;
     self.recentTabsCoordinator = nil;
-    _toolbarCoordinator = nil;
     self.primaryToolbarCoordinator = nil;
     self.secondaryToolbarCoordinator = nil;
     self.toolbarInterface = nil;
@@ -2198,45 +2182,30 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       _toolbarModelDelegate.get(), kMaxURLDisplayChars);
   self.helper = [_dependencyFactory newBrowserViewControllerHelper];
 
-  if (IsUIRefreshPhase1Enabled()) {
-    PrimaryToolbarCoordinator* topToolbarCoordinator =
-        [[PrimaryToolbarCoordinator alloc] initWithBrowserState:_browserState];
-    self.primaryToolbarCoordinator = topToolbarCoordinator;
-    topToolbarCoordinator.delegate = self;
-    topToolbarCoordinator.URLLoader = self;
-    topToolbarCoordinator.webStateList = [_model webStateList];
-    topToolbarCoordinator.dispatcher = self.dispatcher;
-    topToolbarCoordinator.commandDispatcher = _dispatcher;
-    topToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
-    [topToolbarCoordinator start];
+  PrimaryToolbarCoordinator* topToolbarCoordinator =
+      [[PrimaryToolbarCoordinator alloc] initWithBrowserState:_browserState];
+  self.primaryToolbarCoordinator = topToolbarCoordinator;
+  topToolbarCoordinator.delegate = self;
+  topToolbarCoordinator.URLLoader = self;
+  topToolbarCoordinator.webStateList = [_model webStateList];
+  topToolbarCoordinator.dispatcher = self.dispatcher;
+  topToolbarCoordinator.commandDispatcher = _dispatcher;
+  topToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
+  [topToolbarCoordinator start];
 
-    SecondaryToolbarCoordinator* bottomToolbarCoordinator = [
-        [SecondaryToolbarCoordinator alloc] initWithBrowserState:_browserState];
-    self.secondaryToolbarCoordinator = bottomToolbarCoordinator;
-    bottomToolbarCoordinator.webStateList = [_model webStateList];
-    bottomToolbarCoordinator.dispatcher = self.dispatcher;
-    bottomToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
-    [bottomToolbarCoordinator start];
+  SecondaryToolbarCoordinator* bottomToolbarCoordinator =
+      [[SecondaryToolbarCoordinator alloc] initWithBrowserState:_browserState];
+  self.secondaryToolbarCoordinator = bottomToolbarCoordinator;
+  bottomToolbarCoordinator.webStateList = [_model webStateList];
+  bottomToolbarCoordinator.dispatcher = self.dispatcher;
+  bottomToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
+  [bottomToolbarCoordinator start];
 
-    _toolbarCoordinatorAdaptor =
-        [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
-    self.toolbarInterface = _toolbarCoordinatorAdaptor;
-    [_toolbarCoordinatorAdaptor addToolbarCoordinator:topToolbarCoordinator];
-    [_toolbarCoordinatorAdaptor addToolbarCoordinator:bottomToolbarCoordinator];
-  } else {
-    _toolbarCoordinator = [[ToolbarCoordinator alloc]
-        initWithToolsMenuConfigurationProvider:self
-                                    dispatcher:self.dispatcher
-                                  browserState:_browserState];
-    _toolbarCoordinator.webStateList = [_model webStateList];
-    _toolbarCoordinator.delegate = self;
-    _toolbarCoordinator.URLLoader = self;
-    _toolbarCoordinator.commandDispatcher = _dispatcher;
-    self.primaryToolbarCoordinator = _toolbarCoordinator;
-    self.toolbarInterface = _toolbarCoordinator;
-
-    [_toolbarCoordinator start];
-  }
+  _toolbarCoordinatorAdaptor =
+      [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
+  self.toolbarInterface = _toolbarCoordinatorAdaptor;
+  [_toolbarCoordinatorAdaptor addToolbarCoordinator:topToolbarCoordinator];
+  [_toolbarCoordinatorAdaptor addToolbarCoordinator:bottomToolbarCoordinator];
 
   self.sideSwipeController.toolbarInteractionHandler = self.toolbarInterface;
   self.sideSwipeController.primaryToolbarSnapshotProvider =
@@ -2449,35 +2418,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.view]
           .heightAnchor;
 
-  if (IsUIRefreshPhase1Enabled()) {
-    self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
-        initWithBaseViewController:self
-                      browserState:self.browserState];
-    self.popupMenuCoordinator.bubblePresenter = self.bubblePresenter;
-    self.popupMenuCoordinator.dispatcher = _dispatcher;
-    self.popupMenuCoordinator.webStateList = [_model webStateList];
-    self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
-    [self.popupMenuCoordinator start];
+  self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:self.browserState];
+  self.popupMenuCoordinator.bubblePresenter = self.bubblePresenter;
+  self.popupMenuCoordinator.dispatcher = _dispatcher;
+  self.popupMenuCoordinator.webStateList = [_model webStateList];
+  self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
+  [self.popupMenuCoordinator start];
 
-    // TODO(crbug.com/800266): Remove this cast once there is only one top
-    // toolbar.
-    AdaptiveToolbarCoordinator* topToolbarCoordinator =
-        base::mac::ObjCCastStrict<AdaptiveToolbarCoordinator>(
-            self.primaryToolbarCoordinator);
-    topToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
-    self.secondaryToolbarCoordinator.longPressDelegate =
-        self.popupMenuCoordinator;
-    self.tabStripCoordinator.longPressDelegate = self.popupMenuCoordinator;
-  } else {
-    _tabHistoryCoordinator = [[LegacyTabHistoryCoordinator alloc]
-        initWithBaseViewController:self
-                      browserState:_browserState];
-    _tabHistoryCoordinator.dispatcher = _dispatcher;
-    _tabHistoryCoordinator.tabModel = _model;
-    _tabHistoryCoordinator.presentationProvider = self;
-    _tabHistoryCoordinator.tabHistoryUIUpdater =
-        [_toolbarCoordinator tabHistoryUIUpdater];
-  }
+  self.primaryToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
+  self.secondaryToolbarCoordinator.longPressDelegate =
+      self.popupMenuCoordinator;
+  self.tabStripCoordinator.longPressDelegate = self.popupMenuCoordinator;
 
   _sadTabCoordinator = [[SadTabLegacyCoordinator alloc] init];
   _sadTabCoordinator.baseViewController = self;
@@ -2696,7 +2649,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   Tab* tab = [_model currentTab];
   if (![tab navigationManager])
     return;
-  [_toolbarCoordinator updateToolsMenu];
 
   if (_insertedTabWasPrerenderedTab &&
       ![self.helper isToolbarLoading:self.currentWebState])
@@ -2737,12 +2689,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)dismissPopups {
   [self.dispatcher hidePageInfo];
-  if (IsUIRefreshPhase1Enabled()) {
-    [self.dispatcher dismissPopupMenuAnimated:NO];
-  } else {
-    [self.dispatcher dismissToolsMenu];
-    [_tabHistoryCoordinator dismissHistoryPopup];
-  }
+  [self.dispatcher dismissPopupMenuAnimated:NO];
   [self.bubblePresenter dismissBubbles];
 }
 
@@ -5126,23 +5073,17 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 #pragma mark - ToolbarOwner (Public)
 
 - (CGRect)toolbarFrame {
-  return _toolbarCoordinator.viewController.view.frame;
+  // TODO(crbug.com/800266): Check when it is possible to remove the
+  // ToolbarOwner protocol.
+  NOTREACHED();
+  return CGRectZero;
 }
 
 - (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
-  id<ToolbarSnapshotProviding> toolbarSnapshotProvider = nil;
-  Tab* currentTab = [_model currentTab];
-  if (_toolbarCoordinator.viewController.view.hidden && currentTab.webState &&
-      UrlHasChromeScheme(currentTab.webState->GetLastCommittedURL())) {
-    // Use the native content controller's toolbar when the BVC's is hidden.
-    id nativeController = [self nativeControllerForTab:currentTab];
-    if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
-      toolbarSnapshotProvider = [nativeController toolbarSnapshotProvider];
-    }
-  } else {
-    toolbarSnapshotProvider = _toolbarCoordinator;
-  }
-  return toolbarSnapshotProvider;
+  // TODO(crbug.com/800266): Check when it is possible to remove the
+  // ToolbarOwner protocol.
+  NOTREACHED();
+  return nil;
 }
 
 #pragma mark - TabModelObserver methods
@@ -5683,13 +5624,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (BOOL)preventSideSwipe {
-  BOOL isShowingToolsMenu = NO;
-  if (IsUIRefreshPhase1Enabled()) {
-    isShowingToolsMenu = [self.popupMenuCoordinator isShowingPopupMenu];
-  } else {
-    isShowingToolsMenu = [_toolbarCoordinator isShowingToolsMenu];
-  }
-  if (isShowingToolsMenu)
+  if ([self.popupMenuCoordinator isShowingPopupMenu])
     return YES;
 
   if (_voiceSearchController && _voiceSearchController->IsVisible())
@@ -5724,9 +5659,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   BOOL seenInfoBarContainer = NO;
   BOOL seenContentArea = NO;
   for (UIView* view in views.subviews) {
-    if (view == _toolbarCoordinator.viewController.view)
-      seenToolbar = YES;
-    else if (view == _infoBarContainer->view())
+    if (view == _infoBarContainer->view())
       seenInfoBarContainer = YES;
     else if (view == self.contentArea)
       seenContentArea = YES;
