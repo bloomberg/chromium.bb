@@ -57,7 +57,13 @@ function ContextMenuManager(automationManager, desktop) {
  */
 ContextMenuManager.Action = {
   CLICK: 'click',
-  OPTIONS: 'options'
+  OPTIONS: 'options',
+  SCROLL_BACKWARD: 'scroll-backward',
+  SCROLL_DOWN: 'scroll-down',
+  SCROLL_FORWARD: 'scroll-forward',
+  SCROLL_LEFT: 'scroll-left',
+  SCROLL_RIGHT: 'scroll-right',
+  SCROLL_UP: 'scroll-up'
 };
 
 /**
@@ -211,6 +217,12 @@ ContextMenuManager.prototype = {
       this.automationManager_.selectCurrentNode();
     else if (event.data === ContextMenuManager.Action.OPTIONS)
       window.switchAccess.showOptionsPage();
+    else if (
+        event.data === ContextMenuManager.Action.SCROLL_DOWN ||
+        event.data === ContextMenuManager.Action.SCROLL_UP ||
+        event.data === ContextMenuManager.Action.SCROLL_LEFT ||
+        event.data === ContextMenuManager.Action.SCROLL_RIGHT)
+      this.automationManager_.scroll(event.data);
   },
 
   /**

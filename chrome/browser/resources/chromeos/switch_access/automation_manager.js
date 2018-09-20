@@ -140,6 +140,34 @@ class AutomationManager {
   }
 
   /**
+   * Scrolls the current node in the direction indicated by |scrollAction|.
+   * @param {!ContextMenuManager.Action} scrollAction
+   */
+  scroll(scrollAction) {
+    // Find the closest ancestor to the current node that is scrollable.
+    let scrollNode = this.node_;
+    while (scrollNode && scrollNode.scrollX === undefined)
+      scrollNode = scrollNode.parent;
+    if (!scrollNode)
+      return;
+
+    if (scrollAction === ContextMenuManager.Action.SCROLL_DOWN)
+      scrollNode.scrollDown(() => {});
+    else if (scrollAction === ContextMenuManager.Action.SCROLL_UP)
+      scrollNode.scrollUp(() => {});
+    else if (scrollAction === ContextMenuManager.Action.SCROLL_LEFT)
+      scrollNode.scrollLeft(() => {});
+    else if (scrollAction === ContextMenuManager.Action.SCROLL_RIGHT)
+      scrollNode.scrollRight(() => {});
+    else if (scrollAction === ContextMenuManager.Action.SCROLL_FORWARD)
+      scrollNode.scrollForward(() => {});
+    else if (scrollAction === ContextMenuManager.Action.SCROLL_BACKWARD)
+      scrollNode.scrollBackward(() => {});
+    else
+      console.log('Unrecognized scroll action: ', scrollAction);
+  }
+
+  /**
    * Perform the default action for the currently highlighted node. If the node
    * is the current scope, go back to the previous scope. If the node is a group
    * other than the current scope, go into that scope. If the node is
@@ -222,8 +250,10 @@ class AutomationManager {
    */
   getRelevantMenuActions_() {
     // TODO(crbug/881080): determine relevant actions programmatically.
-    let actions =
-        [ContextMenuManager.Action.CLICK, ContextMenuManager.Action.OPTIONS];
+    let actions = [
+      ContextMenuManager.Action.CLICK, ContextMenuManager.Action.OPTIONS,
+      ContextMenuManager.Action.SCROLL_UP, ContextMenuManager.Action.SCROLL_DOWN
+    ];
     return actions;
   }
 
