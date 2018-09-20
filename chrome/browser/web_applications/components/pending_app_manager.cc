@@ -4,8 +4,12 @@
 
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
+
+#include "base/bind_helpers.h"
+#include "base/stl_util.h"
 
 namespace web_app {
 
@@ -41,6 +45,29 @@ bool PendingAppManager::AppInfo::operator==(
 PendingAppManager::PendingAppManager() = default;
 
 PendingAppManager::~PendingAppManager() = default;
+
+void PendingAppManager::SynchronizeInstalledApps(
+    std::vector<AppInfo> desired_apps,
+    InstallSource install_source) {
+  DCHECK(std::all_of(desired_apps.begin(), desired_apps.end(),
+                     [&install_source](const AppInfo& app_info) {
+                       return app_info.install_source == install_source;
+                     }));
+
+  std::vector<GURL> current_urls = GetInstalledAppUrls(install_source);
+  std::sort(current_urls.begin(), current_urls.end());
+
+  std::vector<GURL> desired_urls;
+  for (const auto& info : desired_apps) {
+    desired_urls.emplace_back(info.url);
+  }
+  std::sort(desired_urls.begin(), desired_urls.end());
+
+  UninstallApps(
+      base::STLSetDifference<std::vector<GURL>>(current_urls, desired_urls),
+      base::DoNothing());
+  InstallApps(std::move(desired_apps), base::DoNothing());
+}
 
 std::ostream& operator<<(std::ostream& out,
                          const PendingAppManager::AppInfo& app_info) {

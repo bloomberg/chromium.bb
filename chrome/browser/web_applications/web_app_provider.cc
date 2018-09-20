@@ -69,7 +69,8 @@ void WebAppProvider::Observe(int type,
 
 void WebAppProvider::OnScanForExternalWebApps(
     std::vector<web_app::PendingAppManager::AppInfo> app_infos) {
-  pending_app_manager_->InstallApps(std::move(app_infos), base::DoNothing());
+  pending_app_manager_->SynchronizeInstalledApps(
+      std::move(app_infos), PendingAppManager::InstallSource::kExternalDefault);
 }
 
 }  // namespace web_app

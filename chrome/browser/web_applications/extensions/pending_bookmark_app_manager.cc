@@ -75,14 +75,6 @@ void PendingBookmarkAppManager::Install(AppInfo app_to_install,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-// TODO(nigeltao/ortuno): clarify whether the apps_to_install is relative or
-// absolute: in C++ terminology, an analogy is += versus = operators. Should we
-// install these apps *in addition to* what's already installed, or should we
-// make the list of installed apps is identical to the argument? If the former,
-// we also need a way to tell the PendingBookmarkAppManager to uninstall apps.
-// If the latter, we also need to pass the install source (a Manifest::Location
-// or something similar), so that "the list of policy-installed apps" doesn't
-// interfere with "the list of default-installed apps".
 void PendingBookmarkAppManager::InstallApps(
     std::vector<AppInfo> apps_to_install,
     const RepeatingInstallCallback& callback) {
@@ -129,6 +121,12 @@ void PendingBookmarkAppManager::UninstallApps(
 
     callback.Run(app_to_uninstall, uninstalled);
   }
+}
+
+std::vector<GURL> PendingBookmarkAppManager::GetInstalledAppUrls(
+    InstallSource install_source) const {
+  return web_app::ExtensionIdsMap::GetInstalledAppUrls(profile_,
+                                                       install_source);
 }
 
 void PendingBookmarkAppManager::SetFactoriesForTesting(

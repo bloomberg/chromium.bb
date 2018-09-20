@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,22 +70,12 @@ void WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicyInstalledApps() {
       base::BindRepeating(&WebAppPolicyManager::RefreshPolicyInstalledApps,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  // Populate `last_app_urls_` with the current policy-installed apps so that
-  // we can uninstall any apps that are no longer in the policy.
-  last_app_urls_ = ExtensionIdsMap::GetInstalledAppUrls(
-      profile_, PendingAppManager::InstallSource::kExternalPolicy);
-
-  // Sort so that we can later use base::STLSetDifference.
-  std::sort(last_app_urls_.begin(), last_app_urls_.end());
-
   RefreshPolicyInstalledApps();
 }
 
 void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   const base::Value* web_apps =
       pref_service_->GetList(prefs::kWebAppInstallForceList);
-
-  std::vector<GURL> app_urls;
   std::vector<PendingAppManager::AppInfo> apps_to_install;
   for (const base::Value& info : web_apps->GetList()) {
     const base::Value& url = *info.FindKey(kUrlKey);
@@ -109,18 +98,11 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
         GURL(url.GetString()), container,
         web_app::PendingAppManager::InstallSource::kExternalPolicy,
         false /* create_shortcuts */);
-    app_urls.emplace_back(url.GetString());
   }
 
-  pending_app_manager_->InstallApps(std::move(apps_to_install),
-                                    base::DoNothing());
-  std::sort(app_urls.begin(), app_urls.end());
-
-  auto apps_to_uninstall =
-      base::STLSetDifference<std::vector<GURL>>(last_app_urls_, app_urls);
-  pending_app_manager_->UninstallApps(std::move(apps_to_uninstall),
-                                      base::DoNothing());
-  last_app_urls_.swap(app_urls);
+  pending_app_manager_->SynchronizeInstalledApps(
+      std::move(apps_to_install),
+      PendingAppManager::InstallSource::kExternalPolicy);
 }
 
 }  // namespace web_app
