@@ -64,6 +64,12 @@ constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 54;
 // The color of the online sign-in message text.
 constexpr SkColor kOnlineSignInMessageColor = SkColorSetRGB(0xE6, 0x7C, 0x73);
 
+// The color of the disabled auth message bubble when the color extracted from
+// wallpaper is transparent or invalid (i.e. color calculation fails or is
+// disabled).
+constexpr SkColor kDisabledAuthMessageBubbleColor =
+    SkColorSetRGB(0x20, 0x21, 0x24);
+
 constexpr SkColor kFingerprintTextColor =
     SkColorSetARGB(0x8A, 0xFF, 0xFF, 0xFF);
 constexpr int kFingerprintIconSizeDp = 32;
@@ -312,9 +318,12 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
 
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(Shell::Get()->wallpaper_controller()->GetProminentColor(
+    SkColor color = Shell::Get()->wallpaper_controller()->GetProminentColor(
         color_utils::ColorProfile(color_utils::LumaRange::DARK,
-                                  color_utils::SaturationRange::MUTED)));
+                                  color_utils::SaturationRange::MUTED));
+    if (color == kInvalidWallpaperColor || color == SK_ColorTRANSPARENT)
+      color = kDisabledAuthMessageBubbleColor;
+    flags.setColor(color);
     canvas->DrawRoundRect(GetContentsBounds(),
                           kDisabledAuthMessageRoundedCornerRadiusDp, flags);
   }
