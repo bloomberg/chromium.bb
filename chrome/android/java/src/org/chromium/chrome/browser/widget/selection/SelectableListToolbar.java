@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -769,6 +770,10 @@ public class SelectableListToolbar<E>
             View child = getChildAt(i);
             if (!(child instanceof TextView)) continue;
             child.setFocusable(true);
+
+            // setFocusableInTouchMode is problematic for buttons, see
+            // https://crbug.com/813422.
+            if ((child instanceof Button)) continue;
             child.setFocusableInTouchMode(true);
         }
     }
