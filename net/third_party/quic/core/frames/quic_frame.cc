@@ -19,6 +19,9 @@ QuicFrame::QuicFrame(QuicPaddingFrame padding_frame)
 QuicFrame::QuicFrame(QuicStreamFrame stream_frame)
     : stream_frame(stream_frame) {}
 
+QuicFrame::QuicFrame(QuicCryptoFrame* crypto_frame)
+    : type(CRYPTO_FRAME), crypto_frame(crypto_frame) {}
+
 QuicFrame::QuicFrame(QuicAckFrame* frame) : type(ACK_FRAME), ack_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicMtuDiscoveryFrame frame)
@@ -124,6 +127,9 @@ void DeleteFrame(QuicFrame* frame) {
       break;
     case MESSAGE_FRAME:
       delete frame->message_frame;
+      break;
+    case CRYPTO_FRAME:
+      delete frame->crypto_frame;
       break;
 
     case NUM_FRAME_TYPES:

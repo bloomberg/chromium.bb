@@ -106,16 +106,18 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
 
   bool OnStreamFrame(const QuicStreamFrame& frame) override { return true; }
 
+  bool OnCryptoFrame(const QuicCryptoFrame& frame) override { return true; }
+
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override {
     return true;
   }
 
-  bool OnAckRange(QuicPacketNumber start,
-                  QuicPacketNumber end,
-                  bool /*last_range*/) override {
+  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
     return true;
   }
+
+  bool OnAckFrameEnd(QuicPacketNumber start) override { return true; }
 
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
     return true;

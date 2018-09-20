@@ -106,6 +106,7 @@ class TestStream : public QuicStream {
   TestStream(QuicStreamId id, QuicSession* session)
       : QuicStream(id, session, /*is_static=*/false) {}
 
+  using QuicStream::CloseReadSide;
   using QuicStream::CloseWriteSide;
 
   void OnDataAvailable() override {}
@@ -1467,6 +1468,42 @@ TEST_P(QuicSessionTestServer, SendMessage) {
   // message 1 gets acked.
   session_.OnMessageAcked(1);
   EXPECT_FALSE(session_.IsFrameOutstanding(QuicFrame(&frame)));
+}
+
+// Regression test of b/115323618.
+TEST_P(QuicSessionTestServer, LocallyResetZombieStreams) {
+  QuicConnectionPeer::SetSessionDecidesWhatToWrite(connection_);
+
+  session_.set_writev_consumes_all_data(true);
+  TestStream* stream2 = session_.CreateOutgoingDynamicStream();
+  QuicString body(100, '.');
+  stream2->CloseReadSide();
+  stream2->WriteOrBufferData(body, true, nullptr);
+  EXPECT_TRUE(stream2->IsWaitingForAcks());
+  // Verify stream2 is a zombie streams.
+  EXPECT_TRUE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
+
+  QuicStreamFrame frame(stream2->id(), true, 0, 100);
+  EXPECT_CALL(*stream2, HasPendingRetransmission())
+      .WillRepeatedly(Return(true));
+  session_.OnFrameLost(QuicFrame(frame));
+
+  // Reset stream2 locally.
+  EXPECT_CALL(*connection_, SendControlFrame(_))
+      .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+  EXPECT_CALL(*connection_, OnStreamReset(stream2->id(), _));
+  stream2->Reset(QUIC_STREAM_CANCELLED);
+
+  if (GetQuicReloadableFlag(quic_fix_reset_zombie_streams)) {
+    // Verify stream 2 gets closed.
+    EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
+    EXPECT_TRUE(session_.IsClosedStream(stream2->id()));
+    EXPECT_CALL(*stream2, OnCanWrite()).Times(0);
+  } else {
+    EXPECT_TRUE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
+    EXPECT_CALL(*stream2, OnCanWrite());
+  }
+  session_.OnCanWrite();
 }
 
 }  // namespace

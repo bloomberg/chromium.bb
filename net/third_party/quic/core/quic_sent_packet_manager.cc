@@ -112,7 +112,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       rtt_updated_(false),
       acked_packets_iter_(last_ack_frame_.packets.rbegin()),
       aggregate_acked_stream_frames_(
-          GetQuicReloadableFlag(quic_aggregate_acked_stream_frames)),
+          GetQuicReloadableFlag(quic_aggregate_acked_stream_frames_2)),
       fix_mark_for_loss_retransmission_(
           GetQuicReloadableFlag(quic_fix_mark_for_loss_retransmission)) {
   SetSendAlgorithm(congestion_control_type);
