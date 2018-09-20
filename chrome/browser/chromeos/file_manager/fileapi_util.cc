@@ -154,11 +154,9 @@ void FileDefinitionListConverter::ConvertNextIterator(
   // The converter object will be deleted if the callback is not called because
   // of shutdown during ResolveURL().
   file_system_context_->ResolveURL(
-      url,
-      base::Bind(&FileDefinitionListConverter::OnResolvedURL,
-                 base::Unretained(this),
-                 base::Passed(&self_deleter),
-                 iterator));
+      url, base::BindOnce(&FileDefinitionListConverter::OnResolvedURL,
+                          base::Unretained(this), std::move(self_deleter),
+                          iterator));
 }
 
 void FileDefinitionListConverter::OnResolvedURL(

@@ -56,7 +56,7 @@ void ExecuteFileTaskForUrl(Profile* profile,
       GetFileManagerMainPageUrl(),  // Executing task on behalf of the Files
                                     // app.
       task, std::vector<FileSystemURL>(1, file_system_context->CrackURL(url)),
-      base::Bind(&IgnoreFileTaskExecuteResult));
+      base::BindOnce(&IgnoreFileTaskExecuteResult));
 }
 
 // Opens the file manager for the specified |url|. Used to implement
@@ -121,7 +121,8 @@ void OpenFileWithMimeType(Profile* profile,
 
   file_tasks::FindAllTypesOfTasks(
       profile, entries, file_urls,
-      base::Bind(&OpenFileMimeTypeAfterTasksListed, profile, url, callback));
+      base::BindOnce(&OpenFileMimeTypeAfterTasksListed, profile, url,
+                     callback));
 }
 
 // Opens the file specified by |url| by finding and executing a file task for
