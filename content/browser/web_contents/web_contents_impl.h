@@ -1065,6 +1065,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            PageDisableWithNoDialogManager);
   FRIEND_TEST_ALL_PREFIXES(PointerLockBrowserTest,
                            PointerLockInnerContentsCrashes);
+  FRIEND_TEST_ALL_PREFIXES(PointerLockBrowserTest, PointerLockOopifCrashes);
 
   // So |find_request_manager_| can be accessed for testing.
   friend class FindRequestManagerTest;
