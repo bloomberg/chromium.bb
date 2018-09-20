@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
-#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -35,7 +34,6 @@
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
@@ -397,17 +395,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   existing_user_controller()->Login(user_context, SigninSpecifics());
-}
-
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
-                       SupervisedUserCreationForbidden) {
-  MockBaseScreenDelegate mock_base_screen_delegate;
-  SupervisedUserCreationScreenHandler supervised_user_creation_screen_handler;
-  SupervisedUserCreationScreen supervised_user_creation_screen(
-      &mock_base_screen_delegate, &supervised_user_creation_screen_handler);
-
-  supervised_user_creation_screen.AuthenticateManager(gaia_account_id_,
-                                                      kPassword);
 }
 
 MATCHER_P(HasDetails, expected, "") {

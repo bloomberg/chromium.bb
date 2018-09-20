@@ -41,7 +41,6 @@ cr.define('cr.ui.Oobe', function() {
       login.ErrorMessageScreen.register();
       login.TPMErrorMessageScreen.register();
       login.PasswordChangedScreen.register();
-      login.SupervisedUserCreationScreen.register();
       login.TermsOfServiceScreen.register();
       login.SyncConsentScreen.register();
       login.FingerprintSetupScreen.register();
