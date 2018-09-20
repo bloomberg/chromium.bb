@@ -1463,21 +1463,23 @@ TEST_F(IdentityManagerTest,
 }
 #endif
 
-TEST_F(IdentityManagerTest,
-       CallbackNotSentOnRefreshTokenRemovalOfUnknownAccount) {
-  // RemoveCredentials expects (and DCHECKS) that either the caller passes a
-  // known account ID, or the account is unknown because the token service is
-  // still loading credentials. Our common test setup actually completes this
-  // loading, so use the *for_testing() method below to simulate the race
-  // condition.
+TEST_F(IdentityManagerTest, CallbackSentOnRefreshTokenRemovalOfUnknownAccount) {
+  // When the token service is still loading credentials, it may send token
+  // revoked callbacks for accounts that it has never sent a token available
+  // callback. Our common test setup actually completes this loading, so use the
+  // *for_testing() method below to simulate the race condition and ensure that
+  // IdentityManager passes on the callback in this case.
   token_service()->set_all_credentials_loaded_for_testing(false);
 
-  base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_removed_callback(
-      base::BindRepeating([](const std::string&) { EXPECT_TRUE(false); }));
-  token_service()->RevokeCredentials("dummy_account");
+  std::string dummy_account_id = "dummy_account";
 
+  base::RunLoop run_loop;
+  token_service()->RevokeCredentials(dummy_account_id);
   run_loop.RunUntilIdle();
+
+  EXPECT_EQ(dummy_account_id,
+            identity_manager_observer()
+                ->account_from_refresh_token_removed_callback());
 }
 
 TEST_F(IdentityManagerTest,

@@ -356,18 +356,7 @@ void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
 }
 
 void IdentityManager::OnRefreshTokenRevoked(const std::string& account_id) {
-  // NOTE: It is possible for |pending_token_revoked_info_| to be null in the
-  // corner case of tokens being revoked during initial startup (see
-  // WillFireOnRefreshTokenRevoked() above).
-  if (!pending_token_revoked_info_) {
-    return;
-  }
-
-  DCHECK_EQ(pending_token_revoked_info_->account_id, account_id);
-
-  // Move the state out of |pending_token_revoked_info_| in case any observer
-  // callbacks fired below result in mutations of refresh tokens.
-  AccountInfo account_info = pending_token_revoked_info_.value();
+  // TODO(883722): Remove this state entirely, as it now serves no purpose.
   pending_token_revoked_info_.reset();
 
   for (auto& observer : observer_list_) {
