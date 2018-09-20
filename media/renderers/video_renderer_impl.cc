@@ -138,11 +138,11 @@ VideoRendererImpl::VideoRendererImpl(
 VideoRendererImpl::~VideoRendererImpl() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
+  if (init_cb_)
+    FinishInitialization(PIPELINE_ERROR_ABORT);
 
-  if (!flush_cb_.is_null())
-    base::ResetAndReturn(&flush_cb_).Run();
+  if (flush_cb_)
+    FinishFlush();
 
   if (sink_started_)
     StopSink();
@@ -213,11 +213,13 @@ void VideoRendererImpl::Initialize(
     const TimeSource::WallClockTimeCB& wall_clock_time_cb,
     const PipelineStatusCB& init_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT_ASYNC_BEGIN0("media", "VideoRendererImpl::Initialize", this);
+
   base::AutoLock auto_lock(lock_);
   DCHECK(stream);
   DCHECK_EQ(stream->type(), DemuxerStream::VIDEO);
-  DCHECK(!init_cb.is_null());
-  DCHECK(!wall_clock_time_cb.is_null());
+  DCHECK(init_cb);
+  DCHECK(wall_clock_time_cb);
   DCHECK(kUninitialized == state_ || kFlushed == state_);
   DCHECK(!was_background_rendering_);
   DCHECK(!time_progressing_);
@@ -328,7 +330,7 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
 
   if (!success) {
     state_ = kUninitialized;
-    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    FinishInitialization(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
@@ -340,7 +342,20 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
   if (!drop_frames_)
     algorithm_->disable_frame_dropping();
 
-  base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
+  FinishInitialization(PIPELINE_OK);
+}
+
+void VideoRendererImpl::FinishInitialization(PipelineStatus status) {
+  DCHECK(init_cb_);
+  TRACE_EVENT_ASYNC_END1("media", "VideoRendererImpl::Initialize", this,
+                         "status", MediaLog::PipelineStatusToString(status));
+  base::ResetAndReturn(&init_cb_).Run(status);
+}
+
+void VideoRendererImpl::FinishFlush() {
+  DCHECK(flush_cb_);
+  TRACE_EVENT_ASYNC_END0("media", "VideoRendererImpl::Flush", this);
+  base::ResetAndReturn(&flush_cb_).Run();
 }
 
 void VideoRendererImpl::OnPlaybackError(PipelineStatus error) {
@@ -662,7 +677,7 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
   state_ = kFlushed;
-  base::ResetAndReturn(&flush_cb_).Run();
+  FinishFlush();
 }
 
 void VideoRendererImpl::UpdateStats_Locked(bool force_update) {

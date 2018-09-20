@@ -27,6 +27,9 @@ class MEDIA_EXPORT DemuxerStream {
     TYPE_MAX = TEXT,
   };
 
+  // Returns a string representation of |type|.
+  static const char* GetTypeName(Type type);
+
   enum Liveness {
     LIVENESS_UNKNOWN,
     LIVENESS_RECORDED,

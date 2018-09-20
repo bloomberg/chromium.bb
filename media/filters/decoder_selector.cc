@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/cdm_context.h"
@@ -37,6 +38,8 @@ template <DemuxerStream::Type StreamType>
 DecoderSelector<StreamType>::~DecoderSelector() {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  if (select_decoder_cb_)
+    ReturnNullDecoder();
 }
 
 template <DemuxerStream::Type StreamType>
@@ -61,7 +64,10 @@ void DecoderSelector<StreamType>::SelectDecoder(
     typename Decoder::OutputCB output_cb) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(select_decoder_cb_.is_null());
+  DCHECK(select_decoder_cb);
+  DCHECK(!select_decoder_cb_);
+  TRACE_EVENT_ASYNC_BEGIN1("media", "DecoderSelector::SelectDecoder", this,
+                           "type", DemuxerStream::GetTypeName(StreamType));
 
   select_decoder_cb_ = std::move(select_decoder_cb);
   output_cb_ = std::move(output_cb);
@@ -87,27 +93,14 @@ template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::FinalizeDecoderSelection() {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(select_decoder_cb_.is_null());
-
+  DCHECK(!select_decoder_cb_);
   is_selecting_decoders_ = false;
 
   if (is_codec_changing_) {
     is_codec_changing_ = false;
-
-    std::string stream_type;
-    switch (StreamType) {
-      case DemuxerStream::AUDIO:
-        stream_type = "Audio";
-        break;
-      case DemuxerStream::VIDEO:
-        stream_type = "Video";
-        break;
-      default:
-        NOTREACHED();
-    }
-
-    std::string decoder_type = is_platform_decoder_ ? "HW" : "SW";
-
+    const std::string decoder_type = is_platform_decoder_ ? "HW" : "SW";
+    const std::string stream_type =
+        StreamType == DemuxerStream::AUDIO ? "Audio" : "Video";
     base::UmaHistogramTimes(
         "Media.MSE.CodecChangeTime." + stream_type + "." + decoder_type,
         base::TimeTicks::Now() - codec_change_start_);
@@ -174,10 +167,7 @@ void DecoderSelector<StreamType>::OnDecoderInitializeDone(bool success) {
     return;
   }
 
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(select_decoder_cb_), std::move(decoder_),
-                     std::move(decrypting_demuxer_stream_)));
+  RunSelectDecoderCB();
 }
 
 template <DemuxerStream::Type StreamType>
@@ -185,11 +175,10 @@ void DecoderSelector<StreamType>::ReturnNullDecoder() {
   DVLOG(1) << __func__ << ": No decoder selected";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  decrypting_demuxer_stream_.reset();
+  decoder_.reset();
   decoders_.clear();
-
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(select_decoder_cb_), nullptr, nullptr));
+  RunSelectDecoderCB();
 }
 
 template <DemuxerStream::Type StreamType>
@@ -217,7 +206,6 @@ void DecoderSelector<StreamType>::OnDecryptingDemuxerStreamInitializeDone(
 
   if (status != PIPELINE_OK) {
     // Since we already tried every potential decoder without DDS, give up.
-    decrypting_demuxer_stream_.reset();
     ReturnNullDecoder();
     return;
   }
@@ -234,6 +222,20 @@ void DecoderSelector<StreamType>::OnDecryptingDemuxerStreamInitializeDone(
   // Try decoder selection again now that DDS is being used.
   decoders_ = create_decoders_cb_.Run();
   InitializeDecoder();
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderSelector<StreamType>::RunSelectDecoderCB() {
+  DCHECK(select_decoder_cb_);
+  TRACE_EVENT_ASYNC_END2("media", "DecoderSelector::SelectDecoder", this,
+                         "type", DemuxerStream::GetTypeName(StreamType),
+                         "decoder_name",
+                         decoder_ ? decoder_->GetDisplayName() : "null");
+
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(select_decoder_cb_), std::move(decoder_),
+                     std::move(decrypting_demuxer_stream_)));
 }
 
 // These forward declarations tell the compiler that we will use

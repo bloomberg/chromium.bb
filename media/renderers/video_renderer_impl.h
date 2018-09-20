@@ -89,6 +89,9 @@ class MEDIA_EXPORT VideoRendererImpl
   // Callback for |video_frame_stream_| initialization.
   void OnVideoFrameStreamInitialized(bool success);
 
+  void FinishInitialization(PipelineStatus status);
+  void FinishFlush();
+
   // Functions to notify certain events to the RendererClient.
   void OnPlaybackError(PipelineStatus error);
   void OnPlaybackEnded();
