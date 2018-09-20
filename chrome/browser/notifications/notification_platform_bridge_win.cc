@@ -465,14 +465,11 @@ class NotificationPlatformBridgeWinImpl
   std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
   GetDisplayedFromActionCenter(const std::string& profile_id,
                                bool incognito) const {
-    std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
-        notifications;
-
     mswr::ComPtr<winui::Notifications::IToastNotificationHistory> history;
     if (!GetIToastNotificationHistory(&history)) {
       LogGetDisplayedStatus(GetDisplayedStatus::GET_TOAST_HISTORY_FAILED);
       DLOG(ERROR) << "Failed to get IToastNotificationHistory";
-      return notifications;
+      return {};
     }
 
     mswr::ComPtr<winui::Notifications::IToastNotificationHistory2> history2;
@@ -483,7 +480,7 @@ class NotificationPlatformBridgeWinImpl
           GetDisplayedStatus::QUERY_TOAST_NOTIFICATION_HISTORY2_FAILED);
       DLOG(ERROR) << "Failed to get IToastNotificationHistory2 " << std::hex
                   << hr;
-      return notifications;
+      return {};
     }
 
     ScopedHString application_id = ScopedHString::Create(GetAppId());
@@ -495,7 +492,7 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetDisplayedStatus(GetDisplayedStatus::GET_HISTORY_WITH_ID_FAILED);
       DLOG(ERROR) << "GetHistoryWithId failed " << std::hex << hr;
-      return notifications;
+      return {};
     }
 
     uint32_t size;
@@ -503,12 +500,15 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetDisplayedStatus(GetDisplayedStatus::GET_SIZE_FAILED);
       DLOG(ERROR) << "History get_Size call failed " << std::hex << hr;
-      return notifications;
+      return {};
     }
 
     GetDisplayedStatus status = GetDisplayedStatus::SUCCESS;
-    mswr::ComPtr<winui::Notifications::IToastNotification> tn;
+
+    std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
+        notifications;
     for (uint32_t index = 0; index < size; ++index) {
+      mswr::ComPtr<winui::Notifications::IToastNotification> tn;
       hr = list->GetAt(0U, &tn);
       if (FAILED(hr)) {
         status = GetDisplayedStatus::SUCCESS_WITH_GET_AT_FAILURE;
@@ -525,11 +525,10 @@ class NotificationPlatformBridgeWinImpl
 
   std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
   GetNotifications(const std::string& profile_id, bool incognito) const {
-    if (!NotificationPlatformBridgeWinImpl::notifications_for_testing_) {
-      return GetDisplayedFromActionCenter(profile_id, incognito);
-    } else {
+    if (NotificationPlatformBridgeWinImpl::notifications_for_testing_)
       return *NotificationPlatformBridgeWinImpl::notifications_for_testing_;
-    }
+
+    return GetDisplayedFromActionCenter(profile_id, incognito);
   }
 
   void GetDisplayed(const std::string& profile_id,
