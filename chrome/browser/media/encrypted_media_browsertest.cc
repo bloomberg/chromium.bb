@@ -33,6 +33,10 @@
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
@@ -620,6 +624,16 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
     DVLOG(0) << "Skipping test - FrameSizeChange test requires video playback.";
     return;
   }
+
+#if defined(OS_ANDROID)
+  // https://crbug.com/778245
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
+      base::android::SDK_VERSION_KITKAT) {
+    DVLOG(0) << "Skipping test - FrameSizeChange is flaky on KitKat devices.";
+    return;
+  }
+#endif
+
   TestFrameSizeChange();
 }
 
