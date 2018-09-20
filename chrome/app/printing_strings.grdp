@@ -43,6 +43,9 @@
     <message name="IDS_PRINT_PREVIEW_OPTION_ALL_PAGES" desc="Option to print all pages.">
       All
     </message>
+    <message name="IDS_PRINT_PREVIEW_OPTION_CUSTOM_PAGES" desc="Option to print custom pages.">
+      Custom
+    </message>
     <message name="IDS_PRINT_PREVIEW_DESTINATION_LABEL" desc="Destination option label. It is displayed right on top of the available printers list.">
       Destination
     </message>

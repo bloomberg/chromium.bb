@@ -201,6 +201,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("layoutLabel", IDS_PRINT_PREVIEW_LAYOUT_LABEL);
   source->AddLocalizedString("optionAllPages",
                              IDS_PRINT_PREVIEW_OPTION_ALL_PAGES);
+  source->AddLocalizedString("optionCustomPages",
+                             IDS_PRINT_PREVIEW_OPTION_CUSTOM_PAGES);
   source->AddLocalizedString("optionBw", IDS_PRINT_PREVIEW_OPTION_BW);
   source->AddLocalizedString("optionCollate", IDS_PRINT_PREVIEW_OPTION_COLLATE);
   source->AddLocalizedString("optionColor", IDS_PRINT_PREVIEW_OPTION_COLOR);

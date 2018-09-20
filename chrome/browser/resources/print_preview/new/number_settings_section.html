@@ -44,7 +44,7 @@
           <cr-input id="userValue" type="number"
               max="[[maxValue]]" min="[[minValue]]" data-timeout-delay="250"
               disabled$="[[getDisabled_(disabled)]]" on-keydown="onKeydown_"
-              on-blur="onBlur_" aria-labelled-by="section-title"
+              on-blur="onBlur_" aria-label="[[inputAriaLabel]]"
               error-message="[[hintMessage]]" auto-validate>
             <span slot="suffix">
               <slot name="opt-inside-content"></slot>
