@@ -10,11 +10,6 @@ import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds must not depend on //chromeos")
 
-declare_args() {
-  # Use binder. Binder related code is compiled only when true.
-  use_binder = false
-}
-
 component("chromeos") {
   configs += [ "//build/config/linux/nss:system_nss_no_ssl_config" ]
   public_deps = [
@@ -84,36 +79,6 @@ component("chromeos") {
     "audio/chromeos_sounds.h",
     "audio/cras_audio_handler.cc",
     "audio/cras_audio_handler.h",
-    "binder/buffer_reader.cc",
-    "binder/buffer_reader.h",
-    "binder/command_broker.cc",
-    "binder/command_broker.h",
-    "binder/command_stream.cc",
-    "binder/command_stream.h",
-    "binder/constants.h",
-    "binder/driver.cc",
-    "binder/driver.h",
-    "binder/ipc_thread.cc",
-    "binder/ipc_thread.h",
-    "binder/local_object.cc",
-    "binder/local_object.h",
-    "binder/object.h",
-    "binder/remote_object.cc",
-    "binder/remote_object.h",
-    "binder/service_manager_proxy.cc",
-    "binder/service_manager_proxy.h",
-    "binder/status.h",
-    "binder/transaction_data.h",
-    "binder/transaction_data_from_driver.cc",
-    "binder/transaction_data_from_driver.h",
-    "binder/transaction_data_reader.cc",
-    "binder/transaction_data_reader.h",
-    "binder/transaction_status.cc",
-    "binder/transaction_status.h",
-    "binder/util.cc",
-    "binder/util.h",
-    "binder/writable_transaction_data.cc",
-    "binder/writable_transaction_data.h",
     "cert_loader.cc",
     "cert_loader.h",
     "chromeos_constants.cc",
@@ -779,22 +744,6 @@ test("chromeos_unittests") {
     "tools/variable_expander_unittest.cc",
     "tpm/tpm_token_info_getter_unittest.cc",
   ]
-  if (use_binder) {
-    if (current_cpu == "arm" || current_cpu == "x86") {
-      defines += [ "BINDER_IPC_32BIT" ]
-    }
-    sources += [
-      "binder/buffer_reader_unittest.cc",
-      "binder/command_broker_unittest.cc",
-      "binder/command_stream_unittest.cc",
-      "binder/driver_unittest.cc",
-      "binder/end_to_end_unittest.cc",
-      "binder/service_manager_proxy_unittest.cc",
-      "binder/test_service.cc",
-      "binder/test_service.h",
-      "binder/transaction_data_read_write_unittest.cc",
-    ]
-  }
 
   data = [
     "test/data/",
