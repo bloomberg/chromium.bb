@@ -16,11 +16,7 @@
 
 namespace {
 CGFloat TestBubbleAlignmentOffset() {
-  if (IsUIRefreshPhase1Enabled()) {
-    return 29;
-  } else {
-    return 26;
-  }
+  return 29;
 }
 }  // namespace
 
