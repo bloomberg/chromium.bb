@@ -305,6 +305,9 @@ bool BrowserWindowCocoa::IsToolbarShowing() const {
 
 void BrowserWindowCocoa::BookmarkBarStateChanged(
     BookmarkBar::AnimateChangeType change_type) {
+  [[controller_ bookmarkBarController]
+      updateState:browser_->bookmark_bar_state()
+       changeType:change_type];
 }
 
 void BrowserWindowCocoa::UpdateDevTools() {
@@ -473,11 +476,12 @@ void BrowserWindowCocoa::FocusInactivePopupForAccessibility() {
 }
 
 bool BrowserWindowCocoa::IsBookmarkBarVisible() const {
-  return false;
+  return browser_->profile()->GetPrefs()->GetBoolean(
+      bookmarks::prefs::kShowBookmarkBar);
 }
 
 bool BrowserWindowCocoa::IsBookmarkBarAnimating() const {
-  return false;
+  return [controller_ isBookmarkBarAnimating];
 }
 
 bool BrowserWindowCocoa::IsTabStripEditable() const {
@@ -505,6 +509,8 @@ void BrowserWindowCocoa::ShowUpdateChromeDialog() {
 
 void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
                                             bool already_bookmarked) {
+  [controller_ showBookmarkBubbleForURL:url
+                      alreadyBookmarked:(already_bookmarked ? YES : NO)];
 }
 
 autofill::SaveCardBubbleView* BrowserWindowCocoa::ShowSaveCreditCardBubble(
@@ -704,8 +710,11 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
   }
 }
 
-int BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
-  return 0;
+int
+BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
+  if (browser_->bookmark_bar_state() != BookmarkBar::DETACHED)
+    return 0;
+  return GetCocoaLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT);
 }
 
 void BrowserWindowCocoa::ExecuteExtensionCommand(

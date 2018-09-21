@@ -184,8 +184,19 @@ enum WindowLocation {
 - (NSRect)window:(NSWindow*)window
 willPositionSheet:(NSWindow*)sheet
        usingRect:(NSRect)defaultSheetLocation {
+  // Position the sheet as follows:
+  //  - If the bookmark bar is shown (attached to the normal toolbar), position
+  //    the sheet below the bookmark bar.
+  //  - If the bookmark bar is hidden or shown as a bubble (on the NTP when the
+  //    bookmark bar is disabled), position the sheet immediately below the
+  //    normal toolbar.
+  //  - If the bookmark bar is currently animating, position the sheet according
+  //    to where the bar will be when the animation ends.
   CGFloat defaultSheetY = defaultSheetLocation.origin.y;
-  if ([self hasToolbar]) {
+  if ([self supportsBookmarkBar] &&
+      [bookmarkBarController_ currentState] == BookmarkBar::SHOW) {
+    defaultSheetY = NSMinY([[bookmarkBarController_ view] frame]);
+  } else if ([self hasToolbar]) {
     defaultSheetY = NSMinY([[toolbarController_ view] frame]);
   } else {
     // The toolbar is not shown in popup and application modes. The sheet
@@ -223,6 +234,7 @@ willPositionSheet:(NSWindow*)sheet
   if ([self.window respondsToSelector:@selector(setShouldHideTitle:)])
     [(id)self.window setShouldHideTitle:![self hasTitleBar]];
 
+  [bookmarkBarController_ updateHiddenState];
   [self updateSubviewZOrder];
 
   base::scoped_nsobject<BrowserWindowLayout> layout(
@@ -282,7 +294,12 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (BOOL)placeBookmarkBarBelowInfoBar {
-  return NO;
+  // If we are currently displaying the NTP detached bookmark bar or animating
+  // to/from it (from/to anything else), we display the bookmark bar below the
+  // info bar.
+  return [bookmarkBarController_ isInState:BookmarkBar::DETACHED] ||
+         [bookmarkBarController_ isAnimatingToState:BookmarkBar::DETACHED] ||
+         [bookmarkBarController_ isAnimatingFromState:BookmarkBar::DETACHED];
 }
 
 - (void)layoutTabContentArea:(NSRect)newFrame {
@@ -303,7 +320,10 @@ willPositionSheet:(NSWindow*)sheet
     return;
 
   toolbarFrame.size.height = newHeight;
+  NSRect bookmarkFrame = [[bookmarkBarController_ view] frame];
+  bookmarkFrame.size.height = bookmarkFrame.size.height - deltaH;
   [[toolbarController_ view] setFrame:toolbarFrame];
+  [[bookmarkBarController_ view] setFrame:bookmarkFrame];
   [self layoutSubviews];
 }
 
@@ -730,6 +750,8 @@ willPositionSheet:(NSWindow*)sheet
   [fullscreenToolbarController_ exitFullscreenMode];
   fullscreenToolbarController_.reset();
 
+  // Force the bookmark bar z-order to update.
+  [[bookmarkBarController_ view] removeFromSuperview];
   [self layoutSubviews];
 }
 
@@ -750,6 +772,8 @@ willPositionSheet:(NSWindow*)sheet
         setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
   }
 
+  // Force the bookmark bar z-order to update.
+  [[bookmarkBarController_ view] removeFromSuperview];
   [self layoutSubviews];
 }
 
@@ -787,7 +811,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (CGFloat)toolbarDividerOpacity {
-  return 0;
+  return [bookmarkBarController_ toolbarDividerOpacity];
 }
 
 - (void)enterAppKitFullscreen {
@@ -865,6 +889,11 @@ willPositionSheet:(NSWindow*)sheet
 
   [layout setHasLocationBar:[self hasLocationBar]];
 
+  [layout setPlaceBookmarkBarBelowInfoBar:[self placeBookmarkBarBelowInfoBar]];
+  [layout setBookmarkBarHidden:[bookmarkBarController_ view].isHidden];
+  [layout setBookmarkBarHeight:
+      NSHeight([[bookmarkBarController_ view] bounds])];
+
   [layout setInfoBarHeight:[infoBarContainerController_ heightOfInfoBars]];
 }
 
@@ -876,6 +905,9 @@ willPositionSheet:(NSWindow*)sheet
 
   if (!NSIsEmptyRect(output.toolbarFrame))
     [[toolbarController_ view] setFrame:output.toolbarFrame];
+
+  if (!NSIsEmptyRect(output.bookmarkFrame))
+    [bookmarkBarController_ layoutToFrame:output.bookmarkFrame];
 
   // The info bar is never hidden. Sometimes it has zero effective height.
   [[infoBarContainerController_ view] setFrame:output.infoBarFrame];
@@ -902,6 +934,8 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)updateSubviewZOrderNormal {
   base::scoped_nsobject<NSMutableArray> subviews([[NSMutableArray alloc] init]);
+  if ([bookmarkBarController_ view])
+    [subviews addObject:[bookmarkBarController_ view]];
   if ([toolbarController_ view])
     [subviews addObject:[toolbarController_ view]];
   if ([infoBarContainerController_ view])
@@ -920,8 +954,17 @@ willPositionSheet:(NSWindow*)sheet
   if ([self tabContentArea])
     [subviews addObject:[self tabContentArea]];
 
-  if (floatingBarBackingView_)
-    [subviews addObject:floatingBarBackingView_];
+  if ([self placeBookmarkBarBelowInfoBar]) {
+    if ([bookmarkBarController_ view])
+      [subviews addObject:[bookmarkBarController_ view]];
+    if (floatingBarBackingView_)
+      [subviews addObject:floatingBarBackingView_];
+  } else {
+    if (floatingBarBackingView_)
+      [subviews addObject:floatingBarBackingView_];
+    if ([bookmarkBarController_ view])
+      [subviews addObject:[bookmarkBarController_ view]];
+  }
 
   if ([toolbarController_ view])
     [subviews addObject:[toolbarController_ view]];
