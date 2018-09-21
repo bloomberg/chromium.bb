@@ -217,7 +217,9 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
     if (!assigned_nodes_candidates_.IsEmpty()) {
       added_assigned_nodes =
           DeleteCommonAssignedNodeAndReturnAddedAssignedNode(nodes);
-      ContainingShadowRoot()->GetSlotAssignment().CallSlotChangeIfNeeded(*this);
+      ContainingShadowRoot()
+          ->GetSlotAssignment()
+          .CallSlotChangeAfterRemovedFromAssignFunction(*this);
       ContainingShadowRoot()->GetSlotAssignment().DeleteSlotInChildSlotMap(
           *this);
     } else {
@@ -238,7 +240,10 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
       ContainingShadowRoot()->GetSlotAssignment().InsertSlotInChildSlotMap(
           *this, *child);
     }
-    ContainingShadowRoot()->GetSlotAssignment().CallSlotChangeIfNeeded(*this);
+    ContainingShadowRoot()
+        ->GetSlotAssignment()
+        .CallSlotChangeAfterAdditionFromAssignFunction(*this,
+                                                       added_assigned_nodes);
   }
 }
 

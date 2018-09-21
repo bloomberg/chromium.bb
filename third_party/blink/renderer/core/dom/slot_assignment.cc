@@ -127,7 +127,7 @@ void SlotAssignment::DidAddSlotInternalInManualMode(HTMLSlotElement& slot) {
   for (auto node : slot.AssignedNodesCandidate()) {
     InsertSlotInChildSlotMap(slot, *node);
   }
-  CallSlotChangeIfNeeded(slot);
+  CallSlotChangeAfterAddition(slot);
 }
 
 void SlotAssignment::DidRemoveSlotInternal(
@@ -415,16 +415,40 @@ HTMLSlotElement* SlotAssignment::FindSlotChange(HTMLSlotElement& slot,
   return nullptr;
 }
 
-void SlotAssignment::CallSlotChangeIfNeeded(HTMLSlotElement& slot) {
+void SlotAssignment::CallSlotChangeAfterRemovedFromAssignFunction(
+    HTMLSlotElement& slot) {
   for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
-    auto* changed_slot = FindSlotChange(slot, child);
-    if (changed_slot) {
-      slot.SignalSlotChange();
-      if (changed_slot != slot)
-        changed_slot->SignalSlotChange();
+    if (slot.AssignedNodesCandidate().Contains(&child)) {
+      CallSlotChangeIfNeeded(slot, child);
     }
   }
 }
+void SlotAssignment::CallSlotChangeAfterAdditionFromAssignFunction(
+    HTMLSlotElement& slot,
+    const HeapVector<Member<Node>>& added_assign_nodes) {
+  for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
+    if (added_assign_nodes.Contains(&child)) {
+      CallSlotChangeIfNeeded(slot, child);
+    }
+  }
+}
+
+void SlotAssignment::CallSlotChangeAfterAddition(HTMLSlotElement& slot) {
+  for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
+    CallSlotChangeIfNeeded(slot, child);
+  }
+}
+
+void SlotAssignment::CallSlotChangeIfNeeded(HTMLSlotElement& slot,
+                                            Node& child) {
+  auto* changed_slot = FindSlotChange(slot, child);
+  if (changed_slot) {
+    slot.SignalSlotChange();
+    if (changed_slot != slot)
+      changed_slot->SignalSlotChange();
+  }
+}
+
 void SlotAssignment::CallSlotChangeAfterRemoved(HTMLSlotElement& slot) {
   for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
     auto* changed_slot = FindSlotChange(slot, child);
