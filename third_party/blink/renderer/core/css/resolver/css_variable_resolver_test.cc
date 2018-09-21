@@ -362,4 +362,20 @@ TEST_F(CSSVariableResolverTest, RemoveNonInheritedVariable) {
   EXPECT_FALSE(non_inherited_variables->RegisteredVariable(name));
 }
 
+TEST_F(CSSVariableResolverTest, DontCrashWhenSettingInheritedNullVariable) {
+  scoped_refptr<StyleInheritedVariables> inherited_variables =
+      StyleInheritedVariables::Create();
+  AtomicString name("--test");
+  inherited_variables->SetVariable(name, nullptr);
+  inherited_variables->SetRegisteredVariable(name, nullptr);
+}
+
+TEST_F(CSSVariableResolverTest, DontCrashWhenSettingNonInheritedNullVariable) {
+  std::unique_ptr<StyleNonInheritedVariables> inherited_variables =
+      StyleNonInheritedVariables::Create();
+  AtomicString name("--test");
+  inherited_variables->SetVariable(name, nullptr);
+  inherited_variables->SetRegisteredVariable(name, nullptr);
+}
+
 }  // namespace blink

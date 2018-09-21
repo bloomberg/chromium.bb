@@ -35,8 +35,9 @@ class CORE_EXPORT StyleNonInheritedVariables {
 
   void SetVariable(const AtomicString& name,
                    scoped_refptr<CSSVariableData> value) {
-    needs_resolution_ = needs_resolution_ || value->NeedsVariableResolution() ||
-                        value->NeedsUrlResolution();
+    needs_resolution_ =
+        needs_resolution_ || (value && (value->NeedsVariableResolution() ||
+                                        value->NeedsUrlResolution()));
     data_.Set(name, std::move(value));
   }
   CSSVariableData* GetVariable(const AtomicString& name) const;
