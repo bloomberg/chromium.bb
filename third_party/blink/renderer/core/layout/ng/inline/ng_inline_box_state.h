@@ -34,6 +34,9 @@ struct NGPendingPositions {
 // require ancestor position or size.
 // This is a transient object only while building line boxes in a block.
 struct NGInlineBoxState {
+  DISALLOW_NEW();
+
+ public:
   unsigned fragment_start = 0;
   const NGInlineItem* item = nullptr;
   const ComputedStyle* style = nullptr;
@@ -108,6 +111,8 @@ struct NGInlineBoxState {
 // 2) Performs layout when the positin/size of a box was computed.
 // 3) Cache common values for a box.
 class CORE_EXPORT NGInlineLayoutStateStack {
+  USING_FAST_MALLOC(NGInlineLayoutStateStack);
+
  public:
   // The box state for the line box.
   NGInlineBoxState& LineBoxState() { return stack_.front(); }
