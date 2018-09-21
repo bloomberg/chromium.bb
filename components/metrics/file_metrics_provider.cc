@@ -729,9 +729,12 @@ bool FileMetricsProvider::ProvideIndependentMetrics(
 
     bool success = false;
     RecordEmbeddedProfileResult(EMBEDDED_PROFILE_ATTEMPT);
+    base::Time start_time = base::Time::Now();
     if (PersistentSystemProfile::GetSystemProfile(
             *source->allocator->memory_allocator(), system_profile_proto)) {
       RecordHistogramSnapshotsFromSource(snapshot_manager, source);
+      UMA_HISTOGRAM_TIMES("UMA.FileMetricsProvider.EmbeddedProfile.RecordTime",
+                          base::Time::Now() - start_time);
       success = true;
       RecordEmbeddedProfileResult(EMBEDDED_PROFILE_FOUND);
     } else {
