@@ -114,7 +114,7 @@ void SuggestionChipView::InitLayout(const Params& params) {
 
   // Icon.
   const int icon_size =
-      AppListConfig::instance().recommended_app_icon_dimension();
+      AppListConfig::instance().suggestion_chip_icon_dimension();
   icon_view_->SetImageSize(gfx::Size(icon_size, icon_size));
   icon_view_->SetPreferredSize(gfx::Size(icon_size, icon_size));
 

@@ -32,7 +32,11 @@ namespace app_list {
 namespace {
 
 // Maximum number of results to show in each mixer group.
-constexpr size_t kMaxAppsGroupResults = 6;
+
+// Some app results may be blacklisted(e.g. continue reading) for rendering
+// in some UI, so we need to allow returning more results than actual maximum
+// number of results to be displayed in UI.
+constexpr size_t kMaxAppsGroupResults = 7;
 constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxWebstoreResults = 2;
 constexpr size_t kMaxLauncherSearchResults = 2;
