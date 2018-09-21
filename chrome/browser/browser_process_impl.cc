@@ -1174,7 +1174,7 @@ void BrowserProcessImpl::PreCreateThreads(
   // TODO(mmenke): Once IOThread class is no longer needed (not the thread
   // itself), this can be created on first use.
   system_network_context_manager_ =
-      std::make_unique<SystemNetworkContextManager>();
+      std::make_unique<SystemNetworkContextManager>(local_state_.get());
   io_thread_ = std::make_unique<IOThread>(
       local_state(), policy_service(), net_log_.get(),
       extension_event_router_forwarder(),
