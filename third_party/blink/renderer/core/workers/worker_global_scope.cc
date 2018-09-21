@@ -327,7 +327,7 @@ void WorkerGlobalScope::EvaluateClassicScriptPausable(
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   if (IsContextPaused()) {
-    paused_calls_.push_back(WTF::Bind(
+    AddPausedCall(WTF::Bind(
         &WorkerGlobalScope::EvaluateClassicScriptPausable,
         WrapWeakPersistent(this), script_url, access_control_status,
         source_code, WTF::Passed(std::move(cached_meta_data)), stack_id));
@@ -347,10 +347,9 @@ void WorkerGlobalScope::ImportModuleScriptPausable(
     FetchClientSettingsObjectSnapshot* outside_settings_object,
     network::mojom::FetchCredentialsMode mode) {
   if (IsContextPaused()) {
-    paused_calls_.push_back(
-        WTF::Bind(&WorkerGlobalScope::ImportModuleScriptPausable,
-                  WrapWeakPersistent(this), module_url_record,
-                  WrapPersistent(outside_settings_object), mode));
+    AddPausedCall(WTF::Bind(&WorkerGlobalScope::ImportModuleScriptPausable,
+                            WrapWeakPersistent(this), module_url_record,
+                            WrapPersistent(outside_settings_object), mode));
     return;
   }
   ImportModuleScript(module_url_record, outside_settings_object, mode);
@@ -359,9 +358,8 @@ void WorkerGlobalScope::ImportModuleScriptPausable(
 void WorkerGlobalScope::ReceiveMessagePausable(
     BlinkTransferableMessage message) {
   if (IsContextPaused()) {
-    paused_calls_.push_back(
-        WTF::Bind(&WorkerGlobalScope::ReceiveMessagePausable,
-                  WrapWeakPersistent(this), std::move(message)));
+    AddPausedCall(WTF::Bind(&WorkerGlobalScope::ReceiveMessagePausable,
+                            WrapWeakPersistent(this), std::move(message)));
     return;
   }
 
@@ -400,6 +398,10 @@ void WorkerGlobalScope::EvaluateClassicScript(
                        script_url),
       access_control_status, nullptr /* error_event */, v8_cache_options_);
   ReportingProxy().DidEvaluateClassicScript(success);
+}
+
+void WorkerGlobalScope::AddPausedCall(base::OnceClosure closure) {
+  paused_calls_.push_back(std::move(closure));
 }
 
 WorkerGlobalScope::WorkerGlobalScope(
