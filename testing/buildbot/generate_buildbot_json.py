@@ -641,7 +641,21 @@ class BBJSONGenerator(object):
                            'composition test suites (error found while '
                            'processing %s)' % name)
 
+  def flatten_test_suites(self):
+    new_test_suites = {}
+    for name, value in self.test_suites.get('basic_suites', {}).iteritems():
+      new_test_suites[name] = value
+    for name, value in self.test_suites.get('compound_suites', {}).iteritems():
+      if name in new_test_suites:
+        raise BBGenErr('Composition test suite names may not duplicate basic '
+                       'test suite names (error found while processsing %s' % (
+                       name))
+      new_test_suites[name] = value
+    self.test_suites = new_test_suites
+
   def resolve_composition_test_suites(self):
+    self.flatten_test_suites()
+
     self.check_composition_test_suites()
     for name, value in self.test_suites.iteritems():
       if isinstance(value, list):
@@ -846,7 +860,10 @@ class BBJSONGenerator(object):
     ]
 
   def check_input_file_consistency(self, verbose=False):
+    self.check_input_files_sorting(verbose)
+
     self.load_configuration_files()
+    self.flatten_test_suites()
     self.check_composition_test_suites()
 
     # All bots should exist.
@@ -944,57 +961,170 @@ class BBJSONGenerator(object):
                      ' referenced in a waterfall, machine, or test suite.' % (
                          str(missing_mixins)))
 
-    self.check_input_files_sorting(verbose)
+
+  def type_assert(self, node, typ, filename, verbose=False):
+    """Asserts that the Python AST node |node| is of type |typ|.
+
+    If verbose is set, it prints out some helpful context lines, showing where
+    exactly the error occurred in the file.
+    """
+    if not isinstance(node, typ):
+      if verbose:
+        lines = [""] + self.read_file(filename).splitlines()
+
+        context = 2
+        lines_start = max(node.lineno - context, 0)
+        # Add one to include the last line
+        lines_end = min(node.lineno + context, len(lines)) + 1
+        lines = (
+            ['== %s ==\n' % filename] +
+            ["<snip>\n"] +
+            ['%d %s' % (lines_start + i, line) for i, line in enumerate(
+                lines[lines_start:lines_start + context])] +
+            ['-' * 80 + '\n'] +
+            ['%d %s' % (node.lineno, lines[node.lineno])] +
+            ['-' * (node.col_offset + 3) + '^' + '-' * (
+                80 - node.col_offset - 4) + '\n'] +
+            ['%d %s' % (node.lineno + 1 + i, line) for i, line in enumerate(
+                lines[node.lineno + 1:lines_end])] +
+            ["<snip>\n"]
+        )
+        # Print out a useful message when a type assertion fails.
+        for l in lines:
+          self.print_line(l.strip())
+
+      node_dumped = ast.dump(node, annotate_fields=False)
+      # If the node is huge, truncate it so everything fits in a terminal
+      # window.
+      if len(node_dumped) > 60: # pragma: no cover
+        node_dumped = node_dumped[:30] + '  <SNIP>  ' + node_dumped[-30:]
+      raise BBGenErr(
+          'Invalid .pyl file %r. Python AST node %r on line %s expected to'
+          ' be %s, is %s' % (
+              filename, node_dumped,
+              node.lineno, typ, type(node)))
+
+  def ensure_ast_dict_keys_sorted(self, node, filename, verbose):
+    is_valid = True
+
+    keys = []
+    # The keys of this dict are ordered as ordered in the file; normal python
+    # dictionary keys are given an arbitrary order, but since we parsed the
+    # file itself, the order as given in the file is preserved.
+    for key in node.keys:
+      self.type_assert(key, ast.Str, filename, verbose)
+      keys.append(key.s)
+
+    keys_sorted = sorted(keys)
+    if keys_sorted != keys:
+      is_valid = False
+      if verbose:
+        for line in difflib.unified_diff(
+            keys,
+            keys_sorted, fromfile='current (%r)' % filename, tofile='sorted'):
+          self.print_line(line)
+
+    if len(set(keys)) != len(keys):
+      for i in range(len(keys_sorted)-1):
+        if keys_sorted[i] == keys_sorted[i+1]:
+          self.print_line('Key %s is duplicated' % keys_sorted[i])
+          is_valid = False
+    return is_valid
 
   def check_input_files_sorting(self, verbose=False):
-    bad_files = []
-    # FIXME: Expand to other files. It's unclear if every other file should be
-    # similarly sorted.
-    for filename in ('swarming_mixins.pyl',):
+    # TODO(https://crbug.com/886993): Add the ability for this script to
+    # actually format the files, rather than just complain if they're
+    # incorrectly formatted.
+    bad_files = set()
+
+    for filename in (
+        'swarming_mixins.pyl',
+        'test_suites.pyl',
+        'test_suite_exceptions.pyl',
+    ):
       parsed = ast.parse(self.read_file(self.pyl_file_path(filename)))
 
-      def type_assert(itm, typ): # pragma: no cover
-        if not isinstance(itm, typ):
-          raise BBGenErr(
-              'Invalid .pyl file %s. %s expected to be %s, is %s' % (
-                  filename, itm, typ, type(itm)))
-
       # Must be a module.
-      type_assert(parsed, ast.Module)
+      self.type_assert(parsed, ast.Module, filename, verbose)
       module = parsed.body
 
       # Only one expression in the module.
-      type_assert(module, list)
+      self.type_assert(module, list, filename, verbose)
       if len(module) != 1: # pragma: no cover
         raise BBGenErr('Invalid .pyl file %s' % filename)
       expr = module[0]
-      type_assert(expr, ast.Expr)
+      self.type_assert(expr, ast.Expr, filename, verbose)
 
       # Value should be a dictionary.
       value = expr.value
-      type_assert(value, ast.Dict)
+      self.type_assert(value, ast.Dict, filename, verbose)
 
-      keys = []
-      # The keys of this dict are ordered as ordered in the file; normal python
-      # dictionary keys are given an arbitrary order, but since we parsed the
-      # file itself, the order as given in the file is preserved.
-      for key in value.keys:
-        type_assert(key, ast.Str)
-        keys.append(key.s)
+      if filename == 'test_suites.pyl':
+        expected_keys = ['basic_suites', 'compound_suites']
+        actual_keys = [node.s for node in value.keys]
+        assert all(key in expected_keys for key in actual_keys), (
+                    'Invalid %r file; expected keys %r, got %r' % (
+                        filename, expected_keys, actual_keys))
+        suite_dicts = [node for node in value.values]
+        # Only two keys should mean only 1 or 2 values
+        assert len(suite_dicts) <= 2
+        for suite_group in suite_dicts:
+          if not self.ensure_ast_dict_keys_sorted(
+              suite_group, filename, verbose):
+            bad_files.add(filename)
 
-      if sorted(keys) != keys:
-        bad_files.append(filename)
-        if verbose: # pragma: no cover
-          for line in difflib.unified_diff(
-              sorted(keys),
-              keys):
-            self.print_line(line)
+      else:
+        if not self.ensure_ast_dict_keys_sorted(
+            value, filename, verbose):
+          bad_files.add(filename)
+
+    # waterfalls.pyl is slightly different, just do it manually here
+    filename = 'waterfalls.pyl'
+    parsed = ast.parse(self.read_file(self.pyl_file_path(filename)))
+
+    # Must be a module.
+    self.type_assert(parsed, ast.Module, filename, verbose)
+    module = parsed.body
+
+    # Only one expression in the module.
+    self.type_assert(module, list, filename, verbose)
+    if len(module) != 1: # pragma: no cover
+      raise BBGenErr('Invalid .pyl file %s' % filename)
+    expr = module[0]
+    self.type_assert(expr, ast.Expr, filename, verbose)
+
+    # Value should be a list.
+    value = expr.value
+    self.type_assert(value, ast.List, filename, verbose)
+
+    keys = []
+    for val in value.elts:
+      self.type_assert(val, ast.Dict, filename, verbose)
+      waterfall_name = None
+      for key, val in zip(val.keys, val.values):
+        self.type_assert(key, ast.Str, filename, verbose)
+        if key.s == 'machines':
+          if not self.ensure_ast_dict_keys_sorted(val, filename, verbose):
+            bad_files.add(filename)
+
+        if key.s == "name":
+          self.type_assert(val, ast.Str, filename, verbose)
+          waterfall_name = val.s
+      assert waterfall_name
+      keys.append(waterfall_name)
+
+    if sorted(keys) != keys:
+      bad_files.add(filename)
+      if verbose: # pragma: no cover
+        for line in difflib.unified_diff(
+            keys,
+            sorted(keys), fromfile='current', tofile='sorted'):
+          self.print_line(line)
 
     if bad_files:
       raise BBGenErr(
-          'The following files have unsorted top level keys: %s' % (
-              ', '.join(bad_files)))
-
+          'The following files have invalid keys: %s\n. They are either '
+          'unsorted, or have duplicates.' % ', '.join(bad_files))
 
   def check_output_file_consistency(self, verbose=False):
     self.load_configuration_files()
