@@ -13,10 +13,14 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/download_commands.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_item.h"
 #include "components/offline_items_collection/core/offline_item.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/download/download_commands.h"
+#endif
 
 namespace gfx {
 class FontList;
@@ -49,6 +53,9 @@ class DownloadUIModel {
 
   // Returns the content id associated with this download.
   virtual ContentId GetContentId() const;
+
+  // Returns the profile associated with this download.
+  virtual Profile* profile() const;
 
   // Returns a long descriptive string for a download that's in the INTERRUPTED
   // state. For other downloads, the returned string will be empty.
@@ -229,9 +236,23 @@ class DownloadUIModel {
   // can't be resumed.
   virtual bool IsDone() const;
 
+  // Pauses a download.  Will have no effect if the download is already
+  // paused.
+  virtual void Pause();
+
+  // Resumes a download that has been paused or interrupted. Will have no effect
+  // if the download is neither. Only does something if CanResume() returns
+  // true.
+  virtual void Resume();
+
   // Cancels the download operation. Set |user_cancel| to true if the
   // cancellation was triggered by an explicit user action.
   virtual void Cancel(bool user_cancel);
+
+  // Removes the download from the views and history. If the download was
+  // in-progress or interrupted, then the intermediate file will also be
+  // deleted.
+  virtual void Remove();
 
   // Marks the download to be auto-opened when completed.
   virtual void SetOpenWhenComplete(bool open);
@@ -258,8 +279,18 @@ class DownloadUIModel {
   virtual GURL GetURL() const;
 
 #if !defined(OS_ANDROID)
-  // Creates a download command for the underlying download item.
-  virtual DownloadCommands GetDownloadCommands() const;
+  // Methods related to DownloadCommands.
+  // Returns whether the given download command is enabled for this download.
+  virtual bool IsCommandEnabled(const DownloadCommands* download_commands,
+                                DownloadCommands::Command command) const;
+
+  // Returns whether the given download command is checked for this download.
+  virtual bool IsCommandChecked(const DownloadCommands* download_commands,
+                                DownloadCommands::Command command) const;
+
+  // Executes the given download command on this download.
+  virtual void ExecuteCommand(DownloadCommands* download_commands,
+                              DownloadCommands::Command command);
 #endif
 
  protected:

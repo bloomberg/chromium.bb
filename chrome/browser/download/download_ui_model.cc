@@ -4,6 +4,10 @@
 
 #include "chrome/browser/download/download_ui_model.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/note_taking_helper.h"
+#endif  // defined(OS_CHROMEOS)
+
 using safe_browsing::DownloadFileType;
 
 DownloadUIModel::DownloadUIModel() = default;
@@ -21,6 +25,11 @@ void DownloadUIModel::RemoveObserver(Observer* observer) {
 ContentId DownloadUIModel::GetContentId() const {
   NOTREACHED();
   return ContentId();
+}
+
+Profile* DownloadUIModel::profile() const {
+  NOTREACHED();
+  return nullptr;
 }
 
 base::string16 DownloadUIModel::GetInterruptReasonText() const {
@@ -174,7 +183,13 @@ bool DownloadUIModel::IsDone() const {
   return false;
 }
 
+void DownloadUIModel::Pause() {}
+
+void DownloadUIModel::Resume() {}
+
 void DownloadUIModel::Cancel(bool user_cancel) {}
+
+void DownloadUIModel::Remove() {}
 
 void DownloadUIModel::SetOpenWhenComplete(bool open) {}
 
@@ -203,8 +218,107 @@ GURL DownloadUIModel::GetURL() const {
 }
 
 #if !defined(OS_ANDROID)
-DownloadCommands DownloadUIModel::GetDownloadCommands() const {
+bool DownloadUIModel::IsCommandEnabled(
+    const DownloadCommands* download_commands,
+    DownloadCommands::Command command) const {
+  switch (command) {
+    case DownloadCommands::SHOW_IN_FOLDER:
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+    case DownloadCommands::PLATFORM_OPEN:
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
+      NOTREACHED();
+      return false;
+    case DownloadCommands::CANCEL:
+      return !IsDone();
+    case DownloadCommands::PAUSE:
+      return !IsDone() && !IsPaused() &&
+             GetState() == download::DownloadItem::IN_PROGRESS;
+    case DownloadCommands::RESUME:
+      return CanResume() &&
+             (IsPaused() || GetState() != download::DownloadItem::IN_PROGRESS);
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+      return download_commands->CanBeCopiedToClipboard();
+    case DownloadCommands::ANNOTATE:
+      return GetState() == download::DownloadItem::COMPLETE;
+    case DownloadCommands::DISCARD:
+    case DownloadCommands::KEEP:
+    case DownloadCommands::LEARN_MORE_SCANNING:
+    case DownloadCommands::LEARN_MORE_INTERRUPTED:
+      return true;
+  }
   NOTREACHED();
-  return DownloadCommands(nullptr);
+  return false;
+}
+
+bool DownloadUIModel::IsCommandChecked(
+    const DownloadCommands* download_commands,
+    DownloadCommands::Command command) const {
+  switch (command) {
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
+      NOTREACHED();
+      return false;
+    case DownloadCommands::PAUSE:
+    case DownloadCommands::RESUME:
+      return IsPaused();
+    case DownloadCommands::SHOW_IN_FOLDER:
+    case DownloadCommands::PLATFORM_OPEN:
+    case DownloadCommands::CANCEL:
+    case DownloadCommands::DISCARD:
+    case DownloadCommands::KEEP:
+    case DownloadCommands::LEARN_MORE_SCANNING:
+    case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+    case DownloadCommands::ANNOTATE:
+      return false;
+  }
+  return false;
+}
+
+void DownloadUIModel::ExecuteCommand(DownloadCommands* download_commands,
+                                     DownloadCommands::Command command) {
+  switch (command) {
+    case DownloadCommands::SHOW_IN_FOLDER:
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
+      NOTREACHED();
+      break;
+    case DownloadCommands::PLATFORM_OPEN:
+      OpenUsingPlatformHandler();
+      break;
+    case DownloadCommands::CANCEL:
+      Cancel(true /* Cancelled by user */);
+      break;
+    case DownloadCommands::DISCARD:
+      Remove();
+      break;
+    case DownloadCommands::KEEP:
+    case DownloadCommands::LEARN_MORE_SCANNING:
+      NOTREACHED();
+      break;
+    case DownloadCommands::LEARN_MORE_INTERRUPTED:
+      download_commands->GetBrowser()->OpenURL(content::OpenURLParams(
+          download_commands->GetLearnMoreURLForInterruptedDownload(),
+          content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          ui::PAGE_TRANSITION_LINK, false));
+      break;
+    case DownloadCommands::PAUSE:
+      Pause();
+      break;
+    case DownloadCommands::RESUME:
+      Resume();
+      break;
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+      download_commands->CopyFileAsImageToClipboard();
+      break;
+    case DownloadCommands::ANNOTATE:
+#if defined(OS_CHROMEOS)
+      if (HasSupportedImageMimeType()) {
+        chromeos::NoteTakingHelper::Get()->LaunchAppForNewNote(
+            profile(), GetTargetFilePath());
+      }
+#endif  // defined(OS_CHROMEOS)
+      break;
+  }
 }
 #endif

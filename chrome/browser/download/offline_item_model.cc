@@ -69,3 +69,78 @@ void OfflineItemModel::OnItemUpdated(const OfflineItem& item) {
   for (auto& obs : observers_)
     obs.OnDownloadUpdated();
 }
+
+#if !defined(OS_ANDROID)
+bool OfflineItemModel::IsCommandEnabled(
+    const DownloadCommands* download_commands,
+    DownloadCommands::Command command) const {
+  switch (command) {
+    case DownloadCommands::SHOW_IN_FOLDER:
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+    case DownloadCommands::PLATFORM_OPEN:
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
+      NOTIMPLEMENTED();
+      return false;
+    case DownloadCommands::PAUSE:
+    case DownloadCommands::CANCEL:
+    case DownloadCommands::RESUME:
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+    case DownloadCommands::ANNOTATE:
+    case DownloadCommands::DISCARD:
+    case DownloadCommands::KEEP:
+    case DownloadCommands::LEARN_MORE_SCANNING:
+    case DownloadCommands::LEARN_MORE_INTERRUPTED:
+      return DownloadUIModel::IsCommandEnabled(download_commands, command);
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool OfflineItemModel::IsCommandChecked(
+    const DownloadCommands* download_commands,
+    DownloadCommands::Command command) const {
+  switch (command) {
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
+      NOTIMPLEMENTED();
+      return false;
+    case DownloadCommands::PAUSE:
+    case DownloadCommands::RESUME:
+      return IsPaused();
+    case DownloadCommands::SHOW_IN_FOLDER:
+    case DownloadCommands::PLATFORM_OPEN:
+    case DownloadCommands::CANCEL:
+    case DownloadCommands::DISCARD:
+    case DownloadCommands::KEEP:
+    case DownloadCommands::LEARN_MORE_SCANNING:
+    case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+    case DownloadCommands::ANNOTATE:
+      return false;
+  }
+  return false;
+}
+
+void OfflineItemModel::ExecuteCommand(DownloadCommands* download_commands,
+                                      DownloadCommands::Command command) {
+  switch (command) {
+    case DownloadCommands::SHOW_IN_FOLDER:
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
+    case DownloadCommands::KEEP:
+    case DownloadCommands::LEARN_MORE_SCANNING:
+      NOTIMPLEMENTED();
+      return;
+    case DownloadCommands::PLATFORM_OPEN:
+    case DownloadCommands::CANCEL:
+    case DownloadCommands::DISCARD:
+    case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::PAUSE:
+    case DownloadCommands::RESUME:
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+    case DownloadCommands::ANNOTATE:
+      DownloadUIModel::ExecuteCommand(download_commands, command);
+      break;
+  }
+}
+#endif

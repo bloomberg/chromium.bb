@@ -232,7 +232,7 @@ void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
               weak_ptr_factory_.GetWeakPtr(), download_command));
     }
   } else {
-    model_->GetDownloadCommands().ExecuteCommand(download_command);
+    DownloadCommands(model_.get()).ExecuteCommand(download_command);
   }
 }
 
@@ -788,7 +788,7 @@ void DownloadItemView::SubmitDownloadWhenFeedbackServiceEnabled(
   if (feedback_enabled && SubmitDownloadToFeedbackService(download_command))
     return;
 
-  model_->GetDownloadCommands().ExecuteCommand(download_command);
+  DownloadCommands(model_.get()).ExecuteCommand(download_command);
   // WARNING: 'this' is deleted at this point. Don't access 'this'.
 }
 
