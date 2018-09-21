@@ -1182,8 +1182,6 @@ bool ShelfLayoutManager::IsShelfAutoHideForFullscreenMaximized() const {
 bool ShelfLayoutManager::ShouldBlurShelfBackground() {
   if (!IsBackgroundBlurEnabled())
     return false;
-  if (!chromeos::switches::ShouldUseShelfNewUi())
-    return false;
   return state_.session_state == session_manager::SessionState::ACTIVE;
 }
 

@@ -26,7 +26,6 @@
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_bubble_view_test_api.h"
 #include "ash/shelf/overflow_button.h"
-#include "ash/shelf/overflow_button_test_api.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_constants.h"
@@ -2785,23 +2784,6 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
                           views::InkDropState::DEACTIVATED));
 }
 
-namespace {
-
-std::string ToString(ShelfAlignment shelf_alignment) {
-  switch (shelf_alignment) {
-    case SHELF_ALIGNMENT_BOTTOM:
-      return "SHELF_ALIGNMENT_BOTTOM";
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      return "SHELF_ALIGNMENT_BOTTOM_LOCKED";
-    case SHELF_ALIGNMENT_LEFT:
-      return "SHELF_ALIGNMENT_LEFT";
-    case SHELF_ALIGNMENT_RIGHT:
-      return "SHELF_ALIGNMENT_RIGHT";
-  }
-}
-
-}  // namespace
-
 // Test fixture for testing material design ink drop on overflow button.
 class OverflowButtonInkDropTest : public ShelfViewInkDropTest {
  public:
@@ -3056,13 +3038,7 @@ class OverflowButtonTextDirectionTest
 
   void SetUp() override {
     OverflowButtonInkDropTest::SetUp();
-
-    overflow_button_test_api_ =
-        std::make_unique<OverflowButtonTestApi>(overflow_button_);
   }
-
- protected:
-  std::unique_ptr<OverflowButtonTestApi> overflow_button_test_api_;
 
  private:
   // Restores locale to the default when destructor is called.
@@ -3075,51 +3051,6 @@ INSTANTIATE_TEST_CASE_P(
     /* prefix intentionally left blank due to only one parameterization */,
     OverflowButtonTextDirectionTest,
     testing::Bool());
-
-// Tests that overflow button's chevron points in correct direction for
-// different shelf alignments.
-TEST_P(OverflowButtonTextDirectionTest, ChevronDirection) {
-  struct {
-    ShelfAlignment shelf_alignment;
-    OverflowButtonTestApi::ChevronDirection inactive_direction;
-    OverflowButtonTestApi::ChevronDirection active_direction;
-  } const kTests[] = {
-      {
-          SHELF_ALIGNMENT_BOTTOM, OverflowButtonTestApi::ChevronDirection::UP,
-          OverflowButtonTestApi::ChevronDirection::DOWN,
-      },
-      {
-          SHELF_ALIGNMENT_BOTTOM_LOCKED,
-          OverflowButtonTestApi::ChevronDirection::UP,
-          OverflowButtonTestApi::ChevronDirection::DOWN,
-      },
-      {
-          SHELF_ALIGNMENT_LEFT, OverflowButtonTestApi::ChevronDirection::RIGHT,
-          OverflowButtonTestApi::ChevronDirection::LEFT,
-      },
-      {
-          SHELF_ALIGNMENT_RIGHT, OverflowButtonTestApi::ChevronDirection::LEFT,
-          OverflowButtonTestApi::ChevronDirection::RIGHT,
-      },
-  };
-
-  for (size_t i = 0; i < arraysize(kTests); i++) {
-    std::string extra_message =
-        "Shelf alignment: " + ToString(kTests[i].shelf_alignment);
-    GetPrimaryShelf()->SetAlignment(kTests[i].shelf_alignment);
-    EXPECT_TRUE(overflow_button_test_api_->ChevronDirectionMatches(
-        kTests[i].inactive_direction))
-        << extra_message;
-    test_api_->ShowOverflowBubble();
-    EXPECT_TRUE(overflow_button_test_api_->ChevronDirectionMatches(
-        kTests[i].active_direction))
-        << extra_message;
-    test_api_->HideOverflowBubble();
-    EXPECT_TRUE(overflow_button_test_api_->ChevronDirectionMatches(
-        kTests[i].inactive_direction))
-        << extra_message;
-  }
-}
 
 // Test fixture for testing material design ink drop on overflow button when
 // it is active.

@@ -2227,8 +2227,6 @@ static_library("test_support_common") {
     "session/test_session_controller_client.h",
     "shelf/overflow_bubble_view_test_api.cc",
     "shelf/overflow_bubble_view_test_api.h",
-    "shelf/overflow_button_test_api.cc",
-    "shelf/overflow_button_test_api.h",
     "shelf/shelf_button_pressed_metric_tracker_test_api.cc",
     "shelf/shelf_button_pressed_metric_tracker_test_api.h",
     "shelf/shelf_test_api.cc",

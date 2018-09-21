@@ -26,13 +26,8 @@ DictationButtonTray::DictationButtonTray(Shelf* shelf)
 
   SetInkDropMode(InkDropMode::ON);
 
-  if (chromeos::switches::ShouldUseShelfNewUi()) {
-    off_image_ = gfx::CreateVectorIcon(kDictationOffNewuiIcon, kShelfIconColor);
-    on_image_ = gfx::CreateVectorIcon(kDictationOnNewuiIcon, kShelfIconColor);
-  } else {
-    off_image_ = gfx::CreateVectorIcon(kDictationOffIcon, kShelfIconColor);
-    on_image_ = gfx::CreateVectorIcon(kDictationOnIcon, kShelfIconColor);
-  }
+  off_image_ = gfx::CreateVectorIcon(kDictationOffNewuiIcon, kShelfIconColor);
+  on_image_ = gfx::CreateVectorIcon(kDictationOnNewuiIcon, kShelfIconColor);
   icon_->SetImage(off_image_);
   const int vertical_padding = (kTrayItemSize - off_image_.height()) / 2;
   const int horizontal_padding = (kTrayItemSize - off_image_.width()) / 2;

@@ -43,10 +43,6 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 
 }  // namespace
 
-// Enables the redesigned shelf UI.
-const base::Feature kEnableShelfNewUi{"ShelfNewUi",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether to enable Chrome OS Account Manager.
 const base::Feature kAccountManager{"ChromeOSAccountManager",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -731,10 +727,6 @@ bool ShouldHideActiveAppsFromShelf() {
 
 bool ShouldShowShelfHoverPreviews() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHoverPreviews);
-}
-
-bool ShouldUseShelfNewUi() {
-  return base::FeatureList::IsEnabled(kEnableShelfNewUi);
 }
 
 bool IsInstantTetheringBackgroundAdvertisingSupported() {

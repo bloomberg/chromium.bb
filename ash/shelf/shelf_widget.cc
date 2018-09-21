@@ -204,36 +204,34 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   const gfx::Rect local_bounds = GetLocalBounds();
   gfx::Rect opaque_background_bounds = local_bounds;
 
-  if (chromeos::switches::ShouldUseShelfNewUi()) {
-    const Shelf* shelf = shelf_widget_->shelf();
-    const ShelfBackgroundType background_type =
-        shelf_widget_->GetBackgroundType();
+  const Shelf* shelf = shelf_widget_->shelf();
+  const ShelfBackgroundType background_type =
+      shelf_widget_->GetBackgroundType();
 
-    // Show rounded corners except in maximized and split modes.
-    if (background_type == SHELF_BACKGROUND_MAXIMIZED ||
-        background_type == SHELF_BACKGROUND_SPLIT_VIEW) {
-      mask_ = nullptr;
-      opaque_background_.SetMaskLayer(nullptr);
-    } else {
-      const int radius = kShelfRoundedCornerRadius;
-      // Extend the opaque layer a little bit so that only two rounded
-      // corners are visible.
-      // TODO(manucornet): Add functionality to skia to draw a rounded
-      // rectangle with four different radiuses.
-      opaque_background_bounds = gfx::Rect(
-          local_bounds.x() - shelf->SelectValueForShelfAlignment(0, radius, 0),
-          local_bounds.y(),
-          local_bounds.width() +
-              shelf->SelectValueForShelfAlignment(0, radius, radius),
-          local_bounds.height() +
-              shelf->SelectValueForShelfAlignment(radius, 0, 0));
-      // Only re-create the mask if the bounds have changed.
-      if (!mask_ || mask_->layer()->bounds() != opaque_background_bounds) {
-        mask_ = views::Painter::CreatePaintedLayer(
-            views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
-        mask_->layer()->SetBounds(opaque_background_bounds);
-        opaque_background_.SetMaskLayer(mask_->layer());
-      }
+  // Show rounded corners except in maximized and split modes.
+  if (background_type == SHELF_BACKGROUND_MAXIMIZED ||
+      background_type == SHELF_BACKGROUND_SPLIT_VIEW) {
+    mask_ = nullptr;
+    opaque_background_.SetMaskLayer(nullptr);
+  } else {
+    const int radius = kShelfRoundedCornerRadius;
+    // Extend the opaque layer a little bit so that only two rounded
+    // corners are visible.
+    // TODO(manucornet): Add functionality to skia to draw a rounded
+    // rectangle with four different radiuses.
+    opaque_background_bounds = gfx::Rect(
+        local_bounds.x() - shelf->SelectValueForShelfAlignment(0, radius, 0),
+        local_bounds.y(),
+        local_bounds.width() +
+            shelf->SelectValueForShelfAlignment(0, radius, radius),
+        local_bounds.height() +
+            shelf->SelectValueForShelfAlignment(radius, 0, 0));
+    // Only re-create the mask if the bounds have changed.
+    if (!mask_ || mask_->layer()->bounds() != opaque_background_bounds) {
+      mask_ = views::Painter::CreatePaintedLayer(
+          views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
+      mask_->layer()->SetBounds(opaque_background_bounds);
+      opaque_background_.SetMaskLayer(mask_->layer());
     }
   }
   opaque_background_.SetBounds(opaque_background_bounds);
