@@ -135,6 +135,7 @@ js_compile_bundle("chrome_bundle_all_frames") {
     "//components/autofill/ios/browser/resources/autofill_controller.js",
     "//components/autofill/ios/form_util/resources/fill.js",
     "//components/autofill/ios/form_util/resources/form.js",
+    "//components/autofill/ios/form_util/resources/form_handlers.js",
     "resources/accessibility.js",
     "resources/chrome_bundle_all_frames.js",
     "resources/print.js",

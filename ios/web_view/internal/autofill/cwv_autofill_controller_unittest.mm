@@ -310,6 +310,7 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
 
     test_form_activity_tab_helper_->DocumentSubmitted(
         /*sender_frame*/ nullptr, base::SysNSStringToUTF8(kTestFormName),
+        /*form_data=*/"",
         /*user_initiated=*/true,
         /*is_main_frame=*/true);
 
@@ -320,6 +321,7 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
 
     test_form_activity_tab_helper_->DocumentSubmitted(
         /*sender_frame*/ nullptr, base::SysNSStringToUTF8(kTestFormName),
+        /*form_data=*/"",
         /*user_initiated=*/false,
         /*is_main_frame=*/true);
 

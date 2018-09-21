@@ -208,7 +208,7 @@ executeJavaScriptFunctionWithName:(const std::string&)name
 - (void)toggleTrackingFormMutations:(BOOL)state inFrame:(web::WebFrame*)frame {
   std::vector<base::Value> parameters;
   parameters.push_back(base::Value(state ? 200 : 0));
-  [self executeJavaScriptFunctionWithName:"form.trackFormMutations"
+  [self executeJavaScriptFunctionWithName:"formHandlers.trackFormMutations"
                                parameters:parameters
                                   inFrame:frame
                         completionHandler:nil];
@@ -218,7 +218,8 @@ executeJavaScriptFunctionWithName:(const std::string&)name
                                inFrame:(web::WebFrame*)frame {
   std::vector<base::Value> parameters;
   parameters.push_back(base::Value(static_cast<bool>(state)));
-  [self executeJavaScriptFunctionWithName:"form.toggleTrackingUserEditedFields"
+  [self executeJavaScriptFunctionWithName:
+            "formHandlers.toggleTrackingUserEditedFields"
                                parameters:parameters
                                   inFrame:frame
                         completionHandler:nil];

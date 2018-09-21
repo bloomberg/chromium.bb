@@ -168,6 +168,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
+                          withData:(const std::string&)formData
                     hasUserGesture:(BOOL)hasUserGesture
                    formInMainFrame:(BOOL)formInMainFrame
                            inFrame:(web::WebFrame*)frame {
@@ -193,6 +194,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
              didSubmitForm:form
                inMainFrame:formInMainFrame];
   };
+  // TODO(crbug.com/418827): Use |formData| instead of extracting form again.
   [self extractSubmittedPasswordForm:formName
                    completionHandler:completionHandler];
 }
