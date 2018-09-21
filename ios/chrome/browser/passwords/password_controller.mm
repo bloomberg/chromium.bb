@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -182,14 +183,19 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
     }
   }
 
-  // Add "Show all".
-  NSString* showAll = l10n_util::GetNSString(IDS_IOS_SHOW_ALL_PASSWORDS);
-  [suggestions addObject:[FormSuggestion suggestionWithValue:showAll
-                                          displayDescription:nil
-                                                        icon:nil
-                                                  identifier:1]];
-  LogSuggestionShown(suggestion_type);
-
+  // Once Manual Fallback is enabled the access to settings will exist as an
+  // option in the new passwords UI.
+  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
+    // Add "Show all".
+    NSString* showAll = l10n_util::GetNSString(IDS_IOS_SHOW_ALL_PASSWORDS);
+    [suggestions addObject:[FormSuggestion suggestionWithValue:showAll
+                                            displayDescription:nil
+                                                          icon:nil
+                                                    identifier:1]];
+  }
+  if (suggestions.count) {
+    LogSuggestionShown(suggestion_type);
+  }
   return [suggestions copy];
 }
 
