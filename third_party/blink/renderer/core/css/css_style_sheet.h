@@ -140,6 +140,10 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     associated_document_ = document;
   }
 
+  void AddToCustomElementTagNames(const AtomicString& local_tag_name) {
+    custom_element_tag_names_.insert(local_tag_name);
+  }
+
   class RuleMutationScope {
     STACK_ALLOCATED();
 
@@ -241,8 +245,8 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   Member<Node> owner_node_;
   Member<CSSRule> owner_rule_;
   HeapHashSet<Member<TreeScope>> adopted_tree_scopes_;
-
   Member<Document> associated_document_;
+  HashSet<AtomicString> custom_element_tag_names_;
 
   TextPosition start_position_;
   Member<MediaList> media_cssom_wrapper_;

@@ -130,7 +130,6 @@ test (() => {
   testSection.removeChild(styleEl);
 }, "Normal default style should lose to normal author style, !important declaration in default style should win over important declaration in author style");
 
-
 test (() => {
   window.customElements.define("test-element-important", class extends HTMLElement {
     constructor() {
@@ -222,7 +221,6 @@ test (() => {
   assert_equals(getComputedStyle(testSpan).backgroundColor, backgroundColorNotStyledValue, "Sibling element matching complex selector should not be styled");
 }, "Complex selectors should be ignored");
 
-
 test (() => {
   window.customElements.define("test-element-shadow", class extends HTMLElement {
     constructor() {
@@ -247,29 +245,110 @@ test (() => {
 }, "Default style should not style shadow tree under a custom element");
 </script>
 
-<section>
-  <test-element id="lastTest">test</test-element>
+<section id="secondTestSection">
+  <test-element id="secondTest">test</test-element>
+  <div id="divForStyle"></div>
+  <div id ="divForShadowElement"></div>
 </section>
 
 <script>
+`use strict`;
+
+// In order to have an instance of non-constructed stylesheet with non-null OwnerNode,
+// we need to create a style element and keep it part of the DOM tree.
+// This style has to be under a shadow tree so that the style from this style element will
+// not be applied to elements outside.
+const shadowRootNonConstructed = divForStyle.attachShadow({mode:'open'});
+nonConstructedStyle = document.createElement("style");
+shadowRootNonConstructed.appendChild(nonConstructedStyle);
+nonConstructedStyle.sheet.insertRule("* { color: red; }", 0);
+const nonConstructedStyleSheet = nonConstructedStyle.sheet;
+const shadowRoot = divForShadowElement.attachShadow({mode:'open'});
+
 test (() => {
-  let testElementLast = document.getElementById("lastTest");
+  let testElementLast = document.getElementById("secondTest");
   assert_equals(getComputedStyle(testElementLast).color, redValue, "Color should follow default style");
   assert_equals(getComputedStyle(testElementLast).backgroundColor, greenValue, "Background color should follow default style");
 }, "Custom element constructed from HTML parser should work");
 
 test (() => {
-  window.customElements.define("test-element-cssom", class extends HTMLElement {
+  window.customElements.define("el-nc", class SomeClass extends HTMLElement {
     constructor() {
       super();
     }
-  }, { style: universalStyleSheet });
-  let el = document.createElement("test-element-cssom");
-  testSection.appendChild(el);
+  }, { style: nonConstructedStyleSheet });
+  let el = document.createElement("el-nc");
+  secondTestSection.appendChild(el);
+  let shadowEl = document.createElement("el-nc");
+  shadowRoot.appendChild(shadowEl);
   assert_equals(getComputedStyle(el).color, redValue, "Color should follow defaultStyle");
-  assert_equals(getComputedStyle(el).backgroundColor, greenValue, "Background color should follow default style");
-  universalStyleSheet.deleteRule(0);
-  assert_equals(getComputedStyle(el).color, redValue, "External changes to stylesheet should not be reflected");
-  assert_equals(getComputedStyle(el).backgroundColor, greenValue, "External changes to stylesheet should not be reflected");
-}, "CSSOM changes should not affect default style");
+  assert_equals(getComputedStyle(shadowEl).color, redValue, "Color of custom element under shadow tree should follow defaultStyle");
+
+  nonConstructedStyleSheet.deleteRule(0);
+  assert_equals(getComputedStyle(el).color, colorNotStyledValue, "Rule deletion in non-constructed stylesheet should be reflected");
+  assert_equals(getComputedStyle(shadowEl).color, colorNotStyledValue, "Rule deletion in non-constructed stylesheet should be reflected in custom elements under shadow tree");
+
+  nonConstructedStyleSheet.insertRule("* { color: green; }");
+  assert_equals(getComputedStyle(el).color, greenValue, "Rule addition in non-constructed stylesheet should be reflected");
+  assert_equals(getComputedStyle(shadowEl).color, greenValue, "Rule addition in non-constructed stylesheet should be reflected in custom elements under shadow tree");
+}, "CSSOM changes to non-constructed stylesheet should affect default style");
+
+test (() => {
+  const constructedStyleSheet = document.createEmptyCSSStyleSheet();
+  const redStyleText = "* { color: red; }";
+  constructedStyleSheet.insertRule(redStyleText);
+  window.customElements.define("element-constructed", class extends HTMLElement {
+    constructor() {
+      super();
+    }
+  }, { style: constructedStyleSheet });
+  let el = document.createElement("element-constructed");
+  secondTestSection.appendChild(el);
+  let shadowEl = document.createElement("element-constructed");
+  shadowRoot.appendChild(shadowEl);
+  assert_equals(getComputedStyle(el).color, redValue, "Color should follow defaultStyle");
+  assert_equals(getComputedStyle(shadowEl).color, redValue, "Color of custom elements under shadow tree should follow defaultStyle");
+  constructedStyleSheet.deleteRule(0);
+  assert_equals(getComputedStyle(el).color, colorNotStyledValue, "Rule deletion in constructed stylesheet should be reflected");
+  assert_equals(getComputedStyle(shadowEl).color, colorNotStyledValue, "Rule deletion in constructed stylesheet should be reflected in custom elements under shadow tree")
+  constructedStyleSheet.insertRule("* { color: green; }");
+  assert_equals(getComputedStyle(el).color, greenValue, "Rule addition in constructed stylesheet should be reflected");
+  assert_equals(getComputedStyle(shadowEl).color, greenValue, "Rule addition in constructed stylesheet should be reflected in custom elements under shadow tree");
+}, "CSSOM changes to constructed stylesheet should affect default style");
 </script>
+
+test (() => {
+  let el = document.createElement("el-nc");
+  secondTestSection.appendChild(el);
+  assert_equals(getComputedStyle(el).color, greenValue, "Color should follow defaultStyle");
+  nonConstructedStyle.remove();
+  nonConstructedStyleSheet.deleteRule(0);
+  assert_equals(getComputedStyle(el).color, colorNotStyledValue, "Rule deletion in non-constructed stylesheet after the style being removed is reflected in custom elements");
+  nonConstructedStyleSheet.insertRule("* { color: red; }");
+  assert_equals(getComputedStyle(el).color, redValue, "Rule addition in non-constructed stylesheet after the style being removed is reflected in custom elements");
+  }, "CSSOM changes to non-constructed stylesheet from style element affect default style after style element is removed");
+</script>
+
+<section id="thirdTestSection">
+  <link rel="stylesheet" type="text/css" href="define-with-default-style.css" id="linkedStyle">
+</section>
+
+<section id="fourthTestSection"></section>
+
+<script>
+test (() => {
+  let linkedStylesheet = document.querySelector('#linkedStyle');
+  window.customElements.define("element-link", class extends HTMLElement {
+    constructor() {
+      super();
+    }
+  }, { style: linkedStyleSheet });
+  let el = document.createElement("element-link");
+  fourthTestSection.appendChild(el);
+  assert_equals(getComputedStyle(el).color, redValue, "Color should follow defaultStyle");
+  linkedStyle.remove();
+  linkedStyleSheet.deleteRule(0);
+  assert_equals(getComputedStyle(el).color, colorNotStyledValue, "Rule deletion in non-constructed stylesheet after the style being removed will be reflected in custom elements under shadow tree");
+  linkedStyleSheet.insertRule("* { color: green; }");
+  assert_equals(getComputedStyle(el).color, greenValue, "Rule addition in non-constructed stylesheet after the style being removed will be reflected in custom elements under shadow tree");
+}, "CSSOM changes to non-constructed stylesheet from link element affect default style after link element is removed");
