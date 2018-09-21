@@ -38,20 +38,20 @@ void AppShimHost::BindToRequest(
       base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
 }
 
-base::FilePath AppShimHost::GetProfilePath() const {
-  return profile_path_;
-}
-
-std::string AppShimHost::GetAppId() const {
-  return app_id_;
-}
-
 void AppShimHost::ChannelError(uint32_t custom_reason,
                                const std::string& description) {
   LOG(ERROR) << "Channel error custom_reason:" << custom_reason
              << " description: " << description;
   Close();
 }
+
+void AppShimHost::Close() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  delete this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AppShimHost, chrome::mojom::AppShimHost
 
 void AppShimHost::LaunchApp(chrome::mojom::AppShimPtr app_shim_ptr,
                             const base::FilePath& profile_dir,
@@ -106,6 +106,9 @@ void AppShimHost::QuitApp() {
     handler->OnShimQuit(this);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// AppShimHost, apps::AppShimHandler::Host
+
 void AppShimHost::OnAppLaunchComplete(apps::AppShimLaunchResult result) {
   if (!initial_launch_finished_) {
     app_shim_->LaunchAppDone(result);
@@ -129,7 +132,14 @@ void AppShimHost::OnAppRequestUserAttention(apps::AppShimAttentionType type) {
   app_shim_->SetUserAttention(type);
 }
 
-void AppShimHost::Close() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  delete this;
+base::FilePath AppShimHost::GetProfilePath() const {
+  return profile_path_;
+}
+
+std::string AppShimHost::GetAppId() const {
+  return app_id_;
+}
+
+views::BridgeFactoryHost* AppShimHost::GetViewsBridgeFactoryHost() const {
+  return views_bridge_factory_host_.get();
 }

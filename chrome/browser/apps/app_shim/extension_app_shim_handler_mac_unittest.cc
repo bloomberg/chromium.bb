@@ -133,6 +133,9 @@ class FakeHost : public apps::AppShimHandler::Host {
     return profile_path_;
   }
   std::string GetAppId() const override { return app_id_; }
+  views::BridgeFactoryHost* GetViewsBridgeFactoryHost() const override {
+    return nullptr;
+  }
 
   int close_count() { return close_count_; }
 

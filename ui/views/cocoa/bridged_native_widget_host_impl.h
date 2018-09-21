@@ -140,14 +140,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // Geometry of the window, in DIPs.
   const gfx::Rect& GetWindowBoundsInScreen() const {
-    DCHECK(has_received_window_geometry_);
     return window_bounds_in_screen_;
   }
 
   // Geometry of the content area of the window, in DIPs. Note that this is not
   // necessarily the same as the views::View's size.
   const gfx::Rect& GetContentBoundsInScreen() const {
-    DCHECK(has_received_window_geometry_);
     return content_bounds_in_screen_;
   }
 
@@ -318,7 +316,6 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   scoped_refptr<ui::DisplayLinkMac> display_link_;
 
   // The geometry of the window and its contents view, in screen coordinates.
-  bool has_received_window_geometry_ = false;
   gfx::Rect window_bounds_in_screen_;
   gfx::Rect content_bounds_in_screen_;
   bool is_visible_ = false;

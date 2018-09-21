@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/views/frame/browser_frame_mac.h"
 
 #import "base/mac/foundation_util.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -157,6 +158,17 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
   }
 
   return ns_window.autorelease();
+}
+
+views::BridgeFactoryHost* BrowserFrameMac::GetBridgeFactoryHost() {
+  auto* shim_handler = apps::ExtensionAppShimHandler::Get();
+  if (shim_handler) {
+    apps::AppShimHandler::Host* host =
+        shim_handler->FindHostForBrowser(browser_view_->browser());
+    if (host)
+      return host->GetViewsBridgeFactoryHost();
+  }
+  return nullptr;
 }
 
 void BrowserFrameMac::OnWindowDestroying(NSWindow* window) {

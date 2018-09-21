@@ -206,6 +206,10 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
                              native_widget_mac_->GetWidget()->GetMinimumSize(),
                              GetBoundsOffsetForParent());
 
+  // TODO(ccameron): Correctly set these based |local_window_|.
+  window_bounds_in_screen_ = params.bounds;
+  content_bounds_in_screen_ = params.bounds;
+
   // Widgets for UI controls (usually layered above web contents) start visible.
   if (widget_type_ == Widget::InitParams::TYPE_CONTROL)
     bridge()->SetVisibilityState(WindowVisibilityState::kShowInactive);
@@ -220,6 +224,9 @@ void BridgedNativeWidgetHostImpl::SetBounds(const gfx::Rect& bounds) {
 
 gfx::Vector2d BridgedNativeWidgetHostImpl::GetBoundsOffsetForParent() const {
   gfx::Vector2d offset;
+  // TODO(ccameron): This function needs to be moved out of the host.
+  if (!bridge_impl_)
+    return offset;
   Widget* widget = native_widget_mac_->GetWidget();
   BridgedNativeWidgetOwner* parent = bridge_impl_->parent();
   if (parent && !PositionWindowInScreenCoordinates(widget, widget_type_))
@@ -602,8 +609,6 @@ bool BridgedNativeWidgetHostImpl::GetIsFocusedViewTextual(bool* is_textual) {
 void BridgedNativeWidgetHostImpl::OnWindowGeometryChanged(
     const gfx::Rect& new_window_bounds_in_screen,
     const gfx::Rect& new_content_bounds_in_screen) {
-  has_received_window_geometry_ = true;
-
   bool window_has_moved =
       new_window_bounds_in_screen.origin() != window_bounds_in_screen_.origin();
   bool content_has_resized =
@@ -659,7 +664,7 @@ void BridgedNativeWidgetHostImpl::OnWindowDisplayChanged(
       display_.device_scale_factor() != new_display.device_scale_factor();
   bool display_id_changed = display_.id() != new_display.id();
   display_ = new_display;
-  if (scale_factor_changed && compositor_ && has_received_window_geometry_) {
+  if (scale_factor_changed && compositor_) {
     compositor_->UpdateSurface(
         ConvertSizeToPixel(display_.device_scale_factor(),
                            content_bounds_in_screen_.size()),

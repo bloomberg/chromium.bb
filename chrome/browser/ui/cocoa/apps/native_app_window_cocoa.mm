@@ -437,7 +437,7 @@ gfx::Rect NativeAppWindowCocoa::GetBounds() const {
 
 void NativeAppWindowCocoa::Show() {
   if (is_hidden_with_app_) {
-    apps::ExtensionAppShimHandler::UnhideWithoutActivationForWindow(
+    apps::ExtensionAppShimHandler::Get()->UnhideWithoutActivationForWindow(
         app_window_);
     is_hidden_with_app_ = false;
   }
@@ -613,10 +613,9 @@ void NativeAppWindowCocoa::UpdateDraggableRegionViews() {
 }
 
 void NativeAppWindowCocoa::FlashFrame(bool flash) {
-  apps::ExtensionAppShimHandler::RequestUserAttentionForWindow(
-      app_window_,
-      flash ? apps::APP_SHIM_ATTENTION_CRITICAL
-            : apps::APP_SHIM_ATTENTION_CANCEL);
+  apps::ExtensionAppShimHandler::Get()->RequestUserAttentionForWindow(
+      app_window_, flash ? apps::APP_SHIM_ATTENTION_CRITICAL
+                         : apps::APP_SHIM_ATTENTION_CANCEL);
 }
 
 bool NativeAppWindowCocoa::IsAlwaysOnTop() const {
