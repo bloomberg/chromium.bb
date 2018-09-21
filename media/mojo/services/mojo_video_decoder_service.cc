@@ -119,6 +119,14 @@ MojoVideoDecoderService::~MojoVideoDecoderService() {
     g_num_active_mvd_instances--;
 }
 
+void MojoVideoDecoderService::GetSupportedConfigs(
+    GetSupportedConfigsCallback callback) {
+  DVLOG(3) << __func__;
+
+  std::move(callback).Run(
+      mojo_media_client_->GetSupportedVideoDecoderConfigs());
+}
+
 void MojoVideoDecoderService::Construct(
     mojom::VideoDecoderClientAssociatedPtrInfo client,
     mojom::MediaLogAssociatedPtrInfo media_log,
@@ -129,8 +137,7 @@ void MojoVideoDecoderService::Construct(
   DVLOG(1) << __func__;
 
   if (decoder_) {
-    // TODO(sandersd): Close the channel.
-    DLOG(ERROR) << "|decoder_| already exists";
+    mojo::ReportBadMessage("Construct() already called");
     return;
   }
 
