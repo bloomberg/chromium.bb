@@ -97,7 +97,7 @@ Bug(none) virtual/video-surface-layer/ [ Skip ]
 Bug(none) virtual/windows-directwrite/ [ Skip ]
 Bug(none) virtual/without-smil/ [ Skip ]
 
-crbug.com/778875 virtual/threaded/fast/animationworklet/ [ Skip ]
+crbug.com/778875 virtual/threaded/animations/animationworklet/ [ Skip ]
 crbug.com/841567 virtual/threaded/fast/scrolling [ Skip ]
 
 # Fail on SPv1, but succeed on SPv2
