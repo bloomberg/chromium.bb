@@ -425,10 +425,8 @@ void WasmCompileStreamingImpl(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }  // namespace
 
 void WasmResponseExtensions::Initialize(v8::Isolate* isolate) {
-  if (RuntimeEnabledFeatures::WebAssemblyStreamingEnabled()) {
-    isolate->SetWasmCompileStreamingCallback(WasmCompileStreamingImpl);
-    isolate->SetWasmStreamingCallback(StreamFromResponseCallback);
-  }
+  isolate->SetWasmCompileStreamingCallback(WasmCompileStreamingImpl);
+  isolate->SetWasmStreamingCallback(StreamFromResponseCallback);
 }
 
 }  // namespace blink

@@ -818,11 +818,6 @@ const char kEnableZeroSuggestRedirectToChromeDescription[] =
     "applies to suggestions provided before the user starts typing a URL or a "
     "search query (i.e. zero suggest).";
 
-const char kEnableWasmStreamingName[] =
-    "WebAssembly streaming compile/instantiate support.";
-const char kEnableWasmStreamingDescription[] =
-    "WebAssembly.{compile|instantiate} taking a Response as parameter.";
-
 const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
     "Enables WebAssembly baseline compilation and tier up.";
