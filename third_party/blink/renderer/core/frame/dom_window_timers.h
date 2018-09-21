@@ -43,11 +43,12 @@ class ExceptionState;
 class ScriptState;
 class ScriptValue;
 class StringOrTrustedScript;
+class V8Function;
 
 namespace DOMWindowTimers {
 int setTimeout(ScriptState*,
                EventTarget&,
-               const ScriptValue& handler,
+               V8Function* handler,
                int timeout,
                const Vector<ScriptValue>& arguments);
 int setTimeout(ScriptState*,
@@ -63,7 +64,7 @@ int setTimeoutFromString(ScriptState*,
                          const Vector<ScriptValue>&);
 int setInterval(ScriptState*,
                 EventTarget&,
-                const ScriptValue& handler,
+                V8Function* handler,
                 int timeout,
                 const Vector<ScriptValue>&);
 int setInterval(ScriptState*,
