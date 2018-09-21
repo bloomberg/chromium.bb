@@ -358,12 +358,13 @@ public class DownloadNotificationService2 {
             boolean isOpenable, Bitmap icon, String originalUrl, String referrer, long totalBytes) {
         Context context = ContextUtils.getApplicationContext();
         int notificationId = getNotificationId(id);
-        if (icon == null && mDownloadSuccessLargeIcon == null) {
+        boolean needsDefaultIcon = icon == null || isOffTheRecord;
+        if (mDownloadSuccessLargeIcon == null && needsDefaultIcon) {
             Bitmap bitmap =
                     BitmapFactory.decodeResource(context.getResources(), R.drawable.offline_pin);
             mDownloadSuccessLargeIcon = getLargeNotificationIcon(bitmap);
         }
-        if (icon == null) icon = mDownloadSuccessLargeIcon;
+        if (needsDefaultIcon) icon = mDownloadSuccessLargeIcon;
 
         DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
                                                 .setContentId(id)
