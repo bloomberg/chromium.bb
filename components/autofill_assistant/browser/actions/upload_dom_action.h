@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
@@ -22,6 +23,10 @@ class UploadDomAction : public Action {
                      ProcessActionCallback callback) override;
 
  private:
+  void OnBuildNodeTree(ProcessActionCallback callback, bool status);
+
+  base::WeakPtrFactory<UploadDomAction> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(UploadDomAction);
 };
 

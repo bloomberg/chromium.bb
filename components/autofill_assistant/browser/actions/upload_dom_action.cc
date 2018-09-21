@@ -6,12 +6,14 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 
 namespace autofill_assistant {
 
-UploadDomAction::UploadDomAction(const ActionProto& proto) : Action(proto) {
+UploadDomAction::UploadDomAction(const ActionProto& proto)
+    : Action(proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_upload_dom());
 }
 
@@ -20,13 +22,23 @@ UploadDomAction::~UploadDomAction() {}
 void UploadDomAction::ProcessAction(ActionDelegate* delegate,
                                     ProcessActionCallback callback) {
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
-  // We return a dummy dom tree for now.
+
+  std::vector<std::string> selectors;
+  for (const auto& selector : proto_.upload_dom().tree_root().selectors()) {
+    selectors.emplace_back(selector);
+  }
   NodeProto* root_node = processed_action_proto_->mutable_page_content()
                              ->mutable_dom_tree()
                              ->mutable_root();
-  root_node->set_type(NodeProto::ELEMENT);
-  root_node->set_value("BODY");
-  UpdateProcessedAction(true);
+  delegate->BuildNodeTree(
+      selectors, root_node,
+      base::BindOnce(&UploadDomAction::OnBuildNodeTree,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void UploadDomAction::OnBuildNodeTree(ProcessActionCallback callback,
+                                      bool status) {
+  UpdateProcessedAction(status);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

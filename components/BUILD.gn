@@ -528,6 +528,7 @@ if (!is_ios) {
       sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
       deps += [
         "//components/autofill_assistant/browser",
+        "//components/autofill_assistant/browser:proto",
         "//content/public/test/android:layouttest_java_support",
         "//content/test:layouttest_support",
         "//testing/android/native_test:native_test_support",

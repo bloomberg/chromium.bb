@@ -106,6 +106,13 @@ const autofill::AutofillProfile* ScriptExecutor::GetAutofillProfile(
   return nullptr;
 }
 
+void ScriptExecutor::BuildNodeTree(const std::vector<std::string>& selectors,
+                                   NodeProto* node_tree_out,
+                                   base::OnceCallback<void(bool)> callback) {
+  delegate_->GetWebController()->BuildNodeTree(selectors, node_tree_out,
+                                               std::move(callback));
+}
+
 ClientMemory* ScriptExecutor::GetClientMemory() {
   return delegate_->GetClientMemory();
 }
