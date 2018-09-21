@@ -1193,10 +1193,6 @@ EnumTraits<media::mojom::VideoCaptureFrameDropReason,
       return media::mojom::VideoCaptureFrameDropReason::
           kDeviceClientFrameHasInvalidFormat;
     case media::VideoCaptureFrameDropReason::
-        kDeviceClientFailedToReserveBufferFromBufferPool:
-      return media::mojom::VideoCaptureFrameDropReason::
-          kDeviceClientFailedToReserveBufferFromBufferPool;
-    case media::VideoCaptureFrameDropReason::
         kDeviceClientLibyuvConvertToI420Failed:
       return media::mojom::VideoCaptureFrameDropReason::
           kDeviceClientLibyuvConvertToI420Failed;
@@ -1237,6 +1233,12 @@ EnumTraits<media::mojom::VideoCaptureFrameDropReason,
         kWinMediaFoundationGetBufferByIndexReturnedNull:
       return media::mojom::VideoCaptureFrameDropReason::
           kWinMediaFoundationGetBufferByIndexReturnedNull;
+    case media::VideoCaptureFrameDropReason::kBufferPoolMaxBufferCountExceeded:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kBufferPoolMaxBufferCountExceeded;
+    case media::VideoCaptureFrameDropReason::kBufferPoolBufferAllocationFailed:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kBufferPoolBufferAllocationFailed;
   }
   NOTREACHED();
   return media::mojom::VideoCaptureFrameDropReason::kNone;
@@ -1255,11 +1257,6 @@ bool EnumTraits<media::mojom::VideoCaptureFrameDropReason,
         kDeviceClientFrameHasInvalidFormat:
       *output = media::VideoCaptureFrameDropReason::
           kDeviceClientFrameHasInvalidFormat;
-      return true;
-    case media::mojom::VideoCaptureFrameDropReason::
-        kDeviceClientFailedToReserveBufferFromBufferPool:
-      *output = media::VideoCaptureFrameDropReason::
-          kDeviceClientFailedToReserveBufferFromBufferPool;
       return true;
     case media::mojom::VideoCaptureFrameDropReason::
         kDeviceClientLibyuvConvertToI420Failed:
@@ -1316,6 +1313,16 @@ bool EnumTraits<media::mojom::VideoCaptureFrameDropReason,
         kWinMediaFoundationGetBufferByIndexReturnedNull:
       *output = media::VideoCaptureFrameDropReason::
           kWinMediaFoundationGetBufferByIndexReturnedNull;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kBufferPoolMaxBufferCountExceeded:
+      *output =
+          media::VideoCaptureFrameDropReason::kBufferPoolMaxBufferCountExceeded;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kBufferPoolBufferAllocationFailed:
+      *output =
+          media::VideoCaptureFrameDropReason::kBufferPoolBufferAllocationFailed;
       return true;
   }
   NOTREACHED();

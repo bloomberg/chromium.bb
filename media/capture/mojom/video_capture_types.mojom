@@ -211,7 +211,6 @@ enum VideoCaptureError {
 enum VideoCaptureFrameDropReason {
   kNone,
   kDeviceClientFrameHasInvalidFormat,
-  kDeviceClientFailedToReserveBufferFromBufferPool,
   kDeviceClientLibyuvConvertToI420Failed,
   kV4L2BufferErrorFlagWasSet,
   kV4L2InvalidNumberOfBytesInBuffer,
@@ -223,7 +222,9 @@ enum VideoCaptureFrameDropReason {
   kWinDirectShowFailedToGetMemoryPointerFromMediaSample,
   kWinMediaFoundationReceivedSampleIsNull,
   kWinMediaFoundationLockingBufferDelieveredNullptr,
-  kWinMediaFoundationGetBufferByIndexReturnedNull
+  kWinMediaFoundationGetBufferByIndexReturnedNull,
+  kBufferPoolMaxBufferCountExceeded,
+  kBufferPoolBufferAllocationFailed
 };
 
 struct VideoCaptureFormat {
