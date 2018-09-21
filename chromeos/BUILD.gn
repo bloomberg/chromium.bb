@@ -770,6 +770,7 @@ if (is_chromeos_chrome) {
     testonly = true
     test_exe = "cros_vm_sanity_test"
     generated_script = "$root_build_dir/bin/run_cros_vm_sanity_test"
+    runtime_deps_file = "$root_out_dir/cros_vm_sanity_test.runtime_deps"
 
     data_deps = [
       ":cros_chrome_deploy",

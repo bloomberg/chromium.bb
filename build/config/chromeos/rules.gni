@@ -47,13 +47,18 @@ template("generate_vm_runner_script") {
              "'generated_script'")
 
   action(target_name) {
+    if (defined(runtime_deps_file)) {
+      write_runtime_deps = runtime_deps_file
+    }
     script = "//build/chromeos/create_vm_test_script.py"
 
     outputs = [
       generated_script,
     ]
 
-    deps = [ "//testing/buildbot/filters:chromeos_filters" ]
+    deps = [
+      "//testing/buildbot/filters:chromeos_filters",
+    ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
