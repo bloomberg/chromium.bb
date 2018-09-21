@@ -144,6 +144,12 @@ const char* const kPersistentPrefNames[] = {
     // Google URL prefs don't store user data and just keep track of the URL.
     prefs::kLastKnownGoogleURL, prefs::kLastPromptedGoogleURL,
 
+#if defined(OS_WIN)
+    // The total number of times that network profile warning is shown is
+    // aggregated between regular and incognito modes.
+    prefs::kNetworkProfileWarningsLeft,
+#endif
+
     // Tab stats metrics are aggregated between regular and incognio mode.
     prefs::kTabStatsTotalTabCountMax, prefs::kTabStatsMaxTabsPerWindow,
     prefs::kTabStatsWindowCountMax, prefs::kTabStatsDailySample,
@@ -152,9 +158,9 @@ const char* const kPersistentPrefNames[] = {
     prefs::kShowFullscreenToolbar,
 #endif
 
-// Toggleing custom frames affects all open windows in the profile, hence
-// should be written to the regular profile when changed in incognito mode.
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    // Toggleing custom frames affects all open windows in the profile, hence
+    // should be written to the regular profile when changed in incognito mode.
     prefs::kUseCustomChromeFrame,
 #endif
 
@@ -235,11 +241,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kMediaGalleriesUniqueId,
     prefs::kMediaGalleriesRememberedGalleries,
 #endif  // !defined(OS_ANDROID)
-
-#if defined(OS_WIN)
-    prefs::kNetworkProfileWarningsLeft,
-    prefs::kNetworkProfileLastWarningTime,
-#endif
 
 #if BUILDFLAG(ENABLE_APP_LIST)
     prefs::kAppListLocalState,
