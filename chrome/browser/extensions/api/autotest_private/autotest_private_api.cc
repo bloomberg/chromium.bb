@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/autotest_private/autotest_private_api.h"
 
 #include <memory>
+#include <sstream>
 #include <utility>
 
 #include "base/lazy_instance.h"
@@ -49,6 +50,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/arc/arc_prefs.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
@@ -803,6 +805,49 @@ void AutotestPrivateRunCrostiniInstallerFunction::CrostiniRestarted(
   } else {
     Respond(Error("Error installing crostini"));
   }
+}
+#endif
+
+AutotestPrivateBootstrapMachineLearningServiceFunction::
+    ~AutotestPrivateBootstrapMachineLearningServiceFunction() = default;
+
+AutotestPrivateBootstrapMachineLearningServiceFunction::
+    AutotestPrivateBootstrapMachineLearningServiceFunction() {}
+
+ExtensionFunction::ResponseAction
+AutotestPrivateBootstrapMachineLearningServiceFunction::Run() {
+  DVLOG(1) << "AutotestPrivateBootstrapMachineLearningServiceFunction";
+#if defined(OS_CHROMEOS)
+  // Load a model. This will first bootstrap the Mojo connection to ML Service.
+  chromeos::machine_learning::ServiceConnection::GetInstance()->LoadModel(
+      chromeos::machine_learning::mojom::ModelSpec::New(
+          chromeos::machine_learning::mojom::ModelId::TEST_MODEL),
+      mojo::MakeRequest(&model_),
+      base::BindOnce(
+          &AutotestPrivateBootstrapMachineLearningServiceFunction::ModelLoaded,
+          this));
+  model_.set_connection_error_handler(base::BindOnce(
+      &AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError,
+      this));
+  return RespondLater();
+#else
+  return RespondNow(Error(kOnlyAvailableOnChromeOSError));
+#endif
+}
+
+#if defined(OS_CHROMEOS)
+void AutotestPrivateBootstrapMachineLearningServiceFunction::ModelLoaded(
+    chromeos::machine_learning::mojom::LoadModelResult result) {
+  if (result == chromeos::machine_learning::mojom::LoadModelResult::OK) {
+    Respond(NoArguments());
+  } else {
+    Respond(Error(base::StrCat(
+        {"Model load error ", (std::ostringstream() << result).str()})));
+  }
+}
+
+void AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError() {
+  Respond(Error("ML Service connection error"));
 }
 #endif
 

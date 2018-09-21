@@ -201,5 +201,10 @@ namespace autotestPrivate {
     // |enabled|: Enable Crostini.
     // |callback|: Called when the operation has completed.
     static void setCrostiniEnabled(boolean enabled, VoidCallback callback);
+
+    // Makes a basic request to ML Service, triggering 1. ML Service
+    // daemon startup, and 2. the initial D-Bus -> Mojo IPC bootstrap.
+    // |callback|: Called when the operation has completed.
+    static void bootstrapMachineLearningService(VoidCallback callback);
   };
 };
