@@ -201,6 +201,12 @@ directroy are:
 .BR remoting-plugin.so
 .fi
 .RE
+.TP 7
+.BI "use-pixman=" true
+Enables pixman-based rendering for all outputs on backends that support it.
+Boolean, defaults to
+.BR false .
+There is also a command line option to do the same.
 
 .SH "LIBINPUT SECTION"
 The

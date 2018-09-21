@@ -2143,18 +2143,26 @@ load_drm_backend(struct weston_compositor *c,
 	struct wet_compositor *wet = to_wet_compositor(c);
 	int use_shadow;
 	int ret = 0;
+	int use_pixman_config_ = 0;
+	int32_t use_pixman_ = 0;
 
 	wet->drm_use_current_mode = false;
+
+	section = weston_config_get_section(wc, "core", NULL, NULL);
+	weston_config_section_get_bool(section, "use-pixman", &use_pixman_config_,
+				       use_pixman_config_);
+	use_pixman_ = use_pixman_config_;
 
 	const struct weston_option options[] = {
 		{ WESTON_OPTION_STRING, "seat", 0, &config.seat_id },
 		{ WESTON_OPTION_INTEGER, "tty", 0, &config.tty },
 		{ WESTON_OPTION_STRING, "drm-device", 0, &config.specific_device },
 		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &wet->drm_use_current_mode },
-		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config.use_pixman },
+		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman_ },
 	};
 
 	parse_options(options, ARRAY_LENGTH(options), argc, argv);
+	config.use_pixman = use_pixman_;
 
 	section = weston_config_get_section(wc, "core", NULL, NULL);
 	weston_config_section_get_string(section,
@@ -2204,23 +2212,32 @@ load_headless_backend(struct weston_compositor *c,
 {
 	const struct weston_windowed_output_api *api;
 	struct weston_headless_backend_config config = {{ 0, }};
+	struct weston_config_section *section;
 	int no_outputs = 0;
 	int ret = 0;
 	char *transform = NULL;
+	int32_t use_pixman_config_ = 0;
+	int use_pixman_ = 0;
 
 	struct wet_output_config *parsed_options = wet_init_parsed_options(c);
 	if (!parsed_options)
 		return -1;
 
+	section = weston_config_get_section(wc, "core", NULL, NULL);
+	weston_config_section_get_bool(section, "use-pixman", &use_pixman_config_,
+				       use_pixman_config_);
+	use_pixman_ = use_pixman_config_;
+
 	const struct weston_option options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &parsed_options->width },
 		{ WESTON_OPTION_INTEGER, "height", 0, &parsed_options->height },
-		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config.use_pixman },
+		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman_ },
 		{ WESTON_OPTION_STRING, "transform", 0, &transform },
 		{ WESTON_OPTION_BOOLEAN, "no-outputs", 0, &no_outputs },
 	};
 
 	parse_options(options, ARRAY_LENGTH(options), argc, argv);
+	config.use_pixman = use_pixman_;
 
 	if (transform) {
 		if (weston_parse_transform(transform, &parsed_options->transform) < 0) {
@@ -2415,10 +2432,17 @@ load_x11_backend(struct weston_compositor *c,
 	int output_count = 0;
 	char const *section_name;
 	int i;
+	int32_t use_pixman_config_ = 0;
+	int use_pixman_ = 0;
 
 	struct wet_output_config *parsed_options = wet_init_parsed_options(c);
 	if (!parsed_options)
 		return -1;
+
+	section = weston_config_get_section(wc, "core", NULL, NULL);
+	weston_config_section_get_bool(section, "use-pixman", &use_pixman_config_,
+				       use_pixman_config_);
+	use_pixman_ = use_pixman_config_;
 
 	const struct weston_option options[] = {
 	       { WESTON_OPTION_INTEGER, "width", 0, &parsed_options->width },
@@ -2427,10 +2451,11 @@ load_x11_backend(struct weston_compositor *c,
 	       { WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &config.fullscreen },
 	       { WESTON_OPTION_INTEGER, "output-count", 0, &option_count },
 	       { WESTON_OPTION_BOOLEAN, "no-input", 0, &config.no_input },
-	       { WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config.use_pixman },
+	       { WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman_ },
 	};
 
 	parse_options(options, ARRAY_LENGTH(options), argc, argv);
+	config.use_pixman = use_pixman_;
 
 	config.base.struct_version = WESTON_X11_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_x11_backend_config);
@@ -2522,6 +2547,7 @@ load_wayland_backend(struct weston_compositor *c,
 	int32_t use_pixman_ = 0;
 	int32_t sprawl_ = 0;
 	int32_t fullscreen_ = 0;
+	int use_pixman_config_ = 0;
 
 	struct wet_output_config *parsed_options = wet_init_parsed_options(c);
 	if (!parsed_options)
@@ -2530,6 +2556,11 @@ load_wayland_backend(struct weston_compositor *c,
 	config.cursor_size = 32;
 	config.cursor_theme = NULL;
 	config.display_name = NULL;
+
+	section = weston_config_get_section(wc, "core", NULL, NULL);
+	weston_config_section_get_bool(section, "use-pixman", &use_pixman_config_,
+				       use_pixman_config_);
+	use_pixman_ = use_pixman_config_;
 
 	const struct weston_option wayland_options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &parsed_options->width },
@@ -2544,8 +2575,8 @@ load_wayland_backend(struct weston_compositor *c,
 
 	parse_options(wayland_options, ARRAY_LENGTH(wayland_options), argc, argv);
 	config.sprawl = sprawl_;
-	config.use_pixman = use_pixman_;
 	config.fullscreen = fullscreen_;
+	config.use_pixman = use_pixman_config_;
 
 	section = weston_config_get_section(wc, "shell", NULL, NULL);
 	weston_config_section_get_string(section, "cursor-theme",
