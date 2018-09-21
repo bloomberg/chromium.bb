@@ -603,12 +603,18 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
 
 // Returns an updates list that has client tag hashes populated for every
 // update entity.
-UpdateResponseDataList PopulateClientTags(
+UpdateResponseDataList PopulateClientTagsForWalletData(
     const ModelType& type,
     ModelTypeSyncBridge* bridge,
     const UpdateResponseDataList& updates) {
   UpdateResponseDataList updates_with_client_tags;
   for (const UpdateResponseData& update : updates) {
+    if (update.entity->parent_id == "0") {
+      // Ignore the permanent root node. Other places in this file detect them
+      // by having empty client tags; this cannot be used for wallet_data as no
+      // wallet_data entity has a client tag.
+      continue;
+    }
     updates_with_client_tags.push_back(update);
     updates_with_client_tags.back().entity =
         update.entity->UpdateClientTagHash(GenerateSyncableHash(
@@ -646,7 +652,8 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     // fully use client tags, or to use a different processor.
     // TODO(crbug.com/874001): Remove this feature-specific logic when the right
     // solution for Wallet data has been decided.
-    pre_processed_updates = PopulateClientTags(type_, bridge_, updates);
+    pre_processed_updates =
+        PopulateClientTagsForWalletData(type_, bridge_, updates);
     updates_to_process = &pre_processed_updates;
   }
 
