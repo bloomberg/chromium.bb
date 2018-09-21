@@ -502,10 +502,13 @@ bool SandboxLinux::EngageNamespaceSandboxInternal(bool from_zygote) {
   // safe, as this class is keeping a file descriptor to /proc/.
   CHECK(sandbox::Credentials::DropFileSystemAccess(proc_fd_));
 
-  // We do not drop CAP_SYS_ADMIN because we need it to place each child process
-  // in its own PID namespace later on.
+  // Now we drop all capabilities that we can. In the zygote process, we need
+  // to keep CAP_SYS_ADMIN, to place each child in its own PID namespace
+  // later on.
   std::vector<sandbox::Credentials::Capability> caps;
-  caps.push_back(sandbox::Credentials::Capability::SYS_ADMIN);
+  if (from_zygote) {
+    caps.push_back(sandbox::Credentials::Capability::SYS_ADMIN);
+  }
   CHECK(sandbox::Credentials::SetCapabilities(proc_fd_, caps));
   return true;
 }
