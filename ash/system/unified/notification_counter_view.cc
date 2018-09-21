@@ -89,10 +89,13 @@ class NumberIconImageSource : public gfx::CanvasImageSource {
 
 NotificationCounterView::NotificationCounterView() : TrayItemView(nullptr) {
   CreateImageView();
-  Update();
+  SetVisible(false);
+  Shell::Get()->session_controller()->AddObserver(this);
 }
 
-NotificationCounterView::~NotificationCounterView() = default;
+NotificationCounterView::~NotificationCounterView() {
+  Shell::Get()->session_controller()->RemoveObserver(this);
+}
 
 void NotificationCounterView::Update() {
   size_t notification_count =
@@ -111,22 +114,38 @@ void NotificationCounterView::Update() {
   SetVisible(true);
 }
 
+void NotificationCounterView::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  Update();
+}
+
 QuietModeView::QuietModeView() : TrayItemView(nullptr) {
   CreateImageView();
+  SetVisible(false);
+  Shell::Get()->session_controller()->AddObserver(this);
+}
+
+QuietModeView::~QuietModeView() {
+  Shell::Get()->session_controller()->RemoveObserver(this);
+}
+
+void QuietModeView::Update() {
   // TODO(yamaguchi): Add this check when new style of the system tray is
   // implemented, so that icon resizing will not happen here.
   // DCHECK_EQ(kTrayIconSize,
   //     gfx::GetDefaultSizeOfVectorIcon(kSystemTrayDoNotDisturbIcon));
-  image_view()->SetImage(gfx::CreateVectorIcon(
-      kSystemTrayDoNotDisturbIcon,
-      TrayIconColor(Shell::Get()->session_controller()->GetSessionState())));
-  Update();
+  if (message_center::MessageCenter::Get()->IsQuietMode()) {
+    image_view()->SetImage(gfx::CreateVectorIcon(
+        kSystemTrayDoNotDisturbIcon,
+        TrayIconColor(Shell::Get()->session_controller()->GetSessionState())));
+    SetVisible(true);
+  } else {
+    SetVisible(false);
+  }
 }
 
-QuietModeView::~QuietModeView() = default;
-
-void QuietModeView::Update() {
-  SetVisible(message_center::MessageCenter::Get()->IsQuietMode());
+void QuietModeView::OnSessionStateChanged(session_manager::SessionState state) {
+  Update();
 }
 
 }  // namespace ash
