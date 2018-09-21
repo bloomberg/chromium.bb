@@ -415,9 +415,6 @@ class OmniboxEditModel {
   // Called whenever user_text_ should change.
   void InternalSetUserText(const base::string16& text);
 
-  // Turns off keyword mode for the current match.
-  void ClearPopupKeywordMode() const;
-
   // Conversion between user text and display text. User text is the text the
   // user has input. Display text is the text being shown in the edit. The
   // two are different if a keyword is selected.

@@ -40,9 +40,8 @@ class OmniboxViewTest : public testing::Test {
   OmniboxViewTest() {
     controller_ = std::make_unique<TestOmniboxEditController>();
     view_ = std::make_unique<TestOmniboxView>(controller_.get());
-
-    model_ = new TestOmniboxEditModel(view_.get(), controller_.get());
-    view_->SetModel(model_);
+    view_->SetModel(
+        std::make_unique<TestOmniboxEditModel>(view_.get(), controller_.get()));
 
     bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
     client()->SetBookmarkModel(bookmark_model_.get());
@@ -54,7 +53,9 @@ class OmniboxViewTest : public testing::Test {
 
   TestOmniboxView* view() { return view_.get(); }
 
-  TestOmniboxEditModel* model() { return model_; }
+  TestOmniboxEditModel* model() {
+    return static_cast<TestOmniboxEditModel*>(view_->model());
+  }
 
   TestOmniboxClient* client() {
     return static_cast<TestOmniboxClient*>(model()->client());
@@ -67,7 +68,6 @@ class OmniboxViewTest : public testing::Test {
   std::unique_ptr<ui::test::MaterialDesignControllerTestAPI> material_design_;
   std::unique_ptr<TestOmniboxEditController> controller_;
   std::unique_ptr<TestOmniboxView> view_;
-  TestOmniboxEditModel* model_;
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
 };
 

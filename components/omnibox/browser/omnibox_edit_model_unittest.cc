@@ -28,19 +28,20 @@ class OmniboxEditModelTest : public testing::Test {
   void SetUp() override {
     controller_ = std::make_unique<TestOmniboxEditController>();
     view_ = std::make_unique<TestOmniboxView>(controller_.get());
-    model_ =
-        std::make_unique<TestOmniboxEditModel>(view_.get(), controller_.get());
+    view_->SetModel(
+        std::make_unique<TestOmniboxEditModel>(view_.get(), controller_.get()));
   }
 
-  const TestOmniboxView& view() { return *view_; }
+  TestOmniboxView* view() { return view_.get(); }
   TestToolbarModel* toolbar_model() { return controller_->GetToolbarModel(); }
-  TestOmniboxEditModel* model() { return model_.get(); }
+  TestOmniboxEditModel* model() {
+    return static_cast<TestOmniboxEditModel*>(view_->model());
+  }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<TestOmniboxEditController> controller_;
   std::unique_ptr<TestOmniboxView> view_;
-  std::unique_ptr<TestOmniboxEditModel> model_;
 };
 
 // Tests various permutations of AutocompleteModel::AdjustTextForCopy.
@@ -165,37 +166,37 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
 
 TEST_F(OmniboxEditModelTest, InlineAutocompleteText) {
   // Test if the model updates the inline autocomplete text in the view.
-  EXPECT_EQ(base::string16(), view().inline_autocomplete_text());
+  EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
   model()->SetUserText(base::ASCIIToUTF16("he"));
   model()->OnPopupDataChanged(base::ASCIIToUTF16("llo"), nullptr,
                               base::string16(), false);
-  EXPECT_EQ(base::ASCIIToUTF16("hello"), view().GetText());
-  EXPECT_EQ(base::ASCIIToUTF16("llo"), view().inline_autocomplete_text());
+  EXPECT_EQ(base::ASCIIToUTF16("hello"), view()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("llo"), view()->inline_autocomplete_text());
 
   base::string16 text_before = base::ASCIIToUTF16("he");
   base::string16 text_after = base::ASCIIToUTF16("hel");
   OmniboxView::StateChanges state_changes{
       &text_before, &text_after, 3, 3, false, true, false, false};
   model()->OnAfterPossibleChange(state_changes, true);
-  EXPECT_EQ(base::string16(), view().inline_autocomplete_text());
+  EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
   model()->OnPopupDataChanged(base::ASCIIToUTF16("lo"), nullptr,
                               base::string16(), false);
-  EXPECT_EQ(base::ASCIIToUTF16("hello"), view().GetText());
-  EXPECT_EQ(base::ASCIIToUTF16("lo"), view().inline_autocomplete_text());
+  EXPECT_EQ(base::ASCIIToUTF16("hello"), view()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("lo"), view()->inline_autocomplete_text());
 
   model()->Revert();
-  EXPECT_EQ(base::string16(), view().GetText());
-  EXPECT_EQ(base::string16(), view().inline_autocomplete_text());
+  EXPECT_EQ(base::string16(), view()->GetText());
+  EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
 
   model()->SetUserText(base::ASCIIToUTF16("he"));
   model()->OnPopupDataChanged(base::ASCIIToUTF16("llo"), nullptr,
                               base::string16(), false);
-  EXPECT_EQ(base::ASCIIToUTF16("hello"), view().GetText());
-  EXPECT_EQ(base::ASCIIToUTF16("llo"), view().inline_autocomplete_text());
+  EXPECT_EQ(base::ASCIIToUTF16("hello"), view()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("llo"), view()->inline_autocomplete_text());
 
   model()->AcceptTemporaryTextAsUserText();
-  EXPECT_EQ(base::ASCIIToUTF16("hello"), view().GetText());
-  EXPECT_EQ(base::string16(), view().inline_autocomplete_text());
+  EXPECT_EQ(base::ASCIIToUTF16("hello"), view()->GetText());
+  EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
 }
 
 // This verifies the fix for a bug where calling OpenMatch() with a valid
@@ -353,4 +354,49 @@ TEST_F(OmniboxEditModelTest, ConsumeCtrlKeyOnCtrlAction) {
   model()->OnAfterPossibleChange(state_changes, false);
   EXPECT_EQ(model()->control_key_state_,
             TestOmniboxEditModel::DOWN_AND_CONSUMED);
+}
+
+TEST_F(OmniboxEditModelTest, KeywordModePreservesInlineAutocompleteText) {
+  // Set the edit model into an inline autocompletion state.
+  view()->SetUserText(base::UTF8ToUTF16("user"));
+  view()->OnInlineAutocompleteTextMaybeChanged(base::UTF8ToUTF16("user text"),
+                                               4);
+
+  // Entering keyword search mode should preserve the full display text as the
+  // user text, and select all.
+  model()->EnterKeywordModeForDefaultSearchProvider(
+      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+  EXPECT_EQ(base::UTF8ToUTF16("user text"), model()->GetUserTextForTesting());
+  EXPECT_EQ(base::UTF8ToUTF16("user text"), view()->GetText());
+  EXPECT_TRUE(view()->IsSelectAll());
+
+  // Deleting the user text and exiting keyword mode should clear everything.
+  view()->SetUserText(base::string16());
+  model()->ClearKeyword();
+  {
+    EXPECT_TRUE(view()->GetText().empty());
+    EXPECT_TRUE(model()->GetUserTextForTesting().empty());
+    size_t start = 0, end = 0;
+    view()->GetSelectionBounds(&start, &end);
+    EXPECT_EQ(0U, start);
+    EXPECT_EQ(0U, end);
+  }
+}
+
+TEST_F(OmniboxEditModelTest, KeywordModePreservesTemporaryText) {
+  // Set the edit model into a temporary text state.
+  view()->SetUserText(base::UTF8ToUTF16("user text"));
+  GURL destination_url("http://example.com");
+
+  // OnPopupDataChanged() is called when the user focuses a suggestion.
+  model()->OnPopupDataChanged(base::UTF8ToUTF16("match text"), &destination_url,
+                              base::string16(), false);
+
+  // Entering keyword search mode should preserve temporary text as the user
+  // text, and select all.
+  model()->EnterKeywordModeForDefaultSearchProvider(
+      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+  EXPECT_EQ(base::UTF8ToUTF16("match text"), model()->GetUserTextForTesting());
+  EXPECT_EQ(base::UTF8ToUTF16("match text"), view()->GetText());
+  EXPECT_TRUE(view()->IsSelectAll());
 }
