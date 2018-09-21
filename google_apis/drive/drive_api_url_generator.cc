@@ -20,7 +20,6 @@ namespace {
 // TODO(yamaguchi): Make a utility function to compose some of these URLs by a
 // version and a resource name.
 const char kDriveV2AboutUrl[] = "drive/v2/about";
-const char kDriveV2AppsUrl[] = "drive/v2/apps";
 const char kDriveV2ChangelistUrl[] = "drive/v2/changes";
 const char kDriveV2StartPageTokenUrl[] = "drive/v2/changes/startPageToken";
 const char kDriveV2FilesUrl[] = "drive/v2/files";
@@ -47,14 +46,6 @@ const char kCorporaAllTeamDrives[] = "default,allTeamDrives";
 const char kCorporaDefault[] = "default";
 const char kCorporaTeamDrive[] = "teamDrive";
 const char kTeamDriveId[] = "teamDriveId";
-
-// apps.delete and file.authorize API is exposed through a special endpoint
-// v2internal that is accessible only by the official API key for Chrome.
-const char kDriveV2InternalAppsUrl[] = "drive/v2internal/apps";
-const char kDriveV2AppsDeleteUrlFormat[] = "drive/v2internal/apps/%s";
-const char kDriveV2FilesAuthorizeUrlFormat[] =
-    "drive/v2internal/files/%s/authorize?appId=%s";
-const char kDriveV2InternalFileUrlPrefix[] = "drive/v2internal/files/";
 
 GURL AddResumableUploadParam(const GURL& url) {
   return net::AppendOrReplaceQueryParameter(url, "uploadType", "resumable");
@@ -102,26 +93,10 @@ GURL DriveApiUrlGenerator::GetAboutGetUrl() const {
   return base_url_.Resolve(kDriveV2AboutUrl);
 }
 
-GURL DriveApiUrlGenerator::GetAppsListUrl(bool use_internal_endpoint) const {
-  return base_url_.Resolve(use_internal_endpoint ?
-      kDriveV2InternalAppsUrl : kDriveV2AppsUrl);
-}
-
-GURL DriveApiUrlGenerator::GetAppsDeleteUrl(const std::string& app_id) const {
-  return base_url_.Resolve(base::StringPrintf(
-      kDriveV2AppsDeleteUrlFormat, net::EscapePath(app_id).c_str()));
-}
-
 GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id,
-                                          bool use_internal_endpoint,
                                           const GURL& embed_origin) const {
-  const char* url_prefix = nullptr;
-  if (use_internal_endpoint)
-    url_prefix = kDriveV2InternalFileUrlPrefix;
-  else
-    url_prefix = kDriveV2FileUrlPrefix;
-
-  GURL url = base_url_.Resolve(url_prefix + net::EscapePath(file_id));
+  GURL url =
+      base_url_.Resolve(kDriveV2FileUrlPrefix + net::EscapePath(file_id));
   url = net::AppendOrReplaceQueryParameter(url, kSupportsTeamDrives, "true");
 
   if (!embed_origin.is_empty()) {
@@ -136,16 +111,6 @@ GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id,
     url = net::AppendOrReplaceQueryParameter(
         url, "embedOrigin", serialized_embed_origin);
   }
-  return url;
-}
-
-GURL DriveApiUrlGenerator::GetFilesAuthorizeUrl(
-    const std::string& file_id,
-    const std::string& app_id) const {
-  GURL url = base_url_.Resolve(base::StringPrintf(
-      kDriveV2FilesAuthorizeUrlFormat, net::EscapePath(file_id).c_str(),
-      net::EscapePath(app_id).c_str()));
-  url = net::AppendOrReplaceQueryParameter(url, kSupportsTeamDrives, "true");
   return url;
 }
 

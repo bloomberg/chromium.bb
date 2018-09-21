@@ -20,7 +20,6 @@
 #include "google_apis/drive/drive_api_requests.h"
 #include "google_apis/drive/files_list_request_runner.h"
 #include "google_apis/drive/request_sender.h"
-#include "google_apis/google_api_keys.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using google_apis::AboutResourceCallback;
@@ -471,8 +470,7 @@ CancelCallback DriveAPIService::GetFileResource(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<FilesGetRequest> request = std::make_unique<FilesGetRequest>(
-      sender_.get(), url_generator_, google_apis::IsGoogleChromeAPIKeyUsed(),
-      callback);
+      sender_.get(), url_generator_, callback);
   request->set_file_id(resource_id);
   request->set_fields(kFileResourceFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));

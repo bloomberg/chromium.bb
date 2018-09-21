@@ -41,61 +41,20 @@ TEST_F(DriveApiUrlGeneratorTest, GetAboutGetUrl) {
             url_generator_.GetAboutGetUrl().spec());
 }
 
-TEST_F(DriveApiUrlGeneratorTest, GetAppsListUrl) {
-  const bool use_internal_url = true;
-  EXPECT_EQ("https://www.example.com/drive/v2internal/apps",
-            url_generator_.GetAppsListUrl(use_internal_url).spec());
-  EXPECT_EQ("https://www.example.com/drive/v2/apps",
-            url_generator_.GetAppsListUrl(!use_internal_url).spec());
-}
-
-TEST_F(DriveApiUrlGeneratorTest, GetAppsDeleteUrl) {
-  EXPECT_EQ("https://www.example.com/drive/v2internal/apps/0ADK06pfg",
-            url_generator_.GetAppsDeleteUrl("0ADK06pfg").spec());
-}
-
 TEST_F(DriveApiUrlGeneratorTest, GetFilesGetUrl) {
   // |file_id| should be embedded into the url.
   EXPECT_EQ(
       "https://www.example.com/drive/v2/files/0ADK06pfg"
       "?supportsTeamDrives=true",
-      url_generator_.GetFilesGetUrl("0ADK06pfg", false, GURL()).spec());
+      url_generator_.GetFilesGetUrl("0ADK06pfg", GURL()).spec());
   EXPECT_EQ(
       "https://www.example.com/drive/v2/files/0Bz0bd074"
       "?supportsTeamDrives=true",
-      url_generator_.GetFilesGetUrl("0Bz0bd074", false, GURL()).spec());
+      url_generator_.GetFilesGetUrl("0Bz0bd074", GURL()).spec());
   EXPECT_EQ(
       "https://www.example.com/drive/v2/files/file%3Afile_id"
       "?supportsTeamDrives=true",
-      url_generator_.GetFilesGetUrl("file:file_id", false, GURL()).spec());
-
-  // If |use_internal_endpoint| is true, the generated url should point to the
-  // v2internal.
-  EXPECT_EQ(
-      "https://www.example.com/drive/v2internal/files/0ADK06pfg"
-      "?supportsTeamDrives=true",
-      url_generator_.GetFilesGetUrl("0ADK06pfg", true, GURL()).spec());
-
-  // If |embed_origin| is not empty, it should be added as a query parameter.
-  EXPECT_EQ(
-      "https://www.example.com/drive/v2/files/0ADK06pfg"
-      "?supportsTeamDrives=true&embedOrigin=chrome-extension%3A%2F%2Ftest",
-      url_generator_
-          .GetFilesGetUrl("0ADK06pfg", false, GURL("chrome-extension://test"))
-          .spec());
-  EXPECT_EQ(
-      "https://www.example.com/drive/v2internal/files/0ADK06pfg"
-      "?supportsTeamDrives=true&embedOrigin=chrome-extension%3A%2F%2Ftest",
-      url_generator_
-          .GetFilesGetUrl("0ADK06pfg", true, GURL("chrome-extension://test"))
-          .spec());
-}
-
-TEST_F(DriveApiUrlGeneratorTest, GetFilesAuthorizeUrl) {
-  EXPECT_EQ(
-      "https://www.example.com/drive/v2internal/files/aa/authorize?appId=bb&"
-      "supportsTeamDrives=true",
-      url_generator_.GetFilesAuthorizeUrl("aa", "bb").spec());
+      url_generator_.GetFilesGetUrl("file:file_id", GURL()).spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFilesInsertUrl) {
