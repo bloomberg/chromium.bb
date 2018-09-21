@@ -1602,8 +1602,9 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
     // CopyToPlatformTexture is done correctly. See crbug.com/794706.
     gl->Flush();
 
+    bool flip_y = is_origin_top_left_ && !canvas()->LowLatencyEnabled();
     return drawing_buffer_->CopyToPlatformTexture(
-        gl, GL_TEXTURE_2D, texture_id, true, is_origin_top_left_,
+        gl, GL_TEXTURE_2D, texture_id, true, flip_y,
         IntPoint(0, 0), IntRect(IntPoint(0, 0), drawing_buffer_->Size()),
         source_buffer);
   }
@@ -5198,7 +5199,7 @@ void WebGLRenderingContextBase::TexImageViaGPU(
           IntPoint(xoffset, yoffset), source_sub_rectangle);
     } else {
       WebGLRenderingContextBase* gl = source_canvas_webgl_context;
-      if (gl->is_origin_top_left_)
+      if (gl->is_origin_top_left_ && !canvas()->LowLatencyEnabled())
         flip_y = !flip_y;
       ScopedTexture2DRestorer restorer(gl);
       if (!gl->GetDrawingBuffer()->CopyToPlatformTexture(
