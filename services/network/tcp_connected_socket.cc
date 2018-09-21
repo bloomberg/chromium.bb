@@ -20,7 +20,7 @@ namespace network {
 
 namespace {
 
-int ClampBufferSize(int requested_buffer_size) {
+int ClampTCPBufferSize(int requested_buffer_size) {
   return base::ClampToRange(requested_buffer_size, 0,
                             TCPConnectedSocket::kMaxBufferSize);
 }
@@ -32,7 +32,7 @@ int ConfigureSocket(
     net::TransportClientSocket* socket,
     const mojom::TCPConnectedSocketOptions& tcp_connected_socket_options) {
   int send_buffer_size =
-      ClampBufferSize(tcp_connected_socket_options.send_buffer_size);
+      ClampTCPBufferSize(tcp_connected_socket_options.send_buffer_size);
   if (send_buffer_size > 0) {
     int result = socket->SetSendBufferSize(send_buffer_size);
     DCHECK_NE(net::ERR_IO_PENDING, result);
@@ -41,7 +41,7 @@ int ConfigureSocket(
   }
 
   int receive_buffer_size =
-      ClampBufferSize(tcp_connected_socket_options.receive_buffer_size);
+      ClampTCPBufferSize(tcp_connected_socket_options.receive_buffer_size);
   if (receive_buffer_size > 0) {
     int result = socket->SetReceiveBufferSize(receive_buffer_size);
     DCHECK_NE(net::ERR_IO_PENDING, result);
@@ -168,7 +168,7 @@ void TCPConnectedSocket::SetSendBufferSize(int send_buffer_size,
     std::move(callback).Run(net::ERR_UNEXPECTED);
     return;
   }
-  int result = socket_->SetSendBufferSize(ClampBufferSize(send_buffer_size));
+  int result = socket_->SetSendBufferSize(ClampTCPBufferSize(send_buffer_size));
   std::move(callback).Run(result);
 }
 
@@ -180,7 +180,8 @@ void TCPConnectedSocket::SetReceiveBufferSize(
     std::move(callback).Run(net::ERR_UNEXPECTED);
     return;
   }
-  int result = socket_->SetReceiveBufferSize(ClampBufferSize(send_buffer_size));
+  int result =
+      socket_->SetReceiveBufferSize(ClampTCPBufferSize(send_buffer_size));
   std::move(callback).Run(result);
 }
 
