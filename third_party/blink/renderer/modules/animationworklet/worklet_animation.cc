@@ -239,13 +239,6 @@ WorkletAnimation* WorkletAnimation::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (!Platform::Current()->IsThreadedAnimationEnabled()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "AnimationWorklet requires threaded animations to be enabled");
-    return nullptr;
-  }
-
   HeapVector<Member<KeyframeEffect>> keyframe_effects;
   String error_string;
   if (!ConvertAnimationEffects(effects, keyframe_effects, error_string)) {
@@ -294,7 +287,6 @@ WorkletAnimation::WorkletAnimation(
       options_(std::make_unique<WorkletAnimationOptions>(options)),
       effect_needs_restart_(false) {
   DCHECK(IsMainThread());
-  DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
 
   for (auto& effect : effects_) {
     AnimationEffect* target_effect = effect;

@@ -5182,3 +5182,16 @@ crbug.com/886566 [ Linux Win10 Mac Android ] http/tests/csspaint/invalidation-ba
 crbug.com/886566 http/tests/csspaint/invalidation-border-image.html [ Pass Timeout ]
 crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Timeout ]
 
+# Enable AnimationWorklet tests for mainthread
+crbug.com/887659 animations/animationworklet/animation-worklet-inside-iframe.html [ Failure ]
+crbug.com/887659 animations/animationworklet/animator-animate.html [ Failure ]
+crbug.com/887659 animations/animationworklet/animator-with-options.html [ Failure ]
+crbug.com/887659 animations/animationworklet/peek-updated-composited-property-on-main.html [ Failure ]
+crbug.com/887659 animations/animationworklet/scroll-timeline-display-none.html [ Crash ]
+crbug.com/887659 animations/animationworklet/scroll-timeline-dynamic-update.html [ Crash ]
+crbug.com/887659 animations/animationworklet/worklet-animation-currentTime.html [ Failure ]
+crbug.com/887659 animations/animationworklet/worklet-animation-local-time-after-duration.html [ Failure ]
+crbug.com/887659 animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
+crbug.com/887659 animations/animationworklet/worklet-animation-set-keyframes.html [ Crash ]
+crbug.com/887659 animations/animationworklet/worklet-animation-set-timing.html [ Crash ]
+crbug.com/887659 animations/animationworklet/worklet-animation-style-update.html [ Failure ]
