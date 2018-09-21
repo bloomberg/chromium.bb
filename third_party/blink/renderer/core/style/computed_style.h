@@ -1082,19 +1082,13 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT StyleInheritedVariables* InheritedVariables() const;
   CORE_EXPORT StyleNonInheritedVariables* NonInheritedVariables() const;
 
-  void SetUnresolvedInheritedVariable(const AtomicString&,
-                                      scoped_refptr<CSSVariableData>);
-  void SetUnresolvedNonInheritedVariable(const AtomicString&,
-                                         scoped_refptr<CSSVariableData>);
+  void SetVariable(const AtomicString&,
+                   scoped_refptr<CSSVariableData>,
+                   bool is_inherited_property);
 
-  void SetResolvedUnregisteredVariable(const AtomicString&,
-                                       scoped_refptr<CSSVariableData>);
-  void SetResolvedInheritedVariable(const AtomicString&,
-                                    scoped_refptr<CSSVariableData>,
-                                    const CSSValue*);
-  void SetResolvedNonInheritedVariable(const AtomicString&,
-                                       scoped_refptr<CSSVariableData>,
-                                       const CSSValue*);
+  void SetRegisteredVariable(const AtomicString&,
+                             const CSSValue*,
+                             bool is_inherited_property);
 
   void RemoveVariable(const AtomicString&, bool is_inherited_property);
 

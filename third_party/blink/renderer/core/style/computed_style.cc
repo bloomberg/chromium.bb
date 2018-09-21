@@ -1664,49 +1664,22 @@ StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
   return *variables;
 }
 
-void ComputedStyle::SetUnresolvedInheritedVariable(
-    const AtomicString& name,
-    scoped_refptr<CSSVariableData> value) {
-  DCHECK(value && value->NeedsVariableResolution());
-  MutableInheritedVariables().SetVariable(name, std::move(value));
+void ComputedStyle::SetVariable(const AtomicString& name,
+                                scoped_refptr<CSSVariableData> value,
+                                bool is_inherited_property) {
+  if (is_inherited_property)
+    MutableInheritedVariables().SetVariable(name, std::move(value));
+  else
+    MutableNonInheritedVariables().SetVariable(name, std::move(value));
 }
 
-void ComputedStyle::SetUnresolvedNonInheritedVariable(
-    const AtomicString& name,
-    scoped_refptr<CSSVariableData> value) {
-  DCHECK(value && value->NeedsVariableResolution());
-  MutableNonInheritedVariables().SetVariable(name, std::move(value));
-}
-
-void ComputedStyle::SetResolvedUnregisteredVariable(
-    const AtomicString& name,
-    scoped_refptr<CSSVariableData> value) {
-  DCHECK(value && !value->NeedsVariableResolution());
-  MutableInheritedVariables().SetVariable(name, std::move(value));
-}
-
-void ComputedStyle::SetResolvedInheritedVariable(
-    const AtomicString& name,
-    scoped_refptr<CSSVariableData> value,
-    const CSSValue* parsed_value) {
-  DCHECK(!!value == !!parsed_value);
-  DCHECK(!(value && value->NeedsVariableResolution()));
-
-  StyleInheritedVariables& variables = MutableInheritedVariables();
-  variables.SetVariable(name, std::move(value));
-  variables.SetRegisteredVariable(name, parsed_value);
-}
-
-void ComputedStyle::SetResolvedNonInheritedVariable(
-    const AtomicString& name,
-    scoped_refptr<CSSVariableData> value,
-    const CSSValue* parsed_value) {
-  DCHECK(!!value == !!parsed_value);
-  DCHECK(!(value && value->NeedsVariableResolution()));
-
-  StyleNonInheritedVariables& variables = MutableNonInheritedVariables();
-  variables.SetVariable(name, std::move(value));
-  variables.SetRegisteredVariable(name, parsed_value);
+void ComputedStyle::SetRegisteredVariable(const AtomicString& name,
+                                          const CSSValue* value,
+                                          bool is_inherited_property) {
+  if (is_inherited_property)
+    MutableInheritedVariables().SetRegisteredVariable(name, value);
+  else
+    MutableNonInheritedVariables().SetRegisteredVariable(name, value);
 }
 
 void ComputedStyle::RemoveVariable(const AtomicString& name,
