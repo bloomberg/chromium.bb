@@ -18,8 +18,14 @@
   <template>
     <style include="print-preview-shared action-link cr-hidden-style throbber">
       :host {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
         user-select: none;
+      }
+
+      #listContainer {
+        flex: 1;
       }
 
       .title,
@@ -32,6 +38,8 @@
         align-items: center;
         border-bottom: 2px solid var(--google-grey-300);
         display: flex;
+        flex: 0;
+        min-height: 1em;
         padding-bottom: 8px;
       }
 
@@ -103,15 +111,17 @@
     <div class="no-destinations-message" hidden$="[[hasDestinations_]]">
       $i18n{noDestinationsMessage}
     </div>
-    <iron-list id="list" items="[[matchingDestinations_]]">
-      <template>
-        <print-preview-destination-list-item class="list-item"
-            search-query="[[searchQuery]]" destination="[[item]]"
-            on-click="onDestinationSelected_" on-keydown="onKeydown_"
-            tabindex$="[[tabIndex]]">
-        </print-preview-destination-list-item>
-      </template>
-    </iron-list>
+    <div id="listContainer">
+      <iron-list id="list" items="[[matchingDestinations_]]">
+        <template>
+          <print-preview-destination-list-item class="list-item"
+              search-query="[[searchQuery]]" destination="[[item]]"
+              on-click="onDestinationSelected_" on-keydown="onKeydown_"
+              tabindex$="[[tabIndex]]">
+          </print-preview-destination-list-item>
+        </template>
+      </iron-list>
+    </div>
   </template>
   <script src="destination_list.js"></script>
 </dom-module>
