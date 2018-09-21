@@ -155,11 +155,6 @@ void FormStructureBrowserTest::SetUp() {
 void FormStructureBrowserTest::TearDown() {
   [autofillController_ detachFromWebState];
 
-  // TODO(crbug.com/776330): remove this manual sync.
-  // This is a workaround to manually sync the tasks posted by
-  // |CRWCertVerificationController verifyTrust:completionHandler:|.
-  // |WaitForBackgroundTasks| currently fails to wait for completion of them.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.1));
   ChromeWebTest::TearDown();
 }
 
