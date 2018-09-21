@@ -331,6 +331,9 @@ class CrostiniManager : public KeyedService,
       std::string container_name,
       ShutdownContainerCallback shutdown_callback);
 
+  // Adds a callback to receive uninstall notification.
+  void AddRemoveCrostiniCallback(RemoveCrostiniCallback remove_callback);
+
   // Add/remove observers for package install progress.
   void AddInstallLinuxPackageProgressObserver(
       InstallLinuxPackageProgressObserver* observer);
@@ -501,6 +504,9 @@ class CrostiniManager : public KeyedService,
   void FinishRestart(CrostiniRestarter* restarter,
                      ConciergeClientResult result);
 
+  // Callback for CrostiniManager::RemoveCrostini.
+  void OnRemoveCrostini(ConciergeClientResult result);
+
   Profile* profile_;
   std::string owner_id_;
 
@@ -538,6 +544,8 @@ class CrostiniManager : public KeyedService,
 
   // Running containers as keyed by vm name.
   std::multimap<std::string, std::string> running_containers_;
+
+  std::vector<RemoveCrostiniCallback> remove_crostini_callbacks_;
 
   base::ObserverList<InstallLinuxPackageProgressObserver>::Unchecked
       install_linux_package_progress_observers_;
