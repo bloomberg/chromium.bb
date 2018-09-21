@@ -22,7 +22,7 @@ const base::Feature kEnablePlayStoreAppSearch{
 const base::Feature kEnableHomeLauncher{"EnableHomeLauncher",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableHomeLauncherGestures{
-    "HomeLauncherGestures", base::FEATURE_ENABLED_BY_DEFAULT};
+    "HomeLauncherGestures", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableSettingsShortcutSearch{
     "EnableSettingsShortcutSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppsGridGapFeature{"EnableAppsGridGapFeature",
