@@ -11,4 +11,12 @@ specific_include_rules = {
   "chrome_launcher_controller\.cc": [
     "+ash/shell.h",
   ],
+  # https://crbug.com/887156
+  "crostini_app_window_shelf_controller\.cc": [
+    "+ash/shell.h",
+  ],
+  # https://crbug.com/887156
+  "internal_app_window_shelf_controller\.cc": [
+    "+ash/shell.h",
+  ],
 }

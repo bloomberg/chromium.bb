@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -29,6 +30,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -63,15 +65,17 @@ void MoveWindowFromOldDisplayToNewDisplay(aura::Window* window,
 CrostiniAppWindowShelfController::CrostiniAppWindowShelfController(
     ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {
-  if (aura::Env::HasInstance())
-    aura::Env::GetInstance()->AddObserver(this);
+  // TODO(mash): Find another way to observe for crostini app window creation.
+  // https://crbug.com/887156
+  if (!features::IsMultiProcessMash())
+    ash::Shell::Get()->aura_env()->AddObserver(this);
 }
 
 CrostiniAppWindowShelfController::~CrostiniAppWindowShelfController() {
   for (auto* window : observed_windows_)
     window->RemoveObserver(this);
-  if (aura::Env::HasInstance())
-    aura::Env::GetInstance()->RemoveObserver(this);
+  if (!features::IsMultiProcessMash())
+    ash::Shell::Get()->aura_env()->RemoveObserver(this);
 }
 
 void CrostiniAppWindowShelfController::AddToShelf(aura::Window* window,
