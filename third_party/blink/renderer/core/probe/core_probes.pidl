@@ -120,8 +120,6 @@ interface CoreProbes {
   void frameStoppedLoading([Keep] LocalFrame*);
   void frameScheduledNavigation([Keep] LocalFrame*, ScheduledNavigation*);
   void frameClearedScheduledNavigation([Keep] LocalFrame*);
-  void frameScheduledClientNavigation([Keep] LocalFrame*);
-  void frameClearedScheduledClientNavigation([Keep] LocalFrame*);
   void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
   void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
   void didCreateWebSocket([Keep] ExecutionContext*, unsigned long identifier, const KURL& requestURL, const String& protocol);
