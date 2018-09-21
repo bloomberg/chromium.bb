@@ -199,14 +199,14 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     return extension_items_->IsCommandIdEnabled(command_id);
 
   switch (command_id) {
-    case NAME:
-      // The NAME links to the Homepage URL. If the extension doesn't have a
-      // homepage, we just disable this menu item. We also disable for component
-      // extensions, because it doesn't make sense to link to a webstore page or
-      // chrome://extensions.
+    case HOME_PAGE:
+      // The HOME_PAGE links to the Homepage URL. If the extension doesn't have
+      // a homepage, we just disable this menu item. We also disable for
+      // component extensions, because it doesn't make sense to link to a
+      // webstore page or chrome://extensions.
       return ManifestURL::GetHomepageURL(extension).is_valid() &&
              !is_component_;
-    case CONFIGURE:
+    case OPTIONS:
       return OptionsPageInfo::HasOptionsPage(extension);
     case INSPECT_POPUP: {
       content::WebContents* web_contents = GetActiveWebContents();
@@ -218,7 +218,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
       return !IsExtensionRequiredByPolicy(extension, profile_);
     // The following, if they are present, are always enabled.
     case TOGGLE_VISIBILITY:
-    case MANAGE:
+    case MANAGE_EXTENSIONS:
     case PAGE_ACCESS_SUBMENU:
     case PAGE_ACCESS_RUN_ON_CLICK:
     case PAGE_ACCESS_RUN_ON_SITE:
@@ -245,7 +245,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
   }
 
   switch (command_id) {
-    case NAME: {
+    case HOME_PAGE: {
       content::OpenURLParams params(ManifestURL::GetHomepageURL(extension),
                                     content::Referrer(),
                                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -253,7 +253,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       browser_->OpenURL(params);
       break;
     }
-    case CONFIGURE:
+    case OPTIONS:
       DCHECK(OptionsPageInfo::HasOptionsPage(extension));
       ExtensionTabUtil::OpenOptionsPage(extension, browser_);
       break;
@@ -267,7 +267,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       UninstallDialogHelper::UninstallExtension(browser_, extension);
       break;
     }
-    case MANAGE: {
+    case MANAGE_EXTENSIONS: {
       chrome::ShowExtensions(browser_, extension->id());
       break;
     }
@@ -308,14 +308,14 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
   // Ampersands need to be escaped to avoid being treated like
   // mnemonics in the menu.
   base::ReplaceChars(extension_name, "&", "&&", &extension_name);
-  AddItem(NAME, base::UTF8ToUTF16(extension_name));
+  AddItem(HOME_PAGE, base::UTF8ToUTF16(extension_name));
   AppendExtensionItems();
   AddSeparator(ui::NORMAL_SEPARATOR);
 
   CreatePageAccessSubmenu(extension);
 
   if (!is_component_ || OptionsPageInfo::HasOptionsPage(extension))
-    AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
+    AddItemWithStringId(OPTIONS, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
 
   if (!is_component_) {
     bool is_required_by_policy =
@@ -340,7 +340,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
 
   if (!is_component_) {
     AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSION);
+    AddItemWithStringId(MANAGE_EXTENSIONS, IDS_MANAGE_EXTENSION);
   }
 
   const ActionInfo* action_info = ActionInfo::GetPageActionInfo(extension);

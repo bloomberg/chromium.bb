@@ -406,15 +406,16 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
     // A component extension's context menu should not include options for
     // managing extensions or removing it, and should only include an option for
     // the options page if the extension has one (which this one doesn't).
-    EXPECT_EQ(-1,
-              menu.GetIndexOfCommandId(ExtensionContextMenuModel::CONFIGURE));
+    EXPECT_EQ(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::OPTIONS));
     EXPECT_EQ(-1,
               menu.GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL));
-    EXPECT_EQ(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::MANAGE));
+    EXPECT_EQ(-1, menu.GetIndexOfCommandId(
+                      ExtensionContextMenuModel::MANAGE_EXTENSIONS));
     // The "name" option should be present, but not enabled for component
     // extensions.
-    EXPECT_NE(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::NAME));
-    EXPECT_FALSE(menu.IsCommandIdEnabled(ExtensionContextMenuModel::NAME));
+    EXPECT_NE(-1,
+              menu.GetIndexOfCommandId(ExtensionContextMenuModel::HOME_PAGE));
+    EXPECT_FALSE(menu.IsCommandIdEnabled(ExtensionContextMenuModel::HOME_PAGE));
   }
 
   {
@@ -432,9 +433,8 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
                                    ExtensionContextMenuModel::VISIBLE, nullptr);
     service()->AddExtension(extension.get());
     EXPECT_TRUE(extensions::OptionsPageInfo::HasOptionsPage(extension.get()));
-    EXPECT_NE(-1,
-              menu.GetIndexOfCommandId(ExtensionContextMenuModel::CONFIGURE));
-    EXPECT_TRUE(menu.IsCommandIdEnabled(ExtensionContextMenuModel::CONFIGURE));
+    EXPECT_NE(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::OPTIONS));
+    EXPECT_TRUE(menu.IsCommandIdEnabled(ExtensionContextMenuModel::OPTIONS));
   }
 }
 
@@ -581,12 +581,13 @@ TEST_F(ExtensionContextMenuModelTest,
 
   ExtensionContextMenuModel menu(extension, GetBrowser(),
                                  ExtensionContextMenuModel::VISIBLE, nullptr);
-  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::NAME));
-  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::CONFIGURE));
+  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::HOME_PAGE));
+  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::OPTIONS));
   EXPECT_TRUE(
       menu.IsCommandIdVisible(ExtensionContextMenuModel::TOGGLE_VISIBILITY));
   EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::UNINSTALL));
-  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::MANAGE));
+  EXPECT_TRUE(
+      menu.IsCommandIdVisible(ExtensionContextMenuModel::MANAGE_EXTENSIONS));
   EXPECT_TRUE(
       menu.IsCommandIdVisible(ExtensionContextMenuModel::INSPECT_POPUP));
   EXPECT_TRUE(menu.IsCommandIdVisible(
