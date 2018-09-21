@@ -35,7 +35,6 @@ class ASH_EXPORT ToastManager : public ToastOverlay::Delegate,
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
-  void OnLockStateChanged(bool locked) override;
 
  private:
   friend class ToastManagerTest;

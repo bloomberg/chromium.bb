@@ -84,8 +84,15 @@ void KioskAppMenuUpdater::SendKioskApps() {
 
   LoginScreenClient::Get()->login_screen()->SetKioskApps(std::move(output));
 
+  KioskAppLaunchError::Error error = KioskAppLaunchError::Get();
+  if (error == KioskAppLaunchError::NONE)
+    return;
+
   // Clear any old pending Kiosk launch errors
   KioskAppLaunchError::RecordMetricAndClear();
+
+  LoginScreenClient::Get()->login_screen()->ShowKioskAppError(
+      KioskAppLaunchError::GetErrorMessage(error));
 }
 
 }  // namespace chromeos

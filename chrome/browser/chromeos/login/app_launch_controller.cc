@@ -355,6 +355,10 @@ void AppLaunchController::CleanUp() {
   splash_wait_timer_.Stop();
 
   host_->Finalize(base::OnceClosure());
+
+  // Make sure that any kiosk launch errors get written to disk before we kill
+  // the browser.
+  g_browser_process->local_state()->CommitPendingWrite();
 }
 
 void AppLaunchController::OnNetworkWaitTimedout() {

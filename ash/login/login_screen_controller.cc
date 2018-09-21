@@ -15,6 +15,9 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_delegate.h"
+#include "ash/system/toast/toast_data.h"
+#include "ash/system/toast/toast_manager.h"
 #include "base/debug/alias.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -414,6 +417,14 @@ void LoginScreenController::SetKioskApps(
       ->shelf_widget()
       ->login_shelf_view()
       ->SetKioskApps(std::move(kiosk_apps));
+}
+
+void LoginScreenController::ShowKioskAppError(const std::string& message) {
+  ToastData toast_data(
+      "KioskAppError", base::UTF8ToUTF16(message), -1 /*duration_ms*/,
+      base::Optional<base::string16>(base::string16()) /*dismiss_text*/,
+      true /*visible_on_lock_screen*/);
+  Shell::Get()->toast_manager()->Show(toast_data);
 }
 
 void LoginScreenController::NotifyOobeDialogState(

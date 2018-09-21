@@ -48,6 +48,7 @@ enum {
   kGlobalToggleAuth,
   kGlobalAddKioskApp,
   kGlobalRemoveKioskApp,
+  kGlobalShowKioskError,
   kGlobalToggleDebugDetachableBase,
   kGlobalCycleDetachableBaseStatus,
   kGlobalCycleDetachableBaseId,
@@ -691,6 +692,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
   AddButton("Add kiosk app", ButtonId::kGlobalAddKioskApp, kiosk_container);
   AddButton("Remove kiosk app", ButtonId::kGlobalRemoveKioskApp,
             kiosk_container);
+  AddButton("Show kiosk error", ButtonId::kGlobalShowKioskError,
+            kiosk_container);
 
   global_action_detachable_base_group_ = add_horizontal_container();
   UpdateDetachableBaseColumn();
@@ -879,6 +882,11 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   if (sender->id() == ButtonId::kGlobalRemoveKioskApp) {
     debug_data_dispatcher_->RemoveKioskApp(
         Shelf::ForWindow(GetWidget()->GetNativeWindow())->shelf_widget());
+  }
+
+  if (sender->id() == ButtonId::kGlobalShowKioskError) {
+    Shell::Get()->login_screen_controller()->ShowKioskAppError(
+        "Test error message.");
   }
 
   if (sender->id() == ButtonId::kGlobalToggleDebugDetachableBase) {
