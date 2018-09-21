@@ -53,7 +53,7 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
     0.2,  // 20%
 
     // Maximum amount of time we are willing to delay our request in ms.
-    1000 * 60 * 60 * 4,  // 15 minutes.
+    1000 * 60 * 60 * 4,  // 4 hours.
 
     // Time to keep an entry from being discarded even when it
     // has no significant state, -1 to never discard.
@@ -1046,9 +1046,10 @@ void GaiaCookieManagerService::StartSettingCookies(
           cookie, true, true,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
                                                       false));
-    } else
+    } else {
       LOG(ERROR) << "Duplicate cookie found: " << cookie.Name() << " "
                  << cookie.Domain();
+    }
   }
 }
 
