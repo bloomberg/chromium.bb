@@ -1715,9 +1715,6 @@ extern const char kSiteCharacteristicsDatabaseDescription[];
 extern const char kUseGoogleLocalNtpName[];
 extern const char kUseGoogleLocalNtpDescription[];
 
-extern const char kVoiceSearchOnLocalNtpName[];
-extern const char kVoiceSearchOnLocalNtpDescription[];
-
 #if defined(GOOGLE_CHROME_BUILD)
 
 extern const char kGoogleBrandedContextMenuName[];

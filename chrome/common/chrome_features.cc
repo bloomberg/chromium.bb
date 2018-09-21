@@ -595,12 +595,6 @@ const base::Feature kUserActivityPrediction{"UserActivityPrediction",
 const base::Feature kUseSameCacheForMedia{"UseSameCacheForMedia",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID)
-// Enables or disables Voice Search on the local NTP.
-const base::Feature kVoiceSearchOnLocalNtp{"VoiceSearchOnLocalNtp",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_CHROMEOS)
 // Enables support of libcups APIs from ARC
 const base::Feature kArcCupsApi{"ArcCupsApi",
