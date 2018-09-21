@@ -415,43 +415,6 @@ TEST_F(ContentLoFiDeciderTest, VideoDirectiveDoesNotOverride) {
   EXPECT_EQ("empty-image", header_value);
 }
 
-TEST_F(ContentLoFiDeciderTest, IsSlowPagePreviewRequested) {
-  std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
-      new data_reduction_proxy::ContentLoFiDecider());
-  net::HttpRequestHeaders headers;
-  EXPECT_FALSE(lofi_decider->IsSlowPagePreviewRequested(headers));
-  headers.SetHeader(chrome_proxy_accept_transform_header(), "lite-page");
-  EXPECT_TRUE(lofi_decider->IsSlowPagePreviewRequested(headers));
-  headers.SetHeader(chrome_proxy_accept_transform_header(), "lite-page;foo");
-  EXPECT_FALSE(lofi_decider->IsSlowPagePreviewRequested(headers));
-  headers.SetHeader(chrome_proxy_accept_transform_header(), "empty-image");
-  EXPECT_TRUE(lofi_decider->IsSlowPagePreviewRequested(headers));
-  headers.SetHeader(chrome_proxy_accept_transform_header(), "empty-image;foo");
-  EXPECT_FALSE(lofi_decider->IsSlowPagePreviewRequested(headers));
-  headers.SetHeader("Another-Header", "empty-image");
-  lofi_decider->RemoveAcceptTransformHeader(&headers);
-  EXPECT_FALSE(lofi_decider->IsSlowPagePreviewRequested(headers));
-}
-
-TEST_F(ContentLoFiDeciderTest, IsLitePagePreviewRequested) {
-  std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
-      new data_reduction_proxy::ContentLoFiDecider());
-  net::HttpRequestHeaders headers;
-  EXPECT_FALSE(lofi_decider->IsLitePagePreviewRequested(headers));
-  headers.SetHeader(chrome_proxy_accept_transform_header(), "empty-image");
-  EXPECT_FALSE(lofi_decider->IsLitePagePreviewRequested(headers));
-  headers.SetHeader(chrome_proxy_accept_transform_header(),
-                    "empty-image;lite-page");
-  EXPECT_FALSE(lofi_decider->IsLitePagePreviewRequested(headers));
-  headers.SetHeader(chrome_proxy_accept_transform_header(), "lite-page");
-  EXPECT_TRUE(lofi_decider->IsLitePagePreviewRequested(headers));
-  headers.SetHeader(chrome_proxy_accept_transform_header(), "lite-page;foo");
-  EXPECT_TRUE(lofi_decider->IsLitePagePreviewRequested(headers));
-  headers.SetHeader("Another-Header", "lite-page");
-  lofi_decider->RemoveAcceptTransformHeader(&headers);
-  EXPECT_FALSE(lofi_decider->IsLitePagePreviewRequested(headers));
-}
-
 TEST_F(ContentLoFiDeciderTest, RemoveAcceptTransformHeader) {
   std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
       new data_reduction_proxy::ContentLoFiDecider());

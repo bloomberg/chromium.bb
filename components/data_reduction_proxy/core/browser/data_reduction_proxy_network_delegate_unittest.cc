@@ -220,27 +220,6 @@ class TestLoFiDecider : public LoFiDecider {
     }
   }
 
-  bool IsSlowPagePreviewRequested(
-      const net::HttpRequestHeaders& headers) const override {
-    std::string header_value;
-    if (headers.GetHeader(chrome_proxy_accept_transform_header(),
-                          &header_value)) {
-      return header_value == empty_image_directive() ||
-             header_value == lite_page_directive();
-    }
-    return false;
-  }
-
-  bool IsLitePagePreviewRequested(
-      const net::HttpRequestHeaders& headers) const override {
-    std::string header_value;
-    if (headers.GetHeader(chrome_proxy_accept_transform_header(),
-                          &header_value)) {
-      return header_value == lite_page_directive();
-    }
-    return false;
-  }
-
   void RemoveAcceptTransformHeader(
       net::HttpRequestHeaders* headers) const override {
     if (ignore_is_using_data_reduction_proxy_check_)

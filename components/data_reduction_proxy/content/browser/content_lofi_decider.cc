@@ -122,43 +122,6 @@ void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
                      accept_transform_value);
 }
 
-bool ContentLoFiDecider::IsSlowPagePreviewRequested(
-    const net::HttpRequestHeaders& headers) const {
-  std::string accept_transform_header_value;
-  if (!headers.GetHeader(chrome_proxy_accept_transform_header(),
-                         &accept_transform_header_value)) {
-    return false;
-  }
-
-  std::vector<std::string> tokens =
-      base::SplitString(base::ToLowerASCII(accept_transform_header_value), ";",
-                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  // A slow page preview is a request for any unqualified transform type.
-  if (tokens.size() != 1)
-    return false;
-  std::string transform_type;
-  base::TrimWhitespaceASCII(tokens[0], base::TRIM_ALL, &transform_type);
-  return (transform_type == lite_page_directive() ||
-          transform_type == empty_image_directive());
-}
-
-bool ContentLoFiDecider::IsLitePagePreviewRequested(
-    const net::HttpRequestHeaders& headers) const {
-  std::string accept_transform_header_value;
-  if (!headers.GetHeader(chrome_proxy_accept_transform_header(),
-                         &accept_transform_header_value)) {
-    return false;
-  }
-  std::vector<std::string> tokens =
-      base::SplitString(base::ToLowerASCII(accept_transform_header_value), ";",
-                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (tokens.empty())
-    return false;
-  std::string transform_type;
-  base::TrimWhitespaceASCII(tokens[0], base::TRIM_ALL, &transform_type);
-  return transform_type == lite_page_directive();
-}
-
 void ContentLoFiDecider::RemoveAcceptTransformHeader(
     net::HttpRequestHeaders* headers) const {
   headers->RemoveHeader(chrome_proxy_accept_transform_header());
