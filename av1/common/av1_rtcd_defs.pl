@@ -131,6 +131,10 @@ add_proto qw/void av1_highbd_inv_txfm_add_8x32/,  "const tran_low_t *dqcoeff, ui
 specialize qw/av1_highbd_inv_txfm_add_8x32 sse4_1/;
 add_proto qw/void av1_highbd_inv_txfm_add_32x8/,  "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
 specialize qw/av1_highbd_inv_txfm_add_32x8 sse4_1/;
+add_proto qw/void av1_highbd_inv_txfm_add_4x8/,  "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
+specialize qw/av1_highbd_inv_txfm_add_4x8 sse4_1/;
+add_proto qw/void av1_highbd_inv_txfm_add_8x4/,  "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
+specialize qw/av1_highbd_inv_txfm_add_8x4 sse4_1/;
 
 add_proto qw/void av1_highbd_iwht4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
 add_proto qw/void av1_highbd_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";

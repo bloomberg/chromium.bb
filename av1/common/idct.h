@@ -47,8 +47,6 @@ static INLINE const int32_t *cast_to_int32(const tran_low_t *input) {
 typedef void(highbd_inv_txfm_add)(const tran_low_t *input, uint8_t *dest,
                                   int stride, const TxfmParam *param);
 
-highbd_inv_txfm_add av1_highbd_inv_txfm_add_4x8;
-highbd_inv_txfm_add av1_highbd_inv_txfm_add_8x4;
 highbd_inv_txfm_add av1_highbd_inv_txfm_add_16x4;
 highbd_inv_txfm_add av1_highbd_inv_txfm_add_4x16;
 
