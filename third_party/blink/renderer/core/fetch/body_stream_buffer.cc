@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
+#include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -99,7 +100,8 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
       consumer_(consumer),
       signal_(signal),
       made_from_readable_stream_(false) {
-  RetainWrapperUntilV8WrapperGetReturnedToV8(script_state);
+  if (!RetainWrapperDuringConstruction(this, script_state))
+    stream_broken_ = true;
 
   {
     // Leaving an exception pending will cause Blink to crash in the bindings
@@ -141,7 +143,9 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
       script_state_(script_state),
       signal_(nullptr),
       made_from_readable_stream_(true) {
-  RetainWrapperUntilV8WrapperGetReturnedToV8(script_state);
+  // TODO(ricea): Perhaps this is not needed since the caller must have a strong
+  // reference to |stream| anyway?
+  RetainWrapperDuringConstruction(this, script_state);
   DCHECK(ReadableStreamOperations::IsReadableStreamForDCheck(script_state,
                                                              stream));
 
@@ -527,20 +531,6 @@ base::Optional<bool> BodyStreamBuffer::BooleanStreamOperation(
     return base::nullopt;
   }
   return result;
-}
-
-void BodyStreamBuffer::RetainWrapperUntilV8WrapperGetReturnedToV8(
-    ScriptState* script_state) {
-  bool post_task_succeeded =
-      ExecutionContext::From(script_state)
-          ->GetTaskRunner(TaskType::kInternalDefault)
-          ->PostTask(FROM_HERE,
-                     WTF::Bind(Noop, ScriptValue(script_state,
-                                                 ToV8(this, script_state))));
-  // Temporary CHECK to find out if and how often this PostTask fails.
-  // TODO(ricea): Set stream_broken_ to false if PostTask fails instead of
-  // crashing.
-  CHECK(post_task_succeeded);
 }
 
 BytesConsumer* BodyStreamBuffer::ReleaseHandle(
