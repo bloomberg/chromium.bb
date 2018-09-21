@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_frame_message_filter.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -663,6 +665,44 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   network_usages = GetTotalNetworkUsages();
   EXPECT_TRUE(CheckContainsProcessID(network_usages, process_id1));
   EXPECT_FALSE(CheckContainsProcessID(network_usages, process_id2));
+}
+
+// Make sure cookie access doesn't hang or fail after a network process crash.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Cookies) {
+  auto* web_contents = shell()->web_contents();
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(ExecuteScript(web_contents, "document.cookie = 'foo=bar';"));
+
+  std::string cookie;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents, "window.domAutomationController.send(document.cookie);",
+      &cookie));
+  EXPECT_EQ("foo=bar", cookie);
+
+  SimulateNetworkServiceCrash();
+
+  auto* process = web_contents->GetMainFrame()->GetProcess();
+  scoped_refptr<RenderFrameMessageFilter> filter(
+      static_cast<RenderProcessHostImpl*>(process)
+          ->render_frame_message_filter_for_testing());
+  // Need to use FlushAsyncForTesting instead of FlushForTesting because the IO
+  // thread doesn't support nested message loops.
+  base::RunLoop run_loop;
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindLambdaForTesting([&]() {
+                             filter->GetCookieManager()->FlushAsyncForTesting(
+                                 run_loop.QuitClosure());
+                           }));
+
+  // content_shell uses in-memory cookie database, so the value saved earlier
+  // won't persist across crashes. What matters is that new access works.
+  EXPECT_TRUE(ExecuteScript(web_contents, "document.cookie = 'foo=bar';"));
+
+  // This will hang without the fix.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents, "window.domAutomationController.send(document.cookie);",
+      &cookie));
+  EXPECT_EQ("foo=bar", cookie);
 }
 
 }  // namespace content

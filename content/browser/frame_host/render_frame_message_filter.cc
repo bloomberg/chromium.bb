@@ -273,19 +273,6 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
       render_process_id_(render_process_id) {
-  network::mojom::CookieManagerPtr cookie_manager;
-  storage_partition->GetNetworkContext()->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager));
-
-  // The PostTask below could finish before the constructor returns which would
-  // lead to this object being destructed prematurely.
-  AddRef();
-  base::ThreadTaskRunnerHandle::Get()->ReleaseSoon(FROM_HERE, this);
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&RenderFrameMessageFilter::InitializeOnIO, this,
-                     cookie_manager.PassInterface()));
 }
 
 RenderFrameMessageFilter::~RenderFrameMessageFilter() {
@@ -293,9 +280,26 @@ RenderFrameMessageFilter::~RenderFrameMessageFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-void RenderFrameMessageFilter::InitializeOnIO(
-    network::mojom::CookieManagerPtrInfo cookie_manager) {
-  cookie_manager_.Bind(std::move(cookie_manager));
+network::mojom::CookieManagerPtr* RenderFrameMessageFilter::GetCookieManager() {
+  if (!cookie_manager_ || cookie_manager_.encountered_error()) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&RenderFrameMessageFilter::InitializeCookieManager, this,
+                       mojo::MakeRequest(&cookie_manager_)));
+  }
+  return &cookie_manager_;
+}
+
+void RenderFrameMessageFilter::InitializeCookieManager(
+    network::mojom::CookieManagerRequest cookie_manager_request) {
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(render_process_id_);
+  if (!render_process_host)
+    return;
+
+  render_process_host->GetStoragePartition()
+      ->GetNetworkContext()
+      ->GetCookieManager(std::move(cookie_manager_request));
 }
 
 bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -558,9 +562,10 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
   // this process' StoragePartition.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
       context == request_context_->GetURLRequestContext()) {
-    cookie_manager_->SetCanonicalCookie(*cookie, url.SchemeIsCryptographic(),
-                                        !options.exclude_httponly(),
-                                        net::CookieStore::SetCookiesCallback());
+    (*GetCookieManager())
+        ->SetCanonicalCookie(*cookie, url.SchemeIsCryptographic(),
+                             !options.exclude_httponly(),
+                             net::CookieStore::SetCookiesCallback());
     return;
   }
 
@@ -607,11 +612,12 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
       context == request_context_->GetURLRequestContext()) {
     // TODO(jam): modify GetRequestContextForURL to work with network service.
     // Merge this with code path below for non-network service.
-    cookie_manager_->GetCookieList(
-        url, options,
-        base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
-                       render_frame_id, url, site_for_cookies,
-                       std::move(callback)));
+    (*GetCookieManager())
+        ->GetCookieList(
+            url, options,
+            base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies,
+                           this, render_frame_id, url, site_for_cookies,
+                           std::move(callback)));
     return;
   }
 
