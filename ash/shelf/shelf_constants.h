@@ -99,32 +99,23 @@ class ShelfConstants {
  public:
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).
-  static int shelf_size() { return UseNewUi() ? kShelfSizeNewUi : kShelfSize; }
+  static int shelf_size() { return kShelfSizeNewUi; }
 
   // Size allocated for each app button on the shelf.
-  static int button_size() {
-    return UseNewUi() ? kShelfButtonSizeNewUi : kShelfButtonSize;
-  }
+  static int button_size() { return kShelfButtonSizeNewUi; }
 
   // Size of the space between buttons on the shelf.
-  static int button_spacing() {
-    return UseNewUi() ? kShelfButtonSpacingNewUi : kShelfButtonSpacing;
-  }
+  static int button_spacing() { return kShelfButtonSpacingNewUi; }
 
   // Size of the icons within shelf buttons.
-  static int button_icon_size() {
-    return UseNewUi() ? kShelfButtonIconSizeNewUi : kShelfButtonIconSize;
-  }
+  static int button_icon_size() { return kShelfButtonIconSizeNewUi; }
 
   // The width and height of the material design overflow button.
-  static int overflow_button_size() {
-    return UseNewUi() ? kShelfControlSizeNewUi : kOverflowButtonSize;
-  }
+  static int overflow_button_size() { return kShelfControlSizeNewUi; }
 
   // The radius of the rounded corners of the overflow button.
   static int overflow_button_corner_radius() {
-    return UseNewUi() ? overflow_button_size() / 2
-                      : kOverflowButtonCornerRadiusOldUi;
+    return overflow_button_size() / 2;
   }
 
   // The radius of the circular material design app list button.
@@ -135,15 +126,9 @@ class ShelfConstants {
 
   // The distance between the edge of the shelf and the status indicators.
   static int status_indicator_offset_from_edge() {
-    return UseNewUi() ? kStatusIndicatorOffsetFromShelfEdgeNewUi
-                      : kStatusIndicatorOffsetFromShelfEdge;
+    return kStatusIndicatorOffsetFromShelfEdgeNewUi;
   }
 
- private:
-  static bool UseNewUi() {
-    static bool use_new_ui = chromeos::switches::ShouldUseShelfNewUi();
-    return use_new_ui;
-  }
   DISALLOW_IMPLICIT_CONSTRUCTORS(ShelfConstants);
 };
 

@@ -44,23 +44,17 @@ void OverflowBubble::Show(OverflowButton* overflow_button,
   bubble_->GetWidget()->AddObserver(this);
   bubble_->GetWidget()->Show();
   Shell::Get()->focus_cycler()->AddWidget(bubble_->GetWidget());
-
-  overflow_button->OnOverflowBubbleShown();
 }
 
 void OverflowBubble::Hide() {
   if (!IsShowing())
     return;
 
-  OverflowButton* overflow_button = overflow_button_;
-
   Shell::Get()->focus_cycler()->RemoveWidget(bubble_->GetWidget());
   bubble_->GetWidget()->RemoveObserver(this);
   bubble_->GetWidget()->Close();
   bubble_ = nullptr;
   overflow_button_ = nullptr;
-
-  overflow_button->OnOverflowBubbleHidden();
 }
 
 void OverflowBubble::ProcessPressedEvent(ui::LocatedEvent* event) {

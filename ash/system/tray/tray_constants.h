@@ -235,17 +235,9 @@ constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
 class TrayConstants {
  public:
   // Returns the width of a line used to separate tray items in the shelf.
-  static int separator_width() {
-    return UseNewUi() ? kSeparatorWidthNewUi : kSeparatorWidth;
-  }
+  static int separator_width() { return kSeparatorWidthNewUi; }
 
   static int GetTrayIconSize();
-
- private:
-  static bool UseNewUi() {
-    static bool use_new_ui = chromeos::switches::ShouldUseShelfNewUi();
-    return use_new_ui;
-  }
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TrayConstants);
 };

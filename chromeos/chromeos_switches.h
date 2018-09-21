@@ -166,9 +166,6 @@ CHROMEOS_EXPORT extern const char kWakeOnWifiPacket[];
 // Controls whether to enable Chrome OS Account Manager.
 CHROMEOS_EXPORT extern const base::Feature kAccountManager;
 
-// Controls whether to enable the new shelf UI.
-CHROMEOS_EXPORT extern const base::Feature kEnableShelfNewUi;
-
 // Controls whether to enable Google Assistant feature.
 CHROMEOS_EXPORT extern const base::Feature kAssistantFeature;
 
@@ -230,9 +227,6 @@ CHROMEOS_EXPORT bool ShouldHideActiveAppsFromShelf();
 // Returns true if we should show window previews when hovering over an app
 // on the shelf.
 CHROMEOS_EXPORT bool ShouldShowShelfHoverPreviews();
-
-// Returns true if the shelf should adopt the new UI from summer 2018.
-CHROMEOS_EXPORT bool ShouldUseShelfNewUi();
 
 // Returns true if Instant Tethering should support hosts which use the
 // background advertisement model
