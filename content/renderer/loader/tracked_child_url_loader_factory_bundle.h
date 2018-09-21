@@ -115,6 +115,8 @@ class CONTENT_EXPORT HostChildURLLoaderFactoryBundle
   // ChildURLLoaderFactoryBundle overrides.
   // Returns |std::unique_ptr<TrackedChildURLLoaderFactoryBundleInfo>|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+  CloneWithoutDefaultFactory() override;
   bool IsHostChildURLLoaderFactoryBundle() const override;
 
   // Update this bundle with |info|, and post cloned |info| to tracked bundles.
