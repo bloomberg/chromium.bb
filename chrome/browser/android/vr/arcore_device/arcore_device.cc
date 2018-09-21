@@ -177,6 +177,9 @@ void ARCoreDevice::RequestArModule(int render_process_id,
                                    int render_frame_id,
                                    bool has_user_activation) {
   if (arcore_java_utils_->ShouldRequestInstallArModule()) {
+    on_request_ar_module_result_callback_ =
+        base::BindOnce(&ARCoreDevice::OnRequestArModuleResult, GetWeakPtr(),
+                       render_process_id, render_frame_id, has_user_activation);
     arcore_java_utils_->RequestInstallArModule();
     return;
   }
@@ -233,6 +236,14 @@ void ARCoreDevice::RequestArCoreInstallOrUpdate(int render_process_id,
 
   OnRequestArCoreInstallOrUpdateResult(render_process_id, render_frame_id,
                                        has_user_activation, true);
+}
+
+void ARCoreDevice::OnRequestInstallArModuleResult(bool success) {
+  DCHECK(IsOnMainThread());
+
+  if (on_request_ar_module_result_callback_) {
+    std::move(on_request_ar_module_result_callback_).Run(success);
+  }
 }
 
 void ARCoreDevice::OnRequestInstallSupportedARCoreCanceled() {
