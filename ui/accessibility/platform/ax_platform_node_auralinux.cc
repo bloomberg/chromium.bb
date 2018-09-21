@@ -24,6 +24,8 @@
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
+namespace ui {
+
 //
 // ax_platform_node_auralinux AtkObject definition and implementation.
 //
@@ -202,7 +204,7 @@ constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_LIST_ITEM;
 
 struct _AXPlatformNodeAuraLinuxObject {
   AtkObject parent;
-  ui::AXPlatformNodeAuraLinux* m_object;
+  AXPlatformNodeAuraLinux* m_object;
 };
 
 struct _AXPlatformNodeAuraLinuxClass {
@@ -213,7 +215,7 @@ GType ax_platform_node_auralinux_get_type();
 
 static gpointer kAXPlatformNodeAuraLinuxParentClass = nullptr;
 
-static ui::AXPlatformNodeAuraLinux* ToAXPlatformNodeAuraLinux(
+static AXPlatformNodeAuraLinux* ToAXPlatformNodeAuraLinux(
     AXPlatformNodeAuraLinuxObject* atk_object) {
   if (!atk_object)
     return nullptr;
@@ -221,7 +223,7 @@ static ui::AXPlatformNodeAuraLinux* ToAXPlatformNodeAuraLinux(
   return atk_object->m_object;
 }
 
-static ui::AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
+static AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
     AtkObject* atk_object) {
   if (!atk_object)
     return nullptr;
@@ -233,8 +235,7 @@ static ui::AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
 }
 
 static const gchar* AXPlatformNodeAuraLinuxGetName(AtkObject* atk_object) {
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -248,8 +249,7 @@ static const gchar* AXPlatformNodeAuraLinuxGetName(AtkObject* atk_object) {
 
 static const gchar* AXPlatformNodeAuraLinuxGetDescription(
     AtkObject* atk_object) {
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -258,8 +258,7 @@ static const gchar* AXPlatformNodeAuraLinuxGetDescription(
 }
 
 static gint AXPlatformNodeAuraLinuxGetIndexInParent(AtkObject* atk_object) {
-  ui::AXPlatformNodeAuraLinux* obj =
-    AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
 
   if (!obj)
     return -1;
@@ -268,8 +267,7 @@ static gint AXPlatformNodeAuraLinuxGetIndexInParent(AtkObject* atk_object) {
 }
 
 static AtkObject* AXPlatformNodeAuraLinuxGetParent(AtkObject* atk_object) {
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -277,8 +275,7 @@ static AtkObject* AXPlatformNodeAuraLinuxGetParent(AtkObject* atk_object) {
 }
 
 static gint AXPlatformNodeAuraLinuxGetNChildren(AtkObject* atk_object) {
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return 0;
 
@@ -287,8 +284,7 @@ static gint AXPlatformNodeAuraLinuxGetNChildren(AtkObject* atk_object) {
 
 static AtkObject* AXPlatformNodeAuraLinuxRefChild(AtkObject* atk_object,
                                                   gint index) {
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -300,8 +296,7 @@ static AtkObject* AXPlatformNodeAuraLinuxRefChild(AtkObject* atk_object,
 
 static AtkRelationSet* AXPlatformNodeAuraLinuxRefRelationSet(
     AtkObject* atk_object) {
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   AtkRelationSet* atk_relation_set =
       ATK_OBJECT_CLASS(kAXPlatformNodeAuraLinuxParentClass)
           ->ref_relation_set(atk_object);
@@ -315,8 +310,7 @@ static AtkRelationSet* AXPlatformNodeAuraLinuxRefRelationSet(
 
 static AtkAttributeSet* AXPlatformNodeAuraLinuxGetAttributes(
     AtkObject* atk_object) {
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -324,8 +318,7 @@ static AtkAttributeSet* AXPlatformNodeAuraLinuxGetAttributes(
 }
 
 static AtkRole AXPlatformNodeAuraLinuxGetRole(AtkObject* atk_object) {
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return ATK_ROLE_INVALID;
   return obj->GetAtkRole();
@@ -336,8 +329,7 @@ static AtkStateSet* AXPlatformNodeAuraLinuxRefStateSet(AtkObject* atk_object) {
       ATK_OBJECT_CLASS(kAXPlatformNodeAuraLinuxParentClass)
           ->ref_state_set(atk_object);
 
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_DEFUNCT);
   } else {
@@ -384,8 +376,7 @@ static void AXPlatformNodeAuraLinuxGetExtents(AtkComponent* atk_component,
     *height = 0;
 
   AtkObject* atk_object = ATK_OBJECT(atk_component);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return;
 
@@ -404,8 +395,7 @@ static void AXPlatformNodeAuraLinuxGetPosition(AtkComponent* atk_component,
     *y = 0;
 
   AtkObject* atk_object = ATK_OBJECT(atk_component);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return;
 
@@ -423,8 +413,7 @@ static void AXPlatformNodeAuraLinuxGetSize(AtkComponent* atk_component,
     *height = 0;
 
   AtkObject* atk_object = ATK_OBJECT(atk_component);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return;
 
@@ -438,8 +427,7 @@ static AtkObject* AXPlatformNodeAuraLinuxRefAccessibleAtPoint(
     AtkCoordType coord_type) {
   g_return_val_if_fail(ATK_IS_COMPONENT(atk_component), nullptr);
   AtkObject* atk_object = ATK_OBJECT(atk_component);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -452,8 +440,7 @@ static AtkObject* AXPlatformNodeAuraLinuxRefAccessibleAtPoint(
 static gboolean AXPlatformNodeAuraLinuxGrabFocus(AtkComponent* atk_component) {
   g_return_val_if_fail(ATK_IS_COMPONENT(atk_component), FALSE);
   AtkObject* atk_object = ATK_OBJECT(atk_component);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return FALSE;
 
@@ -481,8 +468,7 @@ static gboolean AXPlatformNodeAuraLinuxDoAction(AtkAction* atk_action,
   g_return_val_if_fail(!index, FALSE);
 
   AtkObject* atk_object = ATK_OBJECT(atk_action);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return FALSE;
 
@@ -493,8 +479,7 @@ static gint AXPlatformNodeAuraLinuxGetNActions(AtkAction* atk_action) {
   g_return_val_if_fail(ATK_IS_ACTION(atk_action), 0);
 
   AtkObject* atk_object = ATK_OBJECT(atk_action);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return 0;
 
@@ -514,8 +499,7 @@ static const gchar* AXPlatformNodeAuraLinuxGetActionName(AtkAction* atk_action,
   g_return_val_if_fail(!index, nullptr);
 
   AtkObject* atk_object = ATK_OBJECT(atk_action);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -529,8 +513,7 @@ static const gchar* AXPlatformNodeAuraLinuxGetActionKeybinding(
   g_return_val_if_fail(!index, nullptr);
 
   AtkObject* atk_object = ATK_OBJECT(atk_action);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -558,8 +541,7 @@ static const gchar* AXPlatformNodeAuraLinuGetDocumentAttributeValue(
   g_return_val_if_fail(ATK_IS_DOCUMENT(atk_doc), nullptr);
 
   AtkObject* atk_object = ATK_OBJECT(atk_doc);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -571,8 +553,7 @@ static AtkAttributeSet* AXPlatformNodeAuraLinuxGetDocumentAttributes(
   g_return_val_if_fail(ATK_IS_DOCUMENT(atk_doc), 0);
 
   AtkObject* atk_object = ATK_OBJECT(atk_doc);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -600,8 +581,7 @@ static void AXPlatformNodeGetImagePosition(AtkImage* atk_img,
   g_return_if_fail(ATK_IMAGE(atk_img));
 
   AtkObject* atk_object = ATK_OBJECT(atk_img);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return;
 
@@ -613,8 +593,7 @@ static const gchar* AXPlatformNodeAuraLinuxGetImageDescription(
   g_return_val_if_fail(ATK_IMAGE(atk_img), nullptr);
 
   AtkObject* atk_object = ATK_OBJECT(atk_img);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -628,8 +607,7 @@ static void AXPlatformNodeAuraLinuxGetImageSize(AtkImage* atk_img,
   g_return_if_fail(ATK_IMAGE(atk_img));
 
   AtkObject* atk_object = ATK_OBJECT(atk_img);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return;
 
@@ -655,8 +633,7 @@ static void AXPlatformNodeAuraLinuxGetCurrentValue(AtkValue* atk_value,
   g_return_if_fail(ATK_VALUE(atk_value));
 
   AtkObject* atk_object = ATK_OBJECT(atk_value);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return;
 
@@ -669,8 +646,7 @@ static void AXPlatformNodeAuraLinuxGetMinimumValue(AtkValue* atk_value,
   g_return_if_fail(ATK_VALUE(atk_value));
 
   AtkObject* atk_object = ATK_OBJECT(atk_value);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return;
 
@@ -683,8 +659,7 @@ static void AXPlatformNodeAuraLinuxGetMaximumValue(AtkValue* atk_value,
   g_return_if_fail(ATK_VALUE(atk_value));
 
   AtkObject* atk_object = ATK_OBJECT(atk_value);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return;
 
@@ -697,8 +672,7 @@ static void AXPlatformNodeAuraLinuxGetMinimumIncrement(AtkValue* atk_value,
   g_return_if_fail(ATK_VALUE(atk_value));
 
   AtkObject* atk_object = ATK_OBJECT(atk_value);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return;
 
@@ -726,8 +700,7 @@ static AtkHyperlink* AXPlatformNodeAuraLinuxGetHyperlink(
   g_return_val_if_fail(ATK_HYPERLINK_IMPL(atk_hyperlink_impl), 0);
 
   AtkObject* atk_object = ATK_OBJECT(atk_hyperlink_impl);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return 0;
 
@@ -757,21 +730,30 @@ static AtkHyperlink* AXPlatformNodeAuraLinuxHypertextGetLink(
   if (!obj)
     return nullptr;
 
-  const ui::AXHypertext& ax_hypertext = obj->GetHypertext();
+  const AXHypertext& ax_hypertext = obj->GetHypertext();
   if (index > static_cast<int>(ax_hypertext.hyperlinks.size()) || index < 0)
     return nullptr;
 
   int32_t id = ax_hypertext.hyperlinks[index];
-  auto* link = ui::AXPlatformNodeAuraLinux::GetFromUniqueId(id);
+  auto* link = AXPlatformNodeAuraLinux::GetFromUniqueId(id);
   if (!link)
     return nullptr;
 
-  return link->GetAtkHyperlink();
+  AtkHyperlink* atk_hyperlink = link->GetAtkHyperlink();
+  for (const auto& key_value : ax_hypertext.hyperlink_offset_to_index) {
+    if (key_value.second == index) {
+      ax_platform_atk_hyperlink_set_indices(
+          AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink), key_value.first,
+          key_value.first + 1);
+    }
+  }
+
+  return atk_hyperlink;
 }
 
 static int AXPlatformNodeAuraLinuxGetNLinks(AtkHypertext* hypertext) {
   g_return_val_if_fail(ATK_HYPERTEXT(hypertext), 0);
-  ui::AXPlatformNodeAuraLinux* obj =
+  AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(hypertext));
   return obj ? obj->GetHypertext().hyperlinks.size() : 0;
 }
@@ -779,7 +761,7 @@ static int AXPlatformNodeAuraLinuxGetNLinks(AtkHypertext* hypertext) {
 static int AXPlatformNodeAuraLinuxGetLinkIndex(AtkHypertext* hypertext,
                                                int char_index) {
   g_return_val_if_fail(ATK_HYPERTEXT(hypertext), 0);
-  ui::AXPlatformNodeAuraLinux* obj =
+  AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(hypertext));
 
   auto it = obj->GetHypertext().hyperlink_offset_to_index.find(char_index);
@@ -806,8 +788,7 @@ static gchar* AXPlatformNodeAuraLinuxGetText(AtkText* atk_text,
                                              gint start_offset,
                                              gint end_offset) {
   AtkObject* atk_object = ATK_OBJECT(atk_text);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -820,8 +801,7 @@ static gchar* AXPlatformNodeAuraLinuxGetText(AtkText* atk_text,
 
 static gint AXPlatformNodeAuraLinuxGetCharacterCount(AtkText* atk_text) {
   AtkObject* atk_object = ATK_OBJECT(atk_text);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return 0;
 
@@ -838,8 +818,7 @@ static AtkAttributeSet* AXPlatformNodeAuraLinuxGetRunAttributes(
   *end_offset = -1;
 
   AtkObject* atk_object = ATK_OBJECT(atk_text);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -852,8 +831,7 @@ static AtkAttributeSet* AXPlatformNodeAuraLinuxGetRunAttributes(
 static gunichar AXPlatformNodeAuraLinuxGetCharacterAtOffset(AtkText* atk_text,
                                                             int offset) {
   AtkObject* atk_object = ATK_OBJECT(atk_text);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return 0;
 
@@ -878,8 +856,7 @@ static char* AXPlatformNodeAuraLinuxGetCharacter(AtkText* atk_text,
   *end_offset = -1;
 
   AtkObject* atk_object = ATK_OBJECT(atk_text);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
 
@@ -995,7 +972,7 @@ static void AXPlatformNodeAuraLinuxInit(AtkObject* atk_object, gpointer data) {
   }
 
   AX_PLATFORM_NODE_AURALINUX(atk_object)->m_object =
-      reinterpret_cast<ui::AXPlatformNodeAuraLinux*>(data);
+      reinterpret_cast<AXPlatformNodeAuraLinux*>(data);
 }
 
 static void AXPlatformNodeAuraLinuxFinalize(GObject* atk_object) {
@@ -1021,7 +998,7 @@ static void AXPlatformNodeAuraLinuxClassInit(AtkObjectClass* klass) {
 }
 
 GType ax_platform_node_auralinux_get_type() {
-  ui::AXPlatformNodeAuraLinux::EnsureGTypeInit();
+  AXPlatformNodeAuraLinux::EnsureGTypeInit();
 
   static volatile gsize type_volatile = 0;
   if (g_once_init_enter(&type_volatile)) {
@@ -1055,8 +1032,6 @@ void AXPlatformNodeAuraLinuxDetach(AXPlatformNodeAuraLinuxObject* atk_object) {
 }
 
 G_END_DECLS
-
-namespace ui {
 
 void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
 #if !GLIB_CHECK_VERSION(2, 36, 0)
@@ -2002,7 +1977,7 @@ const gchar* AXPlatformNodeAuraLinux::GetDefaultActionName() {
   if (!GetIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb, &action))
     return nullptr;
 
-  base::string16 action_verb = ui::ActionVerbToUnlocalizedString(
+  base::string16 action_verb = ActionVerbToUnlocalizedString(
       static_cast<ax::mojom::DefaultActionVerb>(action));
 
   ATK_AURALINUX_RETURN_STRING(base::UTF16ToUTF8(action_verb));
