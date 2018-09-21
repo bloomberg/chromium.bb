@@ -986,6 +986,19 @@ static INLINE void load_buffer_8x16(const int16_t *input, __m128i *out,
   load_buffer_8x8(botL, out + 16, stride, flipud, fliplr, shift);
 }
 
+static INLINE void load_buffer_32x16(const int16_t *input, __m128i *out,
+                                     int stride, int flipud, int fliplr,
+                                     int shift) {
+  const int16_t *in = input;
+  __m128i *output = out;
+  for (int col = 0; col < 16; col++) {
+    in = input + col * stride;
+    output = out + col * 8;
+    load_buffer_4x4(in, output, 4, flipud, fliplr, shift);
+    load_buffer_4x4((in + 16), (output + 4), 4, flipud, fliplr, shift);
+  }
+}
+
 static void fdct16x16_sse4_1(__m128i *in, __m128i *out, int bit,
                              const int col_num) {
   const int32_t *cospi = cospi_arr(bit);
@@ -1719,6 +1732,44 @@ static const fwd_transform_1d_sse4_1 row_highbd_txfm8x8_arr[TX_TYPES] = {
   NULL              // H_FLIPADST
 };
 
+static const fwd_transform_1d_sse4_1 col_highbd_txfm8x32_arr[TX_TYPES] = {
+  av1_fdct32_new_sse4_1,  // DCT_DCT
+  NULL,                   // ADST_DCT
+  NULL,                   // DCT_ADST
+  NULL,                   // ADST_ADST
+  NULL,                   // FLIPADST_DCT
+  NULL,                   // DCT_FLIPADST
+  NULL,                   // FLIPADST_FLIPADST
+  NULL,                   // ADST_FLIPADST
+  NULL,                   // FLIPADST_ADST
+  NULL,                   // IDTX
+  NULL,                   // V_DCT
+  NULL,                   // H_DCT
+  NULL,                   // V_ADST
+  NULL,                   // H_ADST
+  NULL,                   // V_FLIPADST
+  NULL                    // H_FLIPADST
+};
+
+static const fwd_transform_1d_sse4_1 row_highbd_txfm8x32_arr[TX_TYPES] = {
+  fdct16x16_sse4_1,  // DCT_DCT
+  NULL,              // ADST_DCT
+  NULL,              // DCT_ADST
+  NULL,              // ADST_ADST
+  NULL,              // FLIPADST_DCT
+  NULL,              // DCT_FLIPADST
+  NULL,              // FLIPADST_FLIPADST
+  NULL,              // ADST_FLIPADST
+  NULL,              // FLIPADST_ADST
+  NULL,              // IDTX
+  NULL,              // V_DCT
+  NULL,              // H_DCT
+  NULL,              // V_ADST
+  NULL,              // H_ADST
+  NULL,              // V_FLIPADST
+  NULL               // H_FLIPADST
+};
+
 void av1_fwd_txfm2d_16x8_sse4_1(const int16_t *input, int32_t *coeff,
                                 int stride, TX_TYPE tx_type, int bd) {
   __m128i in[32], out[32];
@@ -1779,5 +1830,67 @@ void av1_fwd_txfm2d_8x16_sse4_1(const int16_t *input, int32_t *coeff,
     write_buffer_8x8(in, coeff + i * 64);
   }
 
+  (void)bd;
+}
+
+void av1_fwd_txfm2d_16x32_sse4_1(const int16_t *input, int32_t *coeff,
+                                 int stride, TX_TYPE tx_type, int bd) {
+  assert(DCT_DCT == tx_type);
+  __m128i in[128];
+  __m128i *outcoef128 = (__m128i *)coeff;
+  const int8_t *shift = fwd_txfm_shift_ls[TX_16X32];
+  const int txw_idx = get_txw_idx(TX_16X32);
+  const int txh_idx = get_txh_idx(TX_16X32);
+  const fwd_transform_1d_sse4_1 col_txfm = col_highbd_txfm8x32_arr[tx_type];
+  const fwd_transform_1d_sse4_1 row_txfm = row_highbd_txfm8x32_arr[tx_type];
+  int bitcol = fwd_cos_bit_col[txw_idx][txh_idx];
+  int bitrow = fwd_cos_bit_row[txw_idx][txh_idx];
+
+  // column transform
+  load_buffer_16x16(input, in, stride, 0, 0, shift[0]);
+  load_buffer_16x16(input + 16 * stride, in + 64, stride, 0, 0, shift[0]);
+
+  for (int i = 0; i < 4; i++) {
+    col_txfm((in + i), (in + i), bitcol, 4);
+  }
+  col_txfm_16x16_rounding(&in[0], -shift[1]);
+  col_txfm_16x16_rounding(&in[64], -shift[1]);
+  transpose_8nx8n(in, outcoef128, 16, 32);
+
+  // row transform
+  row_txfm(outcoef128, in, bitrow, 8);
+  transpose_8nx8n(in, outcoef128, 32, 16);
+  av1_round_shift_rect_array_32_sse4_1(outcoef128, outcoef128, 128, -shift[2],
+                                       NewSqrt2);
+  (void)bd;
+}
+
+void av1_fwd_txfm2d_32x16_sse4_1(const int16_t *input, int32_t *coeff,
+                                 int stride, TX_TYPE tx_type, int bd) {
+  assert(DCT_DCT == tx_type);
+  __m128i in[128];
+  __m128i *outcoef128 = (__m128i *)coeff;
+  const int8_t *shift = fwd_txfm_shift_ls[TX_32X16];
+  const int txw_idx = get_txw_idx(TX_32X16);
+  const int txh_idx = get_txh_idx(TX_32X16);
+  const fwd_transform_1d_sse4_1 col_txfm = row_highbd_txfm8x32_arr[tx_type];
+  const fwd_transform_1d_sse4_1 row_txfm = col_highbd_txfm8x32_arr[tx_type];
+  int bitcol = fwd_cos_bit_col[txw_idx][txh_idx];
+  int bitrow = fwd_cos_bit_row[txw_idx][txh_idx];
+
+  // column transform
+  load_buffer_32x16(input, in, stride, 0, 0, shift[0]);
+  col_txfm(in, in, bitcol, 8);
+  col_txfm_16x16_rounding(&in[0], -shift[1]);
+  col_txfm_16x16_rounding(&in[64], -shift[1]);
+  transpose_8nx8n(in, outcoef128, 32, 16);
+
+  // row transform
+  for (int i = 0; i < 4; i++) {
+    row_txfm((outcoef128 + i), (in + i), bitrow, 4);
+  }
+  transpose_8nx8n(in, outcoef128, 16, 32);
+  av1_round_shift_rect_array_32_sse4_1(outcoef128, outcoef128, 128, -shift[2],
+                                       NewSqrt2);
   (void)bd;
 }

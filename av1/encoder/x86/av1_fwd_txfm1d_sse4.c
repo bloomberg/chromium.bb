@@ -11,45 +11,45 @@
 
 #include "av1/encoder/x86/av1_txfm1d_sse4.h"
 
-void av1_fdct32_new_sse4_1(const __m128i *input, __m128i *output,
-                           int8_t cos_bit) {
+void av1_fdct32_new_sse4_1(__m128i *input, __m128i *output, int cos_bit,
+                           const int stride) {
   __m128i buf0[32];
   __m128i buf1[32];
   const int32_t *cospi;
   // stage 0
   // stage 1
-  buf1[0] = _mm_add_epi32(input[0], input[31]);
-  buf1[31] = _mm_sub_epi32(input[0], input[31]);
-  buf1[1] = _mm_add_epi32(input[1], input[30]);
-  buf1[30] = _mm_sub_epi32(input[1], input[30]);
-  buf1[2] = _mm_add_epi32(input[2], input[29]);
-  buf1[29] = _mm_sub_epi32(input[2], input[29]);
-  buf1[3] = _mm_add_epi32(input[3], input[28]);
-  buf1[28] = _mm_sub_epi32(input[3], input[28]);
-  buf1[4] = _mm_add_epi32(input[4], input[27]);
-  buf1[27] = _mm_sub_epi32(input[4], input[27]);
-  buf1[5] = _mm_add_epi32(input[5], input[26]);
-  buf1[26] = _mm_sub_epi32(input[5], input[26]);
-  buf1[6] = _mm_add_epi32(input[6], input[25]);
-  buf1[25] = _mm_sub_epi32(input[6], input[25]);
-  buf1[7] = _mm_add_epi32(input[7], input[24]);
-  buf1[24] = _mm_sub_epi32(input[7], input[24]);
-  buf1[8] = _mm_add_epi32(input[8], input[23]);
-  buf1[23] = _mm_sub_epi32(input[8], input[23]);
-  buf1[9] = _mm_add_epi32(input[9], input[22]);
-  buf1[22] = _mm_sub_epi32(input[9], input[22]);
-  buf1[10] = _mm_add_epi32(input[10], input[21]);
-  buf1[21] = _mm_sub_epi32(input[10], input[21]);
-  buf1[11] = _mm_add_epi32(input[11], input[20]);
-  buf1[20] = _mm_sub_epi32(input[11], input[20]);
-  buf1[12] = _mm_add_epi32(input[12], input[19]);
-  buf1[19] = _mm_sub_epi32(input[12], input[19]);
-  buf1[13] = _mm_add_epi32(input[13], input[18]);
-  buf1[18] = _mm_sub_epi32(input[13], input[18]);
-  buf1[14] = _mm_add_epi32(input[14], input[17]);
-  buf1[17] = _mm_sub_epi32(input[14], input[17]);
-  buf1[15] = _mm_add_epi32(input[15], input[16]);
-  buf1[16] = _mm_sub_epi32(input[15], input[16]);
+  buf1[0] = _mm_add_epi32(input[0 * stride], input[31 * stride]);
+  buf1[31] = _mm_sub_epi32(input[0 * stride], input[31 * stride]);
+  buf1[1] = _mm_add_epi32(input[1 * stride], input[30 * stride]);
+  buf1[30] = _mm_sub_epi32(input[1 * stride], input[30 * stride]);
+  buf1[2] = _mm_add_epi32(input[2 * stride], input[29 * stride]);
+  buf1[29] = _mm_sub_epi32(input[2 * stride], input[29 * stride]);
+  buf1[3] = _mm_add_epi32(input[3 * stride], input[28 * stride]);
+  buf1[28] = _mm_sub_epi32(input[3 * stride], input[28 * stride]);
+  buf1[4] = _mm_add_epi32(input[4 * stride], input[27 * stride]);
+  buf1[27] = _mm_sub_epi32(input[4 * stride], input[27 * stride]);
+  buf1[5] = _mm_add_epi32(input[5 * stride], input[26 * stride]);
+  buf1[26] = _mm_sub_epi32(input[5 * stride], input[26 * stride]);
+  buf1[6] = _mm_add_epi32(input[6 * stride], input[25 * stride]);
+  buf1[25] = _mm_sub_epi32(input[6 * stride], input[25 * stride]);
+  buf1[7] = _mm_add_epi32(input[7 * stride], input[24 * stride]);
+  buf1[24] = _mm_sub_epi32(input[7 * stride], input[24 * stride]);
+  buf1[8] = _mm_add_epi32(input[8 * stride], input[23 * stride]);
+  buf1[23] = _mm_sub_epi32(input[8 * stride], input[23 * stride]);
+  buf1[9] = _mm_add_epi32(input[9 * stride], input[22 * stride]);
+  buf1[22] = _mm_sub_epi32(input[9 * stride], input[22 * stride]);
+  buf1[10] = _mm_add_epi32(input[10 * stride], input[21 * stride]);
+  buf1[21] = _mm_sub_epi32(input[10 * stride], input[21 * stride]);
+  buf1[11] = _mm_add_epi32(input[11 * stride], input[20 * stride]);
+  buf1[20] = _mm_sub_epi32(input[11 * stride], input[20 * stride]);
+  buf1[12] = _mm_add_epi32(input[12 * stride], input[19 * stride]);
+  buf1[19] = _mm_sub_epi32(input[12 * stride], input[19 * stride]);
+  buf1[13] = _mm_add_epi32(input[13 * stride], input[18 * stride]);
+  buf1[18] = _mm_sub_epi32(input[13 * stride], input[18 * stride]);
+  buf1[14] = _mm_add_epi32(input[14 * stride], input[17 * stride]);
+  buf1[17] = _mm_sub_epi32(input[14 * stride], input[17 * stride]);
+  buf1[15] = _mm_add_epi32(input[15 * stride], input[16 * stride]);
+  buf1[16] = _mm_sub_epi32(input[15 * stride], input[16 * stride]);
 
   // stage 2
   cospi = cospi_arr(cos_bit);
@@ -297,38 +297,38 @@ void av1_fdct32_new_sse4_1(const __m128i *input, __m128i *output,
                       buf0[24], cos_bit);
 
   // stage 9
-  output[0] = buf0[0];
-  output[1] = buf0[16];
-  output[2] = buf0[8];
-  output[3] = buf0[24];
-  output[4] = buf0[4];
-  output[5] = buf0[20];
-  output[6] = buf0[12];
-  output[7] = buf0[28];
-  output[8] = buf0[2];
-  output[9] = buf0[18];
-  output[10] = buf0[10];
-  output[11] = buf0[26];
-  output[12] = buf0[6];
-  output[13] = buf0[22];
-  output[14] = buf0[14];
-  output[15] = buf0[30];
-  output[16] = buf0[1];
-  output[17] = buf0[17];
-  output[18] = buf0[9];
-  output[19] = buf0[25];
-  output[20] = buf0[5];
-  output[21] = buf0[21];
-  output[22] = buf0[13];
-  output[23] = buf0[29];
-  output[24] = buf0[3];
-  output[25] = buf0[19];
-  output[26] = buf0[11];
-  output[27] = buf0[27];
-  output[28] = buf0[7];
-  output[29] = buf0[23];
-  output[30] = buf0[15];
-  output[31] = buf0[31];
+  output[0 * stride] = buf0[0];
+  output[1 * stride] = buf0[16];
+  output[2 * stride] = buf0[8];
+  output[3 * stride] = buf0[24];
+  output[4 * stride] = buf0[4];
+  output[5 * stride] = buf0[20];
+  output[6 * stride] = buf0[12];
+  output[7 * stride] = buf0[28];
+  output[8 * stride] = buf0[2];
+  output[9 * stride] = buf0[18];
+  output[10 * stride] = buf0[10];
+  output[11 * stride] = buf0[26];
+  output[12 * stride] = buf0[6];
+  output[13 * stride] = buf0[22];
+  output[14 * stride] = buf0[14];
+  output[15 * stride] = buf0[30];
+  output[16 * stride] = buf0[1];
+  output[17 * stride] = buf0[17];
+  output[18 * stride] = buf0[9];
+  output[19 * stride] = buf0[25];
+  output[20 * stride] = buf0[5];
+  output[21 * stride] = buf0[21];
+  output[22 * stride] = buf0[13];
+  output[23 * stride] = buf0[29];
+  output[24 * stride] = buf0[3];
+  output[25 * stride] = buf0[19];
+  output[26 * stride] = buf0[11];
+  output[27 * stride] = buf0[27];
+  output[28 * stride] = buf0[7];
+  output[29 * stride] = buf0[23];
+  output[30 * stride] = buf0[15];
+  output[31 * stride] = buf0[31];
 }
 
 void av1_fadst4_new_sse4_1(const __m128i *input, __m128i *output,
@@ -394,9 +394,8 @@ void av1_fadst4_new_sse4_1(const __m128i *input, __m128i *output,
   }
 }
 
-void av1_fdct64_new_sse4_1(const __m128i *input, __m128i *output,
-                           int8_t cos_bit, const int instride,
-                           const int outstride) {
+void av1_fdct64_new_sse4_1(__m128i *input, __m128i *output, int8_t cos_bit,
+                           const int instride, const int outstride) {
   const int32_t *cospi = cospi_arr(cos_bit);
   const __m128i __rounding = _mm_set1_epi32(1 << (cos_bit - 1));
 
