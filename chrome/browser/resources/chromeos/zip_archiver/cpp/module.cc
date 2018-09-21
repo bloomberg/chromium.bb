@@ -5,7 +5,10 @@
 #include <clocale>
 #include <sstream>
 
-#include "compressor.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_message_sender_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/request.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/logging.h"
@@ -13,8 +16,6 @@
 #include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/utility/threading/lock.h"
 #include "ppapi/utility/threading/simple_thread.h"
-#include "request.h"
-#include "volume.h"
 
 namespace {
 

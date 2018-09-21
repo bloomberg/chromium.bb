@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "volume.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume.h"
 
 #include <cstring>
 #include <sstream>
 
-#include "char_coding.h"
-#include "request.h"
-#include "volume_archive_minizip.h"
-#include "volume_reader_javascript_stream.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/char_coding.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_message_sender_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_requestor_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/request.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive_minizip.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_reader_javascript_stream.h"
 
 namespace {
 

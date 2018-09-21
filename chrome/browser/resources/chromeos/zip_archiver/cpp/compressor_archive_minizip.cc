@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "compressor_archive_minizip.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive_minizip.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstring>
 
 #include "base/time/time.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_stream.h"
 #include "ppapi/cpp/logging.h"
 
 namespace {

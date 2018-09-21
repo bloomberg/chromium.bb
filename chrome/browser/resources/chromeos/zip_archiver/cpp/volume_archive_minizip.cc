@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "volume_archive_minizip.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive_minizip.h"
 
 #include <time.h>
 #include <algorithm>

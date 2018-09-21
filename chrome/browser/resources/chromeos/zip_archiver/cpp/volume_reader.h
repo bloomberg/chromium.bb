@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_READER_H_
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_READER_H_
 
+#include <cstdint>
+#include <memory>
 #include <string>
 
 // Defines a reader for archive volumes. This class is used by minizip

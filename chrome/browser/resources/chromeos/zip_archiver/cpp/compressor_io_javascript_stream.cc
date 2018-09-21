@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "compressor_io_javascript_stream.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"
 
+#include <algorithm>
+#include <cstring>
 #include <limits>
-#include <thread>
 
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_compressor_requestor_interface.h"
 #include "ppapi/cpp/logging.h"
 
 CompressorIOJavaScriptStream::CompressorIOJavaScriptStream(
