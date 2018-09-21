@@ -31,6 +31,8 @@ class DownloadItemModel : public DownloadUIModel,
   ~DownloadItemModel() override;
 
   // DownloadUIModel implementation.
+  void AddObserver(DownloadUIModel::Observer* observer) override;
+  void RemoveObserver(DownloadUIModel::Observer* observer) override;
   ContentId GetContentId() const override;
   base::string16 GetInterruptReasonText() const override;
   base::string16 GetStatusText() const override;

@@ -4,9 +4,7 @@
 
 #include "chrome/browser/download/offline_item_model_manager.h"
 
-OfflineItemModelManager::OfflineItemModelManager(
-    content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {}
+OfflineItemModelManager::OfflineItemModelManager() = default;
 
 OfflineItemModelManager::~OfflineItemModelManager() = default;
 

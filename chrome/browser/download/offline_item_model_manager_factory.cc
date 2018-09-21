@@ -30,5 +30,5 @@ OfflineItemModelManagerFactory::~OfflineItemModelManagerFactory() = default;
 
 KeyedService* OfflineItemModelManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new OfflineItemModelManager(context);
+  return new OfflineItemModelManager();
 }
