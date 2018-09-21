@@ -20,6 +20,8 @@ function Runner(outerContainerId, opt_config) {
   this.outerContainerEl = document.querySelector(outerContainerId);
   this.containerEl = null;
   this.snackbarEl = null;
+  // A div to intercept touch events. Only set while (playing && useTouch).
+  this.touchController = null;
 
   this.config = opt_config || Runner.config;
   // Logical dimensions of the container.
@@ -408,6 +410,7 @@ Runner.prototype = {
     this.touchController.className = Runner.classes.TOUCH_CONTROLLER;
     this.touchController.addEventListener(Runner.events.TOUCHSTART, this);
     this.touchController.addEventListener(Runner.events.TOUCHEND, this);
+    this.outerContainerEl.appendChild(this.touchController);
   },
 
   /**
@@ -491,10 +494,7 @@ Runner.prototype = {
       this.containerEl.style.webkitAnimation = 'intro .4s ease-out 1 both';
       this.containerEl.style.width = this.dimensions.WIDTH + 'px';
 
-      if (this.touchController) {
-        this.outerContainerEl.appendChild(this.touchController);
-      }
-      this.playing = true;
+      this.setPlayStatus(true);
       this.activated = true;
     } else if (this.crashed) {
       this.restart();
@@ -711,7 +711,7 @@ Runner.prototype = {
             this.createTouchController();
           }
           this.loadSounds();
-          this.playing = true;
+          this.setPlayStatus(true);
           this.update();
           if (window.errorPageController) {
             errorPageController.trackEasterEgg();
@@ -832,7 +832,7 @@ Runner.prototype = {
   },
 
   stop: function() {
-    this.playing = false;
+    this.setPlayStatus(false);
     this.paused = true;
     cancelAnimationFrame(this.raqId);
     this.raqId = 0;
@@ -840,7 +840,7 @@ Runner.prototype = {
 
   play: function() {
     if (!this.crashed) {
-      this.playing = true;
+      this.setPlayStatus(true);
       this.paused = false;
       this.tRex.update(0, Trex.status.RUNNING);
       this.time = getTimeStamp();
@@ -852,7 +852,7 @@ Runner.prototype = {
     if (!this.raqId) {
       this.playCount++;
       this.runningTime = 0;
-      this.playing = true;
+      this.setPlayStatus(true);
       this.paused = false;
       this.crashed = false;
       this.distanceRan = 0;
@@ -868,6 +868,12 @@ Runner.prototype = {
       this.bdayFlashTimer = null;
       this.update();
     }
+  },
+
+  setPlayStatus: function(isPlaying) {
+    if (this.touchController)
+      this.touchController.classList.toggle(HIDDEN_CLASS, !isPlaying);
+    this.playing = isPlaying;
   },
 
   /**
