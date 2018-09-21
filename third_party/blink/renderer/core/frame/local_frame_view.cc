@@ -2151,6 +2151,18 @@ Color LocalFrameView::DocumentBackgroundColor() const {
   // background color of the LocalFrameView. This should match the color drawn
   // by ViewPainter::paintBoxDecorationBackground.
   Color result = BaseBackgroundColor();
+
+  // If we have a fullscreen element grab the fullscreen color from the
+  // backdrop.
+  if (Document* doc = frame_->GetDocument()) {
+    if (Element* element = Fullscreen::FullscreenElementFrom(*doc)) {
+      if (LayoutObject* layout_object =
+              element->PseudoElementLayoutObject(kPseudoIdBackdrop)) {
+        return result.Blend(
+            layout_object->ResolveColor(GetCSSPropertyBackgroundColor()));
+      }
+    }
+  }
   auto* layout_view = GetLayoutView();
   if (layout_view) {
     result = result.Blend(

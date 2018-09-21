@@ -2363,6 +2363,28 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   EXPECT_EQ(2100, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 }
 
+// Tests that background color is read from the backdrop on fullscreen.
+TEST_F(WebViewTest, FullscreenBackgroundColor) {
+  RegisterMockedHttpURLLoad("fullscreen_style.html");
+  WebViewImpl* web_view_impl =
+      web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
+  web_view_impl->Resize(WebSize(800, 600));
+  web_view_impl->UpdateAllLifecyclePhases();
+  EXPECT_EQ(SK_ColorWHITE, web_view_impl->BackgroundColor());
+
+  // Enter fullscreen.
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  Element* element = frame->GetDocument()->getElementById("fullscreenElement");
+  ASSERT_TRUE(element);
+  std::unique_ptr<UserGestureIndicator> gesture =
+      Frame::NotifyUserActivation(frame);
+  Fullscreen::RequestFullscreen(*element);
+  web_view_impl->DidEnterFullscreen();
+  web_view_impl->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(SK_ColorYELLOW, web_view_impl->BackgroundColor());
+}
+
 class PrintWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
   PrintWebViewClient() : print_called_(false) {}
