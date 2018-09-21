@@ -23,7 +23,7 @@ struct CONTENT_EXPORT BackgroundFetchDescription {
                              int total_parts,
                              int completed_parts_size,
                              int total_parts_size,
-                             std::vector<std::string> current_guids);
+                             std::vector<std::string> outstanding_guids);
   ~BackgroundFetchDescription();
 
   const std::string job_unique_id;
@@ -34,7 +34,7 @@ struct CONTENT_EXPORT BackgroundFetchDescription {
   int total_parts;
   int completed_parts_size;
   int total_parts_size;
-  std::vector<std::string> current_guids;
+  std::vector<std::string> outstanding_guids;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchDescription);

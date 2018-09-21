@@ -26,6 +26,9 @@ class BackgroundFetchDownloadClient : public download::Client {
   ~BackgroundFetchDownloadClient() override;
 
  private:
+  // Lazily initializes and returns |delegate_| as a raw pointer.
+  BackgroundFetchDelegateImpl* GetDelegate();
+
   // download::Client implementation
   void OnServiceInitialized(
       bool state_lost,

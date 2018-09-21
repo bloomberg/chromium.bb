@@ -108,6 +108,15 @@ class BackgroundFetchDelegateImpl
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
+  // Whether the provided GUID is resuming from the perspective of Background
+  // Fetch.
+  bool IsGuidOutstanding(const std::string& guid) const;
+
+  // Returns the set of download GUIDs that have started but did not finish
+  // according to Background Fetch. Clears out all references to outstanding
+  // GUIDs.
+  std::set<std::string> TakeOutstandingGuids();
+
   base::WeakPtr<BackgroundFetchDelegateImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
