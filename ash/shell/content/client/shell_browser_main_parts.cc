@@ -104,9 +104,10 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   window_watcher_ = std::make_unique<WindowWatcher>();
 
-  ash::shell::InitWindowTypeLauncher(base::Bind(
-      &views::examples::ShowExamplesWindowWithContent,
-      views::examples::DO_NOTHING_ON_CLOSE, browser_context_.get(), nullptr));
+  ash::shell::InitWindowTypeLauncher(
+      base::Bind(&views::examples::ShowExamplesWindowWithContent,
+                 base::Passed(base::OnceClosure()),
+                 base::Unretained(browser_context_.get()), nullptr));
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
