@@ -1179,6 +1179,14 @@ inline const LayoutObject* EndOfContinuations(
 
 bool LayoutObject::GetUpperLeftCorner(ExpandScrollMargin expand,
                                       FloatPoint& point) const {
+  if (IsSVGChild()) {
+    point = LocalToAbsoluteQuad(StrokeBoundingBox(), kUseTransforms)
+                .BoundingBox()
+                .MinXMinYCorner();
+    if (expand == ExpandScrollMargin::kExpand)
+      MovePointByScrollMargin(this, MarginCorner::kTopLeft, point);
+    return true;
+  }
   if (!IsInline() || IsAtomicInlineLevel()) {
     point = LocalToAbsolute(FloatPoint(), kUseTransforms);
     if (expand == ExpandScrollMargin::kExpand)
@@ -1259,6 +1267,14 @@ bool LayoutObject::GetUpperLeftCorner(ExpandScrollMargin expand,
 
 bool LayoutObject::GetLowerRightCorner(ExpandScrollMargin expand,
                                        FloatPoint& point) const {
+  if (IsSVGChild()) {
+    point = LocalToAbsoluteQuad(StrokeBoundingBox(), kUseTransforms)
+                .BoundingBox()
+                .MaxXMaxYCorner();
+    if (expand == ExpandScrollMargin::kExpand)
+      MovePointByScrollMargin(this, MarginCorner::kBottomRight, point);
+    return true;
+  }
   if (!IsInline() || IsAtomicInlineLevel()) {
     const LayoutBox* box = ToLayoutBox(this);
     point = LocalToAbsolute(FloatPoint(box->Size()), kUseTransforms);
