@@ -2,45 +2,57 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/navigation_state_impl.h"
+#include "content/renderer/navigation_state.h"
+
+#include "content/renderer/internal_document_state_data.h"
 
 namespace content {
 
-NavigationStateImpl::~NavigationStateImpl() {
+NavigationState::~NavigationState() {
   RunCommitNavigationCallback(blink::mojom::CommitResult::Aborted);
 }
 
-NavigationStateImpl* NavigationStateImpl::CreateBrowserInitiated(
+// static
+std::unique_ptr<NavigationState> NavigationState::CreateBrowserInitiated(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     base::TimeTicks time_commit_requested,
     mojom::FrameNavigationControl::CommitNavigationCallback callback) {
-  return new NavigationStateImpl(common_params, request_params,
-                                 time_commit_requested, false,
-                                 std::move(callback));
+  return base::WrapUnique(new NavigationState(common_params, request_params,
+                                              time_commit_requested, false,
+                                              std::move(callback)));
 }
 
-NavigationStateImpl* NavigationStateImpl::CreateContentInitiated() {
-  return new NavigationStateImpl(
+// static
+std::unique_ptr<NavigationState> NavigationState::CreateContentInitiated() {
+  return base::WrapUnique(new NavigationState(
       CommonNavigationParams(), RequestNavigationParams(), base::TimeTicks(),
-      true, content::mojom::FrameNavigationControl::CommitNavigationCallback());
+      true,
+      content::mojom::FrameNavigationControl::CommitNavigationCallback()));
 }
 
-bool NavigationStateImpl::WasWithinSameDocument() {
+// static
+NavigationState* NavigationState::FromDocumentLoader(
+    blink::WebDocumentLoader* document_loader) {
+  return InternalDocumentStateData::FromDocumentLoader(document_loader)
+      ->navigation_state();
+}
+
+bool NavigationState::WasWithinSameDocument() {
   return was_within_same_document_;
 }
 
-bool NavigationStateImpl::IsContentInitiated() {
+bool NavigationState::IsContentInitiated() {
   return is_content_initiated_;
 }
 
-void NavigationStateImpl::RunCommitNavigationCallback(
+void NavigationState::RunCommitNavigationCallback(
     blink::mojom::CommitResult result) {
   if (commit_callback_)
     std::move(commit_callback_).Run(result);
 }
 
-NavigationStateImpl::NavigationStateImpl(
+NavigationState::NavigationState(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     base::TimeTicks time_commit_requested,

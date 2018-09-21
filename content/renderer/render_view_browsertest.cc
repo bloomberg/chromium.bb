@@ -39,8 +39,6 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/document_state.h"
-#include "content/public/renderer/navigation_state.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "content/public/test/render_view_test.h"
@@ -50,7 +48,7 @@
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/loader/request_extra_data.h"
-#include "content/renderer/navigation_state_impl.h"
+#include "content/renderer/navigation_state.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_view_impl.h"
@@ -657,9 +655,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   WebUITestWebUIControllerFactory factory;
   WebUIControllerFactory::RegisterFactory(&factory);
 
-  DocumentState state;
-  state.set_navigation_state(NavigationStateImpl::CreateContentInitiated());
-
   // Navigations to normal HTTP URLs can be handled locally.
   blink::WebURLRequest request(GURL("http://foo.com"));
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
@@ -699,9 +694,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
 }
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
-  DocumentState state;
-  state.set_navigation_state(NavigationStateImpl::CreateContentInitiated());
-
   RendererPreferences prefs = view()->renderer_preferences();
   prefs.browser_handles_all_top_level_requests = true;
   view()->OnSetRendererPrefs(prefs);
@@ -731,9 +723,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
 TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   // Enable bindings to simulate a WebUI view.
   view()->GetMainRenderFrame()->AllowBindings(BINDINGS_POLICY_WEB_UI);
-
-  DocumentState state;
-  state.set_navigation_state(NavigationStateImpl::CreateContentInitiated());
 
   // Navigations to normal HTTP URLs will be sent to browser process.
   blink::WebURLRequest request(GURL("http://foo.com"));
@@ -2143,10 +2132,8 @@ TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
   frame()->GetWebFrame()->LoadHTMLString(
       "hello world", blink::WebURL(GURL("data:text/html,")));
 
-  DocumentState* document_state = DocumentState::FromDocumentLoader(
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetProvisionalDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
   EXPECT_FALSE(navigation_state->common_params().navigation_start.is_null());
   EXPECT_LE(lower_bound_navigation_start,
             navigation_state->common_params().navigation_start);
@@ -2160,10 +2147,8 @@ TEST_F(RenderViewImplTest, BrowserNavigationStart) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
 
   frame()->Navigate(common_params, RequestNavigationParams());
-  DocumentState* document_state = DocumentState::FromDocumentLoader(
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetProvisionalDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
   EXPECT_EQ(common_params.navigation_start,
             navigation_state->common_params().navigation_start);
 }
@@ -2199,10 +2184,8 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
   frame()->Navigate(common_params, RequestNavigationParams());
 
-  DocumentState* document_state = DocumentState::FromDocumentLoader(
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetProvisionalDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
   EXPECT_EQ(common_params.navigation_start,
             navigation_state->common_params().navigation_start);
 }
@@ -2225,10 +2208,8 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
   frame()->Navigate(common_params, RequestNavigationParams());
 
   // The browser navigation_start is always used.
-  DocumentState* document_state = DocumentState::FromDocumentLoader(
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetProvisionalDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
   EXPECT_EQ(common_params.navigation_start,
             navigation_state->common_params().navigation_start);
 }
@@ -2251,10 +2232,8 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
       FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(-1, back_state, common_params_back,
                        RequestNavigationParams());
-  DocumentState* document_state = DocumentState::FromDocumentLoader(
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
 
   // The browser navigation_start is always used.
   EXPECT_EQ(common_params_back.navigation_start,
@@ -2269,10 +2248,8 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
       FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(1, forward_state, common_params_forward,
                        RequestNavigationParams());
-  document_state = DocumentState::FromDocumentLoader(
+  navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
-  navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
   EXPECT_EQ(common_params_forward.navigation_start,
             navigation_state->common_params().navigation_start);
 }
@@ -2292,10 +2269,8 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
   request_params.current_history_list_length = 1;
   frame()->Navigate(common_params, request_params);
 
-  DocumentState* document_state = DocumentState::FromDocumentLoader(
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetProvisionalDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
   EXPECT_EQ(common_params.navigation_start,
             navigation_state->common_params().navigation_start);
 }

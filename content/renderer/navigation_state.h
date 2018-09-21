@@ -2,31 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_NAVIGATION_STATE_IMPL_H_
-#define CONTENT_RENDERER_NAVIGATION_STATE_IMPL_H_
+#ifndef CONTENT_RENDERER_NAVIGATION_STATE_H_
+#define CONTENT_RENDERER_NAVIGATION_STATE_H_
 
 #include <string>
 
 #include "base/macros.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/navigation_params.h"
-#include "content/public/renderer/navigation_state.h"
 #include "content/renderer/navigation_client.h"
 #include "third_party/blink/public/web/commit_result.mojom.h"
 
+namespace blink {
+class WebDocumentLoader;
+}
+
 namespace content {
 
-class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
+class CONTENT_EXPORT NavigationState {
  public:
-  ~NavigationStateImpl() override;
+  ~NavigationState();
 
-  static NavigationStateImpl* CreateBrowserInitiated(
+  static std::unique_ptr<NavigationState> CreateBrowserInitiated(
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       base::TimeTicks time_commit_requested,
       mojom::FrameNavigationControl::CommitNavigationCallback callback);
 
-  static NavigationStateImpl* CreateContentInitiated();
+  static std::unique_ptr<NavigationState> CreateContentInitiated();
+
+  static NavigationState* FromDocumentLoader(
+      blink::WebDocumentLoader* document_loader);
 
   // True iff the frame's navigation was within the same document.
   bool WasWithinSameDocument();
@@ -65,7 +71,7 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
   void RunCommitNavigationCallback(blink::mojom::CommitResult result);
 
  private:
-  NavigationStateImpl(
+  NavigationState(
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       base::TimeTicks time_commit_requested,
@@ -106,9 +112,9 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
   // successful or not.
   mojom::FrameNavigationControl::CommitNavigationCallback commit_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(NavigationStateImpl);
+  DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_NAVIGATION_STATE_IMPL_H_
+#endif  // CONTENT_RENDERER_NAVIGATION_STATE_H_

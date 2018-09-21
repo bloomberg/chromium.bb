@@ -55,7 +55,6 @@ using blink::WebString;
 using blink::WebURL;
 using blink::WebView;
 using content::DocumentState;
-using content::NavigationState;
 
 namespace {
 
