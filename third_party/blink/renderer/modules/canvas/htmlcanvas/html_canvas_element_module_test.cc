@@ -5,17 +5,45 @@
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/html_canvas_element_module.h"
 
 #include <memory>
+
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/canvas/test/mock_viz_mojo.h"
+
+using ::testing::_;
+using ::testing::Values;
 
 namespace blink {
 
-class HTMLCanvasElementModuleTest : public PageTestBase {
+namespace {
+
+// This class allows for overriding GenerateFrameSinkId() so that the
+// HTMLCanvasElement's SurfaceLayerBridge will get a syntactically correct
+// FrameSinkId.
+class TestingPlatformSupportWithGenerateFrameSinkId
+    : public TestingPlatformSupport {
+ public:
+  viz::FrameSinkId GenerateFrameSinkId() override {
+    // Doesn't matter what we return as long as is not zero.
+    constexpr uint32_t kClientId = 2;
+    constexpr uint32_t kSinkId = 1;
+    return viz::FrameSinkId(kClientId, kSinkId);
+  }
+};
+
+}  // unnamed namespace
+
+class HTMLCanvasElementModuleTest : public PageTestBase,
+                                    public ::testing::WithParamInterface<bool> {
  protected:
   void SetUp() override {
     PageTestBase::SetUp();
@@ -23,28 +51,67 @@ class HTMLCanvasElementModuleTest : public PageTestBase {
     canvas_element_ = ToHTMLCanvasElement(GetElementById("c"));
   }
 
-  HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }
-  OffscreenCanvas* TransferControlToOffscreen(ExceptionState&);
+  HTMLCanvasElement& canvas_element() const { return *canvas_element_; }
+  OffscreenCanvas* TransferControlToOffscreen(ExceptionState& exception_state) {
+    return HTMLCanvasElementModule::TransferControlToOffscreenInternal(
+        canvas_element(), exception_state);
+  }
 
- private:
   Persistent<HTMLCanvasElement> canvas_element_;
+  Persistent<CanvasRenderingContext> context_;
 };
 
-OffscreenCanvas* HTMLCanvasElementModuleTest::TransferControlToOffscreen(
-    ExceptionState& exception_state) {
-  // This unit test only tests if the Canvas Id is associated correctly, so we
-  // exclude the part that creates surface layer bridge because a mojo message
-  // pipe cannot be tested using webkit unit tests.
-  return HTMLCanvasElementModule::TransferControlToOffscreenInternal(
-      CanvasElement(), exception_state);
-}
-
+// Tests if the Canvas Id is associated correctly.
 TEST_F(HTMLCanvasElementModuleTest, TransferControlToOffscreen) {
   NonThrowableExceptionState exception_state;
-  OffscreenCanvas* offscreen_canvas =
+  const OffscreenCanvas* offscreen_canvas =
       TransferControlToOffscreen(exception_state);
-  DOMNodeId canvas_id = offscreen_canvas->PlaceholderCanvasId();
-  EXPECT_EQ(canvas_id, DOMNodeIds::IdForNode(&(CanvasElement())));
+  const DOMNodeId canvas_id = offscreen_canvas->PlaceholderCanvasId();
+  EXPECT_EQ(canvas_id, DOMNodeIds::IdForNode(&(canvas_element())));
 }
 
+// Verifies that a lowLatency canvas has the appropriate opacity/blending
+// information sent to the CompositorFrameSink.
+TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithGenerateFrameSinkId>
+      platform;
+
+  // To intercept SubmitCompositorFrame/SubmitCompositorFrameSync messages sent
+  // by a canvas's CanvasResourceDispatcher, we have to override the Mojo
+  // EmbeddedFrameSinkProvider interface impl and its CompositorFrameSinkClient.
+  MockEmbeddedFrameSinkProvider mock_embedded_frame_sink_provider;
+  mojo::Binding<mojom::blink::EmbeddedFrameSinkProvider>
+      embedded_frame_sink_provider_binding(&mock_embedded_frame_sink_provider);
+  auto override =
+      mock_embedded_frame_sink_provider.CreateScopedOverrideMojoInterface(
+          &embedded_frame_sink_provider_binding);
+
+  CanvasContextCreationAttributesCore attrs;
+  attrs.alpha = GetParam();
+  attrs.low_latency = true;
+  // |context_| creation triggers a SurfaceLayerBridge creation which in turn
+  // connects to our MockEmbeddedFrameSinkProvider.
+  EXPECT_CALL(mock_embedded_frame_sink_provider, CreateCompositorFrameSink(_));
+  context_ = canvas_element().GetCanvasRenderingContext(String("2d"), attrs);
+  EXPECT_EQ(context_->CreationAttributes().alpha, attrs.alpha);
+  EXPECT_TRUE(context_->CreationAttributes().low_latency);
+  EXPECT_TRUE(canvas_element().LowLatencyEnabled());
+  EXPECT_TRUE(canvas_element().SurfaceLayerBridge());
+  platform->RunUntilIdle();
+
+  // This call simulates having drawn something before FinalizeFrame()
+  canvas_element().DidDraw();
+
+  mock_embedded_frame_sink_provider.mock_compositor_frame_sink_
+      ->expected_opacity_ = !attrs.alpha;
+
+  EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
+              SubmitCompositorFrameOrSubmitCompositorFrameSync());
+  EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
+              DidAllocateSharedBitmap(_, _));
+  canvas_element().FinalizeFrame();
+  platform->RunUntilIdle();
+}
+
+INSTANTIATE_TEST_CASE_P(, HTMLCanvasElementModuleTest, Values(true, false));
 }  // namespace blink
