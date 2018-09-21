@@ -452,11 +452,9 @@ void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
   ProcessorEntityTracker* entity = GetEntityForTagHash(client_tag_hash);
   DCHECK(entity);
 
-  // TODO(crbug.com/872360): Restore the below DCHECKs once we've figured out
-  // (and fixed) why it fired.
-  // DCHECK(entity->storage_key().empty());
-  // DCHECK(storage_key_to_tag_hash_.find(storage_key) ==
-  //        storage_key_to_tag_hash_.end());
+  DCHECK(entity->storage_key().empty());
+  DCHECK(storage_key_to_tag_hash_.find(storage_key) ==
+         storage_key_to_tag_hash_.end());
 
   storage_key_to_tag_hash_[storage_key] = client_tag_hash;
   entity->SetStorageKey(storage_key);
@@ -1126,14 +1124,10 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
 ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
     const std::string& storage_key,
     const EntityData& data) {
-  // TODO(crbug.com/872360): Restore the below DCHECK once we've figured out
-  // (and fixed) why it fired.
-  // DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
+  DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
   DCHECK(!bridge_->SupportsGetStorageKey() || !storage_key.empty());
-  // TODO(crbug.com/872360): Restore the below DCHECK once we've figured out
-  // (and fixed) why it fired.
-  // DCHECK(storage_key.empty() || storage_key_to_tag_hash_.find(storage_key) ==
-  //                                   storage_key_to_tag_hash_.end());
+  DCHECK(storage_key.empty() || storage_key_to_tag_hash_.find(storage_key) ==
+                                    storage_key_to_tag_hash_.end());
   std::unique_ptr<ProcessorEntityTracker> entity =
       ProcessorEntityTracker::CreateNew(storage_key, data.client_tag_hash,
                                         data.id, data.creation_time);
