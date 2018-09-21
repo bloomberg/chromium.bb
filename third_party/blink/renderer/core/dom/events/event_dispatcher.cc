@@ -187,6 +187,9 @@ DispatchEventResult EventDispatcher::Dispatch() {
                               pre_dispatch_event_handler_result) ==
       kContinueDispatching) {
     if (DispatchEventAtCapturing() == kContinueDispatching) {
+      // TODO(crbug/882574): Remove these.
+      CHECK(event_->HasEventPath());
+      CHECK(!event_->GetEventPath().IsEmpty());
       if (DispatchEventAtTarget() == kContinueDispatching)
         DispatchEventAtBubbling();
     }
