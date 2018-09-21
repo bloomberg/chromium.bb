@@ -2645,7 +2645,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2655,7 +2654,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2666,7 +2664,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2676,7 +2673,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2686,7 +2682,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2696,7 +2691,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2706,7 +2700,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2716,7 +2709,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2726,7 +2718,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2736,7 +2727,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2746,7 +2736,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2756,7 +2745,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2769,7 +2757,6 @@
         "args": [
           "--enable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -2781,7 +2768,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2791,7 +2777,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2801,7 +2786,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2811,7 +2795,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2821,7 +2804,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2831,7 +2813,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2841,7 +2822,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2851,7 +2831,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2862,7 +2841,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2872,7 +2850,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2885,7 +2862,6 @@
         "args": [
           "--enable-features=TracingPerfettoBackend",
           "--gtest_filter=TracingControllerTest.*",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "perfetto_content_browsertests",
@@ -2896,7 +2872,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2907,7 +2882,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2917,7 +2891,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2927,7 +2900,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2937,7 +2909,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2947,7 +2918,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2957,7 +2927,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2967,7 +2936,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2977,7 +2945,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2987,7 +2954,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -2997,7 +2963,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3007,7 +2972,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3017,7 +2981,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3027,7 +2990,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always",
           "--use-gpu-in-tests",
           "--no-xvfb"
@@ -3047,7 +3009,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3057,7 +3018,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3067,7 +3027,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3077,7 +3036,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3090,7 +3048,6 @@
         "args": [
           "--enable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -3101,7 +3058,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3111,7 +3067,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3121,7 +3076,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3131,7 +3085,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3141,7 +3094,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3151,7 +3103,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3161,7 +3112,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3171,7 +3121,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3181,7 +3130,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3191,7 +3139,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3201,7 +3148,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3211,7 +3157,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3221,7 +3166,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3231,7 +3175,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3241,7 +3184,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3251,7 +3193,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3262,7 +3203,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3272,7 +3212,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3282,7 +3221,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3292,7 +3230,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3302,7 +3239,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3312,7 +3248,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3322,7 +3257,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3332,7 +3266,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3342,7 +3275,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3352,7 +3284,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3362,7 +3293,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3372,7 +3302,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3382,7 +3311,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3392,7 +3320,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3402,7 +3329,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3412,7 +3338,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3422,7 +3347,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3433,7 +3357,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3443,7 +3366,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3453,7 +3375,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3463,7 +3384,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3473,7 +3393,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3483,7 +3402,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3494,7 +3412,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3504,7 +3421,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3518,7 +3434,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3529,7 +3444,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3539,7 +3453,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3549,7 +3462,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4187,7 +4099,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4197,7 +4108,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4207,7 +4117,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4217,7 +4126,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4227,7 +4135,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4237,7 +4144,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4249,7 +4155,6 @@
         "args": [
           "--enable-features=SingleProcessMash",
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.ash_unittests.filter",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "single_process_mash_ash_unittests",
@@ -4260,7 +4165,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4270,7 +4174,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4280,7 +4183,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4290,7 +4192,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4300,7 +4201,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4310,7 +4210,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4320,7 +4219,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4330,7 +4228,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4340,7 +4237,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4354,7 +4250,6 @@
           "--enable-features=Mash",
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.browser_tests.filter",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "mash_browser_tests",
@@ -4367,7 +4262,6 @@
       {
         "args": [
           "--enable-features=VizDisplayCompositor",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "viz_browser_tests",
@@ -4381,7 +4275,6 @@
         "args": [
           "--enable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -4393,7 +4286,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4403,7 +4295,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4413,7 +4304,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4423,7 +4313,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4433,7 +4322,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4443,7 +4331,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4453,7 +4340,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4463,7 +4349,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4473,7 +4358,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4483,7 +4367,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4493,7 +4376,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4504,7 +4386,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4514,7 +4395,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4527,7 +4407,6 @@
         "args": [
           "--enable-features=TracingPerfettoBackend",
           "--gtest_filter=TracingControllerTest.*",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "perfetto_content_browsertests",
@@ -4541,7 +4420,6 @@
           "--enable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.content_browsertests.filter",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "single_process_mash_content_browsertests",
@@ -4554,7 +4432,6 @@
       {
         "args": [
           "--enable-features=VizDisplayCompositor",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "viz_content_browsertests",
@@ -4566,7 +4443,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4577,7 +4453,6 @@
       {
         "args": [
           "--enable-features=SingleProcessMash",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "single_process_mash_content_unittests",
@@ -4589,7 +4464,6 @@
       {
         "args": [
           "--enable-features=VizDisplayCompositor",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "viz_content_unittests",
@@ -4600,7 +4474,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4610,7 +4483,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4620,7 +4492,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4630,7 +4501,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4640,7 +4510,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4650,7 +4519,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4662,7 +4530,6 @@
         "args": [
           "--enable-features=SingleProcessMash",
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "single_process_mash_exo_unittests",
@@ -4673,7 +4540,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4683,7 +4549,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4693,7 +4558,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4703,7 +4567,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4713,7 +4576,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4723,7 +4585,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4733,7 +4594,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4743,7 +4603,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4753,7 +4612,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4766,7 +4624,6 @@
         "args": [
           "--enable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -4777,7 +4634,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4787,7 +4643,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4797,7 +4652,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4807,7 +4661,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4817,7 +4670,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4827,7 +4679,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4837,7 +4688,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4847,7 +4697,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4857,7 +4706,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4867,7 +4715,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4877,7 +4724,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4887,7 +4733,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4897,7 +4742,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4907,7 +4751,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4917,7 +4760,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4927,7 +4769,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4937,7 +4778,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4949,7 +4789,6 @@
       {
         "args": [
           "--ozone-platform=headless",
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4959,7 +4798,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4969,7 +4807,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4979,7 +4816,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4989,7 +4825,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4999,7 +4834,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5009,7 +4843,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5019,7 +4852,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5029,7 +4861,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5039,7 +4870,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5049,7 +4879,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5059,7 +4888,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5069,7 +4897,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5079,7 +4906,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5089,7 +4915,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5099,7 +4924,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5109,7 +4933,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5119,7 +4942,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5129,7 +4951,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5139,7 +4960,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5149,7 +4969,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5159,7 +4978,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5170,7 +4988,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5180,7 +4997,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5190,7 +5006,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5200,7 +5015,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5210,7 +5024,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5220,7 +5033,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5230,7 +5042,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5240,7 +5051,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5250,7 +5060,6 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
