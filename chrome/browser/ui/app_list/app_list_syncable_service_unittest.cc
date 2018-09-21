@@ -444,24 +444,6 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate_BadData) {
   ASSERT_TRUE(GetSyncItem(kItemId));
 }
 
-TEST_F(AppListSyncableServiceTest, InitialMerge_NoDriveAppData) {
-  // Note that Drive app item id must start with "drive-app-" prefix as defined
-  // in kDriveAppSyncIdPrefix in AppListSyncableService.
-  constexpr char kDriveAppItemId[] = "drive-app-fake-drive-app";
-
-  syncer::SyncDataList sync_list;
-  sync_list.push_back(CreateAppRemoteData(
-      kDriveAppItemId, "Fake Drive App", kParentId(), "ordinal", "pinordinal"));
-
-  app_list_syncable_service()->MergeDataAndStartSyncing(
-      syncer::APP_LIST, sync_list,
-      std::make_unique<syncer::FakeSyncChangeProcessor>(),
-      std::make_unique<syncer::SyncErrorFactoryMock>());
-  content::RunAllTasksUntilIdle();
-
-  ASSERT_FALSE(GetSyncItem(kDriveAppItemId));
-}
-
 TEST_F(AppListSyncableServiceTest, PruneEmptySyncFolder) {
   // Add a folder item and an item that is parented to the folder item.
   const std::string kFolderItemId = GenerateId("folder_item_id");

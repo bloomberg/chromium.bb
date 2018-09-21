@@ -256,10 +256,6 @@ class AppListSyncableService : public syncer::SyncableService,
   // Returns true if extension service is ready.
   bool IsExtensionServiceReady() const;
 
-  // Remove sync data of Drive apps.
-  // TODO(http://crbug.com/794724): Remove after M65 goes stable.
-  void RemoveDriveAppItems();
-
   // Returns a list of top level sync items sorted by item ordinal.
   std::vector<SyncItem*> GetSortedTopLevelSyncItems() const;
 
