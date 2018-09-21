@@ -2092,6 +2092,9 @@
         '--enable-features=WebUIPolymer2',
         '--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter',
       ],
+      'swarming': {
+        'shards': 4,
+      },
       'test': 'browser_tests',
     },
     'webui_polymer2_interactive_ui_tests': {
