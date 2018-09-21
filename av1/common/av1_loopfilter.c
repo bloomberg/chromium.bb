@@ -1319,12 +1319,16 @@ static void filter_selectively_horiz(uint8_t *s, int pitch, int plane,
   int count;
   const int step = 1 << subsampling;
   const unsigned int two_block_mask = subsampling ? 5 : 3;
+  int offset = 0;
 
   for (mask = mask_16x16 | mask_8x8 | mask_4x4; mask; mask >>= step * count) {
     const loop_filter_thresh *lfi = lfi_n->lfthr + *lfl;
-    // Next block's thresholds.
-    const loop_filter_thresh *lfin = lfi_n->lfthr + *(lfl + step);
-    (void)lfin;
+    // Next block's thresholds, when it is within current 64x64 block.
+    // If it is out of bound, its mask is zero, and it points to current edge's
+    // filter parameters, instead of next edge's.
+    int next_edge = step;
+    if (offset + next_edge >= MI_SIZE_64X64) next_edge = 0;
+    const loop_filter_thresh *lfin = lfi_n->lfthr + *(lfl + next_edge);
 
     count = 1;
     if (mask & 1) {
@@ -1385,6 +1389,7 @@ static void filter_selectively_horiz(uint8_t *s, int pitch, int plane,
     mask_16x16 >>= step * count;
     mask_8x8 >>= step * count;
     mask_4x4 >>= step * count;
+    offset += step * count;
   }
 }
 
@@ -1396,12 +1401,16 @@ static void highbd_filter_selectively_horiz(
   int count;
   const int step = 1 << subsampling;
   const unsigned int two_block_mask = subsampling ? 5 : 3;
+  int offset = 0;
 
   for (mask = mask_16x16 | mask_8x8 | mask_4x4; mask; mask >>= step * count) {
     const loop_filter_thresh *lfi = lfi_n->lfthr + *lfl;
-    // Next block's thresholds.
-    const loop_filter_thresh *lfin = lfi_n->lfthr + *(lfl + step);
-    (void)lfin;
+    // Next block's thresholds, when it is within current 64x64 block.
+    // If it is out of bound, its mask is zero, and it points to current edge's
+    // filter parameters, instead of next edge's.
+    int next_edge = step;
+    if (offset + next_edge >= MI_SIZE_64X64) next_edge = 0;
+    const loop_filter_thresh *lfin = lfi_n->lfthr + *(lfl + next_edge);
 
     count = 1;
     if (mask & 1) {
@@ -1461,6 +1470,7 @@ static void highbd_filter_selectively_horiz(
     mask_16x16 >>= step * count;
     mask_8x8 >>= step * count;
     mask_4x4 >>= step * count;
+    offset += step * count;
   }
 }
 
