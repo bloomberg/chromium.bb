@@ -44,14 +44,12 @@ void BackgroundFetchJobController::InitializeRequestStatus(
   DCHECK_GT(total_downloads, 0);
   DCHECK_EQ(total_downloads_, 0);
 
+  outstanding_requests_ = active_fetch_requests;
   completed_downloads_ = completed_downloads;
   total_downloads_ = total_downloads;
 
   // TODO(nator): Update this when we support uploads.
   total_downloads_size_ = options_.download_total;
-
-  if (!active_fetch_requests.empty())
-    is_processing_a_request_ = true;
 
   std::vector<std::string> active_guids;
   active_guids.reserve(active_fetch_requests.size());
@@ -83,9 +81,7 @@ void BackgroundFetchJobController::StartRequest(
   DCHECK_LT(completed_downloads_, total_downloads_);
   DCHECK(request_finished_callback);
   DCHECK(request);
-  DCHECK(!is_processing_a_request_);
 
-  is_processing_a_request_ = true;
   active_request_downloaded_bytes_ = 0;
   active_request_finished_callback_ = std::move(request_finished_callback);
 
@@ -93,15 +89,9 @@ void BackgroundFetchJobController::StartRequest(
                                 registration_id().origin(), request);
 }
 
-bool BackgroundFetchJobController::IsProcessingARequest() {
-  return is_processing_a_request_;
-}
-
-void BackgroundFetchJobController::Resume(
-    RequestFinishedCallback request_finished_callback) {
-  // At the moment, the Download Service immediately resumes downloading a
-  // request on startup. Ideally we should be able to control when this happens.
-  active_request_finished_callback_ = std::move(request_finished_callback);
+std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+BackgroundFetchJobController::TakeOutstandingRequests() {
+  return std::move(outstanding_requests_);
 }
 
 void BackgroundFetchJobController::DidStartRequest(
@@ -142,8 +132,6 @@ void BackgroundFetchJobController::DidCompleteRequest(
 
   complete_requests_downloaded_bytes_cache_ += request->GetFileSize();
   ++completed_downloads_;
-
-  is_processing_a_request_ = false;
 
   std::move(active_request_finished_callback_).Run(request);
 }

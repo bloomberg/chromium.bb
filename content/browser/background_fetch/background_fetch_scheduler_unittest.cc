@@ -55,8 +55,11 @@ class FakeController : public BackgroundFetchScheduler::Controller {
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(std::move(callback), std::move(request)));
   }
-  bool IsProcessingARequest() override { return false; }
-  void Resume(RequestFinishedCallback callback) override { NOTREACHED(); }
+
+  std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+  TakeOutstandingRequests() override {
+    return {};
+  }
 
  private:
   int jobs_started_ = 0;

@@ -79,7 +79,6 @@ BackgroundFetchDelegateImpl::JobDetails::JobDetails(
           fetch_description->job_unique_id)),
       fetch_description(std::move(fetch_description)) {
   offline_item.is_off_the_record = is_off_the_record;
-  current_download_guids = std::move(this->fetch_description->current_guids);
   UpdateOfflineItem();
 }
 
@@ -213,9 +212,6 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Initialize the download service in case it hasn't been yet.
-  GetDownloadService();
-
   std::string job_unique_id = fetch_description->job_unique_id;
   DCHECK(!job_details_map_.count(job_unique_id));
   auto emplace_result = job_details_map_.emplace(
@@ -224,14 +220,8 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
                  profile_->IsOffTheRecord()));
 
   const JobDetails& details = emplace_result.first->second;
-  for (const auto& download_guid : details.current_download_guids) {
-    DCHECK(!download_job_unique_id_map_.count(download_guid));
-    download_job_unique_id_map_.emplace(download_guid, job_unique_id);
-  }
-
-  for (auto* observer : observers_) {
+  for (auto* observer : observers_)
     observer->OnItemsAdded({details.offline_item});
-  }
 }
 
 void BackgroundFetchDelegateImpl::DownloadUrl(
@@ -459,6 +449,9 @@ void BackgroundFetchDelegateImpl::OnDownloadReceived(
     case StartResult::ACCEPTED:
       // Nothing to do.
       break;
+    case StartResult::UNEXPECTED_GUID:
+      // The download started in a previous session. Nothing to do.
+      break;
     case StartResult::BACKOFF:
       // TODO(delphick): try again later?
       NOTREACHED();
@@ -466,10 +459,6 @@ void BackgroundFetchDelegateImpl::OnDownloadReceived(
     case StartResult::UNEXPECTED_CLIENT:
       // This really should never happen since we're supplying the
       // DownloadClient.
-      NOTREACHED();
-      break;
-    case StartResult::UNEXPECTED_GUID:
-      // TODO(delphick): try again with a different GUID.
       NOTREACHED();
       break;
     case StartResult::CLIENT_CANCELLED:
@@ -614,4 +603,32 @@ void BackgroundFetchDelegateImpl::AddObserver(Observer* observer) {
 
 void BackgroundFetchDelegateImpl::RemoveObserver(Observer* observer) {
   observers_.erase(observer);
+}
+
+bool BackgroundFetchDelegateImpl::IsGuidOutstanding(
+    const std::string& guid) const {
+  auto unique_id_it = download_job_unique_id_map_.find(guid);
+  if (unique_id_it == download_job_unique_id_map_.end())
+    return false;
+
+  auto job_details_it = job_details_map_.find(unique_id_it->second);
+  if (job_details_it == job_details_map_.end())
+    return false;
+
+  std::vector<std::string>& outstanding_guids =
+      job_details_it->second.fetch_description->outstanding_guids;
+  return std::find(outstanding_guids.begin(), outstanding_guids.end(), guid) !=
+         outstanding_guids.end();
+}
+
+std::set<std::string> BackgroundFetchDelegateImpl::TakeOutstandingGuids() {
+  std::set<std::string> outstanding_guids;
+  for (auto& job_id_details : job_details_map_) {
+    std::vector<std::string>& job_outstanding_guids =
+        job_id_details.second.fetch_description->outstanding_guids;
+    for (std::string& outstanding_guid : job_outstanding_guids)
+      outstanding_guids.insert(std::move(outstanding_guid));
+    job_outstanding_guids.clear();
+  }
+  return outstanding_guids;
 }
