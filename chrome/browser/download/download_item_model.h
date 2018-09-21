@@ -14,10 +14,6 @@
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_item.h"
 
-namespace gfx {
-class FontList;
-}
-
 // Implementation of DownloadUIModel that wrappers around a |DownloadItem*|. As
 // such, the caller is expected to ensure that the |download| passed into the
 // constructor outlives this |DownloadItemModel|. In addition, multiple
@@ -33,21 +29,13 @@ class DownloadItemModel : public DownloadUIModel,
   // DownloadUIModel implementation.
   ContentId GetContentId() const override;
   Profile* profile() const override;
-  base::string16 GetInterruptReasonText() const override;
-  base::string16 GetStatusText() const override;
   base::string16 GetTabProgressStatusText() const override;
-  base::string16 GetTooltipText(const gfx::FontList& font_list,
-                                int max_width) const override;
-  base::string16 GetWarningText(const gfx::FontList& font_list,
-                                int base_width) const override;
-  base::string16 GetWarningConfirmButtonText() const override;
   int64_t GetCompletedBytes() const override;
   int64_t GetTotalBytes() const override;
   int PercentComplete() const override;
   bool IsDangerous() const override;
   bool MightBeMalicious() const override;
   bool IsMalicious() const override;
-  bool HasSupportedImageMimeType() const override;
   bool ShouldAllowDownloadFeedback() const override;
   bool ShouldRemoveFromShelfWhenComplete() const override;
   bool ShouldShowDownloadStartedAnimation() const override;
@@ -65,8 +53,6 @@ class DownloadItemModel : public DownloadUIModel,
   bool IsBeingRevived() const override;
   void SetIsBeingRevived(bool is_being_revived) override;
   download::DownloadItem* download() override;
-  base::string16 GetProgressSizesString() const override;
-
   base::FilePath GetFileNameToReportUser() const override;
   base::FilePath GetTargetFilePath() const override;
   void OpenDownload() override;
@@ -105,8 +91,9 @@ class DownloadItemModel : public DownloadUIModel,
   void OnDownloadDestroyed(download::DownloadItem* download) override;
 
  private:
-  // Returns a string indicating the status of an in-progress download.
-  base::string16 GetInProgressStatusString() const;
+  // DownloadUIModel implementation.
+  std::string GetMimeType() const override;
+  bool IsExtensionDownload() const override;
 
   // The DownloadItem that this model represents. Note that DownloadItemModel
   // itself shouldn't maintain any state since there can be more than one
