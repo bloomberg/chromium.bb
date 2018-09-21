@@ -195,7 +195,7 @@ void ProximityAuthProfilePrefManager::OnFeatureStatesChanged(
   }
   feature_state_ = it->second;
 
-  if (local_state_)
+  if (local_state_ && account_id_.is_valid())
     SyncPrefsToLocalState();
 }
 
