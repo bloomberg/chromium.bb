@@ -13,6 +13,35 @@ from chromite.cbuildbot.stages import firmware_stages
 from chromite.cbuildbot.stages import workspace_stages
 
 
+class BuildSpecBuilder(generic_builders.ManifestVersionedBuilder):
+  """Builder that generates new buildspecs.
+
+  This build does four things.
+    1) Uprev and commit ebuilds based on TOT.
+    2) Increatement the ChromeOS version number.
+    3) Generate a buildspec based on that version number.
+    4) Launch child builds based on the buildspec.
+  """
+
+  def RunStages(self):
+    """Run the stages."""
+    workspace_dir = self._run.options.workspace
+
+    self._RunStage(workspace_stages.WorkspaceCleanStage,
+                   build_root=workspace_dir)
+
+    self._RunStage(workspace_stages.WorkspaceSyncStage,
+                   build_root=workspace_dir)
+
+    self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
+                   build_root=workspace_dir)
+
+    self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
+                   build_root=workspace_dir)
+
+    # TODO(dgarrett): Schedule slaves based on version defined.
+
+
 class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
   """Builder that builds firmware branches.
 

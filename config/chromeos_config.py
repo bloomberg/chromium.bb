@@ -3475,7 +3475,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       uprev=True,
       overlays=constants.BOTH_OVERLAYS,
       push_overlays=constants.BOTH_OVERLAYS,
-      builder_class_name='firmware_builders.FirmwareBranchBuilder',
+      builder_class_name='workspace_builders.FirmwareBranchBuilder',
       build_timeout=6*60 * 60,
       description='TOT builder to build a firmware branch.',
       doc='https://goto.google.com/tot-for-firmware-branches',
