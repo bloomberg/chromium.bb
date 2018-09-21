@@ -5,14 +5,12 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 #include <algorithm>
-#include <set>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -150,19 +148,6 @@ sync_pb::AppListSpecifics::AppListItemType GetAppListItemType(
     return sync_pb::AppListSpecifics::TYPE_PAGE_BREAK;
   else
     return sync_pb::AppListSpecifics::TYPE_APP;
-}
-
-// TODO(http://crbug.com/794724): Remove after M65 goes stable.
-bool IsDriveAppSyncId(const std::string& sync_id) {
-  // Prefix for a sync id of a Drive app. Drive app ids are in a different
-  // format and have to be used because a Drive app could have only an URL
-  // without a matching Chrome app. To differentiate the Drive app id from
-  // Chrome app ids, this prefix will be added to create the sync item id
-  // for a Drive app item.
-  constexpr char kDriveAppSyncIdPrefix[] = "drive-app-";
-
-  return base::StartsWith(sync_id, kDriveAppSyncIdPrefix,
-                          base::CompareCase::SENSITIVE);
 }
 
 void RemoveSyncItemFromLocalStorage(Profile* profile,
@@ -478,8 +463,6 @@ void AppListSyncableService::HandleUpdateFinished() {
   // Processing an update may create folders without setting their positions.
   // Resolve them now.
   ResolveFolderPositions();
-
-  RemoveDriveAppItems();
 
   // Resume or start observing app list model changes.
   model_updater_delegate_ = std::make_unique<ModelUpdaterDelegate>(this);
@@ -981,10 +964,8 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
     }
     case sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP: {
       VLOG(1) << this << ": Uninstall: " << sync_item->ToString();
-      if (!IsDriveAppSyncId(sync_item->item_id)) {
-        UninstallExtension(extension_system_->extension_service(),
-                           sync_item->item_id);
-      }
+      UninstallExtension(extension_system_->extension_service(),
+                         sync_item->item_id);
       return;
     }
     case sync_pb::AppListSpecifics::TYPE_FOLDER: {
@@ -1151,17 +1132,6 @@ std::string AppListSyncableService::SyncItem::ToString() const {
     res += " [" + item_pin_ordinal.ToDebugString() + "]";
   }
   return res;
-}
-
-void AppListSyncableService::RemoveDriveAppItems() {
-  std::set<std::string> drive_app_item_ids;
-  for (const auto& sync_pair : sync_items_) {
-    if (IsDriveAppSyncId(sync_pair.first))
-      drive_app_item_ids.insert(sync_pair.first);
-  }
-
-  for (const auto& item_id : drive_app_item_ids)
-    DeleteSyncItem(item_id);
 }
 
 std::vector<AppListSyncableService::SyncItem*>
