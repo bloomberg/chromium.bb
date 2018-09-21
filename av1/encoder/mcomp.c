@@ -179,36 +179,31 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
 }
 
 /* checks if (r, c) has better score than previous best */
-#define CHECK_BETTER(v, r, c)                                                \
-  if (c >= minc && c <= maxc && r >= minr && r <= maxr) {                    \
-    MV this_mv = { r, c };                                                   \
-    v = mv_err_cost(&this_mv, ref_mv, mvjcost, mvcost, error_per_bit);       \
-    if (second_pred == NULL) {                                               \
-      thismse = vfp->svf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r),     \
-                         src_address, src_stride, &sse);                     \
-    } else if (mask) {                                                       \
-      thismse = vfp->msvf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r),    \
-                          src_address, src_stride, second_pred, mask,        \
-                          mask_stride, invert_mask, &sse);                   \
-    } else {                                                                 \
-      if (xd->jcp_param.use_jnt_comp_avg)                                    \
-        thismse = vfp->jsvaf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r), \
-                             src_address, src_stride, &sse, second_pred,     \
-                             &xd->jcp_param);                                \
-      else                                                                   \
-        thismse = vfp->svaf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r),  \
-                            src_address, src_stride, &sse, second_pred);     \
-    }                                                                        \
-    v += thismse;                                                            \
-    if (v < besterr) {                                                       \
-      besterr = v;                                                           \
-      br = r;                                                                \
-      bc = c;                                                                \
-      *distortion = thismse;                                                 \
-      *sse1 = sse;                                                           \
-    }                                                                        \
-  } else {                                                                   \
-    v = INT_MAX;                                                             \
+#define CHECK_BETTER(v, r, c)                                             \
+  if (c >= minc && c <= maxc && r >= minr && r <= maxr) {                 \
+    MV this_mv = { r, c };                                                \
+    v = mv_err_cost(&this_mv, ref_mv, mvjcost, mvcost, error_per_bit);    \
+    if (second_pred == NULL) {                                            \
+      thismse = vfp->svf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r),  \
+                         src_address, src_stride, &sse);                  \
+    } else if (mask) {                                                    \
+      thismse = vfp->msvf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r), \
+                          src_address, src_stride, second_pred, mask,     \
+                          mask_stride, invert_mask, &sse);                \
+    } else {                                                              \
+      thismse = vfp->svaf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r), \
+                          src_address, src_stride, &sse, second_pred);    \
+    }                                                                     \
+    v += thismse;                                                         \
+    if (v < besterr) {                                                    \
+      besterr = v;                                                        \
+      br = r;                                                             \
+      bc = c;                                                             \
+      *distortion = thismse;                                              \
+      *sse1 = sse;                                                        \
+    }                                                                     \
+  } else {                                                                \
+    v = INT_MAX;                                                          \
   }
 
 #define CHECK_BETTER0(v, r, c) CHECK_BETTER(v, r, c)
@@ -348,12 +343,8 @@ static unsigned int setup_center_error(
         aom_highbd_comp_mask_pred(comp_pred, second_pred, w, h, y + offset,
                                   y_stride, mask, mask_stride, invert_mask);
       } else {
-        if (xd->jcp_param.use_jnt_comp_avg)
-          aom_highbd_jnt_comp_avg_pred(comp_pred, second_pred, w, h, y + offset,
-                                       y_stride, &xd->jcp_param);
-        else
-          aom_highbd_comp_avg_pred(comp_pred, second_pred, w, h, y + offset,
-                                   y_stride);
+        aom_highbd_comp_avg_pred(comp_pred, second_pred, w, h, y + offset,
+                                 y_stride);
       }
       besterr = vfp->vf(comp_pred, w, src, src_stride, sse1);
     } else {
@@ -362,11 +353,7 @@ static unsigned int setup_center_error(
         aom_comp_mask_pred(comp_pred, second_pred, w, h, y + offset, y_stride,
                            mask, mask_stride, invert_mask);
       } else {
-        if (xd->jcp_param.use_jnt_comp_avg)
-          aom_jnt_comp_avg_pred(comp_pred, second_pred, w, h, y + offset,
-                                y_stride, &xd->jcp_param);
-        else
-          aom_comp_avg_pred(comp_pred, second_pred, w, h, y + offset, y_stride);
+        aom_comp_avg_pred(comp_pred, second_pred, w, h, y + offset, y_stride);
       }
       besterr = vfp->vf(comp_pred, w, src, src_stride, sse1);
     }
@@ -664,14 +651,9 @@ static int upsampled_pref_error(MACROBLOCKD *xd, const AV1_COMMON *const cm,
             subpel_y_q3, y, y_stride, mask, mask_stride, invert_mask, xd->bd,
             subpel_search);
       } else {
-        if (xd->jcp_param.use_jnt_comp_avg)
-          aom_highbd_jnt_comp_avg_upsampled_pred(
-              xd, cm, mi_row, mi_col, mv, pred8, second_pred, w, h, subpel_x_q3,
-              subpel_y_q3, y, y_stride, xd->bd, &xd->jcp_param, subpel_search);
-        else
-          aom_highbd_comp_avg_upsampled_pred(
-              xd, cm, mi_row, mi_col, mv, pred8, second_pred, w, h, subpel_x_q3,
-              subpel_y_q3, y, y_stride, xd->bd, subpel_search);
+        aom_highbd_comp_avg_upsampled_pred(
+            xd, cm, mi_row, mi_col, mv, pred8, second_pred, w, h, subpel_x_q3,
+            subpel_y_q3, y, y_stride, xd->bd, subpel_search);
       }
     } else {
       aom_highbd_upsampled_pred(xd, cm, mi_row, mi_col, mv, pred8, w, h,
@@ -688,14 +670,9 @@ static int upsampled_pref_error(MACROBLOCKD *xd, const AV1_COMMON *const cm,
                                      subpel_y_q3, y, y_stride, mask,
                                      mask_stride, invert_mask, subpel_search);
       } else {
-        if (xd->jcp_param.use_jnt_comp_avg)
-          aom_jnt_comp_avg_upsampled_pred(
-              xd, cm, mi_row, mi_col, mv, pred, second_pred, w, h, subpel_x_q3,
-              subpel_y_q3, y, y_stride, &xd->jcp_param, subpel_search);
-        else
-          aom_comp_avg_upsampled_pred(xd, cm, mi_row, mi_col, mv, pred,
-                                      second_pred, w, h, subpel_x_q3,
-                                      subpel_y_q3, y, y_stride, subpel_search);
+        aom_comp_avg_upsampled_pred(xd, cm, mi_row, mi_col, mv, pred,
+                                    second_pred, w, h, subpel_x_q3, subpel_y_q3,
+                                    y, y_stride, subpel_search);
       }
     } else {
       aom_upsampled_pred(xd, cm, mi_row, mi_col, mv, pred, w, h, subpel_x_q3,
@@ -726,7 +703,7 @@ static unsigned int upsampled_setup_center_error(
 
 // when use_accurate_subpel_search == 0
 static INLINE unsigned int estimate_upsampled_pref_error(
-    MACROBLOCKD *xd, const aom_variance_fn_ptr_t *vfp, const uint8_t *const src,
+    const aom_variance_fn_ptr_t *vfp, const uint8_t *const src,
     const int src_stride, const uint8_t *const pre, int y_stride,
     int subpel_x_q3, int subpel_y_q3, const uint8_t *second_pred,
     const uint8_t *mask, int mask_stride, int invert_mask, unsigned int *sse) {
@@ -737,12 +714,8 @@ static INLINE unsigned int estimate_upsampled_pref_error(
     return vfp->msvf(pre, y_stride, subpel_x_q3, subpel_y_q3, src, src_stride,
                      second_pred, mask, mask_stride, invert_mask, sse);
   } else {
-    if (xd->jcp_param.use_jnt_comp_avg)
-      return vfp->jsvaf(pre, y_stride, subpel_x_q3, subpel_y_q3, src,
-                        src_stride, sse, second_pred, &xd->jcp_param);
-    else
-      return vfp->svaf(pre, y_stride, subpel_x_q3, subpel_y_q3, src, src_stride,
-                       sse, second_pred);
+    return vfp->svaf(pre, y_stride, subpel_x_q3, subpel_y_q3, src, src_stride,
+                     sse, second_pred);
   }
 }
 
@@ -824,9 +797,9 @@ int av1_find_best_sub_pixel_tree(
               use_accurate_subpel_search);
         } else {
           thismse = estimate_upsampled_pref_error(
-              xd, vfp, src_address, src_stride, pre(y, y_stride, tr, tc),
-              y_stride, sp(tc), sp(tr), second_pred, mask, mask_stride,
-              invert_mask, &sse);
+              vfp, src_address, src_stride, pre(y, y_stride, tr, tc), y_stride,
+              sp(tc), sp(tr), second_pred, mask, mask_stride, invert_mask,
+              &sse);
         }
 
         cost_array[idx] = thismse + mv_err_cost(&this_mv, ref_mv, mvjcost,
@@ -860,9 +833,8 @@ int av1_find_best_sub_pixel_tree(
             use_accurate_subpel_search);
       } else {
         thismse = estimate_upsampled_pref_error(
-            xd, vfp, src_address, src_stride, pre(y, y_stride, tr, tc),
-            y_stride, sp(tc), sp(tr), second_pred, mask, mask_stride,
-            invert_mask, &sse);
+            vfp, src_address, src_stride, pre(y, y_stride, tr, tc), y_stride,
+            sp(tc), sp(tr), second_pred, mask, mask_stride, invert_mask, &sse);
       }
 
       cost_array[4] = thismse + mv_err_cost(&this_mv, ref_mv, mvjcost, mvcost,
@@ -1419,19 +1391,11 @@ int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
   const MV mv = { best_mv->row * 8, best_mv->col * 8 };
   unsigned int unused;
 
-  if (xd->jcp_param.use_jnt_comp_avg)
-    return vfp->jsvaf(get_buf_from_mv(in_what, best_mv), in_what->stride, 0, 0,
-                      what->buf, what->stride, &unused, second_pred,
-                      &xd->jcp_param) +
-           (use_mvcost ? mv_err_cost(&mv, center_mv, x->nmvjointcost, x->mvcost,
-                                     x->errorperbit)
-                       : 0);
-  else
-    return vfp->svaf(get_buf_from_mv(in_what, best_mv), in_what->stride, 0, 0,
-                     what->buf, what->stride, &unused, second_pred) +
-           (use_mvcost ? mv_err_cost(&mv, center_mv, x->nmvjointcost, x->mvcost,
-                                     x->errorperbit)
-                       : 0);
+  return vfp->svaf(get_buf_from_mv(in_what, best_mv), in_what->stride, 0, 0,
+                   what->buf, what->stride, &unused, second_pred) +
+         (use_mvcost ? mv_err_cost(&mv, center_mv, x->nmvjointcost, x->mvcost,
+                                   x->errorperbit)
+                     : 0);
 }
 
 int av1_get_mvpred_mask_var(const MACROBLOCK *x, const MV *best_mv,
@@ -2063,16 +2027,10 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                             second_pred, mask, mask_stride, invert_mask) +
                mvsad_err_cost(x, best_mv, &fcenter_mv, error_per_bit);
   } else {
-    if (xd->jcp_param.use_jnt_comp_avg)
-      best_sad = fn_ptr->jsdaf(what->buf, what->stride,
-                               get_buf_from_mv(in_what, best_mv),
-                               in_what->stride, second_pred, &xd->jcp_param) +
-                 mvsad_err_cost(x, best_mv, &fcenter_mv, error_per_bit);
-    else
-      best_sad = fn_ptr->sdaf(what->buf, what->stride,
-                              get_buf_from_mv(in_what, best_mv),
-                              in_what->stride, second_pred) +
-                 mvsad_err_cost(x, best_mv, &fcenter_mv, error_per_bit);
+    best_sad =
+        fn_ptr->sdaf(what->buf, what->stride, get_buf_from_mv(in_what, best_mv),
+                     in_what->stride, second_pred) +
+        mvsad_err_cost(x, best_mv, &fcenter_mv, error_per_bit);
   }
 
   do_refine_search_grid[grid_coord] = 1;
@@ -2096,14 +2054,9 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              get_buf_from_mv(in_what, &mv), in_what->stride,
                              second_pred, mask, mask_stride, invert_mask);
         } else {
-          if (xd->jcp_param.use_jnt_comp_avg)
-            sad = fn_ptr->jsdaf(what->buf, what->stride,
-                                get_buf_from_mv(in_what, &mv), in_what->stride,
-                                second_pred, &xd->jcp_param);
-          else
-            sad = fn_ptr->sdaf(what->buf, what->stride,
-                               get_buf_from_mv(in_what, &mv), in_what->stride,
-                               second_pred);
+          sad = fn_ptr->sdaf(what->buf, what->stride,
+                             get_buf_from_mv(in_what, &mv), in_what->stride,
+                             second_pred);
         }
         if (sad < best_sad) {
           sad += mvsad_err_cost(x, &mv, &fcenter_mv, error_per_bit);
