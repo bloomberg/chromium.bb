@@ -28,11 +28,11 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
                                   public ui::SimpleMenuModel::Delegate {
  public:
   enum MenuEntries {
-    NAME = 0,
-    CONFIGURE,
+    HOME_PAGE = 0,
+    OPTIONS,
     TOGGLE_VISIBILITY,
     UNINSTALL,
-    MANAGE,
+    MANAGE_EXTENSIONS,
     INSPECT_POPUP,
     PAGE_ACCESS_SUBMENU,
     PAGE_ACCESS_RUN_ON_CLICK,
