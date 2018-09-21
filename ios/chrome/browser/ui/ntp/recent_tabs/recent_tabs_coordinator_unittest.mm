@@ -101,11 +101,13 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     BlockCleanupTest::SetUp();
 
     TestChromeBrowserState::Builder test_cbs_builder;
-    test_cbs_builder.AddTestingFactory(SyncSetupServiceFactory::GetInstance(),
-                                       &CreateSyncSetupService);
+    test_cbs_builder.AddTestingFactory(
+        SyncSetupServiceFactory::GetInstance(),
+        base::BindRepeating(&CreateSyncSetupService));
     test_cbs_builder.AddTestingFactory(
         ProfileSyncServiceFactory::GetInstance(),
-        &BuildMockProfileSyncServiceForRecentTabsTableCoordinator);
+        base::BindRepeating(
+            &BuildMockProfileSyncServiceForRecentTabsTableCoordinator));
     chrome_browser_state_ = test_cbs_builder.Build();
 
     ProfileSyncServiceMockForRecentTabsTableCoordinator* sync_service =

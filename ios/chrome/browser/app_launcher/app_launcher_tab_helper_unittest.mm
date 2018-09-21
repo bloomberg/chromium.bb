@@ -135,7 +135,8 @@ class AppLauncherTabHelperTest : public PlatformTest {
     chrome_browser_state_ = test_cbs_builder.Build();
     web_state_.SetBrowserState(chrome_browser_state_.get());
     ReadingListModelFactory::GetInstance()->SetTestingFactoryAndUse(
-        chrome_browser_state_.get(), &BuildReadingListModel);
+        chrome_browser_state_.get(),
+        base::BindRepeating(&BuildReadingListModel));
     TabIdTabHelper::CreateForWebState(&web_state_);
     LegacyTabHelper::CreateForWebState(&web_state_);
     is_reading_list_initialized_ = true;

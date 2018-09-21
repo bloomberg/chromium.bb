@@ -28,12 +28,12 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
  public:
   typedef std::vector<
       std::pair<BrowserStateKeyedServiceFactory*,
-                BrowserStateKeyedServiceFactory::TestingFactoryFunction>>
+                BrowserStateKeyedServiceFactory::TestingFactory>>
       TestingFactories;
 
-  typedef std::vector<std::pair<
-      RefcountedBrowserStateKeyedServiceFactory*,
-      RefcountedBrowserStateKeyedServiceFactory::TestingFactoryFunction>>
+  typedef std::vector<
+      std::pair<RefcountedBrowserStateKeyedServiceFactory*,
+                RefcountedBrowserStateKeyedServiceFactory::TestingFactory>>
       RefcountedTestingFactories;
 
   ~TestChromeBrowserState() override;
@@ -97,10 +97,22 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
     // factories are installed before the ProfileKeyedServices are created.
     void AddTestingFactory(
         BrowserStateKeyedServiceFactory* service_factory,
-        BrowserStateKeyedServiceFactory::TestingFactoryFunction cb);
+        BrowserStateKeyedServiceFactory::TestingFactory testing_factory);
     void AddTestingFactory(
         RefcountedBrowserStateKeyedServiceFactory* service_factory,
-        RefcountedBrowserStateKeyedServiceFactory::TestingFactoryFunction cb);
+        RefcountedBrowserStateKeyedServiceFactory::TestingFactory
+            testing_factory);
+
+    // Deprecated, do not use. This is kept for compatibility with downstream
+    // code and will be removed as soon as the downstream code has been fixed
+    // to use the new interface.
+    void AddTestingFactory(
+        BrowserStateKeyedServiceFactory* service_factory,
+        std::unique_ptr<KeyedService> (*testing_factory)(web::BrowserState*));
+    void AddTestingFactory(
+        RefcountedBrowserStateKeyedServiceFactory* service_factory,
+        scoped_refptr<RefcountedKeyedService> (*testing_factory)(
+            web::BrowserState*));
 
     // Sets the path to the directory to be used to hold ChromeBrowserState
     // data.
@@ -132,8 +144,8 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
   TestChromeBrowserState(
       const base::FilePath& path,
       std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
-      const TestingFactories& testing_factories,
-      const RefcountedTestingFactories& refcounted_testing_factories);
+      TestingFactories testing_factories,
+      RefcountedTestingFactories refcounted_testing_factories);
 
  private:
   friend class Builder;

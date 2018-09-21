@@ -143,7 +143,8 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // service with no provider registered, allowing to register fake providers
   // which do not require internet connection. The previous service is deleted.
   IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
-      browserState, CreateChromeContentSuggestionsService);
+      browserState,
+      base::BindRepeating(&CreateChromeContentSuggestionsService));
 
   ContentSuggestionsService* service =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
@@ -162,7 +163,8 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // Resets the Service associated with this browserState to a service with
   // default providers. The previous service is deleted.
   IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
-      browserState, CreateChromeContentSuggestionsServiceWithProviders);
+      browserState,
+      base::BindRepeating(&CreateChromeContentSuggestionsServiceWithProviders));
   [super tearDown];
 }
 

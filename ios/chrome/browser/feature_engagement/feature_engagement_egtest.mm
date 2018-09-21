@@ -118,7 +118,7 @@ void LoadFeatureEngagementTracker() {
       chrome_test_util::GetOriginalBrowserState();
 
   feature_engagement::TrackerFactory::GetInstance()->SetTestingFactory(
-      browserState, CreateTestFeatureEngagementTracker);
+      browserState, base::BindRepeating(&CreateTestFeatureEngagementTracker));
 }
 
 // Enables the Badged Reading List help to be triggered for |feature_list|.
