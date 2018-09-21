@@ -307,13 +307,16 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   TestConfigChange(ConfigChangeType::ENCRYPTED_TO_ENCRYPTED);
 }
 
-// https://crbug.com/788748 https://crbug.com/794080
-#if (defined(OS_ANDROID) || defined(OS_LINUX)) && defined(ADDRESS_SANITIZER)
-#define MAYBE_FrameSizeChangeVideo DISABLED_FrameSizeChangeVideo
-#else
-#define MAYBE_FrameSizeChangeVideo FrameSizeChangeVideo
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
+#if defined(OS_ANDROID)
+  // https://crbug.com/778245
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
+      base::android::SDK_VERSION_KITKAT) {
+    DVLOG(0) << "Skipping test - FrameSizeChange is flaky on KitKat devices.";
+    return;
+  }
 #endif
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_FrameSizeChangeVideo) {
+
   TestFrameSizeChange();
 }
 
