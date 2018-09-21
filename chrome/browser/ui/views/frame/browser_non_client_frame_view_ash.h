@@ -32,6 +32,7 @@ class HostedAppButtonContainer;
 class TabIconView;
 
 namespace ash {
+class AshFrameCaptionController;
 class DefaultFrameHeader;
 class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
@@ -94,7 +95,6 @@ class BrowserNonClientFrameViewAsh
   gfx::ImageSkia GetFrameHeaderImage(bool active) override;
   int GetFrameHeaderImageYInset() override;
   gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override;
-  bool IsTabletMode() const override;
 
   // ash::ShellObserver:
   void OnOverviewModeStarting() override;
@@ -209,6 +209,9 @@ class BrowserNonClientFrameViewAsh
 
   // Helper class for painting the header.
   std::unique_ptr<ash::FrameHeader> frame_header_;
+
+  // A helper for controlling the window frame; only used in !Mash.
+  std::unique_ptr<ash::AshFrameCaptionController> caption_controller_;
 
   // Container for extra frame buttons shown for hosted app windows.
   // Owned by views hierarchy.

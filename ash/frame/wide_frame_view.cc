@@ -4,10 +4,10 @@
 
 #include "ash/frame/wide_frame_view.h"
 
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_layout_constants.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/window_state.h"

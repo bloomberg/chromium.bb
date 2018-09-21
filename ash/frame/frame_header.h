@@ -6,7 +6,8 @@
 #define ASH_FRAME_FRAME_HEADER_H_
 
 #include "ash/ash_export.h"
-#include "ash/frame/caption_buttons/frame_caption_button.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -26,8 +27,6 @@ class Widget;
 namespace ash {
 
 enum class AshLayoutSize;
-
-class FrameCaptionButtonContainerView;
 
 // Helper class for managing the window header.
 class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {

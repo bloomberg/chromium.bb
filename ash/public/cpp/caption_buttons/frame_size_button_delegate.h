@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_DELEGATE_H_
-#define ASH_FRAME_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_DELEGATE_H_
+#ifndef ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_DELEGATE_H_
+#define ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_DELEGATE_H_
 
-#include "ash/ash_export.h"
-#include "ash/frame/caption_buttons/caption_button_types.h"
+#include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/caption_buttons/caption_button_types.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_delegate.h"
 
 namespace gfx {
 class Point;
@@ -16,7 +17,7 @@ namespace ash {
 class FrameCaptionButton;
 
 // Delegate interface for FrameSizeButton.
-class ASH_EXPORT FrameSizeButtonDelegate {
+class ASH_PUBLIC_EXPORT FrameSizeButtonDelegate {
  public:
   enum Animate { ANIMATE_YES, ANIMATE_NO };
 
@@ -44,10 +45,15 @@ class ASH_EXPORT FrameSizeButtonDelegate {
       const FrameCaptionButton* to_hover,
       const FrameCaptionButton* to_press) = 0;
 
+  // Thunks to methods of the same name in FrameCaptionDelegate.
+  virtual bool CanSnap() = 0;
+  virtual void ShowSnapPreview(FrameCaptionDelegate::SnapDirection snap) = 0;
+  virtual void CommitSnap(FrameCaptionDelegate::SnapDirection snap) = 0;
+
  protected:
   virtual ~FrameSizeButtonDelegate() {}
 };
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_DELEGATE_H_
+#endif  // ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_DELEGATE_H_

@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -45,9 +46,7 @@ class CloseButton : public TopShortcutButton, public views::ButtonListener {
 };
 
 CloseButton::CloseButton(UnifiedSystemTrayController* controller)
-    : TopShortcutButton(this,
-                        views::kIcCloseIcon,
-                        IDS_ASH_WINDOW_CONTROL_ACCNAME_CLOSE),
+    : TopShortcutButton(this, views::kIcCloseIcon, IDS_APP_ACCNAME_CLOSE),
       controller_(controller) {}
 
 void CloseButton::ButtonPressed(views::Button* sender, const ui::Event& event) {

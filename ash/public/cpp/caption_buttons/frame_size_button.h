@@ -2,24 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_H_
-#define ASH_FRAME_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_H_
+#ifndef ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_H_
+#define ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_H_
 
 #include <memory>
 
-#include "ash/ash_export.h"
-#include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/frame/caption_buttons/frame_size_button_delegate.h"
+#include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
+#include "ash/public/cpp/caption_buttons/frame_size_button_delegate.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 
-namespace views {
-class Widget;
-}
-
 namespace ash {
-class FrameSizeButtonDelegate;
-class PhantomWindowController;
 
 // The maximize/restore button.
 // When the mouse is pressed over the size button or the size button is touched:
@@ -30,10 +24,9 @@ class PhantomWindowController;
 // When the drag terminates, the action for the button underneath the mouse
 // is executed. For the sake of simplicity, the size button is the event
 // handler for a click starting on the size button and the entire drag.
-class ASH_EXPORT FrameSizeButton : public FrameCaptionButton {
+class ASH_PUBLIC_EXPORT FrameSizeButton : public FrameCaptionButton {
  public:
   FrameSizeButton(views::ButtonListener* listener,
-                  views::Widget* frame,
                   FrameSizeButtonDelegate* delegate);
 
   ~FrameSizeButton() override;
@@ -51,8 +44,6 @@ class ASH_EXPORT FrameSizeButton : public FrameCaptionButton {
   }
 
  private:
-  enum SnapType { SNAP_LEFT, SNAP_RIGHT, SNAP_NONE };
-
   // Starts |set_buttons_to_snap_mode_timer_|.
   void StartSetButtonsToSnapModeTimer(const ui::LocatedEvent& event);
 
@@ -63,26 +54,23 @@ class ASH_EXPORT FrameSizeButton : public FrameCaptionButton {
   // Passing in ANIMATE_NO progresses the animation (if any) to the end.
   void SetButtonsToSnapMode(FrameSizeButtonDelegate::Animate animate);
 
-  // Updates |snap_type_|, whether the size button is pressed and whether any
-  // other buttons are hovered.
-  void UpdateSnapType(const ui::LocatedEvent& event);
+  // Asks the delegate to update the appearance of adjacent buttons and show a
+  // phantom window.
+  void UpdateSnapPreview(const ui::LocatedEvent& event);
 
   // Returns the button which should be hovered (if any) while in "snap mode"
-  // for |event_location_in_screen|.
+  // for |event|.
   const FrameCaptionButton* GetButtonToHover(
-      const gfx::Point& event_location_in_screen) const;
+      const ui::LocatedEvent& event) const;
 
-  // Snaps |frame_| according to |snap_type_|. Returns true if |frame_| was
-  // snapped.
+  // Snaps the window based on |event|. Returns true if a snap occurred, false
+  // if no snap (i.e. a preview was cancelled).
   bool CommitSnap(const ui::LocatedEvent& event);
 
   // Sets the buttons adjacent to the size button to minimize and close again.
   // Clears any state set while snapping was enabled. |animate| indicates
   // whether the buttons should animate back to their original icons.
   void SetButtonsToNormalMode(FrameSizeButtonDelegate::Animate animate);
-
-  // Widget that the size button acts on.
-  views::Widget* frame_;
 
   // Not owned.
   FrameSizeButtonDelegate* delegate_;
@@ -102,19 +90,9 @@ class ASH_EXPORT FrameSizeButton : public FrameCaptionButton {
   // right.
   bool in_snap_mode_;
 
-  // The action to execute when the drag/click is ended. If
-  // |snap_type_| == SNAP_NONE, the size button's default action is run when the
-  // drag/click is ended.
-  SnapType snap_type_;
-
-  // Displays a preview of how the window's bounds will change as a result of
-  // snapping the window left or right. The preview is only visible if the snap
-  // left or snap right button is pressed.
-  std::unique_ptr<PhantomWindowController> phantom_window_controller_;
-
   DISALLOW_COPY_AND_ASSIGN(FrameSizeButton);
 };
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_H_
+#endif  // ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_H_

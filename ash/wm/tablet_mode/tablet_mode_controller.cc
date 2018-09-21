@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -145,6 +146,10 @@ TabletModeController::TabletModeController()
   power_manager_client->AddObserver(this);
   power_manager_client->GetSwitchStates(base::BindOnce(
       &TabletModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
+
+  TabletMode::SetCallback(base::BindRepeating(
+      &TabletModeController::IsTabletModeWindowManagerEnabled,
+      base::Unretained(this)));
 }
 
 TabletModeController::~TabletModeController() {
@@ -157,6 +162,8 @@ TabletModeController::~TabletModeController() {
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
+
+  TabletMode::SetCallback(TabletMode::TabletModeCallback());
 }
 
 // TODO(jcliang): Hide or remove EnableTabletModeWindowManager

@@ -6,8 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/frame/caption_buttons/frame_back_button.h"  // mash-ok
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"  // mash-ok
+#include "ash/frame/ash_frame_caption_controller.h"  // mash-ok
 #include "ash/frame/default_frame_header.h"  // mash-ok
 #include "ash/frame/frame_header_util.h"     // mash-ok
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -15,6 +14,8 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/caption_buttons/frame_back_button.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -159,8 +160,9 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 
 void BrowserNonClientFrameViewAsh::Init() {
   if (!IsMash()) {
-    caption_button_container_ =
-        new ash::FrameCaptionButtonContainerView(frame());
+    caption_controller_ = std::make_unique<ash::AshFrameCaptionController>();
+    caption_button_container_ = new ash::FrameCaptionButtonContainerView(
+        frame(), caption_controller_.get());
     caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
     AddChildView(caption_button_container_);
   }
@@ -684,12 +686,6 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(
   return GetFrameOverlayImage(active ? kActive : kInactive);
 }
 
-bool BrowserNonClientFrameViewAsh::IsTabletMode() const {
-  DCHECK(!IsMash());
-  return TabletModeClient::Get() &&
-         TabletModeClient::Get()->tablet_mode_enabled();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // ash::ShellObserver:
 
@@ -892,7 +888,8 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
 
   if (frame()->GetNativeWindow()->GetProperty(
           ash::kHideCaptionButtonsInTabletModeKey) &&
-      IsTabletMode()) {
+      TabletModeClient::Get() &&
+      TabletModeClient::Get()->tablet_mode_enabled()) {
     return false;
   }
 

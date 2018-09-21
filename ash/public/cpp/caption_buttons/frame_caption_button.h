@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
-#define ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
+#ifndef ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
+#define ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
 
 #include <memory>
 
-#include "ash/ash_export.h"
-#include "ash/frame/caption_buttons/caption_button_types.h"
+#include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/caption_buttons/caption_button_types.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
@@ -16,13 +16,13 @@
 namespace gfx {
 class SlideAnimation;
 struct VectorIcon;
-}
+}  // namespace gfx
 
 namespace ash {
 
 // Base class for the window caption buttons (minimize, maximize, restore,
 // close).
-class ASH_EXPORT FrameCaptionButton : public views::Button {
+class ASH_PUBLIC_EXPORT FrameCaptionButton : public views::Button {
  public:
   enum Animate { ANIMATE_YES, ANIMATE_NO };
 
@@ -130,4 +130,4 @@ class ASH_EXPORT FrameCaptionButton : public views::Button {
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
+#endif  // ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_

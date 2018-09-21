@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "ash/client_image_registry.h"
-#include "ash/frame/caption_buttons/caption_button_model.h"
-#include "ash/frame/caption_buttons/frame_back_button.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
 #include "ash/frame/non_client_frame_view_ash.h"
+#include "ash/public/cpp/caption_buttons/caption_button_model.h"
+#include "ash/public/cpp/caption_buttons/frame_back_button.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -57,12 +57,6 @@ class WindowPropertyAppearanceProvider
   gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override {
     return LookUpImageForProperty(active ? kFrameImageOverlayActiveKey
                                          : kFrameImageOverlayInactiveKey);
-  }
-
-  bool IsTabletMode() const override {
-    return Shell::Get()
-        ->tablet_mode_controller()
-        ->IsTabletModeWindowManagerEnabled();
   }
 
  private:
@@ -112,8 +106,7 @@ class HeaderView::HeaderContentView : public views::View {
 };
 
 HeaderView::HeaderView(views::Widget* target_widget,
-                       mojom::WindowStyle window_style,
-                       std::unique_ptr<CaptionButtonModel> model)
+                       mojom::WindowStyle window_style)
     : target_widget_(target_widget),
       avatar_icon_(nullptr),
       header_content_view_(new HeaderContentView(this)),
@@ -123,10 +116,11 @@ HeaderView::HeaderView(views::Widget* target_widget,
   AddChildView(header_content_view_);
 
   caption_button_container_ =
-      new FrameCaptionButtonContainerView(target_widget_, std::move(model));
+      new FrameCaptionButtonContainerView(target_widget_, &caption_controller_);
   caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
   AddChildView(caption_button_container_);
 
+  aura::Window* window = target_widget->GetNativeWindow();
   if (window_style == mojom::WindowStyle::DEFAULT) {
     frame_header_ = std::make_unique<DefaultFrameHeader>(
         target_widget, this, caption_button_container_);
@@ -134,8 +128,8 @@ HeaderView::HeaderView(views::Widget* target_widget,
     DCHECK_EQ(mojom::WindowStyle::BROWSER, window_style);
     // Only used with mash.
     DCHECK(::features::IsUsingWindowService());
-    appearance_provider_ = std::make_unique<WindowPropertyAppearanceProvider>(
-        target_widget_->GetNativeWindow());
+    appearance_provider_ =
+        std::make_unique<WindowPropertyAppearanceProvider>(window);
     auto frame_header = std::make_unique<CustomFrameHeader>(
         target_widget, this, appearance_provider_.get(),
         caption_button_container_);
@@ -144,10 +138,9 @@ HeaderView::HeaderView(views::Widget* target_widget,
 
   UpdateBackButton();
 
-  aura::Window* window = target_widget->GetNativeWindow();
   frame_header_->SetFrameColors(window->GetProperty(kFrameActiveColorKey),
                                 window->GetProperty(kFrameInactiveColorKey));
-  window_observer_.Add(target_widget_->GetNativeWindow());
+  window_observer_.Add(window);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 

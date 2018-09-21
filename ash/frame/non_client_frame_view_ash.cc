@@ -8,11 +8,11 @@
 #include <memory>
 #include <vector>
 
-#include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
 #include "ash/frame/header_view.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
@@ -236,10 +236,9 @@ const char NonClientFrameViewAsh::kViewClassName[] = "NonClientFrameViewAsh";
 NonClientFrameViewAsh::NonClientFrameViewAsh(
     views::Widget* frame,
     ImmersiveFullscreenControllerDelegate* immersive_delegate,
-    mojom::WindowStyle window_style,
-    std::unique_ptr<CaptionButtonModel> model)
+    mojom::WindowStyle window_style)
     : frame_(frame),
-      header_view_(new HeaderView(frame, window_style, std::move(model))),
+      header_view_(new HeaderView(frame, window_style)),
       overlay_view_(new OverlayView(header_view_)),
       immersive_delegate_(immersive_delegate ? immersive_delegate
                                              : header_view_) {

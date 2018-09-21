@@ -1615,15 +1615,8 @@ This file contains the strings for ash.
         </message>
       </if>
 
-      <!-- Window Control -->
-      <message name="IDS_ASH_WINDOW_CONTROL_ACCNAME_BACK" desc="The accessible name for the back button on the window frame.">
-        Back button
-      </message>
       <message name="IDS_ASH_DIALOG_DONT_SHOW_AGAIN" desc="Label for checkbox dismissing show of a dialog.">
         Don't show again
-      </message>
-      <message name="IDS_ASH_WINDOW_CONTROL_ACCNAME_CLOSE" desc="The accessible name for a close button on a window frame.">
-        Close
       </message>
 
       <!-- Power off menu  -->

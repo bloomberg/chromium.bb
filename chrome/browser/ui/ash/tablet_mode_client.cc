@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -25,11 +27,17 @@ TabletModeClient* g_tablet_mode_client_instance = nullptr;
 TabletModeClient::TabletModeClient() : binding_(this) {
   DCHECK(!g_tablet_mode_client_instance);
   g_tablet_mode_client_instance = this;
+  if (features::IsMultiProcessMash()) {
+    ash::TabletMode::SetCallback(base::BindRepeating(
+        &TabletModeClient::tablet_mode_enabled, base::Unretained(this)));
+  }
 }
 
 TabletModeClient::~TabletModeClient() {
   DCHECK_EQ(this, g_tablet_mode_client_instance);
   g_tablet_mode_client_instance = nullptr;
+  if (features::IsMultiProcessMash())
+    ash::TabletMode::SetCallback({});
 }
 
 void TabletModeClient::Init() {
