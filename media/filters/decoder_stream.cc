@@ -24,20 +24,70 @@
 
 namespace media {
 
-template <DemuxerStream::Type StreamType>
-static const char* GetTraceString();
-
 #define FUNCTION_DVLOG(level) \
   DVLOG(level) << __func__ << "<" << GetStreamTypeString() << ">"
 
+template <DemuxerStream::Type StreamType>
+static const char* GetDecodeTraceString();
+template <DemuxerStream::Type StreamType>
+static const char* GetReadTraceString();
+template <DemuxerStream::Type StreamType>
+static const char* GetDemuxerReadTraceString();
+template <DemuxerStream::Type StreamType>
+static const char* GetPrepareTraceString();
+
 template <>
-const char* GetTraceString<DemuxerStream::VIDEO>() {
-  return "DecoderStream<VIDEO>::Decode";
+const char* GetDecodeTraceString<DemuxerStream::VIDEO>() {
+  return "VideoFrameStream::Decode";
 }
 
 template <>
-const char* GetTraceString<DemuxerStream::AUDIO>() {
-  return "DecoderStream<AUDIO>::Decode";
+const char* GetDecodeTraceString<DemuxerStream::AUDIO>() {
+  return "AudioBufferStream::Decode";
+}
+
+template <>
+const char* GetReadTraceString<DemuxerStream::VIDEO>() {
+  return "VideoFrameStream::Read";
+}
+
+template <>
+const char* GetReadTraceString<DemuxerStream::AUDIO>() {
+  return "AudioBufferStream::Read";
+}
+
+template <>
+const char* GetDemuxerReadTraceString<DemuxerStream::VIDEO>() {
+  return "VideoFrameStream::ReadFromDemuxerStream";
+}
+
+template <>
+const char* GetDemuxerReadTraceString<DemuxerStream::AUDIO>() {
+  return "AudioBufferStream::ReadFromDemuxerStream";
+}
+
+template <>
+const char* GetPrepareTraceString<DemuxerStream::VIDEO>() {
+  return "VideoFrameStream::PrepareOutput";
+}
+
+template <>
+const char* GetPrepareTraceString<DemuxerStream::AUDIO>() {
+  return "AudioBufferStream::PrepareOutput";
+}
+
+template <DemuxerStream::Type StreamType>
+const char* GetStatusString(typename DecoderStream<StreamType>::Status status) {
+  switch (status) {
+    case DecoderStream<StreamType>::OK:
+      return "okay";
+    case DecoderStream<StreamType>::ABORTED:
+      return "aborted";
+    case DecoderStream<StreamType>::DEMUXER_READ_ABORTED:
+      return "demuxer_read_aborted";
+    case DecoderStream<StreamType>::DECODE_ERROR:
+      return "decode_error";
+  }
 }
 
 template <DemuxerStream::Type StreamType>
@@ -76,12 +126,14 @@ DecoderStream<StreamType>::~DecoderStream() {
                            base::BindOnce(std::move(init_cb_), false));
   }
   if (read_cb_) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(read_cb_), ABORTED, scoped_refptr<Output>()));
+    read_cb_ = BindToCurrentLoop(std::move(read_cb_));
+    SatisfyRead(ABORTED, nullptr);
   }
   if (reset_cb_)
     task_runner_->PostTask(FROM_HERE, std::move(reset_cb_));
+
+  if (preparing_output_)
+    CompletePrepare(nullptr);
 
   // Don't manually reset anything here; rely on the order of member variables
   // within the header, which enforces WeakPtrFactory invalidation first.
@@ -130,24 +182,23 @@ void DecoderStream<StreamType>::Read(ReadCB read_cb) {
   // No read during resetting or stopping process.
   DCHECK(!reset_cb_);
 
+  TRACE_EVENT_ASYNC_BEGIN0("media", GetReadTraceString<StreamType>(), this);
   if (state_ == STATE_ERROR) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(read_cb), DECODE_ERROR,
-                                          scoped_refptr<Output>()));
+    read_cb_ = BindToCurrentLoop(std::move(read_cb));
+    SatisfyRead(DECODE_ERROR, nullptr);
     return;
   }
 
   if (state_ == STATE_END_OF_STREAM && ready_outputs_.empty() &&
       unprepared_outputs_.empty()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(read_cb), OK,
-                                          StreamTraits::CreateEOSOutput()));
+    read_cb_ = BindToCurrentLoop(std::move(read_cb));
+    SatisfyRead(OK, StreamTraits::CreateEOSOutput());
     return;
   }
 
   if (!ready_outputs_.empty()) {
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(read_cb), OK,
-                                                     ready_outputs_.front()));
+    read_cb_ = BindToCurrentLoop(std::move(read_cb));
+    SatisfyRead(OK, ready_outputs_.front());
     ready_outputs_.pop_front();
     MaybePrepareAnotherOutput();
   } else {
@@ -168,9 +219,8 @@ void DecoderStream<StreamType>::Reset(base::OnceClosure closure) {
   reset_cb_ = std::move(closure);
 
   if (read_cb_) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(read_cb_), ABORTED, scoped_refptr<Output>()));
+    read_cb_ = BindToCurrentLoop(std::move(read_cb_));
+    SatisfyRead(ABORTED, nullptr);
   }
 
   ClearOutputs();
@@ -358,6 +408,8 @@ void DecoderStream<StreamType>::SatisfyRead(
     Status status,
     const scoped_refptr<Output>& output) {
   DCHECK(read_cb_);
+  TRACE_EVENT_ASYNC_END1("media", GetReadTraceString<StreamType>(), this,
+                         "status", GetStatusString<StreamType>(status));
   std::move(read_cb_).Run(status, output);
 }
 
@@ -399,9 +451,9 @@ void DecoderStream<StreamType>::DecodeInternal(
   int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
 
   TRACE_EVENT_ASYNC_BEGIN2(
-      "media", GetTraceString<StreamType>(), this, "key frame",
-      !buffer->end_of_stream() && buffer->is_key_frame(), "timestamp (ms)",
-      !buffer->end_of_stream() ? buffer->timestamp().InMilliseconds() : 0);
+      "media", GetDecodeTraceString<StreamType>(), this, "is_key_frame",
+      !buffer->end_of_stream() && buffer->is_key_frame(), "timestamp_us",
+      !buffer->end_of_stream() ? buffer->timestamp().InMicroseconds() : 0);
 
   if (buffer->end_of_stream())
     decoding_eos_ = true;
@@ -434,7 +486,7 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
 
   --pending_decode_requests_;
 
-  TRACE_EVENT_ASYNC_END0("media", GetTraceString<StreamType>(), this);
+  TRACE_EVENT_ASYNC_END0("media", GetDecodeTraceString<StreamType>(), this);
 
   if (end_of_stream) {
     DCHECK(!pending_decode_requests_);
@@ -582,6 +634,8 @@ void DecoderStream<StreamType>::ReadFromDemuxerStream() {
   if (pending_demuxer_read_)
     return;
 
+  TRACE_EVENT_ASYNC_BEGIN0("media", GetDemuxerReadTraceString<StreamType>(),
+                           this);
   pending_demuxer_read_ = true;
   stream_->Read(base::BindRepeating(&DecoderStream<StreamType>::OnBufferReady,
                                     weak_factory_.GetWeakPtr()));
@@ -591,6 +645,8 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnBufferReady(
     DemuxerStream::Status status,
     scoped_refptr<DecoderBuffer> buffer) {
+  TRACE_EVENT_ASYNC_END1("media", GetDemuxerReadTraceString<StreamType>(), this,
+                         "status", DemuxerStream::GetStatusName(status));
   FUNCTION_DVLOG(3) << ": " << status << ", "
                     << (buffer ? buffer->AsHumanReadableString() : "nullptr");
 
@@ -852,7 +908,8 @@ void DecoderStream<StreamType>::OnDecoderReset() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::ClearOutputs() {
-  preparing_output_ = false;
+  if (preparing_output_)
+    CompletePrepare(nullptr);
   ready_outputs_.clear();
   unprepared_outputs_.clear();
   prepare_weak_factory_.InvalidateWeakPtrs();
@@ -875,6 +932,9 @@ void DecoderStream<StreamType>::MaybePrepareAnotherOutput() {
   if (ready_outputs_.size() >= static_cast<size_t>(GetMaxDecodeRequests()))
     return;
 
+  TRACE_EVENT_ASYNC_BEGIN1(
+      "media", GetPrepareTraceString<StreamType>(), this, "timestamp_us",
+      unprepared_outputs_.front()->timestamp().InMicroseconds());
   preparing_output_ = true;
   prepare_cb_.Run(
       unprepared_outputs_.front(),
@@ -898,7 +958,7 @@ void DecoderStream<StreamType>::OnPreparedOutputReady(
   DCHECK(!unprepared_outputs_.empty());
   DCHECK(preparing_output_);
 
-  preparing_output_ = false;
+  CompletePrepare(output.get());
   unprepared_outputs_.pop_front();
   if (!read_cb_)
     ready_outputs_.emplace_back(output);
@@ -911,6 +971,15 @@ void DecoderStream<StreamType>::OnPreparedOutputReady(
   // to queue another decode here if one has been returned.
   if (state_ == STATE_NORMAL && CanDecodeMore())
     ReadFromDemuxerStream();
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderStream<StreamType>::CompletePrepare(const Output* output) {
+  DCHECK(preparing_output_);
+  TRACE_EVENT_ASYNC_END1(
+      "media", GetPrepareTraceString<StreamType>(), this, "timestamp_us",
+      (output ? output->timestamp() : kNoTimestamp).InMicroseconds());
+  preparing_output_ = false;
 }
 
 template class DecoderStream<DemuxerStream::VIDEO>;
