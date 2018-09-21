@@ -33,11 +33,6 @@ class MEDIA_EXPORT VideoFrameMetadata {
     CAPTURE_BEGIN_TIME,
     CAPTURE_END_TIME,
 
-    // Some VideoFrames have an indication of the color space used.  Use
-    // GetInteger()/SetInteger() and ColorSpace enumeration.
-    // Reading this metadata is deprecated, use frame->ColorSpace() instead.
-    COLOR_SPACE,
-
     // Indicates that this frame must be copied to a new texture before use,
     // rather than being used directly. Specifically this is required for
     // WebView because of limitations about sharing surface textures between GL

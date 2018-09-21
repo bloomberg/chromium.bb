@@ -366,14 +366,19 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
 
   // Default to the color space from the config, but if the bistream specifies
   // one, prefer that instead.
-  ColorSpace color_space = config_.color_space();
-  if (vpx_image->cs == VPX_CS_BT_709)
-    color_space = COLOR_SPACE_HD_REC709;
-  else if (vpx_image->cs == VPX_CS_BT_601 || vpx_image->cs == VPX_CS_SMPTE_170)
-    color_space = COLOR_SPACE_SD_REC601;
-  (*video_frame)
-      ->metadata()
-      ->SetInteger(VideoFrameMetadata::COLOR_SPACE, color_space);
+  switch (config_.color_space()) {
+    case COLOR_SPACE_UNSPECIFIED:
+      break;
+    case COLOR_SPACE_HD_REC709:
+      (*video_frame)->set_color_space(gfx::ColorSpace::CreateREC709());
+      break;
+    case COLOR_SPACE_SD_REC601:
+      (*video_frame)->set_color_space(gfx::ColorSpace::CreateREC601());
+      break;
+    case COLOR_SPACE_JPEG:
+      (*video_frame)->set_color_space(gfx::ColorSpace::CreateJpeg());
+      break;
+  }
 
   if (config_.color_space_info().IsSpecified()) {
     // config_.color_space_info() comes from the color tag which is
