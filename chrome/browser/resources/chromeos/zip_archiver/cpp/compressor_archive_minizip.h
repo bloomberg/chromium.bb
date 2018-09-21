@@ -7,10 +7,11 @@
 
 #include <string>
 
-#include "compressor_archive.h"
-#include "compressor_stream.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive.h"
 #include "third_party/minizip/src/unzip.h"
 #include "third_party/minizip/src/zip.h"
+
+class CompressorStream;
 
 // A namespace with constants used by CompressorArchiveMinizip.
 namespace compressor_archive_constants {

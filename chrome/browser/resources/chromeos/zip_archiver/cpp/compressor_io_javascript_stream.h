@@ -6,15 +6,17 @@
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_COMPRESSOR_IO_JAVASCRIPT_STREAM_H_
 
 #include <pthread.h>
+#include <cstdint>
 #include <string>
 
-#include "compressor_stream.h"
-#include "javascript_compressor_requestor_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_stream.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "ppapi/utility/threading/lock.h"
 #include "ppapi/utility/threading/simple_thread.h"
+
+class JavaScriptCompressorRequestorInterface;
 
 // A namespace with constants used by CompressorArchiveMinizip.
 namespace compressor_stream_constants {

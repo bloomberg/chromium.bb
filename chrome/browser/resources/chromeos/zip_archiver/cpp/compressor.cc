@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "compressor.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor.h"
 
 #include <cstring>
 #include <ctime>
 #include <sstream>
+#include <string>
 
-#include "compressor_archive_minizip.h"
-#include "compressor_io_javascript_stream.h"
-#include "request.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive_minizip.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_compressor_requestor_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_message_sender_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_requestor_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/request.h"
 
 namespace {
 

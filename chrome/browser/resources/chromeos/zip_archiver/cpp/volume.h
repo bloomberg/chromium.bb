@@ -5,17 +5,19 @@
 #ifndef CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_H_
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_H_
 
-#include <pthread.h>
+#include <map>
+#include <string>
 
-#include "javascript_message_sender_interface.h"
-#include "javascript_requestor_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "ppapi/utility/threading/lock.h"
 #include "ppapi/utility/threading/simple_thread.h"
-#include "volume_archive.h"
+
+class JavaScriptMessageSenderInterface;
+class JavaScriptRequestorInterface;
 
 // A factory that creates VolumeArchive(s). Useful for testing.
 class VolumeArchiveFactoryInterface {

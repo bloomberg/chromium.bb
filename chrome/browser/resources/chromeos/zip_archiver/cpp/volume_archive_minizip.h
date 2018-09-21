@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_ARCHIVE_MINIZIP_H_
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_ARCHIVE_MINIZIP_H_
 
+#include <cstdint>
+#include <memory>
 #include <string>
 
 #include "third_party/minizip/src/unzip.h"
 #include "third_party/minizip/src/zip.h"
 
-#include "volume_archive.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive.h"
 
 // A namespace with constants used by VolumeArchiveMinizip.
 namespace volume_archive_constants {

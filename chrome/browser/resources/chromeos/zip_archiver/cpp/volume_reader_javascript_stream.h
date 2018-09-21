@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_READER_JAVASCRIPT_STREAM_H_
 
 #include <pthread.h>
+#include <cstdint>
+#include <memory>
+#include <string>
 
-#include "javascript_requestor_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_reader.h"
 #include "ppapi/cpp/var_array_buffer.h"
-#include "volume_reader.h"
+
+class JavaScriptRequestorInterface;
 
 // A VolumeReader that reads the content of the volume's archive from
 // JavaScript. All methods including the constructor and destructor should be

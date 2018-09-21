@@ -5,18 +5,18 @@
 #ifndef CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_COMPRESSOR_H_
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_COMPRESSOR_H_
 
-#include <pthread.h>
 #include <ctime>
 
-#include "compressor_archive.h"
-#include "compressor_stream.h"
-#include "javascript_compressor_requestor_interface.h"
-#include "javascript_message_sender_interface.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "ppapi/utility/threading/simple_thread.h"
+
+class CompressorArchive;
+class CompressorStream;
+class JavaScriptCompressorRequestorInterface;
+class JavaScriptMessageSenderInterface;
 
 // Handles all packing operations like creating archive objects and writing data
 // onto the archive.

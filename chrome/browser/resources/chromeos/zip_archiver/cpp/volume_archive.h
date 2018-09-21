@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_ARCHIVE_H_
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_ARCHIVE_H_
 
+#include <time.h>
+#include <cstdint>
 #include <string>
 
-#include "volume_reader.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_reader.h"
 
 // Defines a wrapper for operations executed on an archive. API is not meant
 // to be thread safe and its methods shouldn't be called in parallel.

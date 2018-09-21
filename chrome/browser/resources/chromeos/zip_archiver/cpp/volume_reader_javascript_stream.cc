@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "volume_reader_javascript_stream.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_reader_javascript_stream.h"
 
 #include <algorithm>
 #include <limits>
 
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_requestor_interface.h"
 #include "ppapi/cpp/logging.h"
 #include "third_party/minizip/src/unzip.h"
 
