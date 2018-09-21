@@ -24,9 +24,9 @@ namespace chromeos {
 static CrosSettings* g_cros_settings = nullptr;
 
 // static
-void CrosSettings::Initialize() {
+void CrosSettings::Initialize(PrefService* local_state) {
   CHECK(!g_cros_settings);
-  g_cros_settings = new CrosSettings(DeviceSettingsService::Get());
+  g_cros_settings = new CrosSettings(DeviceSettingsService::Get(), local_state);
 }
 
 // static
@@ -62,7 +62,8 @@ bool CrosSettings::IsUserWhitelisted(const std::string& username,
   return FindEmailInList(kAccountsPrefUsers, username, wildcard_match);
 }
 
-CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service) {
+CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service,
+                           PrefService* local_state) {
   CrosSettingsProvider::NotifyObserversCallback notify_cb(
       base::Bind(&CrosSettings::FireObservers,
                  // This is safe since |this| is never deleted.
@@ -72,7 +73,7 @@ CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service) {
     AddSettingsProvider(std::make_unique<StubCrosSettingsProvider>(notify_cb));
   } else {
     AddSettingsProvider(std::make_unique<DeviceSettingsProvider>(
-        notify_cb, device_settings_service));
+        notify_cb, device_settings_service, local_state));
   }
   // System settings are not mocked currently.
   AddSettingsProvider(std::make_unique<SystemSettingsProvider>(notify_cb));
@@ -354,8 +355,8 @@ void CrosSettings::FireObservers(const std::string& path) {
   observer_iterator->second->Notify();
 }
 
-ScopedTestCrosSettings::ScopedTestCrosSettings() {
-  CrosSettings::Initialize();
+ScopedTestCrosSettings::ScopedTestCrosSettings(PrefService* local_state) {
+  CrosSettings::Initialize(local_state);
 }
 
 ScopedTestCrosSettings::~ScopedTestCrosSettings() {

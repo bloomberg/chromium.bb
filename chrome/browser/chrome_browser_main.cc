@@ -1219,7 +1219,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   PrefService* local_state = browser_process_->local_state();
 
 #if defined(OS_CHROMEOS)
-  chromeos::CrosSettings::Initialize();
+  chromeos::CrosSettings::Initialize(local_state);
 #endif  // defined(OS_CHROMEOS)
 
   {
