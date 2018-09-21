@@ -1078,8 +1078,9 @@ void AudioRendererImpl::OnRenderError() {
 
   // Post to |task_runner_| as this is called on the audio callback thread.
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AudioRendererImpl::OnPlaybackError,
-                            weak_factory_.GetWeakPtr(), AUDIO_RENDERER_ERROR));
+      FROM_HERE,
+      base::BindOnce(&AudioRendererImpl::OnPlaybackError,
+                     weak_factory_.GetWeakPtr(), AUDIO_RENDERER_ERROR));
 }
 
 void AudioRendererImpl::HandleAbortedReadOrDecodeError(PipelineStatus status) {
@@ -1146,8 +1147,8 @@ void AudioRendererImpl::SetBufferingState_Locked(
   buffering_state_ = buffering_state;
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AudioRendererImpl::OnBufferingStateChange,
-                            weak_factory_.GetWeakPtr(), buffering_state_));
+      FROM_HERE, base::BindOnce(&AudioRendererImpl::OnBufferingStateChange,
+                                weak_factory_.GetWeakPtr(), buffering_state_));
 }
 
 void AudioRendererImpl::ConfigureChannelMask() {

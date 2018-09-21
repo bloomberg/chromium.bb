@@ -57,7 +57,7 @@ void MojoAudioDecoder::Initialize(
   // This could happen during reinitialization.
   if (remote_decoder_.encountered_error()) {
     DVLOG(1) << __func__ << ": Connection error happened.";
-    task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(init_cb, false));
     return;
   }
 
@@ -68,7 +68,7 @@ void MojoAudioDecoder::Initialize(
 
   if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
-    task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(init_cb, false));
     return;
   }
 
@@ -115,8 +115,9 @@ void MojoAudioDecoder::Reset(const base::Closure& closure) {
 
   if (remote_decoder_.encountered_error()) {
     if (decode_cb_) {
-      task_runner_->PostTask(FROM_HERE, base::Bind(std::move(decode_cb_),
-                                                   DecodeStatus::DECODE_ERROR));
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(decode_cb_), DecodeStatus::DECODE_ERROR));
     }
 
     task_runner_->PostTask(FROM_HERE, closure);

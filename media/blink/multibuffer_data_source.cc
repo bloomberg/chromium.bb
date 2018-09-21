@@ -212,8 +212,8 @@ void MultibufferDataSource::Initialize(const InitializeCB& init_cb) {
     // make sure that the client gets at least one call each for the progress
     // and loading callbacks.
     render_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&MultibufferDataSource::UpdateProgress,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&MultibufferDataSource::UpdateProgress,
+                                  weak_factory_.GetWeakPtr()));
   } else {
     reader_->Wait(1,
                   base::Bind(&MultibufferDataSource::StartCallback, weak_ptr_));
@@ -260,7 +260,8 @@ void MultibufferDataSource::OnRedirect(
       CreateResourceLoader(read_op_->position(), kPositionNotSpecified);
       if (reader_->Available()) {
         render_task_runner_->PostTask(
-            FROM_HERE, base::Bind(&MultibufferDataSource::ReadTask, weak_ptr_));
+            FROM_HERE,
+            base::BindOnce(&MultibufferDataSource::ReadTask, weak_ptr_));
       } else {
         reader_->Wait(1,
                       base::Bind(&MultibufferDataSource::ReadTask, weak_ptr_));
@@ -348,8 +349,8 @@ void MultibufferDataSource::Abort() {
 
 void MultibufferDataSource::SetBitrate(int bitrate) {
   render_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MultibufferDataSource::SetBitrateTask,
-                            weak_factory_.GetWeakPtr(), bitrate));
+      FROM_HERE, base::BindOnce(&MultibufferDataSource::SetBitrateTask,
+                                weak_factory_.GetWeakPtr(), bitrate));
 }
 
 void MultibufferDataSource::OnBufferingHaveEnough(bool always_cancel) {

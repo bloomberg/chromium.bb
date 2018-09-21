@@ -74,8 +74,8 @@ void ResourceMultiBufferDataProvider::Start() {
   DVLOG(1) << __func__ << " @ " << byte_pos();
   if (url_data_->length() > 0 && byte_pos() >= url_data_->length()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ResourceMultiBufferDataProvider::Terminate,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&ResourceMultiBufferDataProvider::Terminate,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 

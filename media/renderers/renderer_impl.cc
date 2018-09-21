@@ -369,7 +369,7 @@ void RendererImpl::InitializeAudioRenderer() {
 
   if (!audio_stream) {
     audio_renderer_.reset();
-    task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(done_cb, PIPELINE_OK));
     return;
   }
 
@@ -420,7 +420,7 @@ void RendererImpl::InitializeVideoRenderer() {
 
   if (!video_stream) {
     video_renderer_.reset();
-    task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(done_cb, PIPELINE_OK));
     return;
   }
 

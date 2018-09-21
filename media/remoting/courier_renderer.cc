@@ -90,8 +90,8 @@ CourierRenderer::~CourierRenderer() {
 
   // Post task on main thread to unregister message receiver.
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RpcBroker::UnregisterMessageReceiverCallback,
-                            rpc_broker_, rpc_handle_));
+      FROM_HERE, base::BindOnce(&RpcBroker::UnregisterMessageReceiverCallback,
+                                rpc_broker_, rpc_handle_));
 
   if (video_renderer_sink_) {
     video_renderer_sink_->PaintSingleFrame(
@@ -109,7 +109,7 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
 
   if (state_ != STATE_UNINITIALIZED) {
     media_task_runner_->PostTask(
-        FROM_HERE, base::Bind(init_cb, PIPELINE_ERROR_INVALID_STATE));
+        FROM_HERE, base::BindOnce(init_cb, PIPELINE_ERROR_INVALID_STATE));
     return;
   }
 
@@ -436,8 +436,8 @@ void CourierRenderer::SendRpcToRemote(std::unique_ptr<pb::RpcMessage> message) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(main_task_runner_);
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RpcBroker::SendMessageToRemote, rpc_broker_,
-                            base::Passed(&message)));
+      FROM_HERE, base::BindOnce(&RpcBroker::SendMessageToRemote, rpc_broker_,
+                                base::Passed(&message)));
 }
 
 void CourierRenderer::AcquireRendererDone(
@@ -724,8 +724,8 @@ void CourierRenderer::OnFatalError(StopTrigger stop_trigger) {
   if (state_ != STATE_ERROR) {
     state_ = STATE_ERROR;
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RendererController::OnRendererFatalError,
-                              controller_, stop_trigger));
+        FROM_HERE, base::BindOnce(&RendererController::OnRendererFatalError,
+                                  controller_, stop_trigger));
   }
 
   data_flow_poll_timer_.Stop();

@@ -300,8 +300,9 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
     }
   } else {
     encoder_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::EncodeTask,
-                              base::Unretained(this), frame, force_keyframe));
+        FROM_HERE,
+        base::BindOnce(&V4L2VideoEncodeAccelerator::EncodeTask,
+                       base::Unretained(this), frame, force_keyframe));
   }
 }
 
@@ -356,8 +357,8 @@ void V4L2VideoEncodeAccelerator::Destroy() {
   // If the encoder thread is running, destroy using posted task.
   if (encoder_thread_.IsRunning()) {
     encoder_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::DestroyTask,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::DestroyTask,
+                                  base::Unretained(this)));
     // DestroyTask() will put the encoder into kError state and cause all tasks
     // to no-op.
     encoder_thread_.Stop();
@@ -381,8 +382,9 @@ void V4L2VideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::FlushTask,
-                            base::Unretained(this), base::Passed(&flush_callback)));
+      FROM_HERE,
+      base::BindOnce(&V4L2VideoEncodeAccelerator::FlushTask,
+                     base::Unretained(this), base::Passed(&flush_callback)));
 }
 
 void V4L2VideoEncodeAccelerator::FlushTask(FlushCallback flush_callback) {
@@ -429,8 +431,8 @@ void V4L2VideoEncodeAccelerator::FrameProcessed(
                  weak_this_, output_buffer_index)));
 
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::EncodeTask,
-                            base::Unretained(this), frame, force_keyframe));
+      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::EncodeTask,
+                                base::Unretained(this), frame, force_keyframe));
 }
 
 void V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer(
@@ -593,8 +595,8 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
   DCHECK(device_poll_thread_.message_loop());
   // Queue the DevicePollTask() now.
   device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::DevicePollTask,
-                            base::Unretained(this), poll_device));
+      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::DevicePollTask,
+                                base::Unretained(this), poll_device));
 
   DVLOGF(3) << encoder_input_queue_.size() << "] => DEVICE["
             << free_input_buffers_.size() << "+"
@@ -903,8 +905,8 @@ bool V4L2VideoEncodeAccelerator::StartDevicePoll() {
   // Enqueue a poll task with no devices to poll on -- it will wait only on the
   // interrupt fd.
   device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::DevicePollTask,
-                            base::Unretained(this), false));
+      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::DevicePollTask,
+                                base::Unretained(this), false));
 
   return true;
 }
@@ -972,8 +974,8 @@ void V4L2VideoEncodeAccelerator::DevicePollTask(bool poll_device) {
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch encoder state from this thread.
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::ServiceDeviceTask,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::ServiceDeviceTask,
+                                base::Unretained(this)));
 }
 
 void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
@@ -981,8 +983,8 @@ void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
 
   if (!child_task_runner_->BelongsToCurrentThread()) {
     child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::NotifyError,
-                              weak_this_, error));
+        FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::NotifyError,
+                                  weak_this_, error));
     return;
   }
 

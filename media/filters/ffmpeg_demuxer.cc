@@ -828,8 +828,8 @@ void FFmpegDemuxerStream::SetEnabled(bool enabled, base::TimeDelta timestamp) {
 
   is_enabled_ = enabled;
   demuxer_->ffmpeg_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SetAVStreamDiscard, av_stream(),
-                            enabled ? AVDISCARD_DEFAULT : AVDISCARD_ALL));
+      FROM_HERE, base::BindOnce(&SetAVStreamDiscard, av_stream(),
+                                enabled ? AVDISCARD_DEFAULT : AVDISCARD_ALL));
   if (is_enabled_) {
     waiting_for_keyframe_ = true;
   }
@@ -1042,7 +1042,8 @@ void FFmpegDemuxer::CancelPendingSeek(base::TimeDelta seek_time) {
   } else {
     // Don't use GetWeakPtr() here since we are on the wrong thread.
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FFmpegDemuxer::AbortPendingReads, weak_this_));
+        FROM_HERE,
+        base::BindOnce(&FFmpegDemuxer::AbortPendingReads, weak_this_));
   }
 }
 

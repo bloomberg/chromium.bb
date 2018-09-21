@@ -1049,8 +1049,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::Shutdown() {
       continue;
 
     media_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PoolImpl::DeleteFrameResources, gpu_factories_,
-                              base::Owned(frame_resources)));
+        FROM_HERE,
+        base::BindOnce(&PoolImpl::DeleteFrameResources, gpu_factories_,
+                       base::Owned(frame_resources)));
   }
   resources_pool_.clear();
 }

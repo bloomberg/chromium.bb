@@ -128,7 +128,7 @@ class MockVideoDecoder : public VideoDecoder {
     }
     // |decode_cb| must not be called from the same stack.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(decode_cb, DecodeStatus::OK));
+        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::OK));
   }
 
   void DoReset(const base::Closure& reset_cb) {

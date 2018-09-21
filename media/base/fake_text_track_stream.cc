@@ -31,8 +31,9 @@ void FakeTextTrackStream::Read(const ReadCB& read_cb) {
   read_cb_ = read_cb;
 
   if (stopping_) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(
-        &FakeTextTrackStream::AbortPendingRead, base::Unretained(this)));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&FakeTextTrackStream::AbortPendingRead,
+                                  base::Unretained(this)));
   }
 }
 

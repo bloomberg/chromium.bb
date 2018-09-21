@@ -133,7 +133,8 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
 
   // Post Cleanup() as a task so we don't recursively acquire lock_.
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::Cleanup, weak_this_));
+      FROM_HERE,
+      base::BindOnce(&VaapiVideoDecodeAccelerator::Cleanup, weak_this_));
 
   VLOGF(1) << "Notifying of error " << error;
   if (client_) {
@@ -321,8 +322,8 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
     case kIdle:
       state_ = kDecoding;
       decoder_thread_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask,
-                                base::Unretained(this)));
+          FROM_HERE, base::BindOnce(&VaapiVideoDecodeAccelerator::DecodeTask,
+                                    base::Unretained(this)));
       break;
 
     case kDecoding:
@@ -535,9 +536,10 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
       vaapi_picture_factory_->GetBufferFormat());
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::ProvidePictureBuffers, client_,
-                            requested_num_pics_, format, 1, requested_pic_size_,
-                            vaapi_picture_factory_->GetGLTextureTarget()));
+      FROM_HERE,
+      base::BindOnce(&Client::ProvidePictureBuffers, client_,
+                     requested_num_pics_, format, 1, requested_pic_size_,
+                     vaapi_picture_factory_->GetGLTextureTarget()));
 }
 
 void VaapiVideoDecodeAccelerator::Decode(
@@ -644,8 +646,8 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   // Resume DecodeTask if it is still in decoding state.
   if (state_ == kDecoding) {
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&VaapiVideoDecodeAccelerator::DecodeTask,
+                                  base::Unretained(this)));
   }
 }
 
@@ -770,8 +772,8 @@ void VaapiVideoDecodeAccelerator::FinishFlush() {
     state_ = kIdle;
   } else {
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&VaapiVideoDecodeAccelerator::DecodeTask,
+                                  base::Unretained(this)));
   }
 
   task_runner_->PostTask(FROM_HERE,
@@ -814,8 +816,8 @@ void VaapiVideoDecodeAccelerator::Reset() {
   TRACE_COUNTER1("media,gpu", "Vaapi input buffers", input_buffers_.size());
 
   decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::ResetTask,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&VaapiVideoDecodeAccelerator::ResetTask,
+                                base::Unretained(this)));
 
   input_ready_.Signal();
   surfaces_available_.Signal();
@@ -859,8 +861,8 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
   if (!input_buffers_.empty()) {
     state_ = kDecoding;
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&VaapiVideoDecodeAccelerator::DecodeTask,
+                                  base::Unretained(this)));
   }
 }
 

@@ -107,8 +107,8 @@ AudioManagerWin::AudioManagerWin(std::unique_ptr<AudioThread> audio_thread,
   // audio thread. Unretained is safe since we join the audio thread before
   // destructing |this|.
   GetTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&AudioManagerWin::InitializeOnAudioThread,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&AudioManagerWin::InitializeOnAudioThread,
+                                base::Unretained(this)));
 }
 
 AudioManagerWin::~AudioManagerWin() = default;

@@ -164,8 +164,9 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   if (buffering_state_ != BUFFERING_HAVE_NOTHING) {
     buffering_state_ = BUFFERING_HAVE_NOTHING;
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoRendererImpl::OnBufferingStateChange,
-                              weak_factory_.GetWeakPtr(), buffering_state_));
+        FROM_HERE,
+        base::BindOnce(&VideoRendererImpl::OnBufferingStateChange,
+                       weak_factory_.GetWeakPtr(), buffering_state_));
   }
   received_end_of_stream_ = false;
   rendered_end_of_stream_ = false;
@@ -293,8 +294,8 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
     // held already and it fire the state changes in the wrong order.
     DVLOG(3) << __func__ << " posted TransitionToHaveNothing.";
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoRendererImpl::TransitionToHaveNothing,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&VideoRendererImpl::TransitionToHaveNothing,
+                                  weak_factory_.GetWeakPtr()));
   }
 
   // We don't count dropped frames in the background to avoid skewing the count
@@ -597,8 +598,8 @@ void VideoRendererImpl::TransitionToHaveEnough_Locked() {
 
   buffering_state_ = BUFFERING_HAVE_ENOUGH;
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoRendererImpl::OnBufferingStateChange,
-                            weak_factory_.GetWeakPtr(), buffering_state_));
+      FROM_HERE, base::BindOnce(&VideoRendererImpl::OnBufferingStateChange,
+                                weak_factory_.GetWeakPtr(), buffering_state_));
 }
 
 void VideoRendererImpl::TransitionToHaveNothing() {
@@ -619,8 +620,8 @@ void VideoRendererImpl::TransitionToHaveNothing_Locked() {
 
   buffering_state_ = BUFFERING_HAVE_NOTHING;
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoRendererImpl::OnBufferingStateChange,
-                            weak_factory_.GetWeakPtr(), buffering_state_));
+      FROM_HERE, base::BindOnce(&VideoRendererImpl::OnBufferingStateChange,
+                                weak_factory_.GetWeakPtr(), buffering_state_));
 }
 
 void VideoRendererImpl::AddReadyFrame_Locked(

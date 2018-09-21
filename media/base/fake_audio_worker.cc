@@ -105,7 +105,8 @@ void FakeAudioWorker::Worker::Start(const base::Closure& worker_cb) {
     DCHECK(!worker_cb_);
     worker_cb_ = worker_cb;
   }
-  worker_task_runner_->PostTask(FROM_HERE, base::Bind(&Worker::DoStart, this));
+  worker_task_runner_->PostTask(FROM_HERE,
+                                base::BindOnce(&Worker::DoStart, this));
 }
 
 void FakeAudioWorker::Worker::DoStart() {
@@ -123,7 +124,8 @@ void FakeAudioWorker::Worker::Stop() {
       return;
     worker_cb_.Reset();
   }
-  worker_task_runner_->PostTask(FROM_HERE, base::Bind(&Worker::DoCancel, this));
+  worker_task_runner_->PostTask(FROM_HERE,
+                                base::BindOnce(&Worker::DoCancel, this));
 }
 
 void FakeAudioWorker::Worker::DoCancel() {

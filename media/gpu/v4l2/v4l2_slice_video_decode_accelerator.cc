@@ -458,8 +458,8 @@ void V4L2SliceVideoDecodeAccelerator::NotifyError(Error error) {
   // Notifying the client should only happen from the client's thread.
   if (!child_task_runner_->BelongsToCurrentThread()) {
     child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::NotifyError,
-                              weak_this_, error));
+        FROM_HERE, base::BindOnce(&V4L2SliceVideoDecodeAccelerator::NotifyError,
+                                  weak_this_, error));
     return;
   }
 
@@ -572,8 +572,9 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
 
   // InitializeTask will NOTIFY_ERROR on failure.
   decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::InitializeTask,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::InitializeTask,
+                     base::Unretained(this)));
 
   VLOGF(2) << "V4L2SliceVideoDecodeAccelerator initialized";
   return true;
@@ -605,8 +606,8 @@ void V4L2SliceVideoDecodeAccelerator::Destroy() {
 
   if (decoder_thread_.IsRunning()) {
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DestroyTask,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&V4L2SliceVideoDecodeAccelerator::DestroyTask,
+                                  base::Unretained(this)));
 
     // Wait for tasks to finish/early-exit.
     decoder_thread_.Stop();
@@ -869,8 +870,9 @@ void V4L2SliceVideoDecodeAccelerator::DevicePollTask(bool poll_device) {
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch encoder state from this thread.
   decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::ServiceDeviceTask,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ServiceDeviceTask,
+                     base::Unretained(this)));
 }
 
 void V4L2SliceVideoDecodeAccelerator::ServiceDeviceTask() {
@@ -904,8 +906,9 @@ void V4L2SliceVideoDecodeAccelerator::SchedulePollIfNeeded() {
   DVLOGF(4) << "Scheduling device poll task";
 
   device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DevicePollTask,
-                            base::Unretained(this), true));
+      FROM_HERE,
+      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::DevicePollTask,
+                     base::Unretained(this), true));
 
   DVLOGF(3) << "buffer counts: "
             << "INPUT[" << decoder_input_queue_.size() << "]"
@@ -1222,8 +1225,9 @@ bool V4L2SliceVideoDecodeAccelerator::StartDevicePoll() {
   }
 
   device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DevicePollTask,
-                            base::Unretained(this), true));
+      FROM_HERE,
+      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::DevicePollTask,
+                     base::Unretained(this), true));
 
   return true;
 }
@@ -1508,8 +1512,9 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputs(bool dismiss) {
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DismissPictures,
-                              weak_this_, picture_buffers_to_dismiss, &done));
+        FROM_HERE,
+        base::BindOnce(&V4L2SliceVideoDecodeAccelerator::DismissPictures,
+                       weak_this_, picture_buffers_to_dismiss, &done));
     done.Wait();
   }
 
@@ -1903,8 +1908,8 @@ void V4L2SliceVideoDecodeAccelerator::Flush() {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::FlushTask,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&V4L2SliceVideoDecodeAccelerator::FlushTask,
+                                base::Unretained(this)));
 }
 
 void V4L2SliceVideoDecodeAccelerator::FlushTask() {
@@ -1982,8 +1987,8 @@ void V4L2SliceVideoDecodeAccelerator::Reset() {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::ResetTask,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ResetTask,
+                                base::Unretained(this)));
 }
 
 void V4L2SliceVideoDecodeAccelerator::ResetTask() {
@@ -2062,8 +2067,9 @@ void V4L2SliceVideoDecodeAccelerator::SetErrorState(Error error) {
   if (decoder_thread_.IsRunning() &&
       !decoder_thread_task_runner_->BelongsToCurrentThread()) {
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::SetErrorState,
-                              base::Unretained(this), error));
+        FROM_HERE,
+        base::BindOnce(&V4L2SliceVideoDecodeAccelerator::SetErrorState,
+                       base::Unretained(this), error));
     return;
   }
 
@@ -3264,7 +3270,7 @@ void V4L2SliceVideoDecodeAccelerator::SendPictureReady() {
       // resolution, send all pictures to ensure PictureReady arrive before
       // reset done, flush done, or picture dismissed.
       child_task_runner_->PostTaskAndReply(
-          FROM_HERE, base::Bind(&Client::PictureReady, client_, picture),
+          FROM_HERE, base::BindOnce(&Client::PictureReady, client_, picture),
           // Unretained is safe. If Client::PictureReady gets to run, |this| is
           // alive. Destroy() will wait the decode thread to finish.
           base::Bind(&V4L2SliceVideoDecodeAccelerator::PictureCleared,

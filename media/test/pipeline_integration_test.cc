@@ -421,7 +421,7 @@ class FailingVideoDecoder : public VideoDecoder {
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
+        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
   }
   void Reset(const base::Closure& closure) override { closure.Run(); }
   bool NeedsBitstreamConversion() const override { return true; }

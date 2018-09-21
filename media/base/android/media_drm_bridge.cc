@@ -719,7 +719,8 @@ void MediaDrmBridge::OnSessionClosed(
     const JavaParamRef<jbyteArray>& j_session_id) {
   DVLOG(2) << __func__;
   std::string session_id = JavaBytesToString(env, j_session_id);
-  task_runner_->PostTask(FROM_HERE, base::Bind(session_closed_cb_, session_id));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(session_closed_cb_, session_id));
 }
 
 void MediaDrmBridge::OnSessionKeysChange(
@@ -788,9 +789,10 @@ void MediaDrmBridge::OnSessionExpirationUpdate(
     jlong expiry_time_ms) {
   DVLOG(2) << __func__ << ": " << expiry_time_ms << " ms";
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(session_expiration_update_cb_,
-                            JavaBytesToString(env, j_session_id),
-                            base::Time::FromDoubleT(expiry_time_ms / 1000.0)));
+      FROM_HERE,
+      base::BindOnce(session_expiration_update_cb_,
+                     JavaBytesToString(env, j_session_id),
+                     base::Time::FromDoubleT(expiry_time_ms / 1000.0)));
 }
 
 void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
