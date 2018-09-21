@@ -58,7 +58,7 @@ int SuggestionChipContainerView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
           results(), ash::SearchResultDisplayType::kRecommendation,
-          kNumStartPageTiles);
+          /*excludes=*/{}, kNumStartPageTiles);
 
   // Create a suggestion chip for each search result, but wait until layout to
   // add them as child views when we know this view's bounds.

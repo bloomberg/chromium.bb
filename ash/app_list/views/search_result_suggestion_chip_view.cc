@@ -109,12 +109,12 @@ void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
     return;
 
   if (suggestion_chip_view_) {
-    suggestion_chip_view_->SetIcon(item_->icon());
+    suggestion_chip_view_->SetIcon(item_->chip_icon());
     suggestion_chip_view_->SetText(item_->title());
   } else {
     app_list::SuggestionChipView::Params params;
     params.text = item_->title();
-    params.icon = item_->icon();
+    params.icon = item_->chip_icon();
     suggestion_chip_view_ = new SuggestionChipView(params, /* listener */ this);
     AddChildView(suggestion_chip_view_);
   }

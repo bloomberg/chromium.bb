@@ -45,6 +45,9 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   const gfx::ImageSkia& icon() const { return metadata_->icon; }
   void SetIcon(const gfx::ImageSkia& icon);
 
+  const gfx::ImageSkia& chip_icon() const { return metadata_->chip_icon; }
+  void SetChipIcon(const gfx::ImageSkia& chip_icon);
+
   const gfx::ImageSkia& badge_icon() const { return metadata_->badge_icon; }
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
 

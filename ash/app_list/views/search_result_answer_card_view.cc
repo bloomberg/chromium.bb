@@ -239,7 +239,7 @@ int SearchResultAnswerCardView::GetYSize() {
 int SearchResultAnswerCardView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
-          results(), ash::SearchResultDisplayType::kCard, 1);
+          results(), ash::SearchResultDisplayType::kCard, /*excludes=*/{}, 1);
 
   const bool have_result = !display_results.empty();
 

@@ -70,6 +70,9 @@ struct SearchResultMetadata {
                                      // loading and its renderer notifies it
                                      // about a new contents size.
   gfx.mojom.ImageSkia? icon;  // The icon of this result.
+  gfx.mojom.ImageSkia? chip_icon;  // The icon of this result in a smaller
+                                   // dimension to be rendered in suggestion
+                                   // chip view.
   gfx.mojom.ImageSkia? badge_icon;  // The badge icon of this result that
                                     // indicates its type, e.g. installable from
                                     // PlayStore, installable from WebStore,
