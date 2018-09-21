@@ -65,6 +65,7 @@ void BackgroundFetchDownloadClient::OnDownloadUpdated(
 
 void BackgroundFetchDownloadClient::OnDownloadFailed(
     const std::string& guid,
+    const download::CompletionInfo& info,
     download::Client::FailureReason reason) {
   if (delegate_)
     delegate_->OnDownloadFailed(guid, reason);

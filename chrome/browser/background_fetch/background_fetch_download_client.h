@@ -38,6 +38,7 @@ class BackgroundFetchDownloadClient : public download::Client {
   void OnDownloadUpdated(const std::string& guid,
                          uint64_t bytes_downloaded) override;
   void OnDownloadFailed(const std::string& guid,
+                        const download::CompletionInfo& info,
                         download::Client::FailureReason reason) override;
   void OnDownloadSucceeded(const std::string& guid,
                            const download::CompletionInfo& info) override;
