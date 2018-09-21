@@ -368,6 +368,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // process. It does this due to idle timeout.
   bool RequestedTermination() const;
 
+  // Stops the worker context. Called on the main thread.
+  void StopWorker();
+
   // Keeps the mapping from version id to ServiceWorker object.
   void AddServiceWorkerObject(int64_t version_id, WebServiceWorkerImpl* worker);
   void RemoveServiceWorkerObject(int64_t version_id);
@@ -427,6 +430,11 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // S13nServiceWorker:
   // A URLLoaderFactory instance used for subresource loading.
   scoped_refptr<HostChildURLLoaderFactoryBundle> loader_factories_;
+
+  // Out-of-process NetworkService:
+  // Detects disconnection from the network service.
+  network::mojom::URLLoaderFactoryPtr
+      network_service_connection_error_handler_holder_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

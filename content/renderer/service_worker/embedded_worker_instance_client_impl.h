@@ -67,6 +67,10 @@ class EmbeddedWorkerInstanceClientImpl
   // Called from ServiceWorkerContextClient.
   void WorkerContextDestroyed();
 
+  // mojom::EmbeddedWorkerInstanceClient implementation (partially exposed to
+  // public)
+  void StopWorker() override;
+
  private:
   EmbeddedWorkerInstanceClientImpl(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
@@ -74,7 +78,6 @@ class EmbeddedWorkerInstanceClientImpl
 
   // mojom::EmbeddedWorkerInstanceClient implementation
   void StartWorker(mojom::EmbeddedWorkerStartParamsPtr params) override;
-  void StopWorker() override;
   void ResumeAfterDownload() override;
   void AddMessageToConsole(blink::WebConsoleMessage::Level level,
                            const std::string& message) override;

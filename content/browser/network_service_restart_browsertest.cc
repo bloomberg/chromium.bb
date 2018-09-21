@@ -625,11 +625,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MultipleWorkerFetch) {
 }
 
 // Make sure fetch from service worker context works after crash.
-//
-// Disabled since service workers don't support recovery from a NS crash:
-// https://crbug.com/884007.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
-                       DISABLED_ServiceWorkerFetch) {
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, ServiceWorkerFetch) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   ServiceWorkerStatusObserver observer;
