@@ -176,9 +176,9 @@ AesDecryptor::AesDecryptor(
       session_expiration_update_cb_(session_expiration_update_cb) {
   // AesDecryptor doesn't keep any persistent data, so no need to do anything
   // with |security_origin|.
-  DCHECK(!session_message_cb_.is_null());
-  DCHECK(!session_closed_cb_.is_null());
-  DCHECK(!session_keys_change_cb_.is_null());
+  DCHECK(session_message_cb_);
+  DCHECK(session_closed_cb_);
+  DCHECK(session_keys_change_cb_);
 }
 
 AesDecryptor::~AesDecryptor() {
@@ -339,10 +339,10 @@ void AesDecryptor::FinishUpdate(const std::string& session_id,
   {
     base::AutoLock auto_lock(new_key_cb_lock_);
 
-    if (!new_audio_key_cb_.is_null())
+    if (new_audio_key_cb_)
       new_audio_key_cb_.Run();
 
-    if (!new_video_key_cb_.is_null())
+    if (new_video_key_cb_)
       new_video_key_cb_.Run();
   }
 

@@ -81,7 +81,7 @@ DecoderStream<StreamType>::~DecoderStream() {
         base::BindOnce(std::move(read_cb_), ABORTED, scoped_refptr<Output>()));
   }
   if (reset_cb_)
-    task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&reset_cb_));
+    task_runner_->PostTask(FROM_HERE, std::move(reset_cb_));
 
   // Don't manually reset anything here; rely on the order of member variables
   // within the header, which enforces WeakPtrFactory invalidation first.
@@ -181,7 +181,7 @@ void DecoderStream<StreamType>::Reset(base::OnceClosure closure) {
   // OnBufferReady() will handle the reset callback.
   // See crbug.com/597605 and crbug.com/607454.
   if (state_ == STATE_ERROR && !pending_demuxer_read_) {
-    task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&reset_cb_));
+    task_runner_->PostTask(FROM_HERE, std::move(reset_cb_));
     return;
   }
 
@@ -651,7 +651,7 @@ void DecoderStream<StreamType>::OnBufferReady(
       // If we are using DecryptingDemuxerStream, we already called DDS::Reset()
       // which will continue the resetting process in its callback.
       if (!decrypting_demuxer_stream_)
-        Reset(base::ResetAndReturn(&reset_cb_));
+        Reset(std::move(reset_cb_));
     }
     return;
   }
@@ -698,7 +698,7 @@ void DecoderStream<StreamType>::OnBufferReady(
       // If we are using DecryptingDemuxerStream, we already called DDS::Reset()
       // which will continue the resetting process in its callback.
       if (!decrypting_demuxer_stream_)
-        Reset(base::ResetAndReturn(&reset_cb_));
+        Reset(std::move(reset_cb_));
       // Reinitialization will continue after Reset() is done.
     } else {
       FlushDecoder();
@@ -710,7 +710,7 @@ void DecoderStream<StreamType>::OnBufferReady(
     // If we are using DecryptingDemuxerStream, we already called DDS::Reset()
     // which will continue the resetting process in its callback.
     if (!decrypting_demuxer_stream_)
-      Reset(base::ResetAndReturn(&reset_cb_));
+      Reset(std::move(reset_cb_));
     return;
   }
 
@@ -780,7 +780,7 @@ void DecoderStream<StreamType>::CompleteDecoderReinitialization(bool success) {
   state_ = success ? STATE_NORMAL : STATE_ERROR;
 
   if (reset_cb_) {
-    base::ResetAndReturn(&reset_cb_).Run();
+    std::move(reset_cb_).Run();
     return;
   }
 
@@ -842,7 +842,7 @@ void DecoderStream<StreamType>::OnDecoderReset() {
     state_ = STATE_NORMAL;
     // Pending read, on failure, could have fired the reset callback already.
     if (reset_cb_)
-      base::ResetAndReturn(&reset_cb_).Run();
+      std::move(reset_cb_).Run();
     return;
   }
 

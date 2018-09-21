@@ -256,7 +256,7 @@ void FFmpegVideoDecoder::Initialize(
     const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(config.IsValidConfig());
-  DCHECK(!output_cb.is_null());
+  DCHECK(output_cb);
 
   InitCB bound_init_cb = BindToCurrentLoop(init_cb);
 
@@ -281,7 +281,7 @@ void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                 const DecodeCB& decode_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buffer.get());
-  DCHECK(!decode_cb.is_null());
+  DCHECK(decode_cb);
   CHECK_NE(state_, kUninitialized);
 
   DecodeCB decode_cb_bound = BindToCurrentLoop(decode_cb);

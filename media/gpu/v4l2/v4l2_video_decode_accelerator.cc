@@ -210,7 +210,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
   video_profile_ = config.profile;
 
   // We need the context to be initialized to query extensions.
-  if (!make_context_current_cb_.is_null()) {
+  if (make_context_current_cb_) {
     if (egl_display_ == EGL_NO_DISPLAY) {
       VLOGF(1) << "could not get EGLDisplay";
       return false;
@@ -447,7 +447,7 @@ void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(texture_id, 0u);
 
-  if (get_gl_context_cb_.is_null() || make_context_current_cb_.is_null()) {
+  if (!get_gl_context_cb_ || !make_context_current_cb_) {
     VLOGF(1) << "GL callbacks required for binding to EGLImages";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
@@ -674,7 +674,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
 
   std::unique_ptr<gl::GLFenceEGL> egl_fence;
 
-  if (!make_context_current_cb_.is_null()) {
+  if (make_context_current_cb_) {
     if (!make_context_current_cb_.Run()) {
       VLOGF(1) << "could not make context current";
       NOTIFY_ERROR(PLATFORM_FAILURE);

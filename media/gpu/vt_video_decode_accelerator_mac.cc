@@ -444,7 +444,7 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VTDecoderThread"),
       weak_this_factory_(this) {
-  DCHECK(!bind_image_cb_.is_null());
+  DCHECK(bind_image_cb_);
 
   callback_.decompressionOutputCallback = OutputThunk;
   callback_.decompressionOutputRefCon = this;

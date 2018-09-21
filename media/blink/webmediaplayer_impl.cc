@@ -276,7 +276,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       overlay_routing_token_(OverlayInfo::RoutingToken()),
       media_metrics_provider_(params->take_metrics_provider()) {
   DVLOG(1) << __func__;
-  DCHECK(!adjust_allocated_memory_cb_.is_null());
+  DCHECK(adjust_allocated_memory_cb_);
   DCHECK(renderer_factory_selector_);
   DCHECK(client_);
   DCHECK(delegate_);
@@ -410,7 +410,7 @@ WebMediaPlayer::LoadTiming WebMediaPlayerImpl::Load(
 
   bool is_deferred = false;
 
-  if (!defer_load_cb_.is_null()) {
+  if (defer_load_cb_) {
     is_deferred = defer_load_cb_.Run(base::BindOnce(
         &WebMediaPlayerImpl::DoLoad, AsWeakPtr(), load_type, url, cors_mode));
   } else {
@@ -2333,7 +2333,7 @@ void WebMediaPlayerImpl::OnOverlayInfoRequested(
   // If we get a non-null cb, a decoder is initializing and requires overlay
   // info. If we get a null cb, a previously initialized decoder is
   // unregistering for overlay info updates.
-  if (provide_overlay_info_cb.is_null()) {
+  if (!provide_overlay_info_cb) {
     decoder_requires_restart_for_overlay_ = false;
     provide_overlay_info_cb_.Reset();
     return;
@@ -2390,7 +2390,7 @@ void WebMediaPlayerImpl::MaybeSendOverlayInfoToDecoder() {
 
   // If restart is required, the callback is one-shot only.
   if (decoder_requires_restart_for_overlay_) {
-    base::ResetAndReturn(&provide_overlay_info_cb_).Run(overlay_info_);
+    std::move(provide_overlay_info_cb_).Run(overlay_info_);
   } else {
     provide_overlay_info_cb_.Run(overlay_info_);
   }

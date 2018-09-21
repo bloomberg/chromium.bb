@@ -41,7 +41,7 @@ VideoRendererAlgorithm::VideoRendererAlgorithm(
       wall_clock_time_cb_(wall_clock_time_cb),
       frame_duration_calculator_(kMovingAverageSamples),
       frame_dropping_disabled_(false) {
-  DCHECK(!wall_clock_time_cb_.is_null());
+  DCHECK(wall_clock_time_cb_);
   Reset();
 }
 

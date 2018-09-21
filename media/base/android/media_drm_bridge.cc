@@ -573,7 +573,7 @@ void MediaDrmBridge::ResetDeviceCredentials(
     const ResetCredentialsCB& callback) {
   DVLOG(1) << __func__;
 
-  DCHECK(reset_credentials_cb_.is_null());
+  DCHECK(!reset_credentials_cb_);
   reset_credentials_cb_ = callback;
   JNIEnv* env = AttachCurrentThread();
   Java_MediaDrmBridge_resetDeviceCredentials(env, j_media_drm_);
@@ -616,18 +616,18 @@ void MediaDrmBridge::SetMediaCryptoReadyCB(
 
   DVLOG(1) << __func__;
 
-  if (media_crypto_ready_cb.is_null()) {
+  if (!media_crypto_ready_cb) {
     media_crypto_ready_cb_.Reset();
     return;
   }
 
-  DCHECK(media_crypto_ready_cb_.is_null());
+  DCHECK(!media_crypto_ready_cb_);
   media_crypto_ready_cb_ = media_crypto_ready_cb;
 
   if (!j_media_crypto_)
     return;
 
-  base::ResetAndReturn(&media_crypto_ready_cb_)
+  std::move(media_crypto_ready_cb_)
       .Run(CreateJavaObjectPtr(j_media_crypto_->obj()),
            IsSecureCodecRequired());
 }
@@ -798,10 +798,9 @@ void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
     const JavaParamRef<jobject>&,
     bool success) {
   DVLOG(2) << __func__ << ": success:" << success;
-  DCHECK(!reset_credentials_cb_.is_null());
+  DCHECK(reset_credentials_cb_);
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(base::ResetAndReturn(&reset_credentials_cb_), success));
+      FROM_HERE, base::BindOnce(std::move(reset_credentials_cb_), success));
 }
 
 //------------------------------------------------------------------------------
@@ -876,9 +875,8 @@ MediaDrmBridge::~MediaDrmBridge() {
 
   player_tracker_.NotifyCdmUnset();
 
-  if (!media_crypto_ready_cb_.is_null()) {
-    base::ResetAndReturn(&media_crypto_ready_cb_)
-        .Run(CreateJavaObjectPtr(nullptr), false);
+  if (media_crypto_ready_cb_) {
+    std::move(media_crypto_ready_cb_).Run(CreateJavaObjectPtr(nullptr), false);
   }
 
   // Rejects all pending promises.
@@ -904,11 +902,11 @@ void MediaDrmBridge::NotifyMediaCryptoReady(JavaObjectPtr j_media_crypto) {
   UMA_HISTOGRAM_BOOLEAN("Media.EME.MediaCryptoAvailable",
                         !j_media_crypto_->is_null());
 
-  if (media_crypto_ready_cb_.is_null())
+  if (!media_crypto_ready_cb_)
     return;
 
   // We have to use scoped_ptr to pass ScopedJavaGlobalRef with a callback.
-  base::ResetAndReturn(&media_crypto_ready_cb_)
+  std::move(media_crypto_ready_cb_)
       .Run(CreateJavaObjectPtr(j_media_crypto_->obj()),
            IsSecureCodecRequired());
 }

@@ -316,7 +316,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoReset<bool> scoper(&during_initialize_, true);
 
-  if (make_context_current_cb_.is_null() || get_context_group_cb_.is_null()) {
+  if (!make_context_current_cb_ || !get_context_group_cb_) {
     DLOG(ERROR) << "GL callbacks are required for this VDA";
     return false;
   }

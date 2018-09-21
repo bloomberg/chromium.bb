@@ -169,7 +169,7 @@ void MojoVideoDecoder::OnInitializeDone(bool status,
   initialized_ = status;
   needs_bitstream_conversion_ = needs_bitstream_conversion;
   max_decode_requests_ = max_decode_requests;
-  base::ResetAndReturn(&init_cb_).Run(status);
+  std::move(init_cb_).Run(status);
 }
 
 void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -251,7 +251,7 @@ void MojoVideoDecoder::Reset(const base::Closure& reset_cb) {
 void MojoVideoDecoder::OnResetDone() {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::ResetAndReturn(&reset_cb_).Run();
+  std::move(reset_cb_).Run();
 }
 
 bool MojoVideoDecoder::NeedsBitstreamConversion() const {
@@ -351,8 +351,8 @@ void MojoVideoDecoder::Stop() {
   // reentrancy is allowed, and therefore which callbacks must be posted.
   base::WeakPtr<MojoVideoDecoder> weak_this = weak_this_;
 
-  if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(false);
+  if (init_cb_)
+    std::move(init_cb_).Run(false);
   if (!weak_this)
     return;
 
@@ -363,8 +363,8 @@ void MojoVideoDecoder::Stop() {
   }
   pending_decodes_.clear();
 
-  if (!reset_cb_.is_null())
-    base::ResetAndReturn(&reset_cb_).Run();
+  if (reset_cb_)
+    std::move(reset_cb_).Run();
 }
 
 }  // namespace media

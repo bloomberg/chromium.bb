@@ -246,7 +246,7 @@ void FakeVideoCaptureDeviceFactory::GetSupportedFormats(
 void FakeVideoCaptureDeviceFactory::GetCameraLocationsAsync(
     std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
     DeviceDescriptorsCallback result_callback) {
-  base::ResetAndReturn(&result_callback).Run(std::move(device_descriptors));
+  std::move(result_callback).Run(std::move(device_descriptors));
 }
 
 // static

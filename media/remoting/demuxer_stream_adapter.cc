@@ -399,7 +399,7 @@ void DemuxerStreamAdapter::OnFatalError(StopTrigger stop_trigger) {
 
   data_pipe_writer_.Close();
 
-  base::ResetAndReturn(&error_callback_).Run(stop_trigger);
+  std::move(error_callback_).Run(stop_trigger);
 }
 
 }  // namespace remoting

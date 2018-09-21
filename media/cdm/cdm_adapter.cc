@@ -547,10 +547,10 @@ void CdmAdapter::Create(
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
   DCHECK(!key_system.empty());
-  DCHECK(!session_message_cb.is_null());
-  DCHECK(!session_closed_cb.is_null());
-  DCHECK(!session_keys_change_cb.is_null());
-  DCHECK(!session_expiration_update_cb.is_null());
+  DCHECK(session_message_cb);
+  DCHECK(session_closed_cb);
+  DCHECK(session_keys_change_cb);
+  DCHECK(session_expiration_update_cb);
 
   scoped_refptr<CdmAdapter> cdm =
       new CdmAdapter(key_system, security_origin, cdm_config, create_cdm_func,
@@ -822,7 +822,7 @@ void CdmAdapter::CancelDecrypt(StreamType stream_type) {
 void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
                                         const DecoderInitCB& init_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(audio_init_cb_.is_null());
+  DCHECK(!audio_init_cb_);
 
   cdm::Status status =
       cdm_->InitializeAudioDecoder(ToCdmAudioDecoderConfig(config));
@@ -848,7 +848,7 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
 void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
                                         const DecoderInitCB& init_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(video_init_cb_.is_null());
+  DCHECK(!video_init_cb_);
 
   cdm::Status status =
       cdm_->InitializeVideoDecoder(ToCdmVideoDecoderConfig(config));
@@ -1058,9 +1058,9 @@ void CdmAdapter::OnSessionKeysChange(const char* session_id,
   // TODO(jrummell): Handling resume playback should be done in the media
   // player, not in the Decryptors. http://crbug.com/413413.
   if (has_additional_usable_key) {
-    if (!new_audio_key_cb_.is_null())
+    if (new_audio_key_cb_)
       new_audio_key_cb_.Run();
-    if (!new_video_key_cb_.is_null())
+    if (new_video_key_cb_)
       new_video_key_cb_.Run();
   }
 
@@ -1224,12 +1224,10 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 
   switch (stream_type) {
     case cdm::kStreamTypeAudio:
-      base::ResetAndReturn(&audio_init_cb_)
-          .Run(decoder_status == cdm::kSuccess);
+      std::move(audio_init_cb_).Run(decoder_status == cdm::kSuccess);
       return;
     case cdm::kStreamTypeVideo:
-      base::ResetAndReturn(&video_init_cb_)
-          .Run(decoder_status == cdm::kSuccess);
+      std::move(video_init_cb_).Run(decoder_status == cdm::kSuccess);
       return;
   }
 

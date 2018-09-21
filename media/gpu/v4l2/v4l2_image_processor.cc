@@ -127,7 +127,7 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
                                     int num_buffers,
                                     const base::Closure& error_cb) {
   VLOGF(2);
-  DCHECK(!error_cb.is_null());
+  DCHECK(error_cb);
   DCHECK_GT(num_buffers, 0);
   error_cb_ = error_cb;
 

@@ -135,7 +135,7 @@ void VideoDecodePerfHistory::OnGotStatsForRequest(
     bool database_success,
     std::unique_ptr<VideoDecodeStatsDB::DecodeStatsEntry> stats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!got_info_cb.is_null());
+  DCHECK(got_info_cb);
   DCHECK_EQ(db_init_status_, COMPLETE);
 
   bool is_power_efficient = false;

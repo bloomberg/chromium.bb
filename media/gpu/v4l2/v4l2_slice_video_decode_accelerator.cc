@@ -103,7 +103,7 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
   // decoding into this surface is finished. The callback is reset afterwards,
   // so it needs to be set again before each decode operation.
   void SetDecodeDoneCallback(const base::Closure& done_cb) {
-    DCHECK(done_cb_.is_null());
+    DCHECK(!done_cb_);
     done_cb_ = done_cb;
   }
 
@@ -156,8 +156,8 @@ void V4L2DecodeSurface::SetDecoded() {
   reference_surfaces_.clear();
 
   // And finally execute and drop the decode done callback, if set.
-  if (!done_cb_.is_null())
-    base::ResetAndReturn(&done_cb_).Run();
+  if (done_cb_)
+    std::move(done_cb_).Run();
 }
 
 std::string V4L2DecodeSurface::ToString() const {
@@ -500,7 +500,7 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   // We need the context to be initialized to query extensions.
-  if (!make_context_current_cb_.is_null()) {
+  if (make_context_current_cb_) {
     if (egl_display_ == EGL_NO_DISPLAY) {
       VLOGF(1) << "could not get EGLDisplay";
       return false;
@@ -1671,7 +1671,7 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(texture_id, 0u);
 
-  if (make_context_current_cb_.is_null()) {
+  if (!make_context_current_cb_) {
     VLOGF(1) << "GL callbacks required for binding to GLImages";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
@@ -1838,7 +1838,7 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(
 
   std::unique_ptr<gl::GLFenceEGL> egl_fence;
 
-  if (!make_context_current_cb_.is_null()) {
+  if (make_context_current_cb_) {
     if (!make_context_current_cb_.Run()) {
       VLOGF(1) << "could not make context current";
       NOTIFY_ERROR(PLATFORM_FAILURE);

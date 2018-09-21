@@ -48,7 +48,7 @@ class MojoCdmBuffer : public cdm::Buffer {
       size_t capacity,
       const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb) {
     DCHECK(buffer.is_valid());
-    DCHECK(!mojo_shared_buffer_done_cb.is_null());
+    DCHECK(mojo_shared_buffer_done_cb);
 
     // cdm::Buffer interface limits capacity to uint32.
     DCHECK_LE(capacity, std::numeric_limits<uint32_t>::max());

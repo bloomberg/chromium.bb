@@ -618,9 +618,9 @@ ExternalVideoEncoder::ExternalVideoEncoder(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK_GT(video_config.max_frame_rate, 0);
   DCHECK(!frame_size_.IsEmpty());
-  DCHECK(!status_change_cb.is_null());
-  DCHECK(!create_vea_cb.is_null());
-  DCHECK(!create_video_encode_memory_cb_.is_null());
+  DCHECK(status_change_cb);
+  DCHECK(create_vea_cb);
+  DCHECK(create_video_encode_memory_cb_);
   DCHECK_GT(bit_rate_, 0);
 
   create_vea_cb.Run(
