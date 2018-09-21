@@ -15,9 +15,11 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
@@ -114,7 +116,11 @@ class WizardController : public BaseScreenDelegate,
   //    chromeos::OobeScreen::SCREEN_OOBE_DEMO_SETUP
   void StartDemoModeSetup();
 
-  void SimulateDemoModeSetupForTesting();
+  // Simulates demo mode setup environment. If |demo_config| has a value, it
+  // is explicitly set on DemoSetupController and going through demo settings
+  // screens can be skipped.
+  void SimulateDemoModeSetupForTesting(
+      base::Optional<DemoSession::DemoModeConfig> demo_config = base::nullopt);
 
   // Advances to login/update screen. Should be used in for testing only.
   void SkipToLoginForTesting(const LoginScreenContext& context);

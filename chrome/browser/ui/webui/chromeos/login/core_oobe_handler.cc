@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -227,6 +228,8 @@ void CoreOobeHandler::RegisterMessages() {
   AddRawCallback("getPrimaryDisplayNameForTesting",
                  &CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting);
   AddCallback("setupDemoMode", &CoreOobeHandler::HandleSetupDemoMode);
+  AddCallback("startDemoModeSetupForTesting",
+              &CoreOobeHandler::HandleStartDemoModeSetupForTesting);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -688,6 +691,24 @@ void CoreOobeHandler::HandleSetupDemoMode() {
   WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller && !wizard_controller->login_screen_started()) {
     wizard_controller->StartDemoModeSetup();
+  }
+}
+
+void CoreOobeHandler::HandleStartDemoModeSetupForTesting(
+    const std::string& demo_config) {
+  DemoSession::DemoModeConfig config;
+  if (demo_config == "online") {
+    config = DemoSession::DemoModeConfig::kOnline;
+  } else if (demo_config == "offline") {
+    config = DemoSession::DemoModeConfig::kOffline;
+  } else {
+    NOTREACHED() << "Unknown demo config passed for tests";
+  }
+
+  WizardController* wizard_controller = WizardController::default_controller();
+  if (wizard_controller && !wizard_controller->login_screen_started()) {
+    wizard_controller->SimulateDemoModeSetupForTesting(config);
+    wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
   }
 }
 

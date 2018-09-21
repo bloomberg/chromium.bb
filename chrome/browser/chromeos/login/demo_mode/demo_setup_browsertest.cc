@@ -349,11 +349,10 @@ class DemoSetupTest : public LoginManagerTest {
     EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
         &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
 
-    auto* const wizard_controller = WizardController::default_controller();
-    wizard_controller->SimulateDemoModeSetupForTesting();
     // Enrollment type is set in the part of the flow that is skipped, That is
     // why we need to set it here.
-    wizard_controller->demo_setup_controller()->set_demo_config(
+    auto* const wizard_controller = WizardController::default_controller();
+    wizard_controller->SimulateDemoModeSetupForTesting(
         DemoSession::DemoModeConfig::kOnline);
     wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
 
