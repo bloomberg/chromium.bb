@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_window_client.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_window_client_callback.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -52,7 +51,7 @@ void DidGetClient(ScriptPromiseResolver* resolver,
     resolver->Resolve();
     return;
   }
-  ServiceWorkerClient* client;
+  ServiceWorkerClient* client = nullptr;
   switch (info->client_type) {
     case mojom::ServiceWorkerClientType::kWindow:
       client = ServiceWorkerWindowClient::Create(*info);
@@ -182,7 +181,7 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* script_state,
   context->ConsumeWindowInteraction();
 
   ServiceWorkerGlobalScopeClient::From(context)->OpenWindowForClients(
-      parsed_url, std::make_unique<NavigateClientCallback>(resolver));
+      parsed_url, resolver);
   return promise;
 }
 
