@@ -1611,8 +1611,9 @@ LayoutUnit LayoutGrid::FirstLineBoxBaseline() const {
   for (size_t column = 0;
        !is_baseline_aligned && column < grid_->NumTracks(kForColumns);
        column++) {
-    for (size_t index = 0; index < grid_->Cell(0, column).size(); index++) {
-      const LayoutBox* child = grid_->Cell(0, column)[index];
+    const GridItemList& cell = grid_->Cell(0, column);
+    for (size_t index = 0; index < cell.size(); index++) {
+      const LayoutBox* child = cell[index];
       DCHECK(!child->IsOutOfFlowPositioned());
       // If an item participates in baseline alignment, we select such item.
       if (IsBaselineAlignmentForChild(*child, kGridColumnAxis)) {
