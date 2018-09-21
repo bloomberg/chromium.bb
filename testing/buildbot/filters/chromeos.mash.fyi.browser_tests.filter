@@ -221,6 +221,7 @@
 -DefaultKeyboardExtensionBrowserTest.*
 -KeyboardEndToEndFocusTest.*
 -KeyboardEndToEndFormTest.*
+-KeyboardEndToEndOverscrollTest.*
 -KioskVirtualKeyboardTest.*
 -VirtualKeyboardAppWindowTest.*
 -VirtualKeyboardStateTest.*
