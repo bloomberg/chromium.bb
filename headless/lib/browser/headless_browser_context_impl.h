@@ -22,10 +22,6 @@
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_export.h"
 
-namespace net {
-class NetLog;
-}
-
 namespace headless {
 class HeadlessBrowserImpl;
 class HeadlessResourceContext;
@@ -147,7 +143,6 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
 
   std::unique_ptr<content::PermissionControllerDelegate>
       permission_controller_delegate_;
-  std::unique_ptr<net::NetLog> net_log_;
 
   HeadlessNetworkConditions network_conditions_;
 
