@@ -142,11 +142,6 @@ SigninManagerAndroid::SigninManagerAndroid(JNIEnv* env, jobject obj)
   profile_ = ProfileManager::GetActiveUserProfile();
   DCHECK(profile_);
   SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kSigninAllowed,
-      base::Bind(&SigninManagerAndroid::OnSigninAllowedPrefChanged,
-                 base::Unretained(this)));
 }
 
 SigninManagerAndroid::~SigninManagerAndroid() {}
@@ -306,12 +301,6 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env,
       ->ValidateAccounts(primary_acct, true);
 }
 
-jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed();
-}
-
 jboolean SigninManagerAndroid::IsForceSigninEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -344,12 +333,6 @@ void SigninManagerAndroid::GoogleSignedOut(const std::string& account_id,
   DCHECK(thread_checker_.CalledOnValidThread());
   Java_SigninManager_onNativeSignOut(base::android::AttachCurrentThread(),
                                      java_signin_manager_);
-}
-
-void SigninManagerAndroid::OnSigninAllowedPrefChanged() {
-  Java_SigninManager_onSigninAllowedByPolicyChanged(
-      base::android::AttachCurrentThread(), java_signin_manager_,
-      SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed());
 }
 
 // static

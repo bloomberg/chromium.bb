@@ -29,8 +29,7 @@ bool ShouldShowPromo(Profile* profile) {
   // Display the signin promo if the user is not signed in.
   SigninManager* signin =
       SigninManagerFactory::GetForProfile(profile->GetOriginalProfile());
-  return !signin->AuthInProgress() && signin->IsSigninAllowed() &&
-         !signin->IsAuthenticated();
+  return !signin->AuthInProgress() && !signin->IsAuthenticated();
 #endif
 }
 

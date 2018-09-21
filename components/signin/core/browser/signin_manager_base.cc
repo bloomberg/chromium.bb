@@ -56,7 +56,6 @@ void SigninManagerBase::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kReverseAutologinEnabled, true);
   registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList,
                              std::make_unique<base::ListValue>());
-  registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
   registry->RegisterInt64Pref(prefs::kSignedInTime,
                               base::Time().ToInternalValue());
 
@@ -153,10 +152,6 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
 }
 
 bool SigninManagerBase::IsInitialized() const { return initialized_; }
-
-bool SigninManagerBase::IsSigninAllowed() const {
-  return client_->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
-}
 
 AccountInfo SigninManagerBase::GetAuthenticatedAccountInfo() const {
   return account_tracker_service_->GetAccountInfo(GetAuthenticatedAccountId());

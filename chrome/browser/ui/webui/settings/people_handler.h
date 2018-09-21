@@ -19,7 +19,6 @@
 #include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -245,9 +244,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   // The OneShotTimer object used to timeout of starting the sync engine
   // service.
   std::unique_ptr<base::OneShotTimer> engine_start_timer_;
-
-  // Used to listen for pref changes to allow or disallow signin.
-  PrefChangeRegistrar profile_pref_registrar_;
 
   // Manages observer lifetimes.
   ScopedObserver<SigninManagerBase, PeopleHandler> signin_observer_;

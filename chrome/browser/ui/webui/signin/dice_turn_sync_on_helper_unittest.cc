@@ -480,38 +480,6 @@ TEST_F(DiceTurnSyncOnHelperTest, InvalidAccount) {
   CheckDelegateCalls();
 }
 
-// Tests that the login error is displayed and that the account is kept.
-TEST_F(DiceTurnSyncOnHelperTest, CanOfferSigninErrorKeepAccount) {
-  // Set expectations.
-  expected_login_error_email_ = kEmail;
-  // Configure the test.
-  profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
-  // Signin flow.
-  CreateDiceTurnOnSyncHelper(
-      DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
-  base::RunLoop().RunUntilIdle();
-  // Check expectations.
-  EXPECT_FALSE(signin_manager()->IsAuthenticated());
-  EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id()));
-  CheckDelegateCalls();
-}
-
-// Tests that the login error is displayed and that the account is removed.
-TEST_F(DiceTurnSyncOnHelperTest, CanOfferSigninErrorRemoveAccount) {
-  // Set expectations.
-  expected_login_error_email_ = kEmail;
-  // Configure the test.
-  profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
-  // Signin flow.
-  CreateDiceTurnOnSyncHelper(
-      DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
-  base::RunLoop().RunUntilIdle();
-  // Check expectations.
-  EXPECT_FALSE(signin_manager()->IsAuthenticated());
-  EXPECT_FALSE(token_service()->RefreshTokenIsAvailable(account_id()));
-  CheckDelegateCalls();
-}
-
 // Aborts the flow after the cross account dialog.
 TEST_F(DiceTurnSyncOnHelperTest, CrossAccountAbort) {
   // Set expectations.

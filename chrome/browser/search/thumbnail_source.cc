@@ -75,12 +75,6 @@ void ThumbnailSource::StartDataRequest(
             SyncDisabled: true
           }
         }
-        chrome_policy {
-          SigninAllowed {
-            policy_options {mode: MANDATORY}
-            SigninAllowed: false
-          }
-        }
       })");
     // Otherwise, if a fallback thumbnail URL was provided, fetch it and
     // eventually return it.

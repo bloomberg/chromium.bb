@@ -272,7 +272,6 @@ class InlineLoginUIBrowserTest : public InProcessBrowserTest {
   InlineLoginUIBrowserTest() {}
 
   void SetUpSigninManager(const std::string& username);
-  void EnableSigninAllowed(bool enable);
   void EnableOneClick(bool enable);
   void AddEmailToOneClickRejectedList(const std::string& email);
   void AllowSigninCookies(bool enable);
@@ -289,11 +288,6 @@ void InlineLoginUIBrowserTest::SetUpSigninManager(const std::string& username) {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(browser()->profile());
   signin_manager->SetAuthenticatedAccountInfo(username, username);
-}
-
-void InlineLoginUIBrowserTest::EnableSigninAllowed(bool enable) {
-  PrefService* pref_service = browser()->profile()->GetPrefs();
-  pref_service->SetBoolean(prefs::kSigninAllowed, enable);
 }
 
 void InlineLoginUIBrowserTest::EnableOneClick(bool enable) {
@@ -395,7 +389,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOffer) {
 
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferProfileConnected) {
   SetUpSigninManager("foo@gmail.com");
-  EnableSigninAllowed(true);
 
   std::string error_message;
 
@@ -425,8 +418,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferUsernameNotAllowed) {
 }
 
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferWithRejectedEmail) {
-  EnableSigninAllowed(true);
-
   AddEmailToOneClickRejectedList("foo@gmail.com");
   AddEmailToOneClickRejectedList("user@gmail.com");
 
@@ -441,7 +432,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferWithRejectedEmail) {
 
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferNoSigninCookies) {
   AllowSigninCookies(false);
-  EnableSigninAllowed(true);
 
   std::string error_message;
   EXPECT_FALSE(CanOfferSignin(browser()->profile(),

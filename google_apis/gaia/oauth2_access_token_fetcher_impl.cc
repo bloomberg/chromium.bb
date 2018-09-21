@@ -108,13 +108,9 @@ static std::unique_ptr<network::SimpleURLLoader> CreateURLLoader(
           cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if user signs "
-            "out of Chrome, this request would not be made."
-          chrome_policy {
-            SigninAllowed {
-              policy_options {mode: MANDATORY}
-              SigninAllowed: false
-            }
-          }
+            "out of Chrome, this request would not be made.",
+          policy_exception_justification:
+            "Essential for Google account management"
         })");
 
   auto resource_request = std::make_unique<network::ResourceRequest>();

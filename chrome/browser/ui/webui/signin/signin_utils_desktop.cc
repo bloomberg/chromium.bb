@@ -33,13 +33,10 @@ bool CanOfferSignin(Profile* profile,
   if (!profile)
     return false;
 
-  SigninManager* manager = SigninManagerFactory::GetForProfile(profile);
-  if (manager && !manager->IsSigninAllowed())
-    return false;
-
   if (!ChromeSigninClient::ProfileAllowsSigninCookies(profile))
     return false;
 
+  SigninManager* manager = SigninManagerFactory::GetForProfile(profile);
   if (!email.empty()) {
     if (!manager)
       return false;

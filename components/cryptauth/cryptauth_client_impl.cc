@@ -204,11 +204,6 @@ void CryptAuthClientImpl::SetupEnrollment(
         setting:
           "This feature cannot be disabled by settings. However, this request "
           "is made only for signed-in users."
-        chrome_policy {
-          SigninAllowed {
-            SigninAllowed: false
-          }
-        }
       })");
   MakeApiCall(kSetupEnrollmentPath, request, callback, error_callback,
               partial_traffic_annotation);
@@ -235,11 +230,6 @@ void CryptAuthClientImpl::FinishEnrollment(
         setting:
           "This feature cannot be disabled by settings. However, this request "
           "is made only for signed-in users."
-        chrome_policy {
-          SigninAllowed {
-            SigninAllowed: false
-          }
-        }
       })");
   MakeApiCall(kFinishEnrollmentPath, request, callback, error_callback,
               partial_traffic_annotation);

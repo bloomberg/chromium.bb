@@ -171,10 +171,6 @@ bool ChildAccountService::SetActive(bool active) {
         supervised_users::kRecordHistoryIncludesSessionSync,
         std::make_unique<base::Value>(false));
 
-    // In contrast to legacy SUs, child account SUs must sign in.
-    settings_service->SetLocalSetting(supervised_users::kSigninAllowed,
-                                      std::make_unique<base::Value>(true));
-
     // Always allow cookies, to avoid website compatibility issues.
     settings_service->SetLocalSetting(supervised_users::kCookiesAlwaysAllowed,
                                       std::make_unique<base::Value>(true));
@@ -215,8 +211,6 @@ bool ChildAccountService::SetActive(bool active) {
         SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
     settings_service->SetLocalSetting(
         supervised_users::kRecordHistoryIncludesSessionSync, nullptr);
-    settings_service->SetLocalSetting(supervised_users::kSigninAllowed,
-                                      nullptr);
     settings_service->SetLocalSetting(supervised_users::kCookiesAlwaysAllowed,
                                       nullptr);
     settings_service->SetLocalSetting(supervised_users::kForceSafeSearch,

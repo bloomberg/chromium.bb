@@ -245,8 +245,7 @@ void SigninManager::DoSignOut(
   // profile is not connected to an account.
   switch (remove_option) {
     case RemoveAccountsOption::kRemoveAllAccounts:
-      VLOG(0) << "Revoking all refresh tokens on server. Reason: sign out, "
-              << "IsSigninAllowed: " << IsSigninAllowed();
+      VLOG(0) << "Revoking all refresh tokens on server. Reason: sign out.";
       token_service_->RevokeAllCredentials();
       break;
     case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
@@ -272,16 +271,12 @@ void SigninManager::Initialize(PrefService* local_state) {
         base::Bind(&SigninManager::OnGoogleServicesUsernamePatternChanged,
                    weak_pointer_factory_.GetWeakPtr()));
   }
-  signin_allowed_.Init(prefs::kSigninAllowed,
-                       client_->GetPrefs(),
-                       base::Bind(&SigninManager::OnSigninAllowedPrefChanged,
-                                  base::Unretained(this)));
 
   std::string account_id =
       client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
   std::string user = account_id.empty() ? std::string() :
       account_tracker_service()->GetAccountInfo(account_id).email;
-  if ((!account_id.empty() && !IsAllowedUsername(user)) || !IsSigninAllowed()) {
+  if (!account_id.empty() && !IsAllowedUsername(user)) {
     // User is signed in, but the username is invalid - the administrator must
     // have changed the policy since the last signin, so sign out the user.
     SignOut(signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN,
@@ -310,16 +305,6 @@ void SigninManager::OnGoogleServicesUsernamePatternChanged() {
     SignOut(signin_metrics::GOOGLE_SERVICE_NAME_PATTERN_CHANGED,
             signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
-}
-
-bool SigninManager::IsSigninAllowed() const {
-  return signin_allowed_.GetValue();
-}
-
-void SigninManager::OnSigninAllowedPrefChanged() {
-  if (!IsSigninAllowed() && (IsAuthenticated() || AuthInProgress()))
-    SignOut(signin_metrics::SIGNOUT_PREF_CHANGED,
-            signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
 
 // static

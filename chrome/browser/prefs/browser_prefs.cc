@@ -369,6 +369,9 @@ const char kTrustedDownloadSources[] = "trusted_download_sources";
 const char kLastWelcomedOSVersion[] = "browser.last_welcomed_os_version";
 #endif
 
+// Deprecated 9/2018.
+const char kSigninAllowed[] = "signin.allowed";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -391,6 +394,7 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kModuleConflictBubbleShown, 0);
   registry->RegisterIntegerPref(kOptionsWindowLastTabIndex, 0);
   registry->RegisterStringPref(kTrustedDownloadSources, std::string());
+  registry->RegisterBooleanPref(kSigninAllowed, true);
 }
 
 }  // namespace
@@ -844,4 +848,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kModuleConflictBubbleShown);
   profile_prefs->ClearPref(kOptionsWindowLastTabIndex);
   profile_prefs->ClearPref(kTrustedDownloadSources);
+
+  // Added 9/2018
+  profile_prefs->ClearPref(kSigninAllowed);
 }
