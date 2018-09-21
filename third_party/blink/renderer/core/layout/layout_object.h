@@ -1785,6 +1785,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool NeedsPaintOffsetAndVisualRectUpdate() const {
     return bitfields_.NeedsPaintOffsetAndVisualRectUpdate();
   }
+  bool DescendantNeedsPaintOffsetAndVisualRectUpdate() const {
+    return bitfields_.DescendantNeedsPaintOffsetAndVisualRectUpdate();
+  }
 
   bool MayNeedPaintInvalidationAnimatedBackgroundImage() const {
     return bitfields_.MayNeedPaintInvalidationAnimatedBackgroundImage();
@@ -2001,16 +2004,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Paint properties (see: |ObjectPaintProperties|) are built from an object's
   // state (location, transform, etc) as well as properties from ancestors.
-  // When these inputs change, setNeedsPaintPropertyUpdate will cause a property
+  // When these inputs change, SetNeedsPaintPropertyUpdate will cause a property
   // tree update during the next document lifecycle update.
   //
   // In addition to tracking if an object needs its own paint properties
-  // updated, setNeedsPaintPropertyUpdate marks all ancestors as having a
+  // updated, SetNeedsPaintPropertyUpdate marks all ancestors as having a
   // descendant needing a paint property update too.
   void SetNeedsPaintPropertyUpdate();
   bool NeedsPaintPropertyUpdate() const {
     return bitfields_.NeedsPaintPropertyUpdate();
   }
+
   void SetSubtreeNeedsForcedPaintPropertyUpdate() {
     bitfields_.SetSubtreeNeedsForcedPaintPropertyUpdate(true);
     SetNeedsPaintPropertyUpdate();
@@ -2431,8 +2435,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           should_delay_full_paint_invalidation_(false),
           subtree_should_do_full_paint_invalidation_(false),
           may_need_paint_invalidation_animated_background_image_(false),
-          needs_paint_offset_and_visual_rect_update_(true),
           should_invalidate_selection_(false),
+          needs_paint_offset_and_visual_rect_update_(true),
+          descendant_needs_paint_offset_and_visual_rect_update_(true),
+          needs_paint_property_update_(true),
+          descendant_needs_paint_property_update_(true),
+          subtree_needs_forced_paint_property_update_(true),
           floating_(false),
           is_anonymous_(!node),
           is_text_(false),
@@ -2462,9 +2470,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_scroll_anchor_object_(false),
           scroll_anchor_disabling_style_changed_(false),
           has_box_decoration_background_(false),
-          needs_paint_property_update_(true),
-          subtree_needs_forced_paint_property_update_(true),
-          descendant_needs_paint_property_update_(true),
           background_changed_since_last_paint_invalidation_(true),
           outline_may_be_affected_by_descendants_(false),
           previous_outline_may_be_affected_by_descendants_(false),
@@ -2539,6 +2544,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // Also maybe set to inline boxes to optimize the propagation.
     ADD_BOOLEAN_BITFIELD(needs_collect_inlines_, NeedsCollectInlines);
 
+    // Paint related dirty bits.
     ADD_BOOLEAN_BITFIELD(should_check_for_paint_invalidation_,
                          ShouldCheckForPaintInvalidation);
     ADD_BOOLEAN_BITFIELD(subtree_should_check_for_paint_invalidation_,
@@ -2549,10 +2555,29 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                          SubtreeShouldDoFullPaintInvalidation);
     ADD_BOOLEAN_BITFIELD(may_need_paint_invalidation_animated_background_image_,
                          MayNeedPaintInvalidationAnimatedBackgroundImage);
-    ADD_BOOLEAN_BITFIELD(needs_paint_offset_and_visual_rect_update_,
-                         NeedsPaintOffsetAndVisualRectUpdate);
     ADD_BOOLEAN_BITFIELD(should_invalidate_selection_,
                          ShouldInvalidateSelection);
+    // Whether the paint offset and visual rect need to be updated for this
+    // object.
+    ADD_BOOLEAN_BITFIELD(needs_paint_offset_and_visual_rect_update_,
+                         NeedsPaintOffsetAndVisualRectUpdate);
+    // Whether the paint offset and visual rect need to be updated for the
+    // descendants of this object.
+    ADD_BOOLEAN_BITFIELD(descendant_needs_paint_offset_and_visual_rect_update_,
+                         DescendantNeedsPaintOffsetAndVisualRectUpdate);
+    // Whether the paint properties need to be updated. For more details, see
+    // LayoutObject::NeedsPaintPropertyUpdate().
+    ADD_BOOLEAN_BITFIELD(needs_paint_property_update_,
+                         NeedsPaintPropertyUpdate);
+    // Whether the paint properties of a descendant need to be updated. For more
+    // details, see LayoutObject::DescendantNeedsPaintPropertyUpdate().
+    ADD_BOOLEAN_BITFIELD(descendant_needs_paint_property_update_,
+                         DescendantNeedsPaintPropertyUpdate);
+
+    // Whether paint properties of the whole subtree need to be updated.
+    ADD_BOOLEAN_BITFIELD(subtree_needs_forced_paint_property_update_,
+                         SubtreeNeedsForcedPaintPropertyUpdate)
+    // End paint related dirty bits.
 
     // This boolean is the cached value of 'float'
     // (see ComputedStyle::isFloating).
@@ -2660,18 +2685,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     ADD_BOOLEAN_BITFIELD(has_box_decoration_background_,
                          HasBoxDecorationBackground);
-
-    // Whether the paint properties need to be updated. For more details, see
-    // LayoutObject::needsPaintPropertyUpdate().
-    ADD_BOOLEAN_BITFIELD(needs_paint_property_update_,
-                         NeedsPaintPropertyUpdate);
-    // Whether paint properties of the whole subtree need to be updated.
-    ADD_BOOLEAN_BITFIELD(subtree_needs_forced_paint_property_update_,
-                         SubtreeNeedsForcedPaintPropertyUpdate)
-    // Whether the paint properties of a descendant need to be updated. For more
-    // details, see LayoutObject::descendantNeedsPaintPropertyUpdate().
-    ADD_BOOLEAN_BITFIELD(descendant_needs_paint_property_update_,
-                         DescendantNeedsPaintPropertyUpdate);
 
     ADD_BOOLEAN_BITFIELD(background_changed_since_last_paint_invalidation_,
                          BackgroundChangedSinceLastPaintInvalidation);

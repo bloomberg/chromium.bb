@@ -3221,15 +3221,21 @@ void LayoutObject::WillBeRemovedFromTree() {
 }
 
 void LayoutObject::SetNeedsPaintPropertyUpdate() {
-  bitfields_.SetNeedsPaintPropertyUpdate(true);
+  if (bitfields_.NeedsPaintPropertyUpdate())
+    return;
 
-  LayoutObject* ancestor = ParentCrossingFrames();
-
+  // Anytime a layout object needs a paint property update, we should also do
+  // intersection observation.
+  // TODO(vmpstr): Figure out if there's a cleaner way to do this outside of
+  // this function, since this is potentially called many times for a single
+  // frame view subtree.
   GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
 
-  while (ancestor && !ancestor->DescendantNeedsPaintPropertyUpdate()) {
+  bitfields_.SetNeedsPaintPropertyUpdate(true);
+  for (auto* ancestor = ParentCrossingFrames();
+       ancestor && !ancestor->DescendantNeedsPaintPropertyUpdate();
+       ancestor = ancestor->ParentCrossingFrames()) {
     ancestor->bitfields_.SetDescendantNeedsPaintPropertyUpdate(true);
-    ancestor = ancestor->ParentCrossingFrames();
   }
 }
 
@@ -3827,10 +3833,11 @@ inline void LayoutObject::MarkAncestorsForPaintInvalidation() {
 
 inline void LayoutObject::SetNeedsPaintOffsetAndVisualRectUpdate() {
   DCHECK(ShouldCheckForPaintInvalidation());
-  for (auto* object = this;
-       object && !object->NeedsPaintOffsetAndVisualRectUpdate();
-       object = object->ParentCrossingFrames()) {
-    object->bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(true);
+  bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(true);
+  for (auto* ancestor = ParentCrossingFrames();
+       ancestor && !ancestor->DescendantNeedsPaintOffsetAndVisualRectUpdate();
+       ancestor = ancestor->ParentCrossingFrames()) {
+    ancestor->bitfields_.SetDescendantNeedsPaintOffsetAndVisualRectUpdate(true);
   }
 }
 
@@ -3941,6 +3948,7 @@ void LayoutObject::ClearPaintInvalidationFlags() {
   bitfields_.SetSubtreeShouldDoFullPaintInvalidation(false);
   bitfields_.SetMayNeedPaintInvalidationAnimatedBackgroundImage(false);
   bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(false);
+  bitfields_.SetDescendantNeedsPaintOffsetAndVisualRectUpdate(false);
   bitfields_.SetShouldInvalidateSelection(false);
   bitfields_.SetBackgroundChangedSinceLastPaintInvalidation(false);
 }
@@ -3950,6 +3958,7 @@ bool LayoutObject::PaintInvalidationStateIsDirty() const {
   return BackgroundChangedSinceLastPaintInvalidation() ||
          ShouldCheckForPaintInvalidation() || ShouldInvalidateSelection() ||
          NeedsPaintOffsetAndVisualRectUpdate() ||
+         DescendantNeedsPaintOffsetAndVisualRectUpdate() ||
          ShouldDoFullPaintInvalidation() ||
          SubtreeShouldDoFullPaintInvalidation() ||
          MayNeedPaintInvalidationAnimatedBackgroundImage() ||

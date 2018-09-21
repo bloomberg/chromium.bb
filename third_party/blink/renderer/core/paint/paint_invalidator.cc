@@ -524,6 +524,8 @@ void PaintInvalidator::InvalidatePaint(
   if (context.subtree_flags && context.NeedsVisualRectUpdate(object)) {
     // If any subtree flag is set, we also need to pass needsVisualRectUpdate
     // requirement to the subtree.
+    // TODO(vmpstr): Investigate why this is true. Specifically, when crossing
+    // an isolation boundary, is it safe to clear this subtree requirement.
     context.subtree_flags |= PaintInvalidatorContext::kSubtreeVisualRectUpdate;
   }
 
