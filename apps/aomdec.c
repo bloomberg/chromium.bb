@@ -143,7 +143,7 @@ static INLINE int libyuv_scale(aom_image_t *src, aom_image_t *dst,
 }
 #endif
 
-void show_help(FILE *fout, int shorthelp) {
+static void show_help(FILE *fout, int shorthelp) {
   fprintf(fout, "Usage: %s <options> filename\n\n", exec_name);
 
   if (shorthelp) {

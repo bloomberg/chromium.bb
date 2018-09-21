@@ -114,7 +114,7 @@ typedef struct {
   const char *debug_file;
 } noise_model_args_t;
 
-void parse_args(noise_model_args_t *noise_args, int *argc, char **argv) {
+static void parse_args(noise_model_args_t *noise_args, int *argc, char **argv) {
   struct arg arg;
   static const arg_def_t *main_args[] = { &help,
                                           &input_arg,

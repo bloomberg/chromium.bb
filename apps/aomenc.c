@@ -732,7 +732,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 
 static const arg_def_t *no_args[] = { NULL };
 
-void show_help(FILE *fout, int shorthelp) {
+static void show_help(FILE *fout, int shorthelp) {
   fprintf(fout, "Usage: %s <options> -o dst_filename src_filename \n",
           exec_name);
 
