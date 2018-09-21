@@ -13,7 +13,7 @@
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "media/base/cdm_proxy_context.h"
+#include "media/cdm/cdm_proxy_context.h"
 #include "media/gpu/windows/d3d11_mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -678,12 +678,39 @@ TEST_F(D3D11CdmProxyTest, GetCdmProxyContext) {
   ASSERT_TRUE(context->GetCdmProxyContext());
 }
 
+// No keys are set.
 TEST_F(D3D11CdmProxyTest, GetD3D11DecryptContextNoKey) {
   base::WeakPtr<CdmContext> context = proxy_->GetCdmContext();
   ASSERT_TRUE(context);
   CdmProxyContext* proxy_context = context->GetCdmProxyContext();
-  // The key ID doesn't matter.
-  auto decrypt_context = proxy_context->GetD3D11DecryptContext("");
+  auto decrypt_context =
+      proxy_context->GetD3D11DecryptContext(kTestKeyType, "");
+  EXPECT_FALSE(decrypt_context);
+}
+
+// A key is set but no keys for the key type requested.
+TEST_F(D3D11CdmProxyTest, GetD3D11DecryptContextNoKeyForKeyType) {
+  uint32_t crypto_session_id_from_initialize = 0;
+  EXPECT_CALL(callback_mock_,
+              InitializeCallback(CdmProxy::Status::kOk, kTestProtocol, _))
+      .WillOnce(SaveArg<2>(&crypto_session_id_from_initialize));
+  ASSERT_NO_FATAL_FAILURE(
+      Initialize(nullptr, base::BindOnce(&CallbackMock::InitializeCallback,
+                                         base::Unretained(&callback_mock_))));
+  ::testing::Mock::VerifyAndClearExpectations(&callback_mock_);
+
+  const std::vector<uint8_t> kAnyBlob = {
+      0x01, 0x4f, 0x83,
+  };
+
+  proxy_->SetKey(crypto_session_id_from_initialize, kAnyBlob,
+                 CdmProxy::KeyType::kDecryptAndDecode, kAnyBlob);
+
+  base::WeakPtr<CdmContext> context = proxy_->GetCdmContext();
+  CdmProxyContext* proxy_context = context->GetCdmProxyContext();
+  auto decrypt_context = proxy_context->GetD3D11DecryptContext(
+      CdmProxy::KeyType::kDecryptOnly,
+      std::string(kAnyBlob.begin(), kAnyBlob.end()));
   EXPECT_FALSE(decrypt_context);
 }
 
@@ -714,7 +741,8 @@ TEST_F(D3D11CdmProxyTest, SetKeyAndGetDecryptContext) {
                  kKeyBlob);
 
   std::string key_id_str(kKeyId.begin(), kKeyId.end());
-  auto decrypt_context = proxy_context->GetD3D11DecryptContext(key_id_str);
+  auto decrypt_context =
+      proxy_context->GetD3D11DecryptContext(kTestKeyType, key_id_str);
   ASSERT_TRUE(decrypt_context);
 
   EXPECT_TRUE(decrypt_context->crypto_session)
@@ -763,7 +791,8 @@ TEST_F(D3D11CdmProxyTest, ClearKeysAfterHardwareContentProtectionTeardown) {
   run_loop.Run();
 
   std::string key_id_str(kKeyId.begin(), kKeyId.end());
-  auto decrypt_context = proxy_context->GetD3D11DecryptContext(key_id_str);
+  auto decrypt_context =
+      proxy_context->GetD3D11DecryptContext(kTestKeyType, key_id_str);
   ASSERT_FALSE(decrypt_context);
 }
 
@@ -795,7 +824,8 @@ TEST_F(D3D11CdmProxyTest, RemoveKey) {
   proxy_->RemoveKey(crypto_session_id_from_initialize, kKeyId);
 
   std::string keyblob_str(kKeyId.begin(), kKeyId.end());
-  auto decrypt_context = proxy_context->GetD3D11DecryptContext(keyblob_str);
+  auto decrypt_context =
+      proxy_context->GetD3D11DecryptContext(kTestKeyType, keyblob_str);
   EXPECT_FALSE(decrypt_context);
 }
 

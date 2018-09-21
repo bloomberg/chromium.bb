@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/cdm_proxy_context.h"
+#include "media/cdm/cdm_proxy_context.h"
 
 #include "build/build_config.h"
 
@@ -13,7 +13,8 @@ CdmProxyContext::~CdmProxyContext() {}
 
 #if defined(OS_WIN)
 base::Optional<CdmProxyContext::D3D11DecryptContext>
-CdmProxyContext::GetD3D11DecryptContext(const std::string& key_id) {
+CdmProxyContext::GetD3D11DecryptContext(CdmProxy::KeyType key_type,
+                                        const std::string& key_id) {
   return base::nullopt;
 }
 #endif
