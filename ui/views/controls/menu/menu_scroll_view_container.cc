@@ -188,10 +188,7 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
   arrow_ = BubbleBorderTypeFromAnchor(
       content_view_->GetMenuItem()->GetMenuController()->GetAnchorPosition());
 
-  if (HasBubbleBorder())
-    CreateBubbleBorder();
-  else
-    CreateDefaultBorder();
+  CreateBorder();
 }
 
 bool MenuScrollViewContainer::HasBubbleBorder() {
@@ -239,8 +236,7 @@ void MenuScrollViewContainer::Layout() {
 
 void MenuScrollViewContainer::OnNativeThemeChanged(
     const ui::NativeTheme* theme) {
-  if (!HasBubbleBorder())
-    CreateDefaultBorder();
+  CreateBorder();
 }
 
 void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
@@ -270,6 +266,13 @@ void MenuScrollViewContainer::OnBoundsChanged(
   scroll_up_button_->SetVisible(content_pref.height() > height());
   scroll_down_button_->SetVisible(content_pref.height() > height());
   Layout();
+}
+
+void MenuScrollViewContainer::CreateBorder() {
+  if (HasBubbleBorder())
+    CreateBubbleBorder();
+  else
+    CreateDefaultBorder();
 }
 
 void MenuScrollViewContainer::CreateDefaultBorder() {
@@ -310,7 +313,9 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
 
 void MenuScrollViewContainer::CreateBubbleBorder() {
   bubble_border_ =
-      new BubbleBorder(arrow_, BubbleBorder::SMALL_SHADOW, SK_ColorWHITE);
+      new BubbleBorder(arrow_, BubbleBorder::SMALL_SHADOW,
+                       GetNativeTheme()->GetSystemColor(
+                           ui::NativeTheme::kColorId_MenuBackgroundColor));
   MenuController* controller =
       content_view_->GetMenuItem()->GetMenuController();
   if (MD::IsRefreshUi() || controller->use_touchable_layout()) {

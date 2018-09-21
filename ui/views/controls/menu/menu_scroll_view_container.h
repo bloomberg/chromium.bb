@@ -44,6 +44,9 @@ class VIEWS_EXPORT MenuScrollViewContainer : public View {
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
+  // Creates the appropriate default or bubble border.
+  void CreateBorder();
+
   // Create the default border.
   void CreateDefaultBorder();
 
