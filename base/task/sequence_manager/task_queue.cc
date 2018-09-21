@@ -10,12 +10,27 @@
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
+#include "base/task/sequence_manager/task_queue_proxy.h"
 #include "base/task/sequence_manager/task_queue_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 
 namespace base {
 namespace sequence_manager {
+
+namespace {
+
+constexpr int kTaskTypeNone = 0;
+
+// TODO(kraynov): Move NullTaskRunner from //base/test to //base.
+scoped_refptr<SingleThreadTaskRunner> CreateNullTaskRunner() {
+  return MakeRefCounted<internal::TaskQueueTaskRunner>(
+      MakeRefCounted<internal::TaskQueueProxy>(
+          nullptr, MakeRefCounted<internal::AssociatedThreadId>()),
+      kTaskTypeNone);
+}
+
+}  // namespace
 
 TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                      const TaskQueue::Spec& spec)
@@ -25,8 +40,9 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
           impl_ ? impl_->GetGracefulQueueShutdownHelper() : nullptr),
       associated_thread_((impl_ && impl_->sequence_manager())
                              ? impl_->sequence_manager()->associated_thread()
-                             : MakeRefCounted<internal::AssociatedThreadId>()) {
-}
+                             : MakeRefCounted<internal::AssociatedThreadId>()),
+      default_task_runner_(impl_ ? impl_->CreateTaskRunner(kTaskTypeNone)
+                                 : CreateNullTaskRunner()) {}
 
 TaskQueue::~TaskQueue() {
   // scoped_refptr guarantees us that this object isn't used.
@@ -101,40 +117,27 @@ void TaskQueue::ShutdownTaskQueue() {
 
 scoped_refptr<SingleThreadTaskRunner> TaskQueue::CreateTaskRunner(
     int task_type) {
-  return MakeRefCounted<internal::TaskQueueTaskRunner>(this, task_type);
+  Optional<MoveableAutoLock> lock(AcquireImplReadLockIfNeeded());
+  if (!impl_)
+    return CreateNullTaskRunner();
+  return impl_->CreateTaskRunner(task_type);
 }
 
 bool TaskQueue::RunsTasksInCurrentSequence() const {
-  return IsOnMainThread();
+  return task_runner()->RunsTasksInCurrentSequence();
 }
 
 bool TaskQueue::PostDelayedTask(const Location& from_here,
                                 OnceClosure task,
                                 TimeDelta delay) {
-  return PostTaskWithMetadata(
-      PostedTask(std::move(task), from_here, delay, Nestable::kNestable));
+  return task_runner()->PostDelayedTask(from_here, std::move(task), delay);
 }
 
 bool TaskQueue::PostNonNestableDelayedTask(const Location& from_here,
                                            OnceClosure task,
                                            TimeDelta delay) {
-  return PostTaskWithMetadata(
-      PostedTask(std::move(task), from_here, delay, Nestable::kNonNestable));
-}
-
-bool TaskQueue::PostTaskWithMetadata(PostedTask task) {
-  Optional<MoveableAutoLock> lock = AcquireImplReadLockIfNeeded();
-  if (!impl_)
-    return false;
-  internal::TaskQueueImpl::PostTaskResult result(
-      impl_->PostDelayedTask(std::move(task)));
-  if (result.success)
-    return true;
-  // If posting task was unsuccessful then |result| will contain
-  // the original task which should be destructed outside of the lock.
-  lock = nullopt;
-  // Task gets implicitly destructed here.
-  return false;
+  return task_runner()->PostNonNestableDelayedTask(from_here, std::move(task),
+                                                   delay);
 }
 
 std::unique_ptr<TaskQueue::QueueEnabledVoter>

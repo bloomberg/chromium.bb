@@ -9,6 +9,8 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
+#include "base/task/sequence_manager/task_queue_proxy.h"
+#include "base/task/sequence_manager/task_queue_task_runner.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/time/time.h"
@@ -49,6 +51,7 @@ TaskQueueImpl::TaskQueueImpl(SequenceManagerImpl* sequence_manager,
                              : AssociatedThreadId::CreateBound()),
       any_thread_(sequence_manager, time_domain),
       main_thread_only_(sequence_manager, this, time_domain),
+      proxy_(MakeRefCounted<TaskQueueProxy>(this, associated_thread_)),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
       should_notify_observers_(spec.should_notify_observers) {
   DCHECK(time_domain);
@@ -130,7 +133,16 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(
 
 TaskQueueImpl::MainThreadOnly::~MainThreadOnly() = default;
 
+scoped_refptr<SingleThreadTaskRunner> TaskQueueImpl::CreateTaskRunner(
+    int task_type) const {
+  // |proxy_| pointer is const, hence no need for lock.
+  return MakeRefCounted<TaskQueueTaskRunner>(proxy_, task_type);
+}
+
 void TaskQueueImpl::UnregisterTaskQueue() {
+  // Detach task runners.
+  proxy_->DetachFromTaskQueueImpl();
+
   TaskDeque immediate_incoming_queue;
 
   {
