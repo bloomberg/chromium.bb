@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
@@ -53,8 +52,9 @@ namespace blink {
 
 ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
                                          ExecutionContext* target,
-                                         V8Function* handler,
+                                         const ScriptValue& handler,
                                          const Vector<ScriptValue>& arguments) {
+  DCHECK(handler.IsFunction());
   if (!script_state->World().IsWorkerWorld()) {
     if (!BindingSecurity::ShouldAllowAccessToFrame(
             EnteredDOMWindow(script_state->GetIsolate()),
@@ -84,14 +84,12 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
 
 ScheduledAction::~ScheduledAction() {
   // Verify that owning DOMTimer has eagerly disposed.
-  DCHECK(arguments_.IsEmpty());
-  DCHECK(!function_);
-  DCHECK(!script_state_);
+  DCHECK(info_.IsEmpty());
 }
 
 void ScheduledAction::Dispose() {
   code_ = String();
-  arguments_.clear();
+  info_.Clear();
   function_.Clear();
   script_state_->Reset();
   script_state_.Clear();
@@ -99,7 +97,6 @@ void ScheduledAction::Dispose() {
 
 void ScheduledAction::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
-  visitor->Trace(function_);
 }
 
 void ScheduledAction::Execute(ExecutionContext* context) {
@@ -130,11 +127,15 @@ void ScheduledAction::Execute(ExecutionContext* context) {
 }
 
 ScheduledAction::ScheduledAction(ScriptState* script_state,
-                                 V8Function* function,
+                                 const ScriptValue& function,
                                  const Vector<ScriptValue>& arguments)
     : ScheduledAction(script_state) {
-  function_ = function;
-  arguments_ = arguments;
+  DCHECK(function.IsFunction());
+  function_.Set(script_state->GetIsolate(),
+                v8::Local<v8::Function>::Cast(function.V8Value()));
+  info_.ReserveCapacity(arguments.size());
+  for (const ScriptValue& argument : arguments)
+    info_.Append(argument.V8Value());
 }
 
 ScheduledAction::ScheduledAction(ScriptState* script_state, const String& code)
@@ -143,34 +144,29 @@ ScheduledAction::ScheduledAction(ScriptState* script_state, const String& code)
 }
 
 ScheduledAction::ScheduledAction(ScriptState* script_state)
-    : script_state_(ScriptStateProtectingContext::Create(script_state)) {}
+    : script_state_(ScriptStateProtectingContext::Create(script_state)),
+      info_(script_state->GetIsolate()) {}
 
-// https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timers
 void ScheduledAction::Execute(LocalFrame* frame) {
   DCHECK(script_state_->ContextIsValid());
 
   TRACE_EVENT0("v8", "ScheduledAction::execute");
-  if (function_) {
+  if (!function_.IsEmpty()) {
     DVLOG(1) << "ScheduledAction::execute " << this << ": have function";
-
-    // The method context is set in
-    // https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#dom-settimeout
-    // as "the object on which the method for which the algorithm is running is
-    // implemented (a Window or WorkerGlobalScope object)."
-    ScriptWrappable* method_context =
-        ToScriptWrappable(script_state_->GetContext()->Global());
-
-    // 7.2. Run the appropriate set of steps from the following list:
-    //
-    //      If the first method argument is a Function:
-    //
-    //        Invoke the Function. Use the third and subsequent method
-    //        arguments (if any) as the arguments for invoking the Function.
-    //        Use method context proxy as the callback this value.
-    //
-    // InvokeAndReportException() is responsible for converting the method
-    // context to the method context proxy, if needed.
-    function_->InvokeAndReportException(method_context, arguments_);
+    v8::Local<v8::Function> function =
+        function_.NewLocal(script_state_->GetIsolate());
+    ScriptState* script_state_for_func =
+        ScriptState::From(function->CreationContext());
+    if (!script_state_for_func->ContextIsValid()) {
+      DVLOG(1) << "ScheduledAction::execute " << this
+               << ": function's context is empty";
+      return;
+    }
+    Vector<v8::Local<v8::Value>> info;
+    CreateLocalHandlesForArgs(&info);
+    V8ScriptRunner::CallFunction(
+        function, frame->GetDocument(), script_state_->GetContext()->Global(),
+        info.size(), info.data(), script_state_->GetIsolate());
   } else {
     DVLOG(1) << "ScheduledAction::execute " << this
              << ": executing from source";
@@ -185,7 +181,6 @@ void ScheduledAction::Execute(LocalFrame* frame) {
   // released it.
 }
 
-// https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timers
 void ScheduledAction::Execute(WorkerGlobalScope* worker) {
   DCHECK(worker->GetThread()->IsCurrentThread());
 
@@ -194,31 +189,36 @@ void ScheduledAction::Execute(WorkerGlobalScope* worker) {
     return;
   }
 
-  if (function_) {
-    // The method context is set in
-    // https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#dom-settimeout
-    // as "the object on which the method for which the algorithm is running is
-    // implemented (a Window or WorkerGlobalScope object)."
-    ScriptWrappable* method_context =
-        ToScriptWrappable(script_state_->GetContext()->Global());
-
-    // 7.2. Run the appropriate set of steps from the following list:
-    //
-    //      If the first method argument is a Function:
-    //
-    //         Invoke the Function. Use the third and subsequent method
-    //         arguments (if any) as the arguments for invoking the Function.
-    //         Use method context proxy as the callback this value.
-    //
-    // InvokeAndReportException() is responsible for converting the method
-    // context to the method context proxy, if needed.
-    function_->InvokeAndReportException(method_context, arguments_);
+  if (!function_.IsEmpty()) {
+    ScriptState::Scope scope(script_state_->Get());
+    v8::Local<v8::Function> function =
+        function_.NewLocal(script_state_->GetIsolate());
+    ScriptState* script_state_for_func =
+        ScriptState::From(function->CreationContext());
+    if (!script_state_for_func->ContextIsValid()) {
+      DVLOG(1) << "ScheduledAction::execute " << this
+               << ": function's context is empty";
+      return;
+    }
+    Vector<v8::Local<v8::Value>> info;
+    CreateLocalHandlesForArgs(&info);
+    V8ScriptRunner::CallFunction(
+        function, worker, script_state_->GetContext()->Global(), info.size(),
+        info.data(), script_state_->GetIsolate());
   } else {
     worker->ScriptController()->Evaluate(
         ScriptSourceCode(code_,
                          ScriptSourceLocationType::kEvalForScheduledAction),
         kNotSharableCrossOrigin);
   }
+}
+
+void ScheduledAction::CreateLocalHandlesForArgs(
+    Vector<v8::Local<v8::Value>>* handles) {
+  wtf_size_t handle_count = SafeCast<wtf_size_t>(info_.Size());
+  handles->ReserveCapacity(handle_count);
+  for (wtf_size_t i = 0; i < handle_count; ++i)
+    handles->push_back(info_.Get(i));
 }
 
 }  // namespace blink
