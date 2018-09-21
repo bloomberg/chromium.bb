@@ -90,13 +90,13 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
   factory_bundle->default_factory_info() = std::move(default_factory_info);
 
   if (use_non_network_factories) {
-    ContentBrowserClient::NonNetworkURLLoaderFactoryMap factories;
+    ContentBrowserClient::NonNetworkURLLoaderFactoryMap non_network_factories;
     GetContentClient()
         ->browser()
         ->RegisterNonNetworkSubresourceURLLoaderFactories(
-            rph->GetID(), MSG_ROUTING_NONE, &factories);
+            rph->GetID(), MSG_ROUTING_NONE, &non_network_factories);
 
-    for (auto& pair : factories) {
+    for (auto& pair : non_network_factories) {
       const std::string& scheme = pair.first;
       std::unique_ptr<network::mojom::URLLoaderFactory> factory =
           std::move(pair.second);
@@ -108,8 +108,8 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
       network::mojom::URLLoaderFactoryPtr factory_ptr;
       mojo::MakeStrongBinding(std::move(factory),
                               mojo::MakeRequest(&factory_ptr));
-      factory_bundle->factories_info().emplace(scheme,
-                                               factory_ptr.PassInterface());
+      factory_bundle->scheme_specific_factory_infos().emplace(
+          scheme, factory_ptr.PassInterface());
     }
   }
   return factory_bundle;

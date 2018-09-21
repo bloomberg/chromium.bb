@@ -5,6 +5,10 @@
 #ifndef CONTENT_RENDERER_LOADER_TRACKED_CHILD_URL_LOADER_FACTORY_BUNDLE_H_
 #define CONTENT_RENDERER_LOADER_TRACKED_CHILD_URL_LOADER_FACTORY_BUNDLE_H_
 
+#include <memory>
+#include <unordered_map>
+#include <utility>
+
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
@@ -25,8 +29,7 @@ class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundleInfo
   TrackedChildURLLoaderFactoryBundleInfo();
   TrackedChildURLLoaderFactoryBundleInfo(
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
-      std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
-          factories_info,
+      SchemeMap scheme_specific_factory_infos,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
       std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,
       bool bypass_redirect_checks);

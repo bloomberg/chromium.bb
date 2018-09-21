@@ -4018,7 +4018,7 @@ void RenderFrameHostImpl::CommitNavigation(
         } else {
           // This is a webui scheme that doesn't have webui bindings. Give it
           // access to the network loader as it might require it.
-          subresource_loader_factories->factories_info().emplace(
+          subresource_loader_factories->scheme_specific_factory_infos().emplace(
               scheme, factory_for_webui.PassInterface());
         }
       }
@@ -4083,7 +4083,7 @@ void RenderFrameHostImpl::CommitNavigation(
           this, false /* is_navigation */, false /* is_download */,
           &factory_request);
       factory.second->Clone(std::move(factory_request));
-      subresource_loader_factories->factories_info().emplace(
+      subresource_loader_factories->scheme_specific_factory_infos().emplace(
           factory.first, std::move(factory_proxy_info));
     }
   }
@@ -4212,8 +4212,7 @@ void RenderFrameHostImpl::FailedNavigation(
         common_params.url, mojo::MakeRequest(&default_factory_info));
     subresource_loader_factories = std::make_unique<URLLoaderFactoryBundleInfo>(
         std::move(default_factory_info),
-        std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>(),
-        bypass_redirect_checks);
+        URLLoaderFactoryBundleInfo::SchemeMap(), bypass_redirect_checks);
   }
   SaveSubresourceFactories(std::move(subresource_loader_factories));
 
@@ -4756,8 +4755,7 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
       std::make_unique<URLLoaderFactoryBundleInfo>(
           std::move(default_factory_info),
-          std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>(),
-          bypass_redirect_checks);
+          URLLoaderFactoryBundleInfo::SchemeMap(), bypass_redirect_checks);
   SaveSubresourceFactories(std::move(subresource_loader_factories));
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
       CloneSubresourceFactories());

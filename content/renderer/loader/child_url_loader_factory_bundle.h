@@ -5,7 +5,12 @@
 #ifndef CONTENT_RENDERER_LOADER_CHILD_URL_LOADER_FACTORY_BUNDLE_H_
 #define CONTENT_RENDERER_LOADER_CHILD_URL_LOADER_FACTORY_BUNDLE_H_
 
+#include <map>
+#include <memory>
+#include <vector>
+
 #include "base/callback.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/common/url_loader_factory_bundle.h"
@@ -27,8 +32,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
       std::unique_ptr<URLLoaderFactoryBundleInfo> base_info);
   ChildURLLoaderFactoryBundleInfo(
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
-      std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
-          factories_info,
+      SchemeMap scheme_specific_factory_infos,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
       bool bypass_redirect_checks);
   ~ChildURLLoaderFactoryBundleInfo() override;
@@ -70,8 +74,6 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
       PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter);
 
   // URLLoaderFactoryBundle overrides.
-  network::mojom::URLLoaderFactory* GetFactoryForURL(const GURL& url) override;
-
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,
                             int32_t request_id,
@@ -80,7 +82,6 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
   // Returns an info that omits this bundle's default factory, if any. This is
@@ -98,6 +99,9 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
  protected:
   ~ChildURLLoaderFactoryBundle() override;
+
+  // URLLoaderFactoryBundle overrides.
+  network::mojom::URLLoaderFactory* GetFactoryForURL(const GURL& url) override;
 
  private:
   void InitDirectNetworkFactoryIfNecessary();
