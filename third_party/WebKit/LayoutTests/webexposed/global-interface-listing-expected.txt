@@ -2035,6 +2035,10 @@ interface Element : Node
     setter scrollLeft
     setter scrollTop
     setter slot
+interface EnterPictureInPictureEvent : Event
+    attribute @@toStringTag
+    getter pictureInPictureWindow
+    method constructor
 interface ErrorEvent : Event
     attribute @@toStringTag
     getter colno
