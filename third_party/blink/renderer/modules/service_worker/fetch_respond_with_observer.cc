@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
@@ -287,12 +288,15 @@ void FetchRespondWithObserver::OnResponseFulfilled(
       return;
     }
     // Handle the stream response body.
+    base::TimeTicks start_pipe_creation = base::TimeTicks::Now();
     mojo::DataPipe pipe;
     if (!pipe.consumer_handle.is_valid()) {
       OnResponseRejected(ServiceWorkerResponseError::kDataPipeCreationFailed);
       return;
     }
     DCHECK(pipe.producer_handle.is_valid());
+    UMA_HISTOGRAM_TIMES("ServiceWorker.FetchRespondWithDataPipeCreation.Time",
+                        base::TimeTicks::Now() - start_pipe_creation);
 
     std::unique_ptr<WebServiceWorkerStreamHandle> body_stream_handle =
         std::make_unique<WebServiceWorkerStreamHandle>(
