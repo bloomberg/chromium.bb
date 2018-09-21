@@ -17,7 +17,6 @@ translated_xibs = [
 ]
 
 untranslated_xibs = [
-  "BookmarkBarFolderWindow.xib",
   "FindBar.xib",
   "InfoBar.xib",
 ]

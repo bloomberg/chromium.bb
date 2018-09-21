@@ -89,36 +89,6 @@ class ZoomDecorationTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, BubbleAtDefaultZoom) {
-  ZoomDecoration* zoom_decoration = GetZoomDecoration();
-
-  // TODO(wjmaclean): This shouldn't be necessary, but at present this test
-  // assumes the various Zoom() calls do not invoke a notification
-  // bubble, which prior to https://codereview.chromium.org/940673002/
-  // was accomplished by not showing the bubble for inactive windows.
-  // Since we now need to be able to show the zoom bubble as a notification
-  // on non-active pages, this test should be revised to account for
-  // these notifications.
-  zoom::ZoomController::FromWebContents(GetLocationBar()->GetWebContents())
-      ->SetShowsNotificationBubble(false);
-
-  // Zoom in and reset.
-  EXPECT_FALSE(zoom_decoration->IsVisible());
-  Zoom(content::PAGE_ZOOM_IN);
-  EXPECT_TRUE(zoom_decoration->IsVisible());
-  Zoom(content::PAGE_ZOOM_RESET);
-  EXPECT_FALSE(zoom_decoration->IsVisible());
-
-  // Zoom in and show bubble then reset.
-  Zoom(content::PAGE_ZOOM_IN);
-  EXPECT_TRUE(zoom_decoration->IsVisible());
-  zoom_decoration->ShowBubble(false);
-  Zoom(content::PAGE_ZOOM_RESET);
-  EXPECT_TRUE(zoom_decoration->IsVisible());
-
-  // Hide bubble and verify the decoration is hidden.
-  zoom_decoration->CloseBubble();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(zoom_decoration->IsVisible());
 }
 
 // Regression test for https://crbug.com/462482.
