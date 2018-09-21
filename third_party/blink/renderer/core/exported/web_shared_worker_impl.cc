@@ -197,10 +197,9 @@ void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(
   DCHECK(worker_thread_->IsCurrentThread());
   WorkerGlobalScope* worker_global_scope =
       ToWorkerGlobalScope(worker_thread_->GlobalScope());
-  MessagePort* port = MessagePort::Create(*worker_global_scope);
-  port->Entangle(std::move(channel));
   SECURITY_DCHECK(worker_global_scope->IsSharedWorkerGlobalScope());
-  worker_global_scope->DispatchEvent(*CreateConnectEvent(port));
+  static_cast<SharedWorkerGlobalScope*>(worker_global_scope)
+      ->ConnectPausable(std::move(channel));
 }
 
 void WebSharedWorkerImpl::StartWorkerContext(
