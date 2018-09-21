@@ -31,10 +31,6 @@ namespace offline_items_collection {
 class OfflineContentAggregator;
 }  // namespace offline_items_collection
 
-namespace storage {
-class BlobDataHandle;
-}  // namespace storage
-
 // Implementation of BackgroundFetchDelegate using the DownloadService. This
 // also implements OfflineContentProvider which allows it to show notifications
 // for its downloads.
@@ -77,18 +73,18 @@ class BackgroundFetchDelegateImpl
   // the bytes downloaded exceed the total download size, if specified.
   void FailFetch(const std::string& job_unique_id);
 
-  void OnDownloadStarted(const std::string& guid,
-                         std::unique_ptr<content::BackgroundFetchResponse>);
+  void OnDownloadStarted(
+      const std::string& guid,
+      std::unique_ptr<content::BackgroundFetchResponse> response);
 
   void OnDownloadUpdated(const std::string& guid, uint64_t bytes_downloaded);
 
   void OnDownloadFailed(const std::string& guid,
-                        download::Client::FailureReason reason);
+                        std::unique_ptr<content::BackgroundFetchResult> result);
 
-  void OnDownloadSucceeded(const std::string& guid,
-                           const base::FilePath& path,
-                           base::Optional<storage::BlobDataHandle> blob_handle,
-                           uint64_t size);
+  void OnDownloadSucceeded(
+      const std::string& guid,
+      std::unique_ptr<content::BackgroundFetchResult> result);
 
   // OfflineContentProvider implementation:
   void OpenItem(offline_items_collection::LaunchLocation location,

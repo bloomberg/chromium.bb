@@ -353,11 +353,8 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
 
 void BackgroundFetchDelegateImpl::OnDownloadFailed(
     const std::string& download_guid,
-    download::Client::FailureReason reason) {
+    std::unique_ptr<content::BackgroundFetchResult> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  using FailureReason = content::BackgroundFetchResult::FailureReason;
-  FailureReason failure_reason;
 
   auto download_job_unique_id_iter =
       download_job_unique_id_map_.find(download_guid);
@@ -372,46 +369,24 @@ void BackgroundFetchDelegateImpl::OnDownloadFailed(
   ++job_details.fetch_description->completed_parts;
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
-  switch (reason) {
-    case download::Client::FailureReason::NETWORK:
-      failure_reason = FailureReason::NETWORK;
-      break;
-    case download::Client::FailureReason::TIMEDOUT:
-      failure_reason = FailureReason::TIMEDOUT;
-      break;
-    case download::Client::FailureReason::UNKNOWN:
-      failure_reason = FailureReason::UNKNOWN;
-      break;
-
-    case download::Client::FailureReason::ABORTED:
-    case download::Client::FailureReason::CANCELLED:
-      // The client cancelled or aborted it so no need to notify it.
-      return;
-    default:
-      NOTREACHED();
-      return;
+  // The client cancelled or aborted the download so no need to notify it.
+  if (result->failure_reason ==
+      content::BackgroundFetchResult::FailureReason::CANCELLED) {
+    return;
   }
-
-  // TODO(delphick): consider calling OnItemUpdated here as well if for instance
-  // the download actually happened but 404ed.
 
   if (client()) {
-    client()->OnDownloadComplete(
-        job_unique_id, download_guid,
-        std::make_unique<content::BackgroundFetchResult>(base::Time::Now(),
-                                                         failure_reason));
+    client()->OnDownloadComplete(job_unique_id, download_guid,
+                                 std::move(result));
   }
 
-  job_details.current_download_guids.erase(
-      job_details.current_download_guids.find(download_guid));
+  job_details.current_download_guids.erase(download_guid);
   download_job_unique_id_map_.erase(download_guid);
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
     const std::string& download_guid,
-    const base::FilePath& path,
-    base::Optional<storage::BlobDataHandle> blob_handle,
-    uint64_t size) {
+    std::unique_ptr<content::BackgroundFetchResult> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto download_job_unique_id_iter =
@@ -424,14 +399,15 @@ void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
   const std::string& job_unique_id = download_job_unique_id_iter->second;
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
   ++job_details.fetch_description->completed_parts;
-  job_details.fetch_description->completed_parts_size = size;
+
+  job_details.fetch_description->completed_parts_size =
+      profile_->IsOffTheRecord() ? result->blob_handle->size()
+                                 : result->file_size;
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
   if (client()) {
-    client()->OnDownloadComplete(
-        job_unique_id, download_guid,
-        std::make_unique<content::BackgroundFetchResult>(
-            base::Time::Now(), path, std::move(blob_handle), size));
+    client()->OnDownloadComplete(job_unique_id, download_guid,
+                                 std::move(result));
   }
 
   job_details.current_download_guids.erase(

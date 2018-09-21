@@ -18,6 +18,28 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "url/origin.h"
 
+namespace {
+
+using BackgroundFetchFailureReason =
+    content::BackgroundFetchResult::FailureReason;
+BackgroundFetchFailureReason ToBackgroundFetchFailureReason(
+    download::Client::FailureReason reason) {
+  switch (reason) {
+    case download::Client::FailureReason::NETWORK:
+      return BackgroundFetchFailureReason::NETWORK;
+    case download::Client::FailureReason::UPLOAD_TIMEDOUT:
+    case download::Client::FailureReason::TIMEDOUT:
+      return BackgroundFetchFailureReason::TIMEDOUT;
+    case download::Client::FailureReason::UNKNOWN:
+      return BackgroundFetchFailureReason::UNKNOWN;
+    case download::Client::FailureReason::ABORTED:
+    case download::Client::FailureReason::CANCELLED:
+      return BackgroundFetchFailureReason::CANCELLED;
+  }
+}
+
+}  // namespace
+
 BackgroundFetchDownloadClient::BackgroundFetchDownloadClient(
     content::BrowserContext* context)
     : browser_context_(context), delegate_(nullptr) {}
@@ -61,11 +83,11 @@ BackgroundFetchDownloadClient::OnDownloadStarted(
     const std::string& guid,
     const std::vector<GURL>& url_chain,
     const scoped_refptr<const net::HttpResponseHeaders>& headers) {
-  std::unique_ptr<content::BackgroundFetchResponse> response =
+  auto response =
       std::make_unique<content::BackgroundFetchResponse>(url_chain, headers);
   GetDelegate()->OnDownloadStarted(guid, std::move(response));
 
-  // TODO(delphick): validate the chain/headers before returning CONTINUE
+  // TODO(crbug.com/884672): Validate the chain/headers before continuing.
   return download::Client::ShouldDownload::CONTINUE;
 }
 
@@ -79,19 +101,29 @@ void BackgroundFetchDownloadClient::OnDownloadFailed(
     const std::string& guid,
     const download::CompletionInfo& info,
     download::Client::FailureReason reason) {
-  GetDelegate()->OnDownloadFailed(guid, reason);
+  auto response = std::make_unique<content::BackgroundFetchResponse>(
+      info.url_chain, info.response_headers);
+  auto result = std::make_unique<content::BackgroundFetchResult>(
+      std::move(response), base::Time::Now(),
+      ToBackgroundFetchFailureReason(reason));
+  GetDelegate()->OnDownloadFailed(guid, std::move(result));
 }
 
 void BackgroundFetchDownloadClient::OnDownloadSucceeded(
     const std::string& guid,
     const download::CompletionInfo& info) {
-  // Pass the response headers and url_chain to the client again, in case
-  // this fetch was restarted and the client has lost this info.
-  // TODO(crbug.com/884672): Move CORS checks to `OnDownloadStarted`,
-  // and pass all the completion info to the client once.
-  OnDownloadStarted(guid, info.url_chain, info.response_headers);
-  GetDelegate()->OnDownloadSucceeded(guid, info.path, info.blob_handle,
-                                     info.bytes_downloaded);
+  if (browser_context_->IsOffTheRecord())
+    DCHECK(info.blob_handle);
+  else
+    DCHECK(!info.path.empty());
+
+  auto response = std::make_unique<content::BackgroundFetchResponse>(
+      info.url_chain, info.response_headers);
+  auto result = std::make_unique<content::BackgroundFetchResult>(
+      std::move(response), base::Time::Now(), info.path, info.blob_handle,
+      info.bytes_downloaded);
+
+  GetDelegate()->OnDownloadSucceeded(guid, std::move(result));
 }
 
 bool BackgroundFetchDownloadClient::CanServiceRemoveDownloadedFile(

@@ -48,9 +48,6 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   // retrieved from storage). Can only be used if no GUID is already set.
   void SetDownloadGuid(const std::string& download_guid);
 
-  // Populates the cached state for the in-progress download.
-  void PopulateWithResponse(std::unique_ptr<BackgroundFetchResponse> response);
-
   void SetResult(std::unique_ptr<BackgroundFetchResult> result);
 
   // Returns the index of this request within a Background Fetch registration.
@@ -100,6 +97,9 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   friend class base::RefCountedDeleteOnSequence<BackgroundFetchRequestInfo>;
   friend class base::DeleteHelper<BackgroundFetchRequestInfo>;
   friend class BackgroundFetchCrossOriginFilterTest;
+
+  // Extracts the headers and the status code.
+  void PopulateWithResponse(std::unique_ptr<BackgroundFetchResponse> response);
 
   ~BackgroundFetchRequestInfo();
 
