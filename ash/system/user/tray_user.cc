@@ -153,7 +153,10 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
     }
   }
 
-  if (status == LoginStatus::GUEST) {
+  if (label_ && session->IsUserLegacySupervised()) {
+    label_->SetText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL));
+  } else if (status == LoginStatus::GUEST) {
     label_->SetText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
   }
 

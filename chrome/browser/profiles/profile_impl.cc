@@ -348,6 +348,11 @@ Profile* Profile::CreateProfile(const base::FilePath& path,
 
   auto profile = base::WrapUnique(
       new ProfileImpl(path, delegate, create_mode, io_task_runner));
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
+    !defined(OS_CHROMEOS)
+  if (create_mode == CREATE_MODE_SYNCHRONOUS && profile->IsLegacySupervised())
+    return nullptr;
+#endif
   return profile.release();
 }
 
@@ -874,6 +879,10 @@ bool ProfileImpl::IsChild() const {
 #else
   return false;
 #endif
+}
+
+bool ProfileImpl::IsLegacySupervised() const {
+  return IsSupervised() && !IsChild();
 }
 
 ExtensionSpecialStoragePolicy* ProfileImpl::GetExtensionSpecialStoragePolicy() {

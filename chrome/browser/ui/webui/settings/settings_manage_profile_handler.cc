@@ -205,6 +205,9 @@ void ManageProfileHandler::HandleSetProfileName(const base::ListValue* args) {
   DCHECK(args);
   DCHECK_EQ(1u, args->GetSize());
 
+  if (profile_->IsLegacySupervised())
+    return;
+
   base::string16 new_profile_name;
   CHECK(args->GetString(0, &new_profile_name));
 

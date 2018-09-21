@@ -800,6 +800,12 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
           !local_state->GetBoolean(prefs::kSuppressUnsupportedOSWarning))
         ObsoleteSystemInfoBarDelegate::Create(infobar_service);
     }
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
+    !defined(OS_CHROMEOS)
+    if (profile_->IsLegacySupervised())
+      SupervisedUsersDeprecatedInfoBarDelegate::Create(infobar_service);
+#endif
+
 #if !defined(OS_CHROMEOS)
     if (!command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
       // Generally, the default browser prompt should not be shown on first

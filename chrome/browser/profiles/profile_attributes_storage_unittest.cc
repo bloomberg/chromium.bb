@@ -483,12 +483,21 @@ TEST_F(ProfileAttributesStorageTest, SupervisedUsersAccessors) {
   entry->SetSupervisedUserId("");
   ASSERT_FALSE(entry->IsSupervised());
   ASSERT_FALSE(entry->IsChild());
+  ASSERT_FALSE(entry->IsLegacySupervised());
+
+  EXPECT_CALL(observer(), OnProfileSupervisedUserIdChanged(path)).Times(1);
+  entry->SetSupervisedUserId("some_supervised_user_id");
+  VerifyAndResetCallExpectations();
+  ASSERT_TRUE(entry->IsSupervised());
+  ASSERT_FALSE(entry->IsChild());
+  ASSERT_TRUE(entry->IsLegacySupervised());
 
   EXPECT_CALL(observer(), OnProfileSupervisedUserIdChanged(path)).Times(1);
   entry->SetSupervisedUserId(supervised_users::kChildAccountSUID);
   VerifyAndResetCallExpectations();
   ASSERT_TRUE(entry->IsSupervised());
   ASSERT_TRUE(entry->IsChild());
+  ASSERT_FALSE(entry->IsLegacySupervised());
 }
 
 TEST_F(ProfileAttributesStorageTest, ReSortTriggered) {

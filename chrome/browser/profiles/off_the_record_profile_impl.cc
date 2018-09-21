@@ -333,6 +333,10 @@ bool OffTheRecordProfileImpl::IsChild() const {
   return profile_->IsChild();
 }
 
+bool OffTheRecordProfileImpl::IsLegacySupervised() const {
+  return profile_->IsLegacySupervised();
+}
+
 PrefService* OffTheRecordProfileImpl::GetPrefs() {
   return prefs_.get();
 }

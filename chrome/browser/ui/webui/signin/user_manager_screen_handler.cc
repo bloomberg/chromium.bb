@@ -73,6 +73,7 @@ const char kKeyDisplayName[]= "displayName";
 const char kKeyEmailAddress[] = "emailAddress";
 const char kKeyProfilePath[] = "profilePath";
 const char kKeyPublicAccount[] = "publicAccount";
+const char kKeyLegacySupervisedUser[] = "legacySupervisedUser";
 const char kKeyChildUser[] = "childUser";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
@@ -780,6 +781,8 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->SetKey(kKeyProfilePath,
                           base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean(kKeyPublicAccount, false);
+    profile_value->SetBoolean(kKeyLegacySupervisedUser,
+                              entry->IsLegacySupervised());
     profile_value->SetBoolean(kKeyChildUser, entry->IsChild());
     profile_value->SetBoolean(kKeyNeedsSignin, entry->IsSigninRequired());
     profile_value->SetBoolean(kKeyHasLocalCreds,

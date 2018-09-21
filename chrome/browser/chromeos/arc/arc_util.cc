@@ -203,6 +203,12 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
     return false;
   }
 
+  if (profile->IsLegacySupervised()) {
+    VLOG_IF(1, should_report_reason)
+        << "Supervised users are not supported in ARC.";
+    return false;
+  }
+
   if (IsArcBlockedDueToIncompatibleFileSystem(profile) &&
       !IsArcMigrationAllowedByPolicyForProfile(profile)) {
     VLOG_IF(1, should_report_reason)
@@ -600,6 +606,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
 
   if (profile->IsOffTheRecord())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO;
+
+  if (profile->IsLegacySupervised())
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER;
 
   if (profile->IsChild())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_CHILD_USER;
