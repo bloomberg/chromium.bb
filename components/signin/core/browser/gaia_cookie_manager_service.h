@@ -36,6 +36,11 @@ class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }
 
+namespace signin {
+// The maximum number of retries for a fetcher used in this class.
+constexpr int kMaxFetcherRetries = 8;
+}  // namespace signin
+
 // Merges a Google account known to Chrome into the cookie jar.  When merging
 // multiple accounts, one instance of the helper is better than multiple
 // instances if there is the possibility that they run concurrently, since
@@ -209,7 +214,8 @@ class GaiaCookieManagerService : public KeyedService,
 
   // Takes list of account_ids from the front request, matches them with a
   // corresponding stored access_token and calls StartMultilogin.
-  void SetAccountsInCookieWithTokens();
+  // Virtual for testing purposes.
+  virtual void SetAccountsInCookieWithTokens();
 
   // Returns if the listed accounts are up to date or not. The out parameter
   // will be assigned the current cached accounts (whether they are not up to
@@ -270,6 +276,14 @@ class GaiaCookieManagerService : public KeyedService,
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(GaiaCookieManagerServiceTest,
+                           MultiloginSuccessAndCookiesSet);
+  FRIEND_TEST_ALL_PREFIXES(GaiaCookieManagerServiceTest,
+                           MultiloginFailurePersistentError);
+  FRIEND_TEST_ALL_PREFIXES(GaiaCookieManagerServiceTest,
+                           MultiloginFailureMaxRetriesReached);
+  FRIEND_TEST_ALL_PREFIXES(GaiaCookieManagerServiceTest,
+                           FetcherRetriesZeroedBetweenCalls);
   // Returns the source value to use for GaiaFetcher requests.  This is
   // virtual to allow tests and fake classes to override.
   virtual std::string GetSourceForRequest(
@@ -307,30 +321,34 @@ class GaiaCookieManagerService : public KeyedService,
   void OnLogOutSuccess() override;
   void OnLogOutFailure(const GoogleServiceAuthError& error) override;
 
-  // Final call in the Setting accounts in cookie procedure.
-  void OnSetAccountsFinished(const GoogleServiceAuthError& error);
-
   // Callback for CookieManager::SetCanonicalCookie.
   void OnCookieSet(const std::string& cookie_name,
                    const std::string& cookie_domain,
                    bool success);
 
+  // Final call in the Setting accounts in cookie procedure. Virtual for testing
+  // purposes.
+  virtual void OnSetAccountsFinished(const GoogleServiceAuthError& error);
+
   // Helper method for AddAccountToCookie* methods.
   void AddAccountToCookieInternal(const std::string& account_id,
                                   const std::string& source);
 
+  // Helper function to trigger fetching retry in case of failure for only
+  // failed account id. Virtual for testing purposes.
+  virtual void StartFetchingAccessToken(const std::string& account_id);
+
   // Starts the process of fetching the access token with OauthLogin scope and
   // performing SetAccountsInCookie on success.  Virtual so that it can be
   // overridden in tests.
-  virtual void StartFetchingAccesstokens();
+  virtual void StartFetchingAccessTokens();
 
   // Starts the proess of fetching the uber token and performing a merge session
   // for the next account.  Virtual so that it can be overriden in tests.
   virtual void StartFetchingUbertoken();
 
-  // Starts the process of setting accounts in cookie. Virtual for testing
-  // purposes.
-  virtual void StartFetchingMultiLogin(
+  // Starts the process of setting accounts in cookie.
+  void StartFetchingMultiLogin(
       const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>& accounts);
 
   // Virtual for testing purposes.
@@ -346,7 +364,7 @@ class GaiaCookieManagerService : public KeyedService,
   // Virtual for testing purpose.
   virtual void StartFetchingLogOut();
 
-  // Starts setting parsed cookies in browser;
+  // Starts setting parsed cookies in browser.
   void StartSettingCookies(const OAuthMultiloginResult& result);
 
   // Start the next request, if needed.
