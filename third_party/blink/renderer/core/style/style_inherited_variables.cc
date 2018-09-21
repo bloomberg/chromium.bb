@@ -71,8 +71,11 @@ const CSSValue* StyleInheritedVariables::RegisteredVariable(
 void StyleInheritedVariables::RemoveVariable(const AtomicString& name) {
   data_.Set(name, nullptr);
   auto iterator = registered_data_.find(name);
-  if (iterator != registered_data_.end())
+  if (iterator != registered_data_.end()) {
     iterator->value = nullptr;
+  } else if (root_ && root_->RegisteredVariable(name)) {
+    SetRegisteredVariable(name, nullptr);
+  }
 }
 
 HashSet<AtomicString> StyleInheritedVariables::GetCustomPropertyNames() const {
