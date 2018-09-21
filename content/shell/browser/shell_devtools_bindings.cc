@@ -188,8 +188,10 @@ class ShellDevToolsBindings::NetworkResourceLoader
 };
 
 // This constant should be in sync with
-// the constant at devtools_ui_bindings.cc.
-const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
+// the constant
+// kMaxMessageChunkSize in chrome/browser/devtools/devtools_ui_bindings.cc.
+constexpr size_t kShellMaxMessageChunkSize =
+    IPC::Channel::kMaximumMessageSize / 4;
 
 void ShellDevToolsBindings::InspectElementAt(int x, int y) {
   if (agent_host_) {
@@ -396,7 +398,7 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
 void ShellDevToolsBindings::DispatchProtocolMessage(
     DevToolsAgentHost* agent_host,
     const std::string& message) {
-  if (message.length() < kMaxMessageChunkSize) {
+  if (message.length() < kShellMaxMessageChunkSize) {
     std::string param;
     base::EscapeJSONString(message, true, &param);
     std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
@@ -406,9 +408,10 @@ void ShellDevToolsBindings::DispatchProtocolMessage(
   }
 
   size_t total_size = message.length();
-  for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
+  for (size_t pos = 0; pos < message.length();
+       pos += kShellMaxMessageChunkSize) {
     std::string param;
-    base::EscapeJSONString(message.substr(pos, kMaxMessageChunkSize), true,
+    base::EscapeJSONString(message.substr(pos, kShellMaxMessageChunkSize), true,
                            &param);
     std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + "," +
                        std::to_string(pos ? 0 : total_size) + ");";
