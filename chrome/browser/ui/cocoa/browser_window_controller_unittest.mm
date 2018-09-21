@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
-#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
@@ -52,10 +51,6 @@ using ::testing::Return;
 
 - (NSView*)toolbarView {
   return [toolbarController_ view];
-}
-
-- (NSView*)findBarView {
-  return [findBarCocoaController_ view];
 }
 
 - (void)dontFocusLocationBar:(BOOL)selectAll {
@@ -475,22 +470,6 @@ TEST_F(BrowserWindowControllerTest, TestZoomFrame) {
   EXPECT_EQ(screenFrame.size.height, zoomFrame.size.height);
   EXPECT_EQ(testFrame.origin.x, zoomFrame.origin.x);
   EXPECT_EQ(screenFrame.origin.y, zoomFrame.origin.y);
-}
-
-TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
-  FindBarBridge bridge(NULL);
-  [controller_ addFindBar:bridge.find_bar_cocoa_controller()];
-
-  // Test that the Z-order of the find bar is on top of everything.
-  NSArray* subviews = [controller_.chromeContentView subviews];
-  NSUInteger findBar_index =
-      [subviews indexOfObject:[controller_ findBarView]];
-  EXPECT_NE(static_cast<NSUInteger>(NSNotFound), findBar_index);
-  NSUInteger toolbar_index =
-      [subviews indexOfObject:[controller_ toolbarView]];
-  EXPECT_NE(static_cast<NSUInteger>(NSNotFound), toolbar_index);
-
-  EXPECT_GT(findBar_index, toolbar_index);
 }
 
 // Check that when the window becomes/resigns main, the tab strip's background

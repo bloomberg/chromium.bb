@@ -83,7 +83,6 @@ void CreateProfileCallback(const base::Closure& quit_closure,
 enum BrowserViewID {
   BROWSER_VIEW_ID_TOOLBAR,
   BROWSER_VIEW_ID_INFO_BAR,
-  BROWSER_VIEW_ID_FIND_BAR,
   BROWSER_VIEW_ID_TAB_CONTENT_AREA,
   BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR,
   BROWSER_VIEW_ID_COUNT,
@@ -233,8 +232,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
         return [[controller() toolbarController] view];
       case BROWSER_VIEW_ID_INFO_BAR:
         return [[controller() infoBarContainerController] view];
-      case BROWSER_VIEW_ID_FIND_BAR:
-        return [[controller() findBarCocoaController] view];
       case BROWSER_VIEW_ID_TAB_CONTENT_AREA:
         return [controller() tabContentArea];
       default:
@@ -409,13 +406,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 // Verify that in non-Instant normal mode that the find bar and download shelf
 // are above the content area. Everything else should be below it.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormal) {
-  browser()->GetFindBarController();  // add find bar
-
   std::vector<BrowserViewID> view_list;
   view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);
   view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
-  view_list.push_back(BROWSER_VIEW_ID_FIND_BAR);
   VerifyZOrder(view_list);
 
   [controller() showOverlay];
@@ -433,14 +427,12 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormal) {
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        DISABLED_ZOrderPresentationMode) {
   chrome::ToggleFullscreenMode(browser());
-  browser()->GetFindBarController();  // add find bar
 
   std::vector<BrowserViewID> view_list;
   view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
   view_list.push_back(BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);
-  view_list.push_back(BROWSER_VIEW_ID_FIND_BAR);
   VerifyZOrder(view_list);
 }
 

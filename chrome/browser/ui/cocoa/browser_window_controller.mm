@@ -50,8 +50,6 @@
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
-#import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
-#import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_cocoa.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
@@ -418,7 +416,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   // controllers.
   [toolbarController_ browserWillBeDestroyed];
   [tabStripController_ browserWillBeDestroyed];
-  [findBarCocoaController_ browserWillBeDestroyed];
   [avatarButtonController_ browserWillBeDestroyed];
 
   [super dealloc];
@@ -466,10 +463,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (TabStripControllerCocoa*)tabStripController {
   return tabStripController_.get();
-}
-
-- (FindBarCocoaController*)findBarCocoaController {
-  return findBarCocoaController_.get();
 }
 
 - (InfoBarContainerController*)infoBarContainerController {
@@ -545,11 +538,8 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)updateDevToolsForContents:(WebContents*)contents {
-  BOOL layout_changed =
-      [devToolsController_ updateDevToolsForWebContents:contents
-                                            withProfile:browser_->profile()];
-  if (layout_changed && [findBarCocoaController_ isFindBarVisible])
-    [self layoutSubviews];
+  [devToolsController_ updateDevToolsForWebContents:contents
+                                        withProfile:browser_->profile()];
 }
 
 // Called when the user wants to close a window or from the shutdown process.
@@ -1317,16 +1307,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   return devToolsController_;
 }
 
-- (void)addFindBar:(FindBarCocoaController*)findBarCocoaController {
-  // Shouldn't call addFindBar twice.
-  DCHECK(!findBarCocoaController_.get());
-
-  // Create a controller for the findbar.
-  findBarCocoaController_.reset([findBarCocoaController retain]);
-  [self layoutSubviews];
-  [self updateSubviewZOrder];
-}
-
 - (NSWindow*)createFullscreenWindow {
   NSWindow* window = [[[FullscreenWindow alloc]
       initForScreen:[[self window] screen]] autorelease];
@@ -1536,14 +1516,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   }
 
   [self updatePermissionBubbleAnchor];
-
-  // The FindBar needs to know its own position to properly detect overlaps
-  // with find results. The position changes whenever the window is resized,
-  // and |layoutSubviews| computes the FindBar's position.
-  // TODO: calling |layoutSubviews| here is a waste, find a better way to
-  // do this.
-  if ([findBarCocoaController_ isFindBarVisible])
-    [self layoutSubviews];
 }
 
 // Delegate method called when window did move. (See below for why we don't use
