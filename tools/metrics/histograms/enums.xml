@@ -21460,10 +21460,19 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FramebustPermissions">
-  <int value="0" label="Only permitted for framebusting, no user gesture"/>
-  <int value="1" label="Only permitted for framebusting, user gesture"/>
-  <int value="2" label="Allowed navigation, no user gesture"/>
-  <int value="3" label="Allowed navigation, user gesture"/>
+  <int value="0"
+      label="Only permitted for framebusting, no user gesture, not an ad
+             frame"/>
+  <int value="1"
+      label="Only permitted for framebusting, user gesture, not an ad frame"/>
+  <int value="2" label="Allowed navigation, no user gesture, not an ad frame"/>
+  <int value="3" label="Allowed navigation, user gesture, not an ad frame"/>
+  <int value="4"
+      label="Only permitted for framebusting, no user gesture, ad frame"/>
+  <int value="5"
+      label="Only permitted for framebusting, user gesture, ad frame"/>
+  <int value="6" label="Allowed navigation, no user gesture, ad frame"/>
+  <int value="7" label="Allowed navigation, user gesture, ad frame"/>
 </enum>
 
 <enum name="FtpDataConnectionError">

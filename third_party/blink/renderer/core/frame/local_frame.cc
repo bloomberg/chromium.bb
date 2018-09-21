@@ -951,13 +951,17 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
       !GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
       target_frame == Tree().Top()) {
     DEFINE_STATIC_LOCAL(EnumerationHistogram, framebust_histogram,
-                        ("WebCore.Framebust", 4));
+                        ("WebCore.Framebust", 8));
     const unsigned kUserGestureBit = 0x1;
     const unsigned kAllowedBit = 0x2;
+    const unsigned kAdBit = 0x4;
     unsigned framebust_params = 0;
 
     if (has_user_gesture)
       framebust_params |= kUserGestureBit;
+
+    if (is_ad_subframe_)
+      framebust_params |= kAdBit;
 
     UseCounter::Count(this, WebFeature::kTopNavigationFromSubFrame);
     if (sandboxed) {  // Sandboxed with 'allow-top-navigation'.
@@ -971,6 +975,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     if (is_allowed_navigation)
       framebust_params |= kAllowedBit;
     framebust_histogram.Count(framebust_params);
+
     if (has_user_gesture || is_allowed_navigation ||
         target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
             SecurityOrigin::Create(destination_url).get())) {
