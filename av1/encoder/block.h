@@ -368,6 +368,9 @@ struct macroblock {
   // Store the second best motion vector during full-pixel motion search
   int_mv second_best_mv;
 
+  // Store the fractional best motion vector during sub/Qpel-pixel motion search
+  int_mv fractional_best_mv[3];
+
   // use default transform and skip transform type search for intra modes
   int use_default_intra_tx_type;
   // use default transform and skip transform type search for inter modes

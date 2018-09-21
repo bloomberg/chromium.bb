@@ -409,7 +409,7 @@ int av1_find_best_sub_pixel_tree_pruned_evenmore(
     int *cost_list, int *mvjcost, int *mvcost[2], int *distortion,
     unsigned int *sse1, const uint8_t *second_pred, const uint8_t *mask,
     int mask_stride, int invert_mask, int w, int h,
-    int use_accurate_subpel_search) {
+    int use_accurate_subpel_search, const int do_reset_fractional_mv) {
   SETUP_SUBPEL_SEARCH;
   besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp,
                                src_address, src_stride, y, y_stride,
@@ -426,6 +426,7 @@ int av1_find_best_sub_pixel_tree_pruned_evenmore(
   (void)cm;
   (void)mi_row;
   (void)mi_col;
+  (void)do_reset_fractional_mv;
 
   if (cost_list && cost_list[0] != INT_MAX && cost_list[1] != INT_MAX &&
       cost_list[2] != INT_MAX && cost_list[3] != INT_MAX &&
@@ -481,12 +482,13 @@ int av1_find_best_sub_pixel_tree_pruned_more(
     int *cost_list, int *mvjcost, int *mvcost[2], int *distortion,
     unsigned int *sse1, const uint8_t *second_pred, const uint8_t *mask,
     int mask_stride, int invert_mask, int w, int h,
-    int use_accurate_subpel_search) {
+    int use_accurate_subpel_search, const int do_reset_fractional_mv) {
   SETUP_SUBPEL_SEARCH;
   (void)use_accurate_subpel_search;
   (void)cm;
   (void)mi_row;
   (void)mi_col;
+  (void)do_reset_fractional_mv;
 
   besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp,
                                src_address, src_stride, y, y_stride,
@@ -549,12 +551,13 @@ int av1_find_best_sub_pixel_tree_pruned(
     int *cost_list, int *mvjcost, int *mvcost[2], int *distortion,
     unsigned int *sse1, const uint8_t *second_pred, const uint8_t *mask,
     int mask_stride, int invert_mask, int w, int h,
-    int use_accurate_subpel_search) {
+    int use_accurate_subpel_search, const int do_reset_fractional_mv) {
   SETUP_SUBPEL_SEARCH;
   (void)use_accurate_subpel_search;
   (void)cm;
   (void)mi_row;
   (void)mi_col;
+  (void)do_reset_fractional_mv;
 
   besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp,
                                src_address, src_stride, y, y_stride,
@@ -750,7 +753,7 @@ int av1_find_best_sub_pixel_tree(
     int *cost_list, int *mvjcost, int *mvcost[2], int *distortion,
     unsigned int *sse1, const uint8_t *second_pred, const uint8_t *mask,
     int mask_stride, int invert_mask, int w, int h,
-    int use_accurate_subpel_search) {
+    int use_accurate_subpel_search, const int do_reset_fractional_mv) {
   const uint8_t *const src_address = x->plane[0].src.buf;
   const int src_stride = x->plane[0].src.stride;
   MACROBLOCKD *xd = &x->e_mbd;
@@ -796,7 +799,16 @@ int av1_find_best_sub_pixel_tree(
 
   (void)cost_list;  // to silence compiler warning
 
+  if (do_reset_fractional_mv) {
+    av1_set_fractional_mv(x->fractional_best_mv);
+  }
+
   for (iter = 0; iter < round; ++iter) {
+    if ((x->fractional_best_mv[iter].as_mv.row == br) &&
+        (x->fractional_best_mv[iter].as_mv.col == bc))
+      return INT_MAX;
+    x->fractional_best_mv[iter].as_mv.row = br;
+    x->fractional_best_mv[iter].as_mv.col = bc;
     // Check vertical and horizontal sub-pixel positions.
     for (idx = 0; idx < 4; ++idx) {
       tr = br + search_step[idx].row;
@@ -2827,16 +2839,14 @@ int av1_obmc_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, MV *mvp_full,
   (void)thismse;                    \
   (void)cost_list;
 // Return the maximum MV.
-int av1_return_max_sub_pixel_mv(MACROBLOCK *x, const AV1_COMMON *const cm,
-                                int mi_row, int mi_col, const MV *ref_mv,
-                                int allow_hp, int error_per_bit,
-                                const aom_variance_fn_ptr_t *vfp,
-                                int forced_stop, int iters_per_step,
-                                int *cost_list, int *mvjcost, int *mvcost[2],
-                                int *distortion, unsigned int *sse1,
-                                const uint8_t *second_pred, const uint8_t *mask,
-                                int mask_stride, int invert_mask, int w, int h,
-                                int use_accurate_subpel_search) {
+int av1_return_max_sub_pixel_mv(
+    MACROBLOCK *x, const AV1_COMMON *const cm, int mi_row, int mi_col,
+    const MV *ref_mv, int allow_hp, int error_per_bit,
+    const aom_variance_fn_ptr_t *vfp, int forced_stop, int iters_per_step,
+    int *cost_list, int *mvjcost, int *mvcost[2], int *distortion,
+    unsigned int *sse1, const uint8_t *second_pred, const uint8_t *mask,
+    int mask_stride, int invert_mask, int w, int h,
+    int use_accurate_subpel_search, const int do_reset_fractional_mv) {
   COMMON_MV_TEST;
   (void)mask;
   (void)mask_stride;
@@ -2847,6 +2857,7 @@ int av1_return_max_sub_pixel_mv(MACROBLOCK *x, const AV1_COMMON *const cm,
   (void)cm;
   (void)mi_row;
   (void)mi_col;
+  (void)do_reset_fractional_mv;
 
   bestmv->row = maxr;
   bestmv->col = maxc;
@@ -2857,16 +2868,14 @@ int av1_return_max_sub_pixel_mv(MACROBLOCK *x, const AV1_COMMON *const cm,
   return besterr;
 }
 // Return the minimum MV.
-int av1_return_min_sub_pixel_mv(MACROBLOCK *x, const AV1_COMMON *const cm,
-                                int mi_row, int mi_col, const MV *ref_mv,
-                                int allow_hp, int error_per_bit,
-                                const aom_variance_fn_ptr_t *vfp,
-                                int forced_stop, int iters_per_step,
-                                int *cost_list, int *mvjcost, int *mvcost[2],
-                                int *distortion, unsigned int *sse1,
-                                const uint8_t *second_pred, const uint8_t *mask,
-                                int mask_stride, int invert_mask, int w, int h,
-                                int use_accurate_subpel_search) {
+int av1_return_min_sub_pixel_mv(
+    MACROBLOCK *x, const AV1_COMMON *const cm, int mi_row, int mi_col,
+    const MV *ref_mv, int allow_hp, int error_per_bit,
+    const aom_variance_fn_ptr_t *vfp, int forced_stop, int iters_per_step,
+    int *cost_list, int *mvjcost, int *mvcost[2], int *distortion,
+    unsigned int *sse1, const uint8_t *second_pred, const uint8_t *mask,
+    int mask_stride, int invert_mask, int w, int h,
+    int use_accurate_subpel_search, const int do_reset_fractional_mv) {
   COMMON_MV_TEST;
   (void)maxr;
   (void)maxc;
@@ -2877,6 +2886,7 @@ int av1_return_min_sub_pixel_mv(MACROBLOCK *x, const AV1_COMMON *const cm,
   (void)cm;
   (void)mi_row;
   (void)mi_col;
+  (void)do_reset_fractional_mv;
 
   bestmv->row = minr;
   bestmv->col = minc;
