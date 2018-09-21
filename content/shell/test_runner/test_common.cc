@@ -24,7 +24,6 @@ const char file_test_prefix[] = "(file test):";
 const char data_url_pattern[] = "data:";
 const std::string::size_type data_url_pattern_size =
     sizeof(data_url_pattern) - 1;
-const char* kIllegalString = "illegal value";
 const char* kPolicyIgnore = "Ignore";
 const char* kPolicyDownload = "download";
 const char* kPolicyCurrentTab = "current tab";
@@ -34,6 +33,8 @@ const char* kPolicyNewWindow = "new window";
 const char* kPolicyNewPopup = "new popup";
 
 }  // namespace
+
+const char* kIllegalString = "illegal value";
 
 std::string NormalizeLayoutTestURL(const std::string& url) {
   std::string result = url;

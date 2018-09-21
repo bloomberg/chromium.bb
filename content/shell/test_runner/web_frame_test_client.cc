@@ -144,7 +144,6 @@ const char* kBackForwardString = "back/forward";
 const char* kReloadString = "reload";
 const char* kFormResubmittedString = "form resubmitted";
 const char* kOtherString = "other";
-const char* kIllegalString = "illegal value";
 
 // Get a debugging string from a WebNavigationType.
 const char* WebNavigationTypeToString(blink::WebNavigationType type) {
