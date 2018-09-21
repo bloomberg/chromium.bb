@@ -1717,3 +1717,24 @@ TEST_F('BackgroundTest', 'GestureGranularity', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'LinesFilterWhitespace', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*
+    <p>start</p>
+    <div role="list">
+      <div role="listitem">
+        <span>Munich</span>
+        <span>London</span>
+      </div>
+    </div>
+  */}, function(root) {
+    mockFeedback.expectSpeech('start')
+        .clearPendingOutput()
+        .call(doCmd('nextLine'))
+        .expectSpeech('Munich')
+        .expectNextSpeechUtteranceIsNot(' ')
+        .expectSpeech('London')
+        .replay();
+  });
+});
