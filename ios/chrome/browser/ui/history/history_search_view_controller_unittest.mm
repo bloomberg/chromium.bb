@@ -38,7 +38,7 @@ class HistorySearchViewControllerTest : public PlatformTest {
 
 // Test that pressing the cancel button invokes delegate callback to cancel
 // search.
-TEST_F(HistorySearchViewControllerTest, CancelButtonPressed) {
+TEST_F(HistorySearchViewControllerTest, DISABLED_CancelButtonPressed) {
   UIButton* cancel_button =
       base::mac::ObjCCastStrict<HistorySearchView>(search_view_controller_.view)
           .cancelButton;
