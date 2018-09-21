@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/events/picture_in_picture_control_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -120,15 +121,17 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
 
   picture_in_picture_element_->OnEnteredPictureInPicture();
 
-  picture_in_picture_element_->DispatchEvent(
-      *Event::CreateBubble(EventTypeNames::enterpictureinpicture));
-
   // Closes the current Picture-in-Picture window if any.
   if (picture_in_picture_window_)
     picture_in_picture_window_->OnClose();
 
   picture_in_picture_window_ = new PictureInPictureWindow(
       GetSupplementable(), picture_in_picture_window_size);
+
+  picture_in_picture_element_->DispatchEvent(
+      *EnterPictureInPictureEvent::Create(
+          EventTypeNames::enterpictureinpicture,
+          WrapPersistent(picture_in_picture_window_.Get())));
 
   element->GetWebMediaPlayer()->RegisterPictureInPictureWindowResizeCallback(
       WTF::BindRepeating(&PictureInPictureWindow::OnResize,
