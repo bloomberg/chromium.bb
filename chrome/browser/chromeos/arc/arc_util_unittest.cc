@@ -239,6 +239,10 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile) {
   // false for incognito mode profile.
   EXPECT_FALSE(
       IsArcAllowedForProfileOnFirstCall(profile()->GetOffTheRecordProfile()));
+
+  // false for Legacy supervised user.
+  profile()->SetSupervisedUserId("foo");
+  EXPECT_FALSE(IsArcAllowedForProfileOnFirstCall(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfileLegacy) {
@@ -254,6 +258,10 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfileLegacy) {
   // false for incognito mode profile.
   EXPECT_FALSE(
       IsArcAllowedForProfileOnFirstCall(profile()->GetOffTheRecordProfile()));
+
+  // false for Legacy supervised user.
+  profile()->SetSupervisedUserId("foo");
+  EXPECT_FALSE(IsArcAllowedForProfileOnFirstCall(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DisableArc) {
@@ -553,6 +561,18 @@ TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_SecondaryUser) {
                         profile()->GetProfileUserName(), kTestGaiaId));
 
   EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_SupervisedUser) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported",
+       "--enable-voice-interaction"});
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  profile()->SetSupervisedUserId("foo");
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER,
             IsAssistantAllowedForProfile(profile()));
 }
 

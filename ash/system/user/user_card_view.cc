@@ -411,7 +411,9 @@ void UserCardView::AddUserContent(views::BoxLayout* layout) {
   base::string16 user_email_string;
   if (!is_guest) {
     user_email_string =
-        base::UTF8ToUTF16(user_session->user_info->display_email);
+        Shell::Get()->session_controller()->IsUserLegacySupervised()
+            ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL)
+            : base::UTF8ToUTF16(user_session->user_info->display_email);
   }
   user_email->SetText(user_email_string);
   user_email->SetHorizontalAlignment(gfx::ALIGN_LEFT);

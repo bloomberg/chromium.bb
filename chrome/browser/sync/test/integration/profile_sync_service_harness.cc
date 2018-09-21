@@ -206,6 +206,9 @@ bool ProfileSyncServiceHarness::SetupSyncForClearingServerData() {
 
 bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
                                           bool skip_passphrase_verification) {
+  DCHECK(!profile_->IsLegacySupervised())
+      << "SetupSync should not be used for legacy supervised users.";
+
   if (service() == nullptr) {
     LOG(ERROR) << "SetupSync(): service() is null.";
     return false;

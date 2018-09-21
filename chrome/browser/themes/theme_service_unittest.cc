@@ -364,6 +364,66 @@ TEST_F(ThemeServiceTest, UninstallThemeOnThemeChangeNotification) {
   EXPECT_EQ(extension1_id, theme_service->GetThemeID());
 }
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+class ThemeServiceSupervisedUserTest : public ThemeServiceTest {
+ public:
+  ThemeServiceSupervisedUserTest() {}
+  ~ThemeServiceSupervisedUserTest() override {}
+
+  void SetUp() override {
+    is_supervised_ = true;
+    ThemeServiceTest::SetUp();
+  }
+};
+
+// Checks that supervised users have their own default theme.
+TEST_F(ThemeServiceSupervisedUserTest,
+       SupervisedUserThemeReplacesDefaultTheme) {
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+  theme_service->UseDefaultTheme();
+  EXPECT_TRUE(theme_service->UsingDefaultTheme());
+  EXPECT_TRUE(get_theme_supplier(theme_service));
+  EXPECT_EQ(get_theme_supplier(theme_service)->get_theme_type(),
+            CustomThemeSupplier::SUPERVISED_USER_THEME);
+}
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Checks that supervised users don't use the system theme even if it is the
+// default. The system theme is only available on Linux.
+TEST_F(ThemeServiceSupervisedUserTest, SupervisedUserThemeReplacesNativeTheme) {
+  profile_->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, true);
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+  theme_service->UseDefaultTheme();
+  EXPECT_TRUE(theme_service->UsingDefaultTheme());
+  EXPECT_TRUE(get_theme_supplier(theme_service));
+  EXPECT_EQ(get_theme_supplier(theme_service)->get_theme_type(),
+            CustomThemeSupplier::SUPERVISED_USER_THEME);
+}
+
+TEST_F(ThemeServiceTest, UserThemeTakesPrecedenceOverSystemTheme) {
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const std::string& extension_id = LoadUnpackedThemeAt(temp_dir.GetPath());
+  ASSERT_EQ(extension_id, theme_service->GetThemeID());
+
+  // Set preference |prefs::kUsesSystemTheme| to true which conflicts with
+  // having a user theme selected.
+  profile_->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, true);
+  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme));
+
+  // Initialization should fix the preference inconsistency.
+  theme_service->Init(profile_.get());
+  ASSERT_EQ(extension_id, theme_service->GetThemeID());
+  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme));
+}
+#endif // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
 #if !defined(OS_MACOSX)  // Mac uses different colors than other platforms.
 // Check that the function which computes the separator color behaves as
 // expected for a variety of inputs.

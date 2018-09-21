@@ -144,6 +144,11 @@ base::string16 FormatBookmarkURLForDisplay(const GURL& url) {
 }
 
 bool IsAppsShortcutEnabled(Profile* profile) {
+  // Legacy supervised users can not have apps installed currently so there's no
+  // need to show the apps shortcut.
+  if (profile->IsLegacySupervised())
+    return false;
+
 #if defined(OS_CHROMEOS)
   // Chrome OS uses the app list / app launcher.
   return false;

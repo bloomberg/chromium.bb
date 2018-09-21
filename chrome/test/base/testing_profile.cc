@@ -747,6 +747,10 @@ bool TestingProfile::IsChild() const {
 #endif
 }
 
+bool TestingProfile::IsLegacySupervised() const {
+  return IsSupervised() && !IsChild();
+}
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void TestingProfile::SetExtensionSpecialStoragePolicy(
     ExtensionSpecialStoragePolicy* extension_special_storage_policy) {

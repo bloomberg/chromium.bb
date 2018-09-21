@@ -271,6 +271,12 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
   DCHECK(signin::DiceMethodGreaterOrEqual(
       method, AccountConsistencyMethod::kDiceMigration));
 
+  // Legacy supervised users cannot get Dice.
+  // TODO(droger): remove this once legacy supervised users are no longer
+  // supported.
+  if (profile->IsLegacySupervised())
+    return AccountConsistencyMethod::kDiceFixAuthErrors;
+
   bool can_enable_dice_for_build = ignore_missing_oauth_client_for_testing_ ||
                                    google_apis::HasOAuthClientConfigured();
   if (!can_enable_dice_for_build) {

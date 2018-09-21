@@ -118,6 +118,10 @@ base::string16 GetAvatarButtonTextForProfile(Profile* profile) {
   name = gfx::TruncateString(name,
                              kMaxCharactersToDisplay,
                              gfx::CHARACTER_BREAK);
+  if (profile->IsLegacySupervised()) {
+    name = l10n_util::GetStringFUTF16(
+        IDS_LEGACY_SUPERVISED_USER_NEW_AVATAR_LABEL, name);
+  }
   return name;
 }
 
@@ -264,8 +268,8 @@ bool AreAllNonChildNonSupervisedProfilesLocked() {
     if (entry->IsOmitted())
       continue;
 
-    // Only consider non-child profiles.
-    if (!entry->IsChild()) {
+    // Only consider non-child and non-supervised profiles.
+    if (!entry->IsChild() && !entry->IsLegacySupervised()) {
       at_least_one_regular_profile_present = true;
 
       if (!entry->IsSigninRequired())
