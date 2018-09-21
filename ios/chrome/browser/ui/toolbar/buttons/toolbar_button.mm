@@ -77,15 +77,6 @@ const CGFloat kSpotlightCornerRadius = 7;
                        ToolbarComponentVisibilityRegularWidthRegularHeight);
   }
 
-  if (!IsIPadIdiom() &&
-      self.visibilityMask & ToolbarComponentVisibilityIPhoneOnly) {
-    newHiddenValue = NO;
-  }
-  if (newHiddenValue &&
-      self.visibilityMask & ToolbarComponentVisibilityOnlyWhenEnabled) {
-    newHiddenValue = !self.enabled;
-  }
-
   if (self.hiddenInCurrentSizeClass != newHiddenValue) {
     self.hiddenInCurrentSizeClass = newHiddenValue;
     [self setHiddenForCurrentStateAndSizeClass];
