@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -29,11 +30,15 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
+
 namespace message_center {
 
 namespace {
 
-const SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
+constexpr SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 
 // Creates a text for spoken feedback from the data contained in the
 // notification.
@@ -51,6 +56,14 @@ base::string16 CreateAccessibleName(const Notification& notification) {
                                items[i].message);
   }
   return base::JoinString(accessible_lines, base::ASCIIToUTF16("\n"));
+}
+
+bool ShouldShowAeroShadowBorder() {
+#if defined(OS_WIN)
+  return ui::win::IsAeroGlassEnabled();
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -72,6 +85,16 @@ MessageView::MessageView(const Notification& notification)
   UpdateWithNotification(notification);
 
   UpdateCornerRadius(0, 0);
+
+  // If Aero is enabled, set shadow border.
+  if (ShouldShowAeroShadowBorder()) {
+    const auto& shadow = gfx::ShadowDetails::Get(2, 0);
+    gfx::Insets ninebox_insets = gfx::ShadowValue::GetBlurRegion(shadow.values);
+    SetBorder(views::CreateBorderPainter(
+        views::Painter::CreateImagePainter(shadow.ninebox_image,
+                                           ninebox_insets),
+        -gfx::ShadowValue::GetMargin(shadow.values)));
+  }
 }
 
 MessageView::~MessageView() {
@@ -219,7 +242,13 @@ bool MessageView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void MessageView::OnPaint(gfx::Canvas* canvas) {
-  views::View::OnPaint(canvas);
+  if (ShouldShowAeroShadowBorder()) {
+    // If the border is shadow, paint border first.
+    OnPaintBorder(canvas);
+    OnPaintBackground(canvas);
+  } else {
+    views::View::OnPaint(canvas);
+  }
   views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
