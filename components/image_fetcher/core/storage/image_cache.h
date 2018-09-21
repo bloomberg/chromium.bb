@@ -67,10 +67,23 @@ class ImageCache {
   // Deletes the data for |url|.
   void DeleteImageImpl(const std::string& url);
 
-  // Runs eviction on the data stores.
-  void RunEviction();
+  // Runs eviction on the data stores (run on startup).
+  void RunEvictionOnStartup();
+  // Runs eviction on the data stores (run when cache is full).
+  void RunEvictionWhenFull();
+  // Catch-all method for eviction, runs reconciliation routine after if
+  // |run_reconciliation| is specified. Evicts until there are |bytes_left|
+  // left in storage.
+  void RunEviction(size_t bytes_left, base::OnceClosure on_completion);
   // Deletes the given keys from the data store.
-  void OnKeysEvicted(std::vector<std::string> keys);
+  void OnKeysEvicted(base::OnceClosure on_completion,
+                     std::vector<std::string> keys);
+  // Reconcile what's on disk against what's in metadata. Any mismatches will
+  // result in eviction.
+  void RunReconciliation();
+  void ReconcileMetadataKeys(std::vector<std::string> md_keys);
+  void ReconcileDataKeys(std::vector<std::string> md_keys,
+                         std::vector<std::string> data_keys);
 
   bool initialization_attempted_;
   std::vector<base::OnceClosure> queued_requests_;

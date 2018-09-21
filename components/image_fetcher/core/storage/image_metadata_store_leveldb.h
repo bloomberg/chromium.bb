@@ -50,6 +50,13 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
   void DeleteImageMetadata(const std::string& key) override;
   void UpdateImageMetadata(const std::string& key) override;
   void GetAllKeys(KeysCallback callback) override;
+  // Gets a size estimate. This is updated when things are added to the cache
+  // and when eviction is performed. This doesn't update more often because
+  // we want to minimize disk io. If the estimate is inaccurate, it's either 0
+  // which means it hasn't been calculated yet, or it's an over-estimate. In
+  // the case of an over estimate, it will be recified if you call into an
+  // eviction routine.
+  int GetEstimatedSize() override;
   void EvictImageMetadata(base::Time expiration_time,
                           const size_t bytes_left,
                           KeysCallback callback) override;
@@ -73,6 +80,7 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
                                 std::vector<std::string> deleted_keys,
                                 bool success);
 
+  int estimated_size_;
   InitializationStatus initialization_status_;
   base::FilePath database_dir_;
   std::unique_ptr<leveldb_proto::ProtoDatabase<CachedImageMetadataProto>>

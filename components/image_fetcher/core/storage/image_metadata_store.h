@@ -40,6 +40,9 @@ class ImageMetadataStore {
   // Returns all the keys this store has.
   virtual void GetAllKeys(KeysCallback callback) = 0;
 
+  // Returns the total size of what's in metadata, possibly incorrect.
+  virtual int GetEstimatedSize() = 0;
+
   // Deletes all metadata that's been cached before the boundary given as
   // |expiration_time|.
   void EvictImageMetadata(base::Time expiration_time, KeysCallback callback) {

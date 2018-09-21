@@ -69,7 +69,8 @@ ImageMetadataStoreLevelDB::ImageMetadataStoreLevelDB(
     std::unique_ptr<leveldb_proto::ProtoDatabase<CachedImageMetadataProto>>
         database,
     base::Clock* clock)
-    : initialization_status_(InitializationStatus::UNINITIALIZED),
+    : estimated_size_(0),
+      initialization_status_(InitializationStatus::UNINITIALIZED),
       database_dir_(database_dir),
       database_(std::move(database)),
       clock_(clock),
@@ -98,6 +99,7 @@ void ImageMetadataStoreLevelDB::SaveImageMetadata(const std::string& key,
   if (!IsInitialized()) {
     return;
   }
+  estimated_size_ += data_size;
 
   int64_t current_time = ToDatabaseTime(clock_->Now());
   CachedImageMetadataProto metadata_proto;
@@ -150,6 +152,10 @@ void ImageMetadataStoreLevelDB::GetAllKeys(KeysCallback callback) {
   database_->LoadKeys(base::BindOnce(&ImageMetadataStoreLevelDB::GetAllKeysImpl,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      std::move(callback)));
+}
+
+int ImageMetadataStoreLevelDB::GetEstimatedSize() {
+  return estimated_size_;
 }
 
 void ImageMetadataStoreLevelDB::EvictImageMetadata(base::Time expiration_time,
@@ -247,6 +253,8 @@ void ImageMetadataStoreLevelDB::EvictImageMetadataImpl(
       total_bytes_stored -= entry.data_size();
     }
   }
+
+  estimated_size_ = total_bytes_stored;
 
   if (keys_to_remove.empty()) {
     std::move(callback).Run({});
