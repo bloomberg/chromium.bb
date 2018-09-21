@@ -1401,17 +1401,9 @@ bool Textfield::GetAcceleratorForCommandId(int command_id,
       *accelerator = ui::Accelerator(ui::VKEY_A, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
-    case IDS_CONTENT_CONTEXT_EMOJI:
-#if defined(OS_MACOSX)
-      *accelerator = ui::Accelerator(ui::VKEY_SPACE,
-                                     ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
-      return true;
-#else
-      return false;
-#endif
-
     default:
-      return false;
+      return text_services_context_menu_->GetAcceleratorForCommandId(
+          command_id, accelerator);
   }
 }
 

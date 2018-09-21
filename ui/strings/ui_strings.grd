@@ -616,6 +616,12 @@ need to be translated for each locale.-->
       <message name="IDS_APP_SHIFT_KEY" desc="Shift key">
         Shift
       </message>
+      <if expr="is_win">
+        <message name="IDS_APP_WINDOWS_KEY" desc="This refers to the 'Windows' key on certain
+            keyboards (often between Ctrl and Alt). This may not need to be translated.">
+          Win
+        </message>
+      </if>
 
       <!-- Accelerator format -->
       <message name="IDS_APP_ACCELERATOR_WITH_MODIFIER" desc="Accelerator with a modifier key">
