@@ -2199,6 +2199,8 @@ jumbo_split_static_library("ui") {
       "webui/signin/sync_confirmation_ui.h",
       "webui/signin/user_manager_screen_handler.cc",
       "webui/signin/user_manager_screen_handler.h",
+      "webui/welcome/nux_helper.cc",
+      "webui/welcome/nux_helper.h",
       "webui/welcome_handler.cc",
       "webui/welcome_handler.h",
       "webui/welcome_ui.cc",
