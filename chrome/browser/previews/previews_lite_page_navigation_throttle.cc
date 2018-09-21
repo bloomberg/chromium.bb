@@ -329,18 +329,22 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
   // timeout whether the previews navigation has finished (either in success or
   // failure). If not, the helper will stop the ongoing previews navigation and
   // load the original page.
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(
-          &WebContentsLifetimeHelper::CheckForHungNavigation,
-          helper->GetWeakPtr(), GetPreviewsURL(),
-          base::BindOnce(
-              &PreviewsLitePageNavigationThrottle::LoadAndBypass,
-              base::Unretained(web_contents), manager_,
-              MakeOpenURLParams(navigation_handle(),
-                                navigation_handle()->GetURL(), std::string()),
-              false)),
-      previews::params::LitePagePreviewsNavigationTimeoutDuration());
+  const base::TimeDelta timeout =
+      previews::params::LitePagePreviewsNavigationTimeoutDuration();
+  if (timeout > base::TimeDelta()) {
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(
+            &WebContentsLifetimeHelper::CheckForHungNavigation,
+            helper->GetWeakPtr(), GetPreviewsURL(),
+            base::BindOnce(
+                &PreviewsLitePageNavigationThrottle::LoadAndBypass,
+                base::Unretained(web_contents), manager_,
+                MakeOpenURLParams(navigation_handle(),
+                                  navigation_handle()->GetURL(), std::string()),
+                false)),
+        timeout);
+  }
 
   // The helper class and its weak pointer protect against the WebContents
   // dying in-between the PostTask and its execution, resulting in a use after

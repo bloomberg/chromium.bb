@@ -58,6 +58,12 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUp() override {
+    SetUpLitePageTest(false);
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpLitePageTest(bool use_timeout) {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
@@ -121,7 +127,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
           {"previews_host", previews_server().spec()},
           {"blacklisted_path_suffixes", ".mp4,.jpg"},
           {"trigger_on_localhost", "true"},
-          {"navigation_timeout_milliseconds", "2000"}};
+          {"navigation_timeout_milliseconds", use_timeout ? "2000" : "0"}};
       base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
           "TrialName1", "GroupName1", feature_parameters);
 
@@ -138,8 +144,6 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
           base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
     }
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
-
-    InProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -203,8 +207,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   GURL HttpLitePageURL(int return_code,
                        std::string* headers = nullptr,
                        int delay_ms = 0) const {
-    std::string query = "resp=" + base::IntToString(return_code) + "&rand=" +
-                        base::IntToString(base::RandInt(INT_MIN, INT_MAX));
+    std::string query = "resp=" + base::IntToString(return_code);
     if (delay_ms != 0)
       query += "&delay_ms=" + base::IntToString(delay_ms);
     if (headers)
@@ -221,8 +224,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   GURL HttpsLitePageURL(int return_code,
                         std::string* headers = nullptr,
                         int delay_ms = 0) const {
-    std::string query = "resp=" + base::IntToString(return_code) + "&rand=" +
-                        base::IntToString(base::RandInt(INT_MIN, INT_MAX));
+    std::string query = "resp=" + base::IntToString(return_code);
     if (delay_ms != 0)
       query += "&delay_ms=" + base::IntToString(delay_ms);
     if (headers)
@@ -555,37 +557,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 // See https://crbug.com/782322 for detail.
 // Also occasional flakes on win7 (https://crbug.com/789542).
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsTimeout LitePagePreviewsTimeout
-#else
-#define MAYBE_LitePagePreviewsTimeout DISABLED_LitePagePreviewsTimeout
-#endif
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       MAYBE_LitePagePreviewsTimeout) {
-  {
-    // Ensure that a hung previews navigation doesn't wind up at the previews
-    // server.
-    base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200, nullptr, -1));
-    VerifyPreviewNotLoaded();
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kTimeout, 1);
-  }
-
-  {
-    // Ensure that a hung normal navigation eventually loads.
-    base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), slow_http_url());
-    VerifyPreviewNotLoaded();
-    histogram_tester.ExpectTotalCount("Previews.ServerLitePage.ServerResponse",
-                                      0);
-  }
-}
-
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_LitePagePreviewsResponse LitePagePreviewsResponse
 #else
 #define MAYBE_LitePagePreviewsResponse DISABLED_LitePagePreviewsResponse
@@ -669,6 +640,51 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   clock->Advance(base::TimeDelta::FromSeconds(31));
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
   VerifyPreviewLoaded();
+}
+
+class PreviewsLitePageServerTimeoutBrowserTest
+    : public PreviewsLitePageServerBrowserTest {
+ public:
+  PreviewsLitePageServerTimeoutBrowserTest() = default;
+
+  ~PreviewsLitePageServerTimeoutBrowserTest() override = default;
+
+  void SetUp() override {
+    SetUpLitePageTest(true);
+
+    InProcessBrowserTest::SetUp();
+  }
+};
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsTimeout LitePagePreviewsTimeout
+#else
+#define MAYBE_LitePagePreviewsTimeout DISABLED_LitePagePreviewsTimeout
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
+                       MAYBE_LitePagePreviewsTimeout) {
+  {
+    // Ensure that a hung previews navigation doesn't wind up at the previews
+    // server.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200, nullptr, -1));
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kTimeout, 1);
+  }
+
+  {
+    // Ensure that a hung normal navigation eventually loads.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), slow_http_url());
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectTotalCount("Previews.ServerLitePage.ServerResponse",
+                                      0);
+  }
 }
 
 class PreviewsLitePageServerBadServerBrowserTest
