@@ -574,11 +574,15 @@ void ClientBufferFrameDeliverer::PaintAndDeliverNextFrame(
     return;
 
   const int arbitrary_frame_feedback_id = 0;
-  auto capture_buffer = client()->ReserveOutputBuffer(
+  VideoCaptureDevice::Client::Buffer capture_buffer;
+  const auto reserve_result = client()->ReserveOutputBuffer(
       device_state()->format.frame_size, device_state()->format.pixel_format,
-      arbitrary_frame_feedback_id);
-  DLOG_IF(ERROR, !capture_buffer.is_valid())
-      << "Couldn't allocate Capture Buffer";
+      arbitrary_frame_feedback_id, &capture_buffer);
+  if (reserve_result != VideoCaptureDevice::Client::ReserveResult::kSucceeded) {
+    client()->OnFrameDropped(
+        ConvertReservationFailureToFrameDropReason(reserve_result));
+    return;
+  }
   auto buffer_access =
       capture_buffer.handle_provider->GetHandleForInProcessAccess();
   DCHECK(buffer_access->data()) << "Buffer has NO backing memory";

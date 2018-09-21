@@ -50309,6 +50309,8 @@ Full version information for the fingerprint enum values:
   <int value="12" label="kWinMediaFoundationReceivedSampleIsNull"/>
   <int value="13" label="kWinMediaFoundationLockingBufferDelieveredNullptr"/>
   <int value="14" label="kWinMediaFoundationGetBufferByIndexReturnedNull"/>
+  <int value="15" label="kBufferPoolMaxBufferCountExceeded"/>
+  <int value="16" label="kBufferPoolBufferAllocationFailed"/>
 </enum>
 
 <enum name="VideoCaptureServiceEvent">

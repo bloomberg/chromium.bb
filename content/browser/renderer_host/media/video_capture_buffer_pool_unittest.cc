@@ -77,11 +77,14 @@ class VideoCaptureBufferPoolTest
     DVLOG(1) << media::VideoPixelFormatToString(pixel_format) << " "
              << dimensions.ToString();
     const int arbitrary_frame_feedback_id = 0;
-    const int buffer_id = pool_->ReserveForProducer(
+    int buffer_id = media::VideoCaptureBufferPool::kInvalidId;
+    const auto reserve_result = pool_->ReserveForProducer(
         dimensions, pixel_format, nullptr, arbitrary_frame_feedback_id,
-        &buffer_id_to_drop);
-    if (buffer_id == media::VideoCaptureBufferPool::kInvalidId)
+        &buffer_id, &buffer_id_to_drop);
+    if (reserve_result !=
+        media::VideoCaptureDevice::Client::ReserveResult::kSucceeded) {
       return std::unique_ptr<Buffer>();
+    }
     EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop);
 
     std::unique_ptr<media::VideoCaptureBufferHandle> buffer_handle =

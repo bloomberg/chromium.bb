@@ -148,12 +148,14 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
 
   std::unique_ptr<MockVideoCaptureDeviceClient> CreateClient() {
     auto result = std::make_unique<MockVideoCaptureDeviceClient>();
-    ON_CALL(*result, ReserveOutputBuffer(_, _, _))
-        .WillByDefault(Invoke(
-            [](const gfx::Size& dimensions, VideoPixelFormat format, int) {
+    ON_CALL(*result, ReserveOutputBuffer(_, _, _, _))
+        .WillByDefault(
+            Invoke([](const gfx::Size& dimensions, VideoPixelFormat format, int,
+                      VideoCaptureDevice::Client::Buffer* buffer) {
               EXPECT_GT(dimensions.GetArea(), 0);
               const VideoCaptureFormat frame_format(dimensions, 0.0, format);
-              return CreateStubBuffer(0, frame_format.ImageAllocationSize());
+              *buffer = CreateStubBuffer(0, frame_format.ImageAllocationSize());
+              return VideoCaptureDevice::Client::ReserveResult::kSucceeded;
             }));
     ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _))
         .WillByDefault(
