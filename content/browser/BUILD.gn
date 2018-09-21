@@ -1868,6 +1868,7 @@ jumbo_source_set("browser") {
       "tracing/cros_tracing_agent.cc",
       "tracing/cros_tracing_agent.h",
     ]
+    deps += [ "//chromeos/resources" ]
   } else {
     sources += [
       "memory/memory_monitor_linux.cc",
