@@ -88,6 +88,12 @@ class ActionDelegate {
   virtual const autofill::AutofillProfile* GetAutofillProfile(
       const std::string& guid) = 0;
 
+  // Given an element |selectors| on the page as the root element, build a node
+  // tree using the output parameter |node_tree_out| as a starting node.
+  virtual void BuildNodeTree(const std::vector<std::string>& selectors,
+                             NodeProto* node_tree_out,
+                             base::OnceCallback<void(bool)> callback) = 0;
+
   // Return the current ClientMemory.
   virtual ClientMemory* GetClientMemory() = 0;
 

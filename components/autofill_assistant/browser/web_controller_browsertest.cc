@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -111,6 +112,21 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
   void OnSelectOption(base::Closure done_callback, bool result) {
     ASSERT_TRUE(result);
     std::move(done_callback).Run();
+  }
+
+  void BuildNodeTree(const std::vector<std::string>& selectors,
+                     NodeProto* node) {
+    base::RunLoop run_loop;
+    web_controller_->BuildNodeTree(
+        selectors, node,
+        base::BindOnce(&WebControllerBrowserTest::OnBuildNodeTree,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  void OnBuildNodeTree(const base::Closure& done_callback, bool result) {
+    done_callback.Run();
+    EXPECT_TRUE(result);
   }
 
   void FindElement(const std::vector<std::string>& selectors,
@@ -308,6 +324,16 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIframe) {
     select.options[select.selectedIndex].label;
   )";
   EXPECT_EQ("NY", content::EvalJs(shell(), javascript));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, BuildNodeTree) {
+  // TODO(crbug/808686): Complete this test when the implementation is finished.
+  std::vector<std::string> selectors;
+  NodeProto node;
+  BuildNodeTree(selectors, &node);
+
+  EXPECT_EQ(node.type(), NodeProto::ELEMENT);
+  EXPECT_EQ(node.value(), "BODY");
 }
 
 }  // namespace

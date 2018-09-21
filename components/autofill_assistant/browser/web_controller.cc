@@ -10,6 +10,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -587,6 +588,15 @@ void WebController::SetFieldsValue(
     base::OnceCallback<void(bool)> callback) {
   DCHECK_EQ(selectors_list.size(), values.size());
   // TODO(crbug.com/806868): Implement set fields value operation.
+  std::move(callback).Run(true);
+}
+
+void WebController::BuildNodeTree(const std::vector<std::string>& selectors,
+                                  NodeProto* node_tree_out,
+                                  base::OnceCallback<void(bool)> callback) {
+  // TODO(crbug.com/806868): We return a dummy dom tree for now.
+  node_tree_out->set_type(NodeProto::ELEMENT);
+  node_tree_out->set_value("BODY");
   std::move(callback).Run(true);
 }
 

@@ -61,6 +61,9 @@ class ScriptExecutor : public ActionDelegate {
       base::OnceCallback<void(bool)> callback) override;
   const autofill::AutofillProfile* GetAutofillProfile(
       const std::string& guid) override;
+  void BuildNodeTree(const std::vector<std::string>& selectors,
+                     NodeProto* node_tree_out,
+                     base::OnceCallback<void(bool)> callback) override;
   ClientMemory* GetClientMemory() override;
 
  private:
