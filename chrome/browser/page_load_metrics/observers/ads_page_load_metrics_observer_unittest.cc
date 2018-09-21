@@ -391,8 +391,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, AllAdTypesInPage) {
   TestHistograms(histogram_tester(), {{10, 0}, {0, 10}, {0, 10}, {10, 10}},
                  20 /* non_ad_cached_kb */, 10 /* non_ad_uncached_kb */,
                  AdType::ALL);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.All.ParentExistsForSubFrame", 0, 0);
 }
 
 // Test that the cross-origin ad subframe navigation metric works as it's
@@ -474,8 +472,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrameThatRenavigates) {
 
   TestHistograms(histogram_tester(), {{0, 20}}, 0 /* non_ad_cached_kb */,
                  10 /* non_ad_uncached_kb */, AdType::GOOGLE);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.All.ParentExistsForSubFrame", 0, 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
@@ -508,8 +504,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
   TestHistograms(histogram_tester(), {{0, 10}, {0, 10}},
                  0 /* non_ad_cached_kb */, 20 /* non_ad_uncached_kb */,
                  AdType::GOOGLE);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.All.ParentExistsForSubFrame", 0, 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedNavigation) {
@@ -601,8 +595,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
 
   TestHistograms(histogram_tester(), {{0, 20}}, 0 /* non_ad_cached_kb */,
                  10 /* non_ad_uncached_kb */, AdType::GOOGLE);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.All.ParentExistsForSubFrame", 0, 0);
 }
 
 // This tests an issue that is believed to be the cause of
@@ -613,9 +605,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, FrameWithNoParent) {
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* sub_frame =
       CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
-
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.All.ParentExistsForSubFrame", 0, 0);
 
   // Renavigate the child, but, while navigating, the main frame renavigates.
   RenderFrameHost* child_of_subframe =
@@ -630,8 +619,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, FrameWithNoParent) {
   // Child frame commits.
   navigation_simulator->Commit();
   child_of_subframe = navigation_simulator->GetFinalRenderFrameHost();
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.All.ParentExistsForSubFrame", 0, 1);
 
   // Test that a resource loaded into an unknown frame doesn't cause any
   // issues.
