@@ -190,13 +190,19 @@ class WorkspacePublishBuildspecStage(WorkspaceStageBase):
     else:
       incr_type = 'branch'
 
-    manifest_version.GenerateAndPublishOfficialBuildSpec(
+    build_spec_path = manifest_version.GenerateAndPublishOfficialBuildSpec(
         repo,
         incr_type,
         manifest_versions_int=int_manifest_versions_path,
         manifest_versions_ext=ext_manifest_versions_path,
         dryrun=self._run.options.debug)
 
+    if self._run.options.debug:
+      msg = 'DEBUG: Would have defined: %s' % build_spec_path
+    else:
+      msg = 'Defined: %s' % build_spec_path
+
+    logging.PrintBuildbotStepText(msg)
 
 class WorkspaceInitSDKStage(WorkspaceStageBase):
   """Stage that is responsible for initializing the SDK."""

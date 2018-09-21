@@ -473,6 +473,9 @@ def GenerateAndPublishOfficialBuildSpec(
     manifest_versions_int: Path to manifest-versions-internal checkout.
     manifest_versions_ext: Path to manifest-versions checkout (public).
     dryrun: Git push --dry-run if set to True.
+
+  Returns:
+    Path for buildspec, relative to manifest_versions root.
   """
   version_info = VersionInfo.from_repo(repo.directory, incr_type=incr_type)
 
@@ -491,6 +494,7 @@ def GenerateAndPublishOfficialBuildSpec(
       manifest_versions_ext,
       dryrun)
 
+  return build_spec_path
 
 def GenerateAndPublishReleaseCandidateBuildSpec(
     repo,
@@ -512,6 +516,9 @@ def GenerateAndPublishReleaseCandidateBuildSpec(
     manifest_versions_int: Path to manifest-versions-internal checkout.
     manifest_versions_ext: Path to manifest-versions checkout (public).
     dryrun: Git push --dry-run if set to True.
+
+  Returns:
+    Path for buildspec, relative to manifest_versions root.
   """
   version_info = VersionInfo.from_repo(repo.directory)
 
@@ -525,6 +532,8 @@ def GenerateAndPublishReleaseCandidateBuildSpec(
       manifest_versions_int,
       manifest_versions_ext,
       dryrun)
+
+  return build_spec_path
 
 
 class BuildSpecsManager(object):
