@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+@class ManualFillInjectionHandler;
 class WebStateList;
 
 // Creates and manages a view controller to present passwords to the user.
@@ -17,12 +18,13 @@ class WebStateList;
 // The view controller of this coordinator.
 @property(nonatomic, readonly) UIViewController* viewController;
 
-// Creates a coordinator that uses a |viewController| a |browserState| and
-// a |webStateList|.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList;
+// Creates a coordinator that uses a |viewController|, |browserState|,
+// |webStateList| and an |injectionHandler|.
+- (instancetype)
+initWithBaseViewController:(UIViewController*)viewController
+              browserState:(ios::ChromeBrowserState*)browserState
+              webStateList:(WebStateList*)webStateList
+          injectionHandler:(ManualFillInjectionHandler*)injectionHandler;
 
 // Unavailable, use -initWithBaseViewController:browserState:webStateList:.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
