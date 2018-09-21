@@ -29,6 +29,17 @@ enum EventType {
   SCROLL_FLING_START,
   SCROLL_FLING_CANCEL,
   CANCEL_MODE,
+  // MOUSE_MOVED has a naming conflict in Windows, where there is a
+  // #define MOUSE_MOVED. Therefore we had to add the suffix, _EVENT. for
+  // consistency, all other mouse event types also were given this suffix.
+  MOUSE_PRESSED_EVENT,
+  MOUSE_DRAGGED_EVENT,
+  MOUSE_RELEASED_EVENT,
+  MOUSE_MOVED_EVENT,
+  MOUSE_ENTERED_EVENT,
+  MOUSE_EXITED_EVENT,
+  MOUSE_WHEEL_EVENT,
+  MOUSE_CAPTURE_CHANGED_EVENT,
 };
 
 // This mirrors ui::EventFlags

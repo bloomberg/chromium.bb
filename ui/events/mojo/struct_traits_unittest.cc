@@ -189,6 +189,63 @@ TEST_F(StructTraitsTest, PointerEvent) {
   }
 }
 
+TEST_F(StructTraitsTest, MouseEvent) {
+  MouseEvent kTestData[] = {
+      {ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(20, 30),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(201), EF_NONE, 0,
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                      MouseEvent::kMousePointerId)},
+      {ET_MOUSE_DRAGGED, gfx::Point(1, 5), gfx::Point(5, 1),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(202),
+       EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON,
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                      MouseEvent::kMousePointerId)},
+      {ET_MOUSE_RELEASED, gfx::Point(411, 130), gfx::Point(20, 30),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(203),
+       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON, EF_RIGHT_MOUSE_BUTTON,
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                      MouseEvent::kMousePointerId)},
+      {ET_MOUSE_MOVED, gfx::Point(0, 1), gfx::Point(2, 3),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(204), EF_ALT_DOWN,
+       0,
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                      MouseEvent::kMousePointerId)},
+      {ET_MOUSE_ENTERED, gfx::Point(6, 7), gfx::Point(8, 9),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(205), EF_NONE, 0,
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                      MouseEvent::kMousePointerId)},
+      {ET_MOUSE_EXITED, gfx::Point(10, 10), gfx::Point(20, 30),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(206),
+       EF_BACK_MOUSE_BUTTON, 0,
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                      MouseEvent::kMousePointerId)},
+      {ET_MOUSE_CAPTURE_CHANGED, gfx::Point(99, 99), gfx::Point(99, 99),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(207),
+       EF_CONTROL_DOWN, 0,
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                      MouseEvent::kMousePointerId)},
+  };
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  for (size_t i = 0; i < arraysize(kTestData); i++) {
+    std::unique_ptr<Event> output;
+    proxy->EchoEvent(Event::Clone(kTestData[i]), &output);
+    ASSERT_TRUE(output->IsMouseEvent());
+
+    const MouseEvent* output_event = output->AsMouseEvent();
+    EXPECT_EQ(kTestData[i].type(), output_event->type());
+    EXPECT_EQ(kTestData[i].flags(), output_event->flags());
+    EXPECT_EQ(kTestData[i].location(), output_event->location());
+    EXPECT_EQ(kTestData[i].root_location(), output_event->root_location());
+    EXPECT_EQ(kTestData[i].pointer_details().id,
+              output_event->pointer_details().id);
+    EXPECT_EQ(kTestData[i].changed_button_flags(),
+              output_event->changed_button_flags());
+    EXPECT_EQ(kTestData[i].pointer_details(), output_event->pointer_details());
+    EXPECT_EQ(kTestData[i].time_stamp(), output_event->time_stamp());
+  }
+}
+
 TEST_F(StructTraitsTest, PointerWheelEvent) {
   MouseWheelEvent kTestData[] = {
       {gfx::Vector2d(11, 15), gfx::Point(3, 4), gfx::Point(40, 30),
@@ -219,6 +276,62 @@ TEST_F(StructTraitsTest, PointerWheelEvent) {
               output_pointer_event->pointer_details().offset);
     EXPECT_EQ(kTestData[i].time_stamp(), output_pointer_event->time_stamp());
   }
+}
+
+TEST_F(StructTraitsTest, MouseWheelEvent) {
+  MouseWheelEvent kTestData[] = {
+      {gfx::Vector2d(11, 15), gfx::Point(3, 4), gfx::Point(40, 30),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(301),
+       EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON},
+      {gfx::Vector2d(-5, 3), gfx::Point(40, 3), gfx::Point(4, 0),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(302),
+       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
+       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON},
+      {gfx::Vector2d(1, 0), gfx::Point(3, 4), gfx::Point(40, 30),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(303), EF_NONE,
+       EF_NONE},
+  };
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  for (size_t i = 0; i < arraysize(kTestData); i++) {
+    std::unique_ptr<Event> output;
+    proxy->EchoEvent(
+        Event::Clone(ui::MouseWheelEvent(ui::PointerEvent(kTestData[i]))),
+        &output);
+    ASSERT_EQ(ET_MOUSEWHEEL, output->type());
+
+    const MouseWheelEvent* output_event = output->AsMouseWheelEvent();
+    EXPECT_EQ(ET_MOUSEWHEEL, output_event->type());
+    EXPECT_EQ(kTestData[i].flags(), output_event->flags());
+    EXPECT_EQ(kTestData[i].location(), output_event->location());
+    EXPECT_EQ(kTestData[i].root_location(), output_event->root_location());
+    EXPECT_EQ(kTestData[i].offset(), output_event->offset());
+    EXPECT_EQ(kTestData[i].time_stamp(), output_event->time_stamp());
+  }
+}
+
+TEST_F(StructTraitsTest, FloatingPointLocations) {
+  ui::MouseEvent input_event = ui::MouseEvent(
+      ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(20, 30),
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(201), EF_NONE, 0,
+      PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                     MouseEvent::kMousePointerId));
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  input_event.set_location_f(gfx::PointF(10.1, 10.2));
+  input_event.set_root_location_f(gfx::PointF(20.2, 30.3));
+
+  std::unique_ptr<Event> output;
+  proxy->EchoEvent(Event::Clone(input_event), &output);
+  ASSERT_TRUE(output->IsMouseEvent());
+
+  const MouseEvent* output_event = output->AsMouseEvent();
+  EXPECT_EQ(input_event.type(), output_event->type());
+  EXPECT_EQ(input_event.flags(), output_event->flags());
+  EXPECT_EQ(input_event.location(), output_event->location());
+  EXPECT_EQ(input_event.root_location(), output_event->root_location());
+  EXPECT_EQ(input_event.location_f(), output_event->location_f());
+  EXPECT_EQ(input_event.root_location_f(), output_event->root_location_f());
 }
 
 TEST_F(StructTraitsTest, KeyEventPropertiesSerialized) {
