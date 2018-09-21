@@ -180,13 +180,9 @@ void GaiaOAuthClient::Core::GetTokensFromAuthCode(
           cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made."
-          chrome_policy {
-            SigninAllowed {
-              policy_options {mode: MANDATORY}
-              SigninAllowed: false
-            }
-          }
+            "signs out of Chrome, this request would not be made.",
+          policy_exception_justification:
+            "Essential for Google account management"
         })"));
   MakeRequest(TOKENS_FROM_AUTH_CODE,
               GURL(GaiaUrls::GetInstance()->oauth2_token_url()), post_body,
@@ -233,13 +229,9 @@ void GaiaOAuthClient::Core::RefreshToken(
           cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made."
-          chrome_policy {
-            SigninAllowed {
-              policy_options {mode: MANDATORY}
-              SigninAllowed: false
-            }
-          }
+            "signs out of Chrome, this request would not be made.",
+          policy_exception_justification:
+            "Essential for Google account management"
         })"));
   MakeRequest(REFRESH_TOKEN, GURL(GaiaUrls::GetInstance()->oauth2_token_url()),
               post_body,
@@ -289,13 +281,9 @@ void GaiaOAuthClient::Core::GetUserInfoImpl(
           cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made."
-          chrome_policy {
-            SigninAllowed {
-              policy_options {mode: MANDATORY}
-              SigninAllowed: false
-            }
-          }
+            "signs out of Chrome, this request would not be made.",
+          policy_exception_justification:
+            "Essential for Google account management"
         })"));
   std::string auth = "OAuth " + oauth_access_token;
   MakeRequest(type, GaiaUrls::GetInstance()->oauth_user_info_url(),
@@ -335,12 +323,8 @@ void GaiaOAuthClient::Core::GetTokenInfo(const std::string& qualifier,
           setting:
             "This feature cannot be disabled in settings, but if the user "
             "signs out of Chrome, this request would not be made."
-          chrome_policy {
-            SigninAllowed {
-              policy_options {mode: MANDATORY}
-              SigninAllowed: false
-            }
-          }
+          policy_exception_justification:
+            "Essential for Google account management"
         })"));
   MakeRequest(TOKEN_INFO,
               GURL(GaiaUrls::GetInstance()->oauth2_token_info_url()), post_body,

@@ -750,11 +750,6 @@ void CryptAuthDeviceManagerImpl::OnSyncRequested(
         setting:
           "This feature cannot be disabled in settings. However, this request "
           "is made only for signed-in users."
-        chrome_policy {
-          SigninAllowed {
-            SigninAllowed: false
-          }
-        }
       })");
   cryptauth_client_->GetMyDevices(
       request,

@@ -143,11 +143,6 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
       base::Bind(&BrowserCommandController::UpdateCommandsForFullscreenMode,
                  base::Unretained(this)));
 #endif
-  pref_signin_allowed_.Init(
-      prefs::kSigninAllowed,
-      profile()->GetOriginalProfile()->GetPrefs(),
-      base::Bind(&BrowserCommandController::OnSigninAllowedPrefChange,
-                 base::Unretained(this)));
 
   InitCommandState();
 
@@ -722,16 +717,6 @@ bool BrowserCommandController::UpdateCommandEnabled(int id, bool state) {
   return command_updater_.UpdateCommandEnabled(id, state);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// BrowserCommandController, SigninPrefObserver implementation:
-
-void BrowserCommandController::OnSigninAllowedPrefChange() {
-  // For unit tests, we don't have a window.
-  if (!window())
-    return;
-  UpdateShowSyncState(IsShowingMainUI());
-}
-
 // BrowserCommandController, TabStripModelObserver implementation:
 
 void BrowserCommandController::TabInsertedAt(TabStripModel* tab_strip_model,
@@ -1288,8 +1273,7 @@ void BrowserCommandController::UpdateShowSyncState(bool show_main_ui) {
   if (is_locked_fullscreen_)
     return;
 
-  command_updater_.UpdateCommandEnabled(
-      IDC_SHOW_SYNC_SETUP, show_main_ui && pref_signin_allowed_.GetValue());
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP, show_main_ui);
 }
 
 // static

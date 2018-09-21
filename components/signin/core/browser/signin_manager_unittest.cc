@@ -431,17 +431,6 @@ TEST_F(SigninManagerTest, ExternalSignIn_ReauthShouldNotSendNotification) {
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }
 
-TEST_F(SigninManagerTest, SigninNotAllowed) {
-  std::string user("user@google.com");
-  user_prefs_.SetString(prefs::kGoogleServicesAccountId, user);
-  user_prefs_.SetBoolean(prefs::kSigninAllowed, false);
-  CreateSigninManager();
-  AddToAccountTracker("gaia_id", user);
-  // Currently signing in is prohibited by policy, so should be signed out.
-  EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
-  EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
-}
-
 TEST_F(SigninManagerTest, UpgradeToNewPrefs) {
   user_prefs_.SetString(prefs::kGoogleServicesUsername, "user@gmail.com");
   user_prefs_.SetString(prefs::kGoogleServicesUserAccountId, "account_id");

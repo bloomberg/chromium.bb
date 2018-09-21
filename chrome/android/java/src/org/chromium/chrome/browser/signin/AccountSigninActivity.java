@@ -15,7 +15,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
-import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
@@ -60,9 +59,6 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
      */
     public static boolean startIfAllowed(Context context, @AccessPoint int accessPoint) {
         if (!SigninManager.get().isSignInAllowed()) {
-            if (SigninManager.get().isSigninDisabledByPolicy()) {
-                ManagedPreferencesUtils.showManagedByAdministratorToast(context);
-            }
             return false;
         }
 

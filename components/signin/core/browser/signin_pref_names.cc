@@ -89,9 +89,6 @@ const char kReverseAutologinRejectedEmailList[] =
 // to the browser.
 const char kSignedInTime[] = "signin.signedin_time";
 
-// Boolean which stores if the user is allowed to signin to chrome.
-const char kSigninAllowed[] = "signin.allowed";
-
 // True if the token service has been prepared for Dice migration.
 const char kTokenServiceDiceCompatible[] = "token_service.dice_compatible";
 

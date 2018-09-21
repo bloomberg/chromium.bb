@@ -33,7 +33,6 @@
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -162,8 +161,6 @@ class SigninManager : public SigninManagerBase,
   // Returns true if there's a signin in progress.
   bool AuthInProgress() const override;
 
-  bool IsSigninAllowed() const override;
-
   // Returns true if the passed username is allowed by policy. Virtual for
   // mocking in tests.
   virtual bool IsAllowedUsername(const std::string& username) const;
@@ -267,7 +264,6 @@ class SigninManager : public SigninManagerBase,
                     signin_metrics::SignoutDelete signout_delete_metric,
                     RemoveAccountsOption remove_option);
 
-  void OnSigninAllowedPrefChanged();
   void OnGoogleServicesUsernamePatternChanged();
 
   std::string possibly_invalid_account_id_;
@@ -298,9 +294,6 @@ class SigninManager : public SigninManagerBase,
   // Helper object to listen for changes to signin preferences stored in non-
   // profile-specific local prefs (like kGoogleServicesUsernamePattern).
   PrefChangeRegistrar local_state_pref_registrar_;
-
-  // Helper object to listen for changes to the signin allowed preference.
-  BooleanPrefMember signin_allowed_;
 
   signin::AccountConsistencyMethod account_consistency_;
 

@@ -60,9 +60,6 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
         supervised_users::kSafeSitesEnabled, prefs::kSupervisedUserSafeSites,
     },
     {
-        supervised_users::kSigninAllowed, prefs::kSigninAllowed,
-    },
-    {
         supervised_users::kUserName, prefs::kProfileName,
     },
 };
@@ -130,7 +127,6 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     prefs_->SetInteger(prefs::kForceYouTubeRestrict,
                        safe_search_util::YOUTUBE_RESTRICT_MODERATE);
     prefs_->SetBoolean(prefs::kHideWebStoreIcon, true);
-    prefs_->SetBoolean(prefs::kSigninAllowed, false);
     prefs_->SetBoolean(ntp_snippets::prefs::kEnableSnippets, false);
 
     // Copy supervised user settings to prefs.

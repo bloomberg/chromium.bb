@@ -51,16 +51,10 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
             "Users can disable this feature by signing out of Chrome, or "
             "disabling Sync or History Sync in Chrome settings under 'Advanced "
             "sync settings...'. The feature is enabled by default."
-        chrome_policy {
-          SyncDisabled {
-            policy_options {mode: MANDATORY}
-            SyncDisabled: true
-          }
-        }
-        chrome_policy {
-          SigninAllowed {
-            policy_options {mode: MANDATORY}
-            SigninAllowed: false
+          chrome_policy {
+            SyncDisabled {
+              policy_options {mode: MANDATORY}
+              SyncDisabled: true
           }
         }
       })");

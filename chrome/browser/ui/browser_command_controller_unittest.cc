@@ -470,7 +470,7 @@ TEST_F(BrowserCommandControllerTest, OptionsConsistency) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
 }
 
-TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {
+TEST_F(BrowserCommandControllerTest, IncognitoModeShowSyncSetupCommand) {
   // Set up a profile with an off the record profile.
   std::unique_ptr<TestingProfile> profile1 = TestingProfile::Builder().Build();
   Profile* profile2 = profile1->GetOffTheRecordProfile();
@@ -486,18 +486,6 @@ TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {
   chrome::BrowserCommandController command_controller(browser2.get());
   const CommandUpdater* command_updater = &command_controller;
 
-  // Check that the SYNC_SETUP command is updated on preference change.
+  // Check that the IDC_SHOW_SYNC_SETUP command is enabled in incognito.
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
-  profile1->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
-}
-
-TEST_F(BrowserCommandControllerTest, OnSigninAllowedPrefChange) {
-  chrome::BrowserCommandController command_controller(browser());
-  const CommandUpdater* command_updater = &command_controller;
-
-  // Check that the SYNC_SETUP command is updated on preference change.
-  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
-  profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
 }

@@ -128,14 +128,6 @@ class SigninManagerBase : public KeyedService {
   virtual void Initialize(PrefService* local_state);
   bool IsInitialized() const;
 
-  // Returns true if a signin to Chrome is allowed (by policy or pref).
-  // TODO(tim): kSigninAllowed is defined for all platforms in pref_names.h.
-  // If kSigninAllowed pref was non-Chrome OS-only, this method wouldn't be
-  // needed, but as is we provide this method to let all interested code
-  // code query the value in one way, versus half using PrefService directly
-  // and the other half using SigninManager.
-  virtual bool IsSigninAllowed() const;
-
   // If a user has previously signed in (and has not signed out), this returns
   // the know information of the account. Otherwise, it returns an empty struct.
   AccountInfo GetAuthenticatedAccountInfo() const;

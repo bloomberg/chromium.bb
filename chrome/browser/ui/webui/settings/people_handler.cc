@@ -274,12 +274,6 @@ void PeopleHandler::RegisterMessages() {
 }
 
 void PeopleHandler::OnJavascriptAllowed() {
-  PrefService* prefs = profile_->GetPrefs();
-  profile_pref_registrar_.Init(prefs);
-  profile_pref_registrar_.Add(
-      prefs::kSigninAllowed,
-      base::Bind(&PeopleHandler::UpdateSyncStatus, base::Unretained(this)));
-
   SigninManagerBase* signin_manager(
       SigninManagerFactory::GetInstance()->GetForProfile(profile_));
   if (signin_manager)
@@ -301,7 +295,6 @@ void PeopleHandler::OnJavascriptAllowed() {
 }
 
 void PeopleHandler::OnJavascriptDisallowed() {
-  profile_pref_registrar_.RemoveAll();
   signin_observer_.RemoveAll();
   sync_service_observer_.RemoveAll();
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -921,7 +914,10 @@ PeopleHandler::GetSyncStatusDictionary() {
   bool disallowed_by_policy =
       service && service->HasDisableReason(
                      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
-  sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());
+  // TODO(https://crbug.com/870239): Sign-in is always allowed for all regular
+  // profiles. Remove |signinAllowed| from here and from all settings js code
+  // that is using this preference.
+  sync_status->SetBoolean("signinAllowed", true);
   sync_status->SetBoolean("syncSystemEnabled", (service != nullptr));
   sync_status->SetBoolean("setupInProgress",
                           service && !disallowed_by_policy &&

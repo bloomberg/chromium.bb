@@ -10,10 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_pref_names.h"
 
 ProfileInfoWatcher::ProfileInfoWatcher(
     Profile* profile, const base::Closure& callback)
@@ -25,9 +22,6 @@ ProfileInfoWatcher::ProfileInfoWatcher(
   // The profile_manager might be NULL in testing environments.
   if (profile_manager)
     profile_manager->GetProfileAttributesStorage().AddObserver(this);
-
-  signin_allowed_pref_.Init(prefs::kSigninAllowed, profile_->GetPrefs(),
-      base::Bind(&ProfileInfoWatcher::RunCallback, base::Unretained(this)));
 }
 
 ProfileInfoWatcher::~ProfileInfoWatcher() {

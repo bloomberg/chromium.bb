@@ -304,12 +304,8 @@ OAuth2MintTokenFlow::GetNetworkTrafficAnnotationTag() {
       policy {
         setting:
           "This feature cannot be disabled by settings, however the request is "
-          "made only for signed-in users."
-        chrome_policy {
-          SigninAllowed {
-            policy_options {mode: MANDATORY}
-            SigninAllowed: false
-          }
-        }
+          "made only for signed-in users.",
+        policy_exception_justification:
+          "Essential for Google account management"
       })");
 }
