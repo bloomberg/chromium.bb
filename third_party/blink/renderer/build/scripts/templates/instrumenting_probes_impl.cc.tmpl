@@ -6,10 +6,11 @@
 {{source_files_for_generated_file(template_file, input_files)}}
 
 {% set sink_class = (name | to_singular) + "Sink" %}
+{% set sink_class_header = (header | to_singular) + "_sink" %}
 {% for file in files %}
-#include "{{output_path_in_gen_dir}}{{file.name}}Inl.h"
+#include "{{output_path_in_gen_dir}}{{file.name}}_inl.h"
 {% endfor %}
-#include "{{output_path_in_gen_dir}}{{sink_class}}.h"
+#include "{{output_path_in_gen_dir}}{{sink_class_header}}.h"
 {% for agent in agents %}
 #include "{{agent | agent_name_to_include}}"
 {% endfor %}

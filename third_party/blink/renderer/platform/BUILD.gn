@@ -94,25 +94,25 @@ compiled_action("character_data") {
 action("instrumentation_probes") {
   script = "../build/scripts/make_instrumenting_probes.py"
 
-  input_file = "probe/PlatformProbes.pidl"
+  input_file = "probe/platform_probes.pidl"
   inputs = [
     input_file,
-    "probe/PlatformProbes.json5",
-    "../build/scripts/templates/InstrumentingProbesImpl.cpp.tmpl",
-    "../build/scripts/templates/InstrumentingProbesInl.h.tmpl",
-    "../build/scripts/templates/ProbeSink.h.tmpl",
+    "probe/platform_probes.json5",
+    "../build/scripts/templates/instrumenting_probes_impl.cc.tmpl",
+    "../build/scripts/templates/instrumenting_probes_inl.h.tmpl",
+    "../build/scripts/templates/probe_sink.h.tmpl",
   ]
 
   outputs = [
-    "$blink_platform_output_dir/PlatformProbeSink.h",
-    "$blink_platform_output_dir/PlatformProbesImpl.cpp",
-    "$blink_platform_output_dir/PlatformProbesInl.h",
+    "$blink_platform_output_dir/platform_probe_sink.h",
+    "$blink_platform_output_dir/platform_probes_impl.cc",
+    "$blink_platform_output_dir/platform_probes_inl.h",
   ]
 
   args = [
     rebase_path(inputs[0], root_build_dir),
     "--config",
-    rebase_path("probe/PlatformProbes.json5", root_build_dir),
+    rebase_path("probe/platform_probes.json5", root_build_dir),
     "--output_dir",
     rebase_path(blink_platform_output_dir, root_build_dir),
   ]

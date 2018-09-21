@@ -5,8 +5,8 @@
 {% from 'macros.tmpl' import source_files_for_generated_file %}
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#ifndef {{file.header_name}}_h
-#define {{file.header_name}}_h
+#ifndef {{file.header_name.upper()}}_H
+#define {{file.header_name.upper()}}_H
 
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -80,4 +80,4 @@ inline void {{probe.name}}({{params_list(probe)}}) {
 } // namespace probe
 } // namespace blink
 
-#endif // !defined({{file.header_name}}_h)
+#endif // !defined({{file.header_name.upper()}}_H)
