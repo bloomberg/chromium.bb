@@ -213,6 +213,9 @@
         "load_accessibility:media:wikipedia": {
             "DEFAULT": "system_health_desktop_059.wprgo"
         },
+        "load_accessibility:media:wikipedia:2018": {
+            "DEFAULT": "system_health_desktop_6903b36338.wprgo"
+        },
         "load_accessibility:shopping:amazon": {
             "DEFAULT": "system_health_desktop_059.wprgo"
         },
