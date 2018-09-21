@@ -6,10 +6,10 @@
 
 #include "ash/message_center/message_center_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/system/tray/tray_bubble_view.h"
 #include "base/macros.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -106,8 +106,7 @@ void MessageCenterBubble::SetMaxHeight(int height) {
     message_center_view_->SetMaxHeight(max_height_);
 }
 
-void MessageCenterBubble::InitializeContents(
-    views::TrayBubbleView* new_bubble_view) {
+void MessageCenterBubble::InitializeContents(TrayBubbleView* new_bubble_view) {
   bubble_view_ = new_bubble_view;
   bubble_view_->GetWidget()->AddObserver(this);
   message_center_view_ = new MessageCenterView(message_center_, max_height_);

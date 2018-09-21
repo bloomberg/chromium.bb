@@ -73,13 +73,13 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // TrayBackgroundView:
   void ClickedOutsideBubble() override;
   base::string16 GetAccessibleNameForTray() override;
-  void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
+  void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void AnchorUpdated() override;
   void Initialize() override;
   bool PerformAction(const ui::Event& event) override;
   void CloseBubble() override;
   void ShowBubble(bool show_by_click) override;
-  views::TrayBubbleView* GetBubbleView() override;
+  TrayBubbleView* GetBubbleView() override;
 
   // PaletteToolManager::Delegate:
   void HidePalette() override;
@@ -95,13 +95,13 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   void OnTouchscreenDeviceConfigurationChanged() override;
   void OnStylusStateChanged(ui::StylusState stylus_state) override;
 
-  // views::TrayBubbleView::Delegate:
+  // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
   void OnMouseEnteredView() override;
   void OnMouseExitedView() override;
   base::string16 GetAccessibleNameForBubble() override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
-  void HideBubble(const views::TrayBubbleView* bubble_view) override;
+  void HideBubble(const TrayBubbleView* bubble_view) override;
 
   // PaletteToolManager::Delegate:
   void OnActiveToolChanged() override;

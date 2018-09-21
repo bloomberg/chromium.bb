@@ -357,7 +357,7 @@ ImeMenuTray::~ImeMenuTray() {
 }
 
 void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
-  views::TrayBubbleView::InitParams init_params;
+  TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
   init_params.parent_window = GetBubbleWindowContainer();
   init_params.anchor_view = GetBubbleAnchor();
@@ -367,7 +367,7 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
   init_params.close_on_deactivate = true;
   init_params.show_by_click = show_by_click;
 
-  views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
+  TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
   bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
 
   // Add a title item with a separator on the top of the IME menu.
@@ -431,7 +431,7 @@ base::string16 ImeMenuTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_IME_MENU_ACCESSIBLE_NAME);
 }
 
-void ImeMenuTray::HideBubbleWithView(const views::TrayBubbleView* bubble_view) {
+void ImeMenuTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   if (bubble_->bubble_view() == bubble_view)
     CloseBubble();
 }
@@ -470,7 +470,7 @@ void ImeMenuTray::ShowBubble(bool show_by_click) {
   }
 }
 
-views::TrayBubbleView* ImeMenuTray::GetBubbleView() {
+TrayBubbleView* ImeMenuTray::GetBubbleView() {
   return bubble_ ? bubble_->bubble_view() : nullptr;
 }
 
@@ -507,7 +507,7 @@ bool ImeMenuTray::ShouldEnableExtraKeyboardAccessibility() {
   return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
 }
 
-void ImeMenuTray::HideBubble(const views::TrayBubbleView* bubble_view) {
+void ImeMenuTray::HideBubble(const TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 

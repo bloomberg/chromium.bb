@@ -20,6 +20,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/ash_popup_alignment_delegate.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
@@ -37,7 +38,6 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -77,7 +77,7 @@ class NotificationBubbleWrapper {
                             MessageCenterBubble* bubble,
                             bool show_by_click) {
     bubble_.reset(bubble);
-    views::TrayBubbleView::InitParams init_params;
+    TrayBubbleView::InitParams init_params;
     init_params.delegate = tray;
     init_params.parent_window = anchor_tray->GetBubbleWindowContainer();
     init_params.anchor_view = anchor_tray->GetBubbleAnchor();
@@ -90,7 +90,7 @@ class NotificationBubbleWrapper {
     init_params.max_height = bubble->max_height();
     init_params.show_by_click = show_by_click;
 
-    views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
+    TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
     bubble_view->set_color(SK_ColorTRANSPARENT);
     bubble_view->layer()->SetFillsBoundsOpaquely(false);
     bubble_view->set_anchor_view_insets(anchor_tray->GetBubbleAnchorInsets());
@@ -107,7 +107,7 @@ class NotificationBubbleWrapper {
   MessageCenterBubble* bubble() const { return bubble_.get(); }
 
   // Convenience accessors.
-  views::TrayBubbleView* bubble_view() const { return bubble_->bubble_view(); }
+  TrayBubbleView* bubble_view() const { return bubble_->bubble_view(); }
 
  private:
   std::unique_ptr<MessageCenterBubble> bubble_;
@@ -463,8 +463,7 @@ base::string16 NotificationTray::GetAccessibleNameForTray() {
                            ->NotificationCount()));
 }
 
-void NotificationTray::HideBubbleWithView(
-    const views::TrayBubbleView* bubble_view) {
+void NotificationTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   if (message_center_bubble() &&
       bubble_view == message_center_bubble()->bubble_view()) {
     message_center_ui_controller_->HideMessageCenterBubble();
@@ -490,7 +489,7 @@ bool NotificationTray::ShouldEnableExtraKeyboardAccessibility() {
   return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
 }
 
-void NotificationTray::HideBubble(const views::TrayBubbleView* bubble_view) {
+void NotificationTray::HideBubble(const TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
@@ -599,7 +598,7 @@ void NotificationTray::ShowBubble(bool show_by_click) {
 }
 
 void NotificationTray::ActivateBubble() {
-  views::TrayBubbleView* bubble_view = GetBubbleView();
+  TrayBubbleView* bubble_view = GetBubbleView();
   // If the bubble is in the process of closing, do not try to activate it.
   if (bubble_view->GetWidget()->IsClosed())
     return;
@@ -607,7 +606,7 @@ void NotificationTray::ActivateBubble() {
   bubble_view->GetWidget()->Activate();
 }
 
-views::TrayBubbleView* NotificationTray::GetBubbleView() {
+TrayBubbleView* NotificationTray::GetBubbleView() {
   return message_center_bubble_ ? message_center_bubble_->bubble_view()
                                 : nullptr;
 }

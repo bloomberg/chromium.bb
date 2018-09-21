@@ -270,7 +270,7 @@ base::string16 PaletteTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE);
 }
 
-void PaletteTray::HideBubbleWithView(const views::TrayBubbleView* bubble_view) {
+void PaletteTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   if (bubble_->bubble_view() == bubble_view)
     HidePalette();
 }
@@ -332,7 +332,7 @@ bool PaletteTray::ShouldEnableExtraKeyboardAccessibility() {
   return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
 }
 
-void PaletteTray::HideBubble(const views::TrayBubbleView* bubble_view) {
+void PaletteTray::HideBubble(const TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
@@ -464,7 +464,7 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   // accelerator.
   DeactivateActiveTool();
 
-  views::TrayBubbleView::InitParams init_params;
+  TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
   init_params.parent_window = GetBubbleWindowContainer();
   init_params.anchor_view = GetBubbleAnchor();
@@ -479,7 +479,7 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   // rows.
 
   // Create and customize bubble view.
-  views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
+  TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
   bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
   bubble_view->set_margins(
       gfx::Insets(kPalettePaddingOnTop, 0, kPalettePaddingOnBottom, 0));
@@ -510,7 +510,7 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   SetIsActive(true);
 }
 
-views::TrayBubbleView* PaletteTray::GetBubbleView() {
+TrayBubbleView* PaletteTray::GetBubbleView() {
   return bubble_ ? bubble_->bubble_view() : nullptr;
 }
 

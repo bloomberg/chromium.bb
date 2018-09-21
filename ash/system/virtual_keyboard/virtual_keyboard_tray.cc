@@ -60,7 +60,7 @@ base::string16 VirtualKeyboardTray::GetAccessibleNameForTray() {
 }
 
 void VirtualKeyboardTray::HideBubbleWithView(
-    const views::TrayBubbleView* bubble_view) {}
+    const TrayBubbleView* bubble_view) {}
 
 void VirtualKeyboardTray::ClickedOutsideBubble() {}
 

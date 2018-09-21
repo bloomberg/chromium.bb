@@ -74,7 +74,7 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
 
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
-  views::TrayBubbleView* GetBubbleView() const override;
+  TrayBubbleView* GetBubbleView() const override;
   views::Widget* GetBubbleWidget() const override;
 
   // ash::ScreenLayoutObserver:
@@ -132,7 +132,7 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   // Background blur layer that is used during animation.
   std::unique_ptr<ui::LayerOwner> blur_layer_;
 
-  views::TrayBubbleView* bubble_view_ = nullptr;
+  TrayBubbleView* bubble_view_ = nullptr;
   UnifiedSystemTrayView* unified_view_ = nullptr;
 
  private:

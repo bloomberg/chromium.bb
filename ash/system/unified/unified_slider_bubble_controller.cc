@@ -151,7 +151,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   slider_type_ = slider_type;
   CreateSliderController();
 
-  views::TrayBubbleView::InitParams init_params;
+  TrayBubbleView::InitParams init_params;
 
   init_params.anchor_alignment = tray_->GetAnchorAlignment();
   init_params.min_width = kTrayMenuWidth;
@@ -163,7 +163,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
 
-  bubble_view_ = new views::TrayBubbleView(init_params);
+  bubble_view_ = new TrayBubbleView(init_params);
   UnifiedSliderView* slider_view =
       static_cast<UnifiedSliderView*>(slider_controller_->CreateView());
   ConfigureSliderViewStyle(slider_view);

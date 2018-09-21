@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BUBBLE_TRAY_BUBBLE_VIEW_H_
-#define UI_VIEWS_BUBBLE_TRAY_BUBBLE_VIEW_H_
+#ifndef ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
+#define ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -14,7 +15,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/mouse_watcher.h"
-#include "ui/views/views_export.h"
 
 namespace aura {
 class Env;
@@ -28,16 +28,16 @@ namespace views {
 class BoxLayout;
 class View;
 class Widget;
-}
+}  // namespace views
 
-namespace views {
+namespace ash {
 
 // Specialized bubble view for bubbles associated with a tray icon (e.g. the
 // Ash status area). Mostly this handles custom anchor location and arrow and
 // border rendering. This also has its own delegate for handling mouse events
 // and other implementation specific details.
-class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
-                                    public MouseWatcherListener {
+class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
+                                  public views::MouseWatcherListener {
  public:
   // AnchorAlignment determines to which side of the anchor the bubble will
   // align itself.
@@ -47,7 +47,7 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
     ANCHOR_ALIGNMENT_RIGHT,
   };
 
-  class VIEWS_EXPORT Delegate {
+  class ASH_EXPORT Delegate {
    public:
     typedef TrayBubbleView::AnchorAlignment AnchorAlignment;
 
@@ -85,7 +85,7 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  struct VIEWS_EXPORT InitParams {
+  struct ASH_EXPORT InitParams {
     InitParams();
     InitParams(const InitParams& other);
     Delegate* delegate = nullptr;
@@ -150,10 +150,10 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
   base::string16 GetAccessibleWindowTitle() const override;
 
   // Overridden from views::BubbleDialogDelegateView.
-  void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
-                                Widget* bubble_widget) const override;
-  void OnWidgetClosing(Widget* widget) override;
-  void OnWidgetActivationChanged(Widget* widget, bool active) override;
+  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
+                                views::Widget* bubble_widget) const override;
+  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // Overridden from views::View.
   gfx::Size CalculatePreferredSize() const override;
@@ -210,12 +210,12 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
   void FocusDefaultIfNeeded();
 
   InitParams params_;
-  BoxLayout* layout_;
+  views::BoxLayout* layout_;
   Delegate* delegate_;
   int preferred_width_;
   // |bubble_border_| and |owned_bubble_border_| point to the same thing, but
   // the latter ensures we don't leak it before passing off ownership.
-  BubbleBorder* bubble_border_;
+  views::BubbleBorder* bubble_border_;
   std::unique_ptr<views::BubbleBorder> owned_bubble_border_;
   std::unique_ptr<ui::LayerOwner> bubble_content_mask_;
   bool is_gesture_dragging_;
@@ -225,7 +225,7 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
   bool mouse_actively_entered_;
 
   // Used to find any mouse movements.
-  std::unique_ptr<MouseWatcher> mouse_watcher_;
+  std::unique_ptr<views::MouseWatcher> mouse_watcher_;
 
   // Used to activate tray bubble view if user tries to interact the tray with
   // keyboard.
@@ -234,6 +234,6 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);
 };
 
-}  // namespace views
+}  // namespace ash
 
-#endif  // UI_VIEWS_BUBBLE_TRAY_BUBBLE_VIEW_H_
+#endif  // ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_

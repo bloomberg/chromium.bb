@@ -295,8 +295,7 @@ base::string16 UnifiedSystemTray::GetAccessibleNameForTray() {
                                     time, battery);
 }
 
-void UnifiedSystemTray::HideBubbleWithView(
-    const views::TrayBubbleView* bubble_view) {}
+void UnifiedSystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {}
 
 void UnifiedSystemTray::ClickedOutsideBubble() {
   CloseBubble();

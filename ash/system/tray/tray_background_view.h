@@ -10,11 +10,11 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/system/tray/actionable_view.h"
+#include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray_drag_controller.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {
 class Shelf;
@@ -29,7 +29,7 @@ class TrayEventFilter;
 class ASH_EXPORT TrayBackgroundView : public ActionableView,
                                       public ui::ImplicitAnimationObserver,
                                       public ShelfBackgroundAnimatorObserver,
-                                      public views::TrayBubbleView::Delegate {
+                                      public TrayBubbleView::Delegate {
  public:
   static const char kViewClassName[];
 
@@ -62,7 +62,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Returns the associated tray bubble view, if one exists. Otherwise returns
   // nullptr.
-  virtual views::TrayBubbleView* GetBubbleView();
+  virtual TrayBubbleView* GetBubbleView();
 
   // Closes the associated tray bubble view if it exists and is currently
   // showing.
@@ -86,18 +86,18 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   virtual base::string16 GetAccessibleNameForTray() = 0;
 
   // Called when the bubble is resized.
-  virtual void BubbleResized(const views::TrayBubbleView* bubble_view);
+  virtual void BubbleResized(const TrayBubbleView* bubble_view);
 
   // Hides the bubble associated with |bubble_view|. Called when the widget
   // is closed.
-  virtual void HideBubbleWithView(const views::TrayBubbleView* bubble_view) = 0;
+  virtual void HideBubbleWithView(const TrayBubbleView* bubble_view) = 0;
 
   // Called by the bubble wrapper when a click event occurs outside the bubble.
   // May close the bubble.
   virtual void ClickedOutsideBubble() = 0;
 
   // Returns the bubble anchor alignment based on |shelf_alignment_|.
-  views::TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
+  TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
 
   void SetIsActive(bool is_active);
   bool is_active() const { return is_active_; }
@@ -107,7 +107,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   Shelf* shelf() { return shelf_; }
 
   // Updates the arrow visibility based on the launcher visibility.
-  void UpdateBubbleViewArrow(views::TrayBubbleView* bubble_view);
+  void UpdateBubbleViewArrow(TrayBubbleView* bubble_view);
 
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfItemBackground(SkColor color) override;

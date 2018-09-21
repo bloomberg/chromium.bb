@@ -68,7 +68,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   if (show_by_click)
     time_shown_by_click_ = base::TimeTicks::Now();
 
-  views::TrayBubbleView::InitParams init_params;
+  TrayBubbleView::InitParams init_params;
   init_params.anchor_alignment = tray_->GetAnchorAlignment();
   init_params.min_width = kTrayMenuWidth;
   init_params.max_width = kTrayMenuWidth;
@@ -81,7 +81,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   init_params.show_by_click = show_by_click;
   init_params.close_on_deactivate = false;
 
-  bubble_view_ = new views::TrayBubbleView(init_params);
+  bubble_view_ = new TrayBubbleView(init_params);
 
   unified_view_ = controller_->CreateView();
   time_to_click_recorder_ =
@@ -223,7 +223,7 @@ TrayBackgroundView* UnifiedSystemTrayBubble::GetTray() const {
   return tray_;
 }
 
-views::TrayBubbleView* UnifiedSystemTrayBubble::GetBubbleView() const {
+TrayBubbleView* UnifiedSystemTrayBubble::GetBubbleView() const {
   return bubble_view_;
 }
 
