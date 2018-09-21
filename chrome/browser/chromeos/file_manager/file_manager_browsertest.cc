@@ -607,6 +607,18 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("launcherOpenSearchResult")));
 
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    Recents, /* recents.js */
+    FilesAppBrowserTest,
+    ::testing::Values(
+        TestCase("recentsDownloads"),
+        TestCase("recentsDrive"),
+        TestCase("recentsDrive").EnableDriveFs(),
+        TestCase("recentsDownloadsAndDrive"),
+        TestCase("recentsDownloadsAndDrive").EnableDriveFs(),
+        TestCase("recentsDownloadsAndDriveWithOverlap"),
+        TestCase("recentsDownloadsAndDriveWithOverlap").EnableDriveFs()));
+
 // Structure to describe an account info.
 struct TestAccountInfo {
   const char* const gaia_id;

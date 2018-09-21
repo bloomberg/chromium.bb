@@ -36,6 +36,7 @@
       "file_manager/open_video_files.js",
       "file_manager/providers.js",
       "file_manager/quick_view.js",
+      "file_manager/recents.js",
       "file_manager/restore_geometry.js",
       "file_manager/restore_prefs.js",
       "file_manager/share_and_manage_dialog.js",

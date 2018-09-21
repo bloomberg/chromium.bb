@@ -97,7 +97,6 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
         query_(base::ToLowerASCII(
             params.title.value_or(params.text_content.value_or("")))),
         weak_ptr_factory_(this) {
-    CHECK(!query_.empty());
   }
 
  private:
@@ -122,11 +121,19 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
     std::vector<drivefs::mojom::QueryItemPtr> results;
     base::FileEnumerator walker(mount_path, true, base::FileEnumerator::FILES);
     for (auto file = walker.Next(); !file.empty(); file = walker.Next()) {
-      if (base::ToLowerASCII(file.BaseName().value()).find(query) !=
-          std::string::npos) {
+      if (query.empty() ||
+          base::ToLowerASCII(file.BaseName().value()).find(query) !=
+              std::string::npos) {
         auto item = drivefs::mojom::QueryItem::New();
         item->path = base::FilePath("/");
         CHECK(mount_path.AppendRelativePath(file, &item->path));
+        std::vector<std::string> components;
+        item->path.GetComponents(&components);
+        // During tests, metadata for the other drive sync implementation can
+        // end up in |mount_path| so filter it out.
+        if (components.size() < 2u || components[1] == "meta") {
+          continue;
+        }
         results.push_back(std::move(item));
       }
     }
@@ -243,6 +250,7 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
   auto metadata = drivefs::mojom::FileMetadata::New();
   metadata->size = info.size;
   metadata->modification_time = info.last_modified;
+  metadata->last_viewed_by_me_time = info.last_modified;
 
   const auto& stored_metadata = metadata_[path];
   metadata->pinned = stored_metadata.pinned;
