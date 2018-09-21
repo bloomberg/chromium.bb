@@ -39,22 +39,22 @@
 @implementation ManualFillPasswordCoordinator
 
 @synthesize allPasswordsViewController = _allPasswordsViewController;
+@synthesize manualFillInjectionHandler = _manualFillInjectionHandler;
 @synthesize passwordMediator = _passwordMediator;
 @synthesize passwordViewController = _passwordViewController;
-@synthesize manualFillInjectionHandler = _manualFillInjectionHandler;
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList {
+- (instancetype)
+initWithBaseViewController:(UIViewController*)viewController
+              browserState:(ios::ChromeBrowserState*)browserState
+              webStateList:(WebStateList*)webStateList
+          injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
   self = [super initWithBaseViewController:viewController
                               browserState:browserState];
   if (self) {
     _passwordViewController =
         [[PasswordViewController alloc] initWithSearchController:nil];
 
-    _manualFillInjectionHandler =
-        [[ManualFillInjectionHandler alloc] initWithWebStateList:webStateList];
+    _manualFillInjectionHandler = injectionHandler;
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState, ServiceAccessType::EXPLICIT_ACCESS);
