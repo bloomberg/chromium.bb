@@ -125,9 +125,10 @@ class AutofillWalletMetadataSyncableService
   // Sends the autofill data model updates to the sync server if the local
   // version is more recent. Used for both profiles and credit cards.
   template <class DataType>
-  void AutofillDataModelChanged(
+  void AutofillDataModelUpdated(
       const std::string& server_id,
       const sync_pb::WalletMetadataSpecifics::Type& type,
+      const sync_pb::WalletMetadataSpecifics& remote,
       const DataType& local);
 
   base::ThreadChecker thread_checker_;

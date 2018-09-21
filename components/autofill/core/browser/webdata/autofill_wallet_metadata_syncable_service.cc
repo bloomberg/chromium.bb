@@ -467,9 +467,17 @@ void AutofillWalletMetadataSyncableService::AutofillProfileChanged(
 
   if (sync_processor_ && change.data_model() &&
       change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {
-    AutofillDataModelChanged(GetServerId(*change.data_model()),
-                             sync_pb::WalletMetadataSpecifics::ADDRESS,
-                             *change.data_model());
+    std::string server_id = GetServerId(*change.data_model());
+    auto it = FindServerIdAndTypeInCache(
+        server_id, sync_pb::WalletMetadataSpecifics::ADDRESS, &cache_);
+    if (it == cache_.end())
+      return;
+    // Implicitly, we filter out ADD (not in cache) and REMOVE (!data_model()).
+    DCHECK(change.type() == AutofillProfileChange::UPDATE);
+
+    AutofillDataModelUpdated(
+        server_id, sync_pb::WalletMetadataSpecifics::ADDRESS,
+        it->GetSpecifics().wallet_metadata(), *change.data_model());
   }
 }
 
@@ -479,8 +487,16 @@ void AutofillWalletMetadataSyncableService::CreditCardChanged(
 
   if (sync_processor_ && change.data_model() &&
       change.data_model()->record_type() != CreditCard::LOCAL_CARD) {
-    AutofillDataModelChanged(GetServerId(*change.data_model()),
-                             sync_pb::WalletMetadataSpecifics::CARD,
+    std::string server_id = GetServerId(*change.data_model());
+    auto it = FindServerIdAndTypeInCache(
+        server_id, sync_pb::WalletMetadataSpecifics::CARD, &cache_);
+    if (it == cache_.end())
+      return;
+    // Implicitly, we filter out ADD (not in cache) and REMOVE (!data_model()).
+    DCHECK(change.type() == AutofillProfileChange::UPDATE);
+
+    AutofillDataModelUpdated(server_id, sync_pb::WalletMetadataSpecifics::CARD,
+                             it->GetSpecifics().wallet_metadata(),
                              *change.data_model());
   }
 }
@@ -635,17 +651,11 @@ syncer::SyncMergeResult AutofillWalletMetadataSyncableService::MergeData(
 }
 
 template <class DataType>
-void AutofillWalletMetadataSyncableService::AutofillDataModelChanged(
+void AutofillWalletMetadataSyncableService::AutofillDataModelUpdated(
     const std::string& server_id,
     const sync_pb::WalletMetadataSpecifics::Type& type,
+    const sync_pb::WalletMetadataSpecifics& remote,
     const DataType& local) {
-  auto it = FindServerIdAndTypeInCache(server_id, type, &cache_);
-  if (it == cache_.end())
-    return;
-
-  const sync_pb::WalletMetadataSpecifics& remote =
-      it->GetSpecifics().wallet_metadata();
-
   if (base::checked_cast<size_t>(remote.use_count()) < local.use_count() &&
       base::Time::FromInternalValue(remote.use_date()) < local.use_date()) {
     SendChangesToSyncServer(syncer::SyncChangeList(

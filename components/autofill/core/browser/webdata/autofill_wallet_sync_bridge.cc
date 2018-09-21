@@ -291,7 +291,7 @@ bool AutofillWalletSyncBridge::SetWalletCards(
   // only do the writes if something changed.
   std::vector<std::unique_ptr<CreditCard>> existing_cards;
   table->GetServerCreditCards(&existing_cards);
-  AutofillWalletDiff diff =
+  AutofillWalletDiff<CreditCard> diff =
       ComputeAutofillWalletDiff(existing_cards, wallet_cards);
 
   // Record only local changes that correspond to changes in the payments
@@ -305,6 +305,8 @@ bool AutofillWalletSyncBridge::SetWalletCards(
 
   if (!diff.IsEmpty()) {
     table->SetServerCreditCards(wallet_cards);
+    for (const CreditCardChange& change : diff.changes)
+      web_data_backend_->NotifyOfCreditCardChanged(change);
     return true;
   }
   return false;
@@ -319,7 +321,7 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
   AutofillTable* table = GetAutofillTable();
   std::vector<std::unique_ptr<AutofillProfile>> existing_addresses;
   table->GetServerProfiles(&existing_addresses);
-  AutofillWalletDiff diff =
+  AutofillWalletDiff<AutofillProfile> diff =
       ComputeAutofillWalletDiff(existing_addresses, wallet_addresses);
 
   // Record only local changes that correspond to changes in the payments
@@ -334,6 +336,8 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
 
   if (!diff.IsEmpty()) {
     table->SetServerProfiles(wallet_addresses);
+    for (const AutofillProfileChange& change : diff.changes)
+      web_data_backend_->NotifyOfAutofillProfileChanged(change);
     return true;
   }
   return false;
@@ -373,9 +377,8 @@ bool AutofillWalletSyncBridge::SetPaymentsCustormerData(
   return false;
 }
 
-// static
 template <class Item>
-AutofillWalletSyncBridge::AutofillWalletDiff
+AutofillWalletSyncBridge::AutofillWalletDiff<Item>
 AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
     const std::vector<std::unique_ptr<Item>>& old_data,
     const std::vector<Item>& new_data) {
@@ -397,27 +400,34 @@ AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
   std::sort(new_ptrs.begin(), new_ptrs.end(), compare);
 
   // Walk over both of them and count added/removed elements.
-  AutofillWalletDiff result;
+  AutofillWalletDiff<Item> result;
   auto old_it = old_ptrs.begin();
   auto new_it = new_ptrs.begin();
-  while (old_it != old_ptrs.end()) {
-    if (new_it == new_ptrs.end()) {
-      result.items_removed += std::distance(old_it, old_ptrs.end());
-      break;
+  while (old_it != old_ptrs.end() || new_it != new_ptrs.end()) {
+    int cmp;
+    if (old_it != old_ptrs.end() && new_it != new_ptrs.end()) {
+      cmp = (*old_it)->Compare(**new_it);
+    } else if (new_it == new_ptrs.end()) {
+      cmp = -1;  // At the end of new items, *old_it needs to get removed.
+    } else {
+      cmp = 1;  // At the end of old items, *new_it needs to get added.
     }
-    int cmp = (*old_it)->Compare(**new_it);
+
     if (cmp < 0) {
       ++result.items_removed;
+      result.changes.emplace_back(AutofillDataModelChange<Item>::REMOVE,
+                                  (*old_it)->guid(), nullptr);
       ++old_it;
     } else if (cmp == 0) {
       ++old_it;
       ++new_it;
     } else {
       ++result.items_added;
+      result.changes.emplace_back(AutofillDataModelChange<Item>::ADD,
+                                  (*new_it)->guid(), *new_it);
       ++new_it;
     }
   }
-  result.items_added += std::distance(new_it, new_ptrs.end());
 
   DCHECK_EQ(old_data.size() + result.items_added - result.items_removed,
             new_data.size());

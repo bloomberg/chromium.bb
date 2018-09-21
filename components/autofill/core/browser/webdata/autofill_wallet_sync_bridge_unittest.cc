@@ -44,6 +44,8 @@
 namespace autofill {
 namespace {
 
+using autofill::AutofillProfileChange;
+using autofill::CreditCardChange;
 using base::ScopedTempDir;
 using sync_pb::AutofillWalletSpecifics;
 using sync_pb::EntityMetadata;
@@ -56,7 +58,9 @@ using syncer::HasInitialSyncDone;
 using syncer::KeyAndData;
 using syncer::MockModelTypeChangeProcessor;
 using syncer::ModelType;
+using testing::_;
 using testing::NiceMock;
+using testing::Pointee;
 using testing::Return;
 using testing::SizeIs;
 using testing::UnorderedElementsAre;
@@ -150,6 +154,34 @@ MATCHER_P(EqualsSpecifics, expected, "") {
                      << "did not match expected\n"
                      << AutofillWalletSpecificsAsDebugString(expected);
     return false;
+  }
+  return true;
+}
+
+MATCHER_P(RemoveChange, key, "") {
+  if (arg.type() != GenericAutofillChange<std::string>::REMOVE) {
+    *result_listener << "type " << arg.type() << " is not REMOVE";
+    return false;
+  }
+  if (arg.key() != key) {
+    *result_listener << "key " << arg.key() << " does not match expected "
+                     << key;
+  }
+  return true;
+}
+
+MATCHER_P2(AddChange, key, data, "") {
+  if (arg.type() != GenericAutofillChange<std::string>::ADD) {
+    *result_listener << "type " << arg.type() << " is not ADD";
+    return false;
+  }
+  if (arg.key() != key) {
+    *result_listener << "key " << arg.key() << " does not match expected "
+                     << key;
+  }
+  if (*arg.data_model() != data) {
+    *result_listener << "data " << *arg.data_model()
+                     << " does not match expected " << data;
   }
   return true;
 }
@@ -411,6 +443,14 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
                                                      &customer_data_specifics);
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(
+                              AddChange(address2.guid(), address2)));
+  EXPECT_CALL(*backend(),
+              NotifyOfAutofillProfileChanged(RemoveChange(address1.guid())));
+  EXPECT_CALL(*backend(),
+              NotifyOfCreditCardChanged(AddChange(card2.guid(), card2)));
+  EXPECT_CALL(*backend(),
+              NotifyOfCreditCardChanged(RemoveChange(card1.guid())));
   StartSyncing({profile_specifics2, card_specifics2, customer_data_specifics});
 
   // Only the server card should be present on the client.
@@ -452,8 +492,8 @@ TEST_F(AutofillWalletSyncBridgeTest,
   ExpectNoHistogramsForCardsDiff();
 }
 
-// Test that all field values for a card sent form the server are copied on the
-// card on the client.
+// Tests that when a new payments customer data is sent by the server, the
+// client only keeps the new data.
 TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NewPaymentsCustomerData) {
   // Create one profile, one card and one customer data entry on the client.
   AutofillProfile address = test::GetServerProfile();
@@ -474,6 +514,8 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NewPaymentsCustomerData) {
                                                      &customer_data_specifics2);
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(_)).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfCreditCardChanged(_)).Times(0);
   StartSyncing({profile_specifics, card_specifics, customer_data_specifics2});
 
   // Only the server card should be present on the client.
@@ -495,6 +537,10 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NoWalletAddressOrCard) {
   table()->SetServerCreditCards({local_card});
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(
+                              RemoveChange(local_profile.guid())));
+  EXPECT_CALL(*backend(),
+              NotifyOfCreditCardChanged(RemoveChange(local_card.guid())));
   StartSyncing({});
 
   EXPECT_TRUE(GetAllLocalData().empty());
@@ -524,6 +570,8 @@ TEST_F(AutofillWalletSyncBridgeTest,
                                                      &customer_data_specifics);
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(_)).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfCreditCardChanged(_)).Times(0);
   StartSyncing({profile_specifics, card_specifics, customer_data_specifics});
 
   EXPECT_THAT(GetAllLocalData(),
@@ -535,7 +583,7 @@ TEST_F(AutofillWalletSyncBridgeTest,
 }
 
 // Tests that when there are multiple changes happening at the same time, the
-// data from the server is what the client ends up with,
+// data from the server is what the client ends up with.
 TEST_F(AutofillWalletSyncBridgeTest,
        MergeSyncData_AddRemoveAndPreserveWalletAddressAndCard) {
   // Create two profile and one card on the client.
@@ -554,6 +602,11 @@ TEST_F(AutofillWalletSyncBridgeTest,
   SetAutofillWalletSpecificsFromServerCard(card2, &card2_specifics);
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  EXPECT_CALL(*backend(),
+              NotifyOfAutofillProfileChanged(RemoveChange(profile2.guid())));
+  EXPECT_CALL(*backend(), NotifyOfCreditCardChanged(RemoveChange(card.guid())));
+  EXPECT_CALL(*backend(),
+              NotifyOfCreditCardChanged(AddChange(card2.guid(), card2)));
   StartSyncing({profile_specifics, card2_specifics});
 
   // Make sure that the client only has the data from the server.
@@ -572,7 +625,6 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletAddressData) {
   AutofillWalletSpecifics profile_specifics;
   SetAutofillWalletSpecificsFromServerProfile(profile, &profile_specifics);
 
-  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
   StartSyncing({profile_specifics});
 
   EXPECT_THAT(GetAllLocalData(),
@@ -629,7 +681,6 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   AutofillWalletSpecifics card_specifics;
   SetAutofillWalletSpecificsFromServerCard(card, &card_specifics);
 
-  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
   StartSyncing({card_specifics});
 
   EXPECT_THAT(GetAllLocalData(),
@@ -678,6 +729,10 @@ TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
   table()->SetServerCreditCards({local_card});
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(
+                              RemoveChange(local_profile.guid())));
+  EXPECT_CALL(*backend(),
+              NotifyOfCreditCardChanged(RemoveChange(local_card.guid())));
   // Passing in a non-null metadata change list indicates to the bridge that
   // sync is stopping because it was disabled.
   bridge()->ApplyStopSyncChanges(
@@ -694,6 +749,10 @@ TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_KeepData) {
   table()->SetServerProfiles({local_profile});
   CreditCard local_card = test::GetMaskedServerCard();
   table()->SetServerCreditCards({local_card});
+
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(_)).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfCreditCardChanged(_)).Times(0);
 
   // Passing in a non-null metadata change list indicates to the bridge that
   // sync is stopping but the data type is not disabled.
@@ -721,6 +780,8 @@ TEST_F(AutofillWalletEphemeralSyncBridgeTest, MergeSyncData_NoWalletCard) {
   table()->SetServerCreditCards({local_card});
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  EXPECT_CALL(*backend(),
+              NotifyOfCreditCardChanged(RemoveChange(local_card.guid())));
   StartSyncing({});
 
   EXPECT_TRUE(GetAllLocalData().empty());
@@ -739,6 +800,7 @@ TEST_F(AutofillWalletEphemeralSyncBridgeTest, MergeSyncData_SameWalletCard) {
   SetAutofillWalletSpecificsFromServerCard(card, &card_specifics);
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfCreditCardChanged(_)).Times(0);
   StartSyncing({card_specifics});
 
   EXPECT_THAT(GetAllLocalData(),
@@ -764,6 +826,10 @@ TEST_F(AutofillWalletEphemeralSyncBridgeTest, MergeSyncData_NewWalletCard) {
                                                      &customer_data_specifics);
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  EXPECT_CALL(*backend(),
+              NotifyOfCreditCardChanged(RemoveChange(card1.guid())));
+  EXPECT_CALL(*backend(),
+              NotifyOfCreditCardChanged(AddChange(card2.guid(), card2)));
   StartSyncing({card_specifics2, customer_data_specifics});
 
   // Only the server card should be present on the client.
@@ -794,7 +860,7 @@ TEST_F(AutofillWalletEphemeralSyncBridgeTest,
   SetAutofillWalletSpecificsFromPaymentsCustomerData(customer_data,
                                                      &customer_data_specifics);
 
-  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(_)).Times(0);
   StartSyncing({profile_specifics, card_specifics2, customer_data_specifics});
 
   // Only the server card should be present on the client; the server profile is
