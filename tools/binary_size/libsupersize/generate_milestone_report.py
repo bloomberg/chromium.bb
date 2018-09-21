@@ -3,23 +3,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generate report files to compare milestones.
+"""Generate report files to view and/or compare (diff) milestones.
 
 Size files are located in a Google Cloud Storage bucket for various Chrome
-versions. This script generates various HTML report files that compare two
-milestones with the same CPU and APK.
+versions. This script generates various HTML report files to view a single
+milesone, or to compare two milestones with the same CPU and APK.
 
-Desired CPUs, APKs, and milestone versions are set in constants below.
-The script check what HTML report files have already been uploaded to the GCS
-bucket, then works on generating the remaining desired files.
+Desired CPUs, APKs, and milestone versions are set in constants below. If
+specified by the --skip-existing flag, the script checks what HTML report files
+have already been uploaded to the GCS bucket, then works on generating the
+remaining desired files.
 
-Size files are fetched by streaming them from the source bucket,
-then the html_report module handles creating a report file to diff two size
-files. Reports are saved to a local directory, and once all reports are
-created they can be uploaded to the destination bucket.
+Size files are fetched by streaming them from the source bucket, then the
+html_report module handles creating a report file to diff two size files.
+Reports are saved to a local directory, and once all reports are created they
+can be uploaded to the destination bucket.
 
-Reports can be uploaded automatically with the --sync flag. Otherwise, they
-can be uploaded at a later point.
+Reports can be uploaded automatically with the --sync flag. Otherwise, they can
+be uploaded at a later point.
 """
 
 import argparse
@@ -39,7 +40,8 @@ import html_report
 
 
 PUSH_URL = 'gs://chrome-supersize/milestones/'
-REPORT_URL_TEMPLATE = '{cpu}/{apk}/report_{version1}_{version2}.ndjson'
+REPORT_URL_TEMPLATE_VIEW = '{cpu}/{apk}/report_{version2}.ndjson'
+REPORT_URL_TEMPLATE_COMP = '{cpu}/{apk}/report_{version1}_{version2}.ndjson'
 
 DESIRED_CPUS = ['arm', 'arm_64']
 # TODO: Add AndroidWebview.apk
@@ -63,7 +65,13 @@ DESIRED_VERSION = [
 
 class Report(collections.namedtuple(
   'Report', ['cpu', 'apk', 'version1', 'version2'])):
-  PUSH_URL_REGEX = re.compile((PUSH_URL + REPORT_URL_TEMPLATE).format(
+  PUSH_URL_REGEX_VIEW = re.compile((PUSH_URL + REPORT_URL_TEMPLATE_VIEW).format(
+    cpu=r'(?P<cpu>[\w.]+)',
+    apk=r'(?P<apk>[\w.]+)',
+    version2=r'(?P<version2>[\w.]+)'
+  ))
+
+  PUSH_URL_REGEX_COMP = re.compile((PUSH_URL + REPORT_URL_TEMPLATE_COMP).format(
     cpu=r'(?P<cpu>[\w.]+)',
     apk=r'(?P<apk>[\w.]+)',
     version1=r'(?P<version1>[\w.]+)',
@@ -72,7 +80,8 @@ class Report(collections.namedtuple(
 
   @classmethod
   def FromUrl(cls, url):
-    match = cls.PUSH_URL_REGEX.match(url)
+    # Perform this match first since it's more restrictive.
+    match = cls.PUSH_URL_REGEX_COMP.match(url)
     if match:
       return cls(
         match.group('cpu'),
@@ -80,8 +89,15 @@ class Report(collections.namedtuple(
         match.group('version1'),
         match.group('version2'),
       )
-    else:
-      return None
+    match = cls.PUSH_URL_REGEX_VIEW.match(url)
+    if match:
+      return cls(
+        match.group('cpu'),
+        match.group('apk'),
+        None,
+        match.group('version2'),
+      )
+    return None
 
 
 def _FetchExistingMilestoneReports():
@@ -94,14 +110,18 @@ def _FetchExistingMilestoneReports():
 
 
 def _FetchSizeFile(path):
+  if path is None:
+    return None
   return cStringIO.StringIO(subprocess.check_output(['gsutil.py', 'cat', path]))
 
 
 def _PossibleReportFiles():
   cpu_and_apk_combos = list(itertools.product(DESIRED_CPUS, DESIRED_APKS))
-  for i, version1 in enumerate(DESIRED_VERSION):
-    for version2 in DESIRED_VERSION[i + 1:]:
-      for cpu, apk in cpu_and_apk_combos:
+  for cpu, apk in cpu_and_apk_combos:
+    for version2 in DESIRED_VERSION:
+      yield Report(cpu, apk, None, version2)
+    for i, version1 in enumerate(DESIRED_VERSION):
+      for version2 in DESIRED_VERSION[i + 1:]:
         yield Report(cpu, apk, version1, version2)
 
 
@@ -118,16 +138,20 @@ def _SetPushedReports(directory):
     json.dump(pushed_reports_obj, out_file)
     out_file.write('\n')
 
+
 def _GetReportPaths(directory, template, report):
   report_dict = report._asdict()
-  before_size_path = template.format(version=report.version1,
-                                                 **report_dict)
-  after_size_path = template.format(version=report.version2,
-                                              **report_dict)
-
-  out_rel = os.path.join(directory, REPORT_URL_TEMPLATE.format(**report_dict))
+  after_size_path = template.format(version=report.version2, **report_dict)
+  if report.version1 is None:
+    before_size_path = None
+    out_rel = os.path.join(directory,
+                           REPORT_URL_TEMPLATE_VIEW.format(**report_dict))
+  else:
+    before_size_path = template.format(version=report.version1,
+                                                   **report_dict)
+    out_rel = os.path.join(directory,
+                           REPORT_URL_TEMPLATE_COMP.format(**report_dict))
   out_abs = os.path.abspath(out_rel)
-
   return (before_size_path, after_size_path, out_abs)
 
 
@@ -139,8 +163,8 @@ def _BuildReport(paths):
     if e.errno != errno.EEXIST:
       raise
 
+  before_file = _FetchSizeFile(before_size_path)  # May be None.
   after_file = _FetchSizeFile(after_size_path)
-  before_file = _FetchSizeFile(before_size_path)
   with codecs.open(outpath, 'w', encoding='ascii') as out_file:
     html_report.BuildReport(
       out_file,
@@ -148,8 +172,9 @@ def _BuildReport(paths):
       before_size_file=(before_size_path, before_file),
       all_symbols=True,
     )
+  if before_file is not None:
+    before_file.close()
   after_file.close()
-  before_file.close()
   return outpath
 
 
@@ -173,10 +198,8 @@ def _BuildReports(directory, bucket, skip_existing):
     stale_reports = existing_reports - desired_reports
     logging.info('Number of desired reports: %d' % len(desired_reports))
     logging.info('Number of existing reports: %d' % len(existing_reports))
-
     if stale_reports:
       logging.warning('Number of stale reports: %d' % len(stale_reports))
-
     if skip_existing:
       logging.info('Generate %d missing reports:' % len(missing_reports))
       return sorted(missing_reports)
