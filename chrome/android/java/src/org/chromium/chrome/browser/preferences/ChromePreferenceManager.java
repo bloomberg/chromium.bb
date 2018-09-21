@@ -145,6 +145,11 @@ public class ChromePreferenceManager {
      */
     public static final String NTP_BUTTON_ENABLED_KEY = "ntp_button_enabled";
 
+    /**
+     * Deprecated in M71. This value may still exist in the shared preferences file. Do not reuse.
+     * TODO(twellington): Remove preference from the file in a future pref cleanup effort.
+     */
+    @Deprecated
     private static final String NTP_BUTTON_VARIANT_KEY = "ntp_button_variant";
 
     /**
@@ -418,23 +423,6 @@ public class ChromePreferenceManager {
      */
     public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
         removeKey(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
-    }
-
-    /**
-     * Set the new tab page button variant.
-     * @param variant The new tab page button variant.
-     */
-    public void setNewTabPageButtonVariant(String variant) {
-        writeString(NTP_BUTTON_VARIANT_KEY, variant);
-    }
-
-    /**
-     * Get the variant of the new tab page button.
-     * @return The stored variant of the new tab page button or the empty string if nothing is
-     *         stored.
-     */
-    public String getNewTabPageButtonVariant() {
-        return mSharedPreferences.getString(NTP_BUTTON_VARIANT_KEY, "");
     }
 
     /**
