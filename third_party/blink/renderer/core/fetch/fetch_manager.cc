@@ -627,8 +627,7 @@ void FetchManager::Loader::DidFail(const ResourceError& error) {
 }
 
 void FetchManager::Loader::DidFailRedirectCheck() {
-  Failed("Fetch API cannot load " + fetch_request_data_->Url().GetString() +
-         ". Redirect failed.");
+  Failed(String());
 }
 
 Document* FetchManager::Loader::GetDocument() const {
