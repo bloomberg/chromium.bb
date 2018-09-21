@@ -280,10 +280,12 @@ public class ExternalNavigationHandler {
 
         // http://crbug/331571 : Do not override a navigation started from user typing.
         // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
+        // http://crbug/881740 : Relax stay in Chrome restriction for Custom Tabs.
         if (params.getRedirectHandler() != null) {
             TabRedirectHandler handler = params.getRedirectHandler();
-            if (handler.shouldStayInChrome(isExternalProtocol)
-                    || handler.shouldNotOverrideUrlLoading()) {
+            boolean shouldStayInChrome = handler.shouldStayInChrome(
+                    isExternalProtocol, mDelegate.isIntentForTrustedCallingApp(intent));
+            if (shouldStayInChrome || handler.shouldNotOverrideUrlLoading()) {
                 // http://crbug.com/659301: Handle redirects to Instant Apps out of Custom Tabs.
                 if (handler.isFromCustomTabIntent() && !isExternalProtocol && incomingIntentRedirect
                         && !handler.shouldNavigationTypeStayInChrome()

@@ -686,4 +686,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     private boolean hasValidTab() {
         return mTab != null && !mIsTabDestroyed;
     }
+
+    @Override
+    public boolean isIntentForTrustedCallingApp(Intent intent) {
+        return false;
+    }
 }
