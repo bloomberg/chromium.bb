@@ -322,15 +322,7 @@ public class CustomTabActivityTest {
     }
 
     private void openAppMenuAndAssertMenuShown() {
-        ThreadUtils.runOnUiThread(
-                (Runnable) () -> getActivity().onMenuOrKeyboardAction(R.id.show_menu, false));
-
-        CriteriaHelper.pollUiThread(new Criteria("App menu was not shown") {
-            @Override
-            public boolean isSatisfied() {
-                return getActivity().getAppMenuHandler().isAppMenuShowing();
-            }
-        });
+        CustomTabsTestUtils.openAppMenuAndAssertMenuShown(mCustomTabActivityTestRule.getActivity());
     }
 
     /**
@@ -559,15 +551,14 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testAppMenu() throws InterruptedException {
+    public void testAppMenu() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         int numMenuEntries = 1;
         addMenuEntriesToIntent(intent, numMenuEntries);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         final int expectedMenuSize = numMenuEntries + NUM_CHROME_MENU_ITEMS;
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
@@ -592,7 +583,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testAppMenuForMediaViewer() throws InterruptedException {
+    public void testAppMenuForMediaViewer() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
                 CustomTabIntentDataProvider.CustomTabsUiType.MEDIA_VIEWER);
@@ -600,8 +591,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         final int expectedMenuSize = 0;
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
@@ -615,7 +605,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testAppMenuForReaderMode() throws InterruptedException {
+    public void testAppMenuForReaderMode() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
                 CustomTabIntentDataProvider.CustomTabsUiType.READER_MODE);
@@ -623,8 +613,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         final int expectedMenuSize = 2;
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
@@ -640,7 +629,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testAppMenuForOfflinePage() throws InterruptedException {
+    public void testAppMenuForOfflinePage() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
                 CustomTabIntentDataProvider.CustomTabsUiType.OFFLINE_PAGE);
@@ -648,8 +637,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         final int expectedMenuSize = 3;
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
@@ -676,14 +664,13 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testShareMenuItem() throws InterruptedException {
+    public void testShareMenuItem() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         intent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         Assert.assertTrue(menu.findItem(R.id.share_menu_id).isVisible());
         Assert.assertTrue(menu.findItem(R.id.share_menu_id).isEnabled());
     }
@@ -695,7 +682,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testMaxMenuItems() throws InterruptedException {
+    public void testMaxMenuItems() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         int numMenuEntries = 7;
         Assert.assertTrue(MAX_MENU_CUSTOM_ITEMS < numMenuEntries);
@@ -703,8 +690,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         final int expectedMenuSize = MAX_MENU_CUSTOM_ITEMS + NUM_CHROME_MENU_ITEMS;
         Assert.assertNotNull("App menu is not initialized: ", menu);
         Assert.assertEquals(expectedMenuSize, getActualMenuSize(menu));
