@@ -58,8 +58,6 @@ const char kSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.SyncPasswordEntry";
 const char kSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.SyncPasswordEntry";
-const char kVerdictMigrationHistogram[] =
-    "PasswordProtection.NumberOfVerdictsMigratedDuringInitialization";
 
 void LogPasswordEntryRequestOutcome(RequestOutcome outcome,
                                     ReusedPasswordType password_type,
@@ -232,10 +230,6 @@ void LogWarningAction(WarningUIType ui_type,
       NOTREACHED();
       break;
   }
-}
-
-void LogNumberOfVerdictMigrated(size_t verdicts_migrated) {
-  UMA_HISTOGRAM_COUNTS_100(kVerdictMigrationHistogram, verdicts_migrated);
 }
 
 void LogNumberOfReuseBeforeSyncPasswordChange(size_t reuse_count) {

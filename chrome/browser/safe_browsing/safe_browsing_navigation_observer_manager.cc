@@ -82,7 +82,7 @@ static const double kUserGestureTTLInSecond = 1.0;
 // expired. So we clean up these navigation footprints every 2 minutes.
 static const double kNavigationFootprintTTLInSecond = 120.0;
 // The maximum number of latest NavigationEvent we keep. It is used to limit
-// memory usage of navigation tracking. This number if picked based on UMA
+// memory usage of navigation tracking. This number is picked based on UMA
 // metric "SafeBrowsing.NavigationObserver.NavigationEventCleanUpCount".
 // Lowering it could make room for abuse.
 static const int kNavigationRecordMaxSize = 100;
@@ -561,8 +561,6 @@ void SafeBrowsingNavigationObserverManager::CleanUpIpAddresses() {
     else
       ++it;
   }
-  UMA_HISTOGRAM_COUNTS_10000(
-      "SafeBrowsing.NavigationObserver.IPAddressCleanUpCount", remove_count);
 }
 
 bool SafeBrowsingNavigationObserverManager::IsCleanUpScheduled() const {
