@@ -5195,3 +5195,4 @@ crbug.com/887659 animations/animationworklet/worklet-animation-local-time-undefi
 crbug.com/887659 animations/animationworklet/worklet-animation-set-keyframes.html [ Crash ]
 crbug.com/887659 animations/animationworklet/worklet-animation-set-timing.html [ Crash ]
 crbug.com/887659 animations/animationworklet/worklet-animation-style-update.html [ Failure ]
+crbug.com/887659 virtual/threaded/fast/animationworklet/worklet-animation-responsive-to-zoom.html [ Failure ]
