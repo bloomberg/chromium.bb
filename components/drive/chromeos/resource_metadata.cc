@@ -222,6 +222,21 @@ FileError ResourceMetadata::SetUpDefaultEntries() {
     return error;
   }
 
+  // Initialize "/drive/Computers".
+  error = storage_->GetEntry(util::kDriveComputersDirLocalId, &entry);
+  if (error == FILE_ERROR_NOT_FOUND) {
+    ResourceEntry computers_dir;
+    computers_dir.mutable_file_info()->set_is_directory(true);
+    computers_dir.set_local_id(util::kDriveComputersDirLocalId);
+    computers_dir.set_parent_local_id(util::kDriveGrandRootLocalId);
+    computers_dir.set_title(util::kDriveComputersDirName);
+    error = PutEntryUnderDirectory(computers_dir);
+    if (error != FILE_ERROR_OK)
+      return error;
+  } else if (error != FILE_ERROR_OK) {
+    return error;
+  }
+
   return FILE_ERROR_OK;
 }
 

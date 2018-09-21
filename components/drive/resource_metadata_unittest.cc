@@ -562,7 +562,7 @@ TEST_F(ResourceMetadataTest, Iterate) {
   }
 
   EXPECT_EQ(7, file_count);
-  EXPECT_EQ(8, directory_count);
+  EXPECT_EQ(9, directory_count);
 }
 
 TEST_F(ResourceMetadataTest, DuplicatedNames) {
@@ -690,11 +690,12 @@ TEST_F(ResourceMetadataTest, Reset) {
   ASSERT_TRUE(entry.file_info().is_directory());
   EXPECT_EQ(util::kDriveGrandRootLocalId, entry.local_id());
 
-  // There are "other", "trash" and "root" under "drive".
+  // There are "other", "trash" and "root", "team_drives" and "Computers"
+  // under "drive".
   ASSERT_EQ(FILE_ERROR_OK,
             resource_metadata_->ReadDirectoryByPath(
                 base::FilePath::FromUTF8Unsafe("drive"), &entries));
-  EXPECT_EQ(4U, entries.size());
+  EXPECT_EQ(5U, entries.size());
 
   // The "other" directory should be empty.
   ASSERT_EQ(FILE_ERROR_OK,
@@ -711,6 +712,11 @@ TEST_F(ResourceMetadataTest, Reset) {
   ASSERT_EQ(FILE_ERROR_OK,
             resource_metadata_->ReadDirectoryByPath(
                 base::FilePath::FromUTF8Unsafe("drive/team_drives"), &entries));
+  EXPECT_TRUE(entries.empty());
+
+  ASSERT_EQ(FILE_ERROR_OK,
+            resource_metadata_->ReadDirectoryByPath(
+                base::FilePath::FromUTF8Unsafe("drive/Computers"), &entries));
   EXPECT_TRUE(entries.empty());
 }
 
