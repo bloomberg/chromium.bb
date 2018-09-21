@@ -6,6 +6,8 @@
 
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/optional.h"
+#include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
+#include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -136,8 +138,12 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
 
   if (state.is_locked) {
     DCHECK(!state.next_unlock_time.is_null());
-    if (!session_manager::SessionManager::Get()->IsScreenLocked())
+    if (!session_manager::SessionManager::Get()->IsScreenLocked()) {
+      VLOG(1) << "Request status report before locking screen.";
+      ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
+          ->RequestImmediateStatusReport();
       ForceScreenLockByPolicy(state.next_unlock_time);
+    }
   } else {
     base::Optional<TimeLimitNotificationType> notification_type;
     switch (state.next_state_active_policy) {

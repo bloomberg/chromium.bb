@@ -90,6 +90,10 @@ void ConsumerStatusReportingService::CreateStatusUploaderIfNeeded(
       base::ThreadTaskRunnerHandle::Get(), kStatusUploadFrequency);
 }
 
+void ConsumerStatusReportingService::RequestImmediateStatusReport() {
+  status_uploader_->ScheduleNextStatusUploadImmediately();
+}
+
 void ConsumerStatusReportingService::OnTimeLimitsPolicyChanged() {
   CreateStatusUploaderIfNeeded(user_cloud_policy_manager_->core()->client());
 }
