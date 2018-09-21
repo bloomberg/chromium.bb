@@ -11557,6 +11557,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
           // clear stats
           for (int k = 0; k < MAX_REF_MV_SERCH; ++k) {
             x->simple_rd_state[mode_index][k].rd_stats.rdcost = INT64_MAX;
+            x->simple_rd_state[mode_index][k].early_skipped = 0;
           }
         } else {
           if (motion_mode_skip_mask & (1 << ref_frame)) {
