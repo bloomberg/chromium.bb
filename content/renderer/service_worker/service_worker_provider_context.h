@@ -101,23 +101,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   int provider_id() const { return provider_id_; }
 
-  // For service worker execution contexts. Sets the registration for
-  // ServiceWorkerGlobalScope#registration. Unlike
-  // TakeRegistrationForServiceWorkerGlobalScope(), called on the main thread.
-  // SetRegistrationForServiceWorkerGlobalScope() is called during the setup for
-  // service worker startup, so it is guaranteed to be called before
-  // TakeRegistrationForServiceWorkerGlobalScope().
-  void SetRegistrationForServiceWorkerGlobalScope(
-      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration);
-
-  // For service worker execution contexts. Used for initializing
-  // ServiceWorkerGlobalScope#registration. Called on the worker thread.
-  // This takes the registration that was passed to
-  // SetRegistrationForServiceWorkerScope(), then creates a new
-  // WebServiceWorkerRegistrationImpl instance and returns it.
-  scoped_refptr<WebServiceWorkerRegistrationImpl>
-  TakeRegistrationForServiceWorkerGlobalScope();
-
   // For service worker clients. Returns version id of the controller service
   // worker object (ServiceWorkerContainer#controller).
   int64_t GetControllerVersionId() const;

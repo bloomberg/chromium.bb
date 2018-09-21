@@ -225,10 +225,6 @@ void WebServiceWorkerProviderImpl::CountFeature(
   provider_client_->CountFeature(feature);
 }
 
-int WebServiceWorkerProviderImpl::provider_id() const {
-  return context_->provider_id();
-}
-
 void WebServiceWorkerProviderImpl::OnRegistered(
     std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks,
     blink::mojom::ServiceWorkerErrorType error,

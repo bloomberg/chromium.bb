@@ -53,23 +53,14 @@ struct WebServiceWorkerError;
 //
 // Once an execution context has an attached WebServiceWorkerProvider, it's able
 // to request the browser process to do things like register/update/get service
-// worker registrations, since it'll have a |provider_id| needed to request the
-// browser process to do these things. The |provider_id| actually comes from
-// WebServiceWorkerNetworkProvider, but content::WebServiceWorkerProviderImpl
-// has access to the same id. (This id should hopefully go away once everything
-// is mojofied/servicified.)
+// worker registrations.
 //
 // WebServiceWorkerProvider is created in two places:
 // 1) It is created in ServiceWorkerContainerClient::From(), which is used to
 // instantiate navigator.serviceWorker for documents.
 // 2) It is created for service worker execution contexts during startup.
 // The instance should eventually be used for WorkerNavigator.serviceWorker but
-// it is not really wired up yet (https://crbug.com/371690). Instead, the
-// instance is used to implement ServiceWorkerRegistration#update() and
-// ServiceWorkerRegistration#unregister(), just because
-// WebServiceWorkerRegistration's corresponding methods need |provider_id| to
-// send the requests to the browser process, and this class is used as the
-// wrapper object that hides the ID details from Blink.
+// it is not really wired up yet (https://crbug.com/371690).
 //
 // WebServiceWorkerProvider is owned by ServiceWorkerContainerClient, which is a
 // garbage collected Supplement for Document (in case (1) above) or
