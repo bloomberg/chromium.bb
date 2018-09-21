@@ -107,6 +107,15 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
     if (!parsed_value)
       new_variable_data = nullptr;
   }
+
+  // If either parsing or resolution failed, and this property inherits,
+  // take inherited values instead of falling back on initial.
+  if (registration->Inherits() && !new_variable_data) {
+    new_variable_data = state_.ParentStyle()->GetVariable(name, true);
+    parsed_value = state_.ParentStyle()->GetRegisteredVariable(name, true);
+  }
+
+  DCHECK(!!new_variable_data == !!parsed_value);
   SetVariable(name, registration, new_variable_data);
   SetRegisteredVariable(name, *registration, parsed_value);
   if (!new_variable_data)
