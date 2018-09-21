@@ -100,7 +100,7 @@ class ChromeOsMirrorAccountConsistencyTest : public chromeos::LoginManagerTest {
   ~ChromeOsMirrorAccountConsistencyTest() override {}
 
   ChromeOsMirrorAccountConsistencyTest()
-      : LoginManagerTest(false),
+      : LoginManagerTest(false, true /* should_initialize_webui */),
         account_id_(AccountId::FromUserEmailGaiaId(kUserEmail, kUserGaiaId)) {}
 
   const AccountId account_id_;

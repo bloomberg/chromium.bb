@@ -71,7 +71,7 @@ class UserAddingScreenWaiter : public UserAddingScreen::Observer {
 
 class ChromeSessionManagerTest : public LoginManagerTest {
  public:
-  ChromeSessionManagerTest() : LoginManagerTest(true) {}
+  ChromeSessionManagerTest() : LoginManagerTest(true, true) {}
   ~ChromeSessionManagerTest() override {}
 
   // LoginManagerTest:

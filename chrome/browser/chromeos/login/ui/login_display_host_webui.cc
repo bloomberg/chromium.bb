@@ -369,6 +369,7 @@ bool ShouldInitializeWebUIHidden() {
 
 // static
 const int LoginDisplayHostWebUI::kShowLoginWebUIid = 0x1111;
+bool LoginDisplayHostWebUI::disable_restrictive_proxy_check_for_test_ = false;
 
 // A class to handle special menu key for keyboard driven OOBE.
 class LoginDisplayHostWebUI::KeyboardDrivenOobeKeyHandler
@@ -444,6 +445,11 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
+
+  if (waiting_for_configuration_) {
+    OobeConfiguration::Get()->RemoveObserver(this);
+    waiting_for_configuration_ = false;
+  }
 
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
 
@@ -522,7 +528,26 @@ void LoginDisplayHostWebUI::SetStatusAreaVisible(bool visible) {
     login_view_->SetStatusAreaVisible(visible);
 }
 
+void LoginDisplayHostWebUI::OnOobeConfigurationChanged() {
+  waiting_for_configuration_ = false;
+  OobeConfiguration::Get()->RemoveObserver(this);
+  StartWizard(first_screen_);
+}
+
 void LoginDisplayHostWebUI::StartWizard(OobeScreen first_screen) {
+  if (!StartupUtils::IsOobeCompleted()) {
+    CHECK(OobeConfiguration::Get());
+    if (waiting_for_configuration_)
+      return;
+    if (!OobeConfiguration::Get()->CheckCompleted()) {
+      waiting_for_configuration_ = true;
+      first_screen_ = first_screen;
+      OobeConfiguration::Get()->AddAndFireObserver(this);
+      VLOG(1) << "Login WebUI >> wizard waiting for configuration check";
+      return;
+    }
+  }
+
   DisableKeyboardOverscroll();
 
   TryToPlayOobeStartupSound();
@@ -979,6 +1004,9 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   login_view_->Init();
   if (login_view_->webui_visible())
     OnLoginPromptVisible();
+  if (disable_restrictive_proxy_check_for_test_) {
+    DisableRestrictiveProxyCheckForTest();
+  }
 
   // For voice interaction OOBE, we do not want the animation here.
   if (!is_voice_interaction_oobe_) {
@@ -1056,10 +1084,15 @@ void LoginDisplayHostWebUI::CreateExistingUserController() {
 
 // static
 void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
-  default_host()
-      ->GetOobeUI()
-      ->GetGaiaScreenView()
-      ->DisableRestrictiveProxyCheckForTest();
+  if (default_host()->GetOobeUI()) {
+    default_host()
+        ->GetOobeUI()
+        ->GetGaiaScreenView()
+        ->DisableRestrictiveProxyCheckForTest();
+    disable_restrictive_proxy_check_for_test_ = false;
+  } else {
+    disable_restrictive_proxy_check_for_test_ = true;
+  }
 }
 
 void LoginDisplayHostWebUI::StartVoiceInteractionOobe() {

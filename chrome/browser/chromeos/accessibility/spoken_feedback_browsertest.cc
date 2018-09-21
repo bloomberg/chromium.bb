@@ -758,7 +758,8 @@ IN_PROC_BROWSER_TEST_F(GuestSpokenFeedbackTest, FocusToolbar) {
 
 class OobeSpokenFeedbackTest : public LoginManagerTest {
  protected:
-  OobeSpokenFeedbackTest() : LoginManagerTest(false) {}
+  OobeSpokenFeedbackTest()
+      : LoginManagerTest(false, true /* should_initialize_webui */) {}
   ~OobeSpokenFeedbackTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
