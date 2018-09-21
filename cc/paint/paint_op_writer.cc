@@ -416,6 +416,7 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
     Write(shader->id_);
     const gfx::Rect playback_rect(
         gfx::ToEnclosingRect(gfx::SkRectToRectF(shader->tile())));
+
     Write(shader->record_.get(), playback_rect, paint_record_post_scale,
           SkMatrix::I());
   } else {
@@ -761,10 +762,14 @@ void PaintOpWriter::Write(const PaintRecord* record,
     return;
   }
 
+  // Nested records are used for picture shaders and filters which don't support
+  // using lcd text. Make sure we disable it here to match this in the text
+  // analysis canvas.
+  const bool can_use_lcd_text = false;
   SimpleBufferSerializer serializer(
       memory_, remaining_bytes_, options_.image_provider,
       options_.transfer_cache, options_.strike_server, options_.color_space,
-      options_.can_use_lcd_text, options_.context_supports_distance_field_text,
+      can_use_lcd_text, options_.context_supports_distance_field_text,
       options_.max_texture_size, options_.max_texture_bytes);
   serializer.Serialize(record, playback_rect, post_scale,
                        post_matrix_for_analysis);
