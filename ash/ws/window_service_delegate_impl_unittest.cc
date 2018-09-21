@@ -6,6 +6,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/ws/test_window_tree_client.h"
@@ -14,6 +15,8 @@
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -298,6 +301,40 @@ TEST_F(WindowServiceDelegateImplTest, ObserveTopmostWindow) {
   GetWindowTreeClientChanges()->clear();
 
   GetWindowTreeTestHelper()->window_tree()->StopObservingTopmostWindow();
+}
+
+TEST_F(WindowServiceDelegateImplTest, MoveAcrossDisplays) {
+  UpdateDisplay("600x400,600+0-400x300");
+
+  GetWindowTreeClientChanges()->clear();
+
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display display1 = screen->GetPrimaryDisplay();
+  display::Display display2;
+  for (const auto& iter : screen->GetAllDisplays()) {
+    if (iter.id() != display1.id()) {
+      display2 = iter;
+      break;
+    }
+  }
+  ASSERT_TRUE(display2.is_valid());
+  EXPECT_EQ(display1.id(),
+            screen->GetDisplayNearestWindow(top_level_.get()).id());
+
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
+      gfx::Point());
+  EXPECT_TRUE(event_handler()->is_drag_in_progress());
+  GetEventGenerator()->MoveMouseTo(gfx::Point(610, 6));
+  GetWindowTreeClientChanges()->clear();
+  GetEventGenerator()->ReleaseLeftButton();
+
+  EXPECT_EQ(display2.id(),
+            screen->GetDisplayNearestWindow(top_level_.get()).id());
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     std::string("DisplayChanged window_id=0,1 display_id=") +
+                         base::NumberToString(display2.id())));
 }
 
 }  // namespace ash

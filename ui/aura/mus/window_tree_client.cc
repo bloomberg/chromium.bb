@@ -1274,6 +1274,14 @@ void WindowTreeClient::OnWindowOpacityChanged(ws::Id window_id,
   window->SetOpacityFromServer(new_opacity);
 }
 
+void WindowTreeClient::OnWindowDisplayChanged(ws::Id window_id,
+                                              int64_t display_id) {
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window)
+    return;
+  GetWindowTreeHostMus(window->GetWindow())->set_display_id(display_id);
+}
+
 void WindowTreeClient::OnWindowParentDrawnStateChanged(ws::Id window_id,
                                                        bool drawn) {
   // TODO: route to WindowTreeHost.

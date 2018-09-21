@@ -180,6 +180,11 @@ void TestWindowTreeClient::OnWindowOpacityChanged(Id window,
   tracker_.OnWindowOpacityChanged(window, new_opacity);
 }
 
+void TestWindowTreeClient::OnWindowDisplayChanged(Id window_id,
+                                                  int64_t display_id) {
+  tracker_.OnWindowDisplayChanged(window_id, display_id);
+}
+
 void TestWindowTreeClient::OnWindowParentDrawnStateChanged(Id window,
                                                            bool drawn) {
   tracker_.OnWindowParentDrawnStateChanged(window, drawn);

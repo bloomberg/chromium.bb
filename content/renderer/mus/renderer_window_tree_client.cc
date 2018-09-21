@@ -299,6 +299,9 @@ void RendererWindowTreeClient::OnWindowOpacityChanged(ws::Id window_id,
                                                       float old_opacity,
                                                       float new_opacity) {}
 
+void RendererWindowTreeClient::OnWindowDisplayChanged(ws::Id window_id,
+                                                      int64_t display_id) {}
+
 void RendererWindowTreeClient::OnWindowParentDrawnStateChanged(ws::Id window_id,
                                                                bool drawn) {}
 

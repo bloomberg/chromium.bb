@@ -483,6 +483,10 @@ interface WindowTreeClient {
   // Invoked when the opacity of the specified window has changed.
   OnWindowOpacityChanged(uint64 window, float old_opacity, float new_opacity);
 
+  // Invoked when the window moves to a new display. This is only called on
+  // a top-level window or an embedded root.
+  OnWindowDisplayChanged(uint64 window, int64 display_id);
+
   // Invoked when the drawn state of |window|'s parent changes. The drawn state
   // is determined by the visibility of a Window and the Windows ancestors. A
   // Window is drawn if all ancestors are visible, not drawn if any ancestor is
