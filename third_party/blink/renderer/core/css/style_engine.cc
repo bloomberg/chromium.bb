@@ -1474,12 +1474,10 @@ void StyleEngine::EnvironmentVariableChanged() {
 
 void StyleEngine::MarkForWhitespaceReattachment() {
   for (auto element : whitespace_reattach_set_) {
-    if (element->NeedsReattachLayoutTree() || !element->GetLayoutObject() ||
-        !LayoutTreeBuilderTraversal::FirstChild(*element)) {
+    if (element->NeedsReattachLayoutTree() || !element->GetLayoutObject())
       continue;
-    }
-    element->SetChildNeedsReattachLayoutTree();
-    element->MarkAncestorsWithChildNeedsReattachLayoutTree();
+    if (Node* first_child = LayoutTreeBuilderTraversal::FirstChild(*element))
+      first_child->MarkAncestorsWithChildNeedsReattachLayoutTree();
   }
 }
 
