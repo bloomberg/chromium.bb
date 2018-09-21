@@ -64,6 +64,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
                         int y,
                         int available_height);
 
+  SkColor active_color_for_testing() const { return active_color_; }
+
  private:
   friend class HostedAppNonClientFrameViewAshTest;
   friend class HostedAppGlassBrowserFrameViewTest;
