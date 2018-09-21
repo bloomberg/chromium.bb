@@ -269,7 +269,7 @@ bool VideoFrameCompositor::ProcessNewFrame(
 
   SetCurrentFrame(frame);
 
-  if (!new_processed_frame_cb_.is_null())
+  if (new_processed_frame_cb_)
     std::move(new_processed_frame_cb_).Run(base::TimeTicks::Now());
 
   return true;

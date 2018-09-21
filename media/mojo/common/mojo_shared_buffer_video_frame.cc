@@ -185,7 +185,7 @@ bool MojoSharedBufferVideoFrame::Init(size_t y_offset,
 MojoSharedBufferVideoFrame::~MojoSharedBufferVideoFrame() {
   // Call |mojo_shared_buffer_done_cb_| to take ownership of
   // |shared_buffer_handle_|.
-  if (!mojo_shared_buffer_done_cb_.is_null())
+  if (mojo_shared_buffer_done_cb_)
     mojo_shared_buffer_done_cb_.Run(std::move(shared_buffer_handle_),
                                     shared_buffer_size_);
 }

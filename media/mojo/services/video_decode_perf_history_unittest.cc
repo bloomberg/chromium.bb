@@ -54,7 +54,7 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
   // for success.
   void CompleteInitialize(bool success) {
     DVLOG(2) << __func__ << " running with success = " << success;
-    EXPECT_FALSE(pendnding_init_cb_.is_null());
+    EXPECT_FALSE(!pendnding_init_cb_);
     std::move(pendnding_init_cb_).Run(success);
   }
 

@@ -30,7 +30,7 @@ VideoDecodeStatsReporter::VideoDecodeStatsReporter(
       tick_clock_(tick_clock),
       stats_cb_timer_(tick_clock_) {
   DCHECK(recorder_ptr_.is_bound());
-  DCHECK(!get_pipeline_stats_cb_.is_null());
+  DCHECK(get_pipeline_stats_cb_);
   DCHECK(video_config_.IsValidConfig());
 
   recorder_ptr_.set_connection_error_handler(base::BindRepeating(

@@ -161,7 +161,7 @@ void VpxVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DVLOG(3) << __func__ << ": " << buffer->AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer);
-  DCHECK(!decode_cb.is_null());
+  DCHECK(decode_cb);
   DCHECK_NE(state_, kUninitialized)
       << "Called Decode() before successful Initialize()";
 

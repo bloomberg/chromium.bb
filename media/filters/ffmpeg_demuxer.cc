@@ -356,7 +356,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
 
 FFmpegDemuxerStream::~FFmpegDemuxerStream() {
   DCHECK(!demuxer_);
-  DCHECK(read_cb_.is_null());
+  DCHECK(!read_cb_);
   DCHECK(buffer_queue_.IsEmpty());
 }
 
@@ -671,7 +671,7 @@ void FFmpegDemuxerStream::SetEndOfStream() {
 
 void FFmpegDemuxerStream::FlushBuffers(bool preserve_packet_position) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(preserve_packet_position || read_cb_.is_null())
+  DCHECK(preserve_packet_position || !read_cb_)
       << "There should be no pending read";
 
   // H264 and AAC require that we resend the header after flush.
@@ -693,16 +693,16 @@ void FFmpegDemuxerStream::FlushBuffers(bool preserve_packet_position) {
 
 void FFmpegDemuxerStream::Abort() {
   aborted_ = true;
-  if (!read_cb_.is_null())
-    base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kAborted, nullptr);
+  if (read_cb_)
+    std::move(read_cb_).Run(DemuxerStream::kAborted, nullptr);
 }
 
 void FFmpegDemuxerStream::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   buffer_queue_.Clear();
-  if (!read_cb_.is_null()) {
-    base::ResetAndReturn(&read_cb_).Run(
-        DemuxerStream::kOk, DecoderBuffer::CreateEOSBuffer());
+  if (read_cb_) {
+    std::move(read_cb_).Run(DemuxerStream::kOk,
+                            DecoderBuffer::CreateEOSBuffer());
   }
   demuxer_ = NULL;
   stream_ = NULL;
@@ -721,7 +721,7 @@ DemuxerStream::Liveness FFmpegDemuxerStream::liveness() const {
 
 void FFmpegDemuxerStream::Read(const ReadCB& read_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  CHECK(read_cb_.is_null()) << "Overlapping reads are not supported";
+  CHECK(!read_cb_) << "Overlapping reads are not supported";
   read_cb_ = BindToCurrentLoop(read_cb);
 
   // Don't accept any additional reads if we've been told to stop.
@@ -729,19 +729,19 @@ void FFmpegDemuxerStream::Read(const ReadCB& read_cb) {
   //
   // TODO(scherkus): it would be cleaner to reply with an error message.
   if (!demuxer_) {
-    base::ResetAndReturn(&read_cb_).Run(
-        DemuxerStream::kOk, DecoderBuffer::CreateEOSBuffer());
+    std::move(read_cb_).Run(DemuxerStream::kOk,
+                            DecoderBuffer::CreateEOSBuffer());
     return;
   }
 
   if (!is_enabled_) {
     DVLOG(1) << "Read from disabled stream, returning EOS";
-    base::ResetAndReturn(&read_cb_).Run(kOk, DecoderBuffer::CreateEOSBuffer());
+    std::move(read_cb_).Run(kOk, DecoderBuffer::CreateEOSBuffer());
     return;
   }
 
   if (aborted_) {
-    base::ResetAndReturn(&read_cb_).Run(kAborted, nullptr);
+    std::move(read_cb_).Run(kAborted, nullptr);
     return;
   }
 
@@ -833,9 +833,9 @@ void FFmpegDemuxerStream::SetEnabled(bool enabled, base::TimeDelta timestamp) {
   if (is_enabled_) {
     waiting_for_keyframe_ = true;
   }
-  if (!is_enabled_ && !read_cb_.is_null()) {
+  if (!is_enabled_ && read_cb_) {
     DVLOG(1) << "Read from disabled stream, returning EOS";
-    base::ResetAndReturn(&read_cb_).Run(kOk, DecoderBuffer::CreateEOSBuffer());
+    std::move(read_cb_).Run(kOk, DecoderBuffer::CreateEOSBuffer());
   }
 }
 
@@ -851,13 +851,12 @@ Ranges<base::TimeDelta> FFmpegDemuxerStream::GetBufferedRanges() const {
 
 void FFmpegDemuxerStream::SatisfyPendingRead() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!read_cb_.is_null()) {
+  if (read_cb_) {
     if (!buffer_queue_.IsEmpty()) {
-      base::ResetAndReturn(&read_cb_).Run(
-          DemuxerStream::kOk, buffer_queue_.Pop());
+      std::move(read_cb_).Run(DemuxerStream::kOk, buffer_queue_.Pop());
     } else if (end_of_stream_) {
-      base::ResetAndReturn(&read_cb_).Run(
-          DemuxerStream::kOk, DecoderBuffer::CreateEOSBuffer());
+      std::move(read_cb_).Run(DemuxerStream::kOk,
+                              DecoderBuffer::CreateEOSBuffer());
     }
   }
 
@@ -924,7 +923,7 @@ FFmpegDemuxer::FFmpegDemuxer(
       weak_factory_(this) {
   DCHECK(task_runner_.get());
   DCHECK(data_source_);
-  DCHECK(!media_tracks_updated_cb_.is_null());
+  DCHECK(media_tracks_updated_cb_);
 }
 
 FFmpegDemuxer::~FFmpegDemuxer() {
@@ -1007,8 +1006,8 @@ void FFmpegDemuxer::AbortPendingReads() {
   // TODO(dalecurtis): We probably should report PIPELINE_ERROR_ABORT here
   // instead to avoid any preroll work that may be started upon return, but
   // currently the PipelineImpl does not know how to handle this.
-  if (!pending_seek_cb_.is_null())
-    base::ResetAndReturn(&pending_seek_cb_).Run(PIPELINE_OK);
+  if (pending_seek_cb_)
+    std::move(pending_seek_cb_).Run(PIPELINE_OK);
 }
 
 void FFmpegDemuxer::Stop() {
@@ -1049,7 +1048,7 @@ void FFmpegDemuxer::CancelPendingSeek(base::TimeDelta seek_time) {
 
 void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  CHECK(pending_seek_cb_.is_null());
+  CHECK(!pending_seek_cb_);
 
   pending_seek_cb_ = cb;
   SeekInternal(time, base::BindOnce(&FFmpegDemuxer::OnSeekFrameSuccess,
@@ -1676,11 +1675,11 @@ FFmpegDemuxerStream* FFmpegDemuxer::FindPreferredStreamForSeeking(
 
 void FFmpegDemuxer::OnSeekFrameSuccess() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  CHECK(!pending_seek_cb_.is_null());
+  CHECK(pending_seek_cb_);
 
   if (stopped_) {
     MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": bad state";
-    base::ResetAndReturn(&pending_seek_cb_).Run(PIPELINE_ERROR_ABORT);
+    std::move(pending_seek_cb_).Run(PIPELINE_ERROR_ABORT);
     return;
   }
 
@@ -1694,7 +1693,7 @@ void FFmpegDemuxer::OnSeekFrameSuccess() {
   ReadFrameIfNeeded();
 
   // Notify we're finished seeking.
-  base::ResetAndReturn(&pending_seek_cb_).Run(PIPELINE_OK);
+  std::move(pending_seek_cb_).Run(PIPELINE_OK);
 }
 
 void FFmpegDemuxer::FindAndEnableProperTracks(
@@ -1784,7 +1783,7 @@ void FFmpegDemuxer::ReadFrameIfNeeded() {
 
   // Make sure we have work to do before reading.
   if (stopped_ || !StreamsHaveAvailableCapacity() || pending_read_ ||
-      !pending_seek_cb_.is_null()) {
+      pending_seek_cb_) {
     return;
   }
 
@@ -1807,7 +1806,7 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
   DCHECK(pending_read_);
   pending_read_ = false;
 
-  if (stopped_ || !pending_seek_cb_.is_null())
+  if (stopped_ || pending_seek_cb_)
     return;
 
   // Consider the stream as ended if:

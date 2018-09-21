@@ -349,13 +349,13 @@ void VideoRendererImpl::FinishInitialization(PipelineStatus status) {
   DCHECK(init_cb_);
   TRACE_EVENT_ASYNC_END1("media", "VideoRendererImpl::Initialize", this,
                          "status", MediaLog::PipelineStatusToString(status));
-  base::ResetAndReturn(&init_cb_).Run(status);
+  std::move(init_cb_).Run(status);
 }
 
 void VideoRendererImpl::FinishFlush() {
   DCHECK(flush_cb_);
   TRACE_EVENT_ASYNC_END0("media", "VideoRendererImpl::Flush", this);
-  base::ResetAndReturn(&flush_cb_).Run();
+  std::move(flush_cb_).Run();
 }
 
 void VideoRendererImpl::OnPlaybackError(PipelineStatus error) {

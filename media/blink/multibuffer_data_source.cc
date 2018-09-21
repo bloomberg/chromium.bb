@@ -115,7 +115,7 @@ MultibufferDataSource::ReadOperation::~ReadOperation() {
 void MultibufferDataSource::ReadOperation::Run(
     std::unique_ptr<ReadOperation> read_op,
     int result) {
-  base::ResetAndReturn(&read_op->callback_).Run(result);
+  std::move(read_op->callback_).Run(result);
 }
 
 MultibufferDataSource::MultibufferDataSource(
@@ -143,7 +143,7 @@ MultibufferDataSource::MultibufferDataSource(
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
   DCHECK(host_);
-  DCHECK(!downloading_cb_.is_null());
+  DCHECK(downloading_cb_);
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   DCHECK(url_data_);
   url_data_->Use();
@@ -194,7 +194,7 @@ void MultibufferDataSource::CreateResourceLoader_Locked(
 
 void MultibufferDataSource::Initialize(const InitializeCB& init_cb) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
-  DCHECK(!init_cb.is_null());
+  DCHECK(init_cb);
   DCHECK(!reader_.get());
 
   init_cb_ = init_cb;
@@ -225,7 +225,7 @@ void MultibufferDataSource::OnRedirect(
   if (!destination) {
     // A failure occured.
     failed_ = true;
-    if (!init_cb_.is_null()) {
+    if (init_cb_) {
       render_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&MultibufferDataSource::StartCallback, weak_ptr_));
@@ -246,7 +246,7 @@ void MultibufferDataSource::OnRedirect(
     url_data_->OnRedirect(
         base::Bind(&MultibufferDataSource::OnRedirect, weak_ptr_));
 
-    if (!init_cb_.is_null()) {
+    if (init_cb_) {
       CreateResourceLoader(0, kPositionNotSpecified);
       if (reader_->Available()) {
         render_task_runner_->PostTask(
@@ -288,7 +288,7 @@ bool MultibufferDataSource::DidPassCORSAccessCheck() const {
     return false;
 
   // If init_cb is set, we know initialization is not finished yet.
-  if (!init_cb_.is_null())
+  if (init_cb_)
     return false;
   if (failed_)
     return false;
@@ -337,7 +337,7 @@ void MultibufferDataSource::Stop() {
 
 void MultibufferDataSource::Abort() {
   base::AutoLock auto_lock(lock_);
-  DCHECK(init_cb_.is_null());
+  DCHECK(!init_cb_);
   if (read_op_)
     ReadOperation::Run(std::move(read_op_), kAborted);
 
@@ -387,8 +387,8 @@ void MultibufferDataSource::Read(int64_t position,
                                  const DataSource::ReadCB& read_cb) {
   DVLOG(1) << "Read: " << position << " offset, " << size << " bytes";
   // Reading is not allowed until after initialization.
-  DCHECK(init_cb_.is_null());
-  DCHECK(!read_cb.is_null());
+  DCHECK(!init_cb_);
+  DCHECK(read_cb);
 
   {
     base::AutoLock auto_lock(lock_);
@@ -577,7 +577,7 @@ void MultibufferDataSource::SetBitrateTask(int bitrate) {
 void MultibufferDataSource::StartCallback() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
-  if (init_cb_.is_null()) {
+  if (!init_cb_) {
     SetReader(nullptr);
     return;
   }
@@ -626,8 +626,8 @@ void MultibufferDataSource::StartCallback() {
                                    url_data_->range_supported());
   }
 
-  render_task_runner_->PostTask(
-      FROM_HERE, base::Bind(base::ResetAndReturn(&init_cb_), success));
+  render_task_runner_->PostTask(FROM_HERE,
+                                base::Bind(std::move(init_cb_), success));
 
   UpdateBufferSizes();
 
