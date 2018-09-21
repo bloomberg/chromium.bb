@@ -74,9 +74,18 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
 
     // Add onboarding welcome resources.
-    // TODO(scottchen): More resources to be added here.
     html_source->SetDefaultResource(
         IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
+    html_source->AddResourcePath(
+        "landing_view.html", IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_HTML);
+    html_source->AddResourcePath(
+        "landing_view.js", IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_JS);
+    html_source->AddResourcePath("welcome.css",
+                                 IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_CSS);
+    html_source->AddResourcePath(
+        "welcome_app.html", IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_HTML);
+    html_source->AddResourcePath("welcome_app.js",
+                                 IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_JS);
 
   } else if (kIsBranded && is_dice) {
     // Use special layout if the application is branded and DICE is enabled.

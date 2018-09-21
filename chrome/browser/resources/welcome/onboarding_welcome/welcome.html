@@ -1,10 +1,13 @@
-<!-- TODO(scottchen): have actual content for onboarding welcome.
-     see: crbug.com/874142. -->
 <!doctype html>
-<html>
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
   <head>
+    <meta charset="utf-8">
+    <title>$i18n{headerText}</title>
+    <link rel="import" href="welcome_app.html">
+    <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+    <link rel="stylesheet" href="chrome://welcome/welcome.css">
   </head>
   <body>
-    Hello world.
+    <welcome-app></welcome-app>
   </body>
 </html>
