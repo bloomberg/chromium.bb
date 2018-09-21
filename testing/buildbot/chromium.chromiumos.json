@@ -500,7 +500,8 @@
         ],
         "name": "webui_polymer2_browser_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 4
         },
         "test": "browser_tests"
       },
@@ -1202,7 +1203,8 @@
         ],
         "name": "webui_polymer2_browser_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 4
         },
         "test": "browser_tests"
       },

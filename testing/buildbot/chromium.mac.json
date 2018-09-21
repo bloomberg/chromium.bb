@@ -141,7 +141,8 @@
               "gpu": "none",
               "os": "Mac-10.10"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "browser_tests"
       },
@@ -1284,7 +1285,8 @@
               "gpu": "none",
               "os": "Mac-10.11"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "browser_tests"
       },
@@ -2445,7 +2447,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "browser_tests"
       },
@@ -3656,7 +3659,8 @@
               "gpu": "none",
               "os": "Mac-10.13"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "browser_tests"
       },
@@ -4787,7 +4791,8 @@
               "gpu": "none",
               "os": "Mac-10.13"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "browser_tests"
       },
