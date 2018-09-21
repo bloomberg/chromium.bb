@@ -235,13 +235,8 @@ function createCellForPropertyAndRemoveProperty(
     } else if (typeof autocompleteSuggestion[propertyName] == 'boolean') {
       // If this is a boolean, display a checkmark or an X instead of
       // the strings true or false.
-      if (autocompleteSuggestion[propertyName]) {
-        cell.className = 'check-mark';
-        cell.textContent = '✔';
-      } else {
-        cell.className = 'x-mark';
-        cell.textContent = '✗';
-      }
+      cell.className =
+          autocompleteSuggestion[propertyName] ? 'check-mark' : 'x-mark';
     } else {
       var text = String(autocompleteSuggestion[propertyName]);
       // If it's a URL wrap it in an href.
