@@ -428,7 +428,7 @@ void HTMLCanvasElement::FinalizeFrame() {
       const bool needs_vertical_flip = !RenderingContext()->IsOriginTopLeft();
       frame_dispatcher_->DispatchFrameSync(std::move(canvas_resource),
                                            start_time, damage_rect,
-                                           needs_vertical_flip);
+                                           needs_vertical_flip, IsOpaque());
       (void)start_time;
       (void)damage_rect;
       dirty_rect_ = FloatRect();
