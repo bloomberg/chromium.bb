@@ -422,6 +422,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
+                          withData:(const std::string&)formData
                     hasUserGesture:(BOOL)userInitiated
                    formInMainFrame:(BOOL)isMainFrame
                            inFrame:(web::WebFrame*)frame {

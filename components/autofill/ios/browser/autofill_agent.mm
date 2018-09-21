@@ -703,6 +703,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
+                          withData:(const std::string&)formData
                     hasUserGesture:(BOOL)hasUserGesture
                    formInMainFrame:(BOOL)formInMainFrame
                            inFrame:(web::WebFrame*)frame {
@@ -714,34 +715,19 @@ autofillManagerFromWebState:(web::WebState*)webState
   if (![self isAutofillEnabled])
     return;
 
-  __weak AutofillAgent* weakSelf = self;
-  id completionHandler = ^(BOOL success, const FormDataVector& forms) {
-    AutofillAgent* strongSelf = weakSelf;
-    if (!strongSelf || !success)
-      return;
-    autofill::AutofillManager* autofillManager =
-        [strongSelf autofillManagerFromWebState:webState webFrame:frame];
-    if (!autofillManager || forms.empty())
-      return;
-    if (forms.size() > 1) {
-      DLOG(WARNING) << "Only one form should be extracted.";
-      return;
-    }
-    [strongSelf notifyAutofillManager:autofillManager
-                     ofFormsSubmitted:forms
-                        userInitiated:hasUserGesture];
+  FormDataVector forms;
+  bool success = autofill::ExtractFormsData(
+      base::SysUTF8ToNSString(formData), true, base::UTF8ToUTF16(formName),
+      webState->GetLastCommittedURL(), frame->GetSecurityOrigin(), &forms);
 
-  };
-
-  // This code is racing against the new page loading and will not get the
-  // password form data if the page has changed. In most cases this code wins
-  // the race.
-  // TODO(crbug.com/418827): Fix this by passing in more data from the JS side.
-  [self fetchFormsFiltered:YES
-                        withName:base::UTF8ToUTF16(formName)
-      minimumRequiredFieldsCount:1
-                         inFrame:frame
-               completionHandler:completionHandler];
+  autofill::AutofillManager* autofillManager =
+      [self autofillManagerFromWebState:webState webFrame:frame];
+  if (!autofillManager || !success || forms.empty())
+    return;
+  DCHECK(forms.size() <= 1) << "Only one form should be extracted.";
+  [self notifyAutofillManager:autofillManager
+             ofFormsSubmitted:forms
+                userInitiated:hasUserGesture];
 }
 
 #pragma mark - PrefObserverDelegate
