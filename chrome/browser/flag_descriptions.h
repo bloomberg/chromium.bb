@@ -515,9 +515,6 @@ extern const char kEnableImageCaptureAPIDescription[];
 extern const char kEnableZeroSuggestRedirectToChromeName[];
 extern const char kEnableZeroSuggestRedirectToChromeDescription[];
 
-extern const char kEnableWasmStreamingName[];
-extern const char kEnableWasmStreamingDescription[];
-
 extern const char kEnableWasmBaselineName[];
 extern const char kEnableWasmBaselineDescription[];
 

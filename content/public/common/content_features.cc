@@ -463,10 +463,6 @@ const base::Feature kV8VmFuture{"V8VmFuture",
 const base::Feature kWebAssembly{"WebAssembly",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable WebAssembly streamed compilation.
-const base::Feature kWebAssemblyStreaming{"WebAssemblyStreaming",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable WebAssembly baseline compilation and tier up.
 const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
