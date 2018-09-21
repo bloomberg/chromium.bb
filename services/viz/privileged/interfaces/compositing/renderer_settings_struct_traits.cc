@@ -11,6 +11,8 @@ namespace mojo {
 bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
     Read(viz::mojom::RendererSettingsDataView data,
          viz::RendererSettings* out) {
+  bool success = true;
+
   out->allow_antialiasing = data.allow_antialiasing();
   out->force_antialiasing = data.force_antialiasing();
   out->force_blending_with_shaders = data.force_blending_with_shaders();
@@ -29,7 +31,12 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->use_skia_deferred_display_list = data.use_skia_deferred_display_list();
   out->allow_overlays = data.allow_overlays();
   out->requires_alpha_channel = data.requires_alpha_channel();
-  return true;
+
+#if defined(OS_ANDROID)
+  success = data.ReadInitialScreenSize(&out->initial_screen_size);
+#endif
+
+  return success;
 }
 
 }  // namespace mojo

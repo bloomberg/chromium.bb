@@ -358,28 +358,10 @@ scoped_refptr<viz::VulkanContextProvider> GetSharedVulkanContextProvider() {
 
 gpu::SharedMemoryLimits GetCompositorContextSharedMemoryLimits(
     gfx::NativeWindow window) {
-  constexpr size_t kBytesPerPixel = 4;
-  const gfx::Size size = display::Screen::GetScreen()
-                             ->GetDisplayNearestWindow(window)
-                             .GetSizeInPixel();
-  const size_t full_screen_texture_size_in_bytes =
-      size.width() * size.height() * kBytesPerPixel;
-
-  gpu::SharedMemoryLimits limits;
-  // This limit is meant to hold the contents of the display compositor
-  // drawing the scene. See discussion here:
-  // https://codereview.chromium.org/1900993002/diff/90001/content/browser/renderer_host/compositor_impl_android.cc?context=3&column_width=80&tab_spaces=8
-  limits.command_buffer_size = 64 * 1024;
-  // These limits are meant to hold the uploads for the browser UI without
-  // any excess space.
-  limits.start_transfer_buffer_size = 64 * 1024;
-  limits.min_transfer_buffer_size = 64 * 1024;
-  limits.max_transfer_buffer_size = full_screen_texture_size_in_bytes;
-  // Texture uploads may use mapped memory so give a reasonable limit for
-  // them.
-  limits.mapped_memory_reclaim_limit = full_screen_texture_size_in_bytes;
-
-  return limits;
+  const gfx::Size screen_size = display::Screen::GetScreen()
+                                    ->GetDisplayNearestWindow(window)
+                                    .GetSizeInPixel();
+  return gpu::SharedMemoryLimits::ForDisplayCompositor(screen_size);
 }
 
 gpu::ContextCreationAttribs GetCompositorContextAttributes(
@@ -1176,6 +1158,10 @@ void CompositorImpl::InitializeDisplay(
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
   renderer_settings.auto_resize_output_surface = false;
+  renderer_settings.initial_screen_size =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(root_window_)
+          .GetSizeInPixel();
   auto* gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
                                         ->gpu_channel_establish_factory()
                                         ->GetGpuMemoryBufferManager();
@@ -1364,6 +1350,10 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
   renderer_settings.requires_alpha_channel = requires_alpha_channel_;
+  renderer_settings.initial_screen_size =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(root_window_)
+          .GetSizeInPixel();
   root_params->frame_sink_id = frame_sink_id_;
   root_params->widget = surface_handle_;
   root_params->gpu_compositing = true;
