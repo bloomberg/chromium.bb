@@ -73,6 +73,8 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
 
+  network::mojom::CookieManagerPtr* GetCookieManager();
+
  protected:
   friend class TestSaveImageFromDataURL;
 
@@ -97,7 +99,8 @@ class CONTENT_EXPORT RenderFrameMessageFilter
 
   ~RenderFrameMessageFilter() override;
 
-  void InitializeOnIO(network::mojom::CookieManagerPtrInfo cookie_manager);
+  void InitializeCookieManager(
+      network::mojom::CookieManagerRequest cookie_manager_request);
 
   // |new_render_frame_id| and |devtools_frame_token| are out parameters.
   // Browser process defines them for the renderer process.
