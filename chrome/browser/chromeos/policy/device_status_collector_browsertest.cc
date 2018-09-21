@@ -304,11 +304,7 @@ namespace policy {
 class DeviceStatusCollectorTest : public testing::Test {
  public:
   DeviceStatusCollectorTest()
-      : install_attributes_(
-            chromeos::StubInstallAttributes::CreateCloudManaged("managed.com",
-                                                                "device_id")),
-        settings_helper_(false),
-        user_manager_(new chromeos::MockUserManager()),
+      : user_manager_(new chromeos::MockUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)),
         got_session_status_(false),
         fake_kiosk_device_local_account_(
@@ -324,6 +320,8 @@ class DeviceStatusCollectorTest : public testing::Test {
                                              kArcKioskAccountId),
         user_data_dir_override_(chrome::DIR_USER_DATA),
         update_engine_client_(new chromeos::FakeUpdateEngineClient) {
+    settings_helper_.InstallAttributes()->SetCloudManaged("managed.com",
+                                                          "device_id");
     EXPECT_CALL(*user_manager_, Shutdown()).Times(1);
 
     // Although this is really a unit test which runs in the browser_tests
@@ -572,11 +570,8 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   ChromeContentClient content_client_;
   ChromeContentBrowserClient browser_content_client_;
-  chromeos::ScopedStubInstallAttributes install_attributes_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   DiskMountManager::MountPointMap mount_point_map_;
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   // Only set after MockRunningKioskApp or MockTODO was called.
   std::unique_ptr<chromeos::FakeOwnerSettingsService> owner_settings_service_;

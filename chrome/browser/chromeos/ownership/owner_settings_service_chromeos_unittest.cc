@@ -98,8 +98,9 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
 
   void SetUp() override {
     DeviceSettingsTestBase::SetUp();
-    provider_.reset(new DeviceSettingsProvider(base::Bind(&OnPrefChanged),
-                                               &device_settings_service_));
+    provider_.reset(new DeviceSettingsProvider(
+        base::Bind(&OnPrefChanged), &device_settings_service_,
+        TestingBrowserProcess::GetGlobal()->local_state()));
     owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
     InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
               true);
@@ -199,8 +200,9 @@ class OwnerSettingsServiceChromeOSNoOwnerTest
 
   void SetUp() override {
     DeviceSettingsTestBase::SetUp();
-    provider_.reset(new DeviceSettingsProvider(base::Bind(&OnPrefChanged),
-                                               &device_settings_service_));
+    provider_.reset(new DeviceSettingsProvider(
+        base::Bind(&OnPrefChanged), &device_settings_service_,
+        TestingBrowserProcess::GetGlobal()->local_state()));
     FlushDeviceSettings();
     service_ = OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
         profile_.get());

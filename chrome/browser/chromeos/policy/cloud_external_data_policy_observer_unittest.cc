@@ -183,8 +183,9 @@ void CloudExternalDataPolicyObserverTest::SetUp() {
   shared_url_loader_factory_ =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &url_loader_factory_);
-  cros_settings_ =
-      std::make_unique<chromeos::CrosSettings>(&device_settings_service_);
+  cros_settings_ = std::make_unique<chromeos::CrosSettings>(
+      &device_settings_service_,
+      TestingBrowserProcess::GetGlobal()->local_state());
   device_local_account_policy_service_.reset(
       new DeviceLocalAccountPolicyService(
           &session_manager_client_, &device_settings_service_,
