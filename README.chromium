@@ -282,3 +282,11 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-20098
   - fix: https://github.com/unicode-org/icu/pull/102
 
+14. Another cherry-pick of upstream CL for duplicate U-extension
+    handling.
+
+  - patches/langtag_uext.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20140
+  - fix: https://github.com/unicode-org/icu/pull/136
+
