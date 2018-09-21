@@ -416,9 +416,10 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
     return story_set
 
 
-@benchmark.Info(emails=['jbroman@chromium.org',
-                         'yukishiino@chromium.org',
-                         'haraken@chromium.org'],
+@benchmark.Info(emails=['hayato@chromium.org',
+                        'tkent@chromium.org',
+                        'yosin@chromium.org'],
+                component='Blink>DOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfDOM(_BlinkPerfBenchmark):
   subdir = 'dom'
