@@ -96,13 +96,23 @@ Polymer({
         print_preview_new.ScalingState.INVALID;
   },
 
+  /**
+   * @return {string} The value to display for fit to page scling.
+   * @private
+   */
+  getFitToPageScalingDisplayValue_: function() {
+    return this.documentInfo.fitToPageScaling > 0 ?
+        this.documentInfo.fitToPageScaling.toString() :
+        '';
+  },
+
   /** @private */
   onFitToPageScalingSet_: function() {
     if (this.currentState_ != print_preview_new.ScalingState.FIT_TO_PAGE)
       return;
 
     this.ignoreValue_ = true;
-    this.currentValue_ = this.documentInfo.fitToPageScaling.toString();
+    this.currentValue_ = this.getFitToPageScalingDisplayValue_();
     this.ignoreValue_ = false;
   },
 
@@ -198,7 +208,7 @@ Polymer({
       }
       this.$$('#fit-to-page-checkbox').checked = true;
       this.ignoreValue_ = true;
-      this.currentValue_ = this.documentInfo.fitToPageScaling.toString();
+      this.currentValue_ = this.getFitToPageScalingDisplayValue_();
       this.ignoreValue_ = false;
     }
   },
