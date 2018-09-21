@@ -483,8 +483,10 @@ void WindowSelectorController::RemoveAndDestroyAnimationObserver(
                 base::MatchesUniquePtr(animation_observer));
 
   // If something has been removed and its the last observer, unblur the
-  // wallpaper and let observers know.
-  if (!previous_empty && delayed_animations_.empty()) {
+  // wallpaper and let observers know. This function may be called while still
+  // in overview (ie. splitview restores one window but leaves overview active)
+  // so check that |window_selector_| is null before notifying.
+  if (!window_selector_ && !previous_empty && delayed_animations_.empty()) {
     if (IsBlurAllowed())
       overview_blur_controller_->Unblur();
     Shell::Get()->NotifyOverviewModeEndingAnimationComplete();
