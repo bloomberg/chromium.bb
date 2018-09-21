@@ -1109,6 +1109,11 @@ void CrostiniManager::AddShutdownContainerCallback(
       std::make_tuple(vm_name, container_name), std::move(shutdown_callback));
 }
 
+void CrostiniManager::AddRemoveCrostiniCallback(
+    RemoveCrostiniCallback remove_callback) {
+  remove_crostini_callbacks_.emplace_back(std::move(remove_callback));
+}
+
 void CrostiniManager::AddInstallLinuxPackageProgressObserver(
     InstallLinuxPackageProgressObserver* observer) {
   install_linux_package_progress_observers_.AddObserver(observer);
@@ -1549,10 +1554,19 @@ void CrostiniManager::OnGetContainerSshKeys(
 void CrostiniManager::RemoveCrostini(std::string vm_name,
                                      std::string container_name,
                                      RemoveCrostiniCallback callback) {
+  AddRemoveCrostiniCallback(std::move(callback));
   auto crostini_remover = base::MakeRefCounted<CrostiniRemover>(
       profile_, std::move(vm_name), std::move(container_name),
-      std::move(callback));
+      base::BindOnce(&CrostiniManager::OnRemoveCrostini,
+                     weak_ptr_factory_.GetWeakPtr()));
   crostini_remover->RemoveCrostini();
+}
+
+void CrostiniManager::OnRemoveCrostini(ConciergeClientResult result) {
+  for (auto& callback : remove_crostini_callbacks_) {
+    std::move(callback).Run(result);
+  }
+  remove_crostini_callbacks_.clear();
 }
 
 void CrostiniManager::FinishRestart(CrostiniRestarter* restarter,
