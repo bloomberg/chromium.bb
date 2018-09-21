@@ -25,6 +25,7 @@ struct TransformNode;
 namespace blink {
 
 class ClipPaintPropertyNode;
+class LayerListBuilder;
 class EffectPaintPropertyNode;
 class ScrollPaintPropertyNode;
 class TransformPaintPropertyNode;
@@ -45,7 +46,7 @@ class PropertyTreeManager {
   PropertyTreeManager(PropertyTreeManagerClient&,
                       cc::PropertyTrees&,
                       cc::Layer* root_layer,
-                      int sequence_number);
+                      LayerListBuilder*);
   ~PropertyTreeManager() {
     DCHECK(!effect_stack_.size()) << "PropertyTreeManager::Finalize() must be "
                                      "called at the end of tree conversion.";
@@ -150,6 +151,8 @@ class PropertyTreeManager {
   // appended into.
   cc::Layer* root_layer_;
 
+  LayerListBuilder* layer_list_builder_;
+
   // Maps from Blink-side property tree nodes to cc property node indices.
   HashMap<const TransformPaintPropertyNode*, int> transform_node_map_;
   HashMap<const ClipPaintPropertyNode*, int> clip_node_map_;
@@ -181,8 +184,6 @@ class PropertyTreeManager {
     const ClipPaintPropertyNode* clip;
   };
   Vector<EffectStackEntry> effect_stack_;
-
-  int sequence_number_;
 
 #if DCHECK_IS_ON()
   HashSet<const EffectPaintPropertyNode*> effect_nodes_converted_;

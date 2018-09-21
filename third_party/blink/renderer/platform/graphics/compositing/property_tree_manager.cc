@@ -11,6 +11,7 @@
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
@@ -34,11 +35,11 @@ static constexpr int kSecondaryRootNodeId = 1;
 PropertyTreeManager::PropertyTreeManager(PropertyTreeManagerClient& client,
                                          cc::PropertyTrees& property_trees,
                                          cc::Layer* root_layer,
-                                         int sequence_number)
+                                         LayerListBuilder* layer_list_builder)
     : client_(client),
       property_trees_(property_trees),
       root_layer_(root_layer),
-      sequence_number_(sequence_number) {
+      layer_list_builder_(layer_list_builder) {
   SetupRootTransformNode();
   SetupRootClipNode();
   SetupRootEffectNode();
@@ -398,8 +399,9 @@ void PropertyTreeManager::EmitClipMaskLayer() {
   mask_effect.blend_mode = SkBlendMode::kDstIn;
 
   const auto* clip_space = current_clip_->LocalTransformSpace();
-  root_layer_->AddChild(mask_layer);
-  mask_layer->set_property_tree_sequence_number(sequence_number_);
+  layer_list_builder_->Add(mask_layer);
+  mask_layer->set_property_tree_sequence_number(
+      root_layer_->property_tree_sequence_number());
   mask_layer->SetTransformTreeIndex(EnsureCompositorTransformNode(clip_space));
   // TODO(pdr): This could be a performance issue because it crawls up the
   // transform tree for each pending layer. If this is on profiles, we should

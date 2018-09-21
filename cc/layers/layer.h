@@ -67,8 +67,6 @@ class PictureLayer;
 // from parents to children.
 class CC_EXPORT Layer : public base::RefCounted<Layer> {
  public:
-  using LayerListType = LayerList;
-
   // An invalid layer id, as all layer ids are positive.
   enum LayerIdLabels {
     INVALID_ID = -1,
@@ -118,6 +116,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Removes all children from this layer's list of children, removing ownership
   // of those children.
   void RemoveAllChildren();
+  // Sets the children while minimizing changes to layers that are already
+  // children of this layer.
+  void SetChildLayerList(LayerList children);
   // Returns true if |ancestor| is this layer's parent or higher ancestor.
   bool HasAncestor(const Layer* ancestor) const;
 
