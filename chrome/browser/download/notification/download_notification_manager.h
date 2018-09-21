@@ -33,8 +33,7 @@ class DownloadNotificationManager : public DownloadUIController::Delegate,
   friend class test::DownloadItemNotificationTest;
 
   Profile* profile_;
-  std::map<ContentId, DownloadItemNotification::DownloadItemNotificationPtr>
-      items_;
+  std::map<ContentId, std::unique_ptr<DownloadItemNotification>> items_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadNotificationManager);
 };

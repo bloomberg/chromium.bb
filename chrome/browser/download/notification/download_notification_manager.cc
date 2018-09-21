@@ -5,19 +5,12 @@
 #include "chrome/browser/download/notification/download_notification_manager.h"
 
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/notification/download_item_notification.h"
 
 DownloadNotificationManager::DownloadNotificationManager(Profile* profile)
     : profile_(profile) {}
 
-DownloadNotificationManager::~DownloadNotificationManager() {
-  for (auto& item : items_) {
-    DownloadItemNotification* download_notification = item.second.get();
-    DownloadUIModel* model = download_notification->GetDownload();
-    if (model->GetState() == download::DownloadItem::IN_PROGRESS)
-      download_notification->DisablePopup();
-    download_notification->Shutdown();
-  }
-}
+DownloadNotificationManager::~DownloadNotificationManager() = default;
 
 void DownloadNotificationManager::OnNewDownloadReady(
     download::DownloadItem* item) {
@@ -32,11 +25,9 @@ void DownloadNotificationManager::OnNewDownloadReady(
   std::unique_ptr<DownloadUIModel> model =
       std::make_unique<DownloadItemModel>(item);
   ContentId contentId = model->GetContentId();
-  DownloadItemNotification::DownloadItemNotificationPtr notification(
-      new DownloadItemNotification(profile_, std::move(model)),
-      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
-  notification->SetObserver(this);
-  items_.emplace(contentId, std::move(notification));
+  items_[contentId] =
+      std::make_unique<DownloadItemNotification>(profile_, std::move(model));
+  items_[contentId]->SetObserver(this);
 }
 
 void DownloadNotificationManager::OnDownloadDestroyed(

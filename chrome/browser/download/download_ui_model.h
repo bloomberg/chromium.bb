@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_commands.h"
@@ -28,9 +27,6 @@ using offline_items_collection::ContentId;
 // with a download.
 class DownloadUIModel {
  public:
-  using DownloadUIModelPtr =
-      std::unique_ptr<DownloadUIModel, base::OnTaskRunnerDeleter>;
-
   DownloadUIModel();
   virtual ~DownloadUIModel();
 
@@ -44,8 +40,8 @@ class DownloadUIModel {
     virtual ~Observer() {}
   };
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
 
   // Returns the content id associated with this download.
   virtual ContentId GetContentId() const;

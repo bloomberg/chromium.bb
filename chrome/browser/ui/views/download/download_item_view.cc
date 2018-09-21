@@ -127,7 +127,7 @@ class SeparatorBorder : public views::FocusableBorder {
 
 }  // namespace
 
-DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
+DownloadItemView::DownloadItemView(std::unique_ptr<DownloadUIModel> download,
                                    DownloadShelfView* parent,
                                    views::View* accessible_alert)
     : shelf_(parent),
