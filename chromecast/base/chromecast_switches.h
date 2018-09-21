@@ -81,6 +81,7 @@ extern const char kEnableTopDragGesture[];
 // Background color used when Chromium hasn't rendered anything yet.
 extern const char kCastAppBackgroundColor[];
 
+extern const char kMixerServiceEndpoint[];
 extern const char kCastMemoryPressureCriticalFraction[];
 extern const char kCastMemoryPressureModerateFraction[];
 
