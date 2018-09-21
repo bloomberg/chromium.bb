@@ -153,10 +153,7 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
   RenderWidgetHostViewBase* target = result.view;
   auto* event_ptr = &event;
   async_depth_ = 0;
-  // TODO(kenrb, wjmaclean): Asynchronous hit tests don't work properly with
-  // GuestViews, so rely on the synchronous result.
-  // See https://crbug.com/802378.
-  if (result.should_query_view && !target->IsRenderWidgetHostViewGuest()) {
+  if (result.should_query_view) {
     // TODO(kenrb, sadrul): When all event types support asynchronous hit
     // testing, we should be able to have FindTargetSynchronously return the
     // view and location to use for the renderer hit test query.

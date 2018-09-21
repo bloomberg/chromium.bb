@@ -18,6 +18,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
@@ -172,6 +173,16 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
   return blink::WebCoalescedInputEvent(pointer_event, related_pointer_events);
 }
 
+viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebNode& node) {
+  blink::WebFrame* result_frame = blink::WebFrame::FromFrameOwnerElement(node);
+  if (result_frame && result_frame->IsWebRemoteFrame()) {
+    return RenderFrameProxy::FromWebFrame(result_frame->ToWebRemoteFrame())
+        ->frame_sink_id();
+  }
+  auto* plugin = BrowserPlugin::GetFromNode(node);
+  return plugin ? plugin->frame_sink_id() : viz::FrameSinkId();
+}
+
 }  // namespace
 
 RenderWidgetInputHandler::RenderWidgetInputHandler(
@@ -213,20 +224,16 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
                             widget_->routing_id());
   }
 
-  blink::WebFrame* result_frame =
-      blink::WebFrame::FromFrameOwnerElement(result_node);
-  if (result_frame && result_frame->IsWebRemoteFrame()) {
-    viz::FrameSinkId frame_sink_id =
-        RenderFrameProxy::FromWebFrame(result_frame->ToWebRemoteFrame())
-            ->frame_sink_id();
+  viz::FrameSinkId frame_sink_id = GetRemoteFrameSinkId(result_node);
+  if (frame_sink_id.is_valid()) {
     *local_point = gfx::PointF(result.LocalPointWithoutContentBoxOffset());
     if (widget_->compositor_deps()->IsUseZoomForDSFEnabled()) {
       *local_point = gfx::ConvertPointToDIP(
           widget_->GetOriginalScreenInfo().device_scale_factor, *local_point);
     }
-    if (frame_sink_id.is_valid())
-      return frame_sink_id;
+    return frame_sink_id;
   }
+
   // Return the FrameSinkId for the current widget if the point did not hit
   // test to a remote frame, or the remote frame doesn't have a valid
   // FrameSinkId yet.
