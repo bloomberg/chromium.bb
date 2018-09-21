@@ -3244,6 +3244,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="12" label="WebAPK update task"/>
   <int value="13" label="Download resumption task"/>
   <int value="14" label="Feed refresh task"/>
+  <int value="15" label="Component update task"/>
+  <int value="16" label="Explore Sites refresh task"/>
 </enum>
 
 <enum name="BackgroundTracingState">

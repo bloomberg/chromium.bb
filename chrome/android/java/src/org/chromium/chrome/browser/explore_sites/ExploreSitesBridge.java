@@ -29,6 +29,14 @@ public class ExploreSitesBridge {
         nativeGetEspCatalog(profile, result, callback);
     }
 
+    /**
+     * Causes a network request for updating the catalog.
+     */
+    public static void updateCatalogFromNetwork(Profile profile, Callback<Void> finishedCallback) {
+        // TODO(dewittj): Connect to the ExploreSitesService on the native side.
+        finishedCallback.onResult(null);
+    }
+
     private static native void nativeGetEspCatalog(Profile profile,
             List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);
 }
