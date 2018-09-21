@@ -8,8 +8,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
-#include "media/base/cdm_proxy_context.h"
 #include "media/base/media_log.h"
+#include "media/cdm/cdm_proxy_context.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/windows/d3d11_picture_buffer.h"
@@ -105,7 +105,7 @@ Status D3D11H264Accelerator::SubmitFrameMetadata(
   base::Optional<CdmProxyContext::D3D11DecryptContext> decrypt_context;
   if (is_encrypted) {
     decrypt_context = cdm_proxy_context_->GetD3D11DecryptContext(
-        pic->decrypt_config()->key_id());
+        CdmProxy::KeyType::kDecryptAndDecode, pic->decrypt_config()->key_id());
     if (!decrypt_context) {
       RecordFailure("Cannot find decrypt context for the frame.");
       return Status::kTryAgain;

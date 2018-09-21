@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_CDM_PROXY_CONTEXT_H_
-#define MEDIA_BASE_CDM_PROXY_CONTEXT_H_
+#ifndef MEDIA_CDM_CDM_PROXY_CONTEXT_H_
+#define MEDIA_CDM_CDM_PROXY_CONTEXT_H_
 
 #include <stdint.h>
 
@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"
+#include "media/cdm/cdm_proxy.h"
 
 #if defined(OS_WIN)
 #include <d3d11.h>
@@ -45,8 +46,10 @@ class MEDIA_EXPORT CdmProxyContext {
   // Returns D3D11DecryptContext on success. Returns nullopt otherwise. The
   // D3D11DecryptContext instance is only guaranteed to be valid before the
   // caller returns.
+  // |key_type| is the requesting key type.
   // |key_id| is the key ID of the media to decrypt.
   virtual base::Optional<D3D11DecryptContext> GetD3D11DecryptContext(
+      CdmProxy::KeyType key_type,
       const std::string& key_id) WARN_UNUSED_RESULT;
 #endif  // defined(OS_WIN)
 
@@ -61,4 +64,4 @@ class MEDIA_EXPORT CdmProxyContext {
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_CDM_PROXY_CONTEXT_H_
+#endif  // MEDIA_CDM_CDM_PROXY_CONTEXT_H_
