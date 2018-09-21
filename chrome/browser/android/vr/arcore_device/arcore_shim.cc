@@ -66,11 +66,11 @@ void LoadFunction(void* handle, const char* function_name, Fn* fn_out) {
 
 namespace vr {
 
-bool LoadArCoreSdk() {
+bool LoadArCoreSdk(const std::string& libraryPath) {
   if (arcore_api)
     return true;
 
-  sdk_handle = dlopen("libarcore_sdk_c_minimal.so", RTLD_GLOBAL | RTLD_NOW);
+  sdk_handle = dlopen(libraryPath.c_str(), RTLD_GLOBAL | RTLD_NOW);
   if (!sdk_handle) {
     char* error_string = nullptr;
     error_string = dlerror();

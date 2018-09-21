@@ -46,6 +46,7 @@ class ARCoreDevice : public VRDeviceBase {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  void OnRequestInstallArModuleResult(bool success);
   void OnRequestInstallSupportedARCoreCanceled();
 
  private:
@@ -136,6 +137,7 @@ class ARCoreDevice : public VRDeviceBase {
 
   base::OnceCallback<void(bool)>
       on_request_arcore_install_or_update_result_callback_;
+  base::OnceCallback<void(bool)> on_request_ar_module_result_callback_;
 
   // Must be last.
   base::WeakPtrFactory<ARCoreDevice> weak_ptr_factory_;
