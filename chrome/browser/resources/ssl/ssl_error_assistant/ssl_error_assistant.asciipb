@@ -6,7 +6,7 @@
 # certificates. See chrome/browser/ssl/ssl_error_assistant.proto for the full
 # format.
 
-version_id: 6
+version_id: 5
 
 # https://captive-portal.badssl.com leaf.
 # This is a test certificate, always keep it at the top.
@@ -28,6 +28,12 @@ captive_portal_cert {
 #          CN=gateway.alwayson.co.za
 captive_portal_cert {
   sha256_hash: "sha256/m/nBiLhStttu1YmOz7Y3D2u1iB1dV2CbIfFa3R2YW5M="
+}
+
+# auth.impulse.com
+# https://crt.sh/?q=d92d97e4d17ce28a7c844f58b0d1cda44e604b959cff998435e01777777ce715
+captive_portal_cert {
+  sha256_hash: "sha256/8Iuf4xRbVCmCMQTJn3rxlglIO1IOKoyuSUgmXyfaIKs="
 }
 
 # beeline.ru
