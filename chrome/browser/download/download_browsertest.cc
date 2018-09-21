@@ -3833,7 +3833,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithFakeSafeBrowsing,
   DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   DownloadItem* download = downloads[0];
-  DownloadCommands(download).ExecuteCommand(DownloadCommands::KEEP);
+  DownloadItemModel model(download);
+  DownloadCommands(&model).ExecuteCommand(DownloadCommands::KEEP);
 
   safe_browsing::ClientSafeBrowsingReportRequest actual_report;
   actual_report.ParseFromString(
@@ -3870,7 +3871,8 @@ IN_PROC_BROWSER_TEST_F(
   DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   DownloadItem* download = downloads[0];
-  DownloadCommands(download).ExecuteCommand(DownloadCommands::DISCARD);
+  DownloadItemModel model(download);
+  DownloadCommands(&model).ExecuteCommand(DownloadCommands::DISCARD);
 
   EXPECT_TRUE(test_safe_browsing_factory_->fake_safe_browsing_service()
                   ->serilized_download_report()

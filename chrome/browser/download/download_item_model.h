@@ -32,6 +32,7 @@ class DownloadItemModel : public DownloadUIModel,
 
   // DownloadUIModel implementation.
   ContentId GetContentId() const override;
+  Profile* profile() const override;
   base::string16 GetInterruptReasonText() const override;
   base::string16 GetStatusText() const override;
   base::string16 GetTabProgressStatusText() const override;
@@ -77,7 +78,10 @@ class DownloadItemModel : public DownloadUIModel,
   bool GetOpened() const override;
   void SetOpened(bool opened) override;
   bool IsDone() const override;
+  void Pause() override;
   void Cancel(bool user_cancel) override;
+  void Resume() override;
+  void Remove() override;
   void SetOpenWhenComplete(bool open) override;
   download::DownloadInterruptReason GetLastReason() const override;
   base::FilePath GetFullPath() const override;
@@ -87,7 +91,12 @@ class DownloadItemModel : public DownloadUIModel,
   GURL GetURL() const override;
 
 #if !defined(OS_ANDROID)
-  DownloadCommands GetDownloadCommands() const override;
+  bool IsCommandEnabled(const DownloadCommands* download_commands,
+                        DownloadCommands::Command command) const override;
+  bool IsCommandChecked(const DownloadCommands* download_commands,
+                        DownloadCommands::Command command) const override;
+  void ExecuteCommand(DownloadCommands* download_commands,
+                      DownloadCommands::Command command) override;
 #endif
 
   // download::DownloadItem::Observer implementation.

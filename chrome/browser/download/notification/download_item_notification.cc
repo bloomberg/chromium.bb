@@ -280,7 +280,7 @@ void DownloadItemNotification::Click(
     DownloadCommands::Command command = button_actions_->at(*button_index);
     RecordButtonClickAction(command);
 
-    item_->GetDownloadCommands().ExecuteCommand(command);
+    DownloadCommands(item_.get()).ExecuteCommand(command);
 
     // ExecuteCommand() might cause |item_| to be destroyed.
     if (item_ && command != DownloadCommands::PAUSE &&
@@ -382,7 +382,7 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
     return;
   }
 
-  DownloadCommands command = item_->GetDownloadCommands();
+  DownloadCommands command(item_.get());
 
   notification_->set_title(GetTitle());
   notification_->set_message(GetSubStatusString());

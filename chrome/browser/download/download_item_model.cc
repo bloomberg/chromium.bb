@@ -13,16 +13,19 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
@@ -317,6 +320,11 @@ ContentId DownloadItemModel::GetContentId() const {
                             ->IsOffTheRecord();
   return ContentId(OfflineItemUtils::GetDownloadNamespace(off_the_record),
                    download_->GetGuid());
+}
+
+Profile* DownloadItemModel::profile() const {
+  return Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download_));
 }
 
 base::string16 DownloadItemModel::GetInterruptReasonText() const {
@@ -776,8 +784,20 @@ bool DownloadItemModel::IsDone() const {
   return download_->IsDone();
 }
 
+void DownloadItemModel::Pause() {
+  download_->Pause();
+}
+
+void DownloadItemModel::Resume() {
+  download_->Resume();
+}
+
 void DownloadItemModel::Cancel(bool user_cancel) {
   download_->Cancel(user_cancel);
+}
+
+void DownloadItemModel::Remove() {
+  download_->Remove();
 }
 
 void DownloadItemModel::SetOpenWhenComplete(bool open) {
@@ -807,12 +827,6 @@ bool DownloadItemModel::GetFileExternallyRemoved() const {
 GURL DownloadItemModel::GetURL() const {
   return download_->GetURL();
 }
-
-#if !defined(OS_ANDROID)
-DownloadCommands DownloadItemModel::GetDownloadCommands() const {
-  return DownloadCommands(download_);
-}
-#endif
 
 void DownloadItemModel::OnDownloadUpdated(DownloadItem* download) {
   for (auto& obs : observers_)
@@ -897,3 +911,167 @@ void DownloadItemModel::OpenUsingPlatformHandler() {
   delegate->OpenDownloadUsingPlatformHandler(download_);
   RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_USER_PLATFORM);
 }
+
+#if !defined(OS_ANDROID)
+bool DownloadItemModel::IsCommandEnabled(
+    const DownloadCommands* download_commands,
+    DownloadCommands::Command command) const {
+  switch (command) {
+    case DownloadCommands::SHOW_IN_FOLDER:
+      return download_->CanShowInFolder();
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+      return download_->CanOpenDownload() &&
+             !download_crx_util::IsExtensionDownload(*download_);
+    case DownloadCommands::PLATFORM_OPEN:
+      return download_->CanOpenDownload() &&
+             !download_crx_util::IsExtensionDownload(*download_);
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
+      // For temporary downloads, the target filename might be a temporary
+      // filename. Don't base an "Always open" decision based on it. Also
+      // exclude extensions.
+      return download_->CanOpenDownload() &&
+             safe_browsing::FileTypePolicies::GetInstance()
+                 ->IsAllowedToOpenAutomatically(
+                     download_->GetTargetFilePath()) &&
+             !download_crx_util::IsExtensionDownload(*download_);
+    case DownloadCommands::PAUSE:
+      return !download_->IsSavePackageDownload() &&
+             DownloadUIModel::IsCommandEnabled(download_commands, command);
+    case DownloadCommands::CANCEL:
+    case DownloadCommands::RESUME:
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+    case DownloadCommands::ANNOTATE:
+    case DownloadCommands::DISCARD:
+    case DownloadCommands::KEEP:
+    case DownloadCommands::LEARN_MORE_SCANNING:
+    case DownloadCommands::LEARN_MORE_INTERRUPTED:
+      return DownloadUIModel::IsCommandEnabled(download_commands, command);
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool DownloadItemModel::IsCommandChecked(
+    const DownloadCommands* download_commands,
+    DownloadCommands::Command command) const {
+  switch (command) {
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+      return download_->GetOpenWhenComplete() ||
+             download_crx_util::IsExtensionDownload(*download_);
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+      if (download_commands->CanOpenPdfInSystemViewer()) {
+        DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(profile());
+        return prefs->ShouldOpenPdfInSystemReader();
+      }
+#endif
+      return download_->ShouldOpenFileBasedOnExtension();
+    case DownloadCommands::PAUSE:
+    case DownloadCommands::RESUME:
+      return IsPaused();
+    case DownloadCommands::SHOW_IN_FOLDER:
+    case DownloadCommands::PLATFORM_OPEN:
+    case DownloadCommands::CANCEL:
+    case DownloadCommands::DISCARD:
+    case DownloadCommands::KEEP:
+    case DownloadCommands::LEARN_MORE_SCANNING:
+    case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+    case DownloadCommands::ANNOTATE:
+      return false;
+  }
+  return false;
+}
+
+void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
+                                       DownloadCommands::Command command) {
+  switch (command) {
+    case DownloadCommands::SHOW_IN_FOLDER:
+      download_->ShowDownloadInShell();
+      break;
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+      download_->OpenDownload();
+      break;
+    case DownloadCommands::ALWAYS_OPEN_TYPE: {
+      bool is_checked = IsCommandChecked(download_commands,
+                                         DownloadCommands::ALWAYS_OPEN_TYPE);
+      DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(profile());
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+      if (download_commands->CanOpenPdfInSystemViewer()) {
+        prefs->SetShouldOpenPdfInSystemReader(!is_checked);
+        SetShouldPreferOpeningInBrowser(is_checked);
+        break;
+      }
+#endif
+      base::FilePath path = download_->GetTargetFilePath();
+      if (is_checked)
+        prefs->DisableAutoOpenBasedOnExtension(path);
+      else
+        prefs->EnableAutoOpenBasedOnExtension(path);
+      break;
+    }
+    case DownloadCommands::KEEP:
+// Only sends uncommon download accept report if :
+// 1. FULL_SAFE_BROWSING is enabled, and
+// 2. Download verdict is uncommon, and
+// 3. Download URL is not empty, and
+// 4. User is not in incognito mode.
+#if defined(FULL_SAFE_BROWSING)
+      if (GetDangerType() == download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT &&
+          !GetURL().is_empty() && !profile()->IsOffTheRecord()) {
+        safe_browsing::SafeBrowsingService* sb_service =
+            g_browser_process->safe_browsing_service();
+        // Compiles the uncommon download warning report.
+        safe_browsing::ClientSafeBrowsingReportRequest report;
+        report.set_type(safe_browsing::ClientSafeBrowsingReportRequest::
+                            DANGEROUS_DOWNLOAD_WARNING);
+        report.set_download_verdict(
+            safe_browsing::ClientDownloadResponse::UNCOMMON);
+        report.set_url(GetURL().spec());
+        report.set_did_proceed(true);
+        std::string token =
+            safe_browsing::DownloadProtectionService::GetDownloadPingToken(
+                download_);
+        if (!token.empty())
+          report.set_token(token);
+        std::string serialized_report;
+        if (report.SerializeToString(&serialized_report)) {
+          sb_service->SendSerializedDownloadReport(serialized_report);
+        } else {
+          DCHECK(false)
+              << "Unable to serialize the uncommon download warning report.";
+        }
+      }
+#endif
+      download_->ValidateDangerousDownload();
+      break;
+    case DownloadCommands::LEARN_MORE_SCANNING: {
+#if defined(FULL_SAFE_BROWSING)
+      using safe_browsing::DownloadProtectionService;
+
+      safe_browsing::SafeBrowsingService* sb_service =
+          g_browser_process->safe_browsing_service();
+      DownloadProtectionService* protection_service =
+          (sb_service ? sb_service->download_protection_service() : nullptr);
+      if (protection_service)
+        protection_service->ShowDetailsForDownload(
+            *download_, download_commands->GetBrowser());
+#else
+      // Should only be getting invoked if we are using safe browsing.
+      NOTREACHED();
+#endif
+      break;
+    }
+    case DownloadCommands::PLATFORM_OPEN:
+    case DownloadCommands::CANCEL:
+    case DownloadCommands::DISCARD:
+    case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::PAUSE:
+    case DownloadCommands::RESUME:
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+    case DownloadCommands::ANNOTATE:
+      DownloadUIModel::ExecuteCommand(download_commands, command);
+      break;
+  }
+}
+#endif
