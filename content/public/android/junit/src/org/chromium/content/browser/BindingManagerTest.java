@@ -48,7 +48,7 @@ public class BindingManagerTest {
                 null /* serviceBundle */);
         connection.setPid(pid);
         connection.start(false /* useStrongBinding */, null /* serviceCallback */);
-        manager.increaseRecency(connection);
+        manager.addConnection(connection);
         iterable.add(connection);
         connection.removeModerateBinding(); // Remove initial binding.
         return connection;
@@ -181,7 +181,7 @@ public class BindingManagerTest {
             // Verify that each connection has a moderate binding after binding and releasing a
             // strong binding.
             for (ChildProcessConnection connection : connections) {
-                manager.increaseRecency(connection);
+                manager.addConnection(connection);
                 mIterable.add(connection);
                 Assert.assertTrue(message, connection.isModerateBindingBound());
             }

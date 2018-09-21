@@ -80,20 +80,6 @@ class BindingManager implements ComponentCallbacks2 {
         assert mConnections.size() == newSize;
     }
 
-    private void addAndUseConnection(ChildProcessConnection connection) {
-        // Note that the size of connections is currently fairly small (40).
-        // If it became bigger we should consider using an alternate data structure.
-        boolean alreadyInQueue = !mConnections.add(connection);
-        if (!alreadyInQueue) connection.addModerateBinding();
-        assert mConnections.size() <= mMaxSize;
-    }
-
-    private void removeConnection(ChildProcessConnection connection) {
-        boolean alreadyInQueue = mConnections.remove(connection);
-        if (alreadyInQueue) connection.removeModerateBinding();
-        assert !mConnections.contains(connection);
-    }
-
     private void removeAllConnections() {
         removeOldConnections(mConnections.size());
     }
@@ -162,13 +148,20 @@ class BindingManager implements ComponentCallbacks2 {
         context.registerComponentCallbacks(this);
     }
 
-    public void increaseRecency(ChildProcessConnection connection) {
+    public void addConnection(ChildProcessConnection connection) {
         assert LauncherThread.runningOnLauncherThread();
-        addAndUseConnection(connection);
+
+        // Note that the size of connections is currently fairly small (40).
+        // If it became bigger we should consider using an alternate data structure.
+        boolean alreadyInQueue = !mConnections.add(connection);
+        if (!alreadyInQueue) connection.addModerateBinding();
+        assert mConnections.size() <= mMaxSize;
     }
 
-    public void dropRecency(ChildProcessConnection connection) {
+    public void removeConnection(ChildProcessConnection connection) {
         assert LauncherThread.runningOnLauncherThread();
-        removeConnection(connection);
+        boolean alreadyInQueue = mConnections.remove(connection);
+        if (alreadyInQueue) connection.removeModerateBinding();
+        assert !mConnections.contains(connection);
     }
 }
