@@ -60,7 +60,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
                                      public ChildFrameCompositor,
                                      public MouseLockDispatcher::LockTarget {
  public:
-  static BrowserPlugin* GetFromNode(blink::WebNode& node);
+  static BrowserPlugin* GetFromNode(const blink::WebNode& node);
 
   int render_frame_routing_id() const { return render_frame_routing_id_; }
   int browser_plugin_instance_id() const { return browser_plugin_instance_id_; }
@@ -98,6 +98,8 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   // Returns the last allocated LocalSurfaceId.
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;
+
+  const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
   void SynchronizeVisualProperties();
 

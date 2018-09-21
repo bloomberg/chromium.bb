@@ -72,7 +72,7 @@ static base::LazyInstance<PluginContainerMap>::DestructorAtExit
 namespace content {
 
 // static
-BrowserPlugin* BrowserPlugin::GetFromNode(blink::WebNode& node) {
+BrowserPlugin* BrowserPlugin::GetFromNode(const blink::WebNode& node) {
   blink::WebPluginContainer* container = node.PluginContainer();
   if (!container)
     return nullptr;
