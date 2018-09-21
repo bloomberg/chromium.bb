@@ -68,16 +68,23 @@
         width: auto
       }
 
+      cr-dialog [slot=body] {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+      }
+
       /* Height = 3 * destination item (28px) + 10px padding + 1 line text */
       #recentList {
-        height: calc(94px + 1rem);
+        flex: 0;
+        min-height: calc(94px + 1rem);
         padding-bottom: 18px;
       }
 
       /* Height = 100vh - recent (94px + 1 line + 18px) - padding (68px) - */
       /* header (82px + 1 line) - button (64px) - 2px spinner - 2px extra */
       #printList {
-        height: calc(100vh - 330px - 2rem);
+        flex: 1;
         min-height: calc(94px + 1rem);
         padding-bottom: 0;
       }
@@ -161,21 +168,19 @@
         </print-preview-search-box>
       </div>
       <div slot="body">
-        <div>
-          <print-preview-destination-list id="recentList"
-              destinations="[[recentDestinationList_]]"
-              search-query="[[searchQuery_]]"
-              list-name="$i18n{recentDestinationsTitle}"
-              on-destination-selected="onDestinationSelected_">
-          </print-preview-destination-list>
-          <print-preview-destination-list id="printList"
-              destinations="[[destinations_]]"
-              has-action-link loading-destinations="[[loadingDestinations_]]"
-              search-query="[[searchQuery_]]"
-              list-name="$i18n{printDestinationsTitle}"
-              on-destination-selected="onDestinationSelected_">
-          </print-preview-destination-list>
-        </div>
+        <print-preview-destination-list id="recentList"
+            destinations="[[recentDestinationList_]]"
+            search-query="[[searchQuery_]]"
+            list-name="$i18n{recentDestinationsTitle}"
+            on-destination-selected="onDestinationSelected_">
+        </print-preview-destination-list>
+        <print-preview-destination-list id="printList"
+            destinations="[[destinations_]]"
+            has-action-link loading-destinations="[[loadingDestinations_]]"
+            search-query="[[searchQuery_]]"
+            list-name="$i18n{printDestinationsTitle}"
+            on-destination-selected="onDestinationSelected_">
+        </print-preview-destination-list>
         <print-preview-provisional-destination-resolver id="provisionalResolver"
             destination-store="[[destinationStore]]">
         </print-preview-provisional-destination-resolver>
