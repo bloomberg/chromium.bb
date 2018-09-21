@@ -6,7 +6,6 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_bindings.h"
 
 namespace vr {
 

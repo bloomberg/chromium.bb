@@ -4,16 +4,16 @@
 
 #include "chrome/browser/vr/test/gl_test_environment.h"
 
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
-#include "ui/gl/test/gl_image_test_support.h"
 #include "ui/gl/test/gl_test_helper.h"
 
 namespace vr {
 
 GlTestEnvironment::GlTestEnvironment(const gfx::Size frame_buffer_size) {
   // Setup offscreen GL context.
-  gl::GLImageTestSupport::InitializeGL(base::nullopt);
   surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
                                        gl::GLContextAttribs());
@@ -38,11 +38,14 @@ GlTestEnvironment::~GlTestEnvironment() {
   context_->ReleaseCurrent(surface_.get());
   context_ = nullptr;
   surface_ = nullptr;
-  gl::GLImageTestSupport::CleanupGL();
 }
 
 GLuint GlTestEnvironment::GetFrameBufferForTesting() {
   return frame_buffer_;
+}
+
+GLuint GlTestEnvironment::CreateTexture(GLenum target) {
+  return gl::GLTestHelper::CreateTexture(target);
 }
 
 }  // namespace vr

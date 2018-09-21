@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/ganesh_surface_provider.h"
+#include "chrome/browser/vr/native_gl_surface_provider.h"
 
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -16,7 +16,7 @@
 
 namespace vr {
 
-GaneshSurfaceProvider::GaneshSurfaceProvider() {
+NativeGlSurfaceProvider::NativeGlSurfaceProvider() {
   const char* version_str =
       reinterpret_cast<const char*>(glGetString(GL_VERSION));
   const char* renderer_str =
@@ -33,17 +33,17 @@ GaneshSurfaceProvider::GaneshSurfaceProvider() {
   glGetIntegerv(GL_FRAMEBUFFER_BINDING, &main_fbo_);
 }
 
-GaneshSurfaceProvider::~GaneshSurfaceProvider() = default;
+NativeGlSurfaceProvider::~NativeGlSurfaceProvider() = default;
 
-sk_sp<SkSurface> GaneshSurfaceProvider::MakeSurface(const gfx::Size& size) {
+sk_sp<SkSurface> NativeGlSurfaceProvider::MakeSurface(const gfx::Size& size) {
   return SkSurface::MakeRenderTarget(
       gr_context_.get(), SkBudgeted::kNo,
       SkImageInfo::MakeN32Premul(size.width(), size.height()), 0,
       kTopLeft_GrSurfaceOrigin, nullptr);
 }
 
-GLuint GaneshSurfaceProvider::FlushSurface(SkSurface* surface,
-                                           GLuint reuse_texture_id) {
+GLuint NativeGlSurfaceProvider::FlushSurface(SkSurface* surface,
+                                             GLuint reuse_texture_id) {
   surface->getCanvas()->flush();
   GrBackendTexture backend_texture =
       surface->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess);
