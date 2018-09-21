@@ -6381,11 +6381,14 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
       CloneBlobURLToken(info.blob_url_token.get()).PassHandle().release();
   params.should_replace_current_entry =
       info.replaces_current_history_item && render_view_->history_list_length_;
-  params.user_gesture =
-      WebUserGestureIndicator::IsProcessingUserGesture(frame_);
+  params.user_gesture = info.has_user_gesture;
   if (GetContentClient()->renderer()->AllowPopup())
     params.user_gesture = true;
 
+  // TODO(csharrison,dgozman): FrameLoader::StartNavigation already consumes for
+  // all main frame navigations, except in the case where page A is navigating
+  // page B (e.g. using anchor targets). This edge case can go away when
+  // UserActivationV2 ships, which would make the conditional below redundant.
   if (is_main_frame_ || policy == blink::kWebNavigationPolicyNewBackgroundTab ||
       policy == blink::kWebNavigationPolicyNewForegroundTab ||
       policy == blink::kWebNavigationPolicyNewWindow ||
