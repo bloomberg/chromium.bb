@@ -367,10 +367,9 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
     }
 
     /**
-     * Returns the Array of {@link DialogOption}. Options are displayed in the same
-     * order as they appear in the array.
+     * Returns the list of supported {@link DialogOption}.
      */
-    abstract protected int[] getDialogOptions();
+    abstract protected List<Integer> getDialogOptions();
 
     /**
      * Returns whether this preference page is a basic or advanced tab in order to use separate
@@ -530,13 +529,14 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
         mDialogOpened = SystemClock.elapsedRealtime();
         getActivity().setTitle(R.string.clear_browsing_data_title);
         PreferenceUtils.addPreferencesFromResource(this, getPreferenceXmlId());
-        int[] options = getDialogOptions();
-        mItems = new Item[options.length];
-        for (int i = 0; i < options.length; i++) {
+        List<Integer> options = getDialogOptions();
+        mItems = new Item[options.size()];
+        for (int i = 0; i < options.size(); i++) {
+            @DialogOption int option = options.get(i);
             boolean enabled = true;
 
             // It is possible to disable the deletion of browsing history.
-            if (options[i] == DialogOption.CLEAR_HISTORY
+            if (option == DialogOption.CLEAR_HISTORY
                     && !PrefServiceBridge.getInstance().getBoolean(
                                Pref.ALLOW_DELETING_BROWSER_HISTORY)) {
                 enabled = false;
@@ -547,16 +547,15 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
                         false);
             }
 
-            mItems[i] = new Item(getActivity(), this, options[i],
-                    (ClearBrowsingDataCheckBoxPreference) findPreference(
-                            getPreferenceKey(options[i])),
-                    isOptionSelectedByDefault(options[i]), enabled);
+            mItems[i] = new Item(getActivity(), this, option,
+                    (ClearBrowsingDataCheckBoxPreference) findPreference(getPreferenceKey(option)),
+                    isOptionSelectedByDefault(option), enabled);
         }
 
         // Not all checkboxes defined in the layout are necessarily handled by this class
         // or a particular subclass. Hide those that are not.
         ArraySet<Integer> unboundOptions = getAllOptions();
-        unboundOptions.removeAll(getSelectedOptions());
+        unboundOptions.removeAll(options);
         for (@DialogOption Integer option : unboundOptions) {
             getPreferenceScreen().removePreference(findPreference(getPreferenceKey(option)));
         }

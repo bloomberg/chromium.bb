@@ -21,6 +21,9 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * A simpler version of {@link ClearBrowsingDataPreferences} with fewer dialog options and more
  * explanatory text.
@@ -67,9 +70,9 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
     }
 
     @Override
-    protected int[] getDialogOptions() {
-        return new int[] {DialogOption.CLEAR_HISTORY, DialogOption.CLEAR_COOKIES_AND_SITE_DATA,
-                DialogOption.CLEAR_CACHE};
+    protected List<Integer> getDialogOptions() {
+        return Arrays.asList(DialogOption.CLEAR_HISTORY, DialogOption.CLEAR_COOKIES_AND_SITE_DATA,
+                DialogOption.CLEAR_CACHE);
     }
 
     @Override
