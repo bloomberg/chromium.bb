@@ -16,6 +16,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.internal.runner.listener.InstrumentationResultPrinter;
 import android.support.test.rule.ActivityTestRule;
 import android.text.TextUtils;
+import android.view.Menu;
 
 import org.junit.Assert;
 import org.junit.runner.Description;
@@ -146,6 +147,12 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
             return mSetActivity;
         }
         return super.getActivity();
+    }
+
+    /** Retrieves the application Menu */
+    public Menu getMenu() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(
+                getActivity().getAppMenuHandler().getAppMenu()::getMenu);
     }
 
     /**

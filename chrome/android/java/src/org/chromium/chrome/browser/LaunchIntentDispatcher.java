@@ -23,6 +23,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -45,6 +46,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
+import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
@@ -363,9 +365,14 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // Create and fire a launch intent.
         Intent launchIntent = createCustomTabActivityIntent(mActivity, mIntent);
 
+        boolean hasOffTheRecordProfile =
+                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .isStartupSuccessfullyCompleted()
+                && Profile.getLastUsedProfile().hasOffTheRecordProfile();
+
         boolean shouldShowIncognitoDisclosure =
                 CustomTabIntentDataProvider.isValidExternalIncognitoIntent(launchIntent)
-                && Profile.getLastUsedProfile().hasOffTheRecordProfile();
+                && hasOffTheRecordProfile;
 
         if (shouldShowIncognitoDisclosure) {
             IncognitoDisclosureActivity.launch(mActivity, launchIntent);
