@@ -6244,23 +6244,23 @@ void RenderFrameImpl::OnFileChooserResponse(
   size_t current_size = 0;
   for (size_t i = 0; i < files.size(); ++i) {
     blink::WebFileChooserCompletion::SelectedFileInfo selected_file;
-    selected_file.file_path = files[i].file_path;
-
-    // Exclude files whose paths can't be converted into WebStrings. Blink won't
-    // be able to handle these, and the browser process would kill the renderer
-    // when it claims to have chosen an empty file path.
-    if (blink::FilePathToWebString(selected_file.file_path).IsEmpty())
-      continue;
-
-    selected_file.display_name =
-        blink::FilePathToWebString(base::FilePath(files[i].display_name));
     if (files[i].file_system_url.is_valid()) {
       selected_file.file_system_url = files[i].file_system_url;
       selected_file.length = files[i].length;
       selected_file.modification_time = files[i].modification_time;
       selected_file.is_directory = files[i].is_directory;
-    }
+    } else {
+      selected_file.file_path = files[i].file_path;
 
+      // Exclude files whose paths can't be converted into WebStrings. Blink
+      // won't be able to handle these, and the browser process would kill the
+      // renderer when it claims to have chosen an empty file path.
+      if (blink::FilePathToWebString(selected_file.file_path).IsEmpty())
+        continue;
+
+      selected_file.display_name =
+          blink::FilePathToWebString(base::FilePath(files[i].display_name));
+    }
     selected_files[current_size] = selected_file;
     current_size++;
   }

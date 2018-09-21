@@ -295,7 +295,6 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
         return;
       }
 
-      chooser_info.file_path = selected_info_list[i].file_path;
       chooser_info.file_system_url = url;
       chooser_info_list_->push_back(chooser_info);
       need_fill_metadata = true;

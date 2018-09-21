@@ -124,8 +124,7 @@ TEST(FileManagerFileAPIUtilTest,
   EXPECT_EQ("display_name", result[1].display_name);
   EXPECT_FALSE(result[1].file_system_url.is_valid());
 
-  EXPECT_EQ(FILE_PATH_LITERAL("/special/drive-test-user-hash/root/File 1.txt"),
-            result[2].file_path.value());
+  EXPECT_TRUE(result[2].file_path.empty());
   EXPECT_TRUE(result[2].display_name.empty());
   EXPECT_TRUE(result[2].file_system_url.is_valid());
   const storage::FileSystemURL url =

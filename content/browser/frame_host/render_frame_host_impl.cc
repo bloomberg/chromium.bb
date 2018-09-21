@@ -4645,14 +4645,15 @@ void RenderFrameHostImpl::FilesSelectedInChooser(
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantCreateReadWriteFile(
           GetProcess()->GetID(), file.file_path);
     } else {
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-          GetProcess()->GetID(), file.file_path);
-    }
-    if (file.file_system_url.is_valid()) {
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFileSystem(
-          GetProcess()->GetID(),
-          file_system_context->CrackURL(file.file_system_url)
-              .mount_filesystem_id());
+      if (file.file_system_url.is_valid()) {
+        ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFileSystem(
+            GetProcess()->GetID(),
+            file_system_context->CrackURL(file.file_system_url)
+                .mount_filesystem_id());
+      } else {
+        ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+            GetProcess()->GetID(), file.file_path);
+      }
     }
   }
 
