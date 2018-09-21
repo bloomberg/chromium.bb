@@ -103,7 +103,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // service with no provider registered, allowing to register fake providers
   // which do not require internet connection. The previous service is deleted.
   IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
-      browserState, CreateChromeContentSuggestionsService);
+      browserState,
+      base::BindRepeating(&CreateChromeContentSuggestionsService));
 
   ContentSuggestionsService* service =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
@@ -122,7 +123,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Resets the Service associated with this browserState to a service with
   // default providers. The previous service is deleted.
   IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
-      browserState, CreateChromeContentSuggestionsServiceWithProviders);
+      browserState,
+      base::BindRepeating(&CreateChromeContentSuggestionsServiceWithProviders));
   [super tearDown];
 }
 

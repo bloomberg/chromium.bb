@@ -51,7 +51,8 @@ class LegacyReadingListCoordinatorTest : public web::WebTestWithWebState {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
         feature_engagement::TrackerFactory::GetInstance(),
-        LegacyReadingListCoordinatorTest::BuildFeatureEngagementMockTracker);
+        base::BindRepeating(&LegacyReadingListCoordinatorTest::
+                                BuildFeatureEngagementMockTracker));
     browser_state_ = builder.Build();
 
     reading_list_model_.reset(new ReadingListModelImpl(

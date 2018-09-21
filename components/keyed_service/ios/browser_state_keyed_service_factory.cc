@@ -12,30 +12,30 @@
 
 void BrowserStateKeyedServiceFactory::SetTestingFactory(
     web::BrowserState* context,
-    TestingFactoryFunction testing_factory) {
+    TestingFactory testing_factory) {
   KeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {
     wrapped_factory = base::BindRepeating(
-        [](TestingFactoryFunction testing_factory,
+        [](const TestingFactory& testing_factory,
            base::SupportsUserData* context) {
-          return testing_factory(static_cast<web::BrowserState*>(context));
+          return testing_factory.Run(static_cast<web::BrowserState*>(context));
         },
-        testing_factory);
+        std::move(testing_factory));
   }
   KeyedServiceFactory::SetTestingFactory(context, std::move(wrapped_factory));
 }
 
 KeyedService* BrowserStateKeyedServiceFactory::SetTestingFactoryAndUse(
     web::BrowserState* context,
-    TestingFactoryFunction testing_factory) {
+    TestingFactory testing_factory) {
   KeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {
     wrapped_factory = base::BindRepeating(
-        [](TestingFactoryFunction testing_factory,
+        [](const TestingFactory& testing_factory,
            base::SupportsUserData* context) {
-          return testing_factory(static_cast<web::BrowserState*>(context));
+          return testing_factory.Run(static_cast<web::BrowserState*>(context));
         },
-        testing_factory);
+        std::move(testing_factory));
   }
   return KeyedServiceFactory::SetTestingFactoryAndUse(
       context, std::move(wrapped_factory));
