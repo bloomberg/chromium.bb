@@ -124,7 +124,7 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
     dummy_http_url = gs.GsUrlToHttp(self.dummy_archive_url,
                                     public=False, directory=True)
 
-    label = '%s Firmware' % self._current_board
+    label = '%s firmware [%s]' % (self._current_board, self.firmware_version)
     logging.PrintBuildbotLink(label, dummy_http_url)
 
   def PushBoardImage(self):
