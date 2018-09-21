@@ -34,6 +34,37 @@
 
 namespace content {
 
+namespace {
+
+// If |frame| is an iframe or a GuestView, returns its parent, null otherwise.
+RenderFrameHostImpl* ParentRenderFrameHost(RenderFrameHostImpl* frame) {
+  // Find the parent in the FrameTree (iframe).
+  if (frame->GetParent())
+    return frame->GetParent();
+
+  // Find the parent in the WebContentsTree (GuestView).
+  FrameTreeNode* frame_in_embedder =
+      frame->frame_tree_node()->render_manager()->GetOuterDelegateNode();
+  if (frame_in_embedder)
+    return frame_in_embedder->current_frame_host()->GetParent();
+
+  // No parent found.
+  return nullptr;
+}
+
+// Return the root RenderFrameHost in the outermost WebContents.
+RenderFrameHostImpl* RootRenderFrameHost(RenderFrameHostImpl* frame) {
+  RenderFrameHostImpl* current = frame;
+  while (true) {
+    RenderFrameHostImpl* parent = ParentRenderFrameHost(current);
+    if (!parent)
+      return current;
+    current = parent;
+  };
+}
+
+}  // namespace
+
 CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameProxyHost* frame_proxy_in_parent_renderer)
     : FrameConnectorDelegate(IsUseZoomForDSFEnabled()),
@@ -393,40 +424,19 @@ CrossProcessFrameConnector::GetRootRenderWidgetHostView() {
   if (!frame_proxy_in_parent_renderer_)
     return nullptr;
 
-  RenderFrameHostImpl* top_host = frame_proxy_in_parent_renderer_->
-      frame_tree_node()->frame_tree()->root()->current_frame_host();
-
-  // This method should return the root RWHV from the top-level WebContents,
-  // in the case of nested WebContents.
-  while (top_host->frame_tree_node()->render_manager()->ForInnerDelegate()) {
-    top_host = top_host->frame_tree_node()->render_manager()->
-        GetOuterDelegateNode()->frame_tree()->root()->current_frame_host();
-  }
-
-  return static_cast<RenderWidgetHostViewBase*>(top_host->GetView());
+  RenderFrameHostImpl* current =
+      frame_proxy_in_parent_renderer_->frame_tree_node()->current_frame_host();
+  RenderFrameHostImpl* root = RootRenderFrameHost(current);
+  return static_cast<RenderWidgetHostViewBase*>(root->GetView());
 }
 
 RenderWidgetHostViewBase*
 CrossProcessFrameConnector::GetParentRenderWidgetHostView() {
-  FrameTreeNode* parent =
-      frame_proxy_in_parent_renderer_->frame_tree_node()->parent();
-
-  if (!parent &&
-      frame_proxy_in_parent_renderer_->frame_tree_node()
-          ->render_manager()
-          ->GetOuterDelegateNode()) {
-    parent = frame_proxy_in_parent_renderer_->frame_tree_node()
-                 ->render_manager()
-                 ->GetOuterDelegateNode()
-                 ->parent();
-  }
-
-  if (parent) {
-    return static_cast<RenderWidgetHostViewBase*>(
-        parent->current_frame_host()->GetView());
-  }
-
-  return nullptr;
+  RenderFrameHostImpl* current =
+      frame_proxy_in_parent_renderer_->frame_tree_node()->current_frame_host();
+  RenderFrameHostImpl* parent = ParentRenderFrameHost(current);
+  return parent ? static_cast<RenderWidgetHostViewBase*>(parent->GetView())
+                : nullptr;
 }
 
 void CrossProcessFrameConnector::EnableAutoResize(const gfx::Size& min_size,
