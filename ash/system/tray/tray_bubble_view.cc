@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/bubble/tray_bubble_view.h"
+#include "ash/system/tray/tray_bubble_view.h"
 
 #include <algorithm>
 
 #include "base/macros.h"
-#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -32,7 +31,14 @@
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 
-namespace views {
+using views::BubbleBorder;
+using views::BubbleFrameView;
+using views::NonClientFrameView;
+using views::View;
+using views::ViewsDelegate;
+using views::Widget;
+
+namespace ash {
 
 namespace {
 
@@ -55,13 +61,9 @@ BubbleBorder::Arrow GetArrowAlignment(
 // lifetimes of two different bubbles can overlap briefly.
 int g_current_tray_bubble_showing_count_ = 0;
 
-}  // namespace
-
-namespace internal {
-
 // Detects any mouse movement. This is needed to detect mouse movements by the
 // user over the bubble if the bubble got created underneath the cursor.
-class MouseMoveDetectorHost : public MouseWatcherHost {
+class MouseMoveDetectorHost : public views::MouseWatcherHost {
  public:
   MouseMoveDetectorHost();
   ~MouseMoveDetectorHost() override;
@@ -72,11 +74,9 @@ class MouseMoveDetectorHost : public MouseWatcherHost {
   DISALLOW_COPY_AND_ASSIGN(MouseMoveDetectorHost);
 };
 
-MouseMoveDetectorHost::MouseMoveDetectorHost() {
-}
+MouseMoveDetectorHost::MouseMoveDetectorHost() {}
 
-MouseMoveDetectorHost::~MouseMoveDetectorHost() {
-}
+MouseMoveDetectorHost::~MouseMoveDetectorHost() {}
 
 bool MouseMoveDetectorHost::Contains(const gfx::Point& screen_point,
                                      MouseEventType type) {
@@ -85,7 +85,7 @@ bool MouseMoveDetectorHost::Contains(const gfx::Point& screen_point,
 
 // Custom layout for the bubble-view. Does the default box-layout if there is
 // enough height. Otherwise, makes sure the bottom rows are visible.
-class BottomAlignedBoxLayout : public BoxLayout {
+class BottomAlignedBoxLayout : public views::BoxLayout {
  public:
   explicit BottomAlignedBoxLayout(TrayBubbleView* bubble_view)
       : BoxLayout(BoxLayout::kVertical), bubble_view_(bubble_view) {}
@@ -102,13 +102,13 @@ class BottomAlignedBoxLayout : public BoxLayout {
 
     int consumed_height = 0;
     for (int i = host->child_count() - 1;
-        i >= 0 && consumed_height < host->height(); --i) {
+         i >= 0 && consumed_height < host->height(); --i) {
       View* child = host->child_at(i);
       if (!child->visible())
         continue;
       gfx::Size size = child->GetPreferredSize();
       child->SetBounds(0, host->height() - consumed_height - size.height(),
-          host->width(), size.height());
+                       host->width(), size.height());
       consumed_height += size.height();
     }
   }
@@ -118,9 +118,7 @@ class BottomAlignedBoxLayout : public BoxLayout {
   DISALLOW_COPY_AND_ASSIGN(BottomAlignedBoxLayout);
 };
 
-}  // namespace internal
-
-using internal::BottomAlignedBoxLayout;
+}  // namespace
 
 TrayBubbleView::Delegate::~Delegate() {}
 
@@ -396,8 +394,8 @@ int TrayBubbleView::GetHeightForWidth(int width) const {
       height += child->GetHeightForWidth(width);
   }
 
-  return (params_.max_height != 0) ?
-      std::min(height, params_.max_height) : height;
+  return (params_.max_height != 0) ? std::min(height, params_.max_height)
+                                   : height;
 }
 
 void TrayBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
@@ -414,8 +412,8 @@ void TrayBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
     // do not call the delegate, but wait for the first mouse move within the
     // bubble. The used MouseWatcher will notify use of a movement and call
     // |MouseMovedOutOfHost|.
-    mouse_watcher_ = std::make_unique<MouseWatcher>(
-        std::make_unique<views::internal::MouseMoveDetectorHost>(), this);
+    mouse_watcher_ = std::make_unique<views::MouseWatcher>(
+        std::make_unique<MouseMoveDetectorHost>(), this);
     // Set the mouse sampling frequency to roughly a frame time so that the user
     // cannot see a lag.
     mouse_watcher_->set_notify_on_exit_time(
@@ -494,4 +492,4 @@ void TrayBubbleView::FocusDefaultIfNeeded() {
   view->RequestFocus();
 }
 
-}  // namespace views
+}  // namespace ash

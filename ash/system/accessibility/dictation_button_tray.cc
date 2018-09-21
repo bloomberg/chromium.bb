@@ -80,7 +80,7 @@ base::string16 DictationButtonTray::GetAccessibleNameForTray() {
 }
 
 void DictationButtonTray::HideBubbleWithView(
-    const views::TrayBubbleView* bubble_view) {
+    const TrayBubbleView* bubble_view) {
   // This class has no bubbles to hide.
 }
 

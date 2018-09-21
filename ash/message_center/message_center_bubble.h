@@ -12,10 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace views {
-class TrayBubbleView;
-}
-
 namespace message_center {
 class MessageCenter;
 }  // namespace message_center
@@ -23,6 +19,7 @@ class MessageCenter;
 namespace ash {
 
 class MessageCenterView;
+class TrayBubbleView;
 
 // Bubble for message center.
 class MessageCenterBubble : public views::WidgetObserver,
@@ -43,7 +40,7 @@ class MessageCenterBubble : public views::WidgetObserver,
 
   // Called after the bubble view has been constructed. Creates and initializes
   // the bubble contents.
-  void InitializeContents(views::TrayBubbleView* bubble_view);
+  void InitializeContents(TrayBubbleView* bubble_view);
 
   bool IsVisible() const;
 
@@ -52,13 +49,13 @@ class MessageCenterBubble : public views::WidgetObserver,
 
   size_t ASH_EXPORT NumMessageViewsForTest() const;
 
-  views::TrayBubbleView* bubble_view() const { return bubble_view_; }
+  TrayBubbleView* bubble_view() const { return bubble_view_; }
 
  private:
   void UpdateBubbleView();
 
   message_center::MessageCenter* message_center_;
-  views::TrayBubbleView* bubble_view_ = nullptr;
+  TrayBubbleView* bubble_view_ = nullptr;
 
   // |message_center_view_| is a child view of the ContentsView, which is a
   // child view of |bubble_view_|. They're added to the view tree by calling

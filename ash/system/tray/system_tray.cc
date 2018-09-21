@@ -82,8 +82,6 @@
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 
-using views::TrayBubbleView;
-
 namespace ash {
 
 namespace {
@@ -592,7 +590,7 @@ void SystemTray::ShowBubble(bool show_by_click) {
   ShowDefaultView(BUBBLE_CREATE_NEW, show_by_click);
 }
 
-views::TrayBubbleView* SystemTray::GetBubbleView() {
+TrayBubbleView* SystemTray::GetBubbleView() {
   // Only return the bubble view when it's showing the main system tray bubble,
   // not the volume or brightness bubbles etc., to avoid client confusion.
   return system_bubble_ && full_system_tray_menu_

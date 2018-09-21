@@ -88,8 +88,6 @@ gfx::Insets GetMirroredBackgroundInsets(bool is_shelf_horizontal) {
 
 }  // namespace
 
-using views::TrayBubbleView;
-
 namespace ash {
 
 // static
@@ -424,8 +422,7 @@ void TrayBackgroundView::AnchorUpdated() {
     UpdateClippingWindowBounds();
 }
 
-void TrayBackgroundView::BubbleResized(
-    const views::TrayBubbleView* bubble_view) {}
+void TrayBackgroundView::BubbleResized(const TrayBubbleView* bubble_view) {}
 
 void TrayBackgroundView::OnImplicitAnimationsCompleted() {
   // If there is another animation in the queue, the reverse animation was
@@ -474,8 +471,7 @@ void TrayBackgroundView::SetIsActive(bool is_active) {
                  nullptr);
 }
 
-void TrayBackgroundView::UpdateBubbleViewArrow(
-    views::TrayBubbleView* bubble_view) {
+void TrayBackgroundView::UpdateBubbleViewArrow(TrayBubbleView* bubble_view) {
   // Nothing to do here.
 }
 

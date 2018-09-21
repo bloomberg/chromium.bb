@@ -30,7 +30,7 @@ class VirtualKeyboardTray : public TrayBackgroundView,
 
   // TrayBackgroundView:
   base::string16 GetAccessibleNameForTray() override;
-  void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
+  void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
   bool PerformAction(const ui::Event& event) override;
 
