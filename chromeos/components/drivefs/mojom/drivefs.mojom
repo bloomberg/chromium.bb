@@ -161,7 +161,7 @@ struct FileMetadata {
   string download_url;
 
   mojo_base.mojom.Time modification_time;
-  mojo_base.mojom.Time modification_by_me_time;
+  mojo_base.mojom.Time last_viewed_by_me_time;
 
   bool available_offline;
   bool dirty;
