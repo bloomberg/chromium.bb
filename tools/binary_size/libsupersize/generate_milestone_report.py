@@ -85,7 +85,8 @@ class Report(collections.namedtuple(
 
 
 def _FetchExistingMilestoneReports():
-  milestones = subprocess.check_output(['gsutil.py', 'ls', '-r', PUSH_URL])
+  milestones = subprocess.check_output(['gsutil.py', 'ls', '-R',
+                                         PUSH_URL + '*'])
   for path in milestones.splitlines()[1:]:
     report = Report.FromUrl(path)
     if report:
@@ -115,6 +116,7 @@ def _SetPushedReports(directory):
       },
     }
     json.dump(pushed_reports_obj, out_file)
+    out_file.write('\n')
 
 def _GetReportPaths(directory, template, report):
   report_dict = report._asdict()
@@ -151,7 +153,7 @@ def _BuildReport(paths):
   return outpath
 
 
-def _BuildReports(directory, bucket):
+def _BuildReports(directory, bucket, skip_existing):
   try:
     if os.listdir(directory):
       raise Exception('Directory must be empty')
@@ -164,13 +166,31 @@ def _BuildReports(directory, bucket):
   # GCS URL template used to get size files.
   template = bucket + '/{version}/{cpu}/{apk}.size'
 
-  desired_reports = _PossibleReportFiles()
-  existing_reports = set(_FetchExistingMilestoneReports())
+  def GetReportsToMake():
+    desired_reports = set(_PossibleReportFiles())
+    existing_reports = set(_FetchExistingMilestoneReports())
+    missing_reports = desired_reports - existing_reports
+    stale_reports = existing_reports - desired_reports
+    logging.info('Number of desired reports: %d' % len(desired_reports))
+    logging.info('Number of existing reports: %d' % len(existing_reports))
 
-  missing_reports = [s for s in desired_reports if s not in existing_reports]
-  paths = (_GetReportPaths(directory, template, r) for r in missing_reports)
+    if stale_reports:
+      logging.warning('Number of stale reports: %d' % len(stale_reports))
 
-  processes = min(len(missing_reports), multiprocessing.cpu_count())
+    if skip_existing:
+      logging.info('Generate %d missing reports:' % len(missing_reports))
+      return sorted(missing_reports)
+    logging.info('Generate all %d desired reports:' %
+                 len(desired_reports))
+    return sorted(desired_reports)
+
+  reports_to_make = GetReportsToMake()
+  if not reports_to_make:
+    return
+
+  paths = (_GetReportPaths(directory, template, r) for r in reports_to_make)
+
+  processes = min(len(reports_to_make), multiprocessing.cpu_count())
   pool = multiprocessing.Pool(processes=processes)
 
   for path in pool.imap_unordered(_BuildReport, paths):
@@ -188,6 +208,8 @@ def main():
   parser.add_argument('--sync', action='store_true',
                       help='Sync data files to GCS '
                            '(otherwise just prints out command to run).')
+  parser.add_argument('--skip-existing', action="store_true",
+                      help='Skip existing reports.')
   parser.add_argument('-v',
                       '--verbose',
                       default=0,
@@ -205,7 +227,8 @@ def main():
     # Remove trailing slash
     size_file_bucket = size_file_bucket[:-1]
 
-  _BuildReports(args.directory, size_file_bucket)
+  _BuildReports(args.directory, size_file_bucket,
+                skip_existing=args.skip_existing)
   _SetPushedReports(args.directory)
   logging.warning('Reports saved to %s', args.directory)
   cmd = ['gsutil.py', '-m', 'rsync', '-J', '-a', 'publicRead', '-r',
