@@ -54,6 +54,7 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
       return;
 
     download_guid_to_job_id_map_[guid] = job_unique_id;
+    download_guid_to_url_map_[guid] = url;
 
     auto response = std::make_unique<BackgroundFetchResponse>(
         std::vector<GURL>({url}),
@@ -92,14 +93,21 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
     if (aborted_jobs_.count(download_guid_to_job_id_map_[guid]))
       return;
 
-    client()->OnDownloadComplete(job_unique_id, guid,
-                                 std::make_unique<BackgroundFetchResult>(
-                                     base::Time::Now(), base::FilePath(),
-                                     base::nullopt /* blob_handle */, 10u));
+    auto response = std::make_unique<BackgroundFetchResponse>(
+        std::vector<GURL>({download_guid_to_url_map_[guid]}),
+        base::MakeRefCounted<net::HttpResponseHeaders>("200 OK"));
+
+    client()->OnDownloadComplete(
+        job_unique_id, guid,
+        std::make_unique<BackgroundFetchResult>(
+            std::move(response), base::Time::Now(), base::FilePath(),
+            base::nullopt /* blob_handle */, 10u));
+    download_guid_to_url_map_.erase(guid);
   }
 
   std::set<std::string> aborted_jobs_;
   std::map<std::string, std::string> download_guid_to_job_id_map_;
+  std::map<std::string, GURL> download_guid_to_url_map_;
   bool complete_downloads_ = true;
 };
 

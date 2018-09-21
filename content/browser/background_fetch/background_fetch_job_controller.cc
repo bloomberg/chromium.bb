@@ -97,8 +97,8 @@ BackgroundFetchJobController::TakeOutstandingRequests() {
 void BackgroundFetchJobController::DidStartRequest(
     const scoped_refptr<BackgroundFetchRequestInfo>& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(delphick): Either add CORS check here or remove this function and do
-  // the CORS check in BackgroundFetchDelegateImpl (since
+  // TODO(crbug.com/884672): Either add CORS check here or remove this function
+  // and do the CORS check in BackgroundFetchDelegateImpl (since
   // download::Client::OnDownloadStarted returns a value that can abort the
   // download).
 }

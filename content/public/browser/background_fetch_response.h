@@ -57,16 +57,20 @@ struct CONTENT_EXPORT BackgroundFetchResult {
   };
 
   // Constructor for failed downloads.
-  BackgroundFetchResult(base::Time response_time, FailureReason failure_reason);
+  BackgroundFetchResult(std::unique_ptr<BackgroundFetchResponse> response,
+                        base::Time response_time,
+                        FailureReason failure_reason);
 
   // Constructor for successful downloads.
-  BackgroundFetchResult(base::Time response_time,
+  BackgroundFetchResult(std::unique_ptr<BackgroundFetchResponse> response,
+                        base::Time response_time,
                         const base::FilePath& path,
                         base::Optional<storage::BlobDataHandle> blob_handle,
                         uint64_t file_size);
 
   ~BackgroundFetchResult();
 
+  std::unique_ptr<BackgroundFetchResponse> response;
   const base::Time response_time;
   const base::FilePath file_path;
   base::Optional<storage::BlobDataHandle> blob_handle;

@@ -63,10 +63,15 @@ class LayoutTestBackgroundFetchDelegate::LayoutTestBackgroundFetchDownloadClient
     if (!client_)
       return download::Client::ShouldDownload::ABORT;
 
+    guid_to_response_[guid] =
+        std::make_unique<content::BackgroundFetchResponse>(url_chain,
+                                                           std::move(headers));
+
     client_->OnDownloadStarted(
         guid_to_unique_job_id_mapping_[guid], guid,
-        std::make_unique<content::BackgroundFetchResponse>(url_chain,
-                                                           std::move(headers)));
+        std::make_unique<content::BackgroundFetchResponse>(
+            guid_to_response_[guid]->url_chain,
+            guid_to_response_[guid]->headers));
 
     return download::Client::ShouldDownload::CONTINUE;
   }
@@ -110,8 +115,9 @@ class LayoutTestBackgroundFetchDelegate::LayoutTestBackgroundFetchDownloadClient
     }
 
     std::unique_ptr<BackgroundFetchResult> result =
-        std::make_unique<BackgroundFetchResult>(base::Time::Now(),
-                                                failure_reason);
+        std::make_unique<BackgroundFetchResult>(
+            std::move(guid_to_response_[guid]), base::Time::Now(),
+            failure_reason);
 
     // Inform the client about the failed |result|. Then remove the mapping as
     // no further communication is expected from the download service.
@@ -119,6 +125,7 @@ class LayoutTestBackgroundFetchDelegate::LayoutTestBackgroundFetchDownloadClient
                                 std::move(result));
 
     guid_to_unique_job_id_mapping_.erase(guid);
+    guid_to_response_.erase(guid);
   }
 
   void OnDownloadSucceeded(const std::string& guid,
@@ -128,9 +135,9 @@ class LayoutTestBackgroundFetchDelegate::LayoutTestBackgroundFetchDownloadClient
       return;
 
     std::unique_ptr<BackgroundFetchResult> result =
-        std::make_unique<BackgroundFetchResult>(base::Time::Now(), info.path,
-                                                info.blob_handle,
-                                                info.bytes_downloaded);
+        std::make_unique<BackgroundFetchResult>(
+            std::move(guid_to_response_[guid]), base::Time::Now(), info.path,
+            info.blob_handle, info.bytes_downloaded);
 
     // Inform the client about the successful |result|. Then remove the mapping
     // as no further communication is expected from the download service.
@@ -138,6 +145,7 @@ class LayoutTestBackgroundFetchDelegate::LayoutTestBackgroundFetchDownloadClient
                                 std::move(result));
 
     guid_to_unique_job_id_mapping_.erase(guid);
+    guid_to_response_.erase(guid);
   }
 
   bool CanServiceRemoveDownloadedFile(const std::string& guid,
@@ -154,6 +162,8 @@ class LayoutTestBackgroundFetchDelegate::LayoutTestBackgroundFetchDownloadClient
  private:
   base::WeakPtr<content::BackgroundFetchDelegate::Client> client_;
   base::flat_map<std::string, std::string> guid_to_unique_job_id_mapping_;
+  base::flat_map<std::string, std::unique_ptr<content::BackgroundFetchResponse>>
+      guid_to_response_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestBackgroundFetchDownloadClient);
 };
