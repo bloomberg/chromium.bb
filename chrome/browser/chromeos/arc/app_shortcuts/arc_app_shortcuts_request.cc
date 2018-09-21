@@ -50,7 +50,18 @@ void ArcAppShortcutsRequest::StartForPackage(const std::string& package_name) {
 
 void ArcAppShortcutsRequest::OnGetAppShortcutItems(
     std::vector<mojom::AppShortcutItemPtr> shortcut_items) {
+  // In case |shortcut_items| is empty report now, otherwise
+  // |OnAllIconDecodeRequestsDone| will be called immediately on creation. As
+  // result of handling this the request will be deleted and assigning
+  // |barrier_closure_| will happen on deleted object that will cause memory
+  // corruption.
+  if (shortcut_items.empty()) {
+    base::ResetAndReturn(&callback_).Run(nullptr);
+    return;
+  }
+
   items_ = std::make_unique<ArcAppShortcutItems>();
+
   // Using base::Unretained(this) here is safe since we own barrier_closure_.
   barrier_closure_ = base::BarrierClosure(
       shortcut_items.size(),
