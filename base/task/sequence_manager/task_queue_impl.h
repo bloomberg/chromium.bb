@@ -36,6 +36,7 @@ class TimeDomain;
 namespace internal {
 
 class SequenceManagerImpl;
+class TaskQueueProxy;
 class WorkQueue;
 class WorkQueueSets;
 
@@ -180,6 +181,9 @@ class BASE_EXPORT TaskQueueImpl {
   using OnTaskCompletedHandler =
       RepeatingCallback<void(const TaskQueue::Task&,
                              const TaskQueue::TaskTiming&)>;
+
+  // May be called from any thread.
+  scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(int task_type) const;
 
   // TaskQueue implementation.
   const char* GetName() const;
@@ -447,6 +451,10 @@ class BASE_EXPORT TaskQueueImpl {
     DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
     return main_thread_only_;
   }
+
+  // Proxy which allows TaskQueueTaskRunner to dispatch tasks and it can be
+  // detached from TaskQueueImpl to leave dangling task runners behind sefely.
+  const scoped_refptr<TaskQueueProxy> proxy_;
 
   mutable Lock immediate_incoming_queue_lock_;
   TaskDeque immediate_incoming_queue_;

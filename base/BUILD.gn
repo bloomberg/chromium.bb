@@ -760,6 +760,8 @@ jumbo_component("base") {
     "task/sequence_manager/task_queue.h",
     "task/sequence_manager/task_queue_impl.cc",
     "task/sequence_manager/task_queue_impl.h",
+    "task/sequence_manager/task_queue_proxy.cc",
+    "task/sequence_manager/task_queue_proxy.h",
     "task/sequence_manager/task_queue_selector.cc",
     "task/sequence_manager/task_queue_selector.h",
     "task/sequence_manager/task_queue_selector_logic.h",
