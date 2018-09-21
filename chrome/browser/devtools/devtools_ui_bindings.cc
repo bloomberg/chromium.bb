@@ -109,7 +109,11 @@ static const char kConfigNetworkDiscoveryEnabled[] = "networkDiscoveryEnabled";
 static const char kConfigNetworkDiscoveryConfig[] = "networkDiscoveryConfig";
 
 // This constant should be in sync with
-// the constant at shell_devtools_frontend.cc.
+// the constant
+// kShellMaxMessageChunkSize in content/shell/browser/shell_devtools_bindings.cc
+// and
+// kLayoutTestMaxMessageChunkSize in
+// content/shell/browser/layout_test/devtools_protocol_test_bindings.cc.
 const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
 
 typedef std::vector<DevToolsUIBindings*> DevToolsUIBindingsList;
