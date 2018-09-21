@@ -371,8 +371,8 @@ customBackgrounds.getTilesWide = function() {
     return 2;
   }
   // Browser window can only fit one column. Should match @media (max-width:
-  // 520px) "#bg-sel-menu" width.
-  else if ($(customBackgrounds.IDS.MENU).offsetWidth < 352) {
+  // 356) "#bg-sel-menu" width.
+  else if ($(customBackgrounds.IDS.MENU).offsetWidth < 356) {
     return 1;
   }
 
