@@ -2001,7 +2001,6 @@
       'test': 'exo_unittests',
       'args': [
         '--enable-features=SingleProcessMash',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter',
       ],
     },
     'ui_chromeos_unittests': {},

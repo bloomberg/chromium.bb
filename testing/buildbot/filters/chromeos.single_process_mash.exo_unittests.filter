@@ -1,2 +1,0 @@
-# System tray bubble should activate after tab pressed. https://crbug.com/880515
--ClientControlledShellSurfaceTest.KeyboardNavigationWithUnifiedSystemTray

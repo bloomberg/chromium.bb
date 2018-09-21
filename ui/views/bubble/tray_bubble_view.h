@@ -16,6 +16,10 @@
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/views_export.h"
 
+namespace aura {
+class Env;
+}
+
 namespace ui {
 class LayerOwner;
 }
@@ -182,7 +186,7 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
   // process accelerator as menu is currently open.
   class RerouteEventHandler : public ui::EventHandler {
    public:
-    explicit RerouteEventHandler(TrayBubbleView* tray_bubble_view);
+    RerouteEventHandler(TrayBubbleView* tray_bubble_view, aura::Env* aura_env);
     ~RerouteEventHandler() override;
 
     // Overridden from ui::EventHandler
@@ -191,6 +195,11 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
    private:
     // TrayBubbleView to which key events are going to be rerouted. Not owned.
     TrayBubbleView* tray_bubble_view_;
+
+    // The aura::Env where this EventHandler is installed. Needed because
+    // SingleProcessMash has more than one aura::Env. Cached so this object
+    // can unregister itself during TrayBubbleView teardown.
+    aura::Env* aura_env_;
 
     DISALLOW_COPY_AND_ASSIGN(RerouteEventHandler);
   };
