@@ -628,9 +628,15 @@ static void rd_pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
     if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       av1_rd_pick_inter_mode_sb_seg_skip(cpi, tile_data, x, mi_row, mi_col,
                                          rd_cost, bsize, ctx, best_rd);
+#if CONFIG_ONE_PASS_SVM
+      ctx->seg_feat = 1;
+#endif
     } else {
       av1_rd_pick_inter_mode_sb(cpi, tile_data, x, mi_row, mi_col, rd_cost,
                                 bsize, ctx, best_rd);
+#if CONFIG_ONE_PASS_SVM
+      ctx->seg_feat = 0;
+#endif
     }
   }
 
@@ -3212,6 +3218,129 @@ static int ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 }
 #undef FEATURES
 
+#if CONFIG_ONE_PASS_SVM
+#define FEATURES 24
+static void ml_op_svm_early_term(const AV1_COMP *const cpi,
+                                 const MACROBLOCK *const x,
+                                 const MACROBLOCKD *const xd,
+                                 const PICK_MODE_CONTEXT *ctx_none,
+                                 const RD_STATS *none_rdc, int pb_source_var,
+                                 BLOCK_SIZE bsize, float *const score) {
+  const float *ml_weights = NULL, *ml_mean = NULL, *ml_std = NULL;
+  if (bsize == BLOCK_128X128) {
+    ml_weights = av1_op_svm_early_term_weights_128;
+    ml_mean = av1_op_svm_early_term_mean_128;
+    ml_std = av1_op_svm_early_term_std_128;
+  } else if (bsize == BLOCK_64X64) {
+    ml_weights = av1_op_svm_early_term_weights_64;
+    ml_mean = av1_op_svm_early_term_mean_64;
+    ml_std = av1_op_svm_early_term_std_64;
+  } else if (bsize == BLOCK_32X32) {
+    ml_weights = av1_op_svm_early_term_weights_32;
+    ml_mean = av1_op_svm_early_term_mean_32;
+    ml_std = av1_op_svm_early_term_std_32;
+  } else if (bsize == BLOCK_16X16) {
+    ml_weights = av1_op_svm_early_term_weights_16;
+    ml_mean = av1_op_svm_early_term_mean_16;
+    ml_std = av1_op_svm_early_term_std_16;
+  } else {
+    assert(bsize == BLOCK_128X128 || bsize == BLOCK_64X64 ||
+           bsize == BLOCK_32X32 || bsize == BLOCK_8X8);
+  }
+  if (ml_weights != NULL) {
+    // Compute some features
+
+    float features[FEATURES] = { 0 };
+    int f_idx = 0;
+    int r_idx = 0;
+
+    // None features
+    // Get none stats
+    features[f_idx++] = none_rdc->rate;
+    features[f_idx++] = none_rdc->dist;
+    features[f_idx++] = none_rdc->rdcost;
+    features[f_idx++] = ctx_none->skip;
+
+    // EOBS
+    features[f_idx++] = none_rdc->eob;
+    int scaled_eob = none_rdc->eob * 32 * 32;
+    features[f_idx++] = (1.0f + none_rdc->eob_0) / (4.0f + scaled_eob);
+    features[f_idx++] = (1.0f + none_rdc->eob_1) / (4.0f + scaled_eob);
+    features[f_idx++] = (1.0f + none_rdc->eob_2) / (4.0f + scaled_eob);
+    features[f_idx++] = (1.0f + none_rdc->eob_3) / (4.0f + scaled_eob);
+
+    // Y_RD
+    features[f_idx++] = none_rdc->rd;
+    int64_t scaled_rd = none_rdc->rd * 32 * 32;
+    features[f_idx++] = (1.0f + none_rdc->rd_0) / (4.0f + scaled_rd);
+    features[f_idx++] = (1.0f + none_rdc->rd_1) / (4.0f + scaled_rd);
+    features[f_idx++] = (1.0f + none_rdc->rd_2) / (4.0f + scaled_rd);
+    features[f_idx++] = (1.0f + none_rdc->rd_3) / (4.0f + scaled_rd);
+
+    // Q_SQUARED
+    features[f_idx++] =
+        (x->plane[0].dequant_QTX[0]) * (x->plane[0].dequant_QTX[0]);
+
+    // SIZE
+    // Get size of surrounding blocks
+    int above_size = 18, left_size = 18;
+    const MB_MODE_INFO *above_block = xd->above_mbmi;
+    const MB_MODE_INFO *left_block = xd->left_mbmi;
+
+    if (above_block) {
+      above_size = above_block->sb_type;
+    }
+    if (left_block) {
+      left_size = left_block->sb_type;
+    }
+
+    features[f_idx++] = left_size;
+    features[f_idx++] = left_size != 18;
+
+    features[f_idx++] = above_size;
+    features[f_idx++] = above_size != 18;
+
+    // Variance
+    // Get variance
+    int var = pb_source_var, var_reg[4] = { 0 };
+    const int bw = block_size_wide[bsize];
+    const int bh = block_size_high[bsize];
+    const BLOCK_SIZE split_size = get_partition_subsize(bsize, PARTITION_SPLIT);
+    struct buf_2d buf;
+    buf.stride = x->plane[0].src.stride;
+    for (int i = 0; i < 4; ++i) {
+      const int x_idx = (i & 1) * bw / 2;
+      const int y_idx = (i >> 1) * bh / 2;
+      buf.buf = x->plane[0].src.buf + x_idx + y_idx * buf.stride;
+      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+        var_reg[i] =
+            av1_high_get_sby_perpixel_variance(cpi, &buf, split_size, xd->bd);
+      } else {
+        var_reg[i] = av1_get_sby_perpixel_variance(cpi, &buf, split_size);
+      }
+    }
+
+    features[f_idx++] = var;
+    for (r_idx = 0; r_idx < 4; r_idx++) {
+      features[f_idx] = (var_reg[r_idx] + 1.0f) / (var + 4.0f);
+      f_idx++;
+    }
+
+    assert(f_idx == FEATURES);
+
+    // Calculate the score
+    *score = 0.0f;
+    for (f_idx = 0; f_idx < FEATURES; f_idx++) {
+      *score += ml_weights[f_idx] * (features[f_idx] - ml_mean[f_idx]) /
+                ml_std[f_idx];
+    }
+    // Dont forget the bias
+    *score += ml_weights[FEATURES];
+  }
+}
+#undef FEATURES
+#endif
+
 // TODO(jingning,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
 // results, for encoding speed-up.
@@ -3536,6 +3665,25 @@ BEGIN_PARTITION_SEARCH:
         best_rdc = this_rdc;
         if (bsize_at_least_8x8) pc_tree->partitioning = PARTITION_NONE;
 
+#if CONFIG_ONE_PASS_SVM
+        // Use ML if the block size is square and >= 16X16
+        if (bsize >= BLOCK_16X16 && !frame_is_intra_only(cm) &&
+            this_rdc.rate < INT_MAX && this_rdc.rate >= 0 &&
+            !ctx_none->seg_feat) {
+          // Model Prediction
+          float score = 0.0f;
+          ml_op_svm_early_term(cpi, x, xd, ctx_none, &this_rdc,
+                               pb_source_variance, bsize, &score);
+
+          // Decide if we want to terminate early
+          if (score >= 0) {
+            do_square_split = 0;
+            do_rectangular_split = 0;
+            partition_horz_allowed = 0;
+            partition_vert_allowed = 0;
+          }
+        }
+#endif
         if ((do_square_split || do_rectangular_split) &&
             !x->e_mbd.lossless[xd->mi[0]->segment_id] && ctx_none->skippable) {
           const int use_ml_based_breakout =
@@ -5445,9 +5593,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     const double *params_this_motion;
     int inliers_by_motion[RANSAC_NUM_MOTIONS];
     WarpedMotionParams tmp_wm_params;
+    // clang-format off
     static const double kIdentityParams[MAX_PARAMDIM - 1] = {
       0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
     };
+    // clang-format on
     int num_refs_using_gm = 0;
 
     for (frame = ALTREF_FRAME; frame >= LAST_FRAME; --frame) {
