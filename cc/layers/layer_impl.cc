@@ -110,7 +110,6 @@ void LayerImpl::SetDebugInfo(
     std::unique_ptr<base::trace_event::TracedValue> debug_info) {
   owned_debug_info_ = std::move(debug_info);
   debug_info_ = owned_debug_info_.get();
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetTransformTreeIndex(int index) {
@@ -469,13 +468,11 @@ bool LayerImpl::LayerPropertyChangedNotFromPropertyTrees() const {
 void LayerImpl::NoteLayerPropertyChanged() {
   layer_property_changed_not_from_property_trees_ = true;
   layer_tree_impl()->set_needs_update_draw_properties();
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::NoteLayerPropertyChangedFromPropertyTrees() {
   layer_property_changed_from_property_trees_ = true;
   layer_tree_impl()->set_needs_update_draw_properties();
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::ValidateQuadResourcesInternal(viz::DrawQuad* quad) const {
@@ -650,8 +647,6 @@ void LayerImpl::SetElementId(ElementId element_id) {
   layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   element_id_ = element_id;
   layer_tree_impl_->AddToElementLayerList(element_id_, this);
-
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetPosition(const gfx::PointF& position) {
@@ -660,7 +655,6 @@ void LayerImpl::SetPosition(const gfx::PointF& position) {
 
 void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
   update_rect_ = update_rect;
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::AddDamageRect(const gfx::Rect& damage_rect) {

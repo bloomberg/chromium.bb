@@ -4739,8 +4739,6 @@ class LayerTreeHostTestImplLayersPushProperties
     if (leaf_always_pushing_layer_impl_)
       EXPECT_EQ(expected_push_properties_grandchild2_impl_,
                 leaf_always_pushing_layer_impl_->push_properties_count());
-
-    leaf_always_pushing_layer_impl_->SetNeedsPushProperties();
   }
 
   size_t expected_push_properties_root_impl_;

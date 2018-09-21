@@ -4428,7 +4428,6 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   active_occluding_layer->SetDrawsContent(true);
   active_occluding_layer->SetContentsOpaque(true);
   active_occluding_layer->SetPosition(active_occluding_layer_position);
-
   ActivateTree();
 
   // Partially invalidate the pending layer. Tiles inside the invalidation rect
