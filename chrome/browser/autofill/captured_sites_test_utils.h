@@ -30,7 +30,7 @@ const base::TimeDelta default_action_timeout = base::TimeDelta::FromSeconds(30);
 // The amount of time to wait for a page to trigger a paint in response to a
 // an ation. The Captured Site Automation Framework uses this timeout to
 // break out of a wait loop after a hover action.
-const base::TimeDelta visual_update_timeout = base::TimeDelta::FromSeconds(5);
+const base::TimeDelta visual_update_timeout = base::TimeDelta::FromSeconds(20);
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str);
 
@@ -148,6 +148,16 @@ class TestRecipeReplayChromeFeatureActionExecutor {
   virtual bool AutofillForm(content::RenderFrameHost* frame,
                             const std::string& focus_element_css_selector,
                             const int attempts = 1);
+  // Chrome Password Manager feature methods.
+  virtual bool AddCredential(const std::string& origin,
+                             const std::string& username,
+                             const std::string& password);
+  virtual bool SavePassword();
+  virtual bool UpdatePassword();
+  virtual bool HasChromeShownSavePasswordPrompt();
+  virtual bool HasChromeStoredCredential(const std::string& origin,
+                                         const std::string& username,
+                                         const std::string& password);
 
  protected:
   TestRecipeReplayChromeFeatureActionExecutor();
@@ -227,10 +237,14 @@ class TestRecipeReplayer {
   bool ExecuteHoverAction(const base::DictionaryValue& action);
   bool ExecutePressEnterAction(const base::DictionaryValue& action);
   bool ExecuteRunCommandAction(const base::DictionaryValue& action);
+  bool ExecuteSavePasswordAction(const base::DictionaryValue& action);
   bool ExecuteSelectDropdownAction(const base::DictionaryValue& action);
   bool ExecuteTypeAction(const base::DictionaryValue& action);
   bool ExecuteTypePasswordAction(const base::DictionaryValue& action);
+  bool ExecuteUpdatePasswordAction(const base::DictionaryValue& action);
   bool ExecuteValidateFieldValueAction(const base::DictionaryValue& action);
+  bool ExecuteValidateNoSavePasswordPromptAction(
+      const base::DictionaryValue& action);
   bool ExecuteWaitForStateAction(const base::DictionaryValue& action);
   bool GetTargetHTMLElementXpathFromAction(const base::DictionaryValue& action,
                                            std::string* xpath);
@@ -256,6 +270,9 @@ class TestRecipeReplayer {
       const std::string& expected_value,
       const bool ignoreCase = false);
   void NavigateAwayAndDismissBeforeUnloadDialog();
+  bool HasChromeStoredCredential(const base::DictionaryValue& action,
+                                 bool* stored_cred);
+  bool SetupSavedPasswords(const base::Value& saved_password_list_container);
 
   Browser* browser_;
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor_;
