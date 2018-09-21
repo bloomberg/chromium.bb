@@ -61,6 +61,11 @@
         <structure name="IDR_DICE_WELCOME_BROWSER_PROXY_JS" file="resources\welcome\dice_welcome\welcome_browser_proxy.js" type="chrome_html" preprocess="true"/>
         <structure name="IDR_DICE_WELCOME_APP_HTML" file="resources\welcome\dice_welcome\welcome_app.html" type="chrome_html" preprocess="true"/>
         <structure name="IDR_DICE_WELCOME_APP_JS" file="resources\welcome\dice_welcome\welcome_app.js" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_HTML" file="resources\welcome\onboarding_welcome\landing_view.html" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_JS" file="resources\welcome\onboarding_welcome\landing_view.js" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_HTML" file="resources\welcome\onboarding_welcome\welcome_app.html" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_JS" file="resources\welcome\onboarding_welcome\welcome_app.js" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_CSS" file="resources\welcome\onboarding_welcome\welcome.css" type="chrome_html" preprocess="true"/>
         <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML" file="resources\welcome\onboarding_welcome\welcome.html" type="chrome_html" preprocess="true"/>
       </if>
       <if expr="is_win">
