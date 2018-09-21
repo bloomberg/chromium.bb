@@ -248,11 +248,16 @@ TEST_F(JsAutofillManagerTest, FillActiveFormField) {
   data->SetString("name", "email");
   data->SetString("identifier", "email");
   data->SetString("value", "newemail@com");
+  __block BOOL block_was_called = NO;
   [manager_ fillActiveFormField:std::move(data)
                         inFrame:web::GetMainWebFrame(web_state())
               completionHandler:^{
+                block_was_called = YES;
               }];
-
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForActionTimeout, ^bool() {
+        return block_was_called;
+      }));
   NSString* element_value_javascript =
       [NSString stringWithFormat:@"%@.value", get_element_javascript];
   EXPECT_NSEQ(@"newemail@com", ExecuteJavaScript(element_value_javascript));

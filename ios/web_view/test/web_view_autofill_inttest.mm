@@ -30,7 +30,6 @@ NSString* const kTestFormName = @"FormName";
 NSString* const kTestFormID = @"FormID";
 NSString* const kTestFieldName = @"FieldName";
 NSString* const kTestFieldID = @"FieldID";
-NSString* const kTestFrameID = @"FrameID";
 NSString* const kTestFieldValue = @"FieldValue";
 NSString* const kTestSubmitID = @"SubmitID";
 NSString* const kTestFormHtml =
@@ -223,7 +222,7 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
   ASSERT_NSEQ(nil, filled_error);
   [autofill_controller_ clearFormWithName:kTestFormName
                           fieldIdentifier:kTestFieldID
-                                  frameID:kTestFrameID
+                                  frameID:GetMainFrameId()
                         completionHandler:nil];
   NSString* cleared_script = [NSString
       stringWithFormat:@"document.getElementById('%@').value", kTestFieldID];
