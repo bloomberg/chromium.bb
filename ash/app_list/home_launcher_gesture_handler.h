@@ -72,8 +72,9 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
-  aura::Window* window() { return window_; }
   Mode mode() const { return mode_; }
+  aura::Window* window() { return window_; }
+  aura::Window* window2() { return window2_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HomeLauncherModeGestureHandlerTest,
@@ -104,20 +105,31 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // Stop observing all windows and remove their local pointers.
   void RemoveObserversAndStopTracking();
 
-  aura::Window* window_ = nullptr;
-
   Mode mode_ = Mode::kNone;
 
-  // Original and target transform and opacity of |window_|.
+  // The windows we are tracking. They are null if a drag is not underway, or if
+  // overview without splitview is active. |window2_| is the secondary window
+  // for splitview and is always null if |window1_| is null.
+  aura::Window* window_ = nullptr;
+  aura::Window* window2_ = nullptr;
+
+  // Original and target transform and opacity of |window_| and |window2_|.
   WindowValues window_values_;
+  WindowValues window_values2_;
+
+  // Tracks the transient descendants of |window_| and their initial and target
+  // opacities and transforms.
+  std::map<aura::Window*, WindowValues> transient_descendants_values_;
+  // Transient descendants of |window2_|.
+  std::map<aura::Window*, WindowValues> transient_descendants_values2_;
 
   // Original and target transform and opacity of the backdrop window. Empty if
   // there is no backdrop on mouse pressed.
   base::Optional<WindowValues> backdrop_values_;
 
-  // Tracks the transient descendants of |window_| and their initial and target
-  // opacities and transforms.
-  std::map<aura::Window*, WindowValues> transient_descendants_values_;
+  // Original and target transform and opacity of the split view divider window.
+  // Empty if there is no divider on press event (ie. split view is not active).
+  base::Optional<WindowValues> divider_values_;
 
   // Stores windows which were shown behind the mru window. They need to be
   // hidden so the home launcher is visible when swiping up.
