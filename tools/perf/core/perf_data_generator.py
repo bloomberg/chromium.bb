@@ -644,7 +644,8 @@ NON_TELEMETRY_BENCHMARKS = {
 NON_WATERFALL_BENCHMARKS = {
     'sizes (mac)':
         BenchmarkMetadata('tapted@chromium.org'),
-    'sizes (win)': BenchmarkMetadata('grt@chromium.org'),
+    'sizes (win)': BenchmarkMetadata('grt@chromium.org',
+                                     'Internals>PlatformIntegration'),
     'sizes (linux)': BenchmarkMetadata('thestig@chromium.org'),
     'resource_sizes': BenchmarkMetadata(
         'agrieve@chromium.org, rnephew@chromium.org, perezju@chromium.org'),
