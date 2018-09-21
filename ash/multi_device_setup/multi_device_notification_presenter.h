@@ -80,7 +80,6 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
    public:
     virtual ~OpenUiDelegate();
     virtual void OpenMultiDeviceSetupUi();
-    virtual void OpenChangeConnectedPhoneSettings();
     virtual void OpenConnectedDevicesSettings();
   };
 
