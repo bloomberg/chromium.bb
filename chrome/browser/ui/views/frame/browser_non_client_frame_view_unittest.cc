@@ -137,7 +137,7 @@ class BrowserNonClientFrameViewThemeTest
 #if defined(OS_MACOSX)
 #define MAYBE_ActiveTabTextColor DISABLED_ActiveTabTextColor
 #else
-#define MAYBE_ActiveTabTextColor ActiveTabTextColor
+#define MAYBE_ActiveTabTextColor DISABLED_ActiveTabTextColor
 #endif
 
 TEST_F(BrowserNonClientFrameViewThemeTest, MAYBE_ActiveTabTextColor) {
