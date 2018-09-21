@@ -85,7 +85,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/document_state.h"
-#include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -130,7 +129,7 @@
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/navigation_client.h"
-#include "content/renderer/navigation_state_impl.h"
+#include "content/renderer/navigation_state.h"
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/push_messaging/push_messaging_client.h"
@@ -343,8 +342,8 @@ int64_t ExtractPostId(const WebHistoryItem& item) {
 ui::PageTransition GetTransitionType(blink::WebDocumentLoader* document_loader,
                                      blink::WebLocalFrame* frame,
                                      bool loading) {
-  NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
-      DocumentState::FromDocumentLoader(document_loader)->navigation_state());
+  NavigationState* navigation_state =
+      NavigationState::FromDocumentLoader(document_loader);
   ui::PageTransition default_transition =
       navigation_state->IsContentInitiated()
           ? ui::PAGE_TRANSITION_LINK
@@ -807,8 +806,8 @@ blink::mojom::BlobURLTokenPtrInfo CloneBlobURLToken(
 std::unique_ptr<DocumentState> BuildDocumentState() {
   std::unique_ptr<DocumentState> document_state =
       std::make_unique<DocumentState>();
-  document_state->set_navigation_state(
-      NavigationStateImpl::CreateContentInitiated());
+  InternalDocumentStateData::FromDocumentState(document_state.get())
+      ->set_navigation_state(NavigationState::CreateContentInitiated());
   return document_state;
 }
 
@@ -869,10 +868,10 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   if (load_data)
     document_state->set_data_url(common_params.url);
 
-  document_state->set_navigation_state(
-      NavigationStateImpl::CreateBrowserInitiated(common_params, request_params,
-                                                  time_commit_requested,
-                                                  std::move(commit_callback)));
+  InternalDocumentStateData::FromDocumentState(document_state.get())
+      ->set_navigation_state(NavigationState::CreateBrowserInitiated(
+          common_params, request_params, time_commit_requested,
+          std::move(commit_callback)));
   return document_state;
 }
 
@@ -2622,8 +2621,8 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
   // Make sure we never show errors in view source mode.
   frame_->EnableViewSourceMode(false);
 
-  NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
-      DocumentState::FromDocumentLoader(document_loader)->navigation_state());
+  NavigationState* navigation_state =
+      NavigationState::FromDocumentLoader(document_loader);
 
   // If this is a failed back/forward/reload navigation, then we need to do a
   // 'replace' load.  This is necessary to avoid messing up session history.
@@ -3394,14 +3393,18 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
     bool is_client_redirect =
         !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+    DocumentState* original_document_state =
+        DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
     std::unique_ptr<DocumentState> document_state =
-        DocumentState::FromDocumentLoader(frame_->GetDocumentLoader())->Clone();
-    NavigationStateImpl* navigation_state =
-        NavigationStateImpl::CreateBrowserInitiated(
-            common_params, request_params,
-            base::TimeTicks(),  // Not used for same-document navigation.
-            CommitNavigationCallback());
-    document_state->set_navigation_state(navigation_state);
+        original_document_state->Clone();
+    InternalDocumentStateData* internal_data =
+        InternalDocumentStateData::FromDocumentState(document_state.get());
+    internal_data->CopyFrom(
+        InternalDocumentStateData::FromDocumentState(original_document_state));
+    internal_data->set_navigation_state(NavigationState::CreateBrowserInitiated(
+        common_params, request_params,
+        base::TimeTicks(),  // Not used for same-document navigation.
+        CommitNavigationCallback()));
 
     // Load the request.
     commit_status = frame_->CommitSameDocumentNavigation(
@@ -3551,14 +3554,10 @@ RenderFrameImpl::CreateApplicationCacheHost(
   if (!frame_ || !frame_->View())
     return nullptr;
 
-  DocumentState* document_state =
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame_->GetProvisionalDocumentLoader()
-          ? DocumentState::FromDocumentLoader(
-                frame_->GetProvisionalDocumentLoader())
-          : DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+          ? frame_->GetProvisionalDocumentLoader()
+          : frame_->GetDocumentLoader());
 
   return std::make_unique<RendererWebApplicationCacheHostImpl>(
       RenderViewImpl::FromWebView(frame_->View()), client,
@@ -3721,11 +3720,8 @@ void RenderFrameImpl::DidAccessInitialDocument() {
   // no longer safe to show the pending URL of the main frame, since a URL spoof
   // is now possible. (If the request has committed, the browser already knows.)
   if (!has_accessed_initial_document_) {
-    DocumentState* document_state =
-        DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-    NavigationStateImpl* navigation_state =
-        static_cast<NavigationStateImpl*>(document_state->navigation_state());
-
+    NavigationState* navigation_state =
+        NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
     if (!navigation_state->request_committed()) {
       Send(new FrameHostMsg_DidAccessInitialDocument(routing_id_));
     }
@@ -4110,11 +4106,8 @@ void RenderFrameImpl::DidStartProvisionalLoad(
     BeginNavigation(info);
   }
 
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(document_loader);
-  NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
-      document_state->navigation_state());
-
+  NavigationState* navigation_state =
+      NavigationState::FromDocumentLoader(document_loader);
   for (auto& observer : observers_) {
     observer.DidStartProvisionalLoad(document_loader,
                                      navigation_state->IsContentInitiated());
@@ -4174,10 +4167,8 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     committed_first_load_ = true;
   }
 
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  NavigationState* navigation_state =
+      NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
   DCHECK(!navigation_state->WasWithinSameDocument());
   const WebURLResponse& web_url_response =
       frame_->GetDocumentLoader()->GetResponse();
@@ -4522,14 +4513,12 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
   TRACE_EVENT1("navigation,rail",
                "RenderFrameImpl::didFinishSameDocumentNavigation", "id",
                routing_id_);
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-  if (content_initiated) {
-    document_state->set_navigation_state(
-        NavigationStateImpl::CreateContentInitiated());
-  }
-  static_cast<NavigationStateImpl*>(document_state->navigation_state())
-      ->set_was_within_same_document(true);
+  InternalDocumentStateData* data =
+      InternalDocumentStateData::FromDocumentLoader(
+          frame_->GetDocumentLoader());
+  if (content_initiated)
+    data->set_navigation_state(NavigationState::CreateContentInitiated());
+  data->navigation_state()->set_was_within_same_document(true);
 
   ui::PageTransition transition = GetTransitionType(frame_->GetDocumentLoader(),
                                                     frame_, true /* loading */);
@@ -4764,13 +4753,9 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   WebDocumentLoader* document_loader = provisional_document_loader
                                            ? provisional_document_loader
                                            : frame_->GetDocumentLoader();
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(document_loader);
-  DCHECK(document_state);
   InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+      InternalDocumentStateData::FromDocumentLoader(document_loader);
+  NavigationState* navigation_state = internal_data->navigation_state();
   ui::PageTransition transition_type =
       GetTransitionType(document_loader, frame_, false /* loading */);
   if (provisional_document_loader &&
@@ -5395,12 +5380,10 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   const WebURLRequest& request = document_loader->GetRequest();
   const WebURLResponse& response = document_loader->GetResponse();
 
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
   InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
+      InternalDocumentStateData::FromDocumentLoader(
+          frame_->GetDocumentLoader());
+  NavigationState* navigation_state = internal_data->navigation_state();
 
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params =
       std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>();
@@ -5589,10 +5572,8 @@ void RenderFrameImpl::UpdateZoomLevel() {
 bool RenderFrameImpl::UpdateNavigationHistory(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  NavigationState* navigation_state =
+      NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
   const RequestNavigationParams& request_params =
       navigation_state->request_params();
 
@@ -5644,12 +5625,10 @@ void RenderFrameImpl::UpdateStateForCommit(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type,
     ui::PageTransition transition) {
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
   InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
+      InternalDocumentStateData::FromDocumentLoader(
+          frame_->GetDocumentLoader());
+  NavigationState* navigation_state = internal_data->navigation_state();
 
   // We need to update the last committed session history entry with state for
   // the previous page. Do this before updating the current history item.
@@ -6722,11 +6701,8 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   mojom::NavigationClientAssociatedPtrInfo navigation_client_info;
   if (IsPerNavigationMojoInterfaceEnabled()) {
     WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
-    DocumentState* document_state =
-        DocumentState::FromDocumentLoader(document_loader);
-    NavigationStateImpl* navigation_state =
-        static_cast<NavigationStateImpl*>(document_state->navigation_state());
-
+    NavigationState* navigation_state =
+        NavigationState::FromDocumentLoader(document_loader);
     BindNavigationClient(mojo::MakeRequest(&navigation_client_info));
     navigation_state->set_navigation_client(std::move(navigation_client_impl_));
   }

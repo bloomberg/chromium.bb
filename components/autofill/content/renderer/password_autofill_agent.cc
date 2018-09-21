@@ -35,7 +35,6 @@
 #include "components/security_state/core/security_state.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/renderer/document_state.h"
-#include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

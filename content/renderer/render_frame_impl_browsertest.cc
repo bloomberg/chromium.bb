@@ -28,7 +28,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
-#include "content/renderer/navigation_state_impl.h"
+#include "content/renderer/navigation_state.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
@@ -282,10 +282,9 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   EXPECT_EQ(SERVER_LOFI_ON, GetMainRenderFrame()->GetPreviewsState());
 
   // The subframe's LoFi state should not be reset on commit.
-  DocumentState* document_state = DocumentState::FromDocumentLoader(
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
-  static_cast<NavigationStateImpl*>(document_state->navigation_state())
-      ->set_was_within_same_document(false);
+  navigation_state->set_was_within_same_document(false);
 
   frame()->DidCommitProvisionalLoad(
       item, blink::kWebStandardCommit,
@@ -293,10 +292,9 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
 
   // The main frame's LoFi state should be reset to off on commit.
-  document_state = DocumentState::FromDocumentLoader(
+  navigation_state = NavigationState::FromDocumentLoader(
       GetMainRenderFrame()->GetWebFrame()->GetDocumentLoader());
-  static_cast<NavigationStateImpl*>(document_state->navigation_state())
-      ->set_was_within_same_document(false);
+  navigation_state->set_was_within_same_document(false);
 
   // Calling didCommitProvisionalLoad is not representative of a full navigation
   // but serves the purpose of testing the LoFi state logic.
@@ -344,10 +342,9 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
 
     // The subframe's effective connection type should not be reset on commit.
-    DocumentState* document_state = DocumentState::FromDocumentLoader(
+    NavigationState* navigation_state = NavigationState::FromDocumentLoader(
         frame()->GetWebFrame()->GetDocumentLoader());
-    static_cast<NavigationStateImpl*>(document_state->navigation_state())
-        ->set_was_within_same_document(false);
+    navigation_state->set_was_within_same_document(false);
 
     frame()->DidCommitProvisionalLoad(
         item, blink::kWebStandardCommit,
@@ -355,10 +352,9 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
 
     // The main frame's effective connection type should be reset on commit.
-    document_state = DocumentState::FromDocumentLoader(
+    navigation_state = NavigationState::FromDocumentLoader(
         GetMainRenderFrame()->GetWebFrame()->GetDocumentLoader());
-    static_cast<NavigationStateImpl*>(document_state->navigation_state())
-        ->set_was_within_same_document(false);
+    navigation_state->set_was_within_same_document(false);
 
     GetMainRenderFrame()->DidCommitProvisionalLoad(
         item, blink::kWebStandardCommit,
