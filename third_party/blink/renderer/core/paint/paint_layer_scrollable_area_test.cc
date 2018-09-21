@@ -959,4 +959,36 @@ TEST_F(PaintLayerScrollableAreaTest, IgnoreDelayedScrollOnDestroyedLayer) {
   }
 }
 
+TEST_F(PaintLayerScrollableAreaTest, ScrollbarMaximum) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #spacer {
+      height: 17.984375px;
+    }
+    #scroller {
+      border-top: 0.328125px solid gray;
+      border-bottom: 0.328125px solid gray;
+      height:149.34375px;
+      width: 100px;
+      overflow-y:auto;
+    }
+    #content {
+      height: 156.578125px;
+    }
+    </style>
+    <div id='spacer'></div>
+    <div id='scroller'>
+      <div id='content'></div>
+    </div>
+  )HTML");
+
+  LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
+
+  scrollable_area->ScrollBy(ScrollOffset(0, 1000), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(scrollbar->CurrentPos(), scrollbar->Maximum());
+}
+
 }  // namespace blink
