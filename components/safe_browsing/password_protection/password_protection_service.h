@@ -89,10 +89,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       LoginReputationClientResponse* verdict,
       const base::Time& receive_time);
 
-  // Migrates cached password reuse verdicts such that verdicts of different
-  // reused password type are cached separately.
-  void MigrateCachedVerdicts();
-
   // Removes all the expired verdicts from cache.
   void CleanUpExpiredVerdicts();
 

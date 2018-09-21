@@ -96,9 +96,6 @@ PasswordProtectionService::PasswordProtectionService(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (history_service)
     history_service_observer_.Add(history_service);
-
-  // TODO(jialiul): Remove this code when migration is done.
-  MigrateCachedVerdicts();
 }
 
 PasswordProtectionService::~PasswordProtectionService() {
@@ -849,61 +846,6 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
     ReusedPasswordType reused_password_type) const {
   return reused_password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
          reused_password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD;
-}
-
-void PasswordProtectionService::MigrateCachedVerdicts() {
-  // |content_settings_| can be null in tests.
-  if (!content_settings_)
-    return;
-
-  ContentSettingsForOneType password_protection_settings;
-  content_settings_->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
-      &password_protection_settings);
-
-  size_t verdicts_migrated = 0;
-  for (const ContentSettingPatternSource& source :
-       password_protection_settings) {
-    GURL primary_pattern_url = GURL(source.primary_pattern.ToString());
-    // Find all verdicts associated with this origin.
-    std::unique_ptr<base::DictionaryValue> cache_dictionary =
-        base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
-            primary_pattern_url, GURL(),
-            CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(), nullptr));
-
-    std::vector<std::string> removed_keys;
-    for (const auto& item : cache_dictionary->DictItems()) {
-      int password_type_int = -1;
-      if (item.first == kPasswordOnFocusCacheKey ||
-          (base::StringToInt(item.first, &password_type_int) &&
-           password_type_int >= PasswordReuseEvent::ReusedPasswordType_MIN &&
-           password_type_int <= PasswordReuseEvent::ReusedPasswordType_MAX)) {
-        continue;
-      }
-      // Removes value if its key is not kPasswordOnFocusCacheKey or a valid
-      // reused password type.
-      removed_keys.push_back(item.first);
-    }
-
-    verdicts_migrated += removed_keys.size();
-    for (const std::string& key : removed_keys)
-      cache_dictionary->RemoveKey(key);
-
-    if (cache_dictionary->size() == 0u) {
-      content_settings_->ClearSettingsForOneTypeWithPredicate(
-          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
-          base::Time::Max(),
-          base::BindRepeating(&OriginMatchPrimaryPattern, primary_pattern_url));
-    } else {
-      // Set the website setting of this origin with the updated
-      // |cache_dictionary|.
-      content_settings_->SetWebsiteSettingDefaultScope(
-          primary_pattern_url, GURL(),
-          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
-          std::move(cache_dictionary));
-    }
-  }
-  LogNumberOfVerdictMigrated(verdicts_migrated);
 }
 
 }  // namespace safe_browsing
