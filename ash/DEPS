@@ -3,6 +3,7 @@ include_rules = [
   "+device/bluetooth",
   "+cc/debug",
   "+cc/output",
+  "+cc/paint",
   "+chromeos/cryptohome",
   "+components/account_id",
   "+components/discardable_memory/public",
