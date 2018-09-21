@@ -706,8 +706,9 @@ blink::WebElement AutofillAgent::FindUniqueWebElement(
 
     // Query shadow DOM if necessary.
     if (elements.size() == 0 && !query_element.ShadowRoot().IsNull()) {
-      elements = query_element.ShadowRoot().QuerySelectorAll(
-          blink::WebString::FromUTF8(selectors[i]));
+      // TODO(806868): Query shadow dom when Autofill is available for forms in
+      // shadow DOM (crbug.com/746593).
+      return blink::WebElement();
     }
 
     // Return an empty element if there are multiple matching elements.
