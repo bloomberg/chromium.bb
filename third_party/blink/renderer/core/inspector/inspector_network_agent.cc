@@ -1516,38 +1516,13 @@ void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
 
 void InspectorNetworkAgent::FrameScheduledNavigation(LocalFrame* frame,
                                                      ScheduledNavigation*) {
-  String frame_id = IdentifiersFactory::FrameId(frame);
-  frames_with_scheduled_navigation_.insert(frame_id);
-  if (!frames_with_scheduled_client_navigation_.Contains(frame_id)) {
-    frame_navigation_initiator_map_.Set(
-        frame_id,
-        BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo()));
-  }
+  frame_navigation_initiator_map_.Set(
+      IdentifiersFactory::FrameId(frame),
+      BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo()));
 }
 
 void InspectorNetworkAgent::FrameClearedScheduledNavigation(LocalFrame* frame) {
-  String frame_id = IdentifiersFactory::FrameId(frame);
-  frames_with_scheduled_navigation_.erase(frame_id);
-  if (!frames_with_scheduled_client_navigation_.Contains(frame_id))
-    frame_navigation_initiator_map_.erase(frame_id);
-}
-
-void InspectorNetworkAgent::FrameScheduledClientNavigation(LocalFrame* frame) {
-  String frame_id = IdentifiersFactory::FrameId(frame);
-  frames_with_scheduled_client_navigation_.insert(frame_id);
-  if (!frames_with_scheduled_navigation_.Contains(frame_id)) {
-    frame_navigation_initiator_map_.Set(
-        frame_id,
-        BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo()));
-  }
-}
-
-void InspectorNetworkAgent::FrameClearedScheduledClientNavigation(
-    LocalFrame* frame) {
-  String frame_id = IdentifiersFactory::FrameId(frame);
-  frames_with_scheduled_client_navigation_.erase(frame_id);
-  if (!frames_with_scheduled_navigation_.Contains(frame_id))
-    frame_navigation_initiator_map_.erase(frame_id);
+  frame_navigation_initiator_map_.erase(IdentifiersFactory::FrameId(frame));
 }
 
 Response InspectorNetworkAgent::GetResponseBody(const String& request_id,
@@ -1640,7 +1615,7 @@ bool InspectorNetworkAgent::FetchResourceContent(Document* document,
 String InspectorNetworkAgent::NavigationInitiatorInfo(LocalFrame* frame) {
   if (!enabled_.Get())
     return String();
-  FrameNavigationInitiatorMap::iterator it =
+  auto it =
       frame_navigation_initiator_map_.find(IdentifiersFactory::FrameId(frame));
   if (it != frame_navigation_initiator_map_.end())
     return it->value->serialize();

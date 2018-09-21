@@ -439,7 +439,6 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
   WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
   switch (state_) {
     case kNotStarted:
-      probe::frameClearedScheduledClientNavigation(frame_);
       FALLTHROUGH;
     case kProvisional:
       state_ = kSentDidFinishLoad;

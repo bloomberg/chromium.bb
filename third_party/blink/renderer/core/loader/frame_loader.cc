@@ -968,8 +968,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
                                             resource_request);
   DCHECK(provisional_document_loader_);
-
-  probe::frameScheduledClientNavigation(frame_);
   TakeObjectSnapshot();
 }
 
@@ -1058,8 +1056,6 @@ void FrameLoader::CommitNavigation(
                                             resource_request);
 
   provisional_document_loader_->StartLoading();
-  probe::frameClearedScheduledClientNavigation(frame_);
-
   TakeObjectSnapshot();
 }
 
