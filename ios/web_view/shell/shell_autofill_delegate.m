@@ -71,6 +71,7 @@
                 handler:^(UIAlertAction* _Nonnull action) {
                   [autofillController clearFormWithName:formName
                                         fieldIdentifier:fieldIdentifier
+                                                frameID:frameID
                                       completionHandler:nil];
                 }];
     [alertController addAction:clearAction];

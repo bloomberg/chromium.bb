@@ -210,6 +210,7 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
   ASSERT_NSEQ(nil, filled_error);
   [autofill_controller_ clearFormWithName:kTestFormName
                           fieldIdentifier:kTestFieldID
+                                  frameID:kTestFrameID
                         completionHandler:nil];
   NSString* cleared_script = [NSString
       stringWithFormat:@"document.getElementById('%@').value", kTestFieldID];
