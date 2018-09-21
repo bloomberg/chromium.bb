@@ -31,10 +31,10 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT MemoryInstrumentation {
   using MemoryDumpType = base::trace_event::MemoryDumpType;
   using MemoryDumpLevelOfDetail = base::trace_event::MemoryDumpLevelOfDetail;
   using RequestGlobalDumpCallback =
-      base::RepeatingCallback<void(bool success,
-                                   std::unique_ptr<GlobalMemoryDump> dump)>;
+      base::OnceCallback<void(bool success,
+                              std::unique_ptr<GlobalMemoryDump> dump)>;
   using RequestGlobalMemoryDumpAndAppendToTraceCallback =
-      base::RepeatingCallback<void(bool success, uint64_t dump_id)>;
+      base::OnceCallback<void(bool success, uint64_t dump_id)>;
 
   static void CreateInstance(service_manager::Connector*,
                              const std::string& service_name);
