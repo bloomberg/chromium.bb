@@ -298,6 +298,12 @@ bool ResourceLoader::ShouldFetchCodeCache() {
   if (!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled())
     return false;
 
+  // TODO(crbug.com/867347): Enable fetching of code caches on non-main threads
+  // once code cache has its own mojo interface. Currently it is using
+  // RenderMessageFilter that is not available on non-main threads.
+  if (!IsMainThread())
+    return false;
+
   const ResourceRequest& request = resource_->GetResourceRequest();
   if (!request.Url().ProtocolIsInHTTPFamily())
     return false;
@@ -986,9 +992,9 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     return;
   DCHECK_GE(response_out.ToResourceResponse().EncodedBodyLength(), 0);
 
-  if (code_cache_request_) {
-    code_cache_request_->FetchFromCodeCacheSynchronously(this);
-  }
+  // TODO(crbug.com/867347): Enable fetching of code caches synchronously
+  // once code cache has its own mojo interface. Currently it is using
+  // RenderMessageFilter that is not available on non-main threads.
 
   // Follow the async case convention of not calling DidReceiveData or
   // appending data to m_resource if the response body is empty. Copying the
