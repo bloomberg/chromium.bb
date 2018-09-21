@@ -31,46 +31,25 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/net_export_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/net_internals_resources.h"
-#include "components/net_log/chrome_net_log.h"
 #include "components/onc/onc_constants.h"
 #include "components/prefs/pref_member.h"
-#include "components/url_formatter/url_fixer.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/browsing_data_remover.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
-#include "net/http/http_cache.h"
-#include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_stream_factory.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/http/transport_security_state.h"
-#include "net/log/net_log.h"
-#include "net/log/net_log_capture_mode.h"
-#include "net/log/net_log_entry.h"
-#include "net/log/net_log_util.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -94,11 +73,6 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 
 namespace {
-
-// Delay between when an event occurs and when it is passed to the Javascript
-// page.  All events that occur during this period are grouped together and
-// sent to the page at once, which reduces context switching and CPU usage.
-const int kNetLogEventDelayMilliseconds = 100;
 
 // A Base-64 encoded DER certificate for use in test Expect-CT reports. The
 // contents of the certificate don't matter.
@@ -188,13 +162,6 @@ class NetInternalsMessageHandler
                              std::unique_ptr<base::Value> arg);
 
   // Javascript message handlers.
-  void OnRendererReady(const base::ListValue* list);
-  void OnClearBrowserCache(const base::ListValue* list);
-  void OnGetPrerenderInfo(const base::ListValue* list);
-  void OnGetHistoricNetworkStats(const base::ListValue* list);
-  void OnGetSessionNetworkStats(const base::ListValue* list);
-  void OnGetExtensionInfo(const base::ListValue* list);
-  void OnGetDataReductionProxyInfo(const base::ListValue* list);
 #if defined(OS_CHROMEOS)
   void OnImportONCFile(const base::ListValue* list);
   void OnStoreDebugLogs(const base::ListValue* list);
@@ -227,15 +194,14 @@ class NetInternalsMessageHandler
 };
 
 // This class is the "real" message handler. It is allocated and destroyed on
-// the UI thread.  With the exception of OnAddEntry, OnWebUIDeleted, and
+// the UI thread.  With the exception of OnWebUIDeleted, and
 // SendJavascriptCommand, its methods are all expected to be called from the IO
-// thread.  OnAddEntry and SendJavascriptCommand can be called from any thread,
-// and OnWebUIDeleted can only be called from the UI thread.
+// thread.  SendJavascriptCommand can be called from any thread, and
+// OnWebUIDeleted can only be called from the UI thread.
 class NetInternalsMessageHandler::IOThreadImpl
     : public base::RefCountedThreadSafe<
           NetInternalsMessageHandler::IOThreadImpl,
-          BrowserThread::DeleteOnUIThread>,
-      public net::NetLog::ThreadSafeObserver {
+          BrowserThread::DeleteOnUIThread> {
  public:
   // Type for methods that can be used as MessageHandler callbacks.
   typedef void (IOThreadImpl::*MessageHandler)(const base::ListValue*);
@@ -250,18 +216,10 @@ class NetInternalsMessageHandler::IOThreadImpl
       IOThread* io_thread,
       net::URLRequestContextGetter* main_context_getter);
 
-  // Called on UI thread just after creation, to add a ContextGetter to
-  // |context_getters_|.
-  void AddRequestContextGetter(net::URLRequestContextGetter* context_getter);
-
   // Helper method to enable a callback that will be executed on the IO thread.
   static void CallbackHelper(MessageHandler method,
                              scoped_refptr<IOThreadImpl> io_thread,
                              const base::ListValue* list);
-
-  // Called once the WebUI has been deleted (i.e. renderer went away), on the
-  // IO thread.
-  void Detach();
 
   // Called when the WebUI is deleted.  Prevents calling Javascript functions
   // afterwards.  Called on UI thread.
@@ -271,9 +229,6 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Javascript message handlers:
   //--------------------------------
 
-  void OnRendererReady(const base::ListValue* list);
-
-  void OnGetNetInfo(const base::ListValue* list);
   void OnReloadProxySettings(const base::ListValue* list);
   void OnClearBadProxies(const base::ListValue* list);
   void OnClearHostResolverCache(const base::ListValue* list);
@@ -285,13 +240,6 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnExpectCTTestReport(const base::ListValue* list);
   void OnCloseIdleSockets(const base::ListValue* list);
   void OnFlushSocketPools(const base::ListValue* list);
-#if defined(OS_WIN)
-  void OnGetServiceProviders(const base::ListValue* list);
-#endif
-  void OnSetCaptureMode(const base::ListValue* list);
-
-  // NetLog::ThreadSafeObserver implementation:
-  void OnAddEntry(const net::NetLogEntry& entry) override;
 
   // Helper that calls g_browser.receive in the renderer, passing in |command|
   // and |arg|.  If the renderer is displaying a log file, the message will be
@@ -306,36 +254,17 @@ class NetInternalsMessageHandler::IOThreadImpl
   using ContextGetterList =
       std::vector<scoped_refptr<net::URLRequestContextGetter>>;
 
-  ~IOThreadImpl() override;
-
-  // Adds |entry| to the queue of pending log entries to be sent to the page via
-  // Javascript.  Must be called on the IO Thread.  Also creates a delayed task
-  // that will call PostPendingEntries, if there isn't one already.
-  void AddEntryToQueue(std::unique_ptr<base::Value> entry);
-
-  // Sends all pending entries to the page via Javascript, and clears the list
-  // of pending entries.  Sending multiple entries at once results in a
-  // significant reduction of CPU usage when a lot of events are happening.
-  // Must be called on the IO Thread.
-  void PostPendingEntries();
-
-  // Adds entries with the states of ongoing URL requests.
-  void PrePopulateEventList();
+  ~IOThreadImpl();
 
   net::URLRequestContext* GetMainContext() {
     return main_context_getter_->GetURLRequestContext();
   }
 
-  // |info_sources| is an or'd together list of the net::NetInfoSources to
-  // send information about.  Information is sent to Javascript in the form of
-  // a single dictionary with information about all requests sources.
-  void SendNetInfo(int info_sources);
-
   // Pointer to the UI-thread message handler. Only access this from
   // the UI thread.
   base::WeakPtr<NetInternalsMessageHandler> handler_;
 
-  // The global IOThread, which contains the global NetLog to observer.
+  // The global IOThread.
   IOThread* io_thread_;
 
   // The main URLRequestContextGetter for the tab's profile.
@@ -348,16 +277,6 @@ class NetInternalsMessageHandler::IOThreadImpl
   //
   // This is only read and written to on the UI thread.
   bool was_webui_deleted_;
-
-  // Log entries that have yet to be passed along to Javascript page.  Non-NULL
-  // when and only when there is a pending delayed task to call
-  // PostPendingEntries.  Read and written to exclusively on the IO Thread.
-  std::unique_ptr<base::ListValue> pending_entries_;
-
-  // Used for getting current status of URLRequests when net-internals is
-  // opened.  |main_context_getter_| is automatically added on construction.
-  // Duplicates are allowed.
-  ContextGetterList context_getters_;
 
   // Used to send test Expect-CT reports. Lazily initialized when the first
   // Expect-CT test report is sent. This is a member variable rather than a
@@ -378,12 +297,8 @@ class NetInternalsMessageHandler::IOThreadImpl
 NetInternalsMessageHandler::NetInternalsMessageHandler() {}
 
 NetInternalsMessageHandler::~NetInternalsMessageHandler() {
-  if (proxy_) {
+  if (proxy_)
     proxy_->OnWebUIDeleted();
-    // Notify the handler on the IO thread that the renderer is gone.
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(&IOThreadImpl::Detach, proxy_));
-  }
 }
 
 void NetInternalsMessageHandler::RegisterMessages() {
@@ -393,17 +308,7 @@ void NetInternalsMessageHandler::RegisterMessages() {
 
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
                             profile->GetRequestContext());
-  proxy_->AddRequestContextGetter(
-      content::BrowserContext::GetDefaultStoragePartition(profile)->
-          GetMediaURLRequestContext());
 
-  web_ui()->RegisterMessageCallback(
-      "notifyReady",
-      base::BindRepeating(&NetInternalsMessageHandler::OnRendererReady,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getNetInfo", base::BindRepeating(&IOThreadImpl::CallbackHelper,
-                                        &IOThreadImpl::OnGetNetInfo, proxy_));
   web_ui()->RegisterMessageCallback(
       "reloadProxySettings",
       base::BindRepeating(&IOThreadImpl::CallbackHelper,
@@ -445,43 +350,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "flushSocketPools",
       base::BindRepeating(&IOThreadImpl::CallbackHelper,
                           &IOThreadImpl::OnFlushSocketPools, proxy_));
-#if defined(OS_WIN)
-  web_ui()->RegisterMessageCallback(
-      "getServiceProviders",
-      base::BindRepeating(&IOThreadImpl::CallbackHelper,
-                          &IOThreadImpl::OnGetServiceProviders, proxy_));
-#endif
-
-  web_ui()->RegisterMessageCallback(
-      "setCaptureMode",
-      base::BindRepeating(&IOThreadImpl::CallbackHelper,
-                          &IOThreadImpl::OnSetCaptureMode, proxy_));
-  web_ui()->RegisterMessageCallback(
-      "clearBrowserCache",
-      base::BindRepeating(&NetInternalsMessageHandler::OnClearBrowserCache,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getPrerenderInfo",
-      base::BindRepeating(&NetInternalsMessageHandler::OnGetPrerenderInfo,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getHistoricNetworkStats",
-      base::BindRepeating(
-          &NetInternalsMessageHandler::OnGetHistoricNetworkStats,
-          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getSessionNetworkStats",
-      base::BindRepeating(&NetInternalsMessageHandler::OnGetSessionNetworkStats,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getExtensionInfo",
-      base::BindRepeating(&NetInternalsMessageHandler::OnGetExtensionInfo,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getDataReductionProxyInfo",
-      base::BindRepeating(
-          &NetInternalsMessageHandler::OnGetDataReductionProxyInfo,
-          base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "importONCFile",
@@ -512,60 +380,6 @@ void NetInternalsMessageHandler::SendJavascriptCommand(
   }
 }
 
-void NetInternalsMessageHandler::OnRendererReady(const base::ListValue* list) {
-  IOThreadImpl::CallbackHelper(&IOThreadImpl::OnRendererReady, proxy_, list);
-}
-
-void NetInternalsMessageHandler::OnClearBrowserCache(
-    const base::ListValue* list) {
-  content::BrowsingDataRemover* remover =
-      Profile::GetBrowsingDataRemover(Profile::FromWebUI(web_ui()));
-  remover->Remove(base::Time(), base::Time::Max(),
-                  content::BrowsingDataRemover::DATA_TYPE_CACHE,
-                  content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
-  // BrowsingDataRemover deletes itself.
-}
-
-void NetInternalsMessageHandler::OnGetPrerenderInfo(
-    const base::ListValue* list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SendJavascriptCommand(
-      "receivedPrerenderInfo",
-      chrome_browser_net::GetPrerenderInfo(Profile::FromWebUI(web_ui())));
-}
-
-void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
-    const base::ListValue* list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SendJavascriptCommand("receivedHistoricNetworkStats",
-                        chrome_browser_net::GetHistoricNetworkStats(
-                            Profile::FromWebUI(web_ui())));
-}
-
-void NetInternalsMessageHandler::OnGetSessionNetworkStats(
-    const base::ListValue* list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SendJavascriptCommand(
-      "receivedSessionNetworkStats",
-      chrome_browser_net::GetSessionNetworkStats(Profile::FromWebUI(web_ui())));
-}
-
-void NetInternalsMessageHandler::OnGetExtensionInfo(
-    const base::ListValue* list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SendJavascriptCommand(
-      "receivedExtensionInfo",
-      chrome_browser_net::GetExtensionInfo(Profile::FromWebUI(web_ui())));
-}
-
-void NetInternalsMessageHandler::OnGetDataReductionProxyInfo(
-    const base::ListValue* list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SendJavascriptCommand("receivedDataReductionProxyInfo",
-                        chrome_browser_net::GetDataReductionProxyInfo(
-                            Profile::FromWebUI(web_ui())));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // NetInternalsMessageHandler::IOThreadImpl
@@ -581,17 +395,10 @@ NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
       main_context_getter_(main_context_getter),
       was_webui_deleted_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  AddRequestContextGetter(main_context_getter);
 }
 
 NetInternalsMessageHandler::IOThreadImpl::~IOThreadImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::AddRequestContextGetter(
-    net::URLRequestContextGetter* context_getter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  context_getters_.push_back(context_getter);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::CallbackHelper(
@@ -611,68 +418,21 @@ void NetInternalsMessageHandler::IOThreadImpl::CallbackHelper(
       base::BindOnce(method, io_thread, base::Owned(list_copy)));
 }
 
-void NetInternalsMessageHandler::IOThreadImpl::Detach() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Unregister with network stack to observe events.
-  if (net_log())
-    net_log()->RemoveObserver(this);
-}
-
 void NetInternalsMessageHandler::IOThreadImpl::OnWebUIDeleted() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   was_webui_deleted_ = true;
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
-    const base::ListValue* list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // If currently watching the NetLog, temporarily stop watching it and flush
-  // pending events, so they won't appear before the status events created for
-  // currently active network objects below.
-  if (net_log()) {
-    net_log()->RemoveObserver(this);
-    PostPendingEntries();
-  }
-
-  SendJavascriptCommand(
-      "receivedConstants",
-      net_log::ChromeNetLog::GetConstants(
-          base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
-          chrome::GetChannelName()));
-
-  PrePopulateEventList();
-
-  // Register with network stack to observe events.
-  io_thread_->net_log()->AddObserver(
-      this, net::NetLogCaptureMode::IncludeCookiesAndCredentials());
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::OnGetNetInfo(
-    const base::ListValue* list) {
-  DCHECK(list);
-  int info_sources;
-  if (!list->GetInteger(0, &info_sources))
-    return;
-  SendNetInfo(info_sources);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
     const base::ListValue* list) {
   DCHECK(!list);
   GetMainContext()->proxy_resolution_service()->ForceReloadProxyConfig();
-
-  // Cause the renderer to be notified of the new values.
-  SendNetInfo(net::NET_INFO_PROXY_SETTINGS);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
     const base::ListValue* list) {
   DCHECK(!list);
   GetMainContext()->proxy_resolution_service()->ClearBadProxiesCache();
-
-  // Cause the renderer to be notified of the new values.
-  SendNetInfo(net::NET_INFO_BAD_PROXIES);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
@@ -682,9 +442,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
 
   if (cache)
     cache->clear();
-
-  // Cause the renderer to be notified of the new values.
-  SendNetInfo(net::NET_INFO_HOST_RESOLVER);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnDomainSecurityPolicyDelete(
@@ -935,15 +692,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnCloseIdleSockets(
     http_network_session->CloseIdleConnections();
 }
 
-#if defined(OS_WIN)
-void NetInternalsMessageHandler::IOThreadImpl::OnGetServiceProviders(
-    const base::ListValue* list) {
-  DCHECK(!list);
-  SendJavascriptCommand("receivedServiceProviders",
-                        chrome_browser_net::GetWindowsServiceProviders());
-}
-#endif
-
 #if defined(OS_CHROMEOS)
 void NetInternalsMessageHandler::ImportONCFileToNSSDB(
     const std::string& onc_blob,
@@ -1071,36 +819,6 @@ void NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted(
 }
 #endif  // defined(OS_CHROMEOS)
 
-void NetInternalsMessageHandler::IOThreadImpl::OnSetCaptureMode(
-    const base::ListValue* list) {
-  std::string capture_mode_string;
-  if (!list->GetString(0, &capture_mode_string)) {
-    NOTREACHED();
-    return;
-  }
-
-  // Convert the string to a NetLogCaptureMode.
-  net::NetLogCaptureMode mode;
-  if (capture_mode_string == "IncludeSocketBytes") {
-    mode = net::NetLogCaptureMode::IncludeSocketBytes();
-  } else if (capture_mode_string == "IncludeCookiesAndCredentials") {
-    mode = net::NetLogCaptureMode::IncludeCookiesAndCredentials();
-  } else {
-    NOTREACHED();
-  }
-
-  net_log()->SetObserverCaptureMode(this, mode);
-}
-
-// Note that unlike other methods of IOThreadImpl, this function
-// can be called from ANY THREAD.
-void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
-    const net::NetLogEntry& entry) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&IOThreadImpl::AddEntryToQueue, this, entry.ToValue()));
-}
-
 // Note that this can be called from ANY THREAD.
 void NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand(
     const std::string& command,
@@ -1117,42 +835,6 @@ void NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand(
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(&IOThreadImpl::SendJavascriptCommand,
                                           this, command, std::move(arg)));
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(
-    std::unique_ptr<base::Value> entry) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!pending_entries_) {
-    pending_entries_.reset(new base::ListValue());
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&IOThreadImpl::PostPendingEntries, this),
-        base::TimeDelta::FromMilliseconds(kNetLogEventDelayMilliseconds));
-  }
-  pending_entries_->Append(std::move(entry));
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::PostPendingEntries() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (pending_entries_)
-    SendJavascriptCommand("receivedLogEntries", std::move(pending_entries_));
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::PrePopulateEventList() {
-  // Using a set removes any duplicates.
-  std::set<net::URLRequestContext*> contexts;
-  for (const auto& getter : context_getters_)
-    contexts.insert(getter->GetURLRequestContext());
-  contexts.insert(io_thread_->globals()->system_request_context);
-
-  // Add entries for ongoing network objects.
-  CreateNetLogEntriesForActiveObjects(contexts, this);
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::SendNetInfo(int info_sources) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SendJavascriptCommand("receivedNetInfo",
-                        net::GetNetInfo(GetMainContext(), info_sources));
 }
 
 }  // namespace
