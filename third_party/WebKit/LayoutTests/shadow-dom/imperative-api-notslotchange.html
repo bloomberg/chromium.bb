@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+</head>
+<body>
+<div id="log"></div>
+<script>
+    const test = async_test('slotchange event must not be fired');
+    let eventCount = 0;
+    let slot1;
+    let child1;
+
+    test.step(function () {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+
+        const shadowRoot = host.attachShadow({mode: 'open', slotting: 'manual'});
+        slot1 = document.createElement('slot');
+
+        slot1.addEventListener('slotchange', function (event) {
+            eventCount++;
+        });
+
+        shadowRoot.appendChild(slot1);
+        child1 = document.createElement('div');
+        host.appendChild(child1);
+        slot1.assign([child1]);
+    });
+
+    setTimeout(function () {
+        test.step(function () {
+            assert_equals(eventCount, 1, 'slotchange event must be fired  when node is assigned');
+            slot1.assign([child1]);
+        });
+
+        setTimeout(function () {
+            test.step(function () {
+                assert_equals(eventCount, 1, 'slotchange event must not be fired  when slot is assigned same node');
+            });
+            test.done();
+        }, 1);
+    }, 1);
+</script>
+</body>
+</html>
