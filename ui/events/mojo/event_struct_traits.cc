@@ -41,12 +41,28 @@ ui::EventPointerType PointerTypeFromPointerKind(ui::mojom::PointerKind kind) {
   return ui::EventPointerType::POINTER_TYPE_UNKNOWN;
 }
 
+void UpdateEventLocation(const ui::mojom::PointerData& pointer_data,
+                         EventUniquePtr* out) {
+  // TODO(katie): Update LocationData to have two PointF instead of storing this
+  // as four floats.
+  const gfx::PointF location(pointer_data.location->x,
+                             pointer_data.location->y);
+  const gfx::PointF screen_location(pointer_data.location->screen_x,
+                                    pointer_data.location->screen_y);
+  // Set the float location, as the constructor only takes a gfx::Point.
+  // This uses the event root_location field to store screen pixel
+  // coordinates. See http://crbug.com/608547
+  out->get()->AsLocatedEvent()->set_location_f(location);
+  out->get()->AsLocatedEvent()->set_root_location_f(screen_location);
+}
+
 bool ReadPointerDetails(ui::mojom::EventType event_type,
                         const ui::mojom::PointerData& pointer_data,
                         ui::PointerDetails* out) {
   switch (pointer_data.kind) {
     case ui::mojom::PointerKind::MOUSE: {
-      if (event_type == ui::mojom::EventType::POINTER_WHEEL_CHANGED) {
+      if (event_type == ui::mojom::EventType::POINTER_WHEEL_CHANGED ||
+          event_type == ui::mojom::EventType::MOUSE_WHEEL_EVENT) {
         *out = ui::PointerDetails(
             ui::EventPointerType::POINTER_TYPE_MOUSE,
             gfx::Vector2d(static_cast<int>(pointer_data.wheel_data->delta_x),
@@ -193,6 +209,22 @@ ui::mojom::EventType TypeConverter<ui::mojom::EventType,
       return ui::mojom::EventType::SCROLL_FLING_CANCEL;
     case ui::ET_CANCEL_MODE:
       return ui::mojom::EventType::CANCEL_MODE;
+    case ui::ET_MOUSE_PRESSED:
+      return ui::mojom::EventType::MOUSE_PRESSED_EVENT;
+    case ui::ET_MOUSE_DRAGGED:
+      return ui::mojom::EventType::MOUSE_DRAGGED_EVENT;
+    case ui::ET_MOUSE_RELEASED:
+      return ui::mojom::EventType::MOUSE_RELEASED_EVENT;
+    case ui::ET_MOUSE_MOVED:
+      return ui::mojom::EventType::MOUSE_MOVED_EVENT;
+    case ui::ET_MOUSE_ENTERED:
+      return ui::mojom::EventType::MOUSE_ENTERED_EVENT;
+    case ui::ET_MOUSE_EXITED:
+      return ui::mojom::EventType::MOUSE_EXITED_EVENT;
+    case ui::ET_MOUSEWHEEL:
+      return ui::mojom::EventType::MOUSE_WHEEL_EVENT;
+    case ui::ET_MOUSE_CAPTURE_CHANGED:
+      return ui::mojom::EventType::MOUSE_CAPTURE_CHANGED_EVENT;
     default:
       NOTREACHED() << "Using unknown event types closes connections:"
                    << ui::EventTypeName(type);
@@ -235,6 +267,22 @@ ui::EventType TypeConverter<ui::EventType, ui::mojom::EventType>::Convert(
       return ui::ET_SCROLL_FLING_START;
     case ui::mojom::EventType::SCROLL_FLING_CANCEL:
       return ui::ET_SCROLL_FLING_CANCEL;
+    case ui::mojom::EventType::MOUSE_PRESSED_EVENT:
+      return ui::ET_MOUSE_PRESSED;
+    case ui::mojom::EventType::MOUSE_DRAGGED_EVENT:
+      return ui::ET_MOUSE_DRAGGED;
+    case ui::mojom::EventType::MOUSE_RELEASED_EVENT:
+      return ui::ET_MOUSE_RELEASED;
+    case ui::mojom::EventType::MOUSE_MOVED_EVENT:
+      return ui::ET_MOUSE_MOVED;
+    case ui::mojom::EventType::MOUSE_ENTERED_EVENT:
+      return ui::ET_MOUSE_ENTERED;
+    case ui::mojom::EventType::MOUSE_EXITED_EVENT:
+      return ui::ET_MOUSE_EXITED;
+    case ui::mojom::EventType::MOUSE_WHEEL_EVENT:
+      return ui::ET_MOUSEWHEEL;
+    case ui::mojom::EventType::MOUSE_CAPTURE_CHANGED_EVENT:
+      return ui::ET_MOUSE_CAPTURE_CHANGED;
     default:
       NOTREACHED();
   }
@@ -293,14 +341,25 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::key_data(
 ui::mojom::PointerDataPtr
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
     const EventUniquePtr& event) {
-  if (!event->IsPointerEvent())
+  if (!event->IsPointerEvent() && !event->IsMouseEvent())
     return nullptr;
 
-  const ui::PointerEvent* pointer_event = event->AsPointerEvent();
   ui::mojom::PointerDataPtr pointer_data(ui::mojom::PointerData::New());
-  pointer_data->pointer_id = pointer_event->pointer_details().id;
-  pointer_data->changed_button_flags = pointer_event->changed_button_flags();
-  const ui::PointerDetails* pointer_details = &pointer_event->pointer_details();
+  const ui::PointerDetails* pointer_details;
+  if (event->IsPointerEvent()) {
+    const ui::PointerEvent* pointer_event = event->AsPointerEvent();
+    pointer_data->changed_button_flags = pointer_event->changed_button_flags();
+    pointer_data->location = GetLocationData(event->AsLocatedEvent());
+    pointer_details = &pointer_event->pointer_details();
+  } else {
+    // Mouse event
+    const ui::MouseEvent* mouse_event = event->AsMouseEvent();
+    pointer_data->changed_button_flags = mouse_event->changed_button_flags();
+    pointer_data->location = GetLocationData(mouse_event);
+    pointer_details = &mouse_event->pointer_details();
+  }
+
+  pointer_data->pointer_id = pointer_details->id;
   ui::EventPointerType pointer_type = pointer_details->pointer_type;
 
   switch (pointer_type) {
@@ -338,9 +397,8 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
   // TODO(rjkroege): Handle force-touch on MacOS
   // TODO(rjkroege): Adjust brush data appropriately for Android.
 
-  pointer_data->location = GetLocationData(event->AsLocatedEvent());
-
-  if (event->type() == ui::ET_POINTER_WHEEL_CHANGED) {
+  if (event->type() == ui::ET_POINTER_WHEEL_CHANGED ||
+      event->type() == ui::ET_MOUSEWHEEL) {
     ui::mojom::WheelDataPtr wheel_data(ui::mojom::WheelData::New());
 
     // TODO(rjkroege): Support page scrolling on windows by directly
@@ -451,16 +509,12 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
       if (!ReadPointerDetails(event.action(), *pointer_data, &pointer_details))
         return false;
 
-      const gfx::Point location(pointer_data->location->x,
-                                pointer_data->location->y);
-      const gfx::Point screen_location(pointer_data->location->screen_x,
-                                       pointer_data->location->screen_y);
-      // This uses the event root_location field to store screen pixel
-      // coordinates. See http://crbug.com/608547
       *out = std::make_unique<ui::PointerEvent>(
-          mojo::ConvertTo<ui::EventType>(event.action()), location,
-          screen_location, event.flags(), pointer_data->changed_button_flags,
+          mojo::ConvertTo<ui::EventType>(event.action()), gfx::Point(),
+          gfx::Point(), event.flags(), pointer_data->changed_button_flags,
           pointer_details, time_stamp);
+
+      UpdateEventLocation(*pointer_data, out);
       break;
     }
     case ui::mojom::EventType::GESTURE_TAP:
@@ -485,6 +539,42 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
     case ui::mojom::EventType::CANCEL_MODE:
       *out = std::make_unique<ui::CancelModeEvent>();
       break;
+    case ui::mojom::EventType::MOUSE_PRESSED_EVENT:
+    case ui::mojom::EventType::MOUSE_RELEASED_EVENT:
+    case ui::mojom::EventType::MOUSE_DRAGGED_EVENT:
+    case ui::mojom::EventType::MOUSE_MOVED_EVENT:
+    case ui::mojom::EventType::MOUSE_ENTERED_EVENT:
+    case ui::mojom::EventType::MOUSE_EXITED_EVENT:
+    case ui::mojom::EventType::MOUSE_WHEEL_EVENT:
+    case ui::mojom::EventType::MOUSE_CAPTURE_CHANGED_EVENT: {
+      ui::mojom::PointerDataPtr pointer_data;
+      if (!event.ReadPointerData<ui::mojom::PointerDataPtr>(&pointer_data))
+        return false;
+
+      ui::PointerDetails pointer_details;
+      if (!ReadPointerDetails(event.action(), *pointer_data, &pointer_details))
+        return false;
+
+      if (event.action() == ui::mojom::EventType::MOUSE_WHEEL_EVENT) {
+        // Use the mouse event to construct a MouseWheel event to avoid asserts
+        // in ui::MouseEvent's constructor that ensure it is not used to create
+        // a wheel event.
+        ui::MouseEvent mouse_event(
+            ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), time_stamp,
+            event.flags(), pointer_data->changed_button_flags, pointer_details);
+        *out = std::make_unique<ui::MouseWheelEvent>(
+            mouse_event, pointer_details.offset.x(),
+            pointer_details.offset.y());
+      } else {
+        *out = std::make_unique<ui::MouseEvent>(
+            mojo::ConvertTo<ui::EventType>(event.action()), gfx::Point(),
+            gfx::Point(), time_stamp, event.flags(),
+            pointer_data->changed_button_flags, pointer_details);
+      }
+
+      UpdateEventLocation(*pointer_data, out);
+      break;
+    }
     case ui::mojom::EventType::UNKNOWN:
       NOTREACHED() << "Using unknown event types closes connections";
       return false;
