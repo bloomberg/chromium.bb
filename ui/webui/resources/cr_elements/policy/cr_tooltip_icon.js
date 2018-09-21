@@ -9,4 +9,9 @@ Polymer({
     iconClass: String,
     tooltipText: String,
   },
+
+  /** @return {!Element} */
+  getFocusableElement: function() {
+    return this.$.indicator;
+  },
 });
