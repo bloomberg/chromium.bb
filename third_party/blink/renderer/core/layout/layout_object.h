@@ -2314,7 +2314,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   inline void MarkContainerChainForOverflowRecalcIfNeeded();
 
-  inline void MarkAncestorsForPaintInvalidation();
   inline void SetNeedsPaintOffsetAndVisualRectUpdate();
 
   inline void InvalidateContainerPreferredLogicalWidths();

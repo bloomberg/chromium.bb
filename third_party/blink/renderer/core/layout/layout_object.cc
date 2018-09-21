@@ -3824,13 +3824,6 @@ bool LayoutObject::IsRelayoutBoundaryForInspector() const {
   return ObjectIsRelayoutBoundary(this);
 }
 
-inline void LayoutObject::MarkAncestorsForPaintInvalidation() {
-  for (LayoutObject* parent = ParentCrossingFrames();
-       parent && !parent->ShouldCheckForPaintInvalidation();
-       parent = parent->ParentCrossingFrames())
-    parent->bitfields_.SetShouldCheckForPaintInvalidation(true);
-}
-
 inline void LayoutObject::SetNeedsPaintOffsetAndVisualRectUpdate() {
   DCHECK(ShouldCheckForPaintInvalidation());
   bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(true);
@@ -3898,8 +3891,13 @@ void LayoutObject::SetShouldCheckForPaintInvalidationWithoutGeometryChange() {
   if (ShouldCheckForPaintInvalidation())
     return;
   GetFrameView()->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
+
   bitfields_.SetShouldCheckForPaintInvalidation(true);
-  MarkAncestorsForPaintInvalidation();
+  for (LayoutObject* parent = ParentCrossingFrames();
+       parent && !parent->ShouldCheckForPaintInvalidation();
+       parent = parent->ParentCrossingFrames()) {
+    parent->bitfields_.SetShouldCheckForPaintInvalidation(true);
+  }
 }
 
 void LayoutObject::SetSubtreeShouldCheckForPaintInvalidation() {
