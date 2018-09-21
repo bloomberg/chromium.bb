@@ -80,6 +80,7 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("parent_id", parent_id);
   value->SetInteger("stable_id", stable_id);
   value->SetDouble("opacity", opacity);
+  value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
   value->SetBoolean("has_render_surface", has_render_surface);
   value->SetBoolean("cache_render_surface", cache_render_surface);
   value->SetBoolean("has_copy_request", has_copy_request);
