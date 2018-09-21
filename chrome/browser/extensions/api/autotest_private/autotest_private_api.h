@@ -15,6 +15,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
+#include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #endif
 
 namespace message_center {
@@ -333,6 +334,28 @@ class AutotestPrivateRemovePrinterFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(AutotestPrivateRemovePrinterFunction);
+};
+
+class AutotestPrivateBootstrapMachineLearningServiceFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateBootstrapMachineLearningServiceFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.bootstrapMachineLearningService",
+                             AUTOTESTPRIVATE_BOOTSTRAPMACHINELEARNINGSERVICE)
+
+ private:
+  ~AutotestPrivateBootstrapMachineLearningServiceFunction() override;
+  ResponseAction Run() override;
+#if defined(OS_CHROMEOS)
+  // Callbacks for a basic Mojo call to MachineLearningService.LoadModel.
+  void ModelLoaded(chromeos::machine_learning::mojom::LoadModelResult result);
+  void ConnectionError();
+
+  chromeos::machine_learning::mojom::ModelPtr model_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(
+      AutotestPrivateBootstrapMachineLearningServiceFunction);
 };
 
 // Don't kill the browser when we're in a browser test.
