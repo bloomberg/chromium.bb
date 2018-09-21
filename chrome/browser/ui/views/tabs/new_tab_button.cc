@@ -382,7 +382,7 @@ bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
   const float scale = GetWidget()->GetCompositor()->device_scale_factor();
   // TODO(pkasting): Fitts' Law horizontally when appropriate.
   GetBorderPath(contents_origin.y() * scale, scale,
-                tab_strip_->SizeTabButtonToTopOfTabStrip(), &border);
+                tab_strip_->controller()->IsFrameCondensed(), &border);
   border.offset(contents_origin.x(), 0);
   mask->addPath(border, SkMatrix::MakeScale(1 / scale));
   return true;

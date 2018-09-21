@@ -102,7 +102,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   gfx::ImageSkia GetIncognitoAvatarIcon() const override;
   bool IsMaximized() const override;
   bool IsMinimized() const override;
-  bool IsFullscreen() const override;
   bool IsTabStripVisible() const override;
   int GetTabStripHeight() const override;
   bool IsToolbarVisible() const override;
@@ -110,6 +109,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Size GetNewTabButtonPreferredSize() const override;
   int GetTopAreaHeight() const override;
   bool UseCustomFrame() const override;
+  bool IsFrameCondensed() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
 
   HostedAppButtonContainer* hosted_app_button_container_for_testing() {

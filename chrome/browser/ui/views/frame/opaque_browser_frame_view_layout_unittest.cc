@@ -70,7 +70,6 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   }
   bool IsMaximized() const override { return maximized_; }
   bool IsMinimized() const override { return false; }
-  bool IsFullscreen() const override { return false; }
   bool IsTabStripVisible() const override { return window_title_.empty(); }
   int GetTabStripHeight() const override {
     return IsTabStripVisible() ? GetLayoutConstant(TAB_HEIGHT) : 0;
@@ -84,6 +83,9 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   }
   int GetTopAreaHeight() const override { return 0; }
   bool UseCustomFrame() const override { return true; }
+  bool IsFrameCondensed() const override {
+    return !show_caption_buttons_ || maximized_;
+  }
   bool EverHasVisibleBackgroundTabShapes() const override { return false; }
 
  private:

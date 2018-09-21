@@ -87,6 +87,11 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns whether the top UI should hide.
   virtual bool ShouldHideTopUIForFullscreen() const;
 
+  // Determines whether the top frame is condensed vertically, as when the
+  // window is maximized. If true, the top frame is just the height of a tab,
+  // rather than having extra vertical space above the tabs.
+  virtual bool IsFrameCondensed() const;
+
   // Returns whether the content is painted with a client edge or not.
   virtual bool HasClientEdge() const;
 

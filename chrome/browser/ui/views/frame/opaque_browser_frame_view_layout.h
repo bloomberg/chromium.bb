@@ -134,12 +134,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   const gfx::Rect& client_view_bounds() const { return client_view_bounds_; }
 
-  // Determines whether the title bar is condensed vertically, as when the
-  // window is maximized. If true, the title bar is just the height of a tab,
-  // rather than having extra vertical space above the tabs. This also removes
-  // the thick frame border and rounded corners.
-  bool IsTitleBarCondensed() const;
-
   // Returns the extra thickness of the area above the tabs. The value returned
   // is dependent on whether in material refresh mode or not.
   int GetNonClientRestoredExtraThickness() const;
@@ -205,7 +199,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // Internal implementation of ViewAdded() and ViewRemoved().
   void SetView(int id, views::View* view);
 
-  // Overriden from views::LayoutManager:
+  // views::LayoutManager:
   void Layout(views::View* host) override;
   gfx::Size GetPreferredSize(const views::View* host) const override;
   void ViewAdded(views::View* host, views::View* view) override;

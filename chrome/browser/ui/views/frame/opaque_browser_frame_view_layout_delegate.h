@@ -42,7 +42,6 @@ class OpaqueBrowserFrameViewLayoutDelegate {
   // Controls window state.
   virtual bool IsMaximized() const = 0;
   virtual bool IsMinimized() const = 0;
-  virtual bool IsFullscreen() const = 0;
 
   virtual bool IsTabStripVisible() const = 0;
   virtual int GetTabStripHeight() const = 0;
@@ -60,6 +59,12 @@ class OpaqueBrowserFrameViewLayoutDelegate {
 
   // Returns true if the window frame is rendered by Chrome.
   virtual bool UseCustomFrame() const = 0;
+
+  // Determines whether the top frame is condensed vertically, as when the
+  // window is maximized. If true, the top frame is just the height of a tab,
+  // rather than having extra vertical space above the tabs. This also removes
+  // the thick frame border and rounded corners.
+  virtual bool IsFrameCondensed() const = 0;
 
   // Returns whether the shapes of background tabs are visible against the frame
   // for either active or inactive windows.
