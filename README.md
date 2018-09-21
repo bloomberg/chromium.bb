@@ -108,9 +108,9 @@ preferred and will often move things much faster.
 ### Review
 
 You get your change reviewed, you can upload it to
-[Rietveld](https://codereview.chromium.org)
+[Gerrit](https://chromium-review.googlesource.com/q/project:linux-syscall-support+status:open)
 using `git cl upload` from
-[Chromium's depot-tools](http://dev.chromium.org/developers/how-tos/depottools).
+[Chromium's depot-tools](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html).
 
 ### Testing
 
