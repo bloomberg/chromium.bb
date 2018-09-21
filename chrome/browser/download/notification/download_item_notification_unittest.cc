@@ -123,8 +123,9 @@ class DownloadItemNotificationTest : public testing::Test {
         OfflineItemUtils::GetDownloadNamespace(profile_->IsOffTheRecord()),
         download_item_->GetGuid());
     download_notification_manager_->OnNewDownloadReady(download_item_.get());
+
     download_item_notification_ =
-        download_notification_manager_->items_[id].get();
+        download_notification_manager_->items_.at(id).get();
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
         NotificationHandler::Type::TRANSIENT,
         *download_item_notification_->notification_);

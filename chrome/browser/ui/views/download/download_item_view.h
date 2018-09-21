@@ -64,7 +64,7 @@ class DownloadItemView : public views::InkDropHostView,
                          public DownloadUIModel::Observer,
                          public gfx::AnimationDelegate {
  public:
-  DownloadItemView(std::unique_ptr<DownloadUIModel> download,
+  DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
                    DownloadShelfView* parent,
                    views::View* accessible_alert);
   ~DownloadItemView() override;
@@ -351,7 +351,7 @@ class DownloadItemView : public views::InkDropHostView,
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   // A model class to control the status text we display.
-  std::unique_ptr<DownloadUIModel> model_;
+  DownloadUIModel::DownloadUIModelPtr model_;
 
   // Animation for download complete.
   std::unique_ptr<gfx::SlideAnimation> complete_animation_;
