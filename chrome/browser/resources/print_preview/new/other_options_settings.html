@@ -30,7 +30,7 @@
           <span class="title">$i18n{optionsLabel}</span>
         </div>
         <div slot="controls" class="checkbox">
-          <cr-checkbox slot="controls" id$="[[item.name]]"
+          <cr-checkbox id$="[[item.name]]"
               disabled$="[[getDisabled_(item.managed, disabled)]]"
               on-change="onChange_" checked$="[[item.value]]">
             <span>[[i18n(item.label)]]</span>
