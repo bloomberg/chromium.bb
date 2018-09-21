@@ -507,10 +507,6 @@ class LocalNtpSource::SearchConfigurationProvider
                            content::BrowserAccessibilityState::GetInstance()
                                ->IsAccessibleBrowser());
 
-    bool is_voice_search_enabled =
-        base::FeatureList::IsEnabled(features::kVoiceSearchOnLocalNtp);
-    config_data.SetBoolean("isVoiceSearchEnabled", is_voice_search_enabled);
-
     config_data.SetBoolean("isMDUIEnabled", features::IsMDUIEnabled());
 
     config_data.SetBoolean("isMDIconsEnabled", features::IsMDIconsEnabled());

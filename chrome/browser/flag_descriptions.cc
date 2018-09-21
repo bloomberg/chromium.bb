@@ -2851,12 +2851,6 @@ const char kUseGoogleLocalNtpName[] = "Enable using the Google local NTP";
 const char kUseGoogleLocalNtpDescription[] =
     "Use the local New Tab page if Google is the default search engine.";
 
-const char kVoiceSearchOnLocalNtpName[] =
-    "Enable Voice Search on the local NTP";
-const char kVoiceSearchOnLocalNtpDescription[] =
-    "Show a microphone for voice search on the local New Tab page "
-    "if Google is the default search engine.";
-
 #if defined(GOOGLE_CHROME_BUILD)
 
 const char kGoogleBrandedContextMenuName[] =

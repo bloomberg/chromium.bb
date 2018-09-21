@@ -29,7 +29,7 @@ var onDdllogResponse = null;
  * raciness in the creation/destruction of the iframe. crbug.com/786313.
  * @type {boolean}
  */
-let iframesDisabledForTesting = false;
+let iframesAndVoiceSearchDisabledForTesting = false;
 
 
 /**
@@ -44,8 +44,8 @@ function LocalNTP() {
  * Called by tests to disable the creation of Most Visited and edit custom link
  * iframes.
  */
-function disableIframesForTesting() {
-  iframesDisabledForTesting = true;
+function disableIframesAndVoiceSearchForTesting() {
+  iframesAndVoiceSearchDisabledForTesting = true;
 }
 
 
@@ -1112,7 +1112,7 @@ function init() {
     $(IDS.FAKEBOX_TEXT).textContent =
         configData.translatedStrings.searchboxPlaceholder;
 
-    if (configData.isVoiceSearchEnabled) {
+    if (!iframesAndVoiceSearchDisabledForTesting) {
       speech.init(
           configData.googleBaseUrl, configData.translatedStrings,
           $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
@@ -1215,7 +1215,7 @@ function init() {
     document.documentElement.classList.add(CLASSES.RTL);
   }
 
-  if (!iframesDisabledForTesting) {
+  if (!iframesAndVoiceSearchDisabledForTesting) {
     createIframes();
   }
 
@@ -1690,7 +1690,7 @@ var applyDoodleMetadata = function() {
 return {
   init: init,  // Exposed for testing.
   listen: listen,
-  disableIframesForTesting: disableIframesForTesting
+  disableIframesAndVoiceSearchForTesting: disableIframesAndVoiceSearchForTesting
 };
 
 }

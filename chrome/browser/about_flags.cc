@@ -3553,12 +3553,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kPwaPersistentNotification)},
 #endif  // OS_ANDROID
 
-#if !defined(OS_ANDROID)
-    {"voice-search-on-local-ntp", flag_descriptions::kVoiceSearchOnLocalNtpName,
-     flag_descriptions::kVoiceSearchOnLocalNtpDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kVoiceSearchOnLocalNtp)},
-#endif  // !defined(OS_ANDROID)
-
     {"click-to-open-pdf", flag_descriptions::kClickToOpenPDFName,
      flag_descriptions::kClickToOpenPDFDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kClickToOpenPDFPlaceholder)},
