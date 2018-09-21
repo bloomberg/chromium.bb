@@ -1533,8 +1533,6 @@ ProfileImpl::CreateMultiDeviceSetupService() {
   return std::make_unique<chromeos::multidevice_setup::MultiDeviceSetupService>(
       GetPrefs(),
       chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(this),
-      chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
-          ->GetClient(),
       chromeos::multidevice_setup::AuthTokenValidatorFactory::GetForProfile(
           this),
       std::make_unique<

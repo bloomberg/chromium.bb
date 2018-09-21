@@ -22,10 +22,6 @@ class GcmDeviceInfoProvider;
 
 namespace chromeos {
 
-namespace secure_channel {
-class SecureChannelClient;
-}  // namespace secure_channel
-
 namespace multidevice_setup {
 
 class AndroidSmsAppHelperDelegate;
@@ -47,7 +43,6 @@ class MultiDeviceSetupInitializer
     virtual std::unique_ptr<MultiDeviceSetupBase> BuildInstance(
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
-        secure_channel::SecureChannelClient* secure_channel_client,
         AuthTokenValidator* auth_token_validator,
         std::unique_ptr<AndroidSmsAppHelperDelegate>
             android_sms_app_helper_delegate,
@@ -65,7 +60,6 @@ class MultiDeviceSetupInitializer
   MultiDeviceSetupInitializer(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client,
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate,
@@ -102,7 +96,6 @@ class MultiDeviceSetupInitializer
 
   PrefService* pref_service_;
   device_sync::DeviceSyncClient* device_sync_client_;
-  secure_channel::SecureChannelClient* secure_channel_client_;
   AuthTokenValidator* auth_token_validator_;
   std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
   std::unique_ptr<AndroidSmsPairingStateTracker>

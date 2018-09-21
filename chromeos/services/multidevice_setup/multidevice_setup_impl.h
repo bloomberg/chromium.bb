@@ -27,10 +27,6 @@ namespace device_sync {
 class DeviceSyncClient;
 }  // namespace device_sync
 
-namespace secure_channel {
-class SecureChannelClient;
-}  // namespace secure_channel
-
 namespace multidevice_setup {
 
 class AccountStatusChangeDelegateNotifier;
@@ -57,7 +53,6 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
     virtual std::unique_ptr<mojom::MultiDeviceSetup> BuildInstance(
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
-        secure_channel::SecureChannelClient* secure_channel_client,
         AuthTokenValidator* auth_token_validator,
         std::unique_ptr<AndroidSmsAppHelperDelegate>
             android_sms_app_helper_delegate,
@@ -74,11 +69,9 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
  private:
   friend class MultiDeviceSetupImplTest;
 
-  // TODO(crbug.com/874283): Remove SecureChannelClient injection.
   MultiDeviceSetupImpl(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client,
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate,
