@@ -5,11 +5,6 @@
 #ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_SIGNATURE_VERIFIER_H_
 #define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_SIGNATURE_VERIFIER_H_
 
-#include <map>
-#include <string>
-#include <vector>
-
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
@@ -52,9 +47,6 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
                        scoped_refptr<net::X509Certificate> certificate,
                        const base::Time& verification_time,
                        SignedExchangeDevToolsProxy* devtools_proxy);
-
-  static base::Optional<std::vector<uint8_t>> EncodeCanonicalExchangeHeaders(
-      const SignedExchangeEnvelope& envelope);
 };
 
 }  // namespace content
