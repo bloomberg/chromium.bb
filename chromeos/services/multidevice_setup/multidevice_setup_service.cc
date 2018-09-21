@@ -31,7 +31,6 @@ void MultiDeviceSetupService::RegisterProfilePrefs(
 MultiDeviceSetupService::MultiDeviceSetupService(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client,
     AuthTokenValidator* auth_token_validator,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate,
@@ -42,7 +41,6 @@ MultiDeviceSetupService::MultiDeviceSetupService(
           MultiDeviceSetupInitializer::Factory::Get()->BuildInstance(
               pref_service,
               device_sync_client,
-              secure_channel_client,
               auth_token_validator,
               std::move(android_sms_app_helper_delegate),
               std::move(android_sms_pairing_state_tracker),

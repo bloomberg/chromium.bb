@@ -32,7 +32,6 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_auth_token_validator.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "components/cryptauth/fake_gcm_device_info_provider.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -407,8 +406,6 @@ class MultiDeviceSetupImplTest : public testing::Test {
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     fake_device_sync_client_ =
         std::make_unique<device_sync::FakeDeviceSyncClient>();
-    fake_secure_channel_client_ =
-        std::make_unique<secure_channel::FakeSecureChannelClient>();
 
     fake_auth_token_validator_ = std::make_unique<FakeAuthTokenValidator>();
     fake_auth_token_validator_->set_expected_auth_token(kValidAuthToken);
@@ -484,7 +481,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
     multidevice_setup_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
         test_pref_service_.get(), fake_device_sync_client_.get(),
-        fake_secure_channel_client_.get(), fake_auth_token_validator_.get(),
+        fake_auth_token_validator_.get(),
         std::move(fake_android_sms_app_helper_delegate),
         std::move(fake_android_sms_pairing_state_tracker),
         fake_gcm_device_info_provider_.get());
@@ -745,8 +742,6 @@ class MultiDeviceSetupImplTest : public testing::Test {
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
-  std::unique_ptr<secure_channel::FakeSecureChannelClient>
-      fake_secure_channel_client_;
   std::unique_ptr<FakeAuthTokenValidator> fake_auth_token_validator_;
   std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
       fake_gcm_device_info_provider_;

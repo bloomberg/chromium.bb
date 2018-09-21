@@ -24,10 +24,6 @@ namespace device_sync {
 class DeviceSyncClient;
 }  // namespace device_sync
 
-namespace secure_channel {
-class SecureChannelClient;
-}  // namespace secure_channel
-
 namespace multidevice_setup {
 
 class AndroidSmsAppHelperDelegate;
@@ -43,7 +39,6 @@ class MultiDeviceSetupService : public service_manager::Service {
   MultiDeviceSetupService(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client,
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate,
