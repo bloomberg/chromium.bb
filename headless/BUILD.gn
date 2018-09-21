@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//build/config/chrome_build.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
@@ -282,7 +283,7 @@ inspector_protocol_generate("protocol_sources") {
   ]
 }
 
-component("headless") {
+jumbo_component("headless") {
   sources = [
     "app/headless_shell_switches.cc",
     "app/headless_shell_switches.h",
@@ -853,7 +854,7 @@ if (is_win) {
 
 # Headless library with all included dependencies. Use this library unless you
 # have browser/child dependencies restrictions.
-static_library("headless_shell_lib") {
+jumbo_static_library("headless_shell_lib") {
   sources = [
     "app/headless_shell.cc",
     "app/headless_shell.h",
