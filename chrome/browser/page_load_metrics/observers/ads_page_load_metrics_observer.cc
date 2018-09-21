@@ -76,13 +76,6 @@ bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
                           base::CompareCase::SENSITIVE);
 }
 
-void RecordParentExistsForSubFrame(
-    bool parent_exists,
-    const AdsPageLoadMetricsObserver::AdTypes& ad_types) {
-  ADS_HISTOGRAM("ParentExistsForSubFrame", UMA_HISTOGRAM_BOOLEAN,
-                AdsPageLoadMetricsObserver::AD_TYPE_ALL, parent_exists);
-}
-
 }  // namespace
 
 AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
@@ -162,7 +155,8 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
   }
 
   // Determine who the parent frame's ad ancestor is.  If we don't know who it
-  // is, return, such as with a frame from a previous navigation.
+  // is (UMA suggested 1.8% of the time in September 2018), return, such as with
+  // a frame from a previous navigation.
   content::RenderFrameHost* parent_frame_host =
       ad_host ? ad_host->GetParent() : nullptr;
   const auto& parent_id_and_data =
@@ -170,7 +164,6 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
           ? ad_frames_data_.find(parent_frame_host->GetFrameTreeNodeId())
           : ad_frames_data_.end();
   bool parent_exists = parent_id_and_data != ad_frames_data_.end();
-  RecordParentExistsForSubFrame(parent_exists, ad_types);
   if (!parent_exists)
     return;
 
