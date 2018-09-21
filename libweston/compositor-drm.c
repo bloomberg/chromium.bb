@@ -4664,11 +4664,6 @@ drm_output_init_backlight(struct drm_output *output)
 			}
 		}
 	}
-
-	if (!output->base.set_backlight) {
-		weston_log("No backlight control for output '%s'\n",
-			   output->base.name);
-	}
 }
 
 /**
