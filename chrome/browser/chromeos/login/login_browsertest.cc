@@ -98,7 +98,7 @@ class LoginSigninTest : public InProcessBrowserTest {
 
 class LoginTest : public LoginManagerTest {
  public:
-  LoginTest() : LoginManagerTest(true) {}
+  LoginTest() : LoginManagerTest(true, true) {}
   ~LoginTest() override {}
 
   void StartGaiaAuthOffline() {

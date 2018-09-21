@@ -69,7 +69,7 @@ constexpr char kCloseButtonId[] = "closeButton";
 class ActiveDirectoryLoginTest : public LoginManagerTest {
  public:
   ActiveDirectoryLoginTest()
-      : LoginManagerTest(true),
+      : LoginManagerTest(true, true),
         // Using the same realm as supervised user domain. Should be treated as
         // normal realm.
         test_realm_(user_manager::kSupervisedUserDomain),

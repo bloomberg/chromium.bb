@@ -322,6 +322,7 @@ PrefService* WizardController::local_state_for_testing_ = nullptr;
 WizardController::WizardController()
     : screen_manager_(std::make_unique<ScreenManager>()),
       network_state_helper_(std::make_unique<login::NetworkStateHelper>()),
+      oobe_configuration_(base::Value(base::Value::Type::DICTIONARY)),
       weak_factory_(this) {
   // In session OOBE was initiated from voice interaction keyboard shortcuts.
   is_in_session_oobe_ =
@@ -333,12 +334,9 @@ WizardController::WizardController()
         base::Bind(&WizardController::OnAccessibilityStatusChanged,
                    weak_factory_.GetWeakPtr()));
   }
-  OobeConfiguration::Get()->AddObserver(this);
-  OnOobeConfigurationChanged();
 }
 
 WizardController::~WizardController() {
-  OobeConfiguration::Get()->RemoveObserver(this);
   screen_manager_.reset();
   // |remora_controller| has to be reset after |screen_manager_| is reset.
   remora_controller_.reset();
@@ -354,6 +352,8 @@ void WizardController::Init(OobeScreen first_screen) {
   first_screen_ = first_screen;
 
   bool oobe_complete = StartupUtils::IsOobeCompleted();
+  if (!oobe_complete)
+    UpdateOobeConfiguration();
   if (!oobe_complete || first_screen == OobeScreen::SCREEN_SPECIAL_OOBE)
     is_out_of_box_ = true;
 
@@ -1423,11 +1423,12 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
   }
 }
 
-void WizardController::OnOobeConfigurationChanged() {
-  oobe_configuration_ = OobeConfiguration::Get()->GetConfiguration().Clone();
-  if (current_screen_) {
-    current_screen_->SetConfiguration(&oobe_configuration_, true /*notify */);
-  }
+void WizardController::UpdateOobeConfiguration() {
+  oobe_configuration_ = base::Value(base::Value::Type::DICTIONARY);
+  chromeos::configuration::FilterConfiguration(
+      OobeConfiguration::Get()->GetConfiguration(),
+      chromeos::configuration::ConfigurationHandlerSide::HANDLER_CPP,
+      oobe_configuration_);
   auto* requisition_value = oobe_configuration_.FindKeyOfType(
       configuration::kDeviceRequisition, base::Value::Type::STRING);
   if (requisition_value) {

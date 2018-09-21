@@ -157,7 +157,8 @@ class UserAddingFinishObserver : public chromeos::UserAddingScreen::Observer {
 class NSSContextChromeOSBrowserTest : public chromeos::LoginManagerTest {
  public:
   NSSContextChromeOSBrowserTest()
-      : LoginManagerTest(true /* should_launch_browser */) {}
+      : LoginManagerTest(true /* should_launch_browser */,
+                         true /* should_initialize_webui */) {}
   ~NSSContextChromeOSBrowserTest() override {}
 };
 

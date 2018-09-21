@@ -131,7 +131,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
                             public ash::mojom::WallpaperObserver {
  protected:
   WallpaperPolicyTest()
-      : LoginManagerTest(true),
+      : LoginManagerTest(true, true),
         wallpaper_change_count_(0),
         owner_key_util_(new ownership::MockOwnerKeyUtil()),
         fake_session_manager_client_(new FakeSessionManagerClient),

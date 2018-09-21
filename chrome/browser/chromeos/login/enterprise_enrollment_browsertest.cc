@@ -80,10 +80,11 @@ class MockAuthPolicyClient : public FakeAuthPolicyClient {
 
 }  // namespace
 
-class EnterpriseEnrollmentTest : public LoginManagerTest {
+class EnterpriseEnrollmentTestBase : public LoginManagerTest {
  public:
-  EnterpriseEnrollmentTest()
-      : LoginManagerTest(true /*should_launch_browser*/) {
+  explicit EnterpriseEnrollmentTestBase(bool should_initialize_webui)
+      : LoginManagerTest(true /*should_launch_browser*/,
+                         should_initialize_webui) {
     enrollment_setup_functions_.clear();
 
     EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
@@ -217,11 +218,20 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
  private:
   static std::vector<OnSetupEnrollmentHelper> enrollment_setup_functions_;
 
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTest);
+  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTestBase);
 };
 
-std::vector<EnterpriseEnrollmentTest::OnSetupEnrollmentHelper>
-    EnterpriseEnrollmentTest::enrollment_setup_functions_;
+std::vector<EnterpriseEnrollmentTestBase::OnSetupEnrollmentHelper>
+    EnterpriseEnrollmentTestBase::enrollment_setup_functions_;
+
+class EnterpriseEnrollmentTest : public EnterpriseEnrollmentTestBase {
+ public:
+  EnterpriseEnrollmentTest()
+      : EnterpriseEnrollmentTestBase(true /* should_initialize_webui */) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTest);
+};
 
 class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
  public:
@@ -231,7 +241,7 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
     DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
         std::make_unique<MockAuthPolicyClient>());
     mock_auth_policy_client()->DisableOperationDelayForTesting();
-    EnterpriseEnrollmentTest::SetUp();
+    EnterpriseEnrollmentTestBase::SetUp();
   }
 
   // Submits Active Directory domain join credentials.
@@ -359,13 +369,16 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryJoinTest);
 };
 
-class EnterpriseEnrollmentConfigurationTest : public EnterpriseEnrollmentTest {
+class EnterpriseEnrollmentConfigurationTest
+    : public EnterpriseEnrollmentTestBase {
  public:
-  EnterpriseEnrollmentConfigurationTest() = default;
+  EnterpriseEnrollmentConfigurationTest()
+      : EnterpriseEnrollmentTestBase(false) {}
 
   void StartWizard() {
     LoginDisplayHost* host = LoginDisplayHost::default_host();
     ASSERT_TRUE(host != nullptr);
+    OobeScreenWaiter waiter(OobeScreen::SCREEN_OOBE_WELCOME);
     host->StartWizard(OobeScreen::SCREEN_OOBE_WELCOME);
 
     // Make sure that OOBE is run as an "official" build.
@@ -373,7 +386,7 @@ class EnterpriseEnrollmentConfigurationTest : public EnterpriseEnrollmentTest {
         WizardController::default_controller();
     wizard_controller->is_official_build_ = true;
 
-    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+    waiter.Wait();
 
     ASSERT_TRUE(WizardController::default_controller() != nullptr);
     ASSERT_FALSE(StartupUtils::IsOobeCompleted());
@@ -393,6 +406,9 @@ class EnterpriseEnrollmentConfigurationTest : public EnterpriseEnrollmentTest {
 
     // Let screens to settle.
     base::RunLoop().RunUntilIdle();
+
+    // WebUI exists now, finish the setup.
+    InitializeWebContents();
   }
 
   void ResetHelper() { enrollment_screen()->enrollment_helper_.reset(); }
@@ -408,7 +424,7 @@ class EnterpriseEnrollmentConfigurationTest : public EnterpriseEnrollmentTest {
         std::unique_ptr<chromeos::UpdateEngineClient>(
             fake_update_engine_client_));
 
-    EnterpriseEnrollmentTest::SetUpInProcessBrowserTestFixture();
+    EnterpriseEnrollmentTestBase::SetUpInProcessBrowserTestFixture();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -424,7 +440,7 @@ class EnterpriseEnrollmentConfigurationTest : public EnterpriseEnrollmentTest {
     command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    file);
 
-    EnterpriseEnrollmentTest::SetUpCommandLine(command_line);
+    EnterpriseEnrollmentTestBase::SetUpCommandLine(command_line);
   }
 
   // Overridden from InProcessBrowserTest:
@@ -437,7 +453,8 @@ class EnterpriseEnrollmentConfigurationTest : public EnterpriseEnrollmentTest {
         ->GetTestInterface()
         ->SetupDefaultEnvironment();
 
-    EnterpriseEnrollmentTest::SetUpOnMainThread();
+    EnterpriseEnrollmentTestBase::SetUpOnMainThread();
+    LoadConfiguration();
 
     // Make sure that OOBE is run as an "official" build.
     WizardController* wizard_controller =
@@ -699,7 +716,6 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 // Check that configuration lets correctly pass Welcome screen.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestLeaveWelcomeScreen) {
-  StartWizard();
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
   // We have to remove the enrollment_helper before the dtor gets called.
@@ -709,7 +725,6 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
 // Check that configuration lets correctly select a network by GUID.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestSelectNetwork) {
-  StartWizard();
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
   // We have to remove the enrollment_helper before the dtor gets called.
@@ -723,7 +738,6 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestAcceptEula) {
   status.download_progress = 0.1;
   fake_update_engine_client_->set_default_status(status);
 
-  StartWizard();
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
   // We have to remove the enrollment_helper before the dtor gets called.
@@ -732,7 +746,6 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestAcceptEula) {
 
 // Check that when configuration has ONC and EULA, we get to update screen.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestSkipUpdate) {
-  StartWizard();
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
   EXPECT_TRUE(IsStepDisplayed("signin"));
@@ -744,7 +757,6 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestSkipUpdate) {
 // beginning.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestDeviceRequisition) {
-  StartWizard();
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
   auto* policy_manager = g_browser_process->platform_part()

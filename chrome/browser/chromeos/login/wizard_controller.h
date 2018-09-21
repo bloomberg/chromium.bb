@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
-#include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
@@ -62,8 +61,7 @@ class WizardController : public BaseScreenDelegate,
                          public ControllerPairingScreen::Delegate,
                          public HostPairingScreen::Delegate,
                          public WelcomeScreen::Delegate,
-                         public HIDDetectionScreen::Delegate,
-                         public OobeConfiguration::Observer {
+                         public HIDDetectionScreen::Delegate {
  public:
   WizardController();
   ~WizardController() override;
@@ -263,6 +261,9 @@ class WizardController : public BaseScreenDelegate,
   void InitiateOOBEUpdate();
   void StartOOBEUpdate();
 
+  // Retrieve filtered OOBE configuration and apply relevant values.
+  void UpdateOobeConfiguration();
+
   // Actions that should be done right after EULA is accepted,
   // before update check.
   void PerformPostEulaActions();
@@ -299,9 +300,6 @@ class WizardController : public BaseScreenDelegate,
 
   // Override from HIDDetectionScreen::Delegate
   void OnHIDScreenNecessityCheck(bool screen_needed) override;
-
-  // Overridden from OobeConfiguration::Observer
-  void OnOobeConfigurationChanged() override;
 
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(

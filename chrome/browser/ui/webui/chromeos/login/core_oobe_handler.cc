@@ -105,14 +105,13 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
   TabletModeClient* tablet_mode_client = TabletModeClient::Get();
   tablet_mode_client->AddObserver(this);
 
-  OobeConfiguration::Get()->AddObserver(this);
-
   // |connector| may be null in tests.
   auto* connector = ash_util::GetServiceManagerConnector();
   if (connector) {
     connector->BindInterface(ash::mojom::kServiceName,
                              &cros_display_config_ptr_);
   }
+  OobeConfiguration::Get()->AddAndFireObserver(this);
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
@@ -179,7 +178,6 @@ void CoreOobeHandler::Initialize() {
   UpdateDeviceRequisition();
   UpdateKeyboardState();
   UpdateClientAreaSize();
-  UpdateOobeConfiguration();
 }
 
 void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
@@ -606,18 +604,12 @@ void CoreOobeHandler::UpdateClientAreaSize() {
 }
 
 void CoreOobeHandler::OnOobeConfigurationChanged() {
-  UpdateOobeConfiguration();
-}
-
-void CoreOobeHandler::UpdateOobeConfiguration() {
-  if (OobeConfiguration::Get()) {
-    base::Value configuration(base::Value::Type::DICTIONARY);
-    chromeos::configuration::FilterConfiguration(
-        OobeConfiguration::Get()->GetConfiguration(),
-        chromeos::configuration::ConfigurationHandlerSide::HANDLER_JS,
-        configuration);
-    CallJSOrDefer("updateOobeConfiguration", configuration);
-  }
+  base::Value configuration(base::Value::Type::DICTIONARY);
+  chromeos::configuration::FilterConfiguration(
+      OobeConfiguration::Get()->GetConfiguration(),
+      chromeos::configuration::ConfigurationHandlerSide::HANDLER_JS,
+      configuration);
+  CallJSOrDefer("updateOobeConfiguration", configuration);
 }
 
 void CoreOobeHandler::OnAccessibilityStatusChanged(

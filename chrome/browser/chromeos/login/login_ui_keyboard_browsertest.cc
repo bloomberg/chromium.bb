@@ -91,7 +91,8 @@ class FocusPODWaiter {
 
 class LoginUIKeyboardTest : public chromeos::LoginManagerTest {
  public:
-  LoginUIKeyboardTest() : LoginManagerTest(false) {}
+  LoginUIKeyboardTest()
+      : LoginManagerTest(false, true /* should_initialize_webui */) {}
   ~LoginUIKeyboardTest() override {}
 
   void SetUpOnMainThread() override {
@@ -178,7 +179,8 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, DISABLED_CheckPODScreenWithUsers) {
 
 class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
  public:
-  LoginUIKeyboardTestWithUsersAndOwner() : LoginManagerTest(false) {}
+  LoginUIKeyboardTestWithUsersAndOwner()
+      : LoginManagerTest(false, true /* should_initialize_webui */) {}
   ~LoginUIKeyboardTestWithUsersAndOwner() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

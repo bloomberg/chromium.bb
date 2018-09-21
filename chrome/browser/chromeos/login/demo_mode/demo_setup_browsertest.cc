@@ -169,7 +169,8 @@ class JsConditionWaiter {
 // Basic tests for demo mode setup flow.
 class DemoSetupTest : public LoginManagerTest {
  public:
-  DemoSetupTest() : LoginManagerTest(false) {}
+  DemoSetupTest()
+      : LoginManagerTest(false, true /* should_initialize_webui */) {}
   ~DemoSetupTest() override = default;
 
   // LoginTestManager:

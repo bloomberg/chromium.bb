@@ -172,9 +172,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // Updates client area size based on the primary screen size.
   void UpdateClientAreaSize();
 
-  // Updates OOBE configuration.
-  void UpdateOobeConfiguration();
-
   // Notification of a change in the accessibility settings.
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
