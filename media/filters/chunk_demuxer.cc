@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
@@ -486,12 +487,13 @@ std::string ChunkDemuxer::GetDisplayName() const {
 void ChunkDemuxer::Initialize(DemuxerHost* host,
                               const PipelineStatusCB& init_cb) {
   DVLOG(1) << "Init(), buffering_by_pts_=" << buffering_by_pts_;
+  TRACE_EVENT_ASYNC_BEGIN0("media", "ChunkDemuxer::Initialize", this);
 
   base::AutoLock auto_lock(lock_);
   if (state_ == SHUTDOWN) {
     // Init cb must only be run after this method returns, so post.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(init_cb, DEMUXER_ERROR_COULD_NOT_OPEN));
+    init_cb_ = BindToCurrentLoop(init_cb);
+    RunInitCB_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
   }
 
@@ -516,19 +518,20 @@ void ChunkDemuxer::Stop() {
 void ChunkDemuxer::Seek(TimeDelta time, const PipelineStatusCB& cb) {
   DVLOG(1) << "Seek(" << time.InSecondsF() << ")";
   DCHECK(time >= TimeDelta());
+  TRACE_EVENT_ASYNC_BEGIN0("media", "ChunkDemuxer::Seek", this);
 
   base::AutoLock auto_lock(lock_);
   DCHECK(!seek_cb_);
 
   seek_cb_ = BindToCurrentLoop(cb);
   if (state_ != INITIALIZED && state_ != ENDED) {
-    std::move(seek_cb_).Run(PIPELINE_ERROR_INVALID_STATE);
+    RunSeekCB_Locked(PIPELINE_ERROR_INVALID_STATE);
     return;
   }
 
   if (cancel_next_seek_) {
     cancel_next_seek_ = false;
-    std::move(seek_cb_).Run(PIPELINE_OK);
+    RunSeekCB_Locked(PIPELINE_OK);
     return;
   }
 
@@ -540,7 +543,7 @@ void ChunkDemuxer::Seek(TimeDelta time, const PipelineStatusCB& cb) {
     return;
   }
 
-  std::move(seek_cb_).Run(PIPELINE_OK);
+  RunSeekCB_Locked(PIPELINE_OK);
 }
 
 // Demuxer implementation.
@@ -634,7 +637,7 @@ void ChunkDemuxer::CancelPendingSeek(TimeDelta seek_time) {
     return;
   }
 
-  std::move(seek_cb_).Run(PIPELINE_OK);
+  RunSeekCB_Locked(PIPELINE_OK);
 }
 
 ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
@@ -898,10 +901,10 @@ bool ChunkDemuxer::AppendData(const std::string& id,
     }
 
     // Check to see if data was appended at the pending seek point. This
-    // indicates we have parsed enough data to complete the seek.
-    if (old_waiting_for_data && !IsSeekWaitingForData_Locked() && seek_cb_) {
-      std::move(seek_cb_).Run(PIPELINE_OK);
-    }
+    // indicates we have parsed enough data to complete the seek. Work is still
+    // in progress at this point, but it's okay since |seek_cb_| will post.
+    if (old_waiting_for_data && !IsSeekWaitingForData_Locked() && seek_cb_)
+      RunSeekCB_Locked(PIPELINE_OK);
 
     ranges = GetBufferedRanges_Locked();
   }
@@ -925,9 +928,8 @@ void ChunkDemuxer::ResetParserState(const std::string& id,
                                           timestamp_offset);
   // ResetParserState can possibly emit some buffers.
   // Need to check whether seeking can be completed.
-  if (old_waiting_for_data && !IsSeekWaitingForData_Locked() && seek_cb_) {
-    std::move(seek_cb_).Run(PIPELINE_OK);
-  }
+  if (old_waiting_for_data && !IsSeekWaitingForData_Locked() && seek_cb_)
+    RunSeekCB_Locked(PIPELINE_OK);
 }
 
 void ChunkDemuxer::Remove(const std::string& id, TimeDelta start,
@@ -1133,9 +1135,8 @@ void ChunkDemuxer::MarkEndOfStream(PipelineStatus status) {
   ChangeState_Locked(ENDED);
   DecreaseDurationIfNecessary();
 
-  if (old_waiting_for_data && !IsSeekWaitingForData_Locked() && seek_cb_) {
-    std::move(seek_cb_).Run(PIPELINE_OK);
-  }
+  if (old_waiting_for_data && !IsSeekWaitingForData_Locked() && seek_cb_)
+    RunSeekCB_Locked(PIPELINE_OK);
 }
 
 void ChunkDemuxer::UnmarkEndOfStream() {
@@ -1170,7 +1171,7 @@ void ChunkDemuxer::Shutdown() {
   ChangeState_Locked(SHUTDOWN);
 
   if (seek_cb_)
-    std::move(seek_cb_).Run(PIPELINE_ERROR_ABORT);
+    RunSeekCB_Locked(PIPELINE_ERROR_ABORT);
 }
 
 void ChunkDemuxer::SetMemoryLimitsForTest(DemuxerStream::Type type,
@@ -1205,19 +1206,14 @@ void ChunkDemuxer::ReportError_Locked(PipelineStatus error) {
 
   ChangeState_Locked(PARSE_ERROR);
 
-  PipelineStatusCB cb;
-
   if (init_cb_) {
-    std::swap(cb, init_cb_);
-  } else {
-    if (seek_cb_)
-      std::swap(cb, seek_cb_);
-
-    ShutdownAllStreams();
+    RunInitCB_Locked(error);
+    return;
   }
 
-  if (!cb.is_null()) {
-    cb.Run(error);
+  ShutdownAllStreams();
+  if (seek_cb_) {
+    RunSeekCB_Locked(error);
     return;
   }
 
@@ -1313,8 +1309,7 @@ void ChunkDemuxer::OnSourceInitDone(
   // build is needed. See https://crbug.com/786975.
   CHECK_EQ(state_, INITIALIZING);
   ChangeState_Locked(INITIALIZED);
-  CHECK(init_cb_);
-  std::move(init_cb_).Run(PIPELINE_OK);
+  RunInitCB_Locked(PIPELINE_OK);
 }
 
 // static
@@ -1474,6 +1469,22 @@ void ChunkDemuxer::ShutdownAllStreams() {
        ++itr) {
     itr->second->Shutdown();
   }
+}
+
+void ChunkDemuxer::RunInitCB_Locked(PipelineStatus status) {
+  lock_.AssertAcquired();
+  DCHECK(init_cb_);
+  TRACE_EVENT_ASYNC_END1("media", "ChunkDemuxer::Initialize", this, "status",
+                         MediaLog::PipelineStatusToString(status));
+  std::move(init_cb_).Run(status);
+}
+
+void ChunkDemuxer::RunSeekCB_Locked(PipelineStatus status) {
+  lock_.AssertAcquired();
+  DCHECK(seek_cb_);
+  TRACE_EVENT_ASYNC_END1("media", "ChunkDemuxer::Seek", this, "status",
+                         MediaLog::PipelineStatusToString(status));
+  std::move(seek_cb_).Run(status);
 }
 
 }  // namespace media

@@ -212,6 +212,7 @@ class MEDIA_EXPORT DecoderStream {
   void ClearOutputs();
   void MaybePrepareAnotherOutput();
   void OnPreparedOutputReady(const scoped_refptr<Output>& frame);
+  void CompletePrepare(const Output* output);
 
   std::unique_ptr<DecoderStreamTraits<StreamType>> traits_;
 
