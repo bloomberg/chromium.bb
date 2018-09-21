@@ -62,15 +62,11 @@ void MultiDeviceNotificationPresenter::OpenUiDelegate::
 }
 
 void MultiDeviceNotificationPresenter::OpenUiDelegate::
-    OpenChangeConnectedPhoneSettings() {
-  // TODO(jordynass): Open the "Settings/Connected Devices/Change Device"
-  // subpage once it has been implemented
-}
-
-void MultiDeviceNotificationPresenter::OpenUiDelegate::
     OpenConnectedDevicesSettings() {
-  // TODO(jordynass): Open the "Settings/Connected Devices" subpage once it
-  // has been implemented
+  Shell::Get()
+      ->system_tray_model()
+      ->client_ptr()
+      ->ShowConnectedDevicesSettings();
 }
 
 // static
@@ -207,8 +203,9 @@ void MultiDeviceNotificationPresenter::OnNotificationClicked() {
       open_ui_delegate_->OpenMultiDeviceSetupUi();
       break;
     case Status::kExistingUserHostSwitchedNotificationVisible:
-      open_ui_delegate_->OpenChangeConnectedPhoneSettings();
-      break;
+      // Clicks on the 'host switched' and 'Chromebook added' notifications have
+      // the same effect, i.e. opening the Settings subpage.
+      FALLTHROUGH;
     case Status::kExistingUserNewChromebookNotificationVisible:
       open_ui_delegate_->OpenConnectedDevicesSettings();
       break;

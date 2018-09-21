@@ -97,10 +97,6 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
       return open_multi_device_setup_ui_count_;
     }
 
-    int open_change_connected_phone_settings_count() const {
-      return open_change_connected_phone_settings_count_;
-    }
-
     int open_connected_devices_settings_count() const {
       return open_connected_devices_settings_count_;
     }
@@ -110,17 +106,12 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
       ++open_multi_device_setup_ui_count_;
     }
 
-    void OpenChangeConnectedPhoneSettings() override {
-      ++open_change_connected_phone_settings_count_;
-    }
-
     void OpenConnectedDevicesSettings() override {
       ++open_connected_devices_settings_count_;
     }
 
    private:
     int open_multi_device_setup_ui_count_ = 0;
-    int open_change_connected_phone_settings_count_ = 0;
     int open_connected_devices_settings_count_ = 0;
   };
 
@@ -370,8 +361,7 @@ TEST_F(MultiDeviceNotificationPresenterTest,
   notification_presenter_->RemoveMultiDeviceSetupNotification();
   VerifyNoNotificationIsVisible();
 
-  EXPECT_EQ(
-      test_open_ui_delegate_->open_change_connected_phone_settings_count(), 0);
+  EXPECT_EQ(test_open_ui_delegate_->open_connected_devices_settings_count(), 0);
   AssertHostSwitchedBucketCount("MultiDeviceSetup_NotificationClicked", 0);
   AssertHostSwitchedBucketCount("MultiDeviceSetup_NotificationShown", 1);
 }
@@ -386,8 +376,7 @@ TEST_F(MultiDeviceNotificationPresenterTest,
   ClickNotification();
   VerifyNoNotificationIsVisible();
 
-  EXPECT_EQ(
-      test_open_ui_delegate_->open_change_connected_phone_settings_count(), 1);
+  EXPECT_EQ(test_open_ui_delegate_->open_connected_devices_settings_count(), 1);
   AssertHostSwitchedBucketCount("MultiDeviceSetup_NotificationClicked", 1);
   AssertHostSwitchedBucketCount("MultiDeviceSetup_NotificationShown", 1);
 }
