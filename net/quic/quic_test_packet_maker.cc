@@ -124,22 +124,7 @@ QuicTestPacketMaker::MakeDummyCHLOPacket(quic::QuicPacketNumber packet_num) {
   frames.push_back(quic::QuicFrame(padding));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
-                              quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_);
-  size_t max_plaintext_size =
-      framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
-  std::unique_ptr<quic::QuicPacket> packet(quic::test::BuildUnsizedDataPacket(
-      &framer, header_, frames, max_plaintext_size));
-
-  char buffer[quic::kDefaultMaxPacketSize];
-  size_t encrypted_size =
-      framer.EncryptPayload(quic::ENCRYPTION_NONE, header_.packet_number,
-                            *packet, buffer, quic::kDefaultMaxPacketSize);
-  EXPECT_EQ(quic::kDefaultMaxPacketSize, encrypted_size);
-  quic::QuicReceivedPacket encrypted(buffer, encrypted_size,
-                                     quic::QuicTime::Zero(), false);
-  return encrypted.Clone();
+  return MakeMultipleFramesPacket(header_, frames);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -183,19 +168,7 @@ QuicTestPacketMaker::MakeAckAndPingPacket(
   frames.push_back(quic::QuicFrame(quic::QuicPingFrame()));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
-                              quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_);
-  std::unique_ptr<quic::QuicPacket> packet(
-      quic::test::BuildUnsizedDataPacket(&framer, header, frames));
-  char buffer[quic::kMaxPacketSize];
-  size_t encrypted_size =
-      framer.EncryptPayload(quic::ENCRYPTION_NONE, header.packet_number,
-                            *packet, buffer, quic::kMaxPacketSize);
-  EXPECT_NE(0u, encrypted_size);
-  quic::QuicReceivedPacket encrypted(buffer, encrypted_size,
-                                     quic::QuicTime::Zero(), false);
-  return encrypted.Clone();
+  return MakeMultipleFramesPacket(header, frames);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
@@ -324,25 +297,11 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
     DVLOG(1) << "Adding frame: " << frames.back();
   }
 
-  // TODO(renjietang): Reduce redundant code by calling MakeMultipleFramesPakcet
   quic::QuicRstStreamFrame rst(1, stream_id, error_code, bytes_written);
   frames.push_back(quic::QuicFrame(&rst));
-  DVLOG(1) << "Adding frame: " << frames[2];
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
-                              quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_);
-  std::unique_ptr<quic::QuicPacket> packet(
-      quic::test::BuildUnsizedDataPacket(&framer, header, frames));
-  char buffer[quic::kMaxPacketSize];
-  size_t encrypted_size =
-      framer.EncryptPayload(quic::ENCRYPTION_NONE, header.packet_number,
-                            *packet, buffer, quic::kMaxPacketSize);
-  EXPECT_NE(0u, encrypted_size);
-  quic::QuicReceivedPacket encrypted(buffer, encrypted_size,
-                                     quic::QuicTime::Zero(), false);
-  return encrypted.Clone();
+  return MakeMultipleFramesPacket(header, frames);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -384,7 +343,6 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
   }
   frames.push_back(quic::QuicFrame(&ack));
   DVLOG(1) << "Adding frame: " << frames.back();
-  DVLOG(1) << "ACK FRAME SIZE IS " << sizeof(frames.back());
 
   quic::QuicStopWaitingFrame stop_waiting;
   if (version_ == quic::QUIC_VERSION_35) {
@@ -400,23 +358,7 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
   frames.push_back(quic::QuicFrame(&close));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  DVLOG(1) << "CLOSE FRAME SIZE IS " << sizeof(frames.back());
-
-  quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
-                              quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_);
-
-  std::unique_ptr<quic::QuicPacket> packet(
-      quic::test::BuildUnsizedDataPacket(&framer, header, frames));
-  char buffer[quic::kMaxPacketSize];
-  size_t encrypted_size =
-      framer.EncryptPayload(quic::ENCRYPTION_NONE, header.packet_number,
-                            *packet, buffer, quic::kMaxPacketSize);
-  DVLOG(1) << "ENCRYPTED LENGTH: " << encrypted_size;
-  EXPECT_NE(0u, encrypted_size);
-  quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
-                                     false);
-  return encrypted.Clone();
+  return MakeMultipleFramesPacket(header, frames);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -467,20 +409,7 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   frames.push_back(quic::QuicFrame(&close));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
-                              quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_);
-
-  std::unique_ptr<quic::QuicPacket> packet(
-      quic::test::BuildUnsizedDataPacket(&framer, header, frames));
-  char buffer[quic::kMaxPacketSize];
-  size_t encrypted_size =
-      framer.EncryptPayload(quic::ENCRYPTION_NONE, header.packet_number,
-                            *packet, buffer, quic::kMaxPacketSize);
-  EXPECT_NE(0u, encrypted_size);
-  quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
-                                     false);
-  return encrypted.Clone();
+  return MakeMultipleFramesPacket(header, frames);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -1057,8 +986,10 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
                           clock_->Now(), perspective_);
-  std::unique_ptr<quic::QuicPacket> packet(
-      quic::test::BuildUnsizedDataPacket(&framer, header, frames));
+  size_t max_plaintext_size =
+      framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
+  std::unique_ptr<quic::QuicPacket> packet(quic::test::BuildUnsizedDataPacket(
+      &framer, header, frames, max_plaintext_size));
   char buffer[quic::kMaxPacketSize];
   size_t encrypted_size =
       framer.EncryptPayload(quic::ENCRYPTION_NONE, header.packet_number,
@@ -1197,7 +1128,6 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
 
     frames.push_back(quic::QuicFrame(stream_frame));
     DVLOG(1) << "Adding frame: " << frames.back();
-    ;
   }
 
   InitializeHeader(packet_number, should_include_version);
