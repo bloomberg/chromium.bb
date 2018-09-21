@@ -22,6 +22,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -42,6 +43,8 @@ using ::testing::Return;
 // Implementations are below.
 - (NSView*)infoBarContainerView;
 - (NSView*)toolbarView;
+- (NSView*)bookmarkView;
+- (BOOL)bookmarkBarVisible;
 - (void)dontFocusLocationBar:(BOOL)selectAll;
 @end
 
@@ -54,8 +57,16 @@ using ::testing::Return;
   return [toolbarController_ view];
 }
 
+- (NSView*)bookmarkView {
+  return [bookmarkBarController_ view];
+}
+
 - (NSView*)findBarView {
   return [findBarCocoaController_ view];
+}
+
+- (BOOL)bookmarkBarVisible {
+  return [bookmarkBarController_ isVisible];
 }
 
 - (void)dontFocusLocationBar:(BOOL)selectAll {
@@ -108,10 +119,16 @@ TEST_F(BrowserWindowControllerTest, TestFullScreenWindow) {
 }
 
 TEST_F(BrowserWindowControllerTest, TestNormal) {
+  // Force the bookmark bar to be shown.
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
+  [controller_ browserWindow]->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+
   // Make sure a normal BrowserWindowController is, uh, normal.
   EXPECT_TRUE([controller_ isTabbedWindow]);
   EXPECT_TRUE([controller_ hasTabStrip]);
   EXPECT_FALSE([controller_ hasTitleBar]);
+  EXPECT_TRUE([controller_ isBookmarkBarVisible]);
 
   // And make sure a controller for a pop-up window is not normal.
   // popup_browser will be owned by its window.
@@ -124,6 +141,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   EXPECT_FALSE([controller isTabbedWindow]);
   EXPECT_FALSE([controller hasTabStrip]);
   EXPECT_TRUE([controller hasTitleBar]);
+  EXPECT_FALSE([controller isBookmarkBarVisible]);
   [[controller nsWindowController] close];
 }
 
@@ -177,6 +195,60 @@ TEST_F(BrowserWindowControllerTest, TestTheme) {
   [controller_ userChangedTheme];
 }
 
+TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
+  EXPECT_FALSE([controller_ isBookmarkBarVisible]);
+
+  // Explicitly show the bar. Can't use chrome::ToggleBookmarkBarWhenVisible()
+  // because of the notification issues.
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
+
+  [controller_ browserWindow]->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+  EXPECT_TRUE([controller_ isBookmarkBarVisible]);
+}
+
+TEST_F(BrowserWindowControllerTest, BookmarkBarToggleRespectMinWindowHeight) {
+  Browser::CreateParams params(Browser::TYPE_TABBED, profile(), true);
+  params.initial_bounds = gfx::Rect(0, 0, 50, 280);
+  Browser* browser = new Browser(params);
+  NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
+  BrowserWindowController* controller =
+      [BrowserWindowController browserWindowControllerForWindow:cocoaWindow];
+  BrowserWindow* browser_window = [controller browserWindow];
+  gfx::Rect bounds = browser_window->GetBounds();
+  EXPECT_EQ(280, bounds.height());
+
+  // Try to set the bounds smaller than the minimum.
+  // Explicitly show the bar. Can't use chrome::ToggleBookmarkBarWhenVisible()
+  // because of the notification issues.
+  [controller adjustWindowHeightBy:-20];
+  bounds = browser_window->GetBounds();
+  EXPECT_EQ(272, bounds.height());
+
+  [[controller nsWindowController] close];
+}
+
+#if 0
+// TODO(jrg): This crashes trying to create the BookmarkBarController, adding
+// an observer to the BookmarkModel.
+TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
+  std::unique_ptr<TestingProfile> incognito_profile(new TestingProfile());
+  incognito_profile->set_off_the_record(true);
+  std::unique_ptr<Browser> browser(
+      new Browser(Browser::CreateParams(incognito_profile.get(), true)));
+  controller_.reset([[BrowserWindowController alloc]
+                              initWithBrowser:browser.get()
+                                takeOwnership:NO]);
+
+  NSRect tabFrame = [[controller_ tabStripView] frame];
+  [controller_ installIncognitoBadge];
+  NSRect newTabFrame = [[controller_ tabStripView] frame];
+  EXPECT_GT(tabFrame.size.width, newTabFrame.size.width);
+
+  controller_.release();
+}
+#endif
+
 namespace {
 
 // Returns the frame of the view in window coordinates.
@@ -197,6 +269,10 @@ BOOL ViewContainmentValid(NSView* view) {
 BOOL ViewHierarchyContainmentValid(NSView* view) {
   // TODO(erikchen): Fix these views to have correct containment.
   // http://crbug.com/397665.
+  if ([view isKindOfClass:NSClassFromString(@"DownloadShelfViewCocoa")])
+    return YES;
+  if ([view isKindOfClass:NSClassFromString(@"BookmarkBarToolbarView")])
+    return YES;
   if ([view isKindOfClass:NSClassFromString(@"BrowserActionsContainerView")])
     return YES;
 
@@ -226,6 +302,17 @@ void CheckViewPositions(BrowserWindowController* controller) {
   NSRect tabContent = FrameInWindowForView([controller tabContentArea]);
 
   EXPECT_EQ(NSMaxY(tabContent), NSMinY(infobar));
+
+  // Bookmark bar frame is random memory when hidden.
+  if ([controller bookmarkBarVisible]) {
+    NSRect bookmark = [[controller bookmarkView] frame];
+    EXPECT_EQ(NSMaxY(infobar), NSMinY(bookmark));
+    EXPECT_EQ(NSMaxY(bookmark), NSMinY(toolbar));
+    EXPECT_FALSE([[controller bookmarkView] isHidden]);
+  } else {
+    EXPECT_EQ(NSMaxY(infobar), NSMinY(toolbar));
+    EXPECT_TRUE([[controller bookmarkView] isHidden]);
+  }
 
   // Toolbar should start immediately under the tabstrip, but the tabstrip is
   // not necessarily fixed with respect to the content view.
@@ -393,6 +480,80 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   CheckViewPositions(controller_);
 }
 
+TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
+  // Force a display of the bookmark bar.
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
+  [controller_ browserWindow]->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+
+  TabStripView* tabstrip = [controller_ tabStripView];
+  NSView* contentView = [[tabstrip window] contentView];
+  NSView* toolbar = [controller_ toolbarView];
+  NSView* bookmark = [controller_ bookmarkView];
+  NSView* infobar = [controller_ infoBarContainerView];
+
+  // We need to muck with the views a bit to put us in a consistent state before
+  // we start resizing.  In particular, we need to move the tab strip to be
+  // immediately above the content area, since we layout views to be directly
+  // under the tab strip.
+  NSRect tabstripFrame = [tabstrip frame];
+  tabstripFrame.origin.y = NSMaxY([contentView frame]);
+  [tabstrip setFrame:tabstripFrame];
+
+  // Force a layout and check each view's frame.
+  [controller_ layoutSubviews];
+  CheckViewPositions(controller_);
+
+  // Add the bookmark bar and recheck.
+  [controller_ resizeView:bookmark newHeight:40];
+  CheckViewPositions(controller_);
+
+  // Expand the infobar to 60px and recheck
+  [controller_ resizeView:infobar newHeight:60];
+  CheckViewPositions(controller_);
+
+  // Expand the toolbar to 64px and recheck
+  [controller_ resizeView:toolbar newHeight:64];
+  CheckViewPositions(controller_);
+
+  // Remove the bookmark bar and recheck
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, false);
+  [controller_ browserWindow]->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+  [controller_ resizeView:bookmark newHeight:0];
+  CheckViewPositions(controller_);
+
+  // Shrink the infobar to 0px and toolbar to 39px and recheck
+  [controller_ resizeView:infobar newHeight:0];
+  [controller_ resizeView:toolbar newHeight:39];
+  CheckViewPositions(controller_);
+}
+
+// Make sure, by default, the bookmark bar and the toolbar are the same width.
+TEST_F(BrowserWindowControllerTest, BookmarkBarIsSameWidth) {
+  // Set the pref to the bookmark bar is visible when the toolbar is
+  // first created.
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
+
+  // Make sure the bookmark bar is the same width as the toolbar
+  NSView* bookmarkBarView = [controller_ bookmarkView];
+  NSView* toolbarView = [controller_ toolbarView];
+  EXPECT_EQ([toolbarView frame].size.width,
+            [bookmarkBarView frame].size.width);
+}
+
+TEST_F(BrowserWindowControllerTest, TestTopRightForBubble) {
+  // The bookmark bubble must be attached to a lit and visible star.
+  [controller_ setStarredState:YES];
+  NSPoint p = [controller_ bookmarkBubblePoint];  // Window coordinates.
+  NSRect all = [[controller_ window] frame];      // Screen coordinates.
+
+  // As a sanity check make sure the point is vaguely in the top right
+  // of the window.
+  EXPECT_GT(p.y, all.size.height / 2);
+  EXPECT_GT(p.x, all.size.width / 2);
+}
+
 // By the "zoom frame", we mean what Apple calls the "standard frame".
 TEST_F(BrowserWindowControllerTest, TestZoomFrame) {
   NSWindow* window = [controller_ window];
@@ -489,8 +650,27 @@ TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
   NSUInteger toolbar_index =
       [subviews indexOfObject:[controller_ toolbarView]];
   EXPECT_NE(static_cast<NSUInteger>(NSNotFound), toolbar_index);
+  NSUInteger bookmark_index =
+      [subviews indexOfObject:[controller_ bookmarkView]];
+  EXPECT_NE(static_cast<NSUInteger>(NSNotFound), bookmark_index);
 
   EXPECT_GT(findBar_index, toolbar_index);
+  EXPECT_GT(findBar_index, bookmark_index);
+}
+
+// Verify that hit testing works correctly when the bookmark bar overlaps
+// web contents.
+TEST_F(BrowserWindowControllerTest, BookmarkBarHitTest) {
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
+  [controller_ browserWindow]->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+
+  NSView* bookmarkView = [controller_ bookmarkView];
+  NSView* contentView = [[controller_ window] contentView];
+  NSPoint point = [bookmarkView convertPoint:NSMakePoint(1, 1)
+                                      toView:[contentView superview]];
+
+  EXPECT_TRUE([[contentView hitTest:point] isDescendantOf:bookmarkView]);
 }
 
 // Check that when the window becomes/resigns main, the tab strip's background

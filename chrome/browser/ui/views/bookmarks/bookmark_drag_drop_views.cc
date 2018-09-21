@@ -26,6 +26,10 @@ void DragBookmarks(Profile* profile,
                    const std::vector<const BookmarkNode*>& nodes,
                    gfx::NativeView view,
                    ui::DragDropTypes::DragEventSource source) {
+#if defined(OS_MACOSX)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return DragBookmarksCocoa(profile, nodes, view, source);
+#endif
   DCHECK(!nodes.empty());
 
   // Set up our OLE machinery.

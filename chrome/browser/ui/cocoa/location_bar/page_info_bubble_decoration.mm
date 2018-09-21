@@ -8,6 +8,7 @@
 
 #import "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/drag_util.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -289,9 +290,12 @@ NSImage* PageInfoBubbleDecoration::GetDragImage() {
           ->GetFavicon()
           .AsNSImage();
   NSImage* icon_image = favicon ? favicon : GetImage();
-  NSSize image_size = [icon_image size];
+
+  NSImage* image = drag_util::DragImageForBookmark(
+      icon_image, web_contents->GetTitle(), bookmarks::kDefaultBookmarkWidth);
+  NSSize image_size = [image size];
   drag_frame_ = NSMakeRect(0, 0, image_size.width, image_size.height);
-  return icon_image;
+  return image;
 }
 
 NSRect PageInfoBubbleDecoration::GetDragImageFrame(NSRect frame) {

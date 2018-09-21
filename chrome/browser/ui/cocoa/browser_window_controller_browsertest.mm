@@ -20,6 +20,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -82,8 +83,10 @@ void CreateProfileCallback(const base::Closure& quit_closure,
 
 enum BrowserViewID {
   BROWSER_VIEW_ID_TOOLBAR,
+  BROWSER_VIEW_ID_BOOKMARK_BAR,
   BROWSER_VIEW_ID_INFO_BAR,
   BROWSER_VIEW_ID_FIND_BAR,
+  BROWSER_VIEW_ID_DOWNLOAD_SHELF,
   BROWSER_VIEW_ID_TAB_CONTENT_AREA,
   BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR,
   BROWSER_VIEW_ID_COUNT,
@@ -218,6 +221,8 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    [[controller() bookmarkBarController] setStateAnimationsEnabled:NO];
+    [[controller() bookmarkBarController] setInnerContentAnimationsEnabled:NO];
   }
 
   BrowserWindowController* controller() const {
@@ -231,10 +236,14 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
         return [controller() floatingBarBackingView];
       case BROWSER_VIEW_ID_TOOLBAR:
         return [[controller() toolbarController] view];
+      case BROWSER_VIEW_ID_BOOKMARK_BAR:
+        return [[controller() bookmarkBarController] view];
       case BROWSER_VIEW_ID_INFO_BAR:
         return [[controller() infoBarContainerController] view];
       case BROWSER_VIEW_ID_FIND_BAR:
         return [[controller() findBarCocoaController] view];
+      case BROWSER_VIEW_ID_DOWNLOAD_SHELF:
+        return [[controller() downloadShelf] view];
       case BROWSER_VIEW_ID_TAB_CONTENT_AREA:
         return [controller() tabContentArea];
       default:
@@ -266,6 +275,27 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
         EXPECT_TRUE(!view || ![view superview]);
       }
     }
+  }
+
+  static void CheckBookmarkBarAnimation(
+      BookmarkBarController* bookmark_bar_controller,
+      const base::Closure& quit_task) {
+    if (![bookmark_bar_controller isAnimationRunning])
+      quit_task.Run();
+  }
+
+  void WaitForBookmarkBarAnimationToFinish() {
+    scoped_refptr<content::MessageLoopRunner> runner =
+        new content::MessageLoopRunner;
+
+    base::RepeatingTimer timer;
+    timer.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(15),
+        base::Bind(&CheckBookmarkBarAnimation,
+                   [controller() bookmarkBarController],
+                   runner->QuitClosure()));
+    runner->Run();
   }
 
   // Nothing should draw on top of the window controls.
@@ -412,6 +442,8 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormal) {
   browser()->GetFindBarController();  // add find bar
 
   std::vector<BrowserViewID> view_list;
+  view_list.push_back(BROWSER_VIEW_ID_DOWNLOAD_SHELF);
+  view_list.push_back(BROWSER_VIEW_ID_BOOKMARK_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);
   view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
@@ -439,8 +471,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
   view_list.push_back(BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_BOOKMARK_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);
   view_list.push_back(BROWSER_VIEW_ID_FIND_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_DOWNLOAD_SHELF);
   VerifyZOrder(view_list);
 }
 
@@ -465,7 +499,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
   view_list.push_back(BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_BOOKMARK_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);
+  view_list.push_back(BROWSER_VIEW_ID_DOWNLOAD_SHELF);
   VerifyZOrder(view_list);
 }
 
@@ -475,6 +511,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   EXPECT_TRUE([controller() hasTabStrip]);
   EXPECT_FALSE([controller() hasTitleBar]);
   EXPECT_TRUE([controller() hasToolbar]);
+  EXPECT_FALSE([controller() isBookmarkBarVisible]);
 
   id sheet = MockWindowWithFrame(NSMakeRect(0, 0, 300, 200));
   NSWindow* window = browser()->window()->GetNativeWindow();
@@ -488,6 +525,15 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   NSRect toolbarFrame = [[[controller() toolbarController] view] frame];
   EXPECT_EQ(NSMinY(toolbarFrame), NSMinY(sheetLocation));
 
+  // Open sheet with normal browser window, persistent bookmark bar.
+  chrome::ToggleBookmarkBarWhenVisible(browser()->profile());
+  EXPECT_TRUE([controller() isBookmarkBarVisible]);
+  sheetLocation = [controller() window:window
+                     willPositionSheet:sheet
+                             usingRect:defaultLocation];
+  NSRect bookmarkBarFrame = [[[controller() bookmarkBarController] view] frame];
+  EXPECT_EQ(NSMinY(bookmarkBarFrame), NSMinY(sheetLocation));
+
   // If the sheet is too large, it should be positioned at the top of the
   // window.
   sheet = MockWindowWithFrame(NSMakeRect(0, 0, 300, 2000));
@@ -499,6 +545,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   // Reset the sheet's size.
   sheet = MockWindowWithFrame(NSMakeRect(0, 0, 300, 200));
 
+  // Make sure the profile does not have the bookmark visible so that
+  // we'll create the shortcut window without the bookmark bar.
+  chrome::ToggleBookmarkBarWhenVisible(browser()->profile());
   // Open application mode window.
   OpenAppShortcutWindow(browser()->profile(), GURL("about:blank"));
   Browser* popup_browser = BrowserList::GetInstance()->GetLastActive();
@@ -509,6 +558,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   EXPECT_FALSE([popupController isTabbedWindow]);
   EXPECT_FALSE([popupController hasTabStrip]);
   EXPECT_TRUE([popupController hasTitleBar]);
+  EXPECT_FALSE([popupController isBookmarkBarVisible]);
   EXPECT_FALSE([popupController hasToolbar]);
 
   // Open sheet in an application window.

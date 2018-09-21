@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -36,6 +37,18 @@ class BrowserWindowCocoaTest : public CocoaProfileTest {
  public:
   BrowserWindowController* controller_;
 };
+
+TEST_F(BrowserWindowCocoaTest, TestBookmarkBarVisible) {
+  std::unique_ptr<BrowserWindowCocoa> bwc(
+      new BrowserWindowCocoa(browser(), controller_));
+
+  bool before = bwc->IsBookmarkBarVisible();
+  chrome::ToggleBookmarkBarWhenVisible(profile());
+  EXPECT_NE(before, bwc->IsBookmarkBarVisible());
+
+  chrome::ToggleBookmarkBarWhenVisible(profile());
+  EXPECT_EQ(before, bwc->IsBookmarkBarVisible());
+}
 
 TEST_F(BrowserWindowCocoaTest, TestWindowTitle) {
   std::unique_ptr<BrowserWindowCocoa> bwc(

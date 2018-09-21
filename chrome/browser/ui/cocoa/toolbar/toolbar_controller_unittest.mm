@@ -379,6 +379,15 @@ TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
   EXPECT_NSEQ(locationBarFrame, newLocationBarFrame);
 }
 
+TEST_F(ToolbarControllerTest, BookmarkBubblePoint) {
+  const NSPoint starPoint = [bar_ bookmarkBubblePoint];
+  const NSRect barFrame =
+      [[bar_ view] convertRect:[[bar_ view] bounds] toView:nil];
+
+  // Make sure the star is completely inside the location bar.
+  EXPECT_TRUE(NSPointInRect(starPoint, barFrame));
+}
+
 TEST_F(ToolbarControllerTest, TranslateBubblePoint) {
   LocationBarViewMac* locationBarBridge = [bar_ locationBarBridge];
   LocationBarDecoration* decoration = locationBarBridge->translate_decoration();

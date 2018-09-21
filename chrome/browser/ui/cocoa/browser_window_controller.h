@@ -20,6 +20,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -32,6 +33,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 @class AvatarBaseController;
+class BookmarkBubbleObserverCocoa;
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
@@ -66,7 +68,9 @@ constexpr const gfx::Size kMinCocoaTabbedWindowSize(400, 272);
 constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 @interface BrowserWindowController
-    : TabWindowController<ViewResizer, TabStripControllerDelegate> {
+    : TabWindowController<BookmarkBarControllerDelegate,
+                          ViewResizer,
+                          TabStripControllerDelegate> {
  @private
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
@@ -79,6 +83,7 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   base::scoped_nsobject<TabStripControllerCocoa> tabStripController_;
   base::scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
   base::scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
+  base::scoped_nsobject<BookmarkBarController> bookmarkBarController_;
   base::scoped_nsobject<DevToolsController> devToolsController_;
   base::scoped_nsobject<OverlayableContentsController>
       overlayableContentsController_;
@@ -95,6 +100,7 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   // be shut down before our destructors are called.
   StatusBubbleMac* statusBubble_;
 
+  std::unique_ptr<BookmarkBubbleObserverCocoa> bookmarkBubbleObserver_;
   BOOL initializing_;  // YES while we are currently in initWithBrowser:
   BOOL ownsBrowser_;  // Only ever NO when testing
 
@@ -303,6 +309,8 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Returns YES if the bookmark bar is currently animating.
 - (BOOL)isBookmarkBarAnimating;
 
+- (BookmarkBarController*)bookmarkBarController;
+
 - (DevToolsController*)devToolsController;
 
 // Retains the given FindBarCocoaController and adds its view to this
@@ -321,6 +329,10 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 // Delegate method for the status bubble to query its base frame.
 - (NSRect)statusBubbleBaseFrame;
+
+// Show the bookmark bubble (e.g. user just clicked on the STAR)
+- (void)showBookmarkBubbleForURL:(const GURL&)url
+               alreadyBookmarked:(BOOL)alreadyBookmarked;
 
 // Show the translate bubble.
 - (void)showTranslateBubbleForWebContents:(content::WebContents*)contents
@@ -346,6 +358,13 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // The result of this method can be used in conjunction with
 // [NSGraphicsContext cr_setPatternPhase:] to set the offset of pattern colors.
 - (NSPoint)themeImagePositionForAlignment:(ThemeImageAlignment)alignment;
+
+// Return the point to which a bubble window's arrow should point, in window
+// coordinates.
+- (NSPoint)bookmarkBubblePoint;
+
+// Called by BookmarkBubbleObserverCocoa when the bubble is closed.
+- (void)bookmarkBubbleClosed;
 
 // Called when the Add Search Engine dialog is closed.
 - (void)sheetDidEnd:(NSWindow*)sheet

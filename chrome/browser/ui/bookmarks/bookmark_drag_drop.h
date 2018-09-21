@@ -25,6 +25,15 @@ void DragBookmarks(Profile* profile,
                    const std::vector<const bookmarks::BookmarkNode*>& nodes,
                    gfx::NativeView view,
                    ui::DragDropTypes::DragEventSource source);
+#if defined(OS_MACOSX)
+// Temporary shim for Polychrome. See bottom of first comment in
+// https://crbug.com/804950 for details
+void DragBookmarksCocoa(
+    Profile* profile,
+    const std::vector<const bookmarks::BookmarkNode*>& nodes,
+    gfx::NativeView view,
+    ui::DragDropTypes::DragEventSource source);
+#endif
 
 // Drops the bookmark nodes that are in |data| onto |parent_node| at |index|.
 // |copy| indicates the source operation: if true then the bookmarks in |data|
