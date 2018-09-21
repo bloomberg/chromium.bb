@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -83,6 +85,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -1224,6 +1227,40 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle) override {
     // Not reached. At this point, the loader and client endpoints must have
     // been unbound and forwarded to the renderer.
+
+    // TODO(crbug.com/882661): Remove these aliases when the linked bug is
+    // fixed.
+    bool received_response = received_response_;
+    base::debug::Alias(&received_response);
+    bool default_loader_used = default_loader_used_;
+    base::debug::Alias(&default_loader_used);
+    DEBUG_ALIAS_FOR_GURL(url, url_);
+    size_t chain_size = url_chain_.size();
+    base::debug::Alias(&chain_size);
+    GURL url0;
+    GURL url1;
+    GURL url2;
+    GURL url3;
+    GURL url4;
+    GURL url5;
+    if (url_chain_.size() > 0)
+      url0 = url_chain_[0];
+    if (url_chain_.size() > 1)
+      url1 = url_chain_[1];
+    if (url_chain_.size() > 2)
+      url2 = url_chain_[2];
+    if (url_chain_.size() > 3)
+      url3 = url_chain_[3];
+    if (url_chain_.size() > 4)
+      url4 = url_chain_[4];
+    if (url_chain_.size() > 5)
+      url5 = url_chain_[5];
+    DEBUG_ALIAS_FOR_GURL(url0_buf, url0);
+    DEBUG_ALIAS_FOR_GURL(url1_buf, url1);
+    DEBUG_ALIAS_FOR_GURL(url2_buf, url2);
+    DEBUG_ALIAS_FOR_GURL(url3_buf, url3);
+    DEBUG_ALIAS_FOR_GURL(url4_buf, url4);
+    DEBUG_ALIAS_FOR_GURL(url5_buf, url5);
     CHECK(false);
   }
 
