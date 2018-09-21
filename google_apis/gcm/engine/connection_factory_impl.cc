@@ -343,7 +343,7 @@ void ConnectionFactoryImpl::StartConnection() {
   socket_factory_->CreateProxyResolvingSocket(
       current_endpoint, true /* use_tls */,
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation),
-      mojo::MakeRequest(&socket_),
+      mojo::MakeRequest(&socket_), nullptr /* observer */,
       base::BindOnce(&ConnectionFactoryImpl::OnConnectDone,
                      base::Unretained(this)));
 }

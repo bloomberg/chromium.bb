@@ -167,7 +167,7 @@ class TLSClientSocketTestBase {
     proxy_resolving_factory_->CreateProxyResolvingSocket(
         url, false /* use_tls */,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        std::move(request),
+        std::move(request), nullptr /* observer */,
         base::BindLambdaForTesting(
             [&](int result,
                 const base::Optional<net::IPEndPoint>& actual_local_addr,
