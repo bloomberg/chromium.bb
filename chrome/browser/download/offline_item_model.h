@@ -30,6 +30,17 @@ class OfflineItemModel : public DownloadUIModel,
   int PercentComplete() const override;
   bool WasUINotified() const override;
   void SetWasUINotified(bool should_notify) override;
+  base::FilePath GetTargetFilePath() const override;
+  download::DownloadItem::DownloadState GetState() const override;
+  bool IsPaused() const override;
+  bool TimeRemaining(base::TimeDelta* remaining) const override;
+  bool IsDone() const override;
+  download::DownloadInterruptReason GetLastReason() const override;
+  base::FilePath GetFullPath() const override;
+  bool CanResume() const override;
+  bool AllDataSaved() const override;
+  bool GetFileExternallyRemoved() const override;
+  GURL GetURL() const override;
 
 #if !defined(OS_ANDROID)
   bool IsCommandEnabled(const DownloadCommands* download_commands,
@@ -45,6 +56,9 @@ class OfflineItemModel : public DownloadUIModel,
   void OnItemRemoved(const offline_items_collection::ContentId& id) override;
   void OnItemUpdated(
       const offline_items_collection::OfflineItem& item) override;
+
+  // DownloadUIModel implementation.
+  std::string GetMimeType() const override;
 
   OfflineItemModelManager* manager_;
 

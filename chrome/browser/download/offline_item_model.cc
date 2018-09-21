@@ -4,12 +4,16 @@
 
 #include "chrome/browser/download/offline_item_model.h"
 
+#include "base/time/time.h"
 #include "chrome/browser/download/offline_item_model_manager.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "components/offline_items_collection/core/fail_state.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 
 using offline_items_collection::ContentId;
+using offline_items_collection::FailState;
 using offline_items_collection::OfflineItem;
+using offline_items_collection::OfflineItemState;
 
 OfflineItemModel::OfflineItemModel(OfflineItemModelManager* manager,
                                    const OfflineItem& offline_item)
@@ -56,6 +60,106 @@ void OfflineItemModel::SetWasUINotified(bool was_ui_notified) {
   OfflineItemModelData* data =
       manager_->GetOrCreateOfflineItemModelData(offline_item_->id);
   data->was_ui_notified_ = was_ui_notified;
+}
+
+base::FilePath OfflineItemModel::GetTargetFilePath() const {
+  return offline_item_ ? offline_item_->file_path : base::FilePath();
+}
+
+download::DownloadItem::DownloadState OfflineItemModel::GetState() const {
+  if (!offline_item_)
+    return download::DownloadItem::CANCELLED;
+  switch (offline_item_->state) {
+    case OfflineItemState::IN_PROGRESS:
+      FALLTHROUGH;
+    case OfflineItemState::PAUSED:
+      return download::DownloadItem::IN_PROGRESS;
+    case OfflineItemState::PENDING:
+      FALLTHROUGH;
+    case OfflineItemState::INTERRUPTED:
+      FALLTHROUGH;
+    case OfflineItemState::FAILED:
+      return download::DownloadItem::INTERRUPTED;
+    case OfflineItemState::COMPLETE:
+      return download::DownloadItem::COMPLETE;
+    case OfflineItemState::CANCELLED:
+      return download::DownloadItem::CANCELLED;
+    case OfflineItemState::MAX_DOWNLOAD_STATE:
+      NOTREACHED();
+      return download::DownloadItem::CANCELLED;
+  }
+}
+
+bool OfflineItemModel::IsPaused() const {
+  return offline_item_
+             ? offline_item_->state == offline_items_collection::PAUSED
+             : true;
+}
+
+bool OfflineItemModel::TimeRemaining(base::TimeDelta* remaining) const {
+  if (!offline_item_ || offline_item_->time_remaining_ms == -1)
+    return false;
+  *remaining =
+      base::TimeDelta::FromMilliseconds(offline_item_->time_remaining_ms);
+  return true;
+}
+
+bool OfflineItemModel::IsDone() const {
+  if (!offline_item_)
+    return true;
+  switch (offline_item_->state) {
+    case OfflineItemState::IN_PROGRESS:
+      FALLTHROUGH;
+    case OfflineItemState::PAUSED:
+      FALLTHROUGH;
+    case OfflineItemState::PENDING:
+      return false;
+    case OfflineItemState::INTERRUPTED:
+      return !offline_item_->is_resumable;
+    case OfflineItemState::FAILED:
+      FALLTHROUGH;
+    case OfflineItemState::COMPLETE:
+      FALLTHROUGH;
+    case OfflineItemState::CANCELLED:
+      return true;
+    case OfflineItemState::MAX_DOWNLOAD_STATE:
+      NOTREACHED();
+  }
+  return false;
+}
+
+download::DownloadInterruptReason OfflineItemModel::GetLastReason() const {
+  if (!offline_item_ || offline_item_->state == OfflineItemState::CANCELLED)
+    return download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
+  switch (offline_item_->fail_state) {
+    case FailState::CANNOT_DOWNLOAD:
+      return download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+    case FailState::NETWORK_INSTABILITY:
+      return download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED;
+    case FailState::NO_FAILURE:
+      return download::DOWNLOAD_INTERRUPT_REASON_NONE;
+  }
+}
+
+base::FilePath OfflineItemModel::GetFullPath() const {
+  return GetTargetFilePath();
+}
+
+bool OfflineItemModel::CanResume() const {
+  return offline_item_ ? offline_item_->is_resumable : false;
+}
+
+bool OfflineItemModel::AllDataSaved() const {
+  return offline_item_ ? offline_item_->state == OfflineItemState::COMPLETE
+                       : false;
+}
+
+bool OfflineItemModel::GetFileExternallyRemoved() const {
+  return offline_item_ ? offline_item_->externally_removed : true;
+}
+
+GURL OfflineItemModel::GetURL() const {
+  return offline_item_ ? offline_item_->page_url : GURL();
 }
 
 void OfflineItemModel::OnItemRemoved(const ContentId& id) {
@@ -144,3 +248,7 @@ void OfflineItemModel::ExecuteCommand(DownloadCommands* download_commands,
   }
 }
 #endif
+
+std::string OfflineItemModel::GetMimeType() const {
+  return offline_item_ ? offline_item_->mime_type : "";
+}
