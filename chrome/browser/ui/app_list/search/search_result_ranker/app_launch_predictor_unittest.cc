@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor.h"
 
 #include "base/test/scoped_mock_clock_override.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,21 +77,7 @@ TEST_F(SerializedMrfuAppLaunchPredictorTest, ToProto) {
   predictor.Train(kTarget2);
 
   // Check predictor.ToProto() is the same as proto_.
-  const SerializedMrfuAppLaunchPredictorProto proto_expected =
-      proto_.serialized_mrfu_app_launch_predictor();
-  const SerializedMrfuAppLaunchPredictorProto proto_trained =
-      predictor.ToProto().serialized_mrfu_app_launch_predictor();
-  EXPECT_EQ(proto_trained.num_of_trains(), proto_expected.num_of_trains());
-  EXPECT_EQ(proto_trained.scores().size(), proto_expected.scores().size());
-  for (const auto& pair : proto_trained.scores()) {
-    const auto find_expected = proto_expected.scores().find(pair.first);
-    EXPECT_TRUE(find_expected != proto_expected.scores().end());
-    const auto& score_expected = find_expected->second;
-    const auto& score_trained = pair.second;
-    EXPECT_EQ(score_trained.num_of_trains_at_last_update(),
-              score_expected.num_of_trains_at_last_update());
-    EXPECT_FLOAT_EQ(score_trained.last_score(), score_expected.last_score());
-  }
+  EXPECT_TRUE(EquivToProtoLite(predictor.ToProto(), proto_));
 }
 
 TEST_F(SerializedMrfuAppLaunchPredictorTest, FromProto) {
