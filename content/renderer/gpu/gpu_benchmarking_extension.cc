@@ -54,6 +54,7 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/docs/SkXPSDocument.h"
 // Note that headers in third_party/skia/src are fragile.  This is
 // an experimental, fragile, and diagnostic-only document type.
 #include "third_party/skia/src/utils/SkMultiPictureDocument.h"
@@ -487,7 +488,7 @@ static sk_sp<SkDocument> MakeXPSDocument(SkWStream* s) {
     LOG(ERROR) << "CoCreateInstance(CLSID_XpsOMObjectFactory, ...) failed:"
                << logging::SystemErrorCodeToString(hr);
   }
-  return SkDocument::MakeXPS(s, factory.Get());
+  return SkXPS::MakeDocument(s, factory.Get());
 }
 #endif
 }  // namespace
