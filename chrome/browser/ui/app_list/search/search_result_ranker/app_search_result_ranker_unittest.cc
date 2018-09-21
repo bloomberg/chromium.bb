@@ -10,6 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,12 +100,10 @@ class AppSearchResultRankerSerializationTest
         temp_dir_.GetPath().AppendASCII("app_launch_predictor");
 
     // Sets proto.
-    AppLaunchPredictorProto proto;
-    (*proto.mutable_fake_app_launch_predictor()
+    (*proto_.mutable_fake_app_launch_predictor()
           ->mutable_rank_result())[kTarget1] = 1.0f;
-    (*proto.mutable_fake_app_launch_predictor()
+    (*proto_.mutable_fake_app_launch_predictor()
           ->mutable_rank_result())[kTarget2] = 2.0f;
-    ASSERT_TRUE(proto.SerializeToString(&proto_str_));
 
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kEnableAppSearchResultRanker,
@@ -113,14 +112,15 @@ class AppSearchResultRankerSerializationTest
   }
 
   base::FilePath predictor_filename_;
-  std::string proto_str_;
+  AppLaunchPredictorProto proto_;
 };
 
 TEST_F(AppSearchResultRankerSerializationTest, LoadFromDiskSucceed) {
   // Prepare file to be loaded.
-  EXPECT_NE(base::WriteFile(predictor_filename_, proto_str_.c_str(),
-                            proto_str_.size()),
-            -1);
+  const std::string proto_str = proto_.SerializeAsString();
+  EXPECT_NE(
+      base::WriteFile(predictor_filename_, proto_str.c_str(), proto_str.size()),
+      -1);
   // Construct ranker.
   AppSearchResultRanker ranker(temp_dir_.GetPath(), kNotAnEphemeralUser);
 
@@ -200,15 +200,14 @@ TEST_F(AppSearchResultRankerSerializationTest, SaveToDiskSucceed) {
   // Expect the predictor file is created.
   EXPECT_TRUE(base::PathExists(predictor_filename_));
 
-  // Construct a second ranker from saved model file.
-  AppSearchResultRanker second_ranker(temp_dir_.GetPath(), kNotAnEphemeralUser);
-  // Wait for the loading to finish.
-  Wait();
+  // Parse the content of the file.
+  std::string str_written;
+  EXPECT_TRUE(base::ReadFileToString(predictor_filename_, &str_written));
+  AppLaunchPredictorProto proto_written;
+  EXPECT_TRUE(proto_written.ParseFromString(str_written));
 
-  // Check the second ranker is loaded correctly.
-  EXPECT_THAT(second_ranker.Rank(),
-              UnorderedElementsAre(Pair(kTarget1, FloatEq(1.0f)),
-                                   Pair(kTarget2, FloatEq(2.0f))));
+  // Expect the content to be proto_.
+  EXPECT_TRUE(EquivToProtoLite(proto_written, proto_));
 }
 
 }  // namespace app_list
