@@ -70,6 +70,8 @@ struct LayoutBoxRareData {
         override_logical_height_(-1),
         has_override_containing_block_content_logical_width_(false),
         has_override_containing_block_content_logical_height_(false),
+        has_override_containing_block_percentage_resolution_logical_height_(
+            false),
         has_previous_content_box_rect_and_layout_overflow_rect_(false),
         percent_height_container_(nullptr),
         snap_container_(nullptr),
@@ -84,10 +86,12 @@ struct LayoutBoxRareData {
 
   bool has_override_containing_block_content_logical_width_ : 1;
   bool has_override_containing_block_content_logical_height_ : 1;
+  bool has_override_containing_block_percentage_resolution_logical_height_ : 1;
   bool has_previous_content_box_rect_and_layout_overflow_rect_ : 1;
 
   LayoutUnit override_containing_block_content_logical_width_;
   LayoutUnit override_containing_block_content_logical_height_;
+  LayoutUnit override_containing_block_percentage_resolution_logical_height_;
 
   LayoutUnit offset_to_next_page_;
 
@@ -761,6 +765,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void SetOverrideContainingBlockContentLogicalWidth(LayoutUnit);
   void SetOverrideContainingBlockContentLogicalHeight(LayoutUnit);
   void ClearOverrideContainingBlockContentSize();
+
+  LayoutUnit OverrideContainingBlockPercentageResolutionLogicalHeight() const;
+  bool HasOverrideContainingBlockPercentageResolutionLogicalHeight() const;
+  void SetOverrideContainingBlockPercentageResolutionLogicalHeight(LayoutUnit);
+  void ClearOverrideContainingBlockPercentageResolutionLogicalHeight();
 
   LayoutUnit AdjustBorderBoxLogicalWidthForBoxSizing(float width) const;
   LayoutUnit AdjustBorderBoxLogicalHeightForBoxSizing(float height) const;

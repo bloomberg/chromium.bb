@@ -138,6 +138,7 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
 void LayoutBox::WillBeDestroyed() {
   ClearOverrideSize();
   ClearOverrideContainingBlockContentSize();
+  ClearOverrideContainingBlockPercentageResolutionLogicalHeight();
 
   if (IsOutOfFlowPositioned())
     LayoutBlock::RemovePositionedObject(this);
@@ -1481,6 +1482,40 @@ void LayoutBox::ClearOverrideContainingBlockContentSize() {
     return;
   EnsureRareData().has_override_containing_block_content_logical_width_ = false;
   EnsureRareData().has_override_containing_block_content_logical_height_ =
+      false;
+}
+
+LayoutUnit LayoutBox::OverrideContainingBlockPercentageResolutionLogicalHeight()
+    const {
+  DCHECK(HasOverrideContainingBlockPercentageResolutionLogicalHeight());
+  return rare_data_
+      ->override_containing_block_percentage_resolution_logical_height_;
+}
+
+bool LayoutBox::HasOverrideContainingBlockPercentageResolutionLogicalHeight()
+    const {
+  return rare_data_ &&
+         rare_data_
+             ->has_override_containing_block_percentage_resolution_logical_height_;
+}
+
+void LayoutBox::SetOverrideContainingBlockPercentageResolutionLogicalHeight(
+    LayoutUnit logical_height) {
+  DCHECK_GE(logical_height, LayoutUnit(-1));
+  EnsureRareData()
+      .override_containing_block_percentage_resolution_logical_height_ =
+      logical_height;
+  EnsureRareData()
+      .has_override_containing_block_percentage_resolution_logical_height_ =
+      true;
+}
+
+void LayoutBox::
+    ClearOverrideContainingBlockPercentageResolutionLogicalHeight() {
+  if (!rare_data_)
+    return;
+  EnsureRareData()
+      .has_override_containing_block_percentage_resolution_logical_height_ =
       false;
 }
 
@@ -3410,6 +3445,10 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
   // percentages.
   return GetDocument().InQuirksMode() && !containing_block->IsTableCell() &&
          !containing_block->IsOutOfFlowPositioned() &&
+         !(containing_block->IsLayoutCustom() &&
+           ToLayoutCustom(containing_block)->IsLoaded()) &&
+         !containing_block
+              ->HasOverrideContainingBlockPercentageResolutionLogicalHeight() &&
          !containing_block->IsLayoutGrid() &&
          containing_block->StyleRef().LogicalHeight().IsAuto();
 }
@@ -3442,7 +3481,16 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
   }
 
   LayoutUnit available_height(-1);
-  if (IsHorizontalWritingMode() != cb->IsHorizontalWritingMode()) {
+  if (containing_block_child
+          ->HasOverrideContainingBlockPercentageResolutionLogicalHeight()) {
+    available_height =
+        containing_block_child
+            ->OverrideContainingBlockPercentageResolutionLogicalHeight();
+  } else if (
+      cb->HasOverrideContainingBlockPercentageResolutionLogicalHeight()) {
+    available_height =
+        cb->OverrideContainingBlockPercentageResolutionLogicalHeight();
+  } else if (IsHorizontalWritingMode() != cb->IsHorizontalWritingMode()) {
     available_height =
         containing_block_child->ContainingBlockLogicalWidthForContent();
   } else if (HasOverrideContainingBlockContentLogicalHeight()) {
@@ -3628,6 +3676,13 @@ bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
   if (logical_height == initial_logical_height)
     return true;
 
+  // CustomLayout items can resolve their percentages against an available or
+  // percentage size override.
+  if (IsCustomItem() &&
+      (HasOverrideContainingBlockContentLogicalHeight() ||
+       HasOverrideContainingBlockPercentageResolutionLogicalHeight()))
+    return false;
+
   if (LayoutBlock* cb = ContainingBlockForAutoHeightDetection(logical_height))
     return cb->HasAutoHeightOrContainingBlockWithAutoHeight();
   return false;
@@ -3712,11 +3767,16 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
             ToLayoutBoxModelObject(cb));
       } else if (stretched_height != -1) {
         available_height = stretched_height;
+      } else if (
+          HasOverrideContainingBlockPercentageResolutionLogicalHeight()) {
+        available_height =
+            OverrideContainingBlockPercentageResolutionLogicalHeight();
       } else {
         available_height = has_perpendicular_containing_block
                                ? ContainingBlockLogicalWidthForContent()
                                : ContainingBlockLogicalHeightForContent(
                                      kIncludeMarginBorderPadding);
+
         // It is necessary to use the border-box to match WinIE's broken
         // box model.  This is essential for sizing inside
         // table cells using percentage heights.
