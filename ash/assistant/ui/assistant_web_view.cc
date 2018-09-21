@@ -182,6 +182,7 @@ void AssistantWebView::ReleaseWebContents() {
     return;
 
   if (content_view_) {
+    content_view_->RemoveObserver(this);
     RemoveChildView(content_view_);
 
     // In Mash, |content_view_| was owned by the view hierarchy prior to its
