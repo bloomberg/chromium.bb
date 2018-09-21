@@ -1010,8 +1010,21 @@ Output.prototype = {
     if (this.speechBuffer_.length > 0)
       Output.forceModeForNextSpeechUtterance_ = undefined;
 
+    var encounteredNonWhitespace = false;
     for (var i = 0; i < this.speechBuffer_.length; i++) {
       var buff = this.speechBuffer_[i];
+      var text = buff.toString();
+
+      // Consider empty strings as non-whitespace; they often have earcons
+      // associated with them, so need to be "spoken".
+      var isNonWhitespace = text === '' || /\S+/.test(text);
+      encounteredNonWhitespace = isNonWhitespace || encounteredNonWhitespace;
+
+      // Skip whitespace if we've already encountered non-whitespace. This
+      // prevents output like 'foo', 'space', 'bar'.
+      if (!isNonWhitespace && encounteredNonWhitespace)
+        continue;
+
       var speechProps = /** @type {Object} */ (
                             buff.getSpanInstanceOf(Output.SpeechProperties)) ||
           {};
