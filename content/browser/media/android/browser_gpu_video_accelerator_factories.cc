@@ -96,6 +96,12 @@ int32_t BrowserGpuVideoAcceleratorFactories::GetCommandBufferRouteId() {
   return context_provider_->GetCommandBufferProxy()->route_id();
 }
 
+bool BrowserGpuVideoAcceleratorFactories::IsDecoderConfigSupported(
+    const media::VideoDecoderConfig& config) {
+  // TODO(sandersd): Add a cache here too?
+  return true;
+}
+
 std::unique_ptr<media::VideoDecoder>
 BrowserGpuVideoAcceleratorFactories::CreateVideoDecoder(
     media::MediaLog* media_log,

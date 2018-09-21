@@ -30,30 +30,6 @@
 
 namespace media {
 
-namespace {
-
-bool IsSupportedConfig(
-    const VideoDecodeAccelerator::SupportedProfiles& supported_profiles,
-    const VideoDecoderConfig& config) {
-  for (const auto& supported_profile : supported_profiles) {
-    if (config.profile() == supported_profile.profile &&
-        (!supported_profile.encrypted_only || config.is_encrypted()) &&
-        config.coded_size().width() >=
-            supported_profile.min_resolution.width() &&
-        config.coded_size().width() <=
-            supported_profile.max_resolution.width() &&
-        config.coded_size().height() >=
-            supported_profile.min_resolution.height() &&
-        config.coded_size().height() <=
-            supported_profile.max_resolution.height()) {
-      return true;
-    }
-  }
-  return false;
-}
-
-}  // namespace
-
 // Provides a thread-safe channel for VideoFrame destruction events.
 class MojoVideoFrameHandleReleaser
     : public base::RefCountedThreadSafe<MojoVideoFrameHandleReleaser> {
@@ -146,14 +122,10 @@ void MojoVideoDecoder::Initialize(
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Fail immediately if we know that the remote side cannot support |config|.
-  //
-  // TODO(sandersd): Implement a generic mechanism for communicating supported
-  // profiles. https://crbug.com/839951
-  if (gpu_factories_) {
-    VideoDecodeAccelerator::Capabilities capabilities =
-        gpu_factories_->GetVideoDecodeAcceleratorCapabilities();
-    if (!base::FeatureList::IsEnabled(kD3D11VideoDecoder) &&
-        !IsSupportedConfig(capabilities.supported_profiles, config)) {
+  if (gpu_factories_ && !gpu_factories_->IsDecoderConfigSupported(config)) {
+    // TODO(liberato): Remove bypass once D3D11VideoDecoder provides
+    // SupportedVideoDecoderConfigs.
+    if (!base::FeatureList::IsEnabled(kD3D11VideoDecoder)) {
       task_runner_->PostTask(FROM_HERE, base::BindRepeating(init_cb, false));
       return;
     }

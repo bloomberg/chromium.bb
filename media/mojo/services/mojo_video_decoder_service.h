@@ -41,6 +41,7 @@ class MEDIA_MOJO_EXPORT MojoVideoDecoderService final
   ~MojoVideoDecoderService() final;
 
   // mojom::VideoDecoder implementation
+  void GetSupportedConfigs(GetSupportedConfigsCallback callback) final;
   void Construct(
       mojom::VideoDecoderClientAssociatedPtrInfo client,
       mojom::MediaLogAssociatedPtrInfo media_log,
