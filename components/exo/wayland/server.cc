@@ -40,8 +40,8 @@
 #include <vector>
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/frame/caption_buttons/caption_button_types.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/public/cpp/caption_buttons/caption_button_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"

@@ -10,6 +10,7 @@
 
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -674,6 +675,10 @@ TEST_F(TabletModeControllerTest, InitializedWhileTabletModeSwitchOn) {
           chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
   power_manager_client->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks::Now());
+
+  // Clear the callback that was set by the original TabletModeController.
+  TabletMode::SetCallback({});
+
   TabletModeController controller;
   EXPECT_FALSE(controller.IsTabletModeWindowManagerEnabled());
   // PowerManagerClient callback is a posted task.

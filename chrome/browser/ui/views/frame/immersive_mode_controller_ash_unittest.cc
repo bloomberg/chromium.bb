@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
-#include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"

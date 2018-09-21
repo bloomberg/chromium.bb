@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/header_view.h"
 #include "ash/public/interfaces/window_style.mojom.h"
 #include "ash/shell_observer.h"
@@ -52,8 +51,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   explicit NonClientFrameViewAsh(
       views::Widget* frame,
       ImmersiveFullscreenControllerDelegate* immersive_delegate = nullptr,
-      mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT,
-      std::unique_ptr<CaptionButtonModel> model = nullptr);
+      mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT);
   ~NonClientFrameViewAsh() override;
 
   // Sets the caption button modeland updates the caption buttons.

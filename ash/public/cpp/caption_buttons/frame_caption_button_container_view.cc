@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 
 #include <cmath>
 #include <map>
 
-#include "ash/frame/caption_buttons/caption_button_model.h"
-#include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/frame/caption_buttons/frame_size_button.h"
+#include "ash/public/cpp/caption_buttons/caption_button_model.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
+#include "ash/public/cpp/caption_buttons/frame_size_button.h"
+#include "ash/public/cpp/gesture_action_type.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shell.h"
-#include "ash/touch/touch_uma.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
@@ -114,9 +114,7 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
       case CAPTION_BUTTON_ICON_MINIMIZE:
         return frame_->widget_delegate()->CanMinimize();
       case CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
-        return !Shell::Get()
-                    ->tablet_mode_controller()
-                    ->IsTabletModeWindowManagerEnabled() &&
+        return !TabletMode::IsEnabled() &&
                frame_->widget_delegate()->CanMaximize();
       // Resizable widget can be snapped.
       case CAPTION_BUTTON_ICON_LEFT_SNAPPED:
@@ -166,10 +164,10 @@ const char FrameCaptionButtonContainerView::kViewClassName[] =
 
 FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
     views::Widget* frame,
-    std::unique_ptr<CaptionButtonModel> model)
+    FrameCaptionDelegate* delegate)
     : frame_(frame),
-      model_(model ? std::move(model)
-                   : std::make_unique<DefaultCaptionButtonModel>(frame)) {
+      delegate_(delegate),
+      model_(std::make_unique<DefaultCaptionButtonModel>(frame)) {
   constexpr int kTouchOptimizedCaptionButtonsSpacing = 8;
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
@@ -201,7 +199,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
   AddChildView(minimize_button_);
 
-  size_button_ = new FrameSizeButton(this, frame, this);
+  size_button_ = new FrameSizeButton(this, this);
   size_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
   AddChildView(size_button_);
@@ -228,7 +226,7 @@ void FrameCaptionButtonContainerView::SetButtonImage(
 
   FrameCaptionButton* buttons[] = {menu_button_, minimize_button_, size_button_,
                                    close_button_};
-  for (size_t i = 0; i < arraysize(buttons); ++i) {
+  for (size_t i = 0; i < base::size(buttons); ++i) {
     if (buttons[i]->icon() == icon)
       buttons[i]->SetImage(icon, FrameCaptionButton::ANIMATE_NO,
                            icon_definition);
@@ -421,17 +419,16 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
       RecordAction(UserMetricsAction("MaxButton_Clk_Maximize"));
     }
 
-    if (event.IsGestureEvent())
-      TouchUMA::GetInstance()->RecordGestureAction(GESTURE_FRAMEMAXIMIZE_TAP);
+    if (event.IsGestureEvent()) {
+      UMA_HISTOGRAM_ENUMERATION("Ash.GestureTarget", GESTURE_FRAMEMAXIMIZE_TAP,
+                                GESTURE_ACTION_COUNT);
+    }
   } else if (sender == close_button_) {
     frame_->Close();
-    if (Shell::Get()
-            ->tablet_mode_controller()
-            ->IsTabletModeWindowManagerEnabled()) {
+    if (TabletMode::IsEnabled())
       RecordAction(UserMetricsAction("Tablet_WindowCloseFromCaptionButton"));
-    } else {
+    else
       RecordAction(UserMetricsAction("CloseButton_Clk"));
-    }
   } else if (sender == menu_button_) {
     // Send up event as well as down event as ARC++ clients expect this
     // sequence.
@@ -481,7 +478,7 @@ const FrameCaptionButton* FrameCaptionButtonContainerView::GetButtonClosestTo(
                                    close_button_};
   int min_squared_distance = INT_MAX;
   FrameCaptionButton* closest_button = NULL;
-  for (size_t i = 0; i < arraysize(buttons); ++i) {
+  for (size_t i = 0; i < base::size(buttons); ++i) {
     FrameCaptionButton* button = buttons[i];
     if (!button->visible())
       continue;
@@ -504,7 +501,7 @@ void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
     const FrameCaptionButton* to_press) {
   FrameCaptionButton* buttons[] = {menu_button_, minimize_button_, size_button_,
                                    close_button_};
-  for (size_t i = 0; i < arraysize(buttons); ++i) {
+  for (size_t i = 0; i < base::size(buttons); ++i) {
     FrameCaptionButton* button = buttons[i];
     views::Button::ButtonState new_state = views::Button::STATE_NORMAL;
     if (button == to_hover)
@@ -513,6 +510,20 @@ void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
       new_state = views::Button::STATE_PRESSED;
     button->SetState(new_state);
   }
+}
+
+bool FrameCaptionButtonContainerView::CanSnap() {
+  return delegate_->CanSnap(frame_->GetNativeWindow());
+}
+
+void FrameCaptionButtonContainerView::ShowSnapPreview(
+    FrameCaptionDelegate::SnapDirection snap) {
+  delegate_->ShowSnapPreview(frame_->GetNativeWindow(), snap);
+}
+
+void FrameCaptionButtonContainerView::CommitSnap(
+    FrameCaptionDelegate::SnapDirection snap) {
+  delegate_->CommitSnap(frame_->GetNativeWindow(), snap);
 }
 
 }  // namespace ash

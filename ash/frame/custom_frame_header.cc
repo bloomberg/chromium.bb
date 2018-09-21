@@ -4,12 +4,15 @@
 
 #include "ash/frame/custom_frame_header.h"
 
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/detached_title_area_renderer.h"
 #include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/ash_layout_constants.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/frame_utils.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -105,7 +108,9 @@ void CustomFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
 
 AshLayoutSize CustomFrameHeader::GetButtonLayoutSize() const {
   return target_widget()->IsMaximized() || target_widget()->IsFullscreen() ||
-                 appearance_provider_->IsTabletMode()
+                 Shell::Get()
+                     ->tablet_mode_controller()
+                     ->IsTabletModeWindowManagerEnabled()
              ? AshLayoutSize::kBrowserCaptionMaximized
              : AshLayoutSize::kBrowserCaptionRestored;
 }

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
-#define ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
+#ifndef ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
+#define ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
 
 #include <map>
 
-#include "ash/ash_export.h"
-#include "ash/frame/caption_buttons/caption_button_model.h"
-#include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/frame/caption_buttons/frame_size_button_delegate.h"
+#include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/caption_buttons/caption_button_model.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
+#include "ash/public/cpp/caption_buttons/frame_size_button_delegate.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -19,7 +19,7 @@
 namespace gfx {
 class SlideAnimation;
 struct VectorIcon;
-}
+}  // namespace gfx
 
 namespace views {
 class Widget;
@@ -29,7 +29,7 @@ namespace ash {
 
 // Container view for the frame caption buttons. It performs the appropriate
 // action when a caption button is clicked.
-class ASH_EXPORT FrameCaptionButtonContainerView
+class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
     : public views::View,
       public views::ButtonListener,
       public FrameSizeButtonDelegate,
@@ -38,13 +38,12 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   static const char kViewClassName[];
 
   // |frame| is the views::Widget that the caption buttons act on.
-  FrameCaptionButtonContainerView(
-      views::Widget* frame,
-      std::unique_ptr<CaptionButtonModel> model = nullptr);
+  FrameCaptionButtonContainerView(views::Widget* frame,
+                                  FrameCaptionDelegate* delegate);
   ~FrameCaptionButtonContainerView() override;
 
   // For testing.
-  class ASH_EXPORT TestApi {
+  class ASH_PUBLIC_EXPORT TestApi {
    public:
     explicit TestApi(FrameCaptionButtonContainerView* container_view)
         : container_view_(container_view) {}
@@ -139,9 +138,15 @@ class ASH_EXPORT FrameCaptionButtonContainerView
       const gfx::Point& position_in_screen) const override;
   void SetHoveredAndPressedButtons(const FrameCaptionButton* to_hover,
                                    const FrameCaptionButton* to_press) override;
+  bool CanSnap() override;
+  void ShowSnapPreview(FrameCaptionDelegate::SnapDirection snap) override;
+  void CommitSnap(FrameCaptionDelegate::SnapDirection snap) override;
 
   // The widget that the buttons act on.
   views::Widget* frame_;
+
+  // The delegate that handles button actions.
+  FrameCaptionDelegate* delegate_;
 
   // The buttons. In the normal button style, at most one of |minimize_button_|
   // and |size_button_| is visible.
@@ -166,4 +171,4 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
+#endif  // ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_

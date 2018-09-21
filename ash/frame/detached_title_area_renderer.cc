@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/header_view.h"
+#include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_state.h"

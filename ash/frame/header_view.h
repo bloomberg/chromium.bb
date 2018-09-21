@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/frame/ash_frame_caption_controller.h"
 #include "ash/frame/custom_frame_header.h"
 #include "ash/frame/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
@@ -31,7 +32,6 @@ class Widget;
 
 namespace ash {
 
-class CaptionButtonModel;
 class DefaultFrameHeader;
 class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
@@ -51,8 +51,7 @@ class ASH_EXPORT HeaderView : public views::View,
   // However, clicking a caption button should act on the target widget.
   explicit HeaderView(
       views::Widget* target_widget,
-      mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT,
-      std::unique_ptr<CaptionButtonModel> model = nullptr);
+      mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT);
   ~HeaderView() override;
 
   void set_is_immersive_delegate(bool value) { is_immersive_delegate_ = value; }
@@ -130,6 +129,8 @@ class ASH_EXPORT HeaderView : public views::View,
 
   // The widget that the caption buttons act on.
   views::Widget* target_widget_;
+
+  AshFrameCaptionController caption_controller_;
 
   std::unique_ptr<CustomFrameHeader::AppearanceProvider> appearance_provider_;
 

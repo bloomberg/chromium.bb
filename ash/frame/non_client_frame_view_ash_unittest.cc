@@ -7,14 +7,14 @@
 #include <memory>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"

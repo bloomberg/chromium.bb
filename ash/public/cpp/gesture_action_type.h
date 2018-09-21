@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_METRICS_GESTURE_ACTION_TYPE_H_
-#define ASH_METRICS_GESTURE_ACTION_TYPE_H_
+#ifndef ASH_PUBLIC_CPP_GESTURE_ACTION_TYPE_H_
+#define ASH_PUBLIC_CPP_GESTURE_ACTION_TYPE_H_
 
 namespace ash {
 
@@ -37,4 +37,4 @@ enum GestureActionType {
 
 }  // namespace ash
 
-#endif  // ASH_METRICS_GESTURE_ACTION_TYPE_H_
+#endif  // ASH_PUBLIC_CPP_GESTURE_ACTION_TYPE_H_

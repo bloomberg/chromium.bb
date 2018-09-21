@@ -4,11 +4,11 @@
 
 #include "ash/frame/default_frame_header.h"
 
-#include "ash/frame/caption_buttons/caption_button_model.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
+#include "ash/public/cpp/caption_buttons/caption_button_model.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"  // DCHECK
