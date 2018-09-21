@@ -454,7 +454,7 @@ void PaintLayer::UpdateTransform(const ComputedStyle* old_style,
     return;
   }
 
-  // hasTransform() on the layoutObject is also true when there is
+  // LayoutObject::HasTransformRelatedProperty is also true when there is
   // transform-style: preserve-3d or perspective set, so check style too.
   bool has_transform = GetLayoutObject().HasTransformRelatedProperty() &&
                        new_style.HasTransform();
