@@ -78,11 +78,16 @@ void AwFieldTrialCreator::DoSetUpFieldTrials(PrefService* pref_service) {
   // https://crbug.com/801771
   std::set<std::string> unforceable_field_trials;
   variations::SafeSeedManager ignored_safe_seed_manager(true, pref_service);
-  // Populates the FieldTrialList singleton via the static member functions.
+
+  // Populate FieldTrialList. Since low_entropy_provider is null, it will fall
+  // back to the provider we previously gave to FieldTrialList, which is a low
+  // entropy provider. We only want one low entropy provider, because multiple
+  // CachingPermutedEntropyProvider objects would all try to cache their values
+  // in the same pref store, overwriting each other's.
   variations_field_trial_creator_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
       switches::kDisableFeatures, unforceable_field_trials,
-      std::vector<std::string>(), metrics_client->CreateLowEntropyProvider(),
+      std::vector<std::string>(), /*low_entropy_provider=*/nullptr,
       std::make_unique<base::FeatureList>(), aw_field_trials_.get(),
       &ignored_safe_seed_manager);
 }
