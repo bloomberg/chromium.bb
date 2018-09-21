@@ -117,7 +117,12 @@ class AdsPageLoadMetricsObserver
   void UpdateResource(
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
-  void RecordResourceHistogram(
+  // Records size of resources by mime type.
+  void RecordResourceMimeHistograms(
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
+
+  // Records per-resource histograms.
+  void RecordResourceHistograms(
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
   void RecordPageResourceTotalHistograms();
   void RecordHistograms();

@@ -371,3 +371,38 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Resources.Bytes.Unfinished", 1, 1);
 }
+
+// Verify that Mime type metrics are recorded correctly.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       RecordedMimeMetrics) {
+  base::HistogramTester histogram_tester;
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("createFrame('multiple_mimes.html', 'test');"));
+  waiter->AddMinimumAdResourceExpectation(8);
+  waiter->Wait();
+
+  // Close all tabs to log metrics, as the video resource request is incomplete.
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Mime.HTML", 1);
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Mime.CSS", 1);
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Mime.JS", 3);
+
+  // Note: png and video/webm mime types are not set explicitly by the
+  // embedded_test_server.
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Mime.Image", 1);
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Mime.Video", 1);
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Mime.Other", 1);
+}
