@@ -116,7 +116,8 @@
           "web_ui_test.mojom.TestRunner"
         ],
         "multidevice_setup" : [
-          "chromeos.multidevice_setup.mojom.MultiDeviceSetup"
+          "chromeos.multidevice_setup.mojom.MultiDeviceSetup",
+          "chromeos.multidevice_setup.mojom.PrivilegedHostDeviceSetter"
         ]
       }
     }

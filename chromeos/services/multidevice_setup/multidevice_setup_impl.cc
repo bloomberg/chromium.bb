@@ -49,7 +49,7 @@ void MultiDeviceSetupImpl::Factory::SetFactoryForTesting(
 
 MultiDeviceSetupImpl::Factory::~Factory() = default;
 
-std::unique_ptr<mojom::MultiDeviceSetup>
+std::unique_ptr<MultiDeviceSetupBase>
 MultiDeviceSetupImpl::Factory::BuildInstance(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
@@ -157,22 +157,7 @@ void MultiDeviceSetupImpl::SetHostDevice(const std::string& host_device_id,
     return;
   }
 
-  cryptauth::RemoteDeviceRefList eligible_devices =
-      eligible_host_devices_provider_->GetEligibleHostDevices();
-  auto it =
-      std::find_if(eligible_devices.begin(), eligible_devices.end(),
-                   [&host_device_id](const auto& eligible_device) {
-                     return eligible_device.GetDeviceId() == host_device_id;
-                   });
-
-  if (it == eligible_devices.end()) {
-    std::move(callback).Run(false /* success */);
-    return;
-  }
-
-  host_backend_delegate_->AttemptToSetMultiDeviceHostOnBackend(*it);
-  android_sms_app_helper_delegate_->InstallAndroidSmsApp();
-  std::move(callback).Run(true /* success */);
+  std::move(callback).Run(AttemptSetHost(host_device_id));
 }
 
 void MultiDeviceSetupImpl::RemoveHostDevice() {
@@ -271,6 +256,12 @@ void MultiDeviceSetupImpl::TriggerEventForDebugging(
   std::move(callback).Run(true /* success */);
 }
 
+void MultiDeviceSetupImpl::SetHostDeviceWithoutAuthToken(
+    const std::string& host_device_id,
+    mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback callback) {
+  std::move(callback).Run(AttemptSetHost(host_device_id));
+}
+
 void MultiDeviceSetupImpl::OnHostStatusChange(
     const HostStatusProvider::HostStatusWithDevice& host_status_with_device) {
   mojom::HostStatus status_for_callback = host_status_with_device.host_status();
@@ -296,6 +287,24 @@ void MultiDeviceSetupImpl::OnFeatureStatesChange(
       [&feature_states_map](mojom::FeatureStateObserver* observer) {
         observer->OnFeatureStatesChanged(feature_states_map);
       });
+}
+
+bool MultiDeviceSetupImpl::AttemptSetHost(const std::string& host_device_id) {
+  cryptauth::RemoteDeviceRefList eligible_devices =
+      eligible_host_devices_provider_->GetEligibleHostDevices();
+  auto it =
+      std::find_if(eligible_devices.begin(), eligible_devices.end(),
+                   [&host_device_id](const auto& eligible_device) {
+                     return eligible_device.GetDeviceId() == host_device_id;
+                   });
+
+  if (it == eligible_devices.end())
+    return false;
+
+  host_backend_delegate_->AttemptToSetMultiDeviceHostOnBackend(*it);
+  android_sms_app_helper_delegate_->InstallAndroidSmsApp();
+
+  return true;
 }
 
 bool MultiDeviceSetupImpl::IsAuthTokenRequiredForFeatureStateChange(

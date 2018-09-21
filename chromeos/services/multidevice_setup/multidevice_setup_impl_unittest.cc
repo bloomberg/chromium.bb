@@ -530,12 +530,27 @@ class MultiDeviceSetupImplTest : public testing::Test {
     base::RunLoop run_loop;
     multidevice_setup_->SetHostDevice(
         host_device_id, auth_token,
-        base::BindOnce(&MultiDeviceSetupImplTest::OnHostSet,
+        base::BindOnce(&MultiDeviceSetupImplTest::OnSetHostDeviceResult,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
 
     bool success = *last_set_host_success_;
     last_set_host_success_.reset();
+
+    return success;
+  }
+
+  bool CallSetHostDeviceWithoutAuth(const std::string& host_device_id) {
+    base::RunLoop run_loop;
+    multidevice_setup_->SetHostDeviceWithoutAuthToken(
+        host_device_id,
+        base::BindOnce(
+            &MultiDeviceSetupImplTest::OnSetHostDeviceWithoutAuthResult,
+            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    bool success = *last_set_host_without_auth_success_;
+    last_set_host_without_auth_success_.reset();
 
     return success;
   }
@@ -566,8 +581,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
 
-    bool success = *last_set_host_success_;
-    last_set_host_success_.reset();
+    bool success = *last_set_feature_enabled_state_success_;
+    last_set_feature_enabled_state_success_.reset();
 
     return success;
   }
@@ -680,9 +695,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
   cryptauth::RemoteDeviceRefList& test_devices() { return test_devices_; }
 
-  mojom::MultiDeviceSetup* multidevice_setup() {
-    return multidevice_setup_.get();
-  }
+  MultiDeviceSetupBase* multidevice_setup() { return multidevice_setup_.get(); }
 
  private:
   void OnEligibleDevicesFetched(
@@ -693,9 +706,16 @@ class MultiDeviceSetupImplTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
-  void OnHostSet(base::OnceClosure quit_closure, bool success) {
+  void OnSetHostDeviceResult(base::OnceClosure quit_closure, bool success) {
     EXPECT_FALSE(last_set_host_success_);
     last_set_host_success_ = success;
+    std::move(quit_closure).Run();
+  }
+
+  void OnSetHostDeviceWithoutAuthResult(base::OnceClosure quit_closure,
+                                        bool success) {
+    EXPECT_FALSE(last_set_host_without_auth_success_);
+    last_set_host_without_auth_success_ = success;
     std::move(quit_closure).Run();
   }
 
@@ -709,8 +729,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
   }
 
   void OnSetFeatureEnabled(base::OnceClosure quit_closure, bool success) {
-    EXPECT_FALSE(last_set_host_success_);
-    last_set_host_success_ = success;
+    EXPECT_FALSE(last_set_feature_enabled_state_success_);
+    last_set_feature_enabled_state_success_ = success;
     std::move(quit_closure).Run();
   }
 
@@ -769,6 +789,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
   base::Optional<bool> last_debug_event_success_;
   base::Optional<cryptauth::RemoteDeviceList> last_eligible_devices_list_;
   base::Optional<bool> last_set_host_success_;
+  base::Optional<bool> last_set_host_without_auth_success_;
   base::Optional<
       std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>>
       last_host_status_;
@@ -777,7 +798,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
       last_get_feature_states_result_;
   base::Optional<bool> last_retry_success_;
 
-  std::unique_ptr<mojom::MultiDeviceSetup> multidevice_setup_;
+  std::unique_ptr<MultiDeviceSetupBase> multidevice_setup_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupImplTest);
 };
@@ -1056,19 +1077,49 @@ TEST_F(MultiDeviceSetupImplTest, ComprehensiveHostTest) {
 }
 
 TEST_F(MultiDeviceSetupImplTest, TestSetHostDevice_InvalidAuthToken) {
-  // Start with no eligible devices.
-  EXPECT_TRUE(CallGetEligibleHostDevices().empty());
-  VerifyCurrentHostStatus(mojom::HostStatus::kNoEligibleHosts,
-                          base::nullopt /* host_device */);
-
-  // Add a status observer.
-  auto observer = std::make_unique<FakeHostStatusObserver>();
-  multidevice_setup()->AddHostStatusObserver(observer->GenerateInterfacePtr());
+  // Start valid eligible host devices.
+  fake_eligible_host_devices_provider()->set_eligible_host_devices(
+      test_devices());
+  EXPECT_EQ(RefListToRawList(test_devices()), CallGetEligibleHostDevices());
+  fake_host_status_provider()->SetHostWithStatus(
+      mojom::HostStatus::kEligibleHostExistsButNoHostSet,
+      base::nullopt /* host_device */);
 
   // Set a valid host as the host device, but pass an invalid token.
   EXPECT_FALSE(
       CallSetHostDevice(test_devices()[0].GetDeviceId(), "invalidAuthToken"));
   EXPECT_FALSE(fake_host_backend_delegate()->HasPendingHostRequest());
+}
+
+TEST_F(MultiDeviceSetupImplTest, TestSetHostDeviceWithoutAuthToken) {
+  // Add a status observer.
+  auto observer = std::make_unique<FakeHostStatusObserver>();
+  multidevice_setup()->AddHostStatusObserver(observer->GenerateInterfacePtr());
+
+  // Start valid eligible host devices.
+  fake_eligible_host_devices_provider()->set_eligible_host_devices(
+      test_devices());
+  EXPECT_EQ(RefListToRawList(test_devices()), CallGetEligibleHostDevices());
+  fake_host_status_provider()->SetHostWithStatus(
+      mojom::HostStatus::kEligibleHostExistsButNoHostSet,
+      base::nullopt /* host_device */);
+  SendPendingObserverMessages();
+  VerifyCurrentHostStatus(mojom::HostStatus::kEligibleHostExistsButNoHostSet,
+                          base::nullopt /* host_device */, observer.get(),
+                          0u /* expected_observer_index */);
+
+  // Set a valid host as the host device, but pass an invalid token.
+  EXPECT_TRUE(CallSetHostDeviceWithoutAuth(test_devices()[0].GetDeviceId()));
+  EXPECT_TRUE(fake_host_backend_delegate()->HasPendingHostRequest());
+  EXPECT_EQ(test_devices()[0],
+            fake_host_backend_delegate()->GetPendingHostRequest());
+  fake_host_status_provider()->SetHostWithStatus(
+      mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation,
+      test_devices()[0]);
+  SendPendingObserverMessages();
+  VerifyCurrentHostStatus(
+      mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation,
+      test_devices()[0], observer.get(), 1u /* expected_observer_index */);
 }
 
 }  // namespace multidevice_setup

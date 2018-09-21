@@ -10,6 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager.h"
 #include "chromeos/services/multidevice_setup/host_status_provider.h"
+#include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -41,7 +42,7 @@ class EligibleHostDevicesProvider;
 class SetupFlowCompletionRecorder;
 
 // Concrete MultiDeviceSetup implementation.
-class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
+class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
                              public HostStatusProvider::Observer,
                              public FeatureStateManager::Observer {
  public:
@@ -50,7 +51,7 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
     static Factory* Get();
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
-    virtual std::unique_ptr<mojom::MultiDeviceSetup> BuildInstance(
+    virtual std::unique_ptr<MultiDeviceSetupBase> BuildInstance(
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
         AuthTokenValidator* auth_token_validator,
@@ -101,6 +102,12 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
       mojom::EventTypeForDebugging type,
       TriggerEventForDebuggingCallback callback) override;
 
+  // MultiDeviceSetupBase:
+  void SetHostDeviceWithoutAuthToken(
+      const std::string& host_device_id,
+      mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback callback)
+      override;
+
   // HostStatusProvider::Observer:
   void OnHostStatusChange(const HostStatusProvider::HostStatusWithDevice&
                               host_status_with_device) override;
@@ -109,6 +116,9 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
   void OnFeatureStatesChange(
       const FeatureStateManager::FeatureStatesMap& feature_states_map) override;
 
+  // Attempts to set the host device, returning a boolean of whether the attempt
+  // was successful.
+  bool AttemptSetHost(const std::string& host_device_id);
   bool IsAuthTokenRequiredForFeatureStateChange(mojom::Feature feature,
                                                 bool enabled);
 
