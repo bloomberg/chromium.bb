@@ -442,14 +442,7 @@ class InitSDKStage(generic_stages.BuilderStage):
         logging.PrintBuildbotStepWarnings()
         replace = True
 
-    if chroot_exists and not replace:
-      # The chroot exists, we are not replacing it, and it is valid.
-      # Update the chroot.
-      usepkg_toolchain = (self._run.config.usepkg_toolchain and
-                          not self._latest_toolchain)
-      commands.UpdateChroot(self._build_root, usepkg=usepkg_toolchain,
-                            extra_env=self._portage_extra_env)
-    else:
+    if not chroot_exists or replace:
       use_sdk = (self._run.config.use_sdk and not self._run.options.nosdk)
       pre_ver = None
       commands.MakeChroot(
@@ -467,6 +460,23 @@ class InitSDKStage(generic_stages.BuilderStage):
       logging.PrintBuildbotStepText(post_ver)
 
 
+class UpdateSDKStage(generic_stages.BuilderStage):
+  """Stage that is responsible for updating the chroot."""
+
+  option_name = 'build'
+  category = constants.CI_INFRA_STAGE
+
+  def PerformStage(self):
+    """Do the work of updating the chroot."""
+    # Ensure we don't run on SDK builder. https://crbug.com/225509
+    assert self._run.config.build_type != constants.CHROOT_BUILDER_TYPE
+
+    usepkg_toolchain = (self._run.config.usepkg_toolchain and
+                        not self._latest_toolchain)
+    commands.UpdateChroot(self._build_root, usepkg=usepkg_toolchain,
+                          extra_env=self._portage_extra_env)
+
+
 class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
   """Stage that is responsible for building host pkgs and setting up a board."""
 
@@ -474,8 +484,6 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
   category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
-    _, _ = self._run.GetCIDBHandle()
-
     # We need to run chroot updates on most builders because they uprev after
     # the InitSDK stage. For the SDK builder, we can skip updates because uprev
     # is run prior to InitSDK. This is not just an optimization: It helps

@@ -23,6 +23,7 @@ class ClangTidyBuilder(generic_builders.ManifestVersionedBuilder):
 
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.UpdateSDKStage)
     self._RunStage(build_stages.SetupBoardStage, board)
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(build_stages.BuildPackagesStage, board)
