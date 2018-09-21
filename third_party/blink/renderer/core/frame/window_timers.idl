@@ -34,13 +34,14 @@
     NoInterfaceObject, // Always used on target of 'implements'
     Exposed=(Window,Worker)
 ] interface WindowTimers {
-    // TODO(yukishiino): Use TimerHandler (or Function at least) to implement
-    // setTimeout and setInterval.
+    // TODO(yukishiino): Use TimerHandler to implement setTimeout and
+    // setInterval, when the IDL code generator supports unions of a callback
+    // function and a string.
     // https://html.spec.whatwg.org/C/webappapis.html#windoworworkerglobalscope-mixin
-    [CallWith=ScriptState, RuntimeCallStatsCounter=WindowSetTimeout] long setTimeout(CallbackFunctionTreatedAsScriptValue handler, optional long timeout = 0, any... arguments);
+    [CallWith=ScriptState, RuntimeCallStatsCounter=WindowSetTimeout] long setTimeout(Function handler, optional long timeout = 0, any... arguments);
     [CallWith=ScriptState, RaisesException] long setTimeout(ScriptString handler, optional long timeout = 0, any... arguments);
     void clearTimeout(optional long handle = 0);
-    [CallWith=ScriptState] long setInterval(CallbackFunctionTreatedAsScriptValue handler, optional long timeout = 0, any... arguments);
+    [CallWith=ScriptState] long setInterval(Function handler, optional long timeout = 0, any... arguments);
     [CallWith=ScriptState, RaisesException] long setInterval(ScriptString handler, optional long timeout = 0, any... arguments);
     void clearInterval(optional long handle = 0);
 };
