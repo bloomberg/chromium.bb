@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/thread_annotations.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/url_data_source_impl.h"
@@ -61,7 +62,8 @@ static void UpdateWebUIDataSourceOnIOThread(
 }  // namespace
 
 // static
-URLDataManager::URLDataSources* URLDataManager::data_sources_ = nullptr;
+URLDataManager::URLDataSources* URLDataManager::data_sources_ PT_GUARDED_BY(
+    g_delete_lock.Get()) = nullptr;
 
 URLDataManager::URLDataManager(BrowserContext* browser_context)
     : browser_context_(browser_context) {

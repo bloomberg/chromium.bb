@@ -53,6 +53,7 @@
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1320,7 +1321,7 @@ class RenderProcessHostImpl::ConnectionFilterController
   }
 
   base::Lock lock_;
-  ConnectionFilterImpl* filter_;
+  ConnectionFilterImpl* filter_ PT_GUARDED_BY(lock_);
 };
 
 // Held by the RPH's BrowserContext's ServiceManagerConnection, ownership
@@ -1380,9 +1381,8 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
   std::unique_ptr<service_manager::BinderRegistry> registry_;
   scoped_refptr<ConnectionFilterController> controller_;
 
-  // Guards |enabled_|.
   base::Lock enabled_lock_;
-  bool enabled_ = true;
+  bool enabled_ GUARDED_BY(enabled_lock_) = true;
 
   base::WeakPtrFactory<ConnectionFilterImpl> weak_factory_;
 

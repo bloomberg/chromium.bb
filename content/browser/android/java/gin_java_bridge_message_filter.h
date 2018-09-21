@@ -12,6 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "content/browser/android/java/gin_java_bound_object.h"
 #include "content/common/android/gin_java_bridge_errors.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -81,7 +82,7 @@ class GinJavaBridgeMessageFilter : public BrowserMessageFilter {
   void OnObjectWrapperDeleted(GinJavaBoundObject::ObjectID object_id);
 
   // Accessed both from UI and background threads.
-  HostMap hosts_;
+  HostMap hosts_ GUARDED_BY(hosts_lock_);
   base::Lock hosts_lock_;
 
   // The routing id of the RenderFrameHost whose request we are processing.
