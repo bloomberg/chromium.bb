@@ -206,10 +206,11 @@ sync_pb::SyncEntity CreateSyncWalletCard(const std::string& name,
   sync_pb::SyncEntity result = CreateDefaultSyncWalletCard();
   result.set_name(name);
   result.set_id_string(name);
-  result.mutable_specifics()
-      ->mutable_autofill_wallet()
-      ->mutable_masked_card()
-      ->set_last_four(last_four);
+  sync_pb::WalletMaskedCreditCard* credit_card = result.mutable_specifics()
+                                                     ->mutable_autofill_wallet()
+                                                     ->mutable_masked_card();
+  credit_card->set_last_four(last_four);
+  credit_card->set_id(name);
   return result;
 }
 
@@ -262,10 +263,10 @@ sync_pb::SyncEntity CreateSyncWalletAddress(const std::string& name,
   sync_pb::SyncEntity result = CreateDefaultSyncWalletAddress();
   result.set_name(name);
   result.set_id_string(name);
-  result.mutable_specifics()
-      ->mutable_autofill_wallet()
-      ->mutable_address()
-      ->set_company_name(company);
+  sync_pb::WalletPostalAddress* wallet_address =
+      result.mutable_specifics()->mutable_autofill_wallet()->mutable_address();
+  wallet_address->set_id(name);
+  wallet_address->set_company_name(company);
   return result;
 }
 
