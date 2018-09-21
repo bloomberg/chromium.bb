@@ -86,12 +86,11 @@ void DisableQuicOnIOThread(IOThread* io_thread) {
 }
 
 void GetStubResolverConfig(
+    PrefService* local_state,
     bool* stub_resolver_enabled,
     base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
         dns_over_https_servers) {
   DCHECK(!dns_over_https_servers->has_value());
-
-  PrefService* local_state = g_browser_process->local_state();
 
   const auto& doh_server_list =
       local_state->GetList(prefs::kDnsOverHttpsServers)->GetList();
@@ -136,18 +135,20 @@ void GetStubResolverConfig(
       local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
 }
 
-void OnStubResolverConfigChanged(const std::string& pref_name) {
+void OnStubResolverConfigChanged(PrefService* local_state,
+                                 const std::string& pref_name) {
   bool stub_resolver_enabled;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  GetStubResolverConfig(&stub_resolver_enabled, &dns_over_https_servers);
+  GetStubResolverConfig(local_state, &stub_resolver_enabled,
+                        &dns_over_https_servers);
   content::GetNetworkService()->ConfigureStubHostResolver(
       stub_resolver_enabled, std::move(dns_over_https_servers));
 }
 
-// Constructs HttpAuthStaticParams based on global state.
-network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams() {
-  PrefService* local_state = g_browser_process->local_state();
+// Constructs HttpAuthStaticParams based on |local_state|.
+network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams(
+    PrefService* local_state) {
   network::mojom::HttpAuthStaticParamsPtr auth_static_params =
       network::mojom::HttpAuthStaticParams::New();
 
@@ -171,9 +172,9 @@ network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams() {
   return auth_static_params;
 }
 
-// Constructs HttpAuthDynamicParams based on current global state.
-network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams() {
-  PrefService* local_state = g_browser_process->local_state();
+// Constructs HttpAuthDynamicParams based on |local_state|.
+network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
+    PrefService* local_state) {
   network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params =
       network::mojom::HttpAuthDynamicParams::New();
 
@@ -199,9 +200,10 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams() {
   return auth_dynamic_params;
 }
 
-void OnAuthPrefsChanged(const std::string& pref_name) {
+void OnAuthPrefsChanged(PrefService* local_state,
+                        const std::string& pref_name) {
   content::GetNetworkService()->ConfigureHttpAuthPrefs(
-      CreateHttpAuthDynamicParams());
+      CreateHttpAuthDynamicParams(local_state));
 }
 
 // Check the AsyncDns field trial and return true if it should be enabled. On
@@ -333,14 +335,17 @@ void SystemNetworkContextManager::SetUp(
     *network_context_params = CreateDefaultNetworkContextParams();
   }
   *is_quic_allowed = is_quic_allowed_;
-  *http_auth_static_params = CreateHttpAuthStaticParams();
-  *http_auth_dynamic_params = CreateHttpAuthDynamicParams();
-  GetStubResolverConfig(stub_resolver_enabled, dns_over_https_servers);
+  *http_auth_static_params = CreateHttpAuthStaticParams(local_state_);
+  *http_auth_dynamic_params = CreateHttpAuthDynamicParams(local_state_);
+  GetStubResolverConfig(local_state_, stub_resolver_enabled,
+                        dns_over_https_servers);
 }
 
-SystemNetworkContextManager::SystemNetworkContextManager()
-    : ssl_config_service_manager_(SSLConfigServiceManager::CreateDefaultManager(
-          g_browser_process->local_state())) {
+SystemNetworkContextManager::SystemNetworkContextManager(
+    PrefService* local_state)
+    : local_state_(local_state),
+      ssl_config_service_manager_(
+          SSLConfigServiceManager::CreateDefaultManager(local_state_)) {
 #if !defined(OS_ANDROID)
   // QuicAllowed was not part of Android policy.
   const base::Value* value =
@@ -353,13 +358,12 @@ SystemNetworkContextManager::SystemNetworkContextManager()
 #endif
   shared_url_loader_factory_ = new URLLoaderFactoryForSystem(this);
 
-  PrefService* local_state = g_browser_process->local_state();
-  pref_change_registrar_.Init(local_state);
+  pref_change_registrar_.Init(local_state_);
 
   // Update the DnsClient and DoH default preferences based on the corresponding
   // features before registering change callbacks for these preferences.
-  local_state->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
-                                   base::Value(ShouldEnableAsyncDns()));
+  local_state_->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
+                                    base::Value(ShouldEnableAsyncDns()));
   base::ListValue default_doh_servers;
   base::ListValue default_doh_server_methods;
   if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
@@ -372,13 +376,14 @@ SystemNetworkContextManager::SystemNetworkContextManager()
       default_doh_server_methods.AppendString(method);
     }
   }
-  local_state->SetDefaultPrefValue(prefs::kDnsOverHttpsServers,
-                                   std::move(default_doh_servers));
-  local_state->SetDefaultPrefValue(prefs::kDnsOverHttpsServerMethods,
-                                   std::move(default_doh_server_methods));
+  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsServers,
+                                    std::move(default_doh_servers));
+  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsServerMethods,
+                                    std::move(default_doh_server_methods));
 
   PrefChangeRegistrar::NamedChangeCallback dns_pref_callback =
-      base::BindRepeating(&OnStubResolverConfigChanged);
+      base::BindRepeating(&OnStubResolverConfigChanged,
+                          base::Unretained(local_state_));
   pref_change_registrar_.Add(prefs::kBuiltInDnsClientEnabled,
                              dns_pref_callback);
   pref_change_registrar_.Add(prefs::kDnsOverHttpsServers, dns_pref_callback);
@@ -386,7 +391,7 @@ SystemNetworkContextManager::SystemNetworkContextManager()
                              dns_pref_callback);
 
   PrefChangeRegistrar::NamedChangeCallback auth_pref_callback =
-      base::BindRepeating(&OnAuthPrefsChanged);
+      base::BindRepeating(&OnAuthPrefsChanged, base::Unretained(local_state_));
   pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
   pref_change_registrar_.Add(prefs::kAuthNegotiateDelegateWhitelist,
                              auth_pref_callback);
@@ -405,7 +410,7 @@ SystemNetworkContextManager::SystemNetworkContextManager()
 #endif  // defined(OS_ANDROID)
 
   enable_referrers_.Init(
-      prefs::kEnableReferrers, g_browser_process->local_state(),
+      prefs::kEnableReferrers, local_state_,
       base::BindRepeating(&SystemNetworkContextManager::UpdateReferrersEnabled,
                           base::Unretained(this)));
 }
@@ -448,9 +453,9 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
                                std::string());
 #endif  // defined(OS_ANDROID)
 
-  // Per-NetworkContext pref. The pref value from
-  // g_browser_process->local_state() is used for the system NetworkContext, and
-  // the per-profile pref values are used for the profile NetworkContexts.
+  // Per-NetworkContext pref. The pref value from |local_state_| is used for
+  // the system NetworkContext, and the per-profile pref values are used for
+  // the profile NetworkContexts.
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
 
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
@@ -465,8 +470,9 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   if (!is_quic_allowed_)
     network_service->DisableQuic();
 
-  network_service->SetUpHttpAuth(CreateHttpAuthStaticParams());
-  network_service->ConfigureHttpAuthPrefs(CreateHttpAuthDynamicParams());
+  network_service->SetUpHttpAuth(CreateHttpAuthStaticParams(local_state_));
+  network_service->ConfigureHttpAuthPrefs(
+      CreateHttpAuthDynamicParams(local_state_));
 
   // The system NetworkContext must be created first, since it sets
   // |primary_network_context| to true.
@@ -479,7 +485,8 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   bool stub_resolver_enabled;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  GetStubResolverConfig(&stub_resolver_enabled, &dns_over_https_servers);
+  GetStubResolverConfig(local_state_, &stub_resolver_enabled,
+                        &dns_over_https_servers);
   content::GetNetworkService()->ConfigureStubHostResolver(
       stub_resolver_enabled, std::move(dns_over_https_servers));
 
@@ -571,11 +578,10 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
     }
   }
 
-  PrefService* local_state = g_browser_process->local_state();
   network_context_params->pac_quick_check_enabled =
-      local_state->GetBoolean(prefs::kQuickCheckEnabled);
+      local_state_->GetBoolean(prefs::kQuickCheckEnabled);
   network_context_params->dangerously_allow_pac_access_to_secure_urls =
-      !local_state->GetBoolean(prefs::kPacHttpsUrlStrippingEnabled);
+      !local_state_->GetBoolean(prefs::kPacHttpsUrlStrippingEnabled);
 
   // Use the SystemNetworkContextManager to populate and update SSL
   // configuration. The SystemNetworkContextManager is owned by the
@@ -634,17 +640,18 @@ void SystemNetworkContextManager::GetStubResolverConfigForTesting(
     bool* stub_resolver_enabled,
     base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
         dns_over_https_servers) {
-  GetStubResolverConfig(stub_resolver_enabled, dns_over_https_servers);
+  GetStubResolverConfig(g_browser_process->local_state(), stub_resolver_enabled,
+                        dns_over_https_servers);
 }
 
 network::mojom::HttpAuthStaticParamsPtr
 SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting() {
-  return CreateHttpAuthStaticParams();
+  return CreateHttpAuthStaticParams(g_browser_process->local_state());
 }
 
 network::mojom::HttpAuthDynamicParamsPtr
 SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting() {
-  return CreateHttpAuthDynamicParams();
+  return CreateHttpAuthDynamicParams(g_browser_process->local_state());
 }
 
 network::mojom::NetworkContextParamsPtr

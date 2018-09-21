@@ -49,7 +49,8 @@ class SharedURLLoaderFactory;
 // to being compatible with the network service.
 class SystemNetworkContextManager {
  public:
-  SystemNetworkContextManager();
+  // Constructor. |pref_service| must out live this object.
+  explicit SystemNetworkContextManager(PrefService* pref_service);
   ~SystemNetworkContextManager();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -144,6 +145,9 @@ class SystemNetworkContextManager {
   // Creates parameters for the NetworkContext. May only be called once, since
   // it initializes some class members.
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
+
+  // The PrefService to retrieve all the pref values.
+  PrefService* local_state_;
 
   // This is an instance of the default SSLConfigServiceManager for the current
   // platform and it gets SSL preferences from the BrowserProcess's local_state
