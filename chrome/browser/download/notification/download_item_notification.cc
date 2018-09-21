@@ -180,7 +180,7 @@ bool IsExtensionDownload(DownloadUIModel* item) {
 
 DownloadItemNotification::DownloadItemNotification(
     Profile* profile,
-    std::unique_ptr<DownloadUIModel> item)
+    DownloadUIModel::DownloadUIModelPtr item)
     : profile_(profile), item_(std::move(item)), weak_factory_(this) {
   item_->AddObserver(this);
   // Creates the notification instance. |title|, |body| and |icon| will be
@@ -207,8 +207,7 @@ DownloadItemNotification::DownloadItemNotification(
 }
 
 DownloadItemNotification::~DownloadItemNotification() {
-  if (item_)
-    item_->RemoveObserver(this);
+  ShutDown();
 
   if (image_decode_status_ == IN_PROGRESS)
     ImageDecoder::Cancel(this);
@@ -234,6 +233,8 @@ void DownloadItemNotification::OnDownloadDestroyed() {
   Close(false);
 
   observer_->OnDownloadDestroyed(item_->GetContentId());
+
+  item_.reset();
 }
 
 void DownloadItemNotification::DisablePopup() {
@@ -329,6 +330,11 @@ void DownloadItemNotification::Click(
     case download::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
   }
+}
+
+void DownloadItemNotification::ShutDown() {
+  if (item_)
+    item_->RemoveObserver(this);
 }
 
 std::string DownloadItemNotification::GetNotificationId() const {
