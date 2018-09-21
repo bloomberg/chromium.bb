@@ -391,8 +391,8 @@ void AppListView::ShowWhenReady() {
 void AppListView::Dismiss() {
   CloseKeyboardIfVisible();
   app_list_main_view_->Close();
-  delegate_->DismissAppList();
   SetState(AppListViewState::CLOSED);
+  delegate_->DismissAppList();
   GetWidget()->Deactivate();
 }
 
