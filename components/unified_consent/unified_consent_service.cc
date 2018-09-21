@@ -102,12 +102,25 @@ void RollbackHelper::DoRollbackIfPossibleAndDie(
     syncer::SyncService* sync_service) {
   DCHECK(!scoped_sync_observer_.IsObservingSources());
 
-  syncer::ModelTypeSet user_types_without_user_events =
+// Warning: ugly code ahead. See https://crbug.com/885382 for background.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  syncer::ModelTypeSet user_selectable_types_except_user_events(
+      syncer::AUTOFILL, syncer::BOOKMARKS, syncer::PASSWORDS,
+      syncer::PREFERENCES, syncer::PROXY_TABS,
+#if BUILDFLAG(ENABLE_READING_LIST)
+      syncer::READING_LIST,
+#endif
+      syncer::TYPED_URLS);
+#else
+  syncer::ModelTypeSet user_selectable_types_except_user_events =
       syncer::UserSelectableTypes();
-  user_types_without_user_events.Remove(syncer::USER_EVENTS);
+  // USER_EVENTS data type doesn't have to be enabled, because it is not
+  // configurable if Unified Consent feature is disabled.
+  user_selectable_types_except_user_events.Remove(syncer::USER_EVENTS);
+#endif
 
   if (sync_service->GetPreferredDataTypes().HasAll(
-          user_types_without_user_events)) {
+          user_selectable_types_except_user_events)) {
     // As part of the migration of a profile to Unified Consent, sync everything
     // is disabled but sync continues to be enabled for all data types except
     // USER_EVENTS. Therefore it is desired to restore sync everything when
