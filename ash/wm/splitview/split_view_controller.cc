@@ -726,6 +726,13 @@ void SplitViewController::OnOverviewModeEnding() {
 
   WindowSelector* window_selector =
       Shell::Get()->window_selector_controller()->window_selector();
+  // Early exit if overview is ended while swiping up on the shelf to avoid
+  // snapping a window or showing a toast.
+  if (window_selector->enter_exit_overview_type() ==
+      WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
+    EndSplitView();
+    return;
+  }
   aura::Window* root_window = GetDefaultSnappedWindow()->GetRootWindow();
 
   if (state_ == BOTH_SNAPPED) {

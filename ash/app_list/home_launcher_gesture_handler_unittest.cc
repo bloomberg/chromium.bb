@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
@@ -145,6 +146,7 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   // Tests that after releasing at below the halfway point, we remain in
   // overview mode.
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  EXPECT_TRUE(controller->IsSelecting());
   EXPECT_EQ(window1_initial_translation,
             window1->transform().To2dTranslation().y());
   EXPECT_EQ(window2_initial_translation,
@@ -155,6 +157,97 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
   EXPECT_FALSE(controller->IsSelecting());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
+}
+
+// Tests that HomeLauncherGestureHandler works as expected when one window is
+// snapped, and overview mode is active on the other side.
+TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
+  UpdateDisplay("400x448");
+
+  auto window1 = CreateWindowForTesting();
+  auto window2 = CreateWindowForTesting();
+
+  // Snap one window and leave overview mode open with the other window.
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  window_selector_controller->ToggleOverview();
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ASSERT_TRUE(window_selector_controller->IsSelecting());
+  ASSERT_TRUE(split_view_controller->IsSplitViewModeActive());
+
+  const int window2_initial_translation =
+      window2->transform().To2dTranslation().y();
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
+  EXPECT_EQ(window1.get(), GetGestureHandler()->window());
+
+  // Tests that while scrolling the window transforms change.
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300));
+  EXPECT_NE(window1->transform(), gfx::Transform());
+  EXPECT_NE(window2_initial_translation,
+            window2->transform().To2dTranslation().y());
+
+  // Tests that after releasing at below the halfway point, we remain in
+  // both splitview and overview mode.
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  EXPECT_EQ(window1->transform(), gfx::Transform());
+  EXPECT_EQ(window2_initial_translation,
+            window2->transform().To2dTranslation().y());
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+
+  // Tests that after releasing on the bottom half, overivew and splitview have
+  // both been exited, and both windows are minimized to show the home launcher.
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
+  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
+}
+
+// Tests that swipe to close works as expected when there are two snapped
+// windows.
+TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
+  UpdateDisplay("400x448");
+
+  auto window1 = CreateWindowForTesting();
+  auto window2 = CreateWindowForTesting();
+
+  // Snap two windows to start.
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  ASSERT_TRUE(split_view_controller->IsSplitViewModeActive());
+
+  // Make |window1| the most recent used window. It should be the main window in
+  // HomeLauncherGestureHandler.
+  ::wm::ActivateWindow(window1.get());
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
+  EXPECT_EQ(window1.get(), GetGestureHandler()->window());
+  EXPECT_EQ(window2.get(), GetGestureHandler()->window2());
+
+  // Tests that while scrolling the window transforms change.
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300));
+  EXPECT_NE(window1->transform(), gfx::Transform());
+  EXPECT_NE(window2->transform(), gfx::Transform());
+
+  // Tests that after releasing at below the halfway point, we remain in
+  // splitview.
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  EXPECT_EQ(window1->transform(), gfx::Transform());
+  EXPECT_EQ(window2->transform(), gfx::Transform());
+  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+
+  // Tests that after releasing on the bottom half, splitview has been ended,
+  // and the two windows have been minimized to show the home launcher.
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
+  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
 }
