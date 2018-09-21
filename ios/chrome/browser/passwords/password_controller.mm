@@ -52,6 +52,8 @@
 #import "ios/web/public/origin_util.h"
 #include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -377,9 +379,16 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
-  if (!GetPageURLAndCheckTrustLevel(webState, nullptr)) {
-    completion(NO);
-    return;
+  if (!isMainFrame) {
+    web::WebFrame* frame =
+        web::GetWebFrameWithId(webState, base::SysNSStringToUTF8(frameID));
+    if (!frame || webState->GetLastCommittedURL().GetOrigin() !=
+                      frame->GetSecurityOrigin()) {
+      // Passwords is only supported on main frame and iframes with the same
+      // origin.
+      completion(NO);
+      return;
+    }
   }
 
   bool should_send_request_to_store =

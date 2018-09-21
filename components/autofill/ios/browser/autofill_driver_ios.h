@@ -64,6 +64,9 @@ class AutofillDriverIOS : public AutofillDriver {
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
 
+  bool is_processed() const { return processed_; }
+  void set_processed(bool processed) { processed_ = processed; };
+
  protected:
   AutofillDriverIOS(
       web::WebState* web_state,
@@ -83,6 +86,10 @@ class AutofillDriverIOS : public AutofillDriver {
 
   // AutofillDriverIOSBridge instance that is passed in.
   __unsafe_unretained id<AutofillDriverIOSBridge> bridge_;
+
+  // Whether the initial processing has been done (JavaScript observers have
+  // been enabled and the forms have been extracted).
+  bool processed_ = false;
 
   // AutofillManager instance via which this object drives the shared Autofill
   // code.

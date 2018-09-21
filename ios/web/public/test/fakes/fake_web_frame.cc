@@ -26,7 +26,7 @@ GURL FakeWebFrame::GetSecurityOrigin() const {
   return security_origin_;
 }
 bool FakeWebFrame::CanCallJavaScriptFunction() const {
-  return false;
+  return true;
 }
 
 bool FakeWebFrame::CallJavaScriptFunction(
