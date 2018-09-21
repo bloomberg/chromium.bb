@@ -491,7 +491,7 @@ void ChunkDemuxer::Initialize(DemuxerHost* host,
   if (state_ == SHUTDOWN) {
     // Init cb must only be run after this method returns, so post.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(init_cb, DEMUXER_ERROR_COULD_NOT_OPEN));
+        FROM_HERE, base::BindOnce(init_cb, DEMUXER_ERROR_COULD_NOT_OPEN));
     return;
   }
 

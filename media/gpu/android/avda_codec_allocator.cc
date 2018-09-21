@@ -151,9 +151,10 @@ void AVDACodecAllocator::StartThread(AVDACodecAllocatorClient* client) {
 
     // Register the hang detector to observe the thread's MessageLoop.
     thread->thread.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&base::MessageLoop::AddTaskObserver,
-                              base::Unretained(thread->thread.message_loop()),
-                              &thread->hang_detector));
+        FROM_HERE,
+        base::BindOnce(&base::MessageLoop::AddTaskObserver,
+                       base::Unretained(thread->thread.message_loop()),
+                       &thread->hang_detector));
   }
 
   clients_.insert(client);
@@ -259,8 +260,9 @@ void AVDACodecAllocator::CreateMediaCodecAsyncInternal(
     // The allocator threads didn't start or are stuck.
     // Post even if it's the current thread, to avoid re-entrancy.
     client_task_runner->PostTask(
-        FROM_HERE, base::Bind(&AVDACodecAllocatorClient::OnCodecConfigured,
-                              client, nullptr, codec_config->surface_bundle));
+        FROM_HERE,
+        base::BindOnce(&AVDACodecAllocatorClient::OnCodecConfigured, client,
+                       nullptr, codec_config->surface_bundle));
     return;
   }
 

@@ -1199,19 +1199,22 @@ void AndroidVideoDecodeAccelerator::OnDrainCompleted() {
     case DRAIN_FOR_FLUSH:
       ResetCodecState();
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
-                                weak_this_factory_.GetWeakPtr()));
+          FROM_HERE,
+          base::BindOnce(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
+                         weak_this_factory_.GetWeakPtr()));
       break;
     case DRAIN_FOR_RESET:
       ResetCodecState();
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
-                                weak_this_factory_.GetWeakPtr()));
+          FROM_HERE,
+          base::BindOnce(&AndroidVideoDecodeAccelerator::NotifyResetDone,
+                         weak_this_factory_.GetWeakPtr()));
       break;
     case DRAIN_FOR_DESTROY:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::ActualDestroy,
-                                weak_this_factory_.GetWeakPtr()));
+          FROM_HERE,
+          base::BindOnce(&AndroidVideoDecodeAccelerator::ActualDestroy,
+                         weak_this_factory_.GetWeakPtr()));
       break;
   }
   drain_type_.reset();
@@ -1278,8 +1281,9 @@ void AndroidVideoDecodeAccelerator::Reset() {
     DCHECK(pending_bitstream_records_.empty());
     DCHECK_EQ(state_, BEFORE_OVERLAY_INIT);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
-                              weak_this_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&AndroidVideoDecodeAccelerator::NotifyResetDone,
+                       weak_this_factory_.GetWeakPtr()));
     return;
   }
 

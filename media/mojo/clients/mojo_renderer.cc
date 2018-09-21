@@ -50,7 +50,8 @@ void MojoRenderer::Initialize(MediaResource* media_resource,
 
   if (encountered_error_) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(init_cb, PIPELINE_ERROR_INITIALIZATION_FAILED));
+        FROM_HERE,
+        base::BindOnce(init_cb, PIPELINE_ERROR_INITIALIZATION_FAILED));
     return;
   }
 
@@ -136,7 +137,7 @@ void MojoRenderer::SetCdm(CdmContext* cdm_context,
   DCHECK(!cdm_attached_cb_);
 
   if (encountered_error_) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(cdm_attached_cb, false));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(cdm_attached_cb, false));
     return;
   }
 
@@ -144,7 +145,7 @@ void MojoRenderer::SetCdm(CdmContext* cdm_context,
   if (cdm_id == CdmContext::kInvalidCdmId) {
     DVLOG(2) << "MojoRenderer only works with remote CDMs but the CDM ID "
                 "is invalid.";
-    task_runner_->PostTask(FROM_HERE, base::Bind(cdm_attached_cb, false));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(cdm_attached_cb, false));
     return;
   }
 

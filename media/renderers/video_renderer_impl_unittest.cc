@@ -268,12 +268,12 @@ class VideoRendererImplTest : public testing::Test {
 
     // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(std::move(decode_cb_), DecodeStatus::OK));
+        FROM_HERE, base::BindOnce(std::move(decode_cb_), DecodeStatus::OK));
 
     WaitForPendingDecode();
 
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(std::move(decode_cb_), DecodeStatus::OK));
+        FROM_HERE, base::BindOnce(std::move(decode_cb_), DecodeStatus::OK));
   }
 
   void AdvanceWallclockTimeInMs(int time_ms) {

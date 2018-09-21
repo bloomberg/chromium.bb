@@ -268,8 +268,8 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
 
   // InitializeTask will NOTIFY_ERROR on failure.
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::InitializeTask,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::InitializeTask,
+                                base::Unretained(this)));
 
   return true;
 }
@@ -501,8 +501,9 @@ void V4L2VideoDecodeAccelerator::AssignEGLImage(
       output_buffer_map_[buffer_index].picture_id != picture_buffer_id) {
     DVLOGF(4) << "Picture set already changed, dropping EGLImage";
     child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(base::IgnoreResult(&V4L2Device::DestroyEGLImage),
-                              device_, egl_display_, egl_image));
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&V4L2Device::DestroyEGLImage),
+                       device_, egl_display_, egl_image));
     return;
   }
 
@@ -651,10 +652,11 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     }
 
     child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
-                              weak_this_, index, picture_buffer_id,
-                              base::Passed(&dmabuf_fds), iter->texture_id,
-                              egl_image_size_, egl_image_format_fourcc_));
+        FROM_HERE,
+        base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
+                       weak_this_, index, picture_buffer_id,
+                       base::Passed(&dmabuf_fds), iter->texture_id,
+                       egl_image_size_, egl_image_format_fourcc_));
   } else {
     // No need for an EGLImage, start using this buffer now.
     DCHECK_EQ(egl_image_planes_count_, dmabuf_fds.size());
@@ -693,25 +695,26 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
   }
 
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::ReusePictureBufferTask,
-                            base::Unretained(this), picture_buffer_id,
-                            base::Passed(&egl_fence)));
+      FROM_HERE,
+      base::BindOnce(&V4L2VideoDecodeAccelerator::ReusePictureBufferTask,
+                     base::Unretained(this), picture_buffer_id,
+                     base::Passed(&egl_fence)));
 }
 
 void V4L2VideoDecodeAccelerator::Flush() {
   VLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::FlushTask,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::FlushTask,
+                                base::Unretained(this)));
 }
 
 void V4L2VideoDecodeAccelerator::Reset() {
   VLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::ResetTask,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::ResetTask,
+                                base::Unretained(this)));
 }
 
 void V4L2VideoDecodeAccelerator::Destroy() {
@@ -729,8 +732,8 @@ void V4L2VideoDecodeAccelerator::Destroy() {
   // If the decoder thread is running, destroy using posted task.
   if (decoder_thread_.IsRunning()) {
     decoder_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::DestroyTask,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::DestroyTask,
+                                  base::Unretained(this)));
     // DestroyTask() will cause the decoder_thread_ to flush all tasks.
     decoder_thread_.Stop();
   } else {
@@ -1009,8 +1012,8 @@ void V4L2VideoDecodeAccelerator::ScheduleDecodeBufferTaskIfNeeded() {
   if (decoder_decode_buffer_tasks_scheduled_ < buffers_to_decode) {
     decoder_decode_buffer_tasks_scheduled_++;
     decoder_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::DecodeBufferTask,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::DecodeBufferTask,
+                                  base::Unretained(this)));
   }
 }
 
@@ -1233,8 +1236,8 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   DCHECK(device_poll_thread_.message_loop());
   // Queue the DevicePollTask() now.
   device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::DevicePollTask,
-                            base::Unretained(this), poll_device));
+      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::DevicePollTask,
+                                base::Unretained(this), poll_device));
 
   DVLOGF(3) << "ServiceDeviceTask(): buffer counts: DEC["
             << decoder_input_queue_.size() << "->"
@@ -1831,8 +1834,8 @@ void V4L2VideoDecodeAccelerator::FinishReset() {
   decoder_state_ = kResetting;
   SendPictureReady();  // Send all pending PictureReady.
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::ResetDoneTask,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::ResetDoneTask,
+                                base::Unretained(this)));
 }
 
 void V4L2VideoDecodeAccelerator::ResetDoneTask() {
@@ -1910,8 +1913,8 @@ bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
     return false;
   }
   device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::DevicePollTask,
-                            base::Unretained(this), 0));
+      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::DevicePollTask,
+                                base::Unretained(this), 0));
 
   return true;
 }
@@ -2066,8 +2069,8 @@ void V4L2VideoDecodeAccelerator::DevicePollTask(bool poll_device) {
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch decoder state from this thread.
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::ServiceDeviceTask,
-                            base::Unretained(this), event_pending));
+      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::ServiceDeviceTask,
+                                base::Unretained(this), event_pending));
 }
 
 bool V4L2VideoDecodeAccelerator::IsDestroyPending() {
@@ -2080,8 +2083,8 @@ void V4L2VideoDecodeAccelerator::NotifyError(Error error) {
   // Notifying the client should only happen from the client's thread.
   if (!child_task_runner_->BelongsToCurrentThread()) {
     child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::NotifyError,
-                              weak_this_, error));
+        FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::NotifyError,
+                                  weak_this_, error));
     return;
   }
 
@@ -2098,8 +2101,8 @@ void V4L2VideoDecodeAccelerator::SetErrorState(Error error) {
   if (decoder_thread_.task_runner() &&
       !decoder_thread_.task_runner()->BelongsToCurrentThread()) {
     decoder_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::SetErrorState,
-                              base::Unretained(this), error));
+        FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::SetErrorState,
+                                  base::Unretained(this), error));
     return;
   }
 
@@ -2536,9 +2539,9 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
           : PIXEL_FORMAT_UNKNOWN;
 
   child_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::ProvidePictureBuffers, client_,
-                            buffer_count, pixel_format, 1, egl_image_size_,
-                            device_->GetTextureTarget()));
+      FROM_HERE, base::BindOnce(&Client::ProvidePictureBuffers, client_,
+                                buffer_count, pixel_format, 1, egl_image_size_,
+                                device_->GetTextureTarget()));
 
   // Go into kAwaitingPictureBuffers to prevent us from doing any more decoding
   // or event handling while we are waiting for AssignPictureBuffers(). Not
@@ -2604,8 +2607,8 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
 
     DVLOGF(3) << "dismissing PictureBuffer id=" << output_record.picture_id;
     child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Client::DismissPictureBuffer, client_,
-                              output_record.picture_id));
+        FROM_HERE, base::BindOnce(&Client::DismissPictureBuffer, client_,
+                                  output_record.picture_id));
   }
 
   struct v4l2_requestbuffers reqbufs;
@@ -2661,7 +2664,7 @@ void V4L2VideoDecodeAccelerator::SendPictureReady() {
       // flushing, send all pictures to ensure PictureReady arrive before
       // ProvidePictureBuffers, NotifyResetDone, or NotifyFlushDone.
       child_task_runner_->PostTaskAndReply(
-          FROM_HERE, base::Bind(&Client::PictureReady, client_, picture),
+          FROM_HERE, base::BindOnce(&Client::PictureReady, client_, picture),
           // Unretained is safe. If Client::PictureReady gets to run, |this| is
           // alive. Destroy() will wait the decode thread to finish.
           base::Bind(&V4L2VideoDecodeAccelerator::PictureCleared,
