@@ -15,7 +15,7 @@ const BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN = [
   ENTRIES.desktop,
   ENTRIES.beautiful,
   ENTRIES.photos,
-  ENTRIES.hiddenFile
+  ENTRIES.hiddenFile,
 ];
 
 /**
@@ -32,17 +32,24 @@ const BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN = [
   ENTRIES.unsupported,
   ENTRIES.testDocument,
   ENTRIES.testSharedDocument,
-  ENTRIES.hiddenFile
+  ENTRIES.hiddenFile,
 ];
 
 const BASIC_ANDROID_ENTRY_SET = [
-  ENTRIES.directoryDocuments, ENTRIES.directoryMovies, ENTRIES.directoryMusic,
-  ENTRIES.directoryPictures
+  ENTRIES.directoryDocuments,
+  ENTRIES.directoryMovies,
+  ENTRIES.directoryMusic,
+  ENTRIES.directoryPictures,
 ];
 
 const BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN = [
-  ENTRIES.directoryDocuments, ENTRIES.directoryMovies, ENTRIES.directoryMusic,
-  ENTRIES.directoryPictures, ENTRIES.hello, ENTRIES.world, ENTRIES.directoryA
+  ENTRIES.directoryDocuments,
+  ENTRIES.directoryMovies,
+  ENTRIES.directoryMusic,
+  ENTRIES.directoryPictures,
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.directoryA,
 ];
 
 /**
