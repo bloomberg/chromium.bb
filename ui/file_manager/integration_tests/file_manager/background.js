@@ -205,13 +205,8 @@ var BASIC_FAKE_ENTRY_SET = [
  * @const
  */
 var RECENT_ENTRY_SET = [
-  ENTRIES.hello,
-  ENTRIES.world,
   ENTRIES.desktop,
   ENTRIES.beautiful,
-  ENTRIES.unsupported,
-  ENTRIES.testDocument,
-  ENTRIES.testSharedDocument
 ];
 
 /**
