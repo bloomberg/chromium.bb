@@ -1248,7 +1248,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=NetworkService,NetworkServiceInProcess",
+          "--enable-features=NetworkService",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_chrome_public_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -1437,7 +1437,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService,NetworkServiceInProcess",
+          "--enable-features=NetworkService",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -2813,7 +2813,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=NetworkService,NetworkServiceInProcess",
+          "--enable-features=NetworkService",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_chrome_public_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -2998,7 +2998,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService,NetworkServiceInProcess",
+          "--enable-features=NetworkService",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
