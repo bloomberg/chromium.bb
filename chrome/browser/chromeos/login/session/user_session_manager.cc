@@ -70,6 +70,7 @@
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
@@ -1665,8 +1666,9 @@ void UserSessionManager::RestoreAuthSessionImpl(
 void UserSessionManager::InitRlzImpl(Profile* profile,
                                      const RlzInitParams& params) {
 #if BUILDFLAG(ENABLE_RLZ)
+  // RLZ is disabled if disabled explicitly or if the device is not yet locked.
   PrefService* local_state = g_browser_process->local_state();
-  if (params.disabled) {
+  if (params.disabled || !InstallAttributes::Get()->IsDeviceLocked()) {
     // Empty brand code means an organic install (no RLZ pings are sent).
     google_brand::chromeos::ClearBrandForCurrentSession();
   }
