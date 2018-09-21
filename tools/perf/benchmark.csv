@@ -47,7 +47,7 @@ rendering.mobile,"sadrul@chromium.org, vmiura@chromium.org",Internals>GPU>Metric
 resource_sizes,"agrieve@chromium.org, rnephew@chromium.org, perezju@chromium.org",,,
 sizes (linux),thestig@chromium.org,,,
 sizes (mac),tapted@chromium.org,,,
-sizes (win),grt@chromium.org,,,
+sizes (win),grt@chromium.org,Internals>PlatformIntegration,,
 smoothness.gpu_rasterization.tough_pinch_zoom_cases,ericrk@chromium.org,,,"gpu_rasterization,tough_pinch_zoom"
 smoothness.tough_pinch_zoom_cases,bokan@chromium.org,,,"gpu_rasterization,tough_pinch_zoom"
 speedometer,hablich@chromium.org,,,
