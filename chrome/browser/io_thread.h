@@ -53,7 +53,6 @@ namespace net {
 class CertVerifier;
 class HostResolver;
 class NetworkQualityEstimator;
-class RTTAndThroughputEstimatesObserver;
 class URLRequestContext;
 class URLRequestContextGetter;
 }  // namespace net
@@ -108,9 +107,6 @@ class IOThread : public content::BrowserThreadDelegate {
     // HostResolver only for use in dummy in-process
     // URLRequestContext when network service is enabled.
     std::unique_ptr<net::HostResolver> deprecated_host_resolver;
-
-    std::unique_ptr<net::RTTAndThroughputEstimatesObserver>
-        network_quality_observer;
 
     // When the network service is enabled, this holds on to a
     // content::NetworkContext class that owns |system_request_context|.

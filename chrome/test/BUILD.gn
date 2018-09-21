@@ -666,6 +666,7 @@ test("browser_tests") {
       "../browser/net/netinfo_network_quality_estimator_holdback_browsertest.cc",
       "../browser/net/network_connection_tracker_browsertest.cc",
       "../browser/net/network_context_configuration_browsertest.cc",
+      "../browser/net/network_quality_netinfo_browsertest.cc",
       "../browser/net/network_quality_tracker_browsertest.cc",
       "../browser/net/network_request_metrics_browsertest.cc",
       "../browser/net/nqe/ui_network_quality_estimator_service_browsertest.cc",

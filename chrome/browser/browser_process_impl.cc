@@ -118,6 +118,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/network_quality_observer_factory.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/plugin_service.h"
@@ -135,7 +136,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "ui/base/idle/idle.h"
@@ -1084,6 +1084,13 @@ void BrowserProcessImpl::OnKeepAliveStateChanged(bool is_keeping_alive) {
     Unpin();
 }
 
+void BrowserProcessImpl::CreateNetworkQualityObserver() {
+  DCHECK(!network_quality_observer_);
+  network_quality_observer_ =
+      content::CreateNetworkQualityObserver(network_quality_tracker());
+  DCHECK(network_quality_observer_);
+}
+
 void BrowserProcessImpl::OnKeepAliveRestartStateChanged(bool can_restart) {}
 
 void BrowserProcessImpl::CreateWatchdogThread() {
@@ -1228,6 +1235,8 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
         base::WrapUnique(new base::DefaultTickClock()), local_state(),
         system_network_context_manager()->GetSharedURLLoaderFactory());
   }
+
+  CreateNetworkQualityObserver();
 }
 
 void BrowserProcessImpl::CreateIconManager() {

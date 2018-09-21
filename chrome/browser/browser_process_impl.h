@@ -31,6 +31,7 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 class ChromeChildProcessWatcher;
@@ -199,6 +200,10 @@ class BrowserProcessImpl : public BrowserProcess,
   void OnKeepAliveStateChanged(bool is_keeping_alive) override;
   void OnKeepAliveRestartStateChanged(bool can_restart) override;
 
+  // Create network quality observer so that it can propagate network quality
+  // changes to the render process.
+  void CreateNetworkQualityObserver();
+
   void CreateWatchdogThread();
   void CreateProfileManager();
   void CreateLocalState();
@@ -254,6 +259,12 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<SystemNetworkContextManager> system_network_context_manager_;
 
   std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
+
+  // Listens to NetworkQualityTracker and sends network quality updates to the
+  // renderer.
+  std::unique_ptr<
+      network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver>
+      network_quality_observer_;
 
   bool created_icon_manager_ = false;
   std::unique_ptr<IconManager> icon_manager_;

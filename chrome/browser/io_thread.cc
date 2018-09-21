@@ -52,7 +52,6 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/network_quality_observer_factory.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -487,11 +486,6 @@ void IOThread::ConstructSystemRequestContext() {
     network_service->ConfigureStubHostResolver(
         stub_resolver_enabled_, std::move(dns_over_https_servers_));
   }
-
-  // TODO(mmenke): This class currently requires an in-process
-  // NetworkQualityEstimator.  Fix that.
-  globals_->network_quality_observer = content::CreateNetworkQualityObserver(
-      globals_->system_request_context->network_quality_estimator());
 }
 
 metrics::UpdateUsagePrefCallbackType IOThread::GetMetricsDataUseForwarder() {
