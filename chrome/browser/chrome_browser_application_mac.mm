@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/native_event_processor_mac.h"
 #include "content/public/browser/native_event_processor_observer_mac.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace chrome_browser_application_mac {
 
@@ -120,6 +122,12 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 
 - (id)init {
   self = [super init];
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceDarkMode)) {
+    if (@available(macOS 10.14, *)) {
+      self.appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
+    }
+  }
 
   // Sanity check to alert if overridden methods are not supported.
   DCHECK([NSApplication

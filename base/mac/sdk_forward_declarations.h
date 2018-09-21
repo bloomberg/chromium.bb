@@ -338,6 +338,20 @@ typedef NSString* VNBarcodeSymbology NS_STRING_ENUM;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_13
+
+// Once Chrome no longer supports macOS 10.13, everything within this
+// preprocessor block can be removed.
+#if !defined(MAC_OS_X_VERSION_10_14) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_14
+
+@interface NSApplication (ForwardDeclare)
+@property(strong) NSAppearance* appearance;
+@end
+
+BASE_EXPORT extern NSString* const NSAppearanceNameDarkAqua;
+
+#endif
+
 // ----------------------------------------------------------------------------
 // The symbol for kCWSSIDDidChangeNotification is available in the
 // CoreWLAN.framework for OSX versions 10.6 through 10.10. The symbol is not

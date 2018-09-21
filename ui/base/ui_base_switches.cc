@@ -48,6 +48,9 @@ const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 const char kEnableTouchableAppContextMenu[] =
     "enable-touchable-app-context-menus";
 
+// Forces dark mode in UI for platforms that support it.
+const char kForceDarkMode[] = "force-dark-mode";
+
 // Forces high-contrast mode in native UI drawing, regardless of system
 // settings. Note that this has limited effect on Windows: only Aura colors will
 // be switched to high contrast, not other system colors.
