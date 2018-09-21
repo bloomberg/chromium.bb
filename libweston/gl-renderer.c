@@ -3235,9 +3235,6 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 
 	if (weston_check_egl_extension(extensions, "EGL_EXT_buffer_age"))
 		gr->has_egl_buffer_age = 1;
-	else
-		weston_log("warning: EGL_EXT_buffer_age not supported. "
-			   "Performance could be affected.\n");
 
 	for (i = 0; i < ARRAY_LENGTH(swap_damage_ext_to_entrypoint); i++) {
 		if (weston_check_egl_extension(extensions,
@@ -3248,11 +3245,6 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 			break;
 		}
 	}
-	if (!gr->swap_buffers_with_damage)
-		weston_log("warning: neither %s or %s is supported. "
-			   "Performance could be affected.\n",
-			   swap_damage_ext_to_entrypoint[0].extension,
-			   swap_damage_ext_to_entrypoint[1].extension);
 
 	if (weston_check_egl_extension(extensions, "EGL_KHR_no_config_context") ||
 	    weston_check_egl_extension(extensions, "EGL_MESA_configless_context"))
