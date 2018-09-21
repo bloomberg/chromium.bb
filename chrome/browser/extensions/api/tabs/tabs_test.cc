@@ -2060,7 +2060,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, CannotZoomInvalidTab) {
 // Regression test for crbug.com/660498.
 // TODO(crbug.com/882213) Disabled due to timeouts on Linux builders.
 #if defined(OS_LINUX)
-#define MAYBE_TemporaryAddressSpoof DISABLE_TemporaryAddressSpoof
+#define MAYBE_TemporaryAddressSpoof DISABLED_TemporaryAddressSpoof
 #else
 #define MAYBE_TemporaryAddressSpoof TemporaryAddressSpoof
 #endif
