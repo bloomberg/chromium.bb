@@ -7,10 +7,13 @@
 #include "base/files/file.h"
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_resource_util.h"
@@ -257,6 +260,44 @@ IN_PROC_BROWSER_TEST_F(
 
   ClickElementWithId(web_contents, "async");
   EXPECT_FALSE(IsKeyboardShowing());
+}
+
+class KeyboardEndToEndOverscrollTest : public KeyboardEndToEndTest {
+ public:
+  KeyboardEndToEndOverscrollTest()
+      : KeyboardEndToEndTest(base::FilePath("form.html")) {}
+  ~KeyboardEndToEndOverscrollTest() override {}
+
+  void FocusAndShowKeyboard() { ClickElementWithId(web_contents, "username"); }
+
+  void HideKeyboard() { KeyboardController::Get()->HideKeyboardByUser(); }
+
+ protected:
+  int GetViewportHeight(content::WebContents* web_contents) {
+    return web_contents->GetRenderWidgetHostView()
+        ->GetVisibleViewportSize()
+        .height();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardEndToEndOverscrollTest);
+};
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndOverscrollTest,
+                       ToggleKeyboardOnMaximizedWindowAffectsViewport) {
+  browser()->window()->Maximize();
+  aura::test::WaitForAllChangesToComplete();
+
+  const int old_height = GetViewportHeight(web_contents);
+
+  FocusAndShowKeyboard();
+  ASSERT_TRUE(WaitUntilShown());
+
+  EXPECT_LT(GetViewportHeight(web_contents), old_height);
+
+  HideKeyboard();
+  ASSERT_TRUE(WaitUntilHidden());
+
+  EXPECT_EQ(GetViewportHeight(web_contents), old_height);
 }
 
 }  // namespace keyboard

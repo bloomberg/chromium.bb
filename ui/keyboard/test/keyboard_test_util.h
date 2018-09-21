@@ -17,12 +17,10 @@ class Rect;
 
 namespace keyboard {
 
-// Waits until the keyboard is shown. Return false if there is no keyboard
-// window created.
+// Waits until the keyboard is fully shown, with no pending animations.
 bool WaitUntilShown();
 
-// Waits until the keyboard is hidden. Return false if there is no keyboard
-// window created.
+// Waits until the keyboard starts to hide, with possible pending animations.
 bool WaitUntilHidden();
 
 // Waits until the keyboard state is changed to the given state.
