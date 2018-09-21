@@ -849,10 +849,134 @@ static AtkAttributeSet* AXPlatformNodeAuraLinuxGetRunAttributes(
   return nullptr;
 }
 
+static gunichar AXPlatformNodeAuraLinuxGetCharacterAtOffset(AtkText* atk_text,
+                                                            int offset) {
+  AtkObject* atk_object = ATK_OBJECT(atk_text);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return 0;
+
+  std::string text = obj->GetTextForATK();
+  size_t limited_offset = std::max(0L, std::min(g_utf8_strlen(text.c_str(), -1),
+                                                static_cast<glong>(offset)));
+
+  // According to the C++ documentation, the pointer returned by c_str() should
+  // be valid as long as any non-const operations are not performed on the
+  // std::string in question.
+  return g_utf8_get_char(
+      g_utf8_offset_to_pointer(text.c_str(), limited_offset));
+}
+
+// This function returns a single character as a UTF-8 encoded C string because
+// the character may be encoded into more than one byte.
+static char* AXPlatformNodeAuraLinuxGetCharacter(AtkText* atk_text,
+                                                 int offset,
+                                                 int* start_offset,
+                                                 int* end_offset) {
+  *start_offset = -1;
+  *end_offset = -1;
+
+  AtkObject* atk_object = ATK_OBJECT(atk_text);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return nullptr;
+
+  std::string text = obj->GetTextForATK();
+  int text_length = static_cast<int>(g_utf8_strlen(text.c_str(), -1));
+  *start_offset = std::max(0, std::min(text_length, offset));
+  *end_offset = std::max(0, std::min(text_length, *start_offset + 1));
+
+  return g_utf8_substring(text.c_str(), *start_offset, *end_offset);
+}
+
+static char* AXPlatformNodeAuraLinuxGetTextAtOffset(
+    AtkText* atk_text,
+    int offset,
+    AtkTextBoundary boundary_type,
+    int* start_offset,
+    int* end_offset) {
+  *start_offset = -1;
+  *end_offset = -1;
+
+  if (boundary_type != ATK_TEXT_BOUNDARY_CHAR) {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  return AXPlatformNodeAuraLinuxGetCharacter(atk_text, offset, start_offset,
+                                             end_offset);
+}
+
+static char* AXPlatformNodeAuraLinuxGetTextAfterOffset(
+    AtkText* atk_text,
+    int offset,
+    AtkTextBoundary boundary_type,
+    int* start_offset,
+    int* end_offset) {
+  *start_offset = -1;
+  *end_offset = -1;
+
+  if (boundary_type != ATK_TEXT_BOUNDARY_CHAR) {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  return AXPlatformNodeAuraLinuxGetCharacter(atk_text, offset + 1, start_offset,
+                                             end_offset);
+}
+
+static char* AXPlatformNodeAuraLinuxGetTextBeforeOffset(
+    AtkText* atk_text,
+    int offset,
+    AtkTextBoundary boundary_type,
+    int* start_offset,
+    int* end_offset) {
+  *start_offset = -1;
+  *end_offset = -1;
+
+  if (boundary_type != ATK_TEXT_BOUNDARY_CHAR) {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  return AXPlatformNodeAuraLinuxGetCharacter(atk_text, offset - 1, start_offset,
+                                             end_offset);
+}
+
+#if ATK_CHECK_VERSION(2, 10, 0)
+static char* AXPlatformNodeAuraLinuxGetStringAtOffset(
+    AtkText* atk_text,
+    int offset,
+    AtkTextGranularity granularity,
+    int* start_offset,
+    int* end_offset) {
+  *start_offset = -1;
+  *end_offset = -1;
+
+  if (granularity != ATK_TEXT_GRANULARITY_CHAR) {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  return AXPlatformNodeAuraLinuxGetCharacter(atk_text, offset, start_offset,
+                                             end_offset);
+}
+#endif
+
 static void AXTextInterfaceBaseInit(AtkTextIface* iface) {
   iface->get_text = AXPlatformNodeAuraLinuxGetText;
   iface->get_run_attributes = AXPlatformNodeAuraLinuxGetRunAttributes;
   iface->get_character_count = AXPlatformNodeAuraLinuxGetCharacterCount;
+  iface->get_character_at_offset = AXPlatformNodeAuraLinuxGetCharacterAtOffset;
+  iface->get_text_after_offset = AXPlatformNodeAuraLinuxGetTextAfterOffset;
+  iface->get_text_before_offset = AXPlatformNodeAuraLinuxGetTextBeforeOffset;
+  iface->get_text_at_offset = AXPlatformNodeAuraLinuxGetTextAtOffset;
+
+#if ATK_CHECK_VERSION(2, 10, 0)
+  iface->get_string_at_offset = AXPlatformNodeAuraLinuxGetStringAtOffset;
+#endif
 }
 
 static const GInterfaceInfo TextInfo = {
