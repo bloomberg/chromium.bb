@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/buildflags.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "ui/base/ui_base_types.h"
 
 class Browser;

@@ -76,46 +76,6 @@ bool ZoomDecoration::UpdateIfNecessary(zoom::ZoomController* zoom_controller,
 }
 
 void ZoomDecoration::ShowBubble(BOOL auto_close) {
-  if (bubble_) {
-    bubble_.delegate = nil;
-    [[bubble_.window parentWindow] removeChildWindow:bubble_.window];
-    [bubble_.window orderOut:nil];
-    [bubble_ closeWithoutAnimation];
-  }
-
-  content::WebContents* web_contents = owner_->GetWebContents();
-  if (!web_contents)
-    return;
-
-  // Get the frame of the decoration.
-  AutocompleteTextField* field = owner_->GetAutocompleteTextField();
-  const NSRect frame =
-      [[field cell] frameForDecoration:this inFrame:[field bounds]];
-
-  if (UseViews()) {
-    NSWindow* window = [web_contents->GetNativeView() window];
-    if (!window) {
-      // The tab isn't active right now.
-      return;
-    }
-    BrowserWindowController* browser_window_controller =
-        [BrowserWindowController browserWindowControllerForWindow:window];
-    NSPoint anchor = [browser_window_controller bookmarkBubblePoint];
-    gfx::Point anchor_point = gfx::ScreenPointFromNSPoint(
-        ui::ConvertPointFromWindowToScreen(window, anchor));
-    chrome::ShowZoomBubbleViewsAtPoint(
-        web_contents, anchor_point, auto_close == NO /* user_action */, this);
-    return;
-  }
-
-  // Find point for bubble's arrow in screen coordinates.
-  NSPoint anchor = GetBubblePointInFrame(frame);
-  anchor = [field convertPoint:anchor toView:nil];
-  anchor = ui::ConvertPointFromWindowToScreen([field window], anchor);
-
-  bubble_ = [[ZoomBubbleController alloc] initWithParentWindow:[field window]
-                                                      delegate:this];
-  [bubble_ showAnchoredAt:anchor autoClose:auto_close];
 }
 
 void ZoomDecoration::CloseBubble() {

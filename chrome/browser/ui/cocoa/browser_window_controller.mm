@@ -40,8 +40,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_observer_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser/exclusive_access_controller_views.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -75,6 +73,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #include "chrome/browser/ui/cocoa/translate/translate_bubble_bridge_views.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -334,28 +333,10 @@ bool IsTabDetachingInFullscreenEnabled() {
     [toolbarController_ setHasToolbar:[self hasToolbar]
                        hasLocationBar:[self hasLocationBar]];
 
-    // Create a sub-controller for the bookmark bar.
-    bookmarkBarController_.reset([[BookmarkBarController alloc]
-        initWithBrowser:browser_.get()
-           initialWidth:NSWidth([[[self window] contentView] frame])
-               delegate:self]);
-    // This call loads the view.
-    BookmarkBarToolbarView* bookmarkBarView =
-        [bookmarkBarController_ controlledView];
-    [bookmarkBarView setResizeDelegate:self];
-
-    [bookmarkBarController_ setBookmarkBarEnabled:[self supportsBookmarkBar]];
-
     // Create the infobar container view, so we can pass it to the
     // ToolbarController.
     infoBarContainerController_.reset(
         [[InfoBarContainerController alloc] initWithResizeDelegate:self]);
-
-    // We don't want to try and show the bar before it gets placed in its parent
-    // view, so this step shoudn't be inside the bookmark bar controller's
-    // |-awakeFromNib|.
-    windowShim_->BookmarkBarStateChanged(
-        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
     [self updateFullscreenCollectionBehavior];
 
@@ -438,7 +419,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   [toolbarController_ browserWillBeDestroyed];
   [tabStripController_ browserWillBeDestroyed];
   [findBarCocoaController_ browserWillBeDestroyed];
-  [bookmarkBarController_ browserWillBeDestroyed];
   [avatarButtonController_ browserWillBeDestroyed];
 
   [super dealloc];
@@ -938,8 +918,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   // bar directly, its superview must be this controller's content view.
   DCHECK(view);
   DCHECK(view == [toolbarController_ view] ||
-         view == [infoBarContainerController_ view] ||
-         view == [bookmarkBarController_ view]);
+         view == [infoBarContainerController_ view]);
 
   // The infobar has insufficient information to determine its new height. It
   // knows the total height of all of the info bars (which is what it passes
@@ -967,22 +946,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
   // Disable screen updates to prevent flickering.
   gfx::ScopedCocoaDisableScreenUpdates disabler;
-
-  // Grow or shrink the window by the amount of the height change.  We adjust
-  // the window height only in two cases:
-  // 1) We are adjusting the height of the bookmark bar and it is currently
-  // animating either open or closed.
-  // 2) We are adjusting the height of the download shelf.
-  //
-  // We do not adjust the window height for bookmark bar changes on the NTP.
-  BOOL shouldAdjustBookmarkHeight =
-      [bookmarkBarController_ isAnimatingBetweenState:BookmarkBar::HIDDEN
-                                             andState:BookmarkBar::SHOW];
-
-  if ((shouldAdjustBookmarkHeight && view == [bookmarkBarController_ view])) {
-    CGFloat deltaH = height - NSHeight(frame);
-    [self adjustWindowHeightBy:deltaH];
-  }
 
   frame.size.height = height;
   // TODO(rohitrao): Determine if calling setFrame: twice is bad.
@@ -1343,15 +1306,11 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (BOOL)isBookmarkBarVisible {
-  return [bookmarkBarController_ isVisible];
+  return NO;
 }
 
 - (BOOL)isBookmarkBarAnimating {
-  return [bookmarkBarController_ isAnimationRunning];
-}
-
-- (BookmarkBarController*)bookmarkBarController {
-  return bookmarkBarController_;
+  return NO;
 }
 
 - (DevToolsController*)devToolsController {
@@ -1425,12 +1384,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
 
-  // Update the bookmark bar.
-  // TODO(viettrungluu): perhaps update to not terminate running animations (if
-  // applicable)?
-  windowShim_->BookmarkBarStateChanged(
-      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
-
   [infoBarContainerController_ changeWebContents:contents];
 
   // Must do this after bookmark and infobar updates to avoid
@@ -1444,12 +1397,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   // the loading state which changed.
   if (change != TabChangeType::kLoadingOnly)
     windowShim_->UpdateTitleBar();
-
-  // Update the bookmark bar if this is the currently selected tab. This for
-  // transitions between the NTP (showing its floating bookmark bar) and normal
-  // web pages (showing no bookmark bar).
-  // TODO(viettrungluu): perhaps update to not terminate running animations?
-  windowShim_->BookmarkBarStateChanged(BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 }
 
 - (void)onTabDetachedWithContents:(WebContents*)contents {
@@ -1507,30 +1454,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   return [BrowserWindowUtils themeImagePositionFor:windowChromeView
                                       withTabStrip:tabStripView
                                          alignment:alignment];
-}
-
-- (NSPoint)bookmarkBubblePoint {
-  return [toolbarController_ bookmarkBubblePoint];
-}
-
-// Show the bookmark bubble (e.g. user just clicked on the STAR).
-- (void)showBookmarkBubbleForURL:(const GURL&)url
-               alreadyBookmarked:(BOOL)alreadyMarked {
-  if (bookmarkBubbleObserver_.get())
-    return;
-
-  bookmarkBubbleObserver_.reset(new BookmarkBubbleObserverCocoa(self));
-
-  chrome::ShowBookmarkBubbleViewsAtPoint(
-      gfx::ScreenPointFromNSPoint(ui::ConvertPointFromWindowToScreen(
-          [self window], [self bookmarkBubblePoint])),
-      [[self window] contentView], bookmarkBubbleObserver_.get(),
-      browser_.get(), url, alreadyMarked,
-      [self locationBarBridge]->star_decoration());
-}
-
-- (void)bookmarkBubbleClosed {
-  bookmarkBubbleObserver_.reset();
 }
 
 - (void)showTranslateBubbleForWebContents:(content::WebContents*)contents
@@ -1666,24 +1589,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   // Ask the toolbar controller if it wants to return a custom field editor
   // for the specific object.
   return [toolbarController_ customFieldEditorForObject:obj];
-}
-
-// (Needed for |BookmarkBarControllerDelegate| protocol.)
-- (void)bookmarkBar:(BookmarkBarController*)controller
- didChangeFromState:(BookmarkBar::State)oldState
-            toState:(BookmarkBar::State)newState {
-  [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
-  [self adjustToolbarAndBookmarkBarForCompression:
-          [controller getDesiredToolbarHeightCompression]];
-}
-
-// (Needed for |BookmarkBarControllerDelegate| protocol.)
-- (void)bookmarkBar:(BookmarkBarController*)controller
-willAnimateFromState:(BookmarkBar::State)oldState
-            toState:(BookmarkBar::State)newState {
-  [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
-  [self adjustToolbarAndBookmarkBarForCompression:
-          [controller getDesiredToolbarHeightCompression]];
 }
 
 // (Private/TestingAPI)
@@ -1948,7 +1853,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (BOOL)supportsBookmarkBar {
-  return [self supportsWindowFeature:Browser::FEATURE_BOOKMARKBAR];
+  return NO;
 }
 
 - (BOOL)isTabbedWindow {
