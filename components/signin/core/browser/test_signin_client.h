@@ -16,6 +16,7 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 class PrefService;
@@ -53,7 +54,7 @@ class TestSigninClient : public SigninClient {
   // Wraps the test_url_loader_factory().
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
-  // Returns nullptr.
+  // Returns FakeCookieManager.
   network::mojom::CookieManager* GetCookieManager() override;
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
@@ -91,6 +92,7 @@ class TestSigninClient : public SigninClient {
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
   PrefService* pref_service_;
+  std::unique_ptr<network::mojom::CookieManager> cookie_manager_;
   bool are_signin_cookies_allowed_;
   bool network_calls_delayed_;
   std::vector<base::OnceClosure> delayed_network_calls_;
