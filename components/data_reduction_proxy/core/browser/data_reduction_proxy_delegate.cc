@@ -9,8 +9,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/time/default_tick_clock.h"
-#include "base/time/tick_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -40,16 +38,13 @@ DataReductionProxyDelegate::DataReductionProxyDelegate(
     const DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator,
     DataReductionProxyBypassStats* bypass_stats,
-    net::NetLog* net_log,
-    network::NetworkConnectionTracker* network_connection_tracker)
+    net::NetLog* net_log)
     : config_(config),
       configurator_(configurator),
       event_creator_(event_creator),
       bypass_stats_(bypass_stats),
-      tick_clock_(base::DefaultTickClock::GetInstance()),
       io_data_(nullptr),
-      net_log_(net_log),
-      network_connection_tracker_(network_connection_tracker) {
+      net_log_(net_log) {
   DCHECK(config_);
   DCHECK(configurator_);
   DCHECK(event_creator_);
@@ -61,14 +56,12 @@ DataReductionProxyDelegate::DataReductionProxyDelegate(
 
 DataReductionProxyDelegate::~DataReductionProxyDelegate() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 void DataReductionProxyDelegate::InitializeOnIOThread(
     DataReductionProxyIOData* io_data) {
   DCHECK(io_data);
   DCHECK(thread_checker_.CalledOnValidThread());
-  network_connection_tracker_->AddNetworkConnectionObserver(this);
   io_data_ = io_data;
 }
 
@@ -169,14 +162,6 @@ void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
     bypass_stats_->OnProxyFallback(bad_proxy, net_error);
 }
 
-void DataReductionProxyDelegate::SetTickClockForTesting(
-    const base::TickClock* tick_clock) {
-  tick_clock_ = tick_clock;
-  // Update |last_network_change_time_| to the provided tick clock's current
-  // time for testing.
-  last_network_change_time_ = tick_clock_->NowTicks();
-}
-
 void DataReductionProxyDelegate::GetAlternativeProxy(
     const GURL& url,
     const net::ProxyRetryInfoMap& proxy_retry_info,
@@ -234,16 +219,6 @@ void DataReductionProxyDelegate::RecordQuicProxyStatus(
   DCHECK(thread_checker_.CalledOnValidThread());
   UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.Quic.ProxyStatus", status,
                             QUIC_PROXY_STATUS_BOUNDARY);
-}
-
-void DataReductionProxyDelegate::OnConnectionChanged(
-    network::mojom::ConnectionType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (type == network::mojom::ConnectionType::CONNECTION_NONE)
-    return;
-
-  last_network_change_time_ = tick_clock_->NowTicks();
 }
 
 }  // namespace data_reduction_proxy
