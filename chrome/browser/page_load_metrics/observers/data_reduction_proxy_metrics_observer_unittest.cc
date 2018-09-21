@@ -176,8 +176,9 @@ class TestDataReductionProxyMetricsObserver
     pmd->os_dump->private_footprint_kb = kMemoryKb;
 
     global_dump->process_dumps.push_back(std::move(pmd));
-    callback.Run(true, memory_instrumentation::GlobalMemoryDump::MoveFrom(
-                           std::move(global_dump)));
+    std::move(callback).Run(true,
+                            memory_instrumentation::GlobalMemoryDump::MoveFrom(
+                                std::move(global_dump)));
   }
 
  private:

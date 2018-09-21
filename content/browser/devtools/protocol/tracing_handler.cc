@@ -433,9 +433,9 @@ void TracingHandler::StartTracingWithGpuPid(
   SetupProcessFilter(gpu_pid, nullptr);
 
   TracingController::GetInstance()->StartTracing(
-      trace_config_, base::BindRepeating(&TracingHandler::OnRecordingEnabled,
-                                         weak_factory_.GetWeakPtr(),
-                                         base::Passed(std::move(callback))));
+      trace_config_,
+      base::BindOnce(&TracingHandler::OnRecordingEnabled,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void TracingHandler::SetupProcessFilter(
@@ -486,7 +486,7 @@ void TracingHandler::OnProcessReady(RenderProcessHost* process_host) {
       base::trace_event::TraceConfig::ProcessFilterConfig(
           included_process_ids));
   TracingController::GetInstance()->StartTracing(
-      trace_config_, base::RepeatingCallback<void()>());
+      trace_config_, TracingController::StartTracingDoneCallback());
 }
 
 Response TracingHandler::End() {
@@ -520,9 +520,8 @@ Response TracingHandler::End() {
 void TracingHandler::GetCategories(
     std::unique_ptr<GetCategoriesCallback> callback) {
   TracingController::GetInstance()->GetCategories(
-      base::Bind(&TracingHandler::OnCategoriesReceived,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&TracingHandler::OnCategoriesReceived,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void TracingHandler::OnRecordingEnabled(
@@ -575,8 +574,8 @@ void TracingHandler::RequestMemoryDump(
   }
 
   auto on_memory_dump_finished =
-      base::Bind(&TracingHandler::OnMemoryDumpFinished,
-                 weak_factory_.GetWeakPtr(), base::Passed(std::move(callback)));
+      base::BindOnce(&TracingHandler::OnMemoryDumpFinished,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDumpAndAppendToTrace(
           base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
@@ -686,7 +685,7 @@ void TracingHandler::ReadyToCommitNavigation(
   SetupProcessFilter(base::kNullProcessId,
                      navigation_handle->GetRenderFrameHost());
   TracingController::GetInstance()->StartTracing(
-      trace_config_, base::RepeatingCallback<void()>());
+      trace_config_, TracingController::StartTracingDoneCallback());
 }
 
 void TracingHandler::FrameDeleted(RenderFrameHostImpl* frame_host) {
