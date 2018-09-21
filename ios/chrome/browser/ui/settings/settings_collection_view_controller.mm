@@ -1100,7 +1100,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       !IsTransientSyncError(syncSetupService->GetSyncServiceState());
   if (identityAccountItem.shouldDisplayError) {
     identityAccountItem.detailText =
-        GetSyncErrorDescriptionForBrowserState(_browserState);
+        GetSyncErrorDescriptionForSyncSetupService(syncSetupService);
   } else {
     identityAccountItem.detailText =
         syncSetupService->IsSyncEnabled()
