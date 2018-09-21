@@ -4,7 +4,7 @@
 
 cr.exportPath('multidevice_setup');
 
-  /** @enum {string} */
+/** @enum {string} */
 multidevice_setup.PageName = {
   FAILURE: 'setup-failed-page',
   PASSWORD: 'password-page',

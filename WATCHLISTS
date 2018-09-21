@@ -1170,7 +1170,8 @@
                   '|chromeos/services/multidevice_setup/'\
                   '|chromeos/services/secure_channel/'\
                   '|components/cryptauth/'\
-                  '|components/proximity_auth/logging'
+                  '|components/proximity_auth/logging'\
+                  '|ui/webui/resources/cr_components/chromeos/multidevice_setup/'
     },
     'mus': {
       'filepath': 'services/ws/'\
