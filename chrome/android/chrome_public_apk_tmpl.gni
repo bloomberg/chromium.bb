@@ -180,7 +180,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
       deps += [ ":$_unwind_asset" ]
     }
 
-    if (enable_vr && _target_type == "android_apk") {
+    if (enable_vr && (_target_type == "android_apk" || !modularize_vr)) {
       deps += [ "//chrome/browser/android/vr:java" ]
     }
   }
@@ -270,7 +270,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       deps += [ "//chrome/browser/android/vr:java" ]
     }
 
-    if (invoker.target_type == "android_apk") {
+    if (invoker.target_type == "android_apk" || !modularize_ar) {
       if (enable_arcore) {
         deps += [ "//third_party/arcore-android-sdk:libdynamite_client_java" ]
       }

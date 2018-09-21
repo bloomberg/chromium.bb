@@ -22,10 +22,10 @@ import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("channel.gni")
 import("java_sources.gni")
 import("static_initializers.gni")
-if (enable_arcore) {
+if (modularize_ar) {
   import("//chrome/android/modules/ar/ar_module_tmpl.gni")
 }
-if (enable_vr) {
+if (modularize_vr) {
   import("//chrome/android/modules/vr/vr_module_tmpl.gni")
 }
 
@@ -1725,7 +1725,7 @@ if (defined(expected_static_initializer_count)) {
 }
 
 # Feature modules that go into Chrome Android application bundles.
-if (enable_arcore) {
+if (modularize_ar) {
   ar_module_tmpl("ar_public_module") {
     manifest_package = manifest_package
     module_name = "ArPublic"
@@ -1733,7 +1733,7 @@ if (enable_arcore) {
   }
 }
 
-if (enable_vr) {
+if (modularize_vr) {
   vr_module_tmpl("vr_public_module") {
     manifest_package = manifest_package
     module_name = "VrPublic"
@@ -1757,7 +1757,7 @@ android_app_bundle("chrome_modern_public_bundle") {
   bundle_name = "ChromeModernPublic"
   base_module_target = ":chrome_modern_public_base_module"
   proguard_enabled = !is_java_debug
-  if (enable_vr) {
+  if (modularize_vr) {
     extra_modules = [
       {
         name = "vr"
@@ -1775,7 +1775,7 @@ android_app_bundle("monochrome_public_bundle") {
     enable_multidex = true
     proguard_android_sdk_dep = webview_framework_dep
   }
-  if (enable_arcore) {
+  if (modularize_ar) {
     extra_modules = [
       {
         name = "ar"
