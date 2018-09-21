@@ -221,16 +221,25 @@ void CustomElementDefinition::Upgrade(Element* element) {
 void CustomElementDefinition::AddDefaultStyle(Element* element) {
   if (!RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled())
     return;
-  if (CSSStyleSheet* default_style = DefaultStyleSheet()) {
-    if (!added_default_style_sheet_) {
-      element->GetDocument().GetStyleEngine().AddedCustomElementDefaultStyle(
-          default_style);
-      added_default_style_sheet_ = true;
-    }
-    element->SetNeedsStyleRecalc(
-        kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                               StyleChangeReason::kActiveStylesheetsUpdate));
+  CSSStyleSheet* default_style = DefaultStyleSheet();
+  if (!default_style)
+    return;
+  Document* associated_document = default_style->AssociatedDocument();
+  if (associated_document && associated_document != &element->GetDocument()) {
+    // Throw exception here?
+    return;
   }
+  if (!added_default_style_sheet_) {
+    element->GetDocument().GetStyleEngine().AddedCustomElementDefaultStyle(
+        default_style);
+    added_default_style_sheet_ = true;
+    const AtomicString& local_tag_name =
+        element->LocalNameForSelectorMatching();
+    default_style->AddToCustomElementTagNames(local_tag_name);
+  }
+  element->SetNeedsStyleRecalc(
+      kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                             StyleChangeReason::kActiveStylesheetsUpdate));
 }
 
 bool CustomElementDefinition::HasAttributeChangedCallback(

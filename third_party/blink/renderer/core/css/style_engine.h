@@ -297,6 +297,7 @@ class CORE_EXPORT StyleEngine final
                                         const HeapHashSet<Member<RuleSet>>&,
                                         InvalidationScope =
                                             kInvalidateCurrentScope);
+  void ScheduleCustomElementInvalidations(HashSet<AtomicString> tag_names);
 
   void NodeWillBeRemoved(Node&);
   void ChildrenRemoved(ContainerNode& parent);

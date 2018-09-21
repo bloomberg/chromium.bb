@@ -204,6 +204,14 @@ void CSSStyleSheet::DidMutateRules() {
   DCHECK_LE(contents_->ClientSize(), 1u);
 
   Document* owner = OwnerDocument();
+
+  if ((associated_document_ || owner) && !custom_element_tag_names_.IsEmpty()) {
+    Document* document =
+        associated_document_ ? associated_document_.Get() : owner;
+    document->GetStyleEngine().ScheduleCustomElementInvalidations(
+        custom_element_tag_names_);
+  }
+
   if (owner && ownerNode() && ownerNode()->isConnected()) {
     owner->GetStyleEngine().SetNeedsActiveStyleUpdate(
         ownerNode()->GetTreeScope());

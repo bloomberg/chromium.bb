@@ -1069,6 +1069,20 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
   }
 }
 
+void StyleEngine::ScheduleCustomElementInvalidations(
+    HashSet<AtomicString> tag_names) {
+  scoped_refptr<DescendantInvalidationSet> invalidation_set =
+      DescendantInvalidationSet::Create();
+  for (auto& tag_name : tag_names) {
+    invalidation_set->AddTagName(tag_name);
+  }
+  invalidation_set->SetTreeBoundaryCrossing();
+  InvalidationLists invalidation_lists;
+  invalidation_lists.descendants.push_back(invalidation_set);
+  pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
+                                                         *document_);
+}
+
 void StyleEngine::InvalidateStyle() {
   StyleInvalidator style_invalidator(
       pending_invalidations_.GetPendingInvalidationMap());
