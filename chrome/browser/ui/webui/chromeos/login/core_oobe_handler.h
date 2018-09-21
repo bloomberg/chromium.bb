@@ -149,6 +149,9 @@ class CoreOobeHandler : public BaseWebUIHandler,
       const base::Value& callback_id,
       std::vector<ash::mojom::DisplayUnitInfoPtr> info_list);
   void HandleSetupDemoMode();
+  // Handles demo mode setup for tests. Accepts 'online' and 'offline' as
+  // |demo_config|.
+  void HandleStartDemoModeSetupForTesting(const std::string& demo_config);
 
   // When keyboard_utils.js arrow key down event is reached, raise it
   // to tab/shift-tab event.
