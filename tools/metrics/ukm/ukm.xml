@@ -1851,6 +1851,12 @@ be describing additional metrics about the same event.
       etc). See WatchTimeRecorder::AudioDecoderName enum for expected values.
     </summary>
   </metric>
+  <metric name="AudioEncryptionScheme">
+    <summary>
+      media::EncryptionMode enum value. Can be kUnencrypted if IsEME is false or
+      if the audio track is unencrypted.
+    </summary>
+  </metric>
   <metric name="AutoplayInitiated">
     <summary>
       Boolean value indicating whether the initial playback was initiated via
@@ -1938,6 +1944,12 @@ be describing additional metrics about the same event.
     <summary>
       Enumeration of video decoder names, zero if none or unknown (Cast, HLS,
       etc). See WatchTimeRecorder::VideoDecoderName enum for expected values.
+    </summary>
+  </metric>
+  <metric name="VideoEncryptionScheme">
+    <summary>
+      media::EncryptionMode enum value. Can be kUnencrypted if IsEME is false or
+      if the video track is unencrypted.
     </summary>
   </metric>
   <metric name="VideoNaturalHeight">
