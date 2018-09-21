@@ -12569,6 +12569,15 @@ class SlimmingPaintWebFrameTest : public PaintTestConfigurations,
         ->ScrollHitTestWebLayerAt(index);
   }
 
+  cc::LayerTreeHost* LayerTreeHost() {
+    return web_view_client_.layer_tree_view()->layer_tree_host();
+  }
+
+  Element* GetElementById(const AtomicString& id) {
+    WebLocalFrameImpl* frame = web_view_helper_->LocalMainFrame();
+    return frame->GetFrame()->GetDocument()->getElementById(id);
+  }
+
  private:
   PaintArtifactCompositor* paint_artifact_compositor() {
     return GetLocalFrameView()->GetPaintArtifactCompositorForTesting();
@@ -12683,6 +12692,186 @@ TEST_P(SlimmingPaintWebFrameTest, FrameViewScroll) {
   scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 1));
   WebView()->UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
+}
+
+class SlimmingPaintWebFrameSimTest : public PaintTestConfigurations,
+                                     public WebFrameSimTest {
+ public:
+  void InitializeWithHTML(const String& html) {
+    WebView().Resize(WebSize(800, 600));
+
+    SimRequest request("https://example.com/test.html", "text/html");
+    LoadURL("https://example.com/test.html");
+    request.Complete(html);
+
+    // Enable the paint artifact compositor extra testing data.
+    WebView().UpdateAllLifecyclePhases();
+    DCHECK(paint_artifact_compositor());
+    paint_artifact_compositor()->EnableExtraDataForTesting();
+    WebView().UpdateAllLifecyclePhases();
+    DCHECK(paint_artifact_compositor()->GetExtraDataForTesting());
+  }
+
+  size_t ContentLayerCount() {
+    return paint_artifact_compositor()
+        ->GetExtraDataForTesting()
+        ->content_layers.size();
+  }
+
+  cc::Layer* ContentLayerAt(size_t index) {
+    return paint_artifact_compositor()
+        ->GetExtraDataForTesting()
+        ->content_layers[index]
+        .get();
+  }
+
+  Element* GetElementById(const AtomicString& id) {
+    return MainFrame().GetFrame()->GetDocument()->getElementById(id);
+  }
+
+ private:
+  PaintArtifactCompositor* paint_artifact_compositor() {
+    return MainFrame().GetFrameView()->GetPaintArtifactCompositorForTesting();
+  }
+};
+
+INSTANTIATE_LAYER_LIST_TEST_CASE_P(SlimmingPaintWebFrameSimTest);
+
+TEST_P(SlimmingPaintWebFrameSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
+  // TODO(crbug.com/765003): SPV2 may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // SPV2 gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        div {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+        }
+      </style>
+      <div id='a'></div>
+      <div id='b'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* a_element = GetElementById("a");
+  auto* a_layer = ContentLayerAt(ContentLayerCount() - 2);
+  DCHECK_EQ(a_layer->element_id(), CompositorElementIdFromUniqueObjectId(
+                                       a_element->GetLayoutObject()->UniqueId(),
+                                       CompositorElementIdNamespace::kPrimary));
+  auto* b_element = GetElementById("b");
+  auto* b_layer = ContentLayerAt(ContentLayerCount() - 1);
+  DCHECK_EQ(b_layer->element_id(), CompositorElementIdFromUniqueObjectId(
+                                       b_element->GetLayoutObject()->UniqueId(),
+                                       CompositorElementIdNamespace::kPrimary));
+
+  // Initially, neither a nor b should have a layer that should push properties.
+  auto* host = Compositor().layer_tree_view().layer_tree_host();
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(b_layer));
+
+  // Modifying b should only cause the b layer to need to push properties.
+  b_element->setAttribute(HTMLNames::styleAttr, "opacity: 0.2");
+  WebView().UpdateAllLifecyclePhases();
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_TRUE(host->LayersThatShouldPushProperties().count(b_layer));
+
+  // After a frame, no layers should need to push properties again.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(b_layer));
+}
+
+TEST_P(SlimmingPaintWebFrameSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
+  // TODO(crbug.com/765003): SPV2 may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // SPV2 gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        div {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+        }
+      </style>
+      <div id='a'></div>
+      <div id='b' style='opacity: 0.2;'></div>
+      <div id='c'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* a_element = GetElementById("a");
+  auto* a_layer = ContentLayerAt(ContentLayerCount() - 3);
+  DCHECK_EQ(a_layer->element_id(), CompositorElementIdFromUniqueObjectId(
+                                       a_element->GetLayoutObject()->UniqueId(),
+                                       CompositorElementIdNamespace::kPrimary));
+  auto* b_element = GetElementById("b");
+  auto* b_layer = ContentLayerAt(ContentLayerCount() - 2);
+  DCHECK_EQ(b_layer->element_id(), CompositorElementIdFromUniqueObjectId(
+                                       b_element->GetLayoutObject()->UniqueId(),
+                                       CompositorElementIdNamespace::kPrimary));
+  auto* c_element = GetElementById("c");
+  auto* c_layer = ContentLayerAt(ContentLayerCount() - 1);
+  DCHECK_EQ(c_layer->element_id(), CompositorElementIdFromUniqueObjectId(
+                                       c_element->GetLayoutObject()->UniqueId(),
+                                       CompositorElementIdNamespace::kPrimary));
+
+  // Initially, no layer should need to push properties.
+  auto* host = Compositor().layer_tree_view().layer_tree_host();
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(b_layer));
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(c_layer));
+
+  // Modifying a and b (adding opacity to a and removing opacity from b) should
+  // not cause the c layer to push properties.
+  a_element->setAttribute(HTMLNames::styleAttr, "opacity: 0.3");
+  b_element->setAttribute(HTMLNames::styleAttr, "");
+  WebView().UpdateAllLifecyclePhases();
+  EXPECT_TRUE(host->LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_TRUE(host->LayersThatShouldPushProperties().count(b_layer));
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(c_layer));
+
+  // After a frame, no layers should need to push properties again.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(b_layer));
+  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(c_layer));
+}
+
+TEST_P(SlimmingPaintWebFrameSimTest, NoopChangeDoesNotCauseFullTreeSync) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        div {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+        }
+      </style>
+      <div></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  // Initially the host should not need to sync.
+  auto* layer_tree_host = Compositor().layer_tree_view().layer_tree_host();
+  EXPECT_FALSE(layer_tree_host->needs_full_tree_sync());
+
+  // A no-op update should not cause the host to need a full tree sync.
+  WebView().UpdateAllLifecyclePhases();
+  EXPECT_FALSE(layer_tree_host->needs_full_tree_sync());
 }
 
 static void TestFramePrinting(WebLocalFrameImpl* frame) {

@@ -1140,6 +1140,169 @@ class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSurfaceDamage);
 
+class LayerTreeHostTestLayerListSurfaceDamage : public LayerTreeHostTest {
+ protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->use_layer_lists = true;
+  }
+
+  void SetupTree() override {
+    root_ = Layer::Create();
+    child_a_ = Layer::Create();
+    child_b_ = Layer::Create();
+    child_c_ = Layer::Create();
+
+    layer_tree_host()->SetRootLayer(root_);
+
+    root_->AddChild(child_a_);
+    root_->AddChild(child_b_);
+    root_->AddChild(child_c_);
+
+    root_->SetBounds(gfx::Size(50, 50));
+
+    child_a_->SetBounds(gfx::Size(10, 20));
+    child_a_->SetForceRenderSurfaceForTesting(true);
+    child_a_->SetIsDrawable(true);
+
+    child_b_->SetBounds(gfx::Size(20, 10));
+    child_b_->SetForceRenderSurfaceForTesting(true);
+    child_b_->SetIsDrawable(true);
+
+    child_c_->SetBounds(gfx::Size(15, 15));
+    child_c_->SetForceRenderSurfaceForTesting(true);
+    child_c_->SetIsDrawable(true);
+
+    layer_tree_host()->BuildPropertyTreesForTesting();
+
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        // Push an unchanged list. This should cause no damage.
+        {
+          LayerList same_list = root_->children();
+          root_->SetChildLayerList(same_list);
+        }
+        break;
+      case 2:
+        // Reverse the last two layers so the order becomes: [a, c, b]. This
+        // should only damage the 'b' layer.
+        {
+          LayerList last_two_reversed;
+          last_two_reversed.push_back(child_a_);
+          last_two_reversed.push_back(child_c_);
+          last_two_reversed.push_back(child_b_);
+          root_->SetChildLayerList(last_two_reversed);
+        }
+        break;
+      case 3:
+        // Reverse the first two layers so the order becomes: [c, a, b]. This
+        // should damage the last two layers, 'a' and 'b'.
+        {
+          LayerList last_pair_reversed;
+          last_pair_reversed.push_back(child_c_);
+          last_pair_reversed.push_back(child_a_);
+          last_pair_reversed.push_back(child_b_);
+          root_->SetChildLayerList(last_pair_reversed);
+        }
+        break;
+      case 4:
+        // Remove the first layer, 'c', so the order becomes: ['a', 'b']. This
+        // should not damage 'a' or 'b'.
+        {
+          LayerList first_removed = root_->children();
+          first_removed.erase(first_removed.begin());
+          root_->SetChildLayerList(first_removed);
+        }
+        break;
+      case 5:
+        // Add a new layer, 'c', so the order becomes: ['a', 'b', 'c']. This
+        // should only damage 'c'.
+        {
+          LayerList existing_plus_new_child = root_->children();
+          existing_plus_new_child.push_back(child_c_);
+          root_->SetChildLayerList(existing_plus_new_child);
+        }
+        break;
+    }
+  }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    LayerImpl* child_a_impl = impl->active_tree()->LayerById(child_a_->id());
+    LayerImpl* child_b_impl = impl->active_tree()->LayerById(child_b_->id());
+    LayerImpl* child_c_impl = impl->active_tree()->LayerById(child_c_->id());
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        // Full damage on first frame.
+        EXPECT_EQ(GetRenderSurface(child_a_impl)->GetDamageRect(),
+                  gfx::Rect(0, 0, 10, 20));
+        EXPECT_EQ(GetRenderSurface(child_b_impl)->GetDamageRect(),
+                  gfx::Rect(0, 0, 20, 10));
+        EXPECT_EQ(GetRenderSurface(child_c_impl)->GetDamageRect(),
+                  gfx::Rect(0, 0, 15, 15));
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        // No damage after pushing the same list.
+        EXPECT_TRUE(GetRenderSurface(child_a_impl)->GetDamageRect().IsEmpty());
+        EXPECT_TRUE(GetRenderSurface(child_b_impl)->GetDamageRect().IsEmpty());
+        EXPECT_TRUE(GetRenderSurface(child_c_impl)->GetDamageRect().IsEmpty());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        // Only 'b' damaged after reversing the last two layers.
+        EXPECT_TRUE(GetRenderSurface(child_a_impl)->GetDamageRect().IsEmpty());
+        EXPECT_EQ(GetRenderSurface(child_b_impl)->GetDamageRect(),
+                  gfx::Rect(0, 0, 20, 10));
+        EXPECT_TRUE(GetRenderSurface(child_c_impl)->GetDamageRect().IsEmpty());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 3:
+        // 'a' and 'b' damaged after reversing the first two layers.
+        EXPECT_EQ(GetRenderSurface(child_a_impl)->GetDamageRect(),
+                  gfx::Rect(0, 0, 10, 20));
+        EXPECT_EQ(GetRenderSurface(child_b_impl)->GetDamageRect(),
+                  gfx::Rect(0, 0, 20, 10));
+        EXPECT_TRUE(GetRenderSurface(child_c_impl)->GetDamageRect().IsEmpty());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 4:
+        // When the first layer, 'c', is removed, 'a' and 'b' should not be
+        // damaged.
+        EXPECT_TRUE(GetRenderSurface(child_a_impl)->GetDamageRect().IsEmpty());
+        EXPECT_TRUE(GetRenderSurface(child_b_impl)->GetDamageRect().IsEmpty());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 5:
+        // When 'c' is added, 'a' and 'b' should not be damaged.
+        EXPECT_TRUE(GetRenderSurface(child_a_impl)->GetDamageRect().IsEmpty());
+        EXPECT_TRUE(GetRenderSurface(child_b_impl)->GetDamageRect().IsEmpty());
+        EXPECT_EQ(GetRenderSurface(child_c_impl)->GetDamageRect(),
+                  gfx::Rect(0, 0, 15, 15));
+        EndTest();
+        break;
+    }
+
+    return draw_result;
+  }
+
+  void AfterTest() override {}
+
+ private:
+  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> child_a_;
+  scoped_refptr<Layer> child_b_;
+  scoped_refptr<Layer> child_c_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLayerListSurfaceDamage);
+
 // When settings->enable_early_damage_check is true, verify that invalidate is
 // not called when changes to a layer don't cause visible damage.
 class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {

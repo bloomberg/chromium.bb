@@ -119,6 +119,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (layer_tree_host_ == host)
     return;
 
+  bool property_tree_indices_invalid = false;
   if (layer_tree_host_) {
     layer_tree_host_->property_trees()->needs_rebuild = true;
     layer_tree_host_->UnregisterLayer(this);
@@ -126,6 +127,8 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
       layer_tree_host_->UnregisterElement(inputs_.element_id,
                                           ElementListType::ACTIVE);
     }
+    if (!layer_tree_host_->IsUsingLayerLists())
+      property_tree_indices_invalid = true;
   }
   if (host) {
     host->property_trees()->needs_rebuild = true;
@@ -133,10 +136,14 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     if (!host->IsUsingLayerLists() && inputs_.element_id) {
       host->RegisterElement(inputs_.element_id, ElementListType::ACTIVE, this);
     }
+    if (!host->IsUsingLayerLists())
+      property_tree_indices_invalid = true;
   }
 
   layer_tree_host_ = host;
-  InvalidatePropertyTreesIndices();
+
+  if (property_tree_indices_invalid)
+    InvalidatePropertyTreesIndices();
 
   // When changing hosts, the layer needs to commit its properties to the impl
   // side for the new host.
@@ -290,7 +297,7 @@ void Layer::SetBounds(const gfx::Size& size) {
     SetPropertyTreesNeedRebuild();
   }
 
-  if (scrollable()) {
+  if (scrollable() && !layer_tree_host_->IsUsingLayerLists()) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
       scroll_node->bounds = inputs_.bounds;
@@ -309,6 +316,7 @@ void Layer::SetOverscrollBehavior(const OverscrollBehavior& behavior) {
   if (!layer_tree_host_)
     return;
 
+  // TODO(pdr): This should not be needed when using layer lists.
   if (scrollable()) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
@@ -328,6 +336,7 @@ void Layer::SetSnapContainerData(base::Optional<SnapContainerData> data) {
   if (!layer_tree_host_)
     return;
 
+  // TODO(pdr): This should not be needed when using layer lists.
   if (scrollable()) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
@@ -353,6 +362,57 @@ void Layer::RemoveAllChildren() {
     DCHECK_EQ(this, layer->parent());
     layer->RemoveFromParent();
   }
+}
+
+void Layer::SetChildLayerList(LayerList new_children) {
+  DCHECK(layer_tree_host_->IsUsingLayerLists());
+
+  // Early out without calling |LayerTreeHost::SetNeedsFullTreeSync| if no
+  // layer has changed.
+  if (children() == new_children)
+    return;
+
+  // Remove existing children that will not be in the new child list.
+  {
+    std::unordered_set<Layer*> children_to_remove;
+    for (auto& existing_child : children())
+      children_to_remove.insert(existing_child.get());
+    for (auto& new_child : new_children)
+      children_to_remove.erase(new_child.get());
+    for (auto* child : children_to_remove) {
+      child->SetParent(nullptr);
+      AddDrawableDescendants(-child->NumDescendantsThatDrawContent() -
+                             (child->DrawsContent() ? 1 : 0));
+    }
+  }
+
+  // Mark existing children as changed if their order changes.
+  auto existing_child_it = children().begin();
+  for (auto& child : new_children) {
+    if (child->parent() == this) {
+      // Search forward in the existing child list to find the new child.
+      existing_child_it = std::find(existing_child_it, children().end(), child);
+      if (existing_child_it == children().end())
+        child->SetSubtreePropertyChanged();
+    }
+  }
+
+  // Process new children and mark them as changed.
+  // Because this changes the child's parent, it must be after code that uses
+  // |child->parent()| such as the above loop.
+  for (auto& child : new_children) {
+    if (child->parent() != this) {
+      child->RemoveFromParent();
+      AddDrawableDescendants(child->NumDescendantsThatDrawContent() +
+                             (child->DrawsContent() ? 1 : 0));
+      child->SetParent(this);
+      child->SetSubtreePropertyChanged();
+    }
+  }
+
+  inputs_.children = std::move(new_children);
+
+  layer_tree_host_->SetNeedsFullTreeSync();
 }
 
 bool Layer::HasAncestor(const Layer* ancestor) const {
@@ -517,6 +577,7 @@ void Layer::SetOpacity(float opacity) {
   bool force_rebuild = opacity == 1.f || inputs_.opacity == 1.f;
   inputs_.opacity = opacity;
   SetSubtreePropertyChanged();
+  // TODO(pdr): This should not be needed when using layer lists.
   if (layer_tree_host_ && !force_rebuild) {
     PropertyTrees* property_trees = layer_tree_host_->property_trees();
     if (EffectNode* node =
@@ -630,6 +691,7 @@ void Layer::SetPosition(const gfx::PointF& position) {
 
   SetSubtreePropertyChanged();
   if (has_transform_node_) {
+    // TODO(pdr): This should not be needed when using layer lists.
     TransformNode* transform_node =
         layer_tree_host_->property_trees()->transform_tree.Node(
             transform_tree_index_);
@@ -671,6 +733,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
   SetSubtreePropertyChanged();
   if (layer_tree_host_) {
     if (has_transform_node_) {
+      // TODO(pdr): This should not be needed when using layer lists.
       TransformNode* transform_node =
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index_);
@@ -706,6 +769,7 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
 
   SetSubtreePropertyChanged();
   if (has_transform_node_) {
+    // TODO(pdr): This should not be needed when using layer lists.
     TransformNode* transform_node =
         layer_tree_host_->property_trees()->transform_tree.Node(
             transform_tree_index_);
@@ -832,12 +896,14 @@ void Layer::SetScrollable(const gfx::Size& bounds) {
   if (!layer_tree_host_)
     return;
 
-  auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
-  auto* scroll_node = scroll_tree.Node(scroll_tree_index_);
-  if (was_scrollable && scroll_node)
-    scroll_node->container_bounds = inputs_.scroll_container_bounds;
-  else
-    SetPropertyTreesNeedRebuild();
+  if (!layer_tree_host_->IsUsingLayerLists()) {
+    auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
+    auto* scroll_node = scroll_tree.Node(scroll_tree_index_);
+    if (was_scrollable && scroll_node)
+      scroll_node->container_bounds = inputs_.scroll_container_bounds;
+    else
+      SetPropertyTreesNeedRebuild();
+  }
 
   SetNeedsCommit();
 }
@@ -852,6 +918,7 @@ void Layer::SetUserScrollable(bool horizontal, bool vertical) {
   if (!layer_tree_host_)
     return;
 
+  // TODO(pdr): This should not be needed when using layer lists.
   if (scrollable()) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_)) {
@@ -1412,8 +1479,7 @@ void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {}
 
 void Layer::SetElementId(ElementId id) {
   DCHECK(IsPropertyChangeAllowed());
-  if ((layer_tree_host_ && layer_tree_host_->IsUsingLayerLists()) ||
-      inputs_.element_id == id)
+  if (inputs_.element_id == id)
     return;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "Layer::SetElementId",
                "element", id.AsValue().release());

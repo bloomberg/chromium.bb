@@ -71,10 +71,16 @@ void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {
 }
 
 void PaintArtifactCompositor::WillBeRemovedFromFrame() {
-  RemoveChildLayers();
+  UnregisterAllElementIds();
+  root_layer_->RemoveAllChildren();
+  if (extra_data_for_testing_enabled_) {
+    extra_data_for_testing_->content_layers.clear();
+    extra_data_for_testing_->synthesized_clip_layers.clear();
+    extra_data_for_testing_->scroll_hit_test_layers.clear();
+  }
 }
 
-void PaintArtifactCompositor::RemoveChildLayers() {
+void PaintArtifactCompositor::UnregisterAllElementIds() {
   // Unregister element ids for all layers. For now we rely on the
   // element id being set on the layer, but we'll be removing that for
   // SPv2 soon. We may also shift to having multiple element ids per
@@ -87,12 +93,6 @@ void PaintArtifactCompositor::RemoveChildLayers() {
     auto element_id = child->element_id();
     if (element_id)
       host->UnregisterElement(element_id, cc::ElementListType::ACTIVE);
-  }
-  root_layer_->RemoveAllChildren();
-  if (extra_data_for_testing_enabled_) {
-    extra_data_for_testing_->content_layers.clear();
-    extra_data_for_testing_->synthesized_clip_layers.clear();
-    extra_data_for_testing_->scroll_hit_test_layers.clear();
   }
 }
 
@@ -677,6 +677,7 @@ class SynthesizedClip : private cc::ContentLayerClient {
   CompositorElementId mask_effect_id_;
 };
 
+// TODO(pdr): There is no test that synthetic clip layers are re-used.
 cc::Layer* PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
     const ClipPaintPropertyNode* node,
     CompositorElementId& mask_isolation_id,
@@ -685,9 +686,10 @@ cc::Layer* PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
       synthesized_clip_cache_.begin(), synthesized_clip_cache_.end(),
       [node](const auto& entry) { return entry.key == node && !entry.in_use; });
   if (entry == synthesized_clip_cache_.end()) {
+    auto clip = std::make_unique<SynthesizedClip>();
+    clip->GetLayer()->SetLayerTreeHost(root_layer_->layer_tree_host());
     entry = synthesized_clip_cache_.insert(
-        entry,
-        SynthesizedClipEntry{node, std::make_unique<SynthesizedClip>(), false});
+        entry, SynthesizedClipEntry{node, std::move(clip), false});
   }
 
   entry->in_use = true;
@@ -716,16 +718,17 @@ void PaintArtifactCompositor::Update(
   DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
          host->GetSettings().use_layer_lists);
 
+  UnregisterAllElementIds();
   if (extra_data_for_testing_enabled_)
     extra_data_for_testing_.reset(new ExtraDataForTesting);
 
-  RemoveChildLayers();
   root_layer_->set_property_tree_sequence_number(
       g_s_property_tree_sequence_number);
 
-  PropertyTreeManager property_tree_manager(*this, *host->property_trees(),
-                                            root_layer_.get(),
-                                            g_s_property_tree_sequence_number);
+  LayerListBuilder layer_list_builder;
+
+  PropertyTreeManager property_tree_manager(
+      *this, *host->property_trees(), root_layer_.get(), &layer_list_builder);
   Vector<PendingLayer, 0> pending_layers;
   CollectPendingLayers(*paint_artifact, pending_layers);
 
@@ -764,6 +767,7 @@ void PaintArtifactCompositor::Update(
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
         paint_artifact, pending_layer, layer_offset, new_content_layer_clients,
         new_scroll_hit_test_layers);
+    layer->SetLayerTreeHost(root_layer_->layer_tree_host());
 
     int transform_id =
         property_tree_manager.EnsureCompositorTransformNode(transform);
@@ -795,7 +799,8 @@ void PaintArtifactCompositor::Update(
       composited_element_ids.insert(element_id);
     }
 
-    root_layer_->AddChild(layer);
+    layer_list_builder.Add(layer);
+
     // TODO(wkorman): Once we've removed all uses of
     // LayerTreeHost::{LayerByElementId,element_layers_map} we can
     // revise element register/unregister to cease passing layer and
@@ -805,7 +810,8 @@ void PaintArtifactCompositor::Update(
                             layer.get());
     }
 
-    layer->set_property_tree_sequence_number(g_s_property_tree_sequence_number);
+    layer->set_property_tree_sequence_number(
+        root_layer_->property_tree_sequence_number());
     layer->SetTransformTreeIndex(transform_id);
     layer->SetScrollTreeIndex(scroll_id);
     layer->SetClipTreeIndex(clip_id);
@@ -833,6 +839,8 @@ void PaintArtifactCompositor::Update(
     }
   }
 
+  root_layer_->SetChildLayerList(layer_list_builder.Finalize());
+
   // Mark the property trees as having been rebuilt.
   host->property_trees()->sequence_number = g_s_property_tree_sequence_number;
   host->property_trees()->needs_rebuild = false;
@@ -853,6 +861,17 @@ void PaintArtifactCompositor::Update(
     }
   }
 #endif
+}
+
+void LayerListBuilder::Add(scoped_refptr<cc::Layer> layer) {
+  DCHECK(list_valid_);
+  list_.push_back(layer);
+}
+
+cc::LayerList LayerListBuilder::Finalize() {
+  DCHECK(list_valid_);
+  list_valid_ = false;
+  return std::move(list_);
 }
 
 cc::Layer*

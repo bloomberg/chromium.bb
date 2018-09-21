@@ -485,11 +485,13 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
   // For web contents, layer transforms should scale up the contents of layers
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
-  // BlinkGenPropertyTrees should imply layer lists in the compositor. Some
-  // code across the boundaries makes assumptions based on this so ensure tests
-  // run using this configuration as well.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+  // Both BlinkGenPropertyTrees and SlimmingPaintV2 should imply layer lists in
+  // the compositor. Some code across the boundaries makes assumptions based on
+  // this so ensure tests run using this configuration as well.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     settings.use_layer_lists = true;
+  }
 
   layer_tree_view_ = std::make_unique<content::LayerTreeView>(
       specified_delegate ? specified_delegate : &delegate_,

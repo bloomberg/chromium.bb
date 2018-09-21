@@ -385,6 +385,8 @@ bool GraphicsLayer::PaintWithoutCommit(
 }
 
 void GraphicsLayer::UpdateChildList() {
+  // TODO(pdr): Do not attach cc::Layers when using layer lists.
+
   cc::Layer* child_host = layer_.get();
   child_host->RemoveAllChildren();
 
