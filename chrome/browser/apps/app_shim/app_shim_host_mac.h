@@ -37,6 +37,9 @@ class AppShimHost : public chrome::mojom::AppShimHost,
   void BindToRequest(chrome::mojom::AppShimHostRequest host_request);
   void ChannelError(uint32_t custom_reason, const std::string& description);
 
+  // Closes the channel and destroys the AppShimHost.
+  void Close();
+
   // chrome::mojom::AppShimHost implementation.
   void LaunchApp(chrome::mojom::AppShimPtr app_shim_ptr,
                  const base::FilePath& profile_dir,
@@ -56,9 +59,7 @@ class AppShimHost : public chrome::mojom::AppShimHost,
   void OnAppRequestUserAttention(apps::AppShimAttentionType type) override;
   base::FilePath GetProfilePath() const override;
   std::string GetAppId() const override;
-
-  // Closes the channel and destroys the AppShimHost.
-  void Close();
+  views::BridgeFactoryHost* GetViewsBridgeFactoryHost() const override;
 
   mojo::IsolatedConnection mojo_connection_;
   chrome::mojom::AppShimPtr app_shim_;

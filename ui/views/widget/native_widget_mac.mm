@@ -110,15 +110,13 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   name_ = params.name;
 
-  // Determine the factory through which to create the bridge.
-  // TODO(ccameron): Make widgets inherit their bridge factory from their
-  // parent, or, from the hosting process. At the moment, this path is
-  // unreachable.
+  // Determine the factory through which to create the bridge
   BridgedNativeWidgetHostImpl* parent_host =
       BridgedNativeWidgetHostImpl::GetFromNativeWindow([params.parent window]);
-  BridgeFactoryHost* bridge_factory_host = nullptr;
+  BridgeFactoryHost* bridge_factory_host = GetBridgeFactoryHost();
   if (parent_host)
     bridge_factory_host = parent_host->bridge_factory_host();
+
   if (bridge_factory_host) {
     // Compute the parameters to describe the NSWindow.
     // TODO(ccameron): This is not yet adequate to capture all NSWindow
@@ -629,6 +627,10 @@ NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
                 styleMask:StyleMaskForParams(params)
                   backing:NSBackingStoreBuffered
                     defer:NO] autorelease];
+}
+
+BridgeFactoryHost* NativeWidgetMac::GetBridgeFactoryHost() {
+  return nullptr;
 }
 
 views_bridge_mac::mojom::BridgedNativeWidget* NativeWidgetMac::bridge() const {

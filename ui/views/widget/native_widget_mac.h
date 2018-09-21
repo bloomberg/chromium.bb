@@ -28,6 +28,7 @@ class MockNativeWidgetMac;
 class WidgetTest;
 }
 
+class BridgeFactoryHost;
 class BridgedNativeWidgetImpl;
 class BridgedNativeWidgetHostImpl;
 
@@ -151,6 +152,11 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // lifetime.
   virtual NativeWidgetMacNSWindow* CreateNSWindow(
       const Widget::InitParams& params);
+
+  // Return the BridgeFactoryHost that is to be used for creating this window
+  // and all of its child windows. This will return nullptr if the native
+  // windows are to be created in the current process.
+  virtual BridgeFactoryHost* GetBridgeFactoryHost();
 
   // Optional hook for subclasses invoked by WindowDestroying().
   virtual void OnWindowDestroying(NSWindow* window) {}

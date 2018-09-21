@@ -437,7 +437,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 - (void)applicationWillHide:(NSNotification*)notification {
   if (![self isProfileReady])
     return;
-  apps::ExtensionAppShimHandler::OnChromeWillHide();
+  apps::ExtensionAppShimHandler::Get()->OnChromeWillHide();
 }
 
 - (BOOL)tryToTerminateApplication:(NSApplication*)app {

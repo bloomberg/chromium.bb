@@ -161,6 +161,7 @@ class MockAppShimHost : public apps::AppShimHandler::Host {
   MOCK_METHOD1(OnAppRequestUserAttention, void(apps::AppShimAttentionType));
   MOCK_CONST_METHOD0(GetProfilePath, base::FilePath());
   MOCK_CONST_METHOD0(GetAppId, std::string());
+  MOCK_CONST_METHOD0(GetViewsBridgeFactoryHost, views::BridgeFactoryHost*());
 };
 
 class MockExtensionAppShimHandler : public apps::ExtensionAppShimHandler {

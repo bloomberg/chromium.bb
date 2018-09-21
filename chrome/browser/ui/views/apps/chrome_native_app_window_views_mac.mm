@@ -178,7 +178,7 @@ void ChromeNativeAppWindowViewsMac::Restore() {
 }
 
 void ChromeNativeAppWindowViewsMac::FlashFrame(bool flash) {
-  apps::ExtensionAppShimHandler::RequestUserAttentionForWindow(
+  apps::ExtensionAppShimHandler::Get()->RequestUserAttentionForWindow(
       app_window(), flash ? apps::APP_SHIM_ATTENTION_CRITICAL
                           : apps::APP_SHIM_ATTENTION_CANCEL);
 }
@@ -201,7 +201,7 @@ void ChromeNativeAppWindowViewsMac::HideWithApp() {
 
 void ChromeNativeAppWindowViewsMac::UnhideWithoutActivation() {
   if (is_hidden_with_app_) {
-    apps::ExtensionAppShimHandler::UnhideWithoutActivationForWindow(
+    apps::ExtensionAppShimHandler::Get()->UnhideWithoutActivationForWindow(
         app_window());
     is_hidden_with_app_ = false;
   }
