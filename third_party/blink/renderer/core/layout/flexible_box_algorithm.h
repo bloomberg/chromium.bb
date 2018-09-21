@@ -44,6 +44,7 @@
 
 namespace blink {
 
+class FlexItem;
 class FlexLayoutAlgorithm;
 class LayoutBox;
 struct MinMaxSize;
@@ -59,6 +60,8 @@ enum class TransformedWritingMode {
   kLeftToRightWritingMode,
   kBottomToTopWritingMode
 };
+
+typedef Vector<FlexItem, 8> FlexItemVector;
 
 class FlexItem {
  public:
@@ -129,11 +132,35 @@ class FlexItem {
   scoped_refptr<NGLayoutResult> layout_result;
 };
 
+class FlexItemVectorView {
+ public:
+  FlexItemVectorView(FlexItemVector* flex_vector,
+                     wtf_size_t start,
+                     wtf_size_t end)
+      : vector_(flex_vector), start_(start), end_(end) {
+    DCHECK_LT(start_, end_);
+    DCHECK_LE(end_, vector_->size());
+  }
+
+  wtf_size_t size() const { return end_ - start_; }
+  FlexItem& operator[](wtf_size_t i) { return vector_->at(start_ + i); }
+  const FlexItem& operator[](wtf_size_t i) const {
+    return vector_->at(start_ + i);
+  }
+
+ private:
+  FlexItemVector* vector_;
+  wtf_size_t start_;
+  wtf_size_t end_;
+};
+
 class FlexLine {
  public:
+  typedef Vector<FlexItem*, 8> ViolationsVector;
+
   // This will std::move the passed-in line_items.
   FlexLine(FlexLayoutAlgorithm* algorithm,
-           Vector<FlexItem>& line_items,
+           FlexItemVectorView line_items,
            LayoutUnit container_logical_width,
            LayoutUnit sum_flex_base_size,
            double total_flex_grow,
@@ -162,7 +189,7 @@ class FlexLine {
   void FreezeInflexibleItems();
 
   // This modifies remaining_free_space.
-  void FreezeViolations(Vector<FlexItem*>& violations);
+  void FreezeViolations(ViolationsVector& violations);
 
   // Should be called in a loop until it returns false.
   // This modifies remaining_free_space.
@@ -183,7 +210,7 @@ class FlexLine {
                                 LayoutUnit& cross_axis_offset);
 
   FlexLayoutAlgorithm* algorithm;
-  Vector<FlexItem> line_items;
+  FlexItemVectorView line_items;
   const LayoutUnit container_logical_width;
   const LayoutUnit sum_flex_base_size;
   double total_flex_grow;
@@ -216,7 +243,7 @@ class FlexLine {
 //   https://drafts.csswg.org/css-flexbox/
 //
 // Expected usage is as follows:
-//    Vector<FlexItem> flex_items;
+//    FlexItemVector flex_items;
 //    for (each child) {
 //       flex_items.emplace_back(...caller must compute these values...)
 //     }
@@ -239,7 +266,7 @@ class FlexLayoutAlgorithm {
  public:
   FlexLayoutAlgorithm(const ComputedStyle*,
                       LayoutUnit line_break_length,
-                      Vector<FlexItem>& all_items);
+                      FlexItemVector& all_items);
 
   const ComputedStyle* Style() const { return style_; }
   const ComputedStyle& StyleRef() const { return *style_; }
@@ -278,7 +305,7 @@ class FlexLayoutAlgorithm {
 
   const ComputedStyle* style_;
   const LayoutUnit line_break_length_;
-  Vector<FlexItem>& all_items_;
+  FlexItemVector& all_items_;
   Vector<FlexLine> flex_lines_;
   size_t next_item_index_;
   DISALLOW_COPY_AND_ASSIGN(FlexLayoutAlgorithm);

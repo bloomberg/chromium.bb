@@ -818,7 +818,7 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
   // TODO(cbiesinger): That second part is not yet true.
   ChildLayoutType layout_type =
       relayout_children ? kForceLayout : kLayoutIfNeeded;
-  Vector<FlexItem> all_items;
+  FlexItemVector all_items;
   order_iterator_.First();
   for (LayoutBox* child = order_iterator_.CurrentChild(); child;
        child = order_iterator_.Next()) {
@@ -1449,7 +1449,7 @@ void LayoutFlexibleBox::ApplyLineItemsPosition(FlexLine* current_line) {
   }
 }
 
-void LayoutFlexibleBox::LayoutColumnReverse(Vector<FlexItem>& children,
+void LayoutFlexibleBox::LayoutColumnReverse(FlexItemVectorView& children,
                                             LayoutUnit cross_axis_offset,
                                             LayoutUnit available_free_space) {
   const StyleContentAlignmentData justify_content =
