@@ -152,6 +152,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       DocumentLoader*,
       WebNavigationType,
       NavigationPolicy,
+      bool has_transient_activation,
       bool should_replace_current_entry,
       bool is_client_redirect,
       WebTriggeringEventInfo,

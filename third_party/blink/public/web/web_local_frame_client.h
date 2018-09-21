@@ -341,6 +341,7 @@ class BLINK_EXPORT WebLocalFrameClient {
     WebURLRequest& url_request;
     WebNavigationType navigation_type;
     WebNavigationPolicy default_policy;
+    bool has_user_gesture;
     bool replaces_current_history_item;
     bool is_history_navigation_in_new_child_frame;
     bool is_client_redirect;
@@ -362,6 +363,7 @@ class BLINK_EXPORT WebLocalFrameClient {
         : url_request(url_request),
           navigation_type(kWebNavigationTypeOther),
           default_policy(kWebNavigationPolicyIgnore),
+          has_user_gesture(false),
           replaces_current_history_item(false),
           is_history_navigation_in_new_child_frame(false),
           is_client_redirect(false),

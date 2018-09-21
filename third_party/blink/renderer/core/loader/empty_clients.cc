@@ -103,6 +103,7 @@ NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
     NavigationPolicy,
     bool,
     bool,
+    bool,
     WebTriggeringEventInfo,
     HTMLFormElement*,
     ContentSecurityPolicyDisposition,

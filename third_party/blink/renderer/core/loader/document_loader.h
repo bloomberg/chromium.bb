@@ -234,6 +234,7 @@ class CORE_EXPORT DocumentLoader
   void LoadFailed(const ResourceError&);
 
   void SetUserActivated();
+  void SetHadTransientUserActivation();
 
   const AtomicString& RequiredCSP();
 

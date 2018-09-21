@@ -117,6 +117,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       DocumentLoader*,
       WebNavigationType,
       NavigationPolicy,
+      bool has_transient_activation,
       bool should_replace_current_entry,
       bool is_client_redirect,
       WebTriggeringEventInfo,
