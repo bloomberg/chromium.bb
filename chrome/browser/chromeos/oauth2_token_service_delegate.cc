@@ -13,9 +13,33 @@
 #include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "content/public/browser/network_service_instance.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
+#include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
+
+namespace {
+
+// Values used from |MutableProfileOAuth2TokenServiceDelegate|.
+const net::BackoffEntry::Policy kBackoffPolicy = {
+    0 /* int num_errors_to_ignore */,
+
+    1000 /* int initial_delay_ms */,
+
+    2.0 /* double multiply_factor */,
+
+    0.2 /* double jitter_factor */,
+
+    15 * 60 * 1000 /* int64_t maximum_backoff_ms */,
+
+    -1 /* int64_t entry_lifetime_ms */,
+
+    false /* bool always_use_initial_delay */,
+};
+
+}  // namespace
 
 class ChromeOSOAuth2TokenServiceDelegate::AccountErrorStatus
     : public SigninErrorController::AuthStatusProvider {
@@ -64,10 +88,15 @@ ChromeOSOAuth2TokenServiceDelegate::ChromeOSOAuth2TokenServiceDelegate(
           std::make_unique<AccountMapperUtil>(account_tracker_service)),
       account_manager_(account_manager),
       signin_error_controller_(signin_error_controller),
-      weak_factory_(this) {}
+      backoff_entry_(&kBackoffPolicy),
+      backoff_error_(GoogleServiceAuthError::NONE),
+      weak_factory_(this) {
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
+}
 
 ChromeOSOAuth2TokenServiceDelegate::~ChromeOSOAuth2TokenServiceDelegate() {
   account_manager_->RemoveObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 }
 
 OAuth2AccessTokenFetcher*
@@ -79,6 +108,25 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
   DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
 
   ValidateAccountId(account_id);
+
+  // Check if we need to reject the request.
+  // We will reject the request if we are facing a persistent error for this
+  // account.
+  auto it = errors_.find(account_id);
+  if (it != errors_.end() && it->second->GetAuthStatus().IsPersistentError()) {
+    VLOG(1) << "Request for token has been rejected due to persistent error #"
+            << it->second->GetAuthStatus().state();
+    // |OAuth2TokenService| will manage the lifetime of this pointer.
+    return new OAuth2AccessTokenFetcherImmediateError(
+        consumer, it->second->GetAuthStatus());
+  }
+  // Or when we need to backoff.
+  if (backoff_entry_.ShouldRejectRequest()) {
+    VLOG(1) << "Request for token has been rejected due to backoff rules from"
+            << " previous error #" << backoff_error_.state();
+    // |OAuth2TokenService| will manage the lifetime of this pointer.
+    return new OAuth2AccessTokenFetcherImmediateError(consumer, backoff_error_);
+  }
 
   const AccountManager::AccountKey& account_key =
       account_mapper_util_->OAuthAccountIdToAccountKey(account_id);
@@ -104,8 +152,10 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateAuthError(
     const GoogleServiceAuthError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(sinhak): Implement a backoff policy.
+  backoff_entry_.InformOfRequest(!error.IsTransientError());
+  ValidateAccountId(account_id);
   if (error.IsTransientError()) {
+    backoff_error_ = error;
     return;
   }
 
@@ -284,6 +334,16 @@ void ChromeOSOAuth2TokenServiceDelegate::RevokeCredentials(
 void ChromeOSOAuth2TokenServiceDelegate::RevokeAllCredentials() {
   // Signing out of Chrome is not possible on Chrome OS.
   NOTREACHED();
+}
+
+const net::BackoffEntry* ChromeOSOAuth2TokenServiceDelegate::BackoffEntry()
+    const {
+  return &backoff_entry_;
+}
+
+void ChromeOSOAuth2TokenServiceDelegate::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  backoff_entry_.Reset();
 }
 
 }  // namespace chromeos
