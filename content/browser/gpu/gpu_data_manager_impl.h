@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/process/kill.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -159,7 +160,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   ~GpuDataManagerImpl() override;
 
   mutable base::Lock lock_;
-  std::unique_ptr<GpuDataManagerImplPrivate> private_;
+  std::unique_ptr<GpuDataManagerImplPrivate> private_ GUARDED_BY(lock_)
+      PT_GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);
 };

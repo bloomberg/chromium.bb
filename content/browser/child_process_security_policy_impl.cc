@@ -1015,20 +1015,28 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
     return false;
   }
 
-  FileSystemPermissionPolicyMap::iterator found =
-      file_system_policy_map_.find(filesystem_url.type());
-  if (found == file_system_policy_map_.end())
-    return false;
+  int found_permissions = 0;
+  {
+    base::AutoLock lock(lock_);
+    FileSystemPermissionPolicyMap::iterator found =
+        file_system_policy_map_.find(filesystem_url.type());
+    if (found == file_system_policy_map_.end())
+      return false;
+    found_permissions = found->second;
+  }
 
-  if ((found->second & storage::FILE_PERMISSION_READ_ONLY) &&
+  if ((found_permissions & storage::FILE_PERMISSION_READ_ONLY) &&
       permissions & ~READ_FILE_GRANT) {
     return false;
   }
 
-  if (found->second & storage::FILE_PERMISSION_USE_FILE_PERMISSION)
+  // Note that HasPermissionsForFile (called below) will internally acquire the
+  // |lock_|, therefore the |lock_| has to be released before the call (since
+  // base::Lock is not reentrant).
+  if (found_permissions & storage::FILE_PERMISSION_USE_FILE_PERMISSION)
     return HasPermissionsForFile(child_id, filesystem_url.path(), permissions);
 
-  if (found->second & storage::FILE_PERMISSION_SANDBOX)
+  if (found_permissions & storage::FILE_PERMISSION_SANDBOX)
     return true;
 
   return false;

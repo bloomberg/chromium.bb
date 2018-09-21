@@ -84,8 +84,14 @@ class GpuDataManagerImplPrivateTest : public testing::Test {
     ScopedGpuDataManagerImplPrivate() { EXPECT_TRUE(impl_.private_.get()); }
     ~ScopedGpuDataManagerImplPrivate() = default;
 
-    GpuDataManagerImplPrivate* get() { return impl_.private_.get(); }
-    GpuDataManagerImplPrivate* operator->() { return impl_.private_.get(); }
+    // NO_THREAD_SAFETY_ANALYSIS should be fine below, because unit tests
+    // pinky-promise to only run single-threaded.
+    GpuDataManagerImplPrivate* get() NO_THREAD_SAFETY_ANALYSIS {
+      return impl_.private_.get();
+    }
+    GpuDataManagerImplPrivate* operator->() NO_THREAD_SAFETY_ANALYSIS {
+      return impl_.private_.get();
+    }
 
    private:
     GpuDataManagerImpl impl_;
