@@ -298,7 +298,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
   DISALLOW_COPY_AND_ASSIGN(DownloadNotificationTest);
 };
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DISABLED_DownloadFile) {
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   CreateDownload();
 
   EXPECT_EQ(l10n_util::GetStringFUTF16(
@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DISABLED_DownloadImageFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DISABLED_CloseNotificationAfterDownload) {
+                       CloseNotificationAfterDownload) {
   CreateDownload();
 
   CompleteTheDownload();
@@ -452,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DISABLED_CloseNotificationWhileDownloading) {
+                       CloseNotificationWhileDownloading) {
   CreateDownload();
 
   CloseNotification();
@@ -464,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_TRUE(notification());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DISABLED_InterruptDownload) {
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, InterruptDownload) {
   CreateDownload();
 
   InterruptTheDownload();
@@ -487,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DISABLED_InterruptDownload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DISABLED_InterruptDownloadAfterClosingNotification) {
+                       InterruptDownloadAfterClosingNotification) {
   CreateDownload();
 
   CloseNotification();
@@ -511,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   ASSERT_TRUE(notification());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DISABLED_DownloadRemoved) {
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadRemoved) {
   CreateDownload();
 
   EXPECT_TRUE(notification());
@@ -524,8 +524,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DISABLED_DownloadRemoved) {
   EXPECT_EQ(0u, downloads.size());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DISABLED_DownloadMultipleFiles) {
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
   GURL url1(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
   GURL url2(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
 
@@ -617,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DISABLED_DownloadMultipleFilesOneByOne) {
+                       DownloadMultipleFilesOneByOne) {
   CreateDownload();
   download::DownloadItem* first_download_item = download_item();
   std::string first_notification_id = notification_id();
@@ -659,7 +658,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_EQ(2u, GetDownloadNotifications().size());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DISABLED_CancelDownload) {
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, CancelDownload) {
   CreateDownload();
 
   // Cancels the notification by clicking the "cancel" button.
@@ -676,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DISABLED_CancelDownload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DISABLED_DownloadCancelledByUserExternally) {
+                       DownloadCancelledByUserExternally) {
   CreateDownload();
 
   // Cancels the notification through the DownloadItem.
@@ -691,8 +690,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_EQ(download::DownloadItem::CANCELLED, downloads[0]->GetState());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DISABLED_IncognitoDownloadFile) {
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
   PrepareIncognitoBrowser();
 
   // Starts an incognito download.
@@ -737,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DISABLED_SimultaneousIncognitoAndNormalDownloads) {
+                       SimultaneousIncognitoAndNormalDownloads) {
   PrepareIncognitoBrowser();
 
   GURL url_incognito(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
@@ -902,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
-                       DISABLED_DownloadMultipleFiles) {
+                       DownloadMultipleFiles) {
   AddAllUsers();
 
   GURL url(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);

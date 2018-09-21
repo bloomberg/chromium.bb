@@ -580,7 +580,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
-                       DISABLED_DownloadNavigationDoesNotUnlock) {
+                       DownloadNavigationDoesNotUnlock) {
   ASSERT_NO_FATAL_FAILURE(StartFullscreenLockPage());
   ASSERT_TRUE(DisablePreventDefaultOnTestPage());
 
