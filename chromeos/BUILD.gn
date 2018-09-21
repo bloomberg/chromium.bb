@@ -766,14 +766,15 @@ if (is_chromeos_chrome) {
   # The sanity test's actual binary is baked into the vm image. All we need to
   # do is build the test wrapper and build our own browser to push to the VM
   # before testing it.
-  generate_vm_runner_script("cros_vm_sanity_test_wrapper") {
-    test_exe = "$root_out_dir/cros_vm_sanity_test"
+  generate_vm_runner_script("cros_vm_sanity_test") {
+    testonly = true
+    test_exe = "cros_vm_sanity_test"
     generated_script = "$root_build_dir/bin/run_cros_vm_sanity_test"
 
-    # The sanity test needs to strip down Chrome and its deps to fit it into
-    # the VM. It does so by using binutils in the toolchain. So signal that we
-    # need the toolchain in the data.
-    need_toolchain = true
+    data_deps = [
+      ":cros_chrome_deploy",
+      "//:chromiumos_preflight",  # Builds the browser.
+    ]
   }
 
   group("cros_chrome_deploy") {
@@ -793,16 +794,6 @@ if (is_chromeos_chrome) {
     # declare it as a dep instead of adding the dir directly.
     data = [
       "$root_out_dir/resources/chromeos/",
-    ]
-  }
-
-  group("cros_vm_sanity_test") {
-    testonly = true
-    write_runtime_deps = "$root_out_dir/cros_vm_sanity_test.runtime_deps"
-    data_deps = [
-      ":cros_chrome_deploy",
-      "//:chromiumos_preflight",  # Builds the browser.
-      ":cros_vm_sanity_test_wrapper",  # Builds the test wrapper.
     ]
   }
 }
