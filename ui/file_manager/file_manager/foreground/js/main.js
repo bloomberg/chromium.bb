@@ -8,13 +8,6 @@
 var fileManager;
 
 /**
- * Indicates if the DOM and scripts have been already loaded.
- * TODO(noel): is this variable used anywhere?
- * @type {boolean}
- */
-var pageLoaded = false;
-
-/**
  * Initializes the File Manager UI and starts the File Manager dialog. Called
  * by main.html after the DOM and all scripts have been loaded.
  * @param event DOMContentLoaded event.
