@@ -8,6 +8,10 @@ general use and is not localized.
 -->
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="sorted_table_behavior.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<script src="chrome://resources/js/cr.js"></script>
+
 <dom-module id="database-tab">
   <template>
     <style>
@@ -35,21 +39,40 @@ general use and is not localized.
         display: flex;
         justify-content: flex-start;
       }
+
+      table th[data-sort-key] {
+        cursor: pointer;
+      }
+
+      th div.header-cell-container::after {
+        content: '▲';
+        opacity: 0;
+      }
+
+      th.sort-column div.header-cell-container::after {
+        content: '▲';
+        opacity: 1;
+      }
+
+      th.sort-column-reverse div.header-cell-container::after {
+        content: '▼';
+        opacity: 1;
+      }
     </style>
     <table>
       <thead>
         <tr>
-          <th>
+          <th data-sort-key="origin" class="sort-column" on-click="onSortClick">
             <div class="header-cell-container">
               Origin
             </div>
           </th>
-          <th>
+          <th data-sort-key="dirty" on-click="onSortClick">
             <div class="header-cell-container">
               Dirty
             </div>
           </th>
-          <th>
+          <th data-sort-key="lastLoaded" on-click="onSortClick">
             <div class="header-cell-container">
               Last Loaded
             </div>
@@ -86,37 +109,38 @@ general use and is not localized.
               </div>
             </div>
           </th>
-          <th>
+          <th data-sort-key="cpuUsage" on-click="onSortClick">
             <div class="header-cell-container">
               <div>
-                <div>Average CPU usage</div>
-                <div>(microseconds)</div>
+                <div>Average</div>
+                <div>CPU Usage</div>
               </div>
             </div>
           </th>
-          <th>
+          <th data-sort-key="memoryUsage" on-click="onSortClick">
             <div class="header-cell-container">
               <div>
                 <div>Average Memory</div>
-                <div>Footprint (kb)</div>
+                <div>Footprint</div>
               </div>
             </div>
           </th>
-          <th>
+          <th data-sort-key="loadDuration" on-click="onSortClick">
             <div class="header-cell-container">
               <div>
                 <div>Average Load</div>
-                <div>Time (us)</div>
-              </div>
+                <div>Time</div>
+            </div>
             </div>
           </th>
         </tr>
       </thead>
       <tbody>
-        <template is="dom-repeat" sort="compareRows_" items="[[rows_]]">
+        <template is="dom-repeat" items="[[rows_]]"
+            sort="[[computeSortFunction_(sortKey, sortReverse)]]">
           <tr>
             <td class="origin-cell">[[item.origin]]</td>
-            <td class="dirty-cell">[[boolToString_(item.dirty)]]</td>
+            <td class="dirty-cell">[[boolToString_(item.isDirty)]]</td>
             <td>[[lastUseToString_(item.value.lastLoaded)]]</td>
             <td>[[featureToString_(item.value.updatesFaviconInBackground)]]</td>
             <td>[[featureToString_(item.value.updatesTitleInBackground)]]</td>

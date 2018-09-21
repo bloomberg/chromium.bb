@@ -367,10 +367,15 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
                           IDR_DISCARDS_DISCARDS_MAIN_HTML);
   source->AddResourcePath("discards_main.js", IDR_DISCARDS_DISCARDS_MAIN_JS);
 
-  source->AddResourcePath("discards_tab.js", IDR_DISCARDS_DISCARDS_TAB_JS);
-  source->AddResourcePath("discards_tab.html", IDR_DISCARDS_DISCARDS_TAB_HTML);
-  source->AddResourcePath("database_tab.js", IDR_DISCARDS_DATABASE_TAB_JS);
   source->AddResourcePath("database_tab.html", IDR_DISCARDS_DATABASE_TAB_HTML);
+  source->AddResourcePath("database_tab.js", IDR_DISCARDS_DATABASE_TAB_JS);
+  source->AddResourcePath("discards_tab.html", IDR_DISCARDS_DISCARDS_TAB_HTML);
+  source->AddResourcePath("discards_tab.js", IDR_DISCARDS_DISCARDS_TAB_JS);
+  source->AddResourcePath("sorted_table_behavior.html",
+                          IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_HTML);
+  source->AddResourcePath("sorted_table_behavior.js",
+                          IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS);
+
   // Full paths (relative to src) are important for Mojom generated files.
   source->AddResourcePath("chrome/browser/ui/webui/discards/discards.mojom.js",
                           IDR_DISCARDS_MOJO_JS);
