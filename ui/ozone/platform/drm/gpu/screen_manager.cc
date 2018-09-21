@@ -30,19 +30,19 @@ namespace ui {
 namespace {
 
 // Copies the contents of the saved framebuffer from the CRTCs in |controller|
-// to the new modeset buffer |buffer|.
-void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
+// to the surface for the new modeset buffer |surface|.
+bool FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
                        HardwareDisplayController* controller,
-                       GbmBuffer* buffer) {
+                       SkSurface* surface,
+                       uint32_t fourcc_format) {
   DCHECK(!controller->crtc_controllers().empty());
   CrtcController* first_crtc = controller->crtc_controllers()[0].get();
   ScopedDrmCrtcPtr saved_crtc(drm->GetCrtc(first_crtc->crtc()));
   if (!saved_crtc || !saved_crtc->buffer_id) {
     VLOG(2) << "Crtc has no saved state or wasn't modeset";
-    return;
+    return false;
   }
 
-  uint32_t fourcc_format = buffer->GetFormat();
   const auto& modifiers = controller->GetFormatModifiers(fourcc_format);
   for (const uint64_t modifier : modifiers) {
     // A value of 0 means DRM_FORMAT_MOD_NONE. If the CRTC has any other
@@ -51,7 +51,7 @@ void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
     if (modifier) {
       VLOG(2) << "Crtc has a modifier and we might not know how to interpret "
                  "the fb.";
-      return;
+      return false;
     }
   }
 
@@ -60,26 +60,22 @@ void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
   DrmConsoleBuffer saved_buffer(drm, saved_crtc->buffer_id);
   if (!saved_buffer.Initialize()) {
     VLOG(2) << "Failed to grab saved framebuffer " << saved_crtc->buffer_id;
-    return;
+    return false;
   }
 
   // Don't copy anything if the sizes mismatch. This can happen when the user
   // changes modes.
   if (saved_buffer.canvas()->getBaseLayerSize() !=
-      SizeToSkISize(buffer->GetSize())) {
+      surface->getCanvas()->getBaseLayerSize()) {
     VLOG(2) << "Previous buffer has a different size than modeset buffer";
-    return;
+    return false;
   }
 
-  sk_sp<SkSurface> surface = buffer->GetSurface();
-  if (!surface) {
-    VLOG(2) << "Can't get a SkSurface from the modeset gbm buffer.";
-    return;
-  }
   SkPaint paint;
   // Copy the source buffer. Do not perform any blending.
   paint.setBlendMode(SkBlendMode::kSrc);
   surface->getCanvas()->drawImage(saved_buffer.image(), 0, 0, &paint);
+  return true;
 }
 
 CrtcController* GetCrtcController(HardwareDisplayController* controller,
@@ -400,7 +396,16 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
     LOG(ERROR) << "Failed to add framebuffer for scanout buffer";
     return DrmOverlayPlane::Error();
   }
-  FillModesetBuffer(drm, controller, buffer.get());
+
+  sk_sp<SkSurface> surface = buffer->GetSurface();
+  if (!surface) {
+    VLOG(2) << "Can't get a SkSurface from the modeset gbm buffer.";
+  } else if (!FillModesetBuffer(drm, controller, surface.get(),
+                                buffer->GetFormat())) {
+    // If we fail to fill the modeset buffer, clear it black to avoid displaying
+    // an uninitialized framebuffer.
+    surface->getCanvas()->clear(SK_ColorBLACK);
+  }
   return DrmOverlayPlane(framebuffer, nullptr);
 }
 
