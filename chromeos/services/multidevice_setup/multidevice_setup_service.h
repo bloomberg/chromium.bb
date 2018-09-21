@@ -30,6 +30,7 @@ class AndroidSmsAppHelperDelegate;
 class AndroidSmsPairingStateTracker;
 class AuthTokenValidator;
 class MultiDeviceSetupBase;
+class PrivilegedHostDeviceSetterBase;
 
 // Service which provides an implementation for mojom::MultiDeviceSetup. This
 // service creates one implementation and shares it among all connection
@@ -57,6 +58,8 @@ class MultiDeviceSetupService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   std::unique_ptr<MultiDeviceSetupBase> multidevice_setup_;
+  std::unique_ptr<PrivilegedHostDeviceSetterBase>
+      privileged_host_device_setter_;
 
   service_manager::BinderRegistry registry_;
 

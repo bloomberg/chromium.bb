@@ -118,8 +118,8 @@ interface FeatureStateObserver {
 };
 
 // Provides an API to the MultiDevice Setup flow. Designed to be exposed
-// primarily to the MultiDevice setup flow at chrome://multidevice-setup (normal
-// usage) as well as the ProximityAuth debug WebUI page at
+// primarily to the MultiDevice setup flow at chrome://multidevice-setup and
+// chrome://oobe (normal usage) as well as the ProximityAuth debug WebUI page at
 // chrome://proximity-auth (debugging only).
 interface MultiDeviceSetup {
   // Registers the "account status change" delegate to be used by the service.
@@ -193,4 +193,13 @@ interface MultiDeviceSetup {
   // intended to be used only for debugging in the chrome://proximity-auth page.
   // During normal usage, events are triggered internally within the service.
   TriggerEventForDebugging(EventTypeForDebugging type) => (bool success);
+};
+
+// Provides an API for setting a MultiDevice host without the need to provide an
+// auth token. This interface should only be used in circumstances when the user
+// has just entered their password.
+interface PrivilegedHostDeviceSetter {
+  // Same functionality as MultiDeviceSetup's SetHostDevice() function above,
+  // except that no auth token is required.
+  SetHostDevice(string device_id) => (bool success);
 };
