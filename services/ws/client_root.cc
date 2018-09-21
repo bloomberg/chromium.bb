@@ -159,6 +159,9 @@ void ClientRoot::OnWindowAddedToRootWindow(aura::Window* window) {
   DCHECK(window->GetHost());
   window->GetHost()->AddObserver(this);
   CheckForScaleFactorChange();
+  window_tree_->window_tree_client_->OnWindowDisplayChanged(
+      window_tree_->TransportIdForWindow(window),
+      window->GetHost()->GetDisplayId());
 }
 
 void ClientRoot::OnWindowRemovingFromRootWindow(aura::Window* window,

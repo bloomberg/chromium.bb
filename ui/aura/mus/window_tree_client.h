@@ -416,6 +416,7 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowOpacityChanged(ws::Id window_id,
                               float old_opacity,
                               float new_opacity) override;
+  void OnWindowDisplayChanged(ws::Id window_id, int64_t display_id) override;
   void OnWindowParentDrawnStateChanged(ws::Id window_id, bool drawn) override;
   void OnWindowSharedPropertyChanged(
       ws::Id window_id,

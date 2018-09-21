@@ -145,6 +145,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowOpacityChanged(Id window,
                               float old_opacity,
                               float new_opacity) override;
+  void OnWindowDisplayChanged(Id window_id, int64_t display_id) override;
   void OnWindowParentDrawnStateChanged(Id window, bool drawn) override;
   void OnWindowInputEvent(uint32_t event_id,
                           Id window_id,

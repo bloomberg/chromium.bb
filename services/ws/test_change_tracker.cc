@@ -160,6 +160,11 @@ std::string ChangeToDescription(const Change& change,
     case CHANGE_TYPE_TRANSFORM_CHANGED:
       return base::StringPrintf("TransformChanged window_id=%s",
                                 WindowIdToString(change.window_id).c_str());
+    case CHANGE_TYPE_DISPLAY_CHANGED:
+      return base::StringPrintf(
+          "DisplayChanged window_id=%s display_id=%s",
+          WindowIdToString(change.window_id).c_str(),
+          base::NumberToString(change.display_id).c_str());
     case CHANGE_TYPE_DRAG_DROP_START:
       return "DragDropStart";
     case CHANGE_TYPE_DRAG_ENTER:
@@ -424,6 +429,15 @@ void TestChangeTracker::OnWindowOpacityChanged(Id window_id, float opacity) {
   change.type = CHANGE_TYPE_OPACITY;
   change.window_id = window_id;
   change.float_value = opacity;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnWindowDisplayChanged(Id window_id,
+                                               int64_t display_id) {
+  Change change;
+  change.type = CHANGE_TYPE_DISPLAY_CHANGED;
+  change.window_id = window_id;
+  change.display_id = display_id;
   AddChange(change);
 }
 

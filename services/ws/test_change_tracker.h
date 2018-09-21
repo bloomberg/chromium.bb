@@ -47,6 +47,7 @@ enum ChangeType {
   CHANGE_TYPE_REQUEST_CLOSE,
   CHANGE_TYPE_SURFACE_CHANGED,
   CHANGE_TYPE_TRANSFORM_CHANGED,
+  CHANGE_TYPE_DISPLAY_CHANGED,
   CHANGE_TYPE_DRAG_DROP_START,
   CHANGE_TYPE_DRAG_ENTER,
   CHANGE_TYPE_DRAG_OVER,
@@ -200,6 +201,7 @@ class TestChangeTracker {
   void OnWindowDeleted(Id window_id);
   void OnWindowVisibilityChanged(Id window_id, bool visible);
   void OnWindowOpacityChanged(Id window_id, float opacity);
+  void OnWindowDisplayChanged(Id window_id, int64_t display_id);
   void OnWindowParentDrawnStateChanged(Id window_id, bool drawn);
   void OnWindowInputEvent(Id window_id,
                           const ui::Event& event,
