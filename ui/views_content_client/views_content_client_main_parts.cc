@@ -12,6 +12,7 @@
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
+#include "ui/views_content_client/views_content_client.h"
 
 namespace ui {
 
@@ -44,6 +45,7 @@ void ViewsContentClientMainParts::PostMainMessageLoopRun() {
 
 bool ViewsContentClientMainParts::MainMessageLoopRun(int* result_code) {
   base::RunLoop run_loop;
+  views_content_client_->set_quit_closure(run_loop.QuitClosure());
   run_loop.Run();
   return true;
 }
