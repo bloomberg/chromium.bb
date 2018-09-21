@@ -190,6 +190,18 @@ EncryptionSchemeUMA DetermineEncryptionSchemeUMAValue(
   return EncryptionSchemeUMA::kCenc;
 }
 
+EncryptionMode DetermineEncryptionMode(
+    const EncryptionScheme& encryption_scheme) {
+  switch (encryption_scheme.mode()) {
+    case EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
+      return EncryptionMode::kUnencrypted;
+    case EncryptionScheme::CIPHER_MODE_AES_CTR:
+      return EncryptionMode::kCenc;
+    case EncryptionScheme::CIPHER_MODE_AES_CBC:
+      return EncryptionMode::kCbcs;
+  }
+}
+
 #if BUILDFLAG(ENABLE_FFMPEG)
 // Returns true if |url| represents (or is likely to) a local file.
 bool IsLocalFile(const GURL& url) {
@@ -2937,7 +2949,12 @@ void WebMediaPlayerImpl::UpdateSecondaryProperties() {
       mojom::SecondaryPlaybackProperties::New(
           pipeline_metadata_.audio_decoder_config.codec(),
           pipeline_metadata_.video_decoder_config.codec(), audio_decoder_name_,
-          video_decoder_name_, pipeline_metadata_.natural_size));
+          video_decoder_name_,
+          DetermineEncryptionMode(
+              pipeline_metadata_.audio_decoder_config.encryption_scheme()),
+          DetermineEncryptionMode(
+              pipeline_metadata_.video_decoder_config.encryption_scheme()),
+          pipeline_metadata_.natural_size));
 }
 
 bool WebMediaPlayerImpl::IsHidden() const {
