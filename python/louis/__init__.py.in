@@ -51,7 +51,7 @@ def _createTypeformbuf(length, typeform=None):
     return (c_ushort*length)(*typeform) if typeform else (c_ushort*length)()
 
 createEncodedByeString = None
-if sys.version_info[0] == 2:
+if sys.version_info.major == 2:
     createEncodedByeString = lambda x: unicode(x).encode(conversionEncoding)
 else: # sys.version_info[0] == 3
     createEncodedByeString = lambda x: str(x).encode(conversionEncoding)
