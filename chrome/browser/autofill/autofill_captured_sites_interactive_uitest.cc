@@ -52,6 +52,13 @@ namespace {
 const base::TimeDelta autofill_wait_for_action_interval =
     base::TimeDelta::FromSeconds(5);
 
+struct GetParamAsString {
+  template <class ParamType>
+  std::string operator()(const testing::TestParamInfo<ParamType>& info) const {
+    return info.param;
+  }
+};
+
 base::FilePath GetReplayFilesDirectory() {
   base::FilePath src_dir;
   if (base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
@@ -247,13 +254,6 @@ IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
   ASSERT_TRUE(
       recipe_replayer()->ReplayTest(capture_file_path, recipe_file_path));
 }
-
-struct GetParamAsString {
-  template <class ParamType>
-  std::string operator()(const testing::TestParamInfo<ParamType>& info) const {
-    return info.param;
-  }
-};
 
 INSTANTIATE_TEST_CASE_P(,
                         AutofillCapturedSitesInteractiveTest,

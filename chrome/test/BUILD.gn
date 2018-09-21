@@ -4844,6 +4844,7 @@ if (!is_android) {
     ldflags = []
 
     deps = [
+      ":captured_sites_interactive_tests",
       ":test_support",
       ":test_support_ui",
       "//chrome:packed_resources",
@@ -5691,7 +5692,7 @@ if (!is_android && !is_fuchsia) {
   }
 
   # Tests autofill on captured websites
-  test("autofill_captured_sites_interactive_tests") {
+  test("captured_sites_interactive_tests") {
     sources = [
       "../browser/autofill/autofill_captured_sites_interactive_uitest.cc",
       "../browser/autofill/autofill_uitest.cc",
@@ -5700,6 +5701,9 @@ if (!is_android && !is_fuchsia) {
       "../browser/autofill/autofill_uitest_util.h",
       "../browser/autofill/captured_sites_test_utils.cc",
       "../browser/autofill/captured_sites_test_utils.h",
+      "../browser/password_manager/password_manager_captured_sites_interactive_uitest.cc",
+      "../browser/password_manager/password_manager_test_base.cc",
+      "../browser/password_manager/password_manager_test_base.h",
       "base/interactive_test_utils.cc",
       "base/interactive_test_utils.h",
       "base/interactive_test_utils_common_views.cc",
