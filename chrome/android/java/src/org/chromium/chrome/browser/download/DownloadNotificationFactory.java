@@ -112,7 +112,6 @@ public final class DownloadNotificationFactory {
                 builder.setOngoing(true)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setAutoCancel(false)
-                        .setLargeIcon(downloadUpdate.getIcon())
                         .addAction(R.drawable.ic_pause_white_24dp,
                                 context.getResources().getString(
                                         R.string.download_notification_pause_button),
@@ -123,6 +122,9 @@ public final class DownloadNotificationFactory {
                                         R.string.download_notification_cancel_button),
                                 buildPendingIntent(
                                         context, cancelIntent, downloadUpdate.getNotificationId()));
+
+                if (!downloadUpdate.getIsOffTheRecord())
+                    builder.setLargeIcon(downloadUpdate.getIcon());
 
                 if (!downloadUpdate.getIsDownloadPending()) {
                     boolean indeterminate = downloadUpdate.getProgress().isIndeterminate();
@@ -161,7 +163,6 @@ public final class DownloadNotificationFactory {
                         DownloadNotificationUmaHelper.StateAtCancel.PAUSED);
 
                 builder.setAutoCancel(false)
-                        .setLargeIcon(downloadUpdate.getIcon())
                         .addAction(R.drawable.ic_file_download_white_24dp,
                                 context.getResources().getString(
                                         R.string.download_notification_resume_button),
@@ -172,6 +173,9 @@ public final class DownloadNotificationFactory {
                                         R.string.download_notification_cancel_button),
                                 buildPendingIntent(
                                         context, cancelIntent, downloadUpdate.getNotificationId()));
+
+                if (!downloadUpdate.getIsOffTheRecord())
+                    builder.setLargeIcon(downloadUpdate.getIcon());
 
                 if (downloadUpdate.getIsTransient()) {
                     builder.setDeleteIntent(buildPendingIntent(
@@ -229,6 +233,12 @@ public final class DownloadNotificationFactory {
                             PendingIntent.getService(context, downloadUpdate.getNotificationId(),
                                     intent, PendingIntent.FLAG_UPDATE_CURRENT));
                 }
+
+                // It's the job of the service to ensure that the default icon is provided when
+                // in incognito mode.
+                if (downloadUpdate.getIcon() != null)
+                    builder.setLargeIcon(downloadUpdate.getIcon());
+
                 break;
             case DownloadNotificationService2.DownloadStatus.FAILED:
                 iconId = android.R.drawable.stat_sys_download_done;
@@ -243,7 +253,11 @@ public final class DownloadNotificationFactory {
         Bundle extras = new Bundle();
         extras.putInt(EXTRA_NOTIFICATION_BUNDLE_ICON_ID, iconId);
 
-        builder.setSmallIcon(iconId).addExtras(extras);
+        if (downloadUpdate.getIsOffTheRecord()) {
+            builder.setSmallIcon(R.drawable.offline_pin).addExtras(extras);
+        } else {
+            builder.setSmallIcon(iconId).addExtras(extras);
+        }
 
         // Context text is shown as title in incognito mode as the file name is not shown.
         if (downloadUpdate.getIsOffTheRecord()) {
@@ -257,7 +271,7 @@ public final class DownloadNotificationFactory {
             builder.setContentTitle(DownloadUtils.getAbbreviatedFileName(
                     downloadUpdate.getFileName(), MAX_FILE_NAME_LENGTH));
         }
-        if (downloadUpdate.getIcon() != null) builder.setLargeIcon(downloadUpdate.getIcon());
+
         if (!downloadUpdate.getIsTransient() && downloadUpdate.getNotificationId() != -1
                 && downloadStatus != DownloadNotificationService2.DownloadStatus.COMPLETED
                 && downloadStatus != DownloadNotificationService2.DownloadStatus.FAILED) {

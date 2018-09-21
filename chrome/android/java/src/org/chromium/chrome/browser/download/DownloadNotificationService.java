@@ -812,7 +812,7 @@ public class DownloadNotificationService extends Service {
                             downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
         builder.setAutoCancel(false);
-        if (icon != null) builder.setLargeIcon(icon);
+        if (icon != null && !isOffTheRecord) builder.setLargeIcon(icon);
 
         Intent pauseIntent = buildActionIntent(
                 ContextUtils.getApplicationContext(), ACTION_DOWNLOAD_PAUSE, id, isOffTheRecord);
@@ -888,7 +888,7 @@ public class DownloadNotificationService extends Service {
         DownloadSharedPreferenceEntry entry =
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(id);
         if (!isResumable) {
-            notifyDownloadFailed(id, fileName, icon);
+            notifyDownloadFailed(id, fileName, isOffTheRecord ? null : icon);
             return;
         }
         // Download is already paused.
@@ -920,7 +920,7 @@ public class DownloadNotificationService extends Service {
                             downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
         builder.setAutoCancel(false);
-        if (icon != null) builder.setLargeIcon(icon);
+        if (icon != null && !isOffTheRecord) builder.setLargeIcon(icon);
 
         Intent resumeIntent = buildActionIntent(
                 ContextUtils.getApplicationContext(), ACTION_DOWNLOAD_RESUME, id, isOffTheRecord);
@@ -1001,7 +1001,7 @@ public class DownloadNotificationService extends Service {
             mDownloadSuccessLargeIcon = getLargeNotificationIcon(bitmap);
         }
         builder.setDeleteIntent(buildSummaryIconIntent(notificationId));
-        builder.setLargeIcon(icon != null ? icon : mDownloadSuccessLargeIcon);
+        builder.setLargeIcon(icon != null && !isOffTheRecord ? icon : mDownloadSuccessLargeIcon);
         updateNotification(notificationId, builder.build(), id, null);
         stopTrackingInProgressDownload(id, true);
         return notificationId;
