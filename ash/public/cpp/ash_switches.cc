@@ -115,6 +115,10 @@ const char kAshTouchHud[] = "ash-touch-hud";
 // instead of displaying an interactive animation.
 const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 
+// If set, tablet-like power button behavior (i.e. tapping the button turns the
+// screen off) is used even if the device is in laptop mode.
+const char kForceTabletPowerButton[] = "force-tablet-power-button";
+
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
 

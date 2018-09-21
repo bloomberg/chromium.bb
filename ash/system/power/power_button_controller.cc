@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
@@ -212,7 +211,7 @@ void PowerButtonController::OnPowerButtonEvent(
     const base::TimeTicks& timestamp) {
   if (down) {
     force_off_on_button_up_ = false;
-    if (in_tablet_mode_) {
+    if (UseTabletBehavior()) {
       force_off_on_button_up_ = true;
 
       // When the system resumes in response to the power button being pressed,
@@ -243,7 +242,7 @@ void PowerButtonController::OnPowerButtonEvent(
       return;
     }
 
-    if (!in_tablet_mode_) {
+    if (!UseTabletBehavior()) {
       StartPowerMenuAnimation();
     } else {
       base::TimeDelta timeout = screen_off_when_power_button_down_
@@ -269,7 +268,7 @@ void PowerButtonController::OnPowerButtonEvent(
     pre_shutdown_timer_.Stop();
 
     const bool menu_was_opened = IsMenuOpened();
-    if (!in_tablet_mode_) {
+    if (!UseTabletBehavior()) {
       // Cancel the menu animation if it's still ongoing when the button is
       // released on a laptop-mode device.
       if (menu_was_opened && !show_menu_animation_done_) {
@@ -453,6 +452,10 @@ void PowerButtonController::OnLockStateEvent(
     lock_button_down_ = false;
 }
 
+bool PowerButtonController::UseTabletBehavior() const {
+  return in_tablet_mode_ || force_tablet_power_button_;
+}
+
 void PowerButtonController::StopTimersAndDismissMenu() {
   pre_shutdown_timer_.Stop();
   power_button_menu_timer_.Stop();
@@ -490,6 +493,7 @@ void PowerButtonController::ProcessCommandLine() {
                      ? ButtonType::LEGACY
                      : ButtonType::NORMAL;
   observe_accelerometer_events_ = cl->HasSwitch(switches::kAshEnableTabletMode);
+  force_tablet_power_button_ = cl->HasSwitch(switches::kForceTabletPowerButton);
 
   ParsePowerButtonPositionSwitch();
 }
