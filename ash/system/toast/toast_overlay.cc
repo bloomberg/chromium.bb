@@ -236,13 +236,6 @@ void ToastOverlay::Show(bool visible) {
 
   ui::LayerAnimator* animator = overlay_widget_->GetLayer()->GetAnimator();
   DCHECK(animator);
-  if (animator->is_animating()) {
-    // Showing during hiding animation doesn't happen since, ToastOverlay should
-    // be one-time-use and not be reused.
-    DCHECK(!visible);
-
-    return;
-  }
 
   base::TimeDelta original_duration = animator->GetTransitionDuration();
   ui::ScopedLayerAnimationSettings animation_settings(animator);
