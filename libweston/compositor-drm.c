@@ -333,7 +333,7 @@ struct drm_backend {
 	bool universal_planes;
 	bool atomic_modeset;
 
-	int use_pixman;
+	bool use_pixman;
 	bool use_pixman_shadow;
 
 	struct udev_input input;

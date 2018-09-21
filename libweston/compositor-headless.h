@@ -40,7 +40,7 @@ struct weston_headless_backend_config {
 	struct weston_backend_config base;
 
 	/** Whether to use the pixman renderer instead of the OpenGL ES renderer. */
-	int use_pixman;
+	bool use_pixman;
 };
 
 #ifdef  __cplusplus
