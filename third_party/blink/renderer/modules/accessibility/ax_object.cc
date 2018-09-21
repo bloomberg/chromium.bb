@@ -704,9 +704,9 @@ bool AXObject::IsCheckable() const {
 // Because an AXMenuListOption (<option>) can
 // have an ARIA role of menuitemcheckbox/menuitemradio
 // yet does not inherit from AXNodeObject
-AccessibilityCheckedState AXObject::CheckedState() const {
+ax::mojom::CheckedState AXObject::CheckedState() const {
   if (!IsCheckable())
-    return kCheckedStateUndefined;
+    return ax::mojom::CheckedState::kNone;
 
   // Try ARIA checked/pressed state
   const ax::mojom::Role role = RoleValue();
@@ -718,20 +718,20 @@ AccessibilityCheckedState AXObject::CheckedState() const {
     if (EqualIgnoringASCIICase(checked_attribute, "mixed")) {
       // Only checkable role that doesn't support mixed is the switch.
       if (role != ax::mojom::Role::kSwitch)
-        return kCheckedStateMixed;
+        return ax::mojom::CheckedState::kMixed;
     }
 
     // Anything other than "false" should be treated as "true".
     return EqualIgnoringASCIICase(checked_attribute, "false")
-               ? kCheckedStateFalse
-               : kCheckedStateTrue;
+               ? ax::mojom::CheckedState::kFalse
+               : ax::mojom::CheckedState::kTrue;
   }
 
   // Native checked state
   if (role != ax::mojom::Role::kToggleButton) {
     const Node* node = this->GetNode();
     if (!node)
-      return kCheckedStateUndefined;
+      return ax::mojom::CheckedState::kNone;
 
     // Expose native checkbox mixed state as accessibility mixed state. However,
     // do not expose native radio mixed state as accessibility mixed state.
@@ -739,15 +739,15 @@ AccessibilityCheckedState AXObject::CheckedState() const {
     // both checked and partially checked, but a native mixed native radio
     // button sinply means no radio buttons have been checked in the group yet.
     if (IsNativeCheckboxInMixedState(node))
-      return kCheckedStateMixed;
+      return ax::mojom::CheckedState::kMixed;
 
     if (IsHTMLInputElement(*node) &&
         ToHTMLInputElement(*node).ShouldAppearChecked()) {
-      return kCheckedStateTrue;
+      return ax::mojom::CheckedState::kTrue;
     }
   }
 
-  return kCheckedStateFalse;
+  return ax::mojom::CheckedState::kFalse;
 }
 
 bool AXObject::IsNativeCheckboxInMixedState(const Node* node) {
@@ -1404,12 +1404,12 @@ String AXObject::CollapseWhitespace(const String& str) {
 }
 
 String AXObject::ComputedName() const {
-  AXNameFrom name_from;
+  ax::mojom::NameFrom name_from;
   AXObject::AXObjectVector name_objects;
   return GetName(name_from, &name_objects);
 }
 
-String AXObject::GetName(AXNameFrom& name_from,
+String AXObject::GetName(ax::mojom::NameFrom& name_from,
                          AXObject::AXObjectVector* name_objects) const {
   HeapHashSet<Member<const AXObject>> visited;
   AXRelatedObjectVector related_objects;
@@ -1433,7 +1433,7 @@ String AXObject::GetName(AXNameFrom& name_from,
 
 String AXObject::GetName(NameSources* name_sources) const {
   AXObjectSet visited;
-  AXNameFrom tmp_name_from;
+  ax::mojom::NameFrom tmp_name_from;
   AXRelatedObjectVector tmp_related_objects;
   String text = TextAlternative(false, false, visited, tmp_name_from,
                                 &tmp_related_objects, name_sources);
@@ -1447,7 +1447,7 @@ String AXObject::RecursiveTextAlternative(const AXObject& ax_obj,
   if (visited.Contains(&ax_obj) && !in_aria_labelled_by_traversal)
     return String();
 
-  AXNameFrom tmp_name_from;
+  ax::mojom::NameFrom tmp_name_from;
   return ax_obj.TextAlternative(true, in_aria_labelled_by_traversal, visited,
                                 tmp_name_from, nullptr, nullptr);
 }
@@ -1482,7 +1482,7 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
 String AXObject::AriaTextAlternative(bool recursive,
                                      bool in_aria_labelled_by_traversal,
                                      AXObjectSet& visited,
-                                     AXNameFrom& name_from,
+                                     ax::mojom::NameFrom& name_from,
                                      AXRelatedObjectVector* related_objects,
                                      NameSources* name_sources,
                                      bool* found_text_alternative) const {
@@ -1501,7 +1501,7 @@ String AXObject::AriaTextAlternative(bool recursive,
   // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
   if (!in_aria_labelled_by_traversal && !already_visited) {
-    name_from = kAXNameFromRelatedElement;
+    name_from = ax::mojom::NameFrom::kRelatedElement;
 
     // Check AOM property first.
     HeapVector<Member<Element>> elements;
@@ -1578,7 +1578,7 @@ String AXObject::AriaTextAlternative(bool recursive,
 
   // Step 2C from: http://www.w3.org/TR/accname-aam-1.1
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
-  name_from = kAXNameFromAttribute;
+  name_from = ax::mojom::NameFrom::kAttribute;
   if (name_sources) {
     name_sources->push_back(
         NameSource(*found_text_alternative, aria_labelAttr));
@@ -1706,39 +1706,40 @@ void AXObject::TextCharacterOffsets(Vector<int>&) const {}
 
 void AXObject::GetWordBoundaries(Vector<AXRange>&) const {}
 
-AXDefaultActionVerb AXObject::Action() const {
+ax::mojom::DefaultActionVerb AXObject::Action() const {
   Element* action_element = ActionElement();
   if (!action_element)
-    return AXDefaultActionVerb::kNone;
+    return ax::mojom::DefaultActionVerb::kNone;
 
   // TODO(dmazzoni): Ensure that combo box text field is handled here.
   if (IsTextControl())
-    return AXDefaultActionVerb::kActivate;
+    return ax::mojom::DefaultActionVerb::kActivate;
 
   if (IsCheckable()) {
-    return CheckedState() != kCheckedStateTrue ? AXDefaultActionVerb::kCheck
-                                               : AXDefaultActionVerb::kUncheck;
+    return CheckedState() != ax::mojom::CheckedState::kTrue
+               ? ax::mojom::DefaultActionVerb::kCheck
+               : ax::mojom::DefaultActionVerb::kUncheck;
   }
 
   switch (RoleValue()) {
     case ax::mojom::Role::kButton:
     case ax::mojom::Role::kDisclosureTriangle:
     case ax::mojom::Role::kToggleButton:
-      return AXDefaultActionVerb::kPress;
+      return ax::mojom::DefaultActionVerb::kPress;
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kMenuItemRadio:
     case ax::mojom::Role::kMenuItem:
     case ax::mojom::Role::kMenuListOption:
-      return AXDefaultActionVerb::kSelect;
+      return ax::mojom::DefaultActionVerb::kSelect;
     case ax::mojom::Role::kLink:
-      return AXDefaultActionVerb::kJump;
+      return ax::mojom::DefaultActionVerb::kJump;
     case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kPopUpButton:
-      return AXDefaultActionVerb::kOpen;
+      return ax::mojom::DefaultActionVerb::kOpen;
     default:
       if (action_element == GetNode())
-        return AXDefaultActionVerb::kClick;
-      return AXDefaultActionVerb::kClickAncestor;
+        return ax::mojom::DefaultActionVerb::kClick;
+      return ax::mojom::DefaultActionVerb::kClickAncestor;
   }
 }
 
@@ -3362,7 +3363,7 @@ ax::mojom::Role AXObject::ButtonRoleType() const {
   // http://www.w3.org/TR/wai-aria/states_and_properties#aria-pressed
   if (AriaPressedIsPresent())
     return ax::mojom::Role::kToggleButton;
-  if (HasPopup())
+  if (HasPopup() != ax::mojom::HasPopup::kFalse)
     return ax::mojom::Role::kPopUpButton;
   // We don't contemplate RadioButtonRole, as it depends on the input
   // type.

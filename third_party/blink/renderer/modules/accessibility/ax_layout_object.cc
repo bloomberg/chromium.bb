@@ -722,8 +722,8 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
 
   // A click handler might be placed on an otherwise ignored non-empty block
   // element, e.g. a div. We shouldn't ignore such elements because if an AT
-  // sees the |AXDefaultActionVerb::kClickAncestor|, it will look for the
-  // clickable ancestor and it expects to find one.
+  // sees the |ax::mojom::DefaultActionVerb::kClickAncestor|, it will look for
+  // the clickable ancestor and it expects to find one.
   if (IsClickable())
     return false;
 
@@ -1206,7 +1206,7 @@ String AXLayoutObject::GetText() const {
   return AXNodeObject::GetText();
 }
 
-AccessibilityTextDirection AXLayoutObject::GetTextDirection() const {
+ax::mojom::TextDirection AXLayoutObject::GetTextDirection() const {
   if (!GetLayoutObject())
     return AXNodeObject::GetTextDirection();
 
@@ -1217,23 +1217,23 @@ AccessibilityTextDirection AXLayoutObject::GetTextDirection() const {
   if (style->IsHorizontalWritingMode()) {
     switch (style->Direction()) {
       case TextDirection::kLtr:
-        return kAccessibilityTextDirectionLTR;
+        return ax::mojom::TextDirection::kLtr;
       case TextDirection::kRtl:
-        return kAccessibilityTextDirectionRTL;
+        return ax::mojom::TextDirection::kRtl;
     }
   } else {
     switch (style->Direction()) {
       case TextDirection::kLtr:
-        return kAccessibilityTextDirectionTTB;
+        return ax::mojom::TextDirection::kTtb;
       case TextDirection::kRtl:
-        return kAccessibilityTextDirectionBTT;
+        return ax::mojom::TextDirection::kBtt;
     }
   }
 
   return AXNodeObject::GetTextDirection();
 }
 
-AXTextPosition AXLayoutObject::GetTextPosition() const {
+ax::mojom::TextPosition AXLayoutObject::GetTextPosition() const {
   if (!GetLayoutObject())
     return AXNodeObject::GetTextPosition();
 
@@ -1252,9 +1252,9 @@ AXTextPosition AXLayoutObject::GetTextPosition() const {
     case EVerticalAlign::kLength:
       return AXNodeObject::GetTextPosition();
     case EVerticalAlign::kSub:
-      return kAXTextPositionSubscript;
+      return ax::mojom::TextPosition::kSubscript;
     case EVerticalAlign::kSuper:
-      return kAXTextPositionSuperscript;
+      return ax::mojom::TextPosition::kSuperscript;
   }
 }
 
@@ -1540,7 +1540,7 @@ String AXLayoutObject::StringValue() const {
 String AXLayoutObject::TextAlternative(bool recursive,
                                        bool in_aria_labelled_by_traversal,
                                        AXObjectSet& visited,
-                                       AXNameFrom& name_from,
+                                       ax::mojom::NameFrom& name_from,
                                        AXRelatedObjectVector* related_objects,
                                        NameSources* name_sources) const {
   if (layout_object_) {
@@ -1581,7 +1581,7 @@ String AXLayoutObject::TextAlternative(bool recursive,
     }
 
     if (found_text_alternative) {
-      name_from = kAXNameFromContents;
+      name_from = ax::mojom::NameFrom::kContents;
       if (name_sources) {
         name_sources->push_back(NameSource(false));
         name_sources->back().type = name_from;
@@ -1610,24 +1610,24 @@ void AXLayoutObject::AriaDescribedbyElements(
                                        describedby);
 }
 
-AXHasPopup AXLayoutObject::HasPopup() const {
+ax::mojom::HasPopup AXLayoutObject::HasPopup() const {
   const AtomicString& has_popup =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kHasPopUp);
   if (!has_popup.IsNull()) {
     if (EqualIgnoringASCIICase(has_popup, "false"))
-      return kAXHasPopupFalse;
+      return ax::mojom::HasPopup::kFalse;
 
     if (EqualIgnoringASCIICase(has_popup, "listbox"))
-      return kAXHasPopupListbox;
+      return ax::mojom::HasPopup::kListbox;
 
     if (EqualIgnoringASCIICase(has_popup, "tree"))
-      return kAXHasPopupTree;
+      return ax::mojom::HasPopup::kTree;
 
     if (EqualIgnoringASCIICase(has_popup, "grid"))
-      return kAXHasPopupGrid;
+      return ax::mojom::HasPopup::kGrid;
 
     if (EqualIgnoringASCIICase(has_popup, "dialog"))
-      return kAXHasPopupDialog;
+      return ax::mojom::HasPopup::kDialog;
 
     // To provide backward compatibility with ARIA 1.0 content,
     // user agents MUST treat an aria-haspopup value of true
@@ -1635,13 +1635,13 @@ AXHasPopup AXLayoutObject::HasPopup() const {
     // And unknown value also return menu too.
     if (EqualIgnoringASCIICase(has_popup, "true") ||
         EqualIgnoringASCIICase(has_popup, "menu") || !has_popup.IsEmpty())
-      return kAXHasPopupMenu;
+      return ax::mojom::HasPopup::kMenu;
   }
 
   // ARIA 1.1 default value of haspopup for combobox is "listbox".
   if (RoleValue() == ax::mojom::Role::kComboBoxMenuButton ||
       RoleValue() == ax::mojom::Role::kTextFieldWithComboBox)
-    return kAXHasPopupListbox;
+    return ax::mojom::HasPopup::kListbox;
 
   return AXObject::HasPopup();
 }
@@ -2992,25 +2992,25 @@ unsigned AXLayoutObject::RowSpan() const {
   return cell->ResolvedRowSpan();
 }
 
-SortDirection AXLayoutObject::GetSortDirection() const {
+ax::mojom::SortDirection AXLayoutObject::GetSortDirection() const {
   if (RoleValue() != ax::mojom::Role::kRowHeader &&
       RoleValue() != ax::mojom::Role::kColumnHeader)
-    return kSortDirectionUndefined;
+    return ax::mojom::SortDirection::kNone;
 
   const AtomicString& aria_sort =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kSort);
   if (aria_sort.IsEmpty())
-    return kSortDirectionUndefined;
+    return ax::mojom::SortDirection::kNone;
   if (EqualIgnoringASCIICase(aria_sort, "none"))
-    return kSortDirectionNone;
+    return ax::mojom::SortDirection::kNone;
   if (EqualIgnoringASCIICase(aria_sort, "ascending"))
-    return kSortDirectionAscending;
+    return ax::mojom::SortDirection::kAscending;
   if (EqualIgnoringASCIICase(aria_sort, "descending"))
-    return kSortDirectionDescending;
+    return ax::mojom::SortDirection::kDescending;
 
   // Technically, illegal values should be exposed as is, but this does
   // not seem to be worth the implementation effort at this time.
-  return kSortDirectionOther;
+  return ax::mojom::SortDirection::kOther;
 }
 
 static ax::mojom::Role DecideRoleFromSibling(LayoutTableCell* sibling_cell) {

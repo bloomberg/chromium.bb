@@ -42,37 +42,37 @@ namespace {
 
 static const AXID kIDForInspectedNodeWithNoAXNode = 0;
 
-void AddHasPopupProperty(AXHasPopup has_popup,
+void AddHasPopupProperty(ax::mojom::HasPopup has_popup,
                          protocol::Array<AXProperty>& properties) {
   switch (has_popup) {
-    case kAXHasPopupFalse:
+    case ax::mojom::HasPopup::kFalse:
       break;
-    case kAXHasPopupTrue:
+    case ax::mojom::HasPopup::kTrue:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("true", AXValueTypeEnum::Token)));
       break;
-    case kAXHasPopupMenu:
+    case ax::mojom::HasPopup::kMenu:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("menu", AXValueTypeEnum::Token)));
       break;
-    case kAXHasPopupListbox:
+    case ax::mojom::HasPopup::kListbox:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("listbox", AXValueTypeEnum::Token)));
       break;
-    case kAXHasPopupTree:
+    case ax::mojom::HasPopup::kTree:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("tree", AXValueTypeEnum::Token)));
       break;
-    case kAXHasPopupGrid:
+    case ax::mojom::HasPopup::kGrid:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("grid", AXValueTypeEnum::Token)));
       break;
-    case kAXHasPopupDialog:
+    case ax::mojom::HasPopup::kDialog:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("dialog", AXValueTypeEnum::Token)));
@@ -121,26 +121,26 @@ void FillGlobalStates(AXObject& ax_object,
 
   AddHasPopupProperty(ax_object.HasPopup(), properties);
 
-  InvalidState invalid_state = ax_object.GetInvalidState();
+  ax::mojom::InvalidState invalid_state = ax_object.GetInvalidState();
   switch (invalid_state) {
-    case kInvalidStateUndefined:
+    case ax::mojom::InvalidState::kNone:
       break;
-    case kInvalidStateFalse:
+    case ax::mojom::InvalidState::kFalse:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::Invalid,
                          CreateValue("false", AXValueTypeEnum::Token)));
       break;
-    case kInvalidStateTrue:
+    case ax::mojom::InvalidState::kTrue:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::Invalid,
                          CreateValue("true", AXValueTypeEnum::Token)));
       break;
-    case kInvalidStateSpelling:
+    case ax::mojom::InvalidState::kSpelling:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::Invalid,
                          CreateValue("spelling", AXValueTypeEnum::Token)));
       break;
-    case kInvalidStateGrammar:
+    case ax::mojom::InvalidState::kGrammar:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::Invalid,
                          CreateValue("grammar", AXValueTypeEnum::Token)));
@@ -291,16 +291,16 @@ void FillWidgetStates(AXObject& ax_object,
   ax::mojom::Role role = ax_object.RoleValue();
   const char* checked_prop_val = nullptr;
   switch (ax_object.CheckedState()) {
-    case kCheckedStateTrue:
+    case ax::mojom::CheckedState::kTrue:
       checked_prop_val = "true";
       break;
-    case kCheckedStateMixed:
+    case ax::mojom::CheckedState::kMixed:
       checked_prop_val = "mixed";
       break;
-    case kCheckedStateFalse:
+    case ax::mojom::CheckedState::kFalse:
       checked_prop_val = "false";
       break;
-    case kCheckedStateUndefined:
+    case ax::mojom::CheckedState::kNone:
       break;
   }
   if (checked_prop_val) {
@@ -720,11 +720,11 @@ void InspectorAccessibilityAgent::FillCoreProperties(
     AXNode& node_object,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
-  AXNameFrom name_from;
+  ax::mojom::NameFrom name_from;
   AXObject::AXObjectVector name_objects;
   ax_object.GetName(name_from, &name_objects);
 
-  AXDescriptionFrom description_from;
+  ax::mojom::DescriptionFrom description_from;
   AXObject::AXObjectVector description_objects;
   String description =
       ax_object.Description(name_from, description_from, &description_objects);

@@ -335,9 +335,11 @@ chrome.automation.NameFromType = {
   UNINITIALIZED: 'uninitialized',
   ATTRIBUTE: 'attribute',
   ATTRIBUTE_EXPLICITLY_EMPTY: 'attributeExplicitlyEmpty',
+  CAPTION: 'caption',
   CONTENTS: 'contents',
   PLACEHOLDER: 'placeholder',
   RELATED_ELEMENT: 'relatedElement',
+  TITLE: 'title',
   VALUE: 'value',
 };
 

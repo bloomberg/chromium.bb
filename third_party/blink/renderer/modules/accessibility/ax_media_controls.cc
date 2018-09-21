@@ -123,7 +123,7 @@ String AccessibilityMediaControl::TextAlternative(
     bool recursive,
     bool in_aria_labelled_by_traversal,
     AXObjectSet& visited,
-    AXNameFrom& name_from,
+    ax::mojom::NameFrom& name_from,
     AXRelatedObjectVector* related_objects,
     NameSources* name_sources) const {
   switch (ControlType()) {
@@ -188,8 +188,8 @@ String AccessibilityMediaControl::TextAlternative(
 }
 
 String AccessibilityMediaControl::Description(
-    AXNameFrom name_from,
-    AXDescriptionFrom& description_from,
+    ax::mojom::NameFrom name_from,
+    ax::mojom::DescriptionFrom& description_from,
     AXObjectVector* description_objects) const {
   switch (ControlType()) {
     case kMediaEnterFullscreenButton:
@@ -328,7 +328,7 @@ String AXMediaControlsContainer::TextAlternative(
     bool recursive,
     bool in_aria_labelled_by_traversal,
     AXObjectSet& visited,
-    AXNameFrom& name_from,
+    ax::mojom::NameFrom& name_from,
     AXRelatedObjectVector* related_objects,
     NameSources* name_sources) const {
   return QueryString(IsControllingVideoElement()
@@ -337,8 +337,8 @@ String AXMediaControlsContainer::TextAlternative(
 }
 
 String AXMediaControlsContainer::Description(
-    AXNameFrom name_from,
-    AXDescriptionFrom& description_from,
+    ax::mojom::NameFrom name_from,
+    ax::mojom::DescriptionFrom& description_from,
     AXObjectVector* description_objects) const {
   return QueryString(IsControllingVideoElement()
                          ? WebLocalizedString::kAXMediaVideoElementHelp
@@ -371,8 +371,8 @@ AXObject* AccessibilityMediaTimeline::Create(
 }
 
 String AccessibilityMediaTimeline::Description(
-    AXNameFrom name_from,
-    AXDescriptionFrom& description_from,
+    ax::mojom::NameFrom name_from,
+    ax::mojom::DescriptionFrom& description_from,
     AXObjectVector* description_objects) const {
   return QueryString(IsControllingVideoElement()
                          ? WebLocalizedString::kAXMediaVideoSliderHelp
@@ -409,7 +409,7 @@ String AccessibilityMediaTimeDisplay::TextAlternative(
     bool recursive,
     bool in_aria_labelled_by_traversal,
     AXObjectSet& visited,
-    AXNameFrom& name_from,
+    ax::mojom::NameFrom& name_from,
     AXRelatedObjectVector* related_objects,
     NameSources* name_sources) const {
   if (ControlType() == kMediaCurrentTimeDisplay)
