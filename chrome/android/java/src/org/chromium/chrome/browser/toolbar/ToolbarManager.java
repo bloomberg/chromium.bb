@@ -410,6 +410,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     return;
                 }
 
+                if (tab.isPreview()) {
+                    // Some previews are not fully decided until the page finishes loading. If this
+                    // is a preview, update the security icon which will also update the verbose
+                    // status view to make sure the "Lite" badge is displayed.
+                    mLocationBar.updateSecurityIcon();
+                }
+
                 handleIPHForSuccessfulPageLoad(tab);
             }
 
