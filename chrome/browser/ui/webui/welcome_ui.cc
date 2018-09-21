@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/browser/ui/webui/welcome_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
@@ -68,9 +69,18 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
   html_source->AddResourcePath("logo2x.png", IDR_PRODUCT_LOGO_256);
 
-  // Use special layout if the application is branded and DICE is enabled.
-  // Otherwise use the default layout.
-  if (kIsBranded && is_dice) {
+  if (nux::IsNuxOnboardingEnabled()) {
+    // Add Onboarding welcome strings.
+    html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
+
+    // Add onboarding welcome resources.
+    // TODO(scottchen): More resources to be added here.
+    html_source->SetDefaultResource(
+        IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
+
+  } else if (kIsBranded && is_dice) {
+    // Use special layout if the application is branded and DICE is enabled.
+    // Otherwise use the default layout.
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
     html_source->AddLocalizedString("secondHeaderText",
                                     IDS_DICE_WELCOME_SECOND_HEADER);

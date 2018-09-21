@@ -61,6 +61,7 @@
         <structure name="IDR_DICE_WELCOME_BROWSER_PROXY_JS" file="resources\welcome\dice_welcome\welcome_browser_proxy.js" type="chrome_html" preprocess="true"/>
         <structure name="IDR_DICE_WELCOME_APP_HTML" file="resources\welcome\dice_welcome\welcome_app.html" type="chrome_html" preprocess="true"/>
         <structure name="IDR_DICE_WELCOME_APP_JS" file="resources\welcome\dice_welcome\welcome_app.js" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML" file="resources\welcome\onboarding_welcome\welcome.html" type="chrome_html" preprocess="true"/>
       </if>
       <if expr="is_win">
         <structure name="IDR_WELCOME_WIN10_CSS" file="resources\welcome\welcome_win10.css" type="chrome_html" />
