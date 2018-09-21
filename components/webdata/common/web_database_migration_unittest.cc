@@ -24,7 +24,6 @@
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/password_manager/core/browser/webdata/logins_table.h"
 #include "components/search_engines/keyword_table.h"
 #include "components/signin/core/browser/webdata/token_service_table.h"
 #include "components/webdata/common/web_database.h"
@@ -64,13 +63,11 @@ class WebDatabaseMigrationTest : public testing::Test {
   void DoMigration() {
     AutofillTable autofill_table;
     KeywordTable keyword_table;
-    LoginsTable logins_table;
     TokenServiceTable token_service_table;
 
     WebDatabase db;
     db.AddTable(&autofill_table);
     db.AddTable(&keyword_table);
-    db.AddTable(&logins_table);
     db.AddTable(&token_service_table);
 
     // This causes the migration to occur.
@@ -129,7 +126,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 78;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 79;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -190,8 +187,6 @@ TEST_F(WebDatabaseMigrationTest, MigrateEmptyToCurrent) {
     EXPECT_TRUE(connection.DoesTableExist("autofill_profiles"));
     EXPECT_TRUE(connection.DoesTableExist("credit_cards"));
     EXPECT_TRUE(connection.DoesTableExist("keywords"));
-    // The logins table is obsolete. (We used to store saved passwords here.)
-    EXPECT_FALSE(connection.DoesTableExist("logins"));
     EXPECT_TRUE(connection.DoesTableExist("meta"));
     EXPECT_TRUE(connection.DoesTableExist("token_service"));
     // The web_apps and web_apps_icons tables are obsolete as of version 58.
@@ -1610,5 +1605,27 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion77ToCurrent) {
     EXPECT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
               s2.ColumnInt(0));
     EXPECT_EQ("state", s2.ColumnString(1));
+  }
+}
+
+TEST_F(WebDatabaseMigrationTest, MigrateVersion78ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_78.sql")));
+
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    ASSERT_TRUE(connection.DoesTableExist("ie7_logins"));
+    ASSERT_TRUE(connection.DoesTableExist("logins"));
+  }
+
+  DoMigration();
+
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    ASSERT_FALSE(connection.DoesTableExist("ie7_logins"));
+    ASSERT_FALSE(connection.DoesTableExist("logins"));
   }
 }
