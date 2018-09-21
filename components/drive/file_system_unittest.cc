@@ -817,14 +817,14 @@ TEST_F(FileSystemTest, ReadDirectory_Root) {
       ReadDirectorySync(base::FilePath::FromUTF8Unsafe("drive")));
   // The root directory should be read correctly.
   ASSERT_TRUE(entries);
-  ASSERT_EQ(4U, entries->size());
+  ASSERT_EQ(5U, entries->size());
 
   // The found three directories should be /drive/root, /drive/other,
   // /drive/trash and /drive/team_drives.
   std::set<base::FilePath> found;
   for (size_t i = 0; i < entries->size(); ++i)
     found.insert(base::FilePath::FromUTF8Unsafe((*entries)[i].title()));
-  EXPECT_EQ(4U, found.size());
+  EXPECT_EQ(5U, found.size());
   EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe(
                     util::kDriveMyDriveRootDirName)));
   EXPECT_EQ(1U, found.count(
@@ -833,6 +833,8 @@ TEST_F(FileSystemTest, ReadDirectory_Root) {
                     base::FilePath::FromUTF8Unsafe(util::kDriveTrashDirName)));
   EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe(
                     util::kDriveTeamDrivesDirName)));
+  EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe(
+                    util::kDriveComputersDirName)));
 }
 
 TEST_F(FileSystemTest, ReadDirectory_TeamDrivesRoot) {
