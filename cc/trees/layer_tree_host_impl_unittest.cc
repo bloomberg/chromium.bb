@@ -1933,6 +1933,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
   host_impl_->pending_tree()->SetRootLayerForTesting(std::move(root_owned));
   root->SetBounds(gfx::Size(50, 50));
   root->test_properties()->force_render_surface = true;
+  root->SetNeedsPushProperties();
 
   root->test_properties()->AddChild(
       LayerImpl::Create(host_impl_->pending_tree(), 2));
@@ -1940,6 +1941,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
+  child->SetNeedsPushProperties();
 
   host_impl_->pending_tree()->SetElementIdsForTesting();
 
@@ -3772,7 +3774,9 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     scrollbar->SetScrollElementId(scroll->element_id());
     scrollbar->SetBounds(gfx::Size(10, 100));
     scrollbar->SetPosition(gfx::PointF(90, 0));
+    scrollbar->SetNeedsPushProperties();
     container->test_properties()->AddChild(std::move(scrollbar));
+
     host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     host_impl_->pending_tree()->BuildPropertyTreesForTesting();
     host_impl_->ActivateSyncTree();
@@ -3803,6 +3807,8 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     container = host_impl_->pending_tree()->InnerViewportContainerLayer();
     container->test_properties()->force_render_surface = true;
     container->SetBounds(gfx::Size(10, 10));
+    container->SetNeedsPushProperties();
+
     host_impl_->pending_tree()->BuildPropertyTreesForTesting();
 
     LayerImpl* pending_scrollbar_layer =
@@ -4016,7 +4022,9 @@ TEST_F(LayerTreeHostImplTest, ScrollbarVisibilityChangeCausesRedrawAndCommit) {
   scrollbar->SetScrollElementId(scroll->element_id());
   scrollbar->SetBounds(gfx::Size(10, 100));
   scrollbar->SetPosition(gfx::PointF(90, 0));
+  scrollbar->SetNeedsPushProperties();
   container->test_properties()->AddChild(std::move(scrollbar));
+
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
   host_impl_->ActivateSyncTree();
@@ -9512,6 +9520,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
       LayerImpl::Create(host_impl_->pending_tree(), 1);
   LayerImpl* root = scoped_root.get();
   root->test_properties()->force_render_surface = true;
+  root->SetNeedsPushProperties();
 
   host_impl_->pending_tree()->SetRootLayerForTesting(std::move(scoped_root));
 
@@ -9519,6 +9528,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
       LayerImpl::Create(host_impl_->pending_tree(), 2);
   LayerImpl* scrolling_layer = scoped_scrolling_layer.get();
   root->test_properties()->AddChild(std::move(scoped_scrolling_layer));
+  scrolling_layer->SetNeedsPushProperties();
 
   gfx::Size content_layer_bounds(100001, 100);
   scoped_refptr<FakeRasterSource> raster_source(
@@ -9531,6 +9541,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   scrolling_layer->test_properties()->AddChild(std::move(scoped_content_layer));
   content_layer->SetBounds(content_layer_bounds);
   content_layer->SetDrawsContent(true);
+  content_layer->SetNeedsPushProperties();
 
   root->SetBounds(root_size);
 
@@ -11432,6 +11443,9 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
       LayerImpl::Create(host_impl_->pending_tree(), 1));
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
   host_impl_->pending_tree()->UpdateDrawProperties();
+  host_impl_->pending_tree()
+      ->root_layer_for_testing()
+      ->SetNeedsPushProperties();
 
   host_impl_->ActivateSyncTree();
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
