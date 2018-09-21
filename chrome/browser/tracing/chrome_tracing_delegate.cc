@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/crash_upload_list/crash_upload_list_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #endif
@@ -105,22 +106,21 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
   // If the profile hasn't loaded or been created yet, we allow the scenario
   // to start up, but not be finalized.
   Profile* profile = GetProfile();
-  if (!profile) {
-    if (profile_permission == PROFILE_REQUIRED)
-      return false;
-    else
-      return true;
-  }
+  if (!profile)
+    return profile_permission != PROFILE_REQUIRED;
 
+// Safeguard, in case background tracing is responsible for a crash on
+// startup.
 #if !defined(OS_ANDROID)
-  // Safeguard, in case background tracing is responsible for a crash on
-  // startup.
   if (profile->GetLastSessionExitType() == Profile::EXIT_CRASHED)
     return false;
 #else
-  // In case of Android the exit state is always set as EXIT_CRASHED. So,
-  // preemptive mode cannot be used safely.
-  if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE)
+  // If the metrics haven't loaded, we allow the scenario to start up, but not
+  // be finalized.
+  if (!CrashUploadListAndroid::BrowserCrashMetricsInitialized())
+    return profile_permission != PROFILE_REQUIRED;
+
+  if (CrashUploadListAndroid::DidBrowserCrashRecently())
     return false;
 #endif
 
