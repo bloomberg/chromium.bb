@@ -14,7 +14,6 @@
 
     (load-file "src/tools/emacs/flymake-chromium.el")
 
-
 ## [ycmd](https://github.com/Valloric/ycmd) (YouCompleteMe) + flycheck
 
 [emacs-ycmd](https://github.com/abingham/emacs-ycmd) in combination with
@@ -162,6 +161,13 @@ Now, you can use the
 &lt;Tab&gt;
 
 key to format the current line (even a long line) or region.
+
+## BUILD.gn and .gni files
+
+BUILD.gn and gni files are supported by the official gn-mode which can
+be enabled with:
+
+    (load-file "src/tools/emacs/gn.el")
 
 ## Highlight long lines
 
