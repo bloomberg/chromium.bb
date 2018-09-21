@@ -1379,6 +1379,7 @@ void LayoutTableSection::ComputeOverflowFromDescendants() {
       total_cell_count < kMinCellCountToUsePartialPaint
           ? 0
           : kMaxOverflowingCellRatioForPartialPaint * total_cell_count;
+  auto old_overflow_rect = SelfVisualOverflowRect();
 
   overflow_.reset();
   overflowing_cells_.clear();
@@ -1421,6 +1422,10 @@ void LayoutTableSection::ComputeOverflowFromDescendants() {
       overflowing_cells_.insert(cell);
     }
   }
+  // Overflow rect contributes to the visual rect, so if it has changed then we
+  // need to signal a possible paint invalidation.
+  if (old_overflow_rect != SelfVisualOverflowRect())
+    SetShouldCheckForPaintInvalidation();
 
 #if DCHECK_IS_ON()
   DCHECK_EQ(has_overflowing_cell, HasOverflowingCell());

@@ -975,8 +975,10 @@ PositionWithAffinity LayoutReplaced::PositionForPoint(
 }
 
 LayoutRect LayoutReplaced::LocalSelectionRect() const {
-  if (!IsSelected())
+  if (GetSelectionState() == SelectionState::kNone ||
+      GetSelectionState() == SelectionState::kContain) {
     return LayoutRect();
+  }
 
   if (IsInline()) {
     const auto fragments = NGPaintFragment::InlineFragmentsFor(this);
