@@ -27,7 +27,7 @@ struct CompletionInfo {
   base::Optional<storage::BlobDataHandle> blob_handle;
 
   // Download file size in bytes.
-  uint64_t bytes_downloaded;
+  uint64_t bytes_downloaded = 0u;
 
   // The url chain of the download. Download may encounter redirects, and
   // fetches the content from the last url in the chain.
@@ -40,11 +40,13 @@ struct CompletionInfo {
   // account changed values during retries/resumptions.
   scoped_refptr<const net::HttpResponseHeaders> response_headers;
 
+  CompletionInfo();
   CompletionInfo(
       const base::FilePath& path,
       uint64_t bytes_downloaded,
       const std::vector<GURL>& url_chain,
       scoped_refptr<const net::HttpResponseHeaders> response_headers);
+  CompletionInfo(const base::FilePath& path, uint64_t bytes_downloaded);
   CompletionInfo(const CompletionInfo& other);
   ~CompletionInfo();
   bool operator==(const CompletionInfo& other) const;

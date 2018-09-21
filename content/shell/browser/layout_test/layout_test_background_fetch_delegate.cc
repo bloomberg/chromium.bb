@@ -82,6 +82,7 @@ class LayoutTestBackgroundFetchDelegate::LayoutTestBackgroundFetchDownloadClient
   }
 
   void OnDownloadFailed(const std::string& guid,
+                        const download::CompletionInfo& info,
                         download::Client::FailureReason reason) override {
     DCHECK(guid_to_unique_job_id_mapping_.count(guid));
     if (!client_)
