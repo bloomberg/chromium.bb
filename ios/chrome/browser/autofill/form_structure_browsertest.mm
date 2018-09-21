@@ -172,6 +172,10 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), frame)
           ->autofill_manager();
   ASSERT_NE(nullptr, autofill_manager);
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForActionTimeout, ^bool() {
+        return autofill_manager->NumFormsDetected() != 0;
+      }));
   *output = FormStructuresToString(autofill_manager->form_structures());
 }
 

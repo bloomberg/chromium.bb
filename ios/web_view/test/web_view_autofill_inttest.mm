@@ -54,6 +54,7 @@ class WebViewAutofillTest : public WebViewInttestBase {
 
   bool LoadTestPage() WARN_UNUSED_RESULT {
     std::string html = base::SysNSStringToUTF8(kTestFormHtml);
+    main_frame_id_ = nil;
     GURL url = GetUrlForPageWithHtmlBody(html);
     return test::LoadUrl(web_view_, net::NSURLWithGURL(url));
   }
@@ -83,7 +84,7 @@ class WebViewAutofillTest : public WebViewInttestBase {
         fetchSuggestionsForFormWithName:kTestFormName
                               fieldName:kTestFieldName
                         fieldIdentifier:kTestFieldID
-                                frameID:kTestFrameID
+                                frameID:GetMainFrameId()
                       completionHandler:^(
                           NSArray<CWVAutofillSuggestion*>* suggestions) {
                         fetched_suggestions = suggestions;
@@ -95,7 +96,19 @@ class WebViewAutofillTest : public WebViewInttestBase {
     return fetched_suggestions;
   }
 
+  NSString* GetMainFrameId() {
+    if (main_frame_id_) {
+      return main_frame_id_;
+    }
+    NSString* main_frame_id_script = @"__gCrWeb.message.getFrameId();";
+    NSError* main_frame_id_error = nil;
+    main_frame_id_ = test::EvaluateJavaScript(web_view_, main_frame_id_script,
+                                              &main_frame_id_error);
+    return main_frame_id_;
+  }
+
   CWVAutofillController* autofill_controller_;
+  NSString* main_frame_id_ = nil;
 };
 
 // Tests that CWVAutofillControllerDelegate receives callbacks.
@@ -185,7 +198,7 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
   EXPECT_NSEQ(kTestFieldValue, fetched_suggestion.value);
   EXPECT_NSEQ(kTestFormName, fetched_suggestion.formName);
   EXPECT_NSEQ(kTestFieldName, fetched_suggestion.fieldName);
-  EXPECT_NSEQ(kTestFrameID, fetched_suggestion.frameID);
+  EXPECT_NSEQ(GetMainFrameId(), fetched_suggestion.frameID);
 
   // The input element needs to be focused before it can be filled or cleared.
   NSString* focus_script = [NSString

@@ -61,7 +61,7 @@ namespace {
 using FormDataVector = std::vector<autofill::FormData>;
 
 // The type of the completion handler block for
-// |fetchFormsWithName:minimumRequiredFieldsCount:pageURL:completionHandler|
+// |fetchFormsWithName:minimumRequiredFieldsCount:completionHandler|
 typedef void (^FetchFormsCompletionHandler)(BOOL, const FormDataVector&);
 
 // Gets the first focusable form and field specified by |fieldIdentifier| from
@@ -121,7 +121,6 @@ void GetFormAndField(autofill::FormData* form,
 - (void)fetchFormsFiltered:(BOOL)filtered
                       withName:(const base::string16&)formName
     minimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
-                       pageURL:(const GURL&)pageURL
                        inFrame:(web::WebFrame*)frame
              completionHandler:(FetchFormsCompletionHandler)completionHandler;
 
@@ -152,9 +151,6 @@ void GetFormAndField(autofill::FormData* form,
 @end
 
 @implementation AutofillAgent {
-  // Whether page is scanned for forms.
-  BOOL pageProcessed_;
-
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
   web::WebState* webState_;
@@ -297,22 +293,22 @@ autofillManagerFromWebState:(web::WebState*)webState
 - (void)fetchFormsFiltered:(BOOL)filtered
                       withName:(const base::string16&)formName
     minimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
-                       pageURL:(const GURL&)pageURL
                        inFrame:(web::WebFrame*)frame
              completionHandler:(FetchFormsCompletionHandler)completionHandler {
   DCHECK(completionHandler);
 
   // Necessary so the values can be used inside a block.
   base::string16 formNameCopy = formName;
-  GURL pageURLCopy = pageURL;
+  GURL pageURL = webState_->GetLastCommittedURL();
+  GURL frameOrigin = frame ? frame->GetSecurityOrigin() : pageURL.GetOrigin();
   [jsAutofillManager_
       fetchFormsWithMinimumRequiredFieldsCount:requiredFieldsCount
                                        inFrame:frame
                              completionHandler:^(NSString* formJSON) {
                                std::vector<autofill::FormData> formData;
                                bool success = autofill::ExtractFormsData(
-                                   formJSON, filtered, formNameCopy,
-                                   pageURLCopy, &formData);
+                                   formJSON, filtered, formNameCopy, pageURL,
+                                   frameOrigin, &formData);
                                completionHandler(success, formData);
                              }];
 }
@@ -416,12 +412,6 @@ autofillManagerFromWebState:(web::WebState*)webState
                              (SuggestionsAvailableCompletion)completion {
   DCHECK_EQ(webState_, webState);
 
-  if (!isMainFrame) {
-    // Filling in iframes is not implemented.
-    completion(NO);
-    return;
-  }
-
   if (![self isAutofillEnabled]) {
     completion(NO);
     return;
@@ -429,6 +419,13 @@ autofillManagerFromWebState:(web::WebState*)webState
 
   // Check for suggestions if the form activity is initiated by the user.
   if (!hasUserGesture) {
+    completion(NO);
+    return;
+  }
+
+  web::WebFrame* frame =
+      web::GetWebFrameWithId(webState_, base::SysNSStringToUTF8(frameID));
+  if (!frame && autofill::switches::IsAutofillIFrameMessagingEnabled()) {
     completion(NO);
     return;
   }
@@ -449,22 +446,12 @@ autofillManagerFromWebState:(web::WebState*)webState
     }
   };
 
-  web::URLVerificationTrustLevel trustLevel;
-  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-  web::WebFrame* frame =
-      web::GetWebFrameWithId(webState_, base::SysNSStringToUTF8(frameID));
-
-  if (!frame && autofill::switches::IsAutofillIFrameMessagingEnabled()) {
-    completion(NO);
-    return;
-  }
   // Re-extract the active form and field only. All forms with at least one
   // input element are considered because key/value suggestions are offered
   // even on short forms.
   [self fetchFormsFiltered:YES
                         withName:base::SysNSStringToUTF16(formName)
       minimumRequiredFieldsCount:1
-                         pageURL:pageURL
                          inFrame:frame
                completionHandler:completionHandler];
 }
@@ -549,6 +536,17 @@ autofillManagerFromWebState:(web::WebState*)webState
 }
 
 - (void)webState:(web::WebState*)webState
+    frameDidBecomeAvailable:(web::WebFrame*)web_frame {
+  DCHECK(web_frame);
+  if (![self isAutofillEnabled] ||
+      !autofill::switches::IsAutofillIFrameMessagingEnabled() ||
+      webState->IsLoading())
+    return;
+
+  [self processFrame:web_frame inWebState:webState];
+}
+
+- (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
   // Ignore navigations within the same document, e.g., history.pushState().
   if (navigation->IsSameDocument())
@@ -560,10 +558,10 @@ autofillManagerFromWebState:(web::WebState*)webState
         [self autofillManagerFromWebState:webState webFrame:frame];
     DCHECK(autofillManager);
     autofillManager->Reset();
+    autofill::AutofillDriverIOS::FromWebStateAndWebFrame(webState, nullptr)
+        ->set_processed(false);
   }
 
-  // Mark the page as not processed.
-  pageProcessed_ = NO;
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -574,21 +572,33 @@ autofillManagerFromWebState:(web::WebState*)webState
 }
 
 - (void)processPage:(web::WebState*)webState {
-  // This process is only done once.
-  if (pageProcessed_)
+  web::WebFramesManager* framesManager =
+      web::WebFramesManager::FromWebState(webState);
+  for (auto* frame : framesManager->GetAllWebFrames()) {
+    [self processFrame:frame inWebState:webState];
+  }
+}
+
+- (void)processFrame:(web::WebFrame*)frame inWebState:(web::WebState*)webState {
+  if (!frame || !frame->CanCallJavaScriptFunction())
     return;
-  pageProcessed_ = YES;
-  web::WebFrame* frame = web::GetMainWebFrame(webState);
+
+  autofill::AutofillDriverIOS* driver =
+      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(webState, frame);
+  // This process is only done once.
+  if (driver->is_processed())
+    return;
+  driver->set_processed(true);
   [jsAutofillManager_ addJSDelayInFrame:frame];
 
-  popupDelegate_.reset();
-  suggestionsAvailableCompletion_ = nil;
-  suggestionHandledCompletion_ = nil;
-  mostRecentSuggestions_ = nil;
-  typedValue_ = nil;
+  if (frame->IsMainFrame()) {
+    popupDelegate_.reset();
+    suggestionsAvailableCompletion_ = nil;
+    suggestionHandledCompletion_ = nil;
+    mostRecentSuggestions_ = nil;
+    typedValue_ = nil;
+  }
 
-  web::URLVerificationTrustLevel trustLevel;
-  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
   [jsAutofillManager_ toggleTrackingFormMutations:YES inFrame:frame];
 
   [jsAutofillManager_ toggleTrackingUserEditedFields:
@@ -596,12 +606,11 @@ autofillManagerFromWebState:(web::WebState*)webState
                               autofill::features::kAutofillPrefilledFields)
                                              inFrame:frame];
 
-  [self scanFormsInPage:webState inFrame:frame pageURL:pageURL];
+  [self scanFormsInWebState:webState inFrame:frame];
 }
 
-- (void)scanFormsInPage:(web::WebState*)webState
-                inFrame:(web::WebFrame*)webFrame
-                pageURL:(const GURL&)pageURL {
+- (void)scanFormsInWebState:(web::WebState*)webState
+                    inFrame:(web::WebFrame*)webFrame {
   __weak AutofillAgent* weakSelf = self;
   id completionHandler = ^(BOOL success, const FormDataVector& forms) {
     AutofillAgent* strongSelf = weakSelf;
@@ -621,7 +630,6 @@ autofillManagerFromWebState:(web::WebState*)webState
   [self fetchFormsFiltered:NO
                         withName:base::string16()
       minimumRequiredFieldsCount:min_required_fields
-                         pageURL:pageURL
                          inFrame:webFrame
                completionHandler:completionHandler];
 }
@@ -635,26 +643,24 @@ autofillManagerFromWebState:(web::WebState*)webState
   if (![self isAutofillEnabled])
     return;
 
+  if (!frame || !frame->CanCallJavaScriptFunction())
+    return;
+
   // Return early if the page is not processed yet.
-  if (!pageProcessed_)
+  DCHECK(autofill::AutofillDriverIOS::FromWebStateAndWebFrame(webState, frame));
+  if (!autofill::AutofillDriverIOS::FromWebStateAndWebFrame(webState, frame)
+           ->is_processed())
     return;
 
   // Return early if |params| is not complete.
   if (params.input_missing)
     return;
 
-  if (!params.is_main_frame) {
-    return;
-  }
-
-  web::URLVerificationTrustLevel trustLevel;
-  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-
   // If the event is a form_changed, then the event concerns the whole page and
   // not a particular form. The whole page need to be reparsed to find the new
   // forms.
   if (params.type == "form_changed") {
-    [self scanFormsInPage:webState inFrame:frame pageURL:pageURL];
+    [self scanFormsInWebState:webState inFrame:frame];
     return;
   }
 
@@ -691,7 +697,6 @@ autofillManagerFromWebState:(web::WebState*)webState
   [self fetchFormsFiltered:YES
                         withName:base::UTF8ToUTF16(params.form_name)
       minimumRequiredFieldsCount:1
-                         pageURL:pageURL
                          inFrame:frame
                completionHandler:completionHandler];
 }
@@ -728,9 +733,6 @@ autofillManagerFromWebState:(web::WebState*)webState
 
   };
 
-  web::URLVerificationTrustLevel trustLevel;
-  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-
   // This code is racing against the new page loading and will not get the
   // password form data if the page has changed. In most cases this code wins
   // the race.
@@ -738,7 +740,6 @@ autofillManagerFromWebState:(web::WebState*)webState
   [self fetchFormsFiltered:YES
                         withName:base::UTF8ToUTF16(formName)
       minimumRequiredFieldsCount:1
-                         pageURL:pageURL
                          inFrame:frame
                completionHandler:completionHandler];
 }
@@ -758,11 +759,9 @@ autofillManagerFromWebState:(web::WebState*)webState
   if (!autofill::prefs::IsAutofillEnabled(prefService_))
     return NO;
 
-  web::URLVerificationTrustLevel trustLevel;
-  const GURL pageURL(webState_->GetCurrentURL(&trustLevel));
-
   // Only web URLs are supported by Autofill.
-  return web::UrlHasWebScheme(pageURL) && webState_->ContentIsHTML();
+  return web::UrlHasWebScheme(webState_->GetLastCommittedURL()) &&
+         webState_->ContentIsHTML();
 }
 
 #pragma mark -

@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #include "components/password_manager/ios/js_password_manager.h"
+#import "ios/web/public/web_state/web_frame.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -171,6 +172,12 @@ constexpr char kCommandPrefix[] = "passwordForm";
                    formInMainFrame:(BOOL)formInMainFrame
                            inFrame:(web::WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
+  GURL pageURL = webState->GetLastCommittedURL();
+  if (pageURL.GetOrigin() != frame->GetSecurityOrigin()) {
+    // Passwords is only supported on main frame and iframes with the same
+    // origin.
+    return;
+  }
   __weak PasswordControllerHelper* weakSelf = self;
   // This code is racing against the new page loading and will not get the
   // password form data if the page has changed. In most cases this code wins
@@ -209,7 +216,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
   FormData formData;
   if (!autofill::ExtractFormData(JSONCommand, false, base::string16(), pageURL,
-                                 &formData)) {
+                                 pageURL.GetOrigin(), &formData)) {
     return NO;
   }
 
@@ -252,7 +259,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
     FormData formData;
     if (!autofill::ExtractFormData(*formValue, false, base::string16(), pageURL,
-                                   &formData)) {
+                                   pageURL.GetOrigin(), &formData)) {
       completionHandler(NO, PasswordForm());
       return;
     }
@@ -275,8 +282,9 @@ constexpr char kCommandPrefix[] = "passwordForm";
                          pageURL:(const GURL&)pageURL
                            forms:(std::vector<autofill::PasswordForm>*)forms {
   std::vector<autofill::FormData> formsData;
+  // Password is only available on main frame.
   if (!autofill::ExtractFormsData(jsonString, false, base::string16(), pageURL,
-                                  &formsData)) {
+                                  pageURL.GetOrigin(), &formsData)) {
     return;
   }
 

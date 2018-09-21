@@ -32,18 +32,20 @@ std::unique_ptr<base::Value> ParseJson(NSString* json_string);
 bool ExtractFormsData(NSString* form_json,
                       bool filtered,
                       const base::string16& form_name,
-                      const GURL& page_url,
+                      const GURL& main_frame_url,
+                      const GURL& frame_origin,
                       std::vector<FormData>* forms_data);
 
 // Converts |form| into |form_data|.
 // Returns false if a form can not be extracted.
 // Returns false if |filtered| == true and |form["name"]| != |formName|.
-// Returns false if |form["origin"]| != |page_url|.
+// Returns false if |form["origin"]| != |form_frame_origin|.
 // Returns true if the conversion succeeds.
 bool ExtractFormData(const base::Value& form,
                      bool filtered,
                      const base::string16& form_name,
-                     const GURL& page_url,
+                     const GURL& main_frame_url,
+                     const GURL& form_frame_origin,
                      FormData* form_data);
 
 // Extracts a single form field from the JSON dictionary into a FormFieldData
