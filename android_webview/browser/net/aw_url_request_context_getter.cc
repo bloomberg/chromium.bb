@@ -190,6 +190,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
       channel_id_path_(channel_id_path),
       net_log_(net_log),
       proxy_config_service_(std::move(config_service)),
+      proxy_config_service_android_(nullptr),
       http_user_agent_settings_(new AwHttpUserAgentSettings()) {
   // CreateSystemProxyConfigService for Android must be called on main thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -293,6 +294,9 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
         net::ProxyResolutionService::CreateFixed(proxy,
                                                  NO_TRAFFIC_ANNOTATION_YET));
   } else {
+    // Retain a pointer to the config proxy service before ownership is passed
+    // on.
+    proxy_config_service_android_ = proxy_config_service_.get();
     builder.set_proxy_resolution_service(
         net::ProxyResolutionService::CreateWithoutProxyResolver(
             std::move(proxy_config_service_), net_log_));
@@ -412,11 +416,15 @@ void AwURLRequestContextGetter::SetProxyOverride(
     const std::string& host,
     int port,
     const std::vector<std::string>& exclusion_list) {
-  proxy_config_service_->SetProxyOverride(host, port, exclusion_list);
+  if (proxy_config_service_android_ != NULL) {
+    proxy_config_service_android_->SetProxyOverride(host, port, exclusion_list);
+  }
 }
 
 void AwURLRequestContextGetter::ClearProxyOverride() {
-  proxy_config_service_->ClearProxyOverride();
+  if (proxy_config_service_android_ != NULL) {
+    proxy_config_service_android_->ClearProxyOverride();
+  }
 }
 
 }  // namespace android_webview
