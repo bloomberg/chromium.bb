@@ -139,7 +139,7 @@ void FlexItem::UpdateAutoMarginsInMainAxis(LayoutUnit auto_margin_offset) {
   }
 }
 
-void FlexLine::FreezeViolations(Vector<FlexItem*>& violations) {
+void FlexLine::FreezeViolations(ViolationsVector& violations) {
   for (size_t i = 0; i < violations.size(); ++i) {
     DCHECK(!violations[i]->frozen) << i;
     LayoutBox* child = violations[i]->box;
@@ -166,7 +166,7 @@ void FlexLine::FreezeInflexibleItems() {
   FlexSign flex_sign = Sign();
   remaining_free_space = container_main_inner_size - sum_flex_base_size;
 
-  Vector<FlexItem*> new_inflexible_items;
+  ViolationsVector new_inflexible_items;
   for (size_t i = 0; i < line_items.size(); ++i) {
     FlexItem& flex_item = line_items[i];
     LayoutBox* child = flex_item.box;
@@ -193,8 +193,8 @@ void FlexLine::FreezeInflexibleItems() {
 bool FlexLine::ResolveFlexibleLengths() {
   LayoutUnit total_violation;
   LayoutUnit used_free_space;
-  Vector<FlexItem*> min_violations;
-  Vector<FlexItem*> max_violations;
+  ViolationsVector min_violations;
+  ViolationsVector max_violations;
 
   FlexSign flex_sign = Sign();
   double sum_flex_factors =
@@ -360,7 +360,7 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
 
 FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
                                          LayoutUnit line_break_length,
-                                         Vector<FlexItem>& all_items)
+                                         FlexItemVector& all_items)
     : style_(style),
       line_break_length_(line_break_length),
       all_items_(all_items),
@@ -371,7 +371,6 @@ FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
 
 FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
     LayoutUnit container_logical_width) {
-  Vector<FlexItem> line_items;
   LayoutUnit sum_flex_base_size;
   double total_flex_grow = 0;
   double total_flex_shrink = 0;
@@ -380,6 +379,8 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
 
   bool line_has_in_flow_item = false;
 
+  wtf_size_t start_index = next_item_index_;
+
   for (; next_item_index_ < all_items_.size(); ++next_item_index_) {
     const FlexItem& flex_item = all_items_[next_item_index_];
     DCHECK(!flex_item.box->IsOutOfFlowPositioned());
@@ -387,9 +388,9 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
         sum_hypothetical_main_size +
                 flex_item.HypotheticalMainAxisMarginBoxSize() >
             line_break_length_ &&
-        line_has_in_flow_item)
+        line_has_in_flow_item) {
       break;
-    line_items.push_back(flex_item);
+    }
     line_has_in_flow_item = true;
     sum_flex_base_size += flex_item.FlexBaseMarginBoxSize();
     total_flex_grow += flex_item.box->StyleRef().FlexGrow();
@@ -398,12 +399,14 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
                                   flex_item.flex_base_content_size;
     sum_hypothetical_main_size += flex_item.HypotheticalMainAxisMarginBoxSize();
   }
-  DCHECK(line_items.size() > 0 || next_item_index_ == all_items_.size());
-  if (line_items.size() > 0) {
-    // This will std::move line_items.
+
+  DCHECK(next_item_index_ > start_index ||
+         next_item_index_ == all_items_.size());
+  if (next_item_index_ > start_index) {
     return &flex_lines_.emplace_back(
-        this, line_items, container_logical_width, sum_flex_base_size,
-        total_flex_grow, total_flex_shrink, total_weighted_flex_shrink,
+        this, FlexItemVectorView(&all_items_, start_index, next_item_index_),
+        container_logical_width, sum_flex_base_size, total_flex_grow,
+        total_flex_shrink, total_weighted_flex_shrink,
         sum_hypothetical_main_size);
   }
   return nullptr;

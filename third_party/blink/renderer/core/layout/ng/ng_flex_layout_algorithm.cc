@@ -36,7 +36,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   LayoutUnit flex_container_content_inline_size =
       flex_container_content_box_size.inline_size;
 
-  Vector<FlexItem> flex_items;
+  FlexItemVector flex_items;
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
     NGBlockNode child = ToNGBlockNode(generic_child);
