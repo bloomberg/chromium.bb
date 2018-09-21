@@ -539,8 +539,7 @@ DataReductionProxyTestContext::Builder::Build() {
 
   io_data->set_proxy_delegate(base::WrapUnique(new DataReductionProxyDelegate(
       io_data->config(), io_data->configurator(), io_data->event_creator(),
-      io_data->bypass_stats(), net_log.get(),
-      test_network_connection_tracker)));
+      io_data->bypass_stats(), net_log.get())));
 
   std::unique_ptr<DataReductionProxyTestContext> test_context(
       new DataReductionProxyTestContext(

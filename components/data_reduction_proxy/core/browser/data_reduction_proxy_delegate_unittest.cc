@@ -51,7 +51,6 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -89,13 +88,11 @@ class TestDataReductionProxyDelegate : public DataReductionProxyDelegate {
       DataReductionProxyBypassStats* bypass_stats,
       bool proxy_supports_quic,
       net::NetLog* net_log)
-      : DataReductionProxyDelegate(
-            config,
-            configurator,
-            event_creator,
-            bypass_stats,
-            net_log,
-            network::TestNetworkConnectionTracker::GetInstance()),
+      : DataReductionProxyDelegate(config,
+                                   configurator,
+                                   event_creator,
+                                   bypass_stats,
+                                   net_log),
         proxy_supports_quic_(proxy_supports_quic) {}
 
   ~TestDataReductionProxyDelegate() override {}

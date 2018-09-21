@@ -173,7 +173,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
 
   proxy_delegate_.reset(new DataReductionProxyDelegate(
       config_.get(), configurator_.get(), event_creator_.get(),
-      bypass_stats_.get(), net_log_, network_connection_tracker_));
+      bypass_stats_.get(), net_log_));
   network_properties_manager_.reset(new NetworkPropertiesManager(
       base::DefaultClock::GetInstance(), prefs, ui_task_runner_));
 }
@@ -297,7 +297,7 @@ DataReductionProxyIOData::CreateProxyDelegate() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return std::make_unique<DataReductionProxyDelegate>(
       config_.get(), configurator_.get(), event_creator_.get(),
-      bypass_stats_.get(), net_log_, network_connection_tracker_);
+      bypass_stats_.get(), net_log_);
 }
 
 // TODO(kundaji): Rename this method to something more descriptive.
