@@ -512,15 +512,17 @@ UNKNOWN_BOT_GTESTS_WATERFALL = """\
 
 FOO_TEST_SUITE = """\
 {
-  'foo_tests': {
-    'foo_test': {
-      'swarming': {
-        'dimension_sets': [
-          {
-            'integrity': 'high',
-          }
-        ],
-        'expiration': 120,
+  'basic_suites': {
+    'foo_tests': {
+      'foo_test': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+            }
+          ],
+          'expiration': 120,
+        },
       },
     },
   },
@@ -529,11 +531,13 @@ FOO_TEST_SUITE = """\
 
 FOO_TEST_SUITE_WITH_ARGS = """\
 {
-  'foo_tests': {
-    'foo_test': {
-      'args': [
-        '--c_arg',
-      ],
+  'basic_suites': {
+    'foo_tests': {
+      'foo_test': {
+        'args': [
+          '--c_arg',
+        ],
+      },
     },
   },
 }
@@ -541,11 +545,13 @@ FOO_TEST_SUITE_WITH_ARGS = """\
 
 FOO_TEST_SUITE_WITH_LINUX_ARGS = """\
 {
-  'foo_tests': {
-    'foo_test': {
-      'linux_args': [
-        '--no-xvfb',
-      ],
+  'basic_suites': {
+    'foo_tests': {
+      'foo_test': {
+        'linux_args': [
+          '--no-xvfb',
+        ],
+      },
     },
   },
 }
@@ -553,11 +559,13 @@ FOO_TEST_SUITE_WITH_LINUX_ARGS = """\
 
 FOO_TEST_SUITE_WITH_ENABLE_FEATURES = """\
 {
-  'foo_tests': {
-    'foo_test': {
-      'args': [
-        '--enable-features=Foo,Bar',
-      ],
+  'basic_suites': {
+    'foo_tests': {
+      'foo_test': {
+        'args': [
+          '--enable-features=Foo,Bar',
+        ],
+      },
     },
   },
 }
@@ -565,17 +573,19 @@ FOO_TEST_SUITE_WITH_ENABLE_FEATURES = """\
 
 FOO_TEST_SUITE_WITH_MIXIN = """\
 {
-  'foo_tests': {
-    'foo_test': {
-      'swarming': {
-        'dimension_sets': [
-          {
-            'integrity': 'high',
-          }
-        ],
-        'expiration': 120,
+  'basic_suites': {
+    'foo_tests': {
+      'foo_test': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+            }
+          ],
+          'expiration': 120,
+        },
+        'swarming_mixins': ['test_mixin'],
       },
-      'swarming_mixins': ['test_mixin'],
     },
   },
 }
@@ -583,12 +593,14 @@ FOO_TEST_SUITE_WITH_MIXIN = """\
 
 FOO_SCRIPT_SUITE = """\
 {
-  'foo_scripts': {
-    'foo_test': {
-      'script': 'foo.py',
-    },
-    'bar_test': {
-      'script': 'bar.py',
+  'basic_suites': {
+    'foo_scripts': {
+      'foo_test': {
+        'script': 'foo.py',
+      },
+      'bar_test': {
+        'script': 'bar.py',
+      },
     },
   },
 }
@@ -596,50 +608,80 @@ FOO_SCRIPT_SUITE = """\
 
 FOO_CTS_SUITE = """\
 {
-  'foo_cts_tests': {
-    'arch': 'arm64',
-    'platform': 'L',
+  'basic_suites': {
+    'foo_cts_tests': {
+      'arch': 'arm64',
+      'platform': 'L',
+    },
   },
 }
 """
 
 GOOD_COMPOSITION_TEST_SUITES = """\
 {
-  'foo_tests': {
-    'foo_test': {},
+  'basic_suites': {
+    'bar_tests': {
+      'bar_test': {},
+    },
+    'foo_tests': {
+      'foo_test': {},
+    },
   },
-  'bar_tests': {
-    'bar_test': {},
+  'compound_suites': {
+    'composition_tests': [
+      'foo_tests',
+      'bar_tests',
+    ],
   },
-  'composition_tests': [
-    'foo_tests',
-    'bar_tests',
-  ],
 }
 """
 
 BAD_COMPOSITION_TEST_SUITES = """\
 {
-  'foo_tests': {},
-  'bar_tests': {},
-  'buggy_composition_tests': [
-    'bar_tests',
-  ],
-  'composition_tests': [
-    'foo_tests',
-    'buggy_composition_tests',
-  ],
+  'basic_suites': {
+    'bar_tests': {},
+    'foo_tests': {},
+  },
+  'compound_suites': {
+    'buggy_composition_tests': [
+      'bar_tests',
+    ],
+    'composition_tests': [
+      'foo_tests',
+      'buggy_composition_tests',
+    ],
+  },
+}
+"""
+
+DUPLICATES_COMPOSITION_TEST_SUITES = """\
+{
+  'basic_suites': {
+    'bar_tests': {},
+    'foo_tests': {},
+  },
+  'compound_suites': {
+    'bar_tests': [
+      'foo_tests',
+    ],
+    'composition_tests': [
+      'foo_tests',
+      'buggy_composition_tests',
+    ],
+  },
 }
 """
 
 INSTRUMENTATION_TESTS_WITH_DIFFERENT_NAMES = """\
 {
-  'composition_tests': {
-    'foo_tests': {
-      'test': 'foo_test',
-    },
-    'bar_tests': {
-      'test': 'foo_test',
+  'basic_suites': {
+    'composition_tests': {
+      'foo_tests': {
+        'test': 'foo_test',
+      },
+      'bar_tests': {
+        'test': 'foo_test',
+      },
     },
   },
 }
@@ -647,9 +689,11 @@ INSTRUMENTATION_TESTS_WITH_DIFFERENT_NAMES = """\
 
 SCRIPT_SUITE = """\
 {
-  'foo_scripts': {
-    'foo_test': {
-      'script': 'foo.py',
+  'basic_suites': {
+    'foo_scripts': {
+      'foo_test': {
+        'script': 'foo.py',
+      },
     },
   },
 }
@@ -657,20 +701,24 @@ SCRIPT_SUITE = """\
 
 UNREFED_TEST_SUITE = """\
 {
-  'foo_tests': {},
-  'bar_tests': {},
+  'basic_suites': {
+    'bar_tests': {},
+    'foo_tests': {},
+  },
 }
 """
 
 REUSING_TEST_WITH_DIFFERENT_NAME = """\
 {
-  'foo_tests': {
-    'foo_test': {},
-    'variation_test': {
-      'args': [
-        '--variation',
-      ],
-      'test': 'foo_test',
+  'basic_suites': {
+    'foo_tests': {
+      'foo_test': {},
+      'variation_test': {
+        'args': [
+          '--variation',
+        ],
+        'test': 'foo_test',
+      },
     },
   },
 }
@@ -678,16 +726,20 @@ REUSING_TEST_WITH_DIFFERENT_NAME = """\
 
 COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST = """\
 {
-  'foo_tests': {
-    'foo': {},
+  'basic_suites': {
+    'foo_tests': {
+      'foo': {},
+    },
+    'bar_tests': {
+      'bar_test': {},
+    },
   },
-  'bar_tests': {
-    'bar_test': {},
+  'compound_suites': {
+    'composition_tests': [
+      'foo_tests',
+      'bar_tests',
+    ],
   },
-  'composition_tests': [
-    'foo_tests',
-    'bar_tests',
-  ],
 }
 """
 
@@ -736,6 +788,44 @@ EMPTY_BAR_TEST_EXCEPTIONS = """\
 {
   'bar_test': {
   }
+}
+"""
+
+EXCEPTIONS_SORTED = """\
+{
+  'suite_c': {
+    'modifications': {
+      'Fake Tester': {
+        'foo': 'bar',
+      },
+    },
+  },
+  'suite_d': {
+    'modifications': {
+      'Fake Tester': {
+        'foo': 'baz',
+      },
+    },
+  },
+}
+"""
+
+EXCEPTIONS_UNSORTED = """\
+{
+  'suite_d': {
+    'modifications': {
+      'Fake Tester': {
+        'foo': 'baz',
+      },
+    },
+  },
+  'suite_c': {
+    'modifications': {
+      'Fake Tester': {
+        'foo': 'bar',
+      },
+    },
+  },
 }
 """
 
@@ -1384,23 +1474,43 @@ consoles {
 }
 """
 
+LUCI_MILO_CFG_WATERFALL_SORTING = """\
+consoles {
+  builders {
+    name: "buildbucket/luci.chromium.ci/Fake Tester"
+    name: "buildbucket/luci.chromium.ci/Really Fake Tester"
+  }
+}
+"""
+
 # These mixins are invalid; if passed to check_input_file_consistency, they will
 # fail. These are used for output file consistency checks.
 SWARMING_MIXINS = """\
 {
+  'builder_mixin': {
+    'value': 'builder',
+  },
   'dimension_mixin': {
     'dimensions': {
       'iama': 'mixin',
     },
   },
+  'test_mixin': {
+    'value': 'test',
+  },
   'waterfall_mixin': {
     'value': 'waterfall',
   },
+}
+"""
+
+SWARMING_MIXINS_DUPLICATED = """\
+{
   'builder_mixin': {
     'value': 'builder',
   },
-  'test_mixin': {
-    'value': 'test',
+  'builder_mixin': {
+    'value': 'builder',
   },
 }
 """
@@ -1430,6 +1540,241 @@ SWARMING_MIXINS_SORTED = """\
   'c_mixin': {
     'c': 'c',
   },
+}
+"""
+
+TEST_SUITE_SORTING_WATERFALL = """
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+    },
+  },
+]
+"""
+
+TEST_SUITE_SORTED_WATERFALL = """
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+      'Really Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+    },
+  },
+  {
+    'name': 'chromium.zz.test',
+    'machines': {
+      'Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+      'Really Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+    },
+  },
+]
+"""
+
+TEST_SUITE_UNSORTED_WATERFALL_1 = """
+[
+  {
+    'name': 'chromium.zz.test',
+    'machines': {
+      'Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+      'Really Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+    },
+  },
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+      'Really Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+    },
+  },
+]
+"""
+
+TEST_SUITE_UNSORTED_WATERFALL_2 = """
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Really Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+      'Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+    },
+  },
+  {
+    'name': 'chromium.zz.test',
+    'machines': {
+      'Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+      'Really Fake Tester': {
+        'test_suites': {
+          'instrumentation_tests': 'suite_a',
+          'scripts': 'suite_b',
+        },
+      },
+    },
+  },
+]
+"""
+
+# Note that the suites in basic_suites would be sorted after the suites in
+# compound_suites. This is valid though, because each set of suites is sorted
+# separately.
+# suite_c is an 'instrumentation_tests' test
+# suite_d is an 'scripts' test
+TEST_SUITE_SORTED = """\
+{
+  'basic_suites': {
+    'suite_c': {
+      'suite_c': {},
+    },
+    'suite_d': {
+      'script': {
+        'script': 'suite_d.py',
+      }
+    },
+  },
+  'compound_suites': {
+    'suite_a': [
+      'suite_c',
+    ],
+    'suite_b': [
+      'suite_d',
+    ],
+  },
+}
+"""
+
+TEST_SUITE_UNSORTED_1 = """\
+{
+  'basic_suites': {
+    'suite_d': {
+      'a': 'b',
+    },
+    'suite_c': {
+      'a': 'b',
+    },
+  },
+  'compound_suites': {
+    'suite_a': [
+      'suite_c',
+    ],
+    'suite_b': [
+      'suite_d',
+    ],
+  },
+}
+"""
+
+TEST_SUITE_UNSORTED_2 = """\
+{
+  'basic_suites': {
+    'suite_c': {
+      'a': 'b',
+    },
+    'suite_d': {
+      'a': 'b',
+    },
+  },
+  'compound_suites': {
+    'suite_b': [
+      'suite_c',
+    ],
+    'suite_a': [
+      'suite_d',
+    ],
+  },
+}
+"""
+TEST_SUITE_UNSORTED_3 = """\
+{
+  'basic_suites': {
+    'suite_d': {
+      'a': 'b',
+    },
+    'suite_c': {
+      'a': 'b',
+    },
+  },
+  'compound_suites': {
+    'suite_b': [
+      'suite_c',
+    ],
+    'suite_a': [
+      'suite_d',
+    ],
+  },
+}
+"""
+
+
+TEST_SUITES_SYNTAX_ERROR = """\
+{
+  'basic_suites': {
+    3: {
+      'suite_c': {},
+    },
+  },
+  'compound_suites': {},
 }
 """
 
@@ -1478,6 +1823,17 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                                  'Composition test suites may not refer to.*'):
+      fbb.check_input_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_composition_test_suites_no_duplicate_names(self):
+    fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
+                    DUPLICATES_COMPOSITION_TEST_SUITES,
+                    EMPTY_PYL_FILE,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+                                 '.*may not duplicate basic test suite.*'):
       fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -1870,6 +2226,14 @@ class UnitTest(unittest.TestCase):
     fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
                     FOO_TEST_SUITE,
                     EMPTY_PYL_FILE,
+                    SWARMING_MIXINS_SORTED,
+                    LUCI_MILO_CFG)
+    fbb.check_input_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+    fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
+                    FOO_TEST_SUITE,
+                    EMPTY_PYL_FILE,
                     SWARMING_MIXINS_UNSORTED,
                     LUCI_MILO_CFG)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
@@ -1882,13 +2246,144 @@ class UnitTest(unittest.TestCase):
     fbb.printed_lines = []
     self.assertFalse(fbb.printed_lines)
 
-    fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
-                    FOO_TEST_SUITE,
+  def test_waterfalls_must_be_sorted(self):
+    fbb = FakeBBGen(TEST_SUITE_SORTED_WATERFALL,
+                    TEST_SUITE_SORTED,
                     EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG_WATERFALL_SORTING)
+    fbb.check_input_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+    fbb = FakeBBGen(TEST_SUITE_UNSORTED_WATERFALL_1,
+                    TEST_SUITE_SORTED,
+                    EMPTY_PYL_FILE,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG_WATERFALL_SORTING)
+    with self.assertRaisesRegexp(
+        generate_buildbot_json.BBGenErr,
+        'The following files have invalid keys: waterfalls.pyl'):
+      fbb.check_input_file_consistency(verbose=True)
+    joined_lines = '\n'.join(fbb.printed_lines)
+    self.assertRegexpMatches(
+      joined_lines, '.*\+chromium\..*test.*')
+    self.assertRegexpMatches(
+      joined_lines, '.*\-chromium\..*test.*')
+    fbb.printed_lines = []
+    self.assertFalse(fbb.printed_lines)
+
+    fbb = FakeBBGen(TEST_SUITE_UNSORTED_WATERFALL_2,
+                    TEST_SUITE_SORTED,
+                    EMPTY_PYL_FILE,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG_WATERFALL_SORTING)
+    with self.assertRaisesRegexp(
+        generate_buildbot_json.BBGenErr,
+        'The following files have invalid keys: waterfalls.pyl'):
+      fbb.check_input_file_consistency(verbose=True)
+    joined_lines = ' '.join(fbb.printed_lines)
+    self.assertRegexpMatches(
+      joined_lines, '.*\+.*Fake Tester.*')
+    self.assertRegexpMatches(
+      joined_lines, '.*\-.*Fake Tester.*')
+    fbb.printed_lines = []
+    self.assertFalse(fbb.printed_lines)
+
+  def test_test_suite_exceptions_must_be_sorted(self):
+    fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
+                    TEST_SUITE_SORTED,
+                    EXCEPTIONS_SORTED,
+                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
+
+    fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
+                    TEST_SUITE_SORTED,
+                    EXCEPTIONS_UNSORTED,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG)
+    with self.assertRaises(generate_buildbot_json.BBGenErr):
+      fbb.check_input_file_consistency(verbose=True)
+    joined_lines = ' '.join(fbb.printed_lines)
+    self.assertRegexpMatches(
+        joined_lines, '.*\+suite_.*')
+    self.assertRegexpMatches(
+        joined_lines, '.*\-suite_.*')
+    fbb.printed_lines = []
+    self.assertFalse(fbb.printed_lines)
+
+  def test_test_suites_must_be_sorted(self):
+    fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
+                    TEST_SUITE_SORTED,
+                    EMPTY_PYL_FILE,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG)
+    fbb.check_input_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+    for unsorted in (
+        TEST_SUITE_UNSORTED_1,
+        TEST_SUITE_UNSORTED_2,
+        TEST_SUITE_UNSORTED_3,
+    ):
+      fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
+                      unsorted,
+                      EMPTY_PYL_FILE,
+                      EMPTY_PYL_FILE,
+                      LUCI_MILO_CFG)
+      with self.assertRaises(generate_buildbot_json.BBGenErr):
+        fbb.check_input_file_consistency(verbose=True)
+      joined_lines = ' '.join(fbb.printed_lines)
+      self.assertRegexpMatches(
+          joined_lines, '.*\+suite_.*')
+      self.assertRegexpMatches(
+          joined_lines, '.*\-suite_.*')
+      fbb.printed_lines = []
+      self.assertFalse(fbb.printed_lines)
+
+  def test_swarming_mixins_no_duplicate_keys(self):
+    fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS_DUPLICATED,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(
+        generate_buildbot_json.BBGenErr,
+        'The following files have invalid keys: swarming_mixins.pyl'):
+      fbb.check_input_file_consistency(verbose=True)
+    joined_lines = ' '.join(fbb.printed_lines)
+    self.assertRegexpMatches(
+        joined_lines, 'Key .* is duplicated')
+    fbb.printed_lines = []
+    self.assertFalse(fbb.printed_lines)
+
+  def test_type_assert_printing_help(self):
+    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
+                    TEST_SUITES_SYNTAX_ERROR,
+                    EMPTY_PYL_FILE,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(
+        generate_buildbot_json.BBGenErr,
+        'Invalid \.pyl file \'test_suites.pyl\'.*'):
+      fbb.check_input_file_consistency(verbose=True)
+    self.assertEquals(
+        fbb.printed_lines, [
+          '== test_suites.pyl ==',
+          '<snip>',
+          '1 {',
+          "2   'basic_suites': {",
+          '--------------------------------------------------------------------'
+          '------------',
+          '3     3: {',
+          '-------^------------------------------------------------------------'
+          '------------',
+          "4       'suite_c': {},",
+          '5     },',
+          '<snip>',
+        ])
+
 
 
 if __name__ == '__main__':
