@@ -30,7 +30,7 @@
 
 /*
  * make_instrumenting_probes.py uses this file as a source to generate
- * CoreProbesInl.h, CoreProbesImpl.cpp and CoreProbeSink.h.
+ * core_probes_inl.h, core_probes_impl.cc and core_probe_sink.h.
  *
  * The code below is not a correct IDL but a mix of IDL and C++.
  *

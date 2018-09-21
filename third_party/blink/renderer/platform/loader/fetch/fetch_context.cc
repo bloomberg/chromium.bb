@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 
-#include "third_party/blink/renderer/platform/PlatformProbeSink.h"
+#include "third_party/blink/renderer/platform/platform_probe_sink.h"
 #include "third_party/blink/renderer/platform/probe/platform_trace_events_agent.h"
 
 namespace blink {
