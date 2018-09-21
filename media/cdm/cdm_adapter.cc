@@ -202,15 +202,15 @@ cdm::VideoCodec ToCdmVideoCodec(VideoCodec codec) {
 cdm::VideoCodecProfile ToCdmVideoCodecProfile(VideoCodecProfile profile) {
   switch (profile) {
     case VP8PROFILE_ANY:
-    // TODO(servolk): See crbug.com/592074. We'll need to update this code to
-    // handle different VP9 profiles properly after adding VP9 profiles in
-    // media/cdm/api/content_decryption_module.h in a separate CL.
-    // For now return kProfileNotNeeded to avoid breaking unit tests.
-    case VP9PROFILE_PROFILE0:
-    case VP9PROFILE_PROFILE1:
-    case VP9PROFILE_PROFILE2:
-    case VP9PROFILE_PROFILE3:
       return cdm::kProfileNotNeeded;
+    case VP9PROFILE_PROFILE0:
+      return cdm::kVP9Profile0;
+    case VP9PROFILE_PROFILE1:
+      return cdm::kVP9Profile1;
+    case VP9PROFILE_PROFILE2:
+      return cdm::kVP9Profile2;
+    case VP9PROFILE_PROFILE3:
+      return cdm::kVP9Profile3;
     case H264PROFILE_BASELINE:
       return cdm::kH264ProfileBaseline;
     case H264PROFILE_MAIN:
@@ -374,6 +374,43 @@ cdm::EncryptionScheme ToCdmEncryptionScheme(const EncryptionMode& mode) {
 
   NOTREACHED();
   return cdm::EncryptionScheme::kUnencrypted;
+}
+
+// Warning: The returned config contains raw pointers to the extra data in the
+// input |config|. Hence, the caller must make sure the input |config| outlives
+// the returned config.
+cdm::AudioDecoderConfig_2 ToCdmAudioDecoderConfig(
+    const media::AudioDecoderConfig& config) {
+  cdm::AudioDecoderConfig_2 cdm_config = {};
+  cdm_config.codec = ToCdmAudioCodec(config.codec());
+  cdm_config.channel_count =
+      ChannelLayoutToChannelCount(config.channel_layout());
+  cdm_config.bits_per_channel = config.bits_per_channel();
+  cdm_config.samples_per_second = config.samples_per_second();
+  cdm_config.extra_data = const_cast<uint8_t*>(config.extra_data().data());
+  cdm_config.extra_data_size = config.extra_data().size();
+  cdm_config.encryption_scheme =
+      ToCdmEncryptionScheme(config.encryption_scheme());
+  return cdm_config;
+}
+
+// Warning: The returned config contains raw pointers to the extra data in the
+// input |config|. Hence, the caller must make sure the input |config| outlives
+// the returned config.
+cdm::VideoDecoderConfig_3 ToCdmVideoDecoderConfig(
+    const media::VideoDecoderConfig& config) {
+  cdm::VideoDecoderConfig_3 cdm_config = {};
+  cdm_config.codec = ToCdmVideoCodec(config.codec());
+  cdm_config.profile = ToCdmVideoCodecProfile(config.profile());
+  cdm_config.format = ToCdmVideoFormat(config.format());
+  cdm_config.color_space = ToCdmColorSpace(config.color_space_info());
+  cdm_config.coded_size.width = config.coded_size().width();
+  cdm_config.coded_size.height = config.coded_size().height();
+  cdm_config.extra_data = const_cast<uint8_t*>(config.extra_data().data());
+  cdm_config.extra_data_size = config.extra_data().size();
+  cdm_config.encryption_scheme =
+      ToCdmEncryptionScheme(config.encryption_scheme());
+  return cdm_config;
 }
 
 // Verify that OutputProtection types matches those in CDM interface.
@@ -787,19 +824,8 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(audio_init_cb_.is_null());
 
-  cdm::AudioDecoderConfig_2 cdm_decoder_config = {};
-  cdm_decoder_config.codec = ToCdmAudioCodec(config.codec());
-  cdm_decoder_config.channel_count =
-      ChannelLayoutToChannelCount(config.channel_layout());
-  cdm_decoder_config.bits_per_channel = config.bits_per_channel();
-  cdm_decoder_config.samples_per_second = config.samples_per_second();
-  cdm_decoder_config.extra_data =
-      const_cast<uint8_t*>(config.extra_data().data());
-  cdm_decoder_config.extra_data_size = config.extra_data().size();
-  cdm_decoder_config.encryption_scheme =
-      ToCdmEncryptionScheme(config.encryption_scheme());
-
-  cdm::Status status = cdm_->InitializeAudioDecoder(cdm_decoder_config);
+  cdm::Status status =
+      cdm_->InitializeAudioDecoder(ToCdmAudioDecoderConfig(config));
   if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
     DCHECK(status == cdm::kInitializationError);
     DVLOG(1) << __func__ << ": status = " << status;
@@ -824,20 +850,8 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(video_init_cb_.is_null());
 
-  cdm::VideoDecoderConfig_3 cdm_decoder_config = {};
-  cdm_decoder_config.codec = ToCdmVideoCodec(config.codec());
-  cdm_decoder_config.profile = ToCdmVideoCodecProfile(config.profile());
-  cdm_decoder_config.format = ToCdmVideoFormat(config.format());
-  cdm_decoder_config.color_space = ToCdmColorSpace(config.color_space_info());
-  cdm_decoder_config.coded_size.width = config.coded_size().width();
-  cdm_decoder_config.coded_size.height = config.coded_size().height();
-  cdm_decoder_config.extra_data =
-      const_cast<uint8_t*>(config.extra_data().data());
-  cdm_decoder_config.extra_data_size = config.extra_data().size();
-  cdm_decoder_config.encryption_scheme =
-      ToCdmEncryptionScheme(config.encryption_scheme());
-
-  cdm::Status status = cdm_->InitializeVideoDecoder(cdm_decoder_config);
+  cdm::Status status =
+      cdm_->InitializeVideoDecoder(ToCdmVideoDecoderConfig(config));
   if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
     DCHECK(status == cdm::kInitializationError);
     DVLOG(1) << __func__ << ": status = " << status;
