@@ -32,6 +32,9 @@ class CacheCreator {
                net::CacheType type,
                net::BackendType backend_type,
                uint32_t flags,
+#if defined(OS_ANDROID)
+               base::android::ApplicationStatusListener* app_status_listener,
+#endif
                net::NetLog* net_log,
                std::unique_ptr<disk_cache::Backend>* backend,
                base::OnceClosure post_cleanup_callback,
@@ -58,6 +61,8 @@ class CacheCreator {
   net::BackendType backend_type_;
 #if !defined(OS_ANDROID)
   uint32_t flags_;
+#else
+  base::android::ApplicationStatusListener* app_status_listener_;
 #endif
   std::unique_ptr<disk_cache::Backend>* backend_;
   base::OnceClosure post_cleanup_callback_;
@@ -69,16 +74,20 @@ class CacheCreator {
   DISALLOW_COPY_AND_ASSIGN(CacheCreator);
 };
 
-CacheCreator::CacheCreator(const base::FilePath& path,
-                           bool force,
-                           int64_t max_bytes,
-                           net::CacheType type,
-                           net::BackendType backend_type,
-                           uint32_t flags,
-                           net::NetLog* net_log,
-                           std::unique_ptr<disk_cache::Backend>* backend,
-                           base::OnceClosure post_cleanup_callback,
-                           net::CompletionOnceCallback callback)
+CacheCreator::CacheCreator(
+    const base::FilePath& path,
+    bool force,
+    int64_t max_bytes,
+    net::CacheType type,
+    net::BackendType backend_type,
+    uint32_t flags,
+#if defined(OS_ANDROID)
+    base::android::ApplicationStatusListener* app_status_listener,
+#endif
+    net::NetLog* net_log,
+    std::unique_ptr<disk_cache::Backend>* backend,
+    base::OnceClosure post_cleanup_callback,
+    net::CompletionOnceCallback callback)
     : path_(path),
       force_(force),
       retry_(false),
@@ -87,6 +96,8 @@ CacheCreator::CacheCreator(const base::FilePath& path,
       backend_type_(backend_type),
 #if !defined(OS_ANDROID)
       flags_(flags),
+#else
+      app_status_listener_(app_status_listener),
 #endif
       backend_(backend),
       post_cleanup_callback_(std::move(post_cleanup_callback)),
@@ -110,6 +121,10 @@ int CacheCreator::Run() {
                                           /* file_tracker = */ nullptr,
                                           max_bytes_, type_, net_log_);
     created_cache_.reset(simple_cache);
+#if defined(OS_ANDROID)
+    if (app_status_listener_)
+      simple_cache->set_app_status_listener(app_status_listener_);
+#endif
     return simple_cache->Init(
         base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
   }
@@ -196,15 +211,19 @@ void CacheCreator::OnIOComplete(int result) {
 
 namespace disk_cache {
 
-int CreateCacheBackendImpl(net::CacheType type,
-                           net::BackendType backend_type,
-                           const base::FilePath& path,
-                           int64_t max_bytes,
-                           bool force,
-                           net::NetLog* net_log,
-                           std::unique_ptr<Backend>* backend,
-                           base::OnceClosure post_cleanup_callback,
-                           net::CompletionOnceCallback callback) {
+int CreateCacheBackendImpl(
+    net::CacheType type,
+    net::BackendType backend_type,
+    const base::FilePath& path,
+    int64_t max_bytes,
+    bool force,
+#if defined(OS_ANDROID)
+    base::android::ApplicationStatusListener* app_status_listener,
+#endif
+    net::NetLog* net_log,
+    std::unique_ptr<Backend>* backend,
+    base::OnceClosure post_cleanup_callback,
+    net::CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
 
   if (type == net::MEMORY_CACHE) {
@@ -225,8 +244,11 @@ int CreateCacheBackendImpl(net::CacheType type,
 
   bool had_post_cleanup_callback = !post_cleanup_callback.is_null();
   CacheCreator* creator = new CacheCreator(
-      path, force, max_bytes, type, backend_type, kNone, net_log, backend,
-      std::move(post_cleanup_callback), std::move(callback));
+      path, force, max_bytes, type, backend_type, kNone,
+#if defined(OS_ANDROID)
+      std::move(app_status_listener),
+#endif
+      net_log, backend, std::move(post_cleanup_callback), std::move(callback));
   if (type == net::DISK_CACHE || type == net::MEDIA_CACHE) {
     DCHECK(!had_post_cleanup_callback);
     return creator->Run();
@@ -244,9 +266,30 @@ int CreateCacheBackend(net::CacheType type,
                        std::unique_ptr<Backend>* backend,
                        net::CompletionOnceCallback callback) {
   return CreateCacheBackendImpl(type, backend_type, path, max_bytes, force,
+#if defined(OS_ANDROID)
+                                nullptr,
+#endif
                                 net_log, backend, base::OnceClosure(),
                                 std::move(callback));
 }
+
+#if defined(OS_ANDROID)
+NET_EXPORT int CreateCacheBackend(
+    net::CacheType type,
+    net::BackendType backend_type,
+    const base::FilePath& path,
+    int64_t max_bytes,
+    bool force,
+    net::NetLog* net_log,
+    std::unique_ptr<Backend>* backend,
+    net::CompletionOnceCallback callback,
+    base::android::ApplicationStatusListener* app_status_listener) {
+  return CreateCacheBackendImpl(type, backend_type, path, max_bytes, force,
+                                std::move(app_status_listener), net_log,
+                                backend, base::OnceClosure(),
+                                std::move(callback));
+}
+#endif
 
 int CreateCacheBackend(net::CacheType type,
                        net::BackendType backend_type,
@@ -258,8 +301,11 @@ int CreateCacheBackend(net::CacheType type,
                        base::OnceClosure post_cleanup_callback,
                        net::CompletionOnceCallback callback) {
   return CreateCacheBackendImpl(
-      type, backend_type, path, max_bytes, force, net_log, backend,
-      std::move(post_cleanup_callback), std::move(callback));
+      type, backend_type, path, max_bytes, force,
+#if defined(OS_ANDROID)
+      nullptr,
+#endif
+      net_log, backend, std::move(post_cleanup_callback), std::move(callback));
 }
 
 void FlushCacheThreadForTesting() {

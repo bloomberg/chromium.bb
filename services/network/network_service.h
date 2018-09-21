@@ -151,6 +151,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void AddCorbExceptionForPlugin(uint32_t process_id) override;
   void RemoveCorbExceptionForPlugin(uint32_t process_id) override;
+#if defined(OS_ANDROID)
+  void OnApplicationStateChange(base::android::ApplicationState state) override;
+#endif
 
   // Returns the shared HttpAuthHandlerFactory for the NetworkService, creating
   // one if needed.

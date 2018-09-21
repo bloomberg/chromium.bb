@@ -83,9 +83,9 @@ DataUseMeasurement::DataUseMeasurement(
 #if defined(OS_ANDROID)
       ,
       app_state_(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES),
-      app_listener_(new base::android::ApplicationStatusListener(
-          base::Bind(&DataUseMeasurement::OnApplicationStateChange,
-                     base::Unretained(this)))),
+      app_listener_(base::android::ApplicationStatusListener::New(
+          base::BindRepeating(&DataUseMeasurement::OnApplicationStateChange,
+                              base::Unretained(this)))),
       rx_bytes_os_(0),
       tx_bytes_os_(0),
       bytes_transferred_since_last_traffic_stats_query_(0),

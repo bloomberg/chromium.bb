@@ -178,9 +178,14 @@ void SimpleIndex::Initialize(base::Time cache_mtime) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
 #if defined(OS_ANDROID)
-  if (base::android::IsVMInitialized()) {
-    app_status_listener_.reset(new base::android::ApplicationStatusListener(
-        base::Bind(&SimpleIndex::OnApplicationStateChange, AsWeakPtr())));
+  if (app_status_listener_) {
+    app_status_listener_->SetCallback(base::BindRepeating(
+        &SimpleIndex::OnApplicationStateChange, AsWeakPtr()));
+  } else if (base::android::IsVMInitialized()) {
+    owned_app_status_listener_ =
+        base::android::ApplicationStatusListener::New(base::BindRepeating(
+            &SimpleIndex::OnApplicationStateChange, AsWeakPtr()));
+    app_status_listener_ = owned_app_status_listener_.get();
   }
 #endif
 

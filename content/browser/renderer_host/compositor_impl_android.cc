@@ -217,9 +217,10 @@ class CompositorDependencies {
 
   CompositorDependencies()
       : frame_sink_id_allocator(kDefaultClientId),
-        app_listener_(base::BindRepeating(
-            &CompositorDependencies::OnApplicationStateChange,
-            base::Unretained(this))) {
+        app_listener_(
+            base::android::ApplicationStatusListener::New(base::BindRepeating(
+                &CompositorDependencies::OnApplicationStateChange,
+                base::Unretained(this)))) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     bool enable_viz =
@@ -330,7 +331,7 @@ class CompositorDependencies {
   base::CancelableOnceClosure low_end_background_cleanup_task_;
 
   // An instance of Android AppListener.
-  base::android::ApplicationStatusListener app_listener_;
+  std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
 };
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;

@@ -52,6 +52,10 @@
 #include "components/os_crypt/key_storage_config_linux.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
+
 namespace network {
 
 namespace {
@@ -457,6 +461,14 @@ void NetworkService::RemoveCorbExceptionForPlugin(uint32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
   CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
 }
+
+#if defined(OS_ANDROID)
+void NetworkService::OnApplicationStateChange(
+    base::android::ApplicationState state) {
+  for (auto* network_context : network_contexts_)
+    network_context->app_status_listener()->Notify(state);
+}
+#endif
 
 net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
   if (!http_auth_handler_factory_) {
