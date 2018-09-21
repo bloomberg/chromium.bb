@@ -11,8 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -29,11 +32,8 @@
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 #include "headless/test/headless_browser_test.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/cookies/cookie_store.h"
-#include "net/http/http_util.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -702,6 +702,31 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ServerWantsClientCertificate) {
           .SetInitialURL(server.GetURL("/hello.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, AIAFetching) {
+  net::SpawnedTestServer::SSLOptions ssl_options(
+      net::SpawnedTestServer::SSLOptions::CERT_AUTO_AIA_INTERMEDIATE);
+  net::SpawnedTestServer server(
+      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(server.Start());
+
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+  browser()->SetDefaultBrowserContext(browser_context);
+
+  GURL url = server.GetURL("/defaultresponse");
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder().SetInitialURL(url).Build();
+  EXPECT_TRUE(WaitForLoad(web_contents));
+  content::NavigationEntry* last_entry =
+      HeadlessWebContentsImpl::From(web_contents)
+          ->web_contents()
+          ->GetController()
+          .GetLastCommittedEntry();
+  EXPECT_FALSE(net::IsCertStatusError(last_entry->GetSSL().cert_status));
+  EXPECT_EQ(url, last_entry->GetURL());
 }
 
 }  // namespace headless
