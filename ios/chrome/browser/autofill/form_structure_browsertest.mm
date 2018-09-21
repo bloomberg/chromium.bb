@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #import "ios/chrome/browser/autofill/autofill_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -135,6 +136,10 @@ FormStructureBrowserTest::FormStructureBrowserTest()
 
 void FormStructureBrowserTest::SetUp() {
   ChromeWebTest::SetUp();
+
+  // AddressNormalizerFactory must be initialized in a blocking allowed scoped.
+  // Initialize it now as it may DCHECK if it is initialized during the test.
+  AddressNormalizerFactory::GetInstance();
 
   IOSSecurityStateTabHelper::CreateForWebState(web_state());
   InfoBarManagerImpl::CreateForWebState(web_state());

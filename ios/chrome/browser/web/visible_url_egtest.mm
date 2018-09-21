@@ -19,6 +19,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/web/public/features.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -560,9 +561,18 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Make server respond so URL1 becomes committed.
   [self setServerPaused:NO];
-  [ChromeEarlGrey waitForWebViewContainingText:kTestPage1];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
-      assertWithMatcher:grey_notNil()];
+  if (base::FeatureList::IsEnabled(web::features::kWebFrameMessaging)) {
+    // With frame messaging, only one back is executed. This is the expected
+    // behavior.
+    [ChromeEarlGrey waitForWebViewContainingText:kTestPage2];
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+        assertWithMatcher:grey_notNil()];
+  } else {
+    // TODO(crbug.com/866406): fix the test to have documented behavior.
+    [ChromeEarlGrey waitForWebViewContainingText:kTestPage1];
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
+        assertWithMatcher:grey_notNil()];
+  }
 }
 
 #pragma mark -
