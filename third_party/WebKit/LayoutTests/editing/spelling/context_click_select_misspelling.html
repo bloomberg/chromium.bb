@@ -97,18 +97,31 @@ spellcheck_test(
       title: 'Context click at boundary of misspelled word.',
       callback: sample => test(() => {
         const container = sample.document.querySelector('div');
-        assertContextClickSelection(
+        const shouldSelect = isMac(navigator.platform);
+        if (shouldSelect) {
+          // On Mac, right-clicking immediately before a word will select it.
+          assertContextClickSelection(
             container, 0, 'wellcome',
             'Context clicking immediately before "wellcome" selects it');
 
-        // De-select "wellcome" to ensure that context-clicking immediately after
-        // "wellcome" will select it again.
-        container.ownerDocument.getSelection().removeAllRanges();
+          // De-select "wellcome"; otherwise, context-clicking immediately after "wellcome" will
+          // not change the selection (since it would select a space and not another word)
+          container.ownerDocument.getSelection().removeAllRanges();
 
-        // Right-clicking immediately after a word will select the whole word.
+          // On Mac, right-clicking immediately after a word will select the space after it.
+          assertContextClickSelection(
+            container, 8, ' ',
+            'Context clicking immediately after "wellcome" selects the space after it');
+          return;
+        }
+
         assertContextClickSelection(
-            container, 8, 'wellcome',
-            'Context clicking immediately after "wellcome" selects it');
+            container, 0, '',
+            'Context clicking immediately before "wellcome" does not select it');
+
+        assertContextClickSelection(
+            container, 8, '',
+            'Context clicking immediately after "wellcome" does not select it');
       },
       'Context clicking immediately before or after misspelled word in editable DIV does not select it.',
       {sample: sample, blockHeldTest: true})

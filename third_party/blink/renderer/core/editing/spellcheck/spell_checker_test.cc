@@ -149,10 +149,7 @@ TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_FirstCharSelected) {
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_EQ(text, result.first);
-  ASSERT_NE(nullptr, result.second);
-  EXPECT_EQ(0u, result.second->StartOffset());
-  EXPECT_EQ(8u, result.second->EndOffset());
+  EXPECT_NE(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_LastCharSelected) {
@@ -176,10 +173,7 @@ TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_LastCharSelected) {
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_EQ(text, result.first);
-  ASSERT_NE(nullptr, result.second);
-  EXPECT_EQ(0u, result.second->StartOffset());
-  EXPECT_EQ(8u, result.second->EndOffset());
+  EXPECT_NE(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -204,10 +198,7 @@ TEST_F(SpellCheckerTest,
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_EQ(text, result.first);
-  ASSERT_NE(nullptr, result.second);
-  EXPECT_EQ(0u, result.second->StartOffset());
-  EXPECT_EQ(1u, result.second->EndOffset());
+  EXPECT_NE(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -232,10 +223,7 @@ TEST_F(SpellCheckerTest,
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_EQ(text, result.first);
-  ASSERT_NE(nullptr, result.second);
-  EXPECT_EQ(0u, result.second->StartOffset());
-  EXPECT_EQ(1u, result.second->EndOffset());
+  EXPECT_EQ(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -260,10 +248,7 @@ TEST_F(SpellCheckerTest,
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_EQ(text, result.first);
-  ASSERT_NE(nullptr, result.second);
-  EXPECT_EQ(0u, result.second->StartOffset());
-  EXPECT_EQ(1u, result.second->EndOffset());
+  EXPECT_EQ(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -288,10 +273,7 @@ TEST_F(SpellCheckerTest,
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_EQ(text, result.first);
-  ASSERT_NE(nullptr, result.second);
-  EXPECT_EQ(0u, result.second->StartOffset());
-  EXPECT_EQ(8u, result.second->EndOffset());
+  EXPECT_EQ(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -316,10 +298,7 @@ TEST_F(SpellCheckerTest,
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_EQ(text, result.first);
-  ASSERT_NE(nullptr, result.second);
-  EXPECT_EQ(0u, result.second->StartOffset());
-  EXPECT_EQ(8u, result.second->EndOffset());
+  EXPECT_EQ(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_CaretMiddleOfWord) {
@@ -343,10 +322,7 @@ TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_CaretMiddleOfWord) {
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_EQ(text, result.first);
-  ASSERT_NE(nullptr, result.second);
-  EXPECT_EQ(0u, result.second->StartOffset());
-  EXPECT_EQ(8u, result.second->EndOffset());
+  EXPECT_NE(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
