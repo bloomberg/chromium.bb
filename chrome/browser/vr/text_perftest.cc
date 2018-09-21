@@ -5,7 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "cc/base/lap_timer.h"
 #include "chrome/browser/vr/elements/text.h"
-#include "chrome/browser/vr/ganesh_surface_provider.h"
+#include "chrome/browser/vr/skia_surface_provider_factory.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/gl_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +27,7 @@ class TextPerfTest : public testing::Test {
   void SetUp() override {
     gl_test_environment_ =
         std::make_unique<GlTestEnvironment>(kPixelHalfScreen);
-    provider_ = std::make_unique<GaneshSurfaceProvider>();
+    provider_ = SkiaSurfaceProviderFactory::Create();
 
     text_element_ = std::make_unique<Text>(kFontHeightMeters);
     text_element_->SetFieldWidth(kTextWidthMeters);

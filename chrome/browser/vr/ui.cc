@@ -18,7 +18,6 @@
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/text_input.h"
-#include "chrome/browser/vr/ganesh_surface_provider.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/vr/model/sound_id.h"
 #include "chrome/browser/vr/platform_input_handler.h"
 #include "chrome/browser/vr/platform_ui_input_delegate.h"
+#include "chrome/browser/vr/skia_surface_provider_factory.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
@@ -376,7 +376,7 @@ void Ui::OnGlInitialized(GlTextureLocation textures_location,
   ui_element_renderer_ = std::make_unique<UiElementRenderer>();
   ui_renderer_ =
       std::make_unique<UiRenderer>(scene_.get(), ui_element_renderer_.get());
-  provider_ = std::make_unique<GaneshSurfaceProvider>();
+  provider_ = SkiaSurfaceProviderFactory::Create();
   scene_->OnGlInitialized(provider_.get());
   model_->content_texture_id = content_texture_id;
   model_->content_overlay_texture_id = content_overlay_texture_id;

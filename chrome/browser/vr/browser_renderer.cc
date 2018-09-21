@@ -18,7 +18,6 @@
 #include "chrome/browser/vr/scheduler_delegate.h"
 #include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_test_input.h"
-#include "ui/gl/gl_bindings.h"
 
 namespace vr {
 

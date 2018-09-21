@@ -92,7 +92,6 @@ static_library("vr_android") {
     "//base",
     "//cc",
     "//chrome/browser/ui:ui",
-    "//chrome/browser/vr:vr_base",
     "//chrome/browser/vr:vr_common",
     "//chrome/common:common",
     "//chrome/common:constants",

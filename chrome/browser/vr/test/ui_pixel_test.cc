@@ -13,9 +13,6 @@
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "third_party/skia/include/core/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkStream.h"
-#include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/test/gl_test_helper.h"
 
 namespace vr {
 
@@ -31,8 +28,8 @@ void UiPixelTest::SetUp() {
       std::make_unique<GlTestEnvironment>(frame_buffer_size_);
 
   // Make content texture.
-  content_texture_ = gl::GLTestHelper::CreateTexture(GL_TEXTURE_2D);
-  content_overlay_texture_ = gl::GLTestHelper::CreateTexture(GL_TEXTURE_2D);
+  content_texture_ = gl_test_environment_->CreateTexture(GL_TEXTURE_2D);
+  content_overlay_texture_ = gl_test_environment_->CreateTexture(GL_TEXTURE_2D);
 
   // TODO(tiborg): Make GL_TEXTURE_EXTERNAL_OES texture for content and fill it
   // with fake content.
