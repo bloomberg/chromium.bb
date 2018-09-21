@@ -71,12 +71,15 @@ scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextProviderImpl(
   attributes.enable_gles2_interface = support_gles2_interface;
   attributes.enable_raster_interface = support_raster_interface;
 
+  gpu::SharedMemoryLimits memory_limits =
+      gpu::SharedMemoryLimits::ForDisplayCompositor();
+
   GURL url("chrome://gpu/VizProcessTransportFactory::CreateContextProvider");
   return base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), gpu_memory_buffer_manager,
       kGpuStreamIdDefault, kGpuStreamPriorityUI, gpu::kNullSurfaceHandle,
       std::move(url), kAutomaticFlushes, support_locking, support_grcontext,
-      gpu::SharedMemoryLimits(), attributes, type);
+      memory_limits, attributes, type);
 }
 
 bool IsContextLost(viz::ContextProvider* context_provider) {
