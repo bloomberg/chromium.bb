@@ -47,11 +47,11 @@ class AccessibilityMediaControl : public AXLayoutObject {
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         AXNameFrom&,
+                         ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
-  String Description(AXNameFrom,
-                     AXDescriptionFrom&,
+  String Description(ax::mojom::NameFrom,
+                     ax::mojom::DescriptionFrom&,
                      AXObjectVector* description_objects) const override;
 
   bool InternalSetAccessibilityFocusAction() override;
@@ -70,8 +70,8 @@ class AccessibilityMediaTimeline final : public AXSlider {
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AccessibilityMediaTimeline() override = default;
 
-  String Description(AXNameFrom,
-                     AXDescriptionFrom&,
+  String Description(ax::mojom::NameFrom,
+                     ax::mojom::DescriptionFrom&,
                      AXObjectVector* description_objects) const override;
 
  private:
@@ -92,11 +92,11 @@ class AXMediaControlsContainer final : public AccessibilityMediaControl {
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         AXNameFrom&,
+                         ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
-  String Description(AXNameFrom,
-                     AXDescriptionFrom&,
+  String Description(ax::mojom::NameFrom,
+                     ax::mojom::DescriptionFrom&,
                      AXObjectVector* description_objects) const override;
 
  private:
@@ -119,7 +119,7 @@ class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         AXNameFrom&,
+                         ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
 

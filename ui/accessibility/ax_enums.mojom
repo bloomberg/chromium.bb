@@ -811,9 +811,11 @@ enum NameFrom {
   kUninitialized,
   kAttribute,
   kAttributeExplicitlyEmpty,
+  kCaption,
   kContents,
   kPlaceholder,
   kRelatedElement,
+  kTitle,
   kValue,
 };
 

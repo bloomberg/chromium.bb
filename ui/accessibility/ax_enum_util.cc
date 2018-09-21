@@ -2151,12 +2151,16 @@ const char* ToString(ax::mojom::NameFrom name_from) {
       return "attribute";
     case ax::mojom::NameFrom::kAttributeExplicitlyEmpty:
       return "attributeExplicitlyEmpty";
+    case ax::mojom::NameFrom::kCaption:
+      return "caption";
     case ax::mojom::NameFrom::kContents:
       return "contents";
     case ax::mojom::NameFrom::kPlaceholder:
       return "placeholder";
     case ax::mojom::NameFrom::kRelatedElement:
       return "relatedElement";
+    case ax::mojom::NameFrom::kTitle:
+      return "title";
     case ax::mojom::NameFrom::kValue:
       return "value";
   }
@@ -2173,12 +2177,16 @@ ax::mojom::NameFrom ParseNameFrom(const char* name_from) {
     return ax::mojom::NameFrom::kAttribute;
   if (0 == strcmp(name_from, "attributeExplicitlyEmpty"))
     return ax::mojom::NameFrom::kAttributeExplicitlyEmpty;
+  if (0 == strcmp(name_from, "caption"))
+    return ax::mojom::NameFrom::kCaption;
   if (0 == strcmp(name_from, "contents"))
     return ax::mojom::NameFrom::kContents;
   if (0 == strcmp(name_from, "placeholder"))
     return ax::mojom::NameFrom::kPlaceholder;
   if (0 == strcmp(name_from, "relatedElement"))
     return ax::mojom::NameFrom::kRelatedElement;
+  if (0 == strcmp(name_from, "title"))
+    return ax::mojom::NameFrom::kTitle;
   if (0 == strcmp(name_from, "value"))
     return ax::mojom::NameFrom::kValue;
   return ax::mojom::NameFrom::kNone;

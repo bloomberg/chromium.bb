@@ -1812,7 +1812,7 @@ TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
   // right target (target 4).
   WebAXObject hitNode =
       WebAXObject::FromWebDocument(web_doc).HitTest(WebPoint(154, 165));
-  WebAXNameFrom name_from;
+  ax::mojom::NameFrom name_from;
   WebVector<WebAXObject> name_objects;
   EXPECT_EQ(std::string("Target4"),
             hitNode.GetName(name_from, name_objects).Utf8());

@@ -353,9 +353,11 @@
     uninitialized,
     attribute,
     attributeExplicitlyEmpty,
+    caption,
     contents,
     placeholder,
     relatedElement,
+    title,
     value
   };
 

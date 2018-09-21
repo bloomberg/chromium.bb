@@ -167,19 +167,19 @@ std::unique_ptr<AXValue> CreateRelatedNodeListValue(
       .build();
 }
 
-String ValueSourceType(AXNameFrom name_from) {
+String ValueSourceType(ax::mojom::NameFrom name_from) {
   switch (name_from) {
-    case kAXNameFromAttribute:
-    case kAXNameFromAttributeExplicitlyEmpty:
-    case kAXNameFromTitle:
-    case kAXNameFromValue:
+    case ax::mojom::NameFrom::kAttribute:
+    case ax::mojom::NameFrom::kAttributeExplicitlyEmpty:
+    case ax::mojom::NameFrom::kTitle:
+    case ax::mojom::NameFrom::kValue:
       return AXValueSourceTypeEnum::Attribute;
-    case kAXNameFromContents:
+    case ax::mojom::NameFrom::kContents:
       return AXValueSourceTypeEnum::Contents;
-    case kAXNameFromPlaceholder:
+    case ax::mojom::NameFrom::kPlaceholder:
       return AXValueSourceTypeEnum::Placeholder;
-    case kAXNameFromCaption:
-    case kAXNameFromRelatedElement:
+    case ax::mojom::NameFrom::kCaption:
+    case ax::mojom::NameFrom::kRelatedElement:
       return AXValueSourceTypeEnum::RelatedElement;
     default:
       return AXValueSourceTypeEnum::Implicit;  // TODO(aboxhall): what to do

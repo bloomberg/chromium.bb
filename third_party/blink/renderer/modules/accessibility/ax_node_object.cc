@@ -1379,47 +1379,47 @@ RGBA32 AXNodeObject::ColorValue() const {
   return color.Rgb();
 }
 
-AriaCurrentState AXNodeObject::GetAriaCurrentState() const {
+ax::mojom::AriaCurrentState AXNodeObject::GetAriaCurrentState() const {
   const AtomicString& attribute_value =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kCurrent);
   if (attribute_value.IsNull())
-    return kAriaCurrentStateUndefined;
+    return ax::mojom::AriaCurrentState::kNone;
   if (attribute_value.IsEmpty() ||
       EqualIgnoringASCIICase(attribute_value, "false"))
-    return kAriaCurrentStateFalse;
+    return ax::mojom::AriaCurrentState::kFalse;
   if (EqualIgnoringASCIICase(attribute_value, "true"))
-    return kAriaCurrentStateTrue;
+    return ax::mojom::AriaCurrentState::kTrue;
   if (EqualIgnoringASCIICase(attribute_value, "page"))
-    return kAriaCurrentStatePage;
+    return ax::mojom::AriaCurrentState::kPage;
   if (EqualIgnoringASCIICase(attribute_value, "step"))
-    return kAriaCurrentStateStep;
+    return ax::mojom::AriaCurrentState::kStep;
   if (EqualIgnoringASCIICase(attribute_value, "location"))
-    return kAriaCurrentStateLocation;
+    return ax::mojom::AriaCurrentState::kLocation;
   if (EqualIgnoringASCIICase(attribute_value, "date"))
-    return kAriaCurrentStateDate;
+    return ax::mojom::AriaCurrentState::kDate;
   if (EqualIgnoringASCIICase(attribute_value, "time"))
-    return kAriaCurrentStateTime;
+    return ax::mojom::AriaCurrentState::kTime;
   // An unknown value should return true.
   if (!attribute_value.IsEmpty())
-    return kAriaCurrentStateTrue;
+    return ax::mojom::AriaCurrentState::kTrue;
 
   return AXObject::GetAriaCurrentState();
 }
 
-InvalidState AXNodeObject::GetInvalidState() const {
+ax::mojom::InvalidState AXNodeObject::GetInvalidState() const {
   const AtomicString& attribute_value =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kInvalid);
   if (EqualIgnoringASCIICase(attribute_value, "false"))
-    return kInvalidStateFalse;
+    return ax::mojom::InvalidState::kFalse;
   if (EqualIgnoringASCIICase(attribute_value, "true"))
-    return kInvalidStateTrue;
+    return ax::mojom::InvalidState::kTrue;
   if (EqualIgnoringASCIICase(attribute_value, "spelling"))
-    return kInvalidStateSpelling;
+    return ax::mojom::InvalidState::kSpelling;
   if (EqualIgnoringASCIICase(attribute_value, "grammar"))
-    return kInvalidStateGrammar;
+    return ax::mojom::InvalidState::kGrammar;
   // A yet unknown value.
   if (!attribute_value.IsEmpty())
-    return kInvalidStateOther;
+    return ax::mojom::InvalidState::kOther;
 
   if (GetNode() && GetNode()->IsElementNode() &&
       ToElement(GetNode())->IsFormControlElement()) {
@@ -1427,7 +1427,8 @@ InvalidState AXNodeObject::GetInvalidState() const {
     HeapVector<Member<HTMLFormControlElement>> invalid_controls;
     bool is_invalid = !element->checkValidity(&invalid_controls,
                                               kCheckValidityDispatchNoEvent);
-    return is_invalid ? kInvalidStateTrue : kInvalidStateFalse;
+    return is_invalid ? ax::mojom::InvalidState::kTrue
+                      : ax::mojom::InvalidState::kFalse;
   }
 
   return AXObject::GetInvalidState();
@@ -1533,7 +1534,7 @@ int AXNodeObject::AutoSetSize() const {
 }
 
 String AXNodeObject::AriaInvalidValue() const {
-  if (GetInvalidState() == kInvalidStateOther)
+  if (GetInvalidState() == ax::mojom::InvalidState::kOther)
     return GetAOMPropertyOrARIAAttribute(AOMStringProperty::kInvalid);
 
   return String();
@@ -1760,7 +1761,7 @@ static bool IsInSameNonInlineBlockFlow(LayoutObject* r1, LayoutObject* r2) {
 // New AX name calculation.
 //
 
-String AXNodeObject::GetName(AXNameFrom& name_from,
+String AXNodeObject::GetName(ax::mojom::NameFrom& name_from,
                              AXObjectVector* name_objects) const {
   String name = AXObject::GetName(name_from, name_objects);
   if (RoleValue() == ax::mojom::Role::kSpinButton && DatetimeAncestor()) {
@@ -1778,7 +1779,7 @@ String AXNodeObject::GetName(AXNameFrom& name_from,
 String AXNodeObject::TextAlternative(bool recursive,
                                      bool in_aria_labelled_by_traversal,
                                      AXObjectSet& visited,
-                                     AXNameFrom& name_from,
+                                     ax::mojom::NameFrom& name_from,
                                      AXRelatedObjectVector* related_objects,
                                      NameSources* name_sources) const {
   // If nameSources is non-null, relatedObjects is used in filling it in, so it
@@ -1822,7 +1823,7 @@ String AXNodeObject::TextAlternative(bool recursive,
                             &found_text_alternative);
   const bool has_text_alternative =
       !text_alternative.IsEmpty() ||
-      name_from == kAXNameFromAttributeExplicitlyEmpty;
+      name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty;
   if (has_text_alternative && !name_sources)
     return text_alternative;
 
@@ -1830,7 +1831,7 @@ String AXNodeObject::TextAlternative(bool recursive,
   if (in_aria_labelled_by_traversal || NameFromContents(recursive)) {
     Node* node = GetNode();
     if (!IsHTMLSelectElement(node)) {  // Avoid option descendant text
-      name_from = kAXNameFromContents;
+      name_from = ax::mojom::NameFrom::kContents;
       if (name_sources) {
         name_sources->push_back(NameSource(found_text_alternative));
         name_sources->back().type = name_from;
@@ -1855,7 +1856,7 @@ String AXNodeObject::TextAlternative(bool recursive,
   }
 
   // Step 2H from: http://www.w3.org/TR/accname-aam-1.1
-  name_from = kAXNameFromTitle;
+  name_from = ax::mojom::NameFrom::kTitle;
   if (name_sources) {
     name_sources->push_back(NameSource(found_text_alternative, titleAttr));
     name_sources->back().type = name_from;
@@ -1871,7 +1872,7 @@ String AXNodeObject::TextAlternative(bool recursive,
     }
   }
 
-  name_from = kAXNameFromUninitialized;
+  name_from = ax::mojom::NameFrom::kUninitialized;
 
   if (name_sources && found_text_alternative) {
     for (size_t i = 0; i < name_sources->size(); ++i) {
@@ -2542,7 +2543,7 @@ void AXNodeObject::ComputeAriaOwnsChildren(
 // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
 String AXNodeObject::NativeTextAlternative(
     AXObjectSet& visited,
-    AXNameFrom& name_from,
+    ax::mojom::NameFrom& name_from,
     AXRelatedObjectVector* related_objects,
     NameSources* name_sources,
     bool* found_text_alternative) const {
@@ -2566,7 +2567,7 @@ String AXNodeObject::NativeTextAlternative(
     html_element = ToHTMLElement(GetNode());
 
   if (html_element && html_element->IsLabelable()) {
-    name_from = kAXNameFromRelatedElement;
+    name_from = ax::mojom::NameFrom::kRelatedElement;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative));
       name_sources->back().type = name_from;
@@ -2611,7 +2612,7 @@ String AXNodeObject::NativeTextAlternative(
   // 5.2 input type="button", input type="submit" and input type="reset"
   if (input_element && input_element->IsTextButton()) {
     // value attribue
-    name_from = kAXNameFromValue;
+    name_from = ax::mojom::NameFrom::kValue;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative, valueAttr));
       name_sources->back().type = name_from;
@@ -2634,7 +2635,7 @@ String AXNodeObject::NativeTextAlternative(
       String default_label = input_element->ValueOrDefaultLabel();
       if (value.IsNull() && !default_label.IsNull()) {
         // default label
-        name_from = kAXNameFromContents;
+        name_from = ax::mojom::NameFrom::kContents;
         if (name_sources) {
           name_sources->push_back(NameSource(*found_text_alternative));
           name_sources->back().type = name_from;
@@ -2658,8 +2659,8 @@ String AXNodeObject::NativeTextAlternative(
     // alt attr
     const AtomicString& alt = input_element->getAttribute(altAttr);
     const bool is_empty = alt.IsEmpty() && !alt.IsNull();
-    name_from =
-        is_empty ? kAXNameFromAttributeExplicitlyEmpty : kAXNameFromAttribute;
+    name_from = is_empty ? ax::mojom::NameFrom::kAttributeExplicitlyEmpty
+                         : ax::mojom::NameFrom::kAttribute;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative, altAttr));
       name_sources->back().type = name_from;
@@ -2681,7 +2682,7 @@ String AXNodeObject::NativeTextAlternative(
       name_sources->push_back(NameSource(*found_text_alternative, valueAttr));
       name_sources->back().type = name_from;
     }
-    name_from = kAXNameFromAttribute;
+    name_from = ax::mojom::NameFrom::kAttribute;
     String value = input_element->value();
     if (!value.IsNull()) {
       text_alternative = value;
@@ -2695,7 +2696,7 @@ String AXNodeObject::NativeTextAlternative(
     }
 
     // localised default value ("Submit")
-    name_from = kAXNameFromValue;
+    name_from = ax::mojom::NameFrom::kValue;
     text_alternative = input_element->GetLocale().QueryString(
         WebLocalizedString::kSubmitButtonDefaultLabel);
     if (name_sources) {
@@ -2713,7 +2714,7 @@ String AXNodeObject::NativeTextAlternative(
 
   // 5.1 Text inputs - step 3 (placeholder attribute)
   if (html_element && html_element->IsTextControl()) {
-    name_from = kAXNameFromPlaceholder;
+    name_from = ax::mojom::NameFrom::kPlaceholder;
     if (name_sources) {
       name_sources->push_back(
           NameSource(*found_text_alternative, placeholderAttr));
@@ -2737,7 +2738,7 @@ String AXNodeObject::NativeTextAlternative(
 
   // Also check for aria-placeholder.
   if (IsTextControl()) {
-    name_from = kAXNameFromPlaceholder;
+    name_from = ax::mojom::NameFrom::kPlaceholder;
     if (name_sources) {
       name_sources->push_back(
           NameSource(*found_text_alternative, aria_placeholderAttr));
@@ -2764,7 +2765,7 @@ String AXNodeObject::NativeTextAlternative(
   // 5.7 figure and figcaption Elements
   if (GetNode()->HasTagName(figureTag)) {
     // figcaption
-    name_from = kAXNameFromRelatedElement;
+    name_from = ax::mojom::NameFrom::kRelatedElement;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative));
       name_sources->back().type = name_from;
@@ -2809,8 +2810,8 @@ String AXNodeObject::NativeTextAlternative(
     // alt
     const AtomicString& alt = GetAttribute(altAttr);
     const bool is_empty = alt.IsEmpty() && !alt.IsNull();
-    name_from =
-        is_empty ? kAXNameFromAttributeExplicitlyEmpty : kAXNameFromAttribute;
+    name_from = is_empty ? ax::mojom::NameFrom::kAttributeExplicitlyEmpty
+                         : ax::mojom::NameFrom::kAttribute;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative, altAttr));
       name_sources->back().type = name_from;
@@ -2832,7 +2833,7 @@ String AXNodeObject::NativeTextAlternative(
   // 5.9 table Element
   if (auto* table_element = ToHTMLTableElementOrNull(GetNode())) {
     // caption
-    name_from = kAXNameFromCaption;
+    name_from = ax::mojom::NameFrom::kCaption;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative));
       name_sources->back().type = name_from;
@@ -2863,7 +2864,7 @@ String AXNodeObject::NativeTextAlternative(
     }
 
     // summary
-    name_from = kAXNameFromAttribute;
+    name_from = ax::mojom::NameFrom::kAttribute;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative, summaryAttr));
       name_sources->back().type = name_from;
@@ -2886,7 +2887,7 @@ String AXNodeObject::NativeTextAlternative(
 
   // Per SVG AAM 1.0's modifications to 2D of this algorithm.
   if (GetNode()->IsSVGElement()) {
-    name_from = kAXNameFromRelatedElement;
+    name_from = ax::mojom::NameFrom::kRelatedElement;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative));
       name_sources->back().type = name_from;
@@ -2921,7 +2922,7 @@ String AXNodeObject::NativeTextAlternative(
 
   // Fieldset / legend.
   if (IsHTMLFieldSetElement(GetNode())) {
-    name_from = kAXNameFromRelatedElement;
+    name_from = ax::mojom::NameFrom::kRelatedElement;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative));
       name_sources->back().type = name_from;
@@ -2958,7 +2959,7 @@ String AXNodeObject::NativeTextAlternative(
   if (IsWebArea()) {
     Document* document = this->GetDocument();
     if (document) {
-      name_from = kAXNameFromAttribute;
+      name_from = ax::mojom::NameFrom::kAttribute;
       if (name_sources) {
         name_sources->push_back(
             NameSource(found_text_alternative, aria_labelAttr));
@@ -2982,7 +2983,7 @@ String AXNodeObject::NativeTextAlternative(
         }
       }
 
-      name_from = kAXNameFromRelatedElement;
+      name_from = ax::mojom::NameFrom::kRelatedElement;
       if (name_sources) {
         name_sources->push_back(NameSource(*found_text_alternative));
         name_sources->back().type = name_from;
@@ -3016,8 +3017,8 @@ String AXNodeObject::NativeTextAlternative(
   return text_alternative;
 }
 
-String AXNodeObject::Description(AXNameFrom name_from,
-                                 AXDescriptionFrom& description_from,
+String AXNodeObject::Description(ax::mojom::NameFrom name_from,
+                                 ax::mojom::DescriptionFrom& description_from,
                                  AXObjectVector* description_objects) const {
   AXRelatedObjectVector related_objects;
   String result =
@@ -3034,7 +3035,7 @@ String AXNodeObject::Description(AXNameFrom name_from,
     // Fields inside a datetime control need to merge the field description
     // with the description of the <input> element.
     const AXObject* datetime_ancestor = DatetimeAncestor();
-    AXNameFrom name_from;
+    ax::mojom::NameFrom name_from;
     datetime_ancestor->GetName(name_from, nullptr);
     description_objects->clear();
     String ancestor_description = DatetimeAncestor()->Description(
@@ -3050,8 +3051,8 @@ String AXNodeObject::Description(AXNameFrom name_from,
 
 // Based on
 // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
-String AXNodeObject::Description(AXNameFrom name_from,
-                                 AXDescriptionFrom& description_from,
+String AXNodeObject::Description(ax::mojom::NameFrom name_from,
+                                 ax::mojom::DescriptionFrom& description_from,
                                  DescriptionSources* description_sources,
                                  AXRelatedObjectVector* related_objects) const {
   // If descriptionSources is non-null, relatedObjects is used in filling it in,
@@ -3065,7 +3066,7 @@ String AXNodeObject::Description(AXNameFrom name_from,
   String description;
   bool found_description = false;
 
-  description_from = kAXDescriptionFromRelatedElement;
+  description_from = ax::mojom::DescriptionFrom::kRelatedElement;
   if (description_sources) {
     description_sources->push_back(
         DescriptionSource(found_description, aria_describedbyAttr));
@@ -3123,9 +3124,9 @@ String AXNodeObject::Description(AXNameFrom name_from,
   const HTMLInputElement* input_element = ToHTMLInputElementOrNull(GetNode());
 
   // value, 5.2.2 from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  if (name_from != kAXNameFromValue && input_element &&
+  if (name_from != ax::mojom::NameFrom::kValue && input_element &&
       input_element->IsTextButton()) {
-    description_from = kAXDescriptionFromAttribute;
+    description_from = ax::mojom::DescriptionFrom::kAttribute;
     if (description_sources) {
       description_sources->push_back(
           DescriptionSource(found_description, valueAttr));
@@ -3146,10 +3147,11 @@ String AXNodeObject::Description(AXNameFrom name_from,
 
   // table caption, 5.9.2 from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  if (name_from != kAXNameFromCaption && IsHTMLTableElement(GetNode())) {
+  if (name_from != ax::mojom::NameFrom::kCaption &&
+      IsHTMLTableElement(GetNode())) {
     HTMLTableElement* table_element = ToHTMLTableElement(GetNode());
 
-    description_from = kAXDescriptionFromRelatedElement;
+    description_from = ax::mojom::DescriptionFrom::kRelatedElement;
     if (description_sources) {
       description_sources->push_back(DescriptionSource(found_description));
       description_sources->back().type = description_from;
@@ -3181,8 +3183,9 @@ String AXNodeObject::Description(AXNameFrom name_from,
 
   // summary, 5.6.2 from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  if (name_from != kAXNameFromContents && IsHTMLSummaryElement(GetNode())) {
-    description_from = kAXDescriptionFromContents;
+  if (name_from != ax::mojom::NameFrom::kContents &&
+      IsHTMLSummaryElement(GetNode())) {
+    description_from = ax::mojom::DescriptionFrom::kContents;
     if (description_sources) {
       description_sources->push_back(DescriptionSource(found_description));
       description_sources->back().type = description_from;
@@ -3203,8 +3206,8 @@ String AXNodeObject::Description(AXNameFrom name_from,
 
   // title attribute, from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  if (name_from != kAXNameFromTitle) {
-    description_from = kAXDescriptionFromAttribute;
+  if (name_from != ax::mojom::NameFrom::kTitle) {
+    description_from = ax::mojom::DescriptionFrom::kAttribute;
     if (description_sources) {
       description_sources->push_back(
           DescriptionSource(found_description, titleAttr));
@@ -3225,7 +3228,7 @@ String AXNodeObject::Description(AXNameFrom name_from,
   // aria-help.
   // FIXME: this is not part of the official standard, but it's needed because
   // the built-in date/time controls use it.
-  description_from = kAXDescriptionFromAttribute;
+  description_from = ax::mojom::DescriptionFrom::kAttribute;
   if (description_sources) {
     description_sources->push_back(
         DescriptionSource(found_description, aria_helpAttr));
@@ -3242,7 +3245,7 @@ String AXNodeObject::Description(AXNameFrom name_from,
     }
   }
 
-  description_from = kAXDescriptionFromUninitialized;
+  description_from = ax::mojom::DescriptionFrom::kUninitialized;
 
   if (found_description) {
     for (size_t i = 0; i < description_sources->size(); ++i) {
@@ -3260,8 +3263,8 @@ String AXNodeObject::Description(AXNameFrom name_from,
   return String();
 }
 
-String AXNodeObject::Placeholder(AXNameFrom name_from) const {
-  if (name_from == kAXNameFromPlaceholder)
+String AXNodeObject::Placeholder(ax::mojom::NameFrom name_from) const {
+  if (name_from == ax::mojom::NameFrom::kPlaceholder)
     return String();
 
   Node* node = GetNode();
