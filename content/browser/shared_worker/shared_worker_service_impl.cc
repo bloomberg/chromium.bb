@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -66,14 +67,14 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     bool file_support) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ContentBrowserClient::NonNetworkURLLoaderFactoryMap factories;
+  ContentBrowserClient::NonNetworkURLLoaderFactoryMap non_network_factories;
   GetContentClient()
       ->browser()
       ->RegisterNonNetworkSubresourceURLLoaderFactories(
-          process_id, MSG_ROUTING_NONE, &factories);
+          process_id, MSG_ROUTING_NONE, &non_network_factories);
 
   auto factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
-  for (auto& pair : factories) {
+  for (auto& pair : non_network_factories) {
     const std::string& scheme = pair.first;
     std::unique_ptr<network::mojom::URLLoaderFactory> factory =
         std::move(pair.second);
@@ -81,8 +82,8 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     network::mojom::URLLoaderFactoryPtr factory_ptr;
     mojo::MakeStrongBinding(std::move(factory),
                             mojo::MakeRequest(&factory_ptr));
-    factory_bundle->factories_info().emplace(scheme,
-                                             factory_ptr.PassInterface());
+    factory_bundle->scheme_specific_factory_infos().emplace(
+        scheme, factory_ptr.PassInterface());
   }
 
   if (file_support) {
@@ -94,8 +95,8 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     network::mojom::URLLoaderFactoryPtr file_factory_ptr;
     mojo::MakeStrongBinding(std::move(file_factory),
                             mojo::MakeRequest(&file_factory_ptr));
-    factory_bundle->factories_info().emplace(url::kFileScheme,
-                                             file_factory_ptr.PassInterface());
+    factory_bundle->scheme_specific_factory_infos().emplace(
+        url::kFileScheme, file_factory_ptr.PassInterface());
   }
 
   return factory_bundle;

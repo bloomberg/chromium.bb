@@ -4,6 +4,8 @@
 
 #include "content/common/url_loader_factory_bundle.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "url/gurl.h"
 
@@ -13,11 +15,10 @@ URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo() = default;
 
 URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo(
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
-    std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
-        factories_info,
+    SchemeMap scheme_specific_factory_infos,
     bool bypass_redirect_checks)
     : default_factory_info_(std::move(default_factory_info)),
-      factories_info_(std::move(factories_info)),
+      scheme_specific_factory_infos_(std::move(scheme_specific_factory_infos)),
       bypass_redirect_checks_(bypass_redirect_checks) {}
 
 URLLoaderFactoryBundleInfo::~URLLoaderFactoryBundleInfo() = default;
@@ -26,7 +27,8 @@ scoped_refptr<network::SharedURLLoaderFactory>
 URLLoaderFactoryBundleInfo::CreateFactory() {
   auto other = std::make_unique<URLLoaderFactoryBundleInfo>();
   other->default_factory_info_ = std::move(default_factory_info_);
-  other->factories_info_ = std::move(factories_info_);
+  other->scheme_specific_factory_infos_ =
+      std::move(scheme_specific_factory_infos_);
   other->bypass_redirect_checks_ = bypass_redirect_checks_;
 
   return base::MakeRefCounted<URLLoaderFactoryBundle>(std::move(other));
@@ -48,22 +50,13 @@ void URLLoaderFactoryBundle::SetDefaultFactory(
   default_factory_ = std::move(factory);
 }
 
-void URLLoaderFactoryBundle::RegisterFactory(
-    const base::StringPiece& scheme,
-    network::mojom::URLLoaderFactoryPtr factory) {
-  DCHECK(factory.is_bound());
-  auto result = factories_.emplace(std::string(scheme), std::move(factory));
-  DCHECK(result.second);
-}
-
 network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactoryForURL(
     const GURL& url) {
-  auto it = factories_.find(url.scheme());
-  if (it == factories_.end()) {
-    DCHECK(default_factory_.is_bound());
-    return default_factory_.get();
-  }
-  return it->second.get();
+  auto it = scheme_specific_factories_.find(url.scheme());
+  if (it != scheme_specific_factories_.end())
+    return it->second.get();
+
+  return default_factory_.get();
 }
 
 void URLLoaderFactoryBundle::CreateLoaderAndStart(
@@ -92,15 +85,16 @@ URLLoaderFactoryBundle::Clone() {
   if (default_factory_)
     default_factory_->Clone(mojo::MakeRequest(&default_factory_info));
 
-  std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo> factories_info;
-  for (auto& factory : factories_) {
+  URLLoaderFactoryBundleInfo::SchemeMap scheme_specific_factory_infos;
+  for (auto& factory : scheme_specific_factories_) {
     network::mojom::URLLoaderFactoryPtrInfo factory_info;
     factory.second->Clone(mojo::MakeRequest(&factory_info));
-    factories_info.emplace(factory.first, std::move(factory_info));
+    scheme_specific_factory_infos.emplace(factory.first,
+                                          std::move(factory_info));
   }
 
   return std::make_unique<URLLoaderFactoryBundleInfo>(
-      std::move(default_factory_info), std::move(factories_info),
+      std::move(default_factory_info), std::move(scheme_specific_factory_infos),
       bypass_redirect_checks_);
 }
 
@@ -112,8 +106,9 @@ void URLLoaderFactoryBundle::Update(
     std::unique_ptr<URLLoaderFactoryBundleInfo> info) {
   if (info->default_factory_info())
     default_factory_.Bind(std::move(info->default_factory_info()));
-  for (auto& factory_info : info->factories_info())
-    factories_[factory_info.first].Bind(std::move(factory_info.second));
+  for (auto& factory_info : info->scheme_specific_factory_infos())
+    scheme_specific_factories_[factory_info.first].Bind(
+        std::move(factory_info.second));
   bypass_redirect_checks_ = info->bypass_redirect_checks();
 }
 
