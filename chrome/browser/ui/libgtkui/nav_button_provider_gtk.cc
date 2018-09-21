@@ -210,6 +210,9 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
     // RenderNavButton() is called at most once for each needed scale
     // factor.  Additionally, buttons in the HOVERED or PRESSED states
     // are not actually rendered until they are needed.
+    if (button_size_.IsEmpty())
+      return gfx::ImageSkiaRep();
+
     auto button_context = AppendCssNodeToStyleContext(
         CreateHeaderContext(maximized_), "GtkButton#button.titlebutton");
     gtk_style_context_add_class(button_context,
