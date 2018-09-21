@@ -76,19 +76,6 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(
       IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_DIALOG_HTML);
-  source->AddResourcePath("mojo/public/mojom/base/time.mojom.js",
-                          IDR_TIME_MOJOM_JS);
-  source->AddResourcePath(
-      "chromeos/services/device_sync/public/mojom/device_sync.mojom.js",
-      IDR_DEVICE_SYNC_MOJOM_JS);
-  source->AddResourcePath(
-      "chromeos/services/multidevice_setup/public/mojom/"
-      "multidevice_setup.mojom.js",
-      IDR_MULTIDEVICE_SETUP_MOJOM_JS);
-  source->AddResourcePath(
-      "chromeos/services/multidevice_setup/public/mojom/"
-      "multidevice_setup_constants.mojom.js",
-      IDR_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_JS);
 
   // Note: The |kMultiDeviceSetupResourcesSize| and |kMultideviceSetupResources|
   // fields are defined in the generated file

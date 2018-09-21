@@ -62,11 +62,14 @@ grit("resources") {
     "grit/mojo_bindings_resources_map.h",
     "mojo_bindings_resources.pak",
   ]
+
   grit_flags = [
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
+
   deps = [
     ":bindings",
+    "//mojo/public/mojom/base:base_js",
   ]
 }
