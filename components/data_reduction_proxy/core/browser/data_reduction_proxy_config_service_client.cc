@@ -232,10 +232,10 @@ void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
 #if defined(OS_ANDROID)
   // It is okay to use Unretained here because |app_status_listener| would be
   // destroyed before |this|.
-  app_status_listener_.reset(
-      new base::android::ApplicationStatusListener(base::Bind(
+  app_status_listener_ =
+      base::android::ApplicationStatusListener::New(base::BindRepeating(
           &DataReductionProxyConfigServiceClient::OnApplicationStateChange,
-          base::Unretained(this))));
+          base::Unretained(this)));
 #endif
   url_request_context_getter_ = url_request_context_getter;
   network_connection_tracker_->AddNetworkConnectionObserver(this);

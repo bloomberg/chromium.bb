@@ -134,6 +134,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   CookieManager* cookie_manager() { return cookie_manager_.get(); }
 
+#if defined(OS_ANDROID)
+  base::android::ApplicationStatusListener* app_status_listener() const {
+    return app_status_listener_.get();
+  }
+#endif
+
   // Creates a URLLoaderFactory with a ResourceSchedulerClient specified. This
   // is used to reuse the existing ResourceSchedulerClient for cloned
   // URLLoaderFactory.
@@ -319,6 +325,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // If non-null, called when the mojo pipe for the NetworkContext is closed.
   OnConnectionCloseCallback on_connection_close_callback_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<base::android::ApplicationStatusListener>
+      app_status_listener_;
+#endif
 
   mojo::Binding<mojom::NetworkContext> binding_;
 

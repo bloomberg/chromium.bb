@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
@@ -29,6 +30,10 @@ class FilePath;
 namespace trace_event {
 class ProcessMemoryDump;
 }
+
+namespace android {
+class ApplicationStatusListener;
+}  // namespace android
 
 }  // namespace base
 
@@ -67,6 +72,22 @@ NET_EXPORT int CreateCacheBackend(net::CacheType type,
                                   net::NetLog* net_log,
                                   std::unique_ptr<Backend>* backend,
                                   net::CompletionOnceCallback callback);
+
+#if defined(OS_ANDROID)
+// Similar to the function above, but takes an |app_status_listener| which is
+// used to listen for when the Android application status changes, so we can
+// flush the cache to disk when the app goes to the background.
+NET_EXPORT int CreateCacheBackend(
+    net::CacheType type,
+    net::BackendType backend_type,
+    const base::FilePath& path,
+    int64_t max_bytes,
+    bool force,
+    net::NetLog* net_log,
+    std::unique_ptr<Backend>* backend,
+    net::CompletionOnceCallback callback,
+    base::android::ApplicationStatusListener* app_status_listener);
+#endif
 
 // Variant of the above that calls |post_cleanup_callback| once all the I/O
 // that was in flight has completed post-destruction. |post_cleanup_callback|

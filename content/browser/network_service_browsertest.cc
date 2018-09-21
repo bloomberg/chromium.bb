@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -18,10 +19,16 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
 
 namespace content {
 
@@ -110,6 +117,7 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
     scoped_feature_list_.InitAndEnableFeature(
         network::features::kNetworkService);
     EXPECT_TRUE(embedded_test_server()->Start());
+    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     WebUIControllerFactory::RegisterFactory(&factory_);
   }
@@ -157,9 +165,32 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
     IsolateAllSitesForTesting(command_line);
   }
 
+  base::FilePath GetCacheDirectory() { return temp_dir_.GetPath(); }
+
+  base::FilePath GetCacheIndexDirectory() {
+    return GetCacheDirectory().AppendASCII("index-dir");
+  }
+
+  void LoadURL(const GURL& url,
+               network::mojom::URLLoaderFactory* loader_factory) {
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
+    request->url = url;
+    content::SimpleURLLoaderTestHelper simple_loader_helper;
+    std::unique_ptr<network::SimpleURLLoader> simple_loader =
+        network::SimpleURLLoader::Create(std::move(request),
+                                         TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        loader_factory, simple_loader_helper.GetCallback());
+    simple_loader_helper.WaitForCallback();
+    ASSERT_TRUE(simple_loader_helper.response_body());
+  }
+
  private:
   WebUITestWebUIControllerFactory factory_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceBrowserTest);
 };
@@ -194,6 +225,49 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   GURL file_url("filesystem:file:///etc/passwd");
   EXPECT_FALSE(FetchResource(file_url));
 }
+
+#if defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
+                       HttpCacheWrittenToDiskOnApplicationStateChange) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  // Create network context with cache pointing to the temp cache dir.
+  network::mojom::NetworkContextPtr network_context;
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  context_params->http_cache_path = GetCacheDirectory();
+  GetNetworkService()->CreateNetworkContext(mojo::MakeRequest(&network_context),
+                                            std::move(context_params));
+
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  network::mojom::URLLoaderFactoryPtr loader_factory;
+  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                          std::move(params));
+
+  // Load a URL and check the cache index size.
+  LoadURL(embedded_test_server()->GetURL("/cachetime"), loader_factory.get());
+  int64_t directory_size = base::ComputeDirectorySize(GetCacheIndexDirectory());
+
+  // Load another URL, cache index should not be written to disk yet.
+  LoadURL(embedded_test_server()->GetURL("/cachetime?foo"),
+          loader_factory.get());
+  EXPECT_EQ(directory_size,
+            base::ComputeDirectorySize(GetCacheIndexDirectory()));
+
+  // After application state changes, cache index should be written to disk.
+  base::android::ApplicationStatusListener::NotifyApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+  base::RunLoop().RunUntilIdle();
+  content::FlushNetworkServiceInstanceForTesting();
+  disk_cache::FlushCacheThreadForTesting();
+
+  EXPECT_GT(base::ComputeDirectorySize(GetCacheIndexDirectory()),
+            directory_size);
+}
+#endif
 
 class NetworkServiceInProcessBrowserTest : public ContentBrowserTest {
  public:

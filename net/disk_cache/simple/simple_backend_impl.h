@@ -21,6 +21,7 @@
 #include "base/strings/string_split.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/disk_cache.h"
@@ -140,6 +141,13 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   net::PrioritizedTaskRunner* prioritized_task_runner() const {
     return prioritized_task_runner_.get();
   }
+
+#if defined(OS_ANDROID)
+  void set_app_status_listener(
+      base::android::ApplicationStatusListener* app_status_listener) {
+    app_status_listener_ = app_status_listener;
+  }
+#endif
 
  private:
   class SimpleIterator;
@@ -282,6 +290,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   net::NetLog* const net_log_;
 
   uint32_t entry_count_ = 0;
+
+#if defined(OS_ANDROID)
+  base::android::ApplicationStatusListener* app_status_listener_ = nullptr;
+#endif
 };
 
 }  // namespace disk_cache

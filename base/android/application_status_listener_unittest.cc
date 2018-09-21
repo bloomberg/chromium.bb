@@ -78,8 +78,8 @@ class MultiThreadedTest {
 
   void RegisterThreadForEvents() {
     ExpectOnThread();
-    listener_.reset(new ApplicationStatusListener(base::Bind(
-        &MultiThreadedTest::StoreStateAndSignal, base::Unretained(this))));
+    listener_ = ApplicationStatusListener::New(base::BindRepeating(
+        &MultiThreadedTest::StoreStateAndSignal, base::Unretained(this)));
     EXPECT_TRUE(listener_.get());
     event_.Signal();
   }
@@ -106,7 +106,7 @@ TEST(ApplicationStatusListenerTest, SingleThread) {
 
   // Create a new listener that stores the new state into |result| on every
   // state change.
-  ApplicationStatusListener listener(
+  auto listener = ApplicationStatusListener::New(
       base::Bind(&StoreStateTo, base::Unretained(&result)));
 
   EXPECT_EQ(kInvalidApplicationState, result);

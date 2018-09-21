@@ -600,6 +600,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_cache_backend =
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);
     }
+#if defined(OS_ANDROID)
+    http_cache_backend->SetAppStatusListener(
+        http_cache_params_.app_status_listener);
+#endif
 
     http_transaction_factory.reset(
         new HttpCache(std::move(http_transaction_factory),

@@ -113,6 +113,10 @@
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
+
 namespace network {
 
 namespace {
@@ -224,6 +228,27 @@ void OnClearedChannelIds(net::SSLConfigService* ssl_config_service,
   ssl_config_service->NotifySSLConfigChange();
   std::move(callback).Run();
 }
+
+#if defined(OS_ANDROID)
+class NetworkContextApplicationStatusListener
+    : public base::android::ApplicationStatusListener {
+ public:
+  // base::android::ApplicationStatusListener implementation:
+  void SetCallback(const ApplicationStateChangeCallback& callback) override {
+    DCHECK(!callback_);
+    DCHECK(callback);
+    callback_ = callback;
+  }
+
+  void Notify(base::android::ApplicationState state) override {
+    if (callback_)
+      callback_.Run(state);
+  }
+
+ private:
+  ApplicationStateChangeCallback callback_;
+};
+#endif
 
 }  // namespace
 
@@ -395,6 +420,10 @@ NetworkContext::NetworkContext(
     : network_service_(network_service),
       params_(std::move(params)),
       on_connection_close_callback_(std::move(on_connection_close_callback)),
+#if defined(OS_ANDROID)
+      app_status_listener_(
+          std::make_unique<NetworkContextApplicationStatusListener>()),
+#endif
       binding_(this, std::move(request)) {
   url_request_context_owner_ = MakeURLRequestContext();
   url_request_context_ = url_request_context_owner_.url_request_context.get();
@@ -424,6 +453,10 @@ NetworkContext::NetworkContext(
     std::unique_ptr<URLRequestContextBuilderMojo> builder)
     : network_service_(network_service),
       params_(std::move(params)),
+#if defined(OS_ANDROID)
+      app_status_listener_(
+          std::make_unique<NetworkContextApplicationStatusListener>()),
+#endif
       binding_(this, std::move(request)) {
   url_request_context_owner_ = ApplyContextParamsToBuilder(builder.get());
   url_request_context_ = url_request_context_owner_.url_request_context.get();
@@ -440,6 +473,10 @@ NetworkContext::NetworkContext(NetworkService* network_service,
                                net::URLRequestContext* url_request_context)
     : network_service_(network_service),
       url_request_context_(url_request_context),
+#if defined(OS_ANDROID)
+      app_status_listener_(
+          std::make_unique<NetworkContextApplicationStatusListener>()),
+#endif
       binding_(this, std::move(request)),
       cookie_manager_(
           std::make_unique<CookieManager>(url_request_context->cookie_store(),
@@ -1139,6 +1176,9 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
           *base::CommandLine::ForCurrentProcess());
     }
 
+#if defined(OS_ANDROID)
+    cache_params.app_status_listener = app_status_listener();
+#endif
     builder->EnableHttpCache(cache_params);
   }
 

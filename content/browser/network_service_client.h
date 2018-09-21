@@ -6,10 +6,15 @@
 #define CONTENT_BROWSER_NETWORK_SERVICE_IMPL_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
 
 namespace content {
 
@@ -72,8 +77,17 @@ class CONTENT_EXPORT NetworkServiceClient
                        int load_flags,
                        OnClearSiteDataCallback callback) override;
 
+#if defined(OS_ANDROID)
+  void OnApplicationStateChange(base::android::ApplicationState state);
+#endif
+
  private:
   mojo::Binding<network::mojom::NetworkServiceClient> binding_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<base::android::ApplicationStatusListener>
+      app_status_listener_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceClient);
 };
