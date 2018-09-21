@@ -16,7 +16,6 @@
 
 class Browser;
 @class BrowserWindowController;
-@class FindBarCocoaController;
 @class NSEvent;
 @class NSMenu;
 @class NSWindow;
@@ -156,9 +155,6 @@ class BrowserWindowCocoa
   // Overridden from ExtensionKeybindingRegistry::Delegate:
   extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()
       override;
-
-  // Adds the given FindBar cocoa controller to this browser window.
-  void AddFindBar(FindBarCocoaController* find_bar_cocoa_controller);
 
   // Updates the window's alert state. If the new alert state is
   // TabAlertState::AUDIO_PLAYING or TabAlertState::AUDIO_MUTING then sets

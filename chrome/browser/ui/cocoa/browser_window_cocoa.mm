@@ -37,7 +37,6 @@
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
-#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -489,11 +488,6 @@ bool BrowserWindowCocoa::IsToolbarVisible() const {
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
-void BrowserWindowCocoa::AddFindBar(
-    FindBarCocoaController* find_bar_cocoa_controller) {
-  [controller_ addFindBar:find_bar_cocoa_controller];
-}
-
 void BrowserWindowCocoa::UpdateAlertState(TabAlertState alert_state) {
   alert_state_ = alert_state;
   UpdateTitleBar();
@@ -640,13 +634,7 @@ void BrowserWindowCocoa::CutCopyPaste(int command_id) {
 }
 
 FindBar* BrowserWindowCocoa::CreateFindBar() {
-  // We could push the AddFindBar() call into the FindBarBridge
-  // constructor or the FindBarCocoaController init, but that makes
-  // unit testing difficult, since we would also require a
-  // BrowserWindow object.
-  FindBarBridge* bridge = new FindBarBridge(browser_);
-  AddFindBar(bridge->find_bar_cocoa_controller());
-  return bridge;
+  return nullptr;
 }
 
 web_modal::WebContentsModalDialogHost*

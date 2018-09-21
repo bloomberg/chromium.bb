@@ -169,16 +169,6 @@ jumbo_split_static_library("ui") {
       "cocoa/extensions/toolbar_actions_bar_bubble_views_presenter.mm",
       "cocoa/fast_resize_view.h",
       "cocoa/fast_resize_view.mm",
-      "cocoa/find_bar/find_bar_bridge.h",
-      "cocoa/find_bar/find_bar_bridge.mm",
-      "cocoa/find_bar/find_bar_cocoa_controller.h",
-      "cocoa/find_bar/find_bar_cocoa_controller.mm",
-      "cocoa/find_bar/find_bar_text_field.h",
-      "cocoa/find_bar/find_bar_text_field.mm",
-      "cocoa/find_bar/find_bar_text_field_cell.h",
-      "cocoa/find_bar/find_bar_text_field_cell.mm",
-      "cocoa/find_bar/find_bar_view_cocoa.h",
-      "cocoa/find_bar/find_bar_view_cocoa.mm",
       "cocoa/floating_bar_backing_view.h",
       "cocoa/floating_bar_backing_view.mm",
       "cocoa/framed_browser_window.h",
@@ -3948,10 +3938,7 @@ static_library("test_support") {
       "views/webauthn/authenticator_request_dialog_view_test_api.h",
     ]
     if (is_mac) {
-      sources += [
-        "cocoa/extensions/browser_action_test_util_views_cocoa.mm",
-        "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
-      ]
+      sources += [ "cocoa/extensions/browser_action_test_util_views_cocoa.mm" ]
     }
     if (use_aura) {
       sources += [ "views/toolbar/browser_action_test_util_views_aura.cc" ]

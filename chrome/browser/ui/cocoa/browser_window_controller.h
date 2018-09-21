@@ -41,7 +41,6 @@ class BrowserWindowCocoa;
 class ExtensionKeybindingRegistryCocoa;
 class ExclusiveAccessController;
 class ExclusiveAccessContext;
-@class FindBarCocoaController;
 @class FullscreenModeController;
 @class FullscreenToolbarControllerCocoa;
 @class FullscreenToolbarVisibilityLockController;
@@ -77,7 +76,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   std::unique_ptr<BrowserWindowCocoa> windowShim_;
   base::scoped_nsobject<ToolbarController> toolbarController_;
   base::scoped_nsobject<TabStripControllerCocoa> tabStripController_;
-  base::scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
   base::scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
   base::scoped_nsobject<DevToolsController> devToolsController_;
   base::scoped_nsobject<OverlayableContentsController>
@@ -217,9 +215,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Return a weak pointer to the tab strip controller.
 - (TabStripControllerCocoa*)tabStripController;
 
-// Return a weak pointer to the find bar controller.
-- (FindBarCocoaController*)findBarCocoaController;
-
 // Access the ObjC controller that contains the infobars.
 - (InfoBarContainerController*)infoBarContainerController;
 
@@ -304,11 +299,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 - (BOOL)isBookmarkBarAnimating;
 
 - (DevToolsController*)devToolsController;
-
-// Retains the given FindBarCocoaController and adds its view to this
-// browser window.  Must only be called once per
-// BrowserWindowController.
-- (void)addFindBar:(FindBarCocoaController*)findBarCocoaController;
 
 // The user changed the theme.
 - (void)userChangedTheme;

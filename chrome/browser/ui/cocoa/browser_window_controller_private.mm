@@ -27,7 +27,6 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
-#import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_cocoa.h"
@@ -887,10 +886,6 @@ willPositionSheet:(NSWindow*)sheet
     [fullscreenToolbarController_
         updateToolbarFrame:output.fullscreenBackingBarFrame];
   }
-
-  [findBarCocoaController_
-      positionFindBarViewAtMaxY:output.findBarMaxY
-                       maxWidth:NSWidth(output.contentAreaFrame)];
 }
 
 - (void)updateSubviewZOrder {
@@ -908,8 +903,6 @@ willPositionSheet:(NSWindow*)sheet
     [subviews addObject:[infoBarContainerController_ view]];
   if ([self tabContentArea])
     [subviews addObject:[self tabContentArea]];
-  if ([findBarCocoaController_ view])
-    [subviews addObject:[findBarCocoaController_ view]];
 
   [self setContentViewSubviews:subviews];
 }
@@ -928,9 +921,6 @@ willPositionSheet:(NSWindow*)sheet
 
   if ([infoBarContainerController_ view])
     [subviews addObject:[infoBarContainerController_ view]];
-
-  if ([findBarCocoaController_ view])
-    [subviews addObject:[findBarCocoaController_ view]];
 
   [self setContentViewSubviews:subviews];
 }
