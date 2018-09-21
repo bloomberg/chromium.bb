@@ -156,7 +156,7 @@ public final class ChildProcessLauncherHelperImpl {
                     sLauncherByPid.remove(connection.getPid());
                     BindingManager manager = getBindingManager();
                     if (mUseBindingManager && manager != null) {
-                        manager.dropRecency(connection);
+                        manager.removeConnection(connection);
                     }
                     if (mRanking != null) {
                         mRanking.removeConnection(connection);
@@ -473,7 +473,7 @@ public final class ChildProcessLauncherHelperImpl {
         if (shouldAddToBindingManager && !wasAddedToBindingManager) {
             BindingManager manager = getBindingManager();
             if (mUseBindingManager && manager != null) {
-                manager.increaseRecency(connection);
+                manager.addConnection(connection);
             }
         }
 
