@@ -256,10 +256,6 @@ bool ColorCorrectionTestUtils::MatchSkImages(sk_sp<SkImage> src_image,
 
   if (compare_alpha && src_image->alphaType() != dst_image->alphaType())
     return false;
-  if (src_image->makeRasterImage()->colorType() !=
-      dst_image->makeRasterImage()->colorType()) {
-    return false;
-  }
   if (!MatchColorSpace(src_image->colorSpace(), dst_image->colorSpace(),
                        xyz_d50_component_tolerance)) {
     return false;
