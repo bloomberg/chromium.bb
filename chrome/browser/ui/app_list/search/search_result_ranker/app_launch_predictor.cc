@@ -203,7 +203,41 @@ bool HourAppLaunchPredictor::FromProto(const AppLaunchPredictorProto& proto) {
       AppLaunchPredictorProto::kHourAppLaunchPredictor) {
     return false;
   }
-  proto_ = proto;
+
+  const HourAppLaunchPredictorProto& predictor_proto =
+      proto.hour_app_launch_predictor();
+
+  const int today = base::Time::Now().ToDeltaSinceWindowsEpoch().InDays();
+
+  // If last_decay_timestamp is not set, just copy the proto.
+  if (!predictor_proto.has_last_decay_timestamp()) {
+    proto_ = proto;
+    proto_.mutable_hour_app_launch_predictor()->set_last_decay_timestamp(today);
+    return true;
+  }
+
+  // If last decay is within 7 days, just copy the proto.
+  if (today - predictor_proto.last_decay_timestamp() <= 7) {
+    proto_ = proto;
+    return true;
+  }
+
+  proto_.Clear();
+  for (const auto& table : predictor_proto.binned_frequency_table()) {
+    auto& new_table = (*proto_.mutable_hour_app_launch_predictor()
+                            ->mutable_binned_frequency_table())[table.first];
+
+    int total_counts = 0;
+    for (const auto& frequency : table.second.frequency()) {
+      const int new_frequency = frequency.second * kWeeklyDecayCoeff;
+      if (new_frequency > 0) {
+        total_counts += new_frequency;
+        (*new_table.mutable_frequency())[frequency.first] = new_frequency;
+      }
+    }
+    new_table.set_total_counts(total_counts);
+  }
+  proto_.mutable_hour_app_launch_predictor()->set_last_decay_timestamp(today);
   return true;
 }
 

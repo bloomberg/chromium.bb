@@ -101,6 +101,8 @@ class HourAppLaunchPredictorTest : public testing::Test {
     }
   }
 
+  base::ScopedMockClockOverride time_;
+
  private:
   // Advances time to be 0am next Sunday.
   void AdvanceToNextLocalSunday() {
@@ -116,7 +118,6 @@ class HourAppLaunchPredictorTest : public testing::Test {
     CHECK_EQ(now.hour, 0);
   }
 
-  base::ScopedMockClockOverride time_;
 };
 
 // Checks HourAppLaunchPredictor::GetBin returns the right bin index for given
@@ -218,6 +219,44 @@ TEST_F(HourAppLaunchPredictorTest, RankFromMultipleBin) {
       predictor.Rank(),
       UnorderedElementsAre(Pair(kTarget1, FloatEq(0.15 * 1.0 / 2.0)),
                            Pair(kTarget2, FloatEq(0.15 * 1.0 / 2.0 + 0.05))));
+}
+
+// Checks FromProto applies decay correctly.
+TEST_F(HourAppLaunchPredictorTest, FromProtoDecay) {
+  HourAppLaunchPredictor predictor;
+  const int bin = predictor.GetBin();
+  const int frequency1 = 11;
+  const int frequency2 = 1;
+
+  AppLaunchPredictorProto proto;
+  auto& frequency_table = (*proto.mutable_hour_app_launch_predictor()
+                                ->mutable_binned_frequency_table())[bin];
+  (*frequency_table.mutable_frequency())[kTarget1] = frequency1;
+  (*frequency_table.mutable_frequency())[kTarget2] = frequency2;
+  frequency_table.set_total_counts(frequency1 + frequency2);
+
+  // FromProto will not decay since last_decay_timestamp is not set.
+  predictor.FromProto(proto);
+  proto.mutable_hour_app_launch_predictor()->set_last_decay_timestamp(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InDays());
+  EXPECT_TRUE(EquivToProtoLite(predictor.ToProto(), proto));
+
+  // FromProto will not decay since last_decay_timestamp is within 7 days.
+  time_.Advance(base::TimeDelta::FromDays(6));
+  predictor.FromProto(proto);
+  EXPECT_TRUE(EquivToProtoLite(predictor.ToProto(), proto));
+
+  // FromProto will decay since last_decay_timestamp is over 7 days.
+  time_.Advance(base::TimeDelta::FromDays(2));
+  predictor.FromProto(proto);
+  const int new_frequency1 =
+      static_cast<int>(frequency1 * HourAppLaunchPredictor::kWeeklyDecayCoeff);
+  frequency_table.mutable_frequency()->clear();
+  (*frequency_table.mutable_frequency())[kTarget1] = new_frequency1;
+  frequency_table.set_total_counts(new_frequency1);
+  proto.mutable_hour_app_launch_predictor()->set_last_decay_timestamp(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InDays());
+  EXPECT_TRUE(EquivToProtoLite(predictor.ToProto(), proto));
 }
 
 }  // namespace app_list

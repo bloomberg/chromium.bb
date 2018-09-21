@@ -138,6 +138,7 @@ class HourAppLaunchPredictor : public AppLaunchPredictor {
   FRIEND_TEST_ALL_PREFIXES(HourAppLaunchPredictorTest, GetTheRightBin);
   FRIEND_TEST_ALL_PREFIXES(HourAppLaunchPredictorTest, RankFromSingleBin);
   FRIEND_TEST_ALL_PREFIXES(HourAppLaunchPredictorTest, RankFromMultipleBin);
+  FRIEND_TEST_ALL_PREFIXES(HourAppLaunchPredictorTest, FromProtoDecay);
 
   // Returns current bin index of this predictor.
   int GetBin() const;
@@ -146,6 +147,8 @@ class HourAppLaunchPredictor : public AppLaunchPredictor {
   AppLaunchPredictorProto proto_;
   // Last time the predictor was saved.
   base::Time last_save_timestamp_;
+  // Coefficient that controls the decay of previous record.
+  static constexpr float kWeeklyDecayCoeff = 0.8;
 
   DISALLOW_COPY_AND_ASSIGN(HourAppLaunchPredictor);
 };
