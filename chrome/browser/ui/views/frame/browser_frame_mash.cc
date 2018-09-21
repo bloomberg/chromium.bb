@@ -40,6 +40,16 @@ BrowserFrameMash::BrowserFrameMash(BrowserFrame* browser_frame,
 
 BrowserFrameMash::~BrowserFrameMash() {}
 
+void BrowserFrameMash::OnWindowTargetVisibilityChanged(bool visible) {
+  if (visible && !browser_view_->browser()->is_type_popup()) {
+    // Once the window has been shown we know the requested bounds
+    // (if provided) have been honored and we can switch on window management.
+    GetNativeWindow()->GetRootWindow()->SetProperty(
+        ash::kWindowPositionManagedTypeKey, true);
+  }
+  views::DesktopNativeWidgetAura::OnWindowTargetVisibilityChanged(visible);
+}
+
 views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   views::Widget::InitParams params;
   params.name = "BrowserFrame";
@@ -65,8 +75,6 @@ views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int64_t>(ash::TYPE_BROWSER_SHORTCUT));
 
-  // TODO(estade): to match classic Ash, this property should be toggled to true
-  // for non-popups after the window is initially shown.
   properties[ash::mojom::kWindowPositionManaged_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int64_t>(
           !browser->bounds_overridden() && !browser->is_session_restore() &&
