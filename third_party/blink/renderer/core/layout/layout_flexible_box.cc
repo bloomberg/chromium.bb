@@ -372,7 +372,8 @@ void LayoutFlexibleBox::UpdateBlockLayout(bool relayout_children) {
 
 void LayoutFlexibleBox::PaintChildren(const PaintInfo& paint_info,
                                       const LayoutPoint&) const {
-  BlockPainter::PaintChildrenOfFlexibleBox(*this, paint_info);
+  BlockPainter(*this).PaintChildrenAtomically(this->GetOrderIterator(),
+                                              paint_info);
 }
 
 void LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems(

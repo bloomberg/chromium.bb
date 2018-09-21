@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/core/layout/grid_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/layout_state.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
-#include "third_party/blink/renderer/core/paint/grid_painter.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -1127,7 +1127,6 @@ void LayoutGrid::DirtyGrid() {
     return;
 
   grid_->SetNeedsItemsPlacement(true);
-  grid_items_overflowing_grid_area_.resize(0);
 }
 
 Vector<LayoutUnit> LayoutGrid::TrackSizesForComputedStyle(
@@ -1225,7 +1224,6 @@ void LayoutGrid::UpdateGridAreaLogicalSize(
 void LayoutGrid::LayoutGridItems() {
   PopulateGridPositionsForDirection(kForColumns);
   PopulateGridPositionsForDirection(kForRows);
-  grid_items_overflowing_grid_area_.resize(0);
 
   for (LayoutBox* child = FirstChildBox(); child;
        child = child->NextSiblingBox()) {
@@ -1281,8 +1279,6 @@ void LayoutGrid::LayoutGridItems() {
         LayoutSize(child_grid_area_width, child_grid_area_height));
     LayoutRect child_overflow_rect = child->FrameRect();
     child_overflow_rect.SetSize(child->VisualOverflowRect().Size());
-    if (!grid_area_rect.Contains(child_overflow_rect))
-      grid_items_overflowing_grid_area_.push_back(child);
   }
 }
 
@@ -2332,8 +2328,10 @@ LayoutPoint LayoutGrid::GridAreaLogicalPosition(const GridArea& area) const {
 void LayoutGrid::PaintChildren(const PaintInfo& paint_info,
                                const LayoutPoint& paint_offset) const {
   DCHECK(!grid_->NeedsItemsPlacement());
-  if (grid_->HasGridItems())
-    GridPainter(*this).PaintChildren(paint_info, paint_offset);
+  if (grid_->HasGridItems()) {
+    BlockPainter(*this).PaintChildrenAtomically(grid_->GetOrderIterator(),
+                                                paint_info);
+  }
 }
 
 bool LayoutGrid::CachedHasDefiniteLogicalHeight() const {

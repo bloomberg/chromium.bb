@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
-#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
@@ -99,13 +98,11 @@ void BlockPainter::PaintChild(const LayoutBox& child,
     child.Paint(paint_info);
 }
 
-void BlockPainter::PaintChildrenOfFlexibleBox(
-    const LayoutFlexibleBox& layout_flexible_box,
-    const PaintInfo& paint_info) {
-  for (const LayoutBox* child = layout_flexible_box.GetOrderIterator().First();
-       child; child = layout_flexible_box.GetOrderIterator().Next()) {
-    BlockPainter(layout_flexible_box)
-        .PaintAllChildPhasesAtomically(*child, paint_info);
+void BlockPainter::PaintChildrenAtomically(const OrderIterator& order_iterator,
+                                           const PaintInfo& paint_info) {
+  for (const LayoutBox* child = order_iterator.First(); child;
+       child = order_iterator.Next()) {
+    PaintAllChildPhasesAtomically(*child, paint_info);
   }
 }
 
