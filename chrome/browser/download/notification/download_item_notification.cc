@@ -234,6 +234,8 @@ void DownloadItemNotification::OnDownloadDestroyed() {
   Close(false);
 
   observer_->OnDownloadDestroyed(item_->GetContentId());
+
+  item_.reset();
 }
 
 void DownloadItemNotification::DisablePopup() {
@@ -329,6 +331,11 @@ void DownloadItemNotification::Click(
     case download::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
   }
+}
+
+void DownloadItemNotification::Shutdown() {
+    if (item_)
+      item_->RemoveObserver(this);
 }
 
 std::string DownloadItemNotification::GetNotificationId() const {
