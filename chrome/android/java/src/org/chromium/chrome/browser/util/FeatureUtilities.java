@@ -14,7 +14,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
 import android.speech.RecognizerIntent;
-import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -30,7 +29,6 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
-import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -164,7 +162,7 @@ public class FeatureUtilities {
         FirstRunUtils.cacheFirstRunPrefs();
         cacheHomePageButtonForceEnabled();
         cacheHomepageTileEnabled();
-        cacheNewTabPageButtonEnabledAndMaybeVariant();
+        cacheNewTabPageButtonEnabled();
         cacheBottomToolbarEnabled();
         cacheInflateToolbarOnBackgroundThread();
 
@@ -270,18 +268,13 @@ public class FeatureUtilities {
     }
 
     /**
-     * Cache whether or not the new tab page button is enabled and, if it is, the button's variant
-     * as well so that on next startup, both values can be made available immediately.
+     * Cache whether or not the new tab page button is enabled so that on next startup, it can be
+     * made available immediately.
      */
-    public static void cacheNewTabPageButtonEnabledAndMaybeVariant() {
+    private static void cacheNewTabPageButtonEnabled() {
         boolean isNTPButtonEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_BUTTON);
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.NTP_BUTTON_ENABLED_KEY, isNTPButtonEnabled);
-        if (isNTPButtonEnabled) {
-            String iconVariant = getNTPButtonVariant();
-            if (TextUtils.isEmpty(iconVariant)) iconVariant = ToolbarModel.NTP_BUTTON_HOME_VARIANT;
-            ChromePreferenceManager.getInstance().setNewTabPageButtonVariant(iconVariant);
-        }
     }
 
     /**
