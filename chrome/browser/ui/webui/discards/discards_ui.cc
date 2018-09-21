@@ -341,11 +341,11 @@ void DiscardsDetailsProviderImpl::GetSiteCharacteristicsDatabase(
     // Get the data for this origin and convert it from proto to the
     // corresponding mojo structure.
     std::unique_ptr<SiteCharacteristicsProto> proto;
-    if (data_store_inspector_->GetaDataForOrigin(origin, &proto)) {
+    bool is_dirty = false;
+    if (data_store_inspector_->GetDataForOrigin(origin, &is_dirty, &proto)) {
       auto entry = ConvertEntryFromProto(proto.get());
       entry->origin = origin.Serialize();
-      // TODO(siggi): Get the dirty bit.
-      entry->is_dirty = false;
+      entry->is_dirty = is_dirty;
       result->db_rows.push_back(std::move(entry));
     }
   }
