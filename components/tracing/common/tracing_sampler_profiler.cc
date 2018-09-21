@@ -137,6 +137,10 @@ void TracingSamplerProfiler::OnTraceLogEnabled() {
   base::StackSamplingProfiler::SamplingParams params;
   params.samples_per_profile = std::numeric_limits<int>::max();
   params.sampling_interval = base::TimeDelta::FromMilliseconds(50);
+  // If the sampled thread is stopped for too long for sampling then it is ok to
+  // get next sample at a later point of time. We do not want very accurate
+  // metrics when looking at traces.
+  params.keep_consistent_sampling_interval = false;
 
   // Create and start the stack sampling profiler.
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \

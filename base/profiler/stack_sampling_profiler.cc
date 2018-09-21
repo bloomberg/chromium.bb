@@ -519,11 +519,8 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
 
   // Schedule the next sample recording if there is one.
   if (++collection->sample_count < collection->params.samples_per_profile) {
-    // This will keep a consistent average interval between samples but will
-    // result in constant series of acquisitions, thus nearly locking out the
-    // target thread, if the interval is smaller than the time it takes to
-    // actually acquire the sample. Anything sampling that quickly is going
-    // to be a problem anyway so don't worry about it.
+    if (!collection->params.keep_consistent_sampling_interval)
+      collection->next_sample_time = Time::Now();
     collection->next_sample_time += collection->params.sampling_interval;
     bool success = GetTaskRunnerOnSamplingThread()->PostDelayedTask(
         FROM_HERE,
