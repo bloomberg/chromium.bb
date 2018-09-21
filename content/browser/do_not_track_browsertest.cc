@@ -212,15 +212,12 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromWorker) {
   if (!EnableDoNotTrack())
     return;
   const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
-  const GURL url = embedded_test_server()->GetURL(
-      std::string("/workers/fetch_from_worker.html?url=") + fetch_url.spec());
-  NavigateToURL(shell(), url);
+  const GURL page_url =
+      embedded_test_server()->GetURL("/workers/fetch_from_worker.html");
+  NavigateToURL(shell(), page_url);
 
-  const base::string16 title = base::ASCIIToUTF16("DONE");
-  TitleWatcher watcher(shell()->web_contents(), title);
-  EXPECT_EQ(title, watcher.WaitAndGetTitle());
-
-  ExpectPageTextEq("1");
+  EXPECT_EQ("1",
+            EvalJs(shell(), "fetch_from_worker('" + fetch_url.spec() + "');"));
 }
 
 // Checks that the DNT header is preserved when fetching from a shared worker.
@@ -237,16 +234,12 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, MAYBE_FetchFromSharedWorker) {
   if (!EnableDoNotTrack())
     return;
   const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
-  const GURL url = embedded_test_server()->GetURL(
-      std::string("/workers/fetch_from_shared_worker.html?url=") +
-      fetch_url.spec());
-  NavigateToURL(shell(), url);
+  const GURL page_url =
+      embedded_test_server()->GetURL("/workers/fetch_from_shared_worker.html");
+  NavigateToURL(shell(), page_url);
 
-  const base::string16 title = base::ASCIIToUTF16("DONE");
-  TitleWatcher watcher(shell()->web_contents(), title);
-  EXPECT_EQ(title, watcher.WaitAndGetTitle());
-
-  ExpectPageTextEq("1");
+  EXPECT_EQ("1", EvalJs(shell(), "fetch_from_shared_worker('" +
+                                     fetch_url.spec() + "');"));
 }
 
 // Checks that the DNT header is preserved when fetching from a service worker.
@@ -255,16 +248,13 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromServiceWorker) {
   if (!EnableDoNotTrack())
     return;
   const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
-  const GURL url = embedded_test_server()->GetURL(
-      std::string("/service_worker/fetch_from_service_worker.html?url=") +
-      fetch_url.spec());
-  NavigateToURL(shell(), url);
+  const GURL page_url = embedded_test_server()->GetURL(
+      "/service_worker/fetch_from_service_worker.html");
+  NavigateToURL(shell(), page_url);
 
-  const base::string16 title = base::ASCIIToUTF16("DONE");
-  TitleWatcher watcher(shell()->web_contents(), title);
-  EXPECT_EQ(title, watcher.WaitAndGetTitle());
-
-  ExpectPageTextEq("1");
+  EXPECT_EQ("ready", EvalJs(shell(), "setup();"));
+  EXPECT_EQ("1", EvalJs(shell(), "fetch_from_service_worker('" +
+                                     fetch_url.spec() + "');"));
 }
 
 // Checks that the DNT header is preserved when fetching from a page controlled
