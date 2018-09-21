@@ -619,6 +619,11 @@ bool ThreadableLoader::RedirectReceived(
     if (redirect_limit_ <= 0) {
       ThreadableLoaderClient* client = client_;
       Clear();
+      ConsoleMessage* message = ConsoleMessage::Create(
+          kNetworkMessageSource, kErrorMessageLevel,
+          "Failed to load resource: net::ERR_TOO_MANY_REDIRECTS",
+          SourceLocation::Capture(original_url, 0, 0));
+      execution_context_->AddConsoleMessage(message);
       client->DidFailRedirectCheck();
       return false;
     }
