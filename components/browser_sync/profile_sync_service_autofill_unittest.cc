@@ -178,6 +178,11 @@ class FakeAutofillBackend : public autofill::AutofillWebDataBackend {
       autofill::AutofillWebDataServiceObserverOnDBSequence* observer) override {
   }
   void RemoveExpiredFormElements() override {}
+
+  void NotifyOfAutofillProfileChanged(
+      const autofill::AutofillProfileChange& change) override {}
+  void NotifyOfCreditCardChanged(
+      const autofill::CreditCardChange& change) override {}
   void NotifyOfMultipleAutofillChanges() override {
     DCHECK(!ui_task_runner_->RunsTasksInCurrentSequence());
     ui_task_runner_->PostTask(FROM_HERE, on_changed_);

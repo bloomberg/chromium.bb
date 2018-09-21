@@ -619,12 +619,15 @@ void AutofillProfileSyncableService::ActOnChange(
       break;
     }
     case AutofillProfileChange::REMOVE: {
-      AutofillProfile empty_profile(change.key(), std::string());
-      new_changes.push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_DELETE,
-                             CreateData(empty_profile)));
-      profiles_map_.erase(change.key());
+      // Removals have no data_model() so this change can still be for a
+      // SERVER_PROFILE. Rule it out by a lookup in profiles_map_.
+      if (profiles_map_.find(change.key()) != profiles_map_.end()) {
+        AutofillProfile empty_profile(change.key(), std::string());
+        new_changes.push_back(
+            syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_DELETE,
+                               CreateData(empty_profile)));
+        profiles_map_.erase(change.key());
+      }
       break;
     }
     default:

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
+#include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
@@ -72,9 +73,11 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   void GetAllDataForTesting(DataCallback callback);
 
  private:
+  template <class Item>
   struct AutofillWalletDiff {
     int items_added = 0;
     int items_removed = 0;
+    std::vector<AutofillDataModelChange<Item>> changes;
 
     bool IsEmpty() const { return items_added == 0 && items_removed == 0; }
   };
@@ -99,14 +102,14 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
       std::vector<PaymentsCustomerData> customer_data);
 
   // Computes a "diff" (items added, items removed) of two vectors of items,
-  // which should be either CreditCard or AutofillProfile. This is used for two
-  // purposes:
+  // which should be either CreditCard or AutofillProfile. This is used for
+  // three purposes:
   // 1) Detecting if anything has changed, so that we don't write to disk in the
   //    common case where nothing has changed.
+  // 3) Notifying |web_data_backend_| of any changes.
   // 2) Recording metrics on the number of added/removed items.
-  // This is exposed as a static method so that it can be tested.
   template <class Item>
-  static AutofillWalletDiff ComputeAutofillWalletDiff(
+  AutofillWalletDiff<Item> ComputeAutofillWalletDiff(
       const std::vector<std::unique_ptr<Item>>& old_data,
       const std::vector<Item>& new_data);
 

@@ -584,15 +584,34 @@ TEST_F(AutofillProfileSyncableServiceTest, AutofillProfileDeleted) {
   TestSyncChangeProcessor* sync_change_processor = new TestSyncChangeProcessor;
   autofill_syncable_service_.set_sync_processor(sync_change_processor);
 
-  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuid2, nullptr);
-  autofill_syncable_service_.AutofillProfileChanged(change);
+  // First add the profile so we have something to delete.
+  AutofillProfile profile(kGuid1, kEmptyOrigin);
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
+  AutofillProfileChange change1(AutofillProfileChange::ADD, kGuid1, &profile);
+  autofill_syncable_service_.AutofillProfileChanged(change1);
+
+  AutofillProfileChange change2(AutofillProfileChange::REMOVE, kGuid1, nullptr);
+  autofill_syncable_service_.AutofillProfileChanged(change2);
 
   ASSERT_EQ(1U, sync_change_processor->changes().size());
   syncer::SyncChange result = sync_change_processor->changes()[0];
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, result.change_type());
   sync_pb::AutofillProfileSpecifics specifics =
       result.sync_data().GetSpecifics().autofill_profile();
-  EXPECT_EQ(kGuid2, specifics.guid());
+  EXPECT_EQ(kGuid1, specifics.guid());
+}
+
+TEST_F(AutofillProfileSyncableServiceTest,
+       AutofillProfileDeletedIgnoresUnknown) {
+  // Will be owned by the syncable service.  Keep a reference available here for
+  // verifying test expectations.
+  TestSyncChangeProcessor* sync_change_processor = new TestSyncChangeProcessor;
+  autofill_syncable_service_.set_sync_processor(sync_change_processor);
+
+  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuid2, nullptr);
+  autofill_syncable_service_.AutofillProfileChanged(change);
+
+  ASSERT_EQ(0U, sync_change_processor->changes().size());
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, UpdateField) {
