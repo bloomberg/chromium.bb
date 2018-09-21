@@ -157,9 +157,13 @@ TEST_F(CWVAutofillControllerTest, FillSuggestion) {
 
 // Tests CWVAutofillController clears form.
 TEST_F(CWVAutofillControllerTest, ClearForm) {
+  auto frame = std::make_unique<web::FakeWebFrame>(
+      base::SysNSStringToUTF8(kTestFrameId), true, GURL::EmptyGURL());
+  web_state_.AddWebFrame(std::move(frame));
   __block BOOL clear_form_completion_was_called = NO;
   [autofill_controller_ clearFormWithName:kTestFormName
                           fieldIdentifier:kTestFieldIdentifier
+                                  frameID:kTestFrameId
                         completionHandler:^{
                           clear_form_completion_was_called = YES;
                         }];
@@ -171,6 +175,7 @@ TEST_F(CWVAutofillControllerTest, ClearForm) {
   EXPECT_NSEQ(kTestFormName, js_autofill_manager_.lastClearedFormName);
   EXPECT_NSEQ(kTestFieldIdentifier,
               js_autofill_manager_.lastClearedFieldIdentifier);
+  EXPECT_NSEQ(kTestFrameId, js_autofill_manager_.lastClearedFrameIdentifier);
 }
 
 // Tests CWVAutofillController focus previous field.

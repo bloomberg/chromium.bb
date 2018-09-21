@@ -133,9 +133,13 @@
 
 - (void)clearFormWithName:(NSString*)formName
           fieldIdentifier:(NSString*)fieldIdentifier
+                  frameID:(NSString*)frameID
         completionHandler:(nullable void (^)(void))completionHandler {
+  web::WebFrame* frame =
+      web::GetWebFrameWithId(_webState, base::SysNSStringToUTF8(frameID));
   [_JSAutofillManager clearAutofilledFieldsForFormName:formName
                                        fieldIdentifier:fieldIdentifier
+                                               inFrame:frame
                                      completionHandler:^{
                                        if (completionHandler) {
                                          completionHandler();
@@ -352,7 +356,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 - (void)onFormDataFilled:(uint16_t)query_id
                  inFrame:(web::WebFrame*)frame
                   result:(const autofill::FormData&)result {
-  [_autofillAgent onFormDataFilled:result];
+  [_autofillAgent onFormDataFilled:result inFrame:frame];
   autofill::AutofillManager* manager = [self autofillManagerForFrame:frame];
   if (manager) {
     manager->OnDidFillAutofillFormData(result, base::TimeTicks::Now());

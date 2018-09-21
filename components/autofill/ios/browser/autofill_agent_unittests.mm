@@ -17,6 +17,7 @@
 #include "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#include "ios/web/public/web_state/web_frame_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -108,6 +109,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
   field.value = base::ASCIIToUTF16("");
   field.is_autofilled = true;
   form.fields.push_back(field);
+  // TODO(crbug.com/881364): Fix for WebFrameMessaging.
   // Fields are in alphabetical order.
   [[mock_js_injection_receiver_ expect]
       executeJavaScript:
@@ -116,7 +118,8 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
           @"\"number\":{\"section\":\"\",\"value\":\"number_value\"}},"
           @"\"formName\":\"CC form\"}, \"\");"
       completionHandler:[OCMArg any]];
-  [autofill_agent_ onFormDataFilled:form];
+  [autofill_agent_ onFormDataFilled:form
+                            inFrame:web::GetMainWebFrame(&test_web_state_)];
   test_web_state_.WasShown();
 
   EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
@@ -149,6 +152,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
   field.value = base::ASCIIToUTF16("value 2");
   field.is_autofilled = true;
   form.fields.push_back(field);
+  // TODO(crbug.com/881364): Fix for WebFrameMessaging.
   // Fields are in alphabetical order.
   [[mock_js_injection_receiver_ expect]
       executeJavaScript:
@@ -157,7 +161,8 @@ TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
           @"2\"},\"region\":{\"section\":\"\",\"value\":\"California\"}},"
           @"\"formName\":\"\"}, \"\");"
       completionHandler:[OCMArg any]];
-  [autofill_agent_ onFormDataFilled:form];
+  [autofill_agent_ onFormDataFilled:form
+                            inFrame:web::GetMainWebFrame(&test_web_state_)];
   test_web_state_.WasShown();
 
   EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
@@ -169,6 +174,7 @@ TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity1) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+  // TODO(crbug.com/881364): Fix for WebFrameMessaging.
   [[mock_js_injection_receiver_ expect]
       executeJavaScript:@"__gCrWeb.autofill.extractForms(1, true);"
       completionHandler:[OCMArg any]];
@@ -194,6 +200,7 @@ TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity2) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+  // TODO(crbug.com/881364): Fix for WebFrameMessaging.
   [[mock_js_injection_receiver_ expect]
       executeJavaScript:@"__gCrWeb.autofill.extractForms(1, false);"
       completionHandler:[OCMArg any]];
