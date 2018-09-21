@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "ui/gfx/image/image_skia_operations.h"
 
 namespace app_list {
 
@@ -42,8 +41,10 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
       icon_dimension);
   icon_decode_request_->StartWithOptions(data_->icon_png);
 
-  badge_icon_loader_ =
-      std::make_unique<ArcAppIconLoader>(profile_, icon_dimension, this);
+  badge_icon_loader_ = std::make_unique<ArcAppIconLoader>(
+      profile_,
+      app_list::AppListConfig::instance().search_tile_badge_icon_dimension(),
+      this);
   badge_icon_loader_->FetchImage(GetAppId());
 }
 
@@ -57,9 +58,7 @@ void ArcAppShortcutSearchResult::Open(int event_flags) {
 void ArcAppShortcutSearchResult::OnAppImageUpdated(
     const std::string& app_id,
     const gfx::ImageSkia& image) {
-  SetBadgeIcon(gfx::ImageSkiaOperations::CreateResizedImage(
-      image, skia::ImageOperations::RESIZE_BEST,
-      app_list::AppListConfig::instance().search_tile_badge_icon_size()));
+  SetBadgeIcon(image);
 }
 
 std::string ArcAppShortcutSearchResult::GetAppId() const {
