@@ -122,7 +122,9 @@ enum class ColorRange : uint8_t {
 CHECK_TYPE(ColorRange, 1, 1);
 
 // Described in ISO 23001-8:2016, section 7. All the IDs are in the range
-// [0, 255] so 8-bit integer is sufficient.
+// [0, 255] so 8-bit integer is sufficient. An unspecified ColorSpace should be
+// {2, 2, 2, ColorRange::kInvalid}, where value 2 means "Unspecified" for all
+// the IDs, as defined by the spec.
 struct ColorSpace {
   uint8_t primary_id;   // 7.1 colour primaries, table 2
   uint8_t transfer_id;  // 7.2 transfer characteristics, table 3
