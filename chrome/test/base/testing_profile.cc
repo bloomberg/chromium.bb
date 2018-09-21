@@ -769,12 +769,6 @@ TestingProfile::GetExtensionSpecialStoragePolicy() {
 #endif
 }
 
-net::CookieStore* TestingProfile::GetCookieStore() {
-  if (!GetRequestContext())
-    return NULL;
-  return GetRequestContext()->GetURLRequestContext()->cookie_store();
-}
-
 void TestingProfile::CreateTestingPrefService() {
   DCHECK(!prefs_.get());
   testing_prefs_ = new sync_preferences::TestingPrefServiceSyncable();
