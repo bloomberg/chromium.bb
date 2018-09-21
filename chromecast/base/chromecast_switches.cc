@@ -162,6 +162,11 @@ const char kBackGestureHorizontalThreshold[] =
 // Whether to enable detection and dispatch of a 'drag from the top' gesture.
 const char kEnableTopDragGesture[] = "enable-top-drag-gesture";
 
+// Endpoint that the mixer service listens on. On Linux/Android, this is a
+// path for a UNIX domain socket (default is /tmp/mixer-service). On other
+// platforms, this is a TCP port to listen on (on localhost) (default 12854).
+const char kMixerServiceEndpoint[] = "mixer-service-endpoint";
+
 extern const char kCastMemoryPressureCriticalFraction[] =
     "memory-pressure-critical-fraction";
 extern const char kCastMemoryPressureModerateFraction[] =
