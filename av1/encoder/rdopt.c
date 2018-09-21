@@ -6963,7 +6963,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
               x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
               cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
               x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref], NULL, NULL,
-              0, 0, pw, ph, 1, 1);
+              0, 0, pw, ph, cpi->sf.use_accurate_subpel_search, 1);
 
           if (try_second) {
             const int minc =
@@ -6988,7 +6988,8 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                   cpi->sf.mv.subpel_force_stop,
                   cpi->sf.mv.subpel_iters_per_step,
                   cond_cost_list(cpi, cost_list), x->nmvjointcost, x->mvcost,
-                  &dis, &x->pred_sse[ref], NULL, NULL, 0, 0, pw, ph, 1, 0);
+                  &dis, &x->pred_sse[ref], NULL, NULL, 0, 0, pw, ph,
+                  cpi->sf.use_accurate_subpel_search, 0);
               if (this_var < best_mv_var) best_mv = x->best_mv.as_mv;
               x->best_mv.as_mv = best_mv;
             }
