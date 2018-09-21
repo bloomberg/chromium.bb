@@ -68,8 +68,6 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   // feature. It is counted as if it were a feature usage from the page.
   void CountFeature(blink::mojom::WebFeature feature);
 
-  int provider_id() const;
-
  private:
   void OnRegistered(
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks,
