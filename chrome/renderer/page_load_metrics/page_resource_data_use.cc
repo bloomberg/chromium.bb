@@ -21,6 +21,8 @@ PageResourceDataUse::PageResourceDataUse()
       reported_as_ad_resource_(false),
       is_main_frame_resource_(false) {}
 
+PageResourceDataUse::PageResourceDataUse(const PageResourceDataUse& other) =
+    default;
 PageResourceDataUse::~PageResourceDataUse() = default;
 
 void PageResourceDataUse::DidStartResponse(
@@ -29,6 +31,7 @@ void PageResourceDataUse::DidStartResponse(
   resource_id_ = resource_id;
   data_reduction_proxy_compression_ratio_estimate_ =
       data_reduction_proxy::EstimateCompressionRatioFromHeaders(&response_head);
+  mime_type_ = response_head.mime_type;
   total_received_bytes_ = 0;
   last_update_bytes_ = 0;
 }
@@ -85,6 +88,7 @@ mojom::ResourceDataUpdatePtr PageResourceDataUse::GetResourceDataUpdate() {
       data_reduction_proxy_compression_ratio_estimate_;
   resource_data_update->reported_as_ad_resource = reported_as_ad_resource_;
   resource_data_update->is_main_frame_resource = is_main_frame_resource_;
+  resource_data_update->mime_type = mime_type_;
   return resource_data_update;
 }
 }  // namespace page_load_metrics

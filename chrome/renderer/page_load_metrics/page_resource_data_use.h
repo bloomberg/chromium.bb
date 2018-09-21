@@ -20,6 +20,7 @@ namespace page_load_metrics {
 class PageResourceDataUse {
  public:
   PageResourceDataUse();
+  PageResourceDataUse(const PageResourceDataUse& other);
   ~PageResourceDataUse();
 
   void DidStartResponse(int resource_id,
@@ -66,6 +67,8 @@ class PageResourceDataUse {
   bool is_canceled_;
   bool reported_as_ad_resource_;
   bool is_main_frame_resource_;
+
+  std::string mime_type_;
 
   DISALLOW_ASSIGN(PageResourceDataUse);
 };

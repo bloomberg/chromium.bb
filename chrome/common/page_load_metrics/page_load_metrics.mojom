@@ -182,6 +182,9 @@ struct ResourceDataUpdate {
 
   // Whether this resource was loaded in the top-level frame.
   bool is_main_frame_resource;
+
+  // Mime type for the resource found in the network response header.
+  string mime_type;
 };
 
 // Sent from renderer to browser process when the PageLoadTiming for the

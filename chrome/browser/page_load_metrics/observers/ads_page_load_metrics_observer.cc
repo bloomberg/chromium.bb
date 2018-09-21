@@ -15,6 +15,8 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/mime_util.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -370,7 +372,7 @@ void AdsPageLoadMetricsObserver::UpdateResource(
 
   // Update resource map.
   if (resource->is_complete) {
-    RecordResourceHistogram(resource);
+    RecordResourceHistograms(resource);
     if (it != page_resources_.end())
       page_resources_.erase(it);
   } else {
@@ -386,7 +388,45 @@ void AdsPageLoadMetricsObserver::UpdateResource(
   }
 }
 
-void AdsPageLoadMetricsObserver::RecordResourceHistogram(
+void AdsPageLoadMetricsObserver::RecordResourceMimeHistograms(
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  if (blink::IsSupportedImageMimeType(resource->mime_type)) {
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Image",
+                         resource->received_data_length);
+  } else if (blink::IsSupportedJavascriptMimeType(resource->mime_type)) {
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.JS",
+                         resource->received_data_length);
+  } else {
+    std::string top_level_type;
+    std::string subtype;
+
+    if (!net::ParseMimeTypeWithoutParameter(resource->mime_type,
+                                            &top_level_type, &subtype)) {
+      // Log invalid mime types as "Other".
+      PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Other",
+                           resource->received_data_length);
+      return;
+    }
+
+    if (top_level_type.compare("video") == 0) {
+      PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Video",
+                           resource->received_data_length);
+    } else if (top_level_type.compare("text") == 0 &&
+               subtype.compare("css") == 0) {
+      PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.CSS",
+                           resource->received_data_length);
+    } else if (top_level_type.compare("text") == 0 &&
+               subtype.compare("html") == 0) {
+      PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.HTML",
+                           resource->received_data_length);
+    } else {
+      PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Other",
+                           resource->received_data_length);
+    }
+  }
+}
+
+void AdsPageLoadMetricsObserver::RecordResourceHistograms(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
   if (resource->is_main_frame_resource && resource->reported_as_ad_resource) {
     PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mainframe.AdResource",
@@ -401,6 +441,10 @@ void AdsPageLoadMetricsObserver::RecordResourceHistogram(
     PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Subframe.VanillaResource",
                          resource->received_data_length);
   }
+
+  // Only report sizes by mime type for ad resources.
+  if (resource->reported_as_ad_resource)
+    RecordResourceMimeHistograms(resource);
 }
 
 void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms() {
@@ -426,7 +470,7 @@ void AdsPageLoadMetricsObserver::RecordHistograms() {
   RecordHistogramsForType(AD_TYPE_ALL);
   RecordPageResourceTotalHistograms();
   for (auto const& kv : page_resources_)
-    RecordResourceHistogram(kv.second);
+    RecordResourceHistograms(kv.second);
 }
 
 void AdsPageLoadMetricsObserver::RecordHistogramsForType(int ad_type) {
