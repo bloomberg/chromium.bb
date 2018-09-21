@@ -13,7 +13,7 @@
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
 // static
-const int WebDatabase::kCurrentVersionNumber = 78;
+const int WebDatabase::kCurrentVersionNumber = 79;
 
 const int WebDatabase::kDeprecatedVersionNumber = 51;
 
@@ -22,7 +22,7 @@ const base::FilePath::CharType WebDatabase::kInMemoryPath[] =
 
 namespace {
 
-const int kCompatibleVersionNumber = 78;
+const int kCompatibleVersionNumber = 79;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.
@@ -184,6 +184,9 @@ bool WebDatabase::MigrateToVersion(int version,
     case 58:
       *update_compatible_version = true;
       return MigrateToVersion58DropWebAppsAndIntents();
+    case 79:
+      *update_compatible_version = true;
+      return MigrateToVersion79DropLoginsTable();
   }
 
   return true;
@@ -196,4 +199,11 @@ bool WebDatabase::MigrateToVersion58DropWebAppsAndIntents() {
          db_.Execute("DROP TABLE IF EXISTS web_intents") &&
          db_.Execute("DROP TABLE IF EXISTS web_intents_defaults") &&
          transaction.Commit();
+}
+
+bool WebDatabase::MigrateToVersion79DropLoginsTable() {
+  sql::Transaction transaction(&db_);
+  return transaction.Begin() &&
+         db_.Execute("DROP TABLE IF EXISTS ie7_logins") &&
+         db_.Execute("DROP TABLE IF EXISTS logins") && transaction.Commit();
 }
