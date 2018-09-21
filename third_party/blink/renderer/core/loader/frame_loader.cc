@@ -937,12 +937,22 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (request.Form())
     Client()->DispatchWillSubmitForm(request.Form());
 
-  DCHECK(policy == kNavigationPolicyCurrentTab ||
-         policy == kNavigationPolicyHandledByClient);
-
-  bool cancel_scheduled_navigations = policy != kNavigationPolicyCurrentTab;
-  if (!CancelProvisionalLoaderForNewNavigation(cancel_scheduled_navigations))
+  if (policy == kNavigationPolicyCurrentTab) {
+    FrameLoadRequest new_request(
+        nullptr, resource_request, AtomicString(),
+        request.ShouldCheckMainWorldContentSecurityPolicy(),
+        request.GetDevToolsNavigationToken());
+    new_request.SetReplacesCurrentItem(request.ReplacesCurrentItem());
+    new_request.SetClientRedirect(request.ClientRedirect());
+    CommitNavigation(new_request, frame_load_type, nullptr, nullptr, nullptr);
     return;
+  }
+
+  DCHECK(policy == kNavigationPolicyHandledByClient);
+  if (!CancelProvisionalLoaderForNewNavigation(
+          true /* cancel_scheduled_navigations */)) {
+    return;
+  }
 
   provisional_document_loader_ = CreateDocumentLoader(
       resource_request, request, frame_load_type, navigation_type,
@@ -959,20 +969,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                             resource_request);
   DCHECK(provisional_document_loader_);
 
-  // TODO(dgozman): there is still a possibility of
-  // |kNavigationPolicyCurrentTab| when starting a navigation. Perhaps, we can
-  // just call CommitNavigation in this case instead, maybe from client side?
-  if (policy == kNavigationPolicyCurrentTab) {
-    provisional_document_loader_->StartLoading();
-    // This should happen after the request is sent, so that the state
-    // the inspector stored in the matching frameScheduledClientNavigation()
-    // is available while sending the request.
-    probe::frameClearedScheduledClientNavigation(frame_);
-  } else {
-    DCHECK(policy == kNavigationPolicyHandledByClient);
-    probe::frameScheduledClientNavigation(frame_);
-  }
-
+  probe::frameScheduledClientNavigation(frame_);
   TakeObjectSnapshot();
 }
 
