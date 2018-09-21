@@ -358,9 +358,10 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
     // enable it on all devices https://crbug.com/765292.
     fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>();
     layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
-    if (is_new_style_launcher_enabled_)
-      SetBorder(views::CreateEmptyBorder(gfx::Insets(kFadeoutZoneHeight, 0)));
   }
+
+  if (!folder_delegate && is_new_style_launcher_enabled_)
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(kFadeoutZoneHeight, 0)));
 
   pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
                                            kOverscrollPageTransitionDurationMs);
