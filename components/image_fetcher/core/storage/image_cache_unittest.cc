@@ -38,13 +38,15 @@ class ImageCacheTest : public testing::Test {
   void CreateImageCache() {
     clock_.SetNow(base::Time());
 
-    auto db =
-        std::make_unique<FakeDB<CachedImageMetadataProto>>(&metadata_store_);
+    auto db = std::make_unique<FakeDB<CachedImageMetadataProto>>(&db_store_);
     db_ = db.get();
     auto metadata_store = std::make_unique<ImageMetadataStoreLevelDB>(
         base::FilePath(), std::move(db), &clock_);
+    metadata_store_ = metadata_store.get();
+
     auto data_store = std::make_unique<ImageDataStoreDisk>(
         temp_dir_.GetPath(), base::SequencedTaskRunnerHandle::Get());
+    data_store_ = data_store.get();
 
     ImageCache::RegisterProfilePrefs(test_prefs_.registry());
     image_cache_ = std::make_unique<ImageCache>(
@@ -54,7 +56,8 @@ class ImageCacheTest : public testing::Test {
 
   void InitializeImageCache() {
     image_cache_->MaybeStartInitialization();
-    db_->InitCallback(true);
+    db()->InitCallback(true);
+
     RunUntilIdle();
   }
 
@@ -69,8 +72,8 @@ class ImageCacheTest : public testing::Test {
     return image_cache()->AreAllDependenciesInitialized();
   }
 
-  void RunCacheEviction(bool success) {
-    image_cache()->RunEviction();
+  void RunEvictionOnStartup(bool success) {
+    image_cache()->RunEvictionOnStartup();
 
     if (success) {
       db_->LoadCallback(true);
@@ -80,23 +83,48 @@ class ImageCacheTest : public testing::Test {
     RunUntilIdle();
   }
 
+  bool IsMetadataPresent(const std::string& key) {
+    return db_store_.find(key) != db_store_.end();
+  }
+
+  void RunReconciliation() {
+    image_cache()->RunReconciliation();
+    db()->LoadKeysCallback(true);
+    RunUntilIdle();
+    db()->UpdateCallback(true);
+    RunUntilIdle();
+  }
+
+  void InjectMetadata(std::string key, int data_size) {
+    metadata_store_->SaveImageMetadata(key, data_size);
+  }
+
+  void InjectData(std::string key, std::string data) {
+    data_store_->SaveImage(key, data);
+    RunUntilIdle();
+  }
+
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
 
   TestingPrefServiceSimple* prefs() { return &test_prefs_; }
   base::SimpleTestClock* clock() { return &clock_; }
   ImageCache* image_cache() { return image_cache_.get(); }
+  ImageDataStoreDisk* data_store() { return data_store_; }
+  ImageMetadataStoreLevelDB* metadata_store() { return metadata_store_; }
   FakeDB<CachedImageMetadataProto>* db() { return db_; }
 
   MOCK_METHOD1(DataCallback, void(std::string));
 
  private:
   std::unique_ptr<ImageCache> image_cache_;
+  ImageMetadataStoreLevelDB* metadata_store_;
+  ImageDataStoreDisk* data_store_;
   base::SimpleTestClock clock_;
 
   TestingPrefServiceSimple test_prefs_;
   base::ScopedTempDir temp_dir_;
   FakeDB<CachedImageMetadataProto>* db_;
-  std::map<std::string, CachedImageMetadataProto> metadata_store_;
+  std::map<std::string, CachedImageMetadataProto> db_store_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -184,7 +212,7 @@ TEST_F(ImageCacheTest, Eviction) {
   PrepareImageCache();
 
   clock()->SetNow(clock()->Now() + base::TimeDelta::FromDays(7));
-  RunCacheEviction(/* success */ true);
+  RunEvictionOnStartup(/* success */ true);
 
   EXPECT_CALL(*this, DataCallback(std::string()));
   image_cache()->LoadImage(
@@ -197,7 +225,7 @@ TEST_F(ImageCacheTest, EvictionTooSoon) {
   PrepareImageCache();
 
   clock()->SetNow(clock()->Now() + base::TimeDelta::FromDays(6));
-  RunCacheEviction(/* success */ true);
+  RunEvictionOnStartup(/* success */ true);
 
   EXPECT_CALL(*this, DataCallback(kImageData));
   image_cache()->LoadImage(
@@ -211,13 +239,63 @@ TEST_F(ImageCacheTest, EvictionWhenEvictionAlreadyPerformed) {
 
   prefs()->SetTime("cached_image_fetcher_last_eviction_time", clock()->Now());
   clock()->SetNow(clock()->Now() + base::TimeDelta::FromHours(23));
-  RunCacheEviction(/* success */ false);
+  RunEvictionOnStartup(/* success */ false);
 
   EXPECT_CALL(*this, DataCallback(kImageData));
   image_cache()->LoadImage(
       kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
+}
+
+TEST_F(ImageCacheTest, Reconciliation) {
+  CreateImageCache();
+  InitializeImageCache();
+
+  // Inject differing keys so they mismatch, then run reconciliation.
+  InjectData("foo", "z");
+  InjectMetadata("bar", 10);
+  RunReconciliation();
+
+  // Data should be gone.
+  EXPECT_CALL(*this, DataCallback(std::string()));
+  image_cache()->LoadImage("foo", base::BindOnce(&ImageCacheTest::DataCallback,
+                                                 base::Unretained(this)));
+  RunUntilIdle();
+
+  // Metadata should be gone.
+  ASSERT_FALSE(IsMetadataPresent("bar"));
+}
+
+TEST_F(ImageCacheTest, ReconciliationMismatchData) {
+  CreateImageCache();
+  InitializeImageCache();
+
+  // Inject differing keys so they mismatch, then run reconciliation.
+  InjectData("foo", "z");
+  InjectData("bar", "z");
+  InjectMetadata("foo", 10);
+  RunReconciliation();
+
+  // Data should be gone.
+  EXPECT_CALL(*this, DataCallback(std::string()));
+  image_cache()->LoadImage("bar", base::BindOnce(&ImageCacheTest::DataCallback,
+                                                 base::Unretained(this)));
+  RunUntilIdle();
+}
+
+TEST_F(ImageCacheTest, ReconciliationMismatchMetadata) {
+  CreateImageCache();
+  InitializeImageCache();
+
+  // Inject differing keys so they mismatch, then run reconciliation.
+  InjectData("foo", "z");
+  InjectMetadata("foo", 10);
+  InjectMetadata("bar", 10);
+  RunReconciliation();
+
+  // Metadata should be gone.
+  ASSERT_FALSE(IsMetadataPresent("bar"));
 }
 
 }  // namespace image_fetcher

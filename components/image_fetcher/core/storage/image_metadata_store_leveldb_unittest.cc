@@ -282,6 +282,12 @@ TEST_F(ImageMetadataStoreLevelDBTest, GetAllKeysLoadFailed) {
   db()->LoadKeysCallback(false);
 }
 
+TEST_F(ImageMetadataStoreLevelDBTest, GetEstimatedSize) {
+  PrepareDatabase(true);
+
+  EXPECT_EQ(5, metadata_store()->GetEstimatedSize());
+}
+
 TEST_F(ImageMetadataStoreLevelDBTest, GarbageCollectBeforeInit) {
   PrepareDatabase(false);
 

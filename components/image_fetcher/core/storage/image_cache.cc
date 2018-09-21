@@ -25,16 +25,18 @@ constexpr char kPrefLastEvictionKey[] =
     "cached_image_fetcher_last_eviction_time";
 
 // TODO(wylieb): Control these parameters server-side.
-constexpr size_t kCacheMaxSize = 64 * 1024 * 1024;  // 64mb.
+constexpr int kCacheMaxSize = 64 * 1024 * 1024;         // 64mb.
+constexpr int kCacheResizeWhenFull = 48 * 1024 * 1024;  // 48mb.
 
 // Cache items are allowed to live for the given amount of days.
-constexpr size_t kCacheItemsTimeToLiveDays = 7;
-constexpr size_t kImageCacheEvictionIntervalHours = 24;
-constexpr size_t kImageCacheEvictionDelayMinutes = 5;
+constexpr int kCacheItemsTimeToLiveDays = 7;
+constexpr int kImageCacheEvictionIntervalHours = 24;
 
 std::string HashUrlToKey(const std::string& input) {
   return base32::Base32Encode(base::SHA1HashString(input));
 }
+
+void OnStartupEvictionQueued() {}
 
 }  // namespace
 
@@ -125,17 +127,22 @@ void ImageCache::OnDependencyInitialized() {
 
   // TODO(wylieb): Consider delaying eviction as new requests come in via
   // seperate weak pointers.
+  // TODO(wylieb): Log UMA data about starting GC eviction here, then again
+  // when it's finished.
   // Once all the queued requests are taken care of, run eviction.
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&ImageCache::RunEviction, weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMinutes(kImageCacheEvictionDelayMinutes));
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(OnStartupEvictionQueued),
+      base::BindOnce(&ImageCache::RunEvictionOnStartup,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ImageCache::SaveImageImpl(const std::string& url, std::string image_data) {
   std::string key = HashUrlToKey(url);
 
-  // TODO(wylieb): Run eviction if size is larger than desired size.
+  // If the cache is full, evict some stuff.
+  RunEvictionWhenFull();
+
   size_t length = image_data.length();
   data_store_->SaveImage(key, std::move(image_data));
   metadata_store_->SaveImageMetadata(key, length);
@@ -156,8 +163,7 @@ void ImageCache::DeleteImageImpl(const std::string& url) {
   metadata_store_->DeleteImageMetadata(key);
 }
 
-// TODO(wylieb): Support an eviction and reconciliation routine.
-void ImageCache::RunEviction() {
+void ImageCache::RunEvictionOnStartup() {
   base::Time last_eviction_time = pref_service_->GetTime(kPrefLastEvictionKey);
   // If we've already garbage collected in the past interval, bail out.
   if (last_eviction_time >
@@ -166,17 +172,70 @@ void ImageCache::RunEviction() {
     return;
   }
 
+  RunEviction(kCacheMaxSize, base::BindOnce(&ImageCache::RunReconciliation,
+                                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ImageCache::RunEvictionWhenFull() {
+  // Storage is within limits, bail out.
+  if (metadata_store_->GetEstimatedSize() < kCacheMaxSize) {
+    return;
+  }
+
+  RunEviction(kCacheResizeWhenFull, base::OnceClosure());
+}
+
+void ImageCache::RunEviction(size_t bytes_left,
+                             base::OnceClosure on_completion) {
   base::Time eviction_time = clock_->Now();
   pref_service_->SetTime(kPrefLastEvictionKey, eviction_time);
   metadata_store_->EvictImageMetadata(
       eviction_time - base::TimeDelta::FromDays(kCacheItemsTimeToLiveDays),
-      kCacheMaxSize,
-      base::BindOnce(&ImageCache::OnKeysEvicted,
-                     weak_ptr_factory_.GetWeakPtr()));
+      bytes_left,
+      base::BindOnce(&ImageCache::OnKeysEvicted, weak_ptr_factory_.GetWeakPtr(),
+                     std::move(on_completion)));
 }
 
-void ImageCache::OnKeysEvicted(std::vector<std::string> keys) {
+void ImageCache::OnKeysEvicted(base::OnceClosure on_completion,
+                               std::vector<std::string> keys) {
   for (const std::string& key : keys) {
+    data_store_->DeleteImage(key);
+  }
+
+  std::move(on_completion).Run();
+}
+
+void ImageCache::RunReconciliation() {
+  metadata_store_->GetAllKeys(base::BindOnce(&ImageCache::ReconcileMetadataKeys,
+                                             weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ImageCache::ReconcileMetadataKeys(std::vector<std::string> metadata_keys) {
+  data_store_->GetAllKeys(base::BindOnce(&ImageCache::ReconcileDataKeys,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         std::move(metadata_keys)));
+}
+
+void ImageCache::ReconcileDataKeys(std::vector<std::string> metadata_keys,
+                                   std::vector<std::string> data_keys) {
+  std::sort(metadata_keys.begin(), metadata_keys.end());
+  std::sort(data_keys.begin(), data_keys.end());
+
+  std::vector<std::string> diff;
+  // Get the keys that should be removed from metadata.
+  std::set_difference(metadata_keys.begin(), metadata_keys.end(),
+                      data_keys.begin(), data_keys.end(),
+                      std::inserter(diff, diff.begin()));
+
+  for (const std::string& key : diff) {
+    metadata_store_->DeleteImageMetadata(key);
+  }
+
+  diff.clear();
+  // Get the keys that should be removed from data.
+  std::set_difference(data_keys.begin(), data_keys.end(), metadata_keys.begin(),
+                      metadata_keys.end(), std::inserter(diff, diff.begin()));
+  for (const std::string& key : diff) {
     data_store_->DeleteImage(key);
   }
 }
