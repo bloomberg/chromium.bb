@@ -139,6 +139,10 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns true if overflow bubble is shown.
   bool IsShowingOverflowBubble() const;
 
+  // Whether we should show a visual highlight on the app list button when
+  // the app list is shown.
+  bool ShouldShowAppListButtonHighlight() const;
+
   // Sets owner overflow bubble instance from which this shelf view pops
   // out as overflow.
   void set_owner_overflow_bubble(OverflowBubble* owner) {

@@ -97,7 +97,10 @@ AppListButton::~AppListButton() {
 }
 
 void AppListButton::OnAppListShown() {
-  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+  // Do not show a highlight in tablet mode since the "homecher" view is always
+  // open in the background.
+  if (shelf_view_->ShouldShowAppListButtonHighlight())
+    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   is_showing_app_list_ = true;
   shelf_->UpdateAutoHideState();
 }
