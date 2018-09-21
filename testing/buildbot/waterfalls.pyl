@@ -786,7 +786,6 @@
           'gtest_tests': 'chromium_linux_gtests',
         },
         'args': [
-          '--test-launcher-batch-limit=1',
           '--test-launcher-print-test-stdio=always',
         ],
       },
@@ -3155,7 +3154,6 @@
           'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
         'args': [
-          '--test-launcher-batch-limit=1',
           '--test-launcher-print-test-stdio=always',
         ],
       },
@@ -3164,7 +3162,6 @@
           'gtest_tests': 'sandboxed_chromium_memory_linux_gtests',
         },
         'args': [
-          '--test-launcher-batch-limit=1',
           '--test-launcher-print-test-stdio=always',
         ],
       },
@@ -3178,7 +3175,6 @@
           'gtest_tests': 'linux_chromeos_gtests',
         },
         'args': [
-          '--test-launcher-batch-limit=1',
           '--test-launcher-print-test-stdio=always',
         ],
       },
