@@ -191,7 +191,7 @@ int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {
 
 int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
   const int top = NonClientTopHeight(restored);
-  return !restored || !delegate_->IsFrameCondensed()
+  return !restored && delegate_->IsFrameCondensed()
              ? top
              : (top + GetNonClientRestoredExtraThickness());
 }
