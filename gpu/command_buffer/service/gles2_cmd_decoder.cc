@@ -13163,10 +13163,15 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
 
   // Prefer to do the clear using a glClear call unless the clear is very small
   // (less than 64x64, or one page). Calls to TexSubImage2D on large textures
-  // can take hundreds of milliseconds.
-  // https://crbug.com/848952
+  // can take hundreds of milliseconds because of slow uploads on macOS. Do this
+  // only on macOS because clears are buggy on other drivers.
+  // https://crbug.com/848952 (slow uploads on macOS)
+  // https://crbug.com/883276 (buggy clears on Android)
+  bool prefer_use_gl_clear = false;
+#if defined(OS_MACOSX)
   const uint32_t kMinSizeForGLClear = 4 * 1024;
-  bool prefer_use_gl_clear = size > kMinSizeForGLClear;
+  prefer_use_gl_clear = size > kMinSizeForGLClear;
+#endif
   if (must_use_gl_clear || prefer_use_gl_clear) {
     if (ClearLevelUsingGL(texture, channels, target, level, xoffset, yoffset,
                           width, height)) {
