@@ -88,7 +88,8 @@ class ZoomDecorationTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(ZoomDecorationTest);
 };
 
-IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, BubbleAtDefaultZoom) {
+// TODO(crbug.com/887811): Re-enable after deflaking
+IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, DISABLED_BubbleAtDefaultZoom) {
 }
 
 // Regression test for https://crbug.com/462482.
