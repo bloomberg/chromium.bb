@@ -2453,8 +2453,8 @@ class ComputedStyle : public ComputedStyleBase,
   StyleColor DecorationColorIncludingFallback(bool visited_link) const;
 
   Color StopColor() const { return SvgStyle().StopColor(); }
-  Color FloodColor() const { return SvgStyle().FloodColor(); }
-  Color LightingColor() const { return SvgStyle().LightingColor(); }
+  StyleColor FloodColor() const { return SvgStyle().FloodColor(); }
+  StyleColor LightingColor() const { return SvgStyle().LightingColor(); }
 
   void AddAppliedTextDecoration(const AppliedTextDecoration&);
   void OverrideTextDecorationColors(Color propagated_color);
