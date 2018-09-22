@@ -131,7 +131,8 @@ class MEDIA_EXPORT DecoderStream {
   // Allows callers to register for notification of config changes; this is
   // called immediately after receiving the 'kConfigChanged' status from the
   // DemuxerStream, before any action is taken to handle the config change.
-  using ConfigChangeObserverCB = base::Callback<void(const DecoderConfig&)>;
+  using ConfigChangeObserverCB =
+      base::RepeatingCallback<void(const DecoderConfig&)>;
   void set_config_change_observer(
       ConfigChangeObserverCB config_change_observer) {
     config_change_observer_cb_ = config_change_observer;
@@ -305,8 +306,8 @@ bool DecoderStream<DemuxerStream::AUDIO>::CanReadWithoutStalling() const;
 template <>
 int DecoderStream<DemuxerStream::AUDIO>::GetMaxDecodeRequests() const;
 
-using VideoFrameStream = DecoderStream<DemuxerStream::VIDEO>;
-using AudioBufferStream = DecoderStream<DemuxerStream::AUDIO>;
+using VideoDecoderStream = DecoderStream<DemuxerStream::VIDEO>;
+using AudioDecoderStream = DecoderStream<DemuxerStream::AUDIO>;
 
 }  // namespace media
 
