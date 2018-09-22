@@ -2047,8 +2047,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool CompositedScrollsWithRespectTo(
       const LayoutBoxModelObject& paint_invalidation_container) const;
-  IntSize ScrollAdjustmentForPaintInvalidation(
-      const LayoutBoxModelObject& paint_invalidation_container) const;
 
   bool PreviousBackgroundObscured() const {
     return bitfields_.PreviousBackgroundObscured();

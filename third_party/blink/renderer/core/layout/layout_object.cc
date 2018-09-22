@@ -1532,21 +1532,6 @@ bool LayoutObject::CompositedScrollsWithRespectTo(
          this != &paint_invalidation_container;
 }
 
-IntSize LayoutObject::ScrollAdjustmentForPaintInvalidation(
-    const LayoutBoxModelObject& paint_invalidation_container) const {
-  // Non-composited scrolling should be included in the bounds of scrolled
-  // items. Since mapToVisualRectInAncestorSpace does not include scrolling of
-  // the ancestor, we need to add it back in after.
-  if (paint_invalidation_container.IsBox() &&
-      !paint_invalidation_container.UsesCompositedScrolling() &&
-      this != &paint_invalidation_container) {
-    const LayoutBox* box = ToLayoutBox(&paint_invalidation_container);
-    if (box->HasOverflowClip())
-      return -box->ScrolledContentOffset();
-  }
-  return IntSize();
-}
-
 void LayoutObject::InvalidatePaintRectangle(const LayoutRect& dirty_rect) {
   DCHECK_NE(GetDocument().Lifecycle().GetState(), DocumentLifecycle::kInPaint);
 
