@@ -31,6 +31,10 @@
 
 namespace blink {
 
+static bool CurrentColorChanged(StyleDifference diff, const StyleColor& color) {
+  return diff.TextDecorationOrColorChanged() && color.IsCurrentColor();
+}
+
 void LayoutSVGResourceFilterPrimitive::StyleDidChange(
     StyleDifference diff,
     const ComputedStyle* old_style) {
@@ -43,13 +47,15 @@ void LayoutSVGResourceFilterPrimitive::StyleDidChange(
       ToSVGFilterPrimitiveStandardAttributes(*GetElement());
   const SVGComputedStyle& new_style = StyleRef().SvgStyle();
   if (IsSVGFEFloodElement(element) || IsSVGFEDropShadowElement(element)) {
-    if (new_style.FloodColor() != old_style->SvgStyle().FloodColor())
+    if (new_style.FloodColor() != old_style->SvgStyle().FloodColor() ||
+        CurrentColorChanged(diff, new_style.FloodColor()))
       element.PrimitiveAttributeChanged(SVGNames::flood_colorAttr);
     if (new_style.FloodOpacity() != old_style->SvgStyle().FloodOpacity())
       element.PrimitiveAttributeChanged(SVGNames::flood_opacityAttr);
   } else if (IsSVGFEDiffuseLightingElement(element) ||
              IsSVGFESpecularLightingElement(element)) {
-    if (new_style.LightingColor() != old_style->SvgStyle().LightingColor())
+    if (new_style.LightingColor() != old_style->SvgStyle().LightingColor() ||
+        CurrentColorChanged(diff, new_style.LightingColor()))
       element.PrimitiveAttributeChanged(SVGNames::lighting_colorAttr);
   }
   if (new_style.ColorInterpolationFilters() !=
