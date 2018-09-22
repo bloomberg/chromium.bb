@@ -60,14 +60,6 @@ Polymer({
       type: Array,
       computed: 'computeRangesToPrint_(pagesToPrint_, allPagesArray_)',
     },
-
-    /** @private {string} */
-    inputPattern_: {
-      type: String,
-      notify: true,
-      value:
-          '([0-9]*(-)?[0-9]*(,|\u3001)( )?)*([0-9]*(-)?[0-9]*(,|\u3001)?( )?)?',
-    },
   },
 
   observers: [
@@ -131,14 +123,9 @@ Polymer({
    * @private
    */
   computePagesToPrint_: function() {
-    if (!this.customSelected_ || this.inputString_.trim() == '') {
+    if (!this.customSelected_ || this.inputString_ === '') {
       this.errorState_ = PagesInputErrorState.NO_ERROR;
       return this.allPagesArray_;
-    }
-    if (this.$.pageSettingsCustomInput.invalid) {
-      this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
-      this.onRangeChange_();
-      return this.pagesToPrint_;
     }
 
     const pages = [];
@@ -153,8 +140,8 @@ Polymer({
         return this.pagesToPrint_;
       }
       const limits = range.split('-');
-      let min = parseInt(limits[0], 10);
-      if (min < 1) {
+      let min = Number.parseInt(limits[0], 10);
+      if ((limits[0].length > 0 && Number.isNaN(min)) || min < 1) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
         return this.pagesToPrint_;
@@ -172,10 +159,16 @@ Polymer({
         continue;
       }
 
-      let max = parseInt(limits[1], 10);
-      if (isNaN(min))
+      let max = Number.parseInt(limits[1], 10);
+      if (Number.isNaN(max) && limits[1].length > 0) {
+        this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
+        this.onRangeChange_();
+        return this.pagesToPrint_;
+      }
+
+      if (Number.isNaN(min))
         min = 1;
-      if (isNaN(max))
+      if (Number.isNaN(max))
         max = maxPage;
       if (min > max) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
@@ -278,6 +271,15 @@ Polymer({
     this.customSelected_ = false;
   },
 
+  /**
+   * @param {Event} event Contains information about where focus came from.
+   * @private
+   */
+  onCustomRadioFocus_: function(event) {
+    if (event.relatedTarget !== this.$.pageSettingsCustomInput)
+      this.onCustomRadioClick_();
+  },
+
   /** @private */
   onCustomRadioClick_: function() {
     /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
@@ -286,7 +288,6 @@ Polymer({
 
   /** @private */
   onCustomInputFocus_: function() {
-    this.$.pageSettingsCustomInput.validate();
     this.customSelected_ = true;
   },
 
@@ -295,8 +296,9 @@ Polymer({
    * @private
    */
   onCustomInputBlur_: function(event) {
+    this.resetAndUpdate();
+
     if (this.inputString_.trim() == '' &&
-        event.relatedTarget != this.$$('.custom-input-wrapper') &&
         event.relatedTarget != this.$$('#custom-radio-button')) {
       this.customSelected_ = false;
     }
