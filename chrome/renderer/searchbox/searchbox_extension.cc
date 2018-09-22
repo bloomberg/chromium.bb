@@ -1031,11 +1031,18 @@ void SearchBoxExtension::Install(blink::WebLocalFrame* frame) {
   v8::Handle<v8::Object> chrome =
       content::GetOrCreateChromeObject(isolate, context->Global());
   v8::Local<v8::Object> embedded_search = v8::Object::New(isolate);
-  embedded_search->Set(gin::StringToV8(isolate, "searchBox"),
-                       searchbox_controller.ToV8());
-  embedded_search->Set(gin::StringToV8(isolate, "newTabPage"),
-                       newtabpage_controller.ToV8());
-  chrome->Set(gin::StringToSymbol(isolate, "embeddedSearch"), embedded_search);
+  embedded_search
+      ->Set(context, gin::StringToV8(isolate, "searchBox"),
+            searchbox_controller.ToV8())
+      .ToChecked();
+  embedded_search
+      ->Set(context, gin::StringToV8(isolate, "newTabPage"),
+            newtabpage_controller.ToV8())
+      .ToChecked();
+  chrome
+      ->Set(context, gin::StringToSymbol(isolate, "embeddedSearch"),
+            embedded_search)
+      .ToChecked();
 }
 
 // static
