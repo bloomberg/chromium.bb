@@ -1513,6 +1513,16 @@ void AutofillMetrics::LogShowedHttpNotSecureExplanation() {
 }
 
 // static
+void AutofillMetrics::LogAutocompleteQuery(bool created) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteQuery", created);
+}
+
+// static
+void AutofillMetrics::LogAutocompleteSuggestions(bool has_suggestions) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteSuggestions", has_suggestions);
+}
+
+// static
 void AutofillMetrics::LogCardUploadDecisionsUkm(ukm::UkmRecorder* ukm_recorder,
                                                 ukm::SourceId source_id,
                                                 const GURL& url,
