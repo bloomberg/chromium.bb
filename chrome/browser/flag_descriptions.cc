@@ -232,19 +232,9 @@ const char kContextualSuggestionsAlternateCardLayoutName[] =
 const char kContextualSuggestionsAlternateCardLayoutDescription[] =
     "If enabled, use an alternate card layout for contextual suggestions.";
 
-const char kContextualSuggestionsBottomSheetName[] =
-    "Contextual Suggestions Bottom Sheet";
-const char kContextualSuggestionsBottomSheetDescription[] =
-    "If enabled, shows contextual suggestions in the bottom sheet.";
-
 const char kContextualSuggestionsButtonName[] = "Contextual Suggestions Button";
 const char kContextualSuggestionsButtonDescription[] =
     "If enabled, shows a button to trigger contextual suggestions.";
-
-const char kContextualSuggestionsSlimPeekUIName[] =
-    "Contextual Suggestions Slim Peek UI";
-const char kContextualSuggestionsSlimPeekUIDescription[] =
-    "Use a slimmer peek UI for the contextual suggestions bottom sheet.";
 
 const char kContextualSuggestionsOptOutName[] =
     "Contextual Suggestions Opt-out";

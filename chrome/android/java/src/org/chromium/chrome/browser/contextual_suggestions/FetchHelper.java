@@ -59,7 +59,6 @@ class FetchHelper {
     class TabFetchReadinessState {
         private long mFetchTimeBaselineMillis;
         private String mUrl;
-        private boolean mSuggestionsDismissed;
         private String mCanonicalUrl;
 
         TabFetchReadinessState(String url) {
@@ -75,7 +74,6 @@ class FetchHelper {
             mUrl = URLUtil.isNetworkUrl(url) ? url : null;
             mCanonicalUrl = "";
             mFetchTimeBaselineMillis = 0;
-            setSuggestionsDismissed(false);
         }
 
         /** @return The current URL tracked by this tab state. */
@@ -94,7 +92,7 @@ class FetchHelper {
          *         for fetching.
          */
         boolean isTrackingPage() {
-            return mUrl != null && !mSuggestionsDismissed;
+            return mUrl != null;
         }
 
         /**
@@ -118,11 +116,6 @@ class FetchHelper {
         /** @return Whether the fetch timer is running. */
         boolean isFetchTimeBaselineSet() {
             return mFetchTimeBaselineMillis != 0;
-        }
-
-        /** @param dismissed Whether the suggestions have been dismissed by the user. */
-        void setSuggestionsDismissed(boolean dismissed) {
-            mSuggestionsDismissed = dismissed;
         }
 
         /**
@@ -420,40 +413,21 @@ class FetchHelper {
                 : mObservedTabs.get(tab.getId()).getFetchTimeBaselineMillis();
     }
 
-    /**
-     * Called when suggestions were dismissed.
-     * @param tab The tab on which suggestions were dismissed.
-     */
-    void onSuggestionsDismissed(@NonNull Tab tab) {
-        mObservedTabs.get(tab.getId()).setSuggestionsDismissed(true);
-    }
-
     private boolean isFromGoogleSearchRequired() {
         return mRequireCurrentPageFromSRP || mRequireNavChainFromSRP;
     }
 
     @VisibleForTesting
     boolean requireCurrentPageFromSRP() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)) {
-            return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                    ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, REQUIRE_CURRENT_PAGE_FROM_SRP,
-                    false);
-        }
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET,
-                REQUIRE_CURRENT_PAGE_FROM_SRP, false);
+                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, REQUIRE_CURRENT_PAGE_FROM_SRP,
+                false);
     }
 
     @VisibleForTesting
     boolean requireNavChainFromSRP() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)) {
-            return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                    ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, REQUIRE_NAV_CHAIN_FROM_SRP,
-                    false);
-        }
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET, REQUIRE_NAV_CHAIN_FROM_SRP,
-                false);
+                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, REQUIRE_NAV_CHAIN_FROM_SRP, false);
     }
 
     @VisibleForTesting
@@ -519,14 +493,9 @@ class FetchHelper {
 
     @VisibleForTesting
     static long getMinimumFetchDelayMillis() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)) {
-            return TimeUnit.SECONDS.toMillis(ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                    ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, FETCH_TRIGGERING_DELAY_SECONDS,
-                    MINIMUM_FETCH_DELAY_SECONDS));
-        }
         return TimeUnit.SECONDS.toMillis(ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET,
-                FETCH_TRIGGERING_DELAY_SECONDS, MINIMUM_FETCH_DELAY_SECONDS));
+                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, FETCH_TRIGGERING_DELAY_SECONDS,
+                MINIMUM_FETCH_DELAY_SECONDS));
     }
 
     @VisibleForTesting
