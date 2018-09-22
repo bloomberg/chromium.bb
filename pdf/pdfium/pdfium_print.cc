@@ -278,71 +278,34 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsRasterPdf(
     uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings,
     const PP_PdfPrintSettings_Dev& pdf_print_settings) {
-  std::vector<PDFiumPage> pages_to_print;
-  // width and height of source PDF pages.
-  std::vector<std::pair<double, double>> source_page_sizes;
-  // Collect pages to print and sizes of source pages.
-  std::vector<uint32_t> page_numbers =
-      PDFiumPrint::GetPageNumbersFromPrintPageNumberRange(page_ranges,
-                                                          page_range_count);
-  for (uint32_t page_number : page_numbers) {
-    ScopedFPDFPage pdf_page(FPDF_LoadPage(engine_->doc(), page_number));
-    double source_page_width = FPDF_GetPageWidth(pdf_page.get());
-    double source_page_height = FPDF_GetPageHeight(pdf_page.get());
-    source_page_sizes.push_back(
-        std::make_pair(source_page_width, source_page_height));
-    // For computing size in pixels, use a square dpi since the source PDF page
-    // has square DPI.
-    int width_in_pixels =
-        ConvertUnit(source_page_width, kPointsPerInch, print_settings.dpi);
-    int height_in_pixels =
-        ConvertUnit(source_page_height, kPointsPerInch, print_settings.dpi);
+  ScopedFPDFDocument output_doc = CreatePrintPdf(
+      page_ranges, page_range_count, print_settings, pdf_print_settings);
+  if (!output_doc)
+    return pp::Buffer_Dev();
 
-    pp::Rect rect(width_in_pixels, height_in_pixels);
-    pages_to_print.push_back(PDFiumPage(engine_, page_number, rect, true));
-  }
+  int page_count = FPDF_GetPageCount(output_doc.get());
+  if (page_count <= 0)
+    return pp::Buffer_Dev();
 
-  ScopedFPDFDocument output_doc(FPDF_CreateNewDocument());
-  DCHECK(output_doc);
+  ScopedFPDFDocument rasterized_output_doc(FPDF_CreateNewDocument());
+  DCHECK(rasterized_output_doc);
 
-  for (size_t i = 0; i < pages_to_print.size(); ++i) {
-    double source_page_width = source_page_sizes[i].first;
-    double source_page_height = source_page_sizes[i].second;
+  for (int i = 0; i < page_count; ++i) {
+    ScopedFPDFPage pdf_page(FPDF_LoadPage(output_doc.get(), i));
+    if (!pdf_page)
+      return pp::Buffer_Dev();
 
-    // Use |temp_doc| to compress image by saving PDF to |temp_buffer|.
-    pp::Buffer_Dev temp_buffer;
-    {
-      ScopedFPDFDocument temp_doc =
-          CreateSinglePageRasterPdf(source_page_width, source_page_height,
-                                    print_settings, &pages_to_print[i]);
+    ScopedFPDFDocument temp_doc =
+        CreateSinglePageRasterPdf(pdf_page.get(), print_settings);
+    if (!temp_doc)
+      return pp::Buffer_Dev();
 
-      if (!temp_doc)
-        return pp::Buffer_Dev();
-
-      temp_buffer = GetFlattenedPrintData(temp_doc.get());
-    }
-
-    PDFiumMemBufferFileRead file_read(temp_buffer.data(), temp_buffer.size());
-    ScopedFPDFDocument temp_doc(FPDF_LoadCustomDocument(&file_read, nullptr));
-    if (!FPDF_ImportPages(output_doc.get(), temp_doc.get(), "1", i))
+    if (!FPDF_ImportPages(rasterized_output_doc.get(), temp_doc.get(), "1", i))
       return pp::Buffer_Dev();
   }
 
-  pp::Buffer_Dev buffer;
-  FPDF_CopyViewerPreferences(output_doc.get(), engine_->doc());
-  uint32_t pages_per_sheet = pdf_print_settings.pages_per_sheet;
-  if (ShouldDoNup(pages_per_sheet)) {
-    ScopedFPDFDocument doc = std::move(output_doc);
-    output_doc = NupPdfToPdf(doc.get(), pages_per_sheet, print_settings);
-    if (output_doc)
-      buffer = GetPrintData(output_doc.get());
-  } else {
-    double scale_factor = pdf_print_settings.scale_factor / 100.0;
-    FitContentsToPrintableAreaIfRequired(output_doc.get(), scale_factor,
-                                         print_settings);
-    buffer = GetPrintData(output_doc.get());
-  }
-  return buffer;
+  FPDF_CopyViewerPreferences(rasterized_output_doc.get(), engine_->doc());
+  return GetPrintData(rasterized_output_doc.get());
 }
 
 pp::Buffer_Dev PDFiumPrint::PrintPagesAsPdf(
@@ -390,15 +353,22 @@ ScopedFPDFDocument PDFiumPrint::CreatePrintPdf(
 }
 
 ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
-    double source_page_width,
-    double source_page_height,
-    const PP_PrintSettings_Dev& print_settings,
-    PDFiumPage* page_to_print) {
+    FPDF_PAGE page_to_print,
+    const PP_PrintSettings_Dev& print_settings) {
   ScopedFPDFDocument temp_doc(FPDF_CreateNewDocument());
   DCHECK(temp_doc);
 
-  const pp::Size& bitmap_size(page_to_print->rect().size());
+  double source_page_width = FPDF_GetPageWidth(page_to_print);
+  double source_page_height = FPDF_GetPageHeight(page_to_print);
 
+  // For computing size in pixels, use a square dpi since the source PDF page
+  // has square DPI.
+  int width_in_pixels =
+      ConvertUnit(source_page_width, kPointsPerInch, print_settings.dpi);
+  int height_in_pixels =
+      ConvertUnit(source_page_height, kPointsPerInch, print_settings.dpi);
+
+  pp::Size bitmap_size(width_in_pixels, height_in_pixels);
   pp::ImageData image =
       pp::ImageData(engine_->GetPluginInstance(),
                     PP_IMAGEDATAFORMAT_BGRA_PREMUL, bitmap_size, false);
@@ -411,17 +381,9 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
   FPDFBitmap_FillRect(bitmap.get(), 0, 0, bitmap_size.width(),
                       bitmap_size.height(), 0xFFFFFFFF);
 
-  pp::Rect page_rect = page_to_print->rect();
-  FPDF_RenderPageBitmap(bitmap.get(), page_to_print->GetPrintPage(),
-                        page_rect.x(), page_rect.y(), page_rect.width(),
-                        page_rect.height(), print_settings.orientation,
+  FPDF_RenderPageBitmap(bitmap.get(), page_to_print, 0, 0, bitmap_size.width(),
+                        bitmap_size.height(), print_settings.orientation,
                         FPDF_PRINTING | FPDF_NO_CATCH);
-
-  // Draw the forms.
-  FPDF_FFLDraw(engine_->form(), bitmap.get(), page_to_print->GetPrintPage(),
-               page_rect.x(), page_rect.y(), page_rect.width(),
-               page_rect.height(), print_settings.orientation,
-               FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
 
   unsigned char* bitmap_data =
       static_cast<unsigned char*>(FPDFBitmap_GetBuffer(bitmap.get()));
@@ -469,7 +431,6 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
     FPDFPage_GenerateContent(temp_page);
   }
 
-  page_to_print->ClosePrintPage();
   return temp_doc;
 }
 
@@ -498,15 +459,6 @@ pp::Buffer_Dev PDFiumPrint::GetPrintData(FPDF_DOCUMENT doc) const {
     if (!buffer.is_null())
       memcpy(buffer.data(), output_file_write.buffer().data(), size);
   }
-  return buffer;
-}
-
-pp::Buffer_Dev PDFiumPrint::GetFlattenedPrintData(FPDF_DOCUMENT doc) const {
-  DCHECK(doc);
-
-  pp::Buffer_Dev buffer;
-  if (FlattenPrintData(doc))
-    buffer = GetPrintData(doc);
   return buffer;
 }
 
