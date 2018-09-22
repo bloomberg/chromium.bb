@@ -54,6 +54,7 @@ void InspectorPerformanceAgent::InnerEnable() {
   recalc_style_start_ticks_ = TimeTicks();
   task_start_ticks_ = TimeTicks();
   script_start_ticks_ = TimeTicks();
+  v8compile_start_ticks_ = TimeTicks();
 }
 
 protocol::Response InspectorPerformanceAgent::enable() {
@@ -122,6 +123,12 @@ Response InspectorPerformanceAgent::getMetrics(
   if (!script_start_ticks_.is_null())
     script_duration += now - script_start_ticks_;
   AppendMetric(result.get(), "ScriptDuration", script_duration.InSecondsF());
+
+  TimeDelta v8compile_duration = v8compile_duration_;
+  if (!v8compile_start_ticks_.is_null())
+    v8compile_duration += now - v8compile_start_ticks_;
+  AppendMetric(result.get(), "V8CompileDuration",
+               v8compile_duration.InSecondsF());
 
   TimeDelta task_duration = task_duration_;
   if (!task_start_ticks_.is_null())
@@ -208,6 +215,16 @@ void InspectorPerformanceAgent::Did(const probe::UpdateLayout& probe) {
     return;
   layout_duration_ += GetTimeTicksNow() - layout_start_ticks_;
   layout_count_++;
+}
+
+void InspectorPerformanceAgent::Will(const probe::V8Compile& probe) {
+  DCHECK(v8compile_start_ticks_.is_null());
+  v8compile_start_ticks_ = GetTimeTicksNow();
+}
+
+void InspectorPerformanceAgent::Did(const probe::V8Compile& probe) {
+  v8compile_duration_ += GetTimeTicksNow() - v8compile_start_ticks_;
+  v8compile_start_ticks_ = TimeTicks();
 }
 
 // Will/DidProcessTask() ignore caller provided times to ensure time domain
