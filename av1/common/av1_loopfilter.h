@@ -175,6 +175,22 @@ LoopFilterMask *get_loop_filter_mask(const struct AV1Common *const cm,
                                      int mi_row, int mi_col);
 int get_index_shift(int mi_col, int mi_row, int *index);
 
+void av1_build_bitmask_vert_info(
+    struct AV1Common *const cm, const struct macroblockd_plane *const plane_ptr,
+    int plane);
+
+void av1_build_bitmask_horz_info(
+    struct AV1Common *const cm, const struct macroblockd_plane *const plane_ptr,
+    int plane);
+
+void av1_filter_block_plane_bitmask_vert(
+    struct AV1Common *const cm, struct macroblockd_plane *const plane_ptr,
+    int pl, int mi_row, int mi_col);
+
+void av1_filter_block_plane_bitmask_horz(
+    struct AV1Common *const cm, struct macroblockd_plane *const plane_ptr,
+    int pl, int mi_row, int mi_col);
+
 extern const int mask_id_table_tx_4x4[BLOCK_SIZES_ALL];
 
 extern const int mask_id_table_tx_8x8[BLOCK_SIZES_ALL];
