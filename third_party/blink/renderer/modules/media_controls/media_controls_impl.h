@@ -192,6 +192,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void OnAccessibleFocus();
   void OnAccessibleBlur();
 
+  // Returns true/false based on which set of controls to display.
+  bool ShouldShowAudioControls() const;
+
  private:
   // MediaControlsMediaEventListener is a component that is listening to events
   // and calling the appropriate callback on MediaControlsImpl. The object is
@@ -290,7 +293,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void UpdateActingAsAudioControls();
 
   // Returns true/false based on which set of controls to display.
-  bool ShouldShowAudioControls() const;
   bool ShouldShowVideoControls() const;
 
   // Node

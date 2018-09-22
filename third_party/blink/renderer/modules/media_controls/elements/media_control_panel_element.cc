@@ -181,7 +181,8 @@ void MediaControlPanelElement::DefaultEventHandler(Event& event) {
 }
 
 bool MediaControlPanelElement::KeepEventInNode(const Event& event) const {
-  return !MediaControlsImpl::IsModern() &&
+  return (!MediaControlsImpl::IsModern() ||
+          GetMediaControls().ShouldShowAudioControls()) &&
          MediaControlElementsHelper::IsUserInteractionEvent(event);
 }
 
