@@ -60,6 +60,12 @@ class PDFiumPrint {
       const PP_PdfPrintSettings_Dev& pdf_print_settings);
 
  private:
+  ScopedFPDFDocument CreatePrintPdf(
+      const PP_PrintPageNumberRange_Dev* page_ranges,
+      uint32_t page_range_count,
+      const PP_PrintSettings_Dev& print_settings,
+      const PP_PdfPrintSettings_Dev& pdf_print_settings);
+
   ScopedFPDFDocument CreateSinglePageRasterPdf(
       double source_page_width,
       double source_page_height,

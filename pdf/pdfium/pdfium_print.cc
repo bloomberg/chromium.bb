@@ -350,6 +350,19 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsPdf(
     uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings,
     const PP_PdfPrintSettings_Dev& pdf_print_settings) {
+  pp::Buffer_Dev buffer;
+  ScopedFPDFDocument output_doc = CreatePrintPdf(
+      page_ranges, page_range_count, print_settings, pdf_print_settings);
+  if (output_doc)
+    buffer = GetPrintData(output_doc.get());
+  return buffer;
+}
+
+ScopedFPDFDocument PDFiumPrint::CreatePrintPdf(
+    const PP_PrintPageNumberRange_Dev* page_ranges,
+    uint32_t page_range_count,
+    const PP_PrintSettings_Dev& print_settings,
+    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
   ScopedFPDFDocument output_doc(FPDF_CreateNewDocument());
   DCHECK(output_doc);
   FPDF_CopyViewerPreferences(output_doc.get(), engine_->doc());
@@ -358,27 +371,22 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsPdf(
       GetPageRangeStringFromRange(page_ranges, page_range_count);
   if (!FPDF_ImportPages(output_doc.get(), engine_->doc(),
                         page_number_str.c_str(), 0)) {
-    return pp::Buffer_Dev();
+    return nullptr;
   }
 
-  pp::Buffer_Dev buffer;
   uint32_t pages_per_sheet = pdf_print_settings.pages_per_sheet;
   if (ShouldDoNup(pages_per_sheet)) {
-    if (FlattenPrintData(output_doc.get())) {
-      ScopedFPDFDocument doc = std::move(output_doc);
-      output_doc = NupPdfToPdf(doc.get(), pages_per_sheet, print_settings);
-      if (output_doc)
-        buffer = GetPrintData(output_doc.get());
-    }
-  } else {
-    double scale_factor = pdf_print_settings.scale_factor / 100.0;
-    FitContentsToPrintableAreaIfRequired(output_doc.get(), scale_factor,
-                                         print_settings);
-    if (FlattenPrintData(output_doc.get()))
-      buffer = GetPrintData(output_doc.get());
+    if (!FlattenPrintData(output_doc.get()))
+      return nullptr;
+    return NupPdfToPdf(output_doc.get(), pages_per_sheet, print_settings);
   }
 
-  return buffer;
+  double scale_factor = pdf_print_settings.scale_factor / 100.0;
+  FitContentsToPrintableAreaIfRequired(output_doc.get(), scale_factor,
+                                       print_settings);
+  if (!FlattenPrintData(output_doc.get()))
+    return nullptr;
+  return output_doc;
 }
 
 ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
