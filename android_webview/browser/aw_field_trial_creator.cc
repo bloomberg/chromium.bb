@@ -33,22 +33,6 @@ AwFieldTrialCreator::AwFieldTrialCreator()
 AwFieldTrialCreator::~AwFieldTrialCreator() {}
 
 void AwFieldTrialCreator::SetUpFieldTrials(PrefService* pref_service) {
-  DoSetUpFieldTrials(pref_service);
-
-  // If DoSetUpFieldTrials failed, it might have skipped creating
-  // FeatureList. If so, create a FeatureList without field trials.
-  if (!base::FeatureList::GetInstance()) {
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    auto feature_list = std::make_unique<base::FeatureList>();
-    feature_list->InitializeFromCommandLine(
-        command_line->GetSwitchValueASCII(switches::kEnableFeatures),
-        command_line->GetSwitchValueASCII(switches::kDisableFeatures));
-    base::FeatureList::SetInstance(std::move(feature_list));
-  }
-}
-
-void AwFieldTrialCreator::DoSetUpFieldTrials(PrefService* pref_service) {
   auto* metrics_client = AwMetricsServiceClient::GetInstance();
 
   // Chrome uses the default entropy provider here (rather than low entropy
