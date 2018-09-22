@@ -132,17 +132,17 @@ public final class ChildProcessLauncherHelperImpl {
                 @Override
                 public void onConnectionEstablished(ChildProcessConnection connection) {
                     int pid = connection.getPid();
-                    assert pid > 0;
 
-                    sLauncherByPid.put(pid, ChildProcessLauncherHelperImpl.this);
-                    if (mRanking != null) {
-                        mRanking.addConnection(connection, false /* visible */, 1 /* frameDepth */,
-                                false /* intersectsViewport */, ChildProcessImportance.MODERATE);
+                    if (pid > 0) {
+                        sLauncherByPid.put(pid, ChildProcessLauncherHelperImpl.this);
+                        if (mRanking != null) {
+                            mRanking.addConnection(connection, false /* visible */,
+                                    1 /* frameDepth */, false /* intersectsViewport */,
+                                    ChildProcessImportance.MODERATE);
+                        }
                     }
 
-                    // If the connection fails and pid == 0, the Java-side cleanup was already
-                    // handled by DeathCallback. We still have to call back to native for cleanup
-                    // there.
+                    // Tell native launch result (whether getPid is 0).
                     if (mNativeChildProcessLauncherHelper != 0) {
                         nativeOnChildProcessStarted(
                                 mNativeChildProcessLauncherHelper, connection.getPid());
@@ -152,7 +152,7 @@ public final class ChildProcessLauncherHelperImpl {
 
                 @Override
                 public void onConnectionLost(ChildProcessConnection connection) {
-                    assert connection.getPid() > 0;
+                    if (connection.getPid() == 0) return;
                     sLauncherByPid.remove(connection.getPid());
                     BindingManager manager = getBindingManager();
                     if (mUseBindingManager && manager != null) {
