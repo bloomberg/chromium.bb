@@ -139,11 +139,6 @@ Background = function() {
    */
   this.focusRecoveryMap_ = new WeakMap();
 
-  chrome.automation.getDesktop(function(desktop) {
-    /** @type {string} */
-    this.chromeChannel_ = desktop.chromeChannel;
-  }.bind(this));
-
   CommandHandler.init();
   FindHandler.init();
 

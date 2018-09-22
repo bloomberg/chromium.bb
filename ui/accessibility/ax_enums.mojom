@@ -426,7 +426,6 @@ enum StringAttribute {
    // Only used when invalid_state == invalid_state_other.
   kAriaInvalidValue,
   kAutoComplete,
-  kChromeChannel,   // Native / Automation
   kClassName,       // Native / Android
   kContainerLiveRelevant,
   kContainerLiveStatus,

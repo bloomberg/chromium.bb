@@ -1162,8 +1162,6 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "ariaInvalidValue";
     case ax::mojom::StringAttribute::kAutoComplete:
       return "autoComplete";
-    case ax::mojom::StringAttribute::kChromeChannel:
-      return "chromeChannel";
     case ax::mojom::StringAttribute::kClassName:
       return "className";
     case ax::mojom::StringAttribute::kContainerLiveRelevant:
@@ -1216,8 +1214,6 @@ ax::mojom::StringAttribute ParseStringAttribute(const char* string_attribute) {
     return ax::mojom::StringAttribute::kAriaInvalidValue;
   if (0 == strcmp(string_attribute, "autoComplete"))
     return ax::mojom::StringAttribute::kAutoComplete;
-  if (0 == strcmp(string_attribute, "chromeChannel"))
-    return ax::mojom::StringAttribute::kChromeChannel;
   if (0 == strcmp(string_attribute, "className"))
     return ax::mojom::StringAttribute::kClassName;
   if (0 == strcmp(string_attribute, "containerLiveRelevant"))

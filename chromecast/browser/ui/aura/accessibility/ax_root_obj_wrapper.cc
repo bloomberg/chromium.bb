@@ -56,9 +56,6 @@ void AXRootObjWrapper::GetChildren(
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->id = unique_id_.Get();
   out_node_data->role = ax::mojom::Role::kDesktop;
-  // TODO(rmrossi) : Find out of this can be removed
-  out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kChromeChannel,
-                                    "");
 }
 
 const ui::AXUniqueId& AXRootObjWrapper::GetUniqueId() const {

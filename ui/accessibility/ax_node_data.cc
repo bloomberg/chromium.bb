@@ -914,9 +914,6 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::StringAttribute::kAutoComplete:
         result += " autocomplete=" + value;
         break;
-      case ax::mojom::StringAttribute::kChromeChannel:
-        result += " chrome_channel=" + value;
-        break;
       case ax::mojom::StringAttribute::kClassName:
         result += " class_name=" + value;
         break;
