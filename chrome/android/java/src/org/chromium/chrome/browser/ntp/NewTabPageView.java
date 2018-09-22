@@ -39,8 +39,6 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 public class NewTabPageView extends FrameLayout {
     private static final String TAG = "NewTabPageView";
 
-    private final int mScrollToSuggestionsOffset;
-
     private NewTabPageRecyclerView mRecyclerView;
 
     private NewTabPageLayout mNewTabPageLayout;
@@ -49,7 +47,6 @@ public class NewTabPageView extends FrameLayout {
     private Tab mTab;
     private SnapScrollHelper mSnapScrollHelper;
     private UiConfig mUiConfig;
-    private Runnable mUpdateSearchBoxOnScrollRunnable;
 
     private boolean mNewTabPageRecyclerViewChanged;
     private int mSnapshotWidth;
@@ -92,9 +89,6 @@ public class NewTabPageView extends FrameLayout {
      */
     public NewTabPageView(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        mScrollToSuggestionsOffset =
-                getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
 
         mRecyclerView = new NewTabPageRecyclerView(getContext());
 
@@ -150,7 +144,7 @@ public class NewTabPageView extends FrameLayout {
 
                 // Cancel any pending scroll update handling, a new one will be scheduled in
                 // onAnimationFinished().
-                mRecyclerView.removeCallbacks(mUpdateSearchBoxOnScrollRunnable);
+                mSnapScrollHelper.resetSearchBoxOnScroll(false);
 
                 return super.animateMove(holder, fromX, fromY, toX, toY);
             }
@@ -169,16 +163,13 @@ public class NewTabPageView extends FrameLayout {
                 if (viewHolder.itemView == mNewTabPageLayout) {
                     mNewTabPageLayout.setIsViewMoving(false);
                 }
-                mRecyclerView.removeCallbacks(mUpdateSearchBoxOnScrollRunnable);
-                mRecyclerView.post(mUpdateSearchBoxOnScrollRunnable);
+                mSnapScrollHelper.resetSearchBoxOnScroll(true);
             }
         });
 
         Profile profile = Profile.getLastUsedProfile();
         OfflinePageBridge offlinePageBridge =
                 SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(profile);
-
-        mUpdateSearchBoxOnScrollRunnable = mNewTabPageLayout::updateSearchBoxOnScroll;
 
         initializeLayoutChangeListener();
         mNewTabPageLayout.setSearchProviderInfo(searchProviderHasLogo, searchProviderIsGoogle);
