@@ -48,16 +48,16 @@
               checked$="[[customSelected_]]"
               disabled$="[[getDisabled_(disabled)]]"
               aria-label="$i18n{optionCustomPages}"
-              on-click="onCustomRadioClick_">
+              on-click="onCustomRadioClick_"
+              on-focus="onCustomRadioFocus_"
+              on-blur="onCustomInputBlur_">
             <cr-input id="pageSettingsCustomInput" type="text"
                 data-timeout-delay="500"
                 disabled$="[[getDisabled_(disabled)]]" spellcheck="false"
-                pattern="[[inputPattern_]]"
                 on-focus="onCustomInputFocus_" on-blur="onCustomInputBlur_"
                 placeholder="$i18n{examplePageRangeText}"
                 error-message="[[getHintMessage_(errorState_,
-                    documentInfo.pageCount)]]"
-                auto-validate>
+                    documentInfo.pageCount)]]">
             </cr-input>
           </cr-radio-button>
         </div>
