@@ -118,9 +118,8 @@ void TCPBoundSocket::Connect(
   // a lot of cases.
   connecting_socket_ = std::make_unique<TCPConnectedSocket>(
       std::move(observer), socket_->net_log().net_log(),
-      // TODO(mmenke): This should not be nullptr. Fix it.
-      nullptr /* tls_socket_factory */, nullptr /* client_socket_factory */,
-      traffic_annotation_);
+      socket_factory_->tls_socket_factory(),
+      nullptr /* client_socket_factory */, traffic_annotation_);
   connecting_socket_->ConnectWithSocket(
       net::TCPClientSocket::CreateFromBoundSocket(
           std::move(socket_), remote_addr_list, bind_address_),

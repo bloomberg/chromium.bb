@@ -161,6 +161,7 @@ void TCPConnectedSocket::UpgradeToTLS(
     std::move(callback).Run(
         net::ERR_NOT_IMPLEMENTED, mojo::ScopedDataPipeConsumerHandle(),
         mojo::ScopedDataPipeProducerHandle(), base::nullopt /* ssl_info*/);
+    return;
   }
   // Wait for data pipes to be closed by the client before doing the upgrade.
   if (socket_data_pump_) {
