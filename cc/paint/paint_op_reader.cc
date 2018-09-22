@@ -463,6 +463,8 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
     size_t record_size = Read(&ref.record_);
     size_t post_size = options_.transfer_cache->GetTotalEntrySizes();
     shader_size = post_size - pre_size + record_size;
+
+    ref.id_ = shader_id;
   }
   decltype(ref.colors_)::size_type colors_size = 0;
   ReadSize(&colors_size);
