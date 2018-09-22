@@ -654,6 +654,9 @@
     long? scrollYMin;
     long? scrollYMax;
 
+    // Indicates whether this node is scrollable.
+    boolean? scrollable;
+
     //
     // Editable text field attributes.
     //

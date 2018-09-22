@@ -833,6 +833,13 @@ chrome.automation.AutomationNode.prototype.scrollYMin;
 chrome.automation.AutomationNode.prototype.scrollYMax;
 
 /**
+ * Indicates whether this node is scrollable.
+ * @type {(boolean|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-scrollable
+ */
+chrome.automation.AutomationNode.prototype.scrollable;
+
+/**
  * The character index of the start of the selection within this editable text element; -1 if no selection.
  * @type {(number|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-textSelStart
