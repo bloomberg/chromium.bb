@@ -15,6 +15,7 @@
 #include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/shell.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -144,13 +145,24 @@ class AssistantContainerLayout : public views::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerLayout);
 };
 
+int GetCompositorFrameNumber(ui::Layer* layer) {
+  ui::Compositor* compositor = layer->GetCompositor();
+  return compositor ? compositor->activated_frame_count() : 0;
+}
+
+float GetCompositorRefreshRate(ui::Layer* layer) {
+  ui::Compositor* compositor = layer->GetCompositor();
+  return compositor ? compositor->refresh_rate() : 60.0f;
+}
+
 }  // namespace
 
 // AssistantContainerView ------------------------------------------------------
 
 AssistantContainerView::AssistantContainerView(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {
+    : assistant_controller_(assistant_controller),
+      animation_start_frame_number_(0) {
   set_accept_events(true);
   SetAnchor(nullptr);
   set_close_on_deactivate(false);
@@ -233,6 +245,8 @@ void AssistantContainerView::PreferredSizeChanged() {
 
     radius_start_ =
         GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
+
+    animation_start_frame_number_ = GetCompositorFrameNumber(layer());
 
     // Start animation.
     resize_animation_->Show();
@@ -390,6 +404,27 @@ void AssistantContainerView::AnimationProgressed(
   GetBubbleFrameView()->bubble_border()->SetCornerRadius(corner_radius);
 
   GetWidget()->SetBounds(bounds);
+}
+
+void AssistantContainerView::AnimationEnded(const gfx::Animation* animation) {
+  const int ideal_frames = GetCompositorRefreshRate(layer()) *
+                           kResizeAnimationDurationMs /
+                           base::Time::kMillisecondsPerSecond;
+
+  const int actual_frames =
+      GetCompositorFrameNumber(layer()) - animation_start_frame_number_;
+  if (actual_frames <= 0)
+    return;
+
+  int smoothness = 100;
+  // The |actual_frames| could be |ideal_frames| + 1. The reason could be that
+  // the animation timer is running with interval of 0.016666 s, which could
+  // animate one more frame than expected due to rounding error.
+  if (ideal_frames > actual_frames)
+    smoothness = 100 * actual_frames / ideal_frames;
+
+  UMA_HISTOGRAM_PERCENTAGE("Assistant.ContainerView.Resize.AnimationSmoothness",
+                           smoothness);
 }
 
 void AssistantContainerView::OnDisplayMetricsChanged(
