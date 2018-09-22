@@ -127,7 +127,10 @@ class FeedNewTabPageMediator
         };
         stream.addScrollListener(mStreamScrollListener);
 
-        mStreamContentChangedListener = () -> mStreamContentChanged = true;
+        mStreamContentChangedListener = () -> {
+            mStreamContentChanged = true;
+            mSnapScrollHelper.resetSearchBoxOnScroll(true);
+        };
         stream.addOnContentChangedListener(mStreamContentChangedListener);
 
         boolean suggestionsVisible =
