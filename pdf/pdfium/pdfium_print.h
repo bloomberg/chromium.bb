@@ -24,7 +24,6 @@ class Size;
 namespace chrome_pdf {
 
 class PDFiumEngine;
-class PDFiumPage;
 
 class PDFiumPrint {
  public:
@@ -67,14 +66,11 @@ class PDFiumPrint {
       const PP_PdfPrintSettings_Dev& pdf_print_settings);
 
   ScopedFPDFDocument CreateSinglePageRasterPdf(
-      double source_page_width,
-      double source_page_height,
-      const PP_PrintSettings_Dev& print_settings,
-      PDFiumPage* page_to_print);
+      FPDF_PAGE page_to_print,
+      const PP_PrintSettings_Dev& print_settings);
 
   bool FlattenPrintData(FPDF_DOCUMENT doc) const;
   pp::Buffer_Dev GetPrintData(FPDF_DOCUMENT doc) const;
-  pp::Buffer_Dev GetFlattenedPrintData(FPDF_DOCUMENT doc) const;
 
   PDFiumEngine* const engine_;
 
