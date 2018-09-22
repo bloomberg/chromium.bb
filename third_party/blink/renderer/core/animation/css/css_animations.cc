@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/transition_interpolation.h"
-#include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_equality.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -274,39 +273,30 @@ void CSSAnimations::CalculateCompositorAnimationUpdate(
   bool transform_zoom_changed =
       old_style->HasCurrentTransformAnimation() &&
       old_style->EffectiveZoom() != style.EffectiveZoom();
-
-  const auto& snapshot = [&](AnimationEffect* effect) {
+  for (auto& entry : element_animations->Animations()) {
+    Animation& animation = *entry.key;
     const KeyframeEffectModelBase* keyframe_effect =
-        GetKeyframeEffectModelBase(effect);
+        GetKeyframeEffectModelBase(animation.effect());
     if (!keyframe_effect)
-      return false;
+      continue;
 
     if ((transform_zoom_changed || was_viewport_resized) &&
         (keyframe_effect->Affects(PropertyHandle(GetCSSPropertyTransform())) ||
          keyframe_effect->Affects(PropertyHandle(GetCSSPropertyTranslate()))))
       keyframe_effect->InvalidateCompositorKeyframesSnapshot();
 
+    bool update_compositor_keyframes = false;
     if (keyframe_effect->SnapshotAllCompositorKeyframesIfNecessary(
             element, style, parent_style)) {
-      return true;
+      update_compositor_keyframes = true;
     } else if (keyframe_effect->HasSyntheticKeyframes() &&
                keyframe_effect->SnapshotNeutralCompositorKeyframes(
                    element, *old_style, style, parent_style)) {
-      return true;
+      update_compositor_keyframes = true;
     }
-    return false;
-  };
 
-  for (auto& entry : element_animations->Animations()) {
-    Animation& animation = *entry.key;
-    if (snapshot(animation.effect()))
+    if (update_compositor_keyframes)
       update.UpdateCompositorKeyframes(&animation);
-  }
-
-  for (auto& entry : element_animations->GetWorkletAnimations()) {
-    WorkletAnimationBase& animation = *entry;
-    if (snapshot(animation.GetEffect()))
-      animation.InvalidateCompositingState();
   }
 }
 

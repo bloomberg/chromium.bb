@@ -88,7 +88,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   // WorkletAnimationBase implementation.
   void Update(TimingUpdateReason) override;
   void UpdateCompositingState() override;
-  void InvalidateCompositingState() override;
 
   // CompositorAnimationClient implementation.
   CompositorAnimation* GetCompositorAnimation() const override {
