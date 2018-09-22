@@ -20,7 +20,7 @@ class _Smoothness(perf_benchmark.PerfBenchmark):
     return 'smoothness'
 
 
-@benchmark.Info(emails=['bokan@chromium.org'])
+@benchmark.Info(emails=['bokan@chromium.org'], component='Blink>Scroll')
 class SmoothnessToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
   cases.
