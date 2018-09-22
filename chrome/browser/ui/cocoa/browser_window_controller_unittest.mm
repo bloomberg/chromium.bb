@@ -39,15 +39,11 @@ using ::testing::Return;
 
 @interface BrowserWindowController (ExposedForTesting)
 // Implementations are below.
-- (NSView*)infoBarContainerView;
 - (NSView*)toolbarView;
 - (void)dontFocusLocationBar:(BOOL)selectAll;
 @end
 
 @implementation BrowserWindowController (ExposedForTesting)
-- (NSView*)infoBarContainerView {
-  return [infoBarContainerController_ view];
-}
 
 - (NSView*)toolbarView {
   return [toolbarController_ view];
@@ -217,10 +213,6 @@ void CheckViewPositions(BrowserWindowController* controller) {
 
   NSRect tabstrip = FrameInWindowForView([controller tabStripView]);
   NSRect toolbar = FrameInWindowForView([controller toolbarView]);
-  NSRect infobar = FrameInWindowForView([controller infoBarContainerView]);
-  NSRect tabContent = FrameInWindowForView([controller tabContentArea]);
-
-  EXPECT_EQ(NSMaxY(tabContent), NSMinY(infobar));
 
   // Toolbar should start immediately under the tabstrip, but the tabstrip is
   // not necessarily fixed with respect to the content view.
@@ -360,7 +352,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   TabStripView* tabstrip = [controller_ tabStripView];
   NSView* contentView = [[tabstrip window] contentView];
   NSView* toolbar = [controller_ toolbarView];
-  NSView* infobar = [controller_ infoBarContainerView];
 
   // We need to muck with the views a bit to put us in a consistent state before
   // we start resizing.  In particular, we need to move the tab strip to be
@@ -374,16 +365,11 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   [controller_ layoutSubviews];
   CheckViewPositions(controller_);
 
-  // Expand the infobar to 60px and recheck
-  [controller_ resizeView:infobar newHeight:60];
-  CheckViewPositions(controller_);
-
   // Expand the toolbar to 64px and recheck
   [controller_ resizeView:toolbar newHeight:64];
   CheckViewPositions(controller_);
 
   // Shrink the infobar to 0px and toolbar to 39px and recheck
-  [controller_ resizeView:infobar newHeight:0];
   [controller_ resizeView:toolbar newHeight:39];
   CheckViewPositions(controller_);
 }

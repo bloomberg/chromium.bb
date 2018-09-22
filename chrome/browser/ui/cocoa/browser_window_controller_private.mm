@@ -31,7 +31,6 @@
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_cocoa.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button_controller.h"
@@ -863,8 +862,6 @@ willPositionSheet:(NSWindow*)sheet
   [layout setToolbarHeight:NSHeight([[toolbarController_ view] bounds])];
 
   [layout setHasLocationBar:[self hasLocationBar]];
-
-  [layout setInfoBarHeight:[infoBarContainerController_ heightOfInfoBars]];
 }
 
 - (void)applyLayout:(BrowserWindowLayout*)layout {
@@ -875,9 +872,6 @@ willPositionSheet:(NSWindow*)sheet
 
   if (!NSIsEmptyRect(output.toolbarFrame))
     [[toolbarController_ view] setFrame:output.toolbarFrame];
-
-  // The info bar is never hidden. Sometimes it has zero effective height.
-  [[infoBarContainerController_ view] setFrame:output.infoBarFrame];
 
   [self layoutTabContentArea:output.contentAreaFrame];
 
@@ -899,8 +893,6 @@ willPositionSheet:(NSWindow*)sheet
   base::scoped_nsobject<NSMutableArray> subviews([[NSMutableArray alloc] init]);
   if ([toolbarController_ view])
     [subviews addObject:[toolbarController_ view]];
-  if ([infoBarContainerController_ view])
-    [subviews addObject:[infoBarContainerController_ view]];
   if ([self tabContentArea])
     [subviews addObject:[self tabContentArea]];
 
@@ -918,9 +910,6 @@ willPositionSheet:(NSWindow*)sheet
 
   if ([toolbarController_ view])
     [subviews addObject:[toolbarController_ view]];
-
-  if ([infoBarContainerController_ view])
-    [subviews addObject:[infoBarContainerController_ view]];
 
   [self setContentViewSubviews:subviews];
 }

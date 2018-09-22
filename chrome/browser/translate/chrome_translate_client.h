@@ -93,12 +93,6 @@ class ChromeTranslateClient
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
       const override;
 #endif
-#if defined(OS_MACOSX)
-  // Temporary shim for Polychrome. See bottom of first comment in
-  // https://crbug.com/804950 for details
-  std::unique_ptr<infobars::InfoBar> CreateInfoBarCocoa(
-      std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const;
-#endif
 
   void RecordLanguageDetectionEvent(
       const translate::LanguageDetectionDetails& details) const override;
