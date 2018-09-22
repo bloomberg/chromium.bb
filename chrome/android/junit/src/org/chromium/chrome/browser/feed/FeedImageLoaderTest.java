@@ -15,6 +15,7 @@ import android.graphics.drawable.Drawable;
 import android.support.test.filters.SmallTest;
 
 import com.google.android.libraries.feed.common.functional.Consumer;
+import com.google.android.libraries.feed.host.imageloader.ImageLoaderApi;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -70,6 +71,9 @@ public class FeedImageLoaderTest {
 
     private FeedImageLoader mImageLoader;
 
+    private static int sDimX = ImageLoaderApi.DIMENSION_UNKNOWN;
+    private static int sDimY = ImageLoaderApi.DIMENSION_UNKNOWN;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -97,7 +101,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void downloadImageTest() {
         List<String> urls = Arrays.asList(HTTP_STRING1);
-        mImageLoader.loadDrawable(urls, mConsumer);
+        mImageLoader.loadDrawable(urls, sDimX, sDimY, mConsumer);
 
         verify(mBridge, times(1))
                 .fetchImage(mUrlListArgument.capture(), mCallbackArgument.capture());
@@ -107,7 +111,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void onlyNetworkURLSendToBridgeTest() {
         List<String> urls = Arrays.asList(HTTP_STRING1, HTTP_STRING2, ASSET_STRING, HTTP_STRING3);
-        mImageLoader.loadDrawable(urls, mConsumer);
+        mImageLoader.loadDrawable(urls, sDimX, sDimY, mConsumer);
         List<String> expected_urls = Arrays.asList(HTTP_STRING1, HTTP_STRING2, HTTP_STRING3);
 
         verify(mBridge, times(1)).fetchImage(eq(expected_urls), mCallbackArgument.capture());
@@ -117,7 +121,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void assetImageTest() {
         List<String> urls = Arrays.asList(ASSET_STRING);
-        mImageLoader.loadDrawable(urls, mConsumer);
+        mImageLoader.loadDrawable(urls, sDimX, sDimY, mConsumer);
 
         verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
@@ -126,7 +130,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void sendNullIfDownloadFailTest() {
         List<String> urls = Arrays.asList(HTTP_STRING1, HTTP_STRING2, HTTP_STRING3);
-        mImageLoader.loadDrawable(urls, mConsumer);
+        mImageLoader.loadDrawable(urls, sDimX, sDimY, mConsumer);
 
         verify(mConsumer, times(1)).accept(eq(null));
     }
@@ -135,7 +139,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void nullUrlListTest() {
         List<String> urls = Arrays.asList();
-        mImageLoader.loadDrawable(urls, mConsumer);
+        mImageLoader.loadDrawable(urls, sDimX, sDimY, mConsumer);
 
         verify(mConsumer, times(1)).accept(eq(null));
     }
@@ -144,7 +148,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void overlayImageTest_Start() {
         List<String> urls = Arrays.asList(OVERLAY_IMAGE_START);
-        mImageLoader.loadDrawable(urls, mConsumer);
+        mImageLoader.loadDrawable(urls, sDimX, sDimY, mConsumer);
 
         verify(mBridge, times(1))
                 .fetchImage(mUrlListArgument.capture(), mCallbackArgument.capture());
@@ -154,7 +158,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void overlayImageTest_End() {
         List<String> urls = Arrays.asList(OVERLAY_IMAGE_END);
-        mImageLoader.loadDrawable(urls, mConsumer);
+        mImageLoader.loadDrawable(urls, sDimX, sDimY, mConsumer);
 
         verify(mBridge, times(1))
                 .fetchImage(mUrlListArgument.capture(), mCallbackArgument.capture());
@@ -164,7 +168,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void overlayImageTest_MissingUrl() {
         List<String> urls = Arrays.asList(OVERLAY_IMAGE_MISSING_URL);
-        mImageLoader.loadDrawable(urls, mConsumer);
+        mImageLoader.loadDrawable(urls, sDimX, sDimY, mConsumer);
 
         verify(mConsumer, times(1)).accept(eq(null));
     }
@@ -173,7 +177,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void overlayImageTest_MissingDirection() {
         List<String> urls = Arrays.asList(OVERLAY_IMAGE_MISSING_DIRECTION);
-        mImageLoader.loadDrawable(urls, mConsumer);
+        mImageLoader.loadDrawable(urls, sDimX, sDimY, mConsumer);
 
         verify(mBridge, times(1))
                 .fetchImage(mUrlListArgument.capture(), mCallbackArgument.capture());
@@ -183,7 +187,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void overlayImageTest_BadDirection() {
         List<String> urls = Arrays.asList(OVERLAY_IMAGE_BAD_DIRECTION);
-        mImageLoader.loadDrawable(urls, mConsumer);
+        mImageLoader.loadDrawable(urls, sDimX, sDimY, mConsumer);
 
         verify(mBridge, times(1))
                 .fetchImage(mUrlListArgument.capture(), mCallbackArgument.capture());

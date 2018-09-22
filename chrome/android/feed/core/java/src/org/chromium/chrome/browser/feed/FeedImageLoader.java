@@ -61,8 +61,10 @@ public class FeedImageLoader implements ImageLoaderApi {
         mActivityContext = activityContext;
     }
 
+    // TODO(gangwu): Handle widthPx and heightPx.
     @Override
-    public void loadDrawable(List<String> urls, Consumer<Drawable> consumer) {
+    public void loadDrawable(
+            List<String> urls, int widthPx, int heightPx, Consumer<Drawable> consumer) {
         assert mFeedImageLoaderBridge != null;
         List<String> assetUrls = new ArrayList<>();
         List<String> networkUrls = new ArrayList<>();

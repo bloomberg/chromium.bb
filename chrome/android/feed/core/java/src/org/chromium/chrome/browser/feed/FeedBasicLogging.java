@@ -19,6 +19,8 @@ public class FeedBasicLogging implements BasicLoggingApi {
     @Override
     public void onContentClicked(ContentLoggingData data) {}
     @Override
+    public void onClientAction(ContentLoggingData data, int actionType) {}
+    @Override
     public void onContentContextMenuOpened(ContentLoggingData data) {}
     @Override
     public void onMoreButtonViewed(int position) {}
