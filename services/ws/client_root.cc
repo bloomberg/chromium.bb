@@ -90,6 +90,58 @@ void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
   }
 }
 
+void ClientRoot::AttachChildFrameSinkId(ServerWindow* server_window) {
+  DCHECK(server_window->attached_frame_sink_id().is_valid());
+  DCHECK(ServerWindow::GetMayBeNull(window_)->frame_sink_id().is_valid());
+  viz::HostFrameSinkManager* host_frame_sink_manager =
+      window_->env()->context_factory_private()->GetHostFrameSinkManager();
+  const viz::FrameSinkId& frame_sink_id =
+      server_window->attached_frame_sink_id();
+  if (host_frame_sink_manager->IsFrameSinkIdRegistered(frame_sink_id)) {
+    host_frame_sink_manager->RegisterFrameSinkHierarchy(
+        ServerWindow::GetMayBeNull(window_)->frame_sink_id(), frame_sink_id);
+  }
+}
+
+void ClientRoot::UnattachChildFrameSinkId(ServerWindow* server_window) {
+  DCHECK(server_window->attached_frame_sink_id().is_valid());
+  DCHECK(ServerWindow::GetMayBeNull(window_)->frame_sink_id().is_valid());
+  viz::HostFrameSinkManager* host_frame_sink_manager =
+      window_->env()->context_factory_private()->GetHostFrameSinkManager();
+  const viz::FrameSinkId& root_frame_sink_id =
+      ServerWindow::GetMayBeNull(window_)->frame_sink_id();
+  const viz::FrameSinkId& window_frame_sink_id =
+      server_window->attached_frame_sink_id();
+  if (host_frame_sink_manager->IsFrameSinkHierarchyRegistered(
+          root_frame_sink_id, window_frame_sink_id)) {
+    host_frame_sink_manager->UnregisterFrameSinkHierarchy(root_frame_sink_id,
+                                                          window_frame_sink_id);
+  }
+}
+
+void ClientRoot::AttachChildFrameSinkIdRecursive(ServerWindow* server_window) {
+  if (server_window->attached_frame_sink_id().is_valid())
+    AttachChildFrameSinkId(server_window);
+
+  for (aura::Window* child : server_window->window()->children()) {
+    ServerWindow* child_server_window = ServerWindow::GetMayBeNull(child);
+    if (child_server_window->owning_window_tree() == window_tree_)
+      AttachChildFrameSinkIdRecursive(child_server_window);
+  }
+}
+
+void ClientRoot::UnattachChildFrameSinkIdRecursive(
+    ServerWindow* server_window) {
+  if (server_window->attached_frame_sink_id().is_valid())
+    UnattachChildFrameSinkId(server_window);
+
+  for (aura::Window* child : server_window->window()->children()) {
+    ServerWindow* child_server_window = ServerWindow::GetMayBeNull(child);
+    if (child_server_window->owning_window_tree() == window_tree_)
+      UnattachChildFrameSinkIdRecursive(child_server_window);
+  }
+}
+
 void ClientRoot::UpdatePrimarySurfaceId() {
   UpdateLocalSurfaceIdIfNecessary();
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);

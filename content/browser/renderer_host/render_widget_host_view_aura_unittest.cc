@@ -3002,7 +3002,7 @@ viz::CompositorFrame MakeDelegatedFrame(float scale_factor,
 // This test verifies that returned resources do not require a pending ack.
 TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
   // TODO: fix for mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   gfx::Size view_size(100, 100);
@@ -3036,7 +3036,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      features::IsUsingWindowService()) {
+      features::IsMultiProcessMash()) {
     return;
   }
 
@@ -3178,7 +3178,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ZeroSizeStillGetsLocalSurfaceId) {
 
 TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorMatchesCompositorFrame) {
   // TODO: fix for mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   gfx::Size frame_size(100, 100);
@@ -3343,7 +3343,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      features::IsUsingWindowService()) {
+      features::IsMultiProcessMash()) {
     return;
   }
 
@@ -3404,7 +3404,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DropFallbackWhenHidden) {
   // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   view_->InitAsChild(nullptr);
@@ -3432,7 +3432,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // the fallback SurfaceId is populated in OnFirstSurfaceActivation.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   view_->InitAsChild(nullptr);
@@ -3471,7 +3471,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DeviceScaleFactorChanges) {
   // TODO: fix for mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   view_->InitAsChild(nullptr);
@@ -3501,7 +3501,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      features::IsUsingWindowService()) {
+      features::IsMultiProcessMash()) {
     return;
   }
 
@@ -3536,7 +3536,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DiscardDelegatedFrames) {
   // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   view_->InitAsChild(nullptr);
@@ -3677,7 +3677,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   view_->InitAsChild(nullptr);
@@ -3751,7 +3751,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
 // only applies to ChromeOS.
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   view_->InitAsChild(nullptr);
@@ -3858,7 +3858,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      features::IsUsingWindowService()) {
+      features::IsMultiProcessMash()) {
     return;
   }
 
@@ -5802,7 +5802,7 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      features::IsUsingWindowService()) {
+      features::IsMultiProcessMash()) {
     return;
   }
 
@@ -5844,7 +5844,7 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        NewContentRenderingTimeout) {
   // TODO: fix for mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   constexpr base::TimeDelta kTimeout = base::TimeDelta::FromMicroseconds(10);
@@ -5899,7 +5899,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        AllocateLocalSurfaceIdOnEviction) {
   // TODO: fix for mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   view_->InitAsChild(nullptr);
@@ -5922,7 +5922,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DropFallbackIfResizedWhileHidden) {
   // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   view_->InitAsChild(nullptr);
@@ -5945,7 +5945,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DontDropFallbackIfNotResizedWhileHidden) {
   // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   view_->InitAsChild(nullptr);
@@ -5967,7 +5967,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        TakeFallbackContent) {
   // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     return;
 
   // Initialize the first view.

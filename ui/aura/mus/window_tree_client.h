@@ -140,6 +140,11 @@ class AURA_EXPORT WindowTreeClient
                         const gfx::Insets& mouse,
                         const gfx::Insets& touch);
 
+  // See WindowPort for details on these.
+  void RegisterFrameSinkId(WindowMus* window,
+                           const viz::FrameSinkId& child_frame_sink_id);
+  void UnregisterFrameSinkId(WindowMus* window);
+
   // Embeds a new client in |window|. |flags| is a bitmask of the values defined
   // by kEmbedFlag*; 0 gives default behavior. |callback| is called to indicate
   // whether the embedding succeeded or failed and may be called immediately if

@@ -12,6 +12,8 @@
 
 #include "base/run_loop.h"
 #include "base/unguessable_token.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/test/fake_host_frame_sink_client.h"
 #include "services/ws/event_test_utils.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -2108,6 +2110,49 @@ TEST(WindowTreeTest, DeactivateWindow) {
   setup.window_tree_test_helper()->window_tree()->DeactivateWindow(
       setup.window_tree_test_helper()->TransportIdForWindow(top_level2));
   EXPECT_TRUE(wm::IsActiveWindow(top_level1));
+}
+
+TEST(WindowTreeTest, AttachFrameSinkId) {
+  // Create two top-levels and focuses (activates) the second.
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+
+  aura::Window* child_window = setup.window_tree_test_helper()->NewWindow();
+  ASSERT_TRUE(child_window);
+  viz::FrameSinkId test_frame_sink_id(101, 102);
+  viz::HostFrameSinkManager* host_frame_sink_manager =
+      child_window->env()->context_factory_private()->GetHostFrameSinkManager();
+
+  // Attach a frame sink to |child_window|. This shouldn't immediately register.
+  setup.window_tree_test_helper()->window_tree()->AttachFrameSinkId(
+      setup.window_tree_test_helper()->TransportIdForWindow(child_window),
+      test_frame_sink_id);
+  EXPECT_FALSE(
+      host_frame_sink_manager->IsFrameSinkIdRegistered(test_frame_sink_id));
+
+  // Add the window to a parent, which should trigger registering the hierarchy.
+  viz::FakeHostFrameSinkClient test_host_frame_sink_client;
+  host_frame_sink_manager->RegisterFrameSinkId(test_frame_sink_id,
+                                               &test_host_frame_sink_client);
+  EXPECT_EQ(test_frame_sink_id,
+            ServerWindow::GetMayBeNull(child_window)->attached_frame_sink_id());
+  top_level->AddChild(child_window);
+  EXPECT_TRUE(host_frame_sink_manager->IsFrameSinkHierarchyRegistered(
+      ServerWindow::GetMayBeNull(top_level)->frame_sink_id(),
+      test_frame_sink_id));
+
+  // Removing the window should remove the association.
+  top_level->RemoveChild(child_window);
+  EXPECT_FALSE(host_frame_sink_manager->IsFrameSinkHierarchyRegistered(
+      ServerWindow::GetMayBeNull(top_level)->frame_sink_id(),
+      test_frame_sink_id));
+
+  setup.window_tree_test_helper()->DeleteWindow(child_window);
+
+  host_frame_sink_manager->InvalidateFrameSinkId(test_frame_sink_id);
 }
 
 }  // namespace

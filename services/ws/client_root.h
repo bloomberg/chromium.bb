@@ -27,6 +27,7 @@ class SurfaceInfo;
 
 namespace ws {
 
+class ServerWindow;
 class WindowTree;
 
 // WindowTree creates a ClientRoot for each window the client is embedded in. A
@@ -48,6 +49,16 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   aura::Window* window() { return window_; }
 
   bool is_top_level() const { return is_top_level_; }
+
+  // Attaches/unattaches server_window->attached_frame_sink_id() to the
+  // HostFrameSinkManager.
+  void AttachChildFrameSinkId(ServerWindow* server_window);
+  void UnattachChildFrameSinkId(ServerWindow* server_window);
+
+  // Recurses through all descendants with the same WindowTree calling
+  // AttachChildFrameSinkId()/UnattachChildFrameSinkId().
+  void AttachChildFrameSinkIdRecursive(ServerWindow* server_window);
+  void UnattachChildFrameSinkIdRecursive(ServerWindow* server_window);
 
  private:
   void UpdatePrimarySurfaceId();

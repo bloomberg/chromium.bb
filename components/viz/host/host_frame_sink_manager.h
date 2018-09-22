@@ -77,6 +77,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
                            HostFrameSinkClient* client);
 
+  // Returns true if RegisterFrameSinkId() was called with |frame_sink_id| and
+  // InvalidateFrameSinkId() has not been called.
+  bool IsFrameSinkIdRegistered(const FrameSinkId& frame_sink_id) const;
+
   // Invalidates |frame_sink_id| which cleans up any dangling temporary
   // references assigned to it. If there is a CompositorFrameSink for
   // |frame_sink_id| then it will be destroyed and the message pipe to the
@@ -131,6 +135,12 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // hierarchy before unregistering.
   void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                     const FrameSinkId& child_frame_sink_id);
+
+  // Returns true if RegisterFrameSinkHierarchy() was called with the supplied
+  // arguments.
+  bool IsFrameSinkHierarchyRegistered(
+      const FrameSinkId& parent_frame_sink_id,
+      const FrameSinkId& child_frame_sink_id) const;
 
   void DropTemporaryReference(const SurfaceId& surface_id);
 

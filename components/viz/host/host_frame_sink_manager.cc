@@ -72,6 +72,12 @@ void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
   frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
 }
 
+bool HostFrameSinkManager::IsFrameSinkIdRegistered(
+    const FrameSinkId& frame_sink_id) const {
+  auto iter = frame_sink_data_map_.find(frame_sink_id);
+  return iter != frame_sink_data_map_.end() && iter->second.client != nullptr;
+}
+
 void HostFrameSinkManager::InvalidateFrameSinkId(
     const FrameSinkId& frame_sink_id) {
   DCHECK(frame_sink_id.is_valid());
@@ -229,6 +235,14 @@ void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
 
   if (parent_data_is_empty)
     frame_sink_data_map_.erase(parent_frame_sink_id);
+}
+
+bool HostFrameSinkManager::IsFrameSinkHierarchyRegistered(
+    const FrameSinkId& parent_frame_sink_id,
+    const FrameSinkId& child_frame_sink_id) const {
+  auto iter = frame_sink_data_map_.find(parent_frame_sink_id);
+  return iter != frame_sink_data_map_.end() &&
+         base::ContainsValue(iter->second.children, child_frame_sink_id);
 }
 
 void HostFrameSinkManager::DropTemporaryReference(const SurfaceId& surface_id) {

@@ -317,6 +317,11 @@ void TestWindowTree::ScheduleEmbedForExistingClient(
                      std::move(callback), token));
 }
 
+void TestWindowTree::AttachFrameSinkId(uint64_t window_id,
+                                       const viz::FrameSinkId& frame_sink_id) {}
+
+void TestWindowTree::UnattachFrameSinkId(uint64_t window_id) {}
+
 void TestWindowTree::SetFocus(uint32_t change_id, ws::Id window_id) {
   OnChangeReceived(change_id, WindowTreeChangeType::FOCUS);
 }

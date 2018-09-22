@@ -346,6 +346,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void OnEmbeddedClientConnectionLost(Embedding* embedding);
 
   // aura::WindowObserver:
+  void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
   void OnWindowDestroyed(aura::Window* window) override;
 
   // aura::client::CaptureClientObserver:
@@ -383,6 +384,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void SetHitTestInsets(Id transport_window_id,
                         const gfx::Insets& mouse,
                         const gfx::Insets& touch) override;
+  void AttachFrameSinkId(Id transport_window_id,
+                         const viz::FrameSinkId& f) override;
+  void UnattachFrameSinkId(Id transport_window_id) override;
   void SetCanAcceptDrops(Id window_id, bool accepts_drops) override;
   void SetWindowVisibility(uint32_t change_id,
                            Id transport_window_id,

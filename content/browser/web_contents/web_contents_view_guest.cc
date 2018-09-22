@@ -74,14 +74,14 @@ void WebContentsViewGuest::OnGuestAttached(WebContentsView* parent_view) {
   // view hierarchy. We add this view as embedder's child here.
   // This would go in WebContentsViewGuest::CreateView, but that is too early to
   // access embedder_web_contents(). Therefore, we do it here.
-  if (!features::IsUsingWindowService())
+  if (!features::IsMultiProcessMash())
     parent_view->GetNativeView()->AddChild(platform_view_->GetNativeView());
 #endif  // defined(USE_AURA)
 }
 
 void WebContentsViewGuest::OnGuestDetached(WebContentsView* old_parent_view) {
 #if defined(USE_AURA)
-  if (!features::IsUsingWindowService()) {
+  if (!features::IsMultiProcessMash()) {
     old_parent_view->GetNativeView()->RemoveChild(
         platform_view_->GetNativeView());
   }

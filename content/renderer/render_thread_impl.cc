@@ -745,7 +745,7 @@ void RenderThreadImpl::Init() {
                           main_thread_runner(), GetConnector()));
 
   gpu_ = ws::Gpu::Create(GetConnector(),
-                         features::IsUsingWindowService()
+                         features::IsMultiProcessMash()
                              ? ws::mojom::kServiceName
                              : mojom::kBrowserServiceName,
                          GetIOTaskRunner());
@@ -797,7 +797,7 @@ void RenderThreadImpl::Init() {
   AddFilter(midi_message_filter_.get());
 
 #if defined(USE_AURA)
-  if (features::IsUsingWindowService())
+  if (features::IsMultiProcessMash())
     CreateRenderWidgetWindowTreeClientFactory(GetServiceManagerConnection());
 #endif
 
@@ -952,7 +952,7 @@ void RenderThreadImpl::Init() {
   categorized_worker_pool_->Start(num_raster_threads);
 
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  if (features::IsUsingWindowService()) {
+  if (features::IsMultiProcessMash()) {
 #if defined(USE_AURA)
     GetServiceManagerConnection()->GetConnector()->BindInterface(
         ws::mojom::kServiceName, &manager_ptr);
@@ -1928,7 +1928,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     params.synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
 
 #if defined(USE_AURA)
-  if (features::IsUsingWindowService()) {
+  if (features::IsMultiProcessMash()) {
     if (!RendererWindowTreeClient::Get(routing_id)) {
       std::move(callback).Run(nullptr);
       return;

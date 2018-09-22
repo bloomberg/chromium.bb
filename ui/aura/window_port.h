@@ -130,6 +130,11 @@ class AURA_EXPORT WindowPort {
   // See description of function with same name in transient_window_client.
   virtual bool ShouldRestackTransientChildren() = 0;
 
+  // Called to register/unregister an embedded FramesSinkId. This is only called
+  // if SetEmbedFrameSinkId() is called on the associated Window.
+  virtual void RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) {}
+  virtual void UnregisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) {}
+
  protected:
   explicit WindowPort(Type type);
 
