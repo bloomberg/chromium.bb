@@ -134,7 +134,7 @@ class AwAutofillClient : public autofill::AutofillClient,
 
   // The web_contents associated with this delegate.
   content::WebContents* web_contents_;
-  bool save_form_data_;
+  bool save_form_data_ = false;
   JavaObjectWeakGlobalRef java_ref_;
 
   ui::ViewAndroid::ScopedAnchorView anchor_view_;
@@ -142,6 +142,10 @@ class AwAutofillClient : public autofill::AutofillClient,
   // The current Autofill query values.
   std::vector<autofill::Suggestion> suggestions_;
   base::WeakPtr<autofill::AutofillPopupDelegate> delegate_;
+
+  // Tracks whether the autocomplete enabled metric has already been logged for
+  // this client.
+  bool autocomplete_uma_recorded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AwAutofillClient);
 };

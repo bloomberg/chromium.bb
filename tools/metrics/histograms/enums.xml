@@ -4505,6 +4505,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Has predictions"/>
 </enum>
 
+<enum name="BooleanHadSuggestions">
+  <int value="0" label="No Suggestions"/>
+  <int value="1" label="Had Suggestions"/>
+</enum>
+
 <enum name="BooleanHandshakeConfirmed">
   <int value="0" label="Handshake not confirmed"/>
   <int value="1" label="Handshake confirmed"/>

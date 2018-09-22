@@ -12,6 +12,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -39,7 +40,7 @@ namespace android_webview {
 // autofill functionality at the java side. The java peer is owned by Java
 // AwContents. The native object only maintains a weak ref to it.
 AwAutofillClient::AwAutofillClient(WebContents* contents)
-    : web_contents_(contents), save_form_data_(false) {
+    : web_contents_(contents) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> delegate;
   delegate.Reset(
@@ -184,7 +185,12 @@ void AwAutofillClient::HideAutofillPopup() {
 }
 
 bool AwAutofillClient::IsAutocompleteEnabled() {
-  return GetSaveFormData();
+  bool enabled = GetSaveFormData();
+  if (!autocomplete_uma_recorded_) {
+    UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteEnabled", enabled);
+    autocomplete_uma_recorded_ = true;
+  }
+  return enabled;
 }
 
 void AwAutofillClient::PropagateAutofillPredictions(
