@@ -8,9 +8,11 @@
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/zx/channel.h>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/macros.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/base_focus_rules.h"
@@ -23,7 +25,6 @@ class WindowTreeHost;
 }  // namespace aura
 
 namespace content {
-class BrowserContext;
 class WebContents;
 }  // namespace content
 
@@ -36,6 +37,7 @@ class ContextImpl;
 class FrameImpl : public chromium::web::Frame,
                   public chromium::web::NavigationController,
                   public content::WebContentsObserver,
+                  public content::WebContentsDelegate,
                   public wm::BaseFocusRules {
  public:
   FrameImpl(std::unique_ptr<content::WebContents> web_contents,
@@ -46,9 +48,6 @@ class FrameImpl : public chromium::web::Frame,
   zx::unowned_channel GetBindingChannelForTest() const;
 
   content::WebContents* web_contents_for_test() { return web_contents_.get(); }
-
-  // content::WebContentsObserver implementation.
-  void Init(content::BrowserContext* browser_context, const GURL& url);
 
   // chromium::web::Frame implementation.
   void CreateView(
@@ -70,13 +69,6 @@ class FrameImpl : public chromium::web::Frame,
       fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
       override;
 
-  // content::WebContentsObserver implementation.
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
-
-  // wm::BaseFocusRules implementation.
-  bool SupportsChildActivation(aura::Window*) const override;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ContextImplTest, DelayedNavigationEventAck);
   FRIEND_TEST_ALL_PREFIXES(ContextImplTest, NavigationObserverDisconnected);
@@ -89,6 +81,28 @@ class FrameImpl : public chromium::web::Frame,
   // Sends |pending_navigation_event_| to the observer if there are any changes
   // to be reported.
   void MaybeSendNavigationEvent();
+
+  // content::WebContentsDelegate implementation.
+  bool ShouldCreateWebContents(
+      content::WebContents* web_contents,
+      content::RenderFrameHost* opener,
+      content::SiteInstance* source_site_instance,
+      int32_t route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
+      content::mojom::WindowContainerType window_container_type,
+      const GURL& opener_url,
+      const std::string& frame_name,
+      const GURL& target_url,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace) override;
+
+  // content::WebContentsObserver implementation.
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+
+  // wm::BaseFocusRules implementation.
+  bool SupportsChildActivation(aura::Window*) const override;
 
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
   std::unique_ptr<content::WebContents> web_contents_;
