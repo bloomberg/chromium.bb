@@ -30,6 +30,7 @@ ScriptPromises
 TaskDuration
 Timestamp
 UACSSResources
+V8CompileDuration
 V8PerContextDatas
 WorkerGlobalScopes
 

@@ -192,6 +192,7 @@
         "ExecuteScript",
         "RecalculateStyle",
         "UpdateLayout",
+        "V8Compile",
       ]
     },
     InspectorTraceEvents: {
