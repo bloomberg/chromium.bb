@@ -203,6 +203,7 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//components/viz/common",
+    "//components/viz/test:test_support",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",

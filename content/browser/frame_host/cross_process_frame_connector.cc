@@ -150,7 +150,7 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
     if (is_hidden_)
       OnVisibilityChanged(false);
     FrameMsg_ViewChanged_Params params;
-    if (!features::IsUsingWindowService())
+    if (!features::IsMultiProcessMash())
       params.frame_sink_id = view_->GetFrameSinkId();
     frame_proxy_in_parent_renderer_->Send(new FrameMsg_ViewChanged(
         frame_proxy_in_parent_renderer_->GetRoutingID(), params));

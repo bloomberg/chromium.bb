@@ -1237,7 +1237,7 @@ void BrowserMainLoop::GetCompositingModeReporter(
   // CompositingModeReporter.
   return;
 #else
-  if (features::IsUsingWindowService()) {
+  if (features::IsMultiProcessMash()) {
     // Mash == ChromeOS, which doesn't support software compositing, so no need
     // to report compositing mode.
     return;

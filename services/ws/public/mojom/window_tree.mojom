@@ -282,6 +282,12 @@ interface WindowTree {
                   uint32 embed_flags)
       => (bool success);
 
+  // Attaches/unattaches a FrameSinkId to this window. A window can only have
+  // a single frame-sink-id attached to it.
+  AttachFrameSinkId(uint64 window_id,
+                    viz.mojom.FrameSinkId frame_sink_id);
+  UnattachFrameSinkId(uint64 window_id);
+
   // Sets focus to the specified window, use 0 to clear focus. For a window to
   // get focus the following has to happen: the window is drawn, the window has
   // been marked as focusable (see SetCanFocus()) and the window is in a

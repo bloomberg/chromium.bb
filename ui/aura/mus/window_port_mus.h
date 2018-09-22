@@ -285,6 +285,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   const viz::LocalSurfaceId& GetLocalSurfaceId() override;
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
+  void RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
+  void UnregisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
 
   void UpdatePrimarySurfaceId();
   void UpdateClientSurfaceEmbedder();
@@ -310,6 +312,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   gfx::Size last_surface_size_in_pixels_;
 
   ui::CursorData cursor_;
+
+  // Set to true if SetEmbedFrameSinkId() is being called on the Window.
+  bool is_setting_embed_frame_sink_id_ = false;
 
   // See description in single place that changes the value for details.
   bool should_restack_transient_children_ = true;

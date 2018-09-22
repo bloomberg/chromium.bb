@@ -202,6 +202,9 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void ScheduleEmbedForExistingClient(
       ws::ClientSpecificId window_id,
       ScheduleEmbedForExistingClientCallback callback) override;
+  void AttachFrameSinkId(uint64_t window_id,
+                         const viz::FrameSinkId& frame_sink_id) override;
+  void UnattachFrameSinkId(uint64_t window_id) override;
   void SetFocus(uint32_t change_id, ws::Id window_id) override;
   void SetCanFocus(ws::Id window_id, bool can_focus) override;
   void SetEventTargetingPolicy(ws::Id window_id,

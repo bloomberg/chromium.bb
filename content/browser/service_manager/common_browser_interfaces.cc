@@ -52,7 +52,7 @@ class ConnectionFilterImpl : public ConnectionFilter {
 #elif defined(OS_MACOSX)
     registry_.AddInterface(base::BindRepeating(&FontLoaderDispatcher::Create));
 #endif
-    if (!features::IsUsingWindowService()) {
+    if (!features::IsMultiProcessMash()) {
       // For mus, the mojom::discardable_memory::DiscardableSharedMemoryManager
       // is exposed from ui::Service. So we don't need bind the interface here.
       auto* browser_main_loop = BrowserMainLoop::GetInstance();

@@ -280,6 +280,16 @@ void WindowTreeClient::SetHitTestInsets(WindowMus* window,
   tree_->SetHitTestInsets(window->server_id(), mouse, touch);
 }
 
+void WindowTreeClient::RegisterFrameSinkId(
+    WindowMus* window,
+    const viz::FrameSinkId& frame_sink_id) {
+  tree_->AttachFrameSinkId(window->server_id(), frame_sink_id);
+}
+
+void WindowTreeClient::UnregisterFrameSinkId(WindowMus* window) {
+  tree_->UnattachFrameSinkId(window->server_id());
+}
+
 void WindowTreeClient::Embed(Window* window,
                              ws::mojom::WindowTreeClientPtr client,
                              uint32_t flags,

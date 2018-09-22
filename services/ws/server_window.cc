@@ -448,7 +448,11 @@ void PointerPressHandler::OnWindowVisibilityChanged(aura::Window* window,
 
 }  // namespace
 
-ServerWindow::~ServerWindow() = default;
+ServerWindow::~ServerWindow() {
+  // WindowTree/ClientRoot should have reset |attached_frame_sink_id_| before
+  // the Window is destroyed.
+  DCHECK(!attached_frame_sink_id_.is_valid());
+}
 
 // static
 ServerWindow* ServerWindow::Create(aura::Window* window,

@@ -4,6 +4,7 @@
 
 #include "ui/aura/mus/window_port_mus.h"
 
+#include "base/auto_reset.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -311,7 +312,10 @@ void WindowPortMus::SetPropertyFromServer(
 void WindowPortMus::SetFrameSinkIdFromServer(
     const viz::FrameSinkId& frame_sink_id) {
   DCHECK(window_mus_type() == WindowMusType::EMBED_IN_OWNER);
-  window_->SetEmbedFrameSinkId(frame_sink_id);
+  {
+    base::AutoReset<bool> resetter(&is_setting_embed_frame_sink_id_, true);
+    window_->SetEmbedFrameSinkId(frame_sink_id);
+  }
   UpdatePrimarySurfaceId();
 }
 
@@ -339,10 +343,13 @@ const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
 void WindowPortMus::SetFallbackSurfaceInfo(
     const viz::SurfaceInfo& surface_info) {
   if (!window_->IsEmbeddingClient()) {
-    // |primary_surface_id_| shold not be valid, since we didn't know the
+    // |primary_surface_id_| should not be valid, since we didn't know the
     // |window_->frame_sink_id()|.
     DCHECK(!primary_surface_id_.is_valid());
-    window_->SetEmbedFrameSinkId(surface_info.id().frame_sink_id());
+    {
+      base::AutoReset<bool> resetter(&is_setting_embed_frame_sink_id_, true);
+      window_->SetEmbedFrameSinkId(surface_info.id().frame_sink_id());
+    }
     UpdatePrimarySurfaceId();
   }
 
@@ -413,6 +420,8 @@ WindowPortMus::ChangeSource WindowPortMus::OnTransientChildRemoved(
 void WindowPortMus::AllocateLocalSurfaceId() {
   local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
   UpdatePrimarySurfaceId();
+  if (local_layer_tree_frame_sink_)
+    local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
 }
 
 bool WindowPortMus::IsLocalSurfaceIdAllocationSuppressed() const {
@@ -581,10 +590,12 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   DCHECK(!local_layer_tree_frame_sink_);
 
   auto client_layer_tree_frame_sink = RequestLayerTreeFrameSink(
-      nullptr,
-      aura::Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager());
+      nullptr, window_->env()->context_factory()->GetGpuMemoryBufferManager());
   local_layer_tree_frame_sink_ = client_layer_tree_frame_sink->GetWeakPtr();
-  window_->SetEmbedFrameSinkId(GenerateFrameSinkIdFromServerId());
+  {
+    base::AutoReset<bool> resetter(&is_setting_embed_frame_sink_id_, true);
+    window_->SetEmbedFrameSinkId(GenerateFrameSinkIdFromServerId());
+  }
 
   gfx::Size size_in_pixel =
       gfx::ConvertSizeToPixel(GetDeviceScaleFactor(), window_->bounds().size());
@@ -600,6 +611,21 @@ void WindowPortMus::OnEventTargetingPolicyChanged() {
 
 bool WindowPortMus::ShouldRestackTransientChildren() {
   return should_restack_transient_children_;
+}
+
+void WindowPortMus::RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
+  if (is_setting_embed_frame_sink_id_)
+    return;
+
+  window_tree_client_->RegisterFrameSinkId(this, frame_sink_id);
+}
+
+void WindowPortMus::UnregisterFrameSinkId(
+    const viz::FrameSinkId& frame_sink_id) {
+  if (is_setting_embed_frame_sink_id_)
+    return;
+
+  window_tree_client_->UnregisterFrameSinkId(this);
 }
 
 void WindowPortMus::UpdatePrimarySurfaceId() {
