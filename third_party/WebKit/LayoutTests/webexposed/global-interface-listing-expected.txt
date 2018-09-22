@@ -9887,12 +9887,6 @@ interface WebGPUDevice
     getter adapter
     method constructor
     method dummy
-interface WebKitAnimationEvent : Event
-    attribute @@toStringTag
-    getter animationName
-    getter elapsedTime
-    getter pseudoElement
-    method constructor
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a

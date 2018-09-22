@@ -8119,12 +8119,6 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
-interface WebKitAnimationEvent : Event
-    attribute @@toStringTag
-    getter animationName
-    getter elapsedTime
-    getter pseudoElement
-    method constructor
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a

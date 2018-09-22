@@ -6332,12 +6332,6 @@ interface WebGLTexture
 interface WebGLUniformLocation
     attribute @@toStringTag
     method constructor
-interface WebKitAnimationEvent : Event
-    attribute @@toStringTag
-    getter animationName
-    getter elapsedTime
-    getter pseudoElement
-    method constructor
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a
