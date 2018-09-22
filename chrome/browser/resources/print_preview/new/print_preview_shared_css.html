@@ -9,7 +9,11 @@
       /* Shared variables *****************************************************/
       :host {
         --cr-input-row-container: {
-          min-height: 32px;
+          min-height: 38px;
+        };
+        --cr-input-container: {
+          margin-top: 3px;
+          margin-bottom: 3px;
         };
         --cr-radio-button-size: 16px;
         --md-select-width: calc(100% - 17px);
@@ -51,6 +55,10 @@
         min-height: 32px;
         --cr-checkbox-ripple-size: 38px;
         --cr-radio-button-ink-size: 38px;
+        --cr-checkbox-label-container: {
+          overflow: hidden;
+          padding-inline-start: 15px;
+        };
       }
 
       cr-input {
