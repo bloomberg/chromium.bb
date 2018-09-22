@@ -16,6 +16,7 @@
 
 #include "base/debug/proc_maps_linux.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/cfi_backtrace_android.h"
 #include "libunwind.h"
 
@@ -23,6 +24,22 @@ using base::trace_event::CFIBacktraceAndroid;
 using base::debug::MappedMemoryRegion;
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SamplingProfilerUnwindResult {
+  kFutexSignalFailed = 0,
+  kStackCopyFailed = 1,
+  kUnwindInitFailed = 2,
+  kHandlerUnwindFailed = 3,
+  kFirstFrameUnmapped = 4,
+  kMaxValue = kFirstFrameUnmapped,
+};
+
+void RecordUnwindResult(SamplingProfilerUnwindResult result) {
+  UMA_HISTOGRAM_ENUMERATION("BackgroundTracing.SamplingProfilerUnwindResult",
+                            result);
+}
 
 // Waitable event implementation with futex and without DCHECK(s), since signal
 // handlers cannot allocate memory or use pthread api.
@@ -102,6 +119,8 @@ size_t TraceStackWithContext(unw_cursor_t* cursor,
     // library.
     return depth +
            cfi_unwinder->Unwind(ip, sp, out_trace + depth, max_depth - depth);
+  } else if (depth == 0) {
+    RecordUnwindResult(SamplingProfilerUnwindResult::kFirstFrameUnmapped);
   }
   return depth;
 }
@@ -281,13 +300,16 @@ size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
     bool changed = sigaction(SIGURG, &oact, &act) == 0;
     DCHECK(changed);
     if (!finished_waiting) {
+      RecordUnwindResult(SamplingProfilerUnwindResult::kFutexSignalFailed);
       NOTREACHED();
       return 0;
     }
   }
   base::subtle::Release_Store(&g_handler_params, 0);
-  if (!copied)
+  if (!copied) {
+    RecordUnwindResult(SamplingProfilerUnwindResult::kStackCopyFailed);
     return 0;
+  }
 
   // Context contains list of saved registers. Replace the SP to the copied
   // stack. The SP should be one of the first 16 registers.
@@ -304,8 +326,10 @@ size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
 
   // Initialize an unwind cursor on copied stack.
   unw_cursor_t cursor;
-  if (unw_init_local(&cursor, &context) != 0)
+  if (unw_init_local(&cursor, &context) != 0) {
+    RecordUnwindResult(SamplingProfilerUnwindResult::kUnwindInitFailed);
     return 0;
+  }
   uintptr_t ip = 0;
   unw_get_reg(&cursor, UNW_REG_SP, &sp);
   DCHECK_EQ(sp, reinterpret_cast<uintptr_t>(stack_copy_buffer.get()));
@@ -317,8 +341,10 @@ size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
   auto* cfi_unwinder = CFIBacktraceAndroid::GetInitializedInstance();
   static CFIBacktraceAndroid::CFIRow cfi;
   static bool found = GetCFIForPC(cfi_unwinder, ip, &cfi);
-  if (!found)
+  if (!found) {
+    RecordUnwindResult(SamplingProfilerUnwindResult::kHandlerUnwindFailed);
     return 0;
+  }
   sp = sp + cfi.cfa_offset;
   memcpy(&ip, reinterpret_cast<uintptr_t*>(sp - cfi.ra_offset),
          sizeof(uintptr_t));
