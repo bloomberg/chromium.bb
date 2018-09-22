@@ -295,8 +295,7 @@ public class InfoBarContainerTest {
     @Test
     @MediumTest
     @Feature({"Browser"})
-    @Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET,
-            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON})
+    @Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON})
     public void testAddAndDismissSurfaceFlingerOverlays() throws Exception {
         final ViewGroup decorView =
                 (ViewGroup) mActivityTestRule.getActivity().getWindow().getDecorView();

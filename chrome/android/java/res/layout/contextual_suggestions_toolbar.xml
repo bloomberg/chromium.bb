@@ -10,19 +10,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
 
-    <org.chromium.chrome.browser.widget.TintedImageView
-        android:id="@+id/arrow"
-        android:layout_height="@dimen/bottom_control_container_slim_peek_height"
-        android:layout_width="match_parent"
-        android:background="@android:color/white"
-        android:gravity="center"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:src="@drawable/ic_expand_less_black_24dp"
-        android:scaleType="center"
-        android:visibility="gone"
-        app:chrometint="@color/dark_mode_tint" />
-
     <LinearLayout
         android:id="@+id/main_content"
         android:layout_width="match_parent"

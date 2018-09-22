@@ -89,7 +89,7 @@ public class ContextualSuggestionsCoordinator {
         mContentCoordinator =
                 new ContentCoordinator(mActivity, mBottomSheetController.getBottomSheet());
         mBottomSheetContent = new ContextualSuggestionsBottomSheetContent(
-                mContentCoordinator, mToolbarCoordinator, mModel.isSlimPeekEnabled());
+                mContentCoordinator, mToolbarCoordinator);
         assert mBottomSheetContent != null;
         mBottomSheetController.requestShowContent(mBottomSheetContent, false);
     }

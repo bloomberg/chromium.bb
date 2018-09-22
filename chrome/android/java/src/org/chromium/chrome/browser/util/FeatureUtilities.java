@@ -401,11 +401,9 @@ public class FeatureUtilities {
                 activityContext.getResources().getConfiguration().smallestScreenWidthDp;
         return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(activityContext)
                 && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
-                && (ChromeFeatureList.isEnabled(
-                            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)
-                    || (smallestScreenWidth >= CONTEXTUAL_SUGGESTIONS_TOOLBAR_MIN_DP
-                        && ChromeFeatureList.isEnabled(
-                                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)));
+                && (smallestScreenWidth >= CONTEXTUAL_SUGGESTIONS_TOOLBAR_MIN_DP
+                           && ChromeFeatureList.isEnabled(
+                                      ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
     }
 
     /**

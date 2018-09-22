@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.content.Context;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.view.LayoutInflater;
@@ -88,13 +87,6 @@ class ContentCoordinator {
                 mModel.setToolbarShadowVisibility(mRecyclerView.canScrollVertically(-1));
             }
         });
-
-        if (mModel.isSlimPeekEnabled()) {
-            ViewCompat.setPaddingRelative(mRecyclerView, ViewCompat.getPaddingStart(mRecyclerView),
-                    context.getResources().getDimensionPixelSize(
-                            R.dimen.bottom_control_container_slim_expanded_height),
-                    ViewCompat.getPaddingEnd(mRecyclerView), mRecyclerView.getPaddingBottom());
-        }
     }
 
     /** Destroy the content component. */
