@@ -221,10 +221,6 @@ class CONTENT_EXPORT ContentRendererClient {
                                 blink::WebNavigationType type,
                                 blink::WebNavigationPolicy default_policy,
                                 bool is_redirect);
-
-  // Indicates if the Android MediaPlayer should be used instead of Chrome's
-  // built in media player for the given |url|. Defaults to false.
-  virtual bool ShouldUseMediaPlayerForURL(const GURL& url);
 #endif
 
   // Returns true if we should fork a new process for the given navigation.

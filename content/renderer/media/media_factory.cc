@@ -194,10 +194,6 @@ bool UseMediaPlayerRenderer(const GURL& url) {
       return true;
   }
 
-  // Indicates if the Android MediaPlayer should be used instead of WMPI.
-  if (GetContentClient()->renderer()->ShouldUseMediaPlayerForURL(url))
-    return true;
-
   // Otherwise, use the default renderer.
   return false;
 }

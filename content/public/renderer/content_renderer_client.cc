@@ -113,10 +113,6 @@ bool ContentRendererClient::HandleNavigation(
     bool is_redirect) {
   return false;
 }
-
-bool ContentRendererClient::ShouldUseMediaPlayerForURL(const GURL& url) {
-  return false;
-}
 #endif
 
 bool ContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
