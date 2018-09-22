@@ -32,8 +32,10 @@ class EmulationHandler : public DevToolsDomainHandler,
       DevToolsAgentHostImpl* host);
 
   void Wire(UberDispatcher* dispatcher) override;
-  void SetRenderer(int process_host_id,
-                   RenderFrameHostImpl* frame_host) override;
+  void InitRenderer(int process_host_id,
+                    RenderFrameHostImpl* frame_host) override;
+  void UpdateRenderer(int process_host_id,
+                      RenderFrameHostImpl* frame_host) override;
 
   Response Disable() override;
 

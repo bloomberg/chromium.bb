@@ -58,7 +58,7 @@ void DevToolsSession::Dispose() {
 void DevToolsSession::AddHandler(
     std::unique_ptr<protocol::DevToolsDomainHandler> handler) {
   handler->Wire(dispatcher_.get());
-  handler->SetRenderer(process_host_id_, host_);
+  handler->InitRenderer(process_host_id_, host_);
   handlers_[handler->name()] = std::move(handler);
 }
 
@@ -67,7 +67,7 @@ void DevToolsSession::SetRenderer(int process_host_id,
   process_host_id_ = process_host_id;
   host_ = frame_host;
   for (auto& pair : handlers_)
-    pair.second->SetRenderer(process_host_id_, host_);
+    pair.second->UpdateRenderer(process_host_id_, host_);
 }
 
 void DevToolsSession::SetBrowserOnly(bool browser_only) {
