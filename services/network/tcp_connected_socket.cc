@@ -112,23 +112,37 @@ void TCPConnectedSocket::Connect(
   DCHECK(!socket_);
   DCHECK(callback);
 
-  socket_ = client_socket_factory_->CreateTransportClientSocket(
-      remote_addr_list, nullptr /*socket_performance_watcher*/, net_log_,
-      net::NetLogSource());
+  std::unique_ptr<net::TransportClientSocket> socket =
+      client_socket_factory_->CreateTransportClientSocket(
+          remote_addr_list, nullptr /*socket_performance_watcher*/, net_log_,
+          net::NetLogSource());
+
+  if (local_addr) {
+    int result = socket->Bind(local_addr.value());
+    if (result != net::OK) {
+      OnConnectCompleted(result);
+      return;
+    }
+  }
+
+  return ConnectWithSocket(std::move(socket),
+                           std::move(tcp_connected_socket_options),
+                           std::move(callback));
+}
+
+void TCPConnectedSocket::ConnectWithSocket(
+    std::unique_ptr<net::TransportClientSocket> socket,
+    mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
+    mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
+  socket_ = std::move(socket);
   connect_callback_ = std::move(callback);
 
-  int result = net::OK;
-  if (local_addr)
-    result = socket_->Bind(local_addr.value());
-
-  if (result == net::OK) {
-    if (tcp_connected_socket_options) {
-      socket_->SetBeforeConnectCallback(base::BindRepeating(
-          &ConfigureSocket, socket_.get(), *tcp_connected_socket_options));
-    }
-    result = socket_->Connect(base::BindRepeating(
-        &TCPConnectedSocket::OnConnectCompleted, base::Unretained(this)));
+  if (tcp_connected_socket_options) {
+    socket_->SetBeforeConnectCallback(base::BindRepeating(
+        &ConfigureSocket, socket_.get(), *tcp_connected_socket_options));
   }
+  int result = socket_->Connect(base::BindRepeating(
+      &TCPConnectedSocket::OnConnectCompleted, base::Unretained(this)));
 
   if (result == net::ERR_IO_PENDING)
     return;
