@@ -596,7 +596,7 @@ AutomationPredicate.multiline = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.autoScrollable = function(node) {
-  return node.scrollable &&
+  return !!node.scrollable &&
       (node.role == Role.GRID || node.role == Role.LIST ||
        node.role == Role.POP_UP_BUTTON || node.role == Role.SCROLL_VIEW);
 };
