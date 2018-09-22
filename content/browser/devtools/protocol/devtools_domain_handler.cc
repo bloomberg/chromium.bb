@@ -17,6 +17,16 @@ DevToolsDomainHandler::DevToolsDomainHandler(const std::string& name)
 DevToolsDomainHandler::~DevToolsDomainHandler() {
 }
 
+void DevToolsDomainHandler::InitRenderer(int process_host_id,
+                                         RenderFrameHostImpl* frame_host) {
+  SetRenderer(process_host_id, frame_host);
+}
+
+void DevToolsDomainHandler::UpdateRenderer(int process_host_id,
+                                           RenderFrameHostImpl* frame_host) {
+  SetRenderer(process_host_id, frame_host);
+}
+
 void DevToolsDomainHandler::SetRenderer(int process_host_id,
                                         RenderFrameHostImpl* frame_host) {}
 

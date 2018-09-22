@@ -73,14 +73,18 @@ std::vector<EmulationHandler*> EmulationHandler::ForAgentHost(
       host, Emulation::Metainfo::domainName);
 }
 
-void EmulationHandler::SetRenderer(int process_host_id,
-                                   RenderFrameHostImpl* frame_host) {
-  if (host_ == frame_host)
-    return;
-
+void EmulationHandler::InitRenderer(int process_host_id,
+                                    RenderFrameHostImpl* frame_host) {
   host_ = frame_host;
   if (touch_emulation_enabled_)
     UpdateTouchEventEmulationState();
+}
+
+void EmulationHandler::UpdateRenderer(int process_host_id,
+                                      RenderFrameHostImpl* frame_host) {
+  if (host_ == frame_host)
+    return;
+  InitRenderer(process_host_id, frame_host);
   UpdateDeviceEmulationState();
 }
 
