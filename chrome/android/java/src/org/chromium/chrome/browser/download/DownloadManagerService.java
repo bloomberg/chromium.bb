@@ -81,7 +81,7 @@ public class DownloadManagerService
                    NetworkChangeNotifierAutoDetect.Observer,
                    DownloadManagerDelegate.DownloadQueryCallback,
                    DownloadManagerDelegate.EnqueueDownloadRequestCallback, DownloadServiceDelegate,
-                   BackendProvider.DownloadDelegate {
+                   BackendProvider.DownloadDelegate, BrowserStartupController.StartupCallback {
     // Download status.
     @IntDef({DownloadStatus.IN_PROGRESS, DownloadStatus.COMPLETE, DownloadStatus.FAILED,
             DownloadStatus.CANCELLED, DownloadStatus.INTERRUPTED})
@@ -1113,12 +1113,28 @@ public class DownloadManagerService
      */
     private long getNativeDownloadManagerService() {
         if (mNativeDownloadManagerService == 0) {
-            mNativeDownloadManagerService =
-                    nativeInit(BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                                       .isStartupSuccessfullyCompleted());
+            boolean startupCompleted =
+                    BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                            .isStartupSuccessfullyCompleted();
+            mNativeDownloadManagerService = nativeInit(startupCompleted);
+            if (!startupCompleted) {
+                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .addStartupCompletedObserver(this);
+            }
         }
         return mNativeDownloadManagerService;
     }
+
+    @Override
+    public void onSuccess() {
+        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .isStartupSuccessfullyCompleted()) {
+            nativeOnFullBrowserStarted(mNativeDownloadManagerService);
+        }
+    }
+
+    @Override
+    public void onFailure() {}
 
     @CalledByNative
     void onResumptionFailed(String downloadGuid) {
@@ -1911,4 +1927,5 @@ public class DownloadManagerService
             long nativeDownloadManagerService, boolean isOffTheRecord);
     private native void nativeUpdateLastAccessTime(
             long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
+    private native void nativeOnFullBrowserStarted(long nativeDownloadManagerService);
 }
