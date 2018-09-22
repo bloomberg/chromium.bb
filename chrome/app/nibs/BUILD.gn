@@ -15,10 +15,8 @@ translated_xibs = [
   "Toolbar.xib",
 ]
 
-untranslated_xibs = [ "InfoBar.xib" ]
-
 mac_xib_bundle_data("chrome_xibs") {
-  sources = translated_xibs + untranslated_xibs
+  sources = translated_xibs
 }
 
 action("localizer_table") {

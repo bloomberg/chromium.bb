@@ -55,7 +55,6 @@
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
 #include "chrome/browser/ui/cocoa/fullscreen_placeholder_view.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -331,11 +330,6 @@ bool IsTabDetachingInFullscreenEnabled() {
     [toolbarController_ setHasToolbar:[self hasToolbar]
                        hasLocationBar:[self hasLocationBar]];
 
-    // Create the infobar container view, so we can pass it to the
-    // ToolbarController.
-    infoBarContainerController_.reset(
-        [[InfoBarContainerController alloc] initWithResizeDelegate:self]);
-
     [self updateFullscreenCollectionBehavior];
 
     [self layoutSubviews];
@@ -463,10 +457,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (TabStripControllerCocoa*)tabStripController {
   return tabStripController_.get();
-}
-
-- (InfoBarContainerController*)infoBarContainerController {
-  return infoBarContainerController_.get();
 }
 
 - (StatusBubbleMac*)statusBubble {
@@ -907,24 +897,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   // If we are asked to size the bookmark
   // bar directly, its superview must be this controller's content view.
   DCHECK(view);
-  DCHECK(view == [toolbarController_ view] ||
-         view == [infoBarContainerController_ view]);
-
-  // The infobar has insufficient information to determine its new height. It
-  // knows the total height of all of the info bars (which is what it passes
-  // into this method), but knows nothing about the maximum arrow height, which
-  // is determined by this class.
-  if (view == [infoBarContainerController_ view]) {
-    base::scoped_nsobject<BrowserWindowLayout> layout(
-        [[BrowserWindowLayout alloc] init]);
-    [self updateLayoutParameters:layout];
-    // Use the new height for the info bar.
-    [layout setInfoBarHeight:height];
-
-    chrome::LayoutOutput output = [layout computeLayout];
-
-    height = NSHeight(output.infoBarFrame);
-  }
+  DCHECK(view == [toolbarController_ view]);
 
   // Change the height of the view and call |-layoutSubViews|. We set the height
   // here without regard to where the view is on the screen or whether it needs
@@ -1363,11 +1336,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
-
-  [infoBarContainerController_ changeWebContents:contents];
-
-  // Must do this after bookmark and infobar updates to avoid
-  // unnecesary resize in contents.
   [devToolsController_ updateDevToolsForWebContents:contents
                                         withProfile:browser_->profile()];
 }
@@ -1380,7 +1348,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)onTabDetachedWithContents:(WebContents*)contents {
-  [infoBarContainerController_ tabDetachedWithContents:contents];
 }
 
 - (void)onTabInsertedWithContents:(content::WebContents*)contents

@@ -32,7 +32,6 @@
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
@@ -82,7 +81,6 @@ void CreateProfileCallback(const base::Closure& quit_closure,
 
 enum BrowserViewID {
   BROWSER_VIEW_ID_TOOLBAR,
-  BROWSER_VIEW_ID_INFO_BAR,
   BROWSER_VIEW_ID_TAB_CONTENT_AREA,
   BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR,
   BROWSER_VIEW_ID_COUNT,
@@ -230,8 +228,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
         return [controller() floatingBarBackingView];
       case BROWSER_VIEW_ID_TOOLBAR:
         return [[controller() toolbarController] view];
-      case BROWSER_VIEW_ID_INFO_BAR:
-        return [[controller() infoBarContainerController] view];
       case BROWSER_VIEW_ID_TAB_CONTENT_AREA:
         return [controller() tabContentArea];
       default:
@@ -408,7 +404,6 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormal) {
   std::vector<BrowserViewID> view_list;
   view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);
-  view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
   VerifyZOrder(view_list);
 
@@ -429,7 +424,6 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   chrome::ToggleFullscreenMode(browser());
 
   std::vector<BrowserViewID> view_list;
-  view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
   view_list.push_back(BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);
@@ -454,7 +448,6 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   [controller() updateSubviewZOrder];
 
   std::vector<BrowserViewID> view_list;
-  view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
   view_list.push_back(BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR);
   view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);

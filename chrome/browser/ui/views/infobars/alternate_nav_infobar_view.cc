@@ -23,11 +23,6 @@
 // static
 std::unique_ptr<infobars::InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
     std::unique_ptr<AlternateNavInfoBarDelegate> delegate) {
-#if defined(OS_MACOSX)
-  if (views_mode_controller::IsViewsBrowserCocoa()) {
-    return CreateInfoBarCocoa(std::move(delegate));
-  }
-#endif
   return std::make_unique<AlternateNavInfoBarView>(std::move(delegate));
 }
 

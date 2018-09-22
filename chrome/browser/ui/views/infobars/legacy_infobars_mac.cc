@@ -16,8 +16,6 @@
 
 std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  if (views_mode_controller::IsViewsBrowserCocoa())
-    return CreateInfoBarCocoa(std::move(delegate));
   NOTREACHED();
   return nullptr;
 }

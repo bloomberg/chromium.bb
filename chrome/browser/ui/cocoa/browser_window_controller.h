@@ -45,7 +45,6 @@ class ExclusiveAccessContext;
 @class FullscreenToolbarControllerCocoa;
 @class FullscreenToolbarVisibilityLockController;
 @class FullscreenWindow;
-@class InfoBarContainerController;
 class LocationBarViewMac;
 @class OverlayableContentsController;
 class StatusBubbleMac;
@@ -76,7 +75,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   std::unique_ptr<BrowserWindowCocoa> windowShim_;
   base::scoped_nsobject<ToolbarController> toolbarController_;
   base::scoped_nsobject<TabStripControllerCocoa> tabStripController_;
-  base::scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
   base::scoped_nsobject<DevToolsController> devToolsController_;
   base::scoped_nsobject<OverlayableContentsController>
       overlayableContentsController_;
@@ -214,9 +212,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 // Return a weak pointer to the tab strip controller.
 - (TabStripControllerCocoa*)tabStripController;
-
-// Access the ObjC controller that contains the infobars.
-- (InfoBarContainerController*)infoBarContainerController;
 
 // Access the C++ bridge object representing the status bubble for the window.
 - (StatusBubbleMac*)statusBubble;
