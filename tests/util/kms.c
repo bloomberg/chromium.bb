@@ -145,6 +145,7 @@ static const char * const modules[] = {
 	"meson",
 	"pl111",
 	"stm",
+	"sun4i-drm",
 };
 
 int util_open(const char *device, const char *module)
