@@ -339,11 +339,6 @@ void RunNonBlockingScriptStreamingTask(
 }  // namespace
 
 bool ScriptStreamer::HasEnoughDataForStreaming(size_t resource_buffer_size) {
-  if (RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
-    // Enable streaming for small scripts, but we must still check the BOM
-    // before starting streaming.
-    return resource_buffer_size >= kMaximumLengthOfBOM;
-  }
   // Only stream larger scripts.
   return resource_buffer_size >= small_script_threshold_;
 }
