@@ -5260,6 +5260,13 @@ static void update_rc_counts(AV1_COMP *cpi) {
   if (cpi->oxcf.pass == 2) update_twopass_gf_group_index(cpi);
 }
 
+static void set_additional_frame_flags(AV1_COMMON *const cm,
+                                       unsigned int *frame_flags) {
+  if (frame_is_intra_only(cm)) *frame_flags |= FRAMEFLAGS_INTRAONLY;
+  if (frame_is_sframe(cm)) *frame_flags |= FRAMEFLAGS_SWITCH;
+  if (cm->error_resilient_mode) *frame_flags |= FRAMEFLAGS_ERROR_RESILIENT;
+}
+
 static int Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
                        int skip_adapt, unsigned int *frame_flags) {
   if (cpi->oxcf.rc_mode == AOM_CBR) {
@@ -5271,6 +5278,8 @@ static int Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
+  set_additional_frame_flags(&cpi->common, frame_flags);
+
   update_rc_counts(cpi);
   check_show_existing_frame(cpi);
   return AOM_CODEC_OK;
@@ -5291,6 +5300,7 @@ static int Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
+  set_additional_frame_flags(&cpi->common, frame_flags);
 
 #if TXCOEFF_COST_TIMER
   cm->cum_txcoeff_cost_timer += cm->txcoeff_cost_timer;

@@ -101,6 +101,12 @@ typedef uint32_t aom_codec_frame_flags_t;
 #define AOM_FRAME_IS_INVISIBLE 0x4
 /*!\brief this is a fragment of the encoded frame */
 #define AOM_FRAME_IS_FRAGMENT 0x8
+/*!\brief this is an INTRA_ONLY frame */
+#define AOM_FRAME_IS_INTRAONLY 0x10
+/*!\brief this is an S-frame */
+#define AOM_FRAME_IS_SWITCH 0x20
+/*!\brief this is an error-resilient frame */
+#define AOM_FRAME_IS_ERROR_RESILIENT 0x40
 
 /*!\brief Error Resilient flags
  *
