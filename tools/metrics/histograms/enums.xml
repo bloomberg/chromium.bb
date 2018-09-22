@@ -43002,6 +43002,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="NOT_SUPPORTED"/>
 </enum>
 
+<enum name="SamplingProfilerUnwindResult">
+  <summary>Track reason for unwind failures in sampling profiler.</summary>
+  <int value="0" label="Futex wait for signal handler failed."/>
+  <int value="1" label="Stack segment was not found or too large to copy."/>
+  <int value="2" label="Unwind initialization failed."/>
+  <int value="3" label="Unwind info for signal handler missing."/>
+  <int value="4" label="First frame of stack isn't mapped."/>
+</enum>
+
 <enum name="SavePasswordPromptResponseType">
   <int value="0" label="NO_RESPONSE"/>
   <int value="1" label="REMEMBER_PASSWORD"/>
