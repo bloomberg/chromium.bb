@@ -268,12 +268,24 @@ TEST_P(PaintPropertyTreeUpdateTest,
                    ->ScrollTranslation()
                    ->ScrollNode()
                    ->HasBackgroundAttachmentFixedDescendants());
-  EXPECT_EQ(visual_viewport.GetScrollNode(), overflow_b->GetLayoutObject()
-                                                 ->FirstFragment()
-                                                 .PaintProperties()
-                                                 ->ScrollTranslation()
-                                                 ->ScrollNode()
-                                                 ->Parent());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(visual_viewport.GetScrollNode(), overflow_b->GetLayoutObject()
+                                                   ->FirstFragment()
+                                                   .PaintProperties()
+                                                   ->ScrollTranslation()
+                                                   ->ScrollNode()
+                                                   ->Parent());
+  } else {
+    // Pre-BGPT we don't create the visual viewport property nodes.
+    EXPECT_TRUE(overflow_b->GetLayoutObject()
+                    ->FirstFragment()
+                    .PaintProperties()
+                    ->ScrollTranslation()
+                    ->ScrollNode()
+                    ->Parent()
+                    ->IsRoot());
+  }
 
   // Removing a main thread scrolling reason should update the entire tree.
   overflow_b->removeAttribute("class");
@@ -796,6 +808,11 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
 // scroll into the region saved for scrollbars.
 TEST_P(PaintPropertyTreeUpdateTest,
        ViewportContentsAndContainerRectsDoNotIncludeScrollbar) {
+  // Pre-BGPT we don't create the visual viewport property nodes.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar {width: 20px; height: 20px}
