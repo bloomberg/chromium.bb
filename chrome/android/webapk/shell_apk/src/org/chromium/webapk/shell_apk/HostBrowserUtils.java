@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
@@ -27,6 +28,11 @@ import java.util.Set;
  */
 public class HostBrowserUtils {
     public static final String SHARED_PREF_RUNTIME_HOST = "runtime_host";
+
+    private static final int MINIMUM_REQUIRED_CHROME_VERSION = 57;
+
+    /** Version name for developer builds. */
+    private static final String DEVELOPER_BUILD_VERSION_NAME = "Developer Build";
 
     private static final String TAG = "cr_HostBrowserUtils";
 
@@ -202,5 +208,34 @@ public class HostBrowserUtils {
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(SHARED_PREF_RUNTIME_HOST, hostPackage);
         editor.apply();
+    }
+
+    /** Queries the given host browser's major version. */
+    public static int queryHostBrowserMajorChromiumVersion(
+            Context context, String hostBrowserPackageName) {
+        PackageInfo info;
+        try {
+            info = context.getPackageManager().getPackageInfo(hostBrowserPackageName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            return -1;
+        }
+        String versionName = info.versionName;
+        int dotIndex = versionName.indexOf(".");
+        if (dotIndex < 0) {
+            if (DEVELOPER_BUILD_VERSION_NAME.equals(versionName)) {
+                return MINIMUM_REQUIRED_CHROME_VERSION;
+            }
+            return -1;
+        }
+        try {
+            return Integer.parseInt(versionName.substring(0, dotIndex));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /** Returns whether a WebAPK should be launched as a tab. See crbug.com/772398. */
+    public static boolean shouldLaunchInTab(int hostBrowserChromiumMajorVersion) {
+        return hostBrowserChromiumMajorVersion < MINIMUM_REQUIRED_CHROME_VERSION;
     }
 }

@@ -33,7 +33,6 @@ import java.util.List;
  * Contains utility methods for interacting with WebAPKs.
  */
 public class WebApkUtils {
-    private static final int MINIMUM_REQUIRED_CHROME_VERSION = 57;
     private static final String TAG = "cr_WebApkUtils";
 
     /** Percentage to darken a color by when setting the status bar color. */
@@ -150,15 +149,6 @@ public class WebApkUtils {
         } else {
             return res.getColor(id);
         }
-    }
-
-    /** Returns whether a WebAPK should be launched as a tab. See crbug.com/772398. */
-    public static boolean shouldLaunchInTab(String versionName) {
-        int dotIndex = versionName.indexOf(".");
-        if (dotIndex == -1) return false;
-
-        int version = Integer.parseInt(versionName.substring(0, dotIndex));
-        return version < MINIMUM_REQUIRED_CHROME_VERSION;
     }
 
     /**
