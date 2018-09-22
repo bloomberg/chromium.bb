@@ -38,42 +38,42 @@ static const char* GetPrepareTraceString();
 
 template <>
 const char* GetDecodeTraceString<DemuxerStream::VIDEO>() {
-  return "VideoFrameStream::Decode";
+  return "VideoDecoderStream::Decode";
 }
 
 template <>
 const char* GetDecodeTraceString<DemuxerStream::AUDIO>() {
-  return "AudioBufferStream::Decode";
+  return "AudioDecoderStream::Decode";
 }
 
 template <>
 const char* GetReadTraceString<DemuxerStream::VIDEO>() {
-  return "VideoFrameStream::Read";
+  return "VideoDecoderStream::Read";
 }
 
 template <>
 const char* GetReadTraceString<DemuxerStream::AUDIO>() {
-  return "AudioBufferStream::Read";
+  return "AudioDecoderStream::Read";
 }
 
 template <>
 const char* GetDemuxerReadTraceString<DemuxerStream::VIDEO>() {
-  return "VideoFrameStream::ReadFromDemuxerStream";
+  return "VideoDecoderStream::ReadFromDemuxerStream";
 }
 
 template <>
 const char* GetDemuxerReadTraceString<DemuxerStream::AUDIO>() {
-  return "AudioBufferStream::ReadFromDemuxerStream";
+  return "AudioDecoderStream::ReadFromDemuxerStream";
 }
 
 template <>
 const char* GetPrepareTraceString<DemuxerStream::VIDEO>() {
-  return "VideoFrameStream::PrepareOutput";
+  return "VideoDecoderStream::PrepareOutput";
 }
 
 template <>
 const char* GetPrepareTraceString<DemuxerStream::AUDIO>() {
-  return "AudioBufferStream::PrepareOutput";
+  return "AudioDecoderStream::PrepareOutput";
 }
 
 template <DemuxerStream::Type StreamType>
