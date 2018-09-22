@@ -1124,17 +1124,17 @@ pp::Resource PDFiumEngine::PrintPages(
 
   if ((print_settings.format & PP_PRINTOUTPUTFORMAT_PDF) &&
       HasPermission(PERMISSION_PRINT_HIGH_QUALITY)) {
-    return PrintPagesAsPDF(page_ranges, page_range_count, print_settings,
+    return PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
                            pdf_print_settings);
   }
   if (HasPermission(PERMISSION_PRINT_LOW_QUALITY)) {
-    return PrintPagesAsRasterPDF(page_ranges, page_range_count, print_settings,
+    return PrintPagesAsRasterPdf(page_ranges, page_range_count, print_settings,
                                  pdf_print_settings);
   }
   return pp::Resource();
 }
 
-pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
+pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPdf(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings,
@@ -1151,11 +1151,11 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
   g_last_instance_id = client_->GetPluginInstance()->pp_instance();
 #endif
 
-  return print_.PrintPagesAsRasterPDF(page_ranges, page_range_count,
+  return print_.PrintPagesAsRasterPdf(page_ranges, page_range_count,
                                       print_settings, pdf_print_settings);
 }
 
-pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
+pp::Buffer_Dev PDFiumEngine::PrintPagesAsPdf(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings,
@@ -1174,7 +1174,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
       pages_[page_number]->Unload();
   }
 
-  return print_.PrintPagesAsPDF(page_ranges, page_range_count, print_settings,
+  return print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
                                 pdf_print_settings);
 }
 

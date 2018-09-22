@@ -16,7 +16,6 @@
 #include "ppapi/c/private/ppp_pdf.h"
 #include "printing/nup_parameters.h"
 #include "printing/units.h"
-#include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_flatten.h"
 #include "third_party/pdfium/public/fpdf_ppo.h"
 #include "third_party/pdfium/public/fpdf_transformpage.h"
@@ -166,6 +165,36 @@ void FitContentsToPrintableAreaIfRequired(
   }
 }
 
+// Performs N-up PDF generation for |doc| based on |pages_per_sheet| and
+// the parameters in |print_settings|.
+// On success, returns the N-up version of |doc|. On failure, returns nullptr.
+ScopedFPDFDocument NupPdfToPdf(FPDF_DOCUMENT doc,
+                               uint32_t pages_per_sheet,
+                               const PP_PrintSettings_Dev& print_settings) {
+  DCHECK(doc);
+  DCHECK(ShouldDoNup(pages_per_sheet));
+
+  PP_Size page_size = print_settings.paper_size;
+
+  printing::NupParameters nup_params;
+  bool is_landscape = PDFiumPrint::IsSourcePdfLandscape(doc);
+  nup_params.SetParameters(pages_per_sheet, is_landscape);
+
+  // Import n pages to one.
+  bool paper_is_landscape = page_size.width > page_size.height;
+  if (nup_params.landscape() != paper_is_landscape)
+    std::swap(page_size.width, page_size.height);
+
+  ScopedFPDFDocument output_doc_nup(FPDF_ImportNPagesToOne(
+      doc, page_size.width, page_size.height, nup_params.num_pages_on_x_axis(),
+      nup_params.num_pages_on_y_axis()));
+  if (output_doc_nup) {
+    FitContentsToPrintableAreaIfRequired(output_doc_nup.get(), 1.0f,
+                                         print_settings);
+  }
+  return output_doc_nup;
+}
+
 int GetBlockForJpeg(void* param,
                     unsigned long pos,
                     unsigned char* buf,
@@ -218,6 +247,7 @@ std::vector<uint32_t> PDFiumPrint::GetPageNumbersFromPrintPageNumberRange(
   return page_numbers;
 }
 
+// static
 bool PDFiumPrint::IsSourcePdfLandscape(FPDF_DOCUMENT doc) {
   DCHECK(doc);
 
@@ -229,6 +259,7 @@ bool PDFiumPrint::IsSourcePdfLandscape(FPDF_DOCUMENT doc) {
   return is_source_landscape;
 }
 
+// static
 void PDFiumPrint::FitContentsToPrintableArea(FPDF_DOCUMENT doc,
                                              const gfx::Size& page_size,
                                              const gfx::Rect& printable_area) {
@@ -242,7 +273,7 @@ void PDFiumPrint::FitContentsToPrintableArea(FPDF_DOCUMENT doc,
   FitContentsToPrintableAreaIfRequired(doc, 1.0, print_settings);
 }
 
-pp::Buffer_Dev PDFiumPrint::PrintPagesAsRasterPDF(
+pp::Buffer_Dev PDFiumPrint::PrintPagesAsRasterPdf(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings,
@@ -274,48 +305,47 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsRasterPDF(
   ScopedFPDFDocument output_doc(FPDF_CreateNewDocument());
   DCHECK(output_doc);
 
-  size_t i = 0;
-  for (; i < pages_to_print.size(); ++i) {
+  for (size_t i = 0; i < pages_to_print.size(); ++i) {
     double source_page_width = source_page_sizes[i].first;
     double source_page_height = source_page_sizes[i].second;
 
-    // Use |temp_doc| to compress image by saving PDF to |buffer|.
-    pp::Buffer_Dev buffer;
+    // Use |temp_doc| to compress image by saving PDF to |temp_buffer|.
+    pp::Buffer_Dev temp_buffer;
     {
-      ScopedFPDFDocument temp_doc(
+      ScopedFPDFDocument temp_doc =
           CreateSinglePageRasterPdf(source_page_width, source_page_height,
-                                    print_settings, &pages_to_print[i]));
+                                    print_settings, &pages_to_print[i]);
 
       if (!temp_doc)
-        break;
+        return pp::Buffer_Dev();
 
-      buffer = GetFlattenedPrintData(temp_doc.get());
+      temp_buffer = GetFlattenedPrintData(temp_doc.get());
     }
 
-    PDFiumMemBufferFileRead file_read(buffer.data(), buffer.size());
+    PDFiumMemBufferFileRead file_read(temp_buffer.data(), temp_buffer.size());
     ScopedFPDFDocument temp_doc(FPDF_LoadCustomDocument(&file_read, nullptr));
     if (!FPDF_ImportPages(output_doc.get(), temp_doc.get(), "1", i))
-      break;
+      return pp::Buffer_Dev();
   }
 
   pp::Buffer_Dev buffer;
-  if (i == pages_to_print.size()) {
-    FPDF_CopyViewerPreferences(output_doc.get(), engine_->doc());
-    uint32_t pages_per_sheet = pdf_print_settings.pages_per_sheet;
-    uint32_t scale_factor = pdf_print_settings.scale_factor;
-    if (ShouldDoNup(pages_per_sheet)) {
-      buffer = NupPdfToPdf(output_doc.get(), pages_per_sheet, print_settings);
-    } else {
-      FitContentsToPrintableAreaIfRequired(
-          output_doc.get(), scale_factor / 100.0f, print_settings);
+  FPDF_CopyViewerPreferences(output_doc.get(), engine_->doc());
+  uint32_t pages_per_sheet = pdf_print_settings.pages_per_sheet;
+  if (ShouldDoNup(pages_per_sheet)) {
+    ScopedFPDFDocument doc = std::move(output_doc);
+    output_doc = NupPdfToPdf(doc.get(), pages_per_sheet, print_settings);
+    if (output_doc)
       buffer = GetPrintData(output_doc.get());
-    }
+  } else {
+    double scale_factor = pdf_print_settings.scale_factor / 100.0;
+    FitContentsToPrintableAreaIfRequired(output_doc.get(), scale_factor,
+                                         print_settings);
+    buffer = GetPrintData(output_doc.get());
   }
-
   return buffer;
 }
 
-pp::Buffer_Dev PDFiumPrint::PrintPagesAsPDF(
+pp::Buffer_Dev PDFiumPrint::PrintPagesAsPdf(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings,
@@ -333,13 +363,17 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsPDF(
 
   pp::Buffer_Dev buffer;
   uint32_t pages_per_sheet = pdf_print_settings.pages_per_sheet;
-  uint32_t scale_factor = pdf_print_settings.scale_factor;
   if (ShouldDoNup(pages_per_sheet)) {
-    if (FlattenPrintData(output_doc.get()))
-      buffer = NupPdfToPdf(output_doc.get(), pages_per_sheet, print_settings);
+    if (FlattenPrintData(output_doc.get())) {
+      ScopedFPDFDocument doc = std::move(output_doc);
+      output_doc = NupPdfToPdf(doc.get(), pages_per_sheet, print_settings);
+      if (output_doc)
+        buffer = GetPrintData(output_doc.get());
+    }
   } else {
-    FitContentsToPrintableAreaIfRequired(output_doc.get(),
-                                         scale_factor / 100.0f, print_settings);
+    double scale_factor = pdf_print_settings.scale_factor / 100.0;
+    FitContentsToPrintableAreaIfRequired(output_doc.get(), scale_factor,
+                                         print_settings);
     if (FlattenPrintData(output_doc.get()))
       buffer = GetPrintData(output_doc.get());
   }
@@ -347,12 +381,12 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsPDF(
   return buffer;
 }
 
-FPDF_DOCUMENT PDFiumPrint::CreateSinglePageRasterPdf(
+ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
     double source_page_width,
     double source_page_height,
     const PP_PrintSettings_Dev& print_settings,
     PDFiumPage* page_to_print) {
-  FPDF_DOCUMENT temp_doc = FPDF_CreateNewDocument();
+  ScopedFPDFDocument temp_doc(FPDF_CreateNewDocument());
   DCHECK(temp_doc);
 
   const pp::Size& bitmap_size(page_to_print->rect().size());
@@ -390,7 +424,7 @@ FPDF_DOCUMENT PDFiumPrint::CreateSinglePageRasterPdf(
 
   // Add the bitmap to an image object and add the image object to the output
   // page.
-  FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImageObj(temp_doc);
+  FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImageObj(temp_doc.get());
 
   bool encoded = false;
   std::vector<uint8_t> compressed_bitmap_data;
@@ -408,7 +442,7 @@ FPDF_DOCUMENT PDFiumPrint::CreateSinglePageRasterPdf(
 
   {
     ScopedFPDFPage temp_page_holder(
-        FPDFPage_New(temp_doc, 0, source_page_width, source_page_height));
+        FPDFPage_New(temp_doc.get(), 0, source_page_width, source_page_height));
     FPDF_PAGE temp_page = temp_page_holder.get();
     if (encoded) {
       FPDF_FILEACCESS file_access = {};
@@ -431,36 +465,7 @@ FPDF_DOCUMENT PDFiumPrint::CreateSinglePageRasterPdf(
   return temp_doc;
 }
 
-pp::Buffer_Dev PDFiumPrint::NupPdfToPdf(
-    FPDF_DOCUMENT doc,
-    uint32_t pages_per_sheet,
-    const PP_PrintSettings_Dev& print_settings) {
-  DCHECK(doc);
-  DCHECK(ShouldDoNup(pages_per_sheet));
-
-  PP_Size page_size = print_settings.paper_size;
-
-  printing::NupParameters nup_params;
-  bool is_landscape = IsSourcePdfLandscape(doc);
-  nup_params.SetParameters(pages_per_sheet, is_landscape);
-
-  // Import n pages to one.
-  bool paper_is_landscape = page_size.width > page_size.height;
-  if (nup_params.landscape() != paper_is_landscape)
-    std::swap(page_size.width, page_size.height);
-
-  ScopedFPDFDocument output_doc_nup(FPDF_ImportNPagesToOne(
-      doc, page_size.width, page_size.height, nup_params.num_pages_on_x_axis(),
-      nup_params.num_pages_on_y_axis()));
-  if (!output_doc_nup)
-    return pp::Buffer_Dev();
-
-  FitContentsToPrintableAreaIfRequired(output_doc_nup.get(), 1.0f,
-                                       print_settings);
-  return GetPrintData(output_doc_nup.get());
-}
-
-bool PDFiumPrint::FlattenPrintData(FPDF_DOCUMENT doc) {
+bool PDFiumPrint::FlattenPrintData(FPDF_DOCUMENT doc) const {
   DCHECK(doc);
 
   ScopedSubstFont scoped_subst_font(engine_);
@@ -474,7 +479,7 @@ bool PDFiumPrint::FlattenPrintData(FPDF_DOCUMENT doc) {
   return true;
 }
 
-pp::Buffer_Dev PDFiumPrint::GetPrintData(FPDF_DOCUMENT doc) {
+pp::Buffer_Dev PDFiumPrint::GetPrintData(FPDF_DOCUMENT doc) const {
   DCHECK(doc);
 
   pp::Buffer_Dev buffer;
@@ -488,7 +493,7 @@ pp::Buffer_Dev PDFiumPrint::GetPrintData(FPDF_DOCUMENT doc) {
   return buffer;
 }
 
-pp::Buffer_Dev PDFiumPrint::GetFlattenedPrintData(FPDF_DOCUMENT doc) {
+pp::Buffer_Dev PDFiumPrint::GetFlattenedPrintData(FPDF_DOCUMENT doc) const {
   DCHECK(doc);
 
   pp::Buffer_Dev buffer;

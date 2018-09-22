@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
+#include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdfview.h"
 
 struct PP_PdfPrintSettings_Dev;
@@ -34,17 +35,6 @@ class PDFiumPrint {
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count);
 
-  pp::Buffer_Dev PrintPagesAsRasterPDF(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings);
-  pp::Buffer_Dev PrintPagesAsPDF(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings);
-
   // Check the source doc orientation.  Returns true if the doc is landscape.
   // For now the orientation of the doc is determined by its first page's
   // orientation.  Improvement can be added in the future to better determine
@@ -58,24 +48,27 @@ class PDFiumPrint {
                                          const gfx::Size& page_size,
                                          const gfx::Rect& printable_area);
 
+  pp::Buffer_Dev PrintPagesAsRasterPdf(
+      const PP_PrintPageNumberRange_Dev* page_ranges,
+      uint32_t page_range_count,
+      const PP_PrintSettings_Dev& print_settings,
+      const PP_PdfPrintSettings_Dev& pdf_print_settings);
+  pp::Buffer_Dev PrintPagesAsPdf(
+      const PP_PrintPageNumberRange_Dev* page_ranges,
+      uint32_t page_range_count,
+      const PP_PrintSettings_Dev& print_settings,
+      const PP_PdfPrintSettings_Dev& pdf_print_settings);
+
  private:
-  FPDF_DOCUMENT CreateSinglePageRasterPdf(
+  ScopedFPDFDocument CreateSinglePageRasterPdf(
       double source_page_width,
       double source_page_height,
       const PP_PrintSettings_Dev& print_settings,
       PDFiumPage* page_to_print);
 
-  // Perform N-up PDF generation from |doc| based on |pages_per_sheet| and
-  // the parameters in |print_settings|.
-  // On success, the returned buffer contains the N-up version of |doc|.
-  // On failure, the returned buffer is empty.
-  pp::Buffer_Dev NupPdfToPdf(FPDF_DOCUMENT doc,
-                             uint32_t pages_per_sheet,
-                             const PP_PrintSettings_Dev& print_settings);
-
-  bool FlattenPrintData(FPDF_DOCUMENT doc);
-  pp::Buffer_Dev GetPrintData(FPDF_DOCUMENT doc);
-  pp::Buffer_Dev GetFlattenedPrintData(FPDF_DOCUMENT doc);
+  bool FlattenPrintData(FPDF_DOCUMENT doc) const;
+  pp::Buffer_Dev GetPrintData(FPDF_DOCUMENT doc) const;
+  pp::Buffer_Dev GetFlattenedPrintData(FPDF_DOCUMENT doc) const;
 
   PDFiumEngine* const engine_;
 
