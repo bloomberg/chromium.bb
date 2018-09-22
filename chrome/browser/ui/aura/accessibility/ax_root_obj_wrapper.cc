@@ -7,7 +7,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
-#include "chrome/common/channel_info.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/env.h"
@@ -74,9 +73,6 @@ void AXRootObjWrapper::GetChildren(
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->id = unique_id_.Get();
   out_node_data->role = ax::mojom::Role::kDesktop;
-  out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kChromeChannel,
-                                    chrome::GetChannelName());
-
   display::Screen* screen = display::Screen::GetScreen();
   if (!screen)
     return;
