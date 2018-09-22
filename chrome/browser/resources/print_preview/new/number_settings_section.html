@@ -21,9 +21,9 @@
       }
 
       cr-input {
-        margin-bottom: 2.5px;
         margin-inline-end: 16px;
-        margin-top: 2.5px;
+        min-height: 38px;
+        overflow: hidden;
       }
 
       .input-wrapper {
@@ -34,6 +34,13 @@
 
       :host(:not([error-displayed_])) cr-input {
         --cr-input-error-display: none;
+      }
+
+      span[slot=suffix] {
+        max-width: calc(100% - 5em);
+        min-height: 38px;
+        overflow: hidden;
+        word-wrap: break-word;
       }
     </style>
     <print-preview-settings-section>
