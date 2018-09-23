@@ -11,7 +11,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // associated with that action. See ui::AXActionData for full documentation.
 struct AXActionData {
   Action action;
-  int32 target_tree_id;
+  string target_tree_id;
   string source_extension_id;
   int32 target_node_id;
   int32 request_id;

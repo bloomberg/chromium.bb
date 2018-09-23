@@ -164,7 +164,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
-  void SetMainFrameAXTreeID(ui::AXTreeIDRegistry::AXTreeID id) override;
+  void SetMainFrameAXTreeID(ui::AXTreeID id) override;
   bool LockMouse() override;
   void UnlockMouse() override;
   bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;

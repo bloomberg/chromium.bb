@@ -62,7 +62,7 @@ TEST_F(AXTreeSourceMusTest, GetTreeData) {
   AXTreeSourceMus tree(root);
   ui::AXTreeData tree_data;
   tree.GetTreeData(&tree_data);
-  EXPECT_EQ(AXRemoteHost::kRemoteAXTreeID, tree_data.tree_id);
+  EXPECT_EQ(RemoteAXTreeID(), tree_data.tree_id);
 }
 
 TEST_F(AXTreeSourceMusTest, Serialize) {

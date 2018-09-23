@@ -303,7 +303,6 @@ static_library("common") {
     sources += [
       "cast_messages.cc",
       "cast_messages.h",
-      "extensions/api/automation_api_constants.h",
       "extensions/api/commands/commands_handler.cc",
       "extensions/api/commands/commands_handler.h",
       "extensions/api/extension_action/action_info.cc",

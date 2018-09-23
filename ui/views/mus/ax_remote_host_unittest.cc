@@ -37,7 +37,7 @@ class TestAXHostService : public ax::mojom::AXHost {
   void ResetCounts() {
     add_client_count_ = 0;
     event_count_ = 0;
-    last_tree_id_ = 0;
+    last_tree_id_ = ui::AXTreeIDUnknown();
     last_updates_.clear();
     last_event_ = ui::AXEvent();
   }
@@ -48,11 +48,11 @@ class TestAXHostService : public ax::mojom::AXHost {
     client->OnAutomationEnabled(automation_enabled_);
     client.FlushForTesting();
   }
-  void HandleAccessibilityEvent(int32_t tree_id,
+  void HandleAccessibilityEvent(const std::string& tree_id,
                                 const std::vector<ui::AXTreeUpdate>& updates,
                                 const ui::AXEvent& event) override {
     ++event_count_;
-    last_tree_id_ = tree_id;
+    last_tree_id_ = ui::AXTreeID(tree_id);
     last_updates_ = updates;
     last_event_ = event;
   }
@@ -61,7 +61,7 @@ class TestAXHostService : public ax::mojom::AXHost {
   bool automation_enabled_ = false;
   int add_client_count_ = 0;
   int event_count_ = 0;
-  int last_tree_id_ = 0;
+  ui::AXTreeID last_tree_id_ = ui::AXTreeIDUnknown();
   std::vector<ui::AXTreeUpdate> last_updates_;
   ui::AXEvent last_event_;
 

@@ -508,14 +508,13 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(int process_id,
 }
 
 // static
-RenderFrameHost* RenderFrameHost::FromAXTreeID(
-    int ax_tree_id) {
+RenderFrameHost* RenderFrameHost::FromAXTreeID(ui::AXTreeID ax_tree_id) {
   return RenderFrameHostImpl::FromAXTreeID(ax_tree_id);
 }
 
 // static
 RenderFrameHostImpl* RenderFrameHostImpl::FromAXTreeID(
-    ui::AXTreeIDRegistry::AXTreeID ax_tree_id) {
+    ui::AXTreeID ax_tree_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ui::AXTreeIDRegistry::FrameID frame_id =
       ui::AXTreeIDRegistry::GetInstance()->GetFrameID(ax_tree_id);
@@ -573,7 +572,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       nav_entry_id_(0),
       accessibility_reset_token_(0),
       accessibility_reset_count_(0),
-      browser_plugin_embedder_ax_tree_id_(ui::AXTreeIDRegistry::kNoAXTreeID),
+      browser_plugin_embedder_ax_tree_id_(ui::AXTreeIDUnknown()),
       no_create_browser_accessibility_manager_for_testing_(false),
       web_ui_type_(WebUI::kNoWebUI),
       pending_web_ui_type_(WebUI::kNoWebUI),
@@ -767,7 +766,7 @@ int RenderFrameHostImpl::GetRoutingID() {
   return routing_id_;
 }
 
-ui::AXTreeIDRegistry::AXTreeID RenderFrameHostImpl::GetAXTreeID() {
+ui::AXTreeID RenderFrameHostImpl::GetAXTreeID() {
   return ax_tree_id_;
 }
 
@@ -4882,8 +4881,7 @@ RenderFrameHost* RenderFrameHost::FromPlaceholderId(
   return node ? node->current_frame_host() : nullptr;
 }
 
-ui::AXTreeIDRegistry::AXTreeID RenderFrameHostImpl::RoutingIDToAXTreeID(
-    int routing_id) {
+ui::AXTreeID RenderFrameHostImpl::RoutingIDToAXTreeID(int routing_id) {
   RenderFrameHostImpl* rfh = nullptr;
   RenderFrameProxyHost* rfph = nullptr;
   LookupRenderFrameHostOrProxy(GetProcess()->GetID(), routing_id, &rfh, &rfph);
@@ -4892,17 +4890,17 @@ ui::AXTreeIDRegistry::AXTreeID RenderFrameHostImpl::RoutingIDToAXTreeID(
   }
 
   if (!rfh)
-    return ui::AXTreeIDRegistry::kNoAXTreeID;
+    return ui::AXTreeIDUnknown();
 
   return rfh->GetAXTreeID();
 }
 
-ui::AXTreeIDRegistry::AXTreeID
-RenderFrameHostImpl::BrowserPluginInstanceIDToAXTreeID(int instance_id) {
+ui::AXTreeID RenderFrameHostImpl::BrowserPluginInstanceIDToAXTreeID(
+    int instance_id) {
   RenderFrameHostImpl* guest = static_cast<RenderFrameHostImpl*>(
       delegate()->GetGuestByInstanceID(this, instance_id));
   if (!guest)
-    return ui::AXTreeIDRegistry::kNoAXTreeID;
+    return ui::AXTreeIDUnknown();
 
   // Create a mapping from the guest to its embedder's AX Tree ID, and
   // explicitly update the guest to propagate that mapping immediately.
@@ -4925,12 +4923,13 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
     int32_t value = iter.second;
     switch (attr) {
       case AX_CONTENT_ATTR_CHILD_ROUTING_ID:
-        dst->int_attributes.push_back(std::make_pair(
-            ax::mojom::IntAttribute::kChildTreeId, RoutingIDToAXTreeID(value)));
+        dst->string_attributes.push_back(
+            std::make_pair(ax::mojom::StringAttribute::kChildTreeId,
+                           RoutingIDToAXTreeID(value)));
         break;
       case AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID:
-        dst->int_attributes.push_back(
-            std::make_pair(ax::mojom::IntAttribute::kChildTreeId,
+        dst->string_attributes.push_back(
+            std::make_pair(ax::mojom::StringAttribute::kChildTreeId,
                            BrowserPluginInstanceIDToAXTreeID(value)));
         break;
       case AX_CONTENT_INT_ATTRIBUTE_LAST:
@@ -4953,7 +4952,7 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
   if (src.parent_routing_id != -1)
     dst->parent_tree_id = RoutingIDToAXTreeID(src.parent_routing_id);
 
-  if (browser_plugin_embedder_ax_tree_id_ != ui::AXTreeIDRegistry::kNoAXTreeID)
+  if (browser_plugin_embedder_ax_tree_id_ != ui::AXTreeIDUnknown())
     dst->parent_tree_id = browser_plugin_embedder_ax_tree_id_;
 
   // If this is not the root frame tree node, we're done.

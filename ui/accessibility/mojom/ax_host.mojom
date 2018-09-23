@@ -25,7 +25,7 @@ interface AXHost {
   // Handles an accessibility |event| (e.g. focus change) for |tree_id| in the
   // remote process. Includes |updates| to child nodes.
   HandleAccessibilityEvent(
-      int32 tree_id, array<AXTreeUpdate> updates, AXEvent event);
+      string tree_id, array<AXTreeUpdate> updates, AXEvent event);
 };
 
 // Remote hosts run outside the browser process, for example in a mojo app like

@@ -280,7 +280,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds);
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget();
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible();
-  virtual void SetMainFrameAXTreeID(ui::AXTreeIDRegistry::AXTreeID id) {}
+  virtual void SetMainFrameAXTreeID(ui::AXTreeID id) {}
   // Informs that the focused DOM node has changed.
   virtual void FocusedNodeChanged(bool is_editable_node,
                                   const gfx::Rect& node_bounds_in_screen) {}

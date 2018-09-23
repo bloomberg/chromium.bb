@@ -17,8 +17,7 @@ AXHostService* AXHostService::instance_ = nullptr;
 
 bool AXHostService::automation_enabled_ = false;
 
-AXHostService::AXHostService()
-    : ui::AXHostDelegate(views::AXRemoteHost::kRemoteAXTreeID) {
+AXHostService::AXHostService() : ui::AXHostDelegate(views::RemoteAXTreeID()) {
   DCHECK(!instance_);
   instance_ = this;
   registry_.AddInterface<ax::mojom::AXHost>(
@@ -56,10 +55,10 @@ void AXHostService::SetRemoteHost(ax::mojom::AXRemoteHostPtr remote) {
 }
 
 void AXHostService::HandleAccessibilityEvent(
-    int32_t tree_id,
+    const std::string& tree_id,
     const std::vector<ui::AXTreeUpdate>& updates,
     const ui::AXEvent& event) {
-  DCHECK_EQ(tree_id, views::AXRemoteHost::kRemoteAXTreeID);
+  DCHECK_EQ(tree_id, views::RemoteAXTreeID());
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
   event_bundle.tree_id = tree_id;
   for (const ui::AXTreeUpdate& update : updates)
@@ -94,5 +93,5 @@ void AXHostService::NotifyAutomationEnabled() {
 
 void AXHostService::OnRemoteHostDisconnected() {
   extensions::AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
-      views::AXRemoteHost::kRemoteAXTreeID, nullptr /* browser_context */);
+      views::RemoteAXTreeID(), nullptr /* browser_context */);
 }

@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromecast/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chromecast/common/extensions_api/automation.h"
-#include "chromecast/common/extensions_api/automation_api_constants.h"
 #include "chromecast/common/extensions_api/automation_internal.h"
 #include "chromecast/common/extensions_api/cast_extension_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -188,7 +187,7 @@ class AutomationWebContentsObserver
 
   void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
-    int tree_id = render_frame_host->GetAXTreeID();
+    ui::AXTreeID tree_id = render_frame_host->GetAXTreeID();
     AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
         tree_id, browser_context_);
   }

@@ -32,7 +32,6 @@ using ash::ArcNotificationSurfaceManager;
 namespace {
 
 constexpr int32_t kNoTaskId = -1;
-constexpr int32_t kInvalidTreeId = -1;
 
 exo::Surface* GetArcSurface(const aura::Window* window) {
   if (!window)
@@ -191,7 +190,7 @@ void ArcAccessibilityHelperBridge::OnSetNativeChromeVoxArcSupportProcessed(
     if (surface) {
       views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
       static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
-          ->SetChildAxTreeId(kInvalidTreeId);
+          ->SetChildAxTreeId(ui::AXTreeIDUnknown());
     }
   }
 
@@ -349,7 +348,8 @@ void ArcAccessibilityHelperBridge::OnNotificationStateChanged(
     }
     case arc::mojom::AccessibilityNotificationStateType::SURFACE_REMOVED:
       notification_key_to_tree_.erase(notification_key);
-      UpdateTreeIdOfNotificationSurface(notification_key, kInvalidTreeId);
+      UpdateTreeIdOfNotificationSurface(notification_key,
+                                        ui::AXTreeIDUnknown());
       break;
   }
 }
@@ -385,7 +385,7 @@ AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromNotificationKey(
 
 void ArcAccessibilityHelperBridge::UpdateTreeIdOfNotificationSurface(
     const std::string& notification_key,
-    uint32_t tree_id) {
+    ui::AXTreeID tree_id) {
   auto* surface_manager = ArcNotificationSurfaceManager::Get();
   if (!surface_manager)
     return;
@@ -406,7 +406,7 @@ void ArcAccessibilityHelperBridge::UpdateTreeIdOfNotificationSurface(
 }
 
 AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromTreeId(
-    int32_t tree_id) const {
+    ui::AXTreeID tree_id) const {
   for (auto it = task_id_to_tree_.begin(); it != task_id_to_tree_.end(); ++it) {
     ui::AXTreeData tree_data;
     it->second->GetTreeData(&tree_data);

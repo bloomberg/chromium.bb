@@ -12,7 +12,7 @@
 
 namespace ui {
 
-AX_EXPORT extern const aura::WindowProperty<AXTreeIDRegistry::AXTreeID>* const
+AX_EXPORT extern const aura::WindowProperty<ui::AXTreeID*>* const
     kChildAXTreeID;
 
 AX_EXPORT extern const aura::WindowProperty<ax::mojom::Role>* const

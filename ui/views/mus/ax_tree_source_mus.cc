@@ -18,7 +18,7 @@ AXTreeSourceMus::AXTreeSourceMus(AXAuraObjWrapper* root) : root_(root) {
 AXTreeSourceMus::~AXTreeSourceMus() = default;
 
 bool AXTreeSourceMus::GetTreeData(ui::AXTreeData* tree_data) const {
-  tree_data->tree_id = AXRemoteHost::kRemoteAXTreeID;
+  tree_data->tree_id = RemoteAXTreeID();
   return AXTreeSourceViews::GetTreeData(tree_data);
 }
 

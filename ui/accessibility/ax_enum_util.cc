@@ -1162,6 +1162,8 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "ariaInvalidValue";
     case ax::mojom::StringAttribute::kAutoComplete:
       return "autoComplete";
+    case ax::mojom::StringAttribute::kChildTreeId:
+      return "childTreeId";
     case ax::mojom::StringAttribute::kClassName:
       return "className";
     case ax::mojom::StringAttribute::kContainerLiveRelevant:
@@ -1214,6 +1216,8 @@ ax::mojom::StringAttribute ParseStringAttribute(const char* string_attribute) {
     return ax::mojom::StringAttribute::kAriaInvalidValue;
   if (0 == strcmp(string_attribute, "autoComplete"))
     return ax::mojom::StringAttribute::kAutoComplete;
+  if (0 == strcmp(string_attribute, "childTreeId"))
+    return ax::mojom::StringAttribute::kChildTreeId;
   if (0 == strcmp(string_attribute, "className"))
     return ax::mojom::StringAttribute::kClassName;
   if (0 == strcmp(string_attribute, "containerLiveRelevant"))
@@ -1329,8 +1333,6 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "nextOnLineId";
     case ax::mojom::IntAttribute::kPreviousOnLineId:
       return "previousOnLineId";
-    case ax::mojom::IntAttribute::kChildTreeId:
-      return "childTreeId";
     case ax::mojom::IntAttribute::kRestriction:
       return "restriction";
     case ax::mojom::IntAttribute::kSetSize:
@@ -1439,8 +1441,6 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kNextOnLineId;
   if (0 == strcmp(int_attribute, "previousOnLineId"))
     return ax::mojom::IntAttribute::kPreviousOnLineId;
-  if (0 == strcmp(int_attribute, "childTreeId"))
-    return ax::mojom::IntAttribute::kChildTreeId;
   if (0 == strcmp(int_attribute, "restriction"))
     return ax::mojom::IntAttribute::kRestriction;
   if (0 == strcmp(int_attribute, "setSize"))

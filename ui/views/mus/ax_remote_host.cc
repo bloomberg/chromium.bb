@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/no_destructor.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -27,8 +28,10 @@ using display::Screen;
 
 namespace views {
 
-// For external linkage.
-constexpr int AXRemoteHost::kRemoteAXTreeID;
+const ui::AXTreeID& RemoteAXTreeID() {
+  static const base::NoDestructor<ui::AXTreeID> remote_ax_tree_id("-2");
+  return *remote_ax_tree_id;
+}
 
 AXRemoteHost::AXRemoteHost() {
   AXAuraObjCache::GetInstance()->SetDelegate(this);
@@ -234,7 +237,7 @@ void AXRemoteHost::SendEvent(AXAuraObjWrapper* aura_obj,
   event.event_type = event_type;
   // Other fields are not used.
 
-  ax_host_ptr_->HandleAccessibilityEvent(kRemoteAXTreeID, updates, event);
+  ax_host_ptr_->HandleAccessibilityEvent(RemoteAXTreeID(), updates, event);
 }
 
 void AXRemoteHost::PerformHitTest(const ui::AXActionData& action) {

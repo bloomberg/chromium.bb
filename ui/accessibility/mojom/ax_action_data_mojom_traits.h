@@ -16,10 +16,10 @@ struct StructTraits<ax::mojom::AXActionDataDataView, ui::AXActionData> {
   static ax::mojom::Action action(const ui::AXActionData& a) {
     return a.action;
   }
-  static int32_t target_tree_id(const ui::AXActionData& a) {
+  static const std::string& target_tree_id(const ui::AXActionData& a) {
     return a.target_tree_id;
   }
-  static std::string source_extension_id(const ui::AXActionData& a) {
+  static const std::string& source_extension_id(const ui::AXActionData& a) {
     return a.source_extension_id;
   }
   static int32_t target_node_id(const ui::AXActionData& a) {
@@ -42,13 +42,13 @@ struct StructTraits<ax::mojom::AXActionDataDataView, ui::AXActionData> {
   static int32_t custom_action_id(const ui::AXActionData& a) {
     return a.custom_action_id;
   }
-  static gfx::Rect target_rect(const ui::AXActionData& a) {
+  static const gfx::Rect& target_rect(const ui::AXActionData& a) {
     return a.target_rect;
   }
-  static gfx::Point target_point(const ui::AXActionData& a) {
+  static const gfx::Point& target_point(const ui::AXActionData& a) {
     return a.target_point;
   }
-  static std::string value(const ui::AXActionData& a) { return a.value; }
+  static const std::string& value(const ui::AXActionData& a) { return a.value; }
   static ax::mojom::Event hit_test_event_to_fire(const ui::AXActionData& a) {
     return a.hit_test_event_to_fire;
   }

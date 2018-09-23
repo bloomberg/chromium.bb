@@ -53,7 +53,7 @@ bool AXTreeSourceAura::HandleAccessibleAction(const ui::AXActionData& action) {
 }
 
 bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
-  tree_data->tree_id = 0;
+  tree_data->tree_id = ui::DesktopAXTreeID();
   tree_data->loaded = true;
   tree_data->loading_progress = 1.0;
   AXAuraObjWrapper* focus = AXAuraObjCache::GetInstance()->GetFocus();

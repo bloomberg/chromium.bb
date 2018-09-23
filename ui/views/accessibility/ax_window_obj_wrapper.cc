@@ -96,9 +96,8 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   if (!window_->IsVisible())
     out_node_data->AddState(ax::mojom::State::kInvisible);
   out_node_data->location = gfx::RectF(window_->GetBoundsInScreen());
-  ui::AXTreeIDRegistry::AXTreeID child_ax_tree_id =
-      window_->GetProperty(ui::kChildAXTreeID);
-  if (child_ax_tree_id != ui::AXTreeIDRegistry::kNoAXTreeID) {
+  ui::AXTreeID* child_ax_tree_id_ptr = window_->GetProperty(ui::kChildAXTreeID);
+  if (child_ax_tree_id_ptr && *child_ax_tree_id_ptr != ui::AXTreeIDUnknown()) {
     // Most often, child AX trees are parented to Views. We need to handle
     // the case where they're not here, but we don't want the same AX tree
     // to be a child of two different parents.
@@ -110,8 +109,8 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
       return;
     }
 
-    out_node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
-                                   child_ax_tree_id);
+    out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                                      *child_ax_tree_id_ptr);
   }
 }
 
