@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
 #include "ui/display/display_observer.h"
@@ -34,6 +35,10 @@ class AXTreeSourceMus;
 class View;
 class Widget;
 
+// Well-known tree ID for the remote client.
+// TODO(jamescook): Support different IDs for different clients.
+VIEWS_MUS_EXPORT extern const ui::AXTreeID& RemoteAXTreeID();
+
 // Manages a tree of automation nodes for a mojo app outside the browser process
 // (e.g. the keyboard shortcut viewer app).
 class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
@@ -41,10 +46,6 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
                                       public display::DisplayObserver,
                                       public AXAuraObjCache::Delegate {
  public:
-  // Well-known tree ID for the remote client.
-  // TODO(jamescook): Support different IDs for different clients.
-  static constexpr int kRemoteAXTreeID = -2;
-
   AXRemoteHost();
   ~AXRemoteHost() override;
 

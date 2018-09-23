@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/common/extensions/api/automation_api_constants.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
@@ -191,7 +190,7 @@ void AutomationManagerAura::OnEvent(views::AXAuraObjWrapper* aura_obj,
 }
 
 AutomationManagerAura::AutomationManagerAura()
-    : AXHostDelegate(extensions::api::automation::kDesktopTreeID),
+    : AXHostDelegate(ui::DesktopAXTreeID()),
       enabled_(false),
       processing_events_(false),
       weak_ptr_factory_(this) {}
@@ -231,7 +230,7 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   processing_events_ = true;
 
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
-  event_bundle.tree_id = extensions::api::automation::kDesktopTreeID;
+  event_bundle.tree_id = ui::DesktopAXTreeID();
   event_bundle.mouse_location = aura::Env::GetInstance()->last_mouse_location();
 
   ui::AXTreeUpdate update;
@@ -296,7 +295,7 @@ void AutomationManagerAura::PerformHitTest(
   aura::Window::ConvertPointToTarget(root_window, window, &action.target_point);
 
   // Check for a AX node tree in a remote process (e.g. renderer, mojo app).
-  ui::AXTreeIDRegistry::AXTreeID child_ax_tree_id;
+  ui::AXTreeID child_ax_tree_id;
   if (ash::Shell::HasRemoteClient(window)) {
     // For remote mojo apps, the |window| is a DesktopNativeWidgetAura, so the
     // parent is the widget and the widget's contents view has the child tree.
@@ -308,17 +307,19 @@ void AutomationManagerAura::PerformHitTest(
     widget->widget_delegate()->GetContentsView()->GetAccessibleNodeData(
         &node_data);
     child_ax_tree_id =
-        node_data.GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId);
-    DCHECK_NE(child_ax_tree_id, ui::AXTreeIDRegistry::kNoAXTreeID);
-    DCHECK_NE(child_ax_tree_id, extensions::api::automation::kDesktopTreeID);
+        node_data.GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId);
+    DCHECK_NE(child_ax_tree_id, ui::AXTreeIDUnknown());
+    DCHECK_NE(child_ax_tree_id, ui::DesktopAXTreeID());
   } else {
     // For normal windows the (optional) child tree is an aura window property.
-    child_ax_tree_id = window->GetProperty(ui::kChildAXTreeID);
+    std::string* child_ax_tree_id_ptr = window->GetProperty(ui::kChildAXTreeID);
+    if (child_ax_tree_id_ptr)
+      child_ax_tree_id = *child_ax_tree_id_ptr;
   }
 
   // If the window has a child AX tree ID, forward the action to the
   // associated AXHostDelegate or RenderFrameHost.
-  if (child_ax_tree_id != ui::AXTreeIDRegistry::kNoAXTreeID) {
+  if (child_ax_tree_id != ui::AXTreeIDUnknown()) {
     ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
     ui::AXHostDelegate* delegate = registry->GetHostDelegate(child_ax_tree_id);
     if (delegate) {

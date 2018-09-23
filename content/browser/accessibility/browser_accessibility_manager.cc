@@ -21,8 +21,7 @@ namespace content {
 namespace {
 
 // Map from AXTreeID to BrowserAccessibilityManager
-using AXTreeIDMap = base::hash_map<ui::AXTreeIDRegistry::AXTreeID,
-                                   BrowserAccessibilityManager*>;
+using AXTreeIDMap = base::hash_map<ui::AXTreeID, BrowserAccessibilityManager*>;
 base::LazyInstance<AXTreeIDMap>::Leaky g_ax_tree_id_map =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -106,7 +105,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
-    ui::AXTreeIDRegistry::AXTreeID ax_tree_id) {
+    ui::AXTreeID ax_tree_id) {
   AXTreeIDMap* ax_tree_id_map = g_ax_tree_id_map.Pointer();
   auto iter = ax_tree_id_map->find(ax_tree_id);
   return iter == ax_tree_id_map->end() ? nullptr : iter->second;
@@ -123,7 +122,7 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       last_focused_node_(nullptr),
       last_focused_manager_(nullptr),
       connected_to_parent_tree_node_(false),
-      ax_tree_id_(ui::AXTreeIDRegistry::kNoAXTreeID),
+      ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
       use_custom_device_scale_factor_for_testing_(false) {
   SetTree(tree_.get());
@@ -140,7 +139,7 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       user_is_navigating_away_(false),
       last_focused_node_(nullptr),
       last_focused_manager_(nullptr),
-      ax_tree_id_(ui::AXTreeIDRegistry::kNoAXTreeID),
+      ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
       use_custom_device_scale_factor_for_testing_(false) {
   SetTree(tree_.get());
@@ -257,7 +256,7 @@ BrowserAccessibilityManager::GetParentNodeFromParentTree() {
   if (!GetRoot())
     return nullptr;
 
-  int parent_tree_id = GetTreeData().parent_tree_id;
+  ui::AXTreeID parent_tree_id = GetTreeData().parent_tree_id;
   BrowserAccessibilityManager* parent_manager =
       BrowserAccessibilityManager::FromID(parent_tree_id);
   if (!parent_manager)
@@ -274,8 +273,8 @@ BrowserAccessibilityManager::GetParentNodeFromParentTree() {
   for (int32_t host_node_id : host_node_ids) {
     BrowserAccessibility* parent_node = parent_manager->GetFromID(host_node_id);
     if (parent_node) {
-      DCHECK_EQ(ax_tree_id_, parent_node->GetIntAttribute(
-                                 ax::mojom::IntAttribute::kChildTreeId));
+      DCHECK_EQ(ax_tree_id_, parent_node->GetStringAttribute(
+                                 ax::mojom::StringAttribute::kChildTreeId));
       return parent_node;
     }
   }
@@ -499,10 +498,10 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFocus() {
   BrowserAccessibilityManager* root_manager = GetRootManager();
   if (!root_manager)
     root_manager = this;
-  int32_t focused_tree_id = root_manager->GetTreeData().focused_tree_id;
+  ui::AXTreeID focused_tree_id = root_manager->GetTreeData().focused_tree_id;
 
   BrowserAccessibilityManager* focused_manager = nullptr;
-  if (focused_tree_id)
+  if (focused_tree_id != ui::AXTreeIDUnknown())
     focused_manager = BrowserAccessibilityManager::FromID(focused_tree_id);
 
   // BrowserAccessibilityManager::FromID(focused_tree_id) may return nullptr
@@ -520,10 +519,10 @@ BrowserAccessibilityManager::GetFocusFromThisOrDescendantFrame() {
   if (!obj)
     return GetRoot();
 
-  if (obj->HasIntAttribute(ax::mojom::IntAttribute::kChildTreeId)) {
+  if (obj->HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
     BrowserAccessibilityManager* child_manager =
         BrowserAccessibilityManager::FromID(
-            obj->GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId));
+            obj->GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
     if (child_manager)
       return child_manager->GetFocusFromThisOrDescendantFrame();
   }
@@ -1115,7 +1114,8 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     const std::vector<ui::AXTreeDelegate::Change>& changes) {
   AXEventGenerator::OnAtomicUpdateFinished(tree, root_changed, changes);
   bool ax_tree_id_changed = false;
-  if (GetTreeData().tree_id != -1 && GetTreeData().tree_id != ax_tree_id_) {
+  if (GetTreeData().tree_id != ui::AXTreeIDUnknown() &&
+      GetTreeData().tree_id != ax_tree_id_) {
     g_ax_tree_id_map.Get().erase(ax_tree_id_);
     ax_tree_id_ = GetTreeData().tree_id;
     g_ax_tree_id_map.Get().insert(std::make_pair(ax_tree_id_, this));

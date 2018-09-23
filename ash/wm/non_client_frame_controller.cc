@@ -251,8 +251,8 @@ class ContentsViewMus : public views::View {
   // views::View:
   const char* GetClassName() const override { return "ContentsViewMus"; }
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
-                               views::AXRemoteHost::kRemoteAXTreeID);
+    node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                                  views::RemoteAXTreeID());
     node_data->role = ax::mojom::Role::kClient;
   }
 

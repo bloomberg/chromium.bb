@@ -397,7 +397,7 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
     std::string package_name;
     if (GetProperty(node, AXStringProperty::PACKAGE_NAME, &package_name)) {
       const std::string& url =
-          base::StringPrintf("%s/%d", package_name.c_str(), tree_id());
+          base::StringPrintf("%s/%s", package_name.c_str(), tree_id().c_str());
       out_data->AddStringAttribute(ax::mojom::StringAttribute::kUrl, url);
     }
   }

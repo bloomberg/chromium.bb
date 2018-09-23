@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_tree_id.h"
 
 namespace ui {
 
@@ -32,17 +33,17 @@ class AX_EXPORT AXHostDelegate {
 
   // A delegate with an explicit tree id. The caller is responsible for ensuring
   // the uniqueness of the id.
-  explicit AXHostDelegate(int32_t tree_id);
+  explicit AXHostDelegate(AXTreeID tree_id);
 
   // A tree id appropriate for annotating events sent to an accessibility
   // client.
-  int32_t tree_id() const { return tree_id_; }
+  AXTreeID tree_id() const { return tree_id_; }
 
  private:
   // Register or unregister this class with |AXTreeIDRegistry|.
   void UpdateActiveState(bool active);
 
-  int32_t tree_id_;
+  AXTreeID tree_id_;
 };
 
 }  // namespace ui

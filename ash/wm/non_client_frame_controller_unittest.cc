@@ -232,9 +232,9 @@ TEST_F(NonClientFrameControllerTest, ExposesChildTreeIdToAccessibility) {
   views::View* contents_view = non_client_frame_controller->GetContentsView();
   ui::AXNodeData ax_node_data;
   contents_view->GetAccessibleNodeData(&ax_node_data);
-  EXPECT_EQ(
-      views::AXRemoteHost::kRemoteAXTreeID,
-      ax_node_data.GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId));
+  EXPECT_EQ(views::RemoteAXTreeID(),
+            ax_node_data.GetStringAttribute(
+                ax::mojom::StringAttribute::kChildTreeId));
   EXPECT_EQ(ax::mojom::Role::kClient, ax_node_data.role);
 }
 

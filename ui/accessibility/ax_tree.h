@@ -224,7 +224,7 @@ class AX_EXPORT AXTree {
 
   // Given a child tree ID, return the node IDs of all nodes in the tree who
   // have a kChildTreeId int attribute with that value.
-  std::set<int32_t> GetNodeIdsForChildTreeId(int32_t child_tree_id) const;
+  std::set<int32_t> GetNodeIdsForChildTreeId(AXTreeID child_tree_id) const;
 
   // Map from a relation attribute to a map from a target id to source ids.
   const IntReverseRelationMap& int_reverse_relations() {
@@ -318,7 +318,7 @@ class AX_EXPORT AXTree {
   // a reverse mapping from target nodes to source nodes.
   IntListReverseRelationMap intlist_reverse_relations_;
   // Map from child tree ID to the set of node IDs that contain that attribute.
-  std::map<int32_t, std::set<int32_t>> child_tree_id_reverse_map_;
+  std::map<AXTreeID, std::set<int32_t>> child_tree_id_reverse_map_;
 
   // Map from node ID to cached table info, if the given node is a table.
   // Invalidated every time the tree is updated.

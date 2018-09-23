@@ -132,7 +132,6 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kHierarchicalLevel:
     case ax::mojom::IntAttribute::kNameFrom:
     case ax::mojom::IntAttribute::kDescriptionFrom:
-    case ax::mojom::IntAttribute::kChildTreeId:
     case ax::mojom::IntAttribute::kSetSize:
     case ax::mojom::IntAttribute::kPosInSet:
     case ax::mojom::IntAttribute::kColorValue:
@@ -717,9 +716,6 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::IntAttribute::kPreviousOnLineId:
         result += " previous_on_line_id=" + value;
         break;
-      case ax::mojom::IntAttribute::kChildTreeId:
-        result += " child_tree_id=" + value;
-        break;
       case ax::mojom::IntAttribute::kColorValue:
         result += base::StringPrintf(" color_value=&%X", int_attribute.second);
         break;
@@ -913,6 +909,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::StringAttribute::kAutoComplete:
         result += " autocomplete=" + value;
+        break;
+      case ax::mojom::StringAttribute::kChildTreeId:
+        result += " child_tree_id=" + value;
         break;
       case ax::mojom::StringAttribute::kClassName:
         result += " class_name=" + value;

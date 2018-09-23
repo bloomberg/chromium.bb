@@ -260,10 +260,11 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, KeyboardShortcutViewer) {
 
   // Capture the destroyed AX tree id when the remote host disconnects.
   base::RunLoop run_loop;
-  int destroyed_tree_id = -1;
+  ui::AXTreeID destroyed_tree_id = ui::AXTreeIDUnknown();
   extensions::AutomationEventRouter::GetInstance()
       ->SetTreeDestroyedCallbackForTest(base::BindRepeating(
-          [](base::RunLoop* run_loop, int* destroyed_tree_id, int tree_id) {
+          [](base::RunLoop* run_loop, ui::AXTreeID* destroyed_tree_id,
+             ui::AXTreeID tree_id) {
             *destroyed_tree_id = tree_id;
             run_loop->Quit();
           },
@@ -276,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, KeyboardShortcutViewer) {
   run_loop.Run();
 
   // Verify the correct AX tree was destroyed.
-  EXPECT_EQ(views::AXRemoteHost::kRemoteAXTreeID, destroyed_tree_id);
+  EXPECT_EQ(views::RemoteAXTreeID(), destroyed_tree_id);
 
   extensions::AutomationEventRouter::GetInstance()
       ->SetTreeDestroyedCallbackForTest(base::DoNothing());

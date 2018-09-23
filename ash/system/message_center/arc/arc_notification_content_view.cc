@@ -166,7 +166,8 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
     // pass tab key event to focus manager of content view.
     // TODO(yawano): include elements inside Android notification in tab focus
     // traversal rather than skipping them.
-    if (owner_->surface_ && owner_->surface_->GetAXTreeId() != -1 &&
+    if (owner_->surface_ &&
+        owner_->surface_->GetAXTreeId() != ui::AXTreeIDUnknown() &&
         event->IsKeyEvent()) {
       ui::KeyEvent* key_event = event->AsKeyEvent();
       if (key_event->key_code() == ui::VKEY_TAB &&
@@ -716,7 +717,7 @@ void ArcNotificationContentView::OnFocus() {
   NativeViewHost::OnFocus();
   notification_view->OnContentFocused();
 
-  if (surface_ && surface_->GetAXTreeId() != -1)
+  if (surface_ && surface_->GetAXTreeId() != ui::AXTreeIDUnknown())
     ActivateWidget(true);
 }
 
@@ -769,10 +770,10 @@ views::FocusTraversable* ArcNotificationContentView::GetFocusTraversable() {
 
 void ArcNotificationContentView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  if (surface_ && surface_->GetAXTreeId() != -1) {
+  if (surface_ && surface_->GetAXTreeId() != ui::AXTreeIDUnknown()) {
     node_data->role = ax::mojom::Role::kClient;
-    node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
-                               surface_->GetAXTreeId());
+    node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                                  surface_->GetAXTreeId());
   } else {
     node_data->role = ax::mojom::Role::kButton;
     node_data->AddStringAttribute(

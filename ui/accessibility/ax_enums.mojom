@@ -426,6 +426,7 @@ enum StringAttribute {
    // Only used when invalid_state == invalid_state_other.
   kAriaInvalidValue,
   kAutoComplete,
+  kChildTreeId,
   kClassName,       // Native / Android
   kContainerLiveRelevant,
   kContainerLiveStatus,
@@ -509,9 +510,6 @@ enum IntAttribute {
   kMemberOfId,
   kNextOnLineId,
   kPreviousOnLineId,
-
-   // Identifies a child tree which this node hosts.
-  kChildTreeId,
 
    // Input restriction, if any, such as readonly or disabled.
    // Of type AXRestriction, see below.

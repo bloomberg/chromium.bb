@@ -182,7 +182,7 @@ api::automation::EventType ToAutomationEvent(
 }  // namespace
 
 AutomationAXTreeWrapper::AutomationAXTreeWrapper(
-    int32_t tree_id,
+    ui::AXTreeID tree_id,
     AutomationInternalCustomBindings* owner)
     : tree_id_(tree_id), owner_(owner) {
   // We have to initialize AXEventGenerator here - we can't do it in the

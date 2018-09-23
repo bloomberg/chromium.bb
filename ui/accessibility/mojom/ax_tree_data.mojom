@@ -8,9 +8,9 @@ import "ui/accessibility/ax_enums.mojom";
 
 // See ui::AXTreeData for comments / explanations of these fields.
 struct AXTreeData {
-  int32 tree_id;
-  int32 parent_tree_id;
-  int32 focused_tree_id;
+  string tree_id;
+  string parent_tree_id;
+  string focused_tree_id;
   string doctype;
   bool loaded;
   float loading_progress;
