@@ -14,26 +14,30 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/html_canvas_element_module.h"
 #include "third_party/blink/renderer/modules/canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d.h"
-#include "third_party/blink/renderer/modules/canvas/test/mock_viz_mojo.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/test/mock_compositor_frame_sink.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 using ::testing::_;
 using ::testing::Combine;
-using ::testing::Values;
+using ::testing::ValuesIn;
 
 namespace blink {
 
 namespace {
 constexpr uint32_t kClientId = 2;
 constexpr uint32_t kSinkId = 1;
+
+struct TestParams {
+  bool alpha;
+  bool low_latency;
+};
 }  // unnamed namespace
 
-class OffscreenCanvasTest
-    : public PageTestBase,
-      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+class OffscreenCanvasTest : public PageTestBase,
+                            public ::testing::WithParamInterface<TestParams> {
  protected:
   OffscreenCanvasTest();
   void SetUp() override;
@@ -77,8 +81,8 @@ void OffscreenCanvasTest::SetUp() {
 
   CanvasContextCreationAttributesCore attrs;
   if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
-    attrs.alpha = std::get<0>(GetParam());
-    attrs.low_latency = std::get<1>(GetParam());
+    attrs.alpha = GetParam().alpha;
+    attrs.low_latency = GetParam().low_latency;
   }
   context_ = static_cast<OffscreenCanvasRenderingContext2D*>(
       offscreen_canvas_->GetCanvasRenderingContext(&GetDocument(), String("2d"),
@@ -99,6 +103,7 @@ TEST_F(OffscreenCanvasTest, AnimationNotInitiallySuspended) {
 TEST_P(OffscreenCanvasTest, CompositorFrameOpacity) {
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform;
   ScriptState::Scope scope(GetScriptState());
+  ::testing::InSequence s;
 
   // To intercept SubmitCompositorFrame/SubmitCompositorFrameSync messages sent
   // by OffscreenCanvas's CanvasResourceDispatcher, we have to override the Mojo
@@ -118,9 +123,7 @@ TEST_P(OffscreenCanvasTest, CompositorFrameOpacity) {
   offscreen_canvas().DidDraw();
   platform->RunUntilIdle();
 
-  const bool context_alpha = std::get<0>(GetParam());
-  mock_embedded_frame_sink_provider.mock_compositor_frame_sink_
-      ->expected_opacity_ = !context_alpha;
+  const bool context_alpha = GetParam().alpha;
 
   const auto canvas_resource = CanvasResourceSharedBitmap::Create(
       offscreen_canvas().Size(), CanvasColorParams(), nullptr /* provider */,
@@ -128,18 +131,48 @@ TEST_P(OffscreenCanvasTest, CompositorFrameOpacity) {
   EXPECT_TRUE(!!canvas_resource);
 
   EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
-              SubmitCompositorFrameOrSubmitCompositorFrameSync());
+              DoSubmitCompositorFrame(_))
+      .WillOnce(::testing::WithArg<0>(
+          ::testing::Invoke([context_alpha](const viz::CompositorFrame* frame) {
+            ASSERT_EQ(frame->render_pass_list.size(), 1u);
+
+            const auto& quad_list = frame->render_pass_list[0]->quad_list;
+            ASSERT_EQ(quad_list.size(), 1u);
+            EXPECT_EQ(quad_list.front()->needs_blending, context_alpha);
+
+            const auto& shared_quad_state_list =
+                frame->render_pass_list[0]->shared_quad_state_list;
+            ASSERT_EQ(shared_quad_state_list.size(), 1u);
+            EXPECT_NE(shared_quad_state_list.front()->are_contents_opaque,
+                      context_alpha);
+          })));
   offscreen_canvas().PushFrame(canvas_resource, SkIRect::MakeWH(10, 10));
   platform->RunUntilIdle();
 
   EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
-              SubmitCompositorFrameOrSubmitCompositorFrameSync());
+              DoSubmitCompositorFrameSync(_))
+      .WillOnce(::testing::WithArg<0>(
+          ::testing::Invoke([context_alpha](const viz::CompositorFrame* frame) {
+            ASSERT_EQ(frame->render_pass_list.size(), 1u);
+
+            const auto& quad_list = frame->render_pass_list[0]->quad_list;
+            ASSERT_EQ(quad_list.size(), 1u);
+            EXPECT_EQ(quad_list.front()->needs_blending, context_alpha);
+
+            const auto& shared_quad_state_list =
+                frame->render_pass_list[0]->shared_quad_state_list;
+            ASSERT_EQ(shared_quad_state_list.size(), 1u);
+            EXPECT_NE(shared_quad_state_list.front()->are_contents_opaque,
+                      context_alpha);
+          })));
   offscreen_canvas().Commit(canvas_resource, SkIRect::MakeWH(10, 10));
   platform->RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        OffscreenCanvasTest,
-                        Combine(Values(true, false), Values(true, false)));
+const TestParams kTestCases[] = {{false /* alpha */, false /* low_latency */},
+                                 {false, true},
+                                 {true, false},
+                                 {true, true}};
 
+INSTANTIATE_TEST_CASE_P(, OffscreenCanvasTest, ValuesIn(kTestCases));
 }  // namespace blink

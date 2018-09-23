@@ -2130,6 +2130,7 @@ jumbo_source_set("unit_tests") {
     "graphics/test/fake_canvas_resource_host.h",
     "graphics/test/fake_gles2_interface.h",
     "graphics/test/fake_web_graphics_context_3d_provider.h",
+    "graphics/test/mock_compositor_frame_sink.h",
     "graphics/test/mock_image_decoder.h",
     "graphics/test/mock_paint_canvas.h",
     "graphics/test/stub_image.h",
@@ -2149,6 +2150,7 @@ jumbo_source_set("unit_tests") {
 
   deps = [
     ":test_support",
+    "//services/viz/public/interfaces:interfaces_blink",
     "//testing/gmock",
     "//testing/gtest",
   ]
