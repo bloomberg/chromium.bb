@@ -2374,9 +2374,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"mac-views-task-manager", flag_descriptions::kMacViewsTaskManagerName,
      flag_descriptions::kMacViewsTaskManagerDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kViewsTaskManager)},
-    {"views-browser-windows", flag_descriptions::kViewsBrowserWindowsName,
-     flag_descriptions::kViewsBrowserWindowsDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kViewsBrowserWindows)},
 #endif  // OS_MACOSX
     {"enable-gamepad-extensions", flag_descriptions::kGamepadExtensionsName,
      flag_descriptions::kGamepadExtensionsDescription, kOsAll,
