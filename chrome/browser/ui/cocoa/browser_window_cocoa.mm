@@ -70,10 +70,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
-#import "chrome/browser/ui/cocoa/one_click_signin_dialog_controller.h"
-#endif
-
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
 
@@ -540,10 +536,6 @@ ShowTranslateBubbleResult BrowserWindowCocoa::ShowTranslateBubble(
 void BrowserWindowCocoa::ShowOneClickSigninConfirmation(
     const base::string16& email,
     const StartSyncCallback& start_sync_callback) {
-  // Deletes itself when the dialog closes.
-  new OneClickSigninDialogController(
-      browser_->tab_strip_model()->GetActiveWebContents(), start_sync_callback,
-      email);
 }
 #endif
 
