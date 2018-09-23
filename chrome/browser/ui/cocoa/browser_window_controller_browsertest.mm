@@ -33,7 +33,6 @@
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -340,64 +339,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowControllerTest);
 };
-
-// Tests that adding the first profile moves the Lion fullscreen button over
-// correctly.
-// DISABLED_ because it regularly times out: http://crbug.com/159002.
-IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
-                       DISABLED_ProfileAvatarFullscreenButton) {
-  // Initialize the locals.
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ASSERT_TRUE(profile_manager);
-
-  NSWindow* window = browser()->window()->GetNativeWindow();
-  ASSERT_TRUE(window);
-
-  // With only one profile, the fullscreen button should be visible, but the
-  // avatar button should not.
-  EXPECT_EQ(1u, profile_manager->GetNumberOfProfiles());
-
-  NSButton* fullscreen_button =
-      [window standardWindowButton:NSWindowFullScreenButton];
-  EXPECT_TRUE(fullscreen_button);
-  EXPECT_FALSE([fullscreen_button isHidden]);
-
-  AvatarBaseController* avatar_controller =
-      [controller() avatarButtonController];
-  NSView* avatar = [avatar_controller view];
-  EXPECT_TRUE(avatar);
-  EXPECT_TRUE([avatar isHidden]);
-
-  // Create a profile asynchronously and run the loop until its creation
-  // is complete.
-  base::RunLoop run_loop;
-
-  ProfileManager::CreateCallback create_callback =
-      base::Bind(&CreateProfileCallback, run_loop.QuitClosure());
-  profile_manager->CreateProfileAsync(
-      profile_manager->user_data_dir().Append("test"),
-      create_callback,
-      base::ASCIIToUTF16("avatar_test"),
-      std::string(),
-      std::string());
-
-  run_loop.Run();
-
-  // There should now be two profiles, and the avatar button and fullscreen
-  // button are both visible.
-  EXPECT_EQ(2u, profile_manager->GetNumberOfProfiles());
-  EXPECT_FALSE([avatar isHidden]);
-  EXPECT_FALSE([fullscreen_button isHidden]);
-  EXPECT_EQ([avatar window], [fullscreen_button window]);
-
-  // Make sure the visual order of the buttons is correct and that they don't
-  // overlap.
-  NSRect avatar_frame = [avatar frame];
-  NSRect fullscreen_frame = [fullscreen_button frame];
-
-  EXPECT_LT(NSMinX(fullscreen_frame), NSMinX(avatar_frame));
-  EXPECT_LT(NSMaxX(fullscreen_frame), NSMinX(avatar_frame));
-}
 
 // Verify that in non-Instant normal mode that the find bar and download shelf
 // are above the content area. Everything else should be below it.

@@ -33,8 +33,6 @@
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/profiles/avatar_button_controller.h"
-#import "chrome/browser/ui/cocoa/profiles/avatar_icon_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
@@ -244,13 +242,6 @@ willPositionSheet:(NSWindow*)sheet
   else
     [tabStripController_ removeCustomWindowControls];
 
-  // Update the layout of the avatar.
-  if (!NSIsEmptyRect(layout.avatarFrame)) {
-    NSView* avatarButton = [avatarButtonController_ view];
-    [avatarButton setFrame:layout.avatarFrame];
-    [avatarButton setHidden:NO];
-  }
-
   // Check if the tab strip's frame has changed.
   BOOL requiresRelayout =
       !NSEqualRects([[self tabStripView] frame], layout.frame);
@@ -344,15 +335,6 @@ willPositionSheet:(NSWindow*)sheet
                             positioned:NSWindowBelow
                             relativeTo:nil];
   [self.chromeContentView setFrame:[[destWindow contentView] bounds]];
-
-  // Move the incognito badge if present.
-  if ([self shouldShowAvatar]) {
-    NSView* avatarButtonView = [avatarButtonController_ view];
-
-    [avatarButtonView removeFromSuperview];
-    [avatarButtonView setHidden:YES];  // Will be shown in layout.
-    [[destWindow contentView] addSubview:avatarButtonView];
-  }
 
   // Add the tab strip after setting the content view and moving the incognito
   // badge (if any), so that the tab strip will be on top (in the z-order).
@@ -847,16 +829,6 @@ willPositionSheet:(NSWindow*)sheet
 
   [layout setHasTabStrip:[self hasTabStrip]];
   [layout setFullscreenButtonFrame:[self fullscreenButtonFrame]];
-
-  if ([self shouldShowAvatar]) {
-    NSView* avatar = [avatarButtonController_ view];
-    [layout setShouldShowAvatar:YES];
-    [layout setShouldUseNewAvatar:[self shouldUseNewAvatarButton]];
-    [layout
-        setIsGenericAvatar:[avatarButtonController_ shouldUseGenericButton]];
-    [layout setAvatarSize:[avatar frame].size];
-    [layout setAvatarLineWidth:[[avatar superview] cr_lineWidth]];
-  }
 
   [layout setHasToolbar:[self hasToolbar]];
   [layout setToolbarHeight:NSHeight([[toolbarController_ view] bounds])];

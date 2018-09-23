@@ -59,9 +59,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
-#import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
-#import "chrome/browser/ui/cocoa/profiles/avatar_button_controller.h"
-#import "chrome/browser/ui/cocoa/profiles/avatar_icon_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
@@ -294,9 +291,6 @@ bool IsTabDetachingInFullscreenEnabled() {
     // of the toolbar/tabstrip is known.
     windowShim_->SetBounds(windowRect);
 
-    // Puts the incognito badge on the window frame, if necessary.
-    [self installAvatar];
-
     // Create a sub-controller for the docked devTools and add its view to the
     // hierarchy.
     devToolsController_.reset([[DevToolsController alloc] init]);
@@ -410,7 +404,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   // controllers.
   [toolbarController_ browserWillBeDestroyed];
   [tabStripController_ browserWillBeDestroyed];
-  [avatarButtonController_ browserWillBeDestroyed];
 
   [super dealloc];
 }
@@ -477,10 +470,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (Profile*)profile {
   return browser_->profile();
-}
-
-- (AvatarBaseController*)avatarButtonController {
-  return avatarButtonController_.get();
 }
 
 - (void)destroyBrowser {
@@ -1252,22 +1241,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   [tabStripController_ showNewTabButton:show];
 }
 
-- (BOOL)shouldShowAvatar {
-  if (![self hasTabStrip])
-    return NO;
-  if (browser_->profile()->IsOffTheRecord())
-    return YES;
-
-  ProfileAttributesEntry* entry;
-  return g_browser_process->profile_manager()
-      ->GetProfileAttributesStorage()
-      .GetProfileAttributesWithPath(browser_->profile()->GetPath(), &entry);
-}
-
-- (BOOL)shouldUseNewAvatarButton {
-  return profiles::IsRegularOrGuestSession(browser_.get());
-}
-
 - (BOOL)isBookmarkBarVisible {
   return NO;
 }
@@ -1415,34 +1388,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   PermissionPrompt::Delegate* delegate = [self permissionRequestManager];
   if (delegate)
     delegate->Closing();
-}
-
-// If the browser is in incognito mode or has multi-profiles, install the image
-// view to decorate the window at the upper right. Use the same base y
-// coordinate as the tab strip.
-- (void)installAvatar {
-  // Install the image into the badge view. Hide it for now; positioning and
-  // sizing will be done by the layout code. The AvatarIcon will choose which
-  // image to display based on the browser. The AvatarButtonCocoa will display
-  // the browser profile's name unless the browser is incognito.
-  NSView* view;
-  if ([self shouldUseNewAvatarButton]) {
-    avatarButtonController_.reset([[AvatarButtonController alloc]
-        initWithBrowser:browser_.get()
-                 window:[self window]]);
-  } else {
-    avatarButtonController_.reset(
-      [[AvatarIconController alloc] initWithBrowser:browser_.get()]);
-  }
-  view = [avatarButtonController_ view];
-  if (cocoa_l10n_util::ShouldFlipWindowControlsInRTL())
-    [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
-  else
-    [view setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
-  [view setHidden:![self shouldShowAvatar]];
-
-  // Install the view.
-  [[[self window] contentView] addSubview:view];
 }
 
 // Called when we get a three-finger swipe.
@@ -1679,10 +1624,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (BOOL)isInAnyFullscreenMode {
   return [self isInImmersiveFullscreen] || [self isInAppKitFullscreen];
-}
-
-- (NSView*)avatarView {
-  return [avatarButtonController_ view];
 }
 
 - (void)enterWebContentFullscreen {

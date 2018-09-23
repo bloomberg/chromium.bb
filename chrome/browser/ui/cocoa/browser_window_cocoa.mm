@@ -41,7 +41,6 @@
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
-#import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #include "chrome/browser/ui/cocoa/restart_browser.h"
 #include "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
@@ -680,15 +679,6 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
   if (SigninViewController::ShouldShowSigninForMode(bubble_view_mode)) {
     browser_->signin_view_controller()->ShowSignin(bubble_view_mode, browser_,
                                                    access_point);
-  } else {
-    AvatarBaseController* controller = [controller_ avatarButtonController];
-    NSView* anchor = [controller buttonView];
-    if ([anchor isHiddenOrHasHiddenAncestor])
-      anchor = [[controller_ toolbarController] appMenuButton];
-    [controller showAvatarBubbleAnchoredAt:anchor
-                                  withMode:mode
-                           withServiceType:manage_accounts_params.service_type
-                           fromAccessPoint:access_point];
   }
 }
 

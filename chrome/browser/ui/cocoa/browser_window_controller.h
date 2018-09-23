@@ -31,7 +31,6 @@
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/gfx/geometry/rect.h"
 
-@class AvatarBaseController;
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
@@ -105,15 +104,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   // restrict the amount of shrinking by the amounts specified above. Reset to
   // NO on growth.
   BOOL isShrinkingFromZoomed_;
-
-  // The view controller that manages the incognito badge or the multi-profile
-  // avatar button. Depending on whether the --new-profile-management flag is
-  // used, the multi-profile button can either be the avatar's icon badge or a
-  // button with the profile's name. If the flag is used, the button is always
-  // shown, otherwise the view will always be in the view hierarchy but will
-  // be hidden unless it's appropriate to show it (i.e. if there's more than
-  // one profile).
-  base::scoped_nsobject<AvatarBaseController> avatarButtonController_;
 
   // Lazily created view which draws the background for the floating set of bars
   // in presentation mode (for window types having a floating bar; it remains
@@ -228,9 +218,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Access the Profile object that backs this Browser.
 - (Profile*)profile;
 
-// Access the avatar button controller.
-- (AvatarBaseController*)avatarButtonController;
-
 // Forces the toolbar (and transitively the location bar) to update its current
 // state.  If |tab| is non-NULL, we're switching (back?) to this tab and should
 // restore any previous location bar state (such as user editing) as well.
@@ -280,13 +267,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // window is currently in fullscreen mode).  The frame is returned in Cocoa
 // coordinates (origin in bottom-left).
 - (NSRect)regularWindowFrame;
-
-// Whether or not to show the avatar, which is either the incognito icon or the
-// user's profile avatar.
-- (BOOL)shouldShowAvatar;
-
-// Whether or not to show the new avatar button used by --new-profile-maagement.
-- (BOOL)shouldUseNewAvatarButton;
 
 - (BOOL)isBookmarkBarVisible;
 
@@ -532,10 +512,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 // Methods which are either only for testing, or only public for testing.
 @interface BrowserWindowController (TestingAPI)
-
-// Put the incognito badge or multi-profile avatar on the browser and adjust the
-// tab strip accordingly.
-- (void)installAvatar;
 
 // Allows us to initWithBrowser withOUT taking ownership of the browser.
 - (id)initWithBrowser:(Browser*)browser takeOwnership:(BOOL)ownIt;

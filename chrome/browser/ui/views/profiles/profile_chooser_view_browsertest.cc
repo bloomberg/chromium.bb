@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -169,16 +168,7 @@ class ProfileChooserViewExtensionsTest
  protected:
   void OpenProfileChooserView(Browser* browser) {
     ProfileChooserView::close_on_deactivate_for_testing_ = false;
-#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
-    if (views_mode_controller::IsViewsBrowserCocoa())
-      OpenProfileChooserCocoa(browser);
-    else
-      OpenProfileChooserViews(browser);
-#elif defined(OS_MACOSX)
-    OpenProfileChooserCocoa(browser);
-#else
     OpenProfileChooserViews(browser);
-#endif
 
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(ProfileChooserView::IsShowing());
@@ -189,18 +179,6 @@ class ProfileChooserViewExtensionsTest
         content::Source<Browser>(browser)));
   }
 
-#if defined(OS_MACOSX)
-  void OpenProfileChooserCocoa(Browser* browser) {
-    // Show the avatar bubble via API on macOS until |mac_views_browser| is
-    // enabled.
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-        signin::ManageAccountsParams(),
-        signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, true);
-  }
-#endif
-
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   void OpenProfileChooserViews(Browser* browser) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
     views::View* button;
@@ -215,7 +193,6 @@ class ProfileChooserViewExtensionsTest
                      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
     button->OnMousePressed(e);
   }
-#endif
 
   AvatarMenu* GetProfileChooserViewAvatarMenu() {
     return ProfileChooserView::profile_bubble_->avatar_menu_.get();
