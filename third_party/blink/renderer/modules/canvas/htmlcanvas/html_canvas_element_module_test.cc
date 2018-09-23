@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/modules/canvas/test/mock_viz_mojo.h"
+#include "third_party/blink/renderer/platform/graphics/test/mock_compositor_frame_sink.h"
 
 using ::testing::_;
 using ::testing::Values;
@@ -86,8 +86,9 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
       mock_embedded_frame_sink_provider.CreateScopedOverrideMojoInterface(
           &embedded_frame_sink_provider_binding);
 
+  const bool context_alpha = GetParam();
   CanvasContextCreationAttributesCore attrs;
-  attrs.alpha = GetParam();
+  attrs.alpha = context_alpha;
   attrs.low_latency = true;
   // |context_| creation triggers a SurfaceLayerBridge creation which in turn
   // connects to our MockEmbeddedFrameSinkProvider.
@@ -102,11 +103,23 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
   // This call simulates having drawn something before FinalizeFrame()
   canvas_element().DidDraw();
 
-  mock_embedded_frame_sink_provider.mock_compositor_frame_sink_
-      ->expected_opacity_ = !attrs.alpha;
-
+  ::testing::InSequence s;
   EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
-              SubmitCompositorFrameOrSubmitCompositorFrameSync());
+              DoSubmitCompositorFrameSync(_))
+      .WillOnce(::testing::WithArg<0>(
+          ::testing::Invoke([context_alpha](const viz::CompositorFrame* frame) {
+            ASSERT_EQ(frame->render_pass_list.size(), 1u);
+
+            const auto& quad_list = frame->render_pass_list[0]->quad_list;
+            ASSERT_EQ(quad_list.size(), 1u);
+            EXPECT_EQ(quad_list.front()->needs_blending, context_alpha);
+
+            const auto& shared_quad_state_list =
+                frame->render_pass_list[0]->shared_quad_state_list;
+            ASSERT_EQ(shared_quad_state_list.size(), 1u);
+            EXPECT_NE(shared_quad_state_list.front()->are_contents_opaque,
+                      context_alpha);
+          })));
   EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
               DidAllocateSharedBitmap(_, _));
   canvas_element().FinalizeFrame();

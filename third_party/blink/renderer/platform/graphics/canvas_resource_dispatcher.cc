@@ -278,15 +278,15 @@ bool CanvasResourceDispatcher::PrepareFrame(
   const bool needs_blending = !is_opaque;
   // TODO(crbug.com/645993): this should be inherited from WebGL context's
   // creation settings.
-  const bool kPremultipliedAlpha = true;
-  const gfx::PointF uv_top_left(0.f, 0.f);
-  const gfx::PointF uv_bottom_right(1.f, 1.f);
-  const float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
+  constexpr bool kPremultipliedAlpha = true;
+  constexpr gfx::PointF uv_top_left(0.f, 0.f);
+  constexpr gfx::PointF uv_bottom_right(1.f, 1.f);
+  constexpr float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
   // TODO(crbug.com/645994): this should be true when using style
   // "image-rendering: pixelated".
   // TODO(crbug.com/645590): filter should respect the image-rendering CSS
   // property of associated canvas element.
-  const bool kNearestNeighbor = false;
+  constexpr bool kNearestNeighbor = false;
   // Accelerated resources have the origin of coordinates in the upper left
   // corner while canvases have it in the lower left corner. The DrawQuad is
   // marked as vertically flipped unless someone else has done the flip for us.
