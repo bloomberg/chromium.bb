@@ -35,7 +35,7 @@ HRESULT MockIToastNotification::get_Content(winxml::Dom::IXmlDocument** value) {
     return hr;
   }
 
-  Microsoft::WRL::ComPtr<winxml::Dom::IXmlDocument> xml_document;
+  mswr::ComPtr<winxml::Dom::IXmlDocument> xml_document;
   hr = xml_document_io.CopyTo(xml_document.GetAddressOf());
   if (FAILED(hr)) {
     LOG(ERROR) << "Unable to copy to XMLDoc " << hr;
