@@ -239,7 +239,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
       }
       case CSSPropertyCursor: {
         if (CursorList* cursor_list = style->Cursors()) {
-          for (size_t i = 0; i < cursor_list->size(); ++i) {
+          for (wtf_size_t i = 0; i < cursor_list->size(); ++i) {
             CursorData& current_cursor = cursor_list->at(i);
             if (StyleImage* image = current_cursor.GetImage()) {
               if (image->IsPendingImage()) {

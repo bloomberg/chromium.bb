@@ -934,7 +934,7 @@ void StyleEngine::ScheduleSiblingInvalidationsForElement(
 
   if (element.HasClass()) {
     const SpaceSplitString& class_names = element.ClassNames();
-    for (size_t i = 0; i < class_names.size(); i++) {
+    for (wtf_size_t i = 0; i < class_names.size(); i++) {
       features.CollectSiblingInvalidationSetForClass(
           invalidation_lists, element, class_names[i], min_direct_adjacent);
     }
@@ -1025,8 +1025,8 @@ void StyleEngine::ScheduleRuleSetInvalidationsForElement(
                                                         element, id);
     }
     if (class_names) {
-      unsigned class_name_count = class_names->size();
-      for (size_t i = 0; i < class_name_count; i++) {
+      wtf_size_t class_name_count = class_names->size();
+      for (wtf_size_t i = 0; i < class_name_count; i++) {
         rule_set->Features().CollectInvalidationSetsForClass(
             invalidation_lists, element, (*class_names)[i]);
       }

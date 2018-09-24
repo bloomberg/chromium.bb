@@ -62,7 +62,7 @@ String MediaQuery::Serialize() const {
   }
 
   result.Append(expressions_.at(0).Serialize());
-  for (size_t i = 1; i < expressions_.size(); ++i) {
+  for (wtf_size_t i = 1; i < expressions_.size(); ++i) {
     result.Append(" and ");
     result.Append(expressions_.at(i).Serialize());
   }

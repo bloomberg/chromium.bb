@@ -82,10 +82,10 @@ CSSSelectorList CSSSelectorParser::ConsumeComplexSelectorList(
   Vector<std::unique_ptr<CSSParserSelector>> selector_list;
 
   while (true) {
-    const size_t selector_offset_start = stream.LookAheadOffset();
+    const wtf_size_t selector_offset_start = stream.LookAheadOffset();
     CSSParserTokenRange complex_selector =
         stream.ConsumeUntilPeekedTypeIs<kLeftBraceToken, kCommaToken>();
-    const size_t selector_offset_end = stream.LookAheadOffset();
+    const wtf_size_t selector_offset_end = stream.LookAheadOffset();
 
     if (stream.UncheckedAtEnd())
       return CSSSelectorList();

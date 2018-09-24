@@ -18,14 +18,14 @@
 
 namespace blink {
 
-void ConsumeWhitespace(const String& string, size_t& offset) {
+void ConsumeWhitespace(const String& string, wtf_size_t& offset) {
   while (IsHTMLSpace(string[offset]))
     offset++;
 }
 
 bool ConsumeCharacterAndWhitespace(const String& string,
                                    char character,
-                                   size_t& offset) {
+                                   wtf_size_t& offset) {
   if (string[offset] != character)
     return false;
   offset++;
@@ -68,11 +68,11 @@ CSSSyntaxType ParseSyntaxType(String type) {
 }
 
 bool ConsumeSyntaxType(const String& input,
-                       size_t& offset,
+                       wtf_size_t& offset,
                        CSSSyntaxType& type) {
   DCHECK_EQ(input[offset], '<');
   offset++;
-  size_t type_start = offset;
+  wtf_size_t type_start = offset;
   while (offset < input.length() && input[offset] != '>')
     offset++;
   if (offset == input.length())
@@ -84,8 +84,10 @@ bool ConsumeSyntaxType(const String& input,
   return true;
 }
 
-bool ConsumeSyntaxIdent(const String& input, size_t& offset, String& ident) {
-  size_t ident_start = offset;
+bool ConsumeSyntaxIdent(const String& input,
+                        wtf_size_t& offset,
+                        String& ident) {
+  wtf_size_t ident_start = offset;
   while (IsNameCodePoint(input[offset]))
     offset++;
   if (offset == ident_start)
@@ -95,7 +97,7 @@ bool ConsumeSyntaxIdent(const String& input, size_t& offset, String& ident) {
 }
 
 CSSSyntaxDescriptor::CSSSyntaxDescriptor(const String& input) {
-  size_t offset = 0;
+  wtf_size_t offset = 0;
   ConsumeWhitespace(input, offset);
 
   if (ConsumeCharacterAndWhitespace(input, '*', offset)) {

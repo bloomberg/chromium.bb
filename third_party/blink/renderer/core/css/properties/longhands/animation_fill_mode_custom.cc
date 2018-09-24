@@ -31,7 +31,7 @@ const CSSValue* AnimationFillMode::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const CSSAnimationData* animation_data = style.Animations();
   if (animation_data) {
-    for (size_t i = 0; i < animation_data->FillModeList().size(); ++i) {
+    for (wtf_size_t i = 0; i < animation_data->FillModeList().size(); ++i) {
       list->Append(*ComputedStyleUtils::ValueForAnimationFillMode(
           animation_data->FillModeList()[i]));
     }

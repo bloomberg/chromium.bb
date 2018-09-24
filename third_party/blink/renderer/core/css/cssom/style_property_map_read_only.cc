@@ -49,7 +49,7 @@ class StylePropertyMapIterationSource final
   }
 
  private:
-  size_t index_;
+  wtf_size_t index_;
   const HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> values_;
 };
 

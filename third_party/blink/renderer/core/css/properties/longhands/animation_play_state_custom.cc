@@ -30,7 +30,7 @@ const CSSValue* AnimationPlayState::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const CSSAnimationData* animation_data = style.Animations();
   if (animation_data) {
-    for (size_t i = 0; i < animation_data->PlayStateList().size(); ++i) {
+    for (wtf_size_t i = 0; i < animation_data->PlayStateList().size(); ++i) {
       list->Append(*ComputedStyleUtils::ValueForAnimationPlayState(
           animation_data->PlayStateList()[i]));
     }

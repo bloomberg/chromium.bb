@@ -60,9 +60,9 @@ class CSSParserImpl {
 
   // Represents the start and end offsets of a CSSParserTokenRange.
   struct RangeOffset {
-    size_t start, end;
+    wtf_size_t start, end;
 
-    RangeOffset(size_t start, size_t end) : start(start), end(end) {
+    RangeOffset(wtf_size_t start, wtf_size_t end) : start(start), end(end) {
       DCHECK(start <= end);
     }
 
@@ -117,7 +117,7 @@ class CSSParserImpl {
 
   static CSSPropertyValueSet* ParseDeclarationListForLazyStyle(
       const String&,
-      size_t offset,
+      wtf_size_t offset,
       const CSSParserContext*);
 
  private:

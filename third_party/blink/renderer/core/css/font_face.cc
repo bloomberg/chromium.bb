@@ -455,7 +455,7 @@ void FontFace::SetLoadStatus(LoadStatusType status) {
 void FontFace::RunCallbacks() {
   HeapVector<Member<LoadFontCallback>> callbacks;
   callbacks_.swap(callbacks);
-  for (size_t i = 0; i < callbacks.size(); ++i) {
+  for (wtf_size_t i = 0; i < callbacks.size(); ++i) {
     if (status_ == kLoaded)
       callbacks[i]->NotifyLoaded(this);
     else

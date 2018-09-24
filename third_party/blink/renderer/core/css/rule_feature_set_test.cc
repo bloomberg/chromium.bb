@@ -38,7 +38,7 @@ class RuleFeatureSetTest : public testing::Test {
         StrictCSSParserContext(SecureContextMode::kInsecureContext), nullptr,
         selector_text);
 
-    std::vector<size_t> indices;
+    std::vector<wtf_size_t> indices;
     for (const CSSSelector* s = selector_list.First(); s;
          s = selector_list.Next(*s)) {
       indices.push_back(selector_list.SelectorIndex(*s));
