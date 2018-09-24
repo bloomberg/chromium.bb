@@ -150,6 +150,10 @@ body.hide-fakebox #fakebox {
   display: block;
 }
 
+#logo-doodle-image {
+  outline: none;
+}
+
 #logo-default.fade,
 #logo-doodle.fade {
   transition: opacity 130ms, visibility 130ms;
