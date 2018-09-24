@@ -27,6 +27,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   // them to the constructor below.
   NGConstraintSpaceBuilder(const NGConstraintSpace& parent_space);
 
+  // writing_mode is the writing mode that the logical sizes passed to the
+  // setters are in.
   NGConstraintSpaceBuilder(WritingMode writing_mode, NGPhysicalSize icb_size);
 
   NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size);
@@ -117,6 +119,16 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
+  // Usually orthogonality is inferred from the WritingMode parameters passed to
+  // the constructor and ToConstraintSpace. But if you're passing the same
+  // writing mode to those methods but the node targeted by this ConstraintSpace
+  // is an orthogonal writing mode root, call this method to have the
+  // appropriate flags set on the resulting ConstraintSpace.
+  NGConstraintSpaceBuilder& SetIsOrthogonalWritingModeRoot(bool b) {
+    force_orthogonal_writing_mode_root_ = b;
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetExclusionSpace(
       const NGExclusionSpace& exclusion_space);
 
@@ -155,6 +167,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       kNotTableCellChild;
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
   TextDirection text_direction_ = TextDirection::kLtr;
+  bool force_orthogonal_writing_mode_root_ = false;
 
   unsigned flags_;
 
