@@ -811,12 +811,6 @@ audio {
   height: 54px;
 }
 
-audio::-webkit-media-controls,
-video::-webkit-media-controls.audio-only {
-  min-width: 240px;
-  min-height: 54px;
-}
-
 audio::-webkit-media-controls-overlay-enclosure,
 video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-overlay-enclosure"] {
   display: none;
@@ -824,7 +818,6 @@ video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-overlay
 
 audio::-webkit-media-controls-enclosure,
 video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-enclosure"] {
-  min-height: 54px;
   max-height: 54px;
   flex-direction: row;
   background: #F1F3F4;
