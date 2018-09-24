@@ -38,25 +38,6 @@ std::string UiModeToString(const ::testing::TestParamInfo<UiMode>& info) {
 
 }  // namespace
 
-namespace test {
-
-// Test API for LocationBarDecoration. This can be moved to its own file if
-// another test needs it.
-class LocationBarDecorationTestApi {
- public:
-  explicit LocationBarDecorationTestApi(LocationBarDecoration* decoration)
-      : decoration_(decoration) {}
-
-  bool active() const { return decoration_->active_; }
-
- private:
-  LocationBarDecoration* decoration_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocationBarDecorationTestApi);
-};
-
-}  // namespace test
-
 // TODO(crbug.com/630357): Remove parameterized testing for this class.
 class PermissionBubbleInteractiveUITest
     : public InProcessBrowserTest,
@@ -102,13 +83,9 @@ class PermissionBubbleInteractiveUITest
         std::make_unique<test::PermissionRequestManagerTestApi>(browser());
     EXPECT_TRUE(test_api_->manager());
 
-    decoration_test_api_ = std::make_unique<test::LocationBarDecorationTestApi>(
-        GetPageInfoDecoration(browser()->window()->GetNativeWindow()));
-
     test_api_->AddSimpleRequest(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
     EXPECT_TRUE([browser()->window()->GetNativeWindow() isKeyWindow]);
-    EXPECT_FALSE(decoration_test_api_->active());
 
     // The PermissionRequestManager displays prompts asynchronously.
     base::RunLoop().RunUntilIdle();
@@ -119,17 +96,19 @@ class PermissionBubbleInteractiveUITest
 
  protected:
   std::unique_ptr<test::PermissionRequestManagerTestApi> test_api_;
-  std::unique_ptr<test::LocationBarDecorationTestApi> decoration_test_api_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
+  // TDOO(thakis): Remove this, this should test views mode.
   test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleInteractiveUITest);
 };
 
 // There is only one tab. Cmd+w will close it along with the browser window.
-IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest, CmdWClosesWindow) {
+// TDOO(thakis): Reenable this once this test tests views.
+IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest,
+                       DISABLED_CmdWClosesWindow) {
   base::scoped_nsobject<NSWindow> browser_window(
       browser()->window()->GetNativeWindow(), base::scoped_policy::RETAIN);
   EXPECT_TRUE([browser_window isVisible]);
@@ -154,7 +133,6 @@ IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest, DISABLED_SwitchTabs) {
 
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   EXPECT_TRUE(test_api_->GetPromptWindow());
-  EXPECT_TRUE(decoration_test_api_->active());
 
   // Add a blank tab in the foreground.
   AddBlankTabAndShow(browser());
@@ -169,7 +147,6 @@ IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest, DISABLED_SwitchTabs) {
 
   // Prompt is hidden while its tab is not active.
   EXPECT_FALSE(test_api_->GetPromptWindow());
-  EXPECT_FALSE(decoration_test_api_->active());
 
   // Now a webcontents is active, it gets a first shot at processing the
   // accelerator before sending it back unhandled to the browser via IPC. That's
@@ -183,7 +160,6 @@ IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest, DISABLED_SwitchTabs) {
   EnsureWindowActive(test_api_->GetPromptWindow(),
                      "switched to permission tab with arrow");
   EXPECT_TRUE(test_api_->GetPromptWindow());
-  EXPECT_TRUE(decoration_test_api_->active());
 
   // Ensure we can switch away with the bubble active.
   SendAccelerator(ui::VKEY_RIGHT, false, true);
@@ -192,7 +168,6 @@ IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest, DISABLED_SwitchTabs) {
   [browser_window makeKeyAndOrderFront:nil];
   EnsureWindowActive(browser_window, "switch away with arrow");
   EXPECT_FALSE(test_api_->GetPromptWindow());
-  EXPECT_FALSE(decoration_test_api_->active());
 
   // Also test switching tabs with curly braces. "VKEY_OEM_4" is
   // LeftBracket/Brace on a US keyboard, which ui::MacKeyCodeForWindowsKeyCode
@@ -204,14 +179,12 @@ IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest, DISABLED_SwitchTabs) {
   EnsureWindowActive(test_api_->GetPromptWindow(),
                      "switch to permission tab with curly brace");
   EXPECT_TRUE(test_api_->GetPromptWindow());
-  EXPECT_TRUE(decoration_test_api_->active());
 
   SendAccelerator(ui::VKEY_OEM_4, true, false);
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   [browser_window makeKeyAndOrderFront:nil];
   EnsureWindowActive(browser_window, "switch away with curly brace");
   EXPECT_FALSE(test_api_->GetPromptWindow());
-  EXPECT_FALSE(decoration_test_api_->active());
 }
 
 INSTANTIATE_TEST_CASE_P(,

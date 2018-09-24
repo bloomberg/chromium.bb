@@ -185,8 +185,6 @@ jumbo_split_static_library("ui") {
       "cocoa/location_bar/location_bar_decoration.mm",
       "cocoa/location_bar/location_bar_view_mac.h",
       "cocoa/location_bar/location_bar_view_mac.mm",
-      "cocoa/location_bar/page_info_bubble_decoration.h",
-      "cocoa/location_bar/page_info_bubble_decoration.mm",
       "cocoa/location_bar/zoom_decoration.h",
       "cocoa/location_bar/zoom_decoration.mm",
       "cocoa/main_menu_item.h",
@@ -206,8 +204,6 @@ jumbo_split_static_library("ui") {
       "cocoa/omnibox/omnibox_popup_view_mac.mm",
       "cocoa/omnibox/omnibox_view_mac.h",
       "cocoa/omnibox/omnibox_view_mac.mm",
-      "cocoa/permission_bubble/chooser_bubble_ui_views_mac.mm",
-      "cocoa/permission_bubble/permission_prompt_impl_views_mac.mm",
       "cocoa/rect_path_utils.h",
       "cocoa/rect_path_utils.mm",
       "cocoa/restart_browser.h",
@@ -3109,10 +3105,6 @@ jumbo_split_static_library("ui") {
         "views/relaunch_notification/get_app_menu_anchor_point.h",
         "views/relaunch_notification/get_app_menu_anchor_point.mm",
       ]
-
-      # This source file is compiled out on Mac because there is a
-      # Mac-specific implementation of it.
-      sources -= [ "views/permission_bubble/permission_prompt_impl_views.cc" ]
     } else {
       sources += [
         "views/create_application_shortcut_view.cc",

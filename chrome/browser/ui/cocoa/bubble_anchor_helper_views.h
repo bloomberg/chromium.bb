@@ -13,9 +13,6 @@ class BubbleDialogDelegateView;
 
 class LocationBarDecoration;
 
-// Returns the page info decoration in the omnibox.
-LocationBarDecoration* GetPageInfoDecoration(gfx::NativeWindow window);
-
 // Monitors |bubble|'s parent window for size changes, and updates the bubble
 // anchor. The monitor will be deleted when |bubble| is closed. If |decoration|
 // is provided, the decoration will be set to active in this function. It will
