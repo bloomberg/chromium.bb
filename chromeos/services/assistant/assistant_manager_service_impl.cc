@@ -220,6 +220,11 @@ void AssistantManagerServiceImpl::StartVoiceInteraction() {
 void AssistantManagerServiceImpl::StopActiveInteraction(
     bool cancel_conversation) {
   platform_api_->SetMicState(false);
+
+  if (!assistant_manager_internal_) {
+    VLOG(1) << "Stopping interaction without assistant manager.";
+    return;
+  }
   assistant_manager_internal_->StopAssistantInteractionInternal(
       cancel_conversation);
 }
