@@ -115,6 +115,7 @@ static_library("metrics") {
     "//components/variations",
     "//components/version_info:version_info",
     "//extensions/buildflags",
+    "//services/network/public/cpp:cpp",
     "//third_party/zlib/google:compression_utils",
   ]
 
