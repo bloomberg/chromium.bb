@@ -5480,6 +5480,121 @@ static void highbd_inv_txfm2d_add_8x4_sse41(const int32_t *input,
                                  txfm_size_row, bd);
 }
 
+static void highbd_inv_txfm2d_add_4x16_sse4_1(const int32_t *input,
+                                              uint16_t *output, int stride,
+                                              TX_TYPE tx_type, TX_SIZE tx_size,
+                                              int eob, const int bd) {
+  (void)eob;
+  __m128i buf1[16];
+  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int txw_idx = get_txw_idx(tx_size);
+  const int txh_idx = get_txh_idx(tx_size);
+  const int txfm_size_col = tx_size_wide[tx_size];
+  const int txfm_size_row = tx_size_high[tx_size];
+  const int buf_size_h_div8 = txfm_size_row >> 2;
+  const transform_1d_sse4_1 row_txfm =
+      highbd_txfm_all_1d_zeros_w8_arr[txw_idx][hitx_1d_tab[tx_type]][0];
+  const transform_1d_sse4_1 col_txfm =
+      highbd_txfm_all_1d_zeros_w8_arr[txh_idx][vitx_1d_tab[tx_type]][2];
+  const int input_stride = AOMMIN(32, txfm_size_col);
+
+  assert(col_txfm != NULL);
+  assert(row_txfm != NULL);
+  int ud_flip, lr_flip;
+  get_flip_cfg(tx_type, &ud_flip, &lr_flip);
+
+  // 1st stage: column transform
+  __m128i buf0[16];
+  const int32_t *input_row = input;
+  __m128i *buf0_cur = buf0;
+  load_buffer_32bit_input(input_row, input_stride, buf0_cur, txfm_size_row);
+  for (int i = 0; i < (txfm_size_row >> 2); i++) {
+    row_txfm(buf0 + (i << 2), buf0 + (i << 2),
+             inv_cos_bit_row[txw_idx][txh_idx], 0, bd, -shift[0]);
+  }
+
+  av1_round_shift_array_32_sse4_1(buf0, buf0, txfm_size_row, -shift[0]);
+
+  if (lr_flip) {
+    for (int j = 0; j < buf_size_h_div8; ++j) {
+      TRANSPOSE_4X4(buf0[4 * j + 3], buf0[4 * j + 2], buf0[4 * j + 1],
+                    buf0[4 * j], buf1[4 * j], buf1[4 * j + 1], buf1[4 * j + 2],
+                    buf1[4 * j + 3]);
+    }
+  } else {
+    for (int j = 0; j < buf_size_h_div8; ++j) {
+      TRANSPOSE_4X4(buf0[4 * j], buf0[4 * j + 1], buf0[4 * j + 2],
+                    buf0[4 * j + 3], buf1[4 * j], buf1[4 * j + 1],
+                    buf1[4 * j + 2], buf1[4 * j + 3]);
+    }
+  }
+
+  // 2nd stage: column transform
+  col_txfm(buf1, buf1, inv_cos_bit_col[txw_idx][txh_idx], 1, bd, 0);
+
+  av1_round_shift_array_32_sse4_1(buf1, buf1, txfm_size_row, -shift[1]);
+
+  // write to buffer
+  highbd_write_buffer_4xn_sse4_1(buf1, output, stride, ud_flip, txfm_size_row,
+                                 bd);
+}
+
+static void highbd_inv_txfm2d_add_16x4_sse4_1(const int32_t *input,
+                                              uint16_t *output, int stride,
+                                              TX_TYPE tx_type, TX_SIZE tx_size,
+                                              int eob, const int bd) {
+  (void)eob;
+  __m128i buf1[16];
+  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int txw_idx = get_txw_idx(tx_size);
+  const int txh_idx = get_txh_idx(tx_size);
+  const int txfm_size_col = tx_size_wide[tx_size];
+  const int txfm_size_row = tx_size_high[tx_size];
+  const int buf_size_w_div8 = txfm_size_col >> 2;
+  const transform_1d_sse4_1 row_txfm =
+      highbd_txfm_all_1d_zeros_w8_arr[txw_idx][hitx_1d_tab[tx_type]][2];
+  const transform_1d_sse4_1 col_txfm =
+      highbd_txfm_all_1d_zeros_w8_arr[txh_idx][vitx_1d_tab[tx_type]][0];
+
+  assert(col_txfm != NULL);
+  assert(row_txfm != NULL);
+  int ud_flip, lr_flip;
+  get_flip_cfg(tx_type, &ud_flip, &lr_flip);
+
+  // 1st stage: column transform
+  __m128i buf0[16];
+  const int32_t *input_row = input;
+  load_buffer_32bit_input(input_row, 4, buf0, txfm_size_col);
+
+  for (int j = 0; j < buf_size_w_div8; j++) {
+    TRANSPOSE_4X4(buf0[j], buf0[j + 4], buf0[j + 8], buf0[j + 12], buf1[4 * j],
+                  buf1[4 * j + 1], buf1[4 * j + 2], buf1[4 * j + 3]);
+  }
+  row_txfm(buf1, buf0, inv_cos_bit_row[txw_idx][txh_idx], 0, bd, -shift[0]);
+
+  __m128i *buf1_ptr;
+  if (lr_flip) {
+    flip_buf_sse2(buf0, buf1, txfm_size_col);
+    buf1_ptr = buf1;
+  } else {
+    buf1_ptr = buf0;
+  }
+
+  // 2nd stage: column transform
+  for (int i = 0; i < buf_size_w_div8; i++) {
+    col_txfm(buf1_ptr + i * txfm_size_row, buf1_ptr + i * txfm_size_row,
+             inv_cos_bit_col[txw_idx][txh_idx], 1, bd, 0);
+  }
+  av1_round_shift_array_32_sse4_1(buf1_ptr, buf1_ptr, txfm_size_col, -shift[1]);
+
+  // write to buffer
+  for (int i = 0; i < (txfm_size_col >> 3); i++) {
+    highbd_write_buffer_8xn_sse4_1(buf1_ptr + i * txfm_size_row * 2,
+                                   output + 8 * i, stride, ud_flip,
+                                   txfm_size_row, bd);
+  }
+}
+
 void av1_highbd_inv_txfm2d_add_universe_sse4_1(const int32_t *input,
                                                uint8_t *output, int stride,
                                                TX_TYPE tx_type, TX_SIZE tx_size,
@@ -5558,6 +5673,62 @@ void av1_highbd_inv_txfm_add_8x4_sse4_1(const tran_low_t *input, uint8_t *dest,
   }
 }
 
+void av1_highbd_inv_txfm_add_4x16_sse4_1(const tran_low_t *input, uint8_t *dest,
+                                         int stride,
+                                         const TxfmParam *txfm_param) {
+  int bd = txfm_param->bd;
+  const TX_TYPE tx_type = txfm_param->tx_type;
+  const TX_SIZE tx_size = txfm_param->tx_size;
+  const int32_t *src = cast_to_int32(input);
+  int eob = txfm_param->eob;
+  switch (tx_type) {
+      // Assembly version doesn't support some transform types, so use C version
+      // for those.
+    case V_DCT:
+    case H_DCT:
+    case V_ADST:
+    case H_ADST:
+    case V_FLIPADST:
+    case H_FLIPADST:
+    case IDTX:
+      av1_inv_txfm2d_add_4x16_c(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
+                                bd);
+      break;
+    default:
+      highbd_inv_txfm2d_add_4x16_sse4_1(input, CONVERT_TO_SHORTPTR(dest),
+                                        stride, tx_type, tx_size, eob, bd);
+      break;
+  }
+}
+
+void av1_highbd_inv_txfm_add_16x4_sse4_1(const tran_low_t *input, uint8_t *dest,
+                                         int stride,
+                                         const TxfmParam *txfm_param) {
+  int bd = txfm_param->bd;
+  const TX_TYPE tx_type = txfm_param->tx_type;
+  const TX_SIZE tx_size = txfm_param->tx_size;
+  const int32_t *src = cast_to_int32(input);
+  int eob = txfm_param->eob;
+  switch (tx_type) {
+      // Assembly version doesn't support some transform types, so use C version
+      // for those.
+    case V_DCT:
+    case H_DCT:
+    case V_ADST:
+    case H_ADST:
+    case V_FLIPADST:
+    case H_FLIPADST:
+    case IDTX:
+      av1_inv_txfm2d_add_16x4_c(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
+                                bd);
+      break;
+    default:
+      highbd_inv_txfm2d_add_16x4_sse4_1(input, CONVERT_TO_SHORTPTR(dest),
+                                        stride, tx_type, tx_size, eob, bd);
+      break;
+  }
+}
+
 void av1_highbd_inv_txfm_add_sse4_1(const tran_low_t *input, uint8_t *dest,
                                     int stride, const TxfmParam *txfm_param) {
   assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
@@ -5594,10 +5765,10 @@ void av1_highbd_inv_txfm_add_sse4_1(const tran_low_t *input, uint8_t *dest,
       av1_highbd_inv_txfm_add_4x4_sse4_1(input, dest, stride, txfm_param);
       break;
     case TX_16X4:
-      av1_highbd_inv_txfm_add_16x4(input, dest, stride, txfm_param);
+      av1_highbd_inv_txfm_add_16x4_sse4_1(input, dest, stride, txfm_param);
       break;
     case TX_4X16:
-      av1_highbd_inv_txfm_add_4x16(input, dest, stride, txfm_param);
+      av1_highbd_inv_txfm_add_4x16_sse4_1(input, dest, stride, txfm_param);
       break;
     case TX_8X32:
       av1_highbd_inv_txfm_add_8x32_sse4_1(input, dest, stride, txfm_param);
