@@ -15,8 +15,7 @@ ProfileOAuth2TokenService::ProfileOAuth2TokenService(
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
     : OAuth2TokenService(std::move(delegate)),
       user_prefs_(user_prefs),
-      all_credentials_loaded_(false),
-      diagnostics_client_(nullptr) {
+      all_credentials_loaded_(false) {
   DCHECK(user_prefs_);
   AddObserver(this);
 }
@@ -78,14 +77,6 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     is_valid = false;
   }
 
-  // NOTE: The code executed in the rest of this method does not affect the
-  // state of the accounts in this object, so it doesn't matter whether the
-  // callout to |diagnostics_client_| is made before or after. If that fact ever
-  // changes, it will be necessary to reason about what the ordering should be.
-  if (diagnostics_client_) {
-    diagnostics_client_->WillFireOnRefreshTokenAvailable(account_id, is_valid);
-  }
-
   CancelRequestsForAccount(account_id);
   ClearCacheForAccount(account_id);
 }
@@ -94,14 +85,6 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
     const std::string& account_id) {
   // If this was the last token, recreate the device ID.
   RecreateDeviceIdIfNeeded();
-
-  // NOTE: The code executed in the rest of this method does not affect the
-  // state of the accounts in this object, so it doesn't matter whether the
-  // callout to |diagnostics_client_| is made before or after. If that fact ever
-  // changes, it will be necessary to reason about what the ordering should be.
-  if (diagnostics_client_) {
-    diagnostics_client_->WillFireOnRefreshTokenRevoked(account_id);
-  }
 
   CancelRequestsForAccount(account_id);
   ClearCacheForAccount(account_id);
