@@ -580,3 +580,6 @@ class ChromeDriver(object):
       for i in range(len(value)):
         typing.append(value[i])
     self.ExecuteCommand(Command.SEND_KEYS_TO_ACTIVE_ELEMENT, {'value': typing})
+
+  def GenerateTestReport(self, message):
+    self.ExecuteCommand(Command.GENERATE_TEST_REPORT, {'message': message})
