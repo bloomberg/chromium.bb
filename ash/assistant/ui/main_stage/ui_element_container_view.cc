@@ -258,15 +258,11 @@ void UiElementContainerView::PreferredSizeChanged() {
 }
 
 void UiElementContainerView::InitLayout() {
-  views::BoxLayout* layout_manager =
-      content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical,
-          gfx::Insets(0, kPaddingHorizontalDip, kPaddingBottomDip,
-                      kPaddingHorizontalDip),
-          kSpacingDip));
-
-  layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_START);
+  content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, kPaddingHorizontalDip, kPaddingBottomDip,
+                  kPaddingHorizontalDip),
+      kSpacingDip));
 }
 
 void UiElementContainerView::OnCommittedQueryChanged(
