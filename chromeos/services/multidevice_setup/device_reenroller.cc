@@ -90,7 +90,9 @@ std::unique_ptr<DeviceReenroller> DeviceReenroller::Factory::BuildInstance(
       device_sync_client, gcm_device_info_provider, std::move(timer)));
 }
 
-DeviceReenroller::~DeviceReenroller() = default;
+DeviceReenroller::~DeviceReenroller() {
+  device_sync_client_->RemoveObserver(this);
+}
 
 DeviceReenroller::DeviceReenroller(
     device_sync::DeviceSyncClient* device_sync_client,
