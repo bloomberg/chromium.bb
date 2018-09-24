@@ -76,4 +76,19 @@ IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorCantDownloadPolicy) {
             NavigateToAndReturnTitle("/page-policy-missing.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy301Redirect) {
+  EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
+            NavigateToAndReturnTitle("/page-policy-301redirect.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy302Redirect) {
+  EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
+            NavigateToAndReturnTitle("/page-policy-302redirect.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy307Redirect) {
+  EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
+            NavigateToAndReturnTitle("/page-policy-307redirect.html"));
+}
+
 }  // namespace content
