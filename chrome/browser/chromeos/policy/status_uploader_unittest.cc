@@ -21,6 +21,7 @@
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -176,6 +177,9 @@ class StatusUploaderTest : public testing::Test {
   MockCloudPolicyClient client_;
   MockDeviceManagementService device_management_service_;
   TestingPrefServiceSimple prefs_;
+  // This property is required to instantiate the session manager, a singleton
+  // which is used by the device status collector.
+  session_manager::SessionManager session_manager_;
 };
 
 TEST_F(StatusUploaderTest, BasicTest) {
