@@ -1610,7 +1610,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
   if (!object_.IsBoxModelObject() && !properties_)
     return;
 
-  if (object_.IsLayoutBlockFlow())
+  if (object_.IsLayoutBlock())
     context_.paint_offset_for_float = context_.current.paint_offset;
 
   if (object_.CanContainAbsolutePositionObjects())
