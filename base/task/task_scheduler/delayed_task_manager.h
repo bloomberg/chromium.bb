@@ -56,10 +56,10 @@ class BASE_EXPORT DelayedTaskManager {
     DelayedTask(DelayedTask&& other);
     ~DelayedTask();
 
-    // Required by priority_queue::pop().
+    // Required by std::priority_queue::pop().
     DelayedTask& operator=(DelayedTask&& other);
 
-    // Required by priority_queue.
+    // Required by std::priority_queue.
     bool operator>(const DelayedTask& other) const;
 
     Task task;
@@ -74,12 +74,15 @@ class BASE_EXPORT DelayedTaskManager {
 
    private:
     bool scheduled_ = false;
+    DISALLOW_COPY_AND_ASSIGN(DelayedTask);
   };
 
   // Pop and post all the ripe tasks in the delayed task queue.
   void ProcessRipeTasks();
 
-  // Get the time at which to schedule the next |ProcessRipeTasks()| execution.
+  // Get the time at which to schedule the next |ProcessRipeTasks()| execution,
+  // or TimeTicks::Max() if none needs to be scheduled (i.e. no task, or next
+  // task already scheduled).
   TimeTicks GetTimeToScheduleProcessRipeTasksLockRequired();
 
   // Schedule |ProcessRipeTasks()| on the service thread to be executed at the
