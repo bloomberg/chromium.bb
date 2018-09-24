@@ -287,12 +287,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Delegate method for the status bubble to query its base frame.
 - (NSRect)statusBubbleBaseFrame;
 
-// Show the translate bubble.
-- (void)showTranslateBubbleForWebContents:(content::WebContents*)contents
-                                     step:(translate::TranslateStep)step
-                                errorType:
-                                    (translate::TranslateErrors::Type)errorType;
-
 // Dismiss the permission bubble
 - (void)dismissPermissionBubble;
 

@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/cocoa/autofill/save_card_bubble_view_views.h"
 #import "chrome/browser/ui/cocoa/browser/exclusive_access_controller_views.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -500,8 +499,7 @@ autofill::SaveCardBubbleView* BrowserWindowCocoa::ShowSaveCreditCardBubble(
     content::WebContents* web_contents,
     autofill::SaveCardBubbleController* controller,
     bool user_gesture) {
-  return autofill::CreateSaveCardBubbleView(web_contents, controller,
-                                            controller_, user_gesture);
+  return nullptr;
 }
 
 autofill::LocalCardMigrationBubble*
@@ -519,16 +517,6 @@ ShowTranslateBubbleResult BrowserWindowCocoa::ShowTranslateBubble(
     translate::TranslateStep step,
     translate::TranslateErrors::Type error_type,
     bool is_user_gesture) {
-  ChromeTranslateClient* chrome_translate_client =
-      ChromeTranslateClient::FromWebContents(contents);
-  translate::LanguageState& language_state =
-      chrome_translate_client->GetLanguageState();
-  language_state.SetTranslateEnabled(true);
-
-  [controller_ showTranslateBubbleForWebContents:contents
-                                            step:step
-                                       errorType:error_type];
-
   return ShowTranslateBubbleResult::SUCCESS;
 }
 
