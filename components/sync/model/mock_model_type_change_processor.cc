@@ -58,6 +58,8 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
 
   bool IsTrackingMetadata() override { return other_->IsTrackingMetadata(); }
 
+  std::string TrackedAccountId() override { return other_->TrackedAccountId(); }
+
   void ReportError(const ModelError& error) override {
     other_->ReportError(error);
   }
@@ -114,6 +116,9 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
   ON_CALL(*this, IsTrackingMetadata())
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::IsTrackingMetadata));
+  ON_CALL(*this, TrackedAccountId())
+      .WillByDefault(
+          Invoke(delegate, &ModelTypeChangeProcessor::TrackedAccountId));
   ON_CALL(*this, ReportError(_))
       .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::ReportError));
   ON_CALL(*this, GetControllerDelegate())

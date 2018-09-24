@@ -171,7 +171,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     model_type_state_.set_cache_guid(activation_request_.cache_guid);
   } else if (model_type_state_.cache_guid() != activation_request_.cache_guid) {
     // There is a mismatch between the cache guid stored in |model_type_state_|
-    // and the one received from sync and stored it |activation_request|. This
+    // and the one received from sync and stored it |activation_request_|. This
     // indicates that the stored metadata are invalid (e.g. has been
     // manipulated) and don't belong to the current syncing client.
     const ModelTypeSyncBridge::StopSyncResponse response =
@@ -196,6 +196,10 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     // Notify the bridge sync is starting to simulate an enable event.
     bridge_->OnSyncStarting(activation_request_);
   }
+
+  // Cache GUID verification guarantees the user is the same.
+  model_type_state_.set_authenticated_account_id(
+      activation_request_.authenticated_account_id);
 
   auto activation_response = std::make_unique<DataTypeActivationResponse>();
   activation_response->model_type_state = model_type_state_;
@@ -279,6 +283,17 @@ ClientTagBasedModelTypeProcessor::ClearMetadataAndResetState() {
 
 bool ClientTagBasedModelTypeProcessor::IsTrackingMetadata() {
   return model_type_state_.initial_sync_done();
+}
+
+std::string ClientTagBasedModelTypeProcessor::TrackedAccountId() {
+  // Returning non-empty here despite !IsTrackingMetadata() has weird semantics,
+  // e.g. initial updates are being fetched but we haven't received the response
+  // (i.e. prior to exercising MergeSyncData()). Let's be cautious and hide the
+  // account ID.
+  if (!IsTrackingMetadata()) {
+    return "";
+  }
+  return model_type_state_.authenticated_account_id();
 }
 
 void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {

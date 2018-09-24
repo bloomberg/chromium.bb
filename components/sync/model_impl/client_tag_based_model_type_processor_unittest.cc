@@ -225,13 +225,14 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   void OnCommitDataLoaded() { bridge()->OnCommitDataLoaded(); }
 
-  void OnSyncStarting() {
+  void OnSyncStarting(
+      const std::string& authenticated_account_id = "SomeAccountId") {
     DataTypeActivationRequest request;
     request.error_handler = base::BindRepeating(
         &ClientTagBasedModelTypeProcessorTest::ErrorReceived,
         base::Unretained(this));
     request.cache_guid = "TestCacheGuid";
-    request.authenticated_account_id = "SomeAccountId";
+    request.authenticated_account_id = authenticated_account_id;
     type_processor()->OnSyncStarting(
         request,
         base::BindOnce(&ClientTagBasedModelTypeProcessorTest::OnReadyToConnect,
@@ -366,6 +367,32 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   // Whether to expect an error from the processor.
   bool expect_error_ = false;
 };
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldExposeNewlyTrackedAccountId) {
+  ModelReadyToSync();
+  ASSERT_EQ("", type_processor()->TrackedAccountId());
+  OnSyncStarting("SomeAccountId");
+  worker()->UpdateFromServer();
+  EXPECT_EQ("SomeAccountId", type_processor()->TrackedAccountId());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldExposePreviouslyTrackedAccountId) {
+  std::unique_ptr<MetadataBatch> metadata_batch = db().CreateMetadataBatch();
+  sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
+  model_type_state.set_initial_sync_done(true);
+  model_type_state.set_authenticated_account_id("PersistedAccountId");
+  metadata_batch->SetModelTypeState(model_type_state);
+  type_processor()->ModelReadyToSync(std::move(metadata_batch));
+
+  // Even prior to starting sync, the account ID should already be tracked.
+  EXPECT_EQ("PersistedAccountId", type_processor()->TrackedAccountId());
+
+  // If sync gets started, the account should still be tracked.
+  OnSyncStarting("PersistedAccountId");
+  EXPECT_EQ("PersistedAccountId", type_processor()->TrackedAccountId());
+}
 
 // Test that an initial sync handles local and remote items properly.
 TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldMergeLocalAndRemoteChanges) {
@@ -2034,6 +2061,31 @@ class CommitOnlyClientTagBasedModelTypeProcessorTest
  protected:
   bool IsCommitOnly() override { return true; }
 };
+
+TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
+       ShouldExposeNewlyTrackedAccountId) {
+  ModelReadyToSync();
+  ASSERT_EQ("", type_processor()->TrackedAccountId());
+  OnSyncStarting("SomeAccountId");
+  EXPECT_EQ("SomeAccountId", type_processor()->TrackedAccountId());
+}
+
+TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
+       ShouldExposePreviouslyTrackedAccountId) {
+  std::unique_ptr<MetadataBatch> metadata_batch = db().CreateMetadataBatch();
+  sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
+  model_type_state.set_initial_sync_done(true);
+  model_type_state.set_authenticated_account_id("PersistedAccountId");
+  metadata_batch->SetModelTypeState(model_type_state);
+  type_processor()->ModelReadyToSync(std::move(metadata_batch));
+
+  // Even prior to starting sync, the account ID should already be tracked.
+  EXPECT_EQ("PersistedAccountId", type_processor()->TrackedAccountId());
+
+  // If sync gets started, the account should still be tracked.
+  OnSyncStarting("PersistedAccountId");
+  EXPECT_EQ("PersistedAccountId", type_processor()->TrackedAccountId());
+}
 
 // Test that commit only types are deleted after commit response.
 TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
