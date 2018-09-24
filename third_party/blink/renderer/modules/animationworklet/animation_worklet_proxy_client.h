@@ -1,16 +1,16 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_PROXY_CLIENT_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_PROXY_CLIENT_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_PROXY_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_PROXY_CLIENT_H_
 
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -19,23 +19,25 @@ class Document;
 class WorkletGlobalScope;
 
 // Mediates between animation worklet global scope and its associated
-// dispatchers. An AnimationWorkletProxyClientImpl is associated with a single
+// dispatchers. An AnimationWorkletProxyClient is associated with a single
 // global scope and up to two dispatchers representing main and compositor
 // threads.
 //
 // This is constructed on the main thread but it is used in the worklet backing
 // thread.
-class MODULES_EXPORT AnimationWorkletProxyClientImpl final
-    : public GarbageCollectedFinalized<AnimationWorkletProxyClientImpl>,
-      public AnimationWorkletProxyClient,
+class MODULES_EXPORT AnimationWorkletProxyClient
+    : public GarbageCollectedFinalized<AnimationWorkletProxyClient>,
+      public Supplement<WorkerClients>,
       public AnimationWorkletMutator {
-  WTF_MAKE_NONCOPYABLE(AnimationWorkletProxyClientImpl);
-  USING_GARBAGE_COLLECTED_MIXIN(AnimationWorkletProxyClientImpl);
+  USING_GARBAGE_COLLECTED_MIXIN(AnimationWorkletProxyClient);
+  DISALLOW_COPY_AND_ASSIGN(AnimationWorkletProxyClient);
 
  public:
+  static const char kSupplementName[];
+
   // This client is hooked to the given |mutatee|, on the given
   // |mutatee_runner|.
-  explicit AnimationWorkletProxyClientImpl(
+  explicit AnimationWorkletProxyClient(
       int scope_id,
       base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> compositor_mutatee,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_mutatee_runner,
@@ -43,9 +45,8 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_mutatee_runner);
   void Trace(blink::Visitor*) override;
 
-  // AnimationWorkletProxyClient:
-  void SetGlobalScope(WorkletGlobalScope*) override;
-  void Dispose() override;
+  virtual void SetGlobalScope(WorkletGlobalScope*);
+  void Dispose();
 
   // AnimationWorkletMutator:
   // These methods are invoked on the animation worklet thread.
@@ -53,7 +54,8 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
   std::unique_ptr<AnimationWorkletOutput> Mutate(
       std::unique_ptr<AnimationWorkletInput> input) override;
 
-  static AnimationWorkletProxyClientImpl* FromDocument(Document*, int scope_id);
+  static AnimationWorkletProxyClient* FromDocument(Document*, int scope_id);
+  static AnimationWorkletProxyClient* From(WorkerClients*);
 
  private:
   const int scope_id_;
@@ -74,6 +76,10 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
   enum RunState { kUninitialized, kWorking, kDisposed } state_;
 };
 
+void MODULES_EXPORT
+ProvideAnimationWorkletProxyClientTo(WorkerClients*,
+                                     AnimationWorkletProxyClient*);
+
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_PROXY_CLIENT_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_PROXY_CLIENT_H_
