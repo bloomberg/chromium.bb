@@ -281,7 +281,7 @@ void Internals::ResetToConsistentState(Page* page) {
   KeyboardEventManager::SetCurrentCapsLockState(
       OverrideCapsLockState::kDefault);
 
-  IntersectionObserver::SetV2ThrottleDelayEnabledForTesting(true);
+  IntersectionObserver::SetThrottleDelayEnabledForTesting(true);
 }
 
 Internals::Internals(ExecutionContext* context)
@@ -3467,9 +3467,9 @@ unsigned Internals::LifecycleUpdateCount() const {
   return document_->View()->LifecycleUpdateCountForTesting();
 }
 
-void Internals::DisableIntersectionObserverV2Throttle() const {
+void Internals::DisableIntersectionObserverThrottleDelay() const {
   // This gets reset by Internals::ResetToConsistentState
-  IntersectionObserver::SetV2ThrottleDelayEnabledForTesting(false);
+  IntersectionObserver::SetThrottleDelayEnabledForTesting(false);
 }
 
 void Internals::addEmbedderCustomElementName(const AtomicString& name,
