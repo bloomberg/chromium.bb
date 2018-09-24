@@ -2262,7 +2262,6 @@ source_set("unit_tests") {
     "policy/weekly_time/weekly_time_unittest.cc",
     "power/auto_screen_brightness/als_reader_impl_unittest.cc",
     "power/auto_screen_brightness/brightness_monitor_impl_unittest.cc",
-    "power/auto_screen_brightness/fake_als_reader_unittest.cc",
     "power/cpu_data_collector_unittest.cc",
     "power/extension_event_observer_unittest.cc",
     "power/ml/adaptive_screen_brightness_manager_unittest.cc",
