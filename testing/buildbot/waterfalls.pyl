@@ -3610,18 +3610,30 @@
         },
       },
       'Win10 Tests x64': {
+        'swarming_mixins': [
+          'x86-64',
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'Win10 Tests x64 (dbg)': {
+        'swarming_mixins': [
+          'x86-64',
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'chromium_dbg_isolated_scripts',
         },
       },
       'Win7 (32) Tests': {
+        'swarming_mixins': [
+          'x86-32',
+          'win7',
+        ],
         'test_suites': {
           'gtest_tests': 'win7_32_bit_gtests',
         }
