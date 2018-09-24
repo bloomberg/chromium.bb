@@ -439,6 +439,8 @@ void MediaCodecVideoDecoder::CreateCodec() {
           media_crypto_);
   config->initial_expected_coded_size = decoder_config_.coded_size();
   config->surface_bundle = target_surface_bundle_;
+  config->container_color_space = decoder_config_.color_space_info();
+  config->hdr_metadata = decoder_config_.hdr_metadata();
 
   // Use the asynchronous API if we can.
   if (device_info_->IsAsyncApiSupported()) {
