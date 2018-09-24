@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "extensions/common/extension.h"
 
@@ -17,6 +18,7 @@ constexpr char const* kAppIdsHiddenInLauncher[] = {kChromeCameraAppId};
 bool ShouldShowInLauncher(const extensions::Extension* extension,
                           content::BrowserContext* context) {
   return !HideInLauncherById(extension->id()) &&
+         chromeos::DemoSession::ShouldDisplayInAppLauncher(extension->id()) &&
          extensions::ui_util::ShouldDisplayInAppLauncher(extension, context);
 }
 

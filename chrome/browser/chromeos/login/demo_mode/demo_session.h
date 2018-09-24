@@ -92,6 +92,10 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // Returns the id of the screensaver app based on the board name.
   static std::string GetScreensaverAppId();
 
+  // Returns whether the app with |app_id| should be displayed in app launcher
+  // in demo mode. Returns true for all apps in non-demo mode.
+  static bool ShouldDisplayInAppLauncher(const std::string& app_id);
+
   // Ensures that the load of offline demo session resources is requested.
   // |load_callback| will be run once the offline resource load finishes.
   void EnsureOfflineResourcesLoaded(base::OnceClosure load_callback);
