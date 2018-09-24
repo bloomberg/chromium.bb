@@ -439,6 +439,49 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollRTL) {
   EXPECT_EQ(FloatRoundedRect(25, 10, 85, 85), overflow_clip->ClipRect());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRLMulticol) {
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar {width: 15px; height: 15px}</style>
+    <div id='scroller'
+         style='width: 100px; height: 100px; overflow: scroll;
+                writing-mode: vertical-rl; border: 10px solid blue'>
+      <div id="multicol"
+           style="width: 50px; height: 400px; columns: 2; column-gap: 0">
+        <div style="width: 100px"></div>
+      </div>
+      <div style='width: 400px; height: 400px'></div>
+    </div>
+  )HTML");
+
+  const auto* flow_thread =
+      GetLayoutObjectByElementId("multicol")->SlowFirstChild();
+  auto check_fragments = [flow_thread]() {
+    ASSERT_EQ(2u, NumFragments(flow_thread));
+    EXPECT_EQ(410, FragmentAt(flow_thread, 0)
+                       .PaintProperties()
+                       ->FragmentClip()
+                       ->ClipRect()
+                       .Rect()
+                       .X());
+    EXPECT_EQ(LayoutPoint(360, 10), FragmentAt(flow_thread, 0).PaintOffset());
+    EXPECT_EQ(460, FragmentAt(flow_thread, 1)
+                       .PaintProperties()
+                       ->FragmentClip()
+                       ->ClipRect()
+                       .Rect()
+                       .MaxX());
+    EXPECT_EQ(LayoutPoint(410, 210), FragmentAt(flow_thread, 1).PaintOffset());
+  };
+  check_fragments();
+
+  // Fragment geometries are not affected by parent scrolling.
+  ToLayoutBox(GetLayoutObjectByElementId("scroller"))
+      ->GetScrollableArea()
+      ->ScrollBy(ScrollOffset(-100, 200), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  check_fragments();
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, DocScrollingTraditional) {
   SetBodyInnerHTML("<style> body { height: 10000px; } </style>");
 

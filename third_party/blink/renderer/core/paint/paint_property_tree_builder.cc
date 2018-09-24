@@ -1199,10 +1199,14 @@ static LayoutPoint VisualOffsetFromPaintOffsetRoot(
         &painting_layer->GetLayoutObject()));
   }
 
-  // Don't include scroll offset of paint_offset_root. Any scroll is
-  // already included in a separate transform node.
-  if (paint_offset_root->HasOverflowClip())
-    result += ToLayoutBox(paint_offset_root)->ScrolledContentOffset();
+  // Convert the result into the space of the scrolling contents space.
+  if (const auto* properties =
+          paint_offset_root->FirstFragment().PaintProperties()) {
+    if (const auto* scroll_translation = properties->ScrollTranslation()) {
+      DCHECK(scroll_translation->Matrix().IsIdentityOr2DTranslation());
+      result += -LayoutSize(scroll_translation->Matrix().To2DTranslation());
+    }
+  }
   return result;
 }
 
@@ -1848,16 +1852,8 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
     const auto& paint_offset_root_fragment =
         context_.current.paint_offset_root->FirstFragment();
     paint_offset.MoveBy(paint_offset_root_fragment.PaintOffset());
-    if (paint_offset_root_fragment.PaintProperties() &&
-        paint_offset_root_fragment.PaintProperties()->ScrollTranslation()) {
-      // This duplicates the logic of the additional paint offset for scrolling
-      // contents in UpdateScrollTranslation().
-      paint_offset.MoveBy(
-          ToLayoutBox(context_.current.paint_offset_root)->ScrollOrigin());
-    }
 
     context_.current.paint_offset = paint_offset;
-
     return;
   }
 
