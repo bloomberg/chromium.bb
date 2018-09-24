@@ -470,6 +470,10 @@ viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
              : viz::SurfaceId();
 }
 
+bool DelegatedFrameHostAndroid::HasPrimarySurface() const {
+  return content_layer_ && content_layer_->primary_surface_id().is_valid();
+}
+
 bool DelegatedFrameHostAndroid::HasFallbackSurface() const {
   return content_layer_ && content_layer_->fallback_surface_id() &&
          content_layer_->fallback_surface_id()->is_valid();
@@ -477,27 +481,42 @@ bool DelegatedFrameHostAndroid::HasFallbackSurface() const {
 
 void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
     DelegatedFrameHostAndroid* other) {
-  if (HasFallbackSurface() || !other->HasFallbackSurface())
+  if (HasFallbackSurface() || !other->HasPrimarySurface())
     return;
 
-  if (!enable_surface_synchronization_) {
-    if (content_layer_) {
-      content_layer_->SetPrimarySurfaceId(
-          *other->content_layer_->fallback_surface_id(),
-          cc::DeadlinePolicy::UseDefaultDeadline());
+  if (enable_surface_synchronization_) {
+    const viz::SurfaceId& other_primary =
+        other->content_layer_->primary_surface_id();
+    const base::Optional<viz::SurfaceId>& other_fallback =
+        other->content_layer_->fallback_surface_id();
+    viz::SurfaceId desired_fallback;
+    if (!other->HasFallbackSurface() ||
+        !other_primary.IsSameOrNewerThan(*other_fallback)) {
+      desired_fallback = other_primary.ToSmallestId();
     } else {
-      const auto& surface_id = other->SurfaceId();
-      active_local_surface_id_ = surface_id.local_surface_id();
-      pending_local_surface_id_ = active_local_surface_id_;
-      active_device_scale_factor_ = other->active_device_scale_factor_;
-      pending_surface_size_in_pixels_ = other->pending_surface_size_in_pixels_;
-      has_transparent_background_ = other->has_transparent_background_;
-      content_layer_ = CreateSurfaceLayer(
-          surface_id, surface_id, other->content_layer_->bounds(),
-          cc::DeadlinePolicy::UseDefaultDeadline(),
-          other->content_layer_->contents_opaque());
-      view_->GetLayer()->AddChild(content_layer_);
+      desired_fallback = *other_fallback;
     }
+    content_layer_->SetFallbackSurfaceId(
+        other->content_layer_->primary_surface_id().ToSmallestId());
+    return;
+  }
+
+  if (content_layer_) {
+    content_layer_->SetPrimarySurfaceId(
+        *other->content_layer_->fallback_surface_id(),
+        cc::DeadlinePolicy::UseDefaultDeadline());
+  } else {
+    const auto& surface_id = other->SurfaceId();
+    active_local_surface_id_ = surface_id.local_surface_id();
+    pending_local_surface_id_ = active_local_surface_id_;
+    active_device_scale_factor_ = other->active_device_scale_factor_;
+    pending_surface_size_in_pixels_ = other->pending_surface_size_in_pixels_;
+    has_transparent_background_ = other->has_transparent_background_;
+    content_layer_ = CreateSurfaceLayer(
+        surface_id, surface_id, other->content_layer_->bounds(),
+        cc::DeadlinePolicy::UseDefaultDeadline(),
+        other->content_layer_->contents_opaque());
+    view_->GetLayer()->AddChild(content_layer_);
   }
   content_layer_->SetFallbackSurfaceId(
       *other->content_layer_->fallback_surface_id());
