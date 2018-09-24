@@ -10,6 +10,15 @@ function prepareDatabase()
 {
 }
 
+function setVersion()
+{
+    debug("Open request should not receive a blocked event:");
+    var request = evalAndLog("indexedDB.open(dbname, 2)");
+    request.onerror = unexpectedErrorCallback;
+    request.onblocked = unexpectedBlockedCallback;
+    request.onsuccess = finishJSTest;
+}
+
 function openSuccess()
 {
     db = event.target.result;
@@ -23,16 +32,8 @@ function openSuccess()
         debug("Dropping references to new connection.");
         // After leaving this function, there are no remaining references to the
         // db, so it should get deleted.
-        setTimeout(setVersion, 2);
+        setTimeout(function () {
+            asyncGC(setVersion);
+        }, 2);
     };
-}
-
-function setVersion()
-{
-    evalAndLog("gc()");
-    debug("Open request should not receive a blocked event:");
-    var request = evalAndLog("indexedDB.open(dbname, 2)");
-    request.onerror = unexpectedErrorCallback;
-    request.onblocked = unexpectedBlockedCallback;
-    request.onsuccess = finishJSTest;
 }
