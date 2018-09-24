@@ -125,8 +125,7 @@ ArcPowerBridge* ArcPowerBridge::GetForBrowserContext(
 
 ArcPowerBridge::ArcPowerBridge(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service),
-      weak_ptr_factory_(this) {
+    : arc_bridge_service_(bridge_service), weak_ptr_factory_(this) {
   arc_bridge_service_->power()->SetHost(this);
   arc_bridge_service_->power()->AddObserver(this);
 }
@@ -152,8 +151,8 @@ void ArcPowerBridge::OnConnectionReady() {
   // TODO(mash): Support this functionality without ash::Shell access in Chrome.
   if (ash::Shell::HasInstance())
     ash::Shell::Get()->display_configurator()->AddObserver(this);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      AddObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      this);
   chromeos::DBusThreadManager::Get()
       ->GetPowerManagerClient()
       ->GetScreenBrightnessPercent(
@@ -165,8 +164,8 @@ void ArcPowerBridge::OnConnectionClosed() {
   // TODO(mash): Support this functionality without ash::Shell access in Chrome.
   if (ash::Shell::HasInstance())
     ash::Shell::Get()->display_configurator()->RemoveObserver(this);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+      this);
   wake_lock_requestors_.clear();
 }
 
