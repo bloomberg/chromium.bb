@@ -247,17 +247,6 @@ void CloseWidgetForWindow(aura::Window* window) {
   widget->Close();
 }
 
-// TODO(sky): investigate removing this entirely. https://crbug.com/842365
-void AddLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
-                                         aura::Window* window) {
-  window->AddPreTargetHandler(handler);
-}
-
-void RemoveLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
-                                            aura::Window* window) {
-  window->RemovePreTargetHandler(handler);
-}
-
 void InstallResizeHandleWindowTargeterForWindow(aura::Window* window) {
   window->SetEventTargeter(std::make_unique<InteriorResizeHandleTargeter>());
 }

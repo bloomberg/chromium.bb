@@ -9,7 +9,6 @@
 #include "ash/shelf/shelf_tooltip_preview_bubble.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
-#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -41,16 +40,12 @@ ShelfTooltipManager::ShelfTooltipManager(ShelfView* shelf_view)
 ShelfTooltipManager::~ShelfTooltipManager() {
   Shell::Get()->RemovePointerWatcher(this);
   shelf_view_->shelf()->RemoveObserver(this);
-  aura::Window* window = nullptr;
-  if (shelf_view_->GetWidget())
-    window = shelf_view_->GetWidget()->GetNativeWindow();
-  if (window)
-    wm::RemoveLimitedPreTargetHandlerForWindow(this, window);
+  if (shelf_view_->GetWidget() && shelf_view_->GetWidget()->GetNativeWindow())
+    shelf_view_->GetWidget()->GetNativeWindow()->RemovePreTargetHandler(this);
 }
 
 void ShelfTooltipManager::Init() {
-  wm::AddLimitedPreTargetHandlerForWindow(
-      this, shelf_view_->GetWidget()->GetNativeWindow());
+  shelf_view_->GetWidget()->GetNativeWindow()->AddPreTargetHandler(this);
 }
 
 void ShelfTooltipManager::Close() {
