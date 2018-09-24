@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/views/crostini/crostini_installer_view.h"
+#include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -750,17 +751,17 @@ AutotestPrivateSetCrostiniEnabledFunction::Run() {
   std::unique_ptr<api::autotest_private::SetCrostiniEnabled::Params> params(
       api::autotest_private::SetCrostiniEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  if (!IsCrostiniUIAllowedForProfile(ProfileManager::GetActiveUserProfile())) {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (!IsCrostiniUIAllowedForProfile(profile))
     return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
-  }
+
   // Set the preference to indicate Crostini is enabled/disabled.
-  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
-      crostini::prefs::kCrostiniEnabled, params->enabled);
+  profile->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled,
+                                  params->enabled);
   // Set the flag to indicate we are in testing mode so that Chrome doesn't
   // try to start the VM/container itself.
   crostini::CrostiniManager* crostini_manager =
-      crostini::CrostiniManager::GetForProfile(
-          ProfileManager::GetActiveUserProfile());
+      crostini::CrostiniManager::GetForProfile(profile);
   crostini_manager->set_skip_restart_for_testing();
   return RespondNow(NoArguments());
 #else
@@ -775,14 +776,14 @@ ExtensionFunction::ResponseAction
 AutotestPrivateRunCrostiniInstallerFunction::Run() {
   DVLOG(1) << "AutotestPrivateInstallCrostiniFunction";
 #if defined(OS_CHROMEOS)
-  if (!IsCrostiniUIAllowedForProfile(ProfileManager::GetActiveUserProfile())) {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (!IsCrostiniUIAllowedForProfile(profile))
     return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
-  }
+
   // Run GUI installer which will install crostini vm / container and
   // start terminal app on completion.  After starting the installer,
   // we call RestartCrostini and we will be put in the pending restarters
   // queue and be notified on success/otherwise of installation.
-  Profile* profile = Profile::FromBrowserContext(browser_context());
   CrostiniInstallerView::Show(profile);
   CrostiniInstallerView::GetActiveViewForTesting()->Accept();
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
@@ -804,6 +805,42 @@ void AutotestPrivateRunCrostiniInstallerFunction::CrostiniRestarted(
     Respond(NoArguments());
   } else {
     Respond(Error("Error installing crostini"));
+  }
+}
+#endif
+
+AutotestPrivateRunCrostiniUninstallerFunction::
+    ~AutotestPrivateRunCrostiniUninstallerFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateRunCrostiniUninstallerFunction::Run() {
+  DVLOG(1) << "AutotestPrivateRunCrostiniUninstallerFunction";
+#if defined(OS_CHROMEOS)
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (!IsCrostiniUIAllowedForProfile(profile))
+    return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
+
+  // Run GUI uninstaller which will remove crostini vm / container. We then
+  // receive the callback with the result when that is complete.
+  crostini::CrostiniManager::GetForProfile(profile)->AddRemoveCrostiniCallback(
+      base::BindOnce(
+          &AutotestPrivateRunCrostiniUninstallerFunction::CrostiniRemoved,
+          this));
+  CrostiniUninstallerView::Show(profile);
+  CrostiniUninstallerView::GetActiveViewForTesting()->Accept();
+  return RespondLater();
+#else
+  return RespondNow(Error(kOnlyAvailableOnChromeOSError));
+#endif
+}
+
+#if defined(OS_CHROMEOS)
+void AutotestPrivateRunCrostiniUninstallerFunction::CrostiniRemoved(
+    crostini::ConciergeClientResult result) {
+  if (result == crostini::ConciergeClientResult::SUCCESS) {
+    Respond(NoArguments());
+  } else {
+    Respond(Error("Error uninstalling crostini"));
   }
 }
 #endif

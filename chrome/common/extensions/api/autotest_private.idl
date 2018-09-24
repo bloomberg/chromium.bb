@@ -197,6 +197,10 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void runCrostiniInstaller(VoidCallback callback);
 
+    // Run the crostini uninstaller GUI to remove the default crostini
+    // vm / container. The callback is invoked upon completion.
+    static void runCrostiniUninstaller(VoidCallback callback);
+
     // Enable/disable Crostini in preferences.
     // |enabled|: Enable Crostini.
     // |callback|: Called when the operation has completed.
