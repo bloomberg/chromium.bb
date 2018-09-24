@@ -484,20 +484,45 @@ void DelegatedFrameHost::WindowTitleChanged(const std::string& title) {
 }
 
 void DelegatedFrameHost::TakeFallbackContentFrom(DelegatedFrameHost* other) {
-  if (!other->HasFallbackSurface() || HasFallbackSurface())
+  // If the other view is not showing anything, we can't obtain a fallback.
+  if (!other->HasPrimarySurface())
     return;
+
+  // This method should not overwrite the existing fallback. This method is only
+  // supposed to be called when the view was just created and there is no
+  // existing fallback.
+  if (HasFallbackSurface())
+    return;
+
+  const viz::SurfaceId* other_primary =
+      other->client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
+
+  const viz::SurfaceId* other_fallback =
+      other->client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId();
+
+  // In two cases we need to obtain a new fallback from the primary id of the
+  // other view instead of using its fallback:
+  // - When the other view has no fallback,
+  // - When a fallback exists but has a different FrameSinkId or embed token
+  // than the primary. If we use the fallback, then the resulting SurfaceRange
+  // in this view will not cover any surface with the FrameSinkId / embed token
+  // of the old view's primary.
+  viz::SurfaceId desired_fallback;
+  if (!other_fallback || !other_primary->IsSameOrNewerThan(*other_fallback)) {
+    desired_fallback = other_primary->ToSmallestId();
+  } else {
+    desired_fallback = *other_fallback;
+  }
 
   if (!HasPrimarySurface()) {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        *other->client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId(),
-        other->client_->DelegatedFrameHostGetLayer()->size(),
+        desired_fallback, other->client_->DelegatedFrameHostGetLayer()->size(),
         other->client_->DelegatedFrameHostGetLayer()->background_color(),
         cc::DeadlinePolicy::UseDefaultDeadline(),
         false /* stretch_content_to_fill_bounds */);
   }
 
-  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-      *other->client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId());
+  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(desired_fallback);
 }
 
 }  // namespace content
