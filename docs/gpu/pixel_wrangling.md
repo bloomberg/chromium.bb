@@ -83,11 +83,11 @@ test the code that is actually shipped. As of this writing, the tests included:
         `pixel_integration_test.py`
     *   Stress tests of the screenshot functionality other tests use:
         `screenshot_sync_integration_test.py`
-*   `angle_unittests`: see `src/gpu/gpu.gyp`
+*   `angle_unittests`: see `src/third_party/angle/src/tests/BUILD.gn`
 *   drawElements tests (on the chromium.gpu.fyi waterfall): see
     `src/third_party/angle/src/tests/BUILD.gn`
 *   `gles2_conform_test` (requires internal sources): see
-    `src/gpu/gles2_conform_support/gles2_conform_test.gyp`
+    `src/gpu/gles2_conform_support/BUILD.gn`
 *   `gl_tests`: see `src/gpu/BUILD.gn`
 *   `gl_unittests`: see `src/ui/gl/BUILD.gn`
 
