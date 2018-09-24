@@ -4179,7 +4179,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/styled_text_field_cell_unittest.mm",
         "../browser/ui/cocoa/styled_text_field_unittest.mm",
         "../browser/ui/cocoa/tabbed_browser_window_unittest.mm",
-        "../browser/ui/cocoa/tabs/alert_indicator_button_cocoa_unittest.mm",
         "../browser/ui/cocoa/tabs/tab_controller_unittest.mm",
         "../browser/ui/cocoa/tabs/tab_strip_controller_unittest.mm",
         "../browser/ui/cocoa/tabs/tab_strip_view_unittest.mm",

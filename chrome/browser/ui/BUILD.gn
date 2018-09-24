@@ -233,8 +233,6 @@ jumbo_split_static_library("ui") {
       "cocoa/tab_contents/tab_contents_controller.mm",
       "cocoa/tabbed_browser_window.h",
       "cocoa/tabbed_browser_window.mm",
-      "cocoa/tabs/alert_indicator_button_cocoa.h",
-      "cocoa/tabs/alert_indicator_button_cocoa.mm",
       "cocoa/tabs/tab_controller.h",
       "cocoa/tabs/tab_controller.mm",
       "cocoa/tabs/tab_controller_target.h",

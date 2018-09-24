@@ -23,7 +23,6 @@ enum TabLoadingState {
   kTabCrashed,
 };
 
-@class AlertIndicatorButtonCocoa;
 @class MenuControllerCocoa;
 @class TabViewCocoa;
 @protocol TabControllerTarget;
@@ -59,7 +58,6 @@ enum TabLoadingState {
 @property(assign, nonatomic) BOOL selected;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) GURL url;
-@property(readonly, nonatomic) AlertIndicatorButtonCocoa* alertIndicatorButton;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 
 // Default height for tabs.
@@ -120,7 +118,6 @@ enum TabLoadingState {
 - (NSView*)iconView;
 - (int)iconCapacity;
 - (BOOL)shouldShowIcon;
-- (BOOL)shouldShowAlertIndicator;
 - (BOOL)shouldShowCloseButton;
 @end  // TabControllerCocoa(TestingAPI)
 

@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
@@ -110,10 +109,6 @@ class TabControllerTest : public CocoaTest {
 
  protected:
   void CheckLayoutAndVisibilityOfSubviewsForAllStates(bool is_rtl) {
-    static const TabAlertState kAlertStatesToTest[] = {
-        TabAlertState::NONE, TabAlertState::TAB_CAPTURING,
-        TabAlertState::AUDIO_PLAYING, TabAlertState::AUDIO_MUTING};
-
     NSWindow* const window = test_window();
 
     // Create TabControllerCocoa instance and place its view into the test
@@ -127,58 +122,43 @@ class TabControllerTest : public CocoaTest {
     base::scoped_nsobject<NSImage> favicon(
         rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
 
-    // Trigger TabControllerCocoa to auto-create the AlertIndicatorButtonCocoa.
-    [controller setAlertState:TabAlertState::AUDIO_PLAYING];
-    [controller setAlertState:TabAlertState::NONE];
-    base::scoped_nsobject<AlertIndicatorButtonCocoa> alertIndicatorButton(
-        [[controller alertIndicatorButton] retain]);
-    ASSERT_TRUE(alertIndicatorButton.get());
-
     // Perform layout over all possible combinations, checking for correct
     // results.
     for (int isPinnedTab = 0; isPinnedTab < 2; ++isPinnedTab) {
       for (int isActiveTab = 0; isActiveTab < 2; ++isActiveTab) {
-        for (size_t alertStateIndex = 0;
-             alertStateIndex < arraysize(kAlertStatesToTest);
-             ++alertStateIndex) {
-          const TabAlertState alertState = kAlertStatesToTest[alertStateIndex];
-          SCOPED_TRACE(::testing::Message()
-                       << (isActiveTab ? "Active" : "Inactive") << ' '
-                       << (isPinnedTab ? "Pinned " : "")
-                       << "Tab with alert indicator state "
-                       << static_cast<uint8_t>(alertState));
+        SCOPED_TRACE(::testing::Message()
+                     << (isActiveTab ? "Active" : "Inactive") << ' '
+                     << (isPinnedTab ? "Pinned " : ""));
 
-          // Simulate what tab_strip_controller would do to set up the
-          // TabControllerCocoa state.
-          [controller setPinned:(isPinnedTab ? YES : NO)];
-          [controller setActive:(isActiveTab ? YES : NO)];
-          [controller setIconImage:favicon
-                   forLoadingState:kTabDone
-                          showIcon:YES];
-          [controller setAlertState:alertState];
-          [controller updateVisibility];
+        // Simulate what tab_strip_controller would do to set up the
+        // TabControllerCocoa state.
+        [controller setPinned:(isPinnedTab ? YES : NO)];
+        [controller setActive:(isActiveTab ? YES : NO)];
+        [controller setIconImage:favicon
+                 forLoadingState:kTabDone
+                        showIcon:YES];
+        [controller updateVisibility];
 
-          // Test layout for every width from maximum to minimum.
-          NSRect tabFrame = [[controller view] frame];
-          int minWidth;
-          if (isPinnedTab) {
-            tabFrame.size.width = minWidth =
-                [TabControllerCocoa pinnedTabWidth];
-          } else {
-            tabFrame.size.width = [TabControllerCocoa maxTabWidth];
-            minWidth = isActiveTab ? [TabControllerCocoa minActiveTabWidth]
-                                   : [TabControllerCocoa minTabWidth];
-          }
-          while (NSWidth(tabFrame) >= minWidth) {
-            SCOPED_TRACE(::testing::Message() << "width="
-                                              << tabFrame.size.width);
-            [[controller view] setFrame:tabFrame];
-            if (is_rtl)
-              CheckForExpectedLayoutAndVisibilityOfSubviewsRTL(controller);
-            else
-              CheckForExpectedLayoutAndVisibilityOfSubviews(controller);
-            --tabFrame.size.width;
-          }
+        // Test layout for every width from maximum to minimum.
+        NSRect tabFrame = [[controller view] frame];
+        int minWidth;
+        if (isPinnedTab) {
+          tabFrame.size.width = minWidth =
+              [TabControllerCocoa pinnedTabWidth];
+        } else {
+          tabFrame.size.width = [TabControllerCocoa maxTabWidth];
+          minWidth = isActiveTab ? [TabControllerCocoa minActiveTabWidth]
+                                 : [TabControllerCocoa minTabWidth];
+        }
+        while (NSWidth(tabFrame) >= minWidth) {
+          SCOPED_TRACE(::testing::Message() << "width="
+                                            << tabFrame.size.width);
+          [[controller view] setFrame:tabFrame];
+          if (is_rtl)
+            CheckForExpectedLayoutAndVisibilityOfSubviewsRTL(controller);
+          else
+            CheckForExpectedLayoutAndVisibilityOfSubviews(controller);
+          --tabFrame.size.width;
         }
       }
     }
@@ -200,24 +180,6 @@ class TabControllerTest : public CocoaTest {
         EXPECT_LE(NSMaxX(iconFrame), NSMinX(titleFrame));
       EXPECT_LE(NSMinY(tabFrame), NSMinY(iconFrame));
       EXPECT_LE(NSMaxY(iconFrame), NSMaxY(tabFrame));
-    }
-    if ([controller shouldShowIcon] && [controller shouldShowAlertIndicator]) {
-      EXPECT_LE(NSMaxX([[controller iconView] frame]),
-                NSMinX([[controller alertIndicatorButton] frame]));
-    }
-    if ([controller shouldShowAlertIndicator]) {
-      const NSRect alertIndicatorFrame =
-          [[controller alertIndicatorButton] frame];
-      if (NSWidth(titleFrame) > 0)
-        EXPECT_LE(NSMaxX(titleFrame), NSMinX(alertIndicatorFrame));
-      EXPECT_LE(NSMaxX(alertIndicatorFrame), NSMaxX(tabFrame));
-      EXPECT_LE(NSMinY(tabFrame), NSMinY(alertIndicatorFrame));
-      EXPECT_LE(NSMaxY(alertIndicatorFrame), NSMaxY(tabFrame));
-    }
-    if ([controller shouldShowAlertIndicator] &&
-        [controller shouldShowCloseButton]) {
-      EXPECT_LE(NSMaxX([[controller alertIndicatorButton] frame]),
-                NSMinX([[controller closeButton] frame]));
     }
     if ([controller shouldShowCloseButton]) {
       const NSRect closeButtonFrame = [[controller closeButton] frame];
@@ -241,22 +203,6 @@ class TabControllerTest : public CocoaTest {
       if (NSWidth(titleFrame) > 0)
         EXPECT_LE(NSMaxX(closeButtonFrame), NSMinX(titleFrame));
     }
-    if ([controller shouldShowCloseButton] &&
-        [controller shouldShowAlertIndicator]) {
-      EXPECT_LE(NSMaxX([[controller closeButton] frame]),
-                NSMinX([[controller alertIndicatorButton] frame]));
-    }
-    if ([controller shouldShowAlertIndicator]) {
-      const NSRect alertIndicatorFrame =
-          [[controller alertIndicatorButton] frame];
-      EXPECT_TRUE(NSContainsRect(tabFrame, alertIndicatorFrame));
-      if (NSWidth(titleFrame) > 0)
-        EXPECT_LE(NSMaxX(alertIndicatorFrame), NSMinX(titleFrame));
-    }
-    if ([controller shouldShowAlertIndicator] && [controller shouldShowIcon]) {
-      EXPECT_LE(NSMaxX([[controller alertIndicatorButton] frame]),
-                NSMinX([[controller iconView] frame]));
-    }
     if ([controller shouldShowIcon]) {
       const NSRect iconFrame = [[controller iconView] frame];
       EXPECT_TRUE(NSContainsRect(tabFrame, iconFrame));
@@ -268,17 +214,9 @@ class TabControllerTest : public CocoaTest {
   static void CheckVisibilityOfSubviews(const TabControllerCocoa* controller) {
     // Check whether subviews should be visible when they are supposed to be,
     // given Tab size and TabRendererData state.
-    const TabAlertState indicatorState =
-        [[controller alertIndicatorButton] showingAlertState];
     if ([controller pinned]) {
       EXPECT_EQ(1, [controller iconCapacity]);
-      if (indicatorState != TabAlertState::NONE) {
-        EXPECT_FALSE([controller shouldShowIcon]);
-        EXPECT_TRUE([controller shouldShowAlertIndicator]);
-      } else {
-        EXPECT_TRUE([controller shouldShowIcon]);
-        EXPECT_FALSE([controller shouldShowAlertIndicator]);
-      }
+      EXPECT_TRUE([controller shouldShowIcon]);
       EXPECT_FALSE([controller shouldShowCloseButton]);
     } else if ([controller selected]) {
       EXPECT_TRUE([controller shouldShowCloseButton]);
@@ -286,24 +224,13 @@ class TabControllerTest : public CocoaTest {
         case 0:
         case 1:
           EXPECT_FALSE([controller shouldShowIcon]);
-          EXPECT_FALSE([controller shouldShowAlertIndicator]);
           break;
         case 2:
-          if (indicatorState != TabAlertState::NONE) {
-            EXPECT_FALSE([controller shouldShowIcon]);
-            EXPECT_TRUE([controller shouldShowAlertIndicator]);
-          } else {
-            EXPECT_TRUE([controller shouldShowIcon]);
-            EXPECT_FALSE([controller shouldShowAlertIndicator]);
-          }
+          EXPECT_TRUE([controller shouldShowIcon]);
           break;
         default:
           EXPECT_LE(3, [controller iconCapacity]);
           EXPECT_TRUE([controller shouldShowIcon]);
-          if (indicatorState != TabAlertState::NONE)
-            EXPECT_TRUE([controller shouldShowAlertIndicator]);
-          else
-            EXPECT_FALSE([controller shouldShowAlertIndicator]);
           break;
       }
     } else {  // Tab not selected/active and not pinned tab.
@@ -311,25 +238,14 @@ class TabControllerTest : public CocoaTest {
         case 0:
           EXPECT_FALSE([controller shouldShowCloseButton]);
           EXPECT_FALSE([controller shouldShowIcon]);
-          EXPECT_FALSE([controller shouldShowAlertIndicator]);
           break;
         case 1:
           EXPECT_FALSE([controller shouldShowCloseButton]);
-          if (indicatorState != TabAlertState::NONE) {
-            EXPECT_FALSE([controller shouldShowIcon]);
-            EXPECT_TRUE([controller shouldShowAlertIndicator]);
-          } else {
-            EXPECT_TRUE([controller shouldShowIcon]);
-            EXPECT_FALSE([controller shouldShowAlertIndicator]);
-          }
+          EXPECT_TRUE([controller shouldShowIcon]);
           break;
         default:
           EXPECT_LE(2, [controller iconCapacity]);
           EXPECT_TRUE([controller shouldShowIcon]);
-          if (indicatorState != TabAlertState::NONE)
-            EXPECT_TRUE([controller shouldShowAlertIndicator]);
-          else
-            EXPECT_FALSE([controller shouldShowAlertIndicator]);
           break;
       }
     }
