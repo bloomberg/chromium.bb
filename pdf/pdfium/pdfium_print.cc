@@ -4,6 +4,7 @@
 
 #include "pdf/pdfium/pdfium_print.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -35,6 +36,11 @@ namespace {
 // reaches here, |pages_per_sheet| should be a positive integer.
 bool ShouldDoNup(int pages_per_sheet) {
   return pages_per_sheet > 1;
+}
+
+// Returns the valid, positive page count, or 0 on failure.
+int GetDocumentPageCount(FPDF_DOCUMENT doc) {
+  return std::max(FPDF_GetPageCount(doc), 0);
 }
 
 // Set the destination page size and content area in points based on source
@@ -273,51 +279,19 @@ void PDFiumPrint::FitContentsToPrintableArea(FPDF_DOCUMENT doc,
   FitContentsToPrintableAreaIfRequired(doc, 1.0, print_settings);
 }
 
-pp::Buffer_Dev PDFiumPrint::PrintPagesAsRasterPdf(
-    const PP_PrintPageNumberRange_Dev* page_ranges,
-    uint32_t page_range_count,
-    const PP_PrintSettings_Dev& print_settings,
-    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
-  ScopedFPDFDocument output_doc = CreatePrintPdf(
-      page_ranges, page_range_count, print_settings, pdf_print_settings);
-  if (!output_doc)
-    return pp::Buffer_Dev();
-
-  int page_count = FPDF_GetPageCount(output_doc.get());
-  if (page_count <= 0)
-    return pp::Buffer_Dev();
-
-  ScopedFPDFDocument rasterized_output_doc(FPDF_CreateNewDocument());
-  DCHECK(rasterized_output_doc);
-
-  for (int i = 0; i < page_count; ++i) {
-    ScopedFPDFPage pdf_page(FPDF_LoadPage(output_doc.get(), i));
-    if (!pdf_page)
-      return pp::Buffer_Dev();
-
-    ScopedFPDFDocument temp_doc =
-        CreateSinglePageRasterPdf(pdf_page.get(), print_settings);
-    if (!temp_doc)
-      return pp::Buffer_Dev();
-
-    if (!FPDF_ImportPages(rasterized_output_doc.get(), temp_doc.get(), "1", i))
-      return pp::Buffer_Dev();
-  }
-
-  FPDF_CopyViewerPreferences(rasterized_output_doc.get(), engine_->doc());
-  return GetPrintData(rasterized_output_doc.get());
-}
-
 pp::Buffer_Dev PDFiumPrint::PrintPagesAsPdf(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings,
-    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
+    const PP_PdfPrintSettings_Dev& pdf_print_settings,
+    bool raster) {
   pp::Buffer_Dev buffer;
   ScopedFPDFDocument output_doc = CreatePrintPdf(
       page_ranges, page_range_count, print_settings, pdf_print_settings);
-  if (output_doc)
-    buffer = GetPrintData(output_doc.get());
+  if (raster)
+    output_doc = CreateRasterPdf(std::move(output_doc), print_settings);
+  if (GetDocumentPageCount(output_doc.get()))
+    buffer = ConvertDocToBuffer(std::move(output_doc));
   return buffer;
 }
 
@@ -350,6 +324,34 @@ ScopedFPDFDocument PDFiumPrint::CreatePrintPdf(
   if (!FlattenPrintData(output_doc.get()))
     return nullptr;
   return output_doc;
+}
+
+ScopedFPDFDocument PDFiumPrint::CreateRasterPdf(
+    ScopedFPDFDocument doc,
+    const PP_PrintSettings_Dev& print_settings) {
+  int page_count = GetDocumentPageCount(doc.get());
+  if (page_count == 0)
+    return nullptr;
+
+  ScopedFPDFDocument rasterized_doc(FPDF_CreateNewDocument());
+  DCHECK(rasterized_doc);
+  FPDF_CopyViewerPreferences(rasterized_doc.get(), doc.get());
+
+  for (int i = 0; i < page_count; ++i) {
+    ScopedFPDFPage pdf_page(FPDF_LoadPage(doc.get(), i));
+    if (!pdf_page)
+      return nullptr;
+
+    ScopedFPDFDocument temp_doc =
+        CreateSinglePageRasterPdf(pdf_page.get(), print_settings);
+    if (!temp_doc)
+      return nullptr;
+
+    if (!FPDF_ImportPages(rasterized_doc.get(), temp_doc.get(), "1", i))
+      return nullptr;
+  }
+
+  return rasterized_doc;
 }
 
 ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
@@ -448,12 +450,12 @@ bool PDFiumPrint::FlattenPrintData(FPDF_DOCUMENT doc) const {
   return true;
 }
 
-pp::Buffer_Dev PDFiumPrint::GetPrintData(FPDF_DOCUMENT doc) const {
+pp::Buffer_Dev PDFiumPrint::ConvertDocToBuffer(ScopedFPDFDocument doc) const {
   DCHECK(doc);
 
   pp::Buffer_Dev buffer;
   PDFiumMemBufferFileWrite output_file_write;
-  if (FPDF_SaveAsCopy(doc, &output_file_write, 0)) {
+  if (FPDF_SaveAsCopy(doc.get(), &output_file_write, 0)) {
     size_t size = output_file_write.size();
     buffer = pp::Buffer_Dev(engine_->GetPluginInstance(), size);
     if (!buffer.is_null())
