@@ -125,7 +125,7 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     RunTest(test_file, "accessibility/regression");
   }
 
-  std::vector<std::string> Dump() override {
+  std::vector<std::string> Dump(std::vector<std::string>& unused) override {
     std::unique_ptr<AccessibilityTreeFormatter> formatter(
         CreateAccessibilityTreeFormatter());
     formatter->SetFilters(filters_);

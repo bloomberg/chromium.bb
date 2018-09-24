@@ -134,6 +134,9 @@ struct AX_EXPORT AXNodeData {
   void AddState(ax::mojom::State state_enum);
   void AddAction(ax::mojom::Action action_enum);
 
+  // Remove bits in the given enum's corresponding bitfield.
+  void RemoveState(ax::mojom::State state_enum);
+
   // Helper functions to get some common int attributes with some specific
   // enum types:
   ax::mojom::CheckedState GetCheckedState() const {
