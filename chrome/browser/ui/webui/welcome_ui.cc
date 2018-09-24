@@ -80,6 +80,12 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
         "landing_view.html", IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_HTML);
     html_source->AddResourcePath(
         "landing_view.js", IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_JS);
+    html_source->AddResourcePath(
+        "navigation_behavior.html",
+        IDR_WELCOME_ONBOARDING_WELCOME_NAVIGATION_BEHAVIOR_HTML);
+    html_source->AddResourcePath(
+        "navigation_behavior.js",
+        IDR_WELCOME_ONBOARDING_WELCOME_NAVIGATION_BEHAVIOR_JS);
     html_source->AddResourcePath("welcome.css",
                                  IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_CSS);
     html_source->AddResourcePath(

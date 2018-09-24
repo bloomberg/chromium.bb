@@ -5,13 +5,15 @@
 Polymer({
   is: 'landing-view',
 
+  behaviors: [welcome.NavigationBehavior],
+
   /** @private */
   onExistingUserClick_: function() {
-    // TODO(scottchen): do something.
+    this.navigateTo(welcome.Routes.RETURNING_USER, 1);
   },
 
   /** @private */
   onNewUserClick_: function() {
-    // TODO(scottchen): do something.
+    this.navigateTo(welcome.Routes.NEW_USER, 1);
   }
 });
