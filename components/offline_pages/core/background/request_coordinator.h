@@ -218,7 +218,7 @@ class RequestCoordinator : public KeyedService,
                              int64_t received_bytes) override;
 
   // Returns the request queue used for requests.  Coordinator keeps ownership.
-  RequestQueue* queue() { return queue_.get(); }
+  RequestQueue* queue_for_testing() { return queue_.get(); }
 
   // Return an unowned pointer to the Scheduler.
   Scheduler* scheduler() { return scheduler_.get(); }
