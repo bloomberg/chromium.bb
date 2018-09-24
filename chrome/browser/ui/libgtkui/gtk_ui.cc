@@ -877,22 +877,16 @@ void GtkUi::OnDeviceScaleFactorMaybeChanged(void*, GParamSpec*) {
 }
 
 void GtkUi::LoadGtkValues() {
-  // TODO(erg): GtkThemeService had a comment here about having to muck with
-  // the raw Prefs object to remove prefs::kCurrentThemeImages or else we'd
-  // regress startup time. Figure out how to do that when we can't access the
-  // prefs system from here.
-
+  // TODO(thomasanderson): GtkThemeService had a comment here about having to
+  // muck with the raw Prefs object to remove prefs::kCurrentThemeImages or else
+  // we'd regress startup time. Figure out how to do that when we can't access
+  // the prefs system from here.
   UpdateDeviceScaleFactor();
   UpdateCursorTheme();
+  UpdateColors();
+}
 
-  SkColor tab_color = GetBgColor("");
-  SkColor tab_text_color = GetFgColor("GtkLabel");
-
-  colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] = tab_text_color;
-
-  colors_[ThemeProperties::COLOR_TAB_TEXT] = tab_text_color;
-  colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = tab_text_color;
-
+void GtkUi::UpdateColors() {
   SkColor location_bar_border = GetBorderColor("GtkEntry#entry");
   if (SkColorGetA(location_bar_border))
     colors_[ThemeProperties::COLOR_LOCATION_BAR_BORDER] = location_bar_border;
@@ -907,9 +901,6 @@ void GtkUi::LoadGtkValues() {
                                         : "GtkTextView.view:selected:backdrop");
 
   SkColor tab_border = GetBorderColor("GtkButton#button");
-  colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND] = tab_color;
-  colors_[ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT] =
-      tab_text_color;
   // Separates the toolbar from the bookmark bar or butter bars.
   colors_[ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR] = tab_border;
   // Separates entries in the downloads bar.
@@ -925,6 +916,43 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_NTP_HEADER] =
       GetBorderColor("GtkButton#button");
 
+  SkColor tab_text_color = GetFgColor("GtkLabel");
+  colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] = tab_text_color;
+  colors_[ThemeProperties::COLOR_TAB_TEXT] = tab_text_color;
+  colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = tab_text_color;
+  colors_[ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT] =
+      tab_text_color;
+
+  colors_[ThemeProperties::COLOR_BACKGROUND_TAB] = SK_ColorTRANSPARENT;
+  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE] = SK_ColorTRANSPARENT;
+  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
+      SK_ColorTRANSPARENT;
+  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE] =
+      SK_ColorTRANSPARENT;
+
+  colors_[ThemeProperties::COLOR_NTP_LINK] = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
+
+  // Generate the colors that we pass to WebKit.
+  focus_ring_color_ = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_FocusedBorderColor);
+
+  // Some GTK themes only define the text selection colors on the GtkEntry
+  // class, so we need to use that for getting selection colors.
+  active_selection_bg_color_ = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
+  active_selection_fg_color_ = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionColor);
+
+  colors_[ThemeProperties::COLOR_TAB_THROBBER_SPINNING] =
+      native_theme_->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberSpinningColor);
+  colors_[ThemeProperties::COLOR_TAB_THROBBER_WAITING] =
+      native_theme_->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberWaitingColor);
+
+  // Generate colors that depend on whether or not a custom window frame is
+  // used.  These colors belong in |color_map| below, not |colors_|.
   for (bool custom_frame : {false, true}) {
     ColorMap& color_map =
         custom_frame ? custom_frame_colors_ : native_frame_colors_;
@@ -932,10 +960,12 @@ void GtkUi::LoadGtkValues() {
                                             ? "#headerbar.header-bar.titlebar"
                                             : "GtkMenuBar#menubar";
     const std::string header_selector_inactive = header_selector + ":backdrop";
-    const SkColor frame_color = GetBgColor(header_selector);
+    const SkColor frame_color =
+        SkColorSetA(GetBgColor(header_selector), SK_AlphaOPAQUE);
     const SkColor frame_color_incognito =
         color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
-    const SkColor frame_color_inactive = GetBgColor(header_selector_inactive);
+    const SkColor frame_color_inactive =
+        SkColorSetA(GetBgColor(header_selector_inactive), SK_AlphaOPAQUE);
     const SkColor frame_color_incognito_inactive =
         color_utils::HSLShift(frame_color_inactive, kDefaultTintFrameIncognito);
 
@@ -945,86 +975,36 @@ void GtkUi::LoadGtkValues() {
     color_map[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
         frame_color_incognito_inactive;
 
-    if (ui::MaterialDesignController::IsRefreshUi()) {
-      colors_[ThemeProperties::COLOR_BACKGROUND_TAB] = SK_ColorTRANSPARENT;
-      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE] =
-          SK_ColorTRANSPARENT;
-      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
-          SK_ColorTRANSPARENT;
-      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE] =
-          SK_ColorTRANSPARENT;
+    // Compose the window color on the frame color to ensure the resulting tab
+    // color is opaque.
+    SkColor tab_color =
+        color_utils::GetResultingPaintColor(GetBgColor(""), frame_color);
 
-      const SkColor background_tab_text_color =
-          GetFgColor(header_selector + " GtkLabel.title");
-      const SkColor background_tab_text_color_inactive =
-          GetFgColor(header_selector_inactive + " GtkLabel.title");
+    color_map[ThemeProperties::COLOR_TOOLBAR] = tab_color;
+    color_map[ThemeProperties::COLOR_CONTROL_BACKGROUND] = tab_color;
 
-      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-          background_tab_text_color;
-      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO] =
-          color_utils::GetColorWithMinimumContrast(
-              color_utils::HSLShift(background_tab_text_color,
-                                    kDefaultTintFrameIncognito),
-              frame_color_incognito);
-      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE] =
-          background_tab_text_color_inactive;
-      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE] =
-          color_utils::GetColorWithMinimumContrast(
-              color_utils::HSLShift(background_tab_text_color_inactive,
-                                    kDefaultTintFrameIncognito),
-              frame_color_incognito_inactive);
-    } else {
-      color_utils::HSL frame_hsl;
-      color_utils::SkColorToHSL(frame_color, &frame_hsl);
-      color_utils::HSL frame_hsl_inactive;
-      color_utils::SkColorToHSL(frame_color_inactive, &frame_hsl_inactive);
-      const color_utils::HSL inactive_shift =
-          color_utils::HSL{-1, (frame_hsl_inactive.s - frame_hsl.s + 1) / 2,
-                           (frame_hsl_inactive.l - frame_hsl.l + 1) / 2};
+    color_map[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND] =
+        tab_color;
 
-      const SkColor background_tab_color =
-          color_utils::HSLShift(tab_color, kDefaultTintBackgroundTab);
-      const SkColor background_tab_color_inactive =
-          color_utils::HSLShift(background_tab_color, inactive_shift);
-      const SkColor background_tab_color_incognito =
-          color_utils::HSLShift(tab_color, kDefaultTintBackgroundTabIncognito);
-      const SkColor background_tab_color_incognito_inactive =
-          color_utils::HSLShift(background_tab_color_incognito, inactive_shift);
+    const SkColor background_tab_text_color =
+        GetFgColor(header_selector + " GtkLabel.title");
+    const SkColor background_tab_text_color_inactive =
+        GetFgColor(header_selector_inactive + " GtkLabel.title");
 
-      colors_[ThemeProperties::COLOR_BACKGROUND_TAB] = background_tab_color;
-      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE] =
-          background_tab_color_inactive;
-      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
-          background_tab_color_incognito;
-      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE] =
-          background_tab_color_incognito_inactive;
-
-      const SkColor background_tab_text_color =
-          color_utils::BlendTowardOppositeLuma(tab_text_color, 50);
-      const SkColor background_tab_text_color_incognito = color_utils::HSLShift(
-          background_tab_text_color, kDefaultTintFrameIncognito);
-      const SkColor background_tab_text_color_inactive =
-          color_utils::HSLShift(background_tab_text_color, inactive_shift);
-      const SkColor background_tab_text_color_incognito_inactive =
-          color_utils::HSLShift(background_tab_text_color_incognito,
-                                inactive_shift);
-
-      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-          color_utils::GetColorWithMinimumContrast(background_tab_text_color,
-                                                   background_tab_color);
-      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO] =
-          color_utils::GetColorWithMinimumContrast(
-              background_tab_text_color_incognito,
-              background_tab_color_incognito);
-      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE] =
-          color_utils::GetColorWithMinimumContrast(
-              background_tab_text_color_inactive,
-              background_tab_color_inactive);
-      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE] =
-          color_utils::GetColorWithMinimumContrast(
-              background_tab_text_color_incognito_inactive,
-              background_tab_color_incognito_inactive);
-    }
+    color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
+        background_tab_text_color;
+    color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO] =
+        color_utils::GetColorWithMinimumContrast(
+            color_utils::HSLShift(background_tab_text_color,
+                                  kDefaultTintFrameIncognito),
+            frame_color_incognito);
+    color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE] =
+        background_tab_text_color_inactive;
+    color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE] =
+        color_utils::GetColorWithMinimumContrast(
+            color_utils::HSLShift(background_tab_text_color_inactive,
+                                  kDefaultTintFrameIncognito),
+            frame_color_incognito_inactive);
 
     // These colors represent the border drawn around tabs and between
     // the tabstrip and toolbar.
@@ -1050,30 +1030,6 @@ void GtkUi::LoadGtkValues() {
           toolbar_top_separator_inactive;
     }
   }
-
-  colors_[ThemeProperties::COLOR_TOOLBAR] = tab_color;
-  colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = tab_color;
-
-  colors_[ThemeProperties::COLOR_NTP_LINK] = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
-
-  // Generate the colors that we pass to WebKit.
-  focus_ring_color_ = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_FocusedBorderColor);
-
-  // Some GTK themes only define the text selection colors on the GtkEntry
-  // class, so we need to use that for getting selection colors.
-  active_selection_bg_color_ = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
-  active_selection_fg_color_ = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionColor);
-
-  colors_[ThemeProperties::COLOR_TAB_THROBBER_SPINNING] =
-      native_theme_->GetSystemColor(
-          ui::NativeTheme::kColorId_ThrobberSpinningColor);
-  colors_[ThemeProperties::COLOR_TAB_THROBBER_WAITING] =
-      native_theme_->GetSystemColor(
-          ui::NativeTheme::kColorId_ThrobberWaitingColor);
 }
 
 void GtkUi::UpdateCursorTheme() {
