@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -68,7 +69,18 @@ net::URLRequestJob* ResponseJob(net::URLRequest* request,
 
 class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
  protected:
-  ArcRobotAuthCodeFetcherBrowserTest() = default;
+  // Test configuration for whether to set up the CloudPolicyClient connection.
+  // By default, the test sets up the connection.
+  enum class CloudPolicyClientSetup {
+    kConnect = 0,
+    kSkip = 1,
+  };
+
+  explicit ArcRobotAuthCodeFetcherBrowserTest(
+      CloudPolicyClientSetup cloud_policy_client_setup =
+          CloudPolicyClientSetup::kConnect)
+      : cloud_policy_client_setup_(cloud_policy_client_setup) {}
+
   ~ArcRobotAuthCodeFetcherBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -88,6 +100,9 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
     const AccountId account_id(AccountId::FromUserEmail(kFakeUserName));
     GetFakeUserManager()->AddArcKioskAppUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
+
+    if (cloud_policy_client_setup_ == CloudPolicyClientSetup::kSkip)
+      return;
 
     policy::BrowserPolicyConnectorChromeOS* const connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -140,6 +155,9 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
   }
 
  private:
+  // Whether to connect the CloudPolicyClient.
+  CloudPolicyClientSetup cloud_policy_client_setup_;
+
   std::unique_ptr<policy::TestRequestInterceptor> interceptor_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
@@ -165,6 +183,34 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAuthCodeFetcherBrowserTest,
   interceptor()->PushJobCallback(
       policy::TestRequestInterceptor::BadRequestJob());
 
+  // We expect auth_code is empty in this case. So initialize with non-empty
+  // value.
+  std::string auth_code = "NOT-YET-FETCHED";
+  bool fetch_success = true;
+
+  auto robot_fetcher = std::make_unique<ArcRobotAuthCodeFetcher>();
+  FetchAuthCode(robot_fetcher.get(), &fetch_success, &auth_code);
+
+  EXPECT_FALSE(fetch_success);
+  // Use EXPECT_EQ for better logging in case of failure.
+  EXPECT_EQ(std::string(), auth_code);
+}
+
+class ArcRobotAuthCodeFetcherOfflineBrowserTest
+    : public ArcRobotAuthCodeFetcherBrowserTest {
+ protected:
+  ArcRobotAuthCodeFetcherOfflineBrowserTest()
+      : ArcRobotAuthCodeFetcherBrowserTest(CloudPolicyClientSetup::kSkip) {}
+
+  ~ArcRobotAuthCodeFetcherOfflineBrowserTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcRobotAuthCodeFetcherOfflineBrowserTest);
+};
+
+// Tests that the fetch fails when CloudPolicyClient has not been set up yet.
+IN_PROC_BROWSER_TEST_F(ArcRobotAuthCodeFetcherOfflineBrowserTest,
+                       RequestAccountInfo) {
   // We expect auth_code is empty in this case. So initialize with non-empty
   // value.
   std::string auth_code = "NOT-YET-FETCHED";

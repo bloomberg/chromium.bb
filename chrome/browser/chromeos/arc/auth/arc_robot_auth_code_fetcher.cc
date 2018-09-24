@@ -46,6 +46,12 @@ ArcRobotAuthCodeFetcher::~ArcRobotAuthCodeFetcher() = default;
 void ArcRobotAuthCodeFetcher::Fetch(const FetchCallback& callback) {
   DCHECK(!fetch_request_job_);
   const policy::CloudPolicyClient* client = GetCloudPolicyClient();
+  if (!client) {
+    LOG(WARNING) << "Synchronously failing auth request because "
+                    "CloudPolicyClient is not initialized.";
+    callback.Run(false, std::string());
+    return;
+  }
 
   policy::DeviceManagementService* service = GetDeviceManagementService();
   fetch_request_job_.reset(service->CreateJob(
