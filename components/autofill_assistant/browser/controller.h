@@ -47,6 +47,7 @@ class Controller : public ScriptExecutorDelegate,
   UiController* GetUiController() override;
   WebController* GetWebController() override;
   ClientMemory* GetClientMemory() override;
+  const std::map<std::string, std::string>& GetParameters() override;
 
  private:
   friend ControllerTest;
@@ -82,6 +83,7 @@ class Controller : public ScriptExecutorDelegate,
   std::unique_ptr<WebController> web_controller_;
   std::unique_ptr<Service> service_;
   std::unique_ptr<ScriptTracker> script_tracker_;
+  std::unique_ptr<std::map<std::string, std::string>> parameters_;
 
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;

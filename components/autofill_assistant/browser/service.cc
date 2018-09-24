@@ -81,18 +81,22 @@ Service::Service(const std::string& api_key, content::BrowserContext* context)
 
 Service::~Service() {}
 
-void Service::GetScriptsForUrl(const GURL& url, ResponseCallback callback) {
+void Service::GetScriptsForUrl(
+    const GURL& url,
+    const std::map<std::string, std::string>& parameters,
+    ResponseCallback callback) {
   DCHECK(url.is_valid());
 
   std::unique_ptr<Loader> loader = std::make_unique<Loader>();
   loader->callback = std::move(callback);
   loader->loader = CreateAndStartLoader(
-      script_server_url_, ProtocolUtils::CreateGetScriptsRequest(url),
-      loader.get());
+      script_server_url_,
+      ProtocolUtils::CreateGetScriptsRequest(url, parameters), loader.get());
   loaders_[loader.get()] = std::move(loader);
 }
 
 void Service::GetActions(const std::string& script_path,
+                         const std::map<std::string, std::string>& parameters,
                          ResponseCallback callback) {
   DCHECK(!script_path.empty());
 
@@ -100,7 +104,7 @@ void Service::GetActions(const std::string& script_path,
   loader->callback = std::move(callback);
   loader->loader = CreateAndStartLoader(
       script_action_server_url_,
-      ProtocolUtils::CreateInitialScriptActionsRequest(script_path),
+      ProtocolUtils::CreateInitialScriptActionsRequest(script_path, parameters),
       loader.get());
   loaders_[loader.get()] = std::move(loader);
 }

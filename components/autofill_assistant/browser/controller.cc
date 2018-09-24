@@ -42,6 +42,10 @@ ClientMemory* Controller::GetClientMemory() {
   return memory_.get();
 }
 
+const std::map<std::string, std::string>& Controller::GetParameters() {
+  return *parameters_;
+}
+
 Controller::Controller(
     content::WebContents* web_contents,
     std::unique_ptr<Client> client,
@@ -52,11 +56,14 @@ Controller::Controller(
       client_(std::move(client)),
       web_controller_(std::move(web_controller)),
       service_(std::move(service)),
-      script_tracker_(
-          std::make_unique<ScriptTracker>(this, this, std::move(parameters))),
+      script_tracker_(std::make_unique<ScriptTracker>(this, this)),
+      parameters_(std::move(parameters)),
       memory_(std::make_unique<ClientMemory>()),
       allow_autostart_(true) {
+  DCHECK(parameters_);
+
   GetUiController()->SetUiDelegate(this);
+  GetUiController()->ShowOverlay();
   if (!web_contents->IsLoading()) {
     GetOrCheckScripts(web_contents->GetLastCommittedURL());
   }
@@ -71,7 +78,7 @@ void Controller::GetOrCheckScripts(const GURL& url) {
   if (script_domain_ != url.host()) {
     script_domain_ = url.host();
     service_->GetScriptsForUrl(
-        url,
+        url, *parameters_,
         base::BindOnce(&Controller::OnGetScripts, base::Unretained(this), url));
   } else {
     script_tracker_->CheckScripts();

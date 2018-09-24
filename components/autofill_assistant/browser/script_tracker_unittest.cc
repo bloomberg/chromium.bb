@@ -40,16 +40,12 @@ class ScriptTrackerTest : public testing::Test,
     ON_CALL(mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
 
     // Scripts run, but have no actions.
-    ON_CALL(mock_service_, OnGetActions(_, _))
-        .WillByDefault(RunOnceCallback<1>(true, ""));
+    ON_CALL(mock_service_, OnGetActions(_, _, _))
+        .WillByDefault(RunOnceCallback<2>(true, ""));
   }
 
  protected:
-  ScriptTrackerTest()
-      : runnable_scripts_changed_(0),
-        tracker_(this,
-                 this,
-                 std::make_unique<std::map<std::string, std::string>>()) {}
+  ScriptTrackerTest() : runnable_scripts_changed_(0), tracker_(this, this) {}
 
   // Overrides ScriptTrackerDelegate
   Service* GetService() override { return &mock_service_; }
@@ -59,6 +55,10 @@ class ScriptTrackerTest : public testing::Test,
   WebController* GetWebController() override { return &mock_web_controller_; }
 
   ClientMemory* GetClientMemory() override { return &client_memory_; }
+
+  const std::map<std::string, std::string>& GetParameters() override {
+    return parameters_;
+  }
 
   // Overrides ScriptTracker::Listener
   void OnRunnableScriptsChanged(
@@ -112,6 +112,7 @@ class ScriptTrackerTest : public testing::Test,
   NiceMock<MockWebController> mock_web_controller_;
   NiceMock<MockUiController> mock_ui_controller_;
   ClientMemory client_memory_;
+  std::map<std::string, std::string> parameters_;
 
   // Number of times OnRunnableScriptsChanged was called.
   int runnable_scripts_changed_;

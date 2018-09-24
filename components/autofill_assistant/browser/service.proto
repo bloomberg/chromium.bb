@@ -16,8 +16,18 @@ message ClientContextProto {
 
 // Get the list of scripts that can potentially be run on a url.
 message SupportsScriptRequestProto {
-  required string url = 1;
-  required ClientContextProto client_context = 3;
+  optional string url = 1;
+
+  // Parameters that can be used to filter the scripts suitable for execution.
+  repeated ScriptParameterProto script_parameters = 2;
+
+  optional ClientContextProto client_context = 3;
+}
+
+message ScriptParameterProto {
+  // Parameter name, as found in the Intent, without prefix.
+  optional string name = 3;
+  optional string value = 2;
 }
 
 // Response of the list of supported scripts.
@@ -99,6 +109,8 @@ message InitialScriptActionsRequestProto {
     optional PolicyType policy = 3;
   }
   optional QueryProto query = 3;
+
+  repeated ScriptParameterProto script_parameters = 2;
 }
 
 // Next request to get a script's actions.
