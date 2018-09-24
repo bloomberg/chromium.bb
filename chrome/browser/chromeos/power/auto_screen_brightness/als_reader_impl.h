@@ -42,7 +42,6 @@ class AlsReaderImpl : public AlsReader {
   // AlsReader overrides:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  AlsInitStatus GetInitStatus() const override;
 
   // Checks if an ALS is enabled, and if the config is valid . Also
   // reads ambient light file path.
