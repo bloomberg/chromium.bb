@@ -277,7 +277,7 @@ Polymer({
 
     if (e.code == 'Enter' && this.state == print_preview_new.State.READY) {
       const activeElementTag = e.path[0].tagName;
-      if (['BUTTON', 'SELECT', 'A'].includes(activeElementTag))
+      if (['PAPER-BUTTON', 'BUTTON', 'SELECT', 'A'].includes(activeElementTag))
         return;
 
       this.onPrintRequested_();
