@@ -4240,4 +4240,8 @@
   <message name="IDS_POWER_SOURCE_PORT_UNKNOWN" desc="The text referring to the device to charge from, when its port location cannot be determined.">
     USB-C device
   </message>
+
+  <message name="IDS_SMB_SHARES_ADD_SERVICE_MENU_OPTION" desc="The text displayed in the files app Add New Services menu for the option that allows users to mount a new SMB file share.">
+    SMB file share
+  </message>
 </grit-part>
