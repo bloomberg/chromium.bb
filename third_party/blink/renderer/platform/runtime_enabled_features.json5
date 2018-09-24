@@ -845,6 +845,9 @@
       status: "experimental",
     },
     {
+      name: "OffMainThreadCSSPaint",
+    },
+    {
       name: "OffMainThreadWebSocket",
     },
     {
