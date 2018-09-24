@@ -4119,8 +4119,6 @@ test("unit_tests") {
       cocoa_test_sources = [
         "../browser/ui/cocoa/animatable_image_unittest.mm",
         "../browser/ui/cocoa/animatable_view_unittest.mm",
-        "../browser/ui/cocoa/autofill/autofill_bubble_controller_unittest.mm",
-        "../browser/ui/cocoa/autofill/autofill_tooltip_controller_unittest.mm",
         "../browser/ui/cocoa/background_gradient_view_unittest.mm",
         "../browser/ui/cocoa/base_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/bookmarks/bookmark_menu_bridge_unittest.mm",

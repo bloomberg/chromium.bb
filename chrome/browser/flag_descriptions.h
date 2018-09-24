@@ -674,9 +674,6 @@ extern const char kLoadMediaRouterComponentExtensionDescription[];
 extern const char kLookalikeUrlNavigationSuggestionsName[];
 extern const char kLookalikeUrlNavigationSuggestionsDescription[];
 
-extern const char kMacViewsAutofillPopupName[];
-extern const char kMacViewsAutofillPopupDescription[];
-
 extern const char kMarkHttpAsName[];
 extern const char kMarkHttpAsDescription[];
 extern const char kMarkHttpAsDangerous[];

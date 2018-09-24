@@ -90,10 +90,6 @@ extern const char
 extern const base::Feature kAutofillRefreshStyleAndroid;
 #endif  // OS_ANDROID
 
-#if defined(OS_MACOSX)
-extern const base::Feature kMacViewsAutofillPopup;
-#endif  // defined(OS_MACOSX)
-
 // Returns whether the Autofill credit card assist infobar should be shown.
 bool IsAutofillCreditCardAssistEnabled();
 

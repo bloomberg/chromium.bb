@@ -297,11 +297,6 @@ const base::Feature kAutofillRefreshStyleAndroid{
     "AutofillRefreshStyleAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OS_ANDROID
 
-#if defined(OS_MACOSX)
-const base::Feature kMacViewsAutofillPopup{"MacViewsAutofillPopup",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_MACOSX)
-
 bool IsAutofillCreditCardAssistEnabled() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   return false;
@@ -350,17 +345,6 @@ bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled() {
 bool IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled() {
   return base::FeatureList::IsEnabled(kAutofillUpstreamUpdatePromptExplanation);
 }
-
-#if defined(OS_MACOSX)
-bool IsMacViewsAutofillPopupExperimentEnabled() {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  if (!::features::IsViewsBrowserCocoa())
-    return true;
-#endif
-
-  return base::FeatureList::IsEnabled(kMacViewsAutofillPopup);
-}
-#endif  // defined(OS_MACOSX)
 
 bool IsPasswordManualFallbackEnabled() {
   return base::FeatureList::IsEnabled(kAutofillManualFallback);
