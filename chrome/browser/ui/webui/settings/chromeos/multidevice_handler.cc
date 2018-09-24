@@ -171,9 +171,9 @@ void MultideviceHandler::HandleRetryPendingHostSetup(
 }
 
 void MultideviceHandler::HandleSetUpAndroidSms(const base::ListValue* args) {
-  PA_LOG(WARNING) << "HandlingSetupSms";
+  PA_LOG(INFO) << "SetUpSMS triggered.";
   DCHECK(args->empty());
-  android_sms_app_helper_->LaunchAndroidSmsApp();
+  android_sms_app_helper_->InstallAndLaunchAndroidSmsApp();
 }
 
 void MultideviceHandler::OnSetFeatureStateEnabledResult(

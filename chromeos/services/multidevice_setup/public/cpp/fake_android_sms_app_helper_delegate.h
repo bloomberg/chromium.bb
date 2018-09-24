@@ -20,7 +20,7 @@ class FakeAndroidSmsAppHelperDelegate : public AndroidSmsAppHelperDelegate {
 
   // AndroidSmsAppHelperDelegate:
   void InstallAndroidSmsApp() override;
-  bool LaunchAndroidSmsApp() override;
+  void InstallAndLaunchAndroidSmsApp() override;
 
  private:
   bool has_installed_ = false;

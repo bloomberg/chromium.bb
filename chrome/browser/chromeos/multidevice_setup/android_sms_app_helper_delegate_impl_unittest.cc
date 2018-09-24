@@ -39,6 +39,10 @@ class AndroidSmsAppHelperDelegateImplTest : public testing::Test {
     android_sms_app_helper_delegate_->InstallAndroidSmsApp();
   }
 
+  void InstallAndLaunchApp() {
+    android_sms_app_helper_delegate_->InstallAndLaunchAndroidSmsApp();
+  }
+
  private:
   std::unique_ptr<web_app::TestPendingAppManager> test_pending_app_manager_;
   std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
@@ -50,12 +54,17 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp) {
   InstallApp();
 
   std::vector<web_app::PendingAppManager::AppInfo> expected_apps_to_install;
-  expected_apps_to_install.push_back(web_app::PendingAppManager::AppInfo(
+  expected_apps_to_install.emplace_back(
       chromeos::android_sms::GetAndroidMessagesURLWithExperiments(),
       web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kInternal));
+      web_app::PendingAppManager::InstallSource::kInternal);
   EXPECT_EQ(expected_apps_to_install,
             test_pending_app_manager()->install_requests());
+}
+
+TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallAndLaunchMessagesApp) {
+  // TODO(crbug/876972): Figure out how to actually test the launching of the
+  // app here.
 }
 
 }  // namespace multidevice_setup
