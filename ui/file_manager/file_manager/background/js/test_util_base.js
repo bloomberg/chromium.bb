@@ -663,3 +663,15 @@ test.util.registerRemoteTestUtils = function() {
     }
   });
 };
+
+/**
+ * Returns the MetadataStats collected in MetadataModel, it will be serialized
+ * as a plain object when sending to test extension.
+ *
+ * @suppress {missingProperties} metadataStats is only defined for foreground
+ *   Window so it isn't visible in the background. Here it will return as JSON
+ *   object to test extension.
+ */
+test.util.sync.getMetadataStats = function(contentWindow) {
+  return contentWindow.fileManager.metadataModel.getStats();
+};
