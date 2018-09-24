@@ -2612,13 +2612,14 @@ TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
 
   // The original order of stacking is determined by the order the associated
   // window was activated (created in this case). All widgets associated with
-  // minimized windows will be above non minimized windows, because a widget for
-  // the minimized windows is created upon entering overview, and them the
-  // window selector item widget is stacked on top of that.
-  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
-            IndexOf(widget3->GetNativeWindow(), parent));
+  // minimized windows will be below non minimized windows, because a widget for
+  // the minimized windows is created upon entering overview, and they are
+  // explicitly stacked beneath non minimized windows so they do not cover them
+  // during enter animation.
   EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
             IndexOf(widget1->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
+            IndexOf(widget2->GetNativeWindow(), parent));
 
   // Verify that only minimized windows have minimized widgets in overview.
   EXPECT_FALSE(min_widget1);
@@ -2660,10 +2661,10 @@ TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
   generator->ReleaseLeftButton();
 
   // Verify the stacking order is same as before dragging started.
-  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
-            IndexOf(widget3->GetNativeWindow(), parent));
   EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
             IndexOf(widget1->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
+            IndexOf(widget2->GetNativeWindow(), parent));
 }
 
 // Tests that overview widgets are stacked in the correct order.
