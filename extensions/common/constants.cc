@@ -119,6 +119,7 @@ const char kGeniusAppId[] = "ljoammodoonkhnehlncldjelhidljdpi";
 const char kHighlightsAppId[] = "lpmakjfjcconjeehbidjclhdlpjmfjjj";
 const char kHighlightsAlt1AppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
 const char kHighlightsAlt2AppId[] = "elhbopodaklenjkeihkdhhfaghalllba";
+const char kScreensaverAppId[] = "mnoijifedipmbjaoekhadjcijipaijjc";
 #endif
 
 const char kProdHangoutsExtensionId[] = "nckgahadagoaajjgafhacjanaoiihapd";

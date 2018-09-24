@@ -101,6 +101,7 @@ const char* const kPublicSessionWhitelist[] = {
     // New demo mode:
     "lpmakjfjcconjeehbidjclhdlpjmfjjj",  // Highlights app
     "iggildboghmjpbjcpmobahnkmoefkike",  // Highlights app
+    "mnoijifedipmbjaoekhadjcijipaijjc",  // Screensaver
 
     // Testing extensions:
     "ongnjlefhnoajpbodoldndkbkdgfomlp",  // Show Managed Storage
