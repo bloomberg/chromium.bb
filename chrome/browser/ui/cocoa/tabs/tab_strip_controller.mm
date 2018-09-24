@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
-#import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
@@ -90,9 +89,6 @@ const CGFloat kUseFullAvailableWidth = -1.0;
 
 // The amount by which pinned tabs are separated from normal tabs.
 const CGFloat kLastPinnedTabSpacing = 2.0;
-
-// The amount by which the new tab button is offset (from the tabs).
-const CGFloat kNewTabButtonOffset = 10.0;
 
 const NSTimeInterval kTabAnimationDuration = 0.125;
 
@@ -172,7 +168,6 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
            forController:(TabControllerCocoa*)controller
                 finished:(BOOL)finished;
 - (NSInteger)indexFromModelIndex:(NSInteger)index;
-- (void)clickNewTabButton:(id)sender;
 - (NSInteger)numberOfOpenTabs;
 - (NSInteger)numberOfOpenPinnedTabs;
 - (NSInteger)numberOfOpenNonPinnedTabs;
@@ -182,7 +177,6 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
             givesIndex:(NSInteger*)index
            disposition:(WindowOpenDisposition*)disposition
            activateTab:(BOOL)activateTab;
-- (void)setNewTabButtonHoverState:(BOOL)showHover;
 - (void)themeDidChangeNotification:(NSNotification*)notification;
 - (BOOL)doesAnyOtherWebContents:(content::WebContents*)selected
                  haveAlertState:(TabAlertState)state;
@@ -453,25 +447,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
                                                        controller:self]);
     [self addSubviewToPermanentList:dragBlockingView_];
 
-    newTabButton_ = [view getNewTabButton];
-    [newTabButton_ setWantsLayer:YES];
-    [self addSubviewToPermanentList:newTabButton_];
-    [newTabButton_ setTarget:self];
-    [newTabButton_ setAction:@selector(clickNewTabButton:)];
-
-    newTabButtonShowingHoverImage_ = NO;
-    newTabTrackingArea_.reset(
-        [[CrTrackingArea alloc] initWithRect:[newTabButton_ bounds]
-                                     options:(NSTrackingMouseEnteredAndExited |
-                                              NSTrackingActiveAlways)
-                                       owner:self
-                                    userInfo:nil]);
-    if (browserWindow)  // Nil for Browsers without a tab strip (e.g. popups).
-      [newTabTrackingArea_ clearOwnerWhenWindowWillClose:browserWindow];
-    [newTabButton_ addTrackingArea:newTabTrackingArea_.get()];
     targetFrames_.reset([[NSMutableDictionary alloc] init]);
 
-    newTabTargetFrame_ = NSZeroRect;
     availableResizeWidth_ = kUseFullAvailableWidth;
 
     closingControllers_.reset([[NSMutableSet alloc] init]);
@@ -514,12 +491,6 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
       [self setTabTrackingAreasEnabled:YES];
       mouseInside_ = YES;
     }
-
-    // Set accessibility descriptions. http://openradar.appspot.com/7496255
-    NSString* description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_NEWTAB);
-    [[newTabButton_ cell]
-        accessibilitySetOverrideValue:description
-                         forAttribute:NSAccessibilityDescriptionAttribute];
 
     // Controller may have been (re-)created by switching layout modes, which
     // means the tab model is already fully formed with tabs. Need to walk the
@@ -565,7 +536,6 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   if (trackingArea_.get())
     [tabStripView_ removeTrackingArea:trackingArea_.get()];
 
-  [newTabButton_ removeTrackingArea:newTabTrackingArea_.get()];
   // Invalidate all closing animations so they don't call back to us after
   // we're gone.
   for (TabControllerCocoa* controller in closingControllers_.get()) {
@@ -640,14 +610,6 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   [[controller view] setHidden:YES];
 
   return controller;
-}
-
-// (Private) Handles a click on the new tab button.
-- (void)clickNewTabButton:(id)sender {
-  base::RecordAction(UserMetricsAction("NewTab_Button"));
-  UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
-                            TabStripModel::NEW_TAB_ENUM_COUNT);
-  tabStripModel_->delegate()->AddTabAt(GURL(), -1, true);
 }
 
 // (Private) Returns the number of open tabs in the tab strip. This is the
@@ -922,12 +884,6 @@ contextMenuModelForController:(TabControllerCocoa*)controller
   return NSMaxX([tabStripView_ frame]) - rightEdge;
 }
 
-- (void)showNewTabButton:(BOOL)show {
-  forceNewTabButtonHidden_ = show ? NO : YES;
-  if (forceNewTabButtonHidden_)
-    [newTabButton_ setHidden:YES];
-}
-
 // Lay out all tabs in the order of their TabContentsControllers, which matches
 // the ordering in the TabStripModel. This call isn't that expensive, though
 // it is O(n) in the number of tabs. Tabs will animate to their new position
@@ -964,9 +920,6 @@ contextMenuModelForController:(TabControllerCocoa*)controller
   } else {
     availableSpace = NSWidth([tabStripView_ frame]);
 
-    // Account for the width of the new tab button.
-    availableSpace -=
-        NSWidth([newTabButton_ frame]) + kNewTabButtonOffset - kTabOverlap;
     // Account for the trailing controls if not in rapid closure mode.
     // (In rapid closure mode, the available width is set based on the
     // position of the trailing tab, not based on the width of the tab strip,
@@ -1183,58 +1136,6 @@ contextMenuModelForController:(TabControllerCocoa*)controller
 
     offset += NSWidth(tabFrame);
     offset -= kTabOverlap;
-  }
-
-  // Hide the new tab button if we're explicitly told to. It may already
-  // be hidden, doing it again doesn't hurt. Otherwise position it
-  // appropriately, showing it if necessary.
-  if (forceNewTabButtonHidden_) {
-    [newTabButton_ setHidden:YES];
-  } else {
-    NSRect newTabNewFrame = [newTabButton_ frame];
-    // We've already ensured there's enough space for the new tab button
-    // so we don't have to check it against the available space. We do need
-    // to make sure we put it after any placeholder.
-    CGFloat maxTabX = MAX(offset, NSMaxX(placeholderFrame_) - kTabOverlap);
-    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-      maxTabX = FlipXInView(tabStripView_, [newTabButton_ frame].size.width,
-                            maxTabX) -
-                (2 * kNewTabButtonOffset);
-    }
-    newTabNewFrame.origin = NSMakePoint(maxTabX + kNewTabButtonOffset, 0);
-    if ([tabContentsArray_ count])
-      [newTabButton_ setHidden:NO];
-
-    if (!NSEqualRects(newTabTargetFrame_, newTabNewFrame)) {
-      // Set the new tab button image correctly based on where the cursor is.
-      NSWindow* window = [tabStripView_ window];
-      NSPoint currentMouse = [window mouseLocationOutsideOfEventStream];
-      currentMouse = [tabStripView_ convertPoint:currentMouse fromView:nil];
-
-      BOOL shouldShowHover = [newTabButton_ pointIsOverButton:currentMouse];
-      [self setNewTabButtonHoverState:shouldShowHover];
-
-      // Move the new tab button into place. We want to animate the new tab
-      // button if it's moving back (closing a tab), but not when it's
-      // moving forward (inserting a new tab). If moving forward, we need
-      // to use a very small duration to make sure we cancel any in-flight
-      // animation to the left.
-      if (visible && animate) {
-        ScopedNSAnimationContextGroup localAnimationGroup(true);
-        BOOL movingBack = NSMinX(newTabNewFrame) < NSMinX(newTabTargetFrame_);
-        if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
-          movingBack = !movingBack;
-
-        if (!movingBack) {
-          localAnimationGroup.SetCurrentContextShortestDuration();
-        }
-        [[newTabButton_ animator] setFrame:newTabNewFrame];
-        newTabTargetFrame_ = newTabNewFrame;
-      } else {
-        [newTabButton_ setFrame:newTabNewFrame];
-        newTabTargetFrame_ = newTabNewFrame;
-      }
-    }
   }
 
   [dragBlockingView_ setFrame:enclosingRect];
@@ -1886,11 +1787,6 @@ contextMenuModelForController:(TabControllerCocoa*)controller
   // Use hit test to figure out what view we are hovering over.
   NSView* targetView = [tabStripView_ hitTest:[event locationInWindow]];
 
-  // Set the new tab button hover state iff the mouse is over the button.
-  BOOL shouldShowHoverImage =
-      [targetView isKindOfClass:[NewTabButtonCocoa class]];
-  [self setNewTabButtonHoverState:shouldShowHoverImage];
-
   TabViewCocoa* tabView = base::mac::ObjCCast<TabViewCocoa>(targetView);
   if (!tabView)
     tabView = base::mac::ObjCCast<TabViewCocoa>([targetView superview]);
@@ -1924,12 +1820,6 @@ contextMenuModelForController:(TabControllerCocoa*)controller
     availableResizeWidth_ = kUseFullAvailableWidth;
     [self setHoveredTab:nil];
     [self layoutTabs];
-  } else if ([area isEqual:newTabTrackingArea_]) {
-    // If the mouse is moved quickly enough, it is possible for the mouse to
-    // leave the tabstrip without sending any mouseMoved: messages at all.
-    // Since this would result in the new tab button incorrectly staying in the
-    // hover state, disable the hover image on every mouse exit.
-    [self setNewTabButtonHoverState:NO];
   } else if ([area isEqual:customWindowControlsTrackingArea_]) {
     [customWindowControls_ setMouseInside:NO];
   }
@@ -1982,18 +1872,6 @@ contextMenuModelForController:(TabControllerCocoa*)controller
                              object:tabView];
     }
     [tabView setTrackingEnabled:enabled];
-  }
-}
-
-// Sets the new tab button's image based on the current hover state.  Does
-// nothing if the hover state is already correct.
-- (void)setNewTabButtonHoverState:(BOOL)shouldShowHover {
-  if (shouldShowHover && !newTabButtonShowingHoverImage_) {
-    newTabButtonShowingHoverImage_ = YES;
-    [[newTabButton_ cell] setIsMouseInside:YES];
-  } else if (!shouldShowHover && newTabButtonShowingHoverImage_) {
-    newTabButtonShowingHoverImage_ = NO;
-    [[newTabButton_ cell] setIsMouseInside:NO];
   }
 }
 
@@ -2417,7 +2295,6 @@ contextMenuModelForController:(TabControllerCocoa*)controller
 }
 
 - (void)themeDidChangeNotification:(NSNotification*)notification {
-  [newTabButton_ setImages];
   for (int i = 0; i < tabStripModel_->count(); i++) {
     [self updateIconsForContents:tabStripModel_->GetWebContentsAt(i) atIndex:i];
   }

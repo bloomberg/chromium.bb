@@ -10,7 +10,6 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -134,11 +133,6 @@ class TabStripControllerTest : public CocoaProfileTest {
     tab_strip_.reset(
         [[TabStripView alloc] initWithFrame:strip_frame]);
     [parent addSubview:tab_strip_.get()];
-    NSRect button_frame = NSMakeRect(0, 0, 15, 15);
-    base::scoped_nsobject<NewTabButtonCocoa> new_tab_button(
-        [[NewTabButtonCocoa alloc] initWithFrame:button_frame]);
-    [tab_strip_ addSubview:new_tab_button.get()];
-    [tab_strip_ setNewTabButton:new_tab_button.get()];
 
     delegate_.reset(new TestTabStripModelDelegate());
     model_ = browser()->tab_strip_model();

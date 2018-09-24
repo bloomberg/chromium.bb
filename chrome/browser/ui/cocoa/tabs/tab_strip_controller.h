@@ -19,7 +19,6 @@
 
 @class CrTrackingArea;
 @class CustomWindowControlsView;
-@class NewTabButtonCocoa;
 @class TabContentsController;
 @class TabControllerCocoa;
 @class TabViewCocoa;
@@ -73,22 +72,14 @@ class WebContents;
   NSView* switchView_;  // weak
   base::scoped_nsobject<NSView> dragBlockingView_;  // avoid bad window server
                                                     // drags
-  NewTabButtonCocoa* newTabButton_;  // weak, obtained from the nib.
-
   // The controller that manages all the interactions of dragging tabs.
   base::scoped_nsobject<TabStripDragController> dragController_;
 
-  // Tracks the newTabButton_ for rollovers.
-  base::scoped_nsobject<CrTrackingArea> newTabTrackingArea_;
   std::unique_ptr<TabStripModelObserverBridge> bridge_;
   Browser* browser_;  // weak
   TabStripModel* tabStripModel_;  // weak
   // Delegate that is informed about tab state changes.
   id<TabStripControllerDelegate> delegate_;  // weak
-
-  // YES if the new tab button is currently displaying the hover image (if the
-  // mouse is currently over the button).
-  BOOL newTabButtonShowingHoverImage_;
 
   // Access to the TabContentsControllers (which own the parent view
   // for the toolbar and associated tab contents) given an index. Call
@@ -116,8 +107,6 @@ class WebContents;
   // aren't coalesced, so we store frames to avoid redundant calls.
   base::scoped_nsobject<NSMutableDictionary> targetFrames_;
   NSRect newTabTargetFrame_;
-  // If YES, do not show the new tab button during layout.
-  BOOL forceNewTabButtonHidden_;
   // YES if we've successfully completed the initial layout. When this is
   // NO, we probably don't want to do any animation because we're just coming
   // into being.
@@ -253,10 +242,6 @@ class WebContents;
 // Returns the right edge of the tab strip's tab area (i.e. the width of the
 // tab strip, less the right indent for controls).
 - (CGFloat)tabAreaRightEdge;
-
-// Show or hide the new tab button. The button is hidden immediately, but
-// waits until the next call to |-layoutTabs| to show it again.
-- (void)showNewTabButton:(BOOL)show;
 
 // Force the tabs to rearrange themselves to reflect the current model.
 - (void)layoutTabs;

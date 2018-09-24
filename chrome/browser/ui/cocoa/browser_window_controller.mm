@@ -1238,7 +1238,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)showNewTabButton:(BOOL)show {
-  [tabStripController_ showNewTabButton:show];
 }
 
 - (BOOL)isBookmarkBarVisible {

@@ -14,7 +14,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
-#import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -36,10 +35,6 @@
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    newTabButton_.reset(
-        [[NewTabButtonCocoa alloc] initWithFrame:NSMakeRect(295, 0, 40, 27)]);
-    [newTabButton_ setToolTip:l10n_util::GetNSString(IDS_TOOLTIP_NEW_TAB)];
-
     // Set lastMouseUp_ = -1000.0 so that timestamp-lastMouseUp_ is big unless
     // lastMouseUp_ has been reset.
     lastMouseUp_ = -1000.0;
@@ -345,14 +340,6 @@
 
 - (ViewID)viewID {
   return VIEW_ID_TAB_STRIP;
-}
-
-- (NewTabButtonCocoa*)getNewTabButton {
-  return newTabButton_;
-}
-
-- (void)setNewTabButton:(NewTabButtonCocoa*)button {
-  newTabButton_.reset([button retain]);
 }
 
 - (NSVisualEffectView*)visualEffectView API_AVAILABLE(macos(10.10)) {
