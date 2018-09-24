@@ -8197,4 +8197,44 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// history.back() called twice in the renderer process should not make the user
+// navigate back twice.
+// Regression test for https://crbug.com/869710
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       HistoryBackTwiceFromRendererWithoutUserGesture) {
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url3(embedded_test_server()->GetURL("c.com", "/title3.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  EXPECT_TRUE(NavigateToURL(shell(), url3));
+
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      shell(), "history.back(); history.back();"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(url2, shell()->web_contents()->GetLastCommittedURL());
+}
+
+// history.back() called twice in the renderer process should not make the user
+// navigate back twice. Even with a user gesture.
+// Regression test for https://crbug.com/869710
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       HistoryBackTwiceFromRendererWithUserGesture) {
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url3(embedded_test_server()->GetURL("c.com", "/title3.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  EXPECT_TRUE(NavigateToURL(shell(), url3));
+
+  EXPECT_TRUE(ExecuteScript(shell(), "history.back(); history.back();"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // TODO(https://crbug.com/869710): This should be url2.
+  EXPECT_EQ(url1, shell()->web_contents()->GetLastCommittedURL());
+}
+
 }  // namespace content
