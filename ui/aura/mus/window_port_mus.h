@@ -313,8 +313,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   ui::CursorData cursor_;
 
-  // Set to true if SetEmbedFrameSinkId() is being called on the Window.
-  bool is_setting_embed_frame_sink_id_ = false;
+  // Set if this class calls SetEmbedFrameSinkId() on the associated window.
+  viz::FrameSinkId embed_frame_sink_id_;
 
   // See description in single place that changes the value for details.
   bool should_restack_transient_children_ = true;

@@ -312,10 +312,8 @@ void WindowPortMus::SetPropertyFromServer(
 void WindowPortMus::SetFrameSinkIdFromServer(
     const viz::FrameSinkId& frame_sink_id) {
   DCHECK(window_mus_type() == WindowMusType::EMBED_IN_OWNER);
-  {
-    base::AutoReset<bool> resetter(&is_setting_embed_frame_sink_id_, true);
-    window_->SetEmbedFrameSinkId(frame_sink_id);
-  }
+  embed_frame_sink_id_ = frame_sink_id;
+  window_->SetEmbedFrameSinkId(embed_frame_sink_id_);
   UpdatePrimarySurfaceId();
 }
 
@@ -346,10 +344,8 @@ void WindowPortMus::SetFallbackSurfaceInfo(
     // |primary_surface_id_| should not be valid, since we didn't know the
     // |window_->frame_sink_id()|.
     DCHECK(!primary_surface_id_.is_valid());
-    {
-      base::AutoReset<bool> resetter(&is_setting_embed_frame_sink_id_, true);
-      window_->SetEmbedFrameSinkId(surface_info.id().frame_sink_id());
-    }
+    embed_frame_sink_id_ = surface_info.id().frame_sink_id();
+    window_->SetEmbedFrameSinkId(embed_frame_sink_id_);
     UpdatePrimarySurfaceId();
   }
 
@@ -592,10 +588,8 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   auto client_layer_tree_frame_sink = RequestLayerTreeFrameSink(
       nullptr, window_->env()->context_factory()->GetGpuMemoryBufferManager());
   local_layer_tree_frame_sink_ = client_layer_tree_frame_sink->GetWeakPtr();
-  {
-    base::AutoReset<bool> resetter(&is_setting_embed_frame_sink_id_, true);
-    window_->SetEmbedFrameSinkId(GenerateFrameSinkIdFromServerId());
-  }
+  embed_frame_sink_id_ = GenerateFrameSinkIdFromServerId();
+  window_->SetEmbedFrameSinkId(embed_frame_sink_id_);
 
   gfx::Size size_in_pixel =
       gfx::ConvertSizeToPixel(GetDeviceScaleFactor(), window_->bounds().size());
@@ -614,7 +608,7 @@ bool WindowPortMus::ShouldRestackTransientChildren() {
 }
 
 void WindowPortMus::RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
-  if (is_setting_embed_frame_sink_id_)
+  if (frame_sink_id == embed_frame_sink_id_)
     return;
 
   window_tree_client_->RegisterFrameSinkId(this, frame_sink_id);
@@ -622,7 +616,7 @@ void WindowPortMus::RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
 
 void WindowPortMus::UnregisterFrameSinkId(
     const viz::FrameSinkId& frame_sink_id) {
-  if (is_setting_embed_frame_sink_id_)
+  if (frame_sink_id == embed_frame_sink_id_)
     return;
 
   window_tree_client_->UnregisterFrameSinkId(this);
