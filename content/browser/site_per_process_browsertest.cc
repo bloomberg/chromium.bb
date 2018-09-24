@@ -37,6 +37,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -13065,9 +13066,13 @@ class UnresponsiveRendererObserver : public WebContentsObserver {
 
   ~UnresponsiveRendererObserver() override {}
 
-  RenderProcessHost* Wait() {
-    if (!captured_render_process_host_)
+  RenderProcessHost* Wait(base::TimeDelta timeout = base::TimeDelta::Max()) {
+    if (!captured_render_process_host_) {
+      base::OneShotTimer timer;
+      timer.Start(FROM_HERE, timeout, run_loop_.QuitClosure());
       run_loop_.Run();
+      timer.Stop();
+    }
     return captured_render_process_host_;
   }
 
@@ -13086,26 +13091,20 @@ class UnresponsiveRendererObserver : public WebContentsObserver {
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        CommitTimeoutForHungRenderer) {
   // Navigate first tab to a.com.
-  GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
   RenderProcessHost* a_process =
       shell()->web_contents()->GetMainFrame()->GetProcess();
 
-  // Use window.open to open b.com in a second tab.  Using a renderer-initiated
-  // navigation is important to leave a.com and b.com SiteInstances in the same
+  // Open b.com in a second tab.  Using a renderer-initiated navigation is
+  // important to leave a.com and b.com SiteInstances in the same
   // BrowsingInstance (so the b.com -> a.com navigation in the next test step
   // will reuse the process associated with the first a.com tab).
-  const char* kWindowOpenScript = R"(
-      var anchor = document.createElement("a");
-      anchor.href = "/cross-site/b.com/title2.html";
-      anchor.target = "_blank";
-      document.body.appendChild(anchor);
-      anchor.click(); )";
-  WebContentsAddedObserver new_window_observer;
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), kWindowOpenScript));
-  WebContents* new_window = new_window_observer.GetWebContents();
-  EXPECT_TRUE(WaitForLoadStop(new_window));
-  RenderProcessHost* b_process = new_window->GetMainFrame()->GetProcess();
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  Shell* new_shell = OpenPopup(shell()->web_contents(), b_url, "newtab");
+  WebContents* new_contents = new_shell->web_contents();
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
+  RenderProcessHost* b_process = new_contents->GetMainFrame()->GetProcess();
   EXPECT_NE(a_process, b_process);
 
   // Hang the first tab's renderer.
@@ -13116,18 +13115,67 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // the hung process.
   NavigationHandleImpl::SetCommitTimeoutForTesting(
       base::TimeDelta::FromMilliseconds(100));
-  const char* kNavigationScript = R"(
-      var anchor = document.createElement("a");
-      anchor.href = "/cross-site/a.com/title3.html";
-      document.body.appendChild(anchor);
-      anchor.click(); )";
-  UnresponsiveRendererObserver unresponsive_renderer_observer(new_window);
-  EXPECT_TRUE(ExecuteScript(new_window, kNavigationScript));
+  GURL hung_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
+  UnresponsiveRendererObserver unresponsive_renderer_observer(new_contents);
+  EXPECT_TRUE(
+      ExecJs(new_contents, JsReplace("window.location = $1", hung_url)));
 
   // Verify that we will be notified about the unresponsive renderer.  Before
   // changes in https://crrev.com/c/1089797, the test would hang here forever.
   RenderProcessHost* hung_process = unresponsive_renderer_observer.Wait();
   EXPECT_EQ(hung_process, a_process);
+
+  // Reset the timeout.
+  NavigationHandleImpl::SetCommitTimeoutForTesting(base::TimeDelta());
+}
+
+// This is a regression test for https://crbug.com/881812 which complained that
+// the hung renderer dialog used to undesirably show up for background tabs
+// (typically during session restore when many navigations would be happening in
+// backgrounded processes).
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CommitTimeoutForInvisibleWebContents) {
+  // Navigate first tab to a.com.
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  RenderProcessHost* a_process =
+      shell()->web_contents()->GetMainFrame()->GetProcess();
+
+  // Open b.com in a second tab.  Using a renderer-initiated navigation is
+  // important to leave a.com and b.com SiteInstances in the same
+  // BrowsingInstance (so the b.com -> a.com navigation in the next test step
+  // will reuse the process associated with the first a.com tab).
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  Shell* new_shell = OpenPopup(shell()->web_contents(), b_url, "newtab");
+  WebContents* new_contents = new_shell->web_contents();
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
+  RenderProcessHost* b_process = new_contents->GetMainFrame()->GetProcess();
+  EXPECT_NE(a_process, b_process);
+
+  // Hang the first tab's renderer.
+  const char* kHungScript = "setTimeout(function() { for (;;) {}; }, 0);";
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), kHungScript));
+
+  // Hide the second tab.  This should prevent reporting of hangs in this tab
+  // (see https://crbug.com/881812).
+  new_contents->WasHidden();
+  EXPECT_EQ(Visibility::HIDDEN, new_contents->GetVisibility());
+
+  // Attempt to navigate the second tab to a.com.  This will attempt to reuse
+  // the hung process.
+  base::TimeDelta kTimeout = base::TimeDelta::FromMilliseconds(100);
+  NavigationHandleImpl::SetCommitTimeoutForTesting(kTimeout);
+  GURL hung_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
+  UnresponsiveRendererObserver unresponsive_renderer_observer(new_contents);
+  EXPECT_TRUE(
+      ExecJs(new_contents, JsReplace("window.location = $1", hung_url)));
+
+  // Verify that we will not be notified about the unresponsive renderer.
+  // Before changes in https://crrev.com/c/1089797, the test would get notified
+  // and therefore |hung_process| would be non-null.
+  RenderProcessHost* hung_process =
+      unresponsive_renderer_observer.Wait(kTimeout * 10);
+  EXPECT_FALSE(hung_process);
 
   // Reset the timeout.
   NavigationHandleImpl::SetCommitTimeoutForTesting(base::TimeDelta());
