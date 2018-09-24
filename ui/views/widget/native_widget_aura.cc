@@ -59,6 +59,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_client_metrics.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/display/win/dpi.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
@@ -1228,6 +1229,7 @@ gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
 #if defined(OS_WIN)
   NONCLIENTMETRICS_XP ncm;
   base::win::GetNonClientMetrics(&ncm);
+  display::win::AdjustFontForAccessibility(&(ncm.lfCaptionFont));
   l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
   base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
   return gfx::FontList(gfx::Font(caption_font.get()));

@@ -4,10 +4,9 @@
 
 #include "ui/display/win/dpi.h"
 
-#include <windows.h>
-
 #include "base/win/scoped_hdc.h"
 #include "ui/display/display.h"
+#include "ui/display/win/uwp_text_scale_factor.h"
 
 namespace display {
 namespace win {
@@ -17,6 +16,19 @@ namespace {
 const float kDefaultDPI = 96.f;
 
 float g_device_scale_factor = 0.f;
+
+LONG AdjustForScaleFactor(LONG value, float scale) {
+  // This should never happen, but make sure we never divide by zero.
+  DCHECK_GT(scale, 0.0f);
+  if (value != 0) {
+    LONG new_value = LONG{std::roundf(value / scale)};
+    if (new_value == 0) {
+      new_value = value > 0 ? 1 : -1;
+    }
+    value = new_value;
+  }
+  return value;
+}
 
 }  // namespace
 
@@ -33,6 +45,15 @@ float GetDPIScale() {
 
 int GetDPIFromScalingFactor(float device_scaling_factor) {
   return kDefaultDPI * device_scaling_factor;
+}
+
+void AdjustFontForAccessibility(LOGFONT* font) {
+  const float accessibility_scale_factor =
+      UwpTextScaleFactor::Instance()->GetTextScaleFactor();
+  font->lfHeight =
+      AdjustForScaleFactor(font->lfHeight, accessibility_scale_factor);
+  font->lfWidth =
+      AdjustForScaleFactor(font->lfWidth, accessibility_scale_factor);
 }
 
 namespace internal {
