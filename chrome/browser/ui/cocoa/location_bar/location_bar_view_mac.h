@@ -26,7 +26,6 @@
 class CommandUpdater;
 class LocationBarDecoration;
 class Profile;
-class PageInfoBubbleDecoration;
 class ZoomDecoration;
 class ZoomDecorationTest;
 
@@ -101,9 +100,6 @@ class LocationBarViewMac : public LocationBar,
   // associate bubble aims.
   NSPoint GetBubblePointForDecoration(LocationBarDecoration* decoration) const;
 
-  // Get the point in window coordinates for the page info bubble anchor.
-  NSPoint GetPageInfoBubblePoint() const;
-
   // When any image decorations change, call this to ensure everything is
   // redrawn and laid out if necessary.
   void OnDecorationsChanged();
@@ -163,10 +159,6 @@ class LocationBarViewMac : public LocationBar,
   // Returns true if the location bar is dark.
   bool IsLocationBarDark() const;
 
-  PageInfoBubbleDecoration* page_info_decoration() const {
-    return page_info_decoration_.get();
-  }
-
   ZoomDecoration* zoom_decoration() const { return zoom_decoration_.get(); }
 
   Browser* browser() const { return browser_; }
@@ -189,8 +181,6 @@ class LocationBarViewMac : public LocationBar,
 
   void OnEditBookmarksEnabledChanged();
 
-  void UpdatePageInfoText();
-
   // Updates visibility of the content settings icons based on the current
   // tab contents state.
   bool RefreshContentSettingsDecorations();
@@ -198,13 +188,6 @@ class LocationBarViewMac : public LocationBar,
   // Updates the zoom decoration in the omnibox with the current zoom level.
   // Returns whether any updates were made.
   bool UpdateZoomDecoration(bool default_zoom_changed);
-
-  // Animates |page_info_decoration_| in or out if applicable. Otherwise,
-  // show it without animation.
-  void AnimatePageInfoIfPossible(bool tab_changed);
-
-  // Returns true if the |page_info_decoration_| can animate for the |level|.
-  bool CanAnimateSecurityLevel(security_state::SecurityLevel level) const;
 
   // Returns pointers to all of the LocationBarDecorations owned by this
   // LocationBarViewMac. This helper function is used for positioning and
@@ -220,10 +203,6 @@ class LocationBarViewMac : public LocationBar,
 
   AutocompleteTextField* field_;  // owned by tab controller
 
-  // A decoration that shows an icon to the left of the address. If applicable,
-  // it'll also show information about the current page.
-  std::unique_ptr<PageInfoBubbleDecoration> page_info_decoration_;
-
   // A zoom icon at the end of the omnibox, which shows at non-standard zoom
   // levels.
   std::unique_ptr<ZoomDecoration> zoom_decoration_;
@@ -235,12 +214,6 @@ class LocationBarViewMac : public LocationBar,
 
   // Indicates whether or not the location bar is currently visible.
   bool location_bar_visible_;
-
-  // True if there's enough room for the omnibox to show the security verbose.
-  bool is_width_available_for_security_verbose_;
-
-  // The security level that's displayed on |page_info_decoration_|.
-  security_state::SecurityLevel security_level_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewMac);
 };

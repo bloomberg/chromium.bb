@@ -391,18 +391,8 @@ void ExtensionInstalledBubbleUi::OnWidgetClosing(views::Widget* widget) {
     bubble_reference_->CloseBubble(BUBBLE_CLOSE_FOCUS_LOST);
 }
 
-// Implemented here to create the platform specific instance of the BubbleUi.
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-
 // Views (BrowserView) specific implementation.
 bool ExtensionInstalledBubble::ShouldShow() {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  // Cocoa browser windows can always show the bubble - no need to check for an
-  // animation.
-  // TODO(ellyjones): Is that actually true?
-  if (views_mode_controller::IsViewsBrowserCocoa())
-    return true;
-#endif
   if (anchor_position() == ANCHOR_ACTION) {
     BrowserActionsContainer* container =
         BrowserView::GetBrowserViewForBrowser(browser())
@@ -415,11 +405,6 @@ bool ExtensionInstalledBubble::ShouldShow() {
 
 gfx::Point ExtensionInstalledBubble::GetAnchorPoint(
     gfx::NativeWindow window) const {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  DCHECK(views_mode_controller::IsViewsBrowserCocoa());
-  return bubble_anchor_util::GetExtensionInstalledAnchorPointCocoa(window,
-                                                                   this);
-#endif
   NOTREACHED();  // There is always an anchor view.
   return gfx::Point();
 }
@@ -427,5 +412,3 @@ gfx::Point ExtensionInstalledBubble::GetAnchorPoint(
 std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
   return base::WrapUnique(new ExtensionInstalledBubbleUi(this));
 }
-
-#endif

@@ -487,7 +487,6 @@ void BrowserWindowCocoa::UpdateAlertState(TabAlertState alert_state) {
 }
 
 void BrowserWindowCocoa::ShowUpdateChromeDialog() {
-  chrome::ShowUpdateChromeDialogViews(GetNativeWindow());
 }
 
 void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,

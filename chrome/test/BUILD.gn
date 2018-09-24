@@ -4156,8 +4156,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/location_bar/autocomplete_text_field_unittest_helper.h",
         "../browser/ui/cocoa/location_bar/autocomplete_text_field_unittest_helper.mm",
         "../browser/ui/cocoa/location_bar/image_decoration_unittest.mm",
-        "../browser/ui/cocoa/location_bar/location_bar_view_mac_unittest.mm",
-        "../browser/ui/cocoa/location_bar/page_info_bubble_decoration_unittest.mm",
         "../browser/ui/cocoa/location_bar/zoom_decoration_unittest.mm",
         "../browser/ui/cocoa/main_menu_builder_unittest.mm",
         "../browser/ui/cocoa/md_hover_button_unittest.mm",

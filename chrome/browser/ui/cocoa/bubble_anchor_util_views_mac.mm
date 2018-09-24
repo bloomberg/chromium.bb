@@ -25,48 +25,6 @@
 
 namespace bubble_anchor_util {
 
-gfx::Rect GetPageInfoAnchorRectCocoa(Browser* browser) {
-  // Note the Cocoa browser currently only offers anchor points, not rects.
-  return gfx::Rect(
-      gfx::ScreenPointFromNSPoint(GetPageInfoAnchorPointForBrowser(browser)),
-      gfx::Size());
-}
-
-gfx::Point GetExtensionInstalledAnchorPointCocoa(
-    gfx::NativeWindow window,
-    const ExtensionInstalledBubble* bubble) {
-  BrowserWindowController* window_controller =
-      [BrowserWindowController browserWindowControllerForWindow:window];
-  ToolbarController* toolbar_controller = [window_controller toolbarController];
-
-  NSPoint arrow_point;
-  switch (bubble->anchor_position()) {
-    case ExtensionInstalledBubble::ANCHOR_ACTION: {
-      BrowserActionsController* controller =
-          [toolbar_controller browserActionsController];
-      arrow_point = [controller popupPointForId:bubble->extension()->id()];
-      break;
-    }
-    case ExtensionInstalledBubble::ANCHOR_OMNIBOX: {
-      LocationBarViewMac* locationBarView =
-          [window_controller locationBarBridge];
-      arrow_point = locationBarView->GetPageInfoBubblePoint();
-      break;
-    }
-    case ExtensionInstalledBubble::ANCHOR_APP_MENU: {
-      arrow_point = [toolbar_controller appMenuBubblePoint];
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
-  }
-  // Convert to screen coordinates.
-  arrow_point = ui::ConvertPointFromWindowToScreen(window, arrow_point);
-  return gfx::ScreenPointFromNSPoint(arrow_point);
-}
-
 gfx::Rect GetAppMenuAnchorRectCocoa(Browser* browser) {
   NSWindow* window = browser->window()->GetNativeWindow();
   BrowserWindowController* bwc = BrowserWindowControllerForWindow(window);
@@ -75,15 +33,5 @@ gfx::Rect GetAppMenuAnchorRectCocoa(Browser* browser) {
                        ui::ConvertPointFromWindowToScreen(window, point)),
                    gfx::Size());
 }
-
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
-gfx::Rect GetPageInfoAnchorRect(Browser* browser) {
-  return GetPageInfoAnchorRectCocoa(browser);
-}
-
-views::View* GetPageInfoAnchorView(Browser* browser, Anchor anchor) {
-  return nullptr;
-}
-#endif
 
 }  // namespace bubble_anchor_util

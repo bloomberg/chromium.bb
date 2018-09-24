@@ -9,7 +9,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/test/scoped_force_rtl_mac.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -93,18 +92,6 @@ TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
   // they are actually drawn, check that |GetWidthForSpace()| doesn't
   // indicate that they should be omitted.
   const CGFloat kVeryWide = 1000.0;
-
-  // TODO(shess): This really wants a |LocationBarViewMac|, but only a
-  // few methods reference it, so this works well enough.  But
-  // something better would be nice.
-  PageInfoBubbleDecoration page_info_bubble_decoration(nullptr);
-  page_info_bubble_decoration.SetVisible(true);
-  page_info_bubble_decoration.SetImage(
-      [NSImage imageNamed:@"NSApplicationIcon"]);
-  page_info_bubble_decoration.SetLabel(@"Application");
-  [cell addLeadingDecoration:&page_info_bubble_decoration];
-  EXPECT_NE(page_info_bubble_decoration.GetWidthForSpace(kVeryWide),
-            LocationBarDecoration::kOmittedWidth);
 
   // Make sure we're actually calling |DrawInFrame()|.
   StrictMock<MockDecoration> mock_decoration;
