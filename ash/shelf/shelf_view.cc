@@ -442,7 +442,7 @@ bool ShelfView::IsShowingMenu() const {
          shelf_menu_model_adapter_->IsShowingMenu();
 }
 
-bool ShelfView::IsShowingMenuForView(views::View* view) const {
+bool ShelfView::IsShowingMenuForView(const views::View* view) const {
   return IsShowingMenu() &&
          shelf_menu_model_adapter_->IsShowingMenuForView(*view);
 }
@@ -502,8 +502,8 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   // Don't show a tooltip for a view that's currently being dragged.
   if (view == drag_view_)
     return false;
-  const ShelfItem* item = ShelfItemForView(view);
-  return item != nullptr;
+
+  return ShelfItemForView(view) && !IsShowingMenuForView(view);
 }
 
 base::string16 ShelfView::GetTitleForView(const views::View* view) const {

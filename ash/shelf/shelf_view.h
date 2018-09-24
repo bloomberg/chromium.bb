@@ -134,7 +134,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Returns true if we're showing a menu for |view|. |view| could be a
   // ShelfButton or the ShelfView.
-  bool IsShowingMenuForView(views::View* view) const;
+  bool IsShowingMenuForView(const views::View* view) const;
 
   // Returns true if overflow bubble is shown.
   bool IsShowingOverflowBubble() const;
