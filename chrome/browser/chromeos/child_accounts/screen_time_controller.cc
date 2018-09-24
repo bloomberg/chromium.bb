@@ -102,15 +102,11 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   const icu::TimeZone& time_zone =
       system::TimezoneSettings::GetInstance()->GetTimezone();
   base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
-  // Used time should be 0 when time usage limit is disabled.
-  base::TimeDelta used_time = base::TimeDelta::FromMinutes(0);
-  if (last_state && last_state->is_time_usage_limit_enabled)
-    used_time = GetScreenTimeDuration();
   const base::DictionaryValue* time_limit =
       pref_service_->GetDictionary(prefs::kUsageTimeLimit);
   usage_time_limit::State state = usage_time_limit::GetState(
-      time_limit->CreateDeepCopy(), used_time, first_screen_start_time_, now,
-      &time_zone, last_state);
+      time_limit->CreateDeepCopy(), GetScreenTimeDuration(),
+      first_screen_start_time_, now, &time_zone, last_state);
   SaveCurrentStateToPref(state);
 
   // Show/hide time limits message based on the policy enforcement.
@@ -154,13 +150,6 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
                 &ScreenTimeController::ShowNotification, base::Unretained(this),
                 notification_type.value(), kExitNotificationTimeout));
       }
-    }
-
-    // The screen limit should start counting only when the time usage limit is
-    // set, ignoring the amount of time that the device was used before.
-    if (state.is_time_usage_limit_enabled &&
-        (!last_state || !last_state->is_time_usage_limit_enabled)) {
-      RefreshScreenLimit();
     }
   }
 
