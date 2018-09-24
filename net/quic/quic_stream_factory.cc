@@ -623,6 +623,10 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
         net_log_.AddEvent(
             NetLogEventType::
                 QUIC_STREAM_FACTORY_JOB_RETRY_ON_ALTERNATE_NETWORK);
+        // Notify requests that connection on the default network failed.
+        for (auto* request : stream_requests_) {
+          request->OnConnectionFailedOnDefaultNetwork();
+        }
         DVLOG(1) << "Retry connection on alternate network";
         session_ = nullptr;
         io_state_ = STATE_CONNECT;
@@ -661,16 +665,18 @@ QuicStreamRequest::~QuicStreamRequest() {
     factory_->CancelRequest(this);
 }
 
-int QuicStreamRequest::Request(const HostPortPair& destination,
-                               quic::QuicTransportVersion quic_version,
-                               PrivacyMode privacy_mode,
-                               RequestPriority priority,
-                               const SocketTag& socket_tag,
-                               int cert_verify_flags,
-                               const GURL& url,
-                               const NetLogWithSource& net_log,
-                               NetErrorDetails* net_error_details,
-                               CompletionOnceCallback callback) {
+int QuicStreamRequest::Request(
+    const HostPortPair& destination,
+    quic::QuicTransportVersion quic_version,
+    PrivacyMode privacy_mode,
+    RequestPriority priority,
+    const SocketTag& socket_tag,
+    int cert_verify_flags,
+    const GURL& url,
+    const NetLogWithSource& net_log,
+    NetErrorDetails* net_error_details,
+    CompletionOnceCallback failed_on_default_network_callback,
+    CompletionOnceCallback callback) {
   DCHECK_NE(quic_version, quic::QUIC_VERSION_UNSUPPORTED);
   DCHECK(net_error_details);
   DCHECK(callback_.is_null());
@@ -678,6 +684,8 @@ int QuicStreamRequest::Request(const HostPortPair& destination,
   DCHECK(factory_);
 
   net_error_details_ = net_error_details;
+  failed_on_default_network_callback_ =
+      std::move(failed_on_default_network_callback);
   session_key_ =
       QuicSessionKey(HostPortPair::FromURL(url), privacy_mode, socket_tag);
 
@@ -707,6 +715,11 @@ bool QuicStreamRequest::WaitForHostResolution(CompletionOnceCallback callback) {
 void QuicStreamRequest::SetSession(
     std::unique_ptr<QuicChromiumClientSession::Handle> session) {
   session_ = move(session);
+}
+
+void QuicStreamRequest::OnConnectionFailedOnDefaultNetwork() {
+  if (!failed_on_default_network_callback_.is_null())
+    base::ResetAndReturn(&failed_on_default_network_callback_).Run(OK);
 }
 
 void QuicStreamRequest::OnRequestComplete(int rv) {
@@ -1323,6 +1336,14 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_MADE_DEFAULT);
   if (!migrate_sessions_on_network_change_v2_)
     return;
+
+  // Clear alternative services that were marked as broken until default network
+  // changes.
+  if (retry_on_alternate_network_before_handshake_ &&
+      default_network_ != NetworkChangeNotifier::kInvalidNetworkHandle &&
+      network != default_network_) {
+    http_server_properties_->OnDefaultNetworkChanged();
+  }
 
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
   default_network_ = network;
