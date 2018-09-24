@@ -80,8 +80,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   FocusCycler* focus_cycler() { return focus_cycler_; }
 
-  ui::Layer* opaque_background() { return &opaque_background_; }
-
   void SetParentLayer(ui::Layer* layer);
 
   void set_default_last_focusable_child(bool default_last_focusable_child) {
@@ -131,6 +129,8 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_allow_deactivate_on_esc(true);
 
+  if (shelf_widget_->shelf_layout_manager()->IsBackgroundBlurEnabled())
+    opaque_background_.SetBackgroundBlur(kShelfBlurRadius);
   UpdateOpaqueBackground();
 }
 
@@ -217,8 +217,6 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
         mask_ = views::Painter::CreatePaintedLayer(
             views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
         mask_->layer()->SetBounds(opaque_background_bounds);
-        if (shelf_widget_->shelf_layout_manager()->IsBackgroundBlurEnabled())
-          opaque_background_.SetBackgroundBlur(kShelfBlurRadius);
         opaque_background_.SetMaskLayer(mask_->layer());
       }
     }
