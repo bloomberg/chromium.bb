@@ -760,12 +760,18 @@ bool ImageData::ImageDataInCanvasColorSettings(
   if (alpha_disposition == kPremultiplyAlpha)
     dst_alpha_format = skcms_AlphaFormat_PremulAsEncoded;
 
-  sk_sp<SkColorSpace> src_color_space =
-      GetCanvasColorParams().GetSkColorSpace();
-  sk_sp<SkColorSpace> dst_color_space = canvas_color_params.GetSkColorSpace();
+  skcms_ICCProfile* src_profile_ptr = nullptr;
+  skcms_ICCProfile* dst_profile_ptr = nullptr;
   skcms_ICCProfile src_profile, dst_profile;
-  src_color_space->toProfile(&src_profile);
-  dst_color_space->toProfile(&dst_profile);
+  GetCanvasColorParams().GetSkColorSpace()->toProfile(&src_profile);
+  canvas_color_params.GetSkColorSpace()->toProfile(&dst_profile);
+  // If the profiles are similar, we better leave them as nullptr, since
+  // skcms_Transform() only checks for profile pointer equality for the fast
+  // path.
+  if (!skcms_ApproximatelyEqualProfiles(&src_profile, &dst_profile)) {
+    src_profile_ptr = &src_profile;
+    dst_profile_ptr = &dst_profile;
+  }
 
   const IntRect* crop_rect = nullptr;
   if (src_rect && *src_rect != IntRect(IntPoint(), Size()))
@@ -787,8 +793,8 @@ bool ImageData::ImageDataInCanvasColorSettings(
     for (int i = 0; data_transform_successful && i < crop_rect->Height(); i++) {
       data_transform_successful = skcms_Transform(
           src_data + src_index, src_pixel_format, src_alpha_format,
-          &src_profile, converted_pixels + dst_index, dst_pixel_format,
-          dst_alpha_format, &dst_profile, crop_rect->Width());
+          src_profile_ptr, converted_pixels + dst_index, dst_pixel_format,
+          dst_alpha_format, dst_profile_ptr, crop_rect->Width());
       DCHECK(data_transform_successful);
       src_index += src_row_stride;
       dst_index += dst_row_stride;
@@ -798,8 +804,8 @@ bool ImageData::ImageDataInCanvasColorSettings(
 
   bool data_transform_successful =
       skcms_Transform(src_data, src_pixel_format, src_alpha_format,
-                      &src_profile, converted_pixels, dst_pixel_format,
-                      dst_alpha_format, &dst_profile, size_.Area());
+                      src_profile_ptr, converted_pixels, dst_pixel_format,
+                      dst_alpha_format, dst_profile_ptr, size_.Area());
   return data_transform_successful;
 }
 
