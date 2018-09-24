@@ -302,8 +302,10 @@ TEST_F(MultideviceHandlerTest, RetryPendingHostSetup) {
 }
 
 TEST_F(MultideviceHandlerTest, SetUpAndroidSms) {
+  EXPECT_FALSE(fake_android_sms_app_helper_delegate()->HasInstalledApp());
   EXPECT_FALSE(fake_android_sms_app_helper_delegate()->HasLaunchedApp());
   CallSetUpAndroidSms();
+  EXPECT_TRUE(fake_android_sms_app_helper_delegate()->HasInstalledApp());
   EXPECT_TRUE(fake_android_sms_app_helper_delegate()->HasLaunchedApp());
 }
 

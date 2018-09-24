@@ -19,13 +19,13 @@ void FakeAndroidSmsAppHelperDelegate::InstallAndroidSmsApp() {
   has_installed_ = true;
 }
 
-bool FakeAndroidSmsAppHelperDelegate::HasInstalledApp() {
-  return has_installed_;
+void FakeAndroidSmsAppHelperDelegate::InstallAndLaunchAndroidSmsApp() {
+  InstallAndroidSmsApp();
+  has_launched_ = true;
 }
 
-bool FakeAndroidSmsAppHelperDelegate::LaunchAndroidSmsApp() {
-  has_launched_ = true;
-  return true;
+bool FakeAndroidSmsAppHelperDelegate::HasInstalledApp() {
+  return has_installed_;
 }
 
 bool FakeAndroidSmsAppHelperDelegate::HasLaunchedApp() {

@@ -36,11 +36,15 @@ class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
   // function are added. See https://crbug.com/876972.
   explicit AndroidSmsAppHelperDelegateImpl(
       web_app::PendingAppManager* pending_app_manager);
-  void OnAppInstalled(const GURL& app_url, web_app::InstallResultCode code);
+  void OnAppInstalled(bool launch_on_install,
+                      const GURL& app_url,
+                      web_app::InstallResultCode code);
+  void InstallAndroidSmsApp(bool launch_on_install);
+  void LaunchAndroidSmsApp();
 
   // AndroidSmsAppHelperDelegate:
   void InstallAndroidSmsApp() override;
-  bool LaunchAndroidSmsApp() override;
+  void InstallAndLaunchAndroidSmsApp() override;
 
   static const char kMessagesWebAppUrl[];
   web_app::PendingAppManager* pending_app_manager_;
