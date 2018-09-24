@@ -23,10 +23,6 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "components/os_crypt/ie7_password_win.h"
-#endif
-
 #include <iterator>
 
 namespace {
