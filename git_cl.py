@@ -3152,7 +3152,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     reviewers = sorted(change_desc.get_reviewers())
 
     # Add cc's from the CC_LIST and --cc flag (if any).
-    if not options.private:
+    if not options.private and not options.no_autocc:
       cc = self.GetCCList().split(',')
     else:
       cc = []
