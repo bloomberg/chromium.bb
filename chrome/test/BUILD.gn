@@ -1935,7 +1935,6 @@ test("browser_tests") {
         "../browser/ui/cocoa/applescript/window_applescript_test.mm",
         "../browser/ui/cocoa/browser_window_mac_browsertest.mm",
         "../browser/ui/cocoa/certificate_viewer_mac_browsertest.mm",
-        "../browser/ui/cocoa/extensions/extension_message_bubble_views_browsertest_mac.mm",
         "../browser/ui/cocoa/share_menu_controller_browsertest.mm",
       ]
       sources -= [
@@ -4137,7 +4136,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/constrained_window/constrained_window_custom_window_unittest.mm",
         "../browser/ui/cocoa/constrained_window/constrained_window_sheet_controller_unittest.mm",
         "../browser/ui/cocoa/draggable_button_unittest.mm",
-        "../browser/ui/cocoa/extensions/browser_actions_container_view_unittest.mm",
         "../browser/ui/cocoa/find_pasteboard_unittest.mm",
         "../browser/ui/cocoa/first_run_dialog_controller_unittest.mm",
         "../browser/ui/cocoa/floating_bar_backing_view_unittest.mm",
@@ -4192,7 +4190,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/toolbar/app_toolbar_button_unittest.mm",
         "../browser/ui/cocoa/toolbar/reload_button_unittest_cocoa.mm",
         "../browser/ui/cocoa/toolbar/toolbar_button_unittest.mm",
-        "../browser/ui/cocoa/toolbar/toolbar_controller_unittest.mm",
         "../browser/ui/cocoa/toolbar/toolbar_view_unittest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_default_touch_bar_unittest.mm",
         "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",

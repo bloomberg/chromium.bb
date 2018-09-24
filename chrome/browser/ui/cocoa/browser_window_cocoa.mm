@@ -35,7 +35,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
@@ -438,9 +437,6 @@ void BrowserWindowCocoa::FocusToolbar() {
 }
 
 ToolbarActionsBar* BrowserWindowCocoa::GetToolbarActionsBar() {
-  if ([controller_ hasToolbar])
-    return [[[controller_ toolbarController] browserActionsController]
-               toolbarActionsBar];
   return nullptr;
 }
 

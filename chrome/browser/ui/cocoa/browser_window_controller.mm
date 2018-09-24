@@ -350,11 +350,6 @@ bool IsTabDetachingInFullscreenEnabled() {
     // Create the bridge for the status bubble.
     statusBubble_ = new StatusBubbleMac([self window], self);
 
-    // This must be done after the view is added to the window since it relies
-    // on the window bounds to determine whether to show buttons or not.
-    if ([self hasToolbar])  // Do not create the buttons in popups.
-      [toolbarController_ createBrowserActionButtons];
-
     extensionKeybindingRegistry_.reset(
         new ExtensionKeybindingRegistryCocoa(browser_->profile(),
             [self window],

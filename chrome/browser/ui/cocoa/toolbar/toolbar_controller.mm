@@ -29,9 +29,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
-#import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
-#import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
-#import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
@@ -112,12 +109,7 @@ const CGFloat kMinimumLocationBarWidth = 100.0;
 - (CGFloat)baseToolbarHeight;
 - (void)toolbarFrameChanged;
 - (void)showLocationBarOnly;
-- (void)pinLocationBarBeforeBrowserActionsContainerAndAnimate:(BOOL)animate;
 - (void)maintainMinimumLocationBarWidth;
-- (void)adjustBrowserActionsContainerForNewWindow:(NSNotification*)notification;
-- (void)browserActionsContainerDragged:(NSNotification*)notification;
-- (void)browserActionsVisibilityChanged:(NSNotification*)notification;
-- (void)browserActionsContainerWillAnimate:(NSNotification*)notification;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
 - (void)updateAppMenuButtonSeverity:(AppMenuIconController::Severity)severity
                            iconType:(AppMenuIconController::IconType)iconType
@@ -341,16 +333,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   locationBarFrame.size.height = kLocationBarHeight;
   [locationBar_ setFrame:locationBarFrame];
 
-  // Correctly position the extension buttons' container view.
-  NSRect containerFrame = [browserActionsContainerView_ frame];
-  containerFrame.size.width += kButtonInset;
-  containerFrame.origin.y = locationBarFrame.origin.y;
-  containerFrame.size.height = kLocationBarHeight;
-  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
-    containerFrame.origin.x = NSMinX(locationBarFrame) - kButtonInset;
-  [browserActionsContainerView_ setFrame:containerFrame];
-  [browserActionsContainerView_ setAutoresizingMask:trailingButtonMask];
-
   notificationBridge_.reset(
       new ToolbarControllerInternal::NotificationBridge(self));
   notificationBridge_->UpdateSeverity();
@@ -394,8 +376,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
           &ToolbarControllerInternal::NotificationBridge::OnPreferenceChanged,
           base::Unretained(notificationBridge_.get())));
   [self showOptionalHomeButton];
-
-  [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
 
   // Create the controllers for the back/forward menus.
   backMenuController_.reset([[BackForwardMenuController alloc]
@@ -452,7 +432,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   // Pass this call onto other reference counted objects.
   [backMenuController_ browserWillBeDestroyed];
   [forwardMenuController_ browserWillBeDestroyed];
-  [browserActionsController_ browserWillBeDestroyed];
 
   [self cleanUp];
 }
@@ -619,10 +598,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 
   [locationBar_ updateMouseTracking];
 
-  if (browserActionsController_.get()) {
-    [browserActionsController_ update];
-  }
-
   BOOL needReloadMenu = chrome::IsDebuggerAttachedToCurrentTab(browser_);
   [reloadButton_ setMenuEnabled:needReloadMenu];
 }
@@ -731,36 +706,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   }
 }
 
-- (void)createBrowserActionButtons {
-  if (!browserActionsController_.get()) {
-    browserActionsController_.reset([[BrowserActionsController alloc]
-            initWithBrowser:browser_
-              containerView:browserActionsContainerView_
-             mainController:nil]);
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(browserActionsContainerDragged:)
-               name:kBrowserActionGrippyDraggingNotification
-             object:browserActionsContainerView_];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(browserActionsVisibilityChanged:)
-               name:kBrowserActionVisibilityChangedNotification
-             object:browserActionsController_];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(browserActionsContainerWillAnimate:)
-               name:kBrowserActionsContainerWillAnimate
-             object:browserActionsContainerView_];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(adjustBrowserActionsContainerForNewWindow:)
-               name:NSWindowDidBecomeKeyNotification
-             object:[[self view] window]];
-  }
-  [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
-}
-
 - (void)updateVisibility:(BOOL)visible withAnimation:(BOOL)animate {
   CGFloat newHeight = visible ? [ToolbarController locationBarHeight] : 0;
 
@@ -774,54 +719,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   }
 }
 
-- (void)adjustBrowserActionsContainerForNewWindow:
-    (NSNotification*)notification {
-  [self toolbarFrameChanged];
-  [[NSNotificationCenter defaultCenter]
-      removeObserver:self
-                name:NSWindowDidBecomeKeyNotification
-              object:[[self view] window]];
-}
-
-- (void)browserActionsContainerDragged:(NSNotification*)notification {
-  [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
-}
-
-- (void)browserActionsVisibilityChanged:(NSNotification*)notification {
-  [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
-}
-
-- (void)browserActionsContainerWillAnimate:(NSNotification*)notification {
-  [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:YES];
-}
-
-- (void)pinLocationBarBeforeBrowserActionsContainerAndAnimate:(BOOL)animate {
-  CGFloat delta = 0.0;
-  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-    CGFloat leftEdge = NSMinX([locationBar_ frame]);
-    if ([browserActionsContainerView_ isHidden]) {
-      delta = leftEdge -
-              (NSMaxX([appMenuButton_ frame]) +
-               [ToolbarController appMenuPadding] + kButtonInset);
-    } else {
-      delta = leftEdge -
-              (NSMaxX([browserActionsContainerView_ animationEndFrame]) +
-               kButtonInset);
-    }
-  } else {
-    CGFloat rightEdge = NSMaxX([locationBar_ frame]);
-    if ([browserActionsContainerView_ isHidden]) {
-      delta = NSMinX([appMenuButton_ frame]) -
-              [ToolbarController appMenuPadding] - kButtonInset - rightEdge;
-    } else {
-      delta = NSMinX([browserActionsContainerView_ animationEndFrame]) -
-              kButtonInset - rightEdge;
-    }
-  }
-
-  [self adjustLocationSizeBy:delta animate:animate];
-}
-
 - (void)maintainMinimumLocationBarWidth {
   CGFloat locationBarWidth = NSWidth([locationBar_ frame]);
   locationBarAtMinSize_ = locationBarWidth <= kMinimumLocationBarWidth;
@@ -832,65 +729,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)toolbarFrameChanged {
-  // Do nothing if the frame changes but no Browser Action Controller is
-  // present.
-  if (!browserActionsController_.get())
-    return;
-
-  if ([browserActionsContainerView_ isAnimating]) {
-    // If the browser actions container is animating, we need to stop it first,
-    // because the frame it's animating for could be incorrect with the new
-    // bounds (if, for instance, the bookmark bar was added).
-    // This will advance to the end of the animation, so we also need to adjust
-    // it afterwards.
-    [browserActionsContainerView_ stopAnimation];
-    NSRect containerFrame = [browserActionsContainerView_ frame];
-    containerFrame.origin.y = [locationBar_ frame].origin.y;
-    [browserActionsContainerView_ setFrame:containerFrame];
-    [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
-  }
-
-  [self maintainMinimumLocationBarWidth];
-
-  if (locationBarAtMinSize_) {
-    // Once the grippy is pinned, leave it until it is explicity un-pinned.
-    [browserActionsContainerView_ setGrippyPinned:YES];
-    NSRect containerFrame = [browserActionsContainerView_ frame];
-    // Determine how much the container needs to move in case it's overlapping
-    // with the location bar.
-    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-      CGFloat dX = NSMaxX(containerFrame) - NSMinX([locationBar_ frame]);
-      containerFrame.size.width -= dX;
-    } else {
-      CGFloat dX = NSMaxX([locationBar_ frame]) - containerFrame.origin.x;
-      containerFrame = NSOffsetRect(containerFrame, dX, 0);
-      containerFrame.size.width -= dX;
-    }
-    [browserActionsContainerView_ setFrame:containerFrame];
-  } else if (!locationBarAtMinSize_ &&
-      [browserActionsContainerView_ grippyPinned]) {
-    // Expand out the container until it hits the saved size, then unpin the
-    // grippy.
-    // Add 0.1 pixel so that it doesn't hit the minimum width codepath above.
-    CGFloat dX = NSWidth([locationBar_ frame]) -
-        (kMinimumLocationBarWidth + 0.1);
-    NSRect containerFrame = [browserActionsContainerView_ frame];
-    if (!cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
-      containerFrame = NSOffsetRect(containerFrame, -dX, 0);
-    containerFrame.size.width += dX;
-    CGFloat savedContainerWidth =
-        [browserActionsController_ preferredSize].width();
-    if (NSWidth(containerFrame) >= savedContainerWidth) {
-      if (!cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-        containerFrame = NSOffsetRect(
-            containerFrame, NSWidth(containerFrame) - savedContainerWidth, 0);
-      }
-      containerFrame.size.width = savedContainerWidth;
-      [browserActionsContainerView_ setGrippyPinned:NO];
-    }
-    [browserActionsContainerView_ setFrame:containerFrame];
-    [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
-  }
 }
 
 // Hide the back, forward, reload, home, and app menu buttons of the toolbar.
@@ -917,16 +755,12 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [reloadButton_ setHidden:YES];
   [appMenuButton_ setHidden:YES];
   [homeButton_ setHidden:YES];
-  [browserActionsContainerView_ setHidden:YES];
 }
 
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate {
   NSRect locationFrame = [locationBar_ frame];
 
   CGFloat location_bar_flex = NSWidth(locationFrame) - kMinimumLocationBarWidth;
-  [browserActionsController_
-      setMaxWidth:NSWidth(browserActionsContainerView_.frame) +
-                  location_bar_flex];
 
   [locationBar_ stopAnimation];
 
@@ -977,10 +811,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [toolbarView setShowsDivider:(opacity > 0 ? YES : NO)];
   [toolbarView setDividerOpacity:opacity];
   [toolbarView setNeedsDisplay:YES];
-}
-
-- (BrowserActionsController*)browserActionsController {
-  return browserActionsController_.get();
 }
 
 - (NSView*)appMenuButton {

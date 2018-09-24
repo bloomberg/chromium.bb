@@ -122,20 +122,8 @@ jumbo_split_static_library("ui") {
       "cocoa/draggable_button.mm",
       "cocoa/draggable_button_mixin.h",
       "cocoa/draggable_button_mixin.mm",
-      "cocoa/extensions/browser_action_button.h",
-      "cocoa/extensions/browser_action_button.mm",
-      "cocoa/extensions/browser_actions_container_view.h",
-      "cocoa/extensions/browser_actions_container_view.mm",
-      "cocoa/extensions/browser_actions_controller.h",
-      "cocoa/extensions/browser_actions_controller.mm",
-      "cocoa/extensions/extension_action_platform_delegate_cocoa.h",
-      "cocoa/extensions/extension_action_platform_delegate_cocoa.mm",
       "cocoa/extensions/extension_keybinding_registry_cocoa.h",
       "cocoa/extensions/extension_keybinding_registry_cocoa.mm",
-      "cocoa/extensions/extension_popup_views_mac.h",
-      "cocoa/extensions/extension_popup_views_mac.mm",
-      "cocoa/extensions/toolbar_actions_bar_bubble_views_presenter.h",
-      "cocoa/extensions/toolbar_actions_bar_bubble_views_presenter.mm",
       "cocoa/fast_resize_view.h",
       "cocoa/fast_resize_view.mm",
       "cocoa/floating_bar_backing_view.h",
@@ -3819,9 +3807,6 @@ static_library("test_support") {
       "views/webauthn/authenticator_request_dialog_view_test_api.cc",
       "views/webauthn/authenticator_request_dialog_view_test_api.h",
     ]
-    if (is_mac) {
-      sources += [ "cocoa/extensions/browser_action_test_util_views_cocoa.mm" ]
-    }
     if (use_aura) {
       sources += [ "views/toolbar/browser_action_test_util_views_aura.cc" ]
       deps += [
