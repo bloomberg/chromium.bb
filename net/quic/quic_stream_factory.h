@@ -123,6 +123,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
               const GURL& url,
               const NetLogWithSource& net_log,
               NetErrorDetails* net_error_details,
+              CompletionOnceCallback failed_on_default_network_callback,
               CompletionOnceCallback callback);
 
   // This function must be called after Request() returns ERR_IO_PENDING.
@@ -143,6 +144,11 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   void OnHostResolutionComplete(int rv);
 
   void OnRequestComplete(int rv);
+
+  // Called when the original connection created on the default network for
+  // |this| fails and a new connection has been created on the alternate
+  // network.
+  void OnConnectionFailedOnDefaultNetwork();
 
   // Helper method that calls |factory_|'s GetTimeDelayForWaitingJob(). It
   // returns the amount of time waiting job should be delayed.
@@ -165,6 +171,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   QuicSessionKey session_key_;
   NetLogWithSource net_log_;
   CompletionOnceCallback callback_;
+  CompletionOnceCallback failed_on_default_network_callback_;
   NetErrorDetails* net_error_details_;  // Unowned.
   std::unique_ptr<QuicChromiumClientSession::Handle> session_;
 

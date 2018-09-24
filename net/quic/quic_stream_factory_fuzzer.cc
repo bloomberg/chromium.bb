@@ -159,7 +159,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       env->host_port_pair,
       data_provider.PickValueInArray(quic::kSupportedTransportVersions),
       PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY, SocketTag(), kCertVerifyFlags,
-      GURL(kUrl), env->net_log, &net_error_details, callback.callback());
+      GURL(kUrl), env->net_log, &net_error_details,
+      /*failed_on_default_network_callback=*/CompletionOnceCallback(),
+      callback.callback());
 
   callback.WaitForResult();
   std::unique_ptr<QuicChromiumClientSession::Handle> session =
