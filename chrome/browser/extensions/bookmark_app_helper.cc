@@ -434,8 +434,10 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
       base::BindOnce(&BookmarkAppHelper::OnIconsDownloaded,
                      weak_factory_.GetWeakPtr())));
 
-  // If the manifest specified icons, don't use the page icons.
-  if (!data.manifest->icons.empty())
+  // If the manifest specified icons, or this is a System App, don't use the
+  // page icons.
+  if (!data.manifest->icons.empty() ||
+      contents_->GetVisibleURL().SchemeIs(content::kChromeUIScheme))
     web_app_icon_downloader_->SkipPageFavicons();
 
   web_app_icon_downloader_->Start();
@@ -522,6 +524,16 @@ void BookmarkAppHelper::OnBubbleCompleted(
 
     if (is_default_app_) {
       crx_installer_->set_install_source(Manifest::EXTERNAL_PREF_DOWNLOAD);
+      // InstallWebApp will OR the creation flags with FROM_BOOKMARK.
+      crx_installer_->set_creation_flags(Extension::WAS_INSTALLED_BY_DEFAULT);
+    }
+
+    if (is_system_app_) {
+      // System Apps are considered EXTERNAL_COMPONENT as they are downloaded
+      // from the WebUI they point to. COMPONENT seems like the more correct
+      // value, but usages (icon loading, filesystem cleanup), are tightly
+      // coupled to this value, making it unsuitable.
+      crx_installer_->set_install_source(Manifest::EXTERNAL_COMPONENT);
       // InstallWebApp will OR the creation flags with FROM_BOOKMARK.
       crx_installer_->set_creation_flags(Extension::WAS_INSTALLED_BY_DEFAULT);
     }

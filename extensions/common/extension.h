@@ -158,7 +158,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Valid schemes for web extent URLPatterns.
   static const int kValidWebExtentSchemes;
 
-  // Valid schemes for bookmark app installs.
+  // Valid schemes for bookmark app installs by the user.
   static const int kValidBookmarkAppSchemes;
 
   // Valid schemes for host permission URLPatterns.
