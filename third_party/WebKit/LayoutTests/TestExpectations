@@ -3732,6 +3732,10 @@ crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-smooth-positions.ht
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-subframe-root.html [ Skip ]
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-subframe-window.html [ Skip ]
 
+# Can't add baselines because a generated unique ID is part of the failure message.
+crbug.com/888470 external/wpt/referrer-policy/css-integration/child-css/internal-import-stylesheet.html [ Failure ]
+crbug.com/888470 external/wpt/referrer-policy/css-integration/child-css/processing-instruction.html [ Failure ]
+
 # This test times out on debug builds, see https://crbug.com/755810
 crbug.com/626703 [ Debug ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Skip ]
 
