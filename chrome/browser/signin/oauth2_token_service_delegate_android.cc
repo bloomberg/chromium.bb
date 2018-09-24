@@ -422,16 +422,6 @@ bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
   return currently_signed_in;
 }
 
-void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailableFromJava(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& account_name) {
-  std::string account_id =
-      MapAccountNameToAccountId(ConvertJavaStringToUTF8(env, account_name));
-  // Notify native observers.
-  FireRefreshTokenAvailable(account_id);
-}
-
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable(
     const std::string& account_id) {
   DCHECK(!account_id.empty());
@@ -445,16 +435,6 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable(
   Java_OAuth2TokenService_notifyRefreshTokenAvailable(env, java_ref_,
                                                       j_account_name);
   OAuth2TokenServiceDelegate::FireRefreshTokenAvailable(account_id);
-}
-
-void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevokedFromJava(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& account_name) {
-  std::string account_id =
-      MapAccountNameToAccountId(ConvertJavaStringToUTF8(env, account_name));
-  // Notify native observers.
-  FireRefreshTokenRevoked(account_id);
 }
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked(
@@ -479,13 +459,6 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked(
     UMA_HISTOGRAM_BOOLEAN("OAuth2Login.AccountRevoked.IsEmailId", is_email_id);
   }
   OAuth2TokenServiceDelegate::FireRefreshTokenRevoked(account_id);
-}
-
-void OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoadedFromJava(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  // Notify native observers.
-  FireRefreshTokensLoaded();
 }
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoaded() {
