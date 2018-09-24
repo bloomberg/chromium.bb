@@ -18,8 +18,6 @@
 
 namespace content {
 
-void BrowserAccessibilityStateImpl::PlatformInitialize() {}
-
 void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
   // NOTE: This function is running on the file thread.
   NSWorkspace* workspace = [NSWorkspace sharedWorkspace];

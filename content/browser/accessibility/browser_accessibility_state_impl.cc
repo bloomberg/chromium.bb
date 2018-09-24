@@ -168,8 +168,6 @@ ui::AXMode BrowserAccessibilityStateImpl::GetAccessibilityMode() const {
 }
 
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
-void BrowserAccessibilityStateImpl::PlatformInitialize() {}
-
 void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
 }
 #endif

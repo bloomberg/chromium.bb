@@ -18,7 +18,8 @@ class BrowserAccessibilityWin;
 
 // Manages a tree of BrowserAccessibilityWin objects.
 class CONTENT_EXPORT BrowserAccessibilityManagerWin
-    : public BrowserAccessibilityManager {
+    : public BrowserAccessibilityManager,
+      public ui::IAccessible2UsageObserver {
  public:
   BrowserAccessibilityManagerWin(
       const ui::AXTreeUpdate& initial_tree,
@@ -31,6 +32,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
   // Get the closest containing HWND.
   HWND GetParentHWND();
+
+  // IAccessible2UsageObserver
+  void OnIAccessible2Used() override;
+  void OnScreenReaderHoneyPotQueried() override;
+  void OnAccNameCalled() override;
 
   // BrowserAccessibilityManager methods
   void UserIsReloading() override;

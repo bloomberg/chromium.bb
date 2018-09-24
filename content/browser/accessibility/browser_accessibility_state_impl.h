@@ -84,7 +84,6 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   // Leaky singleton, destructor generally won't be called.
   ~BrowserAccessibilityStateImpl() override;
 
-  void PlatformInitialize();
   void UpdatePlatformSpecificHistograms();
 
   ui::AXMode accessibility_mode_;
