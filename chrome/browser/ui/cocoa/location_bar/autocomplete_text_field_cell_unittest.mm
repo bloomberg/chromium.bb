@@ -10,7 +10,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/test/scoped_force_rtl_mac.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -94,13 +93,6 @@ TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
   // they are actually drawn, check that |GetWidthForSpace()| doesn't
   // indicate that they should be omitted.
   const CGFloat kVeryWide = 1000.0;
-
-  SelectedKeywordDecoration selected_keyword_decoration;
-  selected_keyword_decoration.SetVisible(true);
-  selected_keyword_decoration.SetKeyword(base::ASCIIToUTF16("Google"), false);
-  [cell addLeadingDecoration:&selected_keyword_decoration];
-  EXPECT_NE(selected_keyword_decoration.GetWidthForSpace(kVeryWide),
-            LocationBarDecoration::kOmittedWidth);
 
   // TODO(shess): This really wants a |LocationBarViewMac|, but only a
   // few methods reference it, so this works well enough.  But

@@ -13,9 +13,6 @@ class BubbleDialogDelegateView;
 
 class LocationBarDecoration;
 
-// Returns the manage password icon decoration in the omnibox.
-LocationBarDecoration* GetManagePasswordDecoration(gfx::NativeWindow window);
-
 // Returns the page info decoration in the omnibox.
 LocationBarDecoration* GetPageInfoDecoration(gfx::NativeWindow window);
 
