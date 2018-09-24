@@ -59,6 +59,9 @@ class TestPaymentsClient : public payments::PaymentsClient {
     return upload_details_addresses_;
   }
   std::string pan_first_six_in_upload_details() const { return pan_first_six_; }
+  const std::vector<AutofillProfile>& addresses_in_upload_card() const {
+    return upload_card_addresses_;
+  }
   const std::vector<const char*>& active_experiments_in_request() const {
     return active_experiments_;
   }
@@ -66,6 +69,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
  private:
   std::string server_id_;
   std::vector<AutofillProfile> upload_details_addresses_;
+  std::vector<AutofillProfile> upload_card_addresses_;
   int detected_values_;
   std::string pan_first_six_;
   std::vector<const char*> active_experiments_;
