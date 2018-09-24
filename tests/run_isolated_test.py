@@ -735,14 +735,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
     isolated_hash = isolateserver_mock.hash_content(isolated)
     files = {isolated_hash:isolated}
     _ = self._run_tha_test(isolated_hash, files)
-    # Injects sys.executable.
-    self.assertEqual(
-        [
-          (
-            [sys.executable, os.path.join(u'..', 'out', 'cmd.py'), u'arg'],
-            {'cwd': self.ir_dir('some'), 'detached': True}),
-        ],
-        self.popen_calls)
+    # Injects sys.executable but on macOS, the path may be different than
+    # sys.executable due to symlinks.
+    self.assertEqual(1, len(self.popen_calls))
+    cmd, args = self.popen_calls[0]
+    self.assertEqual({'cwd': self.ir_dir('some'), 'detached': True}, args)
+    self.assertIn('python', cmd[0])
+    self.assertEqual([os.path.join(u'..', 'out', 'cmd.py'), u'arg'], cmd[1:])
 
   def test_run_tha_test_non_isolated(self):
     _ = self._run_tha_test(command=['/bin/echo', 'hello', 'world'])
