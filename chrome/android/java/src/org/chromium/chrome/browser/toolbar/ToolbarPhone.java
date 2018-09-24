@@ -31,7 +31,6 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.graphics.drawable.DrawableWrapper;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Property;
 import android.util.TypedValue;
@@ -173,7 +172,6 @@ public class ToolbarPhone extends ToolbarLayout
     @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mDelayingTabSwitcherAnimation;
 
-    protected ColorDrawable mTabSwitcherAnimationBgOverlay;
     private TabSwitcherDrawable mTabSwitcherAnimationTabStackDrawable;
     private Drawable mTabSwitcherAnimationMenuDrawable;
     private Drawable mTabSwitcherAnimationMenuBadgeDarkDrawable;
@@ -212,15 +210,11 @@ public class ToolbarPhone extends ToolbarLayout
     protected float mUrlExpansionPercent;
     private AnimatorSet mUrlFocusLayoutAnimator;
 
-    private CharSequence mUrlTextPreFocus;
-    private int mUrlScrollXPositionPreFocus;
-
     protected boolean mDisableLocationBarRelayout;
     protected boolean mLayoutLocationBarInFocusedMode;
     protected int mUnfocusedLocationBarLayoutWidth;
     protected int mUnfocusedLocationBarLayoutLeft;
     protected int mUnfocusedLocationBarLayoutRight;
-    protected boolean mHasVisibleViewPriorToUrlBar;
     private boolean mUnfocusedLocationBarUsesTransparentBg;
 
     private int mLocationBarBackgroundAlpha = 255;
@@ -2051,33 +2045,6 @@ public class ToolbarPhone extends ToolbarLayout
 
         if (isLocationBarShownInNTP() && mNtpSearchBoxScrollPercent == 0f) return;
 
-        // The call to getLayout() can return null briefly during text changes, but as it
-        // is only needed for RTL calculations, we proceed if the location bar is showing
-        // LTR content.
-        boolean isLocationBarRtl = ApiCompatibilityUtils.isLayoutRtl(mLocationBar);
-        if (!TextUtils.isEmpty(mUrlBar.getText())
-                && (!isLocationBarRtl || mUrlBar.getLayout() != null)) {
-            int urlBarStartScrollX = 0;
-            if (TextUtils.equals(mUrlBar.getText(), mUrlTextPreFocus)) {
-                urlBarStartScrollX = mUrlScrollXPositionPreFocus;
-            } else if (isLocationBarRtl) {
-                urlBarStartScrollX = (int) mUrlBar.getLayout().getPrimaryHorizontal(0);
-                urlBarStartScrollX -= mUrlBar.getWidth();
-            }
-
-            // If the scroll position matches the current scroll position, do not trigger
-            // this animation as it will cause visible jumps when going from cleared text
-            // back to page URLs (despite it continually calling setScrollX with the same
-            // number).
-            if (mUrlBar.getScrollX() != urlBarStartScrollX) {
-                animator = ObjectAnimator.ofInt(mUrlBar,
-                        buildUrlScrollProperty(mLocationBar, isLocationBarRtl), urlBarStartScrollX);
-                animator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-                animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-                animators.add(animator);
-            }
-        }
-
         animator = ObjectAnimator.ofFloat(mToolbarShadow, ALPHA, 1);
         animator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
         animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
@@ -2102,12 +2069,8 @@ public class ToolbarPhone extends ToolbarLayout
         List<Animator> animators = new ArrayList<>();
         if (hasFocus) {
             populateUrlFocusingAnimatorSet(animators);
-            mUrlTextPreFocus = mUrlBar.getText();
-            mUrlScrollXPositionPreFocus = mUrlBar.getScrollX();
         } else {
             populateUrlClearFocusingAnimatorSet(animators);
-            mUrlTextPreFocus = null;
-            mUrlScrollXPositionPreFocus = 0;
         }
         mUrlFocusLayoutAnimator = new AnimatorSet();
         mUrlFocusLayoutAnimator.playTogether(animators);
