@@ -76,13 +76,13 @@ void ModelTypeController::LoadModels(
     const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
-  CHECK(!model_load_callback.is_null());
-  CHECK_EQ(NOT_RUNNING, state_);
+  DCHECK(!model_load_callback.is_null());
+  DCHECK_EQ(NOT_RUNNING, state_);
 
   auto it = delegate_map_.find(configure_context.storage_option);
-  CHECK(it != delegate_map_.end());
+  DCHECK(it != delegate_map_.end());
   delegate_ = it->second.get();
-  CHECK(delegate_);
+  DCHECK(delegate_);
 
   DVLOG(1) << "Sync starting for " << ModelTypeToString(type());
   state_ = MODEL_STARTING;
@@ -110,7 +110,7 @@ void ModelTypeController::BeforeLoadModels(ModelTypeConfigurer* configurer) {}
 void ModelTypeController::LoadModelsDone(ConfigureResult result,
                                          const SyncError& error) {
   DCHECK(CalledOnValidThread());
-  CHECK_NE(NOT_RUNNING, state_);
+  DCHECK_NE(NOT_RUNNING, state_);
 
   if (state_ == STOPPING) {
     DCHECK(!model_stop_callbacks_.empty());
@@ -137,7 +137,7 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
   }
 
   if (IsSuccessfulResult(result)) {
-    CHECK_EQ(MODEL_STARTING, state_);
+    DCHECK_EQ(MODEL_STARTING, state_);
     state_ = MODEL_LOADED;
     DVLOG(1) << "Sync start completed for " << ModelTypeToString(type());
   } else {
@@ -168,7 +168,7 @@ void ModelTypeController::RegisterWithBackend(
     return;
   DCHECK(configurer);
   DCHECK(activation_response_);
-  CHECK_EQ(MODEL_LOADED, state_);
+  DCHECK_EQ(MODEL_LOADED, state_);
   // Inform the DataTypeManager whether our initial download is complete.
   set_downloaded.Run(
       activation_response_->model_type_state.initial_sync_done());
@@ -183,7 +183,7 @@ void ModelTypeController::StartAssociating(
     const StartCallback& start_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!start_callback.is_null());
-  CHECK_EQ(MODEL_LOADED, state_);
+  DCHECK_EQ(MODEL_LOADED, state_);
 
   state_ = RUNNING;
   DVLOG(1) << "Sync running for " << ModelTypeToString(type());
@@ -196,11 +196,11 @@ void ModelTypeController::StartAssociating(
 void ModelTypeController::ActivateDataType(ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   DCHECK(configurer);
-  CHECK_EQ(RUNNING, state_);
+  DCHECK_EQ(RUNNING, state_);
   // In contrast with directory datatypes, non-blocking data types should be
   // activated in RegisterWithBackend. activation_response_ should be
   // passed to backend before call to ActivateDataType.
-  CHECK(!activation_response_);
+  DCHECK(!activation_response_);
 }
 
 void ModelTypeController::DeactivateDataType(ModelTypeConfigurer* configurer) {
@@ -230,15 +230,15 @@ void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate,
       return;
 
     case STOPPING:
-      CHECK(!model_stop_callbacks_.empty());
+      DCHECK(!model_stop_callbacks_.empty());
       model_stop_metadata_fate_ =
           TakeStrictestMetadataFate(model_stop_metadata_fate_, metadata_fate);
       model_stop_callbacks_.push_back(std::move(callback));
       break;
 
     case MODEL_STARTING:
-      CHECK(!model_load_callback_.is_null());
-      CHECK(model_stop_callbacks_.empty());
+      DCHECK(!model_load_callback_.is_null());
+      DCHECK(model_stop_callbacks_.empty());
       DLOG(WARNING) << "Deferring stop for " << ModelTypeToString(type())
                     << " because it's still starting";
       model_stop_metadata_fate_ = metadata_fate;
