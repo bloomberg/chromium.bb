@@ -390,16 +390,6 @@ util.runningInBrowser = function() {
 };
 
 /**
- * Attach page load handler.
- * @param {function()} handler Application-specific load handler.
- */
-util.addPageLoadHandler = function(handler) {
-  document.addEventListener('DOMContentLoaded', function() {
-    handler();
-  });
-};
-
-/**
  * Save app launch data to the local storage.
  */
 util.saveAppState = function() {
