@@ -14,6 +14,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/unified_consent/feature.h"
 
 using base::FeatureList;
 using syncer::ModelType;
@@ -25,8 +26,6 @@ using syncer::SyncPrefs;
 using syncer::UserSelectableTypes;
 
 namespace {
-
-const bool kUserEventsSeparatePrefGroup = false;
 
 // Some types show up in multiple groups. This means that there are at least two
 // user selectable groups that will cause these types to become enabled. This
@@ -42,7 +41,8 @@ ModelTypeSet MultiGroupTypes(const SyncPrefs& sync_prefs,
   // elsewhere in the file).
   for (ModelType st : selectable_types) {
     const ModelTypeSet grouped_types = sync_prefs.ResolvePrefGroups(
-        registered_types, ModelTypeSet(st), kUserEventsSeparatePrefGroup);
+        registered_types, ModelTypeSet(st),
+        unified_consent::IsUnifiedConsentFeatureEnabled());
     for (ModelType gt : grouped_types) {
       if (seen.Has(gt)) {
         multi.Put(gt);
@@ -109,10 +109,10 @@ class EnableDisableSingleClientTest : public SyncTest {
   }
 
   ModelTypeSet ResolveGroup(ModelType type) {
-    return Difference(
-        sync_prefs_->ResolvePrefGroups(registered_types_, ModelTypeSet(type),
-                                       kUserEventsSeparatePrefGroup),
-        ProxyTypes());
+    return Difference(sync_prefs_->ResolvePrefGroups(
+                          registered_types_, ModelTypeSet(type),
+                          unified_consent::IsUnifiedConsentFeatureEnabled()),
+                      ProxyTypes());
   }
 
   ModelTypeSet WithoutMultiTypes(const ModelTypeSet& input) {

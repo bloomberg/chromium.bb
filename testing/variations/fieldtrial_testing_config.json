@@ -4563,6 +4563,23 @@
             ]
         }
     ],
+    "UnifiedConsent": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled2",
+                    "enable_features": [
+                        "UnifiedConsent"
+                    ]
+                }
+            ]
+        }
+    ],
     "UpdateMenuItem": [
         {
             "platforms": [
