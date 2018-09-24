@@ -173,7 +173,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
       shelf_widget_(shelf_widget),
       shelf_(shelf),
       is_background_blur_enabled_(
-          app_list::features::IsBackgroundBlurEnabled()) {
+          app_list_features::IsBackgroundBlurEnabled()) {
   DCHECK(shelf_widget_);
   DCHECK(shelf_);
   Shell::Get()->AddShellObserver(this);

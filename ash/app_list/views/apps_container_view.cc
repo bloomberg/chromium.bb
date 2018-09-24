@@ -62,7 +62,8 @@ constexpr float kSuggestionChipOpacityEndProgress = 1;
 AppsContainerView::AppsContainerView(ContentsView* contents_view,
                                      AppListModel* model)
     : contents_view_(contents_view),
-      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()) {
+      is_new_style_launcher_enabled_(
+          app_list_features::IsNewStyleLauncherEnabled()) {
   if (is_new_style_launcher_enabled_) {
     suggestion_chip_container_view_ =
         new SuggestionChipContainerView(contents_view);

@@ -324,8 +324,9 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       pagination_animation_start_frame_number_(0),
       view_structure_(this),
       is_apps_grid_gap_feature_enabled_(
-          features::IsAppsGridGapFeatureEnabled()),
-      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()) {
+          app_list_features::IsAppsGridGapFeatureEnabled()),
+      is_new_style_launcher_enabled_(
+          app_list_features::IsNewStyleLauncherEnabled()) {
   DCHECK(contents_view_);
   SetPaintToLayer();
   // Clip any icons that are outside the grid view's bounds. These icons would
@@ -353,7 +354,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
     AddChildView(expand_arrow_view_);
   }
 
-  if (!folder_delegate_ && features::IsBackgroundBlurEnabled()) {
+  if (!folder_delegate_ && app_list_features::IsBackgroundBlurEnabled()) {
     // TODO(newcomer): Improve implementation of the mask layer so we can
     // enable it on all devices https://crbug.com/765292.
     fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>();

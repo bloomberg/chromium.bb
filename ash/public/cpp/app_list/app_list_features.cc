@@ -8,8 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 
-namespace app_list {
-namespace features {
+namespace app_list_features {
 
 const base::Feature kEnableAnswerCard{"EnableAnswerCard",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -113,5 +112,4 @@ std::string AppSearchResultRankerPredictorName() {
   return std::string("MrfuAppLaunchPredictor");
 }
 
-}  // namespace features
-}  // namespace app_list
+}  // namespace app_list_features

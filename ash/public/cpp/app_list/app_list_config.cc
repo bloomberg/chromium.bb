@@ -59,7 +59,7 @@ AppListConfig::AppListConfig()
       // 48 when the new shelf UI is turned off.
       shelf_height_(56),
       blur_radius_(30) {
-  if (features::IsNewStyleLauncherEnabled()) {
+  if (app_list_features::IsNewStyleLauncherEnabled()) {
     grid_tile_width_ = 120;
     grid_tile_height_ = 112;
     grid_tile_spacing_ = 0;

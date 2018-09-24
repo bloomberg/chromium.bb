@@ -971,7 +971,7 @@ class HomeLauncherNonClientFrameViewAshTest : public AshTestBase {
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        app_list::features::kEnableHomeLauncher);
+        app_list_features::kEnableHomeLauncher);
     AshTestBase::SetUp();
   }
 

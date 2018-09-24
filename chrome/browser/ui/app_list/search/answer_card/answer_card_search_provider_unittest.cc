@@ -150,7 +150,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     std::unique_ptr<base::FeatureList> feature_list =
         std::make_unique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
-        features::kEnableAnswerCard.name,
+        app_list_features::kEnableAnswerCard.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 

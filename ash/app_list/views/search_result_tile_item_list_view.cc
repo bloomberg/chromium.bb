@@ -49,7 +49,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     : search_result_page_view_(search_result_page_view),
       search_box_(search_box),
       is_play_store_app_search_enabled_(
-          features::IsPlayStoreAppSearchEnabled()) {
+          app_list_features::IsPlayStoreAppSearchEnabled()) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
       gfx::Insets(kItemListVerticalSpacing, kItemListHorizontalSpacing),
@@ -98,7 +98,7 @@ int SearchResultTileItemListView::DoUpdate() {
   base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
 
   SearchResult::DisplayType display_type =
-      features::IsZeroStateSuggestionsEnabled()
+      app_list_features::IsZeroStateSuggestionsEnabled()
           ? (query.empty() ? ash::SearchResultDisplayType::kRecommendation
                            : ash::SearchResultDisplayType::kTile)
           : ash::SearchResultDisplayType::kTile;

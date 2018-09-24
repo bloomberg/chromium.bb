@@ -122,10 +122,10 @@ class AppListViewTest : public views::ViewsTestBase,
     }
     if (is_new_style_launcher_enabled_) {
       scoped_feature_list_.InitAndEnableFeature(
-          features::kEnableNewStyleLauncher);
+          app_list_features::kEnableNewStyleLauncher);
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          features::kEnableNewStyleLauncher);
+          app_list_features::kEnableNewStyleLauncher);
     }
     views::ViewsTestBase::SetUp();
   }
@@ -271,10 +271,10 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     }
     if (is_new_style_launcher_enabled_) {
       scoped_feature_list_.InitAndEnableFeature(
-          features::kEnableNewStyleLauncher);
+          app_list_features::kEnableNewStyleLauncher);
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          features::kEnableNewStyleLauncher);
+          app_list_features::kEnableNewStyleLauncher);
     }
 
     views::ViewsTestBase::SetUp();
@@ -614,7 +614,7 @@ class AppListViewHomeLauncherTest : public AppListViewTest {
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        app_list::features::kEnableHomeLauncher);
+        app_list_features::kEnableHomeLauncher);
     AppListViewTest::SetUp();
   }
 
@@ -632,7 +632,7 @@ class AppListViewNonHomeLauncherTest : public AppListViewTest {
 
   void SetUp() override {
     scoped_feature_list_.InitAndDisableFeature(
-        app_list::features::kEnableHomeLauncher);
+        app_list_features::kEnableHomeLauncher);
     AppListViewTest::SetUp();
   }
 

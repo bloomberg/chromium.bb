@@ -150,7 +150,7 @@ class AppListPresenterDelegateNonHomeLauncherTest
   // testing::Test:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {}, {app_list::features::kEnableHomeLauncher});
+        {}, {app_list_features::kEnableHomeLauncher});
     AppListPresenterDelegateTest::SetUp();
   }
 
@@ -1120,8 +1120,8 @@ class AppListPresenterDelegateHomeLauncherTest
   // testing::Test:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {app_list::features::kEnableHomeLauncher,
-         app_list::features::kEnableBackgroundBlur},
+        {app_list_features::kEnableHomeLauncher,
+         app_list_features::kEnableBackgroundBlur},
         {});
     AppListPresenterDelegateTest::SetUp();
     // Home launcher is only enabled on internal display.

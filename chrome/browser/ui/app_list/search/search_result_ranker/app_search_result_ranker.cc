@@ -79,10 +79,11 @@ AppSearchResultRanker::AppSearchResultRanker(const base::FilePath& profile_path,
     : predictor_filename_(
           profile_path.AppendASCII(kAppLaunchPredictorFilename)),
       weak_factory_(this) {
-  if (!features::IsAppSearchResultRankerEnabled())
+  if (!app_list_features::IsAppSearchResultRankerEnabled())
     return;
 
-  predictor_ = CreatePredictor(features::AppSearchResultRankerPredictorName());
+  predictor_ =
+      CreatePredictor(app_list_features::AppSearchResultRankerPredictorName());
 
   // MrfuAppLaunchPredictor doesn't have materialization, so no loading from
   // local disk.

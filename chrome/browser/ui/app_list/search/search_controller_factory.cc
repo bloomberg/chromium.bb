@@ -94,7 +94,7 @@ std::unique_ptr<SearchController> CreateSearchController(
         webstore_group_id,
         std::make_unique<WebstoreProvider>(profile, list_controller));
   }
-  if (features::IsAnswerCardEnabled()) {
+  if (app_list_features::IsAnswerCardEnabled()) {
     controller->AddProvider(
         answer_card_group_id,
         std::make_unique<AnswerCardSearchProvider>(
@@ -113,7 +113,7 @@ std::unique_ptr<SearchController> CreateSearchController(
                             std::make_unique<LauncherSearchProvider>(profile));
   }
 
-  if (features::IsPlayStoreAppSearchEnabled()) {
+  if (app_list_features::IsPlayStoreAppSearchEnabled()) {
     // Set same boost as apps group since Play store results are placed
     // with apps.
     size_t playstore_api_group_id =
@@ -130,7 +130,7 @@ std::unique_ptr<SearchController> CreateSearchController(
                           std::make_unique<ArcAppDataSearchProvider>(
                               kMaxAppDataResults, list_controller));
 
-  if (features::IsSettingsShortcutSearchEnabled()) {
+  if (app_list_features::IsSettingsShortcutSearchEnabled()) {
     size_t settings_shortcut_group_id = controller->AddGroup(
         kMaxSettingsShortcutResults, 1.0, kBoostOfSettingsShortcut);
     controller->AddProvider(
@@ -138,7 +138,7 @@ std::unique_ptr<SearchController> CreateSearchController(
         std::make_unique<SettingsShortcutProvider>(profile));
   }
 
-  if (features::IsAppShortcutSearchEnabled()) {
+  if (app_list_features::IsAppShortcutSearchEnabled()) {
     size_t app_shortcut_group_id =
         controller->AddGroup(kMaxAppShortcutResults, 1.0, kBoostOfApps);
     controller->AddProvider(

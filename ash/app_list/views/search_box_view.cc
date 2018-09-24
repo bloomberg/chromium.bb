@@ -94,12 +94,13 @@ SearchBoxView::SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
     : search_box::SearchBoxViewBase(delegate),
       view_delegate_(view_delegate),
       app_list_view_(app_list_view),
-      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()),
+      is_new_style_launcher_enabled_(
+          app_list_features::IsNewStyleLauncherEnabled()),
       is_app_list_search_autocomplete_enabled_(
-          features::IsAppListSearchAutocompleteEnabled()),
+          app_list_features::IsAppListSearchAutocompleteEnabled()),
       weak_ptr_factory_(this) {
   set_is_tablet_mode(app_list_view->is_tablet_mode());
-  if (features::IsZeroStateSuggestionsEnabled())
+  if (app_list_features::IsZeroStateSuggestionsEnabled())
     set_show_close_button_when_active(true);
 }
 

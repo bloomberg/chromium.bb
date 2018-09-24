@@ -98,7 +98,7 @@ class NotificationBubbleWrapper {
         tray, bubble_view, false /* is_persistent */);
     bubble->InitializeContents(bubble_view);
 
-    if (app_list::features::IsBackgroundBlurEnabled()) {
+    if (app_list_features::IsBackgroundBlurEnabled()) {
       // ClientView's layer (See TrayBubbleView::InitializeAndShowBubble())
       bubble_view->layer()->parent()->SetBackgroundBlur(kBackgroundBlurRadius);
     }

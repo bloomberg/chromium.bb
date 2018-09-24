@@ -1255,7 +1255,7 @@ class HomeLauncherBrowserNonClientFrameViewAshTest
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        app_list::features::kEnableHomeLauncher);
+        app_list_features::kEnableHomeLauncher);
     TopChromeMdParamTest<InProcessBrowserTest>::SetUp();
   }
 
@@ -1280,7 +1280,7 @@ class NonHomeLauncherBrowserNonClientFrameViewAshTest
 
   void SetUp() override {
     scoped_feature_list_.InitAndDisableFeature(
-        app_list::features::kEnableHomeLauncher);
+        app_list_features::kEnableHomeLauncher);
     TopChromeMdParamTest<InProcessBrowserTest>::SetUp();
   }
 

@@ -85,14 +85,14 @@ void ContentsView::Init(AppListModel* model) {
   SearchModel::SearchResults* results =
       view_delegate->GetSearchModel()->results();
 
-  if (features::IsAnswerCardEnabled()) {
+  if (app_list_features::IsAnswerCardEnabled()) {
     search_result_answer_card_view_ =
         new SearchResultAnswerCardView(view_delegate);
     search_results_page_view_->AddSearchResultContainerView(
         results, search_result_answer_card_view_);
   }
 
-  if (features::IsNewStyleLauncherEnabled()) {
+  if (app_list_features::IsNewStyleLauncherEnabled()) {
     expand_arrow_view_ = new ExpandArrowView(this, app_list_view_);
     AddChildView(expand_arrow_view_);
   }
@@ -323,7 +323,7 @@ void ContentsView::UpdateExpandArrowOpacity(double progress,
   // Don't show |expand_arrow_view_| when the home launcher gestures are
   // disabled in tablet mode.
   if (app_list_view_->IsHomeLauncherEnabledInTabletMode() &&
-      !features::IsHomeLauncherGesturesEnabled()) {
+      !app_list_features::IsHomeLauncherGesturesEnabled()) {
     expand_arrow_view_->layer()->SetOpacity(0);
     return;
   }

@@ -402,7 +402,7 @@ class InternalDataSource : public AppSearchProvider::DataSource,
   void AddApps(AppSearchProvider::Apps* apps) override {
     for (const auto& internal_app : GetInternalAppList(profile())) {
       if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading)) {
-        if (!features::IsContinueReadingEnabled())
+        if (!app_list_features::IsContinueReadingEnabled())
           continue;
 
         auto* service =

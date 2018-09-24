@@ -190,7 +190,8 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       icon_(new IconImageView),
       title_(new views::Label),
       progress_bar_(new views::ProgressBar),
-      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()),
+      is_new_style_launcher_enabled_(
+          app_list_features::IsNewStyleLauncherEnabled()),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
