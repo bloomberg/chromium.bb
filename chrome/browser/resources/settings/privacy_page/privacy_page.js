@@ -165,10 +165,6 @@ Polymer({
     },
   },
 
-  listeners: {
-    'doNotTrackDialogIf.dom-change': 'onDoNotTrackDomChange_',
-  },
-
   /** @override */
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
