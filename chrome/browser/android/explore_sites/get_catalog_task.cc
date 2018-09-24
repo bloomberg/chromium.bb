@@ -13,24 +13,20 @@
 namespace explore_sites {
 namespace {
 
-static const char kSelectCategorySql[] = R"(
-SELECT category_id, type, label FROM categories
+static const char kSelectCategorySql[] = R"(SELECT category_id, type, label
+FROM categories
 WHERE version = ?
-ORDER BY category_id ASC;
-)";
+ORDER BY category_id ASC;)";
 
-static const char kSelectSiteSql[] = R"(
-SELECT site_id, url, title FROM sites
-WHERE category_id = ?
-)";
+static const char kSelectSiteSql[] = R"(SELECT site_id, url, title
+FROM sites
+WHERE category_id = ?)";
 
-const char kDeleteSiteSql[] = R"(
-DELETE FROM sites WHERE category_id NOT IN
+const char kDeleteSiteSql[] = R"(DELETE FROM sites
+WHERE category_id NOT IN
 (SELECT category_id FROM categories WHERE version = ?);)";
 
-const char kDeleteCategorySql[] = R"(
-DELETE FROM categories WHERE version <> ?;
-)";
+const char kDeleteCategorySql[] = "DELETE FROM categories WHERE version <> ?;";
 
 }  // namespace
 
