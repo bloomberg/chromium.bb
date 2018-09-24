@@ -1234,6 +1234,7 @@ void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
   LoadPaymentsCustomerData();
+  profile_validities_need_update = true;
 }
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
