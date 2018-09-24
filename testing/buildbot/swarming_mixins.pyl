@@ -51,4 +51,24 @@
       'gpu': 'none',
     }
   },
+  'win10': {
+    'dimensions': {
+      'os': 'Windows-10-15063',
+    }
+  },
+  'win7': {
+    'dimensions': {
+      'os': 'Windows-7-SP1',
+    }
+  },
+  'x86-32': {
+    'dimensions': {
+      'cpu': 'x86-32',
+    }
+  },
+  'x86-64': {
+    'dimensions': {
+      'cpu': 'x86-64',
+    }
+  },
 }
