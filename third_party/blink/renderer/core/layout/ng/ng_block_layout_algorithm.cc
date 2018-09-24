@@ -2074,8 +2074,8 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
   unpositioned_floats_.clear();
 }
 
-void NGBlockLayoutAlgorithm::AddPositionedFloats(
-    const Vector<NGPositionedFloat>& positioned_floats) {
+template <class Vec>
+void NGBlockLayoutAlgorithm::AddPositionedFloats(const Vec& positioned_floats) {
   DCHECK(container_builder_.BfcBlockOffset() ||
          ConstraintSpace().FloatsBfcBlockOffset())
       << "The parent BFC block offset should be known here";

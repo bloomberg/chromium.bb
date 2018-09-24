@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
@@ -244,7 +245,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void PositionPendingFloats(LayoutUnit origin_block_offset);
 
   // Adds a set of positioned floats as children to the current fragment.
-  void AddPositionedFloats(const Vector<NGPositionedFloat>& positioned_floats);
+  template <class Vec>
+  void AddPositionedFloats(const Vec& positioned_floats);
 
   // Positions a list marker for the specified block content.
   void PositionOrPropagateListMarker(const NGLayoutResult&, NGLogicalOffset*);
