@@ -4250,6 +4250,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   MACROBLOCKD *const xd = &x->e_mbd;
   SPEED_FEATURES *const sf = &cpi->sf;
   const int leaf_nodes = 256;
+  const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_data->tile_info);
 
   // Initialize the left context for the new SB row
   av1_zero_left_context(xd);
@@ -4265,8 +4266,14 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   PC_TREE *const pc_root =
       td->pc_root[cm->seq_params.mib_size_log2 - MIN_MIB_SIZE_LOG2];
   // Code each SB in the row
-  for (int mi_col = tile_info->mi_col_start; mi_col < tile_info->mi_col_end;
-       mi_col += cm->seq_params.mib_size) {
+  for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
+       mi_col < tile_info->mi_col_end;
+       mi_col += cm->seq_params.mib_size, sb_col_in_tile++) {
+    if ((cpi->row_mt == 1) && (tile_info->mi_col_start == mi_col) &&
+        (tile_info->mi_row_start != mi_row)) {
+      // restore frame context of 1st column sb
+      memcpy(xd->tile_ctx, x->backup_tile_ctx, sizeof(*xd->tile_ctx));
+    }
     av1_fill_coeff_costs(&td->mb, xd->tile_ctx, num_planes);
     av1_fill_mode_rates(cm, x, xd->tile_ctx);
 
@@ -4467,6 +4474,26 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       av1_inter_mode_data_fit(tile_data, x->rdmult);
     }
 #endif
+    // Context update for row based multi-threading of encoder is done based on
+    // the following conditions:
+    // 1. If mib_size_log2==5, context of top-right superblock is used
+    // for context modelling. If top-right is not available (in case of tile
+    // with width == mib_size_log2==5), top superblock's context is used.
+    // 2. If mib_size_log2==4, context of next superblock to top-right
+    // superblock is used. Using context of top-right superblock in this case
+    // gives high BD Rate drop for smaller resolutions.
+    if (cpi->row_mt == 1) {
+      int update_context = 0;
+      if (cm->seq_params.mib_size_log2 == 5) {
+        update_context = sb_cols_in_tile == 1 || sb_col_in_tile == 1;
+      } else if (cm->seq_params.mib_size_log2 == 4) {
+        update_context = sb_cols_in_tile == 1 ||
+                         (sb_cols_in_tile == 2 && sb_col_in_tile == 1) ||
+                         sb_col_in_tile == 2;
+      }
+      if (update_context)
+        memcpy(x->backup_tile_ctx, xd->tile_ctx, sizeof(*xd->tile_ctx));
+    }
   }
 }
 
@@ -4563,6 +4590,7 @@ void av1_init_tile_data(AV1_COMP *cpi) {
       tile_data->allow_update_cdf = !cm->large_scale_tile;
       tile_data->allow_update_cdf =
           tile_data->allow_update_cdf && !cm->disable_cdf_update;
+      tile_data->tctx = *cm->fc;
     }
   }
 }
@@ -4626,8 +4654,6 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   this_tile->ex_search_count = 0;  // Exhaustive mesh search hits.
   td->mb.m_search_count_ptr = &this_tile->m_search_count;
   td->mb.ex_search_count_ptr = &this_tile->ex_search_count;
-  this_tile->tctx = *cm->fc;
-  td->mb.e_mbd.tile_ctx = &this_tile->tctx;
 
   cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
 
@@ -4654,6 +4680,10 @@ static void encode_tiles(AV1_COMP *cpi) {
 
   for (tile_row = 0; tile_row < tile_rows; ++tile_row) {
     for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
+      TileDataEnc *const this_tile =
+          &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
+      cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
+      cpi->td.mb.backup_tile_ctx = &this_tile->backup_tctx;
       av1_encode_tile(cpi, &cpi->td, tile_row, tile_col);
       cpi->intrabc_used |= cpi->td.intrabc_used_this_tile;
     }
@@ -5274,12 +5304,15 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     }
 #endif
 
-    if (cpi->row_mt && (cpi->oxcf.max_threads > 1))
+    if (cpi->row_mt && (cpi->oxcf.max_threads > 1)) {
       av1_encode_tiles_mt(cpi);
-    else if (AOMMIN(cpi->oxcf.max_threads, cm->tile_cols * cm->tile_rows) > 1)
-      av1_encode_tiles_mt(cpi);
-    else
-      encode_tiles(cpi);
+    } else {
+      cpi->row_mt = 0;
+      if (AOMMIN(cpi->oxcf.max_threads, cm->tile_cols * cm->tile_rows) > 1)
+        av1_encode_tiles_mt(cpi);
+      else
+        encode_tiles(cpi);
+    }
 
     aom_usec_timer_mark(&emr_timer);
     cpi->time_encode_sb_row += aom_usec_timer_elapsed(&emr_timer);

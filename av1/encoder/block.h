@@ -275,6 +275,8 @@ struct macroblock {
   CONV_BUF_TYPE *tmp_conv_dst;
   uint8_t *tmp_obmc_bufs[2];
 
+  FRAME_CONTEXT *backup_tile_ctx;
+
   // buffer for hash value calculation of a block
   // used only in av1_get_block_hash_value()
   // [first hash/second hash]

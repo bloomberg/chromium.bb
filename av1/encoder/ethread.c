@@ -42,6 +42,11 @@ static int enc_worker_hook(void *arg1, void *unused) {
     int tile_row = t / tile_cols;
     int tile_col = t % tile_cols;
 
+    TileDataEnc *const this_tile =
+        &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
+    thread_data->td->tctx = &this_tile->tctx;
+    thread_data->td->mb.e_mbd.tile_ctx = thread_data->td->tctx;
+    thread_data->td->mb.backup_tile_ctx = &this_tile->backup_tctx;
     av1_encode_tile(cpi, thread_data->td, tile_row, tile_col);
   }
 
