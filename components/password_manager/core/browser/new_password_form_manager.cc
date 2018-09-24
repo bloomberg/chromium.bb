@@ -36,7 +36,7 @@ bool NewPasswordFormManager::wait_for_server_predictions_for_filling_ = true;
 
 namespace {
 
-constexpr TimeDelta kMaxFillingDelayForServerPerdictions =
+constexpr TimeDelta kMaxFillingDelayForServerPredictions =
     TimeDelta::FromMilliseconds(500);
 
 // Helper function for calling form parsing and logging results if logging is
@@ -375,7 +375,7 @@ void NewPasswordFormManager::ProcessMatches(
         FROM_HERE,
         base::BindOnce(&NewPasswordFormManager::Fill,
                        weak_ptr_factory_.GetWeakPtr()),
-        kMaxFillingDelayForServerPerdictions);
+        kMaxFillingDelayForServerPredictions);
   }
 }
 
