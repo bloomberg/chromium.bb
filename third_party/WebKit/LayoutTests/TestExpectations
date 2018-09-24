@@ -767,6 +767,7 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-table-cell-height-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-table-cell-height-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-table-cell-vertical-align-001.xht [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-under-vertical-rl-scroll.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-003.xht [ Failure ]
