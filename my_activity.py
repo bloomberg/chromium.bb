@@ -109,9 +109,6 @@ gerrit_instances = [
     'url': 'android-review.googlesource.com',
   },
   {
-    'url': 'review.coreboot.org',
-  },
-  {
     'url': 'pdfium-review.googlesource.com',
   },
 ]
