@@ -101,6 +101,7 @@ source_set("eg_tests") {
   testonly = true
   sources = [
     "save_card_infobar_egtest.mm",
+    "save_profile_egtest.mm",
   ]
   deps = [
     ":autofill_ui",
