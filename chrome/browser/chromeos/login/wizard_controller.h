@@ -464,6 +464,7 @@ class WizardController : public BaseScreenDelegate,
 
   friend class DemoSetupTest;
   friend class EnterpriseEnrollmentConfigurationTest;
+  friend class HandsOffEnrollmentTest;
   friend class WizardControllerBrokenLocalStateTest;
   friend class WizardControllerDemoSetupTest;
   friend class WizardControllerDeviceStateTest;
