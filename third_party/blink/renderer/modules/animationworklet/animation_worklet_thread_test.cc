@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
-#include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -48,15 +48,11 @@ class AnimationWorkletTestPlatform : public TestingPlatformSupport {
   }
 };
 
-class TestAnimationWorkletProxyClient
-    : public GarbageCollected<TestAnimationWorkletProxyClient>,
-      public AnimationWorkletProxyClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TestAnimationWorkletProxyClient);
-
+class TestAnimationWorkletProxyClient : public AnimationWorkletProxyClient {
  public:
-  TestAnimationWorkletProxyClient() = default;
+  TestAnimationWorkletProxyClient()
+      : AnimationWorkletProxyClient(0, nullptr, nullptr, nullptr, nullptr){};
   void SetGlobalScope(WorkletGlobalScope*) override {}
-  void Dispose() override {}
 };
 
 }  // namespace

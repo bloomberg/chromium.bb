@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client_impl.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
 
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -14,7 +14,10 @@
 
 namespace blink {
 
-AnimationWorkletProxyClientImpl::AnimationWorkletProxyClientImpl(
+const char AnimationWorkletProxyClient::kSupplementName[] =
+    "AnimationWorkletProxyClient";
+
+AnimationWorkletProxyClient::AnimationWorkletProxyClient(
     int scope_id,
     base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
         compositor_mutator_dispatcher,
@@ -30,12 +33,12 @@ AnimationWorkletProxyClientImpl::AnimationWorkletProxyClientImpl(
                               std::move(main_thread_mutator_runner));
 }
 
-void AnimationWorkletProxyClientImpl::Trace(blink::Visitor* visitor) {
-  AnimationWorkletProxyClient::Trace(visitor);
+void AnimationWorkletProxyClient::Trace(blink::Visitor* visitor) {
+  Supplement<WorkerClients>::Trace(visitor);
   AnimationWorkletMutator::Trace(visitor);
 }
 
-void AnimationWorkletProxyClientImpl::SetGlobalScope(
+void AnimationWorkletProxyClient::SetGlobalScope(
     WorkletGlobalScope* global_scope) {
   DCHECK(global_scope);
   DCHECK(global_scope->IsContextThread());
@@ -60,7 +63,7 @@ void AnimationWorkletProxyClientImpl::SetGlobalScope(
   }
 }
 
-void AnimationWorkletProxyClientImpl::Dispose() {
+void AnimationWorkletProxyClient::Dispose() {
   if (state_ == RunState::kWorking) {
     // At worklet scope termination break the reference to the clients if it is
     // still alive.
@@ -78,7 +81,7 @@ void AnimationWorkletProxyClientImpl::Dispose() {
     DCHECK(global_scope_->IsContextThread());
 
     // At worklet scope termination break the reference cycle between
-    // AnimationWorkletGlobalScope and AnimationWorkletProxyClientImpl.
+    // AnimationWorkletGlobalScope and AnimationWorkletProxyClient.
     global_scope_ = nullptr;
   }
 
@@ -88,7 +91,7 @@ void AnimationWorkletProxyClientImpl::Dispose() {
   state_ = RunState::kDisposed;
 }
 
-std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClientImpl::Mutate(
+std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClient::Mutate(
     std::unique_ptr<AnimationWorkletInput> input) {
   DCHECK(input);
 #if DCHECK_IS_ON()
@@ -108,7 +111,7 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClientImpl::Mutate(
 }
 
 // static
-AnimationWorkletProxyClientImpl* AnimationWorkletProxyClientImpl::FromDocument(
+AnimationWorkletProxyClient* AnimationWorkletProxyClient::FromDocument(
     Document* document,
     int scope_id) {
   WebLocalFrameImpl* local_frame =
@@ -126,11 +129,21 @@ AnimationWorkletProxyClientImpl* AnimationWorkletProxyClientImpl::FromDocument(
           document->GetWorkletAnimationController()
               .EnsureMainThreadMutatorDispatcher(&main_thread_host_queue);
 
-  return new AnimationWorkletProxyClientImpl(
+  return new AnimationWorkletProxyClient(
       scope_id, std::move(compositor_mutator_dispatcher),
       std::move(compositor_host_queue),
       std::move(main_thread_mutator_dispatcher),
       std::move(main_thread_host_queue));
+}
+
+AnimationWorkletProxyClient* AnimationWorkletProxyClient::From(
+    WorkerClients* clients) {
+  return Supplement<WorkerClients>::From<AnimationWorkletProxyClient>(clients);
+}
+
+void ProvideAnimationWorkletProxyClientTo(WorkerClients* clients,
+                                          AnimationWorkletProxyClient* client) {
+  clients->ProvideSupplement(client);
 }
 
 }  // namespace blink
