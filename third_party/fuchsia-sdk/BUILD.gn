@@ -180,6 +180,7 @@ fuchsia_sdk_fidl_pkg("gfx") {
   ]
   deps = [
     ":images",
+    ":mem",
     ":vectorial",
   ]
 }
