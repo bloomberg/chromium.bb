@@ -2981,6 +2981,35 @@
       "features": [
         "use_high_priority_for_webgl"
       ]
+    },
+    {
+      "id": 277,
+      "description": "Direct composition path is buggy on certain AMD devices/drivers",
+      "cr_bugs": [800950],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "=",
+        "value": "8.970.100.9001"
+      },
+      "features": [
+        "disable_direct_composition"
+      ]
+    },
+    {
+      "id": 278,
+      "description": "Direct composition path is buggy on certain AMD devices/drivers",
+      "cr_bugs": [800950],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x6900"],
+      "features": [
+        "disable_direct_composition"
+      ]
     }
   ]
 }
