@@ -6697,8 +6697,9 @@ class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
   int did_finish_impl_frame_count_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame);
+// TODO(crbug.com/842038): Disabled as flaky.
+// SINGLE_AND_MULTI_THREAD_TEST_F(
+//     LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame);
 
 ::testing::AssertionResult AssertFrameTimeContained(
     const char* haystack_expr,
