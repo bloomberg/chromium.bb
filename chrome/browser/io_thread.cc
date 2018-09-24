@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/leak_tracker.h"
-#include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -75,8 +74,6 @@
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/quic_utils_chromium.h"
-#include "net/socket/ssl_client_socket.h"
-#include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -148,29 +145,6 @@ void ObserveKeychainEvents() {
   net::CertDatabase::GetInstance()->SetMessageLoopForKeychainEvents();
 }
 #endif
-
-// Gets file path into ssl_keylog_file from command line argument or
-// environment variable. Command line argument has priority when
-// both specified.
-base::FilePath GetSSLKeyLogFile(const base::CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kSSLKeyLogFile)) {
-    base::FilePath path =
-        command_line.GetSwitchValuePath(switches::kSSLKeyLogFile);
-    if (!path.empty())
-      return path;
-    LOG(WARNING) << "ssl-key-log-file argument missing";
-  }
-
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  std::string path_str;
-  env->GetVar("SSLKEYLOGFILE", &path_str);
-#if defined(OS_WIN)
-  // base::Environment returns environment variables in UTF-8 on Windows.
-  return base::FilePath(base::UTF8ToUTF16(path_str));
-#else
-  return base::FilePath(path_str);
-#endif
-}
 
 std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
     net::NetLog* net_log) {
@@ -326,13 +300,6 @@ void IOThread::Init() {
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-
-  // Export ssl keys if log file specified.
-  base::FilePath ssl_keylog_file = GetSSLKeyLogFile(command_line);
-  if (!ssl_keylog_file.empty()) {
-    net::SSLClientSocket::SetSSLKeyLogger(
-        std::make_unique<net::SSLKeyLoggerImpl>(ssl_keylog_file));
-  }
 
   DCHECK(!globals_);
   globals_ = new Globals;
