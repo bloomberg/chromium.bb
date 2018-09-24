@@ -338,26 +338,6 @@ const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
   return local_surface_id_;
 }
 
-void WindowPortMus::SetFallbackSurfaceInfo(
-    const viz::SurfaceInfo& surface_info) {
-  if (!window_->IsEmbeddingClient()) {
-    // |primary_surface_id_| should not be valid, since we didn't know the
-    // |window_->frame_sink_id()|.
-    DCHECK(!primary_surface_id_.is_valid());
-    embed_frame_sink_id_ = surface_info.id().frame_sink_id();
-    window_->SetEmbedFrameSinkId(embed_frame_sink_id_);
-    UpdatePrimarySurfaceId();
-  }
-
-  // The frame sink id should never be changed.
-  DCHECK_EQ(surface_info.id().frame_sink_id(), window_->GetFrameSinkId());
-
-  fallback_surface_info_ = surface_info;
-  UpdateClientSurfaceEmbedder();
-  if (window_->delegate())
-    window_->delegate()->OnFirstSurfaceActivation(fallback_surface_info_);
-}
-
 void WindowPortMus::DestroyFromServer() {
   std::unique_ptr<ScopedServerChange> remove_from_parent_change;
   if (window_->parent()) {
@@ -648,7 +628,7 @@ void WindowPortMus::UpdateClientSurfaceEmbedder() {
   }
 
   client_surface_embedder_->SetPrimarySurfaceId(primary_surface_id_);
-  client_surface_embedder_->SetFallbackSurfaceInfo(fallback_surface_info_);
+  client_surface_embedder_->UpdateSizeAndGutters();
 }
 
 }  // namespace aura

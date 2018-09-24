@@ -39,10 +39,6 @@ class Layer;
 class RenderFrameMetadata;
 }
 
-namespace viz {
-class SurfaceInfo;
-}
-
 namespace content {
 
 class BrowserPluginDelegate;
@@ -217,8 +213,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
 #if defined(USE_AURA)
   // MusEmbeddedFrameDelegate
-  void OnMusEmbeddedFrameSurfaceChanged(
-      const viz::SurfaceInfo& surface_info) override {}
   void OnMusEmbeddedFrameSinkIdAllocated(
       const viz::FrameSinkId& frame_sink_id) override;
 #endif

@@ -237,12 +237,6 @@ void TestWindowTreeClient::OnWindowCursorChanged(Id window_id,
   tracker_.OnWindowCursorChanged(window_id, cursor);
 }
 
-void TestWindowTreeClient::OnWindowSurfaceChanged(
-    Id window_id,
-    const viz::SurfaceInfo& surface_info) {
-  tracker_.OnWindowSurfaceChanged(window_id, surface_info);
-}
-
 void TestWindowTreeClient::OnDragDropStart(
     const base::flat_map<std::string, std::vector<uint8_t>>& drag_data) {
   tracker_.OnDragDropStart(drag_data);

@@ -299,34 +299,10 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowTreeClientTestSurfaceSync,
                         ::testing::Bool());
 
-namespace {
-
-class FirstSurfaceActivationWindowDelegate : public test::TestWindowDelegate {
- public:
-  FirstSurfaceActivationWindowDelegate() = default;
-  ~FirstSurfaceActivationWindowDelegate() override = default;
-
-  const viz::SurfaceInfo& last_surface_info() const {
-    return last_surface_info_;
-  }
-
-  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
-    last_surface_info_ = surface_info;
-  }
-
- private:
-  viz::SurfaceInfo last_surface_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(FirstSurfaceActivationWindowDelegate);
-};
-
-}  // namespace
-
 // Verifies that a ClientSurfaceEmbedder is created for a window once it has
 // a bounds, and a valid FrameSinkId.
 TEST_P(WindowTreeClientTestSurfaceSync, ClientSurfaceEmbedderOnValidEmbedding) {
-  FirstSurfaceActivationWindowDelegate delegate;
-  Window window(&delegate);
+  Window window(nullptr);
   // EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds when their sizes
   // change.
   window.SetProperty(aura::client::kEmbedType,
@@ -356,24 +332,11 @@ TEST_P(WindowTreeClientTestSurfaceSync, ClientSurfaceEmbedderOnValidEmbedding) {
   ClientSurfaceEmbedder* client_surface_embedder =
       window_port_mus->client_surface_embedder();
   ASSERT_NE(nullptr, client_surface_embedder);
-  EXPECT_FALSE(delegate.last_surface_info().is_valid());
-
-  // When a SurfaceInfo arrives from the window server, we use it as the
-  // fallback SurfaceInfo. Here we issue the primary SurfaceId back to the
-  // client lib. This should cause the gutter to go away, eliminating overdraw.
-  window_tree_client()->OnWindowSurfaceChanged(
-      server_id(&window),
-      viz::SurfaceInfo(window_port_mus->PrimarySurfaceIdForTesting(), 1.0f,
-                       gfx::Size(100, 100)));
-  EXPECT_TRUE(delegate.last_surface_info().is_valid());
-  EXPECT_EQ(delegate.last_surface_info().id(),
-            window_port_mus->PrimarySurfaceIdForTesting());
 }
 
 // Verifies that EMBED_IN_OWNER windows do not gutter.
 TEST_P(WindowTreeClientTestSurfaceSync, NoEmbedInOwnerGutter) {
-  FirstSurfaceActivationWindowDelegate delegate;
-  Window window(&delegate);
+  Window window(nullptr);
   // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
   // when their sizes change.
   window.SetProperty(aura::client::kEmbedType,
@@ -403,7 +366,6 @@ TEST_P(WindowTreeClientTestSurfaceSync, NoEmbedInOwnerGutter) {
   ClientSurfaceEmbedder* client_surface_embedder =
       window_port_mus->client_surface_embedder();
   ASSERT_NE(nullptr, client_surface_embedder);
-  EXPECT_FALSE(delegate.last_surface_info().is_valid());
 
   EXPECT_EQ(nullptr, client_surface_embedder->BottomGutterForTesting());
   EXPECT_EQ(nullptr, client_surface_embedder->RightGutterForTesting());

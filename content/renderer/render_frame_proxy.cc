@@ -875,11 +875,6 @@ base::UnguessableToken RenderFrameProxy::GetDevToolsFrameToken() {
 }
 
 #if defined(USE_AURA)
-void RenderFrameProxy::OnMusEmbeddedFrameSurfaceChanged(
-    const viz::SurfaceInfo& surface_info) {
-  OnFirstSurfaceActivation(surface_info);
-}
-
 void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
     const viz::FrameSinkId& frame_sink_id) {
   // RendererWindowTreeClient should only call this when mus is hosting viz.

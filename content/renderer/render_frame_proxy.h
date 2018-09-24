@@ -265,8 +265,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
 #if defined(USE_AURA)
   // MusEmbeddedFrameDelegate
-  void OnMusEmbeddedFrameSurfaceChanged(
-      const viz::SurfaceInfo& surface_info) override;
   void OnMusEmbeddedFrameSinkIdAllocated(
       const viz::FrameSinkId& frame_sink_id) override;
 #endif
