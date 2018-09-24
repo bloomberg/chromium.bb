@@ -39,7 +39,10 @@ AndroidSmsServiceFactory::~AndroidSmsServiceFactory() = default;
 KeyedService* AndroidSmsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   if (!base::FeatureList::IsEnabled(
-          chromeos::features::kAndroidMessagesIntegration)) {
+          chromeos::features::kAndroidMessagesIntegration) ||
+      !base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSetup) ||
+      !base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     return nullptr;
   }
 
