@@ -75,9 +75,7 @@ float MediaValues::CalculateDevicePixelRatio(LocalFrame* frame) {
 int MediaValues::CalculateColorBitsPerComponent(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
-  DCHECK(frame->GetPage()->MainFrame());
-  if (!frame->GetPage()->MainFrame()->IsLocalFrame() ||
-      frame->GetPage()->GetChromeClient().GetScreenInfo().is_monochrome)
+  if (frame->GetPage()->GetChromeClient().GetScreenInfo().is_monochrome)
     return 0;
   return frame->GetPage()
       ->GetChromeClient()
@@ -88,9 +86,7 @@ int MediaValues::CalculateColorBitsPerComponent(LocalFrame* frame) {
 int MediaValues::CalculateMonochromeBitsPerComponent(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
-  DCHECK(frame->GetPage()->MainFrame());
-  if (!frame->GetPage()->MainFrame()->IsLocalFrame() ||
-      !frame->GetPage()->GetChromeClient().GetScreenInfo().is_monochrome)
+  if (!frame->GetPage()->GetChromeClient().GetScreenInfo().is_monochrome)
     return 0;
   return frame->GetPage()
       ->GetChromeClient()

@@ -87,6 +87,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
+#include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/viewport_style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -13012,6 +13013,27 @@ TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {
   EXPECT_EQ(111, WebView().MainFrameImpl()->GetScrollOffset().height);
   EXPECT_EQ(0, WebView().VisualViewportOffset().x);
   EXPECT_EQ(0, WebView().VisualViewportOffset().y);
+}
+
+TEST_F(WebFrameTest, MediaQueriesInLocalFrameInsideRemote) {
+  FrameTestHelpers::WebViewHelper helper;
+  FixedLayoutTestWebViewClient client;
+  client.screen_info_.is_monochrome = false;
+  client.screen_info_.depth_per_component = 8;
+  helper.InitializeRemote(nullptr, nullptr, &client);
+
+  WebLocalFrameImpl* local_frame =
+      FrameTestHelpers::CreateLocalChild(*helper.RemoteMainFrame());
+
+  ASSERT_TRUE(local_frame->GetFrame());
+  MediaValues* media_values =
+      MediaValues::CreateDynamicIfFrameExists(local_frame->GetFrame());
+  ASSERT_TRUE(media_values);
+  EXPECT_EQ(0, media_values->MonochromeBitsPerComponent());
+  EXPECT_EQ(8, media_values->ColorBitsPerComponent());
+  // Need to explicitly reset helper to make sure local_frame is not deleted
+  // first.
+  helper.Reset();
 }
 
 }  // namespace blink
