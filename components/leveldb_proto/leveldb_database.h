@@ -85,7 +85,7 @@ class LevelDB {
   leveldb_env::Options open_options_;
   base::HistogramBase* open_histogram_;
   base::HistogramBase* destroy_histogram_;
-  base::HistogramBase* approx_mem_histogram_;
+  base::HistogramBase* approx_memtable_mem_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDB);
 };
