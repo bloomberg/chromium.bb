@@ -37,8 +37,7 @@ namespace content {
 bool OriginPolicyThrottle::ShouldRequestOriginPolicy(
     const GURL& url,
     std::string* request_version) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool origin_policy_enabled =
       base::FeatureList::IsEnabled(features::kOriginPolicy) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -61,7 +60,7 @@ bool OriginPolicyThrottle::ShouldRequestOriginPolicy(
 // static
 std::unique_ptr<NavigationThrottle>
 OriginPolicyThrottle::MaybeCreateThrottleFor(NavigationHandle* handle) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(handle);
 
   // We use presence of the origin policy request header to determine
@@ -146,7 +145,9 @@ OriginPolicyThrottle::WillProcessResponse() {
   FetchCallback done =
       base::BindOnce(&OriginPolicyThrottle::OnTheGloriousPolicyHasArrived,
                      base::Unretained(this));
-  FetchPolicy(policy, std::move(done));
+  RedirectCallback redirect = base::BindRepeating(
+      &OriginPolicyThrottle::OnRedirect, base::Unretained(this));
+  FetchPolicy(policy, std::move(done), std::move(redirect));
   return NavigationThrottle::DEFER;
 }
 
@@ -173,7 +174,9 @@ const url::Origin OriginPolicyThrottle::GetRequestOrigin() {
   return url::Origin::Create(navigation_handle()->GetURL());
 }
 
-void OriginPolicyThrottle::FetchPolicy(const GURL& url, FetchCallback done) {
+void OriginPolicyThrottle::FetchPolicy(const GURL& url,
+                                       FetchCallback done,
+                                       RedirectCallback redirect) {
   // Create the traffic annotation
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("origin_policy_loader", R"(
@@ -197,26 +200,22 @@ void OriginPolicyThrottle::FetchPolicy(const GURL& url, FetchCallback done) {
           policy_exception_justification:
             "Not implemented, considered not useful."})");
 
-  // Create the SimpleURLLoader for the policy.
+  // Create and configure the SimpleURLLoader for the policy.
   std::unique_ptr<network::ResourceRequest> policy_request =
       std::make_unique<network::ResourceRequest>();
   policy_request->url = url;
   policy_request->request_initiator = url::Origin::Create(url);
-  policy_request->fetch_credentials_mode =
-      network::mojom::FetchCredentialsMode::kOmit;
-  policy_request->fetch_redirect_mode =
-      network::mojom::FetchRedirectMode::kError;
   policy_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
                                net::LOAD_DO_NOT_SAVE_COOKIES |
                                net::LOAD_DO_NOT_SEND_AUTH_DATA;
   url_loader_ = network::SimpleURLLoader::Create(std::move(policy_request),
                                                  traffic_annotation);
+  url_loader_->SetOnRedirectCallback(std::move(redirect));
 
   // Obtain the URLLoaderFactory from the NavigationHandle.
   SiteInstance* site_instance = navigation_handle()->GetStartingSiteInstance();
-  content::StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartition(site_instance->GetBrowserContext(),
-                                          site_instance);
+  StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
+      site_instance->GetBrowserContext(), site_instance);
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       storage_partition->GetURLLoaderFactoryForBrowserProcess();
 
@@ -247,6 +246,15 @@ void OriginPolicyThrottle::OnTheGloriousPolicyHasArrived(
   static_cast<NavigationHandleImpl*>(navigation_handle())
       ->set_origin_policy(*policy_content);
   Resume();
+}
+
+void OriginPolicyThrottle::OnRedirect(
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& response_head,
+    std::vector<std::string>* to_be_removed_headers) {
+  // Fail hard if the policy response follows a redirect.
+  url_loader_.reset();  // Cancel the request while it's ongoing.
+  CancelNavigation(OriginPolicyErrorReason::kPolicyShouldNotRedirect);
 }
 
 void OriginPolicyThrottle::CancelNavigation(OriginPolicyErrorReason reason) {
