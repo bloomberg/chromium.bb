@@ -48,10 +48,9 @@ function doSecondOpen()
         evalAndLog("request = null");
 
         debug("Run GC outside of request's callback via setTimeout()");
-        setTimeout( function() {
-            evalAndLog("window.gc()");
+        asyncGC(function () {
             doThirdOpen();
-        }, 0);
+        });
     };
 }
 

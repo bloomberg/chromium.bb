@@ -49,10 +49,10 @@ function onOpen(evt)
         cursorRequest = null;
         cursor = null;
 
-        gc();
-
-        shouldBeTrue("cursorObserver.wasCollected");
-        finishJSTest();
+        asyncGC(function () {
+            shouldBeTrue("cursorObserver.wasCollected");
+            finishJSTest();
+        });
     };
 }
 
