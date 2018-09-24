@@ -34,6 +34,7 @@ class ConsumerStatusReportingService : public KeyedService {
  public:
   explicit ConsumerStatusReportingService(content::BrowserContext* context);
   ~ConsumerStatusReportingService() override;
+  void RequestImmediateStatusReport();
 
  private:
   // Creates new status uploader if parameters changed.
