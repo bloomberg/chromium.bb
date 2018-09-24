@@ -8,10 +8,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 class AppDistributionProvider {
  public:
@@ -23,7 +24,7 @@ class AppDistributionProvider {
 
   // Schedules distribution notifications to be sent using the given |context|.
   virtual void ScheduleDistributionNotifications(
-      net::URLRequestContextGetter* context,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       bool is_first_run);
 
   // Cancels any pending distribution notifications.

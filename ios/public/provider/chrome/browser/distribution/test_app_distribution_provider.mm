@@ -17,7 +17,7 @@ std::string TestAppDistributionProvider::GetDistributionBrandCode() {
 }
 
 void TestAppDistributionProvider::ScheduleDistributionNotifications(
-    net::URLRequestContextGetter* context,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     bool is_first_run) {}
 
 void TestAppDistributionProvider::CancelDistributionNotifications() {}

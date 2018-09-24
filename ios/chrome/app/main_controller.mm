@@ -158,7 +158,7 @@
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "mojo/core/embedder/embedder.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -1054,12 +1054,12 @@ enum class ShowTabSwitcherSnapshotResult {
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kSendInstallPingIfNecessary
                   block:^{
-                    net::URLRequestContextGetter* context =
-                        _mainBrowserState->GetRequestContext();
+                    auto URLLoaderFactory =
+                        _mainBrowserState->GetSharedURLLoaderFactory();
                     bool is_first_run = FirstRun::IsChromeFirstRun();
                     ios::GetChromeBrowserProvider()
                         ->GetAppDistributionProvider()
-                        ->ScheduleDistributionNotifications(context,
+                        ->ScheduleDistributionNotifications(URLLoaderFactory,
                                                             is_first_run);
                     InitializeFirebase(is_first_run);
                   }];
