@@ -2601,7 +2601,7 @@ String AXNodeObject::NativeTextAlternative(
           source.related_objects = *related_objects;
           source.text = text_alternative;
         } else {
-          return text_alternative;
+          return text_alternative.StripWhiteSpace();
         }
       } else if (name_sources) {
         name_sources->back().invalid = true;
