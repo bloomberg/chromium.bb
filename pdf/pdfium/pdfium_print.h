@@ -47,16 +47,12 @@ class PDFiumPrint {
                                          const gfx::Size& page_size,
                                          const gfx::Rect& printable_area);
 
-  pp::Buffer_Dev PrintPagesAsRasterPdf(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings);
   pp::Buffer_Dev PrintPagesAsPdf(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count,
       const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings);
+      const PP_PdfPrintSettings_Dev& pdf_print_settings,
+      bool raster);
 
  private:
   ScopedFPDFDocument CreatePrintPdf(
@@ -65,12 +61,16 @@ class PDFiumPrint {
       const PP_PrintSettings_Dev& print_settings,
       const PP_PdfPrintSettings_Dev& pdf_print_settings);
 
+  ScopedFPDFDocument CreateRasterPdf(
+      ScopedFPDFDocument doc,
+      const PP_PrintSettings_Dev& print_settings);
+
   ScopedFPDFDocument CreateSinglePageRasterPdf(
       FPDF_PAGE page_to_print,
       const PP_PrintSettings_Dev& print_settings);
 
   bool FlattenPrintData(FPDF_DOCUMENT doc) const;
-  pp::Buffer_Dev GetPrintData(FPDF_DOCUMENT doc) const;
+  pp::Buffer_Dev ConvertDocToBuffer(ScopedFPDFDocument doc) const;
 
   PDFiumEngine* const engine_;
 

@@ -1151,8 +1151,8 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPdf(
   g_last_instance_id = client_->GetPluginInstance()->pp_instance();
 #endif
 
-  return print_.PrintPagesAsRasterPdf(page_ranges, page_range_count,
-                                      print_settings, pdf_print_settings);
+  return print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
+                                pdf_print_settings, /*raster=*/true);
 }
 
 pp::Buffer_Dev PDFiumEngine::PrintPagesAsPdf(
@@ -1175,7 +1175,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPdf(
   }
 
   return print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
-                                pdf_print_settings);
+                                pdf_print_settings, /*raster=*/false);
 }
 
 void PDFiumEngine::KillFormFocus() {
