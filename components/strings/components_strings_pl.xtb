@@ -808,7 +808,6 @@
 <translation id="6508722015517270189">Uruchom ponownie Chrome</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>
 <translation id="6534179046333460208">Sugestie dotyczące internetu rzeczy</translation>
-<translation id="6550675742724504774">Opcje</translation>
 <translation id="6563469144985748109">Twój menedżer jeszcze na to nie zezwolił</translation>
 <translation id="6569060085658103619">Przeglądasz stronę rozszerzenia</translation>
 <translation id="6596325263575161958">Opcje szyfrowania</translation>
@@ -952,7 +951,6 @@ Dodatkowe informacje:
 <translation id="7554791636758816595">Nowa karta</translation>
 <translation id="7564049878696755256">Możesz stracić dostęp do swojego konta <ph name="ORG_NAME" /> lub paść ofiarą kradzieży tożsamości. Chrome zaleca natychmiastową zmianę hasła.</translation>
 <translation id="7567204685887185387">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać wydany w celu oszustwa. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
-<translation id="7568593326407688803">Język strony:<ph name="ORIGINAL_LANGUAGE" />Chcesz ją przetłumaczyć?</translation>
 <translation id="7569952961197462199">Usunąć tę kartę kredytową z Chrome?</translation>
 <translation id="7575800019233204241">„Połączenie nie jest prywatne” lub „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;” lub „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;” lub „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;” lub „Błąd certyfikatu SSL”</translation>
 <translation id="7578104083680115302">Używaj swoich kart zapisanych w Google, by łatwiej dokonywać płatności na stronach i w aplikacjach na różnych urządzeniach.</translation>

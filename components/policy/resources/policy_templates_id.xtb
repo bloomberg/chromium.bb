@@ -125,6 +125,7 @@
 
       CATATAN: Kebijakan ini tidak berlaku di Android. Untuk mengaktifkan IsolateOrigins di Android, gunakan setelan kebijakan IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Mengaktifkan Hardware Platform API untuk ekstensi yang diinstal oleh kebijakan</translation>
 <translation id="1384459581748403878">Referensi: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Apakah untuk mengaktifkan kepercayaan pada Infrastruktur PKI Lama milik Symantec Corporation</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
@@ -445,6 +446,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2201555246697292490">Konfigurasikan daftar putih perpesanan asli</translation>
 <translation id="2204753382813641270">Kontrol sembunyi otomatis rak</translation>
 <translation id="2208976000652006649">Parameter untuk URL penelusuran yang menggunakan POST</translation>
+<translation id="2214880135980649323">Jika kebijakan ini diaktifkan, ekstensi yang diinstal oleh kebijakan perusahaan diizinkan untuk menggunakan Enterprise Hardware Platform API. Jika kebijakan ini dinonaktifkan atau tidak ditetapkan, tidak ada ekstensi yang diizinkan untuk menggunakan Enterprise Hardware Platform API. Kebijakan ini juga berlaku untuk ekstensi komponen seperti ekstensi Layanan Hangout.</translation>
 <translation id="2223598546285729819">Setelan pemberitahuan default</translation>
 <translation id="2231817271680715693">Impor histori browseran dari browser default saat pertama kali dijalankan</translation>
 <translation id="2236488539271255289">Jangan izinkan situs mana pun menyetel data lokal</translation>
@@ -2692,7 +2694,7 @@ Kebijakan ini khusus ditujukan untuk mengonfigurasi instance internal <ph name="
 Setelan ini tidak perlu dikonfigurasi secara manual! Template untuk Windows, Mac dan Linux yang mudah digunakan dapat didownload dari <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GPO, meski menyediakan kebijakan melalui registry tetap didukung untuk instance Windows yang bergabung dalam domain <ph name="MS_AD_NAME" />.</translation>
-<translation id="8264653492961233132">Menentukan daftar aplikasi dan ekstensi yang diinstal secara diam-diam, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna. Semua izin yang diminta oleh aplikasi/ekstensi diberikan secara implisit, tanpa interaksi pengguna, termasuk izin tambahan apa pun yang diminta oleh versi berikutnya dari aplikasi/ekstensi tersebut. Selain itu, izin diberikan untuk API ekstensi enterprise.deviceAttributes dan enterprise.platformKeys. (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang tidak diinstal paksa.)
+<translation id="8264653492961233132">Menentukan daftar aplikasi dan ekstensi yang diinstal secara otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna. Semua izin yang diminta oleh aplikasi/ekstensi diberikan secara implisit, tanpa interaksi pengguna, termasuk izin tambahan apa pun yang diminta oleh versi berikutnya dari aplikasi/ekstensi tersebut. Selain itu, izin diberikan untuk API ekstensi enterprise.deviceAttributes dan enterprise.platformKeys. (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang tidak diinstal paksa.)
 
           Kebijakan ini lebih diutamakan daripada kebijakan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> yang berpotensi bentrok. Jika aplikasi atau ekstensi yang sebelumnya diinstal paksa telah dihapus dari daftar ini, aplikasi/ekstensi tersebut akan otomatis di-uninstal oleh <ph name="PRODUCT_NAME" />.
 
@@ -2757,6 +2759,17 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8465065632133292531">Parameter untuk URL instan yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan izinkan situs mana pun menampilkan pop-up</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Menyembunyikan bagian sensitif terhadap privasi dan keamanan pada URL https:// sebelum meneruskannya ke skrip PAC (Proxy Auto Config) yang digunakan oleh <ph name="PRODUCT_NAME" /> selama resolusi proxy.
+
+Jika disetel ke True, fitur keamanan akan aktif dan URL https:// akan disembunyikan sebelum mengirimnya ke skrip PAC. Dengan cara ini, skrip PAC tidak dapat melihat data yang umumnya dilindungi oleh saluran terenkripsi (seperti jalur dan kueri URL).
+
+Jika disetel ke False, fitur keamanan akan nonaktif, dan skrip PAC secara implisit diberi kemampuan untuk melihat semua komponen URL https://. Hal ini berlaku untuk semua skrip PAC terlepas dari asalnya (termasuk skrip yang diambil melalui transportasi tidak aman atau ditemukan secara tidak aman melalui WPAD).
+
+Setelan defaultnya adalah True (fitur keamanan aktif).
+
+Sebaiknya ini disetel ke True. Satu-satunya alasan untuk menyetelnya ke False adalah jika menyebabkan masalah kompatibilitas dengan skrip PAC yang ada.
+
+Kebijakan akan dihapus pada M75.</translation>
 <translation id="8484458986062090479">Menyesuaikan daftar pola URL yang harus selalu dirender oleh browser host.
 
           Jika kebijakan ini tidak disetel, perender default akan digunakan untuk semua situs yang telah ditetapkan oleh kebijakan 'ChromeFrameRendererSettings'.

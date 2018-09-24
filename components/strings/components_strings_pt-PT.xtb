@@ -808,7 +808,6 @@
 <translation id="6508722015517270189">Reiniciar o Chrome</translation>
 <translation id="6529602333819889595">&amp;Refazer eliminação</translation>
 <translation id="6534179046333460208">Sugestões da Web física</translation>
-<translation id="6550675742724504774">Opções</translation>
 <translation id="6563469144985748109">O seu gestor ainda não o aprovou</translation>
 <translation id="6569060085658103619">Está a ver a página de uma extensão</translation>
 <translation id="6596325263575161958">Opções de encriptação</translation>
@@ -951,7 +950,6 @@ Detalhes adicionais:
 <translation id="7554791636758816595">Novo separador</translation>
 <translation id="7564049878696755256">Pode perder o acesso à sua conta do serviço <ph name="ORG_NAME" /> ou ser vítima de roubo de identidade. O Chrome recomenda a alteração da palavra-passe agora.</translation>
 <translation id="7567204685887185387">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ter sido emitido de forma fraudulenta. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
-<translation id="7568593326407688803">Esta página está em<ph name="ORIGINAL_LANGUAGE" />Pretende traduzi-la?</translation>
 <translation id="7569952961197462199">Pretende remover o cartão de crédito do Chrome?</translation>
 <translation id="7575800019233204241">"A sua ligação não é privada" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ou "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ou "Erro de certificado SSL"</translation>
 <translation id="7578104083680115302">Pague rapidamente em sites e aplicações em todos os dispositivos com cartões que tenha guardado com o Google.</translation>

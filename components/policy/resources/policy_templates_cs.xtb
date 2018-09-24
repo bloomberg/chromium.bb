@@ -120,6 +120,7 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
 
       POZNÁMKA: Tato zásada nefunguje na zařízeních Android. K aktivaci zásady IsolateOrigins na zařízeních Android použijte zásadu IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Aktivuje rozhraní Hardware Platform API pro rozšíření nainstalovaná zásadami</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Zda důvěřovat starší infrastruktuře PKI od společnosti Symantec</translation>
 <translation id="1393485621820363363">Povolené podnikové tiskárny pro zařízení</translation>
@@ -366,7 +367,7 @@ Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše)
 <translation id="2116790137063002724">Tato zásada určuje, zda se mají hlásit informace, pomocí kterých lze identifikovat uživatele, jako jsou například přihlašovací údaje operačního systému, přihlašovací údaje profilu <ph name="PRODUCT_NAME" />, název profilu <ph name="PRODUCT_NAME" />, cesta profilu <ph name="PRODUCT_NAME" /> a cesta ke spustitelnému souboru <ph name="PRODUCT_NAME" />.
 
       Když je tato zásada ponechána nenastavená nebo je nastavena na hodnotu True, informace, pomocí nichž lze identifikovat uživatele, se shromažďují.
-      když je tato zásada nastavena na hodnotu False, informace, pomocí nichž lze identifikovat uživatele, se neshromažďují.
+      Když je tato zásada nastavena na hodnotu False, informace, pomocí nichž lze identifikovat uživatele, se neshromažďují.
 
       Tato zásada je účinná, když je zapnuto rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Povolit na těchto stránkách oznámení</translation>
@@ -429,6 +430,9 @@ Tato zásada se netýká terminálových aplikací – ty jsou migrovány automa
 <translation id="2201555246697292490">Konfigurace seznamu povolených hostitelů zasílání nativních zpráv</translation>
 <translation id="2204753382813641270">Řídit automatické skrývání poličky</translation>
 <translation id="2208976000652006649">Parametry adresy URL vyhledávání používající metodu POST</translation>
+<translation id="2214880135980649323">Když je tato zásada povolena, rozšíření nainstalovaná podnikovými zásadami mohou používat rozhraní Enterprise Hardware Platform API.
+Pokud zásada povolena není nebo není nastavena, rozšíření uvedené rozhraní API používat nemohou.
+Zásada platí také pro rozšíření komponent, jako je rozšíření Hangout Services.</translation>
 <translation id="2223598546285729819">Výchozí nastavení oznámení</translation>
 <translation id="2231817271680715693">Importování historie procházení z výchozího prohlížeče při prvním spuštění</translation>
 <translation id="2236488539271255289">Nepovolovat nastavení místních dat žádným webům</translation>
@@ -558,7 +562,7 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
 <translation id="2529880111512635313">Konfigurace seznamu aplikací a rozšíření, jejichž instalace je vynucena</translation>
 <translation id="253135976343875019">Prodleva upozornění na nečinnost při napájení ze sítě</translation>
 <translation id="2536525645274582300">O povolení služeb určování polohy Google rozhoduje uživatel</translation>
-<translation id="2550593661567988768">Pouze tisk na jednu stránku</translation>
+<translation id="2550593661567988768">Pouze jednostranný tisk</translation>
 <translation id="2552966063069741410">Časové pásmo</translation>
 <translation id="2562339630163277285">Určuje adresu URL vyhledávače, který bude použit k získání výsledků dynamického vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />. Tento řetězec bude během dotazování nahrazen textem, který do daného okamžiku zadal uživatel.
 
@@ -859,11 +863,11 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
           Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultCookiesSetting (pokud je nastavena), nebo z osobního nastavení uživatele.
 
           Podívejte se také na zásady CookiesBlockedForUrls a CookiesSessionOnlyForUrls. Vzory adres URL v těchto třech zásadách navzájem nesmějí být v konfliktu – není dáno, která zásada má přednost.</translation>
-<translation id="3373364525435227558">Nastavuje jeden nebo více doporučených národních prostředí pro spravovanou relaci, což uživatelům usnadňuje výběr některého z nich.
+<translation id="3373364525435227558">Nastavuje jedno nebo více doporučených národních prostředí pro spravovanou relaci, což uživatelům usnadňuje výběr některého z nich.
 
-Před zahájením spravované relace může uživatel zvolit národní prostředí a rozložení klávesnice. Ve výchozím nastavení jsou všechna národní prostředí podporovaná systémem <ph name="PRODUCT_OS_NAME" /> uvedeny v abecedním pořadí. Pomocí této zásady můžete přesunout sadu doporučených národních prostředí na začátek seznamu.
+Před zahájením spravované relace může uživatel zvolit národní prostředí a rozložení klávesnice. Ve výchozím nastavení jsou všechna národní prostředí podporovaná systémem <ph name="PRODUCT_OS_NAME" /> uvedena v abecedním pořadí. Pomocí této zásady můžete přesunout sadu doporučených národních prostředí na začátek seznamu.
 
-Pokud tuto zásadu ponecháte nenastavenou, bude předvybrán aktuální národní prostředí uživatelského rozhraní.
+Pokud tuto zásadu ponecháte nenastavenou, bude předvybráno aktuální národní prostředí uživatelského rozhraní.
 
 Pokud je tato zásada nastavena, budou doporučená národní prostředí přesunuta na začátek seznamu a vizuálně odlišena od ostatních. Doporučená národní prostředí budou uvedena v pořadí, ve kterém jsou uvedena v nastavení zásady. První doporučené národní prostředí bude předvybráno.
 
@@ -944,7 +948,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 <translation id="3577251398714997599">Nastavení reklam pro weby s rušivými reklamami</translation>
 <translation id="3591584750136265240">Konfigurace chování přihlašovacího ověření</translation>
 <translation id="3627678165642179114">Povolit nebo zakázat webovou službu kontroly pravopisu</translation>
-<translation id="3628480121685794414">Povolit tisk na jednu stránku</translation>
+<translation id="3628480121685794414">Povolit jednostranný tisk</translation>
 <translation id="3646859102161347133">Nastavení typu lupy</translation>
 <translation id="3653237928288822292">Ikona výchozího poskytovatele vyhledávání</translation>
 <translation id="3660562134618097814">Přenos souborů cookie od poskytovatele identity SAML při přihlášení</translation>
@@ -1733,7 +1737,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, prohlíž
      Je-li zvolena možnost Zakázáno, stránky nelze otevřít v anonymním režimu. 
 
      Je-li zvolena možnost Povinné, stránky lze otevřít POUZE v anonymním režimu.</translation>
-<translation id="582857022372205358">Povolit oboustranný tisk s krátkými okraji</translation>
+<translation id="582857022372205358">Povolit oboustranný tisk s vazbou krátkého okraje</translation>
 <translation id="583091600226586337">
       Pokud je tato zásada povolena, bude uživatel před stažením každého souboru dotázán, kam jej chce uložit.
       Je-li tato zásada zakázána, bude se stahování souborů spouštět ihned a uživatel nebude tázán, kam chce soubor uložit.
@@ -2163,7 +2167,7 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
 <translation id="6923366716660828830">Určuje název výchozího poskytovatele vyhledávání. Je-li toto pole ponecháno prázdné, bude použit název hostitele určený adresou URL vyhledávání.
 
           Tato zásada bude dodržována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
-<translation id="6926703471186170050">Povolit oboustranný tisk s dlouhými okraji</translation>
+<translation id="6926703471186170050">Povolit oboustranný tisk s vazbou dlouhého okraje</translation>
 <translation id="6931242315485576290">Deaktivovat synchronizaci dat se servery Google</translation>
 <translation id="6936894225179401731">Určuje maximální počet souběžných připojení k proxy serveru.
 
@@ -2803,6 +2807,17 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 <translation id="8465065632133292531">Parametry pro adresu URL dynamického vyhledávání používající metodu POST</translation>
 <translation id="847472800012384958">Nepovolit zobrazení vyskakovacích oken žádným webovým stránkám</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Před odesláním skriptům PAC (Proxy Auto Config), které prohlížeč <ph name="PRODUCT_NAME" /> používá ke zjištění proxy serveru, budou z adres URL se schématem https:// odstraněny části citlivé z hlediska zabezpečení a ochrany soukromí.
+
+Když je tato zásada nastavena na hodnotu True, je tato bezpečnostní funkce zapnuta a z adres URL se schématem https:// se před odesláním do skriptu PAC odstraní potenciálně citlivé informace. Skript PAC tak nemůže získat přístup k údajům, které jsou běžně chráněny šifrovaným kanálem (jako jsou cesta a dotaz).
+
+Když je tato zásada nastavena na hodnotu False, je tato bezpečnostní funkce vypnuta a skriptům PAC je tak implicitně umožněn přístup ke všem částem adres URL se schématem https://. Platí to pro všechny skripty PAC bez ohledu na zdroj (včetně skriptů, které byly načteny nezabezpečeným přenosem nebo objeveny nezabezpečeným způsobem pomocí protokolu WPAD).
+
+Výchozí hodnota je True (bezpečnostní funkce je zapnuta).
+
+Doporučujeme tuto zásadu nastavit na hodnotu True. Na hodnotu False ji nastavte pouze v případě, že způsobuje problémy s kompatibilitou s existujícími skripty PAC.
+
+Ve verzi M75 bude tato zásada odstraněna.</translation>
 <translation id="8484458986062090479">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit hostitelský prohlížeč.
 
           Pokud tato zásada není nastavena, použije se pro všechny weby výchozí modul vykreslení určený zásadou ChromeFrameRendererSettings.

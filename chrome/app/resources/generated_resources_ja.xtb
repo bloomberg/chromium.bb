@@ -375,7 +375,6 @@
 <translation id="1531004739673299060">アプリケーション ウィンドウ</translation>
 <translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="1538729222189715449">[Linux ファイル] を開いています...</translation>
-<translation id="153933193410874873">この端末で本人確認ができませんでした</translation>
 <translation id="1540605929960647700">デモモードの有効化</translation>
 <translation id="1543284117603151572">Edge からインポート</translation>
 <translation id="1545177026077493356">自動キオスク モード</translation>
@@ -682,7 +681,6 @@
 <translation id="1981115145845865539"><ph name="DEVICE_TYPE" /> のロックを自動的に解除</translation>
 <translation id="1983959805486816857">新しい監視対象ユーザーを作成した後は、設定をいつでも、どのデバイスからでも <ph name="MANAGEMENT_URL" /> で管理できます。</translation>
 <translation id="1984642098429648350">ウィンドウを右に固定</translation>
-<translation id="1987139229093034863">別のユーザーに切り替えます。</translation>
 <translation id="1987317783729300807">アカウント</translation>
 <translation id="1989112275319619282">閲覧</translation>
 <translation id="1992397118740194946">未設定</translation>
@@ -935,6 +933,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> 個のファイルを選択</translation>
 <translation id="237828693408258535">このページを翻訳しますか？</translation>
 <translation id="2378982052244864789">拡張機能のディレクトリを選択してください。</translation>
+<translation id="2379281330731083556">システム ダイアログを使用して印刷... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">送信する前に確認する（推奨）</translation>
 <translation id="2384436799579181135">エラーが発生しました。プリンタを確認してもう一度お試しください。</translation>
 <translation id="2387458720915042159">プロキシ接続タイプ</translation>
@@ -2067,7 +2066,6 @@
 <translation id="4068506536726151626">このページには、あなたの現在地を追跡している以下のサイトからの要素が含まれています。</translation>
 <translation id="4068776064906523561">保存した指紋</translation>
 <translation id="407173827865827707">クリックされた場合のみ</translation>
-<translation id="4071770069230198275"><ph name="PROFILE_NAME" />: ログインエラー</translation>
 <translation id="4074900173531346617">メール署名者の証明書</translation>
 <translation id="407520071244661467">倍率</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> をキャストできません。</translation>
@@ -2869,6 +2867,7 @@
 <translation id="5332624210073556029">タイムゾーン:</translation>
 <translation id="5334142896108694079">スクリプト キャッシュ</translation>
 <translation id="5334844597069022743">ソースを表示する</translation>
+<translation id="5334899159203764908"><ph name="BEGIN_LINK" />サイトアクセス<ph name="END_LINK" />の詳細</translation>
 <translation id="5335458522276292100"><ph name="FILE_COUNT" />を <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップしています</translation>
 <translation id="5336126339807372270">USB デバイスへのアクセスをどのサイトにも許可しない</translation>
 <translation id="5337771866151525739">第三者によってインストールされました。</translation>
@@ -3316,9 +3315,11 @@
 <translation id="5979469435153841984">ページをブックマークするには、アドレスバーのスターアイコンをクリックしてください</translation>
 <translation id="5982621672636444458">並べ替え方法</translation>
 <translation id="5984222099446776634">最近のアクセス</translation>
+<translation id="5990142338020175451">おすすめのページなど、カスタマイズされた Google サービスを利用できます</translation>
 <translation id="5990386583461751448">翻訳済み</translation>
 <translation id="5991049340509704927">拡大表示</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{今後もウェブ ブラウジングを続けられるように、管理者にこのアプリケーションの削除を依頼してください。}other{今後もウェブ ブラウジングを続けられるように、管理者にこれらのアプリケーションの削除を依頼してください。}}</translation>
+<translation id="5997337190805127100">サイトアクセスの詳細</translation>
 <translation id="6002458620803359783">使用する音声</translation>
 <translation id="6005695835120147974">メディア ルーター</translation>
 <translation id="6006484371116297560">クラシック</translation>
@@ -3455,7 +3456,6 @@
 <translation id="6185132558746749656">デバイスの位置情報</translation>
 <translation id="6185617499004995178">CUPS IPP 検証ツール</translation>
 <translation id="6185696379715117369">ページ内を上に移動</translation>
-<translation id="6189273858858366896">ネットワーク ファイル共有を設定または管理する。</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> で開く</translation>
 <translation id="6196640612572343990">サードパーティの Cookie をブロックする</translation>
 <translation id="6196854373336333322">拡張機能「<ph name="EXTENSION_NAME" />」によってプロキシ設定が制御されています。オンラインで行う操作は、この拡張機能によって変更、遮断、傍受される可能性があります。この変更が行われた理由に心当たりがない場合、これは不正な変更と考えられます。</translation>
@@ -3782,7 +3782,6 @@
 <translation id="667517062706956822">Google でこのページを <ph name="SOURCE_LANGUAGE" /> から <ph name="TARGET_LANGUAGE" /> に翻訳しますか？</translation>
 <translation id="6675665718701918026">ポインティング デバイスが接続されました</translation>
 <translation id="6678717876183468697">クエリ URL</translation>
-<translation id="6680028776254050810">ユーザーを切り替え</translation>
 <translation id="6680442031740878064">空き容量: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">速度</translation>
 <translation id="6681668084120808868">写真を撮る</translation>
@@ -3791,7 +3790,6 @@
 <translation id="668599234725812620">Google Play を開く</translation>
 <translation id="6686490380836145850">右側のタブを閉じる</translation>
 <translation id="6686817083349815241">パスワードを保存</translation>
-<translation id="6690565918367819723"><ph name="PROFILE_NAME" />: ユーザーを切り替える</translation>
 <translation id="6690659332373509948">ファイル <ph name="FILE_NAME" /> を解析できません</translation>
 <translation id="6690751852586194791">このデバイスに追加する監視対象ユーザーを選択してください。</translation>
 <translation id="6691331417640343772">Google ダッシュボードで同期データを管理</translation>
@@ -4015,6 +4013,7 @@
 <translation id="7040230719604914234">携帯通信会社</translation>
 <translation id="7042418530779813870">貼り付けて検索(&amp;S)</translation>
 <translation id="7043108582968290193">完了しました。互換性のないアプリケーションは見つかりませんでした。</translation>
+<translation id="7044124535091449260">サイトアクセスの詳細</translation>
 <translation id="7049293980323620022">ファイルを保存しますか？</translation>
 <translation id="7051943809462976355">マウスを探しています...</translation>
 <translation id="7052237160939977163">パフォーマンス追跡データを送信する</translation>
@@ -5108,7 +5107,6 @@
 <translation id="869884720829132584">アプリケーション メニュー</translation>
 <translation id="869891660844655955">有効期限</translation>
 <translation id="8699566574894671540">この機能をオンにするには、まず [編集] メニューの [入力中にスペルチェック] を選択します</translation>
-<translation id="870073306461175568">ネットワーク ファイル共有</translation>
 <translation id="8701677791353449257">デバイス名は正規表現 <ph name="REGEX" /> と一致する必要があります。</translation>
 <translation id="8704521619148782536">通常よりもかなり時間がかかっています。そのままお待ちいただくか、キャンセルし、しばらくしてからもう一度お試しください。</translation>
 <translation id="8705331520020532516">シリアル番号</translation>
@@ -5293,7 +5291,6 @@
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - クラッシュしました</translation>
 <translation id="8983677657449185470">セーフ ブラウジングの改善に協力する</translation>
 <translation id="8984179138335769204">クイック起動</translation>
-<translation id="8984654317541110628">ファイル共有 URL</translation>
 <translation id="8986362086234534611">切断</translation>
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信します</translation>
 <translation id="8987927404178983737">月</translation>

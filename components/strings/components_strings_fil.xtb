@@ -808,7 +808,6 @@
 <translation id="6508722015517270189">I-restart ang Chrome</translation>
 <translation id="6529602333819889595">&amp;Gawing Muli ang Pagtanggal</translation>
 <translation id="6534179046333460208">Mga suhestyon sa Pisikal na Web</translation>
-<translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="6563469144985748109">Hindi pa ito inaaprubahan ng iyong manager</translation>
 <translation id="6569060085658103619">Isang page ng extension ang tinitingnan mo</translation>
 <translation id="6596325263575161958">Mga pagpipilian sa pag-encrypt</translation>
@@ -952,7 +951,6 @@ Mga karagdagang detalye:
 <translation id="7554791636758816595">Bagong Tab</translation>
 <translation id="7564049878696755256">Maaari kang mawalan ng access sa iyong account sa <ph name="ORG_NAME" /> o manakawan ng pagkakakilanlan. Inirerekomenda ng Chrome na palitan ang iyong password ngayon.</translation>
 <translation id="7567204685887185387">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; maaaring mapanlokong ibinigay ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
-<translation id="7568593326407688803">Ang pahinang ito ay nasa<ph name="ORIGINAL_LANGUAGE" />Gusto mong isalin ito?</translation>
 <translation id="7569952961197462199">Alisin ang credit card sa Chrome?</translation>
 <translation id="7575800019233204241">"Hindi pribado ang iyong koneksyon" o "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" o "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" o "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" o "Error sa SSL certificate"</translation>
 <translation id="7578104083680115302">Magbayad nang mabilis sa mga site at app sa iba't ibang device gamit ang mga card na na-save mo sa Google.</translation>

@@ -137,6 +137,7 @@
 
       TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para ma-enable ang IsolateOrigins sa Android, gamitin ang setting ng patakaran ng IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Ine-enable ang Hardware Platform API sa mga extension na may naka-install na patakaran.</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
@@ -463,6 +464,9 @@
 <translation id="2201555246697292490">I-configure ang whitelist ng native na pagmemensahe</translation>
 <translation id="2204753382813641270">Kontrolin ang awtomatikong pagtatago ng shelf</translation>
 <translation id="2208976000652006649">Mga parameter para sa URL ng paghahanap na ginagamit ang POST</translation>
+<translation id="2214880135980649323">Kapag nakatakda ang patakarang ito sa naka-enable, pinapayagan ang mga extension na na-install ng patakaran sa enterprise na gamitin ang Enterprise Hardware Platform API.
+      Kapag nakatakda ang patakarang ito sa naka-disable o kapag hindi ito nakatakda, hindi pinapayagan ang mga extension na gamitin ang Enterprise Hardware Platform API.
+      Nalalapat din ang patakarang ito sa mga extension ng bahagi gaya ng extension ng Mga Serbisyo ng Hangout.</translation>
 <translation id="2223598546285729819">Default na setting ng notification</translation>
 <translation id="2231817271680715693">I-import ang kasaysayan ng pagba-browse mula sa default na browser sa unang pagtakbo</translation>
 <translation id="2236488539271255289">Huwag payagan ang anumang site na itakda ang data ng lokal</translation>
@@ -2872,6 +2876,25 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
 <translation id="847472800012384958">Huwag payagang magpakita ng mga popup ang anumang site</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Sini-strip ang mga sensitibong bahagi ng privacy at seguridad ng mga https:// na URL bago ipasa ang mga ito sa mga script ng PAC (Proxy Auto Config) na ginagamit ng <ph name="PRODUCT_NAME" /> sa panahon ng pagresolba sa proxy.
+
+      Kapag True, naka-enable ang panseguridad na feature, at sini-strip ang mga https:// na URL
+      bago isumite ang mga ito sa isang script ng PAC. Sa ganitong paraan, hindi
+      matitingnan ng script ng PAC ang data na karaniwang pinoprotektahan ng isang 
+      naka-encrypt na channel (gaya ng path at query ng URL).
+
+      Kapag False, naka-disable ang panseguridad na feature, at hindi
+      tahasang binibigyan ang mga script ng PAC ng kakayahang tingnan ang lahat ng bahagi ng https:// na URL.
+      Nalalapat ito sa lahat ng script ng PAC saanman ito nagmula (kabilang ang
+      mga nakuha sa hindi secure na paglilipat, o natuklasan
+      sa WPAD sa paraang hindi secure).
+
+      Ang nagiging default nito ay True (naka-enable ang panseguridad na feature).
+
+      Inirerekomendang itakda ito sa True. Ang tanging dahilan para itakda ito sa
+      False ay kung nagdudulot ito ng problema sa compatibility sa mga kasalukuyang script ng PAC.
+
+      Aalisin sa M75 ang patakaran.</translation>
 <translation id="8484458986062090479">I-customize ang listahan ng mga pattern ng URL na dapat na palaging i-render ng browser ng host.
 
           Kung hindi nakatakda ang patakarang ito, gagamitin ang default na tagapag-render para sa lahat ng site tulad ng tinukoy sa patakarang 'ChromeFrameRendererSettings.'

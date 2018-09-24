@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">Здесь появятся закладки, сохраненные на других устройствах.</translation>
 <translation id="1113597929977215864">Упрощенный просмотр</translation>
 <translation id="1121094540300013208">Отчеты об использовании и сбоях</translation>
-<translation id="11221688409173367">Нажмите на кнопку главного экрана, чтобы посмотреть статьи, подобранные специально для вас</translation>
 <translation id="1129510026454351943">Сведения об ошибке: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Ожидание скачивания 1 файла…}one{Ожидание скачивания # файла…}few{Ожидание скачивания # файлов…}many{Ожидание скачивания # файлов…}other{Ожидание скачивания # файла…}}</translation>
 <translation id="1145536944570833626">Удалить сохраненные данные.</translation>
@@ -166,7 +165,6 @@
 <translation id="2154484045852737596">Изменение данных карты</translation>
 <translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2156074688469523661">Прочие сайты (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2184766556418880456">Нажмите, чтобы открыть страницу быстрого доступа в текущей вкладке.</translation>
 <translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
 <translation id="2227444325776770048">Продолжить как <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Отправлять системную информацию и содержимое страниц в Google</translation>
@@ -233,7 +231,6 @@
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="271033894570825754">Новый</translation>
 <translation id="2728754400939377704">Сортировать по имени домена</translation>
-<translation id="2736391366332017384">Нажмите кнопку главного экрана, чтобы открыть страницу быстрого доступа в текущей вкладке</translation>
 <translation id="2744248271121720757">Нажмите на слово, чтобы увидеть связанные с ним результаты поиска и действия.</translation>
 <translation id="2762000892062317888">только что</translation>
 <translation id="2777555524387840389">Осталось <ph name="SECONDS" /> сек.</translation>
@@ -344,6 +341,7 @@
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
 <translation id="3773755127849930740">Чтобы разрешить подключение, <ph name="BEGIN_LINK" />включите Bluetooth<ph name="END_LINK" /></translation>
 <translation id="3778956594442850293">Добавлено на главный экран</translation>
+<translation id="3781011235031427080">Панель "Показать похожие страницы" открыта наполовину</translation>
 <translation id="3789841737615482174">Установить</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Настроить</translation>
@@ -492,6 +490,7 @@
 <translation id="4913169188695071480">Остановить обновление</translation>
 <translation id="4915549754973153784">Поиск устройств… <ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="4943872375798546930">Нет результатов</translation>
+<translation id="4956460920135325549">Lite-версия страницы получена с помощью Google.</translation>
 <translation id="4958708863221495346">Сайту <ph name="URL_OF_THE_CURRENT_TAB" /> предоставлен доступ к вашему экрану</translation>
 <translation id="4961334780091921942">Пароли, история действий и другая информация на всех устройствах</translation>
 <translation id="4961700429721424617">Вы выходите из аккаунта, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Обратите внимание, что данные Chrome будут удалены с устройства, но сохранятся в аккаунте Google.</translation>
@@ -511,6 +510,7 @@
 <translation id="5087580092889165836">Добавить карту</translation>
 <translation id="5100237604440890931">Свернуто. Нажмите, чтобы развернуть.</translation>
 <translation id="510275257476243843">Остался 1 час</translation>
+<translation id="5123685120097942451">Вкладка инкогнито</translation>
 <translation id="5127805178023152808">Синхронизация выключена</translation>
 <translation id="5129038482087801250">Установить веб-приложение</translation>
 <translation id="5139940364318403933">Открыть справочную статью</translation>
@@ -658,6 +658,7 @@
 <translation id="6177111841848151710">Закрыт доступ для текущей поисковой системы</translation>
 <translation id="6177390657002841081">Включить режим экономии трафика</translation>
 <translation id="6181444274883918285">Добавить исключение</translation>
+<translation id="618993374665929060">Панель "Показать похожие страницы" открыта полностью</translation>
 <translation id="6192333916571137726">Скачивание файла</translation>
 <translation id="6192792657125177640">Исключения</translation>
 <translation id="6206551242102657620">Подключение защищено. Информация о сайте</translation>
@@ -730,9 +731,11 @@
 <translation id="6697947395630195233">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
 <translation id="6710213216561001401">Назад</translation>
+<translation id="6712388303105732168">Чтобы увидеть подобные результаты из Google Поиска, нажмите кнопку "Показать похожие страницы".</translation>
 <translation id="6738867403308150051">Скачивание…</translation>
 <translation id="6746124502594467657">Переместить вниз</translation>
 <translation id="6762156594045689028">Чтобы изменить эту настройку, <ph name="BEGIN_LINK" />сбросьте параметры синхронизации<ph name="END_LINK" />.</translation>
+<translation id="6766622839693428701">Проведите вниз, чтобы закрыть панель.</translation>
 <translation id="6770414673596662518">Функция "Безопасный просмотр" также позволяет обнаружить подозрительные страницы и защитить устройство от фишинга и вредоносного ПО.</translation>
 <translation id="6776813977906306442">Чтобы скачать видео для просмотра, нажмите соответствующую кнопку</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
@@ -785,7 +788,9 @@
 <translation id="7121362699166175603">Удаление истории и вариантов автозаполнения в адресной строке. Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Открыть доступ текущей поисковой системе</translation>
 <translation id="7138678301420049075">Другое</translation>
+<translation id="7139148793369023665">Панель "Показать похожие страницы" закрыта</translation>
 <translation id="7141896414559753902">Блокировать всплывающие окна и переадресацию на сайтах (рекомендуется)</translation>
+<translation id="7149158118503947153"><ph name="BEGIN_LINK" />Загрузить исходную версию страницы<ph name="END_LINK" /> из <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Последние 24 часа</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Вы всегда можете изменить свой выбор в настройках</translation>
@@ -873,6 +878,7 @@
 <translation id="7846076177841592234">Отменить выбор</translation>
 <translation id="784934925303690534">Временной диапазон</translation>
 <translation id="7851858861565204677">Другие устройства</translation>
+<translation id="7854964836418414587">Закрыть панель "Показать похожие страницы"</translation>
 <translation id="7875915731392087153">Написать письмо</translation>
 <translation id="7876243839304621966">Удалить все</translation>
 <translation id="7882131421121961860">История не найдена</translation>
@@ -1000,7 +1006,6 @@
 <translation id="8912362522468806198">Аккаунт Google</translation>
 <translation id="8920114477895755567">Недостаточно данных о родителях.</translation>
 <translation id="8922289737868596582">Скачивайте страницы через меню кнопки "Ещё" и открывайте их без подключения к Интернету</translation>
-<translation id="8934029156920711950">Нажмите, чтобы посмотреть статьи, подобранные специально для вас.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Открыть в новом окне</translation>
 <translation id="8951232171465285730">Благодаря Chrome вы сэкономили <ph name="MEGABYTES" /> МБ свободного места</translation>

@@ -21,6 +21,7 @@
 <translation id="1270290102613614947">ปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1289185460362160437">ใช้ได้อีกครั้ง<ph name="COME_BACK_DAY_OF_WEEK" /> เวลา <ph name="COME_BACK_TIME" /></translation>
 <translation id="1290331692326790741">สัญญาณไม่ดี</translation>
 <translation id="1293264513303784526">อุปกรณ์ USB-C (พอร์ตด้านซ้าย)</translation>
 <translation id="1294929383540927798">เปลี่ยนการตั้งค่าการแจ้งเตือนในหน้าจอล็อก</translation>
@@ -98,6 +99,7 @@
 <translation id="2501920221385095727">คีย์ติดหนึบ</translation>
 <translation id="2509468283778169019">Caps Lock เปิดอยู่</translation>
 <translation id="2532589005999780174">โหมดคอนทราสต์สูง</translation>
+<translation id="255671100581129685">Google Assistant ไม่พร้อมใช้งานในเซสชันสาธารณะ</translation>
 <translation id="2575685495496069081">ปิดใช้การลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชีอยู่</translation>
 <translation id="2582112259361606227">รีสตาร์ทเพื่ออัปเดต</translation>
 <translation id="2597972630681408282">แสงตอนกลางคืน: <ph name="NIGHT_LIGHT_STATUS" /></translation>
@@ -129,6 +131,7 @@
 <translation id="3000461861112256445">เสียงแบบโมโน</translation>
 <translation id="3009178788565917040">เอาต์พุต</translation>
 <translation id="3019353588588144572">เวลาที่เหลือกว่าจะชาร์จแบตเตอรี่เต็ม, <ph name="TIME_REMAINING" /></translation>
+<translation id="3055162170959710888">วันนี้คุณใช้อุปกรณ์เครื่องนี้ไป <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">ขยายเมนู</translation>
 <translation id="3087734570205094154">ด้านล่าง</translation>
@@ -215,6 +218,7 @@
 <translation id="4659419629803378708">เปิดใช้ ChromeVox แล้ว</translation>
 <translation id="4734965478015604180">แนวนอน</translation>
 <translation id="476166673298332917">ผู้ดูแลระบบของอุปกรณ์นี้มีสิทธิ์เข้าถึงกิจกรรมทั้งหมด ซึ่งรวมถึงรหัสผ่านและการสื่อสารต่างๆ</translation>
+<translation id="4774338217796918551">ใช้ได้อีกครั้งพรุ่งนี้ เวลา <ph name="COME_BACK_TIME" /></translation>
 <translation id="4776917500594043016">รหัสผ่านของ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Assistant ไม่พร้อมใช้งานในเซสชันสาธิต</translation>
 <translation id="479989351350248267">ค้นหา</translation>
@@ -229,6 +233,7 @@
 <translation id="4918086044614829423">ยอมรับ</translation>
 <translation id="4924411785043111640">รีสตาร์ทและรีเซ็ต</translation>
 <translation id="4961318399572185831">แคสต์หน้าจอ</translation>
+<translation id="5030687792513154421">หมดเวลา</translation>
 <translation id="5083553833479578423">ใช้ฟีเจอร์จาก Assistant ได้มากขึ้น</translation>
 <translation id="5136175204352732067">เชื่อมต่อกับแป้นพิมพ์อื่นแล้ว</translation>
 <translation id="5168181903108465623">เครื่องส่งพร้อมใช้งาน</translation>
@@ -277,7 +282,6 @@
 <translation id="598882571027504733">หากต้องการรับอัปเดต ให้รีสตาร์ท Chromebook ในขณะที่ยังเชื่อมต่อกับแป้นพิมพ์</translation>
 <translation id="5992218262414051481">เปิดใช้โหมดคอนทราสต์สูงอยู่ กด Ctrl+Search+H อีกครั้งเพื่อสลับเป็นปิด</translation>
 <translation id="6018164090099858612">กำลังออกจากโหมดมิเรอร์</translation>
-<translation id="6040143037577758943">ปิด</translation>
 <translation id="6043212731627905357">จอภาพนี้ใช้งานไม่ได้กับ <ph name="DEVICE_TYPE" /> ของคุณ (ไม่รองรับจอภาพนี้)</translation>
 <translation id="6043994281159824495">ออกจากระบบเลย</translation>
 <translation id="6047696787498798094">การแชร์หน้าจอจะหยุดเมื่อคุณสลับไปเป็นผู้ใช้อีกรายหนึ่ง ต้องการดำเนินการต่อไหม</translation>
@@ -360,6 +364,7 @@
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">อาจมีการตรวจสอบเครือข่าย</translation>
 <translation id="7536035074519304529">ที่อยู่ IP: <ph name="ADDRESS" /></translation>
+<translation id="7548434653388805669">ได้เวลาเข้านอนแล้ว</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ไม่สนับสนุน <ph name="SPECIFIED_RESOLUTION" /> ความละเอียดเปลี่ยนเป็น <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">ชุดอีโมจิ</translation>
 <translation id="7564874036684306347">การย้ายหน้าต่างไปยังเดสก์ท็อปอื่นอาจส่งผลให้ลักษณะการทำงานผิกปกติ การแจ้งเตือน หน้าต่าง และกล่องโต้ตอบที่ตามมาอาจแสดงแยกส่วนในเดสก์ท็อปทั้งสอง</translation>
@@ -402,12 +407,14 @@
 <translation id="8152119955266188852">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายทั้งหน้าจอ จะเปิดแว่นขยายไหม</translation>
 <translation id="8190698733819146287">กำหนดค่าภาษาและการป้อนข้อมูล... </translation>
 <translation id="8192202700944119416">ซ่อนการแจ้งเตือนไว้</translation>
+<translation id="8236042855478648955">ได้เวลาพักแล้ว</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8297006494302853456">อ่อน</translation>
 <translation id="8308637677604853869">เมนูก่อนหน้า</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">สร้างโน้ต</translation>
 <translation id="8392451568018454956">เมนูตัวเลือกสำหรับ <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8394567579869570560">ผู้ปกครองของคุณล็อกอุปกรณ์นี้ไว้</translation>
 <translation id="8406981827175133772">แว่นขยายทั้งหน้าจอ</translation>
 <translation id="8425213833346101688">เปลี่ยน</translation>
 <translation id="8427213022735114808">การพิมพ์ตามคำบอกจะส่งเสียงของคุณไปยัง Google เพื่อให้พิมพ์ด้วยเสียงในช่องข้อความต่างๆ</translation>
@@ -437,7 +444,6 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">ไม่สนับสนุนการมิเรอร์บนจอแสดงผลเกิน 2 หน้าจอ</translation>
 <translation id="8828714802988429505">90°</translation>
-<translation id="8841375032071747811">ปุ่มกลับ</translation>
 <translation id="8843682306134542540">เปิด/ปิดการล็อกการหมุน <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">แอปไม่สนับสนุนการแยกหน้าจอ</translation>
@@ -464,6 +470,7 @@
 <translation id="9201131092683066720">มีแบตเตอรี่ <ph name="PERCENTAGE" />%</translation>
 <translation id="9210037371811586452">กำลังออกจากโหมดเดสก์ท็อปแบบรวมหลายหน้าจอ</translation>
 <translation id="9215934040295798075">ตั้งค่าวอลเปเปอร์</translation>
+<translation id="921989828232331238">ผู้ปกครองล็อกอุปกรณ์ของคุณไว้ทั้งวัน</translation>
 <translation id="923686485342484400">กด Control Shift Q 2 ครั้งเพื่อออกจากระบบ</translation>
 <translation id="938963181863597773">มีอะไรในปฏิทินของฉันบ้าง</translation>
 <translation id="945522503751344254">ส่งความคิดเห็น</translation>

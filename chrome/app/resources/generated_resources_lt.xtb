@@ -375,7 +375,6 @@
 <translation id="1531004739673299060">Programos langas</translation>
 <translation id="15373452373711364">Didelis pelės žymeklis</translation>
 <translation id="1538729222189715449">Atidaromi „Linux“ failai...</translation>
-<translation id="153933193410874873">Nepavyko patvirtinti tapatybės šiame įrenginyje</translation>
 <translation id="1540605929960647700">Demonstracinio režimo įgalinimas</translation>
 <translation id="1543284117603151572">Importuota iš „Edge“</translation>
 <translation id="1545177026077493356">Automatinis viešojo terminalo režimas</translation>
@@ -682,7 +681,6 @@
 <translation id="1981115145845865539">Automatinis „<ph name="DEVICE_TYPE" />“ atrakinimas</translation>
 <translation id="1983959805486816857">Sukūrę naują prižiūrimą naudotoją galite bet kada valdyti nustatymus iš bet kurio įrenginio adresu <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Pritvirtinti langą dešinėje</translation>
-<translation id="1987139229093034863">Perjungti kitą naudotoją.</translation>
 <translation id="1987317783729300807">Paskyros</translation>
 <translation id="1989112275319619282">Naršyti</translation>
 <translation id="1992397118740194946">Nenustatyta</translation>
@@ -935,6 +933,7 @@
 <translation id="2378075407703503998">Pasirinkta failų: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="237828693408258535">Išversti šį puslapį?</translation>
 <translation id="2378982052244864789">Pasirinkti plėtinio katalogą.</translation>
+<translation id="2379281330731083556">Spausdinti naudojant sistemos dialogo langą... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Klausti prieš siunčiant (rekomenduojama)</translation>
 <translation id="2384436799579181135">Įvyko klaida. Patikrinkite spausdintuvą ir bandykite dar kartą.</translation>
 <translation id="2387458720915042159">Tarpinio serverio ryšio tipas</translation>
@@ -2067,7 +2066,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4068506536726151626">Šiame puslapyje yra elementų iš šių svetainių, kuriose stebima jūsų vietovė:</translation>
 <translation id="4068776064906523561">Išsaugoti kontroliniai kodai</translation>
 <translation id="407173827865827707">Spustelėjus</translation>
-<translation id="4071770069230198275"><ph name="PROFILE_NAME" />: prisijungimo klaida</translation>
 <translation id="4074900173531346617">El. laiškus pasirašančiojo sertifikatas</translation>
 <translation id="407520071244661467">Mastelis</translation>
 <translation id="4075639477629295004">Nepavyko perduoti „<ph name="FILE_NAME" />“.</translation>
@@ -2869,6 +2867,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5332624210073556029">Laiko juosta:</translation>
 <translation id="5334142896108694079">Scenarijų talpykla</translation>
 <translation id="5334844597069022743">Žiūrėti šaltinį</translation>
+<translation id="5334899159203764908">Sužinokite daugiau apie <ph name="BEGIN_LINK" />prieigą prie svetainės<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Kuriama <ph name="FILE_COUNT" /> atsarginė kopija <ph name="BEGIN_LINK" />„Google“ diske<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Neleisti svetainėms pasiekti USB įrenginių</translation>
 <translation id="5337771866151525739">Įdiegė trečioji šalis.</translation>
@@ -3458,7 +3457,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6185132558746749656">Įrenginio vietovė</translation>
 <translation id="6185617499004995178">CUPS IPP patvirtinimo priemonė</translation>
 <translation id="6185696379715117369">Puslapiu aukštyn</translation>
-<translation id="6189273858858366896">Nustatykite arba tvarkykite tinklo failų bendrinimą.</translation>
 <translation id="6189412234224385711">Atidaryti naudojant „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="6196640612572343990">Blokuoti trečiosios šalies slapukus</translation>
 <translation id="6196854373336333322">Plėtinys „<ph name="EXTENSION_NAME" />“ perėmė tarpinio serverio valdymą. Tai reiškia, kad jis gali keisti, nutraukti ar stebėti visus prisijungus atliekamus veiksmus. Jei nesate tikri, kodėl įvyko šis pakeitimas, tikriausiai jūs jo nenorite.</translation>
@@ -3785,7 +3783,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="667517062706956822">Ar norite, kad „Google“ išverstų puslapį iš <ph name="SOURCE_LANGUAGE" /> į <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Manipuliatorius prijungtas</translation>
 <translation id="6678717876183468697">Užklausos URL</translation>
-<translation id="6680028776254050810">Perjungti naudotojus</translation>
 <translation id="6680442031740878064">Pasiekiama: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Sparta</translation>
 <translation id="6681668084120808868">Fotografuoti</translation>
@@ -3794,7 +3791,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="668599234725812620">Atidaryti „Google Play“</translation>
 <translation id="6686490380836145850">Uždaryti dešinėje esančius skirtukus</translation>
 <translation id="6686817083349815241">Išsaugokite slaptažodį</translation>
-<translation id="6690565918367819723"><ph name="PROFILE_NAME" /> – perjungti asmenį</translation>
 <translation id="6690659332373509948">Nepavyksta išanalizuoti failo: „<ph name="FILE_NAME" />“</translation>
 <translation id="6690751852586194791">Pasirinkite prižiūrimą naudotoją, kuris bus pridėtas prie šio įrenginio.</translation>
 <translation id="6691331417640343772">Sinchronizuotų duomenų tvarkymas „Google“ informacijos suvestinėje</translation>
@@ -5111,7 +5107,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="869884720829132584">Programų meniu</translation>
 <translation id="869891660844655955">Galiojimo data</translation>
 <translation id="8699566574894671540">Norėdami tai įjungti, pirmiausia pasirinkite parinktį „Check spelling while typing“, esančią meniu „Edit“</translation>
-<translation id="870073306461175568">Tinklo failų bendrinimas</translation>
 <translation id="8701677791353449257">Įrenginio pavadinimas turi atitikti reguliarųjį reiškinį „<ph name="REGEX" />“.</translation>
 <translation id="8704521619148782536">Tai trunka ilgiau nei paprastai. Galite palaukti arba atšaukti ir vėliau bandyti dar kartą.</translation>
 <translation id="8705331520020532516">Serijos numeris</translation>
@@ -5296,7 +5291,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8980951173413349704">„<ph name="WINDOW_TITLE" />“ – užstrigo</translation>
 <translation id="8983677657449185470">Padėti tobulinti Saugų naršymą</translation>
 <translation id="8984179138335769204">Greitasis paleidimas</translation>
-<translation id="8984654317541110628">Failo bendrinimo URL</translation>
 <translation id="8986362086234534611">Pamiršti</translation>
 <translation id="8986494364107987395">Automatiškai siųsti naudojimo statistiką ir strigčių ataskaitas „Google“</translation>
 <translation id="8987927404178983737">Mėnuo</translation>

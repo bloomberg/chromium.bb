@@ -375,7 +375,6 @@
 <translation id="1531004739673299060">애플리케이션 창</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1538729222189715449">Linux 파일을 여는 중...</translation>
-<translation id="153933193410874873">이 기기에서 신원을 인증할 수 없습니다.</translation>
 <translation id="1540605929960647700">데모 모드 사용</translation>
 <translation id="1543284117603151572">Edge에서 가져옴</translation>
 <translation id="1545177026077493356">자동 키오스크 모드</translation>
@@ -682,7 +681,6 @@
 <translation id="1981115145845865539"><ph name="DEVICE_TYPE" />을(를) 자동으로 잠금 해제</translation>
 <translation id="1983959805486816857">새로운 관리 대상 사용자를 만든 후에는 언제 어떤 기기를 사용하든 <ph name="MANAGEMENT_URL" /> 페이지에서 설정을 관리할 수 있습니다.</translation>
 <translation id="1984642098429648350">창을 오른쪽에 고정</translation>
-<translation id="1987139229093034863">다른 사용자로 전환합니다.</translation>
 <translation id="1987317783729300807">계정</translation>
 <translation id="1989112275319619282">찾아보기</translation>
 <translation id="1992397118740194946">설정 안됨</translation>
@@ -935,6 +933,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" />개의 파일이 선택됨</translation>
 <translation id="237828693408258535">이 페이지를 번역하시겠습니까?</translation>
 <translation id="2378982052244864789">확장 프로그램 디렉토리를 선택합니다.</translation>
+<translation id="2379281330731083556">시스템 대화상자를 사용하여 인쇄... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">보내기 전에 확인(권장)</translation>
 <translation id="2384436799579181135">오류가 발생했습니다. 프린터를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="2387458720915042159">프록시 연결 유형</translation>
@@ -2067,7 +2066,6 @@
 <translation id="4068506536726151626">이 페이지에는 사용자 위치를 추적하는 다음 사이트의 요소가 포함되어 있습니다.</translation>
 <translation id="4068776064906523561">저장된 지문</translation>
 <translation id="407173827865827707">클릭 시</translation>
-<translation id="4071770069230198275"><ph name="PROFILE_NAME" />: 로그인 오류</translation>
 <translation id="4074900173531346617">이메일 서명자 인증서</translation>
 <translation id="407520071244661467">배율</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" />을(를) 전송할 수 없습니다.</translation>
@@ -2867,6 +2865,7 @@
 <translation id="5332624210073556029">표준시간대:</translation>
 <translation id="5334142896108694079">스크립트 캐시</translation>
 <translation id="5334844597069022743">소스 보기</translation>
+<translation id="5334899159203764908"><ph name="BEGIN_LINK" />사이트 액세스 권한<ph name="END_LINK" /> 자세히 알아보기</translation>
 <translation id="5335458522276292100"><ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 파일 <ph name="FILE_COUNT" />개 백업 중</translation>
 <translation id="5336126339807372270">모든 사이트의 USB 기기 액세스를 허용하지 않음</translation>
 <translation id="5337771866151525739">제3자에 의해 설치되었습니다.</translation>
@@ -3455,7 +3454,6 @@
 <translation id="6185132558746749656">기기 위치</translation>
 <translation id="6185617499004995178">CUPS IPP 검사기</translation>
 <translation id="6185696379715117369">페이지 위로</translation>
-<translation id="6189273858858366896">Network File Shares를 설정하거나 관리합니다.</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" />(으)로 열기</translation>
 <translation id="6196640612572343990">타사 쿠키 차단</translation>
 <translation id="6196854373336333322">'<ph name="EXTENSION_NAME" />' 확장 프로그램이 프록시 설정을 제어할 수 있게 되었으며, 따라서 사용자가 온라인에서 수행하는 모든 작업을 변경, 중단하거나 엿볼 수 있게 되었습니다. 이와 같이 변경된 이유를 잘 모른다면 이 설정을 사용하지 않는 것이 좋습니다.</translation>
@@ -3782,7 +3780,6 @@
 <translation id="667517062706956822">Google에서 이 페이지를 <ph name="SOURCE_LANGUAGE" />에서 <ph name="TARGET_LANGUAGE" />로 번역할까요?</translation>
 <translation id="6675665718701918026">포인팅 기기 연결됨</translation>
 <translation id="6678717876183468697">쿼리 URL</translation>
-<translation id="6680028776254050810">사용자 전환</translation>
 <translation id="6680442031740878064">사용 가능한 저장용량: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">평가</translation>
 <translation id="6681668084120808868">사진 찍기</translation>
@@ -3791,7 +3788,6 @@
 <translation id="668599234725812620">Google Play 열기</translation>
 <translation id="6686490380836145850">우측 탭 닫기</translation>
 <translation id="6686817083349815241">비밀번호 저장</translation>
-<translation id="6690565918367819723"><ph name="PROFILE_NAME" /> 사용자 전환</translation>
 <translation id="6690659332373509948">파일을 파싱할 수 없음: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">이 기기에 추가할 관리 대상 사용자를 선택하세요.</translation>
 <translation id="6691331417640343772">Google 대시보드에서 동기화된 데이터 관리</translation>
@@ -5108,7 +5104,6 @@
 <translation id="869884720829132584">애플리케이션 메뉴</translation>
 <translation id="869891660844655955">유효기간</translation>
 <translation id="8699566574894671540">이 기능을 사용 설정하려면 먼저 편집 메뉴에서 '입력하는 동안에 영문 철자 검사'를 선택하세요.</translation>
-<translation id="870073306461175568">Network File Shares</translation>
 <translation id="8701677791353449257">기기 이름이 정규 표현식 <ph name="REGEX" />과(와) 일치해야 합니다.</translation>
 <translation id="8704521619148782536">평소보다 훨씬 오래 걸리는 것 같습니다. 계속 기다리거나, 취소하고 나중에 다시 시도해 보세요.</translation>
 <translation id="8705331520020532516">일련번호</translation>
@@ -5293,7 +5288,6 @@
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 비정상 종료됨</translation>
 <translation id="8983677657449185470">세이프 브라우징 개선에 참여</translation>
 <translation id="8984179138335769204">빠른 실행</translation>
-<translation id="8984654317541110628">파일 공유 URL</translation>
 <translation id="8986362086234534611">저장 안함</translation>
 <translation id="8986494364107987395">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 보내기</translation>
 <translation id="8987927404178983737">월</translation>

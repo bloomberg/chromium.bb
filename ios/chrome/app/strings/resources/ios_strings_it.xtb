@@ -38,7 +38,7 @@
 <translation id="1491277525950327607">Tocca due volte per attivare/disattivare l'impostazione</translation>
 <translation id="152234381334907219">Mai salvate</translation>
 <translation id="1540800554400757039">Indirizzo 1</translation>
-<translation id="1545749641540134597">Leggi il codice QR</translation>
+<translation id="1545749641540134597">Scansiona codice QR</translation>
 <translation id="1558704936695638228">Tieni premuto per vedere maggiori opzioni sulla scheda</translation>
 <translation id="1580783302095112590">Messaggio inviato.</translation>
 <translation id="1582732959743469162">Verrà interrotto l'avanzamento del tuo download attuale.</translation>
@@ -182,6 +182,7 @@
 <translation id="3963231839620026525">Nuova scheda in incognito</translation>
 <translation id="3967822245660637423">Download completato</translation>
 <translation id="3989635538409502728">Esci</translation>
+<translation id="3995521777587992544">Barra di avanzamento del caricamento delle pagine. Percentuale di caricamento: <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Titolo</translation>
 <translation id="4038354071007134711">Impossibile aprire il file con le app sul dispositivo.</translation>
 <translation id="4042870976416480368">Trova nella pagina</translation>

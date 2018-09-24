@@ -275,6 +275,7 @@
 <translation id="1395730723686586365">Sinimulan ang updater</translation>
 <translation id="1396139853388185343">Nagkaroon ng error sa pag-set up ng printer</translation>
 <translation id="1396963298126346194">Hindi nagtutugma ang username at password na inilagay mo</translation>
+<translation id="1397500194120344683">Walang kwalipikadong device. <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="1397854323885047133">Pag-sync at pag-personalize</translation>
 <translation id="1398853756734560583">Maximize</translation>
 <translation id="1399511500114202393">Walang certificate ng user</translation>
@@ -375,7 +376,6 @@
 <translation id="1531004739673299060">Window ng Application</translation>
 <translation id="15373452373711364">Malaking mouse cursor</translation>
 <translation id="1538729222189715449">Binubuksan ang mga Linux file...</translation>
-<translation id="153933193410874873">Hindi namin ma-verify ang iyong pagkakakilanlan sa device na ito</translation>
 <translation id="1540605929960647700">I-enable ang demo mode</translation>
 <translation id="1543284117603151572">Na-import Mula Sa Edge</translation>
 <translation id="1545177026077493356">Awtomatikong Kiosk Mode</translation>
@@ -529,6 +529,7 @@
 <translation id="175772926354468439">Paganahin ang tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Tingnan sa Chrome Web Store</translation>
+<translation id="176193854664720708">Nasa power button ang sensor para sa fingerprint. Pundutin ito nang magaan gamit ang alinmang daliri.</translation>
 <translation id="1763046204212875858">Gumawa ng mga shortcut ng application</translation>
 <translation id="1763108912552529023">Magpatuloy sa pag-explore</translation>
 <translation id="1763808908432309942">Magbubukas sa bagong tab</translation>
@@ -682,7 +683,6 @@
 <translation id="1981115145845865539">Awtomatikong i-unlock ang iyong <ph name="DEVICE_TYPE" /></translation>
 <translation id="1983959805486816857">Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan ang mga setting anumang oras mula sa anumang device, sa <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">I-dock ang window sa kanan</translation>
-<translation id="1987139229093034863">Lumipat sa ibang user.</translation>
 <translation id="1987317783729300807">Mga Account</translation>
 <translation id="1989112275319619282">Mag-browse</translation>
 <translation id="1992397118740194946">Hindi nakatakda</translation>
@@ -823,6 +823,7 @@
 <translation id="2208158072373999562">Zip archive</translation>
 <translation id="220858061631308971">Pakilagay ang PIN code na ito sa "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2209593327042758816">Item 2 sa shelf</translation>
+<translation id="2212126039311489237">Mag-print gamit ang dialog ng system</translation>
 <translation id="2217501013957346740">Gumawa ng pangalan -</translation>
 <translation id="2218019600945559112">Mouse at touchpad</translation>
 <translation id="2218320521449013367">Nagkaroon ng error habang inaalis ng Chrome ang mapaminsalang software</translation>
@@ -935,6 +936,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> (na) file ang pinili</translation>
 <translation id="237828693408258535">I-translate ang page na ito?</translation>
 <translation id="2378982052244864789">Piliin ang direktoryo ng extension.</translation>
+<translation id="2379281330731083556">I-print gamit ang dialog ng system... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Magtanong bago magpadala (inirerekomenda)</translation>
 <translation id="2384436799579181135">Nagka-error. Pakisuri ang iyong printer at subukang muli.</translation>
 <translation id="2387458720915042159">Uri ng koneksyon sa proxy</translation>
@@ -1114,6 +1116,7 @@
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="265390580714150011">Field Value</translation>
 <translation id="2654166010170466751">Payagan ang mga site na mag-install ng mga tagapangasiwa ng pagbabayad</translation>
+<translation id="2656742821229528729">Ikonekta ang iyong Android phone at Chromebook para makapag-text mula sa computer mo, maibahagi ang iyong koneksyon sa internet, at ma-unlock ang Chromebook mo gamit ang iyong telepono.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Nag-iiba-iba ang feature depende sa device</translation>
 <translation id="2660779039299703961">Kaganapan</translation>
 <translation id="266079277508604648">Hindi makakonekta sa printer. Tiyaking naka-on ang printer at nakakonekta ito sa iyong Chromebook sa pamamagitan ng Wi-Fi o USB.</translation>
@@ -1418,6 +1421,7 @@
 <translation id="3115128645424181617">Hindi mahanap ang iyong telepono. Siguraduhing malapit ito at naka-on ang Bluetooth.</translation>
 <translation id="3115147772012638511">Naghihintay para sa cache...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Help</translation>
+<translation id="3119484583572640616">Kapag ini-on ang Better Together, ibig sabihin ay magagawa nitong:</translation>
 <translation id="3120430004221004537">Hindi sapat ang pag-encrypt para sa isang partikular na operation sa: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3121793941267913344">I-reset ang <ph name="IDS_SHORT_PRODUCT_NAME" /> device na ito</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -1732,6 +1736,7 @@
 <translation id="3596235046596950091">I-enable ang mga serbisyo sa cloud</translation>
 <translation id="3599863153486145794">Kini-clear ang history sa lahat ng naka-sign in na device. Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">I-mute ang mga site na nagpe-play ng tunog</translation>
+<translation id="360180734785106144">Mag-alok ng mga bagong feature kapag naging available ang mga ito</translation>
 <translation id="3602290021589620013">I-preview</translation>
 <translation id="3603533104205588786">Maaari mong i-click ang star upang mag-bookmark ng page</translation>
 <translation id="3603622770190368340">Kunin ang certificate ng network</translation>
@@ -2067,7 +2072,6 @@
 <translation id="4068506536726151626">Naglalaman ang page na ito ng mga elemento mula sa sumusunod na mga site na sumusubaybay sa lokasyon mo:</translation>
 <translation id="4068776064906523561">Mga naka-save na fingerprint</translation>
 <translation id="407173827865827707">Sa pag-click</translation>
-<translation id="4071770069230198275"><ph name="PROFILE_NAME" />: error sa pag-sign in</translation>
 <translation id="4074900173531346617">Certificate ng Email Signer</translation>
 <translation id="407520071244661467">Scale</translation>
 <translation id="4075639477629295004">Hindi ma-cast ang <ph name="FILE_NAME" />.</translation>
@@ -2869,6 +2873,7 @@
 <translation id="5332624210073556029">Time zone:</translation>
 <translation id="5334142896108694079">Cache ng Script</translation>
 <translation id="5334844597069022743">Tingnan ang source</translation>
+<translation id="5334899159203764908">Matuto pa tungkol sa <ph name="BEGIN_LINK" />access sa site<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Bina-back up ang <ph name="FILE_COUNT" /> sa <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Huwag payagan ang anumang site na i-access ang mga USB device</translation>
 <translation id="5337771866151525739">Na-install ng third party.</translation>
@@ -2976,6 +2981,7 @@
 <translation id="5487521232677179737">I-clear ang data</translation>
 <translation id="5488093641312826914">Nakopya ang '<ph name="COPIED_ITEM_NAME" />'</translation>
 <translation id="5488468185303821006">Payagan sa incognito</translation>
+<translation id="5489121514345187313">Mas mahusay na gumagana ang iyong Chromebook sa telepono mo. <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="5489435190927933437">Mga naka-save na password para sa <ph name="DOMAIN" /></translation>
 <translation id="5491110079163012109">Magpadala ng data ng system. Awtomatikong magpadala sa Google ng diagnostic at data ng paggamit sa device at app. Ang may-ari ang nagpapatupad sa setting na ito. Maaaring piliin ng may-ari na magpadala sa Google ng diagnostic at data ng paggamit para sa device na ito. Maaari mo itong tingnan sa mga setting. Kung in-on mo ang karagdagang Aktibidad sa Web at App, iso-store ang impormasyong ito sa iyong account para mapamahalaan mo ito sa Aking Aktibidad. <ph name="BEGIN_LINK1" />Matuto Pa<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">naka-on ang screen</translation>
@@ -3147,6 +3153,7 @@
 <translation id="5731409020711461763">1 bagong larawan</translation>
 <translation id="5734362860645681824">Komunikasyon</translation>
 <translation id="5736796278325406685">Mangyaring maglagay ng wastong username</translation>
+<translation id="5739235828260127894">Naghihintay ng pag-verify. <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Napakalaki</translation>
 <translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> at <ph name="NUM_ADDITIONAL_LANGUAGES" /> pa</translation>
 <translation id="574209121243317957">Pitch</translation>
@@ -3250,6 +3257,7 @@
 <translation id="5870086504539785141">Isara ang menu ng accessibility</translation>
 <translation id="5870155679953074650">Mga hard fault</translation>
 <translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>
+<translation id="5877584842898320529">Hindi available o hindi naka-install nang tama ang napiling printer. <ph name="BR" /> Suriin ang iyong printer o subukang pumili ng ibang printer.</translation>
 <translation id="5880247576487732437">May Token</translation>
 <translation id="5882919346125742463">Mga Kilalang Network</translation>
 <translation id="5884474295213649357">Nakakonekta ang tab na ito sa isang USB device.</translation>
@@ -3316,11 +3324,12 @@
 <translation id="5979469435153841984">Upang mag-bookmark ng mga page, i-click ang star sa address bar</translation>
 <translation id="5982621672636444458">Mga opsyon sa pag-uuri</translation>
 <translation id="5984222099446776634">Kamakailang Binisita</translation>
+<translation id="5985458664595100876">Invalid ang format ng URL. Ang mga sinusuportahang format ay \\server\share at smb://server/share.</translation>
 <translation id="5990142338020175451">Higit pang personal na serbisyo ng Google, tulad ng mas mahuhusay na suhestyon sa page</translation>
 <translation id="5990386583461751448">Naisalin</translation>
 <translation id="5991049340509704927">I-magnify</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para matiyak na makakapag-browse ka pa rin sa web, hilingin sa iyong administrator na alisin ang application na ito.}one{Para matiyak na makakapag-browse ka pa rin sa web, hilingin sa iyong administrator na alisin ang mga application na ito.}other{Para matiyak na makakapag-browse ka pa rin sa web, hilingin sa iyong administrator na alisin ang mga application na ito.}}</translation>
-<translation id="5997337190805127100">Matuto pa Tungkol sa Access ng Site</translation>
+<translation id="5997337190805127100">Matuto pa Tungkol sa Access sa Site</translation>
 <translation id="6002458620803359783">Mga Gustong Boses</translation>
 <translation id="6005695835120147974">Router para sa Media</translation>
 <translation id="6006484371116297560">Classic</translation>
@@ -3344,6 +3353,7 @@
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - May nakakonektang USB device</translation>
 <translation id="6028117231645531007">Magdagdag ng fingerprint</translation>
 <translation id="6029027682598229313">Tapos nang i-install ang Linux.</translation>
+<translation id="6029292188939175871">i-delete ang [<ph name="FINGERPRINT_NAME" />], button</translation>
 <translation id="6029587122245504742">Pinakamabagal</translation>
 <translation id="6032912588568283682">System ng file</translation>
 <translation id="6034662038931255275">Na-update na ang OS</translation>
@@ -3457,7 +3467,6 @@
 <translation id="6185132558746749656">Lokasyon ng Device</translation>
 <translation id="6185617499004995178">CUPS IPP Validator</translation>
 <translation id="6185696379715117369">Pataas sa pahina</translation>
-<translation id="6189273858858366896">I-set up o pamahalaan ang Mga Pagbabahagi ng File sa Network.</translation>
 <translation id="6189412234224385711">Buksan gamit ang <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">I-block ang mga third-party na cookie</translation>
 <translation id="6196854373336333322">Kinokontrol na ng extension na "<ph name="EXTENSION_NAME" />" ang iyong mga setting ng proxy, na ang ibig sabihin ay maaari nitong baguhin, sirain o alamin ang anumang bagay na gagawin mo online. Kung hindi ka sigurado kung bakit naganap ang pagbabagong ito, malamang ay hindi mo ito ginustong mangyari.</translation>
@@ -3763,6 +3772,7 @@
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="6644512095122093795">Mag-alok na mag-save ng mga password</translation>
 <translation id="6644846457769259194">Ina-update ang iyong device (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="6645437135153136856">Hindi na sinusuportahan ang Google Cloud Print device. <ph name="BR" /> Subukang i-set up ang printer sa mga setting ng system ng iyong computer.</translation>
 <translation id="6647228709620733774">Netscape Certification Authority Revocation URL</translation>
 <translation id="6647838571840953560">Kasalukuyang nasa <ph name="CHANNEL_NAME" /></translation>
 <translation id="6648051959475508072">Na-activate ang security key...</translation>
@@ -3784,7 +3794,6 @@
 <translation id="667517062706956822">Gusto mo bang i-translate ng Google ang page na ito mula sa <ph name="SOURCE_LANGUAGE" /> patungo sa <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">May nakakonektang pointing device</translation>
 <translation id="6678717876183468697">URL ng Query</translation>
-<translation id="6680028776254050810">Magpalit ng mga User</translation>
 <translation id="6680442031740878064">Available: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">I-rate</translation>
 <translation id="6681668084120808868">Kumuha ng larawan</translation>
@@ -3793,7 +3802,6 @@
 <translation id="668599234725812620">Buksan ang Google Play</translation>
 <translation id="6686490380836145850">Isara ang mga tab sa kanan</translation>
 <translation id="6686817083349815241">I-save ang iyong password</translation>
-<translation id="6690565918367819723"><ph name="PROFILE_NAME" /> Magpalit ng tao</translation>
 <translation id="6690659332373509948">Hindi magawang i-parse ang file: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Pumili ng isang pinangangasiwaang user na idaragdag sa device na ito.</translation>
 <translation id="6691331417640343772">Pamahalaan ang naka-sync na data sa Google Dashboard</translation>
@@ -4017,7 +4025,7 @@
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7042418530779813870">Pa&amp;ste at paghahanap</translation>
 <translation id="7043108582968290193">Tapos na! Walang nakitang hindi compatible na application.</translation>
-<translation id="7044124535091449260">Matuto pa tungkol sa access ng site</translation>
+<translation id="7044124535091449260">Matuto pa tungkol sa access sa site</translation>
 <translation id="7049293980323620022">Gusto mo bang panatilihin ang file?</translation>
 <translation id="7051943809462976355">Naghahanap ng mouse...</translation>
 <translation id="7052237160939977163">Ipadala ang data ng pagte-trace sa pagganap</translation>
@@ -4130,6 +4138,7 @@
 <translation id="7201118060536064622">Na-delete ang '<ph name="DELETED_ITEM_NAME" />'</translation>
 <translation id="7206693748120342859">Dina-download ang <ph name="PLUGIN_NAME" />...</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Umalis sa Page}one{Umalis sa Mga Page}other{Umalis sa Mga Page}}</translation>
+<translation id="7210499381659830293">Mga extension na printer</translation>
 <translation id="721467499098558573">Pindutin ang button sa iyong security key sa loob ng hindi bababa sa 5 segundo</translation>
 <translation id="7216409898977639127">Cellular provider</translation>
 <translation id="7216595297012131718">Pagsunud-sunurin ang mga wika batay sa iyong kagustuhan</translation>
@@ -4208,6 +4217,7 @@
 <translation id="7321545336522791733">Hindi makakonekta sa server</translation>
 <translation id="7324297612904500502">Forum sa Beta</translation>
 <translation id="7325437708553334317">Extension ng Mataas na Contrast</translation>
+<translation id="7328162502911382168">(<ph name="COUNT" />)</translation>
 <translation id="7328867076235380839">Invalid ang kumbinasyon</translation>
 <translation id="7329154610228416156">Hindi nakapag-sign in dahil naka-configure ito sa paggamit ng isang hindi secure na URL (<ph name="BLOCKED_URL" />). Mangyaring makipag-ugnayan sa iyong administrator.</translation>
 <translation id="7334190995941642545">Kasalukuyang hindi available ang Smart Lock. Pakisubukang muli sa ibang pagkakataon.</translation>
@@ -4799,6 +4809,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8199300056570174101">Mga property ng Network (Serbisyo) at Device</translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8202160505685531999">Mangyaring ilagay muli ang iyong password upang i-update ang iyong profile sa <ph name="DEVICE_TYPE" />.</translation>
+<translation id="8203732864715032075">Papadalhan ka ng mga notification at aalalahanin ang computer na ito para sa Messages bilang default. <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="8206354486702514201">Ipinapatupad ng iyong administrator ang setting na ito.</translation>
 <translation id="8206745257863499010">Musika</translation>
 <translation id="8209677645716428427">Maaaring i-explore ng isang pinangangasiwaang user ang web sa iyong paggabay. Bilang manager ng isang pinangangasiwaang user sa Chrome, maaari mong:</translation>
@@ -5111,7 +5122,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="869884720829132584">Menu ng mga application</translation>
 <translation id="869891660844655955">Expiration date</translation>
 <translation id="8699566574894671540">Para i-on ito, piliin muna ang Suriin ang Pagbabaybay Habang Nagta-type sa menu na I-edit</translation>
-<translation id="870073306461175568">Mga Pagbabahagi ng File sa Network</translation>
 <translation id="8701677791353449257">Dapat tumugma ang pangalan ng device sa karaniwang expression na <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">Nagtatagal ito nang higit sa karaniwan. Magagawa mong magpatuloy sa paghihintay, o kanselahin ito at subukang muli sa ibang pagkakataon.</translation>
 <translation id="8705331520020532516">Serial Number</translation>
@@ -5297,7 +5307,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Nag-crash</translation>
 <translation id="8983677657449185470">Tumulong na pahusayin ang Ligtas na Pag-browse</translation>
 <translation id="8984179138335769204">Mabilisang paglunsad</translation>
-<translation id="8984654317541110628">URL ng File Share</translation>
 <translation id="8986362086234534611">Kalimutan</translation>
 <translation id="8986494364107987395">Awtomatikong ipadala ang mga istatistika ng paggamit at mga ulat ng pag-crash sa Google</translation>
 <translation id="8987927404178983737">Buwan</translation>

@@ -372,7 +372,6 @@
 <translation id="1531004739673299060">ઍપ્લિકેશન વિંડો</translation>
 <translation id="15373452373711364">મોટું માઉસ કર્સર</translation>
 <translation id="1538729222189715449">Linux ફાઇલો ખોલી રહ્યાં છીએ...</translation>
-<translation id="153933193410874873">અમે આ ઉપકરણ પર તમારી ઓળખની ચકાસણી કરી શક્યાં નથી</translation>
 <translation id="1540605929960647700">ડેમો મોડ ચાલુ કરો</translation>
 <translation id="1543284117603151572">Edge માંથી આયાત કરેલ</translation>
 <translation id="1545177026077493356">સ્વચલિત કિઓસ્ક મોડ</translation>
@@ -678,7 +677,6 @@
 <translation id="1981115145845865539">તમારા <ph name="DEVICE_TYPE" />ને આપમેળે અનલૉક કરો</translation>
 <translation id="1983959805486816857">તમે નવા નિરીક્ષણ કરેલા વપરાશકર્તા બનાવી લો, પછી કોઈપણ ઉપકરણ પરથી તમે <ph name="MANAGEMENT_URL" /> પર,  કોઈપણ સમયે સેટિંગ્સનું સંચાલન કરી શકો છો.</translation>
 <translation id="1984642098429648350">વિન્ડો જમણે ડૉક કરો</translation>
-<translation id="1987139229093034863">ભિન્ન વપરાશકર્તા પર સ્વિચ કરો.</translation>
 <translation id="1987317783729300807">એકાઉન્ટ્સ</translation>
 <translation id="1989112275319619282">બ્રાઉઝ કરો</translation>
 <translation id="1992397118740194946">સેટ નથી</translation>
@@ -931,6 +929,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ફાઇલો પસંદ કરી</translation>
 <translation id="237828693408258535">આ પેજનો અનુવાદ કરીએ?</translation>
 <translation id="2378982052244864789">એક્સ્ટેંશન ડાયરેક્ટરી પસંદ કરો.</translation>
+<translation id="2379281330731083556">સિસ્ટમ સંવાદનો ઉપયોગ કરીને છાપો... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">મોકલતાં પહેલાં પૂછો (ભલામણ કરેલ)</translation>
 <translation id="2384436799579181135">એક ભૂલ આવી છે. કૃપા કરીને તમારું પ્રિન્ટર તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="2387458720915042159">પ્રૉક્સી કનેક્શનનો પ્રકાર</translation>
@@ -1720,7 +1719,7 @@
 <translation id="358796204584394954">જોડી બનાવવા માટે "<ph name="DEVICE_NAME" />" પર આ કોડ લખો:</translation>
 <translation id="3589766037099229847">અસુરક્ષિત કન્ટેન્ટ બ્લૉક</translation>
 <translation id="3590194807845837023">પ્રોફાઇલ અનલૉક કરો અને ફરીથી લોંચ કરો</translation>
-<translation id="3590295622232282437">મેનેજ કરાયેલ સત્રમાં દાખલ થઈ રહ્યાં છીએ.</translation>
+<translation id="3590295622232282437">મેનેજ કરાયેલ સત્રમાં દાખલ થઈ રહ્યા છીએ.</translation>
 <translation id="3592260987370335752">&amp;વધુ જાણો</translation>
 <translation id="359283478042092570">Enter</translation>
 <translation id="3593965109698325041">પ્રમાણપત્રના નામની મર્યાદાઓ</translation>
@@ -2063,7 +2062,6 @@
 <translation id="4068506536726151626">આ પૃષ્ઠમાં તમારા સ્થાનને ટ્રૅક કરતી નીચેની સાઇટ્સનાં ઘટકો શામેલ છે:</translation>
 <translation id="4068776064906523561">સાચવેલ ફિંગરપ્રિન્ટ</translation>
 <translation id="407173827865827707">ક્લિક કરવા પર</translation>
-<translation id="4071770069230198275"><ph name="PROFILE_NAME" />: સાઇન ઇન ભૂલ</translation>
 <translation id="4074900173531346617">ઇમેઇલ હસ્તાક્ષરકર્તા પ્રમાણપત્ર</translation>
 <translation id="407520071244661467">સ્કેલ</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" />ને કાસ્ટ કરવામાં અસમર્થ.</translation>
@@ -2665,7 +2663,7 @@
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="5039804452771397117">મંજૂરી આપો</translation>
 <translation id="5045550434625856497">ખોટો પાસવર્ડ</translation>
-<translation id="504561833207953641">હાલના બ્રાઉઝર સત્રમાં ખોલી રહ્યાં છીએ.</translation>
+<translation id="504561833207953641">હાલના બ્રાઉઝર સત્રમાં ખોલી રહ્યા છીએ.</translation>
 <translation id="5047421709274785093">સાઇટને મોશન અને લાઇટ સેન્સરનો ઉપયોગ કરવાથી બ્લૉક કરો</translation>
 <translation id="5050042263972837708">જૂથનું નામ</translation>
 <translation id="5052499409147950210">સાઇટ સંપાદિત કરો</translation>
@@ -2865,6 +2863,7 @@
 <translation id="5332624210073556029">ટાઇમ ઝોન:</translation>
 <translation id="5334142896108694079">સ્ક્રિપ્ટ કેશ</translation>
 <translation id="5334844597069022743">સ્રોત જુઓ</translation>
+<translation id="5334899159203764908"><ph name="BEGIN_LINK" />સાઇટના ઍક્સેસ<ph name="END_LINK" /> વિશે વધુ જાણો</translation>
 <translation id="5335458522276292100"><ph name="BEGIN_LINK" />Google ડ્રાઇવ<ph name="END_LINK" />માં <ph name="FILE_COUNT" />નો બૅકઅપ લઈ રહ્યાં છીએ</translation>
 <translation id="5336126339807372270">કોઈપણ સાઇટને USB ઉપકરણો ઍક્સેસ કરવાની મંજૂરી આપશો નહીં</translation>
 <translation id="5337771866151525739">તૃતીય-પક્ષ દ્વારા ઇન્સ્ટોલ કરેલું.</translation>
@@ -3455,7 +3454,6 @@
 <translation id="6185132558746749656">ઉપકરણનું સ્થાન</translation>
 <translation id="6185617499004995178">CUPS IPP વૅલિડેટર</translation>
 <translation id="6185696379715117369">પૃષ્ઠ ઉપર</translation>
-<translation id="6189273858858366896">નેટવર્ક ફાઇલ શેર સેટ કરો અને મેનેજ કરો.</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> સાથે ખોલો</translation>
 <translation id="6196640612572343990">તૃતીય પક્ષની કુકીઝ અવરોધિત કરો</translation>
 <translation id="6196854373336333322"><ph name="EXTENSION_NAME" /> એક્સ્ટેન્શને તમારી પ્રોક્સી સેટિંગ્સનું નિયંત્રણ લઈ લીધું છે, એનો અર્થ છે કે તમે જે કંઈપણ ઓનલાઇન કરો છો તેને તે બદલી, ભંગ કરી કે છુપાઇને પારકી વાતો સાંભળી શકે છે. આ ફેરફાર કેમ થયો તે અંગે જો તમને ખાતરી નથી, તો સંભવિત રૂપે તે તમને જોઈતું નહીં હોય.</translation>
@@ -3782,7 +3780,6 @@
 <translation id="667517062706956822">શું તમે ઇચ્છો છો કે Google, <ph name="SOURCE_LANGUAGE" /> થી <ph name="TARGET_LANGUAGE" /> માં આ પૃષ્ઠનો અનુવાદ કરે?</translation>
 <translation id="6675665718701918026">પોઇંટિંગ ઉપકરણ કનેક્ટ કર્યું</translation>
 <translation id="6678717876183468697">ક્વેરી URL</translation>
-<translation id="6680028776254050810">વપરાશકર્તાઓને સ્વિચ કરો</translation>
 <translation id="6680442031740878064">ઉપલબ્ધ: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">રેટ કરો</translation>
 <translation id="6681668084120808868">ફોટો લો</translation>
@@ -3791,7 +3788,6 @@
 <translation id="668599234725812620">Google Play ખોલો</translation>
 <translation id="6686490380836145850">જમણી બાજુનાં ટૅબ્સ બંધ કરો</translation>
 <translation id="6686817083349815241">તમારો પાસવર્ડ સાચવો</translation>
-<translation id="6690565918367819723"><ph name="PROFILE_NAME" />, વ્યક્તિને સ્વિચ કરો</translation>
 <translation id="6690659332373509948">ફાઇલ વિશ્લેષિત કરવામાં અક્ષમ છે: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">આ ઉપકરણ પર ઉમેરવા માટે એક નિરીક્ષિત વપરાશકર્તા પસંદ કરો.</translation>
 <translation id="6691331417640343772">Google ડૅશબોર્ડ પર સમન્વયિત કરેલ ડેટા સંચાલિત કરો</translation>
@@ -5102,7 +5098,6 @@
 <translation id="869884720829132584">ઍપ્લિકેશનો મેનૂ</translation>
 <translation id="869891660844655955">સમાપ્તિ તારીખ</translation>
 <translation id="8699566574894671540">આ ચાલુ કરવા માટે, પહેલા સંપાદન મેનૂમાં ટાઇપિંગ વખતે જોડણી તપાસો પસંદ કરો</translation>
-<translation id="870073306461175568">નેટવર્ક ફાઇલ શેર</translation>
 <translation id="8701677791353449257">ઉપકરણનું નામ રેગ્યુલર એક્સપ્રેશન <ph name="REGEX" /> સાથે મેળ ખાતું હોવું જોઈએ.</translation>
 <translation id="8704521619148782536">આ સામાન્ય કરતાં વધુ સમય લઈ રહ્યું છે. તમે રાહ જોઈ શકો છો અથવા રદ કરી અને પછીથી ફરી પ્રયાસ કરી શકો છો.</translation>
 <translation id="8705331520020532516">શૃંખલા ક્રમાંક</translation>
@@ -5287,7 +5282,6 @@
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - ક્રેશ થયું</translation>
 <translation id="8983677657449185470">સુરક્ષિત બ્રાઉઝિંગને બહેતર બનાવવામાં સહાય કરો</translation>
 <translation id="8984179138335769204">ઝડપી લૉન્ચ</translation>
-<translation id="8984654317541110628">શેર કરેલ ફાઇલ URL</translation>
 <translation id="8986362086234534611">ભૂલી ગયા</translation>
 <translation id="8986494364107987395">ઉપયોગિતા આંકડાઓ અને ક્રેશ રિપોર્ટ્સ Google ને આપમેળે મોકલો</translation>
 <translation id="8987927404178983737">મહિનો</translation>

@@ -119,6 +119,7 @@ Mfumo wa kipimo lazima uwe 100% au zaidi.</translation>
 
       KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe IsolateOrigins kwenye Android, tumia mipangilio ya sera ya IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Huwasha Hardware Platform API kwenye viendelezi vilivyosakinishwa kupitia sera</translation>
 <translation id="1384459581748403878">Marejeleo: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ikiwa utaruhusu uaminifu katika sera ya Muundomsingi wa PKI ya Symantec Corporation Legacy</translation>
 <translation id="1393485621820363363">Printa za biashara zinazotumia sera</translation>
@@ -439,6 +440,10 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 <translation id="2201555246697292490">Sanidi orodha ya walioidhinishwa ya ujumbe asili</translation>
 <translation id="2204753382813641270">Dhibiti kujificha kitomatiki kwa rafu</translation>
 <translation id="2208976000652006649">Vigezo vya URL ya utafutaji inayotumia POST</translation>
+<translation id="2214880135980649323">Sera hii ikiruhusiwa, viendelezi vilivyosakinishwa kupitia sera ya biashara huruhusiwa kutumia Enterprise Hardware Platform API.
+
+  Sera hii ikizimwa au mipangilio yake isipowekwa, hakuna viendelezi vinavyoruhusiwa kutumia Enterprise Hardware Platform API.
+   Sera hii inatumika pia kwa viendelezi vya sehemu kama vile kiendelezi cha Huduma za Hangout.</translation>
 <translation id="2223598546285729819">Mpangilio wa arifa chaguomsingi</translation>
 <translation id="2231817271680715693">Leta historia ya kivinjari kutoka kwenye kivinjari chaguomsingi wakati wa uendeshaji wa kwanza</translation>
 <translation id="2236488539271255289">Usiruhusu tovuti yoyote kuweka data ya karibu</translation>
@@ -874,7 +879,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 
       Sera hii isipowekwa, kiolesura cha lugha ya sasa kitachaguliwa awali.
 
-      Sera hii ikiwekwa, lugha zilizopendekezwa zitahamishiwia upande wa juu wa orodha na zitatenganishwa na lugha nyingine zote. Lugha zinazopendekezwa zitaorodheshwa katika mpangilio ambao zinaonekana katika sera. Lugha ya kwanza iliyopendekezwa itachaguliwa awali.
+      Sera hii ikiwekwa, lugha zilizopendekezwa zitahamishiwa upande wa juu wa orodha na zitatenganishwa na lugha nyingine zote. Lugha zinazopendekezwa zitaorodheshwa katika mpangilio ambao zinaonekana katika sera. Lugha ya kwanza iliyopendekezwa itachaguliwa awali.
 
       Ikiwa kuna lugha zaidi ya moja iliyopendekezwa, inachukuliwa kwamba watumiaji wangependa kuchagua kati ya lugha hizi. Uteuzi wa lugha na mpangilio wa kibodi utatolewa kwa kuangaziwa wakati wa kuanza kipindi kinachodhibitiwa. Vinginevyo, inachukuliwa kwamba watumiaji wengi wangependa kutumia lugha hizi zilizochaguliwa awali. Uteuzi wa lugha na mpangilio wa kibodi hautatolewa kwa kuangaziwa wakati wa kuanza kipindi kinachodhibitiwa.
 
@@ -1127,7 +1132,7 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
       Iwapo sera hii itawekwa kuwa sivyo, mtumiaji hataweza kukomboa matoleo.</translation>
 <translation id="4008507541867797979">Sera hii ikiwekwa kuwa ndivyo au mipangilio isipowekwa, <ph name="PRODUCT_OS_NAME" /> itaonyesha watumiaji waliopo kwenye skrini ya kuingia katika akaunti na kukuruhusu uteue mmoja.
 
-      Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_OS_NAME" /> haitaonyesha watumiaji waliopo kwenye skrini ya kuingia katika akaunti. Skrini ya kawaida ya kuingia katika akaunti (inayomdokezea mtumiaji kuweka anwani yake ya barua pepe na nenosiri au simu) au skrini ya ukurasa wenye maelezo yanayomwelekeza mtumiaji kuendelea na uthibitishaji kupitia SAML (kama imewashwa kupitia sera ya <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) itaonyeshwa, isipokuwa katika hali ambapo mipangilio ya Kipindi Kilichodhibitiwa imewashwa. Wakati mipangllio ya Kipindi kilichodhibitiwa imewekwa, ni akaunti za kipindi kilichodhibitiwa pekee zitakazoonyeshwa, hali inayokuruhuusu kuteua moja.
+      Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_OS_NAME" /> haitaonyesha watumiaji waliopo kwenye skrini ya kuingia katika akaunti. Skrini ya kawaida ya kuingia katika akaunti (inayomdokezea mtumiaji kuweka anwani yake ya barua pepe na nenosiri au simu) au skrini ya ukurasa wenye maelezo yanayomwelekeza mtumiaji kuendelea na uthibitishaji kupitia SAML (kama imewashwa kupitia sera ya <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) itaonyeshwa, isipokuwa katika hali ambapo mipangilio ya Kipindi Kilichodhibitiwa imewashwa. Wakati mipangllio ya Kipindi kilichodhibitiwa imewekwa, ni akaunti za kipindi kilichodhibitiwa pekee zitakazoonyeshwa, hali inayokuruhusu kuteua moja.
       Kumbuka kwamba sera hii haizingatii ikiwa kifaa kinahifadhi au kuondoa data ya ndani ya mtumiaji.</translation>
 <translation id="4010738624545340900">Ruhusu ubatilishaji wa vidadisi vya uchaguzi wa faili</translation>
 <translation id="4012737788880122133">Huzima masasisho ya kiotomatiki yanapowekwa kuwa Ndivyo.
@@ -1541,11 +1546,11 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="5219844027738217407">Kwa programu za Android, sera hii inaathiri maikrofoni pekee. Sera ikiwekwa kuwa ndivyo, maikrofoni huzimwa sauti kwa programu zote za Android, bila vighairi.</translation>
 <translation id="5228316810085661003">Ucheleweshaji wa kuingia kiotomatiki katika akaunti ya kifaa. 
 
-      Ikiwa sera ya |DeviceLocalAccountAutoLoginId| haijawekwa, sera hii haina athari yote. Vinginevyo:
+      Ikiwa sera ya |DeviceLocalAccountAutoLoginId| haijawekwa, sera hii haina athari yoyote. Vinginevyo:
 
       Sera hii ikiwekwa, inabainisha kiasi cha muda ambacho kinaweza kupita bila shughuli ya mtumiaji kabla kuingia kiotomatiki katika akaunti ya kifaa inayobainishwa na sera ya |DeviceLocalAccountAutoLoginId|.
 
-      Ikiwa sera haitawekwa, milisekunde 0 zitatumika kuonyesha muda umekwisha.
+      Ikiwa sera haitawekwa, muda utakwisha baada ya milisekunde 0.
 
       Sera hii inabainishwa kwa milisekunde.</translation>
 <translation id="523505283826916779">Mipangilio ya ufikiaji</translation>
@@ -2758,13 +2763,13 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
           bila kumhusisha mtumiaji na ambavyo haviwezi kuondolewa au kuzimwa na mtumiaji. Ruhusa zote zinazoombwa na programu au viendelezi zitatolewa kwa njia fiche, bila mtumiaji kuhusishwa, ikijumuisha ruhusa zozote za ziada zinazoombwa na matoleo ya baadaye ya programu au kiendelezi. Zaidi ya hayo, ruhusa za API za viendelezi vya enterprise.deviceAttributes na enterprise.platformKeys extension zinatolewa.
         (API hizi mbili zinapatikana kwenye programu au viendelezi ambavyo havisakinishwi kwa lazima.)
 
-          Sera hii inapewa kipaumbele ikiwa kuna sera inayoweza kukinzana ya <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />.Ikiwa programu au kiendelezi kilichosakinishwa hapo awali kwa lazima kitaondolewa kwenye orodha hii, kitaondolewa kiotomatiki na <ph name="PRODUCT_NAME" />.
+          Sera hii inapewa kipaumbele ikiwa kuna sera inayoweza kukinzana ya <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ikiwa programu au kiendelezi kilichosakinishwa hapo awali kwa lazima kitaondolewa kwenye orodha hii, kitaondolewa kiotomatiki na <ph name="PRODUCT_NAME" />.
 
           Katika matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />, usakinishaji wa lazima unatumiwa tu na programu na viendelezi vilivyoorodheshwa katika Duka la Chrome kwenye Wavuti.
 
           Kumbuka kuwa msimbo wa kiendelezi chochote unaweza kubadilishwa na mtumiaji kupitia Zana za Wasanidi Programu (hali hii inaweza kuzuia kiendelezi kufanya kazi vizuri). Ikiwa jambo hili litatokea, sera ya <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> inapaswa kuwekwa.
 
-          Kila kipengee cha orodha ya sera ni kifungu ambacho kinajumuisha kitambulisho cha kiendelezi na URL ya "sasisho" isiyo ya lazima inayotenganishwa kwa nukta mkato (<ph name="SEMICOLON" />). Kitambulisho cha kiendelezi ni kifungu cha herufi 32 kinachopatikana (kwa mfano kwenye <ph name="CHROME_EXTENSIONS_LINK" /> ikiwa katika hali ya msanidi programu. URL ya "sasisho" (kama imebainishwa) inapaswa kuashiria hati ya XML ya faili ya Maelezo ya Sasisho kama ilivyofanunuliwa katika <ph name="LINK_TO_EXTENSION_DOC1" />. Kwa chaguomsingi, URL ya sasisho ya Duka la Chrome kwenye Wavuti inatumika (kwa sasa ni "https://clients2.google.com/service/update2/crx"). Kumbuka kuwa URL ya "sasisho" iliyowekwa kwenye sera hii itatumiwa tu kwenye usanikishaji wa mwanzo; masasisho yanayofuata ya kiendelezi yatatumia URL ya sasisho inayoonyeshwa katika faili ya maelezo ya kiendelezi. Kumbuka pia kubainisha URL ya "sasisho" bayana ni lazima katika matoleo ya <ph name="PRODUCT_NAME" /> na mapya zaidi ikiwa ni pamoja na la 67.
+          Kila kipengee cha orodha ya sera ni kifungu ambacho kinajumuisha kitambulisho cha kiendelezi na URL ya "sasisho" isiyo ya lazima inayotenganishwa kwa nukta mkato (<ph name="SEMICOLON" />). Kitambulisho cha kiendelezi ni kifungu cha herufi 32 kinachopatikana (kwa mfano kwenye <ph name="CHROME_EXTENSIONS_LINK" /> ikiwa katika hali ya msanidi programu. URL ya "sasisho" (kama imebainishwa) inapaswa kuashiria hati ya XML ya faili ya Maelezo ya Sasisho kama ilivyofafanuliwa katika <ph name="LINK_TO_EXTENSION_DOC1" />. Kwa chaguomsingi, URL ya sasisho ya Duka la Chrome kwenye Wavuti inatumika (kwa sasa ni "https://clients2.google.com/service/update2/crx"). Kumbuka kuwa URL ya "sasisho" iliyowekwa kwenye sera hii itatumiwa tu kwenye usanikishaji wa mwanzo; masasisho yanayofuata ya kiendelezi yatatumia URL ya sasisho inayoonyeshwa katika faili ya maelezo ya kiendelezi. Kumbuka pia kubainisha URL ya "sasisho" bayana ni lazima katika matoleo ya <ph name="PRODUCT_NAME" /> na mapya zaidi ikiwa ni pamoja na la 67.
 
           Kwa mfano, <ph name="EXTENSION_POLICY_EXAMPLE" /> inasakinisha programu ya <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> kutoka URL ya "sasisho" la kawaida la Duka la Chrome kwenye Wavuti. Kwa maelezo zaidi kuhusu jinsi ya kupangisha viendelezi, angalia: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -2821,6 +2826,17 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
 <translation id="8465065632133292531">Vigezo vya URL ya papo hapo inayotumia POST</translation>
 <translation id="847472800012384958">Usiruhusu tovuti yoyote kuonyesha madirisha ibukizi</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Huondoa faragha na sehemu nyeti za usalama za URL za https:// kabla ya kuzipeleka kwenye hati za PAC (Proxy Auto Config) zinazotumika na <ph name="PRODUCT_NAME" /> wakati wa kuweka seva mbadala.
+
+      Ikiwekwa kuwa Ndivyo, kipengele cha usalama huwashwa na URL za https:// huondolewa kabla ya kuziwasilisha kwenye hati ya PAC. Kwa namna hii, hati ya PAC haiwezi kuona data ambayo kwa kawaida inalindwa na kituo kilichosimbwa kwa njia fiche (kama vile njia na hoja ya URL).
+
+      Ikiwekwa kuwa Sivyo, kipengele cha usalama huzimwa na hati za PAC hupata uwezo bayana wa kuona sehemu zote za URL ya https://. Hii inatumika kwa hati zote za PAC bila kuzingatia asili (ikiwa ni pamoja na zilizotokana na usafirishaji usio salama au zilizogunduliwa kwa njia isiyo salama kupitia WPAD).
+
+      Hii huweka mipangilio chagomsingi kuwa Ndivyo (kipengele cha usalama kimewashwa).
+
+      Inapendekezwa kuwa mipangilio hii iwekwe kuwa Ndivyo. Sababu moja tu ya kuiwekea mipangilio ya Sivyo ni kama inasababisha matatizo ya kutumika na hati zilizopo za PAC.
+
+      Sera itaondolewa kwenye M75.</translation>
 <translation id="8484458986062090479">Geuza orodha ya ruwaza za URL ambazo zinastahili kuonyeshwa mara kwa mara na kivinjari kipangishi ili zikufae.
 
           Ikiwa sera hii haitawekwa kionyeshi chaguomsingi kitatumiwa kwa tovuti zote kama ilivyobainishwa na sera ya 'ChromeFrameRendererSettings'.

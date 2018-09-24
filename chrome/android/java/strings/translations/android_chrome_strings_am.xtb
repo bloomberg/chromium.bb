@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">በሌሎች መሣሪያዎችዎ ላይ የተቀመጡ ዕልባቶችዎ እዚህ ብቅ ይላሉ።</translation>
 <translation id="1113597929977215864">የተቃለለ እይታን አሳይ</translation>
 <translation id="1121094540300013208">የአጠቃቀም እና የብልሽት ሪፖርቶች</translation>
-<translation id="11221688409173367">ለእርስዎ በተለይ የተመረጡ ጽሑፎችን ለማየት የመነሻ አዝራሩን መታ ያድርጉ</translation>
 <translation id="1129510026454351943">ዝርዝሮች፦ <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 ውርድን በመጠባበቅ ላይ}one{# ውርዶችን በመጠባበቅ ላይ}other{# ውርዶችን በመጠባበቅ ላይ}}</translation>
 <translation id="1145536944570833626">ነባሩን ውሂብ ይሰርዙ።</translation>
@@ -166,7 +165,6 @@
 <translation id="2154484045852737596">ካርትን ያርትዑ</translation>
 <translation id="2154710561487035718">URL ቅዳ</translation>
 <translation id="2156074688469523661">ቀሪ ጣቢያዎች (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2184766556418880456">በአሁኑ ትርዎ ላይ ወደ አዲስ ትር ገጽ ለመድረስ መታ ያድርጉ</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />፣ የድር መተግበሪያ። <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">እንደ <ph name="USER_FULL_NAME" /> ሆነው ይቀጥሉ</translation>
 <translation id="2232379019872353004">አንዳንድ የስርዓት መረጃ እና የገጽ ይዘት ወደ Google ይልካል</translation>
@@ -233,7 +231,6 @@
 <translation id="2709516037105925701">ራስ-ሙላ</translation>
 <translation id="271033894570825754">አዲስ</translation>
 <translation id="2728754400939377704">በጣቢያ ደርድር</translation>
-<translation id="2736391366332017384">በአሁኑ ትርዎ ላይ ወደ አዲስ ትር ገጽ ለመድረስ የመነሻ አዝራሩን መታ ያድርጉ</translation>
 <translation id="2744248271121720757">አንድ ቃል በቅጽበት ለመፈለግ ወይም ተዛማጅ እርምጃዎችን ለመመልከት አንድ ቃል መታ ያድርጉ</translation>
 <translation id="2762000892062317888">አሁን</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> ሰከንዶች ይቀራሉ</translation>
@@ -344,6 +341,7 @@
 <translation id="3744111561329211289">የዳራ ስምረት</translation>
 <translation id="3773755127849930740">ማጣመርን ለመፍቀድ <ph name="BEGIN_LINK" />ብሉቱዝን ያብሩ<ph name="END_LINK" /></translation>
 <translation id="3778956594442850293">ወደ የመነሻ ገጽ ታክሏል</translation>
+<translation id="3781011235031427080">እንደዚህ ተጨማሪ በግማሽ ቁመት ተከፍቷል</translation>
 <translation id="3789841737615482174">ጫን  </translation>
 <translation id="3810838688059735925">ቪዲዮ</translation>
 <translation id="3810973564298564668">አቀናብር</translation>
@@ -492,6 +490,7 @@
 <translation id="4913169188695071480">ማደስ አቁም</translation>
 <translation id="4915549754973153784">መሣሪያዎችን እየቃኙ ሳሉ <ph name="BEGIN_LINK" />እገዛን ያግኙ<ph name="END_LINK" />…</translation>
 <translation id="4943872375798546930">ውጤቶች የሉም</translation>
+<translation id="4956460920135325549">ቀላል ገጹ በGoogle ተልኳል።</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ማያ ገጽዎን እያጋራ ነው</translation>
 <translation id="4961334780091921942">የእርስዎ የይለፍ ቃላት፣ ታሪክ እና ተጨማሪ ነገሮች በሁሉም መሣሪያዎችዎ ላይ</translation>
 <translation id="4961700429721424617">በ<ph name="MANAGED_DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡ ነው። ይሄ የChrome ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል፣ ነገር ግን ውሂብዎ አሁንም በእርስዎ የGoogle መለያ ውስጥ እንዳለ ይቀራል።</translation>
@@ -511,6 +510,7 @@
 <translation id="5087580092889165836">ካርድ አክል</translation>
 <translation id="5100237604440890931">ተሰብስቧል - ለመዘርጋት ጠቅ ያድርጉ</translation>
 <translation id="510275257476243843">1 ሰዓት ይቀራል</translation>
+<translation id="5123685120097942451">ማንነት የማያሳውቅ ትር</translation>
 <translation id="5127805178023152808">አመሳስል ጠፍቷል</translation>
 <translation id="5129038482087801250">የድር መተግበሪያን ጫን</translation>
 <translation id="5139940364318403933">እንዴት Google Driveን መጠቀም እንደሚችሉ ይወቁ</translation>
@@ -658,6 +658,7 @@
 <translation id="6177111841848151710">ለአሁኑ የፍለጋ ፕሮግራም ታግዷል</translation>
 <translation id="6177390657002841081">የውሂብ አስቀማጭን አብራ</translation>
 <translation id="6181444274883918285">ለየት ያለ ጣቢያን አክል</translation>
+<translation id="618993374665929060">እንደዚህ ተጨማሪ በሙሉ ቁመት ተከፍቷል</translation>
 <translation id="6192333916571137726">ፋይል ያውርዱ</translation>
 <translation id="6192792657125177640">የተለዩ</translation>
 <translation id="6206551242102657620">ግንኙነት ደህንነቱ የተጠበቀ ነው። የጣቢያ መረጃ</translation>
@@ -730,9 +731,11 @@
 <translation id="6697947395630195233">Chrome አካባቢዎን ለዚህ ጣቢያ ለማጋራት የአካባቢዎ መዳረሻ ይፈልጋል።</translation>
 <translation id="6698801883190606802">የተመሳሰለ ውሂብ ያስተዳድሩ</translation>
 <translation id="6710213216561001401">ቀዳሚ</translation>
+<translation id="6712388303105732168">የእንደዚህ ተጨማሪ አዝራሩን በመጠቀም እንደዚህ ያለ ተጨማሪ ከGoogle ይመልከቱ</translation>
 <translation id="6738867403308150051">በማውረድ ላይ…</translation>
 <translation id="6746124502594467657">ወደታች አውርድ</translation>
 <translation id="6762156594045689028">ይህን ቅንብር ለመለወጥ <ph name="BEGIN_LINK" />ስምረትን ዳግም ያስጀምሩ<ph name="END_LINK" /></translation>
+<translation id="6766622839693428701">ለመዝጋት ወደታች ያንሸራትቱ።</translation>
 <translation id="6770414673596662518">የChrome የጥንቃቄ አሰሳ ስርዓት ተንኮል-አዘል ገጾችን ለማወቅ እና እርስዎን ከማስገር፣ ተንኮል-አዘል ዌር እና ጎጂ ወራጆች ለመጠበቅ ስራ ላይ ይውላል።</translation>
 <translation id="6776813977906306442">ቪዲዮዎችን በኋላ ለመመልከት የአውርድ አዝራሩን በመጠቀም ያውርዷቸው</translation>
 <translation id="6790428901817661496">አጫውት</translation>
@@ -785,7 +788,9 @@
 <translation id="7121362699166175603">በአድራሻ አሞሌው ላይ ታሪክን እና ራስ-ማጠናቀቆችን ያጸዳል። የእርስዎ Google መለያ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ አይነቶች ሊኖሩት ይችላል።</translation>
 <translation id="7128222689758636196">አሁን ላለው የፍለጋ ፕሮግራም ፍቀድ</translation>
 <translation id="7138678301420049075">ሌላ</translation>
+<translation id="7139148793369023665">እንደዚህ ተጨማሪ ተዘግቷል</translation>
 <translation id="7141896414559753902">ጣቢያዎች ብቅ-ባዮችን እንዳያሳዩ ያግዱ (የሚመከር)</translation>
+<translation id="7149158118503947153">ከ<ph name="DOMAIN_NAME" /> <ph name="BEGIN_LINK" />የመጀመሪያውን ገጽ ጫን<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">ባለፉት 24 ሰዓቶች</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> ኪባ</translation>
 <translation id="7177466738963138057">ይሄንን በኋላ ቅንብሮች ውስጥ ሊለውጡት ይችላሉ</translation>
@@ -873,6 +878,7 @@
 <translation id="7846076177841592234">ምርጫ ሰርዝ</translation>
 <translation id="784934925303690534">የጊዜ ወሰን</translation>
 <translation id="7851858861565204677">ሌሎች መሣሪያዎች</translation>
+<translation id="7854964836418414587">እንደዚህ ተጨማሪ ዝጋ</translation>
 <translation id="7875915731392087153">ኢሜይል ይፍጠሩ</translation>
 <translation id="7876243839304621966">ሁሉንም አስወግድ</translation>
 <translation id="7882131421121961860">ምንም ታሪክ አልተገኘም</translation>
@@ -1000,7 +1006,6 @@
 <translation id="8912362522468806198">የGoogle መለያ</translation>
 <translation id="8920114477895755567">የወላጆች ዝርዝሮችን በመጠበቅ ላይ።</translation>
 <translation id="8922289737868596582">ገጾችን ከመስመር ውጭ ለመጠቀም ከተጨማሪ አማራጮች አዝራሩ ላይ ያውርዱ</translation>
-<translation id="8934029156920711950">ለእርስዎ በተለየ የተመረጡትን ጽሑፎች ለማየት መታ ያድርጉ</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">በሌላ መስኮት ውስጥ ክፈት</translation>
 <translation id="8951232171465285730">Chrome <ph name="MEGABYTES" /> ሜባ ቆጥቦልዎታል</translation>

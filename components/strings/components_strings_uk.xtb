@@ -808,7 +808,6 @@
 <translation id="6508722015517270189">Перезапустіть Chrome</translation>
 <translation id="6529602333819889595">&amp;Повторити видалення</translation>
 <translation id="6534179046333460208">Пропозиції сервісу "Інтернет навколо нас"</translation>
-<translation id="6550675742724504774">Параметри</translation>
 <translation id="6563469144985748109">Адміністратор ще не схвалив його</translation>
 <translation id="6569060085658103619">Ви переглядаєте сторінку розширень</translation>
 <translation id="6596325263575161958">Параметри шифрування</translation>
@@ -952,7 +951,6 @@
 <translation id="7554791636758816595">Нова вкладка</translation>
 <translation id="7564049878696755256">Ви можете втратити доступ до облікового запису, який вам надає <ph name="ORG_NAME" />, або хтось може викрасти вашу особисту інформацію. Chrome радить змінити пароль.</translation>
 <translation id="7567204685887185387">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Можливо, його сертифікат безпеки видали шахраї. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
-<translation id="7568593326407688803">Мова цієї сторінки:<ph name="ORIGINAL_LANGUAGE" />Перекласти її?</translation>
 <translation id="7569952961197462199">Видалити дані кредитної картки з Chrome?</translation>
 <translation id="7575800019233204241">"З’єднання не конфіденційне", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" або "Помилка сертифіката SSL"</translation>
 <translation id="7578104083680115302">Зберігайте картки в Google, щоб швидко платити на сайтах і в додатках на всіх своїх пристроях.</translation>
@@ -1137,7 +1135,7 @@
 <translation id="8874824191258364635">Введіть дійсний номер картки</translation>
 <translation id="8876793034577346603">Помилка аналізу конфігурації мережі.</translation>
 <translation id="8891727572606052622">Недійсний режим проксі-сервера.</translation>
-<translation id="8892964541482452187">Кнопка перемикача вкладки: натисніть Enter, щоб перейти на цю вкладку</translation>
+<translation id="8892964541482452187">Кнопка перемикання вкладки: натисніть Enter, щоб перейти на цю вкладку</translation>
 <translation id="8903921497873541725">Збільшити масштаб</translation>
 <translation id="8931333241327730545">Зберегти цю картку у вашому обліковому записі Google?</translation>
 <translation id="8932102934695377596">Ваш годинник запізнюється</translation>

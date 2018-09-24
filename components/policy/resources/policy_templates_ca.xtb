@@ -121,6 +121,7 @@
 
       NOTA: aquesta política no s'aplica a Android. S'hi pot substituir per IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Activa l'API Hardware Platform en extensions instal·lades amb la política</translation>
 <translation id="1384459581748403878">Referència: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Determina si es confia en la infraestructura de PKI heretada de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressores activades per a dispositius d'empresa</translation>
@@ -438,6 +439,9 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="2201555246697292490">Configura la llista blanca de missatgeria nativa</translation>
 <translation id="2204753382813641270">Controla l'opció d'amagar el prestatge automàticament</translation>
 <translation id="2208976000652006649">Paràmetres per a l'URL de cerca que utilitza POST</translation>
+<translation id="2214880135980649323">Quan aquesta política està activada, les extensions instal·lades amb la política d'empresa tenen permís per utilitzar l'API Enterprise Hardware Platform.
+      Quan aquesta política està desactivada o no s'estableix, no es permet que cap extensió utilitzi l'API Enterprise Hardware Platform.
+      Aquesta política també s'aplica a extensions de components com ara l'extensió Hangout Services.</translation>
 <translation id="2223598546285729819">Configuració de notificacions predeterminada</translation>
 <translation id="2231817271680715693">Importació de l'historial de navegació des del navegador predeterminat en la primera execució</translation>
 <translation id="2236488539271255289">No permetis que cap lloc estableixi dades locals</translation>
@@ -1847,7 +1851,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       De manera predeterminada, una extensió no pot utilitzar una clau designada per a l'ús corporatiu, que equival a establir allowCorporateKeyUsage en "false" per a l'extensió en qüestió.
 
       L'únic cas en què una extensió pot utilitzar una clau de plataforma marcada per a l'ús corporatiu per signar dades arbitràries és si allowCorporateKeyUsage s'estableix en "true". Aquest permís només s'ha de concedir si es confia que l'extensió protegeixi la clau contra l'accés d'atacants.</translation>
-<translation id="6208896993204286313">Proporciona informació sobre la política <ph name="PRODUCT_NAME" /></translation>
+<translation id="6208896993204286313">Proporciona informació sobre les polítiques relatives a <ph name="PRODUCT_NAME" /></translation>
 <translation id="6210259502936598222">Proporciona informació sobre el sistema operatiu i la versió del producte <ph name="PRODUCT_NAME" /></translation>
 <translation id="6211428344788340116">Informa dels períodes de temps d'activitat del dispositiu.
 
@@ -1945,7 +1949,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6628646143828354685">Us permet definir si els llocs web poden obtenir accés a dispositius Bluetooth propers. Es pot bloquejar completament o es pot consultar a l'usuari cada cop que un lloc web vulgui obtenir accés a dispositius Bluetooth propers.
 
           Si aquesta política es deixa sense establir, es farà servir el valor "3" i l'usuari podrà canviar-lo.</translation>
-<translation id="663685822663765995">Restringeix el mode de color d'impressió</translation>
+<translation id="663685822663765995">Restringeix el mode d'impressió en color</translation>
 <translation id="6641981670621198190">Desactiva la compatibilitat amb API de gràfics en 3D</translation>
 <translation id="6647965994887675196">Si es defineix com a vertader, es poden crear usuaris supervisats i es poden fer servir.
 
@@ -2387,8 +2391,8 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7617319494457709698">Aquesta política especifica les extensions que tenen permís per utilitzar la funció <ph name="CHALLENGE_USER_KEY_FUNCTION" /> de l'<ph name="ENTERPRISE_PLATFORM_KEYS_API" /> per a la confirmació remota. Les extensions s'han d'afegir a aquesta llista per poder utilitzar l'API.
 
           Si no s'estableix la llista o no s'hi inclou alguna extensió, les crides a l'API tornaran un codi d'error.</translation>
-<translation id="7618907117929117943">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació i es pot dur a terme una configuració a nivell del dispositiu (que inclogui les credencials de xarxa) mitjançant la reversió, també ometre OOBE després de la reversió. No duguis a terme o cancel·lis la reversió si no és possible (perquè la versió de destinació no admet la restauració de dades o a causa d'un canvi incompatible amb versions anteriors).
-          S'admet a <ph name="PRODUCT_OS_NAME" /> versió 70 i posteriors. En clients més antics, aquest valor indica que la reversió està desactivada.</translation>
+<translation id="7618907117929117943">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació i es pot dur a terme una configuració a nivell del dispositiu (que inclogui les credencials de xarxa) mitjançant la reversió, i també ometre OOBE després de la reversió. No duguis a terme o cancel·lis la reversió si no és possible, ja sigui perquè la versió de destinació no admet la restauració de dades o a causa d'un canvi incompatible amb versions anteriors.
+          S'admet a <ph name="PRODUCT_OS_NAME" /> en la versió 70 i posteriors. En clients més antics, aquest valor indica que la reversió està desactivada.</translation>
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>
@@ -2570,7 +2574,7 @@ NOTA: a Android, l'aïllament de llocs web és experimental. Amb el temps se'n m
       Si actives aquesta opció de configuració o no hi estableixes cap valor, els usuaris podran continuar controlant Emplenament automàtic. D'aquesta manera, podran configurar perfils d'Emplenament automàtic i activar o desactivar Emplenament automàtic segons el seu criteri.</translation>
 <translation id="8044493735196713914">Informa del mode d'inici del dispositiu</translation>
 <translation id="8050080920415773384">Impressió nativa</translation>
-<translation id="8053580360728293758">Substitueix el mode de color d'impressió predeterminat. Si el mode no està disponible, aquesta política s'ignora.</translation>
+<translation id="8053580360728293758">Substitueix el mode d'impressió en color predeterminat. Si el mode no està disponible, aquesta política s'ignora.</translation>
 <translation id="8059164285174960932">URL on els clients d'accés remot han d'obtenir el testimoni d'autenticació</translation>
 <translation id="8078366200175825572">Permet definir una llista de patrons d'URL que especifiquin els llocs web que no poden establir galetes.
 
@@ -2735,6 +2739,25 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Suprimeix les parts dels URL de tipus https:// que contenen informació sensible i de seguretat abans d'enviar-los als scripts PAC (configuració automàtica de servidor intermediari) que utilitza <ph name="PRODUCT_NAME" /> durant la resolució del servidor intermediari.
+
+      Quan s'estableix en "true", s'activa la funció de seguretat i se suprimeixen els URL de tipus https://
+      abans d'enviar-los a un script PAC. D'aquesta manera, l'script PAC
+      no podrà veure la informació que normalment està protegida per un
+      canal encriptat (com el camí i la consulta de l'URL).
+
+      Quan s'estableix en "false", es desactiva la funció de seguretat i, per tant, implícitament els scripts
+      poden veure tots els components d'un URL de tipus https://.
+      Aquesta opció de configuració s'aplica a tots els scripts PAC independentment de l'origen (com ara
+      els scripts obtinguts amb un mètode de transport no segur o els obtinguts de manera no segura
+      amb l'optimització WPAD).
+
+      S'estableix en "true" de manera predeterminada (funció de seguretat activada).
+
+      Es recomana establir-la en "true". L'única raó per establir-la en
+      "false" és que hi hagi problemes de compatibilitat amb els scripts PAC existents.
+
+      Aquesta política se suprimirà a M75.</translation>
 <translation id="8484458986062090479">Personalitza la llista de patrons d'URL que ha de renderitzar sempre el navegador amfitrió.
 
 
@@ -2768,7 +2791,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       En aquesta política, "versió" pot ser una versió exacta com ara "61.0.3163.120" o un prefix per a la versió com ara "61.0".  </translation>
 <translation id="8544375438507658205">Renderitzador HTML predeterminat per a <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Permet que se sincronitzin missatges SMS del telèfon al dispositiu Chromebook.</translation>
-<translation id="8548832052135586762">Estableix la impressió en només color, només monocroma o sense restriccions en el mode de color. Si la política no s'estableix, no s'aplica cap restricció.</translation>
+<translation id="8548832052135586762">Estableix la impressió només en color, només monocroma o sense cap restricció de color. Si la política no s'estableix, no s'aplica cap restricció.</translation>
 <translation id="8549772397068118889">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
 <translation id="8586528890725660268">Especifica les impressores que un usuari no pot fer servir.
@@ -2954,8 +2977,8 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="9084985621503260744">Especifica si l'activitat de vídeo afecta la gestió d'alimentació</translation>
 <translation id="9088433379343318874">Activa el proveïdor de contingut de l'usuari supervisat</translation>
 <translation id="9088444059179765143">Configura el mètode de detecció automàtica de la zona horària</translation>
-<translation id="9094064873808699479">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació. Prova de dur a terme una configuració a nivell del dispositiu (que inclou credencials de xarxa) mitjançant el procés de reversió sempre que sigui possible. Executa la reversió amb la funció Powerwash completa, fins i tot si no es poden restaurar les dades (perquè la versió de destinació no admet la restauració de dades o a causa d'un canvi incompatible amb versions anteriors).
-          S'admet a <ph name="PRODUCT_OS_NAME" /> versió 70 i posteriors. En clients més antics, aquest valor indica que la reversió està desactivada.</translation>
+<translation id="9094064873808699479">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació. Prova de dur a terme una configuració a nivell del dispositiu (que inclogui les credencials de xarxa) mitjançant el procés de reversió sempre que sigui possible. Executa la reversió amb la funció Powerwash completa, fins i tot si no es poden restaurar les dades, ja sigui perquè la versió de destinació no admet la restauració de dades o a causa d'un canvi incompatible amb versions anteriors.
+          S'admet a <ph name="PRODUCT_OS_NAME" /> en la versió 70 i posteriors. En clients més antics, aquest valor indica que la reversió està desactivada.</translation>
 <translation id="9096086085182305205">Llista blanca del servidor d'autenticació</translation>
 <translation id="9098553063150791878">Polítiques per a l'autenticació HTTP</translation>
 <translation id="9105265795073104888">Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari. No pots forçar-les a utilitzar un servidor intermediari, sinó que és decisió d'elles.</translation>

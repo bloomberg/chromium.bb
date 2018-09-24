@@ -809,7 +809,6 @@
 <translation id="6508722015517270189">Reinicia Chrome.</translation>
 <translation id="6529602333819889595">&amp;Rehacer Eliminar</translation>
 <translation id="6534179046333460208">Sugerencias de la Web física</translation>
-<translation id="6550675742724504774">Opciones</translation>
 <translation id="6563469144985748109">Tu administrador aún no lo aprobó</translation>
 <translation id="6569060085658103619">Estás viendo la página de una extensión</translation>
 <translation id="6596325263575161958">Opciones de encriptación</translation>
@@ -953,7 +952,6 @@ Detalles adicionales:
 <translation id="7554791636758816595">Nueva pestaña</translation>
 <translation id="7564049878696755256">Es posible que hayas perdido el acceso a tu cuenta de <ph name="ORG_NAME" /> o sufrido un robo de identidad. Chrome te recomienda que cambies la contraseña ahora.</translation>
 <translation id="7567204685887185387">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad podría haberse emitido de forma fraudulenta. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
-<translation id="7568593326407688803">Esta página está en<ph name="ORIGINAL_LANGUAGE" />¿Quieres traducirla?</translation>
 <translation id="7569952961197462199">¿Confirmas que quieres quitar la tarjeta de crédito de Chrome?</translation>
 <translation id="7575800019233204241">"La conexión no es privada" o "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" o "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" o "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" o "Error de certificado SSL"</translation>
 <translation id="7578104083680115302">Paga con rapidez en sitios y apps a través de varios dispositivos con tarjetas que guardaste en Google.</translation>
@@ -1138,7 +1136,7 @@ Detalles adicionales:
 <translation id="8874824191258364635">Ingresa un número de tarjeta válido</translation>
 <translation id="8876793034577346603">No se pudo analizar la configuración de red.</translation>
 <translation id="8891727572606052622">Modo proxy no válido</translation>
-<translation id="8892964541482452187">Botón para cambiar de pestaña, presiona Intro para cambiar a esta pestaña</translation>
+<translation id="8892964541482452187">Botón para cambiar de pestaña; presiona Intro para cambiar a esta pestaña</translation>
 <translation id="8903921497873541725">Acercar</translation>
 <translation id="8931333241327730545">¿Quieres guardar esta tarjeta en tu cuenta de Google?</translation>
 <translation id="8932102934695377596">El reloj está atrasado</translation>

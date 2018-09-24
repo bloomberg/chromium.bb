@@ -807,7 +807,6 @@
 <translation id="6508722015517270189">Перезапустите Google Chrome.</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
 <translation id="6534179046333460208">Интернет вокруг нас: рекомендации</translation>
-<translation id="6550675742724504774">Параметры</translation>
 <translation id="6563469144985748109">Ещё не одобрено администратором</translation>
 <translation id="6569060085658103619">Вы просматриваете страницу расширения</translation>
 <translation id="6596325263575161958">Параметры шифрования</translation>
@@ -951,7 +950,6 @@
 <translation id="7554791636758816595">Новая вкладка</translation>
 <translation id="7564049878696755256">Кто-то посторонний мог получить доступ к вашим личным данным или аккаунту в домене <ph name="ORG_NAME" />. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="7567204685887185387">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности мог быть выдан обманным путем. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
-<translation id="7568593326407688803">Язык этой страницы<ph name="ORIGINAL_LANGUAGE" />Хотите перевести ее?</translation>
 <translation id="7569952961197462199">Удалить кредитную карту из Chrome?</translation>
 <translation id="7575800019233204241">"Подключение не защищено", &lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;, &lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;, &lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt; или "Ошибка сертификата SSL"</translation>
 <translation id="7578104083680115302">Быстро оплачивайте покупки на сайтах и в приложениях с помощью карт, сохраненных в Google Payments. Настройка будет действовать на всех ваших устройствах.</translation>

@@ -125,6 +125,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       NOTĂ: această politică nu se aplică pentru Android. Pentru a activa IsolateOrigins pe Android, folosește setarea politicii IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Activează API-ul platformei hardware pentru extensiile instalate prin politică</translation>
 <translation id="1384459581748403878">Referință: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Dacă se acordă încredere infrastructurii PKI vechi a Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantele activate asociate dispozitivelor companiei</translation>
@@ -446,6 +447,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2201555246697292490">Configurați lista albă a mesageriei native</translation>
 <translation id="2204753382813641270">Controlați ascunderea automată a raftului</translation>
 <translation id="2208976000652006649">Parametrii pentru adresa URL a căutării care utilizează POST</translation>
+<translation id="2214880135980649323">Când această politică este activată, extensiile instalate prin politica de întreprindere au permisiunea de a folosi API-ul platformei hardware de întreprindere.
+      Când această politică este dezactivată sau nu este setată, nicio extensie nu poate folosi API-ul platformei hardware de întreprindere.
+      Această politică se aplică și extensiilor de componente, cum ar fi extensia de servicii Hangouts.</translation>
 <translation id="2223598546285729819">Setare prestabilită pentru notificări</translation>
 <translation id="2231817271680715693">Importați istoricul de navigare din browserul prestabilit, la prima rulare</translation>
 <translation id="2236488539271255289">Nu permite niciunui site să seteze date locale</translation>
@@ -1516,7 +1520,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă politica |DeviceLocalAccountAutoLoginId| nu este setată, această politică nu are niciun efect. În caz contrar:
 
-      Dacă această politică este setată, aceasta stabilește intervalul de inactivitate al utilizatorului care trebuie să treacă înainte de conectarea automată la contul local de pe dispozitiv indicat de politica |DeviceLocalAccountAutoLoginId|.
+      Dacă politica este setată, aceasta stabilește intervalul de inactivitate al utilizatorului care trebuie să treacă înainte de conectarea automată la contul local de pe dispozitiv indicat de politica |DeviceLocalAccountAutoLoginId|.
 
       Dacă politica nu este setată, timpul limită va fi de 0 milisecunde.
 
@@ -2764,6 +2768,24 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8465065632133292531">Parametrii pentru adresa URL a căutării instant care utilizează POST</translation>
 <translation id="847472800012384958">Nu permite niciunui site să afișeze ferestre pop-up</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Elimină părțile sensibile legate de confidențialitate și de securitate din adresele URL https:// înainte să le trimită la scripturile PAC (Proxy Auto Config) folosite de <ph name="PRODUCT_NAME" /> în timpul rezolvării proxy-ului.
+
+      Când este activată, funcția de securitate este activată și adresele URL https:// sunt
+      eliminate înainte de a le trimite la un script PAC. Astfel, scriptul PAC
+      nu poate vedea datele protejate de obicei de un canal criptat
+      (cum ar fi calea și interogarea adresei URL).
+
+      Când este dezactivată, funcția de securitate este dezactivată, iar scripturile
+      PAC au permisiunea să vadă toate componentele unei adrese URL https://.
+      Această setare se aplică tuturor scripturilor PAC indiferent de originea lor
+      (inclusiv celor preluate printr-un transport nesigur sau descoperite
+      în mod nesigur prin WPAD).
+
+      Politica este activată în mod prestabilit (funcția de securitate este activată).
+
+      Se recomandă activarea acesteia. Singurul motiv de a o dezactiva este în cazul
+      în care apar probleme de compatibilitate cu scripturile PAC existente.
+      Politica va fi eliminată în M75.</translation>
 <translation id="8484458986062090479">Personalizează lista cu șabloane de adrese URL care trebuie să fie redate întotdeauna de browserul gazdă.
 
           Dacă această politică nu este configurată, va fi folosit programul de redare prestabilit pentru toate site-urile, așa cum este indicat în politica „ChromeFrameRendererSettings”.

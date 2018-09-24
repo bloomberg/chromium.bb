@@ -139,6 +139,7 @@
 
       MÄRKUS. Androidis see reegel ei kehti. Androidis reegli IsolateOrigins lubamiseks kasutage reegli IsolateOriginsAndroid seadet.
       </translation>
+<translation id="1377024960658062022">Lubab riistvara platvormi API reegliga installitud laienduste jaoks</translation>
 <translation id="1384459581748403878">Viide: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Määrab, kas usaldada Symantec Corporationi PKI pärandtaristut</translation>
 <translation id="1393485621820363363">Ettevõtte seadmete jaoks lubatud printerid</translation>
@@ -467,6 +468,9 @@
 <translation id="2201555246697292490">Omasõnumside lubatud üksuste loendi seadistamine</translation>
 <translation id="2204753382813641270">Seadista hoidla automaatne peitmine</translation>
 <translation id="2208976000652006649">Parameetrid POST-meetodit kasutava otsingu URL-i jaoks</translation>
+<translation id="2214880135980649323">Kui see reegel on lubatud, lubatakse ettevõtte reegliga installitud laiendustel kasutada ettevõtte riistvara platvormi API-t.
+      Kui see reegel on keelatud või määramata, ei tohi ükski laiendus ettevõtte riistvara platvormi API-t kasutada.
+      See reegel kehtib ka komponendi laiendustele, nt Hangouti teenuste laiendusele.</translation>
 <translation id="2223598546285729819">Teatiste vaikeseade</translation>
 <translation id="2231817271680715693">Sirvimisajaloo importimine vaikebrauserist esimesel käitamisel</translation>
 <translation id="2236488539271255289">Keela kõigil saitidel kohalike andmete seadmine</translation>
@@ -2873,6 +2877,25 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8465065632133292531">Parameetrid Instant-URL-i jaoks, mis kasutab POST-meetodit</translation>
 <translation id="847472800012384958">Keela kõikidel saitidel hüpikakende näitamine</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Eemaldatakse protokolli https:// URL-ide privaatsuse ja turvalisusega seotud tundlikud osad enne, kui need saadetakse PAC-skriptidele (puhverserveri automaatne seadistamine), mida teenus <ph name="PRODUCT_NAME" /> puhverserveri lahendamisel kasutab.
+
+      Kui reegli väärtuseks määratakse Tõene, on turvafunktsioon lubatud ja protokolli
+      https:// URL-id eemaldatakse enne nende saatmist PAC-skriptidele. Sel viisil
+      ei näe PAC-skriptid andmeid, mida tavaliselt kaitseb krüpteeritud kanal
+      (nt URL-i tee ja päring).
+
+      Kui reegli väärtuseks määratakse Väär, on see turvafunktsioon keelatud
+      ja PAC-skriptid näevad protokolli https:// URL-i kõiki komponente.
+      See seade kehtib kõikide PAC-skriptide puhul, olenemata nende päritolust
+      (sh need, mis tuuakse ebaturvalise transportimise käigus või avastatakse
+      ebaturvaliselt WPAD kaudu).
+
+      Selle vaikeväärtus on Tõene (turvafunktsioon on lubatud).
+
+      Soovitatav on selle väärtuseks määrata Tõene. Ainus põhjus, mis selle väärtuseks
+      määrata Väär, on see, kui see põhjustab olemasolevate PAC-skriptidega ühilduvusprobleeme.
+
+      Reegel eemaldatakse versioonis M75.</translation>
 <translation id="8484458986062090479">Kohandab loendit URL-i mustritest, mille peab alati renderdama hostbrauser.
 
           Kui seda reeglit ei määrata, kasutatakse kõikide saitide puhul vaikerenderdajat, mis on määratud reegliga „ChromeFrameRendererSettings”.

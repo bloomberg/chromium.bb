@@ -808,7 +808,6 @@
 <translation id="6508722015517270189">Chrome को फिर से शुरू करें</translation>
 <translation id="6529602333819889595">&amp;हटाना फिर से करें</translation>
 <translation id="6534179046333460208">जीता-जागता वेब के सुझाव</translation>
-<translation id="6550675742724504774">विकल्प</translation>
 <translation id="6563469144985748109">आपके प्रबंधक ने अभी तक इसकी स्वीकृति नहीं दी है</translation>
 <translation id="6569060085658103619">आप एक एक्सटेंशन पेज देख रहे हैं</translation>
 <translation id="6596325263575161958">सुरक्षित तरीका विकल्प</translation>
@@ -952,7 +951,6 @@
 <translation id="7554791636758816595">नया टैब</translation>
 <translation id="7564049878696755256">आप अपने <ph name="ORG_NAME" /> खाते का एक्सेस खो सकते हैं या आपकी पहचान चोरी हो सकती है. Chrome आपको इसी समय अपना पासवर्ड बदलने का सुझाव देता है.</translation>
 <translation id="7567204685887185387">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; हो सकता है इसका सुरक्षा प्रमाणपत्र धोखे से जारी किया गया हो. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
-<translation id="7568593326407688803">यह पृष्ठ<ph name="ORIGINAL_LANGUAGE" />में है क्या आप इसका अनुवाद करना चाहेंगे?</translation>
 <translation id="7569952961197462199">Chrome से क्रेडिट कार्ड निकालें?</translation>
 <translation id="7575800019233204241">"आपका कनेक्शन निजी नहीं है" या "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" या "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" या "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" या "SSL प्रमाणपत्र गड़बड़ी"</translation>
 <translation id="7578104083680115302">Google के साथ सहेजे गए कार्ड का उपयोग करके डिवाइसों में मौजूद साइटों और ऐप्‍स पर तुरंत भुगतान करें.</translation>
@@ -1137,7 +1135,7 @@
 <translation id="8874824191258364635">मान्य कार्ड संख्या डालें</translation>
 <translation id="8876793034577346603">नेटवर्क कॉन्फ़िगरेशन पार्स होने में विफल रहा.</translation>
 <translation id="8891727572606052622">अमान्य प्रॉक्सी मोड.</translation>
-<translation id="8892964541482452187">टैब बदलने का बटन, इस टैब पर स्विच करने के लिए enter दबाएं</translation>
+<translation id="8892964541482452187">टैब बदलने का बटन, इस टैब पर स्विच करने के लिए 'एन्टर' दबाएं</translation>
 <translation id="8903921497873541725">ज़ूम इन करें</translation>
 <translation id="8931333241327730545">क्या आप इस कार्ड को अपने Google खाते में सहेजना चाहते हैं?</translation>
 <translation id="8932102934695377596">आपकी घड़ी पीछे है</translation>

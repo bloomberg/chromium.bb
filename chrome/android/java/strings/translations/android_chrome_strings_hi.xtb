@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">आपके अन्‍य डिवाइस पर सहेजे गए बुकमार्क यहां दिखाई देंगे.</translation>
 <translation id="1113597929977215864">सरल बनाया गया व्यू दिखाएं</translation>
 <translation id="1121094540300013208">उपयोग और क्रैश रिपोर्ट</translation>
-<translation id="11221688409173367">खास तौर पर आपके लिए चुने गए लेख देखने के लिए 'होम' बटन पर टैप करें</translation>
 <translation id="1129510026454351943">विवरण: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 डाउनलोड बाकी है.}one{# डाउनलोड बाकी हैं.}other{# डाउनलोड बाकी हैं.}}</translation>
 <translation id="1145536944570833626">मौजूदा डेटा हटाएं.</translation>
@@ -166,7 +165,6 @@
 <translation id="2154484045852737596">कार्ड संपादित करें</translation>
 <translation id="2154710561487035718">URL की कॉपी बनाएं</translation>
 <translation id="2156074688469523661">बाकी साइटें (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2184766556418880456">अपने मौजूदा टैब में 'नया टैब' पेज पर जाने के लिए टैप करें</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, वेब ऐप. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> के रूप में जारी रखें</translation>
 <translation id="2232379019872353004">कुछ सिस्टम जानकारी और पेज सामग्री Google को भेजती है</translation>
@@ -233,7 +231,6 @@
 <translation id="2709516037105925701">ऑटोमैटिक भरना</translation>
 <translation id="271033894570825754">नया</translation>
 <translation id="2728754400939377704">साइट के हिसाब से क्रम में लगाएं</translation>
-<translation id="2736391366332017384">अपने मौजूदा टैब में 'नया टैब' पेज पर जाने के लिए 'होम' बटन पर टैप करें</translation>
 <translation id="2744248271121720757">झटपट खोजने या मिलती-जुलती कार्रवाइयां देखने के लिए किसी शब्द पर टैप करें</translation>
 <translation id="2762000892062317888">अभी-अभी</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> सेकंड शेष</translation>
@@ -344,6 +341,7 @@
 <translation id="3744111561329211289">पृष्ठभूमि समन्वयन</translation>
 <translation id="3773755127849930740">युग्मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />ब्लूटूथ चालू करें<ph name="END_LINK" /></translation>
 <translation id="3778956594442850293">होम स्‍क्रीन में जोड़ा गया</translation>
+<translation id="3781011235031427080">'इसी तरह के और भी' आधी स्क्रीन पर खुला है</translation>
 <translation id="3789841737615482174">इंस्‍टॉल करें</translation>
 <translation id="3810838688059735925">वीडियो</translation>
 <translation id="3810973564298564668">प्रबंधित करें</translation>
@@ -492,6 +490,7 @@
 <translation id="4913169188695071480">रीफ्रेश करना बंद करें</translation>
 <translation id="4915549754973153784">डिवाइस स्कैन करने में <ph name="BEGIN_LINK" />सहायता पाएं<ph name="END_LINK" />...</translation>
 <translation id="4943872375798546930">कोई परिणाम नहीं</translation>
+<translation id="4956460920135325549">Google की ओर से लाइट पेज डिलीवर किया गया.</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> आपकी स्क्रीन शेयर कर रहा है</translation>
 <translation id="4961334780091921942">सभी डिवाइस पर आपके पासवर्ड, इतिहास वगैरह</translation>
 <translation id="4961700429721424617">आप <ph name="MANAGED_DOMAIN" /> द्वारा प्रबंधित खाते से प्रस्थान कर रहे हैं. इससे आपका Chrome डेटा इस डिवाइस से हट जाएगा, लेकिन आपका डेटा आपके Google खाते में बना रहेगा.</translation>
@@ -511,6 +510,7 @@
 <translation id="5087580092889165836">कार्ड जोड़ें</translation>
 <translation id="5100237604440890931">संक्षिप्त - विस्तृत करने के लिए क्लिक करें.</translation>
 <translation id="510275257476243843">1 घंटा शेष</translation>
+<translation id="5123685120097942451">गुप्त टैब</translation>
 <translation id="5127805178023152808">समन्वयन बंद है</translation>
 <translation id="5129038482087801250">वेब ऐप्लिकेशन इंस्टॉल करें</translation>
 <translation id="5139940364318403933">Google डिस्क के इस्तेमाल का तरीका जानें</translation>
@@ -658,6 +658,7 @@
 <translation id="6177111841848151710">अभी के खोज इंजन के लिए ब्लॉक किया गया</translation>
 <translation id="6177390657002841081">डेटा बचाने का साधन चालू करना</translation>
 <translation id="6181444274883918285">साइट का अपवाद जोड़ें</translation>
+<translation id="618993374665929060">'इसी तरह के और भी' पूरी स्क्रीन पर खुला है</translation>
 <translation id="6192333916571137726">डाउनलोड फ़ाइल कहां सेव करें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
 <translation id="6206551242102657620">कनेक्शन सुरक्षित है. साइट की जानकारी</translation>
@@ -730,9 +731,11 @@
 <translation id="6697947395630195233">Chrome को इस साइट से आपका स्थान शेयर करने के लिए आपके स्थान का एक्सेस चाहिए.</translation>
 <translation id="6698801883190606802">समन्वयित डेटा प्रबंधित करें</translation>
 <translation id="6710213216561001401">पिछला</translation>
+<translation id="6712388303105732168">'इसी तरह के और भी' बटन का इस्तेमाल करके Google के ज़रिए ऐसी ही और भी चीज़ें देखें</translation>
 <translation id="6738867403308150051">डाउनलोड हो रहे हैं...</translation>
 <translation id="6746124502594467657">नीचे जाएं</translation>
 <translation id="6762156594045689028">यह सेटिंग बदलने के लिए, <ph name="BEGIN_LINK" />समन्वयन रीसेट करें<ph name="END_LINK" /></translation>
+<translation id="6766622839693428701">बंद करने के लिए नीचे स्वाइप करें.</translation>
 <translation id="6770414673596662518">Chrome के सुरक्षित ब्राउज़िंग सिस्टम का उपयोग दुर्भावनापूर्ण पृष्ठों का पता लगाने तथा फ़िशिंग, मैलवेयर और हानिकारक डाउनलोड से आपकी सुरक्षा करने के लिए भी किया जाएगा.</translation>
 <translation id="6776813977906306442">डाउनलोड करें बटन का उपयोग करके बाद में देखने के लिए वीडियो डाउनलोड करें</translation>
 <translation id="6790428901817661496">चलाएं</translation>
@@ -785,7 +788,9 @@
 <translation id="7121362699166175603">पता बार में स्वत: पूर्णता और इतिहास को हटाता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकतेे हैं.</translation>
 <translation id="7128222689758636196">वर्तमान खोज इंजन के लिए अनुमति दें</translation>
 <translation id="7138678301420049075">अन्य</translation>
+<translation id="7139148793369023665">'इसी तरह के और भी' को बंद किया गया</translation>
 <translation id="7141896414559753902">साइटों को पॉप-अप और रीडायरेक्ट दिखाने से ब्लॉक करें (सुझाया गया)</translation>
+<translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> से <ph name="BEGIN_LINK" />मूल पेज लोड करें<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">पिछले 24 घंटे</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> केबी</translation>
 <translation id="7177466738963138057">आप इसे बाद में सेटिंग में जाकर बदल सकते हैं</translation>
@@ -873,6 +878,7 @@
 <translation id="7846076177841592234">चयन हटाएं</translation>
 <translation id="784934925303690534">समय सीमा</translation>
 <translation id="7851858861565204677">अन्य डिवाइस</translation>
+<translation id="7854964836418414587">'इसी तरह के और भी' को बंद करें</translation>
 <translation id="7875915731392087153">ईमेल बनाएं</translation>
 <translation id="7876243839304621966">सभी को निकालें</translation>
 <translation id="7882131421121961860">कोई इतिहास नहीं मिला</translation>
@@ -1000,7 +1006,6 @@
 <translation id="8912362522468806198">Google खाता</translation>
 <translation id="8920114477895755567">अभिभावकों के विवरण की प्रतीक्षा कर रहे हैं.</translation>
 <translation id="8922289737868596582">पेज का ऑफ़लाइन उपयोग करने के लिए उन्हें अधिक विकल्प बटन से डाउनलोड करें</translation>
-<translation id="8934029156920711950">खास तौर पर आपके लिए चुने गए लेख देखने के लिए टैप करें</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">अन्य विंडो में खोलें</translation>
 <translation id="8951232171465285730">Chrome ने आपके <ph name="MEGABYTES" /> एमबी की बचत की</translation>

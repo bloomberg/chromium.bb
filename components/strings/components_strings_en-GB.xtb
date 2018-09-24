@@ -808,7 +808,6 @@
 <translation id="6508722015517270189">Restart Chrome</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
 <translation id="6534179046333460208">Physical Web suggestions</translation>
-<translation id="6550675742724504774">Options</translation>
 <translation id="6563469144985748109">Your manager hasn't approved it yet</translation>
 <translation id="6569060085658103619">You're viewing an extension page</translation>
 <translation id="6596325263575161958">Encryption options</translation>
@@ -952,7 +951,6 @@ Additional details:
 <translation id="7554791636758816595">New Tab</translation>
 <translation id="7564049878696755256">You could lose access to your <ph name="ORG_NAME" /> account or experience identity theft. Chrome recommends changing your password now.</translation>
 <translation id="7567204685887185387">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might have been issued fraudulently. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
-<translation id="7568593326407688803">This page is in<ph name="ORIGINAL_LANGUAGE" />Would you like to translate it?</translation>
 <translation id="7569952961197462199">Remove credit card from Chrome?</translation>
 <translation id="7575800019233204241">'Your connection is not private' or "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" or "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" or "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" or 'SSL certificate error'</translation>
 <translation id="7578104083680115302">Pay quickly on sites and apps across devices using cards that you have saved with Google.</translation>

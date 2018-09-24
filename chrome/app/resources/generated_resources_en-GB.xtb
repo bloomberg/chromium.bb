@@ -275,6 +275,7 @@
 <translation id="1395730723686586365">Updater started</translation>
 <translation id="1396139853388185343">Error setting up printer</translation>
 <translation id="1396963298126346194">The username and password that you entered do not match</translation>
+<translation id="1397500194120344683">No eligible devices. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
 <translation id="1397854323885047133">Sync and personalisation</translation>
 <translation id="1398853756734560583">Maximise</translation>
 <translation id="1399511500114202393">No user certificate</translation>
@@ -375,7 +376,6 @@
 <translation id="1531004739673299060">Application Window</translation>
 <translation id="15373452373711364">Large mouse cursor</translation>
 <translation id="1538729222189715449">Opening Linux files...</translation>
-<translation id="153933193410874873">We couldn't verify your identity on this device</translation>
 <translation id="1540605929960647700">Enable demo mode</translation>
 <translation id="1543284117603151572">Imported From Edge</translation>
 <translation id="1545177026077493356">Automatic Kiosk Mode</translation>
@@ -529,6 +529,7 @@
 <translation id="175772926354468439">Enable theme</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">View in Chrome Web Store</translation>
+<translation id="176193854664720708">The fingerprint sensor is in the power button. Touch it lightly with any finger.</translation>
 <translation id="1763046204212875858">Create application shortcuts</translation>
 <translation id="1763108912552529023">Keep exploring</translation>
 <translation id="1763808908432309942">Opens in a new tab</translation>
@@ -682,7 +683,6 @@
 <translation id="1981115145845865539">Automatically unlock your <ph name="DEVICE_TYPE" /></translation>
 <translation id="1983959805486816857">After you create a new supervised user, you can manage the settings at any time from any device at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Dock window right</translation>
-<translation id="1987139229093034863">Change to a different user.</translation>
 <translation id="1987317783729300807">Accounts</translation>
 <translation id="1989112275319619282">Browse</translation>
 <translation id="1992397118740194946">Not set</translation>
@@ -823,6 +823,7 @@
 <translation id="2208158072373999562">Zip archive</translation>
 <translation id="220858061631308971">Please enter this PIN code on "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2209593327042758816">Shelf item 2</translation>
+<translation id="2212126039311489237">Print using system dialogue</translation>
 <translation id="2217501013957346740">Create a name -</translation>
 <translation id="2218019600945559112">Mouse and touchpad</translation>
 <translation id="2218320521449013367">An error occurred while Chrome was removing harmful software</translation>
@@ -935,6 +936,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> files selected</translation>
 <translation id="237828693408258535">Translate this page?</translation>
 <translation id="2378982052244864789">Select the extension directory.</translation>
+<translation id="2379281330731083556">Print using system dialogue... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Ask before sending (recommended)</translation>
 <translation id="2384436799579181135">An error has occurred. Please check your printer and try again.</translation>
 <translation id="2387458720915042159">Proxy connection type</translation>
@@ -1113,6 +1115,7 @@
 <translation id="2653659639078652383">Submit</translation>
 <translation id="265390580714150011">Field Value</translation>
 <translation id="2654166010170466751">Allow sites to install payment handlers</translation>
+<translation id="2656742821229528729">Connect your Android phone and Chromebook to text from your computer, share your Internet connection and unlock your Chromebook with your phone.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Features vary by device</translation>
 <translation id="2660779039299703961">Event</translation>
 <translation id="266079277508604648">Can’t connect to printer. Check that the printer is turned on and is connected to your Chromebook by Wi-Fi or USB.</translation>
@@ -1417,6 +1420,7 @@
 <translation id="3115128645424181617">Can’t find your phone. Make sure that it’s handy and Bluetooth is turned on.</translation>
 <translation id="3115147772012638511">Waiting for cache...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Help</translation>
+<translation id="3119484583572640616">Turning on Better Together means that it can:</translation>
 <translation id="3120430004221004537">Insufficient encryption for a given operation on: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3121793941267913344">Reset this <ph name="IDS_SHORT_PRODUCT_NAME" /> device</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -1731,6 +1735,7 @@
 <translation id="3596235046596950091">Enable cloud services</translation>
 <translation id="3599863153486145794">Clears history from all signed-in devices. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Mute sites that play sound</translation>
+<translation id="360180734785106144">Offer new features as they become available</translation>
 <translation id="3602290021589620013">Preview</translation>
 <translation id="3603533104205588786">You can click the star to bookmark a page</translation>
 <translation id="3603622770190368340">Obtain network certificate</translation>
@@ -2066,7 +2071,6 @@
 <translation id="4068506536726151626">This page contains elements from the following sites that are tracking your location:</translation>
 <translation id="4068776064906523561">Saved fingerprints</translation>
 <translation id="407173827865827707">On click</translation>
-<translation id="4071770069230198275"><ph name="PROFILE_NAME" />: sign-in error</translation>
 <translation id="4074900173531346617">Email Signer Certificate</translation>
 <translation id="407520071244661467">Scale</translation>
 <translation id="4075639477629295004">Unable to cast <ph name="FILE_NAME" />.</translation>
@@ -2868,6 +2872,7 @@
 <translation id="5332624210073556029">Time zone:</translation>
 <translation id="5334142896108694079">Script Cache</translation>
 <translation id="5334844597069022743">View source</translation>
+<translation id="5334899159203764908">Find out more about <ph name="BEGIN_LINK" />site access<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Backing up <ph name="FILE_COUNT" /> to <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Do not allow any sites to access USB devices</translation>
 <translation id="5337771866151525739">Installed by a third party.</translation>
@@ -2975,6 +2980,7 @@
 <translation id="5487521232677179737">Clear data</translation>
 <translation id="5488093641312826914">'<ph name="COPIED_ITEM_NAME" />' copied</translation>
 <translation id="5488468185303821006">Allow in incognito</translation>
+<translation id="5489121514345187313">Your Chromebook works even better with your phone. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
 <translation id="5489435190927933437">Saved passwords for <ph name="DOMAIN" /></translation>
 <translation id="5491110079163012109">Send system data. Automatically send diagnostic and device and app usage data to Google. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. You may view this in settings. If you turned on additional Web &amp; App Activity, this information will be stored with your account so that you can manage it in My Activity. <ph name="BEGIN_LINK1" />Learn More<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">screen on</translation>
@@ -3146,6 +3152,7 @@
 <translation id="5731409020711461763">One new photo</translation>
 <translation id="5734362860645681824">Communications</translation>
 <translation id="5736796278325406685">Please enter a valid username</translation>
+<translation id="5739235828260127894">Waiting for verification. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Very large</translation>
 <translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" />, and <ph name="NUM_ADDITIONAL_LANGUAGES" /> others</translation>
 <translation id="574209121243317957">Pitch</translation>
@@ -3249,6 +3256,7 @@
 <translation id="5870086504539785141">Close accessibility menu</translation>
 <translation id="5870155679953074650">Hard faults</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
+<translation id="5877584842898320529">The selected printer is not available or not installed correctly. <ph name="BR" /> Check your printer or try selecting another printer.</translation>
 <translation id="5880247576487732437">Token Present</translation>
 <translation id="5882919346125742463">Known Networks</translation>
 <translation id="5884474295213649357">This tab is connected to a USB device.</translation>
@@ -3315,6 +3323,7 @@
 <translation id="5979469435153841984">To bookmark pages, click the star in the address bar</translation>
 <translation id="5982621672636444458">Sort options</translation>
 <translation id="5984222099446776634">Recently Visited</translation>
+<translation id="5985458664595100876">Invalid URL format. Supported formats are \\server\share and smb://server/share.</translation>
 <translation id="5990142338020175451">More personal Google services, such as better page suggestions</translation>
 <translation id="5990386583461751448">Translated</translation>
 <translation id="5991049340509704927">Magnify</translation>
@@ -3343,6 +3352,7 @@
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB device connected</translation>
 <translation id="6028117231645531007">Add fingerprint</translation>
 <translation id="6029027682598229313">Linux installation is complete.</translation>
+<translation id="6029292188939175871">delete [<ph name="FINGERPRINT_NAME" />], button</translation>
 <translation id="6029587122245504742">Slowest</translation>
 <translation id="6032912588568283682">File system</translation>
 <translation id="6034662038931255275">OS update successful</translation>
@@ -3456,7 +3466,6 @@
 <translation id="6185132558746749656">Device Location</translation>
 <translation id="6185617499004995178">CUPS IPP Validator</translation>
 <translation id="6185696379715117369">Page up</translation>
-<translation id="6189273858858366896">Set up or manage Network File Shares.</translation>
 <translation id="6189412234224385711">Open with <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Block third-party cookies</translation>
 <translation id="6196854373336333322">The extension "<ph name="EXTENSION_NAME" />" has taken control of your proxy settings, which means it can change, break or eavesdrop on anything you do online. If you aren't sure why this change happened, you probably don't want it.</translation>
@@ -3762,6 +3771,7 @@
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6644512095122093795">Offer to save passwords</translation>
 <translation id="6644846457769259194">Updating your device (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="6645437135153136856">The selected Google Cloud Print device is no longer supported. <ph name="BR" /> Try setting up the printer in your computer's system settings.</translation>
 <translation id="6647228709620733774">Netscape Certification Authority Revocation URL</translation>
 <translation id="6647838571840953560">Currently on <ph name="CHANNEL_NAME" /></translation>
 <translation id="6648051959475508072">Security key activated...</translation>
@@ -3783,7 +3793,6 @@
 <translation id="667517062706956822">Do you want Google to translate this page from <ph name="SOURCE_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Pointing device connected</translation>
 <translation id="6678717876183468697">Query URL</translation>
-<translation id="6680028776254050810">Change Users</translation>
 <translation id="6680442031740878064">Available: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Rate</translation>
 <translation id="6681668084120808868">Take photo</translation>
@@ -3792,7 +3801,6 @@
 <translation id="668599234725812620">Open Google Play</translation>
 <translation id="6686490380836145850">Close tabs to the right</translation>
 <translation id="6686817083349815241">Save your password</translation>
-<translation id="6690565918367819723"><ph name="PROFILE_NAME" /> Switch person</translation>
 <translation id="6690659332373509948">Unable to parse file: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Choose a supervised user to add to this device.</translation>
 <translation id="6691331417640343772">Manage synced data on Google Dashboard</translation>
@@ -4129,6 +4137,7 @@
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' deleted</translation>
 <translation id="7206693748120342859">Downloading <ph name="PLUGIN_NAME" />...</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Exit page}other{Exit pages}}</translation>
+<translation id="7210499381659830293">Extension printers</translation>
 <translation id="721467499098558573">Press and hold the button on your security key for at least 5 seconds</translation>
 <translation id="7216409898977639127">Mobile provider</translation>
 <translation id="7216595297012131718">Order languages based on your preference</translation>
@@ -4207,6 +4216,7 @@
 <translation id="7321545336522791733">Server unreachable</translation>
 <translation id="7324297612904500502">Beta forum</translation>
 <translation id="7325437708553334317">High Contrast Extension</translation>
+<translation id="7328162502911382168">(<ph name="COUNT" />)</translation>
 <translation id="7328867076235380839">Invalid combination</translation>
 <translation id="7329154610228416156">Sign-in failed because it was configured to use a non-secure URL (<ph name="BLOCKED_URL" />). Please contact your administrator.</translation>
 <translation id="7334190995941642545">Smart Lock is currently unavailable. Please try again later.</translation>
@@ -4798,6 +4808,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8199300056570174101">Network (Service) and Device properties</translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8202160505685531999">Please re-enter your password to update your <ph name="DEVICE_TYPE" /> profile.</translation>
+<translation id="8203732864715032075">Send you notifications and default to remembering this computer for Messages. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
 <translation id="8206354486702514201">This setting is enforced by your administrator.</translation>
 <translation id="8206745257863499010">Bluesy</translation>
 <translation id="8209677645716428427">A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can:</translation>
@@ -5109,7 +5120,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="869884720829132584">Applications menu</translation>
 <translation id="869891660844655955">Expiry date</translation>
 <translation id="8699566574894671540">To turn this on, first select Check Spelling While Typing in the Edit menu</translation>
-<translation id="870073306461175568">Network File Shares</translation>
 <translation id="8701677791353449257">The device name must match regular expression <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">This is taking much longer than usual. You can keep waiting or cancel and try again later.</translation>
 <translation id="8705331520020532516">Serial Number</translation>
@@ -5294,7 +5304,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – Crashed</translation>
 <translation id="8983677657449185470">Help improve Safe Browsing</translation>
 <translation id="8984179138335769204">Quick launch</translation>
-<translation id="8984654317541110628">File Share URL</translation>
 <translation id="8986362086234534611">Forget</translation>
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="8987927404178983737">Month</translation>

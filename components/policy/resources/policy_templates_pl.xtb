@@ -136,6 +136,7 @@
 
       UWAGA: ta zasada nie jest stosowana na urządzeniach z Androidem. Aby włączyć funkcję IsolateOrigins w Androidzie, użyj ustawienia zasady IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Umożliwia rozszerzeniom zainstalowanym przez zasady dostęp do Hardware Platform API</translation>
 <translation id="1384459581748403878">Odniesienie: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Czy włączyć zaufanie w starszej infrastrukturze klucza publicznego Symantec Corporation</translation>
 <translation id="1393485621820363363">Włączone drukarki firmowe powiązane z urządzeniami</translation>
@@ -457,6 +458,9 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2201555246697292490">Skonfiguruj białą listę wiadomości natywnych</translation>
 <translation id="2204753382813641270">Steruj autoukrywaniem półki</translation>
 <translation id="2208976000652006649">Parametry dla adresów URL wyszukiwania używających POST</translation>
+<translation id="2214880135980649323">Jeśli ta zasada jest włączona, rozszerzenia zainstalowane przez zasady przedsiębiorstwa mogą korzystać z Enterprise Hardware Platform API.
+      Jeśli ta zasada jest wyłączona lub nie jest ustawiona, żadne rozszerzenia nie mogą korzystać z Enterprise Hardware Platform API.
+      Zasada ta obejmuje również rozszerzenia składników, np. rozszerzenie Hangout Services.</translation>
 <translation id="2223598546285729819">Domyślne ustawienie powiadomień</translation>
 <translation id="2231817271680715693">Importuj historię przeglądania z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="2236488539271255289">Nie zezwalaj żadnej witrynie na tworzenie danych lokalnych</translation>
@@ -873,7 +877,7 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, cz
           Zobacz również zasady „CookiesBlockedForUrls” i „CookiesSessionOnlyForUrls”. Uwaga: żadne wzorce URL używane w tych trzech zasadach nie mogą pozostawać w konflikcie – nie jest określona zasada, która będzie mieć pierwszeństwo.</translation>
 <translation id="3373364525435227558">Ustawia jeden lub więcej zalecanych języków na potrzeby sesji zarządzanej, spośród których użytkownicy mogą łatwo wybrać jeden język.
 
-      Użytkownik może wybrać język i układ klawiatury przed rozpoczęciem sesji zarządzanej. Domyślnie wszystkie języki obsługiwane w <ph name="PRODUCT_OS_NAME" /> są wymienione w kolejności alfabetycznej. Za pomocą tej zasady możesz przenieść zalecane języki na początek listy.
+      Użytkownik może wybrać język i układ klawiatury przed rozpoczęciem sesji zarządzanej. Domyślnie wszystkie języki obsługiwane w systemie <ph name="PRODUCT_OS_NAME" /> są wymienione w kolejności alfabetycznej. Za pomocą tej zasady możesz przenieść zalecane języki na początek listy.
 
       Jeśli ta zasada jest nieskonfigurowana, wstępnie wybrany będzie bieżący język interfejsu.
 
@@ -885,7 +889,7 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, cz
 
       Wstępnie wybranym układem klawiatury jest zawsze najpopularniejszy układ dla wstępnie wybranego języka.
 
-      Tę zasadę możesz ustawić tylko jako zalecaną. Za jej pomocą możesz przenieść zalecane języki na początek, ale użytkownicy zawsze mogą wybrać dla swojej sesji dowolny język obsługiwany w <ph name="PRODUCT_OS_NAME" />.
+      Tę zasadę możesz ustawić tylko jako zalecaną. Za jej pomocą możesz przenieść zalecane języki na początek, ale użytkownicy zawsze mogą wybrać dla swojej sesji dowolny język obsługiwany w systemie <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
 <translation id="3414260318408232239">Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> korzysta z domyślnej najniższej wersji TLS, czyli 1.0.
@@ -2769,6 +2773,26 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="8465065632133292531">Parametry dla URL-i dynamicznych używających POST</translation>
 <translation id="847472800012384958">Nie zezwalaj na pokazywanie wyskakujących okienek w żadnej witrynie</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Wycina poufne pod względem prywatności i bezpieczeństwa fragmenty adresów URL https:// przed przekazaniem tych adresów do skryptów PAC (Proxy Auto Config), których <ph name="PRODUCT_NAME" /> używa podczas rozpoznawania serwerów proxy.
+
+      Jeśli ustawisz wartość prawda, funkcja zabezpieczeń zostanie włączona,
+      a fragmenty adresów URL https:// będą usuwane przed przekazaniem
+      tych adresów do skryptów PAC. W ten sposób skrypt PAC nie będzie
+      mógł odczytać danych, które są zwykle chronione przez
+      szyfrowany kanał (np. ścieżki lub zapytania adresu URL).
+
+      Jeśli ustawisz wartość fałsz, funkcja zabezpieczeń zostanie wyłączona,
+      a skrypty PAC będą domyślnie mogły odczytać wszystkie składniki
+      adresu URL https://. Dotyczy to wszystkich skryptów PAC bez względu
+      na ich pochodzenie (w tym te pobrane przez niezabezpieczony kanał
+      lub odkryte w niezabezpieczony sposób przez protokół WPAD).
+
+      Domyślne ustawienie to prawda (włączona funkcja zabezpieczeń).
+
+      Zaleca się ustawienie tej zasady na wartość prawda. Wartość fałsz należy ustawić
+      tylko wtedy, gdy występuje problem ze zgodnością z istniejącymi skryptami PAC.
+
+      Planujemy usunąć ten problem w M75.</translation>
 <translation id="8484458986062090479">Pozwala dostosować listę wzorców adresów URL stron, które przeglądarka hosta ma zawsze renderować.
 
           Jeśli nie ustawisz tej zasady, na wszystkich stronach działa domyślny mechanizm renderowania określony przez zasadę ChromeFrameRendererSettings.

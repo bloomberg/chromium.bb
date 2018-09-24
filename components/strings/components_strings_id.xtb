@@ -808,7 +808,6 @@
 <translation id="6508722015517270189">Buka Ulang Chrome</translation>
 <translation id="6529602333819889595">&amp;Ulangi Penghapusan</translation>
 <translation id="6534179046333460208">Saran Web Fisik</translation>
-<translation id="6550675742724504774">Opsi</translation>
 <translation id="6563469144985748109">Pengelola Anda belum menyetujuinya</translation>
 <translation id="6569060085658103619">Anda melihat halaman ekstensi</translation>
 <translation id="6596325263575161958">Opsi enkripsi</translation>
@@ -950,7 +949,6 @@
 <translation id="7554791636758816595">Tab Baru</translation>
 <translation id="7564049878696755256">Anda dapat kehilangan akses ke akun <ph name="ORG_NAME" /> atau mengalami pencurian identitas. Chrome menyarankan Anda untuk mengubah sandi sekarang.</translation>
 <translation id="7567204685887185387">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin telah dikeluarkan dengan curang. Hal ini disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
-<translation id="7568593326407688803">Halaman ini dalam bahasa<ph name="ORIGINAL_LANGUAGE" />Ingin diterjemahkan?</translation>
 <translation id="7569952961197462199">Hapus kartu kredit dari Chrome?</translation>
 <translation id="7575800019233204241">"Koneksi tidak bersifat pribadi" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" atau "SSL certificate error"</translation>
 <translation id="7578104083680115302">Bayar di situs dan aplikasi di semua perangkat dengan cepat menggunakan kartu yang disimpan dengan Google.</translation>

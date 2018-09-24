@@ -807,7 +807,6 @@
 <translation id="6508722015517270189">Поново покрените Chrome</translation>
 <translation id="6529602333819889595">&amp;Понови брисање</translation>
 <translation id="6534179046333460208">Предлози Интернета око нас</translation>
-<translation id="6550675742724504774">Опције</translation>
 <translation id="6563469144985748109">Менаџер га још увек није одобрио</translation>
 <translation id="6569060085658103619">Прегледате страницу додатка.</translation>
 <translation id="6596325263575161958">Опције шифровања</translation>
@@ -951,7 +950,6 @@
 <translation id="7554791636758816595">Нова картица</translation>
 <translation id="7564049878696755256">Можете да изгубите приступ налогу за <ph name="ORG_NAME" /> или би могло да дође до крађе идентитета. Chrome вам препоручује да одмах промените лозинку.</translation>
 <translation id="7567204685887185387">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат је можда лажно издат. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
-<translation id="7568593326407688803">Ова страница је на језику:<ph name="ORIGINAL_LANGUAGE" />Желите ли да је преведете?</translation>
 <translation id="7569952961197462199">Желите ли да уклоните кредитну картицу из Chrome-а?</translation>
 <translation id="7575800019233204241">„Веза није приватна“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“ или „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“ или „Грешка са SSL сертификатом“</translation>
 <translation id="7578104083680115302">Плаћајте брзо на сајтовима и у апликацијама на свим уређајима помоћу картица које сте сачували на Google-у.</translation>

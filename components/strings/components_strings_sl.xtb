@@ -808,7 +808,6 @@
 <translation id="6508722015517270189">Znova zaženite Chrome</translation>
 <translation id="6529602333819889595">&amp;Uveljavi izbris</translation>
 <translation id="6534179046333460208">Predlogi za Fizični splet</translation>
-<translation id="6550675742724504774">Možnosti</translation>
 <translation id="6563469144985748109">Skrbnik še ni odobril</translation>
 <translation id="6569060085658103619">Ogledujete si stran razširitve</translation>
 <translation id="6596325263575161958">Možnosti šifriranja</translation>
@@ -952,7 +951,6 @@ Dodatne podrobnosti:
 <translation id="7554791636758816595">Nov zavihek</translation>
 <translation id="7564049878696755256">Izgubite lahko dostop do računa za <ph name="ORG_NAME" /> ali postanete žrtev kraje identitete. Chrome priporoča, da spremenite geslo.</translation>
 <translation id="7567204685887185387">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda izdano z goljufijo. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
-<translation id="7568593326407688803">Ta stran je v jeziku:<ph name="ORIGINAL_LANGUAGE" />Jo želite prevesti?</translation>
 <translation id="7569952961197462199">Želite odstraniti kreditno kartico iz Chroma?</translation>
 <translation id="7575800019233204241">»Vaša povezava ni zasebna« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;« ali »&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;« ali »Napaka v potrdilu SSL«</translation>
 <translation id="7578104083680115302">Hitro plačevanje na spletnih mestih in v aplikacijah v vseh napravah s karticami, ki ste jih shranili v Googlu.</translation>

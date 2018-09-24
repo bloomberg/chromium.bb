@@ -137,6 +137,7 @@
 
       REMARQUE : Cette règle ne s'applique pas sur Android. Pour activer IsolateOrigins sur Android, utilisez le paramètre de la règle IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Active l'API Hardware Platform pour les extensions installées dans le cadre des règles</translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Faire confiance à l'ancienne infrastructure PKI de Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
@@ -473,6 +474,9 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2201555246697292490">Configurer la liste blanche de messagerie native</translation>
 <translation id="2204753382813641270">Règle pour masquer automatiquement l'étagère</translation>
 <translation id="2208976000652006649">Paramètres pour l'URL de recherche utilisant POST</translation>
+<translation id="2214880135980649323">Lorsque cette règle est activée, les extensions installées dans le cadre des règles de l'entreprise sont autorisées à utiliser l'API Enterprise Hardware Platform.
+      Lorsque cette règle est désactivée ou n'est pas définie, aucune extension n'est autorisée à utiliser l'API Enterprise Hardware Platform.
+      Cette règle s'applique également aux extensions de composant telles que l'extension Hangout Services.</translation>
 <translation id="2223598546285729819">Paramètre de notification par défaut</translation>
 <translation id="2231817271680715693">Importer l'historique de navigation du navigateur par défaut à la première exécution</translation>
 <translation id="2236488539271255289">Interdire à tous les sites de définir des données locales</translation>
@@ -2835,7 +2839,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
           (ces deux API ne sont pas disponibles pour les applications/extensions qui ne sont pas
           installées d'office).
 
-          Cette règle prévaut lors d'un conflit avec la règle <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Si une application ou une extension installée d'office est supprimée de la liste, <ph name="PRODUCT_NAME" /> la désinstalle automatiquement.
+          Cette règle prévaut en cas de conflit avec la règle <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Si une application ou une extension installée d'office est supprimée de la liste, <ph name="PRODUCT_NAME" /> la désinstalle automatiquement.
 
           Pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation d'office est limitée aux applications et aux extensions répertoriées sur le Chrome Web Store.
 
@@ -2898,6 +2902,17 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8465065632133292531">Paramètres pour l'URL instantanée utilisant POST</translation>
 <translation id="847472800012384958">Interdire à tous les sites d'afficher des fenêtres pop-up</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Supprime les sections liées à la confidentialité et celles qui sont sensibles au niveau de la sécurité des URL "https://" avant de les transmettre aux scripts PAC (Proxy Auto Config) utilisés par <ph name="PRODUCT_NAME" /> lors de la résolution du proxy.
+
+      Lorsque la règle est définie sur "True", la fonctionnalité de sécurité est activée et les informations sensibles sont retirées des URL https:// avant leur envoi à un script PAC. De cette manière, le script PAC ne peut pas afficher des données qui sont normalement protégées par un canal chiffré (comme le chemin d'accès et la requête de l'URL).
+
+      Lorsque la règle est définie sur "False", la fonctionnalité de sécurité est désactivée, et les scripts PAC ont implicitement accès à tous les composants d'une URL https://. Ceci s'applique à tous les scripts PAC, quelle que soit leur origine (y compris ceux qui transitent sur un canal non sécurisé ou qui sont découverts de manière non sécurisée via WPAD).
+
+      Cette règle est définie par défaut sur "True" (fonctionnalité de sécurité activée).
+
+      Nous vous recommandons de définir cette règle sur "True". Ne la définissez sur "False" qu'en cas de problème de compatibilité avec les scripts PAC existants.
+
+      La règle sera supprimée dans la version M75.</translation>
 <translation id="8484458986062090479">Personnalise la liste des formats d'URL qui doivent toujours être affichés par le navigateur hôte.
 
           Si vous ne définissez pas cette règle, le moteur de rendu par défaut est utilisé pour tous les sites, tel que spécifié par la règle "ChromeFrameRendererSettings".

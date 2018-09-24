@@ -157,6 +157,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">താഴെയുള്ള പേജുകള്‍</translation>
 <translation id="8245914219290430011">ടാബ്</translation>
+<translation id="8259556432390118667">ഹെക്‌സ് വർണ മൂല്യം</translation>
 <translation id="8328145009876646418">ഇടത് അഗ്രം</translation>
 <translation id="8331626408530291785">മുകളിലേക്ക് സ്ക്രോള്‍ ചെയ്യൂ</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{ഒരു വര്‍ഷം}other{# വർഷം}}</translation>
@@ -172,6 +173,7 @@
 <translation id="8798099450830957504">സ്ഥിരസ്ഥിതി</translation>
 <translation id="8806053966018712535">ഫോൾഡർ <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">ചിത്രം വ്യാഖ്യാനിക്കുക</translation>
+<translation id="8841375032071747811">ബാക്ക് ബട്ടൺ</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="9002566407876343676">തുറക്കുക</translation>
 <translation id="9038489124413477075">പേരിടാത്ത ഫോൾഡർ</translation>

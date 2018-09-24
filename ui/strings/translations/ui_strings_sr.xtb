@@ -157,6 +157,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Страница надоле</translation>
 <translation id="8245914219290430011">Табулатор</translation>
+<translation id="8259556432390118667">Хексадецимална вредност боје</translation>
 <translation id="8328145009876646418">Лева ивица</translation>
 <translation id="8331626408530291785">Помери нагоре</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 година}one{# година}few{# године}other{# година}}</translation>
@@ -172,6 +173,7 @@
 <translation id="8798099450830957504">Подразумевано</translation>
 <translation id="8806053966018712535">Директоријум <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Додај напомену у слику</translation>
+<translation id="8841375032071747811">Дугме Назад</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="9002566407876343676">отварање</translation>
 <translation id="9038489124413477075">Неименовани директоријум</translation>

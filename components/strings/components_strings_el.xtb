@@ -809,7 +809,6 @@
 <translation id="6508722015517270189">Επανεκκινήστε το Chrome</translation>
 <translation id="6529602333819889595">&amp;Επανάληψη διαγραφής</translation>
 <translation id="6534179046333460208">Προτάσεις Φυσικού δικτύου</translation>
-<translation id="6550675742724504774">Επιλογές</translation>
 <translation id="6563469144985748109">Ο διαχειριστής σας δεν τον έχει εγκρίνει ακόμα</translation>
 <translation id="6569060085658103619">Βλέπετε μια σελίδα επέκτασης</translation>
 <translation id="6596325263575161958">Επιλογές κρυπτογράφησης</translation>
@@ -953,7 +952,6 @@
 <translation id="7554791636758816595">Νέα καρτέλα</translation>
 <translation id="7564049878696755256">Μπορεί να χάσετε την πρόσβαση στον λογαριασμό σας <ph name="ORG_NAME" /> ή να πέσετε θύμα κλοπής στοιχείων ταυτότητας. Το Chrome συνιστά να αλλάξετε τον κωδικό πρόσβασής σας τώρα.</translation>
 <translation id="7567204685887185387">Ο διακομιστής δεν μπόρεσε να αποδείξει ότι είναι <ph name="DOMAIN" />. Το πιστοποιητικό ασφαλείας του μπορεί να εκδόθηκε παράνομα. Αυτό μπορεί να οφείλεται σε λανθασμένη ρύθμιση ή σε κάποιον τρίτο που επιτίθεται στη σύνδεσή σας.</translation>
-<translation id="7568593326407688803">Αυτή η σελίδα είναι στα<ph name="ORIGINAL_LANGUAGE" />Θέλετε να τη μεταφράσετε;</translation>
 <translation id="7569952961197462199">Κατάργηση πιστωτικής κάρτας από το Chrome;</translation>
 <translation id="7575800019233204241">"Η σύνδεσή σας δεν είναι ιδιωτική" ή "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ή "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ή "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ή "Σφάλμα πιστοποιητικού SSL"</translation>
 <translation id="7578104083680115302">Κάντε γρήγορες πληρωμές σε ιστότοπους και εφαρμογές σε διαφορετικές συσκευές χρησιμοποιώντας κάρτες που έχετε αποθηκεύσει στο Google.</translation>

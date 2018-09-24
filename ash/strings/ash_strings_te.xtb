@@ -21,6 +21,7 @@
 <translation id="1270290102613614947">స్క్రీన్‌పై కనిపించే కీబోర్డ్ నిలిపివేయబడింది</translation>
 <translation id="1272079795634619415">ఆపు</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> నాడు <ph name="COME_BACK_TIME" />కి తిరిగి రండి.</translation>
 <translation id="1290331692326790741">సిగ్నల్ బలహీనంగా ఉంది</translation>
 <translation id="1293264513303784526">USB-C పరికరం (ఎడమ పోర్ట్)</translation>
 <translation id="1294929383540927798">లాక్-స్క్రీన్ నోటిఫికేషన్ సెట్టింగ్‌లను మార్చండి</translation>
@@ -98,6 +99,7 @@
 <translation id="2501920221385095727">స్టిక్కీ కీలు</translation>
 <translation id="2509468283778169019">CAPS LOCK ఆన్‌లో ఉంది</translation>
 <translation id="2532589005999780174">అధిక కాంట్రాస్ట్ మోడ్</translation>
+<translation id="255671100581129685">Google అసిస్టెంట్ పబ్లిక్ సెషన్‌లో అందుబాటులో లేదు.</translation>
 <translation id="2575685495496069081">బహుళ సైన్-ఇన్ నిలిపివేయబడింది</translation>
 <translation id="2582112259361606227">అప్‌డేేట్ చేయడానికి పునఃప్రారంభించండి</translation>
 <translation id="2597972630681408282">రాత్రి కాంతి: <ph name="NIGHT_LIGHT_STATUS" /></translation>
@@ -129,6 +131,7 @@
 <translation id="3000461861112256445">మోనో ఆడియో</translation>
 <translation id="3009178788565917040">అవుట్‌పుట్</translation>
 <translation id="3019353588588144572">బ్యాటరీ నిండటానికి పట్టే సమయం, <ph name="TIME_REMAINING" /></translation>
+<translation id="3055162170959710888">మీరు ఈ పరికరాన్ని ఈ రోజు <ph name="USED_TIME" /> పాటు ఉపయోగించారు</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">మెనూని విస్తరించు</translation>
 <translation id="3087734570205094154">దిగువ</translation>
@@ -215,6 +218,7 @@
 <translation id="4659419629803378708">ChromeVox ప్రారంభించబడింది</translation>
 <translation id="4734965478015604180">అడ్డంగా ఉంది</translation>
 <translation id="476166673298332917">ఈ పరికరం నిర్వాహకులు పాస్‌వర్డ్‌లు, అలాగే కమ్యూనికేషన్‌లతో సహా మొత్తం కార్యకలాపానికి యాక్సెస్‌ని కలిగి ఉన్నారు.</translation>
+<translation id="4774338217796918551">రేపు <ph name="COME_BACK_TIME" />కి తిరిగి రండి.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> కోసం పాస్‌వర్డ్</translation>
 <translation id="4778095205580009397">Google అసిస్టెంట్ డెమో సెషన్‌లో అందుబాటులో లేదు.</translation>
 <translation id="479989351350248267">search</translation>
@@ -229,6 +233,7 @@
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="4924411785043111640">మళ్లీ ప్రారంభించి, రీసెట్ చేయండి</translation>
 <translation id="4961318399572185831">స్క్రీన్ ప్రసారం చేయండి</translation>
+<translation id="5030687792513154421">సమయం ముగిసింది</translation>
 <translation id="5083553833479578423">మరిన్ని Assistant ఫీచర్‌లను అన్‌లాక్ చేయండి.</translation>
 <translation id="5136175204352732067">వేరే కీబోర్డ్ కనెక్ట్ చేయబడింది</translation>
 <translation id="5168181903108465623">Cast పరికరాలు అందుబాటులో ఉన్నాయి</translation>
@@ -277,7 +282,6 @@
 <translation id="598882571027504733">అప్‌డేట్‌ని పొందడానికి, కీబోర్డ్‌‌ని అలానే జోడించి ఉంచి మీ Chromebookని పునఃప్రారంభించండి.</translation>
 <translation id="5992218262414051481">అధిక క్రాంటాస్ట్ మోడ్ ఆరంభించబడింది. దాన్ని ఆఫ్‌కి టోగుల్ చేయడం కోసం మళ్లీ Ctrl+Search+Hని నొక్కండి.</translation>
 <translation id="6018164090099858612">ప్రతిబింబ మోడ్ నుండి నిష్క్రమిస్తోంది</translation>
-<translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6043212731627905357">మీ <ph name="DEVICE_TYPE" />తో ఈ మానిటర్ పని చేయడం లేదు (మానిటర్‌కు మద్దతు లేదు).</translation>
 <translation id="6043994281159824495">ఇప్పుడే సైన్ అవుట్ చేయి</translation>
 <translation id="6047696787498798094">మీరు మరొక వినియోగదారుకు మారినప్పుడు స్క్రీన్ భాగస్వామ్యం ఆపివేయబడుతుంది. మీరు కొనసాగించాలనుకుంటున్నారా?</translation>
@@ -360,6 +364,7 @@
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">నెట్‌వర్క్ పర్యవేక్షించబడవచ్చు</translation>
 <translation id="7536035074519304529">IP చిరునామా: <ph name="ADDRESS" /></translation>
+<translation id="7548434653388805669">నిద్రపోయే సమయం</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />కి మద్దతివ్వదు. రిజల్యూషన్ <ph name="FALLBACK_RESOLUTION" />కి మార్చబడింది</translation>
 <translation id="7562368315689366235">ఎమోజీ ఫలకం</translation>
 <translation id="7564874036684306347">విండోలను మరొక డెస్క్‌టాప్‌కు తరలించడం వలన ఊహించని ప్రవర్తన చోటు చేసుకోవచ్చు. తర్వాత చూపబడే నోటిఫికేషన్‌లు, విండోలు మరియు డైలాగ్‌లు డెస్క్‌టాప్‌ల మధ్య విభజించబడవచ్చు.</translation>
@@ -402,12 +407,14 @@
 <translation id="8152119955266188852">పూర్తి స్క్రీన్‌ మాగ్నిఫైయర్‌కు సంబంధించిన షార్ట్‌కట్‌ను మీరు నొక్కారు. మీరు దీనిని ఆన్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8190698733819146287">భాషలను అనుకూలీకరించి, ఇన్‌పుట్ చెయ్యి...</translation>
 <translation id="8192202700944119416">నోటిఫికేషన్‌లు దాచబడ్డాయి.</translation>
+<translation id="8236042855478648955">విరామ సమయం</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8297006494302853456">బలహీనం</translation>
 <translation id="8308637677604853869">మునుపటి మెను</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">గమనికను సృష్టించండి</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> కోసం ఎంపికల మెను</translation>
+<translation id="8394567579869570560">మీ తల్లి/తండ్రి ఈ పరికరాన్ని లాక్ చేసి ఉంచారు</translation>
 <translation id="8406981827175133772">పూర్తి స్క్రీన్ మాగ్నిఫైయర్</translation>
 <translation id="8425213833346101688">మార్చు</translation>
 <translation id="8427213022735114808">మీరు రాయాలనుకునేది Googleకి చెబితే చాలు వెంటనే వచన రూపంలోకి మారుస్తుంది.</translation>
@@ -437,7 +444,6 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">రెండింటి కంటే ఎక్కువ డిస్‌ప్లేలతో మిర్రరింగ్ చేయడానికి మద్దతు లేదు.</translation>
 <translation id="8828714802988429505">90°</translation>
-<translation id="8841375032071747811">వెనుకకు బటన్</translation>
 <translation id="8843682306134542540">భ్రమణం లాక్‌ను టోగుల్ చేయండి. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">యాప్‌లో విభజన స్క్రీన్‌కి మద్దతు లేదు.</translation>
@@ -464,6 +470,7 @@
 <translation id="9201131092683066720">బ్యాటరీ <ph name="PERCENTAGE" />% నిండింది.</translation>
 <translation id="9210037371811586452">ఏకీకృత డెస్క్‌టాప్ మోడ్ నుండి నిష్క్రమిస్తోంది</translation>
 <translation id="9215934040295798075">వాల్‌పేపర్‌ను సెట్ చేయండి</translation>
+<translation id="921989828232331238">మీ తల్లి/తండ్రి ఈ రోజుకి మీ పరికరాన్ని లాక్ చేసి ఉంచారు</translation>
 <translation id="923686485342484400">సైన్ అవుట్ చేయడానికి Control Shift Qను రెండుసార్లు నొక్కండి.</translation>
 <translation id="938963181863597773">నా క్యాలెండర్‌లో ఏమి ఉన్నాయి?</translation>
 <translation id="945522503751344254">అభిప్రాయాన్ని పంపండి</translation>

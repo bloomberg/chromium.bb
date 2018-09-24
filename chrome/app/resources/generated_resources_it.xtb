@@ -17,7 +17,7 @@
 <translation id="1018656279737460067">Operazione annullata</translation>
 <translation id="102272308210570439">Consenti all'assistente di usare i contenuti sullo schermo</translation>
 <translation id="1026822031284433028">Carica immagine</translation>
-<translation id="1029317248976101138">Dimensioni dei caratteri</translation>
+<translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> vuole memorizzare in modo definitivo grandi quantità di dati sul dispositivo</translation>
 <translation id="1031362278801463162">Caricamento anteprima in corso</translation>
 <translation id="103279545524624934">Libera spazio sul disco per avviare le app Android.</translation>
@@ -275,6 +275,7 @@
 <translation id="1395730723686586365">Programma di aggiornamento avviato</translation>
 <translation id="1396139853388185343">Errore durante la configurazione della stampante</translation>
 <translation id="1396963298126346194">Il nome utente e la password inseriti non corrispondono</translation>
+<translation id="1397500194120344683">Nessun dispositivo idoneo. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="1397854323885047133">Sincronizzazione e personalizzazione</translation>
 <translation id="1398853756734560583">Ingrandisci</translation>
 <translation id="1399511500114202393">Nessun certificato utente</translation>
@@ -375,7 +376,6 @@
 <translation id="1531004739673299060">Finestra dell'applicazione</translation>
 <translation id="15373452373711364">Puntatore del mouse grande</translation>
 <translation id="1538729222189715449">Apertura di file Linux…</translation>
-<translation id="153933193410874873">Non siamo riusciti a verificare la tua identità su questo dispositivo</translation>
 <translation id="1540605929960647700">Attiva modalità demo</translation>
 <translation id="1543284117603151572">Importati da Edge</translation>
 <translation id="1545177026077493356">Modalità kiosk automatica</translation>
@@ -529,6 +529,7 @@
 <translation id="175772926354468439">Attiva tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Visualizza nel Chrome Web Store</translation>
+<translation id="176193854664720708">Il sensore di impronte digitali si trova nel tasto di accensione. Toccalo leggermente con un dito.</translation>
 <translation id="1763046204212875858">Creazione di scorciatoie applicazione</translation>
 <translation id="1763108912552529023">Continua a esplorare</translation>
 <translation id="1763808908432309942">Si apre in una nuova scheda</translation>
@@ -682,7 +683,6 @@
 <translation id="1981115145845865539">Sblocca automaticamente il tuo dispositivo <ph name="DEVICE_TYPE" /></translation>
 <translation id="1983959805486816857">Dopo avere creato un nuovo utente supervisionato, puoi gestire le impostazioni in qualsiasi momento e da qualsiasi dispositivo all'indirizzo <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Aggancia la finestra a destra</translation>
-<translation id="1987139229093034863">Passa a un altro utente.</translation>
 <translation id="1987317783729300807">Account</translation>
 <translation id="1989112275319619282">Esplora</translation>
 <translation id="1992397118740194946">Non impostata</translation>
@@ -823,6 +823,7 @@
 <translation id="2208158072373999562">Archivio Zip</translation>
 <translation id="220858061631308971">Inserisci questo codice PIN su "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2209593327042758816">Elemento 2 della shelf</translation>
+<translation id="2212126039311489237">Stampa utilizzando la finestra di dialogo di sistema</translation>
 <translation id="2217501013957346740">Crea un nome -</translation>
 <translation id="2218019600945559112">Mouse e touchpad</translation>
 <translation id="2218320521449013367">Si è verificato un errore in Chrome durante la rimozione di software dannoso</translation>
@@ -935,6 +936,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> file selezionati</translation>
 <translation id="237828693408258535">Vuoi tradurre questa pagina?</translation>
 <translation id="2378982052244864789">Seleziona la directory dell'estensione.</translation>
+<translation id="2379281330731083556">Stampa utilizzando la finestra di dialogo di sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Chiedi prima di inviare (opzione consigliata)</translation>
 <translation id="2384436799579181135">Si è verificato un errore. Controlla la tua stampante e riprova.</translation>
 <translation id="2387458720915042159">Tipo di connessione proxy</translation>
@@ -1113,6 +1115,7 @@
 <translation id="2653659639078652383">Invia</translation>
 <translation id="265390580714150011">Valore campo</translation>
 <translation id="2654166010170466751">Consenti ai siti di installare gestori dei pagamenti</translation>
+<translation id="2656742821229528729">Connetti il telefono Android e il Chromebook per poter mandare SMS dal computer, condividere la connessione a Internet e sbloccare il Chromebook con il telefono.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Le funzionalità variano in base al dispositivo</translation>
 <translation id="2660779039299703961">Evento</translation>
 <translation id="266079277508604648">Impossibile connettere la stampante. Verifica che sia accesa e collegata al Chromebook tramite Wi-Fi o USB.</translation>
@@ -1417,6 +1420,7 @@
 <translation id="3115128645424181617">Impossibile trovare il telefono. Assicurati che sia a portata di mano e che il Bluetooth sia attivo.</translation>
 <translation id="3115147772012638511">In attesa di elaborazione cache...</translation>
 <translation id="3118319026408854581">Guida di <ph name="PRODUCT_NAME" /></translation>
+<translation id="3119484583572640616">Se attivi Better Together, questa funzione può:</translation>
 <translation id="3120430004221004537">Crittografia insufficiente per un'operazione specifica su: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3121793941267913344">Ripristina questo dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -1729,6 +1733,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3596235046596950091">Attiva servizi cloud</translation>
 <translation id="3599863153486145794">Consente di cancellare la cronologia da tutti i dispositivi su cui hai eseguito l'accesso. Il tuo account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Disattiva l'audio nei siti che riproducono suoni</translation>
+<translation id="360180734785106144">Offrire nuove funzionalità quando diventano disponibili.</translation>
 <translation id="3602290021589620013">Anteprima</translation>
 <translation id="3603533104205588786">Puoi fare clic sulla stella per aggiungere una pagina ai preferiti</translation>
 <translation id="3603622770190368340">Ottieni certificato di rete</translation>
@@ -2064,7 +2069,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4068506536726151626">Questa pagina contiene elementi dai seguenti siti che stanno rilevando la tua posizione:</translation>
 <translation id="4068776064906523561">Impronte digitali salvate</translation>
 <translation id="407173827865827707">Al clic</translation>
-<translation id="4071770069230198275"><ph name="PROFILE_NAME" />: errore di accesso</translation>
 <translation id="4074900173531346617">Certificato del firmatario email</translation>
 <translation id="407520071244661467">Scala</translation>
 <translation id="4075639477629295004">Impossibile trasmettere <ph name="FILE_NAME" />.</translation>
@@ -2477,7 +2481,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4772404146526168240">Entrambi gli schermi</translation>
 <translation id="4776917500594043016">Password per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
-<translation id="4779083564647765204">Dimensioni dei caratteri</translation>
+<translation id="4779083564647765204">Zoom</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Popup bloccato}other{# popup bloccati}}</translation>
 <translation id="4780321648949301421">Salva pagina con nome...</translation>
 <translation id="4781787911582943401">Ingrandimento dello schermo</translation>
@@ -2865,6 +2869,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5332624210073556029">Fuso orario:</translation>
 <translation id="5334142896108694079">Cache script</translation>
 <translation id="5334844597069022743">Visualizza sorgente</translation>
+<translation id="5334899159203764908">Ulteriori informazioni sull'<ph name="BEGIN_LINK" />accesso ai siti<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Backup di <ph name="FILE_COUNT" /> su <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> in corso</translation>
 <translation id="5336126339807372270">Non consentire ai siti di accedere ai dispositivi USB</translation>
 <translation id="5337771866151525739">Installata da una terza parte.</translation>
@@ -2972,6 +2977,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5487521232677179737">Cancella dati</translation>
 <translation id="5488093641312826914">"<ph name="COPIED_ITEM_NAME" />" copiato</translation>
 <translation id="5488468185303821006">Consenti modalità in incognito</translation>
+<translation id="5489121514345187313">Il Chromebook funziona ancora meglio insieme al tuo telefono. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="5489435190927933437">Password salvate per <ph name="DOMAIN" /></translation>
 <translation id="5491110079163012109">Invia dati sul sistema. Invia automaticamente a Google dati diagnostici e sull'utilizzo delle app e del dispositivo. Questa impostazione viene applicata dal proprietario, che può decidere di inviare a Google dati diagnostici e sull'utilizzo del dispositivo. Puoi visualizzare questa opzione nelle impostazioni. Se hai attivato Attività web e app, queste informazioni vengono memorizzate nel tuo account per consentirti di gestirle nella pagina Le mie attività. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">schermo attivo</translation>
@@ -3143,6 +3149,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5731409020711461763">1 nuova foto</translation>
 <translation id="5734362860645681824">Comunicazioni</translation>
 <translation id="5736796278325406685">Inserisci un nome utente valido</translation>
+<translation id="5739235828260127894">In attesa di verifica. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Molto grandi</translation>
 <translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> e altre <ph name="NUM_ADDITIONAL_LANGUAGES" /></translation>
 <translation id="574209121243317957">Tono</translation>
@@ -3246,6 +3253,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5870086504539785141">Chiudi menu accessibilità</translation>
 <translation id="5870155679953074650">Errori hardware</translation>
 <translation id="5877064549588274448">Canale cambiato. Riavvia il dispositivo per applicare le modifiche.</translation>
+<translation id="5877584842898320529">La stampante selezionata non è disponibile o non è installata correttamente. <ph name="BR" /> Controlla la stampante o prova a selezionarne un'altra.</translation>
 <translation id="5880247576487732437">Token presente</translation>
 <translation id="5882919346125742463">Reti note</translation>
 <translation id="5884474295213649357">La scheda è connessa a un dispositivo USB.</translation>
@@ -3312,6 +3320,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5979469435153841984">Per aggiungere una pagina ai preferiti, fai clic sulla stella nella barra degli indirizzi</translation>
 <translation id="5982621672636444458">Opzioni ordinamento</translation>
 <translation id="5984222099446776634">Visitati di recente</translation>
+<translation id="5985458664595100876">Formato dell'URL non valido. I formati supportati sono \\server\share e smb://server/share.</translation>
 <translation id="5990142338020175451">Più servizi Google personali, ad esempio suggerimenti di pagine migliori</translation>
 <translation id="5990386583461751448">Tradotta</translation>
 <translation id="5991049340509704927">Ingrandisci</translation>
@@ -3340,6 +3349,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - Dispositivo USB collegato</translation>
 <translation id="6028117231645531007">Aggiungi impronta</translation>
 <translation id="6029027682598229313">Installazione di Linux completata.</translation>
+<translation id="6029292188939175871">elimina [<ph name="FINGERPRINT_NAME" />], pulsante</translation>
 <translation id="6029587122245504742">Minima</translation>
 <translation id="6032912588568283682">File system</translation>
 <translation id="6034662038931255275">Aggiornamento del sistema operativo eseguito correttamente</translation>
@@ -3453,7 +3463,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6185132558746749656">Posizione del dispositivo</translation>
 <translation id="6185617499004995178">Validatore IPP CUPS</translation>
 <translation id="6185696379715117369">Pagina su</translation>
-<translation id="6189273858858366896">Configura o gestisci condivisioni file di rete.</translation>
 <translation id="6189412234224385711">Apri con l'estensione <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blocca cookie di terze parti</translation>
 <translation id="6196854373336333322">L'estensione "<ph name="EXTENSION_NAME" />" ha assunto il controllo delle tue impostazioni proxy, il che significa che può cambiare, interrompere o intercettare tutto ciò che fai online. Se non sei sicuro del motivo per cui si sia verificato questo cambiamento, è probabile che sia indesiderato.</translation>
@@ -3759,6 +3768,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6644512095122093795">Chiedi di salvare le password</translation>
 <translation id="6644846457769259194">Aggiornamento del dispositivo in corso (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="6645437135153136856">Il dispositivo Google Cloud Print selezionato non è più supportato. <ph name="BR" /> Prova a configurare la stampante nelle impostazioni di sistema del computer.</translation>
 <translation id="6647228709620733774">URL di revoca dell'autorità di certificazione Netscape</translation>
 <translation id="6647838571840953560">Attualmente su <ph name="CHANNEL_NAME" /></translation>
 <translation id="6648051959475508072">Token di sicurezza attivato…</translation>
@@ -3780,7 +3790,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="667517062706956822">Vuoi che Google traduca la pagina da <ph name="SOURCE_LANGUAGE" /> in <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo di puntamento collegato</translation>
 <translation id="6678717876183468697">URL query</translation>
-<translation id="6680028776254050810">Scambia utenti</translation>
 <translation id="6680442031740878064">Disponibile: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocità</translation>
 <translation id="6681668084120808868">Scatta foto</translation>
@@ -3789,7 +3798,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="668599234725812620">Apri Google Play</translation>
 <translation id="6686490380836145850">Chiudi schede a destra</translation>
 <translation id="6686817083349815241">Salva la password</translation>
-<translation id="6690565918367819723"><ph name="PROFILE_NAME" /> Cambia persona</translation>
 <translation id="6690659332373509948">Impossibile analizzare il file: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Scegli un utente controllato da aggiungere a questo dispositivo.</translation>
 <translation id="6691331417640343772">Gestisci dati sincronizzati sulla Dashboard di Google</translation>
@@ -4126,6 +4134,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7201118060536064622">"<ph name="DELETED_ITEM_NAME" />" eliminato</translation>
 <translation id="7206693748120342859">Download di <ph name="PLUGIN_NAME" /> in corso...</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Esci dalla pagina}other{Esci dalle pagine}}</translation>
+<translation id="7210499381659830293">Stampanti estensione</translation>
 <translation id="721467499098558573">Tieni premuto il pulsante del token di sicurezza per almeno 5 secondi</translation>
 <translation id="7216409898977639127">Fornitore del servizio di telefonia mobile</translation>
 <translation id="7216595297012131718">Ordina le lingue in base alle tue preferenze</translation>
@@ -4204,6 +4213,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7321545336522791733">Server non raggiungibile</translation>
 <translation id="7324297612904500502">Forum per la versione Beta</translation>
 <translation id="7325437708553334317">Estensione Contrasto elevato</translation>
+<translation id="7328162502911382168">(<ph name="COUNT" />)</translation>
 <translation id="7328867076235380839">Combinazione non valida</translation>
 <translation id="7329154610228416156">Accesso non riuscito perché è stato configurato l'utilizzo di un URL non protetto (<ph name="BLOCKED_URL" />). Contatta l'amministratore.</translation>
 <translation id="7334190995941642545">La funzione Smart Lock non è al momento disponibile. Riprova più tardi.</translation>
@@ -4793,6 +4803,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8199300056570174101">Proprietà dispositivo e rete (servizio)</translation>
 <translation id="8200772114523450471">Riprendi</translation>
 <translation id="8202160505685531999">Inserisci di nuovo la password per aggiornare il profilo <ph name="DEVICE_TYPE" />.</translation>
+<translation id="8203732864715032075">Ricevi notifiche e imposta come predefinita la memorizzazione di questo computer per Messaggi. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="8206354486702514201">Questa impostazione è stata applicata dall'amministratore.</translation>
 <translation id="8206745257863499010">Bluesy</translation>
 <translation id="8209677645716428427">Un utente supervisionato può navigare sul Web sotto la tua guida. In qualità di gestore di un utente supervisionato in Chome, puoi:</translation>
@@ -5104,7 +5115,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="869884720829132584">Menu Applicazioni</translation>
 <translation id="869891660844655955">Data di scadenza</translation>
 <translation id="8699566574894671540">Per attivare questa funzione, seleziona prima Controllo ortografico durante la digitazione nel menu Modifica</translation>
-<translation id="870073306461175568">Condivisioni file di rete</translation>
 <translation id="8701677791353449257">Il nome del dispositivo deve corrispondere all'espressione regolare <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">L'operazione sta richiedendo più tempo del solito. Puoi continuare ad aspettare oppure annullare l'operazione e riprovare più tardi.</translation>
 <translation id="8705331520020532516">Numero di serie</translation>
@@ -5289,7 +5299,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Bloccata</translation>
 <translation id="8983677657449185470">Contribuisci a migliorare Navigazione sicura</translation>
 <translation id="8984179138335769204">Avvio rapido</translation>
-<translation id="8984654317541110628">URL condivisione file</translation>
 <translation id="8986362086234534611">Elimina</translation>
 <translation id="8986494364107987395">Invia automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali</translation>
 <translation id="8987927404178983737">Mese</translation>
