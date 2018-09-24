@@ -47,8 +47,8 @@ class ToolbarButtonSlotData {
      */
     static class ToolbarButtonData {
         private final Drawable mDrawable;
-        private final CharSequence mLightAccessibilityString;
-        private final CharSequence mDarkAccessibilityString;
+        private final CharSequence mIncognitoAccessibilityString;
+        private final CharSequence mNormalAccessibilityString;
         private final OnClickListener mOnClickListener;
 
         private final ColorStateList mLightTint;
@@ -56,20 +56,21 @@ class ToolbarButtonSlotData {
 
         /**
          * @param drawable The {@link Drawable} that will be shown in the button slot.
-         * @param lightAccessibilityString The accessibility string to be used in light mode.
-         * @param darkAccessibilityString The accessibility string to be used in dark mode.
+         * @param normalAccessibilityString The accessibility string to be used in normal mode.
+         * @param incognitoAccessibilityString The accessibility string to be used in incognito
+         *                                     mode.
          * @param onClickListener The listener that will be fired when this button is clicked.
          * @param context The {@link Context} that is used to obtain tinting information.
          */
-        ToolbarButtonData(Drawable drawable, CharSequence lightAccessibilityString,
-                CharSequence darkAccessibilityString, OnClickListener onClickListener,
+        ToolbarButtonData(Drawable drawable, CharSequence normalAccessibilityString,
+                CharSequence incognitoAccessibilityString, OnClickListener onClickListener,
                 Context context) {
             mLightTint = AppCompatResources.getColorStateList(context, R.color.light_mode_tint);
             mDarkTint = AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
 
             mDrawable = drawable != null ? DrawableCompat.wrap(drawable) : null;
-            mLightAccessibilityString = lightAccessibilityString;
-            mDarkAccessibilityString = darkAccessibilityString;
+            mNormalAccessibilityString = normalAccessibilityString;
+            mIncognitoAccessibilityString = incognitoAccessibilityString;
             mOnClickListener = onClickListener;
         }
 
@@ -100,17 +101,19 @@ class ToolbarButtonSlotData {
                 public void onAnimationStart(Animator animator) {
                     if (mDrawable != null) {
                         imageButton.setEnabled(true);
+                        imageButton.setVisibility(View.VISIBLE);
                         DrawableCompat.setTintList(mDrawable, isLight ? mLightTint : mDarkTint);
                     }
                     imageButton.setImageDrawable(mDrawable);
                     imageButton.setContentDescription(
-                            isLight ? mLightAccessibilityString : mDarkAccessibilityString);
+                            isLight ? mIncognitoAccessibilityString : mNormalAccessibilityString);
                     imageButton.invalidate();
                 }
 
                 @Override
                 public void onAnimationEnd(Animator animator) {
                     imageButton.setEnabled(mDrawable != null);
+                    imageButton.setVisibility(mDrawable != null ? View.VISIBLE : View.INVISIBLE);
                     imageButton.setOnClickListener(mOnClickListener);
                 }
             });
