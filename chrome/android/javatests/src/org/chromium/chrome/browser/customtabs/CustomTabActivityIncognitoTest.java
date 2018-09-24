@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.browser.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.ExecutionException;
@@ -101,12 +100,7 @@ public class CustomTabActivityIncognitoTest {
 
         IncognitoNotificationService.getRemoveAllIncognitoTabsIntent(mActivity).send();
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity.isFinishing();
-            }
-        });
+        CriteriaHelper.pollUiThread(mActivity::isFinishing);
     }
 
     @Test
