@@ -16,6 +16,7 @@ import android.text.TextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.AsyncTask;
 
 import java.io.File;
 import java.util.ArrayList;

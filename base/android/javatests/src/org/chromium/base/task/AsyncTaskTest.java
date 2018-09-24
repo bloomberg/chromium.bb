@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.base;
+package org.chromium.base.task;
 
 import android.support.annotation.NonNull;
 import android.support.test.filters.SmallTest;
@@ -60,7 +60,7 @@ public class AsyncTaskTest {
     @Test
     @SmallTest
     public void testChromeThreadPoolExecutorRunnables() {
-        Executor executor = new AsyncTask.ChromeThreadPoolExecutor(1, 1, 1, TimeUnit.SECONDS,
+        Executor executor = new ChromeThreadPoolExecutor(1, 1, 1, TimeUnit.SECONDS,
                 new ArrayBlockingQueue<Runnable>(QUEUE_SIZE), new ThreadFactory() {
                     @Override
                     public Thread newThread(@NonNull Runnable r) {
@@ -71,8 +71,8 @@ public class AsyncTaskTest {
             executor.execute(new SpecialRunnable());
         }
         thrown.expect(RejectedExecutionException.class);
-        thrown.expectMessage(
-                CoreMatchers.containsString("org.chromium.base.AsyncTaskTest$SpecialRunnable"));
+        thrown.expectMessage(CoreMatchers.containsString(
+                "org.chromium.base.task.AsyncTaskTest$SpecialRunnable"));
         thrown.expectMessage(
                 CoreMatchers.not(CoreMatchers.containsString("SpecialChromeAsyncTask")));
         new SpecialChromeAsyncTask().executeOnExecutor(executor);
@@ -85,7 +85,7 @@ public class AsyncTaskTest {
     @Test
     @SmallTest
     public void testChromeThreadPoolExecutorChromeAsyncTask() {
-        Executor executor = new AsyncTask.ChromeThreadPoolExecutor(1, 1, 1, TimeUnit.SECONDS,
+        Executor executor = new ChromeThreadPoolExecutor(1, 1, 1, TimeUnit.SECONDS,
                 new ArrayBlockingQueue<Runnable>(QUEUE_SIZE), new ThreadFactory() {
                     @Override
                     public Thread newThread(@NonNull Runnable r) {
@@ -97,7 +97,7 @@ public class AsyncTaskTest {
         }
         thrown.expect(RejectedExecutionException.class);
         thrown.expectMessage(CoreMatchers.containsString(
-                "org.chromium.base.AsyncTaskTest$SpecialChromeAsyncTask"));
+                "org.chromium.base.task.AsyncTaskTest$SpecialChromeAsyncTask"));
         thrown.expectMessage(CoreMatchers.not(CoreMatchers.containsString("SpecialOsAsyncTask")));
         new SpecialOsAsyncTask().executeOnExecutor(executor);
     }
@@ -109,7 +109,7 @@ public class AsyncTaskTest {
     @Test
     @SmallTest
     public void testChromeThreadPoolExecutorOsAsyncTask() {
-        Executor executor = new AsyncTask.ChromeThreadPoolExecutor(1, 1, 1, TimeUnit.SECONDS,
+        Executor executor = new ChromeThreadPoolExecutor(1, 1, 1, TimeUnit.SECONDS,
                 new ArrayBlockingQueue<Runnable>(QUEUE_SIZE), new ThreadFactory() {
                     @Override
                     public Thread newThread(@NonNull Runnable r) {
@@ -120,8 +120,8 @@ public class AsyncTaskTest {
             new SpecialOsAsyncTask().executeOnExecutor(executor);
         }
         thrown.expect(RejectedExecutionException.class);
-        thrown.expectMessage(
-                CoreMatchers.containsString("org.chromium.base.AsyncTaskTest$SpecialOsAsyncTask"));
+        thrown.expectMessage(CoreMatchers.containsString(
+                "org.chromium.base.task.AsyncTaskTest$SpecialOsAsyncTask"));
         thrown.expectMessage(
                 CoreMatchers.not(CoreMatchers.containsString("SpecialChromeAsyncTask")));
         new SpecialChromeAsyncTask().executeOnExecutor(executor);

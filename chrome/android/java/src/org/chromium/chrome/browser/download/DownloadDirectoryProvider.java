@@ -12,11 +12,11 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 
-import org.chromium.base.AsyncTask;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.download.DirectoryOption.DownloadLocationDirectoryType;
 
 import java.io.File;

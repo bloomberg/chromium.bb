@@ -23,11 +23,11 @@ import android.view.animation.LinearInterpolator;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
-import org.chromium.base.AsyncTask;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;

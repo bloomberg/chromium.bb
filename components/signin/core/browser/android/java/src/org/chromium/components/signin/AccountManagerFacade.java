@@ -21,7 +21,6 @@ import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.AsyncTask;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -29,6 +28,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.components.signin.util.PatternMatcher;
 import org.chromium.net.NetworkChangeNotifier;
 
