@@ -182,7 +182,6 @@ class CONTENT_EXPORT AudioCaptureSettings {
   // Creates an object with the given values.
   explicit AudioCaptureSettings(
       std::string device_id,
-      const media::AudioParameters& audio_parameters,
       bool enable_hotword,
       bool disable_local_echo,
       bool enable_automatic_output_device_selection,
@@ -199,11 +198,6 @@ class CONTENT_EXPORT AudioCaptureSettings {
   const std::string& device_id() const {
     DCHECK(HasValue());
     return device_id_;
-  }
-  // This field is meaningless in content capture.
-  const media::AudioParameters& device_parameters() const {
-    DCHECK(HasValue());
-    return audio_parameters_;
   }
   bool hotword_enabled() const {
     DCHECK(HasValue());
@@ -225,7 +219,6 @@ class CONTENT_EXPORT AudioCaptureSettings {
  private:
   const char* failed_constraint_name_;
   std::string device_id_;
-  media::AudioParameters audio_parameters_;
   bool hotword_enabled_;
   bool disable_local_echo_;
   bool render_to_associated_sink_;
