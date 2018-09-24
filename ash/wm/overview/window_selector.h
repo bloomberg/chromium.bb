@@ -78,7 +78,12 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
     // Overview can be closed by swiping up from the shelf. In this mode, the
     // call site will handle shifting the bounds of the windows, so overview
     // code does not need to handle any animations. This is an exit only type.
-    kSwipeFromShelf
+    kSwipeFromShelf,
+    // Overview can be opened by start dragging a window from top or be closed
+    // if the dragged window restores back to maximized/full-screened. Used as
+    // an exit type only currently to avoid the update bounds animation of the
+    // windows in overview grid on overview mode ended.
+    kWindowDragged
   };
 
   // Callback which fills out the passed settings object. Used by several

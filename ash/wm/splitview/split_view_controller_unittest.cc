@@ -2839,6 +2839,51 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
     EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
 }
 
+// Tests that the dragged window should be the active and top window if overview
+// ended because of window drag.
+TEST_F(SplitViewTabDraggingTest, OverviewEndedOnWindowDrag) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  std::unique_ptr<aura::Window> window2(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  // Drags |window2| to overview.
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(window2.get(), window2.get());
+  gfx::Rect new_selector_item_bounds =
+      GetNewSelectorItemBoundsDuringDrag(window1.get());
+  DragWindowTo(resizer.get(), new_selector_item_bounds.CenterPoint());
+  CompleteDrag(std::move(resizer));
+  WindowSelectorController* selector_controller =
+      Shell::Get()->window_selector_controller();
+  EXPECT_TRUE(selector_controller->IsSelecting());
+  EXPECT_TRUE(selector_controller->window_selector()->IsWindowInOverview(
+      window2.get()));
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+
+  // Drags |window1| by a small distance. Both splitview and overview should be
+  // ended and |window1| is the active window and above |window2|.
+  resizer = StartDrag(window1.get(), window1.get());
+  DragWindowTo(resizer.get(), gfx::Point(10, 10));
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(selector_controller->IsSelecting());
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMaximized());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsActive());
+  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsActive());
+  // |window1| should above |window2|.
+  const aura::Window::Windows windows = window1->parent()->children();
+  auto window1_layer = std::find(windows.begin(), windows.end(), window1.get());
+  auto window2_layer = std::find(windows.begin(), windows.end(), window2.get());
+  EXPECT_TRUE(window1_layer > window2_layer);
+}
+
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
   TestWindowDelegateWithWidget(bool can_activate)

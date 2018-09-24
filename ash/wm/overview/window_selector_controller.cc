@@ -291,7 +291,8 @@ bool WindowSelectorController::ToggleOverview(
       return true;
 
     window_selector_->set_enter_exit_overview_type(new_type);
-    if (type != WindowSelector::EnterExitOverviewType::kNormal) {
+    if (type == WindowSelector::EnterExitOverviewType::kWindowsMinimized ||
+        type == WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
       // Minimize the windows without animations. When the home launcher button
       // is pressed, minimized widgets will get created in their place, and
       // those widgets will be slid out of overview. Otherwise,
