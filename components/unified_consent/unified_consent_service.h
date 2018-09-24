@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/unified_consent/unified_consent_service_client.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -131,13 +132,21 @@ class UnifiedConsentService : public KeyedService,
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
 
+  // Updates the sync settings if sync isn't disabled and the sync engine is
+  // initialized.
+  void UpdateSyncSettingsIfPossible(
+      bool sync_everything,
+      syncer::ModelTypeSet sync_data_types = syncer::UserSelectableTypes());
+
+  // Posts a task to call |UpdateSyncSettingsIfPossible|.
+  void PostTaskToUpdateSyncSettings(
+      bool sync_everything,
+      syncer::ModelTypeSet sync_data_types = syncer::UserSelectableTypes());
+
   // Called when |prefs::kUnifiedConsentGiven| pref value changes.
   // When set to true, it enables syncing of all data types and it enables all
   // non-personalized services. Otherwise it does nothing.
   void OnUnifiedConsentGivenPrefChanged();
-
-  // Enables/disables syncing everything if the sync engine is initialized.
-  void SetSyncEverythingIfPossible(bool sync_everything);
 
   // Migration helpers.
   MigrationState GetMigrationState();
@@ -157,10 +166,6 @@ class UnifiedConsentService : public KeyedService,
   // Checks if all on-by-default non-personalized services are on.
   bool AreAllOnByDefaultPrivacySettingsOn();
 
-  // Helper that checks whether it's okay to call
-  // |SyncService::OnUserChoseDatatypes|.
-  bool IsSyncConfigurable();
-
   // Records a sample for each bucket enabled by the user (except kNone).
   // kNone is recorded when none of the other buckets are recorded.
   void RecordSettingsHistogram();
@@ -177,6 +182,8 @@ class UnifiedConsentService : public KeyedService,
   syncer::SyncService* sync_service_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  base::WeakPtrFactory<UnifiedConsentService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentService);
 };
