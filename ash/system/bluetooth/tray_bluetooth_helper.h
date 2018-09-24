@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "services/device/public/mojom/bluetooth_system.mojom.h"
 
 namespace device {
 class BluetoothDiscoverySession;
@@ -67,12 +68,12 @@ class ASH_EXPORT TrayBluetoothHelper
   // Connect to a specific bluetooth device.
   void ConnectToBluetoothDevice(const std::string& address);
 
-  // Returns whether bluetooth capability is available (e.g. the device has
-  // hardware support).
-  bool GetBluetoothAvailable();
+  // Returns the state of Bluetooth in the system e.g. has hardware supports,
+  // is enabled, etc.
+  device::mojom::BluetoothSystem::State GetBluetoothState();
 
-  // Returns whether bluetooth is enabled.
-  bool GetBluetoothEnabled();
+  // Returns true if there is a Bluetooth radio present.
+  bool IsBluetoothStateAvailable();
 
   // Changes bluetooth state to |enabled|. If the current state and |enabled|
   // are same, it does nothing. If they're different, it toggles the state and

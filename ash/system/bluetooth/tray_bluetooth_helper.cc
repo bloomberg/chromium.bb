@@ -17,6 +17,8 @@
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 
+using device::mojom::BluetoothSystem;
+
 namespace ash {
 namespace {
 
@@ -132,20 +134,38 @@ void TrayBluetoothHelper::ConnectToBluetoothDevice(const std::string& address) {
       device->IsConnected());
 }
 
-bool TrayBluetoothHelper::GetBluetoothAvailable() {
-  return adapter_ && adapter_->IsPresent();
+BluetoothSystem::State TrayBluetoothHelper::GetBluetoothState() {
+  // Eventually this will use the BluetoothSystem Mojo interface, but for now
+  // use the current Bluetooth API to get a BluetoothSystem::State.
+  if (!adapter_)
+    return BluetoothSystem::State::kUnavailable;
+  if (!adapter_->IsPresent())
+    return BluetoothSystem::State::kUnavailable;
+  if (adapter_->IsPowered())
+    return BluetoothSystem::State::kPoweredOn;
+
+  return BluetoothSystem::State::kPoweredOff;
 }
 
-bool TrayBluetoothHelper::GetBluetoothEnabled() {
-  return adapter_ && adapter_->IsPowered();
+bool TrayBluetoothHelper::IsBluetoothStateAvailable() {
+  switch (GetBluetoothState()) {
+    case BluetoothSystem::State::kUnsupported:
+    case BluetoothSystem::State::kUnavailable:
+      return false;
+    case BluetoothSystem::State::kPoweredOff:
+    case BluetoothSystem::State::kTransitioning:
+    case BluetoothSystem::State::kPoweredOn:
+      return true;
+  }
 }
 
 void TrayBluetoothHelper::SetBluetoothEnabled(bool enabled) {
-  if (GetBluetoothEnabled() != enabled) {
+  if (enabled != (GetBluetoothState() == BluetoothSystem::State::kPoweredOn)) {
     Shell::Get()->metrics()->RecordUserMetricsAction(
         enabled ? UMA_STATUS_AREA_BLUETOOTH_ENABLED
                 : UMA_STATUS_AREA_BLUETOOTH_DISABLED);
   }
+
   Shell::Get()->bluetooth_power_controller()->SetBluetoothEnabled(enabled);
 }
 

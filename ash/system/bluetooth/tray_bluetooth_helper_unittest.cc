@@ -8,6 +8,7 @@
 
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
+#include "dbus/object_path.h"
 #include "device/base/features.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
@@ -57,8 +58,8 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
   TrayBluetoothHelper helper;
   helper.Initialize();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(helper.GetBluetoothAvailable());
-  EXPECT_FALSE(helper.GetBluetoothEnabled());
+  EXPECT_EQ(device::mojom::BluetoothSystem::State::kPoweredOff,
+            helper.GetBluetoothState());
   EXPECT_FALSE(helper.HasBluetoothDiscoverySession());
 
   BluetoothDeviceList devices = helper.GetAvailableBluetoothDevices();
@@ -76,6 +77,47 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
   helper.StopBluetoothDiscovering();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(helper.HasBluetoothDiscoverySession());
+}
+
+// Tests GetBluetoothState() returns the right value based on the adapter state.
+TEST_F(TrayBluetoothHelperTest, GetBluetoothState) {
+  TrayBluetoothHelper helper;
+  // Purposely don't call TrayBluetoothHelper::Initialize() to simulate that the
+  // BluetoothAdapter object hasn't been retrieved yet.
+  EXPECT_EQ(device::mojom::BluetoothSystem::State::kUnavailable,
+            helper.GetBluetoothState());
+
+  FakeBluetoothAdapterClient* adapter_client =
+      static_cast<FakeBluetoothAdapterClient*>(
+          BluezDBusManager::Get()->GetBluetoothAdapterClient());
+
+  // Mark all adapters as not-visible to simulate no adapters.
+  adapter_client->SetVisible(false);
+  adapter_client->SetSecondVisible(false);
+  helper.Initialize();
+  RunAllPendingInMessageLoop();
+
+  EXPECT_EQ(device::mojom::BluetoothSystem::State::kUnavailable,
+            helper.GetBluetoothState());
+
+  // Make adapter visible but turn it off.
+  adapter_client->SetVisible(true);
+  adapter_client
+      ->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath))
+      ->powered.Set(false, base::DoNothing());
+
+  EXPECT_EQ(device::mojom::BluetoothSystem::State::kPoweredOff,
+            helper.GetBluetoothState());
+
+  // Turn adapter on.
+  adapter_client
+      ->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath))
+      ->powered.Set(true, base::DoNothing());
+
+  EXPECT_EQ(device::mojom::BluetoothSystem::State::kPoweredOn,
+            helper.GetBluetoothState());
 }
 
 // Tests the Bluetooth device list when UnfilteredBluetoothDevices feature is
