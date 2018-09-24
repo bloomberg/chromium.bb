@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -137,14 +136,6 @@ void ToolbarActionViewDelegateBridge::ShowContextMenu() {
 
   // Otherwise, we have to slide the button out.
   contextMenuRunning_ = true;
-  AppMenuController* appMenuController =
-      [[[BrowserWindowController browserWindowControllerForWindow:
-          [controller_ browser]->window()->GetNativeWindow()]
-              toolbarController] appMenuController];
-  // If the app menu is open, we have to first close it. Part of this happens
-  // asynchronously, so we have to use a posted task to open the next menu.
-  if ([appMenuController isMenuOpen])
-    [appMenuController cancel];
 
   [controller_ toolbarActionsBar]->PopOutAction(
       viewController_,
