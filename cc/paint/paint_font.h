@@ -6,8 +6,9 @@
 #define CC_PAINT_PAINT_FONT_H_
 
 #include "cc/paint/paint_export.h"
-#include "cc/paint/paint_typeface.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 
 namespace cc {
 
@@ -24,18 +25,18 @@ class CC_PAINT_EXPORT PaintFont {
   void SetLcdRenderText(bool lcd_text);
   void SetSubpixelText(bool subpixel_text);
   void SetTextSize(SkScalar size);
-  void SetTypeface(const PaintTypeface& typeface);
+  void SetTypeface(sk_sp<SkTypeface> typeface);
   void SetFakeBoldText(bool bold_text);
   void SetTextSkewX(SkScalar skew);
   void SetFlags(uint32_t flags);
 
   uint32_t flags() const { return sk_paint_.getFlags(); }
 
-  const PaintTypeface& typeface() const { return typeface_; }
+  const sk_sp<SkTypeface> typeface() const { return typeface_; }
   const SkPaint& ToSkPaint() const { return sk_paint_; }
 
  private:
-  PaintTypeface typeface_;
+  sk_sp<SkTypeface> typeface_;
   SkPaint sk_paint_;
 };
 

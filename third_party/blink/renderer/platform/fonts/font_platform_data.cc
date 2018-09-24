@@ -87,7 +87,7 @@ FontPlatformData::FontPlatformData(float size,
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& source)
-    : paint_typeface_(source.paint_typeface_),
+    : typeface_(source.typeface_),
 #if !defined(OS_WIN)
       family_(source.family_),
 #endif
@@ -109,7 +109,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& src, float text_size)
-    : FontPlatformData(src.paint_typeface_,
+    : FontPlatformData(src.typeface_,
 #if !defined(OS_WIN)
                        src.family_.data(),
 #else
@@ -121,13 +121,13 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float text_size)
                        src.orientation_) {
 }
 
-FontPlatformData::FontPlatformData(const PaintTypeface& paint_tf,
+FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
                                    const CString& family,
                                    float text_size,
                                    bool synthetic_bold,
                                    bool synthetic_italic,
                                    FontOrientation orientation)
-    : paint_typeface_(paint_tf),
+    : typeface_(typeface),
 #if !defined(OS_WIN)
       family_(family),
 #endif
@@ -144,8 +144,8 @@ FontPlatformData::FontPlatformData(const PaintTypeface& paint_tf,
 {
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
   style_ = WebFontRenderStyle::GetDefault();
-  auto system_style = QuerySystemRenderStyle(
-      family_, text_size_, paint_typeface_.ToSkTypeface()->fontStyle());
+  auto system_style =
+      QuerySystemRenderStyle(family_, text_size_, typeface_->fontStyle());
 
   // In layout tests, ignore system preference for subpixel positioning,
   // or explicitly disable if requested.
@@ -168,7 +168,7 @@ FontPlatformData::~FontPlatformData() = default;
 
 #if defined(OS_MACOSX)
 CTFontRef FontPlatformData::CtFont() const {
-  return SkTypeface_GetCTFontRef(paint_typeface_.ToSkTypeface().get());
+  return SkTypeface_GetCTFontRef(typeface_.get());
 };
 
 CGFontRef FontPlatformData::CgFont() const {
@@ -184,7 +184,7 @@ const FontPlatformData& FontPlatformData::operator=(
   if (this == &other)
     return *this;
 
-  paint_typeface_ = other.paint_typeface_;
+  typeface_ = other.typeface_;
 #if !defined(OS_WIN)
   family_ = other.family_;
 #endif
@@ -242,7 +242,7 @@ String FontPlatformData::FontFamilyName() const {
 }
 
 SkTypeface* FontPlatformData::Typeface() const {
-  return paint_typeface_.ToSkTypeface().get();
+  return typeface_.get();
 }
 
 HarfBuzzFace* FontPlatformData::GetHarfBuzzFace() const {
@@ -321,16 +321,12 @@ void FontPlatformData::SetupPaintFont(PaintFont* font,
 
   const float ts = text_size_ >= 0 ? text_size_ : 12;
   font->SetTextSize(SkFloatToScalar(ts));
-  font->SetTypeface(paint_typeface_);
+  font->SetTypeface(typeface_);
   font->SetFakeBoldText(synthetic_bold_);
   font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
   font->SetEmbeddedBitmapText(!avoid_embedded_bitmaps_);
 }
 #endif
-
-const PaintTypeface& FontPlatformData::GetPaintTypeface() const {
-  return paint_typeface_;
-}
 
 }  // namespace blink

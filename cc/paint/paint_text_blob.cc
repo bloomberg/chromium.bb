@@ -6,14 +6,13 @@
 
 #include <vector>
 
-#include "cc/paint/paint_typeface.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace cc {
 
 PaintTextBlob::PaintTextBlob() = default;
 PaintTextBlob::PaintTextBlob(sk_sp<SkTextBlob> blob,
-                             std::vector<PaintTypeface> typefaces)
+                             std::vector<sk_sp<SkTypeface>> typefaces)
     : sk_blob_(std::move(blob)), typefaces_(std::move(typefaces)) {}
 PaintTextBlob::~PaintTextBlob() = default;
 

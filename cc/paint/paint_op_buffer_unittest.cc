@@ -1152,11 +1152,11 @@ std::vector<std::vector<SkPoint>> test_point_arrays = {
      SkPoint::Make(9, 9), SkPoint::Make(50, 50), SkPoint::Make(100, 100)},
 };
 
-std::vector<std::vector<PaintTypeface>> test_typefaces = {
-    [] { return std::vector<PaintTypeface>{PaintTypeface::TestTypeface()}; }(),
+std::vector<std::vector<sk_sp<SkTypeface>>> test_typefaces = {
+    [] { return std::vector<sk_sp<SkTypeface>>{SkTypeface::MakeDefault()}; }(),
     [] {
-      return std::vector<PaintTypeface>{PaintTypeface::TestTypeface(),
-                                        PaintTypeface::TestTypeface()};
+      return std::vector<sk_sp<SkTypeface>>{SkTypeface::MakeDefault(),
+                                            SkTypeface::MakeDefault()};
     }(),
 };
 
@@ -1164,7 +1164,7 @@ std::vector<scoped_refptr<PaintTextBlob>> test_paint_blobs = {
     [] {
       SkPaint font;
       font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-      font.setTypeface(test_typefaces[0][0].ToSkTypeface());
+      font.setTypeface(test_typefaces[0][0]);
 
       SkTextBlobBuilder builder;
       int glyph_count = 5;
@@ -1178,7 +1178,7 @@ std::vector<scoped_refptr<PaintTextBlob>> test_paint_blobs = {
     [] {
       SkPaint font;
       font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-      font.setTypeface(test_typefaces[1][0].ToSkTypeface());
+      font.setTypeface(test_typefaces[1][0]);
 
       SkTextBlobBuilder builder;
       int glyph_count = 5;
@@ -1194,7 +1194,7 @@ std::vector<scoped_refptr<PaintTextBlob>> test_paint_blobs = {
       std::fill(run2.glyphs, run2.glyphs + glyph_count, 0);
       std::fill(run2.pos, run2.pos + glyph_count * 2, 0);
 
-      font.setTypeface(test_typefaces[1][1].ToSkTypeface());
+      font.setTypeface(test_typefaces[1][1]);
       glyph_count = 8;
       const auto& run3 =
           builder.allocRunPosH(font, glyph_count, 0, &test_rects[2]);

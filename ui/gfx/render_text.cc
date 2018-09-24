@@ -241,11 +241,9 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
   static_assert(sizeof(*pos) == 2 * sizeof(*run_buffer.pos), "");
   memcpy(run_buffer.pos, pos, glyph_count * sizeof(*pos));
 
-  // TODO(vmpstr): In order to OOP raster this, we would have to plumb PaintFont
-  // here instead of |flags_|.
   canvas_skia_->drawTextBlob(
       base::MakeRefCounted<cc::PaintTextBlob>(builder.make(),
-                                              std::vector<cc::PaintTypeface>{}),
+                                              std::vector<sk_sp<SkTypeface>>{}),
       0, 0, flags_);
 }
 
