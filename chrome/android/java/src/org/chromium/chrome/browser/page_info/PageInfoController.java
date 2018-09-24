@@ -31,6 +31,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -479,10 +480,7 @@ public class PageInfoController
     public void onClick(@ButtonType int buttonType) {}
 
     @Override
-    public void onCancel() {}
-
-    @Override
-    public void onDismiss() {
+    public void onDismiss(@DialogDismissalCause int dismissalCause) {
         assert mNativePageInfoController != 0;
         if (mPendingRunAfterDismissTask != null) {
             mPendingRunAfterDismissTask.run();

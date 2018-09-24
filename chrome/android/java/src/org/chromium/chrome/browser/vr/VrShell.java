@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.CompositorView;
+import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -329,7 +330,7 @@ public class VrShell extends GvrLayout
     private void injectVrHostedUiView() {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) return;
         mNonVrModalDialogManager = mActivity.getModalDialogManager();
-        mNonVrModalDialogManager.cancelAllDialogs();
+        mNonVrModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
         mVrModalPresenter = new VrModalPresenter(this);
         mVrModalDialogManager =
                 new ModalDialogManager(mVrModalPresenter, ModalDialogManager.ModalDialogType.APP);
@@ -754,7 +755,7 @@ public class VrShell extends GvrLayout
     public void shutdown() {
         if (mVrBrowsingEnabled) {
             if (mVrModalDialogManager != null) {
-                mVrModalDialogManager.cancelAllDialogs();
+                mVrModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
                 mActivity.setModalDialogManager(mNonVrModalDialogManager);
                 mVrModalDialogManager = null;
             }

@@ -18,6 +18,7 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -225,16 +226,15 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
     @Override
     public void onClick(int buttonType) {
         if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
-            mModalDialogManager.cancelDialog(mDialog);
+            mModalDialogManager.dismissDialog(
+                    mDialog, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
         } else {
             saveLanguages();
-            mModalDialogManager.dismissDialog(mDialog);
+            mModalDialogManager.dismissDialog(
+                    mDialog, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
         }
     }
 
     @Override
-    public void onCancel() {}
-
-    @Override
-    public void onDismiss() {}
+    public void onDismiss(@DialogDismissalCause int dismissalCause) {}
 }

@@ -15,6 +15,7 @@ import android.widget.CheckBox;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
+import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager.ModalDialogType;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
@@ -86,12 +87,7 @@ public class IncognitoDisclosureActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onCancel() {
-            finish();
-        }
-
-        @Override
-        public void onDismiss() {
+        public void onDismiss(@DialogDismissalCause int dismissalCause) {
             finish();
         }
     };
