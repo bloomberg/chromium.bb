@@ -37,17 +37,6 @@ void ProcessCoordinationUnitImpl::AddFrame(const CoordinationUnitID& cu_id) {
   }
 }
 
-void ProcessCoordinationUnitImpl::RemoveFrame(const CoordinationUnitID& cu_id) {
-  DCHECK(cu_id != id());
-  FrameCoordinationUnitImpl* frame_cu =
-      FrameCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
-  if (!frame_cu)
-    return;
-  if (RemoveFrame(frame_cu)) {
-    frame_cu->RemoveProcessCoordinationUnit(this);
-  }
-}
-
 void ProcessCoordinationUnitImpl::SetCPUUsage(double cpu_usage) {
   SetProperty(mojom::PropertyType::kCPUUsage, cpu_usage * 1000);
 }

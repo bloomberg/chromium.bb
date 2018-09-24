@@ -30,7 +30,6 @@ class ProcessCoordinationUnitImpl
 
   // mojom::ProcessCoordinationUnit implementation.
   void AddFrame(const CoordinationUnitID& cu_id) override;
-  void RemoveFrame(const CoordinationUnitID& cu_id) override;
   void SetCPUUsage(double cpu_usage) override;
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
   void SetLaunchTime(base::Time launch_time) override;

@@ -106,7 +106,6 @@ interface ProcessCoordinationUnit {
   // Add a new binding to an existing ProcessCoordinationUnit.
   AddBinding(ProcessCoordinationUnit& request);
   AddFrame(CoordinationUnitID cu_id);
-  RemoveFrame(CoordinationUnitID cu_id);
 
   // Property signals.
   SetCPUUsage(double cpu_usage);

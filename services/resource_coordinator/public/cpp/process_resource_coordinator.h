@@ -27,14 +27,12 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ProcessResourceCoordinator
   void SetPID(base::ProcessId pid);
 
   void AddFrame(const FrameResourceCoordinator& frame);
-  void RemoveFrame(const FrameResourceCoordinator& frame);
 
  private:
   void ConnectToService(mojom::CoordinationUnitProviderPtr& provider,
                         const CoordinationUnitID& cu_id) override;
 
   void AddFrameByID(const CoordinationUnitID& cu_id);
-  void RemoveFrameByID(const CoordinationUnitID& cu_id);
 
   THREAD_CHECKER(thread_checker_);
 
