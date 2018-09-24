@@ -49164,6 +49164,7 @@ Full version information for the fingerprint enum values:
   <int value="0" label="User signed out of Chrome"/>
   <int value="1" label="Service was disabled"/>
   <int value="2" label="Custom passphrase was detected"/>
+  <int value="3" label="User disabled Unity settings toggle"/>
 </enum>
 
 <enum name="UnifiedConsentSyncAndGoogleServicesSettings">

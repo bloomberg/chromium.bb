@@ -321,7 +321,10 @@ Polymer({
    * @private
    */
   onUnifiedConsentToggleChange_: function() {
-    if (!this.$$('#unifiedConsentToggle').checked) {
+    const checked = this.$$('#unifiedConsentToggle').checked;
+    this.browserProxy_.unifiedConsentToggleChanged(checked);
+
+    if (!checked) {
       this.syncSectionOpened_ = !this.syncSectionDisabled_;
       this.personalizeSectionOpened_ = true;
     }

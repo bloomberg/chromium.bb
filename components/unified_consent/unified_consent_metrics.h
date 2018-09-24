@@ -23,7 +23,8 @@ enum class UnifiedConsentRevokeReason : int {
   kUserSignedOut = 0,
   kServiceWasDisabled,
   kCustomPassphrase,
-  kMaxValue = kCustomPassphrase
+  kUserDisabledSettingsToggle,
+  kMaxValue = kUserDisabledSettingsToggle
 };
 
 // Records histogram action for the unified consent bump.
