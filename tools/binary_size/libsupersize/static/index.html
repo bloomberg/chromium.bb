@@ -67,35 +67,63 @@ function isGreaterOrEqual(v1, v2) {
 
   /** @type {HTMLFormElement} */
   const form = document.getElementById('select-form');
-  const cpu = form.elements.namedItem('cpu');
-  const apk = form.elements.namedItem('apk');
-  const version1 = form.elements.namedItem('version1');
-  const version2 = form.elements.namedItem('version2');
+  const selMode = form.elements.namedItem('mode');
+  const selCpu = form.elements.namedItem('cpu');
+  const selApk = form.elements.namedItem('apk');
+  const selVersion1 = form.elements.namedItem('version1');
+  const selVersion2 = form.elements.namedItem('version2');
+  const btnOpen = form.querySelector('button[type="submit"]');
+  const msgBadCompare = form.querySelector('.msg-bad-compare');
 
-  cpu.appendChild(buildOptions(pushed.cpu));
-  apk.appendChild(buildOptions(pushed.apk));
+  selCpu.appendChild(buildOptions(pushed.cpu));
+  selApk.appendChild(buildOptions(pushed.apk));
   const versionOptions = buildOptions(pushed.version);
-  version1.appendChild(versionOptions.cloneNode(true));
-  version2.appendChild(versionOptions);
-  const version2Options = version2.querySelectorAll('option');
-  if (version2Options.length > 1) {
-    version2Options[1].selected = true;
-  }
+  selVersion1.appendChild(versionOptions.cloneNode(true));
+  selVersion2.appendChild(versionOptions);
 
-  function disableSmallerAfterVersions() {
-    const newVersion = version1.value;
-    for (const opt of version2Options) {
-      opt.disabled = isGreaterOrEqual(newVersion, opt.value);
+  function selectOption(optList, index) {
+    const n = optList.length;
+    if (n > 0) optList[((index % n) + n) % n].selected = true;
+  }
+  selectOption(selVersion1.querySelectorAll('option'), -2);
+  selectOption(selVersion2.querySelectorAll('option'), -1);
+
+  let viewMode = null;
+  function readViewMode() {
+    viewMode = document.querySelector('#sel-mode').value;
+    form.classList.toggle('mode-view', viewMode === 'view');
+  }
+  readViewMode();
+
+  function disableButtonIfNoDiffPair() {
+    const isDisabled = (viewMode === 'compare') &&
+        isGreaterOrEqual(selVersion1.value, selVersion2.value);
+    btnOpen.disabled = isDisabled;
+    msgBadCompare.classList.toggle('visible', isDisabled);
+  }
+  disableButtonIfNoDiffPair();
+
+  selMode.addEventListener('change', () => {
+    readViewMode();
+    disableButtonIfNoDiffPair();
+  });
+
+  function getDataUrl() {
+    let ret = `${cpu.value}/${apk.value}/`;
+    if (viewMode === 'view') {
+      ret += `report_${selVersion2.value}.ndjson`;
+    } else if (viewMode === 'compare') {
+      ret += `report_${selVersion1.value}_${selVersion2.value}.ndjson`;
     }
+    return ret;
   }
 
-  disableSmallerAfterVersions();
-  version1.addEventListener('change', disableSmallerAfterVersions);
+  selVersion1.addEventListener('change', disableButtonIfNoDiffPair);
+  selVersion2.addEventListener('change', disableButtonIfNoDiffPair);
   form.addEventListener('submit', event => {
     event.preventDefault();
-    const dataUrl = `${cpu.value}/${apk.value}/` +
-        `report_${version1.value}_${version2.value}.ndjson`;
-    location.href = `viewer.html?load_url=milestones/${dataUrl}`;
+    const dataUrl = getDataUrl();
+    window.open(`viewer.html?load_url=milestones/${dataUrl}`);
   });
 })();
   </script>
@@ -110,27 +138,35 @@ function isGreaterOrEqual(v1, v2) {
   </header>
 
   <form id="select-form">
-    <h2 class="subhead">Select milestones to compare</h2>
+    <h2 class="subhead">Select milestones to
+      <select id="sel-mode" class="sel-small" name="mode">
+        <option value="view">view</option>
+        <option value="compare" selected="selected">compare</option>
+      </select>
+    </h2>
     <p class="select-wrapper">
-      <select id="cpu" name="cpu"></select>
+      <select id="cpu" class="sel-big" name="cpu"></select>
       <label class="select-label" for="cpu">Architecture</label>
     </p>
     <p class="select-wrapper">
-      <select id="apk" name="apk"></select>
+      <select id="apk" class="sel-big" name="apk"></select>
       <label class="select-label" for="apk">APK</label>
     </p>
-    <p class="select-wrapper">
-      <select id="version1" name="version1"></select>
+    <p class="select-wrapper hide-on-mode-view">
+      <select id="version1" class="sel-big" name="version1"></select>
       <label class="select-label" for="version1">Version 1</label>
     </p>
     <p class="select-wrapper">
-      <select id="version2" name="version2"></select>
-      <label class="select-label" for="version2">Version 2</label>
+      <select id="version2" class="sel-big" name="version2"></select>
+      <label class="select-label" for="version2">
+        Version <span class="hide-on-mode-view"> 2</span>
+      </label>
     </p>
 
     <button type="submit" class="text-button filled-button">
       Open report
     </button>
+    <div class="msg-bad-compare">Version 1 must be older than Version 2</div>
   </form>
 </body>
 
