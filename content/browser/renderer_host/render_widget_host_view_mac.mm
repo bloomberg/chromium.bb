@@ -1381,7 +1381,7 @@ MouseWheelPhaseHandler* RenderWidgetHostViewMac::GetMouseWheelPhaseHandler() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostNSViewLocalClient and mojom::RenderWidgetHostNSViewClient
+// RenderWidgetHostNSViewClientHelper and mojom::RenderWidgetHostNSViewClient
 // implementation:
 
 BrowserAccessibilityManager*
@@ -1861,7 +1861,7 @@ void RenderWidgetHostViewMac::StopSpeaking() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // mojom::RenderWidgetHostNSViewClient functions that translate events and
-// forward them to the RenderWidgetHostNSViewLocalClient implementation:
+// forward them to the RenderWidgetHostNSViewClientHelper implementation:
 
 void RenderWidgetHostViewMac::ForwardKeyboardEvent(
     std::unique_ptr<InputEvent> input_event,
