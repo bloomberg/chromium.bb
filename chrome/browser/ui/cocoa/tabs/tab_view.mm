@@ -13,7 +13,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/cocoa/cocoa_util.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
-#import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -734,10 +733,7 @@ ui::ThreePartImage& GetStrokeImage(bool active, StrokeType stroke_type) {
   // Assume the entire region to the left of the alert indicator and/or close
   // buttons is available for click-to-select.  If neither are visible, the
   // entire tab region is available.
-  AlertIndicatorButtonCocoa* const indicator =
-      [controller_ alertIndicatorButton];
-  const int indicatorLeft = (!indicator || [indicator isHidden]) ?
-      NSWidth([self frame]) : NSMinX([indicator frame]);
+  const int indicatorLeft = NSWidth([self frame]);
   const int closeButtonLeft = (!closeButton_ || [closeButton_ isHidden])
                                   ? NSWidth([self frame])
                                   : NSMinX([closeButton_ frame]);

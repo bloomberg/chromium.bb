@@ -16,7 +16,6 @@
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
-#import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_favicon_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
@@ -64,7 +63,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   base::scoped_nsobject<TabFaviconView> iconView_;
   base::scoped_nsobject<NSImage> icon_;
   base::scoped_nsobject<NSView> attentionDotView_;
-  base::scoped_nsobject<AlertIndicatorButtonCocoa> alertIndicatorButton_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 
   BOOL active_;
@@ -198,8 +196,6 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 }
 
 - (void)dealloc {
-  [alertIndicatorButton_ setAnimationDoneTarget:nil withAction:nil];
-  [alertIndicatorButton_ setClickTarget:nil withAction:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [[self tabView] setController:nil];
   [super dealloc];
@@ -253,21 +249,6 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 }
 
 - (void)closeTab:(id)sender {
-  using base::UserMetricsAction;
-
-  if (alertIndicatorButton_ && ![alertIndicatorButton_ isHidden]) {
-    if ([alertIndicatorButton_ isEnabled]) {
-      base::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
-    } else if ([alertIndicatorButton_ showingAlertState] ==
-                   TabAlertState::AUDIO_PLAYING) {
-      base::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
-    } else {
-      base::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
-    }
-  } else {
-    base::RecordAction(UserMetricsAction("CloseTab_NoAlertIndicator"));
-  }
-
   if ([[self target] respondsToSelector:@selector(closeTab:)]) {
     [[self target] performSelector:@selector(closeTab:)
                         withObject:[self view]];
@@ -347,21 +328,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   }
 }
 
-- (AlertIndicatorButtonCocoa*)alertIndicatorButton {
-  return alertIndicatorButton_;
-}
-
 - (void)setAlertState:(TabAlertState)alertState {
-  if (!alertIndicatorButton_ && alertState != TabAlertState::NONE) {
-    alertIndicatorButton_.reset([[AlertIndicatorButtonCocoa alloc] init]);
-    [self updateVisibility];  // Do layout and visibility before adding subview.
-    [[self view] addSubview:alertIndicatorButton_];
-    [alertIndicatorButton_ setAnimationDoneTarget:self
-                                       withAction:@selector(updateVisibility)];
-    [alertIndicatorButton_ setClickTarget:self
-                               withAction:@selector(toggleMute:)];
-  }
-  [alertIndicatorButton_ transitionToAlertState:alertState];
 }
 
 - (BOOL)blocked {
@@ -425,15 +392,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 - (BOOL)shouldShowIcon {
   return chrome::ShouldTabShowFavicon(
       [self iconCapacity], [self pinned], [self active], [self showIcon],
-      !alertIndicatorButton_ ? TabAlertState::NONE
-                             : [alertIndicatorButton_ showingAlertState]);
-}
-
-- (BOOL)shouldShowAlertIndicator {
-  return chrome::ShouldTabShowAlertIndicator(
-      [self iconCapacity], [self pinned], [self active], [self showIcon],
-      !alertIndicatorButton_ ? TabAlertState::NONE
-                             : [alertIndicatorButton_ showingAlertState]);
+      TabAlertState::NONE);
 }
 
 - (BOOL)shouldShowCloseButton {
@@ -543,37 +502,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 
   [closeButton_ setHidden:!newShowCloseButton];
 
-  BOOL newShowAlertIndicator = [self shouldShowAlertIndicator];
-
-  [alertIndicatorButton_ setHidden:!newShowAlertIndicator];
-
   BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
-
-  if (newShowAlertIndicator) {
-    NSRect newFrame = [alertIndicatorButton_ frame];
-    newFrame.size = [[alertIndicatorButton_ image] size];
-    if ([self pinned]) {
-      // Tab is pinned: Position the alert indicator in the center.
-      const CGFloat tabWidth = [TabControllerCocoa pinnedTabWidth];
-      newFrame.origin.x = std::floor((tabWidth - NSWidth(newFrame)) / 2);
-      newFrame.origin.y =
-          kTabElementYOrigin -
-          std::floor((NSHeight(newFrame) - gfx::kFaviconSize) / 2);
-    } else {
-      // The Frame for the alertIndicatorButton_ depends on whether iconView_
-      // and/or closeButton_ are visible, and where they have been positioned.
-      const NSRect closeButtonFrame = [closeButton_ frame];
-      newFrame.origin.x = NSMinX(closeButtonFrame);
-      // Position before the close button when it is showing.
-      if (newShowCloseButton)
-        newFrame.origin.x += isRTL ? NSWidth(newFrame) : -NSWidth(newFrame);
-      // Alert indicator is centered vertically, with respect to closeButton_.
-      newFrame.origin.y = NSMinY(closeButtonFrame) -
-          std::floor((NSHeight(newFrame) - NSHeight(closeButtonFrame)) / 2);
-    }
-    [alertIndicatorButton_ setFrame:newFrame];
-    [alertIndicatorButton_ updateEnabledForMuteToggle];
-  }
 
   // Adjust the title view based on changes to the icon's and close button's
   // visibility.
@@ -584,9 +513,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 
   CGFloat titleLeft, titleRight;
   if (isRTL) {
-    if (newShowAlertIndicator) {
-      titleLeft = NSMaxX([alertIndicatorButton_ frame]);
-    } else if (newShowCloseButton) {
+    if (newShowCloseButton) {
       titleLeft = NSMaxX([closeButton_ frame]);
     } else {
       titleLeft = kTabLeadingPadding;
@@ -597,9 +524,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   } else {
     titleLeft = newShowIcon ? NSMaxX([iconView_ frame]) + kTitleLeadingPadding
                             : kTabLeadingPadding;
-    if (newShowAlertIndicator) {
-      titleRight = NSMinX([alertIndicatorButton_ frame]);
-    } else if (newShowCloseButton) {
+    if (newShowCloseButton) {
       titleRight = NSMinX([closeButton_ frame]);
     } else {
       titleRight = NSWidth([[self tabView] frame]) - kTabTrailingPadding;
@@ -632,7 +557,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   return base::SysUTF16ToNSString(chrome::AssembleTabAccessibilityLabel(
       base::SysNSStringToUTF16([self title]),
       [self loadingState] == kTabCrashed, false,
-      [[self alertIndicatorButton] showingAlertState]));
+      TabAlertState::NONE));
 }
 
 - (void)themeChangedNotification:(NSNotification*)notification {
