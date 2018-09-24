@@ -205,10 +205,10 @@ filelist.renderFileNameLabel = function(doc, entry) {
 filelist.updateListItemExternalProps = function(
     li, externalProps, isTeamDriveRoot) {
   if (li.classList.contains('file')) {
-    if (externalProps.availableOffline)
-      li.classList.remove('dim-offline');
-    else
+    if (externalProps.availableOffline === false)
       li.classList.add('dim-offline');
+    else
+      li.classList.remove('dim-offline');
     // TODO(mtomasz): Consider adding some vidual indication for files which
     // are not cached on LTE. Currently we show them as normal files.
     // crbug.com/246611.
