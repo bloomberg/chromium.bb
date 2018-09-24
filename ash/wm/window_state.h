@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/animation/tween.h"
 
 namespace gfx {
 class Rect;
@@ -394,7 +395,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Sets the window's |bounds| and transition to the new bounds with
   // a cross fade animation.
-  void SetBoundsDirectCrossFade(const gfx::Rect& bounds);
+  void SetBoundsDirectCrossFade(
+      const gfx::Rect& bounds,
+      gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT);
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,

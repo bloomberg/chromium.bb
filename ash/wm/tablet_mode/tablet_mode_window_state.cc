@@ -174,8 +174,7 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
                                              TabletModeWindowManager* creator)
     : window_(window),
       creator_(creator),
-      current_state_type_(wm::GetWindowState(window)->GetStateType()),
-      defer_bounds_updates_(false) {
+      current_state_type_(wm::GetWindowState(window)->GetStateType()) {
   old_state_.reset(wm::GetWindowState(window)
                        ->SetStateObject(std::unique_ptr<State>(this))
                        .release());
@@ -449,6 +448,11 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
     if (!window_state->window()->IsVisible() || !animated) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else {
+      if (use_zero_animation_type_) {
+        window_state->SetBoundsDirectCrossFade(bounds_in_parent,
+                                               gfx::Tween::ZERO);
+        return;
+      }
       // If we animate (to) tablet mode, we want to use the cross fade to
       // avoid flashing.
       if (window_state->IsMaximized())
