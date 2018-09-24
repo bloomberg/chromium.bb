@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -34,7 +35,10 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
     @CalledByNative
     private void destroy() {
         mNativeDownloadLocationDialogBridge = 0;
-        if (mModalDialogManager != null) mModalDialogManager.dismissDialog(mLocationDialog);
+        if (mModalDialogManager != null) {
+            mModalDialogManager.dismissDialog(
+                    mLocationDialog, DialogDismissalCause.DISMISSED_BY_NATIVE);
+        }
     }
 
     @CalledByNative
@@ -43,7 +47,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
         // If the activity has gone away, just clean up the native pointer.
         if (activity == null) {
-            onCancel();
+            onDismiss(DialogDismissalCause.ACTIVITY_DESTROYED);
             return;
         }
 
@@ -60,28 +64,32 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
     public void onClick(@ModalDialogView.ButtonType int buttonType) {
         switch (buttonType) {
             case ModalDialogView.ButtonType.POSITIVE:
-                handleResponses(mLocationDialog.getFileName(), mLocationDialog.getDirectoryOption(),
-                        mLocationDialog.getDontShowAgain());
-                mModalDialogManager.dismissDialog(mLocationDialog);
+                mModalDialogManager.dismissDialog(
+                        mLocationDialog, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                 break;
             case ModalDialogView.ButtonType.NEGATIVE:
-            // Intentional fall-through.
+                mModalDialogManager.dismissDialog(
+                        mLocationDialog, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+                break;
             default:
-                cancel();
-                mModalDialogManager.dismissDialog(mLocationDialog);
         }
 
         mLocationDialog = null;
     }
 
     @Override
-    public void onCancel() {
-        cancel();
+    public void onDismiss(@DialogDismissalCause int dismissalCause) {
+        switch (dismissalCause) {
+            case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
+                handleResponses(mLocationDialog.getFileName(), mLocationDialog.getDirectoryOption(),
+                        mLocationDialog.getDontShowAgain());
+                break;
+            default:
+                cancel();
+                break;
+        }
         mLocationDialog = null;
     }
-
-    @Override
-    public void onDismiss() {}
 
     /**
      * Pass along information from location dialog to native.
