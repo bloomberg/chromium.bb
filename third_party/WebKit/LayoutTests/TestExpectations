@@ -5207,3 +5207,7 @@ crbug.com/887659 animations/animationworklet/worklet-animation-local-time-undefi
 crbug.com/887659 animations/animationworklet/worklet-animation-set-keyframes.html [ Crash ]
 crbug.com/887659 animations/animationworklet/worklet-animation-set-timing.html [ Crash ]
 crbug.com/887659 animations/animationworklet/worklet-animation-style-update.html [ Failure ]
+
+# Sheriff 2018-09-24
+crbug.com/888634 external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure ]
+crbug.com/888634 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure ]
