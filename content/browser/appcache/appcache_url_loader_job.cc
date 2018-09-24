@@ -67,9 +67,7 @@ void AppCacheURLLoaderJob::DeliverNetworkResponse() {
   // the network load.
   DCHECK(loader_callback_ && !binding_.is_bound());
   std::move(loader_callback_).Run({});
-  weak_factory_.InvalidateWeakPtrs();
-  is_deleting_soon_ = true;
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  DeleteSoon();
 }
 
 void AppCacheURLLoaderJob::DeliverErrorResponse() {
@@ -130,8 +128,8 @@ void AppCacheURLLoaderJob::Start(
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
   client_ = std::move(client);
-  binding_.set_connection_error_handler(base::BindOnce(
-      &AppCacheURLLoaderJob::OnConnectionError, GetDerivedWeakPtr()));
+  binding_.set_connection_error_handler(
+      base::BindOnce(&AppCacheURLLoaderJob::DeleteSoon, GetDerivedWeakPtr()));
 }
 
 AppCacheURLLoaderJob::AppCacheURLLoaderJob(
@@ -244,7 +242,7 @@ void AppCacheURLLoaderJob::OnResponseBodyStreamReady(MojoResult result) {
   ReadMore();
 }
 
-void AppCacheURLLoaderJob::OnConnectionError() {
+void AppCacheURLLoaderJob::DeleteSoon() {
   if (storage_.get())
     storage_->CancelDelegateCallbacks(this);
   weak_factory_.InvalidateWeakPtrs();
