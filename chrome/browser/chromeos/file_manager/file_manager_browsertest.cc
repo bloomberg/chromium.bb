@@ -619,6 +619,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("recentsDownloadsAndDriveWithOverlap"),
         TestCase("recentsDownloadsAndDriveWithOverlap").EnableDriveFs()));
 
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    Metadata, /* metadata.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("metadataDownloads"),
+                      TestCase("metadataDrive"),
+                      TestCase("metadataTeamDrives"),
+                      TestCase("metadataLargeDrive")));
+
 // Structure to describe an account info.
 struct TestAccountInfo {
   const char* const gaia_id;

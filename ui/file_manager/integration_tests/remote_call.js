@@ -205,6 +205,38 @@ RemoteCall.prototype.waitForElementStyles = function(
 };
 
 /**
+ * Waits for a remote test function to return a specific result.
+ *
+ * @param {string} funcName Name of remote test function to be executed.
+ * @param {string} windowId Target window ID.
+ * @param {function(Object): boolean|Object} expectedResult An value to be
+ *     checked against the return value of |funcName| or a callabck that
+ *     receives the return value of |funcName| and returns true if the result
+ *     is the expected value.
+ * @param {?Array<*>} args Arguments to be provided to |funcName| when executing
+ *     it.
+ * @return {Promise} Promise to be fulfilled when the |expectedResult| is
+ *     returned from |funcName| execution.
+ */
+RemoteCall.prototype.waitFor = function(
+    funcName, windowId, expectedResult, args) {
+  const caller = getCaller();
+  args = args || [];
+  return repeatUntil(() => {
+    return this.callRemoteTestUtil(funcName, windowId, args).then((result) => {
+      if (typeof expectedResult === 'function' && expectedResult(result))
+        return result;
+      if (expectedResult === result)
+        return result;
+      const msg = 'waitFor: Waiting for ' +
+          `${funcName} to return ${expectedResult}, ` +
+          `but got ${JSON.stringify(result)}.`;
+      return pending(caller, msg);
+    });
+  });
+};
+
+/**
  * Waits for the specified element leaving from the DOM.
  * @param {string} windowId Target window ID.
  * @param {string} query Query string for the element.
