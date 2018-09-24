@@ -98,12 +98,7 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
   ShrinkToFitMode shrink_to_fit_mode_;
 
   FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest, ZoomForDSFScaleImage);
-  FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest,
-                           DivWidthWithZoomForDSFSmallerThanView);
-  FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest,
-                           DivWidthWithZoomForDSFLargerThanView);
-  FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest,
-                           DivWidthWithZoomForDSFMuchLargerThanView);
+  FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest, DivWidthWithZoomForDSF);
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(ImageDocument);
