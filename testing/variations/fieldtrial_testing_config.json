@@ -3102,7 +3102,6 @@
                         "version": "1"
                     },
                     "enable_features": [
-                        "PasswordGenerationRequirements",
                         "PasswordGenerationRequirementsDomainOverrides"
                     ]
                 }

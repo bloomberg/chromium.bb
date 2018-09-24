@@ -28,10 +28,6 @@ const base::Feature kDeleteCorruptedPasswords = {
 const base::Feature kHtmlBasedUsernameDetector = {
     "HtmlBaseUsernameDetector", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls the ability to generate passwords that fit sites' requirements.
-const base::Feature kPasswordGenerationRequirements = {
-    "PasswordGenerationRequirements", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether password requirements can be overridden for domains
 // (as opposed to only relying on the autofill server).
 const base::Feature kPasswordGenerationRequirementsDomainOverrides = {
