@@ -633,8 +633,14 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
 
   gfx::Rect inset_bounds(target_bounds);
   inset_bounds.Inset(kWindowMargin, kWindowMargin);
-  if (wm::GetWindowState(GetWindow())->IsMinimized())
+
+  // Do not animate if entering when the window is minimized, as it will be
+  // faded in. We still want to animate if the position is changed after
+  // entering.
+  if (wm::GetWindowState(GetWindow())->IsMinimized() &&
+      mode == HeaderFadeInMode::kFirstUpdate) {
     new_animation_type = OVERVIEW_ANIMATION_NONE;
+  }
 
   SetItemBounds(inset_bounds, new_animation_type);
 

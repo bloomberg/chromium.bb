@@ -526,6 +526,10 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   minimized_widget_->SetBounds(bounds);
   minimized_widget_->Show();
 
+  // Stack the minimized window at the bottom since it is never transformed in
+  // and only faded in, so it should always be underneath non minimized windows.
+  window_->parent()->StackChildAtBottom(minimized_widget_->GetNativeWindow());
+
   FadeInWidgetAndMaybeSlideOnEnter(
       minimized_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
       /*slide=*/false);
