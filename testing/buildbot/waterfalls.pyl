@@ -3179,6 +3179,10 @@
         ],
       },
       'Linux ChromiumOS MSan Tests': {
+        'swarming_mixins': [
+          'linux-trusty',
+          'x86-64',
+        ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
         },
@@ -3187,6 +3191,10 @@
         ],
       },
       'Linux MSan Tests': {
+        'swarming_mixins': [
+          'linux-trusty',
+          'x86-64',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
