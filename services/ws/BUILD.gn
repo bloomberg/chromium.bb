@@ -182,6 +182,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "client_root_unittest.cc",
     "drag_drop_delegate_unittest.cc",
     "embedding_unittest.cc",
     "focus_handler_unittest.cc",
