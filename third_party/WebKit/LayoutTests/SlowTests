@@ -1446,3 +1446,4 @@ crbug.com/878650 [ Release ] inspector-protocol/heap-profiler/heap-snapshot-merg
 crbug.com/878650 [ Release ] inspector-protocol/heap-profiler/heap-snapshot-with-no-detached-iframe.js [ Slow ]
 
 crbug.com/878995 [ Win ] external/wpt/async-local-storage/key-types.tentative.https.html [ Slow ]
+crbug.com/888225 external/wpt/svg/idlharness.window.html [ Slow ]
