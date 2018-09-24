@@ -204,15 +204,24 @@ bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
   if (!dst_sk_color_space.get())
     dst_sk_color_space = SkColorSpace::MakeSRGB();
 
+  skcms_ICCProfile* src_profile_ptr = nullptr;
+  skcms_ICCProfile* dst_profile_ptr = nullptr;
   skcms_ICCProfile src_profile, dst_profile;
   src_sk_color_space->toProfile(&src_profile);
   dst_sk_color_space->toProfile(&dst_profile);
+  // If the profiles are similar, we better leave them as nullptr, since
+  // skcms_Transform() only checks for profile pointer equality for the fast
+  // path.
+  if (!skcms_ApproximatelyEqualProfiles(&src_profile, &dst_profile)) {
+    src_profile_ptr = &src_profile;
+    dst_profile_ptr = &dst_profile;
+  }
 
   skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
   bool conversion_result =
-      skcms_Transform(src_data, src_pixel_format, alpha_format, &src_profile,
+      skcms_Transform(src_data, src_pixel_format, alpha_format, src_profile_ptr,
                       converted_pixels.get(), dst_pixel_format, alpha_format,
-                      &dst_profile, num_elements / 4);
+                      dst_profile_ptr, num_elements / 4);
 
   return conversion_result;
 }
