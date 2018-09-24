@@ -172,11 +172,8 @@ SessionSyncBridge::CreateMetadataChangeList() {
 base::Optional<syncer::ModelError> SessionSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  // TODO(crbug.com/876490): Here and elsewhere in this file, CHECKs have been
-  // introduced to investigate some crashes in the wild. Let's downgrade all
-  // CHECKs to DCHECKs as soon as the investigation is completed.
-  CHECK(syncing_);
-  CHECK(change_processor()->IsTrackingMetadata());
+  DCHECK(syncing_);
+  DCHECK(change_processor()->IsTrackingMetadata());
 
   StartLocalSessionEventHandler();
 
@@ -186,9 +183,9 @@ base::Optional<syncer::ModelError> SessionSyncBridge::MergeSyncData(
 
 void SessionSyncBridge::StartLocalSessionEventHandler() {
   // We should be ready to propagate local state to sync.
-  CHECK(syncing_);
-  CHECK(!syncing_->local_session_event_handler);
-  CHECK(change_processor()->IsTrackingMetadata());
+  DCHECK(syncing_);
+  DCHECK(!syncing_->local_session_event_handler);
+  DCHECK(change_processor()->IsTrackingMetadata());
 
   syncing_->local_session_event_handler =
       std::make_unique<LocalSessionEventHandlerImpl>(
@@ -204,8 +201,8 @@ void SessionSyncBridge::StartLocalSessionEventHandler() {
 base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
-  CHECK(change_processor()->IsTrackingMetadata());
-  CHECK(syncing_);
+  DCHECK(change_processor()->IsTrackingMetadata());
+  DCHECK(syncing_);
 
   // Merging sessions is simple: remote entities are expected to be foreign
   // sessions (identified by the session tag)  and hence must simply be
@@ -310,7 +307,7 @@ ModelTypeSyncBridge::StopSyncResponse SessionSyncBridge::ApplyStopSyncChanges(
 
 std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>
 SessionSyncBridge::CreateLocalSessionWriteBatch() {
-  CHECK(syncing_);
+  DCHECK(syncing_);
 
   // If a remote client mangled with our local session (typically deleted
   // entities due to garbage collection), we resubmit all local entities at this
@@ -345,7 +342,7 @@ void SessionSyncBridge::OnFaviconVisited(const GURL& page_url,
 
 void SessionSyncBridge::OnSyncStarting(
     const syncer::DataTypeActivationRequest& request) {
-  CHECK(!syncing_);
+  DCHECK(!syncing_);
 
   session_store_factory_.Run(base::BindOnce(
       &SessionSyncBridge::OnStoreInitialized, weak_ptr_factory_.GetWeakPtr()));
@@ -355,15 +352,15 @@ void SessionSyncBridge::OnStoreInitialized(
     const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<SessionStore> store,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
-  CHECK(!syncing_);
+  DCHECK(!syncing_);
 
   if (error) {
     change_processor()->ReportError(*error);
     return;
   }
 
-  CHECK(store);
-  CHECK(metadata_batch);
+  DCHECK(store);
+  DCHECK(metadata_batch);
 
   syncing_.emplace();
   syncing_->store = std::move(store);
