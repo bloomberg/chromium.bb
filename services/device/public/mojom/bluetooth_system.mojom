@@ -18,6 +18,22 @@ interface BluetoothSystemFactory {
 // This interface is implemented only on Chrome OS and lives in the Device
 // Service.
 interface BluetoothSystem {
+
+  // State of Bluetooth.
+  enum State {
+    // The platform does not support Bluetooth.
+    kUnsupported,
+    // The platform supports Bluetooth but we can’t use it right now e.g. a BT
+    // radio is not present.
+    kUnavailable,
+    // Bluetooth Radio is off.
+    kPoweredOff,
+    // State is transitioning between PoweredOff and PoweredOn or vice versa.
+    kTransitioning,
+    // Bluetooth Radio is on.
+    kPoweredOn,
+  };
+
 };
 
 // Interface used by clients of BluetoothSystem to get notified of events
