@@ -120,6 +120,7 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
 
       POZNÁMKA: Toto pravidlo neplatí pre Android. Ak chcete povoliť pravidlo IsolateOrigins v Androide, použite nastavenie pravidla IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Umožňuje rozšíreniam nainštalovaným pravidlom používať rozhranie Hardware Platform API</translation>
 <translation id="1384459581748403878">Referenčná stránka: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Určuje, či sa má dôverovať starej infraštruktúre PKI spoločnosti Symantec Corporation</translation>
 <translation id="1393485621820363363">Povolené podnikové tlačiarne zariadenia</translation>
@@ -439,6 +440,9 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2201555246697292490">Konfigurácia bielej listiny pre odosielanie natívnych správ</translation>
 <translation id="2204753382813641270">Ovládať automatické skrývanie poličky</translation>
 <translation id="2208976000652006649">Parametre pre webovú adresu vyhľadávania, ktorá používa metódu POST</translation>
+<translation id="2214880135980649323">Keď toto pravidlo povolíte, rozšírenia nainštalované podnikovým pravidlom budú môcť používať rozhranie Enterprise Hardware Platform API.
+      Keď ho zakážete alebo nenastavíte, rozhranie Enterprise Hardware Platform API nebudú môcť používať žiadne rozšírenia.
+      Toto pravidlo platí aj pre rozšírenia komponentov, ako je rozšírenie Hangout Services.</translation>
 <translation id="2223598546285729819">Predvolené nastavenie upozornení</translation>
 <translation id="2231817271680715693">Importovať históriu prehliadania z predvoleného prehliadača pri prvom spustení</translation>
 <translation id="2236488539271255289">Nepovoliť žiadnym stránkam nastaviť miestne údaje</translation>
@@ -2842,6 +2846,20 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8465065632133292531">Parametre pre webovú adresu okamžitého vyhľadávania, ktorá používa metódu POST</translation>
 <translation id="847472800012384958">Zakázať všetkým stránkam zobrazovať kontextové okná</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Umožňuje odstrániť citlivé časti webových adries s predponou https:// týkajúce sa súkromia a zabezpečenia ešte predtým, ako sa odošlú do skriptov PAC (Proxy Auto Config) používaných prehliadačom <ph name="PRODUCT_NAME" /> počas vyvolania proxy servera.
+
+      Keď toto pravidlo nastavíte na hodnotu true, daná bezpečnostná funkcia bude povolená a časti webových adries s predponou https:// sa odstránia ešte predtým, ako budú odoslané do skriptov PAC. Takto nebude môcť skript PAC zobraziť dáta, ktoré sú štandardne chránené šifrovaným kanálom (ako sú napríklad cesta webovej adresy a dopyt).
+
+      Keď toto pravidlo nastavíte na hodnotu false, daná bezpečnostná funkcia bude zakázaná a skriptom PAC bude bezvýhradne povolené zobrazovať všetky časti webových adries s predponou https://. 
+Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, ktoré boli načítané cez nezabezpečený prenos alebo objavené nezabezpečeným spôsobom prostredníctvom protokolu WPAD).
+.
+
+      Predvolene je nastavená možnosť true (bezpečnostná funkcia je povolená).
+
+     Na hodnotu false ho nastavte iba vtedy, keď spôsobuje problém s kompatibilitou v prípade existujúcich skriptov PAC.
+.
+
+      Toto pravidlo bude odstránené vo verzii M75.</translation>
 <translation id="8484458986062090479">Prispôsobte si zoznam vzorov webových adries, ktoré by mali byť vždy vykresľované hostiteľským prehliadačom.
 
           Ak toto pravidlo nenastavíte, pre všetky webové stránky sa použije predvolený vykresľovací modul (ako je určené pravidlom „ChromeFrameRendererSettings“).

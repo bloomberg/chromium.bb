@@ -21,6 +21,7 @@
 <translation id="1270290102613614947">Clavier à l'écran désactivé</translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1289185460362160437">Revenez <ph name="COME_BACK_DAY_OF_WEEK" /> à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Signal de faible intensité</translation>
 <translation id="1293264513303784526">Appareil USB de type C (port situé sur la gauche de l'appareil)</translation>
 <translation id="1294929383540927798">Modifier les paramètres de notification sur l'écran de verrouillage</translation>
@@ -98,6 +99,7 @@
 <translation id="2501920221385095727">Touches persistantes</translation>
 <translation id="2509468283778169019">Touche VERR MAJ activée</translation>
 <translation id="2532589005999780174">Mode Contraste élevé</translation>
+<translation id="255671100581129685">L'Assistant Google n'est pas disponible dans une session publique.</translation>
 <translation id="2575685495496069081">La connexion multicompte a été désactivée</translation>
 <translation id="2582112259361606227">Redémarrer pour mettre à jour</translation>
 <translation id="2597972630681408282">Éclairage nocturne : <ph name="NIGHT_LIGHT_STATUS" /></translation>
@@ -129,6 +131,7 @@
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Sortie</translation>
 <translation id="3019353588588144572">Temps restant avant chargement complet de la batterie : <ph name="TIME_REMAINING" />.</translation>
+<translation id="3055162170959710888">Vous avez utilisé l'appareil pendant <ph name="USED_TIME" /> aujourd'hui</translation>
 <translation id="3077734595579995578">maj</translation>
 <translation id="3081696990447829002">Développer le menu</translation>
 <translation id="3087734570205094154">Bas</translation>
@@ -215,6 +218,7 @@
 <translation id="4659419629803378708">ChromeVox activé</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="476166673298332917">L'administrateur de cet appareil a accès à toute l'activité, y compris aux mots de passe et aux communications.</translation>
+<translation id="4774338217796918551">Revenez demain à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">L'Assistant Google n'est pas disponible dans une session de démonstration.</translation>
 <translation id="479989351350248267">rechercher</translation>
@@ -229,6 +233,7 @@
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4924411785043111640">Redémarrer et réinitialiser</translation>
 <translation id="4961318399572185831">Diffuser l'écran</translation>
+<translation id="5030687792513154421">Temps écoulé</translation>
 <translation id="5083553833479578423">Déverrouiller plus de fonctionnalités de l'Assistant.</translation>
 <translation id="5136175204352732067">Clavier différent branché</translation>
 <translation id="5168181903108465623">Appareils Cast disponibles</translation>
@@ -277,7 +282,6 @@
 <translation id="598882571027504733">Pour télécharger la mise à jour, redémarrez votre Chromebook avec le clavier branché.</translation>
 <translation id="5992218262414051481">Le mode Contraste élevé est activé. Appuyez de nouveau sur Ctrl+Recherche+H pour le désactiver.</translation>
 <translation id="6018164090099858612">Sortie du mode Miroir…</translation>
-<translation id="6040143037577758943">Fermer</translation>
 <translation id="6043212731627905357">Ce moniteur ne fonctionne pas avec votre <ph name="DEVICE_TYPE" /> (il n'est pas compatible).</translation>
 <translation id="6043994281159824495">Se déconnecter maintenant</translation>
 <translation id="6047696787498798094">Le partage d'écran s'arrête lorsque vous passez à un autre utilisateur. Voulez-vous continuer ?</translation>
@@ -360,6 +364,7 @@
 <translation id="7510334386202674593">Ctrl+Maj+L</translation>
 <translation id="7526573455193969409">Il est possible que le réseau soit surveillé</translation>
 <translation id="7536035074519304529">Adresse IP : <ph name="ADDRESS" /></translation>
+<translation id="7548434653388805669">Il est l'heure d'aller au lit</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> n'est pas compatible avec <ph name="SPECIFIED_RESOLUTION" />. La résolution a été modifiée pour utiliser <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Palette d'emoji</translation>
 <translation id="7564874036684306347">Le déplacement de fenêtres vers un autre écran peut entraîner un comportement inattendu. Par exemple, les notifications, les fenêtres et les boîtes de dialogue peuvent s'afficher sur les deux écrans.</translation>
@@ -402,12 +407,14 @@
 <translation id="8152119955266188852">Vous avez utilisé le raccourci de la loupe plein écran. Voulez-vous l'activer ?</translation>
 <translation id="8190698733819146287">Personnaliser les langues et la saisie...</translation>
 <translation id="8192202700944119416">Les notifications sont masquées.</translation>
+<translation id="8236042855478648955">Il est temps de faire une pause</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8297006494302853456">Faible</translation>
 <translation id="8308637677604853869">Menu précédent</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Créer une note</translation>
 <translation id="8392451568018454956">Menu "Options" de l'adresse e-mail <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8394567579869570560">Ton parent a verrouillé cet appareil</translation>
 <translation id="8406981827175133772">Loupe plein écran</translation>
 <translation id="8425213833346101688">Modifier</translation>
 <translation id="8427213022735114808">La fonctionnalité de dictée transmet votre voix à Google et permet d'utiliser ainsi la saisie vocale dans n'importe quelle zone de texte.</translation>
@@ -437,7 +444,6 @@
 <translation id="8814190375133053267">Wi-Fi </translation>
 <translation id="8825534185036233643">La duplication d'écran avec plus de deux écrans n'est pas acceptée.</translation>
 <translation id="8828714802988429505">90°</translation>
-<translation id="8841375032071747811">Bouton Retour</translation>
 <translation id="8843682306134542540">Activer/Désactiver le verrouillage de la rotation. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Recherche+Échap</translation>
 <translation id="8870509716567206129">Application incompatible avec l'écran partagé.</translation>
@@ -464,6 +470,7 @@
 <translation id="9201131092683066720">La batterie est chargée à <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Sortie du mode Bureau unifié</translation>
 <translation id="9215934040295798075">Définir le fond d'écran</translation>
+<translation id="921989828232331238">Ton parent a verrouillé ton appareil pour la journée</translation>
 <translation id="923686485342484400">Appuyez deux fois sur Contrôle + Maj + Q pour vous déconnecter.</translation>
 <translation id="938963181863597773">Qu'y a-t-il dans mon agenda ?</translation>
 <translation id="945522503751344254">Envoyer le commentaire</translation>

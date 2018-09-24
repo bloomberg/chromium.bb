@@ -21,6 +21,7 @@
 <translation id="1270290102613614947">Skärmen på tangentbordet har inaktiverats</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1289185460362160437">Prova igen på <ph name="COME_BACK_DAY_OF_WEEK" /> klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">svag signal</translation>
 <translation id="1293264513303784526">USB-C-enhet (vänster port)</translation>
 <translation id="1294929383540927798">Ändra aviseringsinställningarna för låsskärmen</translation>
@@ -98,6 +99,7 @@
 <translation id="2501920221385095727">Tröga tangenter</translation>
 <translation id="2509468283778169019">CAPS LOCK är på</translation>
 <translation id="2532589005999780174">Högkontrastläge</translation>
+<translation id="255671100581129685">Google-assistenten är inte tillgänglig i en offentlig session.</translation>
 <translation id="2575685495496069081">Multiinloggning har inaktiverats</translation>
 <translation id="2582112259361606227">Starta om för att uppdatera</translation>
 <translation id="2597972630681408282">Nattljus: <ph name="NIGHT_LIGHT_STATUS" /></translation>
@@ -129,6 +131,7 @@
 <translation id="3000461861112256445">Monoljud</translation>
 <translation id="3009178788565917040">Utgång</translation>
 <translation id="3019353588588144572">Tid som återstår tills batteriet är fulladdat: <ph name="TIME_REMAINING" /></translation>
+<translation id="3055162170959710888">Du har använt den här enheten i <ph name="USED_TIME" /> i dag</translation>
 <translation id="3077734595579995578">skift</translation>
 <translation id="3081696990447829002">Utöka menyn</translation>
 <translation id="3087734570205094154">Nederst</translation>
@@ -214,6 +217,7 @@
 <translation id="4659419629803378708">ChromeVox har aktiverats</translation>
 <translation id="4734965478015604180">Horisontell</translation>
 <translation id="476166673298332917">Enhetens administratör har tillgång till all aktivitet, inklusive lösenord och kommunikation.</translation>
+<translation id="4774338217796918551">Prova igen i morgon klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google-assistenten är inte tillgänglig i en demosession.</translation>
 <translation id="479989351350248267">sök</translation>
@@ -228,6 +232,7 @@
 <translation id="4918086044614829423">Acceptera</translation>
 <translation id="4924411785043111640">Starta om och återställ</translation>
 <translation id="4961318399572185831">Casta skärmen</translation>
+<translation id="5030687792513154421">Tiden är slut</translation>
 <translation id="5083553833479578423">Lås upp fler funktioner för Assistent</translation>
 <translation id="5136175204352732067">Ett annat tangentbord har anslutits</translation>
 <translation id="5168181903108465623">Överföringsenheter finns tillgängliga</translation>
@@ -276,7 +281,6 @@
 <translation id="598882571027504733">Starta om Chromebook-enheten med tangentbordet tillkopplat för att uppdatera.</translation>
 <translation id="5992218262414051481">Högkontrastläget har aktiverats. Tryck på Ctrl+Sök+H igen om du vill inaktivera det.</translation>
 <translation id="6018164090099858612">Spegelläge avslutas</translation>
-<translation id="6040143037577758943">Stäng</translation>
 <translation id="6043212731627905357">Skärmen kan inte användas med <ph name="DEVICE_TYPE" /> (det finns inte stöd för skärmen).</translation>
 <translation id="6043994281159824495">Logga ut nu</translation>
 <translation id="6047696787498798094">Skärmdelningen avbryts när du byter till en annan användare. Vill du fortsätta?</translation>
@@ -359,6 +363,7 @@
 <translation id="7510334386202674593">Ctrl+Skift+L</translation>
 <translation id="7526573455193969409">Nätverket kan vara övervakat</translation>
 <translation id="7536035074519304529">IP-adress: <ph name="ADDRESS" /></translation>
+<translation id="7548434653388805669">Läggdags</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> har inte stöd för <ph name="SPECIFIED_RESOLUTION" />. Upplösningen ändrades till <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7564874036684306347">Om du flyttar fönster till ett annat skrivbord kan det leda till oväntat beteende. Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivborden.</translation>
@@ -401,12 +406,14 @@
 <translation id="8152119955266188852">Du tryckte på kortkommandot för helskärmsförstoring. Vill du aktivera funktionen?</translation>
 <translation id="8190698733819146287">Anpassa språk och inmatning...</translation>
 <translation id="8192202700944119416">Aviseringar har dolts.</translation>
+<translation id="8236042855478648955">Dags för en paus</translation>
 <translation id="8261506727792406068">Radera</translation>
 <translation id="8297006494302853456">Svag</translation>
 <translation id="8308637677604853869">Föregående meny</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Skapa anteckning</translation>
 <translation id="8392451568018454956">Alternativmenyn för <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8394567579869570560">Din förälder har låst enheten</translation>
 <translation id="8406981827175133772">Helskärmsförstoring</translation>
 <translation id="8425213833346101688">Ändra</translation>
 <translation id="8427213022735114808">Med diktering skickas det du säger till Google så att du kan tala in text i vilket textfält som helst.</translation>
@@ -436,7 +443,6 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">Det finns inte stöd för spegling på fler än två skärmar.</translation>
 <translation id="8828714802988429505">90°</translation>
-<translation id="8841375032071747811">Bakåtknapp</translation>
 <translation id="8843682306134542540">Aktivera och inaktivera rotationslås. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Sök+Escape</translation>
 <translation id="8870509716567206129">Appen har inte stöd för delad skärm.</translation>
@@ -463,6 +469,7 @@
 <translation id="9201131092683066720">Batteriet är fullt till <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Enhetligt skrivbordsläge avslutas</translation>
 <translation id="9215934040295798075">Ange bakgrund</translation>
+<translation id="921989828232331238">Din förälder har låst enheten för dagen</translation>
 <translation id="923686485342484400">Tryck på Control + skift + Q två gånger om du vill logga ut.</translation>
 <translation id="938963181863597773">Vad står det i min kalender?</translation>
 <translation id="945522503751344254">Skicka synpunkter</translation>

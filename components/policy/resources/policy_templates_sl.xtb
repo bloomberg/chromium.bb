@@ -137,6 +137,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       OPOMBA: ta pravilnik se ne uporablja za Android. Če želite IsolateOrigins omogočiti za Android, uporabite nastavitev pravilnika IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Omogoča API za okolja za strojno opremo za razširitve, nameščene s pravilnikom</translation>
 <translation id="1384459581748403878">Sklic: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
@@ -465,6 +466,9 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2201555246697292490">Konfiguracija seznama dovoljenih za izvorno pošiljanje sporočil</translation>
 <translation id="2204753382813641270">Nadzor samodejnega skrivanja police</translation>
 <translation id="2208976000652006649">Parametri za iskalni URL, ki uporablja POST</translation>
+<translation id="2214880135980649323">Če je ta pravilnik omogočen, je razširitvam, nameščenim s pravilnikom podjetja, dovoljeno uporabljati API za okolja za strojno opremo za podjetja.
+      Če je ta pravilnik onemogočen ali ni nastavljen, nobeni razširitvi ni dovoljeno uporabljati API-ja za okolja za strojno opremo za podjetja.
+      Ta pravilnik se uporablja tudi za razširitve komponent, kot je razširitev Hangout Services.</translation>
 <translation id="2223598546285729819">Privzeta nastavitev obveščanja</translation>
 <translation id="2231817271680715693">Uvoz zgodovine brskanja privzetega brskalnika ob prvem zagonu</translation>
 <translation id="2236488539271255289">Nobenemu mestu ne dovoli nastavljanja lokalnih podatkov</translation>
@@ -2887,6 +2891,25 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8465065632133292531">Parametri za takojšnji URL, ki uporablja POST</translation>
 <translation id="847472800012384958">Nobenemu mestu ne dovoli prikaza pojavnih oken</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Iz URL-jev s protokolom https:// odstrani občutljive dele glede zasebnosti in varnosti, preden jih posreduje skriptom PAC (samodejno konfiguriranje strežnika proxy), ki jih med razreševanjem strežnika proxy uporablja <ph name="PRODUCT_NAME" />.
+
+      Če je pravilnik omogočen, je varnostna funkcija omogočena, iz URL-jev s protokolom https://
+      pa se odstranijo deli, preden se pošljejo v skript PAC. Na ta način skriptu PAC
+      niso vidni podatki, ki so običajno zaščiteni s
+      šifriranim kanalom (kot sta pot in poizvedba URL-ja).
+
+      Če je pravilnik onemogočen, je varnostna funkcija onemogočena, skriptom PAC pa je
+      izrecno omogočen ogled vseh komponent URL-ja s protokolom https://.
+      To se uporabi za vse skripte PAC ne glede na izvor (vključno s tistimi,
+      ki so pridobljeni s prenosom, ki ni varen, ali odkriti z mehanizmom
+      WPAD na način, ki ni varen).
+
+      Pravilnik je privzeto omogočen (varnostna funkcija je omogočena).
+
+      Priporočamo, da pravilnik omogočite. Edini razlog za onemogočanje je,
+      če pravilnik povzroča težavo z združljivostjo z obstoječimi skripti PAC.
+
+      Pravilnik bo odstranjen v različici M75.</translation>
 <translation id="8484458986062090479">Prilagodi seznam vzorcev URL-jev, ki naj jih vedno upodobi gostiteljski brskalnik.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta, določena s pravilnikom »ChromeFrameRendererSettings«, uporabljen privzeti upodabljalnik.

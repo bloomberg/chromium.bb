@@ -120,6 +120,7 @@
 
       NOT: Bu politika Android için geçerli değildir. Android'de IsolateOrigins'i etkinleştirmek için IsolateOriginsAndroid politika ayarını kullanın.
       </translation>
+<translation id="1377024960658062022">Politika tarafından yüklenen uzantılar için Donanım Platformu API'sini etkinleştirir</translation>
 <translation id="1384459581748403878">Referans: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Symantec Corporation'ın Eski PKI Altyapısı'ndaki güvenin etkinleştirilip etkinleştirilmemesi</translation>
 <translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
@@ -450,6 +451,9 @@
 <translation id="2201555246697292490">Yerel mesajlaşma beyaz listesini yapılandır</translation>
 <translation id="2204753382813641270">Rafın otomatik olarak gizlenmesini kontrol et</translation>
 <translation id="2208976000652006649">POST kullanan arama URL'si için parametreler</translation>
+<translation id="2214880135980649323">Bu politika etkin değerine ayarlandığında, kurumsal politika tarafından yüklenen uzantıların Kurumsal Donanım Platformu API'sini kullanmasına izin verilir.
+      Bu politika devre dışı değerine ayarlandığında veya ayarlanmadan bırakıldığında, hiçbir uzantının Kurumsal Donanım Platformu API'sini kullanmasına izin verilmez.
+      Bu politika, Hangout Hizmetleri uzantısı gibi bileşen uzantıları için de geçerli olur.</translation>
 <translation id="2223598546285729819">Varsayılan bildirim ayarı</translation>
 <translation id="2231817271680715693">İlk çalıştırmada tarama geçmişini varsayılan tarayıcıdan içe aktar</translation>
 <translation id="2236488539271255289">Hiçbir sitenin yerel verileri ayarlamasına izin verme</translation>
@@ -895,7 +899,7 @@
 
       Önceden seçilmiş olan klavye düzeni her zaman, önceden seçilmiş yerel ayarla eşleşen en popüler düzen olur.
 
-      Bu politika yalnızca önerildiği şekilde ayarlanabilir. Önerilen yerel ayarları en üste taşımak için bu politikayı kullanabilirsiniz, ancak kullanıcıların oturumları için <ph name="PRODUCT_OS_NAME" /> tarafından desteklenen herhangi bir yerel ayarı seçmesine her zaman izin verilir.
+      Bu politika yalnızca öneride bulunabilir. Önerilen yerel ayarları en üste taşımak için bu politikayı kullanabilirsiniz, ancak kullanıcıların oturumları için <ph name="PRODUCT_OS_NAME" /> tarafından desteklenen herhangi bir yerel ayarı seçmesine her zaman izin verilir.
       </translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
 <translation id="3414260318408232239">Bu politika yapılandırılmazsa, <ph name="PRODUCT_NAME" /> varsayılan minimum sürüm olarak TLS 1.0'ı kullanır.
@@ -1646,7 +1650,7 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadan bırakılırsa kullanılan varsayılan ayar, oluşturma işlemini ana makine tarayıcısının yapmasına izin vermektir, ancak isteğe bağlı olarak bu ayarı geçersiz kılabilir ve HTML sayfalarını oluşturma işleminin varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> tarafından yapılmasını sağlayabilirsiniz.</translation>
 <translation id="5464816904705580310">Yönetilen kullanıcılar için ayarları yapılandırın.</translation>
 <translation id="546726650689747237">AC güçle çalışırken ekran karartma gecikmesi</translation>
-<translation id="5469143988693423708">Kullanıcı Crostini'yi çalıştırabilmek üzere etkinleştirilir</translation>
+<translation id="5469143988693423708">Kullanıcının Crostini'yi çalıştırmasına izin verilir</translation>
 <translation id="5469825884154817306">Bu sitelerdeki resimleri engelle</translation>
 <translation id="5475361623548884387">Yazdırmayı etkinleştir</translation>
 <translation id="547601067149622666">Arayan giren reklamların yer aldığı sitelerde reklamlara izin verme</translation>
@@ -2663,7 +2667,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> hedefinin adı</translation>
 <translation id="7980227303582973781">Özel kısıtlama yok</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
-<translation id="7992136759457836904">Chrome OS'de sanal makinelerin çalıştırılmasına izin verilip verilmeyeceğini kontrol etmenize olanak tanır.
+<translation id="7992136759457836904">Chrome OS'te sanal makinelerin çalıştırılmasına izin verilip verilmeyeceğini kontrol etmenize olanak tanır.
 
       Politika True (Doğru) değerine ayarlanırsa cihazın sanal makine çalıştırmasına izin verilir.
       Politika False (Yanlış) değerine ayarlanırsa cihazın sanal makine çalıştırmasına izin verilmez.
@@ -2845,6 +2849,11 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="8465065632133292531">POST kullanan anlık URL parametreleri</translation>
 <translation id="847472800012384958">Hiçbir sitenin pop-up göstermesine izin verme</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">https:// URL'lerini, proxy çözümlemesi sırasında <ph name="PRODUCT_NAME" /> tarafından kullanılan PAC (Proxy Otomatik Yapılandırması) komut dosyalarına geçirmeden önce URL'lerin gizlilik ve güvenlik açısından hassas bölümlerini ayırır.
+
+      True (Doğru) değerine ayarlandığında güvenlik özelliği etkinleştirilir ve https:// URL'leri bir PAC komut dosyasına gönderilmeden önce ayrılır. Bu şekilde, PAC komut dosyası normalde şifrelenmiş kanalla korunan (URL'nin yolu ve sorgusu gibi) verileri görüntüleyemez.
+
+      Politika False (Yanlış) değerine ayarlandığında, güvenlik özelliği devre dışı bırakılır ve PAC komut dosyalarına https:// URL'sinin tüm bileşenlerini görüntüleme izni örtülü olarak verilir. Bu ayar, kaynağından bağımsız olarak tüm PAC komut dosyaları (güvenli olmayan bir aktarım üzerinden getirilenlerin yanı sıra WPAD üzerinden güvenli olmayan bir şekilde keşfedilenler dahil) için geçerlidir.</translation>
 <translation id="8484458986062090479">Her zaman ana makine tarayıcısı tarafından oluşturulması gereken URL kalıplarının listesini özelleştirir.
 
           Bu politika ayarlanmazsa, tüm siteler için "ChromeFrameRendererSettings" politikası tarafından belirtilen varsayılan oluşturucu kullanılır.

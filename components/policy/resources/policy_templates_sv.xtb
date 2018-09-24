@@ -136,6 +136,7 @@
 
       OBS! Den här principen gäller inte Android. Om du vill aktivera IsolateOrigins på Android använder du principen IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Aktiverar Hardware Platform API för tillägg som installerats via en princip</translation>
 <translation id="1384459581748403878">Referens: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Om Symantec Corporations äldre PKI-infrastruktur ska vara betrodd eller inte</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
@@ -465,6 +466,9 @@
 <translation id="2201555246697292490">Konfigurera lista över tillåtna värdar för Native Messaging</translation>
 <translation id="2204753382813641270">Kontrollera hur hyllan döljs automatiskt</translation>
 <translation id="2208976000652006649">Parametrar för sökadress som använder POST</translation>
+<translation id="2214880135980649323">När principen har aktiverats tillåts tillägg som installerats via en företagsprincip att använda Enterprise Hardware Platform API.
+      När principen har inaktiverats eller lämnats utan inställning tillåts inga tillägg att använda Enterprise Hardware Platform API.
+      Principen gäller även för tilläggskomponenter som tillägget Hangout Services.</translation>
 <translation id="2223598546285729819">Standardinställning för avisering</translation>
 <translation id="2231817271680715693">Importera webbhistorik från standardwebbläsaren första gången den körs</translation>
 <translation id="2236488539271255289">Tillåt inte att någon webbplats ställer in lokala data</translation>
@@ -2883,6 +2887,27 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8465065632133292531">Parametrar för webbadress för Instant som använder POST</translation>
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Principen gör att webbadresser som använder https:// rensas på delar som kan vara känsliga i sekretess- eller säkerhetshänseende innan webbadresserna skickas vidare till PAC-skript (Proxy Auto Config) som används av <ph name="PRODUCT_NAME" /> vid proxymatchning.
+
+      När principen är inställd på sant är säkerhetsfunktionen aktiverad och 
+      webbadresser som använder protokollet https:// rensas innan de skickas
+      till ett PAC-skript. Det gör att PAC-skriptet inte får tillgång till data som 
+      normalt skyddas av en krypterad kanal (t.ex. webbadressens sökväg och
+      sökfråga).
+
+      När principen är inställd på falskt är säkerhetsfunktionen inaktiverad och 
+      PAC-skript ges implicit behörighet att läsa alla delar av en webbadress 
+      som använder https://. Det gäller för alla PAC-skript oavsett ursprung 
+      (inklusive sådana som hämtats via en osäker kanal eller upptäckts på ett 
+      osäkert sätt via WPAD).
+
+      Standardinställningen är sant (säkerhetsfunktionen är aktiverad).
+
+      Den rekommenderade inställningen är sant. Den enda anledningen att ställa 
+      in principen på falskt är om det annars blir kompatibilitetsproblem med
+      PAC-skript som används.
+
+      Principen kommer att tas bort i M75.</translation>
 <translation id="8484458986062090479">Anpassa listan med webbadressmönster som alltid ska renderas av värdwebbläsaren.
 
           Om principen inte har ställts in används standardrenderaren för alla webbplatser enligt specifikationen i principen ChromeFrameRendererSettings.

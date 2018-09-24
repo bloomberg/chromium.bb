@@ -21,6 +21,7 @@
 <translation id="1270290102613614947">Zaslonska tipkovnica onemogočena</translation>
 <translation id="1272079795634619415">Ustavi</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1289185460362160437">Vrni se ta dan ob <ph name="COME_BACK_TIME" />: <ph name="COME_BACK_DAY_OF_WEEK" />.</translation>
 <translation id="1290331692326790741">Šibek signal</translation>
 <translation id="1293264513303784526">Naprava USB-C (leva vrata)</translation>
 <translation id="1294929383540927798">Spreminjanje nastavitve obvestil na zaklenjenem zaslonu</translation>
@@ -98,6 +99,7 @@
 <translation id="2501920221385095727">Zaklepanje tipk</translation>
 <translation id="2509468283778169019">Tipka CAPS LOCK je vklopljena</translation>
 <translation id="2532589005999780174">Visokokontrastni način</translation>
+<translation id="255671100581129685">Pomočnik Google ni na voljo v javni seji.</translation>
 <translation id="2575685495496069081">Prijava z več računi je onemogočena</translation>
 <translation id="2582112259361606227">Znova zaženite za posodobitev</translation>
 <translation id="2597972630681408282">Nočna svetloba: <ph name="NIGHT_LIGHT_STATUS" /></translation>
@@ -129,6 +131,7 @@
 <translation id="3000461861112256445">Mono zvok</translation>
 <translation id="3009178788565917040">Izhod</translation>
 <translation id="3019353588588144572">Preostali čas do napolnitve akumulatorja, <ph name="TIME_REMAINING" /></translation>
+<translation id="3055162170959710888">To napravo si danes uporabljal <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Razširi meni</translation>
 <translation id="3087734570205094154">Na dno</translation>
@@ -214,6 +217,7 @@
 <translation id="4659419629803378708">Omogočen je ChromeVox</translation>
 <translation id="4734965478015604180">Vodoravno</translation>
 <translation id="476166673298332917">Skrbnik te naprave ima dostop do vse dejavnosti, vključno z gesli in komunikacijami.</translation>
+<translation id="4774338217796918551">Vrni se jutri ob <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Geslo za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Pomočnik Google ni na voljo v predstavitveni seji.</translation>
 <translation id="479989351350248267">search</translation>
@@ -228,6 +232,7 @@
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="4924411785043111640">Znova zaženi in ponastavi</translation>
 <translation id="4961318399572185831">Predvajanje zaslona</translation>
+<translation id="5030687792513154421">Dovoljeni čas je potekel</translation>
 <translation id="5083553833479578423">Odklenite več funkcij Pomočnika.</translation>
 <translation id="5136175204352732067">Priklopljena je druga tipkovnica</translation>
 <translation id="5168181903108465623">Naprave za predvajanje so na voljo</translation>
@@ -276,7 +281,6 @@
 <translation id="598882571027504733">Če želite prejeti posodobitev, znova zaženite Chromebook s priklopljeno tipkovnico.</translation>
 <translation id="5992218262414051481">Visokokontrastni način je omogočen. Če ga želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + H.</translation>
 <translation id="6018164090099858612">Izhod iz zrcalnega načina</translation>
-<translation id="6040143037577758943">Zapri</translation>
 <translation id="6043212731627905357">Ta monitor se ne ujema z napravo <ph name="DEVICE_TYPE" /> (monitor ni podprt).</translation>
 <translation id="6043994281159824495">Odjava</translation>
 <translation id="6047696787498798094">Ko preklopite na drugega uporabnika, bo skupna raba zaslona ustavljena. Ali želite nadaljevati?</translation>
@@ -359,6 +363,7 @@
 <translation id="7510334386202674593">Ctrl + Shift + L</translation>
 <translation id="7526573455193969409">Omrežje je morda nadzorovano</translation>
 <translation id="7536035074519304529">Naslov IP: <ph name="ADDRESS" /></translation>
+<translation id="7548434653388805669">Čas je za spanje</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ne podpira ločljivosti <ph name="SPECIFIED_RESOLUTION" />. Spremenjena je bila na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta emodžijev</translation>
 <translation id="7564874036684306347">Če okna premaknete na drugo namizje, lahko pride do nepričakovanega delovanja. Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</translation>
@@ -401,12 +406,14 @@
 <translation id="8152119955266188852">Pritisnili ste bližnjico za celozaslonsko lupo. Ali jo želite vklopiti?</translation>
 <translation id="8190698733819146287">Prilagajanje jezikov in vnosa ...</translation>
 <translation id="8192202700944119416">Obvestila so skrita.</translation>
+<translation id="8236042855478648955">Čas je za premor</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8297006494302853456">Šibek</translation>
 <translation id="8308637677604853869">Prejšnji meni</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Ustvarjanje zapiska</translation>
 <translation id="8392451568018454956">Meni z možnostmi za <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8394567579869570560">Tvoj starš je zaklenil to napravo</translation>
 <translation id="8406981827175133772">Celozaslonska lupa</translation>
 <translation id="8425213833346101688">Spremeni</translation>
 <translation id="8427213022735114808">Narekovanje pošlje vaš glas v Google zaradi omogočanja glasovnega vnašanja v poljubnem besedilnem polju.</translation>
@@ -436,7 +443,6 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">Zrcaljenje z več kot dvema zaslonoma ni podprto.</translation>
 <translation id="8828714802988429505">90°</translation>
-<translation id="8841375032071747811">Gumb za nazaj</translation>
 <translation id="8843682306134542540">Preklop zaklepanja zasuka. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Iskanje + Esc</translation>
 <translation id="8870509716567206129">Aplikacija ne podpira načina razdeljenega zaslona.</translation>
@@ -463,6 +469,7 @@
 <translation id="9201131092683066720">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Izhod iz načina enotnega namizja</translation>
 <translation id="9215934040295798075">Nastavi sliko za ozadje</translation>
+<translation id="921989828232331238">Tvoj starš je zaklenil napravo za ves dan</translation>
 <translation id="923686485342484400">Dvakrat pritisnite Control Shift Q, če se želite odjaviti.</translation>
 <translation id="938963181863597773">Kaj je v mojem koledarju?</translation>
 <translation id="945522503751344254">Pošlji povratne informacije</translation>

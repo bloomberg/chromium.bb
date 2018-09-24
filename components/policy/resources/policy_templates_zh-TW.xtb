@@ -124,6 +124,7 @@
       在 <ph name="PRODUCT_OS_NAME" />上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
       注意：這項政策不適用於 Android 裝置。如要在 Android 裝置上啟用 IsolateOrigins，請改用 IsolateOriginsAndroid 政策設定。
       </translation>
+<translation id="1377024960658062022">針對透過政策安裝的擴充功能啟用 Hardware Platform API</translation>
 <translation id="1384459581748403878">參考頁面：<ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">是否信任 Symantec 公司的舊版 PKI 基礎架構</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
@@ -444,6 +445,9 @@
 <translation id="2201555246697292490">設定內建訊息傳遞許可清單</translation>
 <translation id="2204753382813641270">控制檔案櫃自動隱藏功能</translation>
 <translation id="2208976000652006649">使用 POST 的搜尋網址參數</translation>
+<translation id="2214880135980649323">如果將這項政策設為啟用，系統將允許由企業政策安裝的擴充功能使用 Enterprise Hardware Platform API。
+      如果將這項政策設為停用或不予設定，則所有擴充功能皆無法使用 Enterprise Hardware Platform API。
+      這項政策也適用於元件擴充功能，例如 Hangout Services 擴充功能。</translation>
 <translation id="2223598546285729819">預設通知設定</translation>
 <translation id="2231817271680715693">第一次執行時從預設瀏覽器匯入瀏覽記錄</translation>
 <translation id="2236488539271255289">不允許任何網站設定本機資料</translation>
@@ -2751,6 +2755,17 @@
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="847472800012384958">不允許任何網站顯示彈出式視窗</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">先將 https:// 網址中攸關隱私和安全性的敏感部分去除，再轉送給 PAC (Proxy Auto Config) 指令碼，供 <ph name="PRODUCT_NAME" /> 在 Proxy 解析期間使用。
+
+      設為 True 時會啟用安全性功能，先將 https:// 網址分解再提交給 PAC 指令碼。如此一來，PAC 指令碼便無法檢視原本受加密通道保護的資料 (例如網址的路徑和查詢)。
+
+      設為 False 時會停用安全性功能，PAC 指令碼將因此獲得檢視所有 https:// 網址元素的權限。所有 PAC 指令碼都會套用這項設定，無論來源為何 (包括從不安全的傳輸過程中擷取而來的 PAC 指令碼，或是以不安全的方式透過 WPAD 找到的 PAC 指令碼)。
+
+      這項政策預設為 True (啟用安全性功能)。
+
+      建議你將這項政策設為 True。如果設為 True 會與現有的 PAC 指令碼衝突，造成相容性問題，才需要將這項政策設為 False。
+
+      這項政策將於 M75 移除。</translation>
 <translation id="8484458986062090479">自訂主機瀏覽器應一律轉譯的網址模式清單。
 
           如果未設定這項政策，系統會針對所有網站使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。

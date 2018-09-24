@@ -136,6 +136,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
       HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "IsolateOrigins" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "IsolateOriginsAndroid" verwendet werden.
       </translation>
+<translation id="1377024960658062022">Aktiviert die Hardware Platform API für Erweiterungen, die über die Richtlinie installiert wurden</translation>
 <translation id="1384459581748403878">Referenz: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Festlegen, ob der veralteten Symantec-PKI vertraut werden soll</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
@@ -451,6 +452,9 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="2201555246697292490">Weiße Liste für natives Messaging konfigurieren</translation>
 <translation id="2204753382813641270">Automatisches Ausblenden der Ablage verwalten</translation>
 <translation id="2208976000652006649">Parameter für URL der Suche, die POST verwendet</translation>
+<translation id="2214880135980649323">Wenn diese Richtlinie aktiviert ist, können Erweiterungen, die über die Unternehmensrichtlinie installiert wurden, die Enterprise Hardware Platform API verwenden.
+Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, darf die Enterprise Hardware Platform API von keinen Erweiterungen verwendet werden.
+Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hangouts-Erweiterung.</translation>
 <translation id="2223598546285729819">Standardeinstellung für Benachrichtigungen</translation>
 <translation id="2231817271680715693">Browserverlauf bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="2236488539271255289">Speichern von lokalen Daten für keine Website zulassen</translation>
@@ -2756,6 +2760,17 @@ Diese Richtlinie gilt nicht für den Inkognitomodus.</translation>
 <translation id="8465065632133292531">Parameter für URL der Suche im Voraus, die POST verwendet</translation>
 <translation id="847472800012384958">Anzeige von Pop-ups für keine Website zulassen</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Entfernt datenschutz- und sicherheitsrelevante Teile aus https://-URLs, bevor diese an PAC-Skripts (Proxy Auto Config) übergeben werden, die <ph name="PRODUCT_NAME" /> während der Proxy-Auflösung verwendet.
+
+Wenn diese Richtlinie auf "true" gesetzt ist, wird die Sicherheitsfunktion aktiviert und ein Stripping für https://-URLs durchgeführt, bevor diese an ein PAC-Skript übergeben werden. Auf diese Weise können für das PAC-Skript keine Daten eingesehen werden, die normalerweise durch einen verschlüsselten Kanal geschützt sind, etwa Pfad und Abfrage der URL.
+
+Wird die Richtlinie auf "false" gesetzt, ist die Sicherheitsfunktion deaktiviert und für PAC-Skripts können alle Komponenten einer https://-URL eingesehen werden. Diese Einstellung gilt für alle PAC-Skripts, unabhängig von ihrem Ursprung. Sie schließt auch PAC-Skripts ein, die über WPAD gefunden oder über ein unsicheres Transportprotokoll abgerufen wurden.
+
+Standardmäßig ist die Richtlinie auf "true" gesetzt und die Sicherheitsfunktion aktiviert.
+
+Diese Richtlinie sollte auf "true" gesetzt sein und nur zu "false" geändert werden, wenn Kompatibilitätsprobleme mit bestehenden PAC-Skripts auftreten.
+
+Die Richtlinie wird in M75 entfernt.</translation>
 <translation id="8484458986062090479">Passt die Liste mit URL-Mustern an, die immer vom Host-Browser gerendert werden müssen.
 
           Wenn diese Richtlinie nicht konfiguriert ist, kommt der über die Richtlinie "ChromeFrameRendererSettings" festgelegte Standard-Renderer für alle Websites zum Einsatz.

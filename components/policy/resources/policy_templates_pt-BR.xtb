@@ -133,6 +133,7 @@
 
       OBSERVAÇÃO: esta política não se aplica ao Android. Para ativar IsolateOrigins no Android, use a configuração da política IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Ativa a API Hardware Platform para extensões instaladas pela política</translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Se a confiança deve ou não ser ativada na Infraestrutura PKI de legado da Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressoras empresariais ativadas</translation>
@@ -453,6 +454,9 @@
 <translation id="2201555246697292490">Configurar a lista de permissões de mensagens nativas</translation>
 <translation id="2204753382813641270">Controlar a ocultação automática da estante</translation>
 <translation id="2208976000652006649">Parâmetros para URL de pesquisa que usa POST</translation>
+<translation id="2214880135980649323">Quando esta política estiver definida como ativada, as extensões instaladas pela política da empresa poderão usar a API Enterprise Hardware Platform.
+      Quando esta política estiver definida como desativada ou não estiver definida, nenhuma extensão terá permissão para usar a API Enterprise Hardware Platform.
+      Esta política também se aplica a extensões de componentes, como a extensão Serviços do Hangout.</translation>
 <translation id="2223598546285729819">Configuração padrão de notificações</translation>
 <translation id="2231817271680715693">Importar histórico de navegação do navegador padrão na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que nenhum site defina dados locais</translation>
@@ -2756,6 +2760,25 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8465065632133292531">Parâmetros para URL de instantâneos que usa POST</translation>
 <translation id="847472800012384958">Não permite que nenhum site exiba pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Retira partes confidenciais de privacidade e segurança de URLs https:// antes de repassá-los para scripts de PAC (Config. automática de proxy) usados pelo <ph name="PRODUCT_NAME" /> durante a resolução de proxy.
+
+      Quando a política é definida como Verdadeira, o recurso de segurança é ativado, e os URLs https:// são
+      retirados antes de enviá-los para um script de PAC. Dessa forma, o script 
+      de PAC não pode ver os dados que geralmente são protegidos por um
+      canal criptografado (como o caminho e a consulta do URL).
+
+      Quando a política é definida como Falsa, o recurso de segurança é desativado,
+      e os scripts de PAC podem ver todos os componentes de um URL https://.
+      Essa configuração se aplica a todos os scripts de PAC, independentemente de origem
+      (incluindo aqueles adquiridos por um transporte não seguro ou descobertos de forma 
+      não segura por meio de WPAD).
+
+      O padrão é Verdadeira (recurso de segurança ativado).
+
+      Recomendamos que a política seja definida como Verdadeira. A única razão para defini-la como
+      Falsa é por ela causar um problema de compatibilidade com os scripts de PAC já existentes.
+
+      A política será removida em M75.</translation>
 <translation id="8484458986062090479">Personaliza a lista de padrões de URL que deve sempre ser processada pelo navegador do host.
 
           Se esta política não estiver definida, o renderizador padrão será usado para todos os sites, conforme especificado pela política "ChromeFrameRendererSettings".

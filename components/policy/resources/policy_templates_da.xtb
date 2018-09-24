@@ -125,6 +125,7 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 
       BEMÆRK! Denne politik anvendes ikke på Android-enheder. Hvis du vil aktivere IsolateOrigins på en Android-enhed, skal du bruge politikindstillingen IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Aktiverer Hardware Platform API for udvidelser, der er installeret via politikker</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Angiver, om der skal aktiveres tillid til Symantec Corporations forældede PKI-infrastruktur</translation>
 <translation id="1393485621820363363">Aktiverede virksomhedsprintere for enheder</translation>
@@ -445,6 +446,9 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2201555246697292490">Konfigurer hvidlisten for indbyggede beskedhosts</translation>
 <translation id="2204753382813641270">Administrer, hvornår hylden skjules automatisk</translation>
 <translation id="2208976000652006649">Parametre for søgewebadresse, som anvender POST</translation>
+<translation id="2214880135980649323">Når denne politik er aktiveret, har udvidelser, der er installeret via en virksomhedspolitik, tilladelse til at bruge Enterprise Hardware Platform API.
+      Når denne politik er deaktiveret eller ikke angivet, har ingen udvidelser tilladelse til at bruge Enterprise Hardware Platform API.
+      Denne politik gælder også for komponentudvidelser som f.eks. udvidelsen Hangout Services.</translation>
 <translation id="2223598546285729819">Standardindstilling for underretninger</translation>
 <translation id="2231817271680715693">Import af browseroversigt fra standardbrowser ved første visning</translation>
 <translation id="2236488539271255289">Tillad ikke, at websites angiver lokale data</translation>
@@ -2760,6 +2764,25 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
 <translation id="847472800012384958">Tillad ikke, at websites viser pop op-vinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Fjerner følsomme dele vedrørende personlige oplysninger og sikkerhed i webadresser af typen https://, før de overføres til PAC-scripter (Proxy Auto Config), som anvendes af <ph name="PRODUCT_NAME" /> under proxyfortolkning.
+
+      Hvis politikken er angivet som Sand, er sikkerhedsfunktionen aktiveret, og webadresser af typen https://
+      fjernes, før de indsendes til et PAC-script. På den måde kan
+      PAC-scriptet ikke få vist data, der normalt er beskyttet af en
+      krypteret kanal (som f.eks. webadressens sti og forespørgsel).
+
+      Hvis politikken er angivet som Falsk, er sikkerhedsfunktionen deaktiveret, og PAC-scripts får
+      implicit tilladelse til at se alle komponenter i en webadresse af typen https://.
+      Dette gælder for alle PAC-scripts uanset oprindelse (inklusive
+      scripts, der hentes via en usikker overførsel eller opdages på en usikker måde
+      via WPAD).
+
+      Politikken er som standard angivet som Sand (sikkerhedsfunktionen er aktiveret).
+
+      Det anbefales, at politikken angives som Sand. Den eneste grund til at angive den som
+      Falsk, er hvis den forårsager et kompatibilitetsproblem med eksisterende PAC-scripts.
+
+      Politikken bliver fjernet i M75.</translation>
 <translation id="8484458986062090479">Tilpas listen over webstedsmønstre, der altid bør gengives af hostbrowseren.
 
           Hvis denne politik ikke er angivet, anvendes standardgengivelsen på alle websites, sådan som det er angivet i politikken "ChromeFrameRendererSettings".

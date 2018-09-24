@@ -137,6 +137,7 @@
 
       NOTE: This policy does not apply on Android. To enable IsolateOrigins on Android, use the IsolateOriginsAndroid policy setting.
       </translation>
+<translation id="1377024960658062022">Enables the Hardware Platform API to policy-installed extensions</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
@@ -465,6 +466,9 @@
 <translation id="2201555246697292490">Configure native messaging whitelist</translation>
 <translation id="2204753382813641270">Control shelf auto-hiding</translation>
 <translation id="2208976000652006649">Parameters for search URL which uses POST</translation>
+<translation id="2214880135980649323">When this policy is set to enabled, extensions installed by enterprise policy are allowed to use the Enterprise Hardware Platform API.
+      When this policy is set to disabled or not set, no extensions are allowed to use the Enterprise Hardware Platform API.
+      This policy also applies to component extensions such as the Hangout Services extension.</translation>
 <translation id="2223598546285729819">Default notification settings</translation>
 <translation id="2231817271680715693">Import browsing history from default browser on first run</translation>
 <translation id="2236488539271255289">Do not allow any site to set local data</translation>
@@ -2882,6 +2886,25 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Strips privacy and security sensitive parts of https:// URLs before passing them on to PAC scripts (Proxy Auto Config) used by <ph name="PRODUCT_NAME" /> during proxy resolution.
+
+      When True, the security feature is enabled, and https:// URLs are
+      stripped before submitting them to a PAC script. In this manner, the PAC
+      script is not able to view data that is ordinarily protected by an
+      encrypted channel (such as the URL's path and query).
+
+      When False, the security feature is disabled, and PAC scripts are
+      implicitly granted the ability to view all components of an https://
+      URL. This applies to all PAC scripts regardless of origin (including
+      those fetched over an insecure transport, or discovered insecurely
+      through WPAD).
+
+      This defaults to True (security feature enabled).
+
+      It is recommended that this be set to True. The only reason to set it to
+      False is if it causes a compatibility problem with existing PAC scripts.
+
+      The policy will be removed in M75.</translation>
 <translation id="8484458986062090479">Customise the list of URL patterns that should always be rendered by the host browser.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.

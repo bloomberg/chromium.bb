@@ -182,6 +182,7 @@
 <translation id="3963231839620026525">打开新的无痕式标签页</translation>
 <translation id="3967822245660637423">下载完毕</translation>
 <translation id="3989635538409502728">退出</translation>
+<translation id="3995521777587992544">网页加载进度条，已加载 <ph name="EMAIL" />。</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4038354071007134711">此设备上没有可以打开该文件的应用。</translation>
 <translation id="4042870976416480368">在网页上查找</translation>
@@ -443,7 +444,7 @@
 <translation id="8534481786647257214">Google+ 信息发布已完成。</translation>
 <translation id="8548878600947630424">在网页中查找...</translation>
 <translation id="8605219856220328675">关闭标签页。</translation>
-<translation id="8620640915598389714">修改</translation>
+<translation id="8620640915598389714">编辑</translation>
 <translation id="8636825310635137004">要在您的其他设备上访问您的标签页，请开启同步功能。</translation>
 <translation id="8654802032646794042">取消</translation>
 <translation id="8668210798914567634">此页面已保存到您的阅读列表。</translation>
@@ -466,7 +467,7 @@
 <translation id="9034759925968272072">您不会因此而退出自己的 Google 帐号。您的 Google 帐号在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="9039373489628511875">带宽</translation>
 <translation id="9055772144595778347">无法登录</translation>
-<translation id="9065203028668620118">修改</translation>
+<translation id="9065203028668620118">编辑</translation>
 <translation id="9079935439869366234">全部标为未读</translation>
 <translation id="9083392325882095631">有1个书签</translation>
 <translation id="9100610230175265781">必须提供密码</translation>

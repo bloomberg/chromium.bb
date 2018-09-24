@@ -138,6 +138,7 @@
 
       FONTOS: A házirend nem vonatkozik az Android rendszerre. Ha engedélyezni kívánja az IsolateOrigins házirendet Android rendszeren, használja az IsolateOriginsAndroid házirend-beállítást.
       </translation>
+<translation id="1377024960658062022">Elérhetővé teszi a Hardverplatform API-t a házirend által telepített bővítmények számára</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">A Symantec Corporation régi PKI-infrastruktúrájának megbízhatóként való elfogadása</translation>
 <translation id="1393485621820363363">Eszközökhöz kötött engedélyezett vállalati nyomtatók</translation>
@@ -457,6 +458,9 @@
 <translation id="2201555246697292490">Natív üzenetkezelő engedélyezőlista konfigurálása</translation>
 <translation id="2204753382813641270">Polc automatikus elrejtésének szabályozása</translation>
 <translation id="2208976000652006649">Paraméterek POST metódust használó keresési URL-hez</translation>
+<translation id="2214880135980649323">Ha a házirend engedélyezve van, akkor a vállalati házirend által telepített bővítmények használhatják a Vállalati hardverplatform API-t.
+      Ha a házirend le van tiltva, vagy nincs beállítva, akkor egyetlen bővítmény sem használhatja a Vállalati hardverplatform API-t.
+      A házirend érvényes az összetevő-bővítményekre is (például Hangout-szolgáltatások bővítmény).</translation>
 <translation id="2223598546285729819">Alapértelmezett értesítési beállítás</translation>
 <translation id="2231817271680715693">Böngészési előzmények importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="2236488539271255289">Egy webhely sem állíthat be helyi adatokat</translation>
@@ -872,7 +876,7 @@
           Lásd még a „CookiesBlockedForUrls” és a „CookiesSessionOnlyForUrls” házirendeket. Fontos megjegyezni, hogy nem lehetnek ütköző URL-minták a három házirend között – nincs meghatározva, hogy melyik házirend élvez elsőbbséget.</translation>
 <translation id="3373364525435227558">Egy vagy több ajánlott területi beállítást rendel a felügyelt munkamenethez, hogy a felhasználók könnyedén kiválaszthassák a nekik megfelelőt.
 
-      A felhasználók a felügyelt munkamenet elindítása előtt választhatnak területi beállítást és billentyűzetkiosztást. Alapértelmezés szerint a <ph name="PRODUCT_OS_NAME" /> által támogatott összes területi beállítás megjelenik betűrendben. A házirend segítségével ajánlott beállításokat adhat meg, amelyeket a lista elején jelennek meg.
+      A felhasználók a felügyelt munkamenet elindítása előtt választhatnak területi beállítást és billentyűzetkiosztást. Alapértelmezés szerint a <ph name="PRODUCT_OS_NAME" /> által támogatott összes területi beállítás megjelenik betűrendben. A házirend segítségével ajánlott beállításokat adhat meg, amelyek a lista elején jelennek meg.
 
       Ha a házirend nincs beállítva, akkor a jelenlegi területi beállítást választja ki előre a rendszer.
 
@@ -2770,6 +2774,26 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8465065632133292531">Paraméterek POST metódust használó azonnali URL-hez</translation>
 <translation id="847472800012384958">Előugró ablakok tiltása minden webhely esetén</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Eltávolítja a https:// URL-ekből az adatvédelmi és biztonsági szempontból érzékeny elemeket, mielőtt a <ph name="PRODUCT_NAME" /> által proxy-feloldás során használt PAC-szkripteknek (Proxy Auto Config, automatikus proxy-konfiguráció) továbbítaná őket.
+
+      Igaz érték esetén a biztonsági funkció engedélyezve van, és a https:// URL-ek
+      csak biztonsági tisztítás után kerülnek a PAC-szkriptekhez. A PAC-szkriptek
+      így nem látnak olyan adatokat, amelyeket általában titkosított
+      csatorna védene (például az URL útvonalát és lekérését).
+
+      Hamis érték esetén a biztonsági funkció nincs engedélyezve, és a
+      PAC-szkriptek implicit módon engedélyt kapnak a https:// URL-ek
+      minden elemének megtekintésére. Ez eredettől függetlenül minden
+      PAC-szkriptre vonatkozik (a védtelen csatornán lekértekre és a WPAD-n
+      keresztül nem biztonságos módon azonosítottakra is).
+
+      Az alapértelmezés az Igaz beállítás (biztonsági funkció engedélyezve).
+
+      Javasolt az Igaz beállítás használata. Csak akkor érdemes Hamis
+      beállítást használni, ha kompatibilitási problémák adódtak a meglévő
+      PAC-szkriptekkel.
+
+      A házirend eltávolításra kerül az M75-ös verzióban.</translation>
 <translation id="8484458986062090479">A mindig a gazdagép böngészője segítségével megjelenítendő URL-minták listájának testreszabása.
 
           Ha nincs konfigurálva ez a házirend, akkor a rendszer a „ChromeFrameRendererSettings” házirend által meghatározott alapértelmezett megjelenítőt használja valamennyi webhely esetében.

@@ -21,6 +21,7 @@
 <translation id="1270290102613614947">Softwarová klávesnice je deaktivována</translation>
 <translation id="1272079795634619415">Zastavit</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1289185460362160437">Vrať se, až bude <ph name="COME_BACK_DAY_OF_WEEK" />, <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Slabý signál</translation>
 <translation id="1293264513303784526">Zařízení USB Type-C (levý port)</translation>
 <translation id="1294929383540927798">Změnit nastavení oznámení na obrazovce uzamčení</translation>
@@ -98,6 +99,7 @@
 <translation id="2501920221385095727">Jedním prstem</translation>
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
 <translation id="2532589005999780174">Režim vysokého kontrastu</translation>
+<translation id="255671100581129685">Asistent Google není ve veřejné relaci k dispozici.</translation>
 <translation id="2575685495496069081">Vícenásobné přihlášení je zakázáno.</translation>
 <translation id="2582112259361606227">Restartovat a aktualizovat</translation>
 <translation id="2597972630681408282">Noční režim: <ph name="NIGHT_LIGHT_STATUS" /></translation>
@@ -129,6 +131,7 @@
 <translation id="3000461861112256445">Zvuk mono</translation>
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3019353588588144572">Čas zbývající do úplného nabití baterie: <ph name="TIME_REMAINING" /></translation>
+<translation id="3055162170959710888">Toto zařízení jsi dnes používal(a) <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Rozbalit nabídku</translation>
 <translation id="3087734570205094154">Až dolů</translation>
@@ -214,8 +217,9 @@
 <translation id="4659419629803378708">Funkce ChromeVox je zapnutá</translation>
 <translation id="4734965478015604180">Na šířku</translation>
 <translation id="476166673298332917">Administrátor tohoto zařízení má přístup k veškeré aktivitě včetně hesel a komunikace.</translation>
+<translation id="4774338217796918551">Vrať se v <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Heslo pro účet <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="4778095205580009397">Asistent Google v ukázkové relaci není k dispozici.</translation>
+<translation id="4778095205580009397">Asistent Google není v ukázkové relaci k dispozici.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Odpojit</translation>
 <translation id="4849058404725798627">Zvýraznit objekt se zaměřením pro zadávání</translation>
@@ -228,6 +232,7 @@
 <translation id="4918086044614829423">Přijmout</translation>
 <translation id="4924411785043111640">Restartovat a resetovat</translation>
 <translation id="4961318399572185831">Odesílání obrazovky</translation>
+<translation id="5030687792513154421">Čas vypršel</translation>
 <translation id="5083553833479578423">Odemkněte další funkce Asistenta.</translation>
 <translation id="5136175204352732067">Je připojena jiná klávesnice</translation>
 <translation id="5168181903108465623">Dostupná zařízení Cast</translation>
@@ -276,7 +281,6 @@
 <translation id="598882571027504733">Aktualizaci nainstalujete tím, že Chromebook s připojenou klávesnicí restartujete.</translation>
 <translation id="5992218262414051481">Je aktivován režim vysokého kontrastu. Vypnete jej opětovným stisknutím kombinace kláves Ctrl+Hledat+H.</translation>
 <translation id="6018164090099858612">Ukončování režimu zrcadlení</translation>
-<translation id="6040143037577758943">Zavřít</translation>
 <translation id="6043212731627905357">Tento monitor si se zařízením <ph name="DEVICE_TYPE" /> nerozumí (monitor není podporován).</translation>
 <translation id="6043994281159824495">Odhlásit se</translation>
 <translation id="6047696787498798094">Pokud přepnete na jiného uživatele, sdílení obrazovky bude ukončeno. Chcete pokračovat?</translation>
@@ -359,6 +363,7 @@
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Síť může být sledována</translation>
 <translation id="7536035074519304529">IP adresa: <ph name="ADDRESS" /></translation>
+<translation id="7548434653388805669">Čas jít spát</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> rozlišení <ph name="SPECIFIED_RESOLUTION" /> nepodporuje. Rozlišení bylo změněno zpět na <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Paleta emodži</translation>
 <translation id="7564874036684306347">Přesunutí oken na jinou plochu může vést k neočekávanému chování. Následná oznámení, okna a dialogy mohou být rozděleny mezi plochy.</translation>
@@ -401,12 +406,14 @@
 <translation id="8152119955266188852">Stiskli jste klávesovou zkratku pro lupu celé obrazovky. Chcete ji zapnout?</translation>
 <translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
 <translation id="8192202700944119416">Oznámení jsou skryta.</translation>
+<translation id="8236042855478648955">Čas na přestávku</translation>
 <translation id="8261506727792406068">Smazat</translation>
 <translation id="8297006494302853456">Slabý</translation>
 <translation id="8308637677604853869">Předchozí nabídka</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Vytvořit poznámku</translation>
 <translation id="8392451568018454956">Nabídka možností pro uživatele <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8394567579869570560">Rodič toto zařízení uzamkl</translation>
 <translation id="8406981827175133772">Lupa celé obrazovky</translation>
 <translation id="8425213833346101688">Změnit</translation>
 <translation id="8427213022735114808">Diktování odesílá váš hlas do Googlu, aby bylo možné hlasově zadávat do libovolného textového pole.</translation>
@@ -436,7 +443,6 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">Zrcadlení s více než dvěma obrazovkami není podporováno.</translation>
 <translation id="8828714802988429505">90°</translation>
-<translation id="8841375032071747811">Tlačítko Zpět</translation>
 <translation id="8843682306134542540">Přepnout zámek otáčení. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Hledat+Esc</translation>
 <translation id="8870509716567206129">Aplikace nepodporuje režim rozdělené obrazovky.</translation>
@@ -463,6 +469,7 @@
 <translation id="9201131092683066720">Baterie je nabita na <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Ukončování režimu jednotné plochy</translation>
 <translation id="9215934040295798075">Nastavit tapetu</translation>
+<translation id="921989828232331238">Rodič zařízení na celý den uzamkl</translation>
 <translation id="923686485342484400">Odhlásíte se dvojitým stisknutím kombinace kláves Control Shift Q.</translation>
 <translation id="938963181863597773">Co mám v kalendáři?</translation>
 <translation id="945522503751344254">Odeslat zpětnou vazbu</translation>

@@ -372,7 +372,6 @@
 <translation id="1531004739673299060">Programvindu</translation>
 <translation id="15373452373711364">Stor markør</translation>
 <translation id="1538729222189715449">Åpner Linux-filer …</translation>
-<translation id="153933193410874873">Vi kunne ikke bekrefte identiteten din på denne enheten</translation>
 <translation id="1540605929960647700">Slå på demomodus</translation>
 <translation id="1543284117603151572">Importert fra Edge</translation>
 <translation id="1545177026077493356">Automatisk kioskmodus</translation>
@@ -679,7 +678,6 @@
 <translation id="1981115145845865539">Lås opp <ph name="DEVICE_TYPE" />-enheten automatisk</translation>
 <translation id="1983959805486816857">Når du har opprettet en ny administrert bruker, kan du administrere innstillingene når som helst fra hvilken som helst enhet på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Forankre vinduet til høyre</translation>
-<translation id="1987139229093034863">Bytt til en annen bruker.</translation>
 <translation id="1987317783729300807">Kontoer</translation>
 <translation id="1989112275319619282">Bla gjennom</translation>
 <translation id="1992397118740194946">Ikke angitt</translation>
@@ -932,6 +930,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer valgt</translation>
 <translation id="237828693408258535">Vil du oversette denne siden?</translation>
 <translation id="2378982052244864789">Velg katalog for utvidelsen.</translation>
+<translation id="2379281330731083556">Skriv ut med systemdialogen <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Spør før noe sendes (anbefales).</translation>
 <translation id="2384436799579181135">Det har oppstått en feil. Sjekk skriveren og prøv på nytt.</translation>
 <translation id="2387458720915042159">Tilkoblingstype for proxy-tjener</translation>
@@ -2060,7 +2059,6 @@
 <translation id="4068506536726151626">Denne siden inneholder elementer fra følgende nettsteder som sporer posisjonen din:</translation>
 <translation id="4068776064906523561">Lagrede fingeravtrykk</translation>
 <translation id="407173827865827707">Ved klikk</translation>
-<translation id="4071770069230198275"><ph name="PROFILE_NAME" />: påloggingsfeil</translation>
 <translation id="4074900173531346617">Sertifikat for signering av e-poster</translation>
 <translation id="407520071244661467">Skalér</translation>
 <translation id="4075639477629295004">Kunne ikke caste <ph name="FILE_NAME" />.</translation>
@@ -2861,6 +2859,7 @@
 <translation id="5332624210073556029">Tidssone:</translation>
 <translation id="5334142896108694079">Skriptbuffer</translation>
 <translation id="5334844597069022743">Se kilden</translation>
+<translation id="5334899159203764908">Finn ut mer om <ph name="BEGIN_LINK" />nettstedstilgang<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Sikkerhetskopierer <ph name="FILE_COUNT" /> til <ph name="BEGIN_LINK" />Google Disk<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Ikke gi noen nettsteder tilgang til USB-enheter</translation>
 <translation id="5337771866151525739">Installert av en tredjepart.</translation>
@@ -3449,7 +3448,6 @@
 <translation id="6185132558746749656">Enhetsposisjon</translation>
 <translation id="6185617499004995178">CUPS IPP-validator</translation>
 <translation id="6185696379715117369">Opp én side</translation>
-<translation id="6189273858858366896">Konfigurer eller administrer fildelinger på nettverket.</translation>
 <translation id="6189412234224385711">Åpne med <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokkér informasjonskapsler fra tredjeparter</translation>
 <translation id="6196854373336333322">Utvidelsen «<ph name="EXTENSION_NAME" />» har tatt kontroll over proxy-tjenerinnstillingene dine, noe som betyr at den kan endre, ødelegge eller spionere på alt du foretar deg på nettet. Hvis du ikke er sikker på hvorfor denne endringen fant sted, vil du mest sannsynlig ikke ha den.</translation>
@@ -3775,7 +3773,6 @@
 <translation id="667517062706956822">Vil du at Google skal oversette denne siden fra <ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">En pekeenhet er koblet til</translation>
 <translation id="6678717876183468697">Nettadresse for søk</translation>
-<translation id="6680028776254050810">Bytt bruker</translation>
 <translation id="6680442031740878064">Tilgjengelig: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Vurder</translation>
 <translation id="6681668084120808868">Ta et bilde</translation>
@@ -3784,7 +3781,6 @@
 <translation id="668599234725812620">Åpne Google Play.</translation>
 <translation id="6686490380836145850">Lukk fanene til høyre</translation>
 <translation id="6686817083349815241">Lagre passordet ditt</translation>
-<translation id="6690565918367819723"><ph name="PROFILE_NAME" /> – Bytt person</translation>
 <translation id="6690659332373509948">Kan ikke parse filen: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Velg en administrert bruker som skal legges til på denne enheten.</translation>
 <translation id="6691331417640343772">Administrer synkroniserte data i Google Oversikt</translation>
@@ -5099,7 +5095,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="869884720829132584">Programmeny</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
 <translation id="8699566574894671540">For å slå dette på må du først velge «Kontrollér staving mens du skriver» på Rediger-menyen</translation>
-<translation id="870073306461175568">Fildelinger på nettverket</translation>
 <translation id="8701677791353449257">Enhetsnavnet må samsvare med det regulære uttrykket <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">Dette tar mye lengre tid enn normalt. Du kan fortsette å vente eller avbryte og prøve på nytt senere.</translation>
 <translation id="8705331520020532516">Serienummer</translation>
@@ -5284,7 +5279,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – kræsjet</translation>
 <translation id="8983677657449185470">Bidra til å forbedre Safe Browsing</translation>
 <translation id="8984179138335769204">Hurtigtaster</translation>
-<translation id="8984654317541110628">Nettadresse for fildeling</translation>
 <translation id="8986362086234534611">Glem</translation>
 <translation id="8986494364107987395">Send bruksstatistikk og programstopprapporter automatisk til Google</translation>
 <translation id="8987927404178983737">Måned</translation>

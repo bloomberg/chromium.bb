@@ -139,6 +139,7 @@
 
      NOTA: Dasar ini tidak terpakai pada Android. Untuk mendayakan IsolateOrigins pada Android, gunakan tetapan dasar IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Mendayakan API Platform Perkakasan ke sambungan yang dipasang dasar</translation>
 <translation id="1384459581748403878">Rujukan: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Sama ada hendak mendayakan kepercayaan dalam Infrastruktur PKI Lama Symantec Corporation</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
@@ -467,6 +468,9 @@
 <translation id="2201555246697292490">Konfigurasi senarai putih pemesejan natif</translation>
 <translation id="2204753382813641270">Kawal penyembunyian automatik rak</translation>
 <translation id="2208976000652006649">Parameter untuk URL carian yang menggunakan POST</translation>
+<translation id="2214880135980649323">Apabila dasar ini ditetapkan untuk didayakan, sambungan yang dipasang oleh dasar perusahaan dibenarkan menggunakan API Platform Perkakasan Perusahaan.
+      Apabila dasar ini ditetapkan untuk dilumpuhkan atau tidak ditetapkan, tiada sambungan yang dibenarkan menggunakan API Platform Perkakasan Perusahaan.
+      Dasar ini juga terpakai kepada sambungan komponen seperti sambungan Perkhidmatan Hangout.</translation>
 <translation id="2223598546285729819">Tetapan pemberitahuan lalai</translation>
 <translation id="2231817271680715693">Import sejarah penyemakan imbas daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="2236488539271255289">Jangan benarkan mana-mana tapak untuk menetapkan data setempat</translation>
@@ -2753,7 +2757,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8138009212169037227">Dasar ini mengawal sama ada hendak melaporkan data dasar dan masa pengambilan dasar.
 
       Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, data dasar dan masa pengambilan dasar akan dikumpulkan.
-      Apabila dasar ini ditetapkan kepada Palsu, data dasar dan masa pengambilan data tidak akan dikumpulkan.
+      Apabila dasar ini ditetapkan kepada Palsu, data dasar dan masa pengambilan dasar tidak akan dikumpulkan.
 
       Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Laporkan senarai antara muka rangkaian bersama jenis dan alamat perkakasan ke pelayan.
@@ -2881,6 +2885,25 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan benarkan mana-mana tapak untuk menunjukkan pop muncul</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Mengeluarkan bahagian privasi dan keselamatan URL https:// yang sensitif sebelum menyerahkannya kepada skrip PAC (Konfigurasi Automatik Proksi) yang digunakan oleh <ph name="PRODUCT_NAME" /> semasa peleraian proksi.
+
+      Apabila Benar, ciri keselamatan didayakan dan URL https://
+      dibuang sebelum menyerahkannya kepada skrip PAC. Dalam cara ini, skrip PAC
+      tidak dapat melihat data yang lazimnya dilindungi oleh
+      saluran yang disulitkan (seperti laluan dan pertanyaan URL).
+
+      Apabila Palsu, ciri keselamatan dilumpuhkan dan skrip PAC
+      secara tersirat diberikan keupayaan untuk melihat semua komponen
+      URL https://. Tindakan ini terpakai kepada semua skrip PAC tanpa mengambil kira asalnya
+      (termasuk skrip yang diambil melalui pengangkutan yang tidak selamat atau ditemui secara tidak selamat
+      menerusi WPAD).
+
+      Ciri ini ditetapkan kepada Benar secara lalai (ciri keselamatan didayakan).
+
+      Anda disyorkan supaya menetapkannya kepada Benar. Satu-satunya sebab untuk menetapkannya kepada
+      Palsu adalah jika ciri ini menyebabkan masalah keserasian dengan skrip PAC yang sedia ada.
+
+      Dasar ini akan dialih keluar dalam M75.</translation>
 <translation id="8484458986062090479">Sesuaikan senarai pola URL yang sentiasa harus dipaparkan oleh penyemak imbas hos.
 
           Jika dasar ini tidak ditetapkan, pemapar lalai akan digunakan untuk semua tapak seperti yang dinyatakan oleh dasar 'ChromeFrameRendererSettings'.

@@ -142,6 +142,7 @@
 
       NOTA: esta política não é aplicável no Android. Para ativar IsolateOrigins no Android, utilize a definição da política IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Ativa a API Hardware Platform para as extensões instaladas por políticas</translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ativar ou não ativar confiança na Infraestrutura PKI antiga da Symantec Corporation.</translation>
 <translation id="1393485621820363363">Impressoras empresariais de dispositivos ativadas</translation>
@@ -469,6 +470,9 @@
 <translation id="2201555246697292490">Configurar a lista de autorizações de mensagens nativas</translation>
 <translation id="2204753382813641270">Controlar a ocultação automática da prateleira</translation>
 <translation id="2208976000652006649">Parâmetros do URL de pesquisa que utilize POST</translation>
+<translation id="2214880135980649323">Quando esta política está definida como ativada, as extensões instaladas por uma política empresarial têm autorização para utilizar a API Enterprise Hardware Platform.
+      Quando esta política está definida como desativada ou não está definida, nenhuma extensão tem autorização para utilizar a API Enterprise Hardware Platform.
+      Esta política também se aplica às extensões de componentes, tais como a extensão Serviços do Hangout.</translation>
 <translation id="2223598546285729819">Definição de notificação predefinida</translation>
 <translation id="2231817271680715693">Importar histórico de navegação a partir do navegador predefinido na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que os sites definam dados de local</translation>
@@ -2603,7 +2607,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7976157349247117979">Nome do destino do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Sem restrições especiais</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
-<translation id="7992136759457836904">Permite-lhe controlar a execução de máquinas virtuais no SO Chrome.
+<translation id="7992136759457836904">Permite-lhe controlar a execução de máquinas virtuais no Chrome OS.
 
       Se a política estiver definida como verdadeira, o dispositivo pode executar máquinas virtuais.
       Se a política estiver definida como falsa, o dispositivo não pode executar máquinas virtuais.
@@ -2727,7 +2731,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
           Em instâncias do Windows que não fazem parte de um domínio <ph name="MS_AD_NAME" />, a instalação forçada está limitada a aplicações e extensões apresentadas na Web Store do Chrome.
 
-          Tenha em atenção que o código-fonte de qualquer extensão pode ser alterado pelos utilizadores através das Ferramentas para programador (o que pode resultar no funcionamento incorreto da extensão). Se pretender evitar esta situação, defina a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+          Tenha em atenção que o código-fonte de qualquer extensão pode ser alterado pelos utilizadores através das Ferramentas para programadores (o que pode resultar no funcionamento incorreto da extensão). Se pretender evitar esta situação, defina a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
           Cada item de lista da política é uma string que contém um ID de extensão e, opcionalmente, um URL de "atualização" separado por ponto e vírgula (<ph name="SEMICOLON" />). O ID da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de programador. O URL de "atualização", se especificado, deve apontar para um documento XML de Atualização do manifesto conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por predefinição, utiliza-se o URL de atualização da Web Store do Chrome (que, atualmente, é "https://clients2.google.com/service/update2/crx"). Tenha em atenção que o URL de "atualização" definido nesta política apenas é utilizado para a instalação inicial e as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. Tenha também em atenção que era obrigatório especificar explicitamente o URL de "atualização" até à versão 67 do <ph name="PRODUCT_NAME" />, inclusive.
 
@@ -2785,6 +2789,25 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8465065632133292531">Parâmetros do URL instantâneo que utilize POST</translation>
 <translation id="847472800012384958">Não permitir que os sites mostrem pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Remove as partes sensíveis de privacidade e de segurança de URLs https:// antes de os transmitir para scripts de PAC (Configuração automática do proxy) utilizados pelo <ph name="PRODUCT_NAME" /> durante a resolução de proxy.
+
+      Quando definida como Verdadeira, a funcionalidade de segurança está ativada e os URLs https:// são
+      removidos antes de serem enviados para um script de PAC. Desta forma, o script de PAC
+      não consegue ver dados normalmente protegidos por um
+      canal encriptado (como o caminho e a consulta do URL).
+
+      Quando definida como Falsa, a funcionalidade de segurança está desativada e é concedida,
+      implicitamente, aos scripts de PAC a capacidade de verem todos os componentes de um URL https://.
+      Isto aplica-se a todos os scripts de PAC, independentemente da origem (incluindo
+      os que são obtidos através de um transporte não protegido ou detetados
+      através de WPAD inseguro).
+
+      A predefinição é Verdadeira (funcionalidade de segurança ativada).
+
+      Recomenda-se que a política seja definida como Verdadeira. O único motivo para a definir como
+      Falsa é se provocar problemas de incompatibilidade com scripts de PAC existentes.
+
+      A política vai ser removida em M75.</translation>
 <translation id="8484458986062090479">Personaliza a lista de padrões de URL que devem ser sempre processados pelo navegador anfitrião.
 
           Se esta política não for definida, é utilizado o processador predefinido para todos os sites, conforme especificado pela política "ChromeFrameRendererSettings".

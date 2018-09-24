@@ -21,6 +21,7 @@
 <translation id="1270290102613614947">صفحه‌کلید روی صفحه غیرفعال شد</translation>
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> ساعت <ph name="COME_BACK_TIME" /> برگردید.</translation>
 <translation id="1290331692326790741">سیگنال ضعیف</translation>
 <translation id="1293264513303784526">‏دستگاه USB-C (درگاه سمت چپ)</translation>
 <translation id="1294929383540927798">تغییر تنظیمات اعلان صفحه قفل</translation>
@@ -98,6 +99,7 @@
 <translation id="2501920221385095727">کلیدهای چسبان</translation>
 <translation id="2509468283778169019">‏CAPS LOCK روشن است</translation>
 <translation id="2532589005999780174">حالت کنتراست بالا</translation>
+<translation id="255671100581129685">‏«دستیار Google» در جلسه عمومی در دسترس نیست.</translation>
 <translation id="2575685495496069081">ورود چندگانه به سیستم غیرفعال شده است</translation>
 <translation id="2582112259361606227">بازراه‌اندازی برای به‌روزرسانی</translation>
 <translation id="2597972630681408282">«نور شب»: <ph name="NIGHT_LIGHT_STATUS" /></translation>
@@ -129,6 +131,7 @@
 <translation id="3000461861112256445">صدای مونو</translation>
 <translation id="3009178788565917040">خروجی</translation>
 <translation id="3019353588588144572">زمان باقی مانده تا شارژ کامل باتری، <ph name="TIME_REMAINING" /></translation>
+<translation id="3055162170959710888">امروز از این دستگاه به‌مدت <ph name="USED_TIME" /> استفاده کردید</translation>
 <translation id="3077734595579995578">تبدیل</translation>
 <translation id="3081696990447829002">بزرگ کردن منو</translation>
 <translation id="3087734570205094154">پایین</translation>
@@ -215,6 +218,7 @@
 <translation id="4659419629803378708">‏ChromeVox فعال شد</translation>
 <translation id="4734965478015604180">افقی</translation>
 <translation id="476166673298332917">سرپرست این سیستم به همه فعالیت‌ها، ازجمله گذرواژه‌ها و ارتباطات دسترسی دارد.</translation>
+<translation id="4774338217796918551">فردا ساعت <ph name="COME_BACK_TIME" /> برگردید.</translation>
 <translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">‏«دستیار Google» در جلسه نمایشی در دسترس نیست.</translation>
 <translation id="479989351350248267">جستجو</translation>
@@ -229,6 +233,7 @@
 <translation id="4918086044614829423">می‌پذیرم</translation>
 <translation id="4924411785043111640">بازراه‌اندازی و بازنشانی</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
+<translation id="5030687792513154421">وقت تمام شد</translation>
 <translation id="5083553833479578423">باز کردن قفل ویژگی‌های بیشتری از «دستیار».</translation>
 <translation id="5136175204352732067">صفحه‌کلید دیگری متصل شد</translation>
 <translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>
@@ -277,7 +282,6 @@
 <translation id="598882571027504733">‏برای دریافت به‌روزرسانی، Chromebook را با صفحه‌کلید متصل بازراه‌اندازی کنید.</translation>
 <translation id="5992218262414051481">‏«حالت تضاد بالا» فعال شد. برای خاموش کردن آن، Ctrl+Search+H را دوباره فشار دهید.</translation>
 <translation id="6018164090099858612">خروج از حالت آینه</translation>
-<translation id="6040143037577758943">بستن</translation>
 <translation id="6043212731627905357">این نمایشگر با <ph name="DEVICE_TYPE" /> سازگار نیست (نمایشگر پشتیبانی نمی‌شود).</translation>
 <translation id="6043994281159824495">خروج از سیستم هم‌اکنون</translation>
 <translation id="6047696787498798094">زمانی که به یک کاربر دیگر جابه‌جا می‌شوید، اشتراک‌گذاری صفحه نمایش متوقف می‌شود. می‌خواهید ادامه دهید؟</translation>
@@ -360,6 +364,7 @@
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">ممکن است شبکه پایش شود</translation>
 <translation id="7536035074519304529">‏نشانی IP: <ph name="ADDRESS" /></translation>
+<translation id="7548434653388805669">وقت خواب</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />،‏ <ph name="SPECIFIED_RESOLUTION" /> را پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION" /> تغییر کرد</translation>
 <translation id="7562368315689366235">پالت صورتک</translation>
 <translation id="7564874036684306347">انتقال پنجره‌ها به میز کار دیگر می‌تواند به رفتار غیرمنتظره منجر شود. اعلان‌ها، پنجره‌ها و کادرهای گفتگوی بعدی ممکن است بین میز کارها تقسیم شوند.</translation>
@@ -402,12 +407,14 @@
 <translation id="8152119955266188852">میان‌بر مربوط به ذره‌بین تمام‌صفحه را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
 <translation id="8190698733819146287">سفارشی کردن زبان‌ها و ورودی...</translation>
 <translation id="8192202700944119416">اعلان‌ها پنهان شده است.</translation>
+<translation id="8236042855478648955">وقت استراحت</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8297006494302853456">ضعیف</translation>
 <translation id="8308637677604853869">منوی قبلی</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">یادداشت ایجاد کنید</translation>
 <translation id="8392451568018454956">منوی گزینه‌ها برای <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8394567579869570560">پدر یا مادرتان این دستگاه را قفل کرده است</translation>
 <translation id="8406981827175133772">ذره‌بین تمام‌صفحه</translation>
 <translation id="8425213833346101688">تغییر</translation>
 <translation id="8427213022735114808">‏با دیکته کردن، صدایتان به Google ارسال می‌شود تا بتوانید در هر فیلد نوشتاری تایپ گفتاری انجام دهید.</translation>
@@ -437,7 +444,6 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">«نمایش صفحه‌نمایش روی دستگاه دیگر» با بیش از دو نمایشگر پشتیبانی نمی‌شود.</translation>
 <translation id="8828714802988429505">۹۰°</translation>
-<translation id="8841375032071747811">دکمه برگشت</translation>
 <translation id="8843682306134542540">تغییر وضعیت قفل چرخش. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">برنامه از تقسیم صفحه پشتیبانی نمی‌کند.</translation>
@@ -464,6 +470,7 @@
 <translation id="9201131092683066720">باتری <ph name="PERCENTAGE" /> درصد پر است.</translation>
 <translation id="9210037371811586452">خروج از حالت میزکار یکپارچه</translation>
 <translation id="9215934040295798075">تنظیم کاغذدیواری</translation>
+<translation id="921989828232331238">پدر یا مادرتان دستگاهتان را برای تمام روز قفل کرده‌ است</translation>
 <translation id="923686485342484400">‏برای خروج از سیستم Control Shift Q را دو بار فشار دهید.</translation>
 <translation id="938963181863597773">‏?What's on my calendar (در تقویم من چه رویدادی هست؟)</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>

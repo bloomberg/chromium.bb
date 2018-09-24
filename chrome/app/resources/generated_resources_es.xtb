@@ -261,7 +261,7 @@
 <translation id="1374844444528092021">El certificado requerido por la red "<ph name="NETWORK_NAME" />" no está instalado o ya no es válido. Consigue un nuevo certificado y prueba a conectarte de nuevo.</translation>
 <translation id="1375321115329958930">Contraseñas guardadas</translation>
 <translation id="137651782282853227">Las direcciones guardadas aparecerán aquí</translation>
-<translation id="1377600615067678409">Omitir por ahora</translation>
+<translation id="1377600615067678409">Saltarpor ahora</translation>
 <translation id="1378613616312864539"><ph name="NAME" /> controla esta configuración</translation>
 <translation id="1378727793141957596">Te damos la bienvenida a Google Drive</translation>
 <translation id="1380436189840894976">¿Quieres salir del modo de incógnito de todas formas?</translation>
@@ -275,6 +275,7 @@
 <translation id="1395730723686586365">Herramienta de actualización iniciada</translation>
 <translation id="1396139853388185343">No se ha podido configurar la impresora</translation>
 <translation id="1396963298126346194">El nombre de usuario y la contraseña que has introducido no coinciden</translation>
+<translation id="1397500194120344683">No hay ningún dispositivo apto. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="1397854323885047133">Sincronización y personalización</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Sin certificado de usuario</translation>
@@ -375,7 +376,6 @@
 <translation id="1531004739673299060">Ventana de la aplicación</translation>
 <translation id="15373452373711364">Cursor del ratón grande</translation>
 <translation id="1538729222189715449">Abriendo archivos de Linux...</translation>
-<translation id="153933193410874873">No hemos podido verificar tu identidad en este dispositivo</translation>
 <translation id="1540605929960647700">Habilitar modo de demostración</translation>
 <translation id="1543284117603151572">Importado desde Edge</translation>
 <translation id="1545177026077493356">Modo kiosco automático</translation>
@@ -529,6 +529,7 @@
 <translation id="175772926354468439">Habilitar tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Ver en Chrome Web Store</translation>
+<translation id="176193854664720708">El sensor de huellas digitales está situado en el botón de encendido. Tócalo ligeramente con un dedo.</translation>
 <translation id="1763046204212875858">Crear accesos directos a aplicaciones</translation>
 <translation id="1763108912552529023">Seguir explorando</translation>
 <translation id="1763808908432309942">Se abre en una nueva pestaña</translation>
@@ -682,7 +683,6 @@
 <translation id="1981115145845865539">Desbloquea automáticamente tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="1983959805486816857">Una vez que hayas creado un nuevo usuario supervisado, podrás administrar su configuración en cualquier momento desde cualquier dispositivo a través de la página <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Acoplar ventana a la derecha</translation>
-<translation id="1987139229093034863">Cambiar a un usuario diferente</translation>
 <translation id="1987317783729300807">Cuentas</translation>
 <translation id="1989112275319619282">Examinar</translation>
 <translation id="1992397118740194946">Sin configurar</translation>
@@ -823,6 +823,7 @@
 <translation id="2208158072373999562">Archivo zip</translation>
 <translation id="220858061631308971">Introduce este código PIN en "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2209593327042758816">Elemento 2 de la estantería</translation>
+<translation id="2212126039311489237">Imprimir usando el cuadro de diálogo del sistema</translation>
 <translation id="2217501013957346740">Crea un nombre -</translation>
 <translation id="2218019600945559112">Ratón y panel táctil</translation>
 <translation id="2218320521449013367">Chrome no ha podido eliminar el software dañino</translation>
@@ -935,6 +936,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> archivos seleccionados</translation>
 <translation id="237828693408258535">¿Quieres traducir esta página?</translation>
 <translation id="2378982052244864789">Selecciona el directorio de la extensión.</translation>
+<translation id="2379281330731083556">Imprimir utilizando el cuadro de diálogo del sistema <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Preguntar antes de enviar (recomendado)</translation>
 <translation id="2384436799579181135">Se ha producido un error. Comprueba tu impresora y vuelve a intentarlo.</translation>
 <translation id="2387458720915042159">Tipo de conexión con proxy</translation>
@@ -1114,6 +1116,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="265390580714150011">Valor de campo</translation>
 <translation id="2654166010170466751">Permitir a los sitios web instalar controladores de pago</translation>
+<translation id="2656742821229528729">Conecta tu teléfono Android al Chromebook para enviar mensajes desde el ordenador, compartir la conexión a Internet y desbloquear tu Chromebook con el teléfono.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Las funciones varían según el dispositivo</translation>
 <translation id="2660779039299703961">Evento</translation>
 <translation id="266079277508604648">No se puede establecer conexión con la impresora. Comprueba que esté encendida y conectada a tu Chromebook por red Wi‑Fi o USB.</translation>
@@ -1418,6 +1421,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3115128645424181617">No se encuentra tu teléfono. Asegúrate de que lo tienes cerca y de que el Bluetooth está activado.</translation>
 <translation id="3115147772012638511">Esperando caché...</translation>
 <translation id="3118319026408854581">Ayuda de <ph name="PRODUCT_NAME" /></translation>
+<translation id="3119484583572640616">Si la función Better Together está activada, puede hacer lo siguiente:</translation>
 <translation id="3120430004221004537">Cifrado insuficiente para una operación determinada de "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3121793941267913344">Restablece este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -1730,6 +1734,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3596235046596950091">Habilitar servicios en la nube</translation>
 <translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que hayas iniciado sesión. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar los sitios web que reproducen sonidos</translation>
+<translation id="360180734785106144">Ofrecer funciones nuevas cuando estén disponibles</translation>
 <translation id="3602290021589620013">Vista previa</translation>
 <translation id="3603533104205588786">Puedes hacer clic en la estrella para añadir esta página a marcadores</translation>
 <translation id="3603622770190368340">Obtener certificado de red</translation>
@@ -1834,7 +1839,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3737536731758327622">Tus descargas aparecen en esta sección</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">¿Abrir <ph name="APPLICATION" />?</translation>
-<translation id="3741158646617793859"><ph name="DEVICE_NAME" /> aparecerá ahora en la Consola del administrador</translation>
+<translation id="3741158646617793859"><ph name="DEVICE_NAME" /> aparecerá ahora en la Consola de administración</translation>
 <translation id="3741243925913727067">Realiza una copia de seguridad en Google Drive de los vídeos y de las fotos de tu dispositivo multimedia.</translation>
 <translation id="3742055079367172538">Captura de pantalla hecha</translation>
 <translation id="3742666961763734085">No se puede encontrar una unidad organizativa con ese nombre. Inténtalo de nuevo.</translation>
@@ -2064,7 +2069,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4068506536726151626">Esta página contiene elementos de los siguientes sitios que hacen un seguimiento de tu ubicación:</translation>
 <translation id="4068776064906523561">Huellas digitales guardadas</translation>
 <translation id="407173827865827707">Al hacer clic</translation>
-<translation id="4071770069230198275"><ph name="PROFILE_NAME" />: error de inicio de sesión</translation>
 <translation id="4074900173531346617">Certificado de firma de correo electrónico</translation>
 <translation id="407520071244661467">Escala</translation>
 <translation id="4075639477629295004">No se puede enviar <ph name="FILE_NAME" />.</translation>
@@ -2972,6 +2976,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5487521232677179737">Borrar los datos</translation>
 <translation id="5488093641312826914">Se ha copiado <ph name="COPIED_ITEM_NAME" /></translation>
 <translation id="5488468185303821006">Permitir en modo de incógnito</translation>
+<translation id="5489121514345187313">Tu Chromebook funciona aún mejor con tu teléfono. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" />.</translation>
 <translation id="5489435190927933437">Contraseñas guardadas de <ph name="DOMAIN" /></translation>
 <translation id="5491110079163012109">Enviar datos del sistema. Envía automáticamente datos de diagnósticos y uso del dispositivo y las aplicaciones a Google. El propietario aplica esta configuración y puede elegir si se envían datos de uso y diagnósticos de este dispositivo a Google. Puedes ver esta opción en los ajustes. Si has activado la opción Actividad en la Web y en Aplicaciones, esta información se almacenará en tu cuenta para que puedas gestionarla en la sección Mi Actividad. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">pantalla encendida</translation>
@@ -3143,6 +3148,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5731409020711461763">1 foto nueva</translation>
 <translation id="5734362860645681824">Comunicaciones</translation>
 <translation id="5736796278325406685">Introduce un nombre de usuario válido</translation>
+<translation id="5739235828260127894">Esperando verificación. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" />.</translation>
 <translation id="5739458112391494395">Muy grande</translation>
 <translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> y otros <ph name="NUM_ADDITIONAL_LANGUAGES" /></translation>
 <translation id="574209121243317957">Tono</translation>
@@ -3246,6 +3252,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5870086504539785141">Cerrar menú de accesibilidad</translation>
 <translation id="5870155679953074650">Fallos graves</translation>
 <translation id="5877064549588274448">Se ha cambiado el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
+<translation id="5877584842898320529">La impresora seleccionada no se encuentra disponible o no está bien instalada. <ph name="BR" /> Compruébala o prueba a seleccionar otra.</translation>
 <translation id="5880247576487732437">Token presente</translation>
 <translation id="5882919346125742463">Redes conocidas</translation>
 <translation id="5884474295213649357">Esta pestaña está conectada a un dispositivo USB.</translation>
@@ -3312,9 +3319,12 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="5979469435153841984">Para añadir páginas a marcadores, haz clic en la estrella situada en la barra de direcciones</translation>
 <translation id="5982621672636444458">Opciones de orden</translation>
 <translation id="5984222099446776634">Visitados recientemente</translation>
+<translation id="5985458664595100876">El formato de la URL no es válido. Los formatos admitidos son \\server\share y smb://server/share.</translation>
+<translation id="5990142338020175451">Servicios de Google más personalizados, como mejores sugerencias de páginas</translation>
 <translation id="5990386583461751448">Traducida</translation>
 <translation id="5991049340509704927">Ampliar</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para seguir navegando por Internet, pide a tu administrador que quite esta aplicación.}other{Para seguir navegando por Internet, pide a tu administrador que quite estas aplicaciones.}}</translation>
+<translation id="5997337190805127100">Más información sobre el acceso del sitio web</translation>
 <translation id="6002458620803359783">Voces preferidas</translation>
 <translation id="6005695835120147974">Router multimedia</translation>
 <translation id="6006484371116297560">Clásico</translation>
@@ -3338,6 +3348,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: dispositivo USB conectado</translation>
 <translation id="6028117231645531007">Añadir huella digital</translation>
 <translation id="6029027682598229313">Se ha completado la instalación de Linux.</translation>
+<translation id="6029292188939175871">eliminar [<ph name="FINGERPRINT_NAME" />], botón</translation>
 <translation id="6029587122245504742">Velocidad mínima</translation>
 <translation id="6032912588568283682">Sistema de archivos</translation>
 <translation id="6034662038931255275">Se ha actualizado correctamente el SO</translation>
@@ -3451,7 +3462,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6185132558746749656">Ubicación del dispositivo</translation>
 <translation id="6185617499004995178">Validador de IPP de CUPS</translation>
 <translation id="6185696379715117369">Retroceder página</translation>
-<translation id="6189273858858366896">Configurar o gestionar archivos compartidos de la red.</translation>
 <translation id="6189412234224385711">Abrir con <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Bloquear cookies de terceros</translation>
 <translation id="6196854373336333322">La extensión <ph name="EXTENSION_NAME" /> ahora controla la configuración del proxy, lo que significa que puede cambiar, deshacer o espiar cualquier acción que hagas online. Si no estás seguro de los motivos por los que se ha producido este cambio, probablemente no haya sido intencionado.</translation>
@@ -3756,6 +3766,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6644512095122093795">Preguntar si quiero guardar contraseñas</translation>
 <translation id="6644846457769259194">Actualizando el dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="6645437135153136856">El dispositivo de Google Cloud Print seleccionado ya no se admite. <ph name="BR" /> Prueba a configurar la impresora desde la configuración del sistema de tu ordenador.</translation>
 <translation id="6647228709620733774">URL de revocación de la entidad emisora de certificados de Netscape</translation>
 <translation id="6647838571840953560">Actualmente en <ph name="CHANNEL_NAME" /></translation>
 <translation id="6648051959475508072">Llave de seguridad activada...</translation>
@@ -3777,7 +3788,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="667517062706956822">¿Quieres que Google traduzca esta página de <ph name="SOURCE_LANGUAGE" /> a <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo señalador conectado</translation>
 <translation id="6678717876183468697">URL de la consulta</translation>
-<translation id="6680028776254050810">Cambiar usuario</translation>
 <translation id="6680442031740878064">Disponible: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocidad</translation>
 <translation id="6681668084120808868">Sacar foto</translation>
@@ -3786,7 +3796,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="668599234725812620">Abrir Google Play</translation>
 <translation id="6686490380836145850">Cerrar pestañas a la derecha</translation>
 <translation id="6686817083349815241">Guardar tu contraseña</translation>
-<translation id="6690565918367819723"><ph name="PROFILE_NAME" /> - Cambiar de persona</translation>
 <translation id="6690659332373509948">No se puede analizar el archivo: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Selecciona un usuario supervisado que quieras añadir a este dispositivo.</translation>
 <translation id="6691331417640343772">Gestionar datos sincronizados en el Panel de Control de Google</translation>
@@ -4010,6 +4019,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7042418530779813870">Pe&amp;gar y buscar</translation>
 <translation id="7043108582968290193">¡Listo! No se han encontrado aplicaciones incompatibles.</translation>
+<translation id="7044124535091449260">Más información sobre el acceso del sitio web</translation>
 <translation id="7049293980323620022">¿Quieres conservar el archivo?</translation>
 <translation id="7051943809462976355">Buscando el ratón...</translation>
 <translation id="7052237160939977163">Enviar datos de seguimiento de rendimiento</translation>
@@ -4122,6 +4132,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7201118060536064622">Se ha eliminado "<ph name="DELETED_ITEM_NAME" />"</translation>
 <translation id="7206693748120342859">Descargando <ph name="PLUGIN_NAME" />...</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Salir de la página}other{Salir de las páginas}}</translation>
+<translation id="7210499381659830293">Impresoras de extensiones</translation>
 <translation id="721467499098558573">Mantén pulsado el botón de la llave de seguridad durante al menos 5 segundos</translation>
 <translation id="7216409898977639127">Proveedor de servicios móviles</translation>
 <translation id="7216595297012131718">Ordena los idiomas según tus preferencias</translation>
@@ -4200,6 +4211,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7321545336522791733">No se puede acceder al servidor</translation>
 <translation id="7324297612904500502">Foro beta</translation>
 <translation id="7325437708553334317">Extensión de contraste alto</translation>
+<translation id="7328162502911382168">(<ph name="COUNT" />)</translation>
 <translation id="7328867076235380839">Combinación no válida</translation>
 <translation id="7329154610228416156">No ha sido posible iniciar la sesión porque se ha establecido una URL de inicio de sesión no segura (<ph name="BLOCKED_URL" />). Ponte en contacto con el administrador.</translation>
 <translation id="7334190995941642545">Smart Lock no está disponible en este momento. Inténtalo de nuevo más tarde.</translation>
@@ -4791,6 +4803,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8199300056570174101">Propiedades de los dispositivos y las redes (servicio)</translation>
 <translation id="8200772114523450471">Reanudar</translation>
 <translation id="8202160505685531999">Vuelve a introducir tu contraseña para actualizar tu perfil de <ph name="DEVICE_TYPE" />.</translation>
+<translation id="8203732864715032075">Recibe notificaciones en este ordenador y establécelo como predeterminado para enviar y recibir mensajes. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="8206354486702514201">El administrador aplica esta opción.</translation>
 <translation id="8206745257863499010">Música</translation>
 <translation id="8209677645716428427">Un usuario supervisado puede explorar la Web con tu ayuda. Como administrador de un usuario supervisado en Chrome, puedes realizar las siguientes acciones:</translation>
@@ -5102,7 +5115,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="869884720829132584">Menú de aplicaciones</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
 <translation id="8699566574894671540">Para activar esta opción, antes debes seleccionar Comprobar ortografía al escribir en el menú Editar</translation>
-<translation id="870073306461175568">Uso compartido de archivos del sistema</translation>
 <translation id="8701677791353449257">El nombre del dispositivo debe coincidir con la expresión regular <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">Esta acción está tardando mucho más tiempo del habitual. Puedes seguir esperando o cancelar la acción y volver a intentarlo más tarde.</translation>
 <translation id="8705331520020532516">Número de serie</translation>
@@ -5287,7 +5299,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" />: ha fallado</translation>
 <translation id="8983677657449185470">Ayudar a mejorar la función Navegación Segura</translation>
 <translation id="8984179138335769204">Inicio rápido</translation>
-<translation id="8984654317541110628">URL de recurso compartido</translation>
 <translation id="8986362086234534611">Dejar de recordar</translation>
 <translation id="8986494364107987395">Envía automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8987927404178983737">Mes</translation>

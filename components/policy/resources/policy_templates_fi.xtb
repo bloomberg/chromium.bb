@@ -137,6 +137,7 @@
 
       HUOM. Tämä käytäntö ei koske Androidia. Jos haluat ottaa IsolateOrigins-asetuksen käyttöön Androidilla, käytä IsolateOriginsAndroid-käytännön asetusta.
       </translation>
+<translation id="1377024960658062022">Ota käyttöön Hardware Platform API käytäntöjen asentamia laajennuksia varten</translation>
 <translation id="1384459581748403878">Viite: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Luotetaanko Symantec Corporationin vanhaan PKI-infrastruktuuriin vai ei</translation>
 <translation id="1393485621820363363">Käytössä olevat yrityslaitteiden tulostimet</translation>
@@ -458,6 +459,9 @@
 <translation id="2201555246697292490">Määritä sallittujen luettelo laitteen omalle viestijärjestelmälle</translation>
 <translation id="2204753382813641270">Hallinnoi hyllyn automaattista piilottamista</translation>
 <translation id="2208976000652006649">POST-metodia käyttävän haun URL-osoitteen parametrit</translation>
+<translation id="2214880135980649323">Kun tämä käytäntö on käytössä, yrityskäytäntöjen asentamille laajennuksille annetaan Enterprise Hardware Platform APIn käyttöoikeus.
+      Kun tämä käytäntö on poistettu käytöstä tai sen arvoa ei ole määritetty, laajennukset eivät saa käyttää Enterprise Hardware Platform APIa.
+      Tämä käytäntö koskee myös komponenttilaajennuksia, kuten Hangout Services ‑laajennusta.</translation>
 <translation id="2223598546285729819">Ilmoitusten oletusasetus</translation>
 <translation id="2231817271680715693">Tuo selaushistoria oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="2236488539271255289">Älä salli sivustojen luoda tiedostoja tietokoneelle</translation>
@@ -2771,6 +2775,25 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="8465065632133292531">POST-metodia käyttävän pikahaun URL-osoitteen parametrit</translation>
 <translation id="847472800012384958">Älä anna sivustojen näyttää ponnahdusikkunoita</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Tämä karsii https://-alkuisista URL-osoitteista yksityisyyden ja tietoturvan kannalta riskialttiit osat, ennen kuin osoitteet välitetään PAC-skripteille (Proxy Auto Config), joita <ph name="PRODUCT_NAME" /> käyttää välityspalvelimen selvityksen aikana.
+
+      Kun tämän käytännön arvo on tosi, tietoturvaominaisuus otetaan käyttöön
+      ja https://-alkuisten URL-osoitteiden osat karsitaan ennen osoitteiden
+      välittämistä PAC-skriptille. Tällöin PAC-skripti ei näe dataa, jota suojataan
+      tavallisesti käyttämällä salattua kanavaa (esim. URL-osoitteen polku ja kysely).
+
+      Jos arvo on epätosi, tietoturvaominaisuus poistetaan käytöstä ja
+      PAC-skriptit saavat implisiittisen oikeuden tarkistaa https://-alkuisen
+      URL-osoitteen kaikki osat. Tämä koskee kaikkia PAC-skriptejä niiden
+      alkuperästä riippumatta (mukaan lukien suojaamattoman yhteyden kautta
+      noudettuja tai WPAD:n kautta suojaamattomasti löydettyjä skriptejä).
+
+      Oletuksena tämän käytännön arvo on tosi (tietoturvaominaisuus on käytössä).
+
+      Tämän käytännön suositusarvo on tosi. Epätosi-arvon määrittäminen on tarpeen vain silloin,
+      kun käytännön ja nykyisten PAC-skriptien kanssa esiintyy yhteensopivuusongelmia.
+
+      Tämä käytäntö poistetaan versiossa M75.</translation>
 <translation id="8484458986062090479">Muokkaa niiden URL-mallien luetteloa, jotka isäntäselaimen tulee aina piirtää näytölle.
  
           Jos käytäntöä ei ole määritetty, kaikki sivustot piirretään näytölle ChromeFrameRendererSettings-käytännön näytölle piirtämisen oletusmäärityksien mukaan.

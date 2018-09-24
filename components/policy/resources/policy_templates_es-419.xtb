@@ -136,6 +136,7 @@
 
       NOTA: Esta política no se aplica en Android. Para habilitar IsolateOrigins en esta plataforma, usa la configuración de la política IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Permitir la API de plataforma de hardware para las extensiones instaladas por políticas</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Habilitar o inhabilitar la confianza en la infraestructura del PKI heredado de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impresoras empresariales habilitadas asociadas a dispositivos</translation>
@@ -450,6 +451,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2201555246697292490">Configurar la lista blanca de mensajería nativa</translation>
 <translation id="2204753382813641270">Controlar opción para ocultar archivos automáticamente</translation>
 <translation id="2208976000652006649">Parámetros para URL de búsqueda que utiliza POST</translation>
+<translation id="2214880135980649323">Si se habilita esta política, las extensiones que instale una política empresarial podrán usar la API de plataforma de hardware empresarial.
+      Si se establece esta política como inhabilitada, o no se configura, las extensiones no podrán usar la API de plataforma de hardware empresarial.
+      Esta política también se aplica en las extensiones de componentes como la extensión de Servicios de Hangout.</translation>
 <translation id="2223598546285729819">Configuración de notificación predeterminada</translation>
 <translation id="2231817271680715693">Importar historial de navegación del navegador predeterminado en la primera ejecución</translation>
 <translation id="2236488539271255289">No permitir que ningún sitio configure los datos locales.</translation>
@@ -1536,7 +1540,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si se establece la política como falsa, el usuario no podrá utilizar Crostini.
       Si se establece como verdadera, o no se establece, el usuario podrá utilizar Crostini, siempre que otras opciones de configuración también lo permitan.
-      Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas cuando se aplican.
+      Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas.
       Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.</translation>
 <translation id="5283457834853986457">Inhabilitar el buscador de complementos (obsoleto)</translation>
 <translation id="5288772341821359899">Si se establece la política, el intervalo de puertos UDP que usa WebRTC está restringido al intervalo de puertos especificado (extremos incluidos).
@@ -1595,7 +1599,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5457924070961220141">Te permite configurar el procesador HTML predeterminado cuando se instala <ph name="PRODUCT_FRAME_NAME" />. La configuración predeterminada que se usa cuando esta política no se configura es permitir que el navegador del host realice la representación, pero puedes anular esta opción y hacer que <ph name="PRODUCT_FRAME_NAME" /> muestre páginas HTML de forma predeterminada.</translation>
 <translation id="5464816904705580310">Permite establecer parámetros de configuración para los usuarios administrados.</translation>
 <translation id="546726650689747237">Demora de atenuación de pantalla con alimentación de CA</translation>
-<translation id="5469143988693423708">Permitir que el usuario ejecute Crostini</translation>
+<translation id="5469143988693423708">Se permite que el usuario ejecute Crostini</translation>
 <translation id="5469825884154817306">Bloquear imágenes en estos sitios</translation>
 <translation id="5475361623548884387">Habilitar la impresión</translation>
 <translation id="547601067149622666">No permitir anuncios en sitios con anuncios intrusivos</translation>
@@ -2247,7 +2251,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7232816984286843471">Si se establece la política como falsa, los usuarios no afiliados no podrán usar Crostini.
 
       Si se establece como verdadera, o no se establece, todos los usuarios podrán usar Crostini, siempre que otras opciones de configuración también lo permitan.
-      Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas cuando se aplican.
+      Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas.
       Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.</translation>
 <translation id="7234280155140786597">Nombres de los hosts de mensajería nativa prohibidos (o * para todos)</translation>
 <translation id="7236775576470542603">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.
@@ -2585,7 +2589,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 
       Si la política se establece como verdadera, el dispositivo podrá ejecutar máquinas virtuales.
       Si se establece como falsa, el dispositivo no podrá hacerlo.
-      Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas cuando se aplican.
+      Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas.
       Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.
       Si no se establece esta política en un dispositivo administrado, el dispositivo no podrá ejecutar máquinas virtuales.
       Los dispositivos no administrados pueden ejecutar máquinas virtuales.</translation>
@@ -2774,6 +2778,29 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre ventanas emergentes</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Recorta las partes confidenciales por motivos de seguridad y privacidad de las URL de https:// antes de enviarlas a secuencias de comandos PAC (Configuración automática de proxy) que usa <ph name="PRODUCT_NAME" /> en la resolución del proxy.
+
+      Cuando se establece como verdadera, se activa la función
+      de seguridad, y se recortan las URL de https://
+      antes de enviarlas a una secuencia de comandos PAC. De esta forma, la
+      secuencia de comandos PAC no puede ver los datos que, por lo general,
+      están protegidos por un canal encriptado (como la ruta y la consulta de la
+      URL).
+
+      Cuando se establece la política como falsa, esta función de seguridad
+      se inhabilita, y las secuencias de comandos PAC pueden ver todos los
+      componentes de la URL de https://. Esta configuración se aplica a todas las
+      secuencias de comandos PAC, más allá de su origen (incluye las secuencias
+      de comandos PAC que se obtienen mediante WPAD o un transporte
+      no seguro).
+
+      De manera predeterminada, se establece como verdadera (función de seguridad habilitada).
+
+      Se recomienda que se establezca la política como verdadera. La única
+      razón para establecerla como falsa es si produce un problema
+      de compatibilidad con las secuencias de comandos PAC existentes.
+
+      Se quitó esta política de la versión M75.</translation>
 <translation id="8484458986062090479">Personaliza la lista de los patrones de URL que siempre deben procesarse en el navegador del host.
 
           Si esta política no se configura, se usará el procesador predeterminado para todos los sitios, como lo especifica la política "ChromeFrameRendererSettings".

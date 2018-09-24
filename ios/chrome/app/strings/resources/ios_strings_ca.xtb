@@ -182,6 +182,7 @@
 <translation id="3963231839620026525">Pestanya d'incògnit nova</translation>
 <translation id="3967822245660637423">S'ha completat la baixada</translation>
 <translation id="3989635538409502728">Tanca la sessió</translation>
+<translation id="3995521777587992544">Barra de progrés de càrrega de la pàgina; s'ha carregat un <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Títol</translation>
 <translation id="4038354071007134711">Cap aplicació del dispos. no pot obrir el fitxer.</translation>
 <translation id="4042870976416480368">Cerca a la pàgina</translation>
@@ -289,7 +290,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5957613098218939406">Més opcions</translation>
 <translation id="5964480694698977962">Crea una pestanya d'incògnit nova.</translation>
 <translation id="5965679971710331625">Tens la sessió iniciada</translation>
-<translation id="5979837087407522202">Cercar contrasenyes</translation>
+<translation id="5979837087407522202">Cerca contrasenyes</translation>
 <translation id="5982717868370722439">Afegeix les dades existents a <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">S'està encriptant…</translation>
 <translation id="6021332621416007159">Obre a...</translation>

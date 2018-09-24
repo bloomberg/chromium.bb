@@ -157,6 +157,7 @@
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8210608804940886430">Av Pàg</translation>
 <translation id="8245914219290430011">Tabulador</translation>
+<translation id="8259556432390118667">Valor del color hexadecimal</translation>
 <translation id="8328145009876646418">Extrem esquerre</translation>
 <translation id="8331626408530291785">Desplaçament amunt</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 any}other{# anys}}</translation>
@@ -172,6 +173,7 @@
 <translation id="8798099450830957504">Predeterminat</translation>
 <translation id="8806053966018712535">Carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Afegeix una anotació a la imatge</translation>
+<translation id="8841375032071747811">Botó Enrere</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="9002566407876343676">obrir</translation>
 <translation id="9038489124413477075">Carpeta sense nom</translation>

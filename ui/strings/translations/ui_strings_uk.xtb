@@ -157,6 +157,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Сторінка вниз</translation>
 <translation id="8245914219290430011">Tab</translation>
+<translation id="8259556432390118667">Значення шістнадцяткового коду кольору</translation>
 <translation id="8328145009876646418">Лівий край</translation>
 <translation id="8331626408530291785">Прокрутка вгору</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 рік}one{# рік}few{# роки}many{# років}other{# року}}</translation>
@@ -172,6 +173,7 @@
 <translation id="8798099450830957504">За умовчанням</translation>
 <translation id="8806053966018712535">Папка <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Додати нотатку до зображення</translation>
+<translation id="8841375032071747811">Кнопка "Назад"</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>
 <translation id="9002566407876343676">відкрити</translation>
 <translation id="9038489124413477075">Папка без назви</translation>

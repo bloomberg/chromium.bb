@@ -122,6 +122,7 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 
       NOTA: questa norma non viene applicata su Android. Per attivare IsolateOrigins su Android, utilizza l'impostazione della norma IsolateOriginsAndroid.
       </translation>
+<translation id="1377024960658062022">Attiva l'API Hardware Platform per le estensioni installate in base alle norme</translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Consente di stabilire se considerare attendibile o meno l'infrastruttura PKI precedente di Symantec Corporation</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
@@ -364,8 +365,8 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
 <translation id="2116790137063002724">Questa norma consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare gli utenti, ad esempio i dati di accesso al sistema operativo, i dati di accesso del profilo <ph name="PRODUCT_NAME" />, il nome del profilo <ph name="PRODUCT_NAME" />, il percorso del profilo <ph name="PRODUCT_NAME" /> e il percorso eseguibile di <ph name="PRODUCT_NAME" />.
 
-      Se questa norma non viene impostata o viene impostata su true, vengono raccolte le informazioni che possono essere usate per identificare gli utenti.
-      Se questa norma viene impostata su false, non vengono raccolte le informazioni che possono essere usate per identificare gli utenti.
+      Se questa norma non viene impostata o viene impostata su True, vengono raccolte le informazioni che possono essere usate per identificare gli utenti.
+      Se questa norma viene impostata su False, non vengono raccolte le informazioni che possono essere usate per identificare gli utenti.
 
       Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
@@ -428,6 +429,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2201555246697292490">Configura whitelist messaggi nativi</translation>
 <translation id="2204753382813641270">Controlla la visualizzazione automatica dello shelf</translation>
 <translation id="2208976000652006649">Parametri per l'URL di ricerca che utilizza POST</translation>
+<translation id="2214880135980649323">Se questa norma viene attivata, le estensioni installate in base alle norme aziendali possono usare l'API Enterprise Hardware Platform.
+      Se questa norma viene disattivata e non viene impostata, nessuna estensione può usare l'API Enterprise Hardware Platform.
+      Questa norma si applica anche a estensioni di componenti come l'estensione Hangout Services.</translation>
 <translation id="2223598546285729819">Impostazione di notifica predefinita</translation>
 <translation id="2231817271680715693">Importa cronologia di navigazione dal browser predefinito alla prima esecuzione</translation>
 <translation id="2236488539271255289">Non consentire ai siti di impostare i dati locali</translation>
@@ -1079,9 +1083,9 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa norma viene impostata su true o non viene impostata, gli utenti potranno utilizzare le offerte tramite la registrazione a Chrome OS.
 
       Se questa norma viene impostata su false, gli utenti non potranno utilizzare le offerte.</translation>
-<translation id="4008507541867797979">Se questa norma viene impostata su true o non viene configurata, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> verranno visualizzati gli utenti esistenti tra cui sarà possibile selezionare un utente.
+<translation id="4008507541867797979">Se questa norma viene impostata su True o non viene configurata, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> verranno visualizzati gli utenti esistenti tra cui sarà possibile selezionare un utente.
 
-      Se la norma è impostata su false, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> non verranno visualizzati gli utenti esistenti. Verrà visualizzata la normale schermata di accesso (richiesta di email utente e password o telefono) o la schermata interstiziale SAML (se attivata tramite la norma <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), a meno che non sia stata configurata una sessione gestita. Quando viene configurata una sessione gestita, verranno visualizzati solo gli account della sessione gestita, consentendo di selezionarne uno.
+      Se la norma è impostata su False, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> non verranno visualizzati gli utenti esistenti. Verrà visualizzata la normale schermata di accesso (richiesta di email utente e password o telefono) o la schermata interstiziale SAML (se attivata tramite la norma <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), a meno che non sia stata configurata una sessione gestita. Quando viene configurata una sessione gestita, verranno visualizzati solo gli account della sessione gestita, consentendo di selezionarne uno.
 
       Tieni presente che questa norma non influisce sull'eliminazione o meno dei dati utenti locali sul dispositivo.</translation>
 <translation id="4010738624545340900">Consenti richiamo di finestre di dialogo di selezione file</translation>
@@ -1497,10 +1501,10 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
           Se viene impostata su false o non viene impostata, le chiamate all'API non vanno a buon fine e viene generato un codice di errore.</translation>
 <translation id="5277806246014825877">Questa norma consente all'utente di eseguire Crostini.
 
-      Se la norma viene impostata su false, Crostini non è abilitato per l'utente.
-      Se la norma viene impostata su true o non viene impostata, Crostini è abilitato per l'utente, a patto che anche le altre impostazioni lo permettano.
-      Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su true affinché Crostini possa essere eseguito.
-      Quando l'impostazione di questa norma viene modificata in false, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
+      Se la norma viene impostata su False, Crostini non è abilitato per l'utente.
+      Se la norma viene impostata su True o non viene impostata, Crostini è abilitato per l'utente, a patto che anche le altre impostazioni lo permettano.
+      Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su True affinché Crostini possa essere eseguito.
+      Quando l'impostazione di questa norma viene modificata in False, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
 <translation id="5283457834853986457">Disattiva la ricerca dei plug-in (ritirata)</translation>
 <translation id="5288772341821359899">Se la norma viene impostata, l'intervallo di porte UDP utilizzato da WebRTC viene limitato all'intervallo di porte specificato (endpoint inclusi).
 
@@ -2194,11 +2198,11 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
 
           Se questa norma non viene impostata, l'utente potrà cambiare manualmente questa impostazione.</translation>
 <translation id="723103540848640830">Imposta la lunghezza minima del PIN per la schermata di blocco</translation>
-<translation id="7232816984286843471">Se la norma viene impostata su false, gli utenti non affiliati non potranno usare Crostini.
+<translation id="7232816984286843471">Se la norma viene impostata su False, gli utenti non affiliati non potranno usare Crostini.
 
-      Se la norma non viene impostata o viene impostata su true, tutti gli utenti potranno utilizzare Crostini, a patto che anche le altre impostazioni lo permettano.
-      Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su true affinché Crostini possa essere eseguito.
-      Quando l'impostazione di questa norma viene modificata in false, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
+      Se la norma non viene impostata o viene impostata su True, tutti gli utenti potranno utilizzare Crostini, a patto che anche le altre impostazioni lo permettano.
+      Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su True affinché Crostini possa essere eseguito.
+      Quando l'impostazione di questa norma viene modificata in False, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
 <translation id="7234280155140786597">Nomi degli host di messaggi nativi vietati (o * per indicarli tutti)</translation>
 <translation id="7236775576470542603">Consente di impostare il tipo di ingrandimento dello schermo predefinito che viene attivato nella schermata di accesso.
 
@@ -2248,8 +2252,8 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Se viene impostata su false, i suggerimenti di contenuti generati automaticamente non vengono mostrati nella pagina Nuova scheda.</translation>
 <translation id="7313793931637495417">Questa norma consente di stabilire se segnalare o meno informazioni sulla versione, ad esempio la versione del sistema operativo, la piattaforma e l'architettura del sistema operativo, la versione di <ph name="PRODUCT_NAME" /> e il canale di <ph name="PRODUCT_NAME" />.
 
-      Se questa norma non viene impostata o viene impostata su true, le informazioni sulla versione vengono raccolte.
-      Se questa norma viene impostata su false, le informazioni sulla versione non vengono raccolte.
+      Se questa norma non viene impostata o viene impostata su True, le informazioni sulla versione vengono raccolte.
+      Se questa norma viene impostata su False, le informazioni sulla versione non vengono raccolte.
 
       Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Parametri aggiuntivi della riga di comando per <ph name="PRODUCT_NAME" /></translation>
@@ -2284,8 +2288,8 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Ogni elemento dell'elenco della norma è un oggetto con due componenti: "url" e "launch_container". "url" deve essere l'URL dell'app web da installare e "launch_container" deve essere "finestra" o "scheda" per indicare in che modo l'app web verrà aperta una volta installata. Se il valore di "launch_container" non viene specificato, l'app verrà avviata in una finestra se Chrome la considera un'applicazione web progressiva, altrimenti in una scheda.</translation>
 <translation id="735902178936442460">Questa norma consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare i computer, ad esempio il nome del computer e gli indirizzi di rete.
 
-      Se questa norma non viene impostata o viene impostata su true, vengono raccolte le informazioni che possono essere usate per identificare i computer.
-      Se questa norma viene impostata su false, non vengono raccolte le informazioni che possono essere usate per identificare i computer.
+      Se questa norma non viene impostata o viene impostata su True, vengono raccolte le informazioni che possono essere usate per identificare i computer.
+      Se questa norma viene impostata su False, non vengono raccolte le informazioni che possono essere usate per identificare i computer.
 
       Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Il servizio Navigazione sicura mostra una pagina di avviso quando gli utenti visitano siti che sono segnalati come potenzialmente dannosi. L'attivazione di questa impostazione impedisce agli utenti di proseguire dalla pagina di avviso al sito dannoso.
@@ -2532,10 +2536,10 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="7992136759457836904">Questa norma consente di controllare se le macchine virtuali possono essere eseguite su Chrome OS.
 
-      Se la norma viene impostata su true, al dispositivo è consentito eseguire le macchine virtuali.
-      Se la norma viene impostata su false, al dispositivo non è consentito eseguire le macchine virtuali.
-      Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su true affinché Crostini possa essere eseguito.
-      Quando l'impostazione di questa norma viene modificata in false, la norma viene applicata all'avvio di nuove macchine virtuali, ma non determina l'arresto delle macchine virtuali già in esecuzione.
+      Se la norma viene impostata su True, al dispositivo è consentito eseguire le macchine virtuali.
+      Se la norma viene impostata su False, al dispositivo non è consentito eseguire le macchine virtuali.
+      Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su True affinché Crostini possa essere eseguito.
+      Quando l'impostazione di questa norma viene modificata in False, la norma viene applicata all'avvio di nuove macchine virtuali, ma non determina l'arresto delle macchine virtuali già in esecuzione.
       Quando questa norma non è impostata su un dispositivo gestito, il dispositivo non può eseguire macchine virtuali.
        I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="802147957407376460">Ruota lo schermo di 0°</translation>
@@ -2584,8 +2588,8 @@ Se questa norma non viene impostata, viene utilizzato un periodo di tempo predef
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di inattività.</translation>
 <translation id="8138009212169037227">Questa norma consente di stabilire se segnalare o meno i dati delle norme e data/ora del recupero delle norme.
 
-      Se questa norma non viene impostata o viene impostata su true, i dati delle norme e data/ora del recupero delle norme vengono raccolti.
-      Se questa norma viene impostata su false, i dati delle norme e data/ora del recupero delle norme non vengono raccolti.
+      Se questa norma non viene impostata o viene impostata su True, i dati delle norme e data/ora del recupero delle norme vengono raccolti.
+      Se questa norma viene impostata su False, i dati delle norme e data/ora del recupero delle norme non vengono raccolti.
 
       Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Consente di comunicare al server l'elenco di interfacce di rete con i relativi tipi e indirizzi hardware. Se la norma viene impostata su False, l'elenco di interfacce non viene comunicato.</translation>
@@ -2711,6 +2715,17 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8465065632133292531">Parametri per l'URL istantaneo che utilizza POST</translation>
 <translation id="847472800012384958">Non consentire la visualizzazione di popup nei siti</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Consente di rimuovere le parti sensibili per la privacy e la sicurezza dagli URL https:// prima di trasmetterli agli script PAC (Proxy Auto Config) utilizzati da <ph name="PRODUCT_NAME" /> durante la risoluzione proxy.
+
+      Se la norma viene impostata su True, la funzione di sicurezza viene attivata e vengono rimosse le parti sensibili dagli URL https:// prima di inviarli allo script PAC. In questo modo lo script PAC non può visualizzare i dati solitamente protetti tramite un canale criptato (ad esempio il percorso e la query dell'URL).
+
+      Se la norma viene impostata su False, la funzione di sicurezza viene disattivata e gli script PAC possono visualizzare tutti i componenti di un URL https://. Questa impostazione viene applicata per tutti gli script PAC, a prescindere dall'origine (sono inclusi quelli recuperati tramite un metodo di trasporto non protetto o scoperti in modo non sicuro tramite WPAD).
+
+      Il valore predefinito della norma è True (funzione di sicurezza attivata).
+
+      È consigliato impostare la norma su True. L'unico motivo per impostare la norma su False è in caso di problemi di compatibilità con gli script PAC esistenti.
+
+      La norma verrà rimossa in M75.</translation>
 <translation id="8484458986062090479">Consente di personalizzare l'elenco di pattern URL per i quali il rendering deve sempre essere eseguito dal browser host.
 
           Se la norma non viene impostata, viene utilizzato per tutti i siti il renderer predefinito specificato dalla norma "ChromeFrameRendererSettings".
