@@ -422,7 +422,7 @@ single step.
 If you are adding a new test to one of the existing tests (e.g., `pixel_test`),
 all you need to do is make sure that your new test runs correctly via isolates.
 See the documentation from the GPU bot details on [adding new isolated
-tests][new-isolates] for the `GYP_DEFINES` and authentication needed to upload
+tests][new-isolates] for the gn args and authentication needed to upload
 isolates to the isolate server. Most likely the new test will be Telemetry
 based, and included in the `telemetry_gpu_test_run` isolate. You can then
 invoke it via:
