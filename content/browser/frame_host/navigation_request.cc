@@ -293,7 +293,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     base::TimeTicks navigation_start,
     NavigationControllerImpl* controller,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
-    base::TimeTicks input_start) {
+    base::TimeTicks input_start,
+    WasActivatedOption was_activated) {
   // A form submission happens either because the navigation is a
   // renderer-initiated form submission that took the OpenURL path or a
   // back/forward/reload navigation the does a form resubmission.
@@ -338,6 +339,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           controller->GetLastCommittedEntryIndex(),
           controller->GetEntryCount());
   request_params.post_content_type = post_content_type;
+  request_params.was_activated = was_activated;
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, common_params,
@@ -990,23 +992,27 @@ void NavigationRequest::OnResponseStarted(
   //    context menu. This should apply to pages that open in a new tab and we
   //    have to follow the referrer. It means that the activation might not be
   //    transmitted if it should have.
-  request_params_.was_activated = false;
-  if (navigation_handle_->IsRendererInitiated() &&
-      frame_tree_node_->has_received_user_gesture() &&
-      ShouldPropagateUserActivation(
-          frame_tree_node_->current_origin(),
-          url::Origin::Create(navigation_handle_->GetURL()))) {
-    request_params_.was_activated = true;
-    // TODO(805871): the next check is relying on
-    // navigation_handle_->GetReferrer() but should ideally use a more reliable
-    // source for the originating URL when the navigation is renderer initiated.
-  } else if (((navigation_handle_->HasUserGesture() &&
-               navigation_handle_->IsRendererInitiated()) ||
-              navigation_handle_->WasStartedFromContextMenu()) &&
-             ShouldPropagateUserActivation(
-                 url::Origin::Create(navigation_handle_->GetReferrer().url),
-                 url::Origin::Create(navigation_handle_->GetURL()))) {
-    request_params_.was_activated = true;
+  if (request_params_.was_activated == WasActivatedOption::kUnknown) {
+    request_params_.was_activated = WasActivatedOption::kNo;
+
+    if (navigation_handle_->IsRendererInitiated() &&
+        frame_tree_node_->has_received_user_gesture() &&
+        ShouldPropagateUserActivation(
+            frame_tree_node_->current_origin(),
+            url::Origin::Create(navigation_handle_->GetURL()))) {
+      request_params_.was_activated = WasActivatedOption::kYes;
+      // TODO(805871): the next check is relying on
+      // navigation_handle_->GetReferrer() but should ideally use a more
+      // reliable source for the originating URL when the navigation is renderer
+      // initiated.
+    } else if (((navigation_handle_->HasUserGesture() &&
+                 navigation_handle_->IsRendererInitiated()) ||
+                navigation_handle_->WasStartedFromContextMenu()) &&
+               ShouldPropagateUserActivation(
+                   url::Origin::Create(navigation_handle_->GetReferrer().url),
+                   url::Origin::Create(navigation_handle_->GetURL()))) {
+      request_params_.was_activated = WasActivatedOption::kYes;
+    }
   }
 
   // Update the previews state of the request.

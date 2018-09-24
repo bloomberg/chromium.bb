@@ -23,6 +23,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/was_activated_option.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -300,15 +301,15 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // The AppCache host id to be used to identify this navigation.
   int appcache_host_id = kAppCacheNoHostId;
 
-  // True if a navigation is following the rules of user activation propagation.
-  // This is different from |has_user_gesture| (in CommonNavigationParams) as
-  // the activation may have happened before the navigation was triggered, for
-  // example.
+  // Set to |kYes| if a navigation is following the rules of user activation
+  // propagation. This is different from |has_user_gesture|
+  // (in CommonNavigationParams) as the activation may have happened before
+  // the navigation was triggered, for example.
   // In other words, the distinction isn't regarding user activation and user
   // gesture but whether there was an activation prior to the navigation or to
   // start it. `was_activated` will answer the former question while
   // `user_gesture` will answer the latter.
-  bool was_activated = false;
+  WasActivatedOption was_activated = WasActivatedOption::kUnknown;
 
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for

@@ -50,6 +50,7 @@
 #include "content/public/common/screen_info.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/three_d_api_types.h"
+#include "content/public/common/was_activated_option.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -142,6 +143,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
                           blink::UserActivationUpdateType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
                           blink::WebMediaPlayerAction::Type::kTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(content::WasActivatedOption,
+                          content::WasActivatedOption::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
                               blink::kFirstScrollDirection,
                               blink::kLastScrollDirection)

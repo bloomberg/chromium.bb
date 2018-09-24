@@ -450,7 +450,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
             manager->frame_tree_node_, frame_entry->url(),
             frame_entry->referrer(), *frame_entry, entry, navigate_type,
             PREVIEWS_UNSPECIFIED, false, false, nullptr, base::TimeTicks::Now(),
-            controller, nullptr, base::TimeTicks());
+            controller, nullptr, base::TimeTicks(),
+            WasActivatedOption::kUnknown);
 
     // Simulates request creation that triggers the 1st internal call to
     // GetFrameHostForNavigation.
@@ -2824,7 +2825,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
           FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
           false, false, nullptr, base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()), nullptr,
-          base::TimeTicks());
+          base::TimeTicks(), WasActivatedOption::kUnknown);
   manager->DidCreateNavigationRequest(navigation_request.get());
 
   // As the initial RenderFrame was not live, the new RenderFrameHost should be
@@ -2887,7 +2888,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
           FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
           false, false, nullptr, base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()), nullptr,
-          base::TimeTicks());
+          base::TimeTicks(), WasActivatedOption::kUnknown);
   manager->DidCreateNavigationRequest(navigation_request.get());
 
   // The current WebUI should still be in place and the pending WebUI should be
@@ -2947,7 +2948,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
           FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
           false, false, nullptr, base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()), nullptr,
-          base::TimeTicks());
+          base::TimeTicks(), WasActivatedOption::kUnknown);
   manager->DidCreateNavigationRequest(navigation_request.get());
 
   // The current WebUI should still be in place and there should be a new

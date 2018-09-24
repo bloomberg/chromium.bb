@@ -234,6 +234,25 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
   EXPECT_TRUE(AttemptPlay(GetWebContents()));
 }
 
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, ForceWasActivated_Default) {
+  const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
+
+  NavigateParams params(browser(), kTestPageUrl, ui::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&params);
+
+  EXPECT_FALSE(AttemptPlay(GetWebContents()));
+}
+
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, ForceWasActivated_Yes) {
+  const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
+
+  NavigateParams params(browser(), kTestPageUrl, ui::PAGE_TRANSITION_LINK);
+  params.was_activated = content::WasActivatedOption::kYes;
+  ui_test_utils::NavigateToURL(&params);
+
+  EXPECT_TRUE(AttemptPlay(GetWebContents()));
+}
+
 // Integration tests for the new unified autoplay sound settings UI.
 
 class UnifiedAutoplaySettingBrowserTest : public UnifiedAutoplayBrowserTest {

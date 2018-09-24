@@ -26,6 +26,7 @@
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
+enum class WasActivatedOption;
 class FrameTreeNode;
 class RenderFrameHostImpl;
 class NavigationEntryScreenshotManager;
@@ -294,7 +295,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool is_history_navigation_in_new_child,
       const scoped_refptr<network::ResourceRequestBody>& post_body,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
-      base::TimeTicks input_start);
+      base::TimeTicks input_start,
+      WasActivatedOption was_activated);
 
   // Returns whether there is a pending NavigationEntry whose unique ID matches
   // the given NavigationHandle's pending_nav_entry_id.
