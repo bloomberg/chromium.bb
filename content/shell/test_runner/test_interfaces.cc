@@ -58,7 +58,7 @@ void TestInterfaces::SetDelegate(WebTestDelegate* delegate) {
 
 void TestInterfaces::BindTo(blink::WebLocalFrame* frame) {
   gamepad_controller_->Install(frame);
-  GCController::Install(frame);
+  GCController::Install(this, frame);
 }
 
 void TestInterfaces::ResetTestHelperControllers() {

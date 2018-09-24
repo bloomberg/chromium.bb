@@ -752,15 +752,13 @@ function asyncGC(callback) {
         return new Promise(resolve => asyncGC(resolve));
     }
     var documentsBefore = internals.numberOfLiveDocuments();
-    GCController.collectAll();
-    // FIXME: we need a better way of waiting for chromium events to happen
-    setTimeout(function () {
+    GCController.asyncCollectAll(function () {
         var documentsAfter = internals.numberOfLiveDocuments();
         if (documentsAfter < documentsBefore)
             asyncGC(callback);
         else
             callback();
-    }, 0);
+    });
 }
 
 function gc() {
