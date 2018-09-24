@@ -298,9 +298,11 @@ void UnifiedConsentService::OnServiceStateChanged(Service service) {
 void UnifiedConsentService::OnPrimaryAccountCleared(
     const AccountInfo& account_info) {
   // When signing out, the unfied consent is revoked.
-  pref_service_->SetBoolean(prefs::kUnifiedConsentGiven, false);
-  RecordUnifiedConsentRevoked(
-      metrics::UnifiedConsentRevokeReason::kUserSignedOut);
+  if (IsUnifiedConsentGiven()) {
+    SetUnifiedConsentGiven(false);
+    RecordUnifiedConsentRevoked(
+        metrics::UnifiedConsentRevokeReason::kUserSignedOut);
+  }
 
   // By design, signing out of Chrome automatically disables off-by-default
   // services.
