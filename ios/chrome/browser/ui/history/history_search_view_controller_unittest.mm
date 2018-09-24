@@ -52,7 +52,7 @@ TEST_F(HistorySearchViewControllerTest, DISABLED_CancelButtonPressed) {
 // Test that invocation of
 // textField:shouldChangeCharactersInRange:replacementString: on the text field
 // delegate results invokes delegate callback to request search.
-TEST_F(HistorySearchViewControllerTest, SearchButtonPressed) {
+TEST_F(HistorySearchViewControllerTest, DISABLED_SearchButtonPressed) {
   UITextField* text_field =
       base::mac::ObjCCastStrict<HistorySearchView>(search_view_controller_.view)
           .textField;
@@ -67,7 +67,7 @@ TEST_F(HistorySearchViewControllerTest, SearchButtonPressed) {
 
 // Test that disabling HistorySearchViewController disables the search view text
 // field.
-TEST_F(HistorySearchViewControllerTest, DisableSearchBar) {
+TEST_F(HistorySearchViewControllerTest, DISABLED_DisableSearchBar) {
   UITextField* text_field =
       base::mac::ObjCCastStrict<HistorySearchView>(search_view_controller_.view)
           .textField;
