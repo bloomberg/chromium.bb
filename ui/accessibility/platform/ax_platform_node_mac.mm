@@ -560,6 +560,10 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
     [axAttributes addObjectsFromArray:@[ NSAccessibilitySelectedAttribute ]];
   }
 
+  if (ui::IsMenuItem(node_->GetData().role)) {
+    [axAttributes addObjectsFromArray:@[ @"AXMenuItemMarkChar" ]];
+  }
+
   return axAttributes.autorelease();
 }
 
@@ -825,6 +829,19 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   return [self getStringAttribute:ax::mojom::StringAttribute::kPlaceholder];
 }
 
+- (NSString*)AXMenuItemMarkChar {
+  if (!ui::IsMenuItem(node_->GetData().role))
+    return nil;
+
+  const auto checkedState = static_cast<ax::mojom::CheckedState>(
+      node_->GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
+  if (checkedState == ax::mojom::CheckedState::kTrue) {
+    return @"\xE2\x9C\x93";  // UTF-8 for unicode 0x2713, "check mark"
+  }
+
+  return @"";
+}
+
 // Text-specific attributes.
 
 - (NSString*)AXSelectedText {
@@ -976,7 +993,7 @@ void AXPlatformNodeMac::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
       break;
     case ax::mojom::Event::kSelection:
       // On Mac, map menu item selection to a focus event.
-      if (GetData().role == ax::mojom::Role::kMenuItem) {
+      if (ui::IsMenuItem(GetData().role)) {
         NotifyMacEvent(native_node_, ax::mojom::Event::kFocus);
         return;
       }

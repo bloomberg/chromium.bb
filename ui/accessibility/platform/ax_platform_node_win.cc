@@ -5558,8 +5558,7 @@ int AXPlatformNodeWin::MSAAState() {
 
   // In focused single selection UI menus and listboxes, mirror item selection
   // to focus. This helps NVDA read the selected option as it changes.
-  if ((data.role == ax::mojom::Role::kListBoxOption ||
-       data.role == ax::mojom::Role::kMenuItem) &&
+  if ((data.role == ax::mojom::Role::kListBoxOption || IsMenuItem(data.role)) &&
       data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
     AXPlatformNodeBase* container = FromNativeViewAccessible(GetParent());
     if (container && container->GetParent() == focus) {

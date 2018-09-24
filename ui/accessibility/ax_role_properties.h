@@ -48,6 +48,10 @@ AX_EXPORT bool IsControl(ax::mojom::Role role);
 // Returns true if this node is a menu or related role.
 AX_EXPORT bool IsMenuRelated(ax::mojom::Role role);
 
+// Returns true if the role is a menu item, including menu item
+// check box and menu item radio buttons.
+AX_EXPORT bool IsMenuItem(ax::mojom::Role role);
+
 // Returns true if it's an image, graphic, canvas, etc.
 AX_EXPORT bool IsImage(ax::mojom::Role role);
 
