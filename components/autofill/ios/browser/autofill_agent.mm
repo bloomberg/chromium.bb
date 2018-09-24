@@ -574,8 +574,12 @@ autofillManagerFromWebState:(web::WebState*)webState
 - (void)processPage:(web::WebState*)webState {
   web::WebFramesManager* framesManager =
       web::WebFramesManager::FromWebState(webState);
-  for (auto* frame : framesManager->GetAllWebFrames()) {
-    [self processFrame:frame inWebState:webState];
+  if (!autofill::switches::IsAutofillIFrameMessagingEnabled()) {
+    [self processFrame:framesManager->GetMainWebFrame() inWebState:webState];
+  } else {
+    for (auto* frame : framesManager->GetAllWebFrames()) {
+      [self processFrame:frame inWebState:webState];
+    }
   }
 }
 
