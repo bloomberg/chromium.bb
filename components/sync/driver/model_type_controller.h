@@ -76,10 +76,10 @@ class ModelTypeController : public DataTypeController {
       delegate_map_;
 
   // State of this datatype controller.
-  State state_;
+  State state_ = NOT_RUNNING;
 
   // Owned by |delegate_map_|. Null while NOT_RUNNING.
-  ModelTypeControllerDelegate* delegate_;
+  ModelTypeControllerDelegate* delegate_ = nullptr;
 
   // Callback for use when starting the datatype (usually MODEL_STARTING, but
   // STOPPING if abort requested while starting).

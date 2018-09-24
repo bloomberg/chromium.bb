@@ -50,7 +50,7 @@ SyncStopMetadataFate TakeStrictestMetadataFate(SyncStopMetadataFate fate1,
 ModelTypeController::ModelTypeController(
     ModelType type,
     std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk)
-    : DataTypeController(type), state_(NOT_RUNNING) {
+    : DataTypeController(type) {
   delegate_map_.emplace(ConfigureContext::STORAGE_ON_DISK,
                         std::move(delegate_on_disk));
 }
