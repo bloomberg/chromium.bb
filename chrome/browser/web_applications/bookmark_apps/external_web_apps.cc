@@ -25,8 +25,21 @@
 
 namespace {
 
-constexpr char kWebAppManifestUrl[] = "web_app_manifest_url";
-constexpr char kWebAppStartUrl[] = "web_app_start_url";
+// kAppUrl is a required string specifying a URL inside the scope of the web
+// app that contains a link to the app manifest.
+constexpr char kAppUrl[] = "app_url";
+
+// kCreateShortcuts is an optional boolean which controls whether OS
+// level shortcuts are created. On Chrome OS this controls whether the app is
+// pinned to the shelf.
+// The default value of kCreateShortcuts if false.
+constexpr char kCreateShortcuts[] = "create_shortcuts";
+
+// kLaunchContainer is a required string which can be "window" or "tab"
+// and controls what sort of container the web app is launched in.
+constexpr char kLaunchContainer[] = "launch_container";
+constexpr char kLaunchContainerTab[] = "tab";
+constexpr char kLaunchContainerWindow[] = "window";
 
 #if defined(OS_CHROMEOS)
 // The sub-directory of the extensions directory in which to scan for external
@@ -50,6 +63,7 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
       continue;
     }
 
+    // TODO(benwells): Remove deprecated use of base::DictionaryValue API.
     JSONFileValueDeserializer deserializer(file);
     std::string error_msg;
     std::unique_ptr<base::Value> value =
@@ -65,29 +79,44 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
     std::unique_ptr<base::DictionaryValue> dict_value =
         base::DictionaryValue::From(std::move(value));
 
-    std::string manifest_url_str;
-    if (!dict_value->GetString(kWebAppStartUrl, &manifest_url_str) ||
-        manifest_url_str.empty() || !GURL(manifest_url_str).is_valid()) {
-      VLOG(2) << file.value() << " had an invalid " << kWebAppManifestUrl;
+    std::string app_url_str;
+    if (!dict_value->GetString(kAppUrl, &app_url_str) || app_url_str.empty()) {
+      VLOG(2) << file.value() << " had an invalid " << kAppUrl;
+      continue;
+    }
+    GURL app_url(app_url_str);
+    if (!app_url.is_valid()) {
+      VLOG(2) << file.value() << " had an invalid " << kAppUrl;
       continue;
     }
 
-    std::string start_url_str;
-    if (!dict_value->GetString(kWebAppStartUrl, &start_url_str) ||
-        start_url_str.empty()) {
-      VLOG(2) << file.value() << " had an invalid " << kWebAppStartUrl;
+    bool create_shortcuts = false;
+    if (dict_value->HasKey(kCreateShortcuts) &&
+        !dict_value->GetBoolean(kCreateShortcuts, &create_shortcuts)) {
+      VLOG(2) << file.value() << " had an invalid " << kCreateShortcuts;
       continue;
     }
-    GURL start_url(start_url_str);
-    if (!start_url.is_valid()) {
-      VLOG(2) << file.value() << " had an invalid " << kWebAppStartUrl;
+
+    web_app::PendingAppManager::LaunchContainer launch_container =
+        web_app::PendingAppManager::LaunchContainer::kTab;
+    std::string launch_container_str;
+    if (!dict_value->GetString(kLaunchContainer, &launch_container_str)) {
+      VLOG(2) << file.value() << " had an invalid " << kLaunchContainer;
+      continue;
+    }
+    if (launch_container_str == kLaunchContainerTab) {
+      launch_container = web_app::PendingAppManager::LaunchContainer::kTab;
+    } else if (launch_container_str == kLaunchContainerWindow) {
+      launch_container = web_app::PendingAppManager::LaunchContainer::kWindow;
+    } else {
+      VLOG(2) << file.value() << " had an invalid " << kLaunchContainer;
       continue;
     }
 
     app_infos.emplace_back(
-        std::move(start_url),
-        web_app::PendingAppManager::LaunchContainer::kWindow,
-        web_app::PendingAppManager::InstallSource::kExternalDefault);
+        std::move(app_url), launch_container,
+        web_app::PendingAppManager::InstallSource::kExternalDefault,
+        create_shortcuts);
   }
 
   return app_infos;

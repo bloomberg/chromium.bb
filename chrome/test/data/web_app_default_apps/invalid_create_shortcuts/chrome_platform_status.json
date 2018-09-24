@@ -1,5 +1,5 @@
 {
   "app_url": "https://www.chromestatus.com/features",
-  "create_shortcuts": true,
+  "create_shortcuts": "schmerg",
   "launch_container": "tab"
 }
