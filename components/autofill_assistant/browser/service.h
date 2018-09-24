@@ -31,10 +31,14 @@ class Service {
   using ResponseCallback =
       base::OnceCallback<void(bool result, const std::string&)>;
   // Get scripts for a given |url|, which should be a valid URL.
-  virtual void GetScriptsForUrl(const GURL& url, ResponseCallback callback);
+  virtual void GetScriptsForUrl(
+      const GURL& url,
+      const std::map<std::string, std::string>& parameters,
+      ResponseCallback callback);
 
   // Get actions.
   virtual void GetActions(const std::string& script_path,
+                          const std::map<std::string, std::string>& parameters,
                           ResponseCallback callback);
 
   // Get next sequence of actions according to server payload in previous

@@ -31,8 +31,9 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
   DCHECK(delegate_->GetService());
 
   delegate_->GetService()->GetActions(
-      script_path_, base::BindOnce(&ScriptExecutor::OnGetActions,
-                                   weak_ptr_factory_.GetWeakPtr()));
+      script_path_, delegate_->GetParameters(),
+      base::BindOnce(&ScriptExecutor::OnGetActions,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScriptExecutor::ShowStatusMessage(const std::string& message) {

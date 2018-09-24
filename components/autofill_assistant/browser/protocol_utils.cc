@@ -20,14 +20,34 @@
 
 namespace autofill_assistant {
 
+namespace {
+
+// Fills the destination proto field with script parameters from the given
+// parameter map.
+void AddScriptParametersToProto(
+    const std::map<std::string, std::string>& source,
+    ::google::protobuf::RepeatedPtrField<ScriptParameterProto>* destination) {
+  for (const auto& param_entry : source) {
+    ScriptParameterProto* parameter = destination->Add();
+    parameter->set_name(param_entry.first);
+    parameter->set_value(param_entry.second);
+  }
+}
+
+}  // namespace
+
 // static
-std::string ProtocolUtils::CreateGetScriptsRequest(const GURL& url) {
+std::string ProtocolUtils::CreateGetScriptsRequest(
+    const GURL& url,
+    const std::map<std::string, std::string>& parameters) {
   DCHECK(!url.is_empty());
 
   SupportsScriptRequestProto script_proto;
   script_proto.set_url(url.spec());
   script_proto.mutable_client_context()->mutable_chrome()->set_chrome_version(
       version_info::GetProductNameAndVersionForUserAgent());
+  AddScriptParametersToProto(parameters,
+                             script_proto.mutable_script_parameters());
   std::string serialized_script_proto;
   bool success = script_proto.SerializeToString(&serialized_script_proto);
   DCHECK(success);
@@ -72,12 +92,17 @@ bool ProtocolUtils::ParseScripts(
 
 // static
 std::string ProtocolUtils::CreateInitialScriptActionsRequest(
-    const std::string& script_path) {
+    const std::string& script_path,
+    const std::map<std::string, std::string>& parameters) {
   ScriptActionRequestProto request_proto;
+  InitialScriptActionsRequestProto* initial_request_proto =
+      request_proto.mutable_initial_request();
   InitialScriptActionsRequestProto::QueryProto* query =
-      request_proto.mutable_initial_request()->mutable_query();
+      initial_request_proto->mutable_query();
   query->add_script_path(script_path);
   query->set_policy(PolicyType::SCRIPT);
+  AddScriptParametersToProto(
+      parameters, initial_request_proto->mutable_script_parameters());
   request_proto.mutable_client_context()->mutable_chrome()->set_chrome_version(
       version_info::GetProductNameAndVersionForUserAgent());
 

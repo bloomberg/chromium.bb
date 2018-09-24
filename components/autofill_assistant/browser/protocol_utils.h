@@ -23,7 +23,9 @@ class ProtocolUtils {
  public:
   // Create getting autofill assistant scripts request for the given
   // |url|.
-  static std::string CreateGetScriptsRequest(const GURL& url);
+  static std::string CreateGetScriptsRequest(
+      const GURL& url,
+      const std::map<std::string, std::string>& parameters);
 
   using Scripts = std::map<Script*, std::unique_ptr<Script>>;
   // Parse assistant scripts from the given |response|, which should not be an
@@ -39,7 +41,8 @@ class ProtocolUtils {
 
   // Create initial request to get script actions for the given |script_path|.
   static std::string CreateInitialScriptActionsRequest(
-      const std::string& script_path);
+      const std::string& script_path,
+      const std::map<std::string, std::string>& parameters);
 
   // Create request to get next sequence of actions for a script.
   static std::string CreateNextScriptActionsRequest(
