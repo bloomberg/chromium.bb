@@ -91,7 +91,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
 
   scoped_refptr<NotificationPlatformBridgeWinImpl> impl_;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> notification_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPlatformBridgeWin);
 };
