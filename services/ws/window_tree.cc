@@ -1010,16 +1010,21 @@ bool WindowTree::SetWindowPropertyImpl(
   }
   aura::PropertyConverter* property_converter =
       window_service_->property_converter();
-  DCHECK(property_converter->IsTransportNameRegistered(name))
-      << "Attempting to set an unregistered property; this is not implemented. "
-      << "property name=" << name;
+  if (!property_converter->IsTransportNameRegistered(name)) {
+    NOTREACHED() << "Attempting to set an unregistered property; this is not "
+                    "implemented. property name="
+                 << name;
+    return false;
+  }
   if (!IsClientCreatedWindow(window) && !IsClientRootWindow(window)) {
     DVLOG(1) << "SetWindowProperty failed (access policy denied change)";
     return false;
   }
 
-  ClientChange change(property_change_tracker_.get(), window,
-                      ClientChangeType::kProperty);
+  ClientChange change(
+      property_change_tracker_.get(), window, ClientChangeType::kProperty,
+      property_converter->GetPropertyKeyFromTransportName(name));
+
   // Special handle the property whose value is a pointer to aura::Window since
   // property converter can't convert the transported value.
   const aura::WindowProperty<aura::Window*>* property =

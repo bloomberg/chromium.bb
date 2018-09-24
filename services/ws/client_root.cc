@@ -179,8 +179,8 @@ void ClientRoot::HandleBoundsOrScaleFactorChange(const gfx::Rect& old_bounds) {
 void ClientRoot::OnWindowPropertyChanged(aura::Window* window,
                                          const void* key,
                                          intptr_t old) {
-  if (window_tree_->property_change_tracker_->IsProcessingChangeForWindow(
-          window, ClientChangeType::kProperty)) {
+  if (window_tree_->property_change_tracker_
+          ->IsProcessingPropertyChangeForWindow(window, key)) {
     // Do not send notifications for changes intiated by the client.
     return;
   }
