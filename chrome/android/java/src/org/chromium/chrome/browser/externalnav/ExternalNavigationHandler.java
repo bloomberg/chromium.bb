@@ -773,7 +773,7 @@ public class ExternalNavigationHandler {
 
         int launchSource = IntentUtils.safeGetIntExtra(
                 tab.getActivity().getIntent(), EXTRA_BROWSER_LAUNCH_SOURCE, LaunchSourceType.OTHER);
-        if (launchSource != LaunchSourceType.WEBAPK && launchSource != LaunchSourceType.TWA) {
+        if (launchSource != LaunchSourceType.WEBAPK) {
             return false;
         }
 
@@ -781,9 +781,8 @@ public class ExternalNavigationHandler {
                 tab.getActivity().getIntent(), Browser.EXTRA_APPLICATION_ID);
         if (appId == null) return false;
 
-        Intent intent;
         try {
-            intent = Intent.parseUri(params.getUrl(), Intent.URI_INTENT_SCHEME);
+            Intent.parseUri(params.getUrl(), Intent.URI_INTENT_SCHEME);
         } catch (URISyntaxException ex) {
             return false;
         }
