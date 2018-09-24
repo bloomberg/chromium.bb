@@ -30749,6 +30749,12 @@ from previous Chrome versions.
   <int value="22" label="MacBookPro5,X"/>
 </enum>
 
+<enum name="MachineLearningServiceMojoConnectionEvent">
+  <int value="0" label="Mojo bootstrap requested over D-Bus"/>
+  <int value="1" label="Mojo bootstrap succeeded"/>
+  <int value="2" label="Connection error"/>
+</enum>
+
 <enum name="MachineLevelUserCloudPolicyEnrollmentResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed to fetch DM Token from the server"/>
