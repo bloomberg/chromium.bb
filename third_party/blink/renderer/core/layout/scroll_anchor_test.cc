@@ -885,4 +885,26 @@ TEST_F(ScrollAnchorTest, RestoreAnchorSucceedsWhenScriptForbidden) {
       GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor));
   EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 100);
 }
+
+TEST_F(ScrollAnchorTest, RestoreAnchorSucceedsWithExistingAnchorObject) {
+  SetBodyInnerHTML(
+      "<style> body { height: 1000px; margin: 0; } div { height: 100px } "
+      "</style>"
+      "<div id='block1'>abc</div>"
+      "<div id='block2'>def</div>");
+
+  EXPECT_FALSE(GetScrollAnchor(LayoutViewport()).AnchorObject());
+
+  SerializedAnchor serialized_anchor("#block1", LayoutPoint(0, 0));
+
+  EXPECT_TRUE(
+      GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor));
+  EXPECT_TRUE(GetScrollAnchor(LayoutViewport()).AnchorObject());
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 0);
+
+  EXPECT_TRUE(
+      GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor));
+  EXPECT_TRUE(GetScrollAnchor(LayoutViewport()).AnchorObject());
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 0);
+}
 }
