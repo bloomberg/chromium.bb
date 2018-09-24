@@ -293,8 +293,8 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
     // Readonly fields can be an indication that filling is useless (e.g., the
     // page might use a virtual keyboard). However, if the field was readonly
     // only temporarily, that makes it still interesting for saving. The fact
-    // that a user typed or Chrome filled into that field in tha past is an
-    // indicator that the radonly was only temporary.
+    // that a user typed or Chrome filled into that field in the past is an
+    // indicator that the readonly was only temporary.
     if (processed_field.field->is_readonly &&
         !(processed_field.field->properties_mask &
           (FieldPropertiesFlags::USER_TYPED |
