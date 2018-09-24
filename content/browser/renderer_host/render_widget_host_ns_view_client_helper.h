@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_HELPER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_HELPER_H_
 
 #include "base/macros.h"
 
@@ -22,6 +22,10 @@ class LatencyInfo;
 
 namespace content {
 
+namespace mojom {
+class RenderWidgetHostNSViewClient;
+}  // namespace mojom
+
 class BrowserAccessibilityManager;
 struct EditCommand;
 struct NativeWebKeyboardEvent;
@@ -32,10 +36,16 @@ struct NativeWebKeyboardEvent;
 // instantiated in the local process. This is to implement functions that
 // cannot be sent across mojo (e.g, GetRootBrowserAccessibilityManager), or
 // to avoid unnecessary translation of event types.
-class RenderWidgetHostNSViewLocalClient {
+class RenderWidgetHostNSViewClientHelper {
  public:
-  RenderWidgetHostNSViewLocalClient() {}
-  virtual ~RenderWidgetHostNSViewLocalClient() {}
+  // Create a RenderWidgetHostNSViewClientHelper that will only implement
+  // functionality through mojo (this is in contrast with an in-process
+  // RenderWidgetHostNSViewClientHelper that would use raw pointer access).
+  static std::unique_ptr<RenderWidgetHostNSViewClientHelper>
+  CreateForMojoClient(content::mojom::RenderWidgetHostNSViewClient* client);
+
+  RenderWidgetHostNSViewClientHelper() {}
+  virtual ~RenderWidgetHostNSViewClientHelper() {}
 
   // Return the RenderWidget's BrowserAccessibilityManager.
   // TODO(ccameron): This returns nullptr for non-local NSViews. A scheme for
@@ -73,9 +83,9 @@ class RenderWidgetHostNSViewLocalClient {
       const blink::WebGestureEvent& smart_magnify_event) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewLocalClient);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewClientHelper);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_HELPER_H_

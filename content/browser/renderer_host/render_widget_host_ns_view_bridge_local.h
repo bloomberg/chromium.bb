@@ -26,7 +26,7 @@ class RenderWidgetHostNSViewBridgeLocal
  public:
   RenderWidgetHostNSViewBridgeLocal(
       mojom::RenderWidgetHostNSViewClient* client,
-      RenderWidgetHostNSViewLocalClient* local_client);
+      RenderWidgetHostNSViewClientHelper* client_helper);
   ~RenderWidgetHostNSViewBridgeLocal() override;
 
   // TODO(ccameron): RenderWidgetHostViewMac and other functions currently use
