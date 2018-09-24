@@ -254,7 +254,7 @@ def main():
                 skip_existing=args.skip_existing)
   _SetPushedReports(args.directory)
   logging.warning('Reports saved to %s', args.directory)
-  cmd = ['gsutil.py', '-m', 'rsync', '-J', '-a', 'publicRead', '-r',
+  cmd = ['gsutil.py', '-m', 'rsync', '-J', '-a', 'public-read', '-r',
          args.directory, PUSH_URL]
 
   if args.sync:
