@@ -42,6 +42,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'setPinEnabledForUser',
       'setAuthType',
       'setTabletModeState',
+      'setDemoModeState',
       'setPublicSessionDisplayName',
       'setPublicSessionLocales',
       'setPublicSessionKeyboardLayouts',
@@ -166,6 +167,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
         return;
       }
       chrome.send('getTabletModeState');
+      chrome.send('getDemoModeState');
       if (!this.firstShown_)
         return;
       this.firstShown_ = false;
@@ -430,6 +432,14 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     setTabletModeState: function(isTabletModeEnabled) {
       $('pod-row').setTabletModeState(isTabletModeEnabled);
+    },
+
+    /**
+     * Sets whether the device is in demo mode.
+     * @param {boolean} isDeviceInDemoMode true if the device is in demo mode.
+     */
+    setDemoModeState: function(isDeviceInDemoMode) {
+      $('pod-row').setDemoModeState(isDeviceInDemoMode);
     },
 
     /**

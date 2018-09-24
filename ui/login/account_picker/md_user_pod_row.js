@@ -2410,6 +2410,19 @@ cr.define('login', function() {
     lastPosition: {left: 'unset', top: 'unset'},
 
     /**
+     * If true, the public session should be launched directly without showing
+     * the expanded view when the pod is activated.
+     * @type {boolean}
+     */
+    skipExpandedView: false,
+
+    /**
+     * If true, further attempts of entering public session should bail out.
+     * @type {boolean}
+     */
+    isEnteringPublicSession_: false,
+
+    /**
      * The Learn more dialog.
      * @type {HTMLDivElement}
      */
@@ -2523,17 +2536,7 @@ cr.define('login', function() {
       this.enterButtonElement.tabIndex = UserPodTabOrder.POD_INPUT;
       this.enterButtonElement.addEventListener('click', (function(e) {
         this.enterButtonElement.disabled = true;
-        var locale = this.querySelector('.language-select').value;
-        var keyboardSelect = this.querySelector('.keyboard-select');
-        // The contents of |keyboardSelect| is updated asynchronously. If its
-        // locale does not match |locale|, it has not updated yet and the
-        // currently selected keyboard layout may not be applicable to |locale|.
-        // Do not return any keyboard layout in this case and let the backend
-        // choose a suitable layout.
-        var keyboardLayout =
-            keyboardSelect.loadedLocale == locale ? keyboardSelect.value : '';
-        chrome.send('launchPublicSession',
-                    [this.user.username, locale, keyboardLayout]);
+        this.enterPublicSession_();
       }).bind(this));
     },
 
@@ -2583,8 +2586,12 @@ cr.define('login', function() {
     /** @override */
     activate: function(e) {
       if (!this.expanded) {
-        this.expanded = true;
-        this.focusInput();
+        if (this.skipExpandedView) {
+          this.enterPublicSession_();
+        } else {
+          this.expanded = true;
+          this.focusInput();
+        }
       }
       return true;
     },
@@ -2768,6 +2775,28 @@ cr.define('login', function() {
       // Retrieve a list of keyboard layouts applicable to the locale that is
       // now selected.
       this.getPublicSessionKeyboardLayouts_();
+    },
+
+    /**
+     * Launches the public session with the user-selected locale and keyboard
+     * layout (if available).
+     * @private
+     */
+    enterPublicSession_: function() {
+      if (this.isEnteringPublicSession_)
+        return;
+      this.isEnteringPublicSession_ = true;
+      var locale = this.querySelector('.language-select').value;
+      var keyboardSelect = this.querySelector('.keyboard-select');
+      // The contents of |keyboardSelect| is updated asynchronously. If its
+      // locale does not match |locale|, it has not updated yet and the
+      // currently selected keyboard layout may not be applicable to |locale|.
+      // Do not return any keyboard layout in this case and let the backend
+      // choose a suitable layout.
+      var keyboardLayout =
+          keyboardSelect.loadedLocale == locale ? keyboardSelect.value : '';
+      chrome.send(
+          'launchPublicSession', [this.user.username, locale, keyboardLayout]);
     }
   };
 
@@ -3616,7 +3645,7 @@ cr.define('login', function() {
 
     /**
      * Sets the state of tablet mode.
-     * @param {boolean} isTabletModeEnabled true if the mode is on.
+     * @param {boolean} isTabletModeEnabled
      */
     setTabletModeState: function(isTabletModeEnabled) {
       this.tabletModeEnabled_ = isTabletModeEnabled;
@@ -3628,6 +3657,17 @@ cr.define('login', function() {
               .classList.toggle('forced', isTabletModeEnabled);
         }
       });
+    },
+
+    /**
+     * Sets whether the device is in demo mode.
+     * @param {boolean} isDeviceInDemoMode
+     */
+    setDemoModeState: function(isDeviceInDemoMode) {
+      for (let pod of this.pods) {
+        if (pod.isPublicSessionPod)
+          pod.skipExpandedView = isDeviceInDemoMode;
+      }
     },
 
     /**
