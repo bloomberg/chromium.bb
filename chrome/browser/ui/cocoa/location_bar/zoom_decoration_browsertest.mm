@@ -12,7 +12,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/browser/zoom_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
@@ -134,8 +133,6 @@ IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, HideOnInputProgress) {
 }
 
 IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, CloseBrowserWithOpenBubble) {
-  chrome::SetZoomBubbleAutoCloseDelayForTesting(0);
-
   // Create a new browser so that it can be closed properly.
   Browser* browser2 = CreateBrowser(browser()->profile());
   ZoomDecoration* zoom_decoration = GetZoomDecorationForBrowser(browser2);

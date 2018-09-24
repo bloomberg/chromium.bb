@@ -22,25 +22,11 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
-namespace {
-
-// Whether the toolkit-views zoom bubble should be used.
-bool UseViews() {
-  return true;
-}
-
-}  // namespace
-
 ZoomDecoration::ZoomDecoration(LocationBarViewMac* owner)
-    : owner_(owner), bubble_(nullptr), vector_icon_(nullptr) {}
+    : owner_(owner), vector_icon_(nullptr) {}
 
 ZoomDecoration::~ZoomDecoration() {
-  if (UseViews()) {
-    CloseBubble();
-    return;
-  }
-  [bubble_ closeWithoutAnimation];
-  bubble_.delegate = nil;
+  CloseBubble();
 }
 
 bool ZoomDecoration::UpdateIfNecessary(zoom::ZoomController* zoom_controller,
@@ -79,11 +65,7 @@ void ZoomDecoration::ShowBubble(BOOL auto_close) {
 }
 
 void ZoomDecoration::CloseBubble() {
-  if (UseViews()) {
-    chrome::CloseZoomBubbleViews();
-    return;
-  }
-  [bubble_ close];
+  chrome::CloseZoomBubbleViews();
 }
 
 void ZoomDecoration::HideUI() {
@@ -103,10 +85,7 @@ void ZoomDecoration::UpdateUI(zoom::ZoomController* zoom_controller,
 
   tooltip_.reset([tooltip_string retain]);
 
-  if (UseViews())
-    chrome::RefreshZoomBubbleViews();
-  else
-    [bubble_ onZoomChanged];
+  chrome::RefreshZoomBubbleViews();
 }
 
 NSPoint ZoomDecoration::GetBubblePointInFrame(NSRect frame) {
@@ -127,7 +106,7 @@ bool ZoomDecoration::IsAtDefaultZoom() const {
 }
 
 bool ZoomDecoration::IsBubbleShown() const {
-  return (UseViews() && chrome::IsZoomBubbleViewsShown()) || bubble_;
+  return chrome::IsZoomBubbleViewsShown();
 }
 
 bool ZoomDecoration::ShouldShowDecoration() const {
@@ -144,35 +123,13 @@ bool ZoomDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   if (IsBubbleShown()) {
     CloseBubble();
   } else {
-    // With Material Design enabled the zoom bubble is no longer auto-closed
-    // when activated with a mouse click.
-    const BOOL auto_close = !UseViews();
-    ShowBubble(auto_close);
+    ShowBubble(false);
   }
   return true;
 }
 
 NSString* ZoomDecoration::GetToolTip() {
   return tooltip_.get();
-}
-
-content::WebContents* ZoomDecoration::GetWebContents() {
-  return owner_->GetWebContents();
-}
-
-void ZoomDecoration::OnClose() {
-  if (!UseViews()) {
-    bubble_.delegate = nil;
-    bubble_ = nil;
-  }
-
-  // If the page is at default zoom then hiding the zoom decoration
-  // was suppressed while the bubble was open. Now that the bubble is
-  // closed the decoration can be hidden.
-  if (IsAtDefaultZoom() && IsVisible()) {
-    SetVisible(false);
-    owner_->OnDecorationsChanged();
-  }
 }
 
 const gfx::VectorIcon* ZoomDecoration::GetMaterialVectorIcon() const {
