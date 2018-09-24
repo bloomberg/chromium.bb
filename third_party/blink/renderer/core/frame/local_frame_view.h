@@ -813,13 +813,6 @@ class CORE_EXPORT LocalFrameView final
   template <typename Function>
   void ForAllNonThrottledLocalFrameViews(const Function&);
 
-  // This flag is only set on the local root view, whenever any descendant in
-  // the frame tree has a visual change the requires IntersectionObservations
-  // to be recomputed.
-  void SetDescendantNeedsIntersectionObservationUpdate() {
-    descendant_needs_intersection_observation_update_ = true;
-  }
-
   void UpdateViewportIntersectionsForSubtree() override;
   void UpdateThrottlingStatusForSubtree();
 
@@ -945,7 +938,6 @@ class CORE_EXPORT LocalFrameView final
   bool allows_layout_invalidation_after_layout_clean_ = true;
 #endif
   IntersectionObservationState intersection_observation_state_;
-  bool descendant_needs_intersection_observation_update_;
   bool needs_forced_compositing_update_;
 
   bool needs_focus_on_fragment_;

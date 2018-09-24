@@ -35,15 +35,11 @@ bool IsOccluded(const Element& element, const IntersectionGeometry& geometry) {
 
 }  // namespace
 
-// Minimum time, in milliseconds, between observations. See:
-//   http://szager-chromium.github.io/IntersectionObserver/#dom-intersectionobserver-trackvisibility
-const DOMHighResTimeStamp IntersectionObservation::s_v2_throttle_delay_ = 100;
-
 IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
                                                  Element& target)
     : observer_(observer),
       target_(&target),
-      last_run_time_(-s_v2_throttle_delay_),
+      last_run_time_(-observer.GetEffectiveDelay()),
       last_is_visible_(false),
       // Note that the spec says the initial value of last_threshold_index_
       // should be -1, but since last_threshold_index_ is unsigned, we use a
@@ -54,19 +50,20 @@ void IntersectionObservation::Compute(unsigned flags) {
   DCHECK(Observer());
   if (!target_ || !observer_->RootIsValid() | !observer_->GetExecutionContext())
     return;
-  bool needs_update =
-      flags & (observer_->RootIsImplicit() ? kImplicitRootObserversNeedUpdate
-                                           : kExplicitRootObserversNeedUpdate);
-  if (!needs_update)
+  if (flags &
+      (observer_->RootIsImplicit() ? kImplicitRootObserversNeedUpdate
+                                   : kExplicitRootObserversNeedUpdate)) {
+    needs_update_ = true;
+  }
+  if (!needs_update_)
     return;
   DOMHighResTimeStamp timestamp = observer_->GetTimeStamp();
   if (timestamp == -1)
     return;
-  if (observer_->trackVisibility() &&
-      IntersectionObserver::V2ThrottleDelayEnabled() &&
-      timestamp - last_run_time_ < s_v2_throttle_delay_) {
+  if (timestamp - last_run_time_ < observer_->GetEffectiveDelay())
     return;
-  }
+  last_run_time_ = timestamp;
+  needs_update_ = 0;
   Vector<Length> root_margin(4);
   root_margin[0] = observer_->TopMargin();
   root_margin[1] = observer_->RightMargin();

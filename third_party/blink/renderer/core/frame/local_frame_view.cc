@@ -254,7 +254,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       past_layout_lifecycle_update_(false),
       suppress_adjust_view_size_(false),
       intersection_observation_state_(kNotNeeded),
-      descendant_needs_intersection_observation_update_(false),
       needs_forced_compositing_update_(false),
       needs_focus_on_fragment_(false),
       tracked_object_paint_invalidations_(
@@ -2413,15 +2412,12 @@ bool LocalFrameView::UpdateLifecyclePhases(
   UpdateLifecyclePhasesInternal(target_state);
 
   // Update intersection observations if needed.
-  if ((intersection_observation_state_ != kNotNeeded ||
-       descendant_needs_intersection_observation_update_) &&
-      target_state == DocumentLifecycle::kPaintClean) {
+  if (target_state == DocumentLifecycle::kPaintClean) {
     TRACE_EVENT0("blink,benchmark",
                  "LocalFrameView::UpdateViewportIntersectionsForSubtree");
     SCOPED_UMA_AND_UKM_TIMER("Blink.IntersectionObservation.UpdateTime",
                              UkmMetricNames::kIntersectionObservation);
     UpdateViewportIntersectionsForSubtree();
-    descendant_needs_intersection_observation_update_ = false;
   }
 
   UpdateThrottlingStatusForSubtree();
@@ -4170,8 +4166,6 @@ void LocalFrameView::SetIntersectionObservationState(
   if (intersection_observation_state_ >= state)
     return;
   intersection_observation_state_ = state;
-  if (LocalFrameView* root_view = GetFrame().LocalFrameRoot().View())
-    root_view->SetDescendantNeedsIntersectionObservationUpdate();
 }
 
 unsigned LocalFrameView::GetIntersectionObservationFlags() const {

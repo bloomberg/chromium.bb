@@ -591,7 +591,7 @@ class Internals final : public ScriptWrappable {
   // LocalFrameView::UpdateLifecyclePhasesInternal).
   unsigned LifecycleUpdateCount() const;
 
-  void DisableIntersectionObserverV2Throttle() const;
+  void DisableIntersectionObserverThrottleDelay() const;
 
   void addEmbedderCustomElementName(const AtomicString& name, ExceptionState&);
 
