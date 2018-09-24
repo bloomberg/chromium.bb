@@ -106,7 +106,7 @@ java_cpp_enum("aw_safe_browsing_action") {
 jinja_template("system_webview_manifest") {
   input = "apk/java/AndroidManifest.xml"
   output = system_webview_android_manifest
-  variables = [ "package=$system_webview_package_name" ]
+  variables = [ "manifest_package=$system_webview_package_name" ]
 }
 
 webview_repack_locales("repack_locales") {
