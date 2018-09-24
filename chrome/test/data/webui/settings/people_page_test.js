@@ -17,6 +17,9 @@ cr.define('settings_people_page', function() {
         easyUnlockAllowed: false,
         // Force Dice off. Dice is tested in the DiceUITest suite.
         diceEnabled: false,
+        // Force Unified Consent off. Unified Consent is tested in the
+        // UnifiedConsentUITest suite.
+        unifiedConsentEnabled: false,
       });
     });
 

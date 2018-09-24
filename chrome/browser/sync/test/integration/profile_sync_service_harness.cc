@@ -530,7 +530,13 @@ bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
     return false;
   }
 
-  service()->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Setting unified consent given to true will enable all sync data types.
+    UnifiedConsentServiceFactory::GetForProfile(profile_)
+        ->SetUnifiedConsentGiven(true);
+  } else {
+    service()->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  }
   if (AwaitSyncSetupCompletion(/*skip_passphrase_verification=*/false)) {
     DVLOG(1) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes "
              << "on " << profile_debug_name_ << ".";

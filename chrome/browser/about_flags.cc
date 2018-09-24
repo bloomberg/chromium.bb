@@ -3805,7 +3805,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUnifiedConsentDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(unified_consent::kUnifiedConsent,
                                     kUnifiedConsentVariations,
-                                    "UnifiedConsentVariations")},
+                                    "UnifiedConsent")},
 
     {"force-unified-consent-bump",
      flag_descriptions::kForceUnifiedConsentBumpName,
