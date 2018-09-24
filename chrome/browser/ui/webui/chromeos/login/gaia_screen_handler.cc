@@ -1132,7 +1132,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
             g_browser_process->platform_part()
                 ->browser_policy_connector_chromeos()
                 ->GetDeviceNetworkConfigurationUpdater()
-                ->GetAuthorityCertificates());
+                ->GetAllAuthorityCertificates());
   }
 
   LoadAuthExtension(!gaia_silent_load_ /* force */, false /* offline */);

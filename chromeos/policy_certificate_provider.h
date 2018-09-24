@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERTIFICATE_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERTIFICATE_PROVIDER_H_
+#ifndef CHROMEOS_POLICY_CERTIFICATE_PROVIDER_H_
+#define CHROMEOS_POLICY_CERTIFICATE_PROVIDER_H_
 
-#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -16,8 +15,11 @@ class X509Certificate;
 using CertificateList = std::vector<scoped_refptr<X509Certificate>>;
 }  // namespace net
 
-namespace policy {
+namespace chromeos {
 
+// An interface for a class which makes server and authority certificates
+// available from enterprise policy. Clients of this interface can register as
+// |Observer|s to receive update notifications.
 class PolicyCertificateProvider {
  public:
   virtual ~PolicyCertificateProvider() {}
@@ -40,6 +42,10 @@ class PolicyCertificateProvider {
   // independent of their trust bits.
   virtual net::CertificateList GetAllServerAndAuthorityCertificates() const = 0;
 
+  // Returns all authority certificates successfully parsed from ONC,
+  // independent of their trust bits.
+  virtual net::CertificateList GetAllAuthorityCertificates() const = 0;
+
   // Returns the server and authority certificates which were successfully
   // parsed from ONC and were granted web trust. This means that the
   // certificates had the "Web" trust bit set, and this
@@ -55,6 +61,6 @@ class PolicyCertificateProvider {
   virtual net::CertificateList GetCertificatesWithoutWebTrust() const = 0;
 };
 
-}  // namespace policy
+}  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERTIFICATE_PROVIDER_H_
+#endif  // CHROMEOS_POLICY_CERTIFICATE_PROVIDER_H_
