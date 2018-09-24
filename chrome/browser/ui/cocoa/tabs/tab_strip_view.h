@@ -11,7 +11,6 @@
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
-@class NewTabButtonCocoa;
 @class TabStripControllerCocoa;
 
 // A view class that handles rendering the tab strip and drops of URLS with
@@ -26,8 +25,6 @@
   // Handles being a drag-and-drop target.
   base::scoped_nsobject<URLDropTargetHandler> dropHandler_;
 
-  base::scoped_nsobject<NewTabButtonCocoa> newTabButton_;
-
   // Whether the drop-indicator arrow is shown, and if it is, the coordinate of
   // its tip.
   BOOL dropArrowShown_;
@@ -39,10 +36,6 @@
 @property(assign, nonatomic) BOOL dropArrowShown;
 @property(assign, nonatomic) NSPoint dropArrowPosition;
 @property(assign, nonatomic) BOOL inATabDraggingOverlayWindow;
-
-// Name starts with "get" because methods staring with "new" return retained
-// objects according to Cocoa's create rule.
-- (NewTabButtonCocoa*)getNewTabButton;
 
 // Leaving visual effects enabled when fullscreen results in higher power
 // consumption. This is used to disable effects when fullscreen.
@@ -59,10 +52,6 @@
 @interface TabStripView (Protected)
 - (void)drawBottomBorder:(NSRect)bounds;
 - (BOOL)doubleClickMinimizesWindow;
-@end
-
-@interface TabStripView (TestingAPI)
-- (void)setNewTabButton:(NewTabButtonCocoa*)button;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_VIEW_H_
