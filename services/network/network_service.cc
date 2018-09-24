@@ -31,6 +31,7 @@
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_util.h"
+#include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/crl_set_distributor.h"
@@ -290,6 +291,11 @@ void NetworkService::StartNetLog(base::File file,
 
   network_service_net_log_->ObserveFileWithConstants(std::move(file),
                                                      std::move(*constants));
+}
+
+void NetworkService::SetSSLKeyLogFile(const base::FilePath& file) {
+  net::SSLClientSocket::SetSSLKeyLogger(
+      std::make_unique<net::SSLKeyLoggerImpl>(file));
 }
 
 void NetworkService::CreateNetworkContext(

@@ -123,6 +123,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // mojom::NetworkService implementation:
   void SetClient(mojom::NetworkServiceClientPtr client) override;
   void StartNetLog(base::File file, base::Value constants) override;
+  void SetSSLKeyLogFile(const base::FilePath& file) override;
   void CreateNetworkContext(mojom::NetworkContextRequest request,
                             mojom::NetworkContextParamsPtr params) override;
   void ConfigureStubHostResolver(
