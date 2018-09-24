@@ -30,6 +30,7 @@ public class FeedProcessScopeFactory {
     private static FeedProcessScope sFeedProcessScope;
     private static FeedScheduler sFeedScheduler;
     private static FeedOfflineIndicator sFeedOfflineIndicator;
+    private static NetworkClient sTestNetworkClient;
 
     /** @return The shared {@link FeedProcessScope} instance. Null if the Feed is disabled. */
     public static @Nullable FeedProcessScope getFeedProcessScope() {
@@ -76,10 +77,12 @@ public class FeedProcessScopeFactory {
                 new FeedAppLifecycleListener(new ThreadUtils());
         FeedContentStorage contentStorage = new FeedContentStorage(profile);
         FeedJournalStorage journalStorage = new FeedJournalStorage(profile);
+        NetworkClient networkClient = sTestNetworkClient == null ?
+            new FeedNetworkBridge(profile) : sTestNetworkClient;
         sFeedProcessScope =
                 new FeedProcessScope
                         .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                new LoggingApiImpl(), new FeedNetworkBridge(profile),
+                                new LoggingApiImpl(), networkClient,
                                 schedulerBridge, lifecycleListener, DebugBehavior.SILENT,
                                 ContextUtils.getApplicationContext())
                         .setContentStorage(contentStorage)
@@ -123,6 +126,19 @@ public class FeedProcessScopeFactory {
                                             ContextUtils.getApplicationContext())
                                     .build();
         sFeedOfflineIndicator = feedOfflineIndicator;
+    }
+
+    /** Use supplied NetworkClient instead of real one, for tests. */
+    @VisibleForTesting
+    public static void setTestNetworkClient(NetworkClient client) {
+        if (client == null) {
+            sTestNetworkClient = null;
+        } else if (sFeedProcessScope == null) {
+            sTestNetworkClient = client;
+        } else {
+            throw(new IllegalStateException(
+                    "TestNetworkClient can not be set after FeedProcessScope has initialized."));
+        }
     }
 
     /** Resets the FeedProcessScope after testing is complete. */
