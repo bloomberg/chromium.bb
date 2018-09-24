@@ -58,11 +58,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'SelectElementTest.shouldAllowUserToDeselectOptionsByVisibleText',
     'SessionHandlingTest.callingAnyOperationAfterClosingTheLastWindowShouldThrowAnException',
     'SessionHandlingTest.callingQuitAfterClosingTheLastWindowIsANoOp',
-    'TakesScreenshotTest.testCaptureToBase64',
-    'TakesScreenshotTest.testSaveScreenshotAsFile',
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePageAfterSwitching',
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePageAfterSwitching',
 
     # Tests require multiple sessions, not supported on Android'
     'CorrectEventFiringTest.testShouldFireFocusEventInNonTopmostWindow',
@@ -156,12 +151,17 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ReferrerTest.basicHistoryNavigationWithADirectProxy',
     'ReferrerTest.crossDomainHistoryNavigationWhenProxyInterceptsHostRequests',
     'ReferrerTest.crossDomainHistoryNavigationWithAProxiedHost',
-    'TakesScreenshotTest.testShouldCaptureScreenshotOfCurrentViewport',
     'UploadTest.testUploadingWithHiddenFileInput',
     'CombinedInputActionsTest.testControlClickingOnMultiSelectionList',
     'CombinedInputActionsTest.testShiftClickingOnMultiSelectionList',
     'CombinedInputActionsTest.testPlainClickingOnMultiSelectionList',
     'CorrectEventFiringTest.testClickingAnUnfocusableChildShouldNotBlurTheParent',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2594
+    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
+    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePageAfterSwitching',
+    'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePageAfterSwitching',
+    'TakesScreenshotTest.testShouldCaptureScreenshotOfCurrentViewport',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
@@ -186,8 +186,9 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
         'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
          # Not applicable on ChromeDriverWebViewShell (doesn't support tabs).
         'WindowSwitchingTest.*',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2595
         'TakesScreenshotTest.*',
+
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
         'ImplicitWaitTest.testShouldRetainImplicitlyWaitFromTheReturnedWebDriverOfFrameSwitchTo',
     ]
