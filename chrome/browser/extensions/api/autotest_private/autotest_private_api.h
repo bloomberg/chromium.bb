@@ -293,6 +293,23 @@ class AutotestPrivateRunCrostiniInstallerFunction
   DISALLOW_COPY_AND_ASSIGN(AutotestPrivateRunCrostiniInstallerFunction);
 };
 
+class AutotestPrivateRunCrostiniUninstallerFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateRunCrostiniUninstallerFunction() = default;
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.runCrostiniUninstaller",
+                             AUTOTESTPRIVATE_RUNCROSTINIUNINSTALLER)
+
+ private:
+  ~AutotestPrivateRunCrostiniUninstallerFunction() override;
+  ResponseAction Run() override;
+#if defined(OS_CHROMEOS)
+  void CrostiniRemoved(crostini::ConciergeClientResult);
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateRunCrostiniUninstallerFunction);
+};
+
 class AutotestPrivateGetPrinterListFunction : public UIThreadExtensionFunction {
  public:
   AutotestPrivateGetPrinterListFunction() = default;

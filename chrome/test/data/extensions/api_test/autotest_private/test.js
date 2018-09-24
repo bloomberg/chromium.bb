@@ -189,6 +189,10 @@ chrome.test.runTests([
     chrome.autotestPrivate.bootstrapMachineLearningService(
         chrome.test.callbackFail('ML Service connection error'));
   },
+  function runCrostiniUninstaller() {
+    chrome.autotestPrivate.runCrostiniUninstaller(chrome.test.callbackFail(
+        'Crostini is not available for the current user'));
+  },
   function getPrinterList() {
     chrome.autotestPrivate.getPrinterList(function(){
       chrome.test.succeed();
