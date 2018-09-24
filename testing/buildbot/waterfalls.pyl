@@ -3502,6 +3502,20 @@
   {
     'name': 'chromium.webrtc.fyi.experimental',
     'machines': {
+      # For builders, specify targets if the builder has no associated
+      # tester (if it does, it will build what the tester needs).
+      'WebRTC Chromium FYI Android Builder': {
+        'additional_compile_targets': [
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+      'WebRTC Chromium FYI Android Builder (dbg)': {},
+      'WebRTC Chromium FYI Android Builder ARM64 (dbg)': {},
       'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_android_gtests',
@@ -3512,15 +3526,54 @@
           'gtest_tests': 'webrtc_chromium_android_gtests',
         },
       },
+      'WebRTC Chromium FYI Linux Builder': {},
+      'WebRTC Chromium FYI Linux Builder (dbg)': {
+        'additional_compile_targets': [
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+          'remoting/webapp:webapp',
+        ],
+      },
       'WebRTC Chromium FYI Linux Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
+      'WebRTC Chromium FYI Mac Builder': {},
+      'WebRTC Chromium FYI Mac Builder (dbg)': {
+        'additional_compile_targets': [
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+          'remoting/webapp:webapp',
+        ],
+      },
       'WebRTC Chromium FYI Mac Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
+      },
+      'WebRTC Chromium FYI Win Builder': {},
+      'WebRTC Chromium FYI Win Builder (dbg)': {
+        'additional_compile_targets': [
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+          'remoting/webapp:webapp',
+        ],
       },
       'WebRTC Chromium FYI Win10 Tester': {
         'test_suites': {
