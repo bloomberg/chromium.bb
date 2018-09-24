@@ -858,6 +858,59 @@ def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
   return [output_api.PresubmitPromptWarning('UNIT_TEST is only for headers.\n' +
       '\n'.join(problems))]
 
+def _CheckNoDISABLETypoInTests(input_api, output_api):
+  """Checks to prevent attempts to disable tests with DISABLE_ prefix.
+
+  This test warns if somebody tries to disable a test with the DISABLE_ prefix
+  instead of DISABLED_. To filter false positives, reports are only generated
+  if a corresponding MAYBE_ line exists.
+  """
+  problems = []
+
+  # The following two patterns are looked for in tandem - is a test labeled
+  # as MAYBE_ followed by a DISABLE_ (instead of the correct DISABLED)
+  maybe_pattern = input_api.re.compile(r'MAYBE_([a-zA-Z0-9_]+)')
+  disable_pattern = input_api.re.compile(r'DISABLE_([a-zA-Z0-9_]+)')
+
+  # This is for the case that a test is disabled on all platforms.
+  full_disable_pattern = input_api.re.compile(
+      r'^\s*TEST[^(]*\([a-zA-Z0-9_]+,\s*DISABLE_[a-zA-Z0-9_]+\)',
+      input_api.re.MULTILINE)
+
+  for f in input_api.AffectedFiles():
+    if not 'test' in f.LocalPath() or not f.LocalPath().endswith('.cc'):
+      continue
+
+    # Search for MABYE_, DISABLE_ pairs.
+    disable_lines = {}  # Maps of test name to line number.
+    maybe_lines = {}
+    for line_num, line in f.ChangedContents():
+      disable_match = disable_pattern.search(line)
+      if disable_match:
+        disable_lines[disable_match.group(1)] = line_num
+      maybe_match = maybe_pattern.search(line)
+      if maybe_match:
+        maybe_lines[maybe_match.group(1)] = line_num
+
+    # Search for DISABLE_ occurrences within a TEST() macro.
+    disable_tests = set(disable_lines.keys())
+    maybe_tests = set(maybe_lines.keys())
+    for test in disable_tests.intersection(maybe_tests):
+      problems.append('    %s:%d' % (f.LocalPath(), disable_lines[test]))
+
+    contents = input_api.ReadFile(f)
+    full_disable_match = full_disable_pattern.search(contents)
+    if full_disable_match:
+      problems.append('    %s' % f.LocalPath())
+
+  if not problems:
+    return []
+  return [
+      output_api.PresubmitPromptWarning(
+          'Attempt to disable a test with DISABLE_ instead of DISABLED_?\n' +
+          '\n'.join(problems))
+  ]
+
 
 def _CheckDCHECK_IS_ONHasBraces(input_api, output_api):
   """Checks to make sure DCHECK_IS_ON() does not skip the parentheses."""
@@ -2957,6 +3010,7 @@ def _CommonChecks(input_api, output_api):
       _CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api))
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
   results.extend(_CheckNoUNIT_TESTInSourceFiles(input_api, output_api))
+  results.extend(_CheckNoDISABLETypoInTests(input_api, output_api))
   results.extend(_CheckDCHECK_IS_ONHasBraces(input_api, output_api))
   results.extend(_CheckNoNewWStrings(input_api, output_api))
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
