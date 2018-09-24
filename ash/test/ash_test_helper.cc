@@ -255,9 +255,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   }
 
   if (!bluez::BluezDBusManager::IsInitialized()) {
-    bluez::BluezDBusManager::Initialize(
-        chromeos::DBusThreadManager::Get()->GetSystemBus(),
-        chromeos::DBusThreadManager::Get()->IsUsingFakes());
+    bluez::BluezDBusManager::Initialize();
     bluez_dbus_manager_initialized_ = true;
   }
 

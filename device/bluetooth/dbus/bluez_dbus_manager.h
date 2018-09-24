@@ -61,7 +61,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   // This will initialize real, stub, or fake DBusClients depending on
   // command-line arguments, whether Object Manager is supported and
   // whether this process runs in a real or test environment.
-  static void Initialize(dbus::Bus* bus, bool use_dbus_fakes);
+  static void Initialize();
 
   // Returns a BluezDBusManagerSetter instance that allows tests to
   // replace individual D-Bus clients with their own implementations.

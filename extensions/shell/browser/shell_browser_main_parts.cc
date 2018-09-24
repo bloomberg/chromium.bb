@@ -124,9 +124,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   chromeos::DBusThreadManager::Initialize();
   chromeos::disks::DiskMountManager::Initialize();
 
-  bluez::BluezDBusManager::Initialize(
-      chromeos::DBusThreadManager::Get()->GetSystemBus(),
-      chromeos::DBusThreadManager::Get()->IsUsingFakes());
+  bluez::BluezDBusManager::Initialize();
 
   chromeos::NetworkHandler::Initialize();
   network_controller_.reset(new ShellNetworkController(
@@ -144,9 +142,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   ui::InitializeInputMethodForTesting();
 
   bluez::DBusThreadManagerLinux::Initialize();
-  bluez::BluezDBusManager::Initialize(
-      bluez::DBusThreadManagerLinux::Get()->GetSystemBus(),
-      /*use_dbus_fakes=*/false);
+  bluez::BluezDBusManager::Initialize();
 #else
   ui::InitializeInputMethodForTesting();
 #endif

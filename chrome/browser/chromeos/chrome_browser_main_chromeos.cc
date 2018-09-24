@@ -316,9 +316,7 @@ class DBusPreEarlyInit {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
-    bluez::BluezDBusManager::Initialize(
-        DBusThreadManager::Get()->GetSystemBus(),
-        chromeos::DBusThreadManager::Get()->IsUsingFakes());
+    bluez::BluezDBusManager::Initialize();
 
     if (!features::IsMultiProcessMash()) {
       // In Mash, power policy is sent to powerd by ash.

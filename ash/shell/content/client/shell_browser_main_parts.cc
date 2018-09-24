@@ -80,7 +80,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // is absent.
   chromeos::CrasAudioHandler::InitializeForTesting();
 
-  bluez::BluezDBusManager::Initialize(nullptr, true /* use stub */);
+  bluez::BluezDBusManager::Initialize();
 
   chromeos::PowerPolicyController::Initialize(
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient());

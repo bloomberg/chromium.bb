@@ -148,10 +148,9 @@ void AshService::InitForMash() {
   chromeos::PowerPolicyController::Initialize(
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
 
-  // See ChromeBrowserMainPartsChromeos for ordering details.
-  bluez::BluezDBusManager::Initialize(
-      chromeos::DBusThreadManager::Get()->GetSystemBus(),
-      chromeos::DBusThreadManager::Get()->IsUsingFakes());
+  // The initialization matches that in ChromeBrowserMainPartsChromeos.
+
+  bluez::BluezDBusManager::Initialize();
   if (!chromeos::NetworkHandler::IsInitialized()) {
     chromeos::NetworkHandler::Initialize();
     network_handler_initialized_ = true;
