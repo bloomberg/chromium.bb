@@ -12,9 +12,7 @@ namespace bluez {
 // static
 void DBusBluezManagerWrapperLinux::Initialize() {
   DBusThreadManagerLinux::Initialize();
-  BluezDBusManager::Initialize(
-      bluez::DBusThreadManagerLinux::Get()->GetSystemBus(),
-      false /* use_dbus_stub */);
+  BluezDBusManager::Initialize();
 }
 
 // static

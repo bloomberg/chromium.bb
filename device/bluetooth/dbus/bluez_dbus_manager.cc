@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
 #include "dbus/message.h"
@@ -31,6 +32,12 @@
 #include "device/bluetooth/dbus/bluetooth_media_transport_client.h"
 #include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#elif defined(OS_LINUX)
+#include "device/bluetooth/dbus/dbus_thread_manager_linux.h"
+#endif
 
 namespace bluez {
 
@@ -223,14 +230,21 @@ std::string BluezDBusManager::GetBluetoothServiceName() {
 }
 
 // static
-void BluezDBusManager::Initialize(dbus::Bus* bus, bool use_dbus_stub) {
+void BluezDBusManager::Initialize() {
   // If we initialize BluezDBusManager twice we may also be shutting it down
   // early; do not allow that.
   if (g_using_bluez_dbus_manager_for_testing)
     return;
 
   CHECK(!g_bluez_dbus_manager);
-  CreateGlobalInstance(bus, use_dbus_stub);
+
+#if defined(OS_CHROMEOS)
+  CreateGlobalInstance(chromeos::DBusThreadManager::Get()->GetSystemBus(),
+                       chromeos::DBusThreadManager::Get()->IsUsingFakes());
+#elif defined(OS_LINUX)
+  CreateGlobalInstance(bluez::DBusThreadManagerLinux::Get()->GetSystemBus(),
+                       false /* use_dbus_stubs */);
+#endif
 }
 
 // static
