@@ -279,6 +279,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
 // Tests which only work for a single codec.
 class MediaCodecVideoDecoderH264Test : public MediaCodecVideoDecoderTest {};
 class MediaCodecVideoDecoderVp8Test : public MediaCodecVideoDecoderTest {};
+class MediaCodecVideoDecoderVp9Test : public MediaCodecVideoDecoderTest {};
 
 TEST_P(MediaCodecVideoDecoderTest, UnknownCodecIsRejected) {
   ASSERT_FALSE(Initialize(TestVideoConfig::Invalid()));
@@ -902,6 +903,43 @@ TEST_P(MediaCodecVideoDecoderH264Test, CsdIsIncludedInCodecConfig) {
   EXPECT_EQ(csd0, codec_allocator_->most_recent_config->csd0);
   csd1.insert(csd1.begin(), csd_header.begin(), csd_header.end());
   EXPECT_EQ(csd1, codec_allocator_->most_recent_config->csd1);
+}
+
+TEST_P(MediaCodecVideoDecoderVp9Test, ColorSpaceIsIncludedInCodecConfig) {
+  VideoDecoderConfig config = TestVideoConfig::Normal(kCodecVP9);
+  VideoColorSpace color_space_info(VideoColorSpace::PrimaryID::BT2020,
+                                   VideoColorSpace::TransferID::SMPTEST2084,
+                                   VideoColorSpace::MatrixID::BT2020_CL,
+                                   gfx::ColorSpace::RangeID::LIMITED);
+
+  config.set_color_space_info(color_space_info);
+  EXPECT_TRUE(InitializeFully_OneDecodePending(config));
+
+  EXPECT_EQ(color_space_info,
+            codec_allocator_->most_recent_config->container_color_space);
+}
+
+TEST_P(MediaCodecVideoDecoderVp9Test, HdrMetadataIsIncludedInCodecConfig) {
+  VideoDecoderConfig config = TestVideoConfig::Normal(kCodecVP9);
+  HDRMetadata hdr_metadata;
+  hdr_metadata.max_frame_average_light_level = 123;
+  hdr_metadata.max_content_light_level = 456;
+  hdr_metadata.mastering_metadata.primary_r.set_x(0.1f);
+  hdr_metadata.mastering_metadata.primary_r.set_y(0.2f);
+  hdr_metadata.mastering_metadata.primary_g.set_x(0.3f);
+  hdr_metadata.mastering_metadata.primary_g.set_y(0.4f);
+  hdr_metadata.mastering_metadata.primary_b.set_x(0.5f);
+  hdr_metadata.mastering_metadata.primary_b.set_y(0.6f);
+  hdr_metadata.mastering_metadata.white_point.set_x(0.7f);
+  hdr_metadata.mastering_metadata.white_point.set_y(0.8f);
+  hdr_metadata.mastering_metadata.luminance_max = 1000;
+  hdr_metadata.mastering_metadata.luminance_min = 0;
+
+  config.set_hdr_metadata(hdr_metadata);
+
+  EXPECT_TRUE(InitializeFully_OneDecodePending(config));
+
+  EXPECT_EQ(hdr_metadata, codec_allocator_->most_recent_config->hdr_metadata);
 }
 
 static std::vector<VideoCodec> GetTestList() {
