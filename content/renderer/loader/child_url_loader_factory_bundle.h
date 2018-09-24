@@ -85,7 +85,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   // Returns an info that omits this bundle's default factory, if any. This is
   // useful to make a clone that bypasses AppCache, for example.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+  virtual std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   CloneWithoutDefaultFactory();
 
   std::unique_ptr<ChildURLLoaderFactoryBundleInfo> PassInterface();

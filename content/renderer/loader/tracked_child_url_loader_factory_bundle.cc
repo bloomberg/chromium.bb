@@ -134,6 +134,23 @@ HostChildURLLoaderFactoryBundle::Clone() {
       std::move(main_thread_host_bundle_clone), info->bypass_redirect_checks());
 }
 
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+HostChildURLLoaderFactoryBundle::CloneWithoutDefaultFactory() {
+  auto info = base::WrapUnique(static_cast<ChildURLLoaderFactoryBundleInfo*>(
+      ChildURLLoaderFactoryBundle::CloneWithoutDefaultFactory().release()));
+
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  auto main_thread_host_bundle_clone = std::make_unique<
+      TrackedChildURLLoaderFactoryBundle::HostPtrAndTaskRunner>(AsWeakPtr(),
+                                                                task_runner_);
+
+  return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
+      std::move(info->default_factory_info()),
+      std::move(info->factories_info()),
+      std::move(info->direct_network_factory_info()),
+      std::move(main_thread_host_bundle_clone), info->bypass_redirect_checks());
+}
+
 void HostChildURLLoaderFactoryBundle::UpdateThisAndAllClones(
     std::unique_ptr<URLLoaderFactoryBundleInfo> info) {
   DCHECK(RenderThread::Get()) << "Should run on the main renderer thread";
