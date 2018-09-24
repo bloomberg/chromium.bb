@@ -527,6 +527,7 @@ class MyActivity(object):
 
   def monorail_issue_search(self, project):
     epoch = datetime.utcfromtimestamp(0)
+    # TODO(tandrii): support non-chromium email, too.
     user_str = '%s@chromium.org' % self.user
 
     issues = self.monorail_query_issues(project, {
@@ -535,6 +536,13 @@ class MyActivity(object):
       'publishedMax': '%d' % (self.modified_before - epoch).total_seconds(),
       'updatedMin': '%d' % (self.modified_after - epoch).total_seconds(),
     })
+
+    if self.options.completed_issues:
+      return [
+          issue for issue in issues
+          if (self.match(issue['owner']) and
+              issue['status'].lower() in ('verified', 'fixed'))
+      ]
 
     return [
         issue for issue in issues
@@ -969,6 +977,13 @@ def main():
       dest='merged_only',
       default=False,
       help='Shows only changes that have been merged.')
+  parser.add_option(
+      '-C', '--completed-issues',
+      action='store_true',
+      dest='completed_issues',
+      default=False,
+      help='Shows only monorail issues that have completed (Fixed|Verified) '
+           'by the user.')
   parser.add_option(
       '-o', '--output', metavar='<file>',
       help='Where to output the results. By default prints to stdout.')
