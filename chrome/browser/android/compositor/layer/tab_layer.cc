@@ -489,7 +489,7 @@ void TabLayer::SetProperties(int id,
     transform.Translate(toolbar_position.x(), toolbar_position.y());
     toolbar_layer_->layer()->SetTransformOrigin(gfx::Point3F(0.f, 0.f, 0.f));
     toolbar_layer_->layer()->SetTransform(transform);
-    toolbar_layer_->layer()->SetOpacity(toolbar_alpha);
+    toolbar_layer_->SetOpacity(toolbar_alpha);
 
     toolbar_layer_->layer()->SetMasksToBounds(
         toolbar_layer_->layer()->bounds() != toolbar_size);
