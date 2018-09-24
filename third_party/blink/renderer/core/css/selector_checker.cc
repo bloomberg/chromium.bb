@@ -564,7 +564,7 @@ static bool AttributeValueMatches(const Attribute& attribute_item,
 
       unsigned start_search_at = 0;
       while (true) {
-        size_t found_pos =
+        wtf_size_t found_pos =
             value.Find(selector_value, start_search_at, case_sensitivity);
         if (found_pos == kNotFound)
           return false;

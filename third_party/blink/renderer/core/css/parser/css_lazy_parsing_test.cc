@@ -23,7 +23,7 @@ class CSSLazyParsingTest : public testing::Test {
     return rule->HasParsedProperties();
   }
 
-  StyleRule* RuleAt(StyleSheetContents* sheet, size_t index) {
+  StyleRule* RuleAt(StyleSheetContents* sheet, wtf_size_t index) {
     return ToStyleRule(sheet->ChildRules()[index]);
   }
 

@@ -564,14 +564,14 @@ bool ConsumeAnimationShorthand(
   const unsigned longhand_count = shorthand.length();
   DCHECK_LE(longhand_count, kMaxNumAnimationLonghands);
 
-  for (size_t i = 0; i < longhand_count; ++i)
+  for (unsigned i = 0; i < longhand_count; ++i)
     longhands[i] = CSSValueList::CreateCommaSeparated();
 
   do {
     bool parsed_longhand[kMaxNumAnimationLonghands] = {false};
     do {
       bool found_property = false;
-      for (size_t i = 0; i < longhand_count; ++i) {
+      for (unsigned i = 0; i < longhand_count; ++i) {
         if (parsed_longhand[i])
           continue;
 
@@ -589,7 +589,7 @@ bool ConsumeAnimationShorthand(
         return false;
     } while (!range.AtEnd() && range.Peek().GetType() != kCommaToken);
 
-    for (size_t i = 0; i < longhand_count; ++i) {
+    for (unsigned i = 0; i < longhand_count; ++i) {
       if (!parsed_longhand[i]) {
         longhands[i]->Append(
             *ToLonghand(shorthand.properties()[i])->InitialValue());
@@ -821,7 +821,7 @@ bool ParseBackgroundOrMask(bool important,
     CSSValue* origin_value = nullptr;
     do {
       bool found_property = false;
-      for (size_t i = 0; i < longhand_count; ++i) {
+      for (unsigned i = 0; i < longhand_count; ++i) {
         if (parsed_longhand[i])
           continue;
 
@@ -882,7 +882,7 @@ bool ParseBackgroundOrMask(bool important,
     } while (!range.AtEnd() && range.Peek().GetType() != kCommaToken);
 
     // TODO(timloh): This will make invalid longhands, see crbug.com/386459
-    for (size_t i = 0; i < longhand_count; ++i) {
+    for (unsigned i = 0; i < longhand_count; ++i) {
       const CSSProperty& property = *shorthand.properties()[i];
       if (property.IDEquals(CSSPropertyBackgroundColor) && !range.AtEnd()) {
         if (parsed_longhand[i])
@@ -903,7 +903,7 @@ bool ParseBackgroundOrMask(bool important,
   if (!range.AtEnd())
     return false;
 
-  for (size_t i = 0; i < longhand_count; ++i) {
+  for (unsigned i = 0; i < longhand_count; ++i) {
     const CSSProperty& property = *shorthand.properties()[i];
     if (property.IDEquals(CSSPropertyBackgroundSize) && longhands[i] &&
         context.UseLegacyBackgroundSizeShorthandBehavior())

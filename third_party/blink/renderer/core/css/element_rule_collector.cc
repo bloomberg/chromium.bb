@@ -223,7 +223,7 @@ void ElementRuleCollector::CollectMatchingRules(
         match_request.rule_set->IdRules(element.IdForStyleResolution()),
         cascade_order, match_request);
   if (element.IsStyledElement() && element.HasClass()) {
-    for (size_t i = 0; i < element.ClassNames().size(); ++i)
+    for (wtf_size_t i = 0; i < element.ClassNames().size(); ++i)
       CollectMatchingRulesForList(
           match_request.rule_set->ClassRules(element.ClassNames()[i]),
           cascade_order, match_request);

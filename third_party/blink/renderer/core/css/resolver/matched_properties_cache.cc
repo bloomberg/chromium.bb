@@ -69,13 +69,13 @@ const CachedMatchedProperties* MatchedPropertiesCache::Find(
   if (!cache_item)
     return nullptr;
 
-  size_t size = properties.size();
+  wtf_size_t size = properties.size();
   if (size != cache_item->matched_properties.size())
     return nullptr;
   if (cache_item->computed_style->InsideLink() !=
       style_resolver_state.Style()->InsideLink())
     return nullptr;
-  for (size_t i = 0; i < size; ++i) {
+  for (wtf_size_t i = 0; i < size; ++i) {
     if (properties[i] != cache_item->matched_properties[i])
       return nullptr;
   }

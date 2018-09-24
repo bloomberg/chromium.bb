@@ -371,7 +371,7 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordLoadTimeHistogram(
     return;
   }
 
-  unsigned size = font->EncodedSize();
+  size_t size = font->EncodedSize();
   if (size < 10 * 1024) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, under10k_histogram,

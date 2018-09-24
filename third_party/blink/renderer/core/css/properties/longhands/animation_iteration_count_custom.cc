@@ -30,7 +30,8 @@ const CSSValue* AnimationIterationCount::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const CSSAnimationData* animation_data = style.Animations();
   if (animation_data) {
-    for (size_t i = 0; i < animation_data->IterationCountList().size(); ++i) {
+    for (wtf_size_t i = 0; i < animation_data->IterationCountList().size();
+         ++i) {
       list->Append(*ComputedStyleUtils::ValueForAnimationIterationCount(
           animation_data->IterationCountList()[i]));
     }

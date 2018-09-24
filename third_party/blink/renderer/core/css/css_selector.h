@@ -461,7 +461,7 @@ inline CSSSelector::AttributeMatchType CSSSelector::AttributeMatch() const {
 }
 
 inline bool CSSSelector::IsASCIILower(const AtomicString& value) {
-  for (size_t i = 0; i < value.length(); ++i) {
+  for (wtf_size_t i = 0; i < value.length(); ++i) {
     if (IsASCIIUpper(value[i]))
       return false;
   }
