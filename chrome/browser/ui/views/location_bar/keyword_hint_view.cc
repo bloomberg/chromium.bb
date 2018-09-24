@@ -93,8 +93,6 @@ KeywordHintView::~KeywordHintView() {}
 
 void KeywordHintView::SetKeyword(const base::string16& keyword,
                                  SkColor background_color) {
-  // In the newer MD style, the KeywordHintView chip background should match the
-  // LocationBarView's background, which changes when the popup is open.
   if (ui::MaterialDesignController::IsNewerMaterialUi()) {
     chip_label_->SetBackgroundColor(background_color);
     chip_container_->background()->SetNativeControlColor(background_color);
