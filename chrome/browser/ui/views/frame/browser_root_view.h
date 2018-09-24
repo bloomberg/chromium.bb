@@ -71,6 +71,10 @@ class BrowserRootView : public views::internal::RootView {
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
 
+ protected:
+  // views::View:
+  void PaintChildren(const views::PaintInfo& paint_info) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserRootViewBrowserTest, ClearDropInfo);
 
