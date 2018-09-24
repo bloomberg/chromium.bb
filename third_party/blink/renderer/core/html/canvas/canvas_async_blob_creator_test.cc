@@ -265,6 +265,8 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
   // The maximum difference locally observed is 3.
   const unsigned uint8_color_tolerance = 5;
   const float f16_color_tolerance = 0.01;
+  // The maximum difference locally observed has the order of e^-6.
+  const float xyz_d50_color_space_component_tolerance = 0.001;
 
   for (auto color_space_param : color_space_params) {
     for (auto blob_mime_type : blob_mime_types) {
@@ -304,7 +306,8 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
           bool compare_alpha = (blob_mime_type != "image/jpeg");
           ASSERT_TRUE(ColorCorrectionTestUtils::MatchSkImages(
               ref_image, decoded_img, uint8_color_tolerance,
-              f16_color_tolerance, compare_alpha));
+              f16_color_tolerance, xyz_d50_color_space_component_tolerance,
+              compare_alpha));
         }
       }
     }

@@ -6,7 +6,6 @@
 
 #include "base/sys_byteorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/third_party/skcms/skcms.h"
 
 namespace blink {
 
@@ -65,32 +64,6 @@ sk_sp<SkColorSpace> ColorCorrectionTestUtils::ColorSpinSkColorSpace() {
   skcms_Parse(colorspin_profile_data, sizeof(colorspin_profile_data),
               &colorspin_profile);
   return SkColorSpace::Make(colorspin_profile);
-}
-
-sk_sp<SkColorSpace>
-ColorCorrectionTestUtils::ColorSpaceConversionToSkColorSpace(
-    ColorSpaceConversion conversion) {
-  if (conversion == kDefault || conversion == kSRGB) {
-    return SkColorSpace::MakeSRGB();
-  }
-  if (conversion == kLinearRGB)
-    return SkColorSpace::MakeSRGBLinear();
-  if (conversion == kP3) {
-    return SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                 SkColorSpace::kDCIP3_D65_Gamut);
-  }
-  if (conversion == kRec2020) {
-    return SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                 SkColorSpace::kRec2020_Gamut);
-  }
-  return nullptr;
-}
-
-String ColorCorrectionTestUtils::ColorSpaceConversionToString(
-    ColorSpaceConversion color_space_conversion) {
-  static const Vector<String> kConversions = {
-      "none", "default", "preserve", "srgb", "linear-rgb", "p3", "rec2020"};
-  return kConversions[static_cast<uint8_t>(color_space_conversion)];
 }
 
 void ColorCorrectionTestUtils::CompareColorCorrectedPixels(
@@ -254,23 +227,32 @@ bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
 }
 
 bool ColorCorrectionTestUtils::MatchColorSpace(
-    sk_sp<SkColorSpace> src_color_space,
-    sk_sp<SkColorSpace> dst_color_space) {
+    SkColorSpace* src_color_space,
+    SkColorSpace* dst_color_space,
+    float xyz_d50_component_tolerance) {
   if ((!src_color_space && dst_color_space) ||
       (src_color_space && !dst_color_space))
     return false;
-  if (!src_color_space && !dst_color_space)
-    return true;
-  skcms_ICCProfile src_profile, dst_profile;
-  src_color_space->toProfile(&src_profile);
-  dst_color_space->toProfile(&dst_profile);
-  return skcms_ApproximatelyEqualProfiles(&src_profile, &dst_profile);
+  if (src_color_space) {
+    const SkMatrix44* src_matrix = src_color_space->toXYZD50();
+    const SkMatrix44* dst_matrix = dst_color_space->toXYZD50();
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        if (fabs(src_matrix->get(i, j) - dst_matrix->get(i, j)) >
+            xyz_d50_component_tolerance) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
 }
 
 bool ColorCorrectionTestUtils::MatchSkImages(sk_sp<SkImage> src_image,
                                              sk_sp<SkImage> dst_image,
                                              unsigned uint8_tolerance,
                                              float f16_tolerance,
+                                             float xyz_d50_component_tolerance,
                                              bool compare_alpha) {
   if ((!src_image && dst_image) || (src_image && !dst_image))
     return false;
@@ -283,10 +265,8 @@ bool ColorCorrectionTestUtils::MatchSkImages(sk_sp<SkImage> src_image,
 
   if (compare_alpha && src_image->alphaType() != dst_image->alphaType())
     return false;
-  // Color type is not checked since the decoded image does not have a specific
-  // color type, unless it is drawn onto a surface or readPixels() is called.
-  if (!MatchColorSpace(src_image->refColorSpace(),
-                       dst_image->refColorSpace())) {
+  if (!MatchColorSpace(src_image->colorSpace(), dst_image->colorSpace(),
+                       xyz_d50_component_tolerance)) {
     return false;
   }
 
