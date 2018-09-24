@@ -1075,6 +1075,10 @@ void PersonalDataManager::AddServerCreditCardForTest(
   server_credit_cards_.push_back(std::move(credit_card));
 }
 
+bool PersonalDataManager::IsUsingAccountStorageForServerCardsForTest() const {
+  return database_helper_->IsUsingAccountStorageForServerCards();
+}
+
 void PersonalDataManager::SetSyncServiceForTest(
     syncer::SyncService* sync_service) {
   if (sync_service_)

@@ -60,10 +60,6 @@ class SyncService;
 
 namespace autofill {
 
-extern const char kFrecencyFieldTrialName[];
-extern const char kFrecencyFieldTrialStateEnabled[];
-extern const char kFrecencyFieldTrialLimitParam[];
-
 // Handles loading and saving Autofill profile information to the web database.
 // This class also stores the profiles loaded from the database for use during
 // Autofill.
@@ -197,6 +193,10 @@ class PersonalDataManager : public KeyedService,
 
   // Sets a server credit card for test.
   void AddServerCreditCardForTest(std::unique_ptr<CreditCard> credit_card);
+
+  // Returns whether server credit cards are stored in account (i.e. ephemeral)
+  // storage.
+  bool IsUsingAccountStorageForServerCardsForTest() const;
 
   // Sets which SyncService to use and observe in a test. |sync_service| is not
   // owned by this class and must outlive |this|.

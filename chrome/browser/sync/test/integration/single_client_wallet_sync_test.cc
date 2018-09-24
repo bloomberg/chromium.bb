@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -388,7 +389,6 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, EnabledByDefault) {
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, DownloadProfileStorage) {
-  base::test::ScopedFeatureList feature_list;
   InitWithFeatures(/*enabled_features=*/{},
                    /*disabled_features=*/
                    {autofill::features::kAutofillEnableAccountWalletStorage});
@@ -832,6 +832,104 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
   EXPECT_EQ(kDefaultCardID, cards[0]->server_id());
   EXPECT_EQ(kDefaultBillingAddressId, cards[0]->billing_address_id());
 }
+
+class SingleClientWalletSecondaryAccountSyncTest
+    : public SingleClientWalletSyncTest {
+ public:
+  SingleClientWalletSecondaryAccountSyncTest() {
+    features_.InitWithFeatures(
+        /*enabled_features=*/{switches::kSyncStandaloneTransport,
+                              switches::kSyncSupportSecondaryAccount,
+                              switches::kSyncUSSAutofillWalletData,
+                              autofill::features::
+                                  kAutofillEnableAccountWalletStorage},
+        /*disabled_features=*/{});
+  }
+  ~SingleClientWalletSecondaryAccountSyncTest() override {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    fake_gaia_cookie_manager_factory_ =
+        secondary_account_helper::SetUpFakeGaiaCookieManagerService();
+  }
+
+  void SetUpOnMainThread() override {
+#if defined(OS_CHROMEOS)
+    secondary_account_helper::InitNetwork();
+#endif  // defined(OS_CHROMEOS)
+  }
+
+  Profile* profile() { return GetProfile(0); }
+
+ private:
+  base::test::ScopedFeatureList features_;
+
+  secondary_account_helper::ScopedFakeGaiaCookieManagerServiceFactory
+      fake_gaia_cookie_manager_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SingleClientWalletSecondaryAccountSyncTest);
+};
+
+// ChromeOS doesn't support changes to the primary account after startup, so
+// this test doesn't apply.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
+                       SwitchesFromAccountToProfileStorage) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
+
+  GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
+
+  // Set up Sync in transport mode for a non-primary account.
+  secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // PersonalDataManager should use (ephemeral) account storage.
+  EXPECT_FALSE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_TRUE(
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+
+  auto account_data = GetAccountWebDataService(0);
+  ASSERT_NE(nullptr, account_data);
+  auto profile_data = GetProfileWebDataService(0);
+  ASSERT_NE(nullptr, profile_data);
+
+  // Check that the card is stored in the account storage (ephemeral), but not
+  // in the profile storage (persisted).
+  EXPECT_EQ(1U, GetServerCards(account_data).size());
+  EXPECT_EQ(0U, GetServerCards(profile_data).size());
+
+  // Simulate the user opting in to full Sync: Make the account primary, and
+  // set first-time setup to complete.
+  secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
+  GetSyncService(0)->SetFirstSetupComplete();
+
+  // Wait for Sync to get reconfigured into feature mode.
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // PersonalDataManager should have switched to persistent storage.
+  EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_FALSE(
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+
+  // The card should now be in the profile storage (persisted).
+  EXPECT_EQ(0U, GetServerCards(account_data).size());
+  EXPECT_EQ(1U, GetServerCards(profile_data).size());
+}
+#endif  // !defined(OS_CHROMEOS)
 
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientWalletSyncTest,
