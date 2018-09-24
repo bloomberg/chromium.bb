@@ -536,12 +536,13 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
 class ControlButtonBackgroundImageSource : public gfx::CanvasImageSource {
  public:
   ControlButtonBackgroundImageSource(SkColor background_color,
-                                     const gfx::ImageSkia& bg_image)
-      : gfx::CanvasImageSource(
-            bg_image.isNull() ? gfx::Size(1, 1) : bg_image.size(),
-            false),
+                                     const gfx::ImageSkia& bg_image,
+                                     const gfx::Size& dest_size)
+      : gfx::CanvasImageSource(dest_size, false),
         background_color_(background_color),
-        bg_image_(bg_image) {}
+        bg_image_(bg_image) {
+    DCHECK(!bg_image.isNull());
+  }
 
   ~ControlButtonBackgroundImageSource() override = default;
 
@@ -549,7 +550,7 @@ class ControlButtonBackgroundImageSource : public gfx::CanvasImageSource {
     canvas->DrawColor(background_color_);
 
     if (!bg_image_.isNull())
-      canvas->TileImageInt(bg_image_, 0, 0, size().width(), size().height());
+      canvas->DrawImageInt(bg_image_, 0, 0);
   }
 
  private:
@@ -1397,6 +1398,14 @@ void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
   gfx::Size dest_size =
       WindowFrameUtil::GetWindows10GlassCaptionButtonAreaSize();
 
+  // To get an accurate sampling, all we need to do is get a representative
+  // image that is at MOST the size of the caption button area.  In the case of
+  // an image that is smaller - we only need to sample an area the size of the
+  // provided image (trying to take tiling into account would be overkill).
+  if (!bg_image.isNull()) {
+    dest_size.SetToMin(bg_image.size());
+  }
+
   for (const ControlBGValue& bg_pair : kControlButtonBackgroundMap) {
     SkColor frame_color;
     GetColor(bg_pair.frame_color_id, &frame_color);
@@ -1409,7 +1418,7 @@ void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
     }
 
     auto source = std::make_unique<ControlButtonBackgroundImageSource>(
-        base_color, bg_image);
+        base_color, bg_image, dest_size);
     const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
 
     ComputeColorFromImage(bg_pair.color_id, dest_size.height(), dest_image);

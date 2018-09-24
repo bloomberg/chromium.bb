@@ -137,16 +137,6 @@ class KMeanCluster {
   uint32_t weight_;
 };
 
-// Un-premultiplies each pixel in |bitmap| into an output |buffer|. Requires
-// approximately 10 microseconds for a 16x16 icon on an Intel Core i5.
-void UnPreMultiply(const SkBitmap& bitmap, uint32_t* buffer, int buffer_size) {
-  uint32_t* in = static_cast<uint32_t*>(bitmap.getPixels());
-  uint32_t* out = buffer;
-  int pixel_count = std::min(bitmap.width() * bitmap.height(), buffer_size);
-  for (int i = 0; i < pixel_count; ++i)
-    *out++ = SkUnPreMultiply::PMColorToColor(*in++);
-}
-
 // Prominent color utilities ---------------------------------------------------
 
 // A color value with an associated weight.
@@ -713,12 +703,24 @@ SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap,
                                     const HSL& lower_bound,
                                     const HSL& upper_bound,
                                     bool find_closest) {
+  // Clamp the height being used to the height of the provided image (otherwise,
+  // we can end up creating a larger buffer than we have data for, and the end
+  // of the buffer will remain uninitialized after we copy/UnPreMultiply the
+  // image data into it).
+  height = std::min(height, bitmap.height());
+
   // SkBitmap uses pre-multiplied alpha but the KMean clustering function
   // above uses non-pre-multiplied alpha. Transform the bitmap before we
   // analyze it because the function reads each pixel multiple times.
   int pixel_count = bitmap.width() * height;
   std::unique_ptr<uint32_t[]> image(new uint32_t[pixel_count]);
-  UnPreMultiply(bitmap, image.get(), pixel_count);
+
+  // Un-premultiplies each pixel in bitmap into the buffer. Requires
+  // approximately 10 microseconds for a 16x16 icon on an Intel Core i5.
+  uint32_t* in = static_cast<uint32_t*>(bitmap.getPixels());
+  uint32_t* out = image.get();
+  for (int i = 0; i < pixel_count; ++i)
+    *out++ = SkUnPreMultiply::PMColorToColor(*in++);
 
   GridSampler sampler;
   return CalculateKMeanColorOfBuffer(reinterpret_cast<uint8_t*>(image.get()),
