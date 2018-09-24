@@ -320,10 +320,6 @@ void PaletteTray::BubbleViewDestroyed() {
                              PaletteGroup::MODE) != PaletteToolId::NONE);
 }
 
-void PaletteTray::OnMouseEnteredView() {}
-
-void PaletteTray::OnMouseExitedView() {}
-
 base::string16 PaletteTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
 }

@@ -42,10 +42,6 @@ namespace ash {
 
 namespace {
 
-// The sampling time for mouse position changes in ms - which is roughly a frame
-// time.
-const int kFrameTimeInMS = 30;
-
 BubbleBorder::Arrow GetArrowAlignment(
     TrayBubbleView::AnchorAlignment alignment) {
   if (alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
@@ -401,32 +397,23 @@ int TrayBubbleView::GetHeightForWidth(int width) const {
 void TrayBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
   mouse_watcher_.reset();
   if (delegate_ && !(event.flags() & ui::EF_IS_SYNTHESIZED)) {
-    // Coming here the user was actively moving the mouse over the bubble and
-    // we inform the delegate that we entered. This will prevent the bubble
-    // to auto close.
+    // The user actively moved the mouse over the bubble; inform the delegate.
     delegate_->OnMouseEnteredView();
     mouse_actively_entered_ = true;
   } else {
-    // Coming here the bubble got shown and the mouse was 'accidentally' over it
-    // which is not a reason to prevent the bubble to auto close. As such we
-    // do not call the delegate, but wait for the first mouse move within the
-    // bubble. The used MouseWatcher will notify use of a movement and call
-    // |MouseMovedOutOfHost|.
+    // The mouse was located over the bubble when it was first shown; use
+    // MouseWatcher to wait for user interaction before signaling the delegate.
     mouse_watcher_ = std::make_unique<views::MouseWatcher>(
         std::make_unique<MouseMoveDetectorHost>(), this);
-    // Set the mouse sampling frequency to roughly a frame time so that the user
-    // cannot see a lag.
-    mouse_watcher_->set_notify_on_exit_time(
-        base::TimeDelta::FromMilliseconds(kFrameTimeInMS));
+    mouse_watcher_->set_notify_on_exit_time(base::TimeDelta());
     mouse_watcher_->Start(GetWidget()->GetNativeWindow());
   }
 }
 
 void TrayBubbleView::OnMouseExited(const ui::MouseEvent& event) {
-  // If there was a mouse watcher waiting for mouse movements we disable it
-  // immediately since we now leave the bubble.
+  // Disable any MouseWatcher waiting for user interaction inside the bubble.
   mouse_watcher_.reset();
-  // Do not notify the delegate of an exit if we never told it that we entered.
+  // Only notify the delegate on exit if it was notified on enter.
   if (delegate_ && mouse_actively_entered_)
     delegate_->OnMouseExitedView();
 }
@@ -441,19 +428,14 @@ void TrayBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void TrayBubbleView::OnGestureEvent(ui::GestureEvent* event) {
   if (delegate_)
     delegate_->ProcessGestureEventForBubble(event);
-
-  if (!event->handled())
-    BubbleDialogDelegateView::OnGestureEvent(event);
 }
 
 void TrayBubbleView::MouseMovedOutOfHost() {
-  // The mouse was accidentally over the bubble when it opened and the AutoClose
-  // logic was not activated. Now that the user did move the mouse we tell the
-  // delegate to disable AutoClose.
+  // The user moved the mouse that was over the bubble when it was first shown.
   if (delegate_)
     delegate_->OnMouseEnteredView();
   mouse_actively_entered_ = true;
-  mouse_watcher_->Stop();
+  mouse_watcher_.reset();
 }
 
 void TrayBubbleView::ChildPreferredSizeChanged(View* child) {

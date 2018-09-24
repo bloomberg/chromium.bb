@@ -492,13 +492,6 @@ void ImeMenuTray::OnIMEMenuActivationChanged(bool is_activated) {
     CloseBubble();
 }
 
-void ImeMenuTray::BubbleViewDestroyed() {
-}
-
-void ImeMenuTray::OnMouseEnteredView() {}
-
-void ImeMenuTray::OnMouseExitedView() {}
-
 base::string16 ImeMenuTray::GetAccessibleNameForBubble() {
   return l10n_util::GetStringUTF16(IDS_ASH_IME_MENU_ACCESSIBLE_NAME);
 }

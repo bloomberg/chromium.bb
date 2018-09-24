@@ -65,9 +65,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   void OnIMEMenuActivationChanged(bool is_activated) override;
 
   // TrayBubbleView::Delegate:
-  void BubbleViewDestroyed() override;
-  void OnMouseEnteredView() override;
-  void OnMouseExitedView() override;
   base::string16 GetAccessibleNameForBubble() override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
   void HideBubble(const TrayBubbleView* bubble_view) override;

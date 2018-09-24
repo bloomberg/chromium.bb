@@ -97,8 +97,6 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
-  void OnMouseEnteredView() override;
-  void OnMouseExitedView() override;
   base::string16 GetAccessibleNameForBubble() override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
   void HideBubble(const TrayBubbleView* bubble_view) override;
