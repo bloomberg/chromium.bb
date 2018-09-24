@@ -23,7 +23,8 @@ namespace syncer {
 
 namespace {
 
-bool ExtractSyncEntity(ReadTransaction* trans,
+bool ExtractSyncEntity(ModelType type,
+                       ReadTransaction* trans,
                        int64_t id,
                        sync_pb::SyncEntity* entity) {
   ReadNode read_node(trans);
@@ -50,6 +51,11 @@ bool ExtractSyncEntity(ReadTransaction* trans,
   if (entry.GetServerUniquePosition().IsValid()) {
     *entity->mutable_unique_position() =
         entry.GetServerUniquePosition().ToProto();
+  } else {
+    // All boookmarks should have valid unique_positions including legacy
+    // bookmarks that are missing the field. Directory should have taken care of
+    // assigning proper unique_position during the first sync flow.
+    DCHECK_NE(BOOKMARKS, type);
   }
   entity->set_server_defined_unique_tag(entry.GetUniqueServerTag());
 
@@ -103,7 +109,7 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
     const size_t batch_limit = std::min(i + batch_size, child_ids.size());
     for (; i < batch_limit; i++) {
       auto entity = std::make_unique<sync_pb::SyncEntity>();
-      if (!ExtractSyncEntity(&trans, child_ids[i], entity.get())) {
+      if (!ExtractSyncEntity(type, &trans, child_ids[i], entity.get())) {
         LOG(ERROR) << "Failed to fetch child node for "
                    << ModelTypeToString(type);
         // Inform the worker so it can clear any partial data and trigger a
