@@ -76,6 +76,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUnlockWithExternalBinary;
 // Enables views login.
 ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
 
+// Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
+ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
+
 ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();

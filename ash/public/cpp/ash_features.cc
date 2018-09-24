@@ -57,6 +57,9 @@ const base::Feature kUnlockWithExternalBinary{
 
 const base::Feature kViewsLogin{"ViewsLogin", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsDockedMagnifierEnabled() {
   return base::FeatureList::IsEnabled(kDockedMagnifier);
 }
