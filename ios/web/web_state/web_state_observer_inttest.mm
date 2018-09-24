@@ -478,6 +478,78 @@ ACTION_P4(VerifyDownloadFinishedContext, web_state, url, context, nav_id) {
   EXPECT_FALSE((*context)->IsRendererInitiated());
 }
 
+// Verifies correctness of |NavigationContext| (|arg1|) for restoration
+// navigation passed to |DidStartNavigation|. Stores |NavigationContext| in
+// |context| pointer.
+ACTION_P4(VerifyRestorationStartedContext, web_state, url, context, nav_id) {
+  *context = arg1;
+  ASSERT_TRUE(*context);
+  EXPECT_EQ(web_state, arg0);
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  *nav_id = (*context)->GetNavigationId();
+  EXPECT_NE(0, *nav_id);
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
+  // Transition type is not restored (crbug.com/888011).
+  ui::PageTransition actual_transition = (*context)->GetPageTransition();
+  EXPECT_TRUE(PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_LINK,
+                                       actual_transition))
+      << "Got unexpected transition: " << actual_transition;
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
+  EXPECT_FALSE((*context)->IsDownload());
+  EXPECT_FALSE((*context)->IsPost());
+  EXPECT_FALSE((*context)->GetError());
+  // This should be false. Navigation is determined as renderer initiated
+  // because there is no pending item during the restoration (crbug.com/888021).
+  EXPECT_TRUE((*context)->IsRendererInitiated());
+  ASSERT_FALSE((*context)->GetResponseHeaders());
+  ASSERT_TRUE(web_state->IsLoading());
+  // Pending item is null during restoration (crbug.com/888021).
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  ASSERT_FALSE(navigation_manager->GetPendingItem());
+}
+
+// Verifies correctness of |NavigationContext| (|arg1|) for restoration
+// navigation passed to |DidFinishNavigation|. Asserts that |NavigationContext|
+// the same as |context|.
+ACTION_P5(VerifyRestorationFinishedContext,
+          web_state,
+          url,
+          mime_type,
+          context,
+          nav_id) {
+  ASSERT_EQ(*context, arg1);
+  EXPECT_EQ(web_state, arg0);
+  ASSERT_TRUE((*context));
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
+  // Transition type is not restored (crbug.com/888011).
+  ui::PageTransition actual_transition = (*context)->GetPageTransition();
+  EXPECT_TRUE(PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_LINK,
+                                       actual_transition))
+      << "Got unexpected transition: " << actual_transition;
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_TRUE((*context)->HasCommitted());
+  EXPECT_FALSE((*context)->IsDownload());
+  EXPECT_FALSE((*context)->IsPost());
+  EXPECT_FALSE((*context)->GetError());
+  // This should be false. Navigation is determined as renderer initiated
+  // because there is no pending item during the restoration (crbug.com/888021).
+  EXPECT_TRUE((*context)->IsRendererInitiated());
+  ASSERT_TRUE((*context)->GetResponseHeaders());
+  std::string actual_mime_type;
+  (*context)->GetResponseHeaders()->GetMimeType(&actual_mime_type);
+  ASSERT_TRUE(web_state->IsLoading());
+  EXPECT_EQ(mime_type, actual_mime_type);
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  NavigationItem* item = navigation_manager->GetLastCommittedItem();
+  EXPECT_TRUE(!item->GetTimestamp().is_null());
+  EXPECT_EQ(url, item->GetURL());
+}
+
 // A Google Mock matcher which matches |target_frame_is_main| member of
 // WebStatePolicyDecider::RequestInfo. This is needed because
 // WebStatePolicyDecider::RequestInfo doesn't support operator==.
@@ -1791,7 +1863,8 @@ TEST_P(WebStateObserverTest, IframeNavigation) {
 TEST_P(WebStateObserverTest, RestoreSession) {
   // Create session storage.
   CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-  item.virtualURL = GURL("http://www.test.com");
+  GURL url(test_server_->GetURL("/echo"));
+  item.virtualURL = url;
   NSArray<CRWNavigationItemStorage*>* item_storages = @[ item ];
 
   // Create the session with storage and add observer.
@@ -1803,8 +1876,23 @@ TEST_P(WebStateObserverTest, RestoreSession) {
   ScopedObserver<WebState, WebStateObserver> scoped_observer(&observer);
   scoped_observer.Add(web_state.get());
 
-  // TODO(crbug.com/877671): No WebStateObserver callbacks should be called.
-  EXPECT_CALL(observer, DidStartLoading(web_state.get()));
+  // TODO(crbug.com/877671): WebStateObserver callbacks should be called for
+  // /echo URL.
+  if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    NavigationContext* context = nullptr;
+    int32_t nav_id = 0;
+    EXPECT_CALL(observer, DidStartLoading(web_state.get()));
+    EXPECT_CALL(observer, DidStartNavigation(web_state.get(), _))
+        .WillOnce(VerifyRestorationStartedContext(web_state.get(), url,
+                                                  &context, &nav_id));
+    EXPECT_CALL(observer, DidFinishNavigation(web_state.get(), _))
+        .WillOnce(VerifyRestorationFinishedContext(
+            web_state.get(), url, kExpectedMimeType, &context, &nav_id));
+    EXPECT_CALL(observer, TitleWasSet(web_state.get()));
+    EXPECT_CALL(observer, DidStopLoading(web_state.get()));
+    EXPECT_CALL(observer,
+                PageLoaded(web_state.get(), PageLoadCompletionStatus::SUCCESS));
+  }
 
   // Trigger the session restoration.
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
@@ -1817,6 +1905,11 @@ TEST_P(WebStateObserverTest, RestoreSession) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return navigation_manager->GetItemCount() == 1;
   }));
+
+  // Wait until the page finishes loading.
+  if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state.get()));
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(

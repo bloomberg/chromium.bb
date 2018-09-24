@@ -1464,7 +1464,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   context->SetIsPost([self isCurrentNavigationItemPOST]);
   context->SetIsSameDocument(sameDocumentNavigation);
 
-  if (!IsPlaceholderUrl(requestURL)) {
+  if (!IsWKInternalUrl(requestURL)) {
     _webStateImpl->SetIsLoading(true);
 
     // WKBasedNavigationManager triggers HTML load when placeholder navigation
