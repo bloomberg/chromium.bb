@@ -213,7 +213,7 @@ message ElementReferenceProto {
   // document.
   // APIs are free to reject element references that do not refer to unique
   // elements (i.e. resolve to more than one element on the page).
-  repeated string selectors = 1;
+  repeated string selectors = 2;
 }
 
 // Contain all arguments to perform a click.
