@@ -100,6 +100,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
       base::TimeDelta::FromMilliseconds(300);
   timing.document_timing->load_event_start =
       base::TimeDelta::FromMilliseconds(500);
+  timing.input_to_navigation_start = base::TimeDelta::FromMilliseconds(50);
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kTestUrl1));
@@ -115,6 +116,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kExperimental_InputToNavigationStartName,
+        50);
     test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), PageLoad::kNavigation_PageTransitionName,
         ui::PAGE_TRANSITION_LINK);
