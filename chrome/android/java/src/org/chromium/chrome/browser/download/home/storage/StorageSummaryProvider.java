@@ -8,7 +8,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.AsyncTask;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DirectoryOption;
 import org.chromium.chrome.browser.download.DownloadUtils;

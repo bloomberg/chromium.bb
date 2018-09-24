@@ -7,11 +7,11 @@ package org.chromium.components.gcm_driver.instance_id;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.task.AsyncTask;
 
 import java.io.IOException;
 import java.util.Collections;
