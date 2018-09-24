@@ -101,6 +101,8 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
 _VERSION_SPECIFIC_FILTER['70'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+    # Feature not yet supported in this version
+    'ChromeDriverTest.testGenerateTestReport',
 ]
 
 _VERSION_SPECIFIC_FILTER['69'] = [
