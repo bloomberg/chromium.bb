@@ -70,6 +70,22 @@ NGConstraintSpace::NGConstraintSpace(WritingMode out_writing_mode,
   }
   DCHECK_EQ(flags_ & kOrthogonalWritingModeRoot, !is_in_parallel_flow);
 
+  // For ConstraintSpace instances created from layout objects,
+  // parent_writing_mode_ isn't actually the parent's, it's the same as the out
+  // writing mode. So we miss setting kOrthogonalWritingModeRoot on such
+  // constraint spaces unless it is forced.
+  if (builder.force_orthogonal_writing_mode_root_) {
+    DCHECK(is_in_parallel_flow)
+        << "Forced and inferred ortho writing mode shouldn't happen "
+           "simultaneously. Inferred means the constraints are in parent "
+           "writing mode, forced means they are in child writing mode. "
+           "parent_writing_mode_ = "
+        << static_cast<int>(builder.parent_writing_mode_)
+        << ", requested writing mode = " << static_cast<int>(out_writing_mode);
+    SetResolvedFlag(kOrthogonalWritingModeRoot, true);
+    SetResolvedFlag(kFixedSizeBlockIsDefinite, true);
+  }
+
   // If inline size is indefinite, use size of initial containing block.
   // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
   if (available_size_.inline_size == NGSizeIndefinite) {
@@ -210,6 +226,7 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
           box.SizesLogicalWidthToFitContent(box.StyleRef().LogicalWidth()))
       .SetIsNewFormattingContext(is_new_fc)
       .SetTextDirection(box.StyleRef().Direction())
+      .SetIsOrthogonalWritingModeRoot(!parallel_containing_block)
       .ToConstraintSpace(writing_mode);
 }
 
