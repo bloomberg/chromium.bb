@@ -543,9 +543,6 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
         AnimateDoubleTapZoom(
             FlooredIntPoint(scaled_event.PositionInRootFrame()));
       }
-      // GestureDoubleTap is currently only used by Android for zooming. For
-      // WebCore, GestureTap with tap count = 2 is used instead. So we drop
-      // GestureDoubleTap here.
       event_result = WebInputEventResult::kHandledSystem;
       WidgetClient()->DidHandleGestureEvent(event, event_cancelled);
       return event_result;

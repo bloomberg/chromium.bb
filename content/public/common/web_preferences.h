@@ -229,9 +229,9 @@ struct CONTENT_EXPORT WebPreferences {
 
   bool immersive_mode_enabled;
 
-  bool text_autosizing_enabled;
-
   bool double_tap_to_zoom_enabled;
+
+  bool text_autosizing_enabled;
 
 #if defined(OS_ANDROID)
   float font_scale_factor;

@@ -187,12 +187,15 @@ WebPreferences::WebPreferences()
       user_gesture_required_for_presentation(true),
       text_track_margin_percentage(0.0f),
       immersive_mode_enabled(false),
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+      double_tap_to_zoom_enabled(true),
+#else
+      double_tap_to_zoom_enabled(false),
+#endif
 #if !defined(OS_ANDROID)
       text_autosizing_enabled(false),
-      double_tap_to_zoom_enabled(false),
 #else
       text_autosizing_enabled(true),
-      double_tap_to_zoom_enabled(true),
       font_scale_factor(1.0f),
       device_scale_adjustment(1.0f),
       force_enable_zoom(false),

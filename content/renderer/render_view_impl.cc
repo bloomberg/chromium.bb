@@ -1009,7 +1009,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   }
 
 #if defined(OS_MACOSX)
-  settings->SetDoubleTapToZoomEnabled(true);
   web_view->SetMaximumLegibleScale(prefs.default_maximum_page_scale_factor);
 #endif
 
