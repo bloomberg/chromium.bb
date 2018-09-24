@@ -81,14 +81,14 @@ class MultiDeviceSetupDeviceReenrollerTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<DeviceReenroller> device_reenroller_;
+  cryptauth::RemoteDeviceRef test_local_device_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
       fake_gcm_device_info_provider_;
   base::MockOneShotTimer* mock_timer_;
 
-  cryptauth::RemoteDeviceRef test_local_device_;
+  std::unique_ptr<DeviceReenroller> device_reenroller_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupDeviceReenrollerTest);
 };
