@@ -88,7 +88,7 @@
                         <action selector="commandDispatch:" target="-1" id="24"/>
                     </connections>
                 </textField>
-                <customView hidden="YES" id="144" userLabel="Browser Actions Container" customClass="BrowserActionsContainerView">
+                <customView hidden="YES" id="144" userLabel="Browser Actions Container">
                     <rect key="frame" x="572" y="4" width="0.0" height="29"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                 </customView>

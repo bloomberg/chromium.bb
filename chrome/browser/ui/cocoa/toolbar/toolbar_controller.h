@@ -20,8 +20,6 @@
 @class AutocompleteTextFieldEditor;
 @class BackForwardMenuController;
 class Browser;
-@class BrowserActionsContainerView;
-@class BrowserActionsController;
 class CommandUpdater;
 class LocationBarViewMac;
 @class MenuButton;
@@ -56,7 +54,7 @@ class NotificationBridge;
   IBOutlet ToolbarButtonCocoa* homeButton_;
   IBOutlet MenuButton* appMenuButton_;
   IBOutlet AutocompleteTextField* locationBar_;
-  IBOutlet BrowserActionsContainerView* browserActionsContainerView_;
+  IBOutlet id browserActionsContainerView_;
 
  @private
   CommandUpdater* commands_;  // weak, one per window
@@ -69,7 +67,6 @@ class NotificationBridge;
       autocompleteTextFieldEditor_;
   base::scoped_nsobject<BackForwardMenuController> backMenuController_;
   base::scoped_nsobject<BackForwardMenuController> forwardMenuController_;
-  base::scoped_nsobject<BrowserActionsController> browserActionsController_;
 
   // Used for monitoring the optional toolbar button prefs.
   std::unique_ptr<ToolbarControllerInternal::NotificationBridge>
@@ -170,14 +167,8 @@ class NotificationBridge;
 // |ToolbarViewCocoa| (0 means don't show it); no-op otherwise.
 - (void)setDividerOpacity:(CGFloat)opacity;
 
-// Create and add the Browser Action buttons to the toolbar view.
-- (void)createBrowserActionButtons;
-
 // Updates the visibility of the toolbar, with an optional animation.
 - (void)updateVisibility:(BOOL)visible withAnimation:(BOOL)animate;
-
-// Return the BrowserActionsController for this toolbar.
-- (BrowserActionsController*)browserActionsController;
 
 // Returns the app menu button.
 - (NSButton*)appMenuButton;
