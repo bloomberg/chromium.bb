@@ -25,9 +25,7 @@
 @class AutocompleteTextField;
 class CommandUpdater;
 class LocationBarDecoration;
-class ManagePasswordsDecoration;
 class Profile;
-class SelectedKeywordDecoration;
 class PageInfoBubbleDecoration;
 class ZoomDecoration;
 class ZoomDecorationTest;
@@ -169,10 +167,6 @@ class LocationBarViewMac : public LocationBar,
     return page_info_decoration_.get();
   }
 
-  ManagePasswordsDecoration* manage_passwords_decoration() {
-    return manage_passwords_decoration_.get();
-  }
-
   ZoomDecoration* zoom_decoration() const { return zoom_decoration_.get(); }
 
   Browser* browser() const { return browser_; }
@@ -226,9 +220,6 @@ class LocationBarViewMac : public LocationBar,
 
   AutocompleteTextField* field_;  // owned by tab controller
 
-  // A decoration that shows the keyword-search bubble on the left.
-  std::unique_ptr<SelectedKeywordDecoration> selected_keyword_decoration_;
-
   // A decoration that shows an icon to the left of the address. If applicable,
   // it'll also show information about the current page.
   std::unique_ptr<PageInfoBubbleDecoration> page_info_decoration_;
@@ -236,9 +227,6 @@ class LocationBarViewMac : public LocationBar,
   // A zoom icon at the end of the omnibox, which shows at non-standard zoom
   // levels.
   std::unique_ptr<ZoomDecoration> zoom_decoration_;
-
-  // The right-hand-side button to manage passwords associated with a page.
-  std::unique_ptr<ManagePasswordsDecoration> manage_passwords_decoration_;
 
   Browser* browser_;
 

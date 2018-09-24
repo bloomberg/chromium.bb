@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget_observer.h"
@@ -75,13 +74,6 @@ class BubbleAnchorHelper final : public views::WidgetObserver {
 };
 
 }  // namespace
-
-LocationBarDecoration* GetManagePasswordDecoration(gfx::NativeWindow window) {
-  BrowserWindowController* window_controller =
-      [BrowserWindowController browserWindowControllerForWindow:window];
-  LocationBarViewMac* location_bar = [window_controller locationBarBridge];
-  return location_bar ? location_bar->manage_passwords_decoration() : nullptr;
-}
 
 LocationBarDecoration* GetPageInfoDecoration(gfx::NativeWindow window) {
   BrowserWindowController* window_controller =

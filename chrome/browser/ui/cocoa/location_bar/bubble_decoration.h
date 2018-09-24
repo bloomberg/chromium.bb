@@ -61,10 +61,6 @@ class BubbleDecoration : public LocationBarDecoration {
   base::scoped_nsobject<NSMutableDictionary> attributes_;
 
  private:
-  friend class SelectedKeywordDecorationTest;
-  FRIEND_TEST_ALL_PREFIXES(SelectedKeywordDecorationTest,
-                           UsesPartialKeywordIfNarrow);
-
   // Contains any Retina-only baseline adjustment for |label_|.
   CGFloat retina_baseline_offset_;
 

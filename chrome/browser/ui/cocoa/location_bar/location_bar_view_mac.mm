@@ -29,9 +29,7 @@
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
-#import "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -92,11 +90,8 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       ChromeOmniboxEditController(command_updater),
       omnibox_view_(new OmniboxViewMac(this, profile, command_updater, field)),
       field_(field),
-      selected_keyword_decoration_(new SelectedKeywordDecoration()),
       page_info_decoration_(new PageInfoBubbleDecoration(this)),
       zoom_decoration_(new ZoomDecoration(this)),
-      manage_passwords_decoration_(
-          new ManagePasswordsDecoration(command_updater, this)),
       browser_(browser),
       location_bar_visible_(true),
       is_width_available_for_security_verbose_(false),
@@ -163,12 +158,6 @@ void LocationBarViewMac::UpdateContentSettingsIcons() {
 }
 
 void LocationBarViewMac::UpdateManagePasswordsIconAndBubble() {
-  WebContents* web_contents = GetWebContents();
-  if (!web_contents)
-    return;
-  ManagePasswordsUIController::FromWebContents(web_contents)
-      ->UpdateIconAndBubbleState(manage_passwords_decoration_->icon());
-  OnDecorationsChanged();
 }
 
 void LocationBarViewMac::UpdateSaveCreditCardIcon() {
@@ -277,13 +266,10 @@ void LocationBarViewMac::Layout() {
   // the constructor.  I am still wrestling with how best to deal with
   // right-hand decorations, which are not a static set.
   [cell clearDecorations];
-  [cell addLeadingDecoration:selected_keyword_decoration_.get()];
   [cell addLeadingDecoration:page_info_decoration_.get()];
   [cell addTrailingDecoration:zoom_decoration_.get()];
-  [cell addTrailingDecoration:manage_passwords_decoration_.get()];
 
   // By default only the location icon is visible.
-  selected_keyword_decoration_->SetVisible(false);
   page_info_decoration_->SetVisible(true);
 
   // Get the keyword to use for keyword-search and hinting.
@@ -305,16 +291,6 @@ void LocationBarViewMac::Layout() {
 
   NSString* a11y_description = @"";
   if (!keyword.empty() && !is_keyword_hint) {
-    // Switch from location icon to keyword mode.
-    selected_keyword_decoration_->SetVisible(true);
-    page_info_decoration_->SetVisible(false);
-    selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
-    // Note: the first time through this code path the
-    // |selected_keyword_decoration_| has no image set because under Material
-    // Design we need to set its color, which we cannot do until we know the
-    // theme (by being installed in a browser window).
-    selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
-    a11y_description = selected_keyword_decoration_->GetAccessibilityLabel();
   } else if (!keyword.empty() && is_keyword_hint) {
   } else {
     UpdatePageInfoText();
@@ -642,10 +618,8 @@ std::vector<LocationBarDecoration*> LocationBarViewMac::GetDecorations() {
   // TODO(ellyjones): page actions and keyword hints are not included right
   // now. Keyword hints have no useful tooltip (issue 752592), and page actions
   // are likewise.
-  decorations.push_back(selected_keyword_decoration_.get());
   decorations.push_back(page_info_decoration_.get());
   decorations.push_back(zoom_decoration_.get());
-  decorations.push_back(manage_passwords_decoration_.get());
   return decorations;
 }
 
