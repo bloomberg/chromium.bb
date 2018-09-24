@@ -178,6 +178,11 @@ bool CastExtensionsBrowserClient::IsInDemoMode() {
   return false;
 }
 
+bool CastExtensionsBrowserClient::IsScreensaverInDemoMode(
+    const std::string& app_id) {
+  return false;
+}
+
 bool CastExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return false;
 }

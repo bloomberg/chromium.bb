@@ -7,6 +7,9 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_image_loader_client.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,9 +29,28 @@ class InstallLimiterTest : public testing::Test {
   InstallLimiterTest() = default;
   ~InstallLimiterTest() override = default;
 
+  void SetUp() override {
+    auto image_loader_client =
+        std::make_unique<chromeos::FakeImageLoaderClient>();
+    image_loader_client_ = image_loader_client.get();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetImageLoaderClient(
+        std::move(image_loader_client));
+    session_manager_ = std::make_unique<session_manager::SessionManager>();
+  }
+
+  void TearDown() override {
+    chromeos::DemoSession::ShutDownIfInitialized();
+    chromeos::DemoSession::ResetDemoConfigForTesting();
+    image_loader_client_ = nullptr;
+    chromeos::DBusThreadManager::Shutdown();
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   chromeos::ScopedStubInstallAttributes test_install_attributes_;
+  std::unique_ptr<session_manager::SessionManager> session_manager_;
+  // Points to the image loader client passed to the test DBusTestManager.
+  chromeos::FakeImageLoaderClient* image_loader_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(InstallLimiterTest);
 };
@@ -48,6 +70,7 @@ TEST_F(InstallLimiterTest, ShouldDeferInstall) {
   // for the screensaver should be deferred.
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOnline);
+  chromeos::DemoSession::StartIfInDemoMode();
   EXPECT_FALSE(InstallLimiter::ShouldDeferInstall(
       kLargeExtensionSize, extension_misc::kScreensaverAppId));
   EXPECT_TRUE(InstallLimiter::ShouldDeferInstall(kLargeExtensionSize,

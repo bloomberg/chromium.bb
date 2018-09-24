@@ -89,10 +89,6 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // StartIfInDemoMode() or PreloadOfflineResourcesIfInDemoMode()).
   static DemoSession* Get();
 
-  // Returns whether |app_id| matches the screensaver app and the device is in
-  // demo mode.
-  static bool IsScreensaverInDemoMode(const std::string& app_id);
-
   // Ensures that the load of offline demo session resources is requested.
   // |load_callback| will be run once the offline resource load finishes.
   void EnsureOfflineResourcesLoaded(base::OnceClosure load_callback);
