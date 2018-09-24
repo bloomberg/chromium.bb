@@ -491,12 +491,10 @@ OffTheRecordProfileImpl::GetVideoDecodePerfHistory() {
                          // because original profile will outlive this profile.
                          : GetOriginalProfile()->GetVideoDecodePerfHistory();
 
-    auto db_factory =
-        std::make_unique<media::InMemoryVideoDecodeStatsDBFactory>(
-            seed_db_provider);
-
+    auto stats_db = std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(
+        seed_db_provider);
     auto new_decode_history =
-        std::make_unique<media::VideoDecodePerfHistory>(std::move(db_factory));
+        std::make_unique<media::VideoDecodePerfHistory>(std::move(stats_db));
     decode_history = new_decode_history.get();
 
     SetUserData(kVideoDecodePerfHistoryId, std::move(new_decode_history));

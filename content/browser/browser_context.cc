@@ -687,10 +687,14 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
   // occurs later upon first VideoDecodePerfHistory API request that requires DB
   // access. DB operations will not block the UI thread.
   if (!decode_history) {
-    auto db_factory = std::make_unique<media::VideoDecodeStatsDBImplFactory>(
-        GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")));
-    decode_history = new media::VideoDecodePerfHistory(std::move(db_factory));
-    SetUserData(kVideoDecodePerfHistoryId, base::WrapUnique(decode_history));
+    std::unique_ptr<media::VideoDecodeStatsDBImpl> stats_db =
+        media::VideoDecodeStatsDBImpl::Create(
+            GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")));
+    auto new_decode_history =
+        std::make_unique<media::VideoDecodePerfHistory>(std::move(stats_db));
+    decode_history = new_decode_history.get();
+
+    SetUserData(kVideoDecodePerfHistoryId, std::move(new_decode_history));
   }
 
   return decode_history;

@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
@@ -16,6 +17,8 @@
 #include "media/capabilities/video_decode_stats.pb.h"
 
 namespace media {
+
+using ProtoDecodeStatsEntry = leveldb_proto::ProtoDatabase<DecodeStatsProto>;
 
 namespace {
 
@@ -25,16 +28,10 @@ const char kDatabaseClientName[] = "VideoDecodeStatsDB";
 
 };  // namespace
 
-VideoDecodeStatsDBImplFactory::VideoDecodeStatsDBImplFactory(
-    base::FilePath db_dir)
-    : db_dir_(db_dir) {
-  DVLOG(2) << __func__ << " db_dir:" << db_dir_;
-}
-
-VideoDecodeStatsDBImplFactory::~VideoDecodeStatsDBImplFactory() = default;
-
-std::unique_ptr<VideoDecodeStatsDB> VideoDecodeStatsDBImplFactory::CreateDB() {
-  std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db_;
+// static
+std::unique_ptr<VideoDecodeStatsDBImpl> VideoDecodeStatsDBImpl::Create(
+    base::FilePath db_dir) {
+  DVLOG(2) << __func__ << " db_dir:" << db_dir;
 
   auto proto_db =
       std::make_unique<leveldb_proto::ProtoDatabaseImpl<DecodeStatsProto>>(
@@ -42,7 +39,8 @@ std::unique_ptr<VideoDecodeStatsDB> VideoDecodeStatsDBImplFactory::CreateDB() {
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
-  return std::make_unique<VideoDecodeStatsDBImpl>(std::move(proto_db), db_dir_);
+  return base::WrapUnique(
+      new VideoDecodeStatsDBImpl(std::move(proto_db), db_dir));
 }
 
 VideoDecodeStatsDBImpl::VideoDecodeStatsDBImpl(
@@ -61,7 +59,6 @@ void VideoDecodeStatsDBImpl::Initialize(InitializeCB init_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(init_cb);
   DCHECK(!IsInitialized());
-  DCHECK(!db_destroy_pending_);
 
   // "Simple options" will use the default global cache of 8MB. In the worst
   // case our whole DB will be less than 35K, so we aren't worried about
@@ -167,7 +164,6 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
                                sum_frames_decoded_power_efficient)
                   .ToLogString();
 
-  using ProtoDecodeStatsEntry = leveldb_proto::ProtoDatabase<DecodeStatsProto>;
   std::unique_ptr<ProtoDecodeStatsEntry::KeyEntryVector> entries =
       std::make_unique<ProtoDecodeStatsEntry::KeyEntryVector>();
 
@@ -209,35 +205,50 @@ void VideoDecodeStatsDBImpl::OnGotDecodeStats(
   std::move(get_stats_cb).Run(success, std::move(entry));
 }
 
-void VideoDecodeStatsDBImpl::DestroyStats(base::OnceClosure destroy_done_cb) {
+void VideoDecodeStatsDBImpl::ClearStats(base::OnceClosure clear_done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << __func__;
 
-  // DB is no longer initialized once destruction kicks off.
-  db_init_ = false;
-  db_destroy_pending_ = true;
-
-  db_->Destroy(base::BindOnce(&VideoDecodeStatsDBImpl::OnDestroyedStats,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              std::move(destroy_done_cb)));
+  db_->LoadKeys(
+      base::BindOnce(&VideoDecodeStatsDBImpl::OnLoadAllKeysForClearing,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(clear_done_cb)));
 }
 
-void VideoDecodeStatsDBImpl::OnDestroyedStats(base::OnceClosure destroy_done_cb,
-                                              bool success) {
+void VideoDecodeStatsDBImpl::OnLoadAllKeysForClearing(
+    base::OnceClosure clear_done_cb,
+    bool success,
+    std::unique_ptr<std::vector<std::string>> keys) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(2) << __func__ << (success ? " succeeded" : " FAILED!");
+
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.LoadKeys", success);
+
+  if (success) {
+    // Remove all keys.
+    db_->UpdateEntries(
+        std::make_unique<ProtoDecodeStatsEntry::KeyEntryVector>(),
+        std::move(keys) /* keys_to_remove */,
+        base::BindOnce(&VideoDecodeStatsDBImpl::OnStatsCleared,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(clear_done_cb)));
+  } else {
+    // Fail silently. See comment in OnStatsCleared().
+    std::move(clear_done_cb).Run();
+  }
+}
+
+void VideoDecodeStatsDBImpl::OnStatsCleared(base::OnceClosure clear_done_cb,
+                                            bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << __func__ << (success ? " succeeded" : " FAILED!");
 
   UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.Destroy", success);
 
-  // Allow calls to re-Intialize() now that destruction is complete.
-  DCHECK(!db_init_);
-  db_destroy_pending_ = false;
-
-  // We don't pass success to |destroy_done_cb|. Clearing is best effort and
+  // We don't pass success to |clear_done_cb|. Clearing is best effort and
   // there is no additional action for callers to take in case of failure.
   // TODO(chcunningham): Monitor UMA and consider more aggressive action like
   // deleting the DB directory.
-  std::move(destroy_done_cb).Run();
+  std::move(clear_done_cb).Run();
 }
 
 }  // namespace media
