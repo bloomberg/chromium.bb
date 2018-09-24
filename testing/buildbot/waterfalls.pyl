@@ -3109,21 +3109,6 @@
           'isolated_scripts': 'chromium_dbg_isolated_scripts',
         },
       },
-      'mac-cocoa-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Mac-10.13',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'chromium_browser_tests',
-        },
-        'args': [
-          '--disable-features=ViewsBrowserWindows',
-        ],
-      },
       'mac-jumbo-rel': {
         'additional_compile_targets': [
           'all'
