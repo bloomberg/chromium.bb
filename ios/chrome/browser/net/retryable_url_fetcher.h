@@ -13,7 +13,7 @@
 
 namespace network {
 class SharedURLLoaderFactory;
-}
+}  // namespace network
 
 // Delegate protocol for RetryableURLFetcher object.
 @protocol RetryableURLFetcherDelegate<NSObject>
