@@ -16,7 +16,7 @@
 namespace viz {
 namespace {
 static const int kIdleCleanupDelaySeconds = 1;
-static const int kOldResourceCleanupDelaySeconds = 30;
+static const int kOldResourceCleanupDelaySeconds = 15;
 }  // namespace
 
 ContextCacheController::ScopedToken::ScopedToken() = default;
