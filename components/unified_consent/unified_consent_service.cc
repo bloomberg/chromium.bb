@@ -357,23 +357,38 @@ void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
 
 void UnifiedConsentService::UpdateSyncSettingsIfPossible(
     bool sync_everything,
-    syncer::ModelTypeSet sync_data_types) {
+    syncer::ModelTypeSet enable_data_types,
+    syncer::ModelTypeSet disable_data_types) {
+  DCHECK(Intersection(enable_data_types, disable_data_types).Empty());
+
   if (sync_service_->GetDisableReasons() !=
           syncer::SyncService::DISABLE_REASON_NONE ||
       !sync_service_->IsEngineInitialized()) {
     return;
   }
-  sync_service_->OnUserChoseDatatypes(sync_everything, sync_data_types);
+
+  if (sync_everything) {
+    sync_service_->OnUserChoseDatatypes(/*sync_everything=*/true,
+                                        syncer::UserSelectableTypes());
+    return;
+  }
+
+  syncer::ModelTypeSet data_types = sync_service_->GetPreferredDataTypes();
+  data_types.PutAll(enable_data_types);
+  data_types.RemoveAll(disable_data_types);
+  data_types.RetainAll(syncer::UserSelectableTypes());
+  sync_service_->OnUserChoseDatatypes(/*sync_everything=*/false, data_types);
 }
 
 void UnifiedConsentService::PostTaskToUpdateSyncSettings(
     bool sync_everything,
-    syncer::ModelTypeSet sync_data_types) {
+    syncer::ModelTypeSet enable_data_types,
+    syncer::ModelTypeSet disable_data_types) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&UnifiedConsentService::UpdateSyncSettingsIfPossible,
                      weak_ptr_factory_.GetWeakPtr(), sync_everything,
-                     sync_data_types));
+                     enable_data_types, disable_data_types));
 }
 
 void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
@@ -490,12 +505,9 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
 
   // Disable the datatype user events for newly migrated users. Also set
   // sync-everything to false, so it matches unified consent given.
-  syncer::ModelTypeSet preferred_types_without_user_events =
-      sync_service_->GetPreferredDataTypes();
-  preferred_types_without_user_events.RetainAll(syncer::UserSelectableTypes());
-  preferred_types_without_user_events.Remove(syncer::USER_EVENTS);
-  PostTaskToUpdateSyncSettings(/*sync_everything=*/false,
-                               preferred_types_without_user_events);
+  PostTaskToUpdateSyncSettings(
+      /*sync_everything=*/false, /*enable_data_types=*/syncer::ModelTypeSet(),
+      /*disable_data_types=*/syncer::ModelTypeSet(syncer::USER_EVENTS));
 
   SetMigrationState(MigrationState::kCompleted);
 }
