@@ -4,6 +4,7 @@
 
 package org.chromium.ui;
 
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -68,6 +69,12 @@ public interface DropdownPopupWindowInterface {
      * @param clickListener Listener to register.
      */
     void setOnItemClickListener(AdapterView.OnItemClickListener clickListener);
+
+    /**
+     * Adds a non-scrolling View beneath the list. This View will be separated from the main list
+     * by a single divider. Passing null will remove any existing footer.
+     */
+    void setFooterView(View footerView);
 
     /**
      * Show the popup. Will have no effect if the popup is already showing.

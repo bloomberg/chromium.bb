@@ -7,10 +7,13 @@ package org.chromium.ui;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
@@ -33,7 +36,10 @@ class DropdownPopupWindowImpl
     private CharSequence mDescription;
     private AnchoredPopupWindow mAnchoredPopupWindow;
     ListAdapter mAdapter;
-    private ListView mListView;
+
+    private final LinearLayout mContentView;
+    private final ListView mListView;
+    private final FrameLayout mFooterView;
     private Drawable mBackground;
     private int mHorizontalPadding;
 
@@ -66,13 +72,18 @@ class DropdownPopupWindowImpl
                 mAnchorView.setTag(null);
             }
         };
-        mListView = new ListView(context);
+
+        mContentView =
+                (LinearLayout) LayoutInflater.from(context).inflate(R.layout.dropdown_window, null);
+        mListView = (ListView) mContentView.findViewById(R.id.dropdown_body_list);
+        mFooterView = (FrameLayout) mContentView.findViewById(R.id.dropdown_footer);
+
         ViewRectProvider rectProvider = new ViewRectProvider(mAnchorView);
         rectProvider.setIncludePadding(true);
         mBackground = ApiCompatibilityUtils.getDrawable(
                 context.getResources(), R.drawable.dropdown_popup_background);
-        mAnchoredPopupWindow =
-                new AnchoredPopupWindow(context, mAnchorView, mBackground, mListView, rectProvider);
+        mAnchoredPopupWindow = new AnchoredPopupWindow(
+                context, mAnchorView, mBackground, mContentView, rectProvider);
         mAnchoredPopupWindow.addOnDismissListener(onDismissLitener);
         mAnchoredPopupWindow.setLayoutObserver(this);
         Rect paddingRect = new Rect();
@@ -194,6 +205,18 @@ class DropdownPopupWindowImpl
     @Override
     public void setOnItemClickListener(AdapterView.OnItemClickListener clickListener) {
         mListView.setOnItemClickListener(clickListener);
+    }
+
+    @Override
+    public void setFooterView(View footerView) {
+        boolean hasFooter = footerView != null;
+        View divider = mContentView.findViewById(R.id.dropdown_body_footer_divider);
+        divider.setVisibility(hasFooter ? View.VISIBLE : View.GONE);
+
+        mFooterView.removeAllViews();
+        if (hasFooter) {
+            mFooterView.addView(footerView);
+        }
     }
 
     /**

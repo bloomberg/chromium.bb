@@ -191,6 +191,11 @@ class DropdownPopupWindowJellyBean implements DropdownPopupWindowInterface {
         mListPopupWindow.setOnItemClickListener(clickListener);
     }
 
+    @Override
+    public void setFooterView(View footerView) {
+        // TODO(crbug.com/874077): Implement this before using footer views.
+    }
+
     /**
      * Show the popup. Will have no effect if the popup is already showing.
      * Post a {@link #show()} call to the UI thread.
