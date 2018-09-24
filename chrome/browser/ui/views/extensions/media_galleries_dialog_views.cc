@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -333,9 +332,5 @@ void MediaGalleriesDialogViews::OnMenuClosed() {
 // static
 MediaGalleriesDialog* MediaGalleriesDialog::Create(
     MediaGalleriesDialogController* controller) {
-#if defined(OS_MACOSX)
-  if (views_mode_controller::IsViewsBrowserCocoa())
-    return MediaGalleriesDialog::CreateCocoa(controller);
-#endif
   return new MediaGalleriesDialogViews(controller);
 }
