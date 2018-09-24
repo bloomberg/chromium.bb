@@ -112,7 +112,7 @@ TEST_F(OverviewButtonTrayTest, TabletModeObserverOnTabletModeToggled) {
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetTray()->visible());
 
-  TabletModeControllerTestApi().LeaveTabletMode(false);
+  TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_FALSE(GetTray()->visible());
 }
 
@@ -302,7 +302,7 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
   ASSERT_TRUE(Shell::IsSystemModalWindowOpen());
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetTray()->visible());
-  TabletModeControllerTestApi().LeaveTabletMode(false);
+  TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_FALSE(GetTray()->visible());
 }
 
@@ -364,10 +364,12 @@ TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
 // Tests that the tray remains visible when leaving tablet mode due to external
 // mouse being connected.
 TEST_F(OverviewButtonTrayTest, LeaveTabletModeBecauseExternalMouse) {
-  TabletModeControllerTestApi().EnterTabletMode();
+  TabletModeControllerTestApi().OpenLidToAngle(315.0f);
+  EXPECT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
   ASSERT_TRUE(GetTray()->visible());
 
-  TabletModeControllerTestApi().LeaveTabletMode(true);
+  TabletModeControllerTestApi().AttachExternalMouse();
+  EXPECT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
   EXPECT_TRUE(GetTray()->visible());
 }
 

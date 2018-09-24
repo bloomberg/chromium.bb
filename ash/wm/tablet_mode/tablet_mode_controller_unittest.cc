@@ -38,8 +38,7 @@ namespace ash {
 
 namespace {
 
-constexpr float kDegreesToRadians = 3.1415926f / 180.0f;
-constexpr float kMeanGravity = 9.8066f;
+constexpr float kMeanGravity = TabletModeControllerTestApi::kMeanGravity;
 
 // The strings are "Touchview" as they're already used in metrics.
 constexpr char kTabletModeInitiallyDisabled[] = "Touchview_Initially_Disabled";
@@ -102,27 +101,15 @@ class TabletModeControllerTest : public AshTestBase {
   }
 
   void TriggerLidUpdate(const gfx::Vector3dF& lid) {
-    scoped_refptr<chromeos::AccelerometerUpdate> update(
-        new chromeos::AccelerometerUpdate());
-    update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(),
-                lid.z());
-    tablet_mode_controller()->OnAccelerometerUpdated(update);
+    test_api_->TriggerLidUpdate(lid);
   }
 
   void TriggerBaseAndLidUpdate(const gfx::Vector3dF& base,
                                const gfx::Vector3dF& lid) {
-    scoped_refptr<chromeos::AccelerometerUpdate> update(
-        new chromeos::AccelerometerUpdate());
-    update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, base.x(),
-                base.y(), base.z());
-    update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(),
-                lid.z());
-    tablet_mode_controller()->OnAccelerometerUpdated(update);
+    test_api_->TriggerBaseAndLidUpdate(base, lid);
   }
 
-  bool IsTabletModeStarted() {
-    return tablet_mode_controller()->IsTabletModeWindowManagerEnabled();
-  }
+  bool IsTabletModeStarted() const { return test_api_->IsTabletModeStarted(); }
 
   // Attaches a SimpleTestTickClock to the TabletModeController with a non
   // null value initial value.
@@ -135,47 +122,15 @@ class TabletModeControllerTest : public AshTestBase {
     test_tick_clock_.Advance(delta);
   }
 
-  void OpenLidToAngle(float degrees) {
-    DCHECK(degrees >= 0.0f);
-    DCHECK(degrees <= 360.0f);
-
-    float radians = degrees * kDegreesToRadians;
-    gfx::Vector3dF base_vector(0.0f, -kMeanGravity, 0.0f);
-    gfx::Vector3dF lid_vector(0.0f, kMeanGravity * cos(radians),
-                              kMeanGravity * sin(radians));
-    TriggerBaseAndLidUpdate(base_vector, lid_vector);
-  }
-
-  void HoldDeviceVertical() {
-    gfx::Vector3dF base_vector(9.8f, 0.0f, 0.0f);
-    gfx::Vector3dF lid_vector(9.8f, 0.0f, 0.0f);
-    TriggerBaseAndLidUpdate(base_vector, lid_vector);
-  }
-
-  void OpenLid() {
-    tablet_mode_controller()->LidEventReceived(
-        chromeos::PowerManagerClient::LidState::OPEN,
-        test_api_->tick_clock()->NowTicks());
-  }
-
-  void CloseLid() {
-    tablet_mode_controller()->LidEventReceived(
-        chromeos::PowerManagerClient::LidState::CLOSED,
-        test_api_->tick_clock()->NowTicks());
-  }
-
+  void OpenLidToAngle(float degrees) { test_api_->OpenLidToAngle(degrees); }
+  void HoldDeviceVertical() { test_api_->HoldDeviceVertical(); }
+  void OpenLid() { test_api_->OpenLid(); }
+  void CloseLid() { test_api_->CloseLid(); }
   bool CanUseUnstableLidAngle() { return test_api_->CanUseUnstableLidAngle(); }
 
-  void SetTabletMode(bool on) {
-    tablet_mode_controller()->TabletModeEventReceived(
-        on ? chromeos::PowerManagerClient::TabletMode::ON
-           : chromeos::PowerManagerClient::TabletMode::OFF,
-        test_api_->tick_clock()->NowTicks());
-  }
+  void SetTabletMode(bool on) { test_api_->SetTabletMode(on); }
 
-  bool AreEventsBlocked() {
-    return tablet_mode_controller()->AreInternalInputDeviceEventsBlocked();
-  }
+  bool AreEventsBlocked() const { return test_api_->AreEventsBlocked(); }
 
   TabletModeController::UiMode forced_ui_mode() const {
     return test_api_->force_ui_mode();
@@ -585,7 +540,8 @@ TEST_F(TabletModeControllerTest, NoTabletModeWithDisabledInternalDisplay) {
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
-  // Deactivate the internal display to simulate Docked Mode.
+  // Close lid and deactivate the internal display to simulate Docked Mode.
+  CloseLid();
   display_manager()->OnNativeDisplaysChanged(secondary_only);
   ASSERT_FALSE(display_manager()->IsActiveDisplayId(internal_display_id));
   EXPECT_FALSE(IsTabletModeStarted());
@@ -842,6 +798,35 @@ TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
+}
+
+// Test that plug in or out a mouse in laptop mode will not change current
+// laptop mode.
+TEST_F(TabletModeControllerTest, ExternalMouseInLaptopMode) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  base::RunLoop().RunUntilIdle();
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+
+  // Start in laptop mode.
+  OpenLidToAngle(30.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Attach external mouse doesn't change the mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
+      3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Now remove the external mouse. It still should maintain in laptop mode
+  // because its lid angle is still in laptop mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
 }
 
 }  // namespace ash
