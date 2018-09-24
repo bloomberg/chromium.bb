@@ -12,25 +12,25 @@
 
 namespace explore_sites {
 namespace {
+
 static const char kDeleteExistingCategorySql[] =
     "DELETE FROM categories WHERE version = ?";
-static const char kInsertCategorySql[] = R"(
-INSERT INTO categories
+
+static const char kInsertCategorySql[] = R"(INSERT INTO categories
 (version, type, label, image)
 VALUES
 (?, ?, ?, ?);)";
 
-static const char kDeleteExistingSiteSql[] = R"(
-DELETE FROM sites
+static const char kDeleteExistingSiteSql[] = R"(DELETE FROM sites
 WHERE (
  SELECT COUNT(1) FROM categories
- WHERE category_id = sites.category_id AND categories.version = ?) > 0
-)";
-static const char kInsertSiteSql[] = R"(
-INSERT INTO sites
+ WHERE category_id = sites.category_id AND categories.version = ?) > 0)";
+
+static const char kInsertSiteSql[] = R"(INSERT INTO sites
 (url, category_id, title, favicon)
 VALUES
 (?, ?, ?, ?);)";
+
 }  // namespace
 
 bool ImportCatalogSync(int64_t catalog_timestamp,
