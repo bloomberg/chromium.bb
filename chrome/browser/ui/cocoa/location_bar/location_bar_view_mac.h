@@ -24,15 +24,10 @@
 
 @class AutocompleteTextField;
 class CommandUpdater;
-class ContentSettingDecoration;
-class KeywordHintDecoration;
 class LocationBarDecoration;
 class ManagePasswordsDecoration;
 class Profile;
-class SaveCreditCardDecoration;
 class SelectedKeywordDecoration;
-class StarDecoration;
-class TranslateDecoration;
 class PageInfoBubbleDecoration;
 class ZoomDecoration;
 class ZoomDecorationTest;
@@ -97,12 +92,6 @@ class LocationBarViewMac : public LocationBar,
   void SetEditable(bool editable);
   bool IsEditable();
 
-  // Set the starred state of the bookmark star.
-  void SetStarred(bool starred);
-
-  // Set whether or not the translate icon is lit.
-  void SetTranslateIconLit(bool on);
-
   // Happens when the zoom changes for the active tab. |can_show_bubble| is
   // false when the change in zoom for the active tab wasn't an explicit user
   // action (e.g. switching tabs, creating a new tab, creating a new browser).
@@ -110,16 +99,9 @@ class LocationBarViewMac : public LocationBar,
   // be obscured by other UI (app menu) or redundant (+/- from app menu).
   void ZoomChangedForActiveTab(bool can_show_bubble);
 
-  // Checks if the bookmark star should be enabled or not.
-  bool IsStarEnabled() const;
-
   // Get the point in window coordinates in the |decoration| at which the
   // associate bubble aims.
   NSPoint GetBubblePointForDecoration(LocationBarDecoration* decoration) const;
-
-  // Get the point in window coordinates in the save credit card icon for the
-  //  save credit card bubble to aim at.
-  NSPoint GetSaveCreditCardBubblePoint() const;
 
   // Get the point in window coordinates for the page info bubble anchor.
   NSPoint GetPageInfoBubblePoint() const;
@@ -191,16 +173,6 @@ class LocationBarViewMac : public LocationBar,
     return manage_passwords_decoration_.get();
   }
 
-  SaveCreditCardDecoration* save_credit_card_decoration() {
-    return save_credit_card_decoration_.get();
-  }
-
-  StarDecoration* star_decoration() const { return star_decoration_.get(); }
-
-  TranslateDecoration* translate_decoration() const {
-    return translate_decoration_.get();
-  }
-
   ZoomDecoration* zoom_decoration() const { return zoom_decoration_.get(); }
 
   Browser* browser() const { return browser_; }
@@ -228,10 +200,6 @@ class LocationBarViewMac : public LocationBar,
   // Updates visibility of the content settings icons based on the current
   // tab contents state.
   bool RefreshContentSettingsDecorations();
-
-  // Updates the translate decoration in the omnibox with the current translate
-  // state.
-  void UpdateTranslateDecoration();
 
   // Updates the zoom decoration in the omnibox with the current zoom level.
   // Returns whether any updates were made.
@@ -265,25 +233,9 @@ class LocationBarViewMac : public LocationBar,
   // it'll also show information about the current page.
   std::unique_ptr<PageInfoBubbleDecoration> page_info_decoration_;
 
-  // Save credit card icon on the right side of the omnibox.
-  std::unique_ptr<SaveCreditCardDecoration> save_credit_card_decoration_;
-
-  // Bookmark star right of page actions.
-  std::unique_ptr<StarDecoration> star_decoration_;
-
-  // Translate icon at the end of the ominibox.
-  std::unique_ptr<TranslateDecoration> translate_decoration_;
-
   // A zoom icon at the end of the omnibox, which shows at non-standard zoom
   // levels.
   std::unique_ptr<ZoomDecoration> zoom_decoration_;
-
-  // The content blocked decorations.
-  std::vector<std::unique_ptr<ContentSettingDecoration>>
-      content_setting_decorations_;
-
-  // Keyword hint decoration displayed on the right-hand side.
-  std::unique_ptr<KeywordHintDecoration> keyword_hint_decoration_;
 
   // The right-hand-side button to manage passwords associated with a page.
   std::unique_ptr<ManagePasswordsDecoration> manage_passwords_decoration_;

@@ -22,7 +22,6 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/location_bar/translate_decoration.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/test/scoped_force_rtl_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -377,16 +376,6 @@ TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
   EXPECT_NSEQ(locationBarFrame, newLocationBarFrame);
   newLocationBarFrame = [locationBar frame];
   EXPECT_NSEQ(locationBarFrame, newLocationBarFrame);
-}
-
-TEST_F(ToolbarControllerTest, TranslateBubblePoint) {
-  LocationBarViewMac* locationBarBridge = [bar_ locationBarBridge];
-  LocationBarDecoration* decoration = locationBarBridge->translate_decoration();
-  const NSPoint translatePoint =
-      locationBarBridge->GetBubblePointForDecoration(decoration);
-  const NSRect barFrame =
-      [[bar_ view] convertRect:[[bar_ view] bounds] toView:nil];
-  EXPECT_TRUE(NSPointInRect(translatePoint, barFrame));
 }
 
 TEST_F(ToolbarControllerTest, HoverButtonForEvent) {

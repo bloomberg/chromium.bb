@@ -58,7 +58,6 @@
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
@@ -69,7 +68,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
-#include "chrome/browser/ui/cocoa/translate/translate_bubble_bridge_views.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1373,14 +1371,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   return [BrowserWindowUtils themeImagePositionFor:windowChromeView
                                       withTabStrip:tabStripView
                                          alignment:alignment];
-}
-
-- (void)showTranslateBubbleForWebContents:(content::WebContents*)contents
-                                     step:(translate::TranslateStep)step
-                                errorType:(translate::TranslateErrors::Type)
-                                errorType {
-  ShowTranslateBubbleViews([self window], [self locationBarBridge], contents,
-                           step, errorType, true);
 }
 
 - (void)dismissPermissionBubble {

@@ -37,7 +37,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button_cell.h"
@@ -633,11 +632,9 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)setStarredState:(BOOL)isStarred {
-  locationBarView_->SetStarred(isStarred);
 }
 
 - (void)setTranslateIconLit:(BOOL)on {
-  locationBarView_->SetTranslateIconLit(on);
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
@@ -952,15 +949,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (NSPoint)bookmarkBubblePoint {
-  if (locationBarView_->IsStarEnabled())
-    return locationBarView_->GetBubblePointForDecoration(
-        locationBarView_->star_decoration());
-
   return [self appMenuBubblePoint];
-}
-
-- (NSPoint)saveCreditCardBubblePoint {
-  return locationBarView_->GetSaveCreditCardBubblePoint();
 }
 
 - (NSPoint)appMenuBubblePoint {

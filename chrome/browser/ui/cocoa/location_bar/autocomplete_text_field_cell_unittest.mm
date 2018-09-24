@@ -8,11 +8,9 @@
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
-#import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/test/scoped_force_rtl_mac.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -114,19 +112,6 @@ TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
   page_info_bubble_decoration.SetLabel(@"Application");
   [cell addLeadingDecoration:&page_info_bubble_decoration];
   EXPECT_NE(page_info_bubble_decoration.GetWidthForSpace(kVeryWide),
-            LocationBarDecoration::kOmittedWidth);
-
-  StarDecoration star_decoration(NULL);
-  star_decoration.SetVisible(true);
-  [cell addTrailingDecoration:&star_decoration];
-  EXPECT_NE(star_decoration.GetWidthForSpace(kVeryWide),
-            LocationBarDecoration::kOmittedWidth);
-
-  KeywordHintDecoration keyword_hint_decoration;
-  keyword_hint_decoration.SetVisible(true);
-  keyword_hint_decoration.SetKeyword(base::ASCIIToUTF16("google"), false);
-  [cell addTrailingDecoration:&keyword_hint_decoration];
-  EXPECT_NE(keyword_hint_decoration.GetWidthForSpace(kVeryWide),
             LocationBarDecoration::kOmittedWidth);
 
   // Make sure we're actually calling |DrawInFrame()|.
