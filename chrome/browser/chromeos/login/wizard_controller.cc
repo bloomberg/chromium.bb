@@ -276,8 +276,10 @@ bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
 // is never triggered before.
 bool ShouldShowRecommendAppsScreen() {
   return base::FeatureList::IsEnabled(features::kOobeRecommendAppsScreen) &&
-         !ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
-             prefs::kOobeRecommendAppScreenFinished);
+         (!ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+              prefs::kOobeRecommendAppScreenFinished) ||
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              chromeos::switches::kForceShowRecommendAppsScreenForTest));
 }
 
 chromeos::LoginDisplayHost* GetLoginDisplayHost() {
