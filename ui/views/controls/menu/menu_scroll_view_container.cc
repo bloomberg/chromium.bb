@@ -8,7 +8,6 @@
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/border.h"
@@ -20,7 +19,6 @@
 #include "ui/views/round_rect_painter.h"
 
 using ui::NativeTheme;
-using MD = ui::MaterialDesignController;
 
 namespace views {
 
@@ -188,14 +186,14 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
   arrow_ = BubbleBorderTypeFromAnchor(
       content_view_->GetMenuItem()->GetMenuController()->GetAnchorPosition());
 
-  if (HasBubbleBorder())
+  if (arrow_ != BubbleBorder::NONE)
     CreateBubbleBorder();
   else
     CreateDefaultBorder();
 }
 
 bool MenuScrollViewContainer::HasBubbleBorder() {
-  return (arrow_ != BubbleBorder::NONE) || MD::IsRefreshUi();
+  return arrow_ != BubbleBorder::NONE;
 }
 
 void MenuScrollViewContainer::SetBubbleArrowOffset(int offset) {
@@ -239,7 +237,7 @@ void MenuScrollViewContainer::Layout() {
 
 void MenuScrollViewContainer::OnNativeThemeChanged(
     const ui::NativeTheme* theme) {
-  if (!HasBubbleBorder())
+  if (arrow_ == BubbleBorder::NONE)
     CreateDefaultBorder();
 }
 
@@ -311,14 +309,13 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
 void MenuScrollViewContainer::CreateBubbleBorder() {
   bubble_border_ =
       new BubbleBorder(arrow_, BubbleBorder::SMALL_SHADOW, SK_ColorWHITE);
-  MenuController* controller =
-      content_view_->GetMenuItem()->GetMenuController();
-  if (MD::IsRefreshUi() || controller->use_touchable_layout()) {
+  if (content_view_->GetMenuItem()
+          ->GetMenuController()
+          ->use_touchable_layout()) {
     const MenuConfig& menu_config = MenuConfig::instance();
-    bubble_border_->SetCornerRadius(
-        menu_config.CornerRadiusForMenu(controller));
+    bubble_border_->SetCornerRadius(menu_config.touchable_corner_radius);
     bubble_border_->set_md_shadow_elevation(
-        menu_config.ShadowElevationForMenu(controller));
+        menu_config.touchable_menu_shadow_elevation);
     scroll_view_->GetContents()->SetBorder(CreateEmptyBorder(
         gfx::Insets(menu_config.vertical_touchable_menu_item_padding, 0)));
   }
