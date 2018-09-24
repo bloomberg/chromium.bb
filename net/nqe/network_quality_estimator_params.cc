@@ -443,10 +443,7 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               "hanging_request_http_rtt_upper_bound_http_rtt_multiplier",
               6)),
       hanging_request_upper_bound_min_http_rtt_(
-          base::TimeDelta::FromMilliseconds(GetValueForVariationParam(
-              params_,
-              "hanging_request_upper_bound_min_http_rtt_msec",
-              500))),
+          base::TimeDelta::FromMilliseconds(500)),
       http_rtt_transport_rtt_min_count_(
           GetValueForVariationParam(params_,
                                     "http_rtt_transport_rtt_min_count",
@@ -471,10 +468,7 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
           params_,
           "hanging_request_duration_http_rtt_multiplier",
           5)),
-      hanging_request_min_duration_(base::TimeDelta::FromMilliseconds(
-          GetValueForVariationParam(params_,
-                                    "hanging_request_min_duration_msec",
-                                    3000))),
+      hanging_request_min_duration_(base::TimeDelta::FromMilliseconds(3000)),
       add_default_platform_observations_(
           GetStringValueForVariationParamWithDefaultValue(
               params_,
@@ -501,6 +495,10 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
 
   DCHECK_GE(1.0, weight_multiplier_per_signal_strength_level_);
   DCHECK_LE(0.0, weight_multiplier_per_signal_strength_level_);
+
+  DCHECK_LT(0, hanging_request_duration_http_rtt_multiplier());
+  DCHECK_LT(0, hanging_request_http_rtt_upper_bound_http_rtt_multiplier());
+  DCHECK_LT(0, hanging_request_http_rtt_upper_bound_transport_rtt_multiplier());
 
   ObtainDefaultObservations(params_, default_observations_);
   ObtainTypicalNetworkQualities(params_, typical_network_quality_);

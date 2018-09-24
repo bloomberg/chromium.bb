@@ -389,10 +389,7 @@ void ThroughputAnalyzer::BoundRequestsSize() {
 void ThroughputAnalyzer::EraseHangingRequests(const URLRequest& request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (params_->hanging_request_duration_http_rtt_multiplier() <= 0) {
-    // Experiment is not enabled.
-    return;
-  }
+  DCHECK_LT(0, params_->hanging_request_duration_http_rtt_multiplier());
 
   const base::TimeTicks now = tick_clock_->NowTicks();
 
