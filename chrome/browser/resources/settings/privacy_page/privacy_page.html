@@ -45,7 +45,8 @@
       </settings-clear-browsing-data-dialog>
     </template>
     <template id="doNotTrackDialogIf" is="dom-if"
-        if="[[showDoNotTrackDialog_]]" notify-dom-change>
+        if="[[showDoNotTrackDialog_]]" notify-dom-change
+        on-dom-change="onDoNotTrackDomChange_">
       <cr-dialog id="confirmDoNotTrackDialog"
           close-text="$i18n{close}" on-cancel="onDoNotTrackDialogCancel_"
           on-close="onDoNotTrackDialogClosed_">
