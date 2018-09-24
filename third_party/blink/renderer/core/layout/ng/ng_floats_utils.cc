@@ -306,7 +306,7 @@ NGPositionedFloat PositionFloat(
   return NGPositionedFloat(std::move(layout_result), float_bfc_offset);
 }
 
-const Vector<NGPositionedFloat> PositionFloats(
+const NGPositionedFloatVector PositionFloats(
     const NGLogicalSize& float_available_size,
     const NGLogicalSize& float_percentage_size,
     const NGLogicalSize& float_replaced_percentage_size,
@@ -315,7 +315,7 @@ const Vector<NGPositionedFloat> PositionFloats(
     NGUnpositionedFloatVector& unpositioned_floats,
     const NGConstraintSpace& space,
     NGExclusionSpace* exclusion_space) {
-  Vector<NGPositionedFloat> positioned_floats;
+  NGPositionedFloatVector positioned_floats;
   positioned_floats.ReserveCapacity(unpositioned_floats.size());
 
   for (NGUnpositionedFloat& unpositioned_float : unpositioned_floats) {
