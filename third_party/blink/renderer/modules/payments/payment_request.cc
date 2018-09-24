@@ -675,7 +675,7 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate& input,
       return;
   }
 
-  if (input.hasError() && !input.error().IsNull()) {
+  if (input.hasError()) {
     String error_message;
     if (!PaymentsValidators::IsValidErrorMsgFormat(input.error(),
                                                    &error_message)) {
@@ -683,8 +683,6 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate& input,
       return;
     }
     output->error = input.error();
-  } else {
-    output->error = "";
   }
 
   if (input.hasShippingAddressErrors()) {
