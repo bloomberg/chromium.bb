@@ -33,7 +33,7 @@ const base::Feature kEnableFullscreenHandwritingVirtualKeyboard = {
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableStylusVirtualKeyboard = {
-    "enable-stylus-virtual-keyboard", base::FEATURE_DISABLED_BY_DEFAULT};
+    "enable-stylus-virtual-keyboard", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, uses the Material Design UI for virtual keyboard.
 const base::Feature kEnableVirtualKeyboardMdUi = {
