@@ -32,6 +32,13 @@ function buttonPanelElement(videoElement) {
   return element;
 }
 
+function panelElement(videoElement) {
+  var element = mediaControlsButton(videoElement, "panel");
+  if (!element)
+    throw 'Failed to find media controls panel';
+  return element;
+}
+
 function castButton(videoElement) {
     var controlID = '-internal-media-controls-cast-button';
     var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
