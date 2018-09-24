@@ -278,10 +278,14 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
     v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
     v8::MicrotasksScope microtasks_scope(isolate,
                                          v8::MicrotasksScope::kRunMicrotasks);
+    v8::Local<v8::String> script_url;
+    if (!script_name->ToString(isolate->GetCurrentContext())
+             .ToLocal(&script_url))
+      return result;
+
     // ToCoreString here should be zero copy due to externalized string
     // unpacked.
-    String script_url = ToCoreString(script_name->ToString(isolate));
-    probe::ExecuteScript probe(context, script_url);
+    probe::ExecuteScript probe(context, ToCoreString(script_url));
     result = script->Run(isolate->GetCurrentContext());
   }
 
