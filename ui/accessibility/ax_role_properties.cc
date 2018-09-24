@@ -214,6 +214,17 @@ bool IsMenuRelated(ax::mojom::Role role) {
   }
 }
 
+bool IsMenuItem(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kMenuItem:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsImage(ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kCanvas:

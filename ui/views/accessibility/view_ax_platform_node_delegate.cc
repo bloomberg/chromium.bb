@@ -9,6 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/native_widget_types.h"
@@ -148,7 +149,7 @@ void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
       OnMenuEnd();
       break;
     case ax::mojom::Event::kSelection:
-      if (menu_depth_ && GetData().role == ax::mojom::Role::kMenuItem)
+      if (menu_depth_ && ui::IsMenuItem(GetData().role))
         OnMenuItemActive();
       break;
     case ax::mojom::Event::kFocusContext: {
