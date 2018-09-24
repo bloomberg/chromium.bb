@@ -239,13 +239,13 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
           // |requests_hang_duration| is less than 5 times the HTTP RTT.
           // Requests should not be marked as hanging.
           5, base::TimeDelta::FromMilliseconds(1000),
-          base::TimeDelta::FromMilliseconds(2000), true,
+          base::TimeDelta::FromMilliseconds(3000), true,
       },
       {
           // |requests_hang_duration| is more than 5 times the HTTP RTT.
           // Requests should be marked as hanging.
           5, base::TimeDelta::FromMilliseconds(200),
-          base::TimeDelta::FromMilliseconds(2000), false,
+          base::TimeDelta::FromMilliseconds(3000), false,
       },
       {
           // |requests_hang_duration| is less than
@@ -259,12 +259,7 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
           // |hanging_request_min_duration_msec|. Requests should be marked as
           // hanging.
           1, base::TimeDelta::FromMilliseconds(2000),
-          base::TimeDelta::FromMilliseconds(2100), false,
-      },
-      {
-          // Experiment is disabled. Requests should be marked as hanging.
-          -1, base::TimeDelta::FromMilliseconds(100),
-          base::TimeDelta::FromMilliseconds(1000), true,
+          base::TimeDelta::FromMilliseconds(3100), false,
       },
       {
           // |requests_hang_duration| is less than 5 times the HTTP RTT.
@@ -294,7 +289,6 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
     variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "-1";
     variation_params["hanging_request_duration_http_rtt_multiplier"] =
         base::IntToString(test.hanging_request_duration_http_rtt_multiplier);
-    variation_params["hanging_request_min_duration_msec"] = "2000";
 
     NetworkQualityEstimatorParams params(variation_params);
 
@@ -521,7 +515,6 @@ TEST_F(ThroughputAnalyzerTest, TestRequestDeletedImmediately) {
   network_quality_provider.SetHttpRtt(base::TimeDelta::FromSeconds(1));
   std::map<std::string, std::string> variation_params;
   variation_params["hanging_request_duration_http_rtt_multiplier"] = "2";
-  variation_params["hanging_request_min_duration_msec"] = "2000";
   NetworkQualityEstimatorParams params(variation_params);
 
   TestThroughputAnalyzer throughput_analyzer(&network_quality_provider, &params,
@@ -543,8 +536,8 @@ TEST_F(ThroughputAnalyzerTest, TestRequestDeletedImmediately) {
   throughput_analyzer.NotifyStartTransaction(*request_not_local);
   EXPECT_EQ(1u, throughput_analyzer.CountInFlightRequests());
 
-  tick_clock.Advance(base::TimeDelta::FromMilliseconds(1900));
-  // Current time is t=1.9 seconds.
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(2900));
+  // Current time is t=2.9 seconds.
 
   throughput_analyzer.EraseHangingRequests(*request_not_local);
   EXPECT_EQ(1u, throughput_analyzer.CountInFlightRequests());

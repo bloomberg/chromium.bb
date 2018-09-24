@@ -2605,13 +2605,8 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "hanging_request_http_rtt_upper_bound_http_rtt_multiplier": "6",
-                        "hanging_request_http_rtt_upper_bound_transport_rtt_multiplier": "8",
-                        "hanging_request_upper_bound_min_http_rtt_msec": "500",
-                        "lower_bound_http_rtt_transport_rtt_multiplier": "1",
                         "rssi_weight_per_signal_strength_level": "0.9",
-                        "throughput_hanging_requests_cwnd_size_multiplier": "1",
-                        "upper_bound_http_rtt_transport_rtt_multiplier": "5"
+                        "use_end_to_end_rtt": "true"
                     }
                 }
             ]
