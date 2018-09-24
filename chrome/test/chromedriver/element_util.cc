@@ -433,12 +433,19 @@ Status GetElementClickableLocation(
       return Status(kUnknownError, "no element reference returned by script");
   }
   bool is_displayed = false;
-  status = IsElementDisplayed(
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  while (true) {
+    Status status = IsElementDisplayed(
       session, web_view, target_element_id, true, &is_displayed);
-  if (status.IsError())
-    return status;
-  if (!is_displayed)
-    return Status(kElementNotVisible);
+    if (status.IsError())
+      return status;
+    if (is_displayed)
+      break;
+    if (base::TimeTicks::Now() - start_time >= session->implicit_wait) {
+      return Status(kElementNotVisible);
+    }
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+  }
 
   WebRect rect;
   status = GetElementRegion(session, web_view, element_id, &rect);
