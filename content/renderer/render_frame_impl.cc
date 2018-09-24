@@ -964,7 +964,8 @@ std::unique_ptr<blink::WebNavigationParams> BuildNavigationParams(
         common_params.source_location->column_number;
   }
 
-  navigation_params->is_user_activated = request_params.was_activated;
+  navigation_params->is_user_activated =
+      request_params.was_activated == WasActivatedOption::kYes;
   navigation_params->service_worker_network_provider =
       std::move(service_worker_network_provider);
   return navigation_params;

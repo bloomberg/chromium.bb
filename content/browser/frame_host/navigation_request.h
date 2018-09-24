@@ -94,7 +94,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       base::TimeTicks navigation_start,
       NavigationControllerImpl* controller,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
-      base::TimeTicks input_start);
+      base::TimeTicks input_start,
+      WasActivatedOption was_activated);
 
   // Creates a request for a renderer-intiated navigation.
   // Note: |body| is sent to the IO thread when calling BeginNavigation, and
