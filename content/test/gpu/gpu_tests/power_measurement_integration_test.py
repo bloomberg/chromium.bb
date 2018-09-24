@@ -15,6 +15,57 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 import os
 import sys
 
+fullscreen_script = r"""
+  function locateElement(tag) {
+    // return the element with largest width.
+    var elements = document.getElementsByTagName(tag);
+    if (elements.length == 0)
+      return null;
+    var rt = elements[0];
+    var max = elements[0].width;
+    for (var ii = 0; ii < elements.length; ++ii) {
+      if (elements[ii].width > max) {
+        rt = elements[ii];
+        max = elements[ii].width;
+      }
+    }
+    return rt;
+  }
+
+  function setupVideoElement() {
+    var video = locateElement("video");
+    if (video) {
+      video.volume = 0;
+      video.loop = true;
+      video.autoplay = true;
+      video.play();
+    }
+  }
+
+  function isVideoPlaying() {
+    var video = locateElement("video");
+    if (video) {
+      // Wait until playing starts is necessary. Otherwise going fullscreen
+      // becomes flaky.
+      return video.currentTime > 1;
+    }
+    return false;
+  }
+
+  function locateButton(url) {
+    var lower_url = url.toLowerCase();
+    var button_class = '';
+    if (lower_url.indexOf('youtube') != -1)
+      button_class = 'ytp-fullscreen-button';
+    if (button_class == '')
+      return null;
+    var buttons = document.getElementsByClassName(button_class);
+    if (buttons.length == 0)
+      return null;
+    return buttons[0];
+  }
+"""
+
 # There are no expectations for power_measurement
 class PowerMeasurementExpectations(GpuTestExpectations):
   def SetExpectations(self):
@@ -61,9 +112,12 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    yield ('url', options.url, (options.repeat, options.outliers,
-                                options.fullscreen, options.logdir,
-                                options.duration, options.delay,
+    yield ('url', options.url, (options.repeat,
+                                options.outliers,
+                                options.fullscreen,
+                                options.logdir,
+                                options.duration,
+                                options.delay,
                                 options.resolution))
 
   @classmethod
@@ -94,11 +148,17 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       run_label = "Iteration_%d" % iteration
       print run_label
       if test_path:
-        self.tab.action_runner.Navigate(test_path)
+        self.tab.action_runner.Navigate(test_path, fullscreen_script)
+        self.tab.WaitForDocumentReadyStateToBeComplete()
+        self.tab.action_runner.ExecuteJavaScript('setupVideoElement()')
+        self.tab.action_runner.WaitForJavaScriptCondition(
+            'isVideoPlaying()', timeout=10)
 
       if fullscreen:
-        # TODO(zmo): implement fullscreen mode.
-        pass
+        # TODO(zmo): Switch to use click instead of tap once Telemetry's click
+        # is implemented through DevTools.
+        self.tab.action_runner.TapElement(element_function=(
+            'locateButton("%s")' % test_path))
 
       logfile = None
       if ipg_logdir:
