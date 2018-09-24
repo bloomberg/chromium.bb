@@ -919,9 +919,7 @@ PeopleHandler::GetSyncStatusDictionary() {
   bool disallowed_by_policy =
       service && service->HasDisableReason(
                      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
-  // TODO(https://crbug.com/870239): Sign-in is always allowed for all regular
-  // profiles. Remove |signinAllowed| from here and from all settings js code
-  // that is using this preference.
+  // Sign-in is always allowed for all regular profiles.
   sync_status->SetBoolean("signinAllowed", true);
   sync_status->SetBoolean("syncSystemEnabled", (service != nullptr));
   sync_status->SetBoolean("setupInProgress",
