@@ -736,7 +736,8 @@ const CGFloat kShadowRadius = 12.0f;
 }
 
 - (void)showSignin:(ShowSigninCommand*)command {
-  [self.dispatcher showSignin:command baseViewController:self];
+  [self.dispatcher showSignin:command
+           baseViewController:self.navigationController];
 }
 
 - (void)configureSigninPromoWithConfigurator:
