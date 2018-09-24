@@ -124,6 +124,10 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     ukm::SourceId source_id) {
   ukm::builders::PageLoad builder(source_id);
+  if (timing.input_to_navigation_start) {
+    builder.SetExperimental_InputToNavigationStart(
+        timing.input_to_navigation_start.value().InMilliseconds());
+  }
   if (timing.parse_timing->parse_start) {
     builder.SetParseTiming_NavigationToParseStart(
         timing.parse_timing->parse_start.value().InMilliseconds());

@@ -2640,6 +2640,12 @@ be describing additional metrics about the same event.
       start to the time the load event is fired, for main frame documents.
     </summary>
   </metric>
+  <metric name="Experimental.InputToNavigationStart">
+    <summary>
+      Measures the time in milliseconds from when the OS level input event
+      occurred which triggered a navigation, until the navigation was started.
+    </summary>
+  </metric>
   <metric name="Experimental.NavigationToInteractive">
     <summary>
       Measures Time to Interactive, a metric based on main thread and network
