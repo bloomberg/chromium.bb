@@ -499,6 +499,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       content::mojom::RendererPreferenceWatcherPtr watcher) override;
 
+  base::Optional<std::string> GetOriginPolicyErrorPage(
+      content::OriginPolicyErrorReason error_reason,
+      const url::Origin& origin,
+      const GURL& url) override;
+
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
   static bool HandleWebUIReverse(GURL* url,

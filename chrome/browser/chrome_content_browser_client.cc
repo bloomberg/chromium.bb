@@ -206,6 +206,7 @@
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
+#include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -4861,4 +4862,13 @@ ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
   }
 
   return safe_browsing_url_checker_delegate_.get();
+}
+
+base::Optional<std::string>
+ChromeContentBrowserClient::GetOriginPolicyErrorPage(
+    content::OriginPolicyErrorReason error_reason,
+    const url::Origin& origin,
+    const GURL& url) {
+  return security_interstitials::OriginPolicyUI::GetErrorPage(error_reason,
+                                                              origin, url);
 }
