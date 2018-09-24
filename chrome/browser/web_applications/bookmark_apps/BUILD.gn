@@ -14,6 +14,8 @@ source_set("bookmark_apps") {
     "policy/web_app_policy_constants.h",
     "policy/web_app_policy_manager.cc",
     "policy/web_app_policy_manager.h",
+    "system_web_app_manager.cc",
+    "system_web_app_manager.h",
   ]
 
   deps = [
@@ -34,6 +36,7 @@ source_set("unit_tests") {
   sources = [
     "external_web_apps_unittest.cc",
     "policy/web_app_policy_manager_unittest.cc",
+    "system_web_app_manager_unittest.cc",
   ]
 
   deps = [

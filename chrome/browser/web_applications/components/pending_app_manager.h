@@ -88,6 +88,11 @@ class PendingAppManager {
     // The corresponding SynchronizeInstalledApps call site is in
     // WebAppPolicyManager::RefreshPolicyInstalledApps.
     kExternalPolicy = 2,
+    // Installed as a Chrome component, such as a help app, or a settings app.
+    //
+    // The corresponding SynchronizeInstalledApps call site is in
+    // SystemWebAppManager::RefreshPolicyInstalledApps.
+    kSystemInstalled = 3,
   };
 
   struct AppInfo {

@@ -127,6 +127,9 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
     case web_app::PendingAppManager::InstallSource::kExternalPolicy:
       helper_->set_is_policy_installed_app();
       break;
+    case web_app::PendingAppManager::InstallSource::kSystemInstalled:
+      helper_->set_is_system_app();
+      break;
   }
 
   if (!app_info_.create_shortcuts)
