@@ -1512,14 +1512,15 @@ void StyleEngine::NodeWillBeRemoved(Node& node) {
 void StyleEngine::ChildrenRemoved(ContainerNode& parent) {
   if (!parent.isConnected())
     return;
-  if (parent.IsShadowRoot() && ToShadowRoot(parent).IsUserAgent() &&
-      ToShadowRoot(parent).host().IsMediaControlElement()) {
-    // TODO(crbug.com/882869):
-    // This is a workaround for MediaControlLoadingPanelElement which removes
-    // its shadow root children as part of RemovedFrom() which means we do a
-    // removal from within another removal where isConnected() is not completely
-    // up to date which would confuse the code. Instead we will clean traversal
-    // roots properly in the outer remove.
+  if ((parent.IsShadowRoot() && ToShadowRoot(parent).IsUserAgent()) ||
+      parent.IsInUserAgentShadowRoot()) {
+    // This is a workaround for nested removals. There are elements which
+    // removes parts of its UA shadow DOM as part being removed which means we
+    // do a removal from within another removal where isConnected() is not
+    // completely up to date which would confuse this code. Instead we will
+    // clean traversal roots properly in the outer remove.
+    // TODO(crbug.com/882869): MediaControlLoadingPanelElement
+    // TODO(crbug.com/888448): TextFieldInputType::ListAttributeTargetChanged
     return;
   }
   style_invalidation_root_.ChildrenRemoved(parent);
