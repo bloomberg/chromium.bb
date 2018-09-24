@@ -59,7 +59,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 59;
+const int kThemePackVersion = 60;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -1504,8 +1504,9 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
 }
 
 void BrowserThemePack::GenerateMissingTextColors() {
-  // Background Tab
   constexpr int kDefaultSourceTextColorId = TP::COLOR_BACKGROUND_TAB_TEXT;
+
+  // Background Tab
   GenerateMissingTextColorForID(TP::COLOR_BACKGROUND_TAB_TEXT,
                                 TP::COLOR_BACKGROUND_TAB, TP::COLOR_FRAME,
                                 kDefaultSourceTextColorId);
@@ -1534,19 +1535,35 @@ void BrowserThemePack::GenerateMissingTextColorForID(int text_color_id,
                                                      int frame_color_id,
                                                      int source_color_id) {
   SkColor text_color, tab_color, frame_color;
+  color_utils::HSL tab_tint;
+
   const bool has_text_color = GetColor(text_color_id, &text_color);
   const bool has_tab_color = GetColor(tab_color_id, &tab_color);
   const bool has_frame_color = GetColor(frame_color_id, &frame_color);
 
+  const bool has_tab_tint = GetTint(TP::TINT_BACKGROUND_TAB, &tab_tint);
+  const bool has_meaningful_tab_tint =
+      has_tab_tint && color_utils::IsHSLShiftMeaningful(tab_tint);
+
   // If there is no tab color specified (also meaning there is no image), fall
   // back to the frame color.
   SkColor bg_color = (has_tab_color ? tab_color : frame_color);
-  const bool has_bg_color = has_tab_color || has_frame_color;
+  const bool has_bg_color =
+      has_tab_color || has_frame_color || has_meaningful_tab_tint;
 
   // If no bg color is set, we have nothing to blend against, so there's no way
   // to do this calculation.
   if (!has_bg_color)
     return;
+
+  if (has_meaningful_tab_tint && !has_tab_color) {
+    // We need to tint the frame color, so if the theme didn't specify it, grab
+    // the default.
+    if (!has_frame_color) {
+      frame_color = TP::GetDefaultColor(TP::GetLookupID(frame_color_id));
+    }
+    bg_color = color_utils::HSLShift(frame_color, tab_tint);
+  }
 
   // Determine the text color to start with, in order of preference:
   // 1) The color specified by the theme (if it exists)
@@ -1561,7 +1578,7 @@ void BrowserThemePack::GenerateMissingTextColorForID(int text_color_id,
       blend_source_color = source_text_color;
     } else {
       // GetDefaultColor() requires incognito-aware lookup, so we first have to
-      // get the appropriate lookup ID information
+      // get the appropriate lookup ID information.
       TP::PropertyLookupPair lookup_pair = TP::GetLookupID(text_color_id);
 
       blend_source_color = TP::GetDefaultColor(lookup_pair);

@@ -872,6 +872,33 @@ TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign_NoTabColor) {
                     TP::COLOR_BACKGROUND_TAB_TEXT);
 }
 
+// Ensure that, given a theme which specifies a background tab tint, but no
+// background tab color, tab text is correctly calculated to ensure contrast
+// against the (tinted) background tab color.
+TEST_F(BrowserThemePackTest, TestBGTabTextColorContrast_TabTint) {
+  // This theme specifies a color for frame (white) and background_tab_text
+  // (black), in addition to a background_tab tint that reduces the color to
+  // nearly zero.
+  base::FilePath theme_path =
+      GetTestExtensionThemePath("theme_test_bgtabtext_tintonly");
+  scoped_refptr<BrowserThemePack> pack;
+  BuildFromUnpackedExtension(theme_path, &pack);
+
+  SkColor frame_color;
+  SkColor text_color;
+  color_utils::HSL tab_tint;
+
+  pack->GetColor(TP::COLOR_FRAME, &frame_color);
+  pack->GetColor(TP::COLOR_BACKGROUND_TAB_TEXT, &text_color);
+  pack->GetTint(TP::TINT_BACKGROUND_TAB, &tab_tint);
+
+  SkColor tinted_bg_tab_color = color_utils::HSLShift(frame_color, tab_tint);
+  float contrast_ratio =
+      color_utils::GetContrastRatio(tinted_bg_tab_color, text_color);
+
+  EXPECT_GE(contrast_ratio, color_utils::kMinimumReadableContrastRatio);
+}
+
 // Ensure that, given a theme which only specifies a frame color, the calculated
 // caption button background colors appropriately match the frame color.
 TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_FrameColor) {
