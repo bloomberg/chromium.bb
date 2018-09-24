@@ -11,6 +11,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -86,6 +87,7 @@ struct FakeDriveFs::FileMetadata {
   std::string mime_type;
   bool pinned = false;
   bool hosted = false;
+  bool shared = false;
   std::string original_name;
 };
 
@@ -96,8 +98,9 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
       : drive_fs_(std::move(drive_fs)),
         query_(base::ToLowerASCII(
             params.title.value_or(params.text_content.value_or("")))),
-        weak_ptr_factory_(this) {
-  }
+        shared_with_me_(params.shared_with_me),
+        available_offline_(params.available_offline),
+        weak_ptr_factory_(this) {}
 
  private:
   void GetNextPage(GetNextPageCallback callback) override {
@@ -108,34 +111,28 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
       callback_ = std::move(callback);
       base::PostTaskWithTraitsAndReplyWithResult(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-          base::BindOnce(&SearchQuery::SearchByTitle, drive_fs_->mount_path(),
-                         query_),
+          base::BindOnce(&SearchQuery::SearchFiles, drive_fs_->mount_path()),
           base::BindOnce(&SearchQuery::GetMetadata,
                          weak_ptr_factory_.GetWeakPtr()));
     }
   }
 
-  static std::vector<drivefs::mojom::QueryItemPtr> SearchByTitle(
-      const base::FilePath& mount_path,
-      const std::string& query) {
+  static std::vector<drivefs::mojom::QueryItemPtr> SearchFiles(
+      const base::FilePath& mount_path) {
     std::vector<drivefs::mojom::QueryItemPtr> results;
     base::FileEnumerator walker(mount_path, true, base::FileEnumerator::FILES);
     for (auto file = walker.Next(); !file.empty(); file = walker.Next()) {
-      if (query.empty() ||
-          base::ToLowerASCII(file.BaseName().value()).find(query) !=
-              std::string::npos) {
-        auto item = drivefs::mojom::QueryItem::New();
-        item->path = base::FilePath("/");
-        CHECK(mount_path.AppendRelativePath(file, &item->path));
-        std::vector<std::string> components;
-        item->path.GetComponents(&components);
-        // During tests, metadata for the other drive sync implementation can
-        // end up in |mount_path| so filter it out.
-        if (components.size() < 2u || components[1] == "meta") {
-          continue;
-        }
-        results.push_back(std::move(item));
+      auto item = drivefs::mojom::QueryItem::New();
+      item->path = base::FilePath("/");
+      CHECK(mount_path.AppendRelativePath(file, &item->path));
+      std::vector<std::string> components;
+      item->path.GetComponents(&components);
+      // During tests, metadata for the other drive sync implementation can
+      // end up in |mount_path| so filter it out.
+      if (components.size() < 2u || components[1] == "meta") {
+        continue;
       }
+      results.push_back(std::move(item));
     }
     return results;
   }
@@ -167,6 +164,30 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
 
   void OnComplete() {
     if (--pending_callbacks_ == 0) {
+      if (!query_.empty() || available_offline_ || shared_with_me_) {
+        // Filter out non-matching results.
+        base::EraseIf(results_, [=](const auto& item_ptr) {
+          const base::FilePath path = item_ptr->path;
+          const drivefs::mojom::FileMetadata* metadata =
+              item_ptr->metadata.get();
+          if (!query_.empty()) {
+            return base::ToLowerASCII(path.BaseName().value()).find(query_) ==
+                   std::string::npos;
+          }
+          if (available_offline_) {
+            if (metadata && metadata->available_offline)
+              return false;
+            if (metadata &&
+                metadata->type == mojom::FileMetadata::Type::kHosted)
+              return false;
+          }
+          if (shared_with_me_ && metadata) {
+            return !metadata->shared;
+          }
+          return true;
+        });
+      }
+
       std::move(callback_).Run(drive::FileError::FILE_ERROR_OK,
                                {std::move(results_)});
     }
@@ -174,6 +195,8 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
 
   base::WeakPtr<FakeDriveFs> drive_fs_;
   const std::string query_;
+  const bool shared_with_me_;
+  const bool available_offline_;
   GetNextPageCallback callback_;
   std::vector<drivefs::mojom::QueryItemPtr> results_;
   size_t pending_callbacks_ = 0;
@@ -219,13 +242,17 @@ FakeDriveFs::CreateConnectionDelegate() {
 void FakeDriveFs::SetMetadata(const base::FilePath& path,
                               const std::string& mime_type,
                               const std::string& original_name,
-                              bool pinned) {
+                              bool pinned,
+                              bool shared) {
   auto& stored_metadata = metadata_[path];
   stored_metadata.mime_type = mime_type;
   stored_metadata.original_name = original_name;
   stored_metadata.hosted = (original_name != path.BaseName().value());
   if (pinned) {
     stored_metadata.pinned = true;
+  }
+  if (shared) {
+    stored_metadata.shared = true;
   }
 }
 
@@ -255,6 +282,7 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
   const auto& stored_metadata = metadata_[path];
   metadata->pinned = stored_metadata.pinned;
   metadata->available_offline = stored_metadata.pinned;
+  metadata->shared = stored_metadata.shared;
 
   metadata->content_mime_type = stored_metadata.mime_type;
   metadata->type = stored_metadata.hosted

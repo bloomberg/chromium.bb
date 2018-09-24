@@ -841,7 +841,8 @@ class DriveFsTestVolume : public DriveTestVolume {
       case AddEntriesMessage::FILE: {
         fake_drivefs_->SetMetadata(
             GetRelativeDrivePathForTestEntry(entry), entry.mime_type,
-            base::FilePath(entry.target_path).BaseName().value(), entry.pinned);
+            base::FilePath(entry.target_path).BaseName().value(), entry.pinned,
+            entry.shared_option == AddEntriesMessage::SharedOption::SHARED);
 
         if (entry.source_file_name.empty()) {
           ASSERT_EQ(0, base::WriteFile(target_path, "", 0));
