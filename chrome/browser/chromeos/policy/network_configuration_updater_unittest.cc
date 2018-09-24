@@ -15,7 +15,6 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
-#include "chrome/browser/chromeos/policy/policy_certificate_provider.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
@@ -26,6 +25,7 @@
 #include "chromeos/network/onc/onc_parsed_certificates.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/policy_certificate_provider.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/account_id/account_id.h"
@@ -82,7 +82,7 @@ class FakeUser : public user_manager::User {
 };
 
 class FakePolicyProvidedCertsObserver
-    : public PolicyCertificateProvider::Observer {
+    : public chromeos::PolicyCertificateProvider::Observer {
  public:
   FakePolicyProvidedCertsObserver() {}
 

@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/policy_certificate_provider.h"
 #include "net/cert/scoped_nss_types.h"
 
 namespace net {
@@ -34,7 +35,7 @@ namespace chromeos {
 // before user sign-in, and additionally with a user-specific NSSCertDatabase
 // after user sign-in. When both NSSCertDatabase are used, CertLoader combines
 // certificates from both into |all_certs()|.
-class CHROMEOS_EXPORT CertLoader {
+class CHROMEOS_EXPORT CertLoader : public PolicyCertificateProvider::Observer {
  public:
   class Observer {
    public:
@@ -82,6 +83,20 @@ class CHROMEOS_EXPORT CertLoader {
   // with only one database or with both (system and user) databases.
   void SetUserNSSDB(net::NSSCertDatabase* user_database);
 
+  // Adds the passed |PolicyCertificateProvider| and starts using the authority
+  // certificates provided by it. CertLoader registers itself as Observer on
+  // |policy_certificate_provider|, so the caller must ensure to call
+  // |RemovePolicyCertificateProvider| before |policy_certificate_provider| is
+  // destroyed or before |CertLoader| is shut down.
+  void AddPolicyCertificateProvider(
+      PolicyCertificateProvider* policy_certificate_provider);
+
+  // Removes the passed |PolicyCertificateProvider| and stops using authority
+  // certificates provided by it. |policy_certificate_provider| must have been
+  // added using |AddPolicyCertificateProvider| before.
+  void RemovePolicyCertificateProvider(
+      PolicyCertificateProvider* policy_certificate_provider);
+
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
 
@@ -117,9 +132,9 @@ class CHROMEOS_EXPORT CertLoader {
 
   // Returns certificates from the system token. This will be empty until
   // certificates_loaded() is true.
-  const net::ScopedCERTCertificateList& system_certs() const {
+  const net::ScopedCERTCertificateList& system_token_client_certs() const {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return system_certs_;
+    return system_token_client_certs_;
   }
 
   // Called in tests if |IsCertificateHardwareBacked()| should always return
@@ -130,17 +145,23 @@ class CHROMEOS_EXPORT CertLoader {
   class CertCache;
 
   CertLoader();
-  ~CertLoader();
+  ~CertLoader() override;
 
-  // Called by |system_cert_cache_| or |user_cert_cache| when these had an
-  // update.
-  void CacheUpdated();
+  // Called when |system_cert_cache_|, |user_cert_cache| or policy-provided
+  // certificates have potentially changed.
+  void OnCertCacheOrPolicyCertsUpdated();
 
   // Called if a certificate load task is finished.
-  void UpdateCertificates(net::ScopedCERTCertificateList all_certs,
-                          net::ScopedCERTCertificateList system_certs);
+  void UpdateCertificates(
+      net::ScopedCERTCertificateList all_certs,
+      net::ScopedCERTCertificateList system_token_client_certs);
 
   void NotifyCertificatesLoaded();
+
+  // PolicyCertificateProvider::Observer
+  void OnPolicyProvidedCertsChanged(
+      const net::CertificateList& all_server_and_authority_certs,
+      const net::CertificateList& trust_anchors) override;
 
   base::ObserverList<Observer>::Unchecked observers_;
 
@@ -149,11 +170,14 @@ class CHROMEOS_EXPORT CertLoader {
   // Cache for certificates from the user-specific NSSCertDatabase.
   std::unique_ptr<CertCache> user_cert_cache_;
 
-  // Cached certificates loaded from the database(s).
+  // Cached certificates loaded from the database(s) and policy-pushed Authority
+  // certificates.
   net::ScopedCERTCertificateList all_certs_;
 
   // Cached certificates from system token.
-  net::ScopedCERTCertificateList system_certs_;
+  net::ScopedCERTCertificateList system_token_client_certs_;
+
+  std::vector<const PolicyCertificateProvider*> policy_certificate_providers_;
 
   base::ThreadChecker thread_checker_;
 

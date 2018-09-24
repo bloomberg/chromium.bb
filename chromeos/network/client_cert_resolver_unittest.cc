@@ -595,7 +595,7 @@ TEST_F(ClientCertResolverTest, UserPolicyUsesSystemToken) {
 
   StartCertLoader();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(1U, cert_loader_->system_certs().size());
+  EXPECT_EQ(1U, cert_loader_->system_token_client_certs().size());
 
   // Verify that the resolver positively matched the pattern in the policy with
   // the test client cert and configured the network.
@@ -633,7 +633,7 @@ TEST_F(ClientCertResolverTest, DevicePolicyUsesSystemToken) {
 
   StartCertLoader();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(1U, cert_loader_->system_certs().size());
+  EXPECT_EQ(1U, cert_loader_->system_token_client_certs().size());
 
   // Verify that the resolver positively matched the pattern in the policy with
   // the test client cert and configured the network.
@@ -672,7 +672,7 @@ TEST_F(ClientCertResolverTest, DevicePolicyDoesNotUseUserToken) {
   network_properties_changed_count_ = 0;
   StartCertLoader();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(0U, cert_loader_->system_certs().size());
+  EXPECT_EQ(0U, cert_loader_->system_token_client_certs().size());
 
   // Verify that no client certificate was configured.
   std::string pkcs11_id;
