@@ -114,6 +114,10 @@ suite('<bookmarks-command-manager>', function() {
     MockInteractions.pressAndReleaseKeyOn(document.body, '', [], key);
     commandManager.assertLastCommand(Command.EDIT, ['13']);
 
+    // close dialog for other tests.
+    const dialog = commandManager.$.editDialog.getIfExists();
+    dialog.onCancelButtonTap_();
+
     // Doesn't trigger when multiple items are selected.
     store.data.selection.items = new Set(['11', '13']);
     store.notifyObservers();
