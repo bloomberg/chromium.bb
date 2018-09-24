@@ -73,8 +73,6 @@ class ASH_EXPORT NotificationTray
 
   // Overridden from TrayBubbleView::Delegate.
   void BubbleViewDestroyed() override;
-  void OnMouseEnteredView() override;
-  void OnMouseExitedView() override;
   base::string16 GetAccessibleNameForBubble() override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
   void HideBubble(const TrayBubbleView* bubble_view) override;

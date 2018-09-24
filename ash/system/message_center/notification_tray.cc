@@ -477,10 +477,6 @@ void NotificationTray::BubbleViewDestroyed() {
     message_center_bubble()->bubble()->BubbleViewDestroyed();
 }
 
-void NotificationTray::OnMouseEnteredView() {}
-
-void NotificationTray::OnMouseExitedView() {}
-
 base::string16 NotificationTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
 }
