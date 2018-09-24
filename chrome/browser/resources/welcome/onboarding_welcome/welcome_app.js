@@ -41,7 +41,7 @@ Polymer({
     // If the specified step doesn't exist, that means there are no more steps.
     // In that case, go to NTP.
     if (!this.$$('#step-' + step))
-      window.location.replace('chrome://newtab');
+      welcome.WelcomeBrowserProxyImpl.getInstance().goToNewTabPage();
     else  // Otherwise, go to the chosen step of that route.
       this.$.viewManager.switchView('step-' + step);
   },

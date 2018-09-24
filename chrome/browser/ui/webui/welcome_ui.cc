@@ -92,7 +92,12 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
         "welcome_app.html", IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_HTML);
     html_source->AddResourcePath("welcome_app.js",
                                  IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_JS);
-
+    html_source->AddResourcePath(
+        "welcome_browser_proxy.html",
+        IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_HTML);
+    html_source->AddResourcePath(
+        "welcome_browser_proxy.js",
+        IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_JS);
   } else if (kIsBranded && is_dice) {
     // Use special layout if the application is branded and DICE is enabled.
     // Otherwise use the default layout.
