@@ -343,12 +343,6 @@ class MediaStreamConstraintsUtilAudioTest
   void CheckDevice(const AudioDeviceCaptureCapability& expected_device,
                    const AudioCaptureSettings& result) {
     EXPECT_EQ(expected_device.DeviceID(), result.device_id());
-    EXPECT_EQ(expected_device.Parameters().sample_rate(),
-              result.device_parameters().sample_rate());
-    EXPECT_EQ(expected_device.Parameters().channels(),
-              result.device_parameters().channels());
-    EXPECT_EQ(expected_device.Parameters().effects(),
-              result.device_parameters().effects());
   }
 
   void CheckDeviceDefaults(const AudioCaptureSettings& result) {
