@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -396,7 +395,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
           &ToolbarControllerInternal::NotificationBridge::OnPreferenceChanged,
           base::Unretained(notificationBridge_.get())));
   [self showOptionalHomeButton];
-  [self installAppMenu];
 
   [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
 
@@ -456,7 +454,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [backMenuController_ browserWillBeDestroyed];
   [forwardMenuController_ browserWillBeDestroyed];
   [browserActionsController_ browserWillBeDestroyed];
-  [appMenuController_ browserWillBeDestroyed];
 
   [self cleanUp];
 }
@@ -644,8 +641,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
-  locationBarView_->ZoomChangedForActiveTab(
-      canShowBubble && ![appMenuController_ isMenuOpen]);
+  locationBarView_->ZoomChangedForActiveTab(canShowBubble);
 }
 
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
@@ -722,18 +718,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     locationBarFrame.origin.x += moveX;
   [locationBar_ setFrame:locationBarFrame];
   [homeButton_ setHidden:hide];
-}
-
-// Install the app menu buttons. Calling this repeatedly is inexpensive so it
-// can be done every time the buttons are shown.
-- (void)installAppMenu {
-  if (appMenuController_.get())
-    return;
-
-  appMenuController_.reset(
-      [[AppMenuController alloc] initWithBrowser:browser_]);
-  [appMenuController_ setUseWithPopUpButtonCell:YES];
-  [appMenuButton_ setAttachedMenu:[appMenuController_ menu]];
 }
 
 - (void)updateAppMenuButtonSeverity:(AppMenuIconController::Severity)severity
@@ -1012,10 +996,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 
 - (NSView*)appMenuButton {
   return appMenuButton_;
-}
-
-- (AppMenuController*)appMenuController {
-  return appMenuController_.get();
 }
 
 - (BOOL)isLocationBarFocused {

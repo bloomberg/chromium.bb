@@ -278,6 +278,7 @@ static_library("test_support") {
     public_deps += [ "//ui/views:test_support" ]
     sources += [
       "../browser/ui/views/media_router/app_menu_test_api.h",
+      "../browser/ui/views/media_router/app_menu_test_api_views.cc",
       "views/accessibility_checker.cc",
       "views/accessibility_checker.h",
       "views/chrome_test_views_delegate.cc",
@@ -285,14 +286,6 @@ static_library("test_support") {
       "views/chrome_views_test_base.cc",
       "views/chrome_views_test_base.h",
     ]
-    if (is_mac) {
-      sources +=
-          [ "../browser/ui/views/media_router/app_menu_test_api_cocoa.mm" ]
-    }
-    if (!is_mac || mac_views_browser) {
-      sources +=
-          [ "../browser/ui/views/media_router/app_menu_test_api_views.cc" ]
-    }
   }
 
   if (enable_extensions) {
@@ -4126,9 +4119,6 @@ test("unit_tests") {
       cocoa_test_sources = [
         "../browser/ui/cocoa/animatable_image_unittest.mm",
         "../browser/ui/cocoa/animatable_view_unittest.mm",
-        "../browser/ui/cocoa/app_menu/app_menu_button_cell_unittest.mm",
-        "../browser/ui/cocoa/app_menu/app_menu_controller_unittest.mm",
-        "../browser/ui/cocoa/app_menu/menu_tracked_root_view_unittest.mm",
         "../browser/ui/cocoa/autofill/autofill_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/autofill/autofill_tooltip_controller_unittest.mm",
         "../browser/ui/cocoa/background_gradient_view_unittest.mm",
@@ -5119,8 +5109,6 @@ if (!is_android) {
       # The browser window can be views or Cocoa on Mac, but this is chosen at
       # runtime. This block captures tests that only run with a Cocoa browser.
       sources += [
-        "../browser/ui/cocoa/extensions/browser_action_button_interactive_uitest.mm",
-
         # Note permission_bubble_cocoa_interactive_uitest tests both Cocoa and
         # toolkit-views secondary UI. It should not be deleted with the Cocoa
         # bubble (but it can be deleted with the Cocoa browser window).

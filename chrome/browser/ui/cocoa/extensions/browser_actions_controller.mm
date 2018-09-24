@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
@@ -240,13 +239,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 }
 
 bool ToolbarActionsBarBridge::CloseOverflowMenuIfOpen() {
-  AppMenuController* appMenuController =
-      [[controller_ toolbarController] appMenuController];
-  if (![appMenuController isMenuOpen])
-    return false;
-
-  [appMenuController cancel];
-  return true;
+  return false;
 }
 
 }  // namespace

@@ -29,7 +29,6 @@ class Profile;
 @class ReloadButtonCocoa;
 @class ToolbarButtonCocoa;
 @class ToolbarViewCocoa;
-@class AppMenuController;
 
 namespace content {
 class WebContents;
@@ -71,9 +70,6 @@ class NotificationBridge;
   base::scoped_nsobject<BackForwardMenuController> backMenuController_;
   base::scoped_nsobject<BackForwardMenuController> forwardMenuController_;
   base::scoped_nsobject<BrowserActionsController> browserActionsController_;
-
-  // Lazily-instantiated menu controller.
-  base::scoped_nsobject<AppMenuController> appMenuController_;
 
   // Used for monitoring the optional toolbar button prefs.
   std::unique_ptr<ToolbarControllerInternal::NotificationBridge>
@@ -189,9 +185,6 @@ class NotificationBridge;
 // Returns the app menu button.
 - (NSButton*)appMenuButton;
 
-// Returns the app menu controller.
-- (AppMenuController*)appMenuController;
-
 // Returns true of the location bar is focused.
 - (BOOL)isLocationBarFocused;
 
@@ -202,7 +195,6 @@ class NotificationBridge;
 // Returns an array of views in the order of the outlets above.
 - (NSArray*)toolbarViews;
 - (void)showOptionalHomeButton;
-- (void)installAppMenu;
 // Return a hover button for the current event.
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
 // Adjusts browser actions container view in response to toolbar frame changes.

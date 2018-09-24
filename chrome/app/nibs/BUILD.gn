@@ -8,7 +8,6 @@ import("//ui/base/ui_features.gni")
 assert(is_mac)
 
 translated_xibs = [
-  "AppMenu.xib",
   "SaveAccessoryView.xib",
   "TaskManager.xib",
   "Toolbar.xib",
