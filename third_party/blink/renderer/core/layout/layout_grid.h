@@ -284,8 +284,6 @@ class LayoutGrid final : public LayoutBlock {
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
 
-  void ComputeBaselineAlignmentContext();
-
   LayoutUnit ColumnAxisBaselineOffsetForChild(const LayoutBox&) const;
   LayoutUnit RowAxisBaselineOffsetForChild(const LayoutBox&) const;
 
@@ -325,6 +323,7 @@ class LayoutGrid final : public LayoutBlock {
   LayoutUnit max_content_height_{-1};
 
   bool has_any_orthogonal_item_{false};
+  bool baseline_items_cached_{false};
   base::Optional<bool> has_definite_logical_height_;
 };
 

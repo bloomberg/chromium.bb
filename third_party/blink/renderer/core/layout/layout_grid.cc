@@ -267,18 +267,35 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     LayoutSize previous_size = Size();
     has_definite_logical_height_ = HasDefiniteLogicalHeight();
 
-    // Grid's layout logic controls the grid item's override height, hence
-    // we need to clear any override height set previously, so it doesn't
-    // interfere in current layout execution.
-    // Grid never uses the override width, that's why we don't need to clear it.
     has_any_orthogonal_item_ = false;
     for (auto* child = FirstInFlowChildBox(); child;
          child = child->NextInFlowSiblingBox()) {
+      // Grid's layout logic controls the grid item's override height, hence
+      // we need to clear any override height set previously, so it doesn't
+      // interfere in current layout execution.
+      // Grid never uses the override width, that's why we don't need to clear
+      // it.
       child->ClearOverrideLogicalHeight();
+
+      // We may need to repeat the track sizing in case of any grid item was
+      // orthogonal.
       if (GridLayoutUtils::IsOrthogonalChild(*this, *child))
         has_any_orthogonal_item_ = true;
-    }
 
+      // We keep a cache of items with baseline as alignment values so
+      // that we only compute the baseline shims for such items. This
+      // cache is needed for performance related reasons due to the
+      // cost of evaluating the item's participation in a baseline
+      // context during the track sizing algorithm.
+      if (IsBaselineAlignmentForChild(*child, kGridColumnAxis)) {
+        track_sizing_algorithm_.CacheBaselineAlignedItem(*child,
+                                                         kGridColumnAxis);
+      }
+      if (IsBaselineAlignmentForChild(*child, kGridRowAxis)) {
+        track_sizing_algorithm_.CacheBaselineAlignedItem(*child, kGridRowAxis);
+      }
+    }
+    baseline_items_cached_ = true;
     UpdateLogicalWidth();
 
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this, &layout_scope);
@@ -358,6 +375,9 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
   UpdateAfterLayout();
 
   ClearNeedsLayout();
+
+  track_sizing_algorithm_.ClearBaselineItemsCache();
+  baseline_items_cached_ = false;
 }
 
 LayoutUnit LayoutGrid::GridGap(
@@ -482,6 +502,17 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
   PlaceItemsOnGrid(algorithm, base::nullopt);
 
   PerformGridItemsPreLayout(algorithm);
+
+  if (baseline_items_cached_) {
+    algorithm.CopyBaselineItemsCache(track_sizing_algorithm_, kGridRowAxis);
+  } else {
+    for (auto* child = FirstInFlowChildBox(); child;
+         child = child->NextInFlowSiblingBox()) {
+      if (IsBaselineAlignmentForChild(*child, kGridRowAxis)) {
+        algorithm.CacheBaselineAlignedItem(*child, kGridRowAxis);
+      }
+    }
+  }
 
   ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, min_logical_width,
                                      max_logical_width);
