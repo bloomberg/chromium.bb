@@ -96,9 +96,7 @@ class DeviceTarget(target.Target):
               boot_data.ConfigureDataFVM(self._output_dir,
                                          boot_data.FVM_TYPE_SPARSE)),
           EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                   'zircon.bin')),
-          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                   'bootdata-blob.bin')),
+                                                   'fuchsia.zbi')),
           '--'] + boot_data.GetKernelArgs(self._output_dir)
       logging.debug(' '.join(bootserver_command))
       subprocess.check_call(bootserver_command)
