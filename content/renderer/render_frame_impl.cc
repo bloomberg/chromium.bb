@@ -5929,8 +5929,11 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       // navigation.
       if (!info.is_client_redirect) {
         OpenURL(info, /*is_history_navigation_in_new_child=*/true);
-        // Suppress the load in Blink but mark the frame as loading.
-        return blink::kWebNavigationPolicyHandledByClientForInitialHistory;
+        // TODO(japhet): This case wants to flag the frame as loading and do
+        // nothing else. It'd be nice if it could go through the placeholder
+        // DocumentLoader path, too.
+        frame_->MarkAsLoading();
+        return blink::kWebNavigationPolicyIgnore;
       } else {
         // Client redirects during an initial history load should attempt to
         // cancel the history navigation.  They will create a provisional
