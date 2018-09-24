@@ -353,6 +353,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
   RenderWidgetHostViewBase* target = nullptr;
   bool needs_transform_point = true;
   bool latched_target = true;
+  bool should_verify_result = false;
   if (root_view->IsMouseLocked()) {
     target = root_view->host()->delegate()->GetMouseLockWidget()->GetView();
   }
@@ -371,8 +372,14 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
     auto result = FindViewAtLocation(
         root_view, event.PositionInWidget(), event.PositionInScreen(),
         viz::EventSource::MOUSE, &transformed_point);
+    // Due to performance concerns we do not verify mouse move events.
+    should_verify_result = (event.GetType() == blink::WebInputEvent::kMouseMove)
+                               ? false
+                               : result.should_verify_result;
     if (result.should_query_view) {
-      return {result.view, true, transformed_point, latched_target};
+      DCHECK(!should_verify_result);
+      return {result.view, true, transformed_point, latched_target,
+              should_verify_result};
     }
     target = result.view;
     // |transformed_point| is already transformed.
@@ -383,10 +390,11 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
     if (!root_view->TransformPointToCoordSpaceForView(
             event.PositionInWidget(), target, &transformed_point,
             viz::EventSource::MOUSE)) {
-      return {nullptr, false, base::nullopt, latched_target};
+      return {nullptr, false, base::nullopt, latched_target, false};
     }
   }
-  return {target, false, transformed_point, latched_target};
+  return {target, false, transformed_point, latched_target,
+          should_verify_result};
 }
 
 RenderWidgetTargetResult
@@ -400,25 +408,21 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
     if (!root_view->TransformPointToCoordSpaceForView(
             event.PositionInWidget(), target, &transformed_point,
             viz::EventSource::MOUSE)) {
-      return {nullptr, false, base::nullopt, true};
+      return {nullptr, false, base::nullopt, true, false};
     }
-    return {target, false, transformed_point, true};
+    return {target, false, transformed_point, true, false};
   }
 
-    if (event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
-      auto result = FindViewAtLocation(
-          root_view, event.PositionInWidget(), event.PositionInScreen(),
-          viz::EventSource::MOUSE, &transformed_point);
-      return {result.view, result.should_query_view, transformed_point, false};
-    }
-    // For non-begin events, the target found for the previous phaseBegan is
-    // used.
-    return {nullptr, false, base::nullopt, true};
-
-  auto result = FindViewAtLocation(root_view, event.PositionInWidget(),
-                                   event.PositionInScreen(),
-                                   viz::EventSource::MOUSE, &transformed_point);
-  return {result.view, result.should_query_view, transformed_point, false};
+  if (event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
+    auto result = FindViewAtLocation(
+        root_view, event.PositionInWidget(), event.PositionInScreen(),
+        viz::EventSource::MOUSE, &transformed_point);
+    return {result.view, result.should_query_view, transformed_point, false,
+            result.should_verify_result};
+  }
+  // For non-begin events, the target found for the previous phaseBegan is
+  // used.
+  return {nullptr, false, base::nullopt, true, false};
 }
 
 RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
@@ -431,16 +435,17 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
   // hit testing.
   if (owner_map_.size() <= 1) {
     *transformed_point = point;
-    return {root_view, false, *transformed_point, false};
+    return {root_view, false, *transformed_point, false, false};
   }
 
   viz::FrameSinkId frame_sink_id;
   bool query_renderer = false;
+  bool should_verify_result = false;
   if (use_viz_hit_test_) {
     viz::HitTestQuery* query = GetHitTestQuery(GetHostFrameSinkManager(),
                                                root_view->GetRootFrameSinkId());
     if (!query)
-      return {root_view, false, base::nullopt, false};
+      return {root_view, false, base::nullopt, false, false};
     // |point_in_screen| is in the coordinate space of of the screen, but the
     // display HitTestQuery does a hit test in the coordinate space of the root
     // window. The following translation should account for that discrepancy.
@@ -458,8 +463,18 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     } else {
       *transformed_point = point;
     }
+    // To ensure the correctness of viz hit testing with cc generated data, we
+    // verify hit test results when:
+    // a) We use cc generated data to do synchronous hit testing and
+    // b) We use HitTestQuery to find the target (instead of reusing previous
+    // targets when hit testing latched events) and
+    // c) We are not hit testing MouseMove events which is too frequent to
+    // verify it without impacting performance.
+    // The code that implements c) locates in |FindMouseEventTarget|.
     if (target.flags & viz::HitTestRegionFlags::kHitTestAsk)
       query_renderer = true;
+    else if (features::IsVizHitTestingSurfaceLayerEnabled())
+      should_verify_result = true;
   } else {
     // The hittest delegate is used to reject hittesting quads based on extra
     // hittesting data send by the renderer.
@@ -481,7 +496,8 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     *transformed_point = point;
   }
 
-  return {view, query_renderer, *transformed_point, false};
+  return {view, query_renderer, *transformed_point, false,
+          should_verify_result};
 }
 
 void RenderWidgetHostInputEventRouter::RouteMouseEvent(
@@ -685,7 +701,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindTouchEventTarget(
   // Tests may call this without an initial TouchStart, so check event type
   // explicitly here.
   if (active_touches_ || event.GetType() != blink::WebInputEvent::kTouchStart)
-    return {nullptr, false, base::nullopt, true};
+    return {nullptr, false, base::nullopt, true, false};
 
   active_touches_ += CountChangedTouchPoints(event);
   gfx::PointF original_point = gfx::PointF(event.touches[0].PositionInWidget());
@@ -1180,7 +1196,7 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
   // target we could just return nullptr for pinch events, but since we know
   // where they are going we return the correct target.
   if (blink::WebInputEvent::IsPinchGestureEventType(gesture_event.GetType()))
-    return {root_view, false, gesture_event.PositionInWidget(), true};
+    return {root_view, false, gesture_event.PositionInWidget(), true, false};
 
   // Android sends gesture events that have no corresponding touch sequence, so
   // these we hit-test explicitly.
@@ -1195,7 +1211,7 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
 
   // Remaining gesture events will defer to the gesture event target queue
   // during dispatch.
-  return {nullptr, false, base::nullopt, true};
+  return {nullptr, false, base::nullopt, true, false};
 }
 
 bool RenderWidgetHostInputEventRouter::IsViewInMap(
@@ -1409,7 +1425,7 @@ RenderWidgetHostInputEventRouter::FindTouchpadGestureEventTarget(
     const blink::WebGestureEvent& event) const {
   if (event.GetType() != blink::WebInputEvent::kGesturePinchBegin &&
       event.GetType() != blink::WebInputEvent::kGestureFlingCancel) {
-    return {nullptr, false, base::nullopt, true};
+    return {nullptr, false, base::nullopt, true, false};
   }
 
   gfx::PointF transformed_point;
