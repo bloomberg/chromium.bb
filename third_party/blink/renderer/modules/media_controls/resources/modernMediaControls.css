@@ -522,6 +522,14 @@ video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-
 }
 
 video::-webkit-media-controls div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  overflow: hidden;
+
+  height: var(--overlay-play-button-width, 48px);
+  width: var(--overlay-play-button-width, 48px);
+  margin-left: calc(var(--overlay-play-button-width) / -2);
   margin-top: calc(
       (var(--overlay-play-button-width, 48px)
           + 24px /* timeline height + padding-bottom */)
@@ -1094,12 +1102,25 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-control
   margin-top: -5px;
 }
 
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-overlay-play-button" i] {
+  margin-left: -52px /* (play button width / 2) + 20px Padding */;
+  margin-top: -64px /* (play button width + timeline height + padding-bottom) / 2 + padding */
+}
+
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
   width: 64px;
   height: 64px;
   border-radius: 32px;
   background-size: 36px;
 }
+
+video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-frame {
+  width: 64px; /* play button width */
+  height: 64px; /* play button width */
+  margin-top: -44px; /* (play button width + timeline height + padding-bottom) / -2 */
+  margin-left: -32px; /* play button width / -2 */
+}
+
 
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-mute-button" i],
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i],
