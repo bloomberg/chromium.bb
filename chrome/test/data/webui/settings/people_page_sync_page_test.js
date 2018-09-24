@@ -74,6 +74,40 @@ cr.define('settings_people_page_sync_page', function() {
       syncAllDataTypesControl.click();
     }
 
+    // Tests the initial layout of the sync section and the personalize section,
+    // depending on the sync state and the unified consent state.
+    function testInitialLayout(
+        unifiedConsentGiven, signedIn, hasError, setupInProgress,
+        syncSectionExpanded, syncSectionDisabled, personalizeSectionExpanded) {
+      syncPage.unifiedConsentEnabled = true;
+      syncPage.prefs = {unified_consent_given: {value: unifiedConsentGiven}};
+      syncPage.syncStatus = {
+        signedIn: signedIn,
+        disabled: false,
+        hasError: hasError,
+        setupInProgress: setupInProgress,
+        statusAction: hasError ? settings.StatusAction.REAUTHENTICATE :
+                                 settings.StatusAction.NO_ACTION,
+      };
+      Polymer.dom.flush();
+
+      const syncSectionToggle = syncPage.$$('#sync-section-toggle');
+      const syncSectionExpandIcon =
+          syncSectionToggle.querySelector('cr-expand-button');
+      const personalizeSectionToggle =
+          syncPage.$$('#personalize-section-toggle');
+      const personalizeSectionExpandIcon =
+          personalizeSectionToggle.querySelector('cr-expand-button');
+      const unifiedConsentToggle = syncPage.$$('#unifiedConsentToggle');
+
+      assertTrue(unifiedConsentToggle.checked == unifiedConsentGiven);
+      assertTrue(syncSectionExpandIcon.expanded == syncSectionExpanded);
+      assertTrue(syncSectionExpandIcon.disabled == syncSectionDisabled);
+      assertTrue(
+          personalizeSectionExpandIcon.expanded == personalizeSectionExpanded);
+      assertFalse(personalizeSectionExpandIcon.disabled);
+    }
+
     setup(function() {
       browserProxy = new TestSyncBrowserProxy();
       settings.SyncBrowserProxyImpl.instance_ = browserProxy;
@@ -321,6 +355,83 @@ cr.define('settings_people_page_sync_page', function() {
 
       // The unified consent toggle should be hidden.
       assertTrue(unifiedConsentToggle.hidden);
+    });
+
+    test('InitialLayout_UnifiedConsentGiven_SignedIn', function() {
+      testInitialLayout(
+          /*unifiedConsentGiven=*/true,
+          /*signedIn=*/true,
+          /*hasError=*/false,
+          /*setupInProgress=*/false,
+          /*syncSectionExpanded=*/false,
+          /*syncSectionDisabled=*/false,
+          /*personalizeSectionExpanded=*/false);
+    });
+
+    test('InitialLayout_UnifiedConsentGiven_SignedOut', function() {
+      testInitialLayout(
+          /*unifiedConsentGiven=*/true,
+          /*signedIn=*/false,
+          /*hasError=*/false,
+          /*setupInProgress=*/false,
+          /*syncSectionExpanded=*/false,
+          /*syncSectionDisabled=*/true,
+          /*personalizeSectionExpanded=*/false);
+    });
+
+    test('InitialLayout_UnifiedConsentGiven_SyncPaused', function() {
+      testInitialLayout(
+          /*unifiedConsentGiven=*/true,
+          /*signedIn=*/true,
+          /*hasError=*/true,
+          /*setupInProgress=*/false,
+          /*syncSectionExpanded=*/false,
+          /*syncSectionDisabled=*/true,
+          /*personalizeSectionExpanded=*/false);
+    });
+
+    test('InitialLayout_NoUnifiedConsentGiven_SignedIn', function() {
+      testInitialLayout(
+          /*unifiedConsentGiven=*/false,
+          /*signedIn=*/true,
+          /*hasError=*/false,
+          /*setupInProgress=*/false,
+          /*syncSectionExpanded=*/true,
+          /*syncSectionDisabled=*/false,
+          /*personalizeSectionExpanded=*/true);
+    });
+
+    test('InitialLayout_NoUnifiedConsentGiven_SignedOut', function() {
+      testInitialLayout(
+          /*unifiedConsentGiven=*/false,
+          /*signedIn=*/false,
+          /*hasError=*/false,
+          /*setupInProgress=*/false,
+          /*syncSectionExpanded=*/false,
+          /*syncSectionDisabled=*/true,
+          /*personalizeSectionExpanded=*/true);
+    });
+
+    test('InitialLayout_NoUnifiedConsentGiven_SyncPaused', function() {
+      testInitialLayout(
+          /*unifiedConsentGiven=*/false,
+          /*signedIn=*/true,
+          /*hasError=*/true,
+          /*setupInProgress=*/false,
+          /*syncSectionExpanded=*/false,
+          /*syncSectionDisabled=*/true,
+          /*personalizeSectionExpanded=*/true);
+    });
+
+    test('InitialLayout_SetupInProgress', function() {
+      testInitialLayout(
+          /*unifiedConsentGiven=*/true,
+          /*signedIn=*/true,
+          /*hasError=*/false,
+          /*setupInProgress=*/true,
+          /*syncSectionExpanded=*/true,
+          /*syncSectionDisabled=*/false,
+          /*personalizeSectionExpanded=*/true);
     });
 
     test('LoadingAndTimeout', function() {
