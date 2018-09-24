@@ -100,8 +100,10 @@ bool FrameSizeButton::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void FrameSizeButton::OnMouseReleased(const ui::MouseEvent& event) {
-  if (!IsTriggerableEvent(event) || !CommitSnap(event))
-    FrameCaptionButton::OnMouseReleased(event);
+  if (IsTriggerableEvent(event))
+    CommitSnap(event);
+
+  FrameCaptionButton::OnMouseReleased(event);
 }
 
 void FrameSizeButton::OnMouseCaptureLost() {
@@ -210,7 +212,7 @@ void FrameSizeButton::UpdateSnapPreview(const ui::LocatedEvent& event) {
   }
 
   delegate_->SetHoveredAndPressedButtons(to_hover,
-                                         press_size_button ? this : NULL);
+                                         press_size_button ? this : nullptr);
   delegate_->ShowSnapPreview(snap);
 }
 
@@ -232,6 +234,7 @@ bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
   FrameCaptionDelegate::SnapDirection snap =
       GetSnapDirection(GetButtonToHover(event));
   delegate_->CommitSnap(snap);
+  delegate_->SetHoveredAndPressedButtons(nullptr, nullptr);
 
   if (snap == FrameCaptionDelegate::SnapDirection::kLeft) {
     base::RecordAction(base::UserMetricsAction("MaxButton_MaxLeft"));
