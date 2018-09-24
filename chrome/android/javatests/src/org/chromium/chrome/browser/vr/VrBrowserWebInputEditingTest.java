@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr;
 
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL_LONG_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
@@ -27,9 +28,12 @@ import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+
+import java.util.concurrent.TimeoutException;
 
 /**
- * End-to-end tests for Daydream controller input while in the VR browser.
+ * End-to-end tests for interacting with HTML input elements on a webpage.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
@@ -124,5 +128,44 @@ public class VrBrowserWebInputEditingTest {
                 },
                 "Keyboard did not hide from unfocusing a web input box", POLL_TIMEOUT_LONG_MS,
                 POLL_CHECK_INTERVAL_SHORT_MS);
+    }
+
+    /**
+     * Tests that interacting with a <code><select></code> tag on a webpage brings up a working
+     * Android selection dialog.
+     */
+    @Test
+    @MediumTest
+    public void testSelectTag() throws TimeoutException, InterruptedException {
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_select_tag"),
+                PAGE_LOAD_TIMEOUT_S);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
+        NativeUiUtils.enableMockedInput();
+        // Click on the <select> tag and wait for the resulting modal dialog to appear.
+        DOMUtils.clickNode(mVrBrowserTestFramework.getFirstTabWebContents(), "selectbox",
+                false /* goThroughRootAndroidView */);
+        NativeUiUtils.waitForModalDialogStatus(true /* shouldBeShown */, mVrTestRule.getActivity());
+        // Click on whichever option is near the center of the screen. We don't care which, as long
+        // as it's not the initial selection, which should be at the top. Clicking in the exact
+        // center can sometimes click in the area between two options, so offset slightly to prevent
+        // flakes from that.
+        // Most of the time, the first click will go through. However, it's possible to send the
+        // click while the dialog is technically present, but not fully ready, resulting in the
+        // click not registering. Since there doesn't seem to be a good way to wait for the dialog
+        // to be ready, try several times.
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> {
+                    if (!mVrTestRule.getActivity().getModalDialogManager().isShowing()) return true;
+                    NativeUiUtils.clickElement(
+                            UserFriendlyElementName.CONTENT_QUAD, new PointF(0f, 0.05f));
+                    return false;
+                },
+                "Could not click on <select> modal dialog", POLL_TIMEOUT_LONG_MS,
+                POLL_CHECK_INTERVAL_LONG_MS);
+
+        // Wait on JavaScript to verify that a selection was made.
+        mVrBrowserTestFramework.waitOnJavaScriptStep();
+        mVrBrowserTestFramework.endTest();
     }
 }

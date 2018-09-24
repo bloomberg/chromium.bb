@@ -13,6 +13,7 @@ import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.UiTestOperationType;
 import org.chromium.chrome.browser.vr.UserFriendlyElementName;
@@ -21,6 +22,7 @@ import org.chromium.chrome.browser.vr.VrDialog;
 import org.chromium.chrome.browser.vr.VrShell;
 import org.chromium.chrome.browser.vr.VrUiTestActivityResult;
 import org.chromium.chrome.browser.vr.VrViewContainer;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
@@ -207,6 +209,20 @@ public class NativeUiUtils {
     public static ViewGroup getVrViewContainer() {
         VrShell vrShell = TestVrShellDelegate.getVrShellForTesting();
         return vrShell.getVrViewContainerForTesting();
+    }
+
+    /**
+     * Waits until a modal dialog is or is not shown.
+     */
+    public static void waitForModalDialogStatus(
+            final boolean shouldBeShown, final ChromeActivity activity) {
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> {
+                    return shouldBeShown == activity.getModalDialogManager().isShowing();
+                },
+                "Timed out waiting for modal dialog to "
+                        + (shouldBeShown ? "be shown" : "not be shown"));
     }
 
     private static void clickFallbackUiButton(int buttonId) throws InterruptedException {
