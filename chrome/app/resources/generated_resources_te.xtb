@@ -371,7 +371,6 @@
 <translation id="1531004739673299060">అప్లికేషన్ విండో</translation>
 <translation id="15373452373711364">పెద్ద మౌస్ కర్సర్</translation>
 <translation id="1538729222189715449">Linux ఫైల్‌లను తెరుస్తోంది...</translation>
-<translation id="153933193410874873">మేము ఈ పరికరంలో మీ గుర్తింపును ధృవీకరించలేకపోయాము</translation>
 <translation id="1540605929960647700">డెమో మోడ్‌ని ప్రారంభించండి</translation>
 <translation id="1543284117603151572">Edge నుండి దిగుమతి చేసినవి</translation>
 <translation id="1545177026077493356">స్వయంచాలక కియోస్క్ మోడ్</translation>
@@ -2862,6 +2861,7 @@
 <translation id="5332624210073556029">టైమ్ జోన్:</translation>
 <translation id="5334142896108694079">స్క్రిప్ట్ క్యాష్</translation>
 <translation id="5334844597069022743">మూలాన్ని చూడండి</translation>
+<translation id="5334899159203764908"><ph name="BEGIN_LINK" />సైట్ యాక్సెస్<ph name="END_LINK" /> గురించి మరింత తెలుసుకోండి</translation>
 <translation id="5335458522276292100"><ph name="FILE_COUNT" /> వాటిని <ph name="BEGIN_LINK" />Google డిస్క్<ph name="END_LINK" />కు బ్యాకప్ చేస్తోంది</translation>
 <translation id="5336126339807372270">USB పరికరాలను యాక్సెస్ చేయడానికి ఏ సైట్‌లను అనుమతించవద్దు</translation>
 <translation id="5337771866151525739">మూడవ పక్షం ద్వారా ఇన్‌స్టాల్ చేయబడింది.</translation>

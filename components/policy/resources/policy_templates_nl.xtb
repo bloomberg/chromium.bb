@@ -388,9 +388,9 @@
 
       Als er geen instelling voor dit beleid is opgegeven, staat dit gelijk aan het inschakelen van het beleid (zie de beschrijving hierboven).</translation>
 <translation id="2113068765175018713">Uptime van apparaat beperken door automatisch opnieuw op te starten</translation>
-<translation id="2116790137063002724">Met dit beleid wordt bepaald of er gegevens worden gerapporteerd die kunnen worden gebruikt om gebruikers te identificeren, zoals de OS-inloggegevens, de inloggegevens voor het <ph name="PRODUCT_NAME" />-profiel, de profielnaam voor <ph name="PRODUCT_NAME" />, het profielpad voor <ph name="PRODUCT_NAME" /> en het uitvoerbare pad voor <ph name="PRODUCT_NAME" />.
+<translation id="2116790137063002724">Met dit beleid wordt bepaald of informatie moet worden gerapporteerd die gebruikt kan worden om gebruikers te identificeren, zoals de OS-inloggegevens, de inloggegevens voor het <ph name="PRODUCT_NAME" />-profiel, de profielnaam voor <ph name="PRODUCT_NAME" />, het profielpad voor <ph name="PRODUCT_NAME" /> en het uitvoerbare pad voor <ph name="PRODUCT_NAME" />.
 
-      Als dit beleid niet is ingesteld of is ingesteld op 'true' (waar), worden er gegevens verzameld die kunnen worden gebruikt om gebruikers te identificeren.
+      Als dit beleid niet is ingesteld of op 'true' (waar) is ingesteld, worden er gegevens verzameld die kunnen worden gebruikt om gebruikers te identificeren.
       Als dit beleid is ingesteld op 'false' (onwaar), worden er geen gegevens verzameld die kunnen worden gebruikt om gebruikers te identificeren.
 
       Dit beleid is alleen van toepassing wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -2327,7 +2327,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="723103540848640830">De minimumlengte van de pincode voor het vergrendelingsscherm instellen</translation>
 <translation id="7232816984286843471">Als het beleid is ingesteld op 'false' (onwaar), mogen niet-gelieerde gebruikers Crostini niet gebruiken.
 
-      Als het beleid niet is ingesteld of is ingesteld op 'true' (waar), mogen alle gebruikers Crostini gebruiken, op voorwaarde dat de andere instellingen dit ook toestaan.
+      Als het beleid niet is ingesteld of op 'true' (waar) is ingesteld, mogen alle gebruikers Crostini gebruiken, op voorwaarde dat de andere instellingen dit ook toestaan.
       Alle drie beleidsregels (VirtualMachinesAllowed, CrostiniAllowed en DeviceUnaffiliatedCrostiniAllowed) moeten voor Crostini zijn ingesteld op 'true' (waar) om Crostini te kunnen uitvoeren.
       Wanneer dit beleid wordt gewijzigd in 'false' (onwaar), is het beleid van toepassing op nieuwe Crostini-containers die worden gestart. Containers die al worden uitgevoerd, worden niet uitgeschakeld.</translation>
 <translation id="7234280155140786597">Namen van de verboden hosts voor systeemeigen berichten (of * voor alle)</translation>
@@ -2377,9 +2377,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7311458740754205918">Als dit beleid is ingesteld op 'waar' of niet is ingesteld, kunnen op de nieuwe tabbladpagina contentsuggesties worden weergegeven op basis van de browsegeschiedenis, interesses en locatie van de gebruiker.
 
       Als dit is ingesteld op 'onwaar', worden er geen automatisch gegenereerde contentsuggesties weergegeven op de nieuwe tabbladpagina.</translation>
-<translation id="7313793931637495417">Met dit beleid wordt bepaald of er versiegegevens worden gerapporteerd, zoals OS-versie, OS-platform, OS-architectuur, <ph name="PRODUCT_NAME" />-versie en <ph name="PRODUCT_NAME" />-kanaal.
+<translation id="7313793931637495417">Met dit beleid wordt bepaald of er versiegegevens moeten worden gerapporteerd, zoals OS-versie, OS-platform, OS-architectuur, <ph name="PRODUCT_NAME" />-versie en <ph name="PRODUCT_NAME" />-kanaal.
 
-      Als dit beleid niet is ingesteld of is ingesteld op 'true' (waar), worden er versiegegevens verzameld.
+      Als dit beleid niet is ingesteld of op 'true' (waar) is ingesteld, worden er versiegegevens verzameld.
       Als dit beleid is ingesteld op 'false' (onwaar), worden er geen versiegegevens verzameld.
 
       Dit beleid is alleen van toepassing wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -2415,9 +2415,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7349338075015720646">Specificeert een lijst met web-apps die op de achtergrond worden geïnstalleerd zonder interactie van de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker.
 
       Elk lijstitem van het beleid is een tweeledig object, bestaande uit 'url' en 'launch_container'. 'url' moet de URL van de te installeren web-app zijn en 'launch_container' moet 'window' of 'tab' zijn om aan te duiden hoe de web-app na de installatie wordt geopend. Als 'launch_container' wordt weggelaten, wordt de app geopend in een venster indien Chrome de app als progressieve web-app beschouwt en op een tabblad indien de app niet als progressieve web-app wordt beschouwd.</translation>
-<translation id="735902178936442460">Met dit beleid wordt bepaald of er gegevens worden gerapporteerd die kunnen worden gebruikt om machines te identificeren, zoals de machinenaam en netwerkadressen.
+<translation id="735902178936442460">Met dit beleid wordt bepaald of er informatie moet worden gerapporteerd die gebruikt kan worden om machines te identificeren, zoals de machinenaam en netwerkadressen.
 
-      Als dit beleid niet is ingesteld of is ingesteld op 'true' (waar), worden er gegevens verzameld die kunnen worden gebruikt om machines te identificeren.
+      Als dit beleid niet is ingesteld of op 'true' (waar) is ingesteld, worden er gegevens verzameld die kunnen worden gebruikt om machines te identificeren.
       Als dit beleid is ingesteld op 'false' (onwaar), worden er geen gegevens verzameld die kunnen worden gebruik om machines te identificeren.
 
       Dit beleid is alleen van toepassing wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -2739,7 +2739,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moet lager zijn dan of gelijk zijn aan de inactieve vertraging.</translation>
 <translation id="8138009212169037227">Met dit beleid wordt bepaald of beleidsgegevens en het tijdstip van de beleidsfetch worden gerapporteerd.
 
-      Als dit beleid niet is ingesteld of is ingesteld op 'true' (waar), worden beleidsgegevens en het tijdstip van de beleidsfetch verzameld.
+      Als dit beleid niet is ingesteld of op 'true' (waar) is ingesteld, worden beleidsgegevens en het tijdstip van de beleidsfetch verzameld.
       Als dit beleid is ingesteld op 'false' (onwaar), worden beleidsgegevens en het tijdstip van de beleidsfetch niet verzameld.
 
       Dit beleid is alleen van toepassing wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>

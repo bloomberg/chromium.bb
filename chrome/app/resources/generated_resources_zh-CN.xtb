@@ -368,7 +368,6 @@
 <translation id="1531004739673299060">应用窗口</translation>
 <translation id="15373452373711364">大号鼠标光标</translation>
 <translation id="1538729222189715449">正在打开 Linux 文件…</translation>
-<translation id="153933193410874873">无法在此设备上验证您的身份</translation>
 <translation id="1540605929960647700">启用演示模式</translation>
 <translation id="1543284117603151572">从 Edge 导入的书签</translation>
 <translation id="1545177026077493356">自动自助服务终端模式</translation>
@@ -2763,7 +2762,7 @@
 <translation id="5227808808023563348">查找上一文字</translation>
 <translation id="5228076606934445476">设备出现问题。要从此错误下恢复，您需要重启设备，然后重试。</translation>
 <translation id="5229189185761556138">管理输入法</translation>
-<translation id="5230516054153933099">窗</translation>
+<translation id="5230516054153933099">窗口</translation>
 <translation id="5233019165164992427">NaCl调试端口</translation>
 <translation id="5233231016133573565">进程 ID</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
@@ -2849,6 +2848,7 @@
 <translation id="5332624210073556029">时区：</translation>
 <translation id="5334142896108694079">脚本缓存</translation>
 <translation id="5334844597069022743">查看源代码</translation>
+<translation id="5334899159203764908">详细了解<ph name="BEGIN_LINK" />网站访问权限<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">正在将 <ph name="FILE_COUNT" />备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">禁止任何网站访问 USB 设备</translation>
 <translation id="5337771866151525739">由第三方安装。</translation>
@@ -5050,7 +5050,7 @@
 <translation id="8659875081143553823">请稍候</translation>
 <translation id="8661290697478713397">在隐身窗口中打开链接(&amp;G)</translation>
 <translation id="8662671328352114214">加入<ph name="TYPE" />网络</translation>
-<translation id="8662795692588422978">其他人</translation>
+<translation id="8662795692588422978">用户</translation>
 <translation id="8662811608048051533">您会从大多数网站退出。</translation>
 <translation id="8662911384982557515">将您的主页更改为：<ph name="HOME_PAGE" /></translation>
 <translation id="8662978096466608964">Chrome 无法设置壁纸。</translation>
@@ -5332,7 +5332,7 @@
 <translation id="9064142312330104323">Google 个人资料照片（正在加载）</translation>
 <translation id="9064275926664971810">启用自动填充功能后，只需点击一次即可填写多个表单</translation>
 <translation id="9064939804718829769">正在处理…</translation>
-<translation id="9065203028668620118">修改</translation>
+<translation id="9065203028668620118">编辑</translation>
 <translation id="9066773882585798925">让系统大声朗读文字</translation>
 <translation id="9066782832737749352">文字转语音</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> 会使用您保存的密码让您自动登录到符合条件的网站和应用。</translation>
@@ -5386,7 +5386,7 @@
 <translation id="9148058034647219655">退出</translation>
 <translation id="9148116311817999634">设置屏幕锁定，以确保安全无虞</translation>
 <translation id="9148126808321036104">重新登录</translation>
-<translation id="9149866541089851383">修改...</translation>
+<translation id="9149866541089851383">编辑...</translation>
 <translation id="9150045010208374699">使用您的摄像头</translation>
 <translation id="9153934054460603056">保存身份信息和密码</translation>
 <translation id="9154194610265714752">已更新</translation>

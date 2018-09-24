@@ -371,7 +371,6 @@
 <translation id="1531004739673299060">應用程式視窗</translation>
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1538729222189715449">正在開啟 Linux 檔案…</translation>
-<translation id="153933193410874873">我們無法在這部裝置上驗證你的身分</translation>
 <translation id="1540605929960647700">啟用示範模式</translation>
 <translation id="1543284117603151572">從 Edge 匯入的書籤</translation>
 <translation id="1545177026077493356">自動 Kiosk 模式</translation>
@@ -3304,9 +3303,11 @@
 <translation id="5979469435153841984">如要將網頁加入書籤，請按一下網址列的星號</translation>
 <translation id="5982621672636444458">排序選項</translation>
 <translation id="5984222099446776634">最近造訪的網站</translation>
+<translation id="5990142338020175451">體驗更加個人化的 Google 服務 (例如更適切的網頁建議)</translation>
 <translation id="5990386583461751448">已翻譯</translation>
 <translation id="5991049340509704927">放大</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{為確保你可以持續瀏覽網路，請要求你的管理員移除這個應用程式。}other{為確保你可以持續瀏覽網路，請要求你的管理員移除這些應用程式。}}</translation>
+<translation id="5997337190805127100">進一步瞭解網站存取權</translation>
 <translation id="6002458620803359783">聲音偏好</translation>
 <translation id="6005695835120147974">媒體路由器</translation>
 <translation id="6006484371116297560">傳統版</translation>
@@ -4001,6 +4002,7 @@
 <translation id="7040230719604914234">電信業者</translation>
 <translation id="7042418530779813870">貼上及搜尋(&amp;S)</translation>
 <translation id="7043108582968290193">完成！未找到不相容的應用程式。</translation>
+<translation id="7044124535091449260">進一步瞭解網站存取權</translation>
 <translation id="7049293980323620022">要保留檔案嗎？</translation>
 <translation id="7051943809462976355">正在搜尋滑鼠...</translation>
 <translation id="7052237160939977163">傳送效能追蹤資料</translation>

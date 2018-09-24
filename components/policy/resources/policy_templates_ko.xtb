@@ -1596,12 +1596,12 @@
 <translation id="5272684451155669299">True일 경우, 사용자는 Chrome 기기의 하드웨어를 사용하여 <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> <ph name="CHALLENGE_USER_KEY_FUNCTION" />을(를) 통해 개인정보 보호 설정 CA에 대한 인증서를 원격으로 증명할 수 있습니다.
 
           False로 설정되어 있거나 설정되지 않은 경우, API 호출 시 오류 메시지가 표시되며 호출에 실패합니다.</translation>
-<translation id="5277806246014825877">이 사용자가 Crostini를 실행할 수 있게 합니다.
+<translation id="5277806246014825877">사용자가 Crostini를 실행할 수 있게 합니다.
 
       이 정책이 False로 설정되어 있으면 사용자가 Crostini를 사용할 수 없습니다.
       이 정책이 True로 설정되어 있거나 설정되어 있지 않으면 다른 설정에서도 허용하는 한 사용자가 Crostini를 사용할 수 있습니다.
-      VirtualMachinesAllowed, CrostiniAllowed, DeviceUnaffiliatedCrostiniAllowed가 Crostini에 적용되어 있을 때 실행할 수 있으려면 세 가지 정책이 모두 True로 설정되어 있어야 합니다.
-      이 정책이 False로 변경되면 새 Crostini 컨테이너를 시작하도록 적용되지만 이미 실행 중인 컨테이너는 종료되지 않습니다.</translation>
+      VirtualMachinesAllowed, CrostiniAllowed, DeviceUnaffiliatedCrostiniAllowed가 Crostini에 적용되어 실행할 수 있으려면 세 가지 정책이 모두 True로 설정되어 있어야 합니다.
+      이 정책이 False로 변경되면 새 Crostini 컨테이너가 시작되지만 이미 실행 중인 컨테이너는 종료되지 않습니다.</translation>
 <translation id="5283457834853986457">플러그인 Finder 사용 중지(지원 중단됨)</translation>
 <translation id="5288772341821359899">정책이 설정된 경우 WebRTC가 사용하는 UDP 포트 범위는 지정한 포트 간격(엔드포인트 포함)으로 제한됩니다.
 
@@ -2344,8 +2344,8 @@
 <translation id="7232816984286843471">이 정책이 False로 설정되어 있으면 제휴되지 않은 사용자는 Crostini를 사용할 수 없습니다.
 
       이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 다른 설정에서도 허용하는 한 모든 사용자가 Crostini를 사용할 수 있습니다.
-      VirtualMachinesAllowed, CrostiniAllowed, DeviceUnaffiliatedCrostiniAllowed가 Crostini에 적용되어 있을 때 실행할 수 있으려면 세 가지 정책이 모두 True로 설정되어 있어야 합니다.
-      이 정책이 False로 변경되면 새 Crostini 컨테이너를 시작하도록 적용되지만 이미 실행 중인 컨테이너는 종료되지 않습니다.</translation>
+      VirtualMachinesAllowed, CrostiniAllowed, DeviceUnaffiliatedCrostiniAllowed가 Crostini에 적용되어 실행할 수 있으려면 세 가지 정책이 모두 True로 설정되어 있어야 합니다.
+      이 정책이 False로 변경되면 새 Crostini 컨테이너가 시작되지만 이미 실행 중인 컨테이너는 종료되지 않습니다.</translation>
 <translation id="7234280155140786597">차단된 기본 메시지 호스트의 이름(모두 차단하려면 * 값 적용)</translation>
 <translation id="7236775576470542603">로그인 화면에서 사용하는 화면 돋보기의 기본 유형을 설정합니다.
 
@@ -2713,9 +2713,9 @@
 
       이 정책이 True로 설정되어 있으면 기기에서 가상 머신을 실행할 수 있습니다.
       이 정책이 False로 설정되어 있으면 기기에서 가상 머신을 실행할 수 없습니다.
-      VirtualMachinesAllowed, CrostiniAllowed, DeviceUnaffiliatedCrostiniAllowed가 Crostini에 적용되어 있을 때 실행할 수 있으려면 세 가지 정책이 모두 True로 설정되어 있어야 합니다.
+      VirtualMachinesAllowed, CrostiniAllowed, DeviceUnaffiliatedCrostiniAllowed가 Crostini에 적용되어 실행할 수 있으려면 세 가지 정책이 모두 True로 설정되어 있어야 합니다.
 
-      이 정책이 False로 변경되면 새 Crostini 컨테이너를 시작하도록 적용되지만 이미 실행 중인 컨테이너는 종료되지 않습니다.
+      이 정책이 False로 변경되면 새 Crostini 컨테이너가 시작되지만 이미 실행 중인 컨테이너는 종료되지 않습니다.
       이 정책이 관리 기기에서 설정되어 있지 않으면 기기에서 가상 머신을 실행할 수 없습니다.
       관리되지 않는 기기는 가상 머신을 실행할 수 있습니다.</translation>
 <translation id="802147957407376460">화면을 0도 회전</translation>

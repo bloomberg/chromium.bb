@@ -371,7 +371,6 @@
 <translation id="1531004739673299060">หน้าต่างแอปพลิเคชัน</translation>
 <translation id="15373452373711364">เคอร์เซอร์เมาส์ขนาดใหญ่</translation>
 <translation id="1538729222189715449">กำลังเปิดไฟล์ Linux...</translation>
-<translation id="153933193410874873">เรายืนยันตัวตนของคุณในอุปกรณ์เครื่องนี้ไม่ได้</translation>
 <translation id="1540605929960647700">เปิดใช้โหมดสาธิต</translation>
 <translation id="1543284117603151572">นำเข้าจาก Edge</translation>
 <translation id="1545177026077493356">โหมดคีออสก์อัตโนมัติ</translation>
@@ -2862,6 +2861,7 @@
 <translation id="5332624210073556029">โซนเวลา:</translation>
 <translation id="5334142896108694079">แคชของสคริปต์</translation>
 <translation id="5334844597069022743">ดูโค้ดต้นฉบับ</translation>
+<translation id="5334899159203764908">ดูข้อมูลเพิ่มเติมเกี่ยวกับ<ph name="BEGIN_LINK" />การเข้าถึงเว็บไซต์<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">กำลังสำรอง <ph name="FILE_COUNT" />ไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">ไม่อนุญาตให้เว็บไซต์เข้าถึงอุปกรณ์ USB</translation>
 <translation id="5337771866151525739">ติดตั้งโดยบุคคลที่สาม</translation>

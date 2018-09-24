@@ -370,7 +370,6 @@
 <translation id="1531004739673299060">Окно программы</translation>
 <translation id="15373452373711364">Большой курсор мыши</translation>
 <translation id="1538729222189715449">Файлы Linux открываются…</translation>
-<translation id="153933193410874873">Не удалось проверить вашу личность на этом устройстве.</translation>
 <translation id="1540605929960647700">Демонстрационный режим</translation>
 <translation id="1543284117603151572">Импортированные из Microsoft Edge</translation>
 <translation id="1545177026077493356">Автоматическое включение режима киоска</translation>
@@ -2863,6 +2862,7 @@
 <translation id="5332624210073556029">Часовой пояс:</translation>
 <translation id="5334142896108694079">Кеш скрипта</translation>
 <translation id="5334844597069022743">Смотреть исходный код</translation>
+<translation id="5334899159203764908">Подробнее <ph name="BEGIN_LINK" />о доступе для сайта<ph name="END_LINK" />…</translation>
 <translation id="5335458522276292100">Сохранение файлов (<ph name="FILE_COUNT" />) на <ph name="BEGIN_LINK" />Google Диске<ph name="END_LINK" />…</translation>
 <translation id="5336126339807372270">Запретить сайтам доступ к USB-устройствам.</translation>
 <translation id="5337771866151525739">Установлено независимым поставщиком.</translation>

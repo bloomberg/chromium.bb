@@ -371,7 +371,6 @@
 <translation id="1531004739673299060">Okno aplikacije</translation>
 <translation id="15373452373711364">Velik miškin kazalec</translation>
 <translation id="1538729222189715449">Odpiranje datotek za Linux ...</translation>
-<translation id="153933193410874873">V tej napravi ni bilo mogoče preveriti vaše identitete</translation>
 <translation id="1540605929960647700">Omogočanje predstavitvenega načina</translation>
 <translation id="1543284117603151572">Uvoženo iz brskalnika Edge</translation>
 <translation id="1545177026077493356">Samodejni način kiosk</translation>
@@ -2862,6 +2861,7 @@
 <translation id="5332624210073556029">Časovni pas:</translation>
 <translation id="5334142896108694079">Predpomnilnik za skripte</translation>
 <translation id="5334844597069022743">Ogled izvorne kode</translation>
+<translation id="5334899159203764908">Preberite več o <ph name="BEGIN_LINK" />dostopu do spletnih mest<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Varnostno kopiranje v <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="5336126339807372270">Spletnim mestom ne dovoli dostopa do naprav USB</translation>
 <translation id="5337771866151525739">Namestil jo je drug ponudnik.</translation>

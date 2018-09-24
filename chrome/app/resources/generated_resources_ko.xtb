@@ -371,7 +371,6 @@
 <translation id="1531004739673299060">애플리케이션 창</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1538729222189715449">Linux 파일을 여는 중...</translation>
-<translation id="153933193410874873">이 기기에서 신원을 인증할 수 없습니다.</translation>
 <translation id="1540605929960647700">데모 모드 사용</translation>
 <translation id="1543284117603151572">Edge에서 가져옴</translation>
 <translation id="1545177026077493356">자동 키오스크 모드</translation>
@@ -2860,6 +2859,7 @@
 <translation id="5332624210073556029">표준시간대:</translation>
 <translation id="5334142896108694079">스크립트 캐시</translation>
 <translation id="5334844597069022743">소스 보기</translation>
+<translation id="5334899159203764908"><ph name="BEGIN_LINK" />사이트 액세스 권한<ph name="END_LINK" /> 자세히 알아보기</translation>
 <translation id="5335458522276292100"><ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 파일 <ph name="FILE_COUNT" />개 백업 중</translation>
 <translation id="5336126339807372270">모든 사이트의 USB 기기 액세스를 허용하지 않음</translation>
 <translation id="5337771866151525739">제3자에 의해 설치되었습니다.</translation>

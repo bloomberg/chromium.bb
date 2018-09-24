@@ -2621,7 +2621,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7976157349247117979">Nome do destino do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Sem restrições especiais</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
-<translation id="7992136759457836904">Permite-lhe controlar a execução de máquinas virtuais no SO Chrome.
+<translation id="7992136759457836904">Permite-lhe controlar a execução de máquinas virtuais no Chrome OS.
 
       Se a política estiver definida como verdadeira, o dispositivo pode executar máquinas virtuais.
       Se a política estiver definida como falsa, o dispositivo não pode executar máquinas virtuais.

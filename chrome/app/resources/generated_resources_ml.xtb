@@ -368,7 +368,6 @@
 <translation id="1531004739673299060">അപ്ലിക്കേഷൻ വിൻഡോ</translation>
 <translation id="15373452373711364">വലിയ മൗസ് കഴ്‌സർ</translation>
 <translation id="1538729222189715449">Linux ഫയലുകൾ തുറക്കുന്നു...</translation>
-<translation id="153933193410874873">ഈ ഉപകരണത്തിൽ നിങ്ങളുടെ ഐഡൻറിറ്റി പരിശോധിച്ചുറപ്പിക്കാൻ ഞങ്ങൾക്കായില്ല</translation>
 <translation id="1540605929960647700">ഡെമോ മോഡ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="1543284117603151572">Edge-ൽ നിന്നും ഇമ്പോർട്ടുചെയ്‌തത്</translation>
 <translation id="1545177026077493356">യാന്ത്രിക കിയോസ്‌ക് മോഡ്</translation>
@@ -2858,6 +2857,7 @@
 <translation id="5332624210073556029">സമയ മേഖല :</translation>
 <translation id="5334142896108694079">സ്‌ക്രിപ്റ്റ് കാഷെ</translation>
 <translation id="5334844597069022743">ഉറവിടം കാണുക</translation>
+<translation id="5334899159203764908"><ph name="BEGIN_LINK" />സൈറ്റ് ആക്‌സസ്<ph name="END_LINK" /> എന്നതിനെ കുറിച്ച് കൂടുതലറിയുക</translation>
 <translation id="5335458522276292100"><ph name="BEGIN_LINK" />Google ഡ്രൈവിലേക്ക്<ph name="END_LINK" /> <ph name="FILE_COUNT" /> ബാക്കപ്പ് ചെയ്യുന്നു</translation>
 <translation id="5336126339807372270">USB ഉപകരണങ്ങൾ ആക്‌സസ് ചെയ്യാൻ ഒരു സൈറ്റിനെയും അനുവദിക്കരുത്</translation>
 <translation id="5337771866151525739">ഒരു മൂന്നാം കക്ഷി ഇൻസ്റ്റാളുചെയ്‌തത്.</translation>
@@ -4506,7 +4506,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
     <ph name="LINE_BREAK2" />
     കുറച്ച് ഫോട്ടോകൾ തിരഞ്ഞെടുത്ത് പരീക്ഷിക്കുക.</translation>
 <translation id="782590969421016895">നിലവിലെ പേജുകള്‍ ഉപയോഗിക്കുക</translation>
-<translation id="7826346148677309647">നിങ്ങളുടെ ഉപകരണത്തിനായി കൂടുതൽ ആപ്പുകൾ Play സ്‌റ്റോറിൽ കണ്ടെത്താനാവും.</translation>
+<translation id="7826346148677309647">നിങ്ങളുടെ ഉപകരണത്തിനായി കൂടുതൽ ആപ്പുകൾ, Play സ്‌റ്റോറിൽ കണ്ടെത്താനാവും.</translation>
 <translation id="7826790948326204519"><ph name="BEGIN_H3" />ഡീബഗ് ചെയ്യൽ ഫീച്ചറുകൾ<ph name="END_H3" />
     <ph name="BR" />
     നിങ്ങളുടെ ഉപകരണത്തിൽ ഇൻസ്‌റ്റാൾ ചെയ്യുന്നതിനും ഇഷ്‌ടാനുസൃത കോഡ് പരീക്ഷിക്കുന്നതിനും Chrome OS ഉപകരണത്തിൽ ഡീബഗ് ചെയ്യൽ ഫീച്ചറുകൾ പ്രവർത്തനക്ഷമമാക്കാനാവും. ഇനി പറയുന്നവ ചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കും:<ph name="BR" />
@@ -4703,7 +4703,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8059417245945632445">&amp;ഉപകരണങ്ങൾ പരിശോധിക്കുക</translation>
 <translation id="8063235345342641131">ഡിഫോൾട്ടായ പച്ച അവതാർ</translation>
 <translation id="8064671687106936412">കീ:</translation>
-<translation id="8065485338434000013">നിങ്ങളുടെ ചില കാർഡുകൾ മാത്രമേ ഈ ഉപകരണത്തിൽ ഉപയോഗിക്കാനാവൂ</translation>
+<translation id="8065485338434000013">നിങ്ങളുടെ ചില കാർഡുകൾ, ഈ ഉപകരണത്തിൽ മാത്രമേ ഉപയോഗിക്കാനാവൂ</translation>
 <translation id="806812017500012252">ശീര്‍ഷക പ്രകാരം പുനര്‍ക്രമീകരിക്കുക</translation>
 <translation id="8068253693380742035">സൈൻ ഇൻ ചെയ്യാൻ സ്‌പർശിക്കുക</translation>
 <translation id="8069615408251337349">Google ക്ലൗഡ് പ്രിന്റ്</translation>

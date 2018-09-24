@@ -371,7 +371,6 @@
 <translation id="1531004739673299060">अॅप्लिकेशन विंडो</translation>
 <translation id="15373452373711364">मोठा माउस कर्सर</translation>
 <translation id="1538729222189715449">Linux फायली सुरू करत आहे...</translation>
-<translation id="153933193410874873">आम्ही या डिव्हाइसवर तुमची ओळख पडताळू शकलो नाही</translation>
 <translation id="1540605929960647700">डेमो मोड सुरू करा</translation>
 <translation id="1543284117603151572">Edge वरून आयात केले</translation>
 <translation id="1545177026077493356">स्वयंचलित कियोस्क मोड</translation>
@@ -2862,6 +2861,7 @@
 <translation id="5332624210073556029">टाइम झोन:</translation>
 <translation id="5334142896108694079">स्क्रिप्ट कॅशे</translation>
 <translation id="5334844597069022743">स्त्रोत पहा</translation>
+<translation id="5334899159203764908"><ph name="BEGIN_LINK" />साइट अॅक्सेस<ph name="END_LINK" /> बद्दल अधिक जाणून घ्या</translation>
 <translation id="5335458522276292100"><ph name="FILE_COUNT" /> चा <ph name="BEGIN_LINK" />Google ड्राइव्ह<ph name="END_LINK" /> वर बॅकअप घेत आहे</translation>
 <translation id="5336126339807372270">कोणत्याही साइटना USB डिव्हाइस अॅक्सेस करू देऊ नका</translation>
 <translation id="5337771866151525739">एका तृतीय पक्षाद्वारे इंस्टॉल.</translation>

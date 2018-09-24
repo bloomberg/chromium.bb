@@ -381,12 +381,12 @@
 
       Ja šai politikai nav iestatīta vērtība, ir spēkā tādi paši iestatījumi kā gadījumos, kad politika ir iespējota (skatiet iepriekš sniegto aprakstu).</translation>
 <translation id="2113068765175018713">Ierobežot ierīces darbspējas laiku, veicot automātisku atsāknēšanu</translation>
-<translation id="2116790137063002724">Šī politika kontrolē, vai ziņot informāciju, kas var tikt izmantota lietotāju identificēšanai, piemēram, operētājsistēmas pieteikšanās datus, <ph name="PRODUCT_NAME" /> profila pieteikšanās datus, <ph name="PRODUCT_NAME" /> profila nosaukumu, <ph name="PRODUCT_NAME" /> profila ceļu un <ph name="PRODUCT_NAME" /> izpildāmo ceļu.
+<translation id="2116790137063002724">Šī politika kontrolē, vai sniegt informāciju, kas var tikt izmantota lietotāju identificēšanai, piemēram, operētājsistēmas pieteikšanās datus, <ph name="PRODUCT_NAME" /> profila pieteikšanās datus, <ph name="PRODUCT_NAME" /> profila nosaukumu, <ph name="PRODUCT_NAME" /> profila ceļu un <ph name="PRODUCT_NAME" /> izpildāmo ceļu.
 
-      Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “True”, informācija, ko var izmantot, lai identificētu lietotājus, tiek apkopota.
+      Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “True”, informācija, kas var tikt izmantot lietotāju identificēšanai, tiek apkopota.
       Ja šai politikai ir iestatīta vērtība “False”, informācija, kas var tikt izmantota lietotāju identificēšanai, netiek apkopota.
 
-      Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un mašīna ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="2132732175597591362">Pārvalda URL rakstu balto sarakstu ar vietnēm, kurās atskaņošana vienmēr būs iespējota.
@@ -1594,8 +1594,8 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šai politikai ir iestatīta vērtība “False”, rīks Crostini lietotājam nav iespējots.
       Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “True”, rīks Crostini lietotājam ir iespējots, ja vien to atļauj arī citi iestatījumi.
-      Visu trīs politiku, VirtualMachinesAllowed, CrostiniAllowed un DeviceUnaffiliatedCrostiniAllowed, kad tās ir attiecināmas, vērtībām ir jābūt “True”, lai rīka Crostini darbība būtu atļauta.
-      Nomainot šīs politikas vērtību uz “False”, tas attiecas uz jaunu rīka Crostini konteineru sākšanu, bet neaizver jau darbībā esošos konteinerus.</translation>
+      Visu trīs politiku (VirtualMachinesAllowed, CrostiniAllowed un DeviceUnaffiliatedCrostiniAllowed) vērtībām ir jābūt “True”, kad tās tiek piemērotas Crostini darbībai un lietošanai.
+      Nomainot šīs politikas vērtību uz “False”, tas attiecas uz jaunu rīka Crostini konteineru palaišanu, bet neaizver jau darbībā esošos konteinerus.</translation>
 <translation id="5283457834853986457">Atspējo spraudņu meklētāju (novecojis)</translation>
 <translation id="5288772341821359899">Ja politika ir iestatīta, WebRTC izmantotais UDP portu diapazons ir ierobežots līdz portu intervālam (tostarp galapunktiem).
 
@@ -2336,8 +2336,8 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7232816984286843471">Ja šai politikai ir iestatīta vērtība “False”, nesaistīti lietotāji nevarēs izmantot rīku Crostini.
 
       Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “True”, visi lietotāji varēs izmantot rīku Crostini, ciktāl tas ir saskaņā arī ar citiem iestatījumiem.
-      Visu trīs politiku, VirtualMachinesAllowed, CrostiniAllowed un DeviceUnaffiliatedCrostiniAllowed, kad tās ir attiecināmas, vērtībām ir jābūt “True”, lai atļautu rīka Crostini darbību.
-      Nomainot šīs politikas vērtību uz “False”, tas attiecas uz jaunu rīka Crostini konteineru sākšanu, bet neaizver jau darbībā esošos konteinerus.</translation>
+      Visu trīs politiku (VirtualMachinesAllowed, CrostiniAllowed un DeviceUnaffiliatedCrostiniAllowed) vērtībām ir jābūt “True”, kad tās tiek piemērotas Crostini darbībai un lietošanai.
+      Nomainot šīs politikas vērtību uz “False”, tas attiecas uz jaunu rīka Crostini konteineru palaišanu, bet neaizver jau darbībā esošos konteinerus.</translation>
 <translation id="7234280155140786597">Aizliegto vietējās ziņojumapmaiņas saimniekdatoru nosaukumi (vai “*”, lai norādītu visus)</translation>
 <translation id="7236775576470542603">Iestatiet noklusējuma veidu ekrāna lupai, kas ir iespējota pieteikšanās ekrānā.
 
@@ -2387,10 +2387,10 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šai politikai ir iestatīta vērtība “Nepatiesa”, lapā “Jauna cilne” netiek rādīti automātiski veidoti satura ieteikumi.</translation>
 <translation id="7313793931637495417">Šī politika nosaka, vai ziņot par versijas informāciju, piemēram, operētājsistēmas versiju, operētājsistēmas platformu, operētājsistēmas arhitektūru, <ph name="PRODUCT_NAME" /> versiju un <ph name="PRODUCT_NAME" /> kanālu.
 
-      Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “True”, tiek apkopota versijas informācija.
+      Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “True”, versijas informācija tiek apkopota.
       Ja šai politikai ir iestatīta vērtība ir “False”, versijas informācija netiek apkopota.
 
-      Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un mašīna ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Papildu komandrindas parametri pārlūkprogrammai <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Darbojas līdzīgi politikai Wipe (vērtība 2), taču mēģina saglabāt pieteikšanās marķierus, tādējādi lietotājam nav jāpierakstās atkārtoti.</translation>
 <translation id="7329842439428490522">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā ekrāns tiek izslēgts, ja ierīce darbojas ar akumulatora jaudu.
@@ -2423,12 +2423,12 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7349338075015720646">Saraksts ar vietnēm, kas tika instalētas neuzraudzīti (bez lietotāja mijiedarbības) un ko lietotājs nevar atinstalēt vai atspējot.
 
       Katrs politikas saraksta vienums ir objekts ar diviem elementiem: “url” un “launch_container”. Elementam “url” jābūt instalējamās tīmekļa lietotnes vietrādim URL, savukārt elementam “launch_container” — vai nu “window”, vai “tab”, kas nosaka veidu, kādā tīmekļa vietne tiks atvērta pēc tās instalēšanas. Izlaižot elementu “launch_container”, ja pārlūks Chrome uzskatīs, ka tā ir progresīvā tīmekļa lietotne, lietotne tiks palaista loga veidā, citādi — cilnes veidā.</translation>
-<translation id="735902178936442460">Šī politika nosaka, vai ziņot informāciju, kas var tikt izmantota iekārtu identificēšanai, piemēram, iekārtas nosaukumu un tīkla adreses.
+<translation id="735902178936442460">Šī politika nosaka, vai sniegt informāciju, kas var tikt izmantota iekārtu identificēšanai, piemēram, iekārtas nosaukums un tīkla adreses.
 
       Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “True”, informācija, kas var tikt izmantota iekārtu identificēšanai, tiek apkopota.
       Ja šai politikai ir iestatīta vērtība “False”, informācija, kas var tikt izmantota iekārtu identificēšanai, netiek apkopota.
 
-      Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un mašīna ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Kad lietotāji pāriet uz vietnēm, kas ir atzīmētas kā iespējami ļaunprātīgas, tiek rādīta funkcijas Droša pārlūkošana brīdinājuma lapa. Ja šis iestatījums ir iespējots, lietotāji nevar pāriet no brīdinājuma lapas uz ļaunprātīgo vietni.
 
       Ja šis iestatījums ir atspējots vai nav konfigurēts, lietotāji pēc brīdinājuma saņemšanas var pāriet uz vietni, kas atzīmēta kā nevēlama.
@@ -2702,7 +2702,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
       Ja politikai ir iestatīta vērtība “True”, ierīcei ir atļauts palaist virtuālās mašīnas.
       Ja politikai ir iestatīta vērtība “False”, ierīcei nebūs atļauts palaist virtuālās mašīnas.
-      Visu trīs politiku, VirtualMachinesAllowed, CrostiniAllowed un DeviceUnaffiliatedCrostiniAllowed, kad tās ir attiecināmas, vērtībām ir jābūt “True”, lai rīka Crostini darbība būtu atļauta.
+      Visu trīs politiku (VirtualMachinesAllowed, CrostiniAllowed un DeviceUnaffiliatedCrostiniAllowed), vērtībām ir jābūt “True”, kad tās tiek piemērotas Crostini darbībai un lietošanai.
       Nomainot šīs politikas vērtību uz “False”, tas attiecas uz jaunu virtuālo mašīnu sākšanu, bet neaizver jau darbībā esošās virtuālās mašīnas.
       Ja šī politika nav iestatīta pārvaldītā ierīcē, ierīcei nav atļauts palaist virtuālās mašīnas.
       Nepārvaldītām ierīcēm ir atļauts palaist virtuālās mašīnas.</translation>
@@ -2753,9 +2753,9 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="8138009212169037227">Šī politika nosaka, vai ziņot par politikas datiem un politikas ieneses laiku.
 
       Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “True”, tiek apkopoti politikas dati un politikas ieneses laiks.
-      Ja šai politikai ir iestatīta vērtība “False”, politikas dati un politikas ieneses laiks netiek apkopoti.
+      Ja šai politikai ir iestatīta vērtība “False”, netiek apkopoti politikas dati un politikas ieneses laiks.
 
-      Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un mašīna ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Nosūtiet serverim sarakstu ar tīkla saskarnēm, to veidiem un aparatūras adresēm.
 
       Ja šīs politikas iestatījums ir “False”, saskarņu saraksts netiks nosūtīts.</translation>

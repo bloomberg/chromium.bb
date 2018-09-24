@@ -2539,8 +2539,8 @@
       如果此政策设为 False，相应设备将无法运行虚拟机。
       若想通过应用 VirtualMachinesAllowed、CrostiniAllowed 和 DeviceUnaffiliatedCrostiniAllowed 这三项政策以允许 Crostini 运行，则这三项政策都需设为 True。
       如果此政策改设为 False，则只会导致无法启动新的虚拟机，而不会关闭已在运行的虚拟机。
-      如果未在某部托管设备上设置此政策，该设备将无法运行虚拟机。
-      非托管设备可以运行虚拟机。</translation>
+      如果未在某部受管理设备上设置此政策，该设备将无法运行虚拟机。
+      未受管理的设备可以运行虚拟机。</translation>
 <translation id="802147957407376460">将屏幕旋转 0 度</translation>
 <translation id="8033913082323846868">我们在 M70 中弃用了此政策，请改用 AutofillAddressEnabled 和 AutofillCreditCardEnabled。
 

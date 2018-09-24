@@ -371,7 +371,6 @@
 <translation id="1531004739673299060">Παράθυρο εφαρμογής</translation>
 <translation id="15373452373711364">Μεγάλος δείκτης ποντικιού</translation>
 <translation id="1538729222189715449">Άνοιγμα αρχείων Linux…</translation>
-<translation id="153933193410874873">Δεν ήταν δυνατή η επαλήθευση της ταυτότητάς σας σε αυτήν τη συσκευή</translation>
 <translation id="1540605929960647700">Ενεργοποίηση λειτουργίας επίδειξης</translation>
 <translation id="1543284117603151572">Εισαγωγή από το Edge</translation>
 <translation id="1545177026077493356">Αυτόματη λειτουργία kiosk</translation>
@@ -2862,6 +2861,7 @@
 <translation id="5332624210073556029">Ζώνη ώρας:</translation>
 <translation id="5334142896108694079">Προσωρινή μνήμη σεναρίου</translation>
 <translation id="5334844597069022743">Προβολή κώδικα</translation>
+<translation id="5334899159203764908">Μάθετε περισσότερα για την <ph name="BEGIN_LINK" />πρόσβαση ιστοτόπου<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Δημιουργία αντιγράφων ασφαλείας για <ph name="FILE_COUNT" /> αρχεία στο <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Να μην επιτρέπεται η πρόσβαση των ιστοτόπων στις συσκευές USB</translation>
 <translation id="5337771866151525739">Εγκαταστάθηκε από τρίτο μέρος.</translation>

@@ -368,7 +368,6 @@
 <translation id="1531004739673299060">חלון אפליקציה</translation>
 <translation id="15373452373711364">סמן עכבר גדול</translation>
 <translation id="1538729222189715449">‏מתבצעת פתיחה של קובצי Linux...</translation>
-<translation id="153933193410874873">לא ניתן לאמת את הזהות שלך במכשיר הזה</translation>
 <translation id="1540605929960647700">הפעלת מצב הדגמה</translation>
 <translation id="1543284117603151572">‏מיובא מ-Edge</translation>
 <translation id="1545177026077493356">מצב קיוסק אוטומטי</translation>
@@ -3304,9 +3303,11 @@
 <translation id="5979469435153841984">כדי להוסיף דפים לסימניות, לחץ על הכוכב בסרגל הכתובות</translation>
 <translation id="5982621672636444458">אפשרויות מיון</translation>
 <translation id="5984222099446776634">ביקרת לאחרונה</translation>
+<translation id="5990142338020175451">‏שירותי Google בהתאמה אישית יותר, כמו הצעות טובות יותר לדפים</translation>
 <translation id="5990386583461751448">מתורגם</translation>
 <translation id="5991049340509704927">הגדל</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציה הזו.}two{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}many{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}other{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}}</translation>
+<translation id="5997337190805127100">מידע נוסף על גישה לאתר</translation>
 <translation id="6002458620803359783">קולות מועדפים</translation>
 <translation id="6005695835120147974">נתב מדיה</translation>
 <translation id="6006484371116297560">קלאסי</translation>
@@ -4002,6 +4003,7 @@
 <translation id="7040230719604914234">ספק</translation>
 <translation id="7042418530779813870">הדבק וחפש</translation>
 <translation id="7043108582968290193">סיימת. לא נמצאו יותר אפליקציות שאינן תואמות.</translation>
+<translation id="7044124535091449260">מידע נוסף על גישה לאתר</translation>
 <translation id="7049293980323620022">להשאיר את הקובץ?</translation>
 <translation id="7051943809462976355">מחפש עכבר...</translation>
 <translation id="7052237160939977163">שלח נתוני מעקב אחר ביצועים</translation>

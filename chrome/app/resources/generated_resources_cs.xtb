@@ -371,7 +371,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1531004739673299060">Okno aplikace</translation>
 <translation id="15373452373711364">Velký kurzor myši</translation>
 <translation id="1538729222189715449">Otevírání souborů systému Linux...</translation>
-<translation id="153933193410874873">Na tomto zařízení jsme nemohli ověřit vaši identitu</translation>
 <translation id="1540605929960647700">Zapnout ukázkový režim</translation>
 <translation id="1543284117603151572">Importováno z aplikace Edge</translation>
 <translation id="1545177026077493356">Automatický režim veřejného terminálu</translation>
@@ -1642,7 +1641,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3465800511193611451">Čeká na ověření. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
 <translation id="3466147780910026086">Prohledávání mediálního zařízení...</translation>
 <translation id="3467267818798281173">Žádat o návrhy z Googlu</translation>
-<translation id="3468275649641751422">Streamovat soubor videa nebo zvuku</translation>
+<translation id="3468275649641751422">Streamovat zvukový soubor nebo video</translation>
 <translation id="3468522857997926824">Počet fotek, které byly zálohovány na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="3470442499439619530">Odebrat tohoto uživatele</translation>
 <translation id="3470502288861289375">Kopírování...</translation>
@@ -2858,6 +2857,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5332624210073556029">Časové pásmo:</translation>
 <translation id="5334142896108694079">Mezipaměť skriptů</translation>
 <translation id="5334844597069022743">Zobrazit zdrojový kód</translation>
+<translation id="5334899159203764908">Další informace o <ph name="BEGIN_LINK" />přístupu k webu<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Probíhá zálohování na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="5336126339807372270">Nepovolovat žádným webům přístup k zařízením USB</translation>
 <translation id="5337771866151525739">Nainstalováno třetí stranou.</translation>
@@ -4339,7 +4339,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7564847347806291057">Ukončit proces</translation>
 <translation id="7566118625369982896">Spravovat odkazy na aplikace ve službě Play</translation>
 <translation id="7566723889363720618">F12</translation>
-<translation id="7567772679638539078">Umístěte prst</translation>
+<translation id="7567772679638539078">Přiložte prst</translation>
 <translation id="756809126120519699">Vymazání údajů Chromu</translation>
 <translation id="7568790562536448087">Aktualizace</translation>
 <translation id="7571643774869182231">Na aktualizaci nemáte dostatek místa</translation>

@@ -368,7 +368,6 @@
 <translation id="1531004739673299060">Прозорец на приложението</translation>
 <translation id="15373452373711364">Голям курсор на мишката</translation>
 <translation id="1538729222189715449">Файловете за Linux се отварят...</translation>
-<translation id="153933193410874873">Не можахме да потвърдим самоличността ви на това устройство</translation>
 <translation id="1540605929960647700">Активиране на демонстрационния режим</translation>
 <translation id="1543284117603151572">Импортирани от Edge</translation>
 <translation id="1545177026077493356">Автоматичен павилионен режим</translation>
@@ -2861,6 +2860,7 @@
 <translation id="5332624210073556029">Часова зона:</translation>
 <translation id="5334142896108694079">Кеш за скриптове</translation>
 <translation id="5334844597069022743">Преглед на изходния код</translation>
+<translation id="5334899159203764908">Научете повече за <ph name="BEGIN_LINK" />достъпа на сайта<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Създаваме резервно копие на <ph name="FILE_COUNT" /> в <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Забраняване на сайтовете да осъществяват достъп до USB устройства</translation>
 <translation id="5337771866151525739">Инсталирано от трета страна.</translation>
@@ -3306,9 +3306,11 @@
 <translation id="5979469435153841984">За да запазите отметка към страница, кликнете върху иконата на звезда в адресната лента</translation>
 <translation id="5982621672636444458">Опции за сортиране</translation>
 <translation id="5984222099446776634">Наскоро посетени</translation>
+<translation id="5990142338020175451">По-персонализирани услуги на Google, като например по-добри предложения за страници</translation>
 <translation id="5990386583461751448">Преведено</translation>
 <translation id="5991049340509704927">Увеличаване</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{За да продължите да сърфирате безпроблемно в мрежата, помолете администратора да премахне това приложение.}other{За да продължите да сърфирате безпроблемно в мрежата, помолете администратора да премахне тези приложения.}}</translation>
+<translation id="5997337190805127100">Научете повече за достъпа на сайта</translation>
 <translation id="6002458620803359783">Предпочитани гласове</translation>
 <translation id="6005695835120147974">Медиен маршрутизатор</translation>
 <translation id="6006484371116297560">Класическа тема</translation>
@@ -4004,6 +4006,7 @@
 <translation id="7040230719604914234">Оператор</translation>
 <translation id="7042418530779813870">Поставяне и търсе&amp;не</translation>
 <translation id="7043108582968290193">Готово! Няма намерени несъвместими приложения.</translation>
+<translation id="7044124535091449260">Научете повече за достъпа на сайта</translation>
 <translation id="7049293980323620022">Да се запази ли файлът?</translation>
 <translation id="7051943809462976355">Търси се мишка...</translation>
 <translation id="7052237160939977163">Да се изпратят данните от проследяването на ефективността</translation>

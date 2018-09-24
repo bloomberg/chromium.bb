@@ -371,7 +371,6 @@
 <translation id="1531004739673299060">Janela do aplicativo</translation>
 <translation id="15373452373711364">Cursor grande do mouse</translation>
 <translation id="1538729222189715449">Abrindo arquivos do Linux…</translation>
-<translation id="153933193410874873">Não foi possível verificar sua identidade neste dispositivo</translation>
 <translation id="1540605929960647700">Ativar modo de demonstração</translation>
 <translation id="1543284117603151572">Importados do Edge</translation>
 <translation id="1545177026077493356">Modo de quiosque automático</translation>
@@ -2862,6 +2861,7 @@
 <translation id="5332624210073556029">Fuso horário:</translation>
 <translation id="5334142896108694079">Cache de script</translation>
 <translation id="5334844597069022743">Exibir código fonte</translation>
+<translation id="5334899159203764908">Saiba mais sobre o <ph name="BEGIN_LINK" />acesso de site<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Fazendo backup de <ph name="FILE_COUNT" /> arquivo(s) para o <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Não permitir que nenhum site acesse dispositivos USB</translation>
 <translation id="5337771866151525739">Instalada por terceiro.</translation>
@@ -3307,9 +3307,11 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5979469435153841984">Para adicionar páginas aos favoritos, clique na estrela na barra de endereço</translation>
 <translation id="5982621672636444458">Opções de classificação</translation>
 <translation id="5984222099446776634">Visitados recentemente</translation>
+<translation id="5990142338020175451">Serviços do Google mais personalizados, como melhores sugestões de páginas</translation>
 <translation id="5990386583461751448">Traduzida</translation>
 <translation id="5991049340509704927">Ampliar</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para que você possa continuar navegando na Web, peça ao seu administrador para remover esse aplicativo.}one{Para que você possa continuar navegando na Web, peça ao seu administrador para remover esse aplicativo.}other{Para que você possa continuar navegando na Web, peça ao seu administrador para remover esses aplicativos.}}</translation>
+<translation id="5997337190805127100">Saiba mais sobre o acesso aos sites</translation>
 <translation id="6002458620803359783">Vozes preferidas</translation>
 <translation id="6005695835120147974">Roteador de mídia</translation>
 <translation id="6006484371116297560">Clássico</translation>
@@ -4006,6 +4008,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7042418530779813870">&amp;Colar e pesquisar</translation>
 <translation id="7043108582968290193">Pronto! Nenhum aplicativo incompatível encontrado.</translation>
+<translation id="7044124535091449260">Saiba mais sobre o acesso aos sites</translation>
 <translation id="7049293980323620022">Manter arquivo?</translation>
 <translation id="7051943809462976355">Procurando mouse...</translation>
 <translation id="7052237160939977163">Enviar dados de rastreamento de desempenho</translation>
