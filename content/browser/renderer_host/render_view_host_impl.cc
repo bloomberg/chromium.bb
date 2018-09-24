@@ -95,6 +95,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_client_metrics.h"
+#include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/platform_font_win.h"
@@ -124,6 +125,18 @@ void GetPlatformSpecificPrefs(RendererPreferences* prefs) {
   NONCLIENTMETRICS_XP metrics = {0};
   base::win::GetNonClientMetrics(&metrics);
 
+  // Render process has the same problem with Windows applying text scaling
+  // before Chrome DPI + accessibility scaling is applied, resulting in double
+  // scaling. These fonts are only used for very specific CSS styles, but to
+  // remain consistent with the rest of chrome we will make sure they aren't
+  // incorrectly scaled:
+  display::win::AdjustFontForAccessibility(&metrics.lfCaptionFont);
+  display::win::AdjustFontForAccessibility(&metrics.lfSmCaptionFont);
+  display::win::AdjustFontForAccessibility(&metrics.lfMenuFont);
+  display::win::AdjustFontForAccessibility(&metrics.lfStatusFont);
+  display::win::AdjustFontForAccessibility(&metrics.lfMessageFont);
+
+  // Store the preferred font faces and sizes:
   prefs->caption_font_family_name = metrics.lfCaptionFont.lfFaceName;
   prefs->caption_font_height = gfx::PlatformFontWin::GetFontSize(
       metrics.lfCaptionFont);

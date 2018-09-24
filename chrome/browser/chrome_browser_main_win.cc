@@ -82,6 +82,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/base/win/message_box_win.h"
+#include "ui/display/win/dpi.h"
 #include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/switches.h"
 #include "ui/strings/grit/app_locale_settings.h"
@@ -110,6 +111,7 @@ void DumpHungRendererProcessImpl(const base::Process& renderer) {
 
 // gfx::Font callbacks
 void AdjustUIFont(LOGFONT* logfont) {
+  display::win::AdjustFontForAccessibility(logfont);
   l10n_util::AdjustUIFont(logfont);
 }
 

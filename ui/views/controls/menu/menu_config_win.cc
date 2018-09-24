@@ -12,6 +12,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_client_metrics.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/display/win/dpi.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme_win.h"
 
@@ -24,6 +25,7 @@ void MenuConfig::Init() {
 
   NONCLIENTMETRICS_XP metrics;
   base::win::GetNonClientMetrics(&metrics);
+  display::win::AdjustFontForAccessibility(&metrics.lfMenuFont);
   l10n_util::AdjustUIFont(&(metrics.lfMenuFont));
   {
     base::win::ScopedHFONT new_font(CreateFontIndirect(&metrics.lfMenuFont));

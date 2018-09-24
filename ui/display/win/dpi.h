@@ -5,6 +5,8 @@
 #ifndef UI_DISPLAY_WIN_DPI_H_
 #define UI_DISPLAY_WIN_DPI_H_
 
+#include <windows.h>
+
 #include "ui/display/display_export.h"
 
 namespace display {
@@ -26,6 +28,16 @@ DISPLAY_EXPORT float GetDPIScale();
 //
 // Returns the equivalent DPI for |device_scaling_factor|.
 DISPLAY_EXPORT int GetDPIFromScalingFactor(float device_scaling_factor);
+
+// Adjusts |font|'s height for accessibility measures already built into the
+// font in order to prevent applying the same factor twice.
+//
+// Windows will add text scaling factor into the logical size of its default
+// system fonts (which it does *not* do for DPI scaling). Since we're scaling
+// the entire UI by a combination of text scale and DPI scale, this results in
+// double scaling. Call this function to unscale the font before using it in
+// any of our rendering code.
+DISPLAY_EXPORT void AdjustFontForAccessibility(LOGFONT* font);
 
 namespace internal {
 // Note: These methods do not take accessibility adjustments into account.
