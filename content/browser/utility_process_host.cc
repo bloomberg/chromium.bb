@@ -294,9 +294,11 @@ bool UtilityProcessHost::StartProcess() {
 #if defined(OS_MACOSX)
       service_manager::switches::kEnableSandboxLogging,
 #endif
+      switches::kEnableLogging,
       switches::kForceTextDirection,
       switches::kForceUIDirection,
       switches::kIgnoreCertificateErrors,
+      switches::kLoggingLevel,
       switches::kOverrideUseSoftwareGLForTests,
       switches::kOverrideEnabledCdmInterfaceVersion,
       switches::kProxyServer,
@@ -307,6 +309,8 @@ bool UtilityProcessHost::StartProcess() {
       switches::kUseMockCertVerifierForTesting,
       switches::kUtilityStartupDialog,
       switches::kUseGL,
+      switches::kV,
+      switches::kVModule,
 #if defined(OS_ANDROID)
       switches::kOrderfileMemoryOptimization,
 #endif

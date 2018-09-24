@@ -938,9 +938,10 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
       return result;
   }
 
-  // Allow the renderer and gpu processes to access the log file.
+  // Allow the renderer, gpu and utility processes to access the log file.
   if (process_type == service_manager::switches::kRendererProcess ||
-      process_type == service_manager::switches::kGpuProcess) {
+      process_type == service_manager::switches::kGpuProcess ||
+      process_type == service_manager::switches::kUtilityProcess) {
     if (logging::IsLoggingToFileEnabled()) {
       DCHECK(base::FilePath(logging::GetLogFileFullPath()).IsAbsolute());
       result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
