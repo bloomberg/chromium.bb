@@ -47,7 +47,7 @@ class AppSearchResultRankerFlagTest : public testing::Test {
 
 TEST_F(AppSearchResultRankerFlagTest, TrainAndInfer) {
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      features::kEnableAppSearchResultRanker,
+      app_list_features::kEnableAppSearchResultRanker,
       {{"app_search_result_ranker_predictor_name",
         FakeAppLaunchPredictor::kPredictorName}});
 
@@ -64,7 +64,7 @@ TEST_F(AppSearchResultRankerFlagTest, TrainAndInfer) {
 
 TEST_F(AppSearchResultRankerFlagTest, EphemeralUsersAreDisabled) {
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      features::kEnableAppSearchResultRanker,
+      app_list_features::kEnableAppSearchResultRanker,
       {{"app_search_result_ranker_predictor_name",
         FakeAppLaunchPredictor::kPredictorName}});
 
@@ -79,7 +79,7 @@ TEST_F(AppSearchResultRankerFlagTest, EphemeralUsersAreDisabled) {
 
 TEST_F(AppSearchResultRankerFlagTest, ReturnEmptyIfDisabled) {
   scoped_feature_list_.InitWithFeatures(
-      {}, {features::kEnableAppSearchResultRanker});
+      {}, {app_list_features::kEnableAppSearchResultRanker});
 
   AppSearchResultRanker ranker(temp_dir_.GetPath(), kNotAnEphemeralUser);
   Wait();
@@ -106,7 +106,7 @@ class AppSearchResultRankerSerializationTest
           ->mutable_rank_result())[kTarget2] = 2.0f;
 
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kEnableAppSearchResultRanker,
+        app_list_features::kEnableAppSearchResultRanker,
         {{"app_search_result_ranker_predictor_name",
           FakeAppLaunchPredictor::kPredictorName}});
   }

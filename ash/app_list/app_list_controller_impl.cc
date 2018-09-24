@@ -48,7 +48,7 @@ namespace ash {
 AppListControllerImpl::AppListControllerImpl(ws::WindowService* window_service)
     : window_service_(window_service),
       presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
-      is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()),
+      is_home_launcher_enabled_(app_list_features::IsHomeLauncherEnabled()),
       voice_interaction_binding_(this) {
   model_.AddObserver(this);
 
@@ -73,7 +73,7 @@ AppListControllerImpl::AppListControllerImpl(ws::WindowService* window_service)
   keyboard::KeyboardController::Get()->AddObserver(this);
 
   if (is_home_launcher_enabled_ &&
-      app_list::features::IsHomeLauncherGesturesEnabled()) {
+      app_list_features::IsHomeLauncherGesturesEnabled()) {
     home_launcher_gesture_handler_ =
         std::make_unique<HomeLauncherGestureHandler>(this);
   }

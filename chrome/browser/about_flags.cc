@@ -1695,7 +1695,7 @@ const FeatureEntry kFeatureEntries[] = {
     {
         "enable-background-blur", flag_descriptions::kEnableBackgroundBlurName,
         flag_descriptions::kEnableBackgroundBlurDescription, kOsCrOS,
-        FEATURE_VALUE_TYPE(app_list::features::kEnableBackgroundBlur),
+        FEATURE_VALUE_TYPE(app_list_features::kEnableBackgroundBlur),
     },
     {"enable-touchable-app-context-menu",
      flag_descriptions::kTouchableAppContextMenuName,
@@ -1708,7 +1708,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-app-list-search-autocomplete",
      flag_descriptions::kEnableAppListSearchAutocompleteName,
      flag_descriptions::kEnableAppListSearchAutocompleteDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableAppListSearchAutocomplete)},
+     FEATURE_VALUE_TYPE(app_list_features::kEnableAppListSearchAutocomplete)},
     {
         "enable-pinch", flag_descriptions::kPinchScaleName,
         flag_descriptions::kPinchScaleDescription, kOsLinux | kOsWin | kOsCrOS,
@@ -3957,16 +3957,16 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"enable-home-launcher", flag_descriptions::kEnableHomeLauncherName,
      flag_descriptions::kEnableHomeLauncherDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableHomeLauncher)},
+     FEATURE_VALUE_TYPE(app_list_features::kEnableHomeLauncher)},
 
     {"enable-apps-grid-gap", flag_descriptions::kEnableAppsGridGapFeatureName,
      flag_descriptions::kEnableAppsGridGapFeatureDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableAppsGridGapFeature)},
+     FEATURE_VALUE_TYPE(app_list_features::kEnableAppsGridGapFeature)},
 
     {"enable-new-style-launcher",
      flag_descriptions::kEnableNewStyleLauncherName,
      flag_descriptions::kEnableNewStyleLauncherDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableNewStyleLauncher)},
+     FEATURE_VALUE_TYPE(app_list_features::kEnableNewStyleLauncher)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)
@@ -3998,7 +3998,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-settings-shortcut-search",
      flag_descriptions::kEnableSettingsShortcutSearchName,
      flag_descriptions::kEnableSettingsShortcutSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableSettingsShortcutSearch)},
+     FEATURE_VALUE_TYPE(app_list_features::kEnableSettingsShortcutSearch)},
 #endif  // OS_CHROMEOS
 
     {"autofill-cache-query-responses",
@@ -4124,7 +4124,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-app-shortcut-search",
      flag_descriptions::kEnableAppShortcutSearchName,
      flag_descriptions::kEnableAppShortcutSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableAppShortcutSearch)},
+     FEATURE_VALUE_TYPE(app_list_features::kEnableAppShortcutSearch)},
 
     {"enable-drag-tabs-in-tablet-mode",
      flag_descriptions::kEnableDragTabsInTabletModeName,
@@ -4263,11 +4263,11 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"enable-continue-reading", flag_descriptions::kEnableContinueReadingName,
      flag_descriptions::kEnableContinueReadingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableContinueReading)},
+     FEATURE_VALUE_TYPE(app_list_features::kEnableContinueReading)},
     {"enable-zero-state-suggestions",
      flag_descriptions::kEnableZeroStateSuggestionsName,
      flag_descriptions::kEnableZeroStateSuggestionsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableZeroStateSuggestions)},
+     FEATURE_VALUE_TYPE(app_list_features::kEnableZeroStateSuggestions)},
 #endif  // OS_CHROMEOS
 
     {"enable-bloated-renderer-detection",
@@ -4366,7 +4366,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-home-launcher-gestures",
      flag_descriptions::kEnableHomeLauncherGesturesName,
      flag_descriptions::kEnableHomeLauncherGesturesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableHomeLauncherGestures)},
+     FEATURE_VALUE_TYPE(app_list_features::kEnableHomeLauncherGestures)},
 #endif
 
 #if !defined(OS_ANDROID)

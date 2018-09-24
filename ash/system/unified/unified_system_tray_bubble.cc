@@ -113,7 +113,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
 
-  if (app_list::features::IsBackgroundBlurEnabled()) {
+  if (app_list_features::IsBackgroundBlurEnabled()) {
     bubble_widget_->client_view()->layer()->SetBackgroundBlur(
         kUnifiedMenuBackgroundBlur);
   }
@@ -313,7 +313,7 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
 }
 
 void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
-  if (!app_list::features::IsBackgroundBlurEnabled())
+  if (!app_list_features::IsBackgroundBlurEnabled())
     return;
 
   if (blur_layer_)
@@ -336,7 +336,7 @@ void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
 }
 
 void UnifiedSystemTrayBubble::DestroyBlurLayerForAnimation() {
-  if (!app_list::features::IsBackgroundBlurEnabled())
+  if (!app_list_features::IsBackgroundBlurEnabled())
     return;
 
   if (!blur_layer_)

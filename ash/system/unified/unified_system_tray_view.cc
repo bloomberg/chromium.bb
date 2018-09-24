@@ -375,7 +375,7 @@ void UnifiedSystemTrayView::SetNotificationHeightBelowScroll(
 std::unique_ptr<views::Background> UnifiedSystemTrayView::CreateBackground() {
   return views::CreateBackgroundFromPainter(
       views::Painter::CreateSolidRoundRectPainter(
-          app_list::features::IsBackgroundBlurEnabled()
+          app_list_features::IsBackgroundBlurEnabled()
               ? kUnifiedMenuBackgroundColorWithBlur
               : kUnifiedMenuBackgroundColor,
           kUnifiedTrayCornerRadius));

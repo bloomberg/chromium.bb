@@ -181,7 +181,7 @@ void AppListMainView::QueryChanged(search_box::SearchBoxViewBase* sender) {
   base::string16 query;
   base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
   bool should_show_search =
-      features::IsZeroStateSuggestionsEnabled()
+      app_list_features::IsZeroStateSuggestionsEnabled()
           ? search_box_view_->is_search_box_active() || !query.empty()
           : !query.empty();
   contents_view_->ShowSearchResults(should_show_search);
@@ -190,7 +190,7 @@ void AppListMainView::QueryChanged(search_box::SearchBoxViewBase* sender) {
 }
 
 void AppListMainView::ActiveChanged(search_box::SearchBoxViewBase* sender) {
-  if (!features::IsZeroStateSuggestionsEnabled())
+  if (!app_list_features::IsZeroStateSuggestionsEnabled())
     return;
 
   if (search_box_view_->is_search_box_active()) {

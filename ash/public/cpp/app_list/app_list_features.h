@@ -13,8 +13,7 @@ namespace base {
 struct Feature;
 }
 
-namespace app_list {
-namespace features {
+namespace app_list_features {
 
 // Please keep these features sorted.
 // TODO(newcomer|weidongg): Sort these features.
@@ -82,7 +81,6 @@ std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();
 std::string ASH_PUBLIC_EXPORT AppSearchResultRankerPredictorName();
 
-}  // namespace features
-}  // namespace app_list
+}  // namespace app_list_features
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_FEATURES_H_

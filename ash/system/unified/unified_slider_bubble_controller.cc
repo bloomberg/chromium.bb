@@ -178,7 +178,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
 
-  if (app_list::features::IsBackgroundBlurEnabled()) {
+  if (app_list_features::IsBackgroundBlurEnabled()) {
     bubble_widget_->client_view()->layer()->SetBackgroundBlur(
         kUnifiedMenuBackgroundBlur);
   }

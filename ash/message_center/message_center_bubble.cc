@@ -51,8 +51,8 @@ ContentsView::ContentsView(MessageCenterBubble* bubble, views::View* contents)
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   SetBackground(views::CreateSolidBackground(
-      app_list::features::IsBackgroundBlurEnabled() ? kBackgroundColorWithBlur
-                                                    : kBackgroundColor));
+      app_list_features::IsBackgroundBlurEnabled() ? kBackgroundColorWithBlur
+                                                   : kBackgroundColor));
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   AddChildView(contents);

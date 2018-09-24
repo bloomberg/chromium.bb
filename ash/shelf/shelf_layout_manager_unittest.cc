@@ -706,7 +706,7 @@ class ShelfLayoutManagerNonHomeLauncherTest : public ShelfLayoutManagerTest {
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {}, {app_list::features::kEnableHomeLauncher});
+        {}, {app_list_features::kEnableHomeLauncher});
     ShelfLayoutManagerTest::SetUp();
   }
 

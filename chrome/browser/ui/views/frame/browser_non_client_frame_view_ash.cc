@@ -198,7 +198,7 @@ void BrowserNonClientFrameViewAsh::Init() {
   // minimize all windows when pressing the Launcher button on the shelf.
   window->SetProperty(
       ash::kHideCaptionButtonsInTabletModeKey,
-      (browser->is_app() || !app_list::features::IsHomeLauncherEnabled())
+      (browser->is_app() || !app_list_features::IsHomeLauncherEnabled())
           ? false
           : true);
 
