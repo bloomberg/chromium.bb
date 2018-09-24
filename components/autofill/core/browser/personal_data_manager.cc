@@ -1408,8 +1408,11 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
       unique_matched_profiles, &other_field_types, type.GetStorableType(), 1,
       app_locale_, &labels);
   DCHECK_EQ(unique_suggestions.size(), labels.size());
-  for (size_t i = 0; i < labels.size(); i++)
+  for (size_t i = 0; i < labels.size(); i++) {
     unique_suggestions[i].label = labels[i];
+    // Used when two-line display is enabled.
+    unique_suggestions[i].additional_label = labels[i];
+  }
 
   return unique_suggestions;
 }
@@ -2161,6 +2164,9 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         suggestion->value = credit_card->NetworkOrBankNameAndLastFourDigits();
         suggestion->label = credit_card->GetInfo(
             AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale_);
+        // The additional label will be used if two-line display is enabled.
+        suggestion->additional_label =
+            credit_card->DescriptiveExpiration(app_locale_);
       } else if (credit_card->number().empty()) {
         if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
           suggestion->label = credit_card->GetInfo(
@@ -2174,6 +2180,13 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         suggestion->label = credit_card->NetworkOrBankNameAndLastFourDigits();
 #else
         suggestion->label = credit_card->ObfuscatedLastFourDigits();
+        // Ad the card number with expiry information in the additional
+        // label portion so that we an show it when two-line display is
+        // enabled.
+        suggestion->additional_label =
+            credit_card
+                ->NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
+                    app_locale_);
 #endif
       }
     }

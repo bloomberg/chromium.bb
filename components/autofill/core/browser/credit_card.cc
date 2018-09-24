@@ -796,6 +796,22 @@ base::string16 CreditCard::NetworkOrBankNameAndLastFourDigits() const {
                             : BankNameAndLastFourDigits();
 }
 
+base::string16
+CreditCard::NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
+    const std::string& app_locale) const {
+  return l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_CREDIT_CARD_TWO_LINE_LABEL_FROM_NAME,
+      NetworkOrBankNameAndLastFourDigits(),
+      GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale));
+}
+
+base::string16 CreditCard::DescriptiveExpiration(
+    const std::string& app_locale) const {
+  return l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_CREDIT_CARD_TWO_LINE_LABEL_FROM_CARD_NUMBER,
+      GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale));
+}
+
 base::string16 CreditCard::AbbreviatedExpirationDateForDisplay() const {
   base::string16 month = ExpirationMonthAsString();
   base::string16 year = Expiration2DigitYearAsString();

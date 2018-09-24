@@ -1303,12 +1303,17 @@ const FeatureEntry::FeatureParam kAutofillDropdownLayoutLeadingIcon[] = {
 const FeatureEntry::FeatureParam kAutofillDropdownLayoutTrailingIcon[] = {
     {autofill::kAutofillDropdownLayoutParameterName,
      autofill::kAutofillDropdownLayoutParameterTrailingIcon}};
+const FeatureEntry::FeatureParam kAutofillDropdownLayoutTwoLinesLeadingIcon[] =
+    {{autofill::kAutofillDropdownLayoutParameterName,
+      autofill::kAutofillDropdownLayoutParameterTwoLinesLeadingIcon}};
 
 const FeatureEntry::FeatureVariation kAutofillDropdownLayoutVariations[] = {
     {"(leading icon)", kAutofillDropdownLayoutLeadingIcon,
      base::size(kAutofillDropdownLayoutLeadingIcon), nullptr},
     {"(trailing icon)", kAutofillDropdownLayoutTrailingIcon,
-     base::size(kAutofillDropdownLayoutTrailingIcon), nullptr}};
+     base::size(kAutofillDropdownLayoutLeadingIcon), nullptr},
+    {"(two line leading icon)", kAutofillDropdownLayoutTwoLinesLeadingIcon,
+     base::size(kAutofillDropdownLayoutTwoLinesLeadingIcon), nullptr}};
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
