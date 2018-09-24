@@ -1093,11 +1093,6 @@ const char kLookalikeUrlNavigationSuggestionsDescription[] =
     "Enable navigation suggestions for URLs that are visually similar to "
     "popular domains or to domains with a site engagement score.";
 
-const char kMacViewsAutofillPopupName[] =
-    "Uses the Views Autofill Popup on Mac";
-const char kMacViewsAutofillPopupDescription[] =
-    "Autofill popup will be shown using the Views toolkit rather than Cocoa.";
-
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 

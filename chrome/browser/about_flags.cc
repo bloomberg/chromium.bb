@@ -3894,12 +3894,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(printing::features::kUsePdfCompositorServiceForPrint)},
 #endif
 
-#if defined(OS_MACOSX)
-    {"mac-views-autofill-popup", flag_descriptions::kMacViewsAutofillPopupName,
-     flag_descriptions::kMacViewsAutofillPopupDescription, kOsMac,
-     FEATURE_VALUE_TYPE(autofill::features::kMacViewsAutofillPopup)},
-#endif  // OS_MACOSX
-
     {"autofill-dynamic-forms", flag_descriptions::kAutofillDynamicFormsName,
      flag_descriptions::kAutofillDynamicFormsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
