@@ -115,6 +115,8 @@ PasswordReuseLookup::ReputationVerdict GetVerdictToLogFromResponse(
 // Given a |web_contents|, returns the navigation id of its last committed
 // navigation.
 int64_t GetLastCommittedNavigationID(const content::WebContents* web_contents) {
+  if (!web_contents)
+    return 0;
   content::NavigationEntry* navigation =
       web_contents->GetController().GetLastCommittedEntry();
   return navigation
