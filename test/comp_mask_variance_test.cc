@@ -34,7 +34,7 @@ typedef void (*comp_mask_pred_func)(uint8_t *comp_pred, const uint8_t *pred,
                                     int ref_stride, const uint8_t *mask,
                                     int mask_stride, int invert_mask);
 
-#if HAVE_SSSE3 || HAVE_AV2
+#if HAVE_SSSE3 || HAVE_SSE2 || HAVE_AV2
 const BLOCK_SIZE kValidBlockSize[] = {
   BLOCK_8X8,   BLOCK_8X16, BLOCK_8X32,  BLOCK_16X8,  BLOCK_16X16,
   BLOCK_16X32, BLOCK_32X8, BLOCK_32X16, BLOCK_32X32,

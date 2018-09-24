@@ -56,6 +56,7 @@ list(APPEND AOM_DSP_COMMON_ASM_SSE2
             "${AOM_ROOT}/aom_dsp/x86/inv_wht_sse2.asm")
 
 list(APPEND AOM_DSP_COMMON_INTRIN_SSE2
+            "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_sse2.c"
             "${AOM_ROOT}/aom_dsp/x86/aom_asm_stubs.c"
             "${AOM_ROOT}/aom_dsp/x86/convolve.h"
             "${AOM_ROOT}/aom_dsp/x86/convolve_sse2.h"
