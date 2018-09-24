@@ -359,10 +359,14 @@ class WebLocalFrame : public WebFrame {
                                  bool had_redirect,
                                  const WebSourceLocation&) = 0;
 
-  // PlzNavigate
   // Informs the frame that the navigation it asked the client to do was
   // dropped.
   virtual void ClientDroppedNavigation() = 0;
+
+  // Marks the frame as loading, without performing any loading. Used for
+  // initial history navigations in child frames, which may actually happen
+  // in the other process.
+  virtual void MarkAsLoading() = 0;
 
   // Orientation Changes ----------------------------------------------------
 

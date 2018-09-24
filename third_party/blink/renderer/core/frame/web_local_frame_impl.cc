@@ -2307,6 +2307,10 @@ void WebLocalFrameImpl::ClientDroppedNavigation() {
   GetFrame()->Loader().ClientDroppedNavigation();
 }
 
+void WebLocalFrameImpl::MarkAsLoading() {
+  GetFrame()->Loader().MarkAsLoading();
+}
+
 void WebLocalFrameImpl::SendOrientationChangeEvent() {
   if (!GetFrame())
     return;

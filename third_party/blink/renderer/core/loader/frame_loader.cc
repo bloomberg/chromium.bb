@@ -764,8 +764,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   CHECK(!IsBackForwardLoadType(frame_load_type));
   DCHECK(passed_request.TriggeringEventInfo() !=
          WebTriggeringEventInfo::kUnknown);
-  DCHECK(policy != kNavigationPolicyHandledByClient &&
-         policy != kNavigationPolicyHandledByClientForInitialHistory);
+  DCHECK(policy != kNavigationPolicyHandledByClient);
 
   DCHECK(frame_->GetDocument());
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
@@ -922,17 +921,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 
   if (policy == kNavigationPolicyIgnore)
     return;
-
-  // TODO(japhet): This case wants to flag the frame as loading and do nothing
-  // else. It'd be nice if it could go through the placeholder DocumentLoader
-  // path, too.
-  if (policy == kNavigationPolicyHandledByClientForInitialHistory) {
-    DCHECK(!provisional_document_loader_);
-    DCHECK(frame_->GetDocument()->IsLoadCompleted());
-    DCHECK(frame_->GetDocument()->HasFinishedParsing());
-    progress_tracker_->ProgressStarted();
-    return;
-  }
 
   if (request.Form())
     Client()->DispatchWillSubmitForm(request.Form());
@@ -1511,6 +1499,14 @@ void FrameLoader::ClientDroppedNavigation() {
     // Forcibly instantiate WindowProxy.
     frame_->GetScriptController().WindowProxy(DOMWrapperWorld::MainWorld());
   }
+}
+
+void FrameLoader::MarkAsLoading() {
+  // This should only be called for initial history navigation in child frame.
+  DCHECK(!provisional_document_loader_);
+  DCHECK(frame_->GetDocument()->IsLoadCompleted());
+  DCHECK(frame_->GetDocument()->HasFinishedParsing());
+  progress_tracker_->ProgressStarted();
 }
 
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation(

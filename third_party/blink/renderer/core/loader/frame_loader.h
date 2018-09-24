@@ -225,6 +225,7 @@ class CORE_EXPORT FrameLoader final {
   static void UpgradeInsecureRequest(ResourceRequest&, ExecutionContext*);
 
   void ClientDroppedNavigation();
+  void MarkAsLoading();
 
  private:
   bool PrepareRequestForThisFrame(FrameLoadRequest&);
