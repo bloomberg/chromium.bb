@@ -364,15 +364,15 @@ test.util.sync.fakeEvent = function(contentWindow,
  */
 test.util.sync.fakeKeyDown = function(
     contentWindow, targetQuery, key, keyIdentifier, ctrl, shift, alt) {
-  var event = new KeyboardEvent('keydown',
-      {
-        bubbles: true,
-        key: key,
-        keyIdentifier: keyIdentifier,
-        ctrlKey: ctrl,
-        shiftKey: shift,
-        altKey: alt
-      });
+  const event = new KeyboardEvent('keydown', {
+    bubbles: true,
+    composed: true,  // Allow the event to bubble past shadow DOM root.
+    key: key,
+    keyIdentifier: keyIdentifier,
+    ctrlKey: ctrl,
+    shiftKey: shift,
+    altKey: alt
+  });
   return test.util.sync.sendEvent(contentWindow, targetQuery, event);
 };
 
@@ -391,17 +391,22 @@ test.util.sync.fakeKeyDown = function(
  *     otherwise.
  */
 test.util.sync.fakeMouseClick = function(contentWindow, targetQuery) {
-  var mouseOverEvent = new MouseEvent('mouseover', {bubbles: true, detail: 1});
-  var resultMouseOver =
+  const props = {
+    bubbles: true,
+    detail: 1,
+    composed: true,  // Allow the event to bubble past shadow DOM root.
+  };
+  const mouseOverEvent = new MouseEvent('mouseover', props);
+  const resultMouseOver =
       test.util.sync.sendEvent(contentWindow, targetQuery, mouseOverEvent);
-  var mouseDownEvent = new MouseEvent('mousedown', {bubbles: true, detail: 1});
-  var resultMouseDown =
+  const mouseDownEvent = new MouseEvent('mousedown', props);
+  const resultMouseDown =
       test.util.sync.sendEvent(contentWindow, targetQuery, mouseDownEvent);
-  var mouseUpEvent = new MouseEvent('mouseup', {bubbles: true, detail: 1});
-  var resultMouseUp =
+  const mouseUpEvent = new MouseEvent('mouseup', props);
+  const resultMouseUp =
       test.util.sync.sendEvent(contentWindow, targetQuery, mouseUpEvent);
-  var clickEvent = new MouseEvent('click', {bubbles: true, detail: 1});
-  var resultClick =
+  const clickEvent = new MouseEvent('click', props);
+  const resultClick =
       test.util.sync.sendEvent(contentWindow, targetQuery, clickEvent);
   return resultMouseOver && resultMouseDown && resultMouseUp && resultClick;
 };
@@ -416,12 +421,14 @@ test.util.sync.fakeMouseClick = function(contentWindow, targetQuery) {
  *     otherwise.
  */
 test.util.sync.fakeMouseRightClick = function(contentWindow, targetQuery) {
-  var mouseDownEvent = new MouseEvent('mousedown', {bubbles: true, button: 2});
+  const mouseDownEvent =
+      new MouseEvent('mousedown', {bubbles: true, button: 2, composed: true});
   if (!test.util.sync.sendEvent(contentWindow, targetQuery, mouseDownEvent)) {
     return false;
   }
 
-  var contextMenuEvent = new MouseEvent('contextmenu', {bubbles: true});
+  const contextMenuEvent =
+      new MouseEvent('contextmenu', {bubbles: true, composed: true});
   return test.util.sync.sendEvent(contentWindow, targetQuery, contextMenuEvent);
 };
 
@@ -435,22 +442,24 @@ test.util.sync.fakeMouseRightClick = function(contentWindow, targetQuery) {
  *     otherwise.
  */
 test.util.sync.fakeTouchClick = function(contentWindow, targetQuery) {
-  var touchStartEvent = new TouchEvent('touchstart');
+  const touchStartEvent = new TouchEvent('touchstart');
   if (!test.util.sync.sendEvent(contentWindow, targetQuery, touchStartEvent)) {
     return false;
   }
 
-  var mouseDownEvent = new MouseEvent('mousedown', {bubbles: true, button: 2});
+  const mouseDownEvent =
+      new MouseEvent('mousedown', {bubbles: true, button: 2, composed: true});
   if (!test.util.sync.sendEvent(contentWindow, targetQuery, mouseDownEvent)) {
     return false;
   }
 
-  var touchEndEvent = new TouchEvent('touchend');
+  const touchEndEvent = new TouchEvent('touchend');
   if (!test.util.sync.sendEvent(contentWindow, targetQuery, touchEndEvent)) {
     return false;
   }
 
-  var contextMenuEvent = new MouseEvent('contextmenu', {bubbles: true});
+  const contextMenuEvent =
+      new MouseEvent('contextmenu', {bubbles: true, composed: true});
   return test.util.sync.sendEvent(contentWindow, targetQuery, contextMenuEvent);
 };
 
@@ -470,13 +479,14 @@ test.util.sync.fakeMouseDoubleClick = function(contentWindow, targetQuery) {
 
   // Send the second click event, but with detail equal to 2 (number of clicks)
   // in a row.
-  var event = new MouseEvent('click', { bubbles: true, detail: 2 });
+  let event =
+      new MouseEvent('click', {bubbles: true, detail: 2, composed: true});
   if (!test.util.sync.sendEvent(contentWindow, targetQuery, event)) {
     return false;
   }
 
   // Send the double click event.
-  var event = new MouseEvent('dblclick', { bubbles: true });
+  event = new MouseEvent('dblclick', {bubbles: true, composed: true});
   if (!test.util.sync.sendEvent(contentWindow, targetQuery, event)) {
     return false;
   }
@@ -492,7 +502,7 @@ test.util.sync.fakeMouseDoubleClick = function(contentWindow, targetQuery) {
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.sync.fakeMouseDown = function(contentWindow, targetQuery) {
-  var event = new MouseEvent('mousedown', { bubbles: true });
+  const event = new MouseEvent('mousedown', {bubbles: true, composed: true});
   return test.util.sync.sendEvent(contentWindow, targetQuery, event);
 };
 
@@ -504,7 +514,7 @@ test.util.sync.fakeMouseDown = function(contentWindow, targetQuery) {
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.sync.fakeMouseUp = function(contentWindow, targetQuery) {
-  var event = new MouseEvent('mouseup', { bubbles: true });
+  const event = new MouseEvent('mouseup', {bubbles: true, composed: true});
   return test.util.sync.sendEvent(contentWindow, targetQuery, event);
 };
 
