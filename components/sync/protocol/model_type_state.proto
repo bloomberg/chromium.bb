@@ -37,4 +37,7 @@ message ModelTypeState {
   // persisted sync metadata, because cache_guid is reset when sync is disabled,
   // and disabling sync is supposed to clear sync metadata.
   optional string cache_guid = 5;
+
+  // Syncing account ID, representing the user.
+  optional string authenticated_account_id = 6;
 }

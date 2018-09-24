@@ -35,6 +35,7 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   void UntrackEntityForStorageKey(const std::string& storage_key) override;
   void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override;
   bool IsTrackingMetadata() override;
+  std::string TrackedAccountId() override;
 
   void SetIsTrackingMetadata(bool is_tracking);
 
