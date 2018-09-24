@@ -14,7 +14,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -44,19 +43,11 @@ base::string16 GetButtonTitleForAccount(const AccountInfo& account) {
       IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON_NO_NAME);
 }
 
-// Sizes |image| to 40x40, adds a white background in case it is transparent and
-// shapes it circular.
+// Sizes |image| to 40x40 and shapes it circular.
 gfx::ImageSkia PrepareAvatarImage(const gfx::Image& image) {
-  // Add white background.
-  SkBitmap mask;
-  mask.allocN32Pixels(image.Width(), image.Height());
-  mask.eraseARGB(255, 255, 255, 0);
-  SkBitmap opaque_bitmap = SkBitmapOperations::CreateButtonBackground(
-      SK_ColorWHITE, image.AsBitmap(), mask);
-  // Size and shape.
-  return profiles::GetSizedAvatarIcon(
-             gfx::Image::CreateFrom1xBitmap(opaque_bitmap), true, 40, 40,
-             profiles::SHAPE_CIRCLE)
+  CHECK(!image.IsEmpty());
+  return profiles::GetSizedAvatarIcon(image, true, 40, 40,
+                                      profiles::SHAPE_CIRCLE)
       .AsImageSkia();
 }
 
