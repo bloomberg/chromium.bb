@@ -818,6 +818,8 @@ void NetworkQualityEstimator::UpdateSignalStrength() {
   if (new_signal_strength == INT32_MIN)
     return;
 
+  DCHECK(new_signal_strength >= 0 && new_signal_strength <= 4);
+
   // Record the network quality we experienced for the previous signal strength
   // (for when we return to that signal strength).
   network_quality_store_->Add(current_network_id_,

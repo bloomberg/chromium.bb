@@ -57,6 +57,10 @@ void ObservationBuffer::AddObservation(const Observation& observation) {
   DCHECK(observations_.empty() ||
          observation.timestamp() >= observations_.back().timestamp());
 
+  DCHECK(observation.signal_strength() == INT32_MIN ||
+         (observation.signal_strength() >= 0 &&
+          observation.signal_strength() <= 4));
+
   // Evict the oldest element if the buffer is already full.
   if (observations_.size() == params_->observation_buffer_size())
     observations_.pop_front();
@@ -67,9 +71,12 @@ void ObservationBuffer::AddObservation(const Observation& observation) {
 
 base::Optional<int32_t> ObservationBuffer::GetPercentile(
     base::TimeTicks begin_timestamp,
-    const base::Optional<int32_t>& current_signal_strength,
+    int32_t current_signal_strength,
     int percentile,
     size_t* observations_count) const {
+  DCHECK(current_signal_strength == INT32_MIN ||
+         (current_signal_strength >= 0 && current_signal_strength <= 4));
+
   // Stores weighted observations in increasing order by value.
   std::vector<WeightedObservation> weighted_observations;
 
@@ -174,7 +181,7 @@ void ObservationBuffer::RemoveObservationsWithSource(
 
 void ObservationBuffer::ComputeWeightedObservations(
     const base::TimeTicks& begin_timestamp,
-    const base::Optional<int32_t>& current_signal_strength,
+    int32_t current_signal_strength,
     std::vector<WeightedObservation>* weighted_observations,
     double* total_weight) const {
   DCHECK_GE(Capacity(), Size());
@@ -192,10 +199,9 @@ void ObservationBuffer::ComputeWeightedObservations(
         pow(weight_multiplier_per_second_, time_since_sample_taken.InSeconds());
 
     double signal_strength_weight = 1.0;
-    if (current_signal_strength && observation.signal_strength()) {
+    if (current_signal_strength >= 0 && observation.signal_strength() >= 0) {
       int32_t signal_strength_weight_diff =
-          std::abs(current_signal_strength.value() -
-                   observation.signal_strength().value());
+          std::abs(current_signal_strength - observation.signal_strength());
       signal_strength_weight =
           pow(weight_multiplier_per_signal_level_, signal_strength_weight_diff);
     }
