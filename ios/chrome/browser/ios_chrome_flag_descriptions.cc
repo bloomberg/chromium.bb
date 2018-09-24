@@ -304,6 +304,10 @@ const char kWKWebViewSnapshotsName[] = "WKWebView Snapshots";
 const char kWKWebViewSnapshotsDescription[] =
     "When enabled, the WKWebView snapshotting API is used for iOS 11+.";
 
+const char kCustomSearchEnginesName[] = "Custom Search Engines";
+const char kCustomSearchEnginesDescription[] =
+    "When enabled, user can add custom search engines in settings.";
+
 // Please insert your name/description above in alphabetical order.
 
 }  // namespace flag_descriptions

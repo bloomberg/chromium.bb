@@ -47,6 +47,7 @@
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
 #include "ios/chrome/browser/mailto/features.h"
+#include "ios/chrome/browser/search_engines/feature_flags.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
@@ -391,6 +392,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"wk-web-view-snapshots", flag_descriptions::kWKWebViewSnapshotsName,
      flag_descriptions::kWKWebViewSnapshotsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kWKWebViewSnapshots)},
+    {"custom-search-engines", flag_descriptions::kCustomSearchEnginesName,
+     flag_descriptions::kCustomSearchEnginesDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCustomSearchEngines)},
 };
 
 // Add all switches from experimental flags to |command_line|.

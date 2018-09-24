@@ -255,6 +255,10 @@ extern const char kWKHTTPSystemCookieStoreDescription[];
 extern const char kWKWebViewSnapshotsName[];
 extern const char kWKWebViewSnapshotsDescription[];
 
+// Title and description for the flag to allow custom search engines.
+extern const char kCustomSearchEnginesName[];
+extern const char kCustomSearchEnginesDescription[];
+
 // Please insert your name/description above in alphabetical order.
 
 }  // namespace flag_descriptions
