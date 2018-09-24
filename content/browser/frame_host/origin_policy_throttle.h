@@ -25,6 +25,7 @@ class SimpleURLLoader;
 
 namespace content {
 class NavigationHandle;
+enum class OriginPolicyErrorReason;
 
 // The OriginPolicyThrottle is responsible for deciding whether an origin
 // policy should be fetched, and doing so when that is positive.
@@ -72,6 +73,7 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   void FetchPolicy(const GURL& url, FetchCallback done);
   void OnTheGloriousPolicyHasArrived(
       std::unique_ptr<std::string> policy_content);
+  void CancelNavigation(OriginPolicyErrorReason reason);
 
   // We may need the SimpleURLLoader to download the policy. The loader must
   // be kept alive while the load is ongoing.

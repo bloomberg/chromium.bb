@@ -179,6 +179,7 @@ class URLLoaderThrottle;
 class VpnServiceProxy;
 class WebContents;
 class WebContentsViewDelegate;
+enum class OriginPolicyErrorReason;
 struct MainFunctionParams;
 struct OpenURLParams;
 struct Referrer;
@@ -1330,6 +1331,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void RegisterRendererPreferenceWatcherForWorkers(
       BrowserContext* browser_context,
       mojom::RendererPreferenceWatcherPtr watcher);
+
+  // Returns the HTML content of the error page for Origin Policy related
+  // errors.
+  virtual base::Optional<std::string> GetOriginPolicyErrorPage(
+      OriginPolicyErrorReason error_reason,
+      const url::Origin& origin,
+      const GURL& url);
 };
 
 }  // namespace content

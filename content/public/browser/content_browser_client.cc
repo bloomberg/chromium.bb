@@ -806,4 +806,11 @@ void ContentBrowserClient::RegisterRendererPreferenceWatcherForWorkers(
     BrowserContext* browser_context,
     mojom::RendererPreferenceWatcherPtr watcher) {}
 
+base::Optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
+    OriginPolicyErrorReason error_reason,
+    const url::Origin& origin,
+    const GURL& url) {
+  return base::nullopt;
+}
+
 }  // namespace content

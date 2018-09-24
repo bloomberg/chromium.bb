@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/origin_policy_error_reason.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -236,7 +237,7 @@ void OriginPolicyThrottle::OnTheGloriousPolicyHasArrived(
 
   // Fail hard if the policy could not be loaded.
   if (!policy_content) {
-    CancelDeferredNavigation(NavigationThrottle::CANCEL_AND_IGNORE);
+    CancelNavigation(OriginPolicyErrorReason::kCannotLoadPolicy);
     return;
   }
 
@@ -246,6 +247,14 @@ void OriginPolicyThrottle::OnTheGloriousPolicyHasArrived(
   static_cast<NavigationHandleImpl*>(navigation_handle())
       ->set_origin_policy(*policy_content);
   Resume();
+}
+
+void OriginPolicyThrottle::CancelNavigation(OriginPolicyErrorReason reason) {
+  base::Optional<std::string> error_page =
+      GetContentClient()->browser()->GetOriginPolicyErrorPage(
+          reason, GetRequestOrigin(), navigation_handle()->GetURL());
+  CancelDeferredNavigation(NavigationThrottle::ThrottleCheckResult(
+      NavigationThrottle::CANCEL, net::ERR_BLOCKED_BY_CLIENT, error_page));
 }
 
 }  // namespace content
