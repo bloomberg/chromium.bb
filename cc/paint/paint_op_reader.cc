@@ -13,7 +13,6 @@
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/paint_shader.h"
-#include "cc/paint/paint_typeface_transfer_cache_entry.h"
 #include "cc/paint/path_transfer_cache_entry.h"
 #include "cc/paint/shader_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
@@ -396,7 +395,7 @@ void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
   }
 
   *paint_blob = base::MakeRefCounted<PaintTextBlob>(
-      std::move(blob), std::vector<PaintTypeface>());
+      std::move(blob), std::vector<sk_sp<SkTypeface>>());
   memory_ += data_bytes;
   remaining_bytes_ -= data_bytes;
 }

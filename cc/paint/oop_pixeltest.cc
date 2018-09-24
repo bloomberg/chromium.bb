@@ -1387,11 +1387,10 @@ TEST_F(OopPixelTest, DrawRectColorSpace) {
 }
 
 scoped_refptr<PaintTextBlob> BuildTextBlob(
-    PaintTypeface typeface = PaintTypeface(),
+    sk_sp<SkTypeface> typeface = SkTypeface::MakeDefault(),
     bool use_lcd_text = false) {
-  SkFontStyle style;
   if (!typeface) {
-    typeface = PaintTypeface::FromFamilyNameAndFontStyle("monospace", style);
+    typeface = SkTypeface::MakeFromName("monospace", SkFontStyle());
   }
 
   PaintFont font;
@@ -1457,8 +1456,8 @@ class OopRecordShaderPixelTest : public OopPixelTest,
      PaintFlags flags;
      flags.setStyle(PaintFlags::kFill_Style);
      flags.setColor(SK_ColorGREEN);
-     paint_record->push<DrawTextBlobOp>(BuildTextBlob(PaintTypeface(), UseLcdText()), 0u, 0u,
-                                        flags);
+     paint_record->push<DrawTextBlobOp>(
+         BuildTextBlob(SkTypeface::MakeDefault(), UseLcdText()), 0u, 0u, flags);
      auto paint_record_shader = PaintShader::MakePaintRecord(
         paint_record, SkRect::MakeWH(25, 25), SkShader::kRepeat_TileMode,
         SkShader::kRepeat_TileMode, nullptr);
@@ -1501,8 +1500,8 @@ class OopRecordFilterPixelTest : public OopPixelTest,
      PaintFlags flags;
      flags.setStyle(PaintFlags::kFill_Style);
      flags.setColor(SK_ColorGREEN);
-     paint_record->push<DrawTextBlobOp>(BuildTextBlob(PaintTypeface(), UseLcdText()), 0u, 0u,
-                                        flags);
+     paint_record->push<DrawTextBlobOp>(
+         BuildTextBlob(SkTypeface::MakeDefault(), UseLcdText()), 0u, 0u, flags);
      auto paint_record_filter =
         sk_make_sp<RecordPaintFilter>(paint_record, SkRect::MakeWH(100, 100));
 
@@ -1546,18 +1545,16 @@ TEST_F(OopPixelTest, DrawTextMultipleRasterCHROMIUM) {
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setColor(SK_ColorGREEN);
-  display_item_list->push<DrawTextBlobOp>(
-      BuildTextBlob(PaintTypeface::FromSkTypeface(sk_typeface_1)), 0u, 0u,
-      flags);
+  display_item_list->push<DrawTextBlobOp>(BuildTextBlob(sk_typeface_1), 0u, 0u,
+                                          flags);
   display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
   display_item_list->Finalize();
 
   // Create another list with a different typeface.
   auto display_item_list_2 = base::MakeRefCounted<DisplayItemList>();
   display_item_list_2->StartPaint();
-  display_item_list_2->push<DrawTextBlobOp>(
-      BuildTextBlob(PaintTypeface::FromSkTypeface(sk_typeface_2)), 0u, 0u,
-      flags);
+  display_item_list_2->push<DrawTextBlobOp>(BuildTextBlob(sk_typeface_2), 0u,
+                                            0u, flags);
   display_item_list_2->EndPaintOfUnpaired(options.full_raster_rect);
   display_item_list_2->Finalize();
 

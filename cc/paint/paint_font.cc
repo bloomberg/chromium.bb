@@ -5,7 +5,6 @@
 #include "cc/paint/paint_font.h"
 
 #include "cc/paint/paint_export.h"
-#include "cc/paint/paint_typeface.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
 namespace cc {
@@ -45,9 +44,9 @@ void PaintFont::SetTextSize(SkScalar size) {
   sk_paint_.setTextSize(size);
 }
 
-void PaintFont::SetTypeface(const PaintTypeface& typeface) {
+void PaintFont::SetTypeface(sk_sp<SkTypeface> typeface) {
   typeface_ = typeface;
-  sk_paint_.setTypeface(typeface.ToSkTypeface());
+  sk_paint_.setTypeface(typeface);
 }
 
 void PaintFont::SetFakeBoldText(bool bold_text) {

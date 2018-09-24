@@ -148,7 +148,7 @@ void FontPlatformData::SetupPaintFont(PaintFont* paint_font,
   paint_font->SetEmbeddedBitmapText(false);
   const float ts = text_size_ >= 0 ? text_size_ : 12;
   paint_font->SetTextSize(SkFloatToScalar(ts));
-  paint_font->SetTypeface(paint_typeface_);
+  paint_font->SetTypeface(typeface_);
   paint_font->SetFakeBoldText(synthetic_bold_);
   paint_font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
   paint_font->SetLcdRenderText(should_smooth_fonts);
@@ -199,8 +199,7 @@ FontPlatformData::FontPlatformData(NSFont* ns_font,
         typeface->openStream(nullptr)->duplicate(),
         SkFontArguments().setAxes(axes, variation_settings->size()));
   }
-  // TODO(vmpstr): Save the creation parameters in PaintTypeface instead.
-  paint_typeface_ = PaintTypeface::FromSkTypeface(typeface);
+  typeface_ = typeface;
 }
 
 }  // namespace blink

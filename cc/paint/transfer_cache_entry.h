@@ -22,7 +22,6 @@ namespace cc {
 enum class TransferCacheEntryType : uint32_t {
   kRawMemory,
   kImage,
-  kPaintTypeface,
   kColorSpace,
   kPath,
   kShader,

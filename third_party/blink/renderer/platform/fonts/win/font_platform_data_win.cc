@@ -47,7 +47,7 @@ void FontPlatformData::SetupPaintFont(PaintFont* font,
                                       const Font*) const {
   const float ts = text_size_ >= 0 ? text_size_ : 12;
   font->SetTextSize(SkFloatToScalar(text_size_));
-  font->SetTypeface(paint_typeface_);
+  font->SetTypeface(typeface_);
   font->SetFakeBoldText(synthetic_bold_);
   font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
