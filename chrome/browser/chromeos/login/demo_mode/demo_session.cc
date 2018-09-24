@@ -110,6 +110,8 @@ std::string GetBoardName() {
 std::string GetHighlightsAppId() {
   if (GetBoardName() == "eve")
     return extension_misc::kHighlightsAlt1AppId;
+  if (GetBoardName() == "nocturne")
+    return extension_misc::kHighlightsAlt2AppId;
   return extension_misc::kHighlightsAppId;
 }
 
@@ -241,6 +243,15 @@ DemoSession* DemoSession::Get() {
   return g_demo_session;
 }
 
+// static
+std::string DemoSession::GetScreensaverAppId() {
+  if (GetBoardName() == "eve")
+    return extension_misc::kScreensaverAlt1AppId;
+  if (GetBoardName() == "nocturne")
+    return extension_misc::kScreensaverAlt2AppId;
+  return extension_misc::kScreensaverAppId;
+}
+
 void DemoSession::EnsureOfflineResourcesLoaded(
     base::OnceClosure load_callback) {
   if (offline_resources_loaded_) {
@@ -325,7 +336,7 @@ bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {
 void DemoSession::SetExtensionsExternalLoader(
     scoped_refptr<DemoExtensionsExternalLoader> extensions_external_loader) {
   extensions_external_loader_ = extensions_external_loader;
-  InstallAppFromUpdateUrl(extension_misc::kScreensaverAppId);
+  InstallAppFromUpdateUrl(GetScreensaverAppId());
 }
 
 void DemoSession::OverrideIgnorePinPolicyAppsForTesting(

@@ -56,11 +56,15 @@ class InstallLimiterTest : public testing::Test {
 };
 
 TEST_F(InstallLimiterTest, ShouldDeferInstall) {
+  const std::vector<std::string> screensaver_ids = {
+      extension_misc::kScreensaverAppId, extension_misc::kScreensaverAlt1AppId,
+      extension_misc::kScreensaverAlt2AppId};
   // In non-demo mode, all apps larger than 1 MB should be deferred.
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kNone);
-  EXPECT_TRUE(InstallLimiter::ShouldDeferInstall(
-      kLargeExtensionSize, extension_misc::kScreensaverAppId));
+  for (const std::string& id : screensaver_ids) {
+    EXPECT_TRUE(InstallLimiter::ShouldDeferInstall(kLargeExtensionSize, id));
+  }
   EXPECT_TRUE(InstallLimiter::ShouldDeferInstall(kLargeExtensionSize,
                                                  kRandomExtensionId));
   EXPECT_FALSE(InstallLimiter::ShouldDeferInstall(kSmallExtensionSize,
@@ -71,8 +75,10 @@ TEST_F(InstallLimiterTest, ShouldDeferInstall) {
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOnline);
   chromeos::DemoSession::StartIfInDemoMode();
-  EXPECT_FALSE(InstallLimiter::ShouldDeferInstall(
-      kLargeExtensionSize, extension_misc::kScreensaverAppId));
+  for (const std::string& id : screensaver_ids) {
+    EXPECT_NE(id == chromeos::DemoSession::GetScreensaverAppId(),
+              InstallLimiter::ShouldDeferInstall(kLargeExtensionSize, id));
+  }
   EXPECT_TRUE(InstallLimiter::ShouldDeferInstall(kLargeExtensionSize,
                                                  kRandomExtensionId));
   EXPECT_FALSE(InstallLimiter::ShouldDeferInstall(kSmallExtensionSize,
@@ -80,8 +86,10 @@ TEST_F(InstallLimiterTest, ShouldDeferInstall) {
 
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOffline);
-  EXPECT_FALSE(InstallLimiter::ShouldDeferInstall(
-      kLargeExtensionSize, extension_misc::kScreensaverAppId));
+  for (const std::string& id : screensaver_ids) {
+    EXPECT_NE(id == chromeos::DemoSession::GetScreensaverAppId(),
+              InstallLimiter::ShouldDeferInstall(kLargeExtensionSize, id));
+  }
   EXPECT_TRUE(InstallLimiter::ShouldDeferInstall(kLargeExtensionSize,
                                                  kRandomExtensionId));
   EXPECT_FALSE(InstallLimiter::ShouldDeferInstall(kSmallExtensionSize,
