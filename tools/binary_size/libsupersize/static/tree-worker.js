@@ -37,7 +37,6 @@
 importScripts('./shared.js');
 
 const _PATH_SEP = '/';
-const _DEMO_DATA_URL = 'demo.ndjson';
 const _NAMES_TO_FLAGS = Object.freeze({
   hot: _FLAGS.HOT,
   generated: _FLAGS.GENERATED_SOURCE,
@@ -600,7 +599,7 @@ class DataFetcher {
 function parseOptions(options) {
   const params = new URLSearchParams(options);
 
-  const url = params.get('data_url');
+  const url = params.get('load_url');
   const groupBy = params.get('group_by') || 'source_path';
   const methodCountMode = params.has('method_count');
   const filterGeneratedFiles = params.has('generated_filter');
@@ -793,19 +792,10 @@ const actions = {
   /** @param {{input:string|null,options:string}} param0 */
   load({input, options}) {
     const {groupBy, filterTest, highlightTest, url} = parseOptions(options);
-    if (input === 'from-url://') {
-      if (url) {
-        // Display the data from the `data_url` query parameter
-        console.info('Displaying data from', url);
-        fetcher.setInput(url);
-      } else {
-        // Display starter content if nothing was specified.
-        console.info('Displaying demo data');
-        // The demo file only exists in the GCS bucket where the UI is hosted.
-        // When using `start_server`, no data is shown until the user uploads
-        // something.
-        fetcher.setInput(_DEMO_DATA_URL);
-      }
+    if (input === 'from-url://' && url) {
+      // Display the data from the `load_url` query parameter
+      console.info('Displaying data from', url);
+      fetcher.setInput(url);
     } else if (input != null) {
       console.info('Displaying uploaded data');
       fetcher.setInput(input);

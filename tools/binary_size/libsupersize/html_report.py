@@ -291,7 +291,7 @@ def Run(args, parser):
       'View using a local server via: ',
       '    %s start_server %s',
       'or upload to the hosted version here:',
-      '    https://storage.googleapis.com/chrome-supersize/index.html'
+      '    https://storage.googleapis.com/chrome-supersize/viewer.html'
       ]
   supersize_path = os.path.relpath(os.path.join(
       path_util.SRC_ROOT, 'tools', 'binary_size', 'supersize'))
