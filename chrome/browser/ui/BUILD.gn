@@ -264,8 +264,6 @@ jumbo_split_static_library("ui") {
       "cocoa/tab_contents/overlayable_contents_controller.mm",
       "cocoa/tab_contents/tab_contents_controller.h",
       "cocoa/tab_contents/tab_contents_controller.mm",
-      "cocoa/tab_modal_confirm_dialog_mac.h",
-      "cocoa/tab_modal_confirm_dialog_mac.mm",
       "cocoa/tabbed_browser_window.h",
       "cocoa/tabbed_browser_window.mm",
       "cocoa/tabs/alert_indicator_button_cocoa.h",
