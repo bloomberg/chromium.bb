@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -191,7 +192,11 @@ class ManualFillingMediator
         if (!mKeyboardAccessory.hasContents()) return; // Exit early to not affect the layout.
         if (isShowing) {
             // Don't open the accessory inside the contextual search panel.
-            if (mActivity.getContextualSearchManager().isSearchPanelOpened()) return;
+            ContextualSearchManager contextualSearchManager =
+                    mActivity.getContextualSearchManager();
+            if (contextualSearchManager != null && contextualSearchManager.isSearchPanelOpened()) {
+                return;
+            }
             mKeyboardAccessory.requestShowing();
             mActivity.getFullscreenManager().setBottomControlsHeight(calculateAccessoryBarHeight());
             mKeyboardAccessory.closeActiveTab();
