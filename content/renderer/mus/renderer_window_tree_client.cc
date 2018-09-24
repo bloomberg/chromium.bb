@@ -331,18 +331,6 @@ void RendererWindowTreeClient::OnWindowFocused(ws::Id focused_window_id) {}
 void RendererWindowTreeClient::OnWindowCursorChanged(ws::Id window_id,
                                                      ui::CursorData cursor) {}
 
-void RendererWindowTreeClient::OnWindowSurfaceChanged(
-    ws::Id window_id,
-    const viz::SurfaceInfo& surface_info) {
-  DCHECK(features::IsMultiProcessMash());
-  for (MusEmbeddedFrame* embedded_frame : embedded_frames_) {
-    if (embedded_frame->window_id_ == window_id) {
-      embedded_frame->delegate_->OnMusEmbeddedFrameSurfaceChanged(surface_info);
-      return;
-    }
-  }
-}
-
 void RendererWindowTreeClient::OnDragDropStart(
     const base::flat_map<std::string, std::vector<uint8_t>>& mime_data) {}
 

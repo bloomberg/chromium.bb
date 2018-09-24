@@ -161,8 +161,6 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       const base::Optional<std::vector<uint8_t>>& new_data) override;
   void OnWindowFocused(Id focused_window_id) override;
   void OnWindowCursorChanged(Id window_id, ui::CursorData cursor) override;
-  void OnWindowSurfaceChanged(Id window_id,
-                              const viz::SurfaceInfo& surface_info) override;
   void OnDragDropStart(const base::flat_map<std::string, std::vector<uint8_t>>&
                            drag_data) override;
   void OnDragEnter(Id window,

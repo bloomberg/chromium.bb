@@ -245,7 +245,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       const gfx::Size& surface_size_in_pixels) override;
   void UpdateLocalSurfaceIdFromEmbeddedClient(
       const viz::LocalSurfaceId& embedded_client_local_surface_id) override;
-  void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
   void RemoveTransientChildFromServer(WindowMus* child) override;
@@ -302,7 +301,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChanges server_changes_;
 
   viz::SurfaceId primary_surface_id_;
-  viz::SurfaceInfo fallback_surface_info_;
 
   viz::LocalSurfaceId local_surface_id_;
   // TODO(sad, fsamuel): For 'mash' mode, where the embedder is responsible for

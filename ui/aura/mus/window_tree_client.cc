@@ -1416,21 +1416,6 @@ void WindowTreeClient::OnWindowCursorChanged(ws::Id window_id,
   window->SetCursorFromServer(cursor);
 }
 
-void WindowTreeClient::OnWindowSurfaceChanged(
-    ws::Id window_id,
-    const viz::SurfaceInfo& surface_info) {
-  WindowMus* window = GetWindowByServerId(window_id);
-  if (!window)
-    return;
-
-  // If the parent is informed of a child's surface then that surface ID is
-  // guaranteed to be available in the display compositor so we set it as the
-  // fallback. If surface synchronization is enabled, the primary SurfaceInfo
-  // is created by the embedder, and the LocalSurfaceId is allocated by the
-  // embedder.
-  window->SetFallbackSurfaceInfo(surface_info);
-}
-
 void WindowTreeClient::OnDragDropStart(
     const base::flat_map<std::string, std::vector<uint8_t>>& mime_data) {
   drag_drop_controller_->OnDragDropStart(mojo::FlatMapToMap(mime_data));
