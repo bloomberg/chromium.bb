@@ -1149,3 +1149,25 @@ Status ExecuteDeleteScreenOrientation(Session* session,
     return status;
   return Status(kOk);
 }
+
+Status ExecuteGenerateTestReport(Session* session,
+                                 const base::DictionaryValue& params,
+                                 std::unique_ptr<base::Value>* value) {
+  WebView* web_view = nullptr;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  std::string message, group;
+  if (!params.GetString("message", &message))
+    return Status(kInvalidArgument, "missing parameter 'message'");
+  if (!params.GetString("group", &group))
+    group = "default";
+
+  base::DictionaryValue body;
+  body.SetString("message", message);
+  body.SetString("group", group);
+
+  web_view->SendCommandAndGetResult("Page.generateTestReport", body, value);
+  return Status(kOk);
+}

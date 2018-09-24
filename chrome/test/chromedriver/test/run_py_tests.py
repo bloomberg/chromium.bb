@@ -106,9 +106,14 @@ _VERSION_SPECIFIC_FILTER['70'] = [
 _VERSION_SPECIFIC_FILTER['69'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2515
     'HeadlessInvalidCertificateTest.*',
+    # Feature not yet supported in this version
+    'ChromeDriverTest.testGenerateTestReport',
 ]
 
-_VERSION_SPECIFIC_FILTER['68'] = []
+_VERSION_SPECIFIC_FILTER['68'] = [
+    # Feature not yet supported in this version
+    'ChromeDriverTest.testGenerateTestReport',
+]
 
 
 
@@ -1734,6 +1739,15 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                                             'redboxScreenshot.png')
     imageGoldenScreenshot= open(filenameOfGoldenScreenshot, 'rb').read()
     self.assertEquals(imageGoldenScreenshot, dataActualScreenshot)
+
+  def testGenerateTestReport(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+                      '/chromedriver/reporting_observer.html'))
+    self._driver.GenerateTestReport('test report message');
+    report = self._driver.ExecuteScript('return window.result;')
+
+    self.assertEquals('test', report['type']);
+    self.assertEquals('test report message', report['body']['message']);
 
 class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   """Tests for ChromeDriver with the new Site Isolation Chrome feature.

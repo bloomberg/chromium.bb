@@ -489,6 +489,11 @@ HttpHandler::HttpHandler(
                      WrapToCommand("GetLogTypes",
                                    base::Bind(&ExecuteGetAvailableLogTypes))),
 
+      // extension commands
+      CommandMapping(kPost, "session/:sessionId/reporting/generate_test_report",
+                     WrapToCommand("GenerateTestReport",
+                                   base::Bind(&ExecuteGenerateTestReport))),
+
       // chromedriver only
       CommandMapping(kPost, "session/:sessionId/chromium/launch_app",
                      WrapToCommand("LaunchApp", base::Bind(&ExecuteLaunchApp))),
