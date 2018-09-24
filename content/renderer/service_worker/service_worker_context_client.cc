@@ -171,6 +171,13 @@ class StreamHandleListener
   blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr_;
 };
 
+bool IsOutOfProcessNetworkService() {
+  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+         !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kSingleProcess);
+}
+
 WebURLRequest::RequestContext GetBlinkRequestContext(
     RequestContextType request_context_type) {
   return static_cast<WebURLRequest::RequestContext>(request_context_type);
@@ -709,6 +716,21 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
           std::move(instance_host), main_thread_task_runner_);
 
   if (subresource_loaders) {
+    if (IsOutOfProcessNetworkService()) {
+      // If the network service crashes, this worker self-terminates, so it can
+      // be restarted later with a connection to the restarted network
+      // service.
+      // Note that the default factory is the network service factory. It's set
+      // on the start worker sequence.
+      network_service_connection_error_handler_holder_.Bind(
+          std::move(subresource_loaders->default_factory_info()));
+      network_service_connection_error_handler_holder_->Clone(
+          mojo::MakeRequest(&subresource_loaders->default_factory_info()));
+      network_service_connection_error_handler_holder_
+          .set_connection_error_handler(base::BindOnce(
+              &ServiceWorkerContextClient::StopWorker, base::Unretained(this)));
+    }
+
     loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
         main_thread_task_runner_);
     loader_factories_->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
@@ -1977,6 +1999,12 @@ void ServiceWorkerContextClient::OnRequestedTermination(
 
 bool ServiceWorkerContextClient::RequestedTermination() const {
   return context_->timeout_timer->did_idle_timeout();
+}
+
+void ServiceWorkerContextClient::StopWorker() {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  if (embedded_worker_client_)
+    embedded_worker_client_->StopWorker();
 }
 
 void ServiceWorkerContextClient::AddServiceWorkerObject(
