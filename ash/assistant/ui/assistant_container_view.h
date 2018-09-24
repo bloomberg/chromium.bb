@@ -61,6 +61,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -99,6 +100,8 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
 
   // This layer shows a rounded rectangle with drop shadow.
   ui::Layer shadow_layer_;
+
+  int animation_start_frame_number_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };
