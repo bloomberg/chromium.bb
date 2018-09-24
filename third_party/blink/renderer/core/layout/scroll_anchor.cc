@@ -465,13 +465,21 @@ void ScrollAnchor::Adjust() {
 }
 
 bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
-  if (!scroller_ || anchor_object_ || !serialized_anchor.IsValid()) {
+  if (!scroller_ || !serialized_anchor.IsValid()) {
     return false;
   }
 
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Layout.ScrollAnchor.TimeToRestoreAnchor");
   DEFINE_STATIC_LOCAL(EnumerationHistogram, restoration_status_histogram,
                       ("Layout.ScrollAnchor.RestorationStatus", kStatusCount));
+
+  if (anchor_object_ && serialized_anchor.selector == saved_selector_) {
+    return true;
+  }
+
+  if (anchor_object_) {
+    return false;
+  }
 
   Document* document = &(ScrollerLayoutBox(scroller_)->GetDocument());
 
@@ -533,6 +541,7 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
 
     saved_selector_ = serialized_anchor.selector;
     restoration_status_histogram.Count(kSuccess);
+
     return true;
   }
 
