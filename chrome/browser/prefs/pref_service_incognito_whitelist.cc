@@ -257,8 +257,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif
 
     prefs::kBackgroundTracingLastUpload,
-
-    prefs::kMediaEngagementSchemaVersion,
 };
 
 }  // namespace
