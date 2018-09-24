@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -198,12 +197,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         });
     }
 
-    /**
-     * Continues to be flaky on bots which doesn't reproduce on local devices,
-     * continuing to investigate offline.
-     */
     @Test
-    @DisabledTest(message = "crbug.com/761060")
     @LargeTest
     public void testNoSelection() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
@@ -220,12 +214,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         dismissDialog();
     }
 
-    /**
-     * Continues to be flaky on bots which doesn't reproduce on local devices,
-     * continuing to investigate offline.
-     */
     @Test
-    @DisabledTest(message = "crbug.com/761060")
     @LargeTest
     public void testSingleSelectionPhoto() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
@@ -245,12 +234,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         dismissDialog();
     }
 
-    /**
-     * Continues to be flaky on bots which doesn't reproduce on local devices,
-     * continuing to investigate offline.
-     */
     @Test
-    @DisabledTest(message = "crbug.com/761060")
     @LargeTest
     public void testMultiSelectionPhoto() throws Throwable {
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
