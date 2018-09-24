@@ -23,36 +23,16 @@ namespace media {
 
 class DecodeStatsProto;
 
-// Factory interface to create a DB instance.
-class MEDIA_EXPORT VideoDecodeStatsDBImplFactory
-    : public VideoDecodeStatsDBFactory {
- public:
-  // |db_dir| specifies where to store LevelDB files to disk. LevelDB generates
-  // a handful of files, so its recommended to provide a dedicated directory to
-  // keep them isolated.
-  explicit VideoDecodeStatsDBImplFactory(base::FilePath db_dir);
-  ~VideoDecodeStatsDBImplFactory() override;
-  std::unique_ptr<VideoDecodeStatsDB> CreateDB() override;
-
- private:
-  base::FilePath db_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoDecodeStatsDBImplFactory);
-};
-
 // LevelDB implementation of VideoDecodeStatsDB. This class is not
 // thread safe. All API calls should happen on the same sequence used for
 // construction. API callbacks will also occur on this sequence.
 class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
  public:
-  // Constructs the database. NOTE: must call Initialize() before using.
-  // |db| injects the level_db database instance for storing capabilities info.
-  // |dir| specifies where to store LevelDB files to disk. LevelDB generates a
-  // handful of files, so its recommended to provide a dedicated directory to
-  // keep them isolated.
-  VideoDecodeStatsDBImpl(
-      std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db,
-      const base::FilePath& dir);
+  // Create an instance! |db_dir| specifies where to store LevelDB files to
+  // disk. LevelDB generates a handful of files, so its recommended to provide a
+  // dedicated directory to keep them isolated.
+  static std::unique_ptr<VideoDecodeStatsDBImpl> Create(base::FilePath db_dir);
+
   ~VideoDecodeStatsDBImpl() override;
 
   // Implement VideoDecodeStatsDB.
@@ -62,10 +42,16 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
                          AppendDecodeStatsCB append_done_cb) override;
   void GetDecodeStats(const VideoDescKey& key,
                       GetDecodeStatsCB get_stats_cb) override;
-  void DestroyStats(base::OnceClosure destroy_done_cb) override;
+  void ClearStats(base::OnceClosure clear_done_cb) override;
 
  private:
-  friend class VideoDecodeStatsDBTest;
+  friend class VideoDecodeStatsDBImplTest;
+
+  // Private constructor only called by tests (friends). Production code
+  // should always use the static Create() method.
+  VideoDecodeStatsDBImpl(
+      std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db,
+      const base::FilePath& dir);
 
   // Called when the database has been initialized. Will immediately call
   // |init_cb| to forward |success|.
@@ -94,18 +80,20 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
       bool success,
       std::unique_ptr<DecodeStatsProto> capabilities_info_proto);
 
-  // Internal callback for ClearStats that logs |success| and runs
-  // |destroy_done_cb|
-  void OnDestroyedStats(base::OnceClosure destroy_done_cb, bool success);
+  // Internal callback for first step of ClearStats(). Will clear all stats If
+  // |keys| fetched successfully.
+  void OnLoadAllKeysForClearing(base::OnceClosure clear_done_cb,
+                                bool success,
+                                std::unique_ptr<std::vector<std::string>> keys);
+
+  // Internal callback for OnLoadAllKeysForClearing(), initially triggered by
+  // ClearStats(). Method simply logs |success| and runs |clear_done_cb|.
+  void OnStatsCleared(base::OnceClosure clear_done_cb, bool success);
 
   // Indicates whether initialization is completed. Does not indicate whether it
   // was successful. Will be reset upon calling DestroyStats(). Failed
   // initialization is signaled by setting |db_| to null.
   bool db_init_ = false;
-
-  // Tracks whether db_->Destroy() is in progress. Used to assert that
-  // Initialize() is not called until db destruction is complete.
-  bool db_destroy_pending_ = false;
 
   // ProtoDatabase instance. Set to nullptr if fatal database error is
   // encountered.

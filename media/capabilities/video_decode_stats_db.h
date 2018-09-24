@@ -93,10 +93,8 @@ class MEDIA_EXPORT VideoDecodeStatsDB {
   virtual void GetDecodeStats(const VideoDescKey& key,
                               GetDecodeStatsCB get_stats_cb) = 0;
 
-  // Clear all statistics by DESTROYING the underlying the database.
-  // DO NOT use the database until |callback| is run. When finished, users must
-  // RE-RUN Initialize() before performing further I/O.
-  virtual void DestroyStats(base::OnceClosure destroy_done_cb) = 0;
+  // Clear all statistics from the DB.
+  virtual void ClearStats(base::OnceClosure clear_done_cb) = 0;
 
   // Tracking down root cause of crash probable UAF (https://crbug/865321).
   // We will CHECK if a |dependent_db_| is found to be set during destruction.
@@ -123,13 +121,6 @@ MEDIA_EXPORT bool operator==(const VideoDecodeStatsDB::DecodeStatsEntry& x,
                              const VideoDecodeStatsDB::DecodeStatsEntry& y);
 MEDIA_EXPORT bool operator!=(const VideoDecodeStatsDB::DecodeStatsEntry& x,
                              const VideoDecodeStatsDB::DecodeStatsEntry& y);
-
-// Factory interface to create a DB instance.
-class MEDIA_EXPORT VideoDecodeStatsDBFactory {
- public:
-  virtual ~VideoDecodeStatsDBFactory() {}
-  virtual std::unique_ptr<VideoDecodeStatsDB> CreateDB() = 0;
-};
 
 }  // namespace media
 
