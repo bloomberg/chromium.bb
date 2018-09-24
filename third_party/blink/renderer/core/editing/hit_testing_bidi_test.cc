@@ -953,8 +953,8 @@ TEST_P(ParameterizedHitTestingBidiTest,
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryLeftSideOfLeftEdgeOftwoNestedRunsWithBaseRunEnd) {
   // Visual: |a b c F E D g h i
   // Bidi:    2 2 2 1 1 1 0 0 0
@@ -974,8 +974,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryRightSideOfLeftEdgeOftwoNestedRunsWithBaseRunEnd) {
   // Visual: |a b c F E D g h i
   // Bidi:    2 2 2 1 1 1 0 0 0
@@ -995,8 +995,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryLeftSideOfRightEdgeOftwoNestedRunsWithBaseRunEnd) {
   // Visual:  g h i F E D a b c|
   // Bidi:    0 0 0 1 1 1 2 2 2
@@ -1016,8 +1016,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryRightSideOfRightEdgeOftwoNestedRunsWithBaseRunEnd) {
   // Visual:  g h i F E D a b c|
   // Bidi:    0 0 0 1 1 1 2 2 2
@@ -1445,8 +1445,8 @@ TEST_P(ParameterizedHitTestingBidiTest,
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryLeftSideOfLeftEdgeOftwoNestedRunsWithBaseRunEnd) {
   // Visual: |C B A d e f I H G
   // Bidi:    3 3 3 2 2 2 1 1 1
@@ -1467,8 +1467,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryRightSideOfLeftEdgeOftwoNestedRunsWithBaseRunEnd) {
   // Visual: |C B A d e f I H G
   // Bidi:    3 3 3 2 2 2 1 1 1
@@ -1489,8 +1489,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryLeftSideOfRightEdgeOftwoNestedRunsWithBaseRunEnd) {
   // Visual:  I H G d e f C B A|
   // Bidi:    1 1 1 2 2 2 3 3 3
@@ -1511,8 +1511,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryRightSideOfRightEdgeOftwoNestedRunsWithBaseRunEnd) {
   // Visual:  I H G d e f C B A|
   // Bidi:    1 1 1 2 2 2 3 3 3
@@ -1953,8 +1953,8 @@ TEST_P(ParameterizedHitTestingBidiTest,
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryLeftSideOfLeftEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual: |C B A d e f I H G j k l
   // Bidi:    3 3 3 2 2 2 1 1 1 0 0 0
@@ -1975,8 +1975,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryRightSideOfLeftEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual: |C B A d e f I H G j k l
   // Bidi:    3 3 3 2 2 2 1 1 1 0 0 0
@@ -1997,8 +1997,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryLeftSideOfRightEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual:  j k l I H G d e f C B A|
   // Bidi:    0 0 0 1 1 1 2 2 2 3 3 3
@@ -2019,8 +2019,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryRightSideOfRightEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual:  j k l I H G d e f C B A|
   // Bidi:    0 0 0 1 1 1 2 2 2 3 3 3
@@ -2188,8 +2188,8 @@ TEST_P(ParameterizedHitTestingBidiTest,
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockLtrBaseRunRightSideOfRightEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual:  m n o I H G d e f C B A|j k l
   // Bidi:    0 0 0 1 1 1 2 2 2 3 3 3 0 0 0
@@ -2359,8 +2359,8 @@ TEST_P(ParameterizedHitTestingBidiTest,
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockRtlBaseRunRightSideOfRightEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual:  O N M g h i F E D a b c|L K J
   // Bidi:    1 1 1 2 2 2 3 3 3 4 4 4 1 1 1
@@ -2467,8 +2467,8 @@ TEST_P(ParameterizedHitTestingBidiTest,
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryLeftSideOfLeftEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual: |a b c F E D g h i L K J
   // Bidi:    4 4 4 3 3 3 2 2 2 1 1 1
@@ -2489,8 +2489,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryRightSideOfLeftEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual: |a b c F E D g h i L K J
   // Bidi:    4 4 4 3 3 3 2 2 2 1 1 1
@@ -2511,8 +2511,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryLeftSideOfRightEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual:  L K J g h i F E D a b c|
   // Bidi:    1 1 1 2 2 2 3 3 3 4 4 4
@@ -2533,8 +2533,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryRightSideOfRightEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual:  L K J g h i F E D a b c|
   // Bidi:    1 1 1 2 2 2 3 3 3 4 4 4
@@ -2705,8 +2705,8 @@ TEST_P(ParameterizedHitTestingBidiTest,
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockLtrBaseRunRightSideOfRightEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual:  m n o I H G d e f C B A|j k l
   // Bidi:    2 2 2 3 3 3 4 4 4 5 5 5 2 2 2
@@ -2881,8 +2881,8 @@ TEST_P(ParameterizedHitTestingBidiTest,
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockRtlBaseRunRightSideOfRightEdgeOfthreeNestedRunsWithBaseRunEnd) {
   // Visual:  O N M g h i F E D a b c|L K J
   // Bidi:    1 1 1 2 2 2 3 3 3 4 4 4 1 1 1
@@ -2989,8 +2989,8 @@ TEST_P(ParameterizedHitTestingBidiTest,
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryLeftSideOfLeftEdgeOffourNestedRunsWithBaseRunEnd) {
   // Visual: |a b c F E D g h i L K J m n o
   // Bidi:    4 4 4 3 3 3 2 2 2 1 1 1 0 0 0
@@ -3012,8 +3012,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryRightSideOfLeftEdgeOffourNestedRunsWithBaseRunEnd) {
   // Visual: |a b c F E D g h i L K J m n o
   // Bidi:    4 4 4 3 3 3 2 2 2 1 1 1 0 0 0
@@ -3035,8 +3035,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryLeftSideOfRightEdgeOffourNestedRunsWithBaseRunEnd) {
   // Visual:  m n o L K J g h i F E D a b c|
   // Bidi:    0 0 0 1 1 1 2 2 2 3 3 3 4 4 4
@@ -3057,8 +3057,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InLtrBlockAtLineBoundaryRightSideOfRightEdgeOffourNestedRunsWithBaseRunEnd) {
   // Visual:  m n o L K J g h i F E D a b c|
   // Bidi:    0 0 0 1 1 1 2 2 2 3 3 3 4 4 4
@@ -3512,8 +3512,8 @@ TEST_P(ParameterizedHitTestingBidiTest,
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryLeftSideOfLeftEdgeOffourNestedRunsWithBaseRunEnd) {
   // Visual: |C B A d e f I H G j k l O N M
   // Bidi:    5 5 5 4 4 4 3 3 3 2 2 2 1 1 1
@@ -3535,8 +3535,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryRightSideOfLeftEdgeOffourNestedRunsWithBaseRunEnd) {
   // Visual: |C B A d e f I H G j k l O N M
   // Bidi:    5 5 5 4 4 4 3 3 3 2 2 2 1 1 1
@@ -3558,8 +3558,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryLeftSideOfRightEdgeOffourNestedRunsWithBaseRunEnd) {
   // Visual:  O N M j k l I H G d e f C B A|
   // Bidi:    1 1 1 2 2 2 3 3 3 4 4 4 5 5 5
@@ -3581,8 +3581,8 @@ TEST_F(
       GetCaretTextFromBody(result.StartPosition()));
 }
 
-TEST_F(
-    HitTestingBidiTest,
+TEST_P(
+    ParameterizedHitTestingBidiTest,
     InRtlBlockAtLineBoundaryRightSideOfRightEdgeOffourNestedRunsWithBaseRunEnd) {
   // Visual:  O N M j k l I H G d e f C B A|
   // Bidi:    1 1 1 2 2 2 3 3 3 4 4 4 5 5 5
