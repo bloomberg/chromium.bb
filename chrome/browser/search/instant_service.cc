@@ -546,16 +546,6 @@ void InstantService::BuildThemeInfo() {
                      SkColorGetG(header_color),
                      SkColorGetB(header_color));
 
-  // Invert colors if needed.
-  if (color_utils::IsInvertedColorScheme()) {
-    background_color = color_utils::InvertColor(background_color);
-    text_color = color_utils::InvertColor(text_color);
-    link_color = color_utils::InvertColor(link_color);
-    text_color_light = color_utils::InvertColor(text_color_light);
-    header_color = color_utils::InvertColor(header_color);
-    section_border_color = color_utils::InvertColor(section_border_color);
-  }
-
   // Set colors.
   theme_info_->background_color = SkColorToRGBAColor(background_color);
   theme_info_->text_color = SkColorToRGBAColor(text_color);
