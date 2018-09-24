@@ -798,7 +798,7 @@ def map_and_run(data, constant_run_path):
           try:
             success = file_path.rmtree(run_dir)
           except OSError as e:
-            logging.error('Failure with %s', e)
+            logging.error('rmtree(%r) failed: %s', run_dir, e)
             success = False
           if not success:
             sys.stderr.write(OUTLIVING_ZOMBIE_MSG % ('run', data.grace_period))
@@ -808,7 +808,7 @@ def map_and_run(data, constant_run_path):
           try:
             success = file_path.rmtree(tmp_dir)
           except OSError as e:
-            logging.error('Failure with %s', e)
+            logging.error('rmtree(%r) failed: %s', tmp_dir, e)
             success = False
           if not success:
             sys.stderr.write(OUTLIVING_ZOMBIE_MSG % ('temp', data.grace_period))

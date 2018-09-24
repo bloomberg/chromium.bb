@@ -787,8 +787,8 @@ class NamedCache(Cache):
       try:
         self._lru = lru.LRUDict.load(self.state_file)
       except ValueError:
-        logging.exception('failed to load named cache state file')
-        logging.warning('deleting named caches')
+        logging.exception(
+            'NamedCache: failed to load named cache state file; obliterating')
         file_path.rmtree(self.cache_dir)
       with self._lock:
         self._try_upgrade()
@@ -808,7 +808,7 @@ class NamedCache(Cache):
 
     Raises NamedCacheError if cannot install the cache.
     """
-    logging.info('Installing named cache %r to %r', name, path)
+    logging.info('NamedCache.install(%r, %r)', path, name)
     with self._lock:
       try:
         if os.path.isdir(path):
@@ -820,23 +820,22 @@ class NamedCache(Cache):
           fs.rmtree(link_name)
 
         if name in self._lru:
-          rel_cache, _size = self._lru.get(name)
+          rel_cache, size = self._lru.get(name)
           abs_cache = os.path.join(self.cache_dir, rel_cache)
           if os.path.isdir(abs_cache):
-            logging.info('Moving %r to %r', abs_cache, path)
+            logging.info('- reusing %r; size was %d', rel_cache, size)
             file_path.ensure_tree(os.path.dirname(path))
             fs.rename(abs_cache, path)
             self._remove(name)
             return
 
-          logging.warning(
-              'directory for named cache %r does not exist at %s', name,
-              rel_cache)
+          logging.warning('- expected directory %r, does not exist', rel_cache)
           self._remove(name)
 
-        # The named cache does not exist, create an empty directory.
-        # When uninstalling, we will move it back to the cache and create an
-        # an entry.
+        # The named cache does not exist, create an empty directory. When
+        # uninstalling, we will move it back to the cache and create an an
+        # entry.
+        logging.info('- creating new directory')
         file_path.ensure_tree(path)
       except (IOError, OSError) as ex:
         raise NamedCacheError(
@@ -852,24 +851,25 @@ class NamedCache(Cache):
 
     Raises NamedCacheError if cannot uninstall the cache.
     """
-    logging.info('Uninstalling named cache %r from %r', name, path)
+    logging.info('NamedCache.uninstall(%r, %r)', path, name)
     with self._lock:
       try:
         if not os.path.isdir(path):
           logging.warning(
-              'Directory %r does not exist anymore. Cache lost.', path)
+              'NamedCache: Directory %r does not exist anymore. Cache lost.',
+              path)
           return
 
         if name in self._lru:
           # This shouldn't happen but just remove the preexisting one and move
           # on.
-          logging.warning('overwriting an existing named cache %r', name)
+          logging.error('- overwriting existing cache!')
           self._remove(name)
         rel_cache = self._allocate_dir()
 
         # Move the dir and create an entry for the named cache.
         abs_cache = os.path.join(self.cache_dir, rel_cache)
-        logging.info('Moving %r to %r', path, abs_cache)
+        logging.info('- Moving to %r', rel_cache)
         file_path.ensure_tree(os.path.dirname(abs_cache))
         fs.rename(path, abs_cache)
 
@@ -878,6 +878,7 @@ class NamedCache(Cache):
         if not size:
           # Do not save empty named cache.
           return
+        logging.info('- Size is %d', size)
         self._lru.add(name, (rel_cache, size))
         self._added.append(size)
 
@@ -891,7 +892,8 @@ class NamedCache(Cache):
 
         try:
           fs.symlink(abs_cache, named_path)
-          logging.info('Created symlink %r to %r', named_path, abs_cache)
+          logging.info(
+              'NamedCache: Created symlink %r to %r', named_path, abs_cache)
         except OSError:
           # Ignore on Windows. It happens when running as a normal user or when
           # UAC is enabled and the user is a filtered administrator account.
@@ -942,7 +944,8 @@ class NamedCache(Cache):
   def remove_oldest(self):
     with self._lock:
       # TODO(maruel): Update self._added.
-      return self._remove_lru_item()
+      _name, size = self._remove_lru_item()
+      return size
 
   def save(self):
     with self._lock:
@@ -957,7 +960,11 @@ class NamedCache(Cache):
       # Trim according to maximum number of items.
       if self._policies.max_items:
         while len(self._lru) > self._policies.max_items:
-          evicted.append(self._remove_lru_item())
+          name, size = self._remove_lru_item()
+          evicted.append(size)
+          logging.info(
+              'NamedCache.trim(): Removed %r(%d) due to max_items(%d)',
+              name, size, self._policies.max_items)
 
       # Trim according to maximum age.
       if self._policies.max_age_secs:
@@ -966,7 +973,11 @@ class NamedCache(Cache):
           _name, (_data, ts) = self._lru.get_oldest()
           if ts >= cutoff:
             break
-          evicted.append(self._remove_lru_item())
+          name, size = self._remove_lru_item()
+          evicted.append(size)
+          logging.info(
+              'NamedCache.trim(): Removed %r(%d) due to max_age_secs(%d)',
+              name, size, self._policies.max_age_secs)
 
       # Trim according to minimum free space.
       if self._policies.min_free_space:
@@ -974,7 +985,11 @@ class NamedCache(Cache):
           free_space = file_path.get_free_space(self.cache_dir)
           if free_space >= self._policies.min_free_space:
             break
-          evicted.append(self._remove_lru_item())
+          name, size = self._remove_lru_item()
+          evicted.append(size)
+          logging.info(
+              'NamedCache.trim(): Removed %r(%d) due to min_free_space(%d)',
+              name, size, self._policies.min_free_space)
 
       # Trim according to maximum total size.
       if self._policies.max_cache_size:
@@ -982,7 +997,11 @@ class NamedCache(Cache):
           total = sum(size for _rel_cache, size in self._lru.itervalues())
           if total <= self._policies.max_cache_size:
             break
-          evicted.append(self._remove_lru_item())
+          name, size = self._remove_lru_item()
+          evicted.append(size)
+          logging.info(
+              'NamedCache.trim(): Removed %r(%d) due to max_cache_size(%d)',
+              name, size, self._policies.max_cache_size)
 
       self._save()
     return evicted
@@ -1003,11 +1022,15 @@ class NamedCache(Cache):
         # First, handle the actual cache content.
         # Remove missing entries.
         for missing in (set(expected) - actual):
-          self._lru.pop(expected[missing])
+          name, size = self._lru.pop(expected[missing])
+          logging.warning(
+              'NamedCache.cleanup(): Missing on disk %r(%d)', name, size)
         # Remove unexpected items.
         for unexpected in (actual - set(expected)):
           try:
             p = os.path.join(self.cache_dir, unexpected)
+            logging.warning(
+                'NamedCache.cleanup(): Unexpected %r', unexpected)
             if fs.isdir(p) and not fs.islink(p):
               file_path.rmtree(p)
             else:
@@ -1082,7 +1105,7 @@ class NamedCache(Cache):
     name, ((_rel_path, size), _ts) = self._lru.get_oldest()
     logging.info('Removing named cache %r', name)
     self._remove(name)
-    return size
+    return name, size
 
   def _allocate_dir(self):
     """Creates and returns relative path of a new cache directory."""
