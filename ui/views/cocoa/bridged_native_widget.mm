@@ -16,6 +16,7 @@
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
@@ -295,7 +296,8 @@ BridgedNativeWidgetImpl::~BridgedNativeWidgetImpl() {
 
 void BridgedNativeWidgetImpl::BindRequest(
     views_bridge_mac::mojom::BridgedNativeWidgetRequest request) {
-  bridge_mojo_binding_.Bind(std::move(request));
+  bridge_mojo_binding_.Bind(std::move(request),
+                            ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
 void BridgedNativeWidgetImpl::SetWindow(
