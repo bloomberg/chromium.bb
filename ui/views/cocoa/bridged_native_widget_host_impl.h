@@ -15,11 +15,11 @@
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/views/cocoa/bridge_factory_host.h"
-#include "ui/views/cocoa/bridged_native_widget_host.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_observer.h"
+#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
@@ -39,7 +39,7 @@ class NativeWidgetMac;
 // communicates to the BridgedNativeWidgetImpl, which interacts with the Cocoa
 // APIs, and which may live in an app shim process.
 class VIEWS_EXPORT BridgedNativeWidgetHostImpl
-    : public BridgedNativeWidgetHostHelper,
+    : public views_bridge_mac::BridgedNativeWidgetHostHelper,
       public BridgeFactoryHost::Observer,
       public views_bridge_mac::mojom::BridgedNativeWidgetHost,
       public DialogObserver,
@@ -171,6 +171,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   bool IsMiniaturized() const { return is_miniaturized_; }
   bool IsWindowKey() const { return is_window_key_; }
   bool IsMouseCaptureActive() const { return is_mouse_capture_active_; }
+
+  // Used by NativeWidgetPrivate::GetGlobalCapture.
+  static NSView* GetGlobalCaptureView();
 
  private:
   gfx::Vector2d GetBoundsOffsetForParent() const;

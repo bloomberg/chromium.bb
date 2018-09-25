@@ -445,13 +445,9 @@ jumbo_component("views") {
     "cocoa/bridged_content_view.h",
     "cocoa/bridged_content_view.mm",
     "cocoa/bridged_content_view_touch_bar.mm",
-    "cocoa/bridged_native_widget_host.h",
     "cocoa/bridged_native_widget_host_impl.h",
     "cocoa/bridged_native_widget_host_impl.mm",
     "cocoa/bridged_native_widget_owner.h",
-    "cocoa/cocoa_mouse_capture.h",
-    "cocoa/cocoa_mouse_capture.mm",
-    "cocoa/cocoa_mouse_capture_delegate.h",
     "cocoa/cocoa_window_move_loop.h",
     "cocoa/cocoa_window_move_loop.mm",
     "cocoa/drag_drop_client_mac.h",
@@ -740,6 +736,7 @@ jumbo_component("views") {
       "//components/crash/core/common",
       "//ui/accelerated_widget_mac",
       "//ui/events:dom_keycode_converter",
+      "//ui/views_bridge_mac",
     ]
     public_deps += [ "//ui/views_bridge_mac:mojo" ]
     libs = [
@@ -1117,7 +1114,10 @@ source_set("views_unittests_sources") {
   if (is_mac) {
     # views_unittests not yet compiling on Mac. http://crbug.com/378134
     sources -= [ "controls/native/native_view_host_unittest.cc" ]
-    public_deps += [ "//ui/accelerated_widget_mac" ]
+    public_deps += [
+      "//ui/accelerated_widget_mac",
+      "//ui/views_bridge_mac:views_bridge_mac",
+    ]
   }
 }
 

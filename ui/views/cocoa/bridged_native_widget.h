@@ -19,10 +19,10 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
-#import "ui/views/cocoa/cocoa_mouse_capture_delegate.h"
 #import "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
+#import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 
 @class BridgedContentView;
@@ -31,9 +31,14 @@
 @class ViewsNSWindowDelegate;
 
 namespace views_bridge_mac {
+
 namespace mojom {
 class BridgedNativeWidgetHost;
 }  // namespace mojom
+
+class CocoaMouseCapture;
+class BridgedNativeWidgetHostHelper;
+
 }  // namespace views_bridge_mac
 
 namespace views {
@@ -41,13 +46,14 @@ namespace test {
 class BridgedNativeWidgetTestApi;
 }
 
-class BridgedNativeWidgetHostHelper;
-class CocoaMouseCapture;
 class CocoaWindowMoveLoop;
 class DragDropClientMac;
 class View;
 
 using views_bridge_mac::mojom::BridgedNativeWidgetHost;
+using views_bridge_mac::BridgedNativeWidgetHostHelper;
+using views_bridge_mac::CocoaMouseCapture;
+using views_bridge_mac::CocoaMouseCaptureDelegate;
 
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the

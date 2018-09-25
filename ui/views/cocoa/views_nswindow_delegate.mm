@@ -9,7 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
-#include "ui/views/cocoa/bridged_native_widget_host.h"
+#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @implementation ViewsNSWindowDelegate
