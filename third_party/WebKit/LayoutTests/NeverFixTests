@@ -1917,3 +1917,4 @@ http/tests/cachestorage/large-put.html [ WontFix ]
 # Tests that work only when LazyImageLoading feature is enabled.
 crbug.com/846170 http/tests/lazyload/lazy.html [ WontFix ]
 crbug.com/846170 http/tests/lazyload/attribute.html [ WontFix ]
+crbug.com/846170 http/tests/lazyload/fixed-dimension.html [ WontFix ]
