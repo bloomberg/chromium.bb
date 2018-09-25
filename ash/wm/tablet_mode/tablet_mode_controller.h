@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/bluetooth_devices_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "ash/session/session_observer.h"
@@ -132,7 +133,7 @@ class ASH_EXPORT TabletModeController
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // ui::InputDeviceEventObserver::
+  // ui::InputDeviceEventObserver:
   void OnMouseDeviceConfigurationChanged() override;
   void OnDeviceListsComplete() override;
 
@@ -211,6 +212,10 @@ class ASH_EXPORT TabletModeController
   // angle range.
   bool LidAngleIsInTabletModeRange();
 
+  // Callback function for |bluetooth_devices_observer_|. Called when |device|
+  // changes.
+  void UpdateBluetoothDevice(device::BluetoothDevice* device);
+
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
 
@@ -257,6 +262,11 @@ class ASH_EXPORT TabletModeController
   // not enter tablet mode if this is true.
   bool has_external_mouse_ = false;
 
+  // Tracks if the device would enter tablet mode, but does not because of a
+  // attached external mouse. If the external mouse is detached and this is
+  // true, we will enter tablet mode.
+  bool should_enter_tablet_mode_ = false;
+
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to
   // incorrect calculations of hinge angles.
@@ -276,6 +286,9 @@ class ASH_EXPORT TabletModeController
   base::RepeatingTimer record_lid_angle_timer_;
 
   ScopedSessionObserver scoped_session_observer_;
+
+  // Observer to observe the bluetooth devices.
+  std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;
 
   base::ObserverList<TabletModeObserver>::Unchecked tablet_mode_observers_;
 

@@ -185,7 +185,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // Simulate an external keyboard being connected. We should assume there's a
   // Caps Lock and Meta keys now.
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
-      {2, ui::INPUT_DEVICE_EXTERNAL, "external keyboard"}});
+      {2, ui::INPUT_DEVICE_USB, "external keyboard"}});
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_TRUE(HasExternalMetaKey());
@@ -194,7 +194,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // Simulate an external Apple keyboard being connected. Now users can remap
   // the command key.
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
-      {3, ui::INPUT_DEVICE_EXTERNAL, "Apple Inc. Apple Keyboard"}});
+      {3, ui::INPUT_DEVICE_USB, "Apple Inc. Apple Keyboard"}});
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_FALSE(HasExternalMetaKey());
@@ -203,8 +203,8 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // Simulate two external keyboards (Apple and non-Apple) are connected at the
   // same time.
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
-      {2, ui::INPUT_DEVICE_EXTERNAL, "external keyboard"},
-      {3, ui::INPUT_DEVICE_EXTERNAL, "Apple Inc. Apple Keyboard"}});
+      {2, ui::INPUT_DEVICE_USB, "external keyboard"},
+      {3, ui::INPUT_DEVICE_USB, "Apple Inc. Apple Keyboard"}});
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_TRUE(HasExternalMetaKey());
@@ -215,7 +215,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // should show the capslock and external meta remapping.
   // https://crbug.com/834594.
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
-      {4, ui::INPUT_DEVICE_EXTERNAL, "Topre Corporation Realforce 87"}});
+      {4, ui::INPUT_DEVICE_USB, "Topre Corporation Realforce 87"}});
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_TRUE(HasExternalMetaKey());

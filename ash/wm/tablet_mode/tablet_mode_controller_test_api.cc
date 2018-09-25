@@ -27,7 +27,7 @@ void TabletModeControllerTestApi::LeaveTabletMode() {
 
 void TabletModeControllerTestApi::AttachExternalMouse() {
   ws::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
-      3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
+      3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
   base::RunLoop().RunUntilIdle();
   tablet_mode_controller_->OnMouseDeviceConfigurationChanged();
 }

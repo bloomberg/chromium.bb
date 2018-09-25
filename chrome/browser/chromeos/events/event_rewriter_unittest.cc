@@ -310,8 +310,7 @@ TEST_F(EventRewriterTest, TestRewriteExternalMetaKey) {
       ui::INPUT_DEVICE_INTERNAL);
   rewriter_->KeyboardDeviceAddedForTesting(
       kKeyboardDeviceId + 1, "External Keyboard",
-      ui::EventRewriterChromeOS::kKbdTopRowLayoutDefault,
-      ui::INPUT_DEVICE_EXTERNAL);
+      ui::EventRewriterChromeOS::kKbdTopRowLayoutDefault, ui::INPUT_DEVICE_USB);
 
   // The Meta key on both external and internal keyboards should produce Search.
 
