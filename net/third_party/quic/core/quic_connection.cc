@@ -291,9 +291,13 @@ QuicConnection::QuicConnection(
       packet_generator_(connection_id_, &framer_, random_generator_, this),
       idle_network_timeout_(QuicTime::Delta::Infinite()),
       handshake_timeout_(QuicTime::Delta::Infinite()),
+      time_of_first_packet_sent_after_receiving_(
+          GetQuicReloadableFlag(
+              quic_fix_time_of_first_packet_sent_after_receiving)
+              ? QuicTime::Zero()
+              : clock_->ApproximateNow()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_previous_received_packet_(QuicTime::Zero()),
-      last_send_for_timeout_(clock_->ApproximateNow()),
       sent_packet_manager_(
           perspective,
           clock_,
@@ -2124,12 +2128,27 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
       SetPathDegradingAlarm();
     }
 
-    // Only adjust the last sent time (for the purpose of tracking the idle
-    // timeout) if this is the first retransmittable packet sent after a
-    // packet is received. If it were updated on every sent packet, then
-    // sending into a black hole might never timeout.
-    if (last_send_for_timeout_ <= time_of_last_received_packet_) {
-      last_send_for_timeout_ = packet_send_time;
+    if (GetQuicReloadableFlag(
+            quic_fix_time_of_first_packet_sent_after_receiving)) {
+      // Update |time_of_first_packet_sent_after_receiving_| if this is the
+      // first packet sent after the last packet was received. If it were
+      // updated on every sent packet, then sending into a black hole might
+      // never timeout.
+      if (time_of_first_packet_sent_after_receiving_ <
+          time_of_last_received_packet_) {
+        QUIC_FLAG_COUNT(
+            quic_reloadable_flag_quic_fix_time_of_first_packet_sent_after_receiving);  // NOLINT
+        time_of_first_packet_sent_after_receiving_ = packet_send_time;
+      }
+    } else {
+      // Only adjust the last sent time (for the purpose of tracking the idle
+      // timeout) if this is the first retransmittable packet sent after a
+      // packet is received. If it were updated on every sent packet, then
+      // sending into a black hole might never timeout.
+      if (time_of_first_packet_sent_after_receiving_ <=
+          time_of_last_received_packet_) {
+        time_of_first_packet_sent_after_receiving_ = packet_send_time;
+      }
     }
   }
   SetPingAlarm();
@@ -2602,7 +2621,8 @@ void QuicConnection::SetNetworkTimeouts(QuicTime::Delta handshake_timeout,
 void QuicConnection::CheckForTimeout() {
   QuicTime now = clock_->ApproximateNow();
   QuicTime time_of_last_packet =
-      std::max(time_of_last_received_packet_, last_send_for_timeout_);
+      std::max(time_of_last_received_packet_,
+               time_of_first_packet_sent_after_receiving_);
 
   // |delta| can be < 0 as |now| is approximate time but |time_of_last_packet|
   // is accurate time. However, this should not change the behavior of
@@ -2649,7 +2669,8 @@ void QuicConnection::CheckForTimeout() {
 
 void QuicConnection::SetTimeoutAlarm() {
   QuicTime time_of_last_packet =
-      std::max(time_of_last_received_packet_, last_send_for_timeout_);
+      std::max(time_of_last_received_packet_,
+               time_of_first_packet_sent_after_receiving_);
 
   QuicTime deadline = time_of_last_packet + idle_network_timeout_;
   if (!handshake_timeout_.IsInfinite()) {
