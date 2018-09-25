@@ -11521,7 +11521,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #else
   const int do_tx_search = 1;
 #endif
-  InterModesInfo *inter_modes_info = &tile_data->inter_modes_info;
+  InterModesInfo *inter_modes_info = x->inter_modes_info;
   inter_modes_info->num = 0;
 #endif
 
