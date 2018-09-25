@@ -204,8 +204,8 @@ class CORE_EXPORT HTMLMediaElement
   void FlingingStopped();
 
   // statistics
-  unsigned webkitAudioDecodedByteCount() const;
-  unsigned webkitVideoDecodedByteCount() const;
+  uint64_t webkitAudioDecodedByteCount() const;
+  uint64_t webkitVideoDecodedByteCount() const;
 
   // media source extensions
   void CloseMediaSource();
