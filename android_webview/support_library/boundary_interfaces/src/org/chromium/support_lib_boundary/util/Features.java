@@ -134,4 +134,10 @@ public class Features {
 
     // WebViewRenderer.terminate
     public static final String WEB_VIEW_RENDERER_TERMINATE = "WEB_VIEW_RENDERER_TERMINATE";
+
+    // TracingController.getInstance
+    // TracingController.isTracing
+    // TracingController.start
+    // TracingController.stop
+    public static final String TRACING_CONTROLLER_BASIC_USAGE = "TRACING_CONTROLLER_BASIC_USAGE";
 }
