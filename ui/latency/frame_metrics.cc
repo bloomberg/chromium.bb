@@ -8,6 +8,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/bit_cast.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 
@@ -387,6 +388,27 @@ void FrameMetrics::StartNewReportPeriod() {
   latency_analyzer_.StartNewReportPeriod();
   latency_speed_analyzer_.StartNewReportPeriod();
   latency_acceleration_analyzer_.StartNewReportPeriod();
+}
+
+double FrameMetrics::FastApproximateSqrt(double x) {
+  if (x <= 0)
+    return 0;
+  // Basically performs x*fastinvSqrt(x) - using high precision (3 steps)
+  double y = x;
+  double xhalf = 0.5f * x;
+  float xf = static_cast<float>(x);
+  int32_t i = bit_cast<int32_t>(xf);
+  // Magic Number for initial guess. Reference:
+  // http://www.lomont.org/Math/Papers/2003/InvSqrt.pdf.
+  i = 0x5f3759df - (i >> 1);
+  x = static_cast<double>(bit_cast<float>(i));
+  // Newton step.
+  x = x * (1.5 - xhalf * x * x);
+  // Newton step.
+  x = x * (1.5 - xhalf * x * x);
+  // Newton step.
+  x = x * (1.5 - xhalf * x * x);
+  return y * x;
 }
 
 namespace {
