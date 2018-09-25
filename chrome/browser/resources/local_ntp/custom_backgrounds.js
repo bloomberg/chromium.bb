@@ -902,6 +902,9 @@ customBackgrounds.init = function(showErrorNotification) {
       .setAttribute(
           'aria-label', configData.translatedStrings.customizeThisPage);
 
+  $(customBackgrounds.IDS.EDIT_BG_GEAR)
+      .setAttribute('title', configData.translatedStrings.customizeBackground);
+
   // Edit gear icon interaction events.
   let editBackgroundInteraction = function() {
     editDialog.showModal();
