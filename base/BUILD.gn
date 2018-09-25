@@ -4,6 +4,8 @@
 
 source_set("base") {
   sources = [
+    "error.cc",
+    "error.h",
     "export.h",
     "ip_address.cc",
     "ip_address.h",
@@ -19,6 +21,7 @@ source_set("base_unittests") {
   testonly = true
 
   sources = [
+    "error_unittest.cc",
     "ip_address_unittest.cc",
     "scoped_pipe_unittest.cc",
   ]
