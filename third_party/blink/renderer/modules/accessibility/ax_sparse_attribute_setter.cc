@@ -222,7 +222,7 @@ void AXSparseAttributeAOMPropertyClient::AddRelationListProperty(
   }
 
   HeapVector<Member<AXObject>> objects;
-  for (size_t i = 0; i < relations.length(); ++i) {
+  for (unsigned i = 0; i < relations.length(); ++i) {
     AccessibleNode* accessible_node = relations.item(i);
     if (accessible_node) {
       Element* element = accessible_node->element();

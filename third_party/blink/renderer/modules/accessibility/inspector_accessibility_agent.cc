@@ -575,13 +575,15 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildObjectForIgnoredNode(
     ignored_reasons.push_back(IgnoredReason(kAXNotRendered));
   }
 
-  if (dom_node)
-    ignored_node_object->setBackendDOMNodeId(DOMNodeIds::IdForNode(dom_node));
+  if (dom_node) {
+    ignored_node_object->setBackendDOMNodeId(
+        IdentifiersFactory::IntIdForNode(dom_node));
+  }
 
   std::unique_ptr<protocol::Array<AXProperty>> ignored_reason_properties =
       protocol::Array<AXProperty>::create();
-  for (size_t i = 0; i < ignored_reasons.size(); i++)
-    ignored_reason_properties->addItem(CreateProperty(ignored_reasons[i]));
+  for (IgnoredReason& reason : ignored_reasons)
+    ignored_reason_properties->addItem(CreateProperty(reason));
   ignored_node_object->setIgnoredReasons(std::move(ignored_reason_properties));
 
   return ignored_node_object;
@@ -659,8 +661,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
     if (!name_sources.IsEmpty()) {
       std::unique_ptr<protocol::Array<AXValueSource>> name_source_properties =
           protocol::Array<AXValueSource>::create();
-      for (size_t i = 0; i < name_sources.size(); ++i) {
-        NameSource& name_source = name_sources[i];
+      for (NameSource& name_source : name_sources) {
         name_source_properties->addItem(CreateValueSource(name_source));
         if (name_source.text.IsNull() || name_source.superseded)
           continue;
@@ -749,7 +750,7 @@ void InspectorAccessibilityAgent::FillCoreProperties(
 
   Node* node = ax_object.GetNode();
   if (node)
-    node_object.setBackendDOMNodeId(DOMNodeIds::IdForNode(node));
+    node_object.setBackendDOMNodeId(IdentifiersFactory::IntIdForNode(node));
 }
 
 void InspectorAccessibilityAgent::PopulateRelatives(

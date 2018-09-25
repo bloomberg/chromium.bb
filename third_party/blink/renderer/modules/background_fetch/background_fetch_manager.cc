@@ -416,7 +416,7 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
 
     web_requests.resize(request_vector.size());
 
-    for (size_t i = 0; i < request_vector.size(); ++i) {
+    for (wtf_size_t i = 0; i < request_vector.size(); ++i) {
       const RequestOrUSVString& request_or_url = request_vector[i];
 
       Request* request = nullptr;
