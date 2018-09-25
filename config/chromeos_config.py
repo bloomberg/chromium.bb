@@ -3495,7 +3495,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       (None, 'firmware-leon-4389.61.B', ['leon']),
       (None, 'firmware-monroe-4921.B', ['monroe']),
       (None, 'firmware-panther-4920.24.B', ['panther']),
-      (None, 'firmware-skate-3824.129.B', ['daisy_skate']),
+      (INACTIVE, 'firmware-skate-3824.129.B', ['daisy_skate']),
       (None, 'firmware-zako-5219.B', ['zako']),
       (None, 'firmware-squawks-5216.152.B', ['squawks']),
       (None, 'firmware-nyan-5771.B', ['nyan_big', 'nyan_blaze']),
@@ -3515,7 +3515,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       (None, 'firmware-samus-6300.B', ['samus']),
       (None, 'firmware-auron-6301.B', ['jecht']),
       (None, 'firmware-candy-5216.310.B', ['candy']),
-      (None, 'firmware-veyron-6588.B', [
+      (INACTIVE, 'firmware-veyron-6588.B', [
           'veyron_jerry', 'veyron_mighty',
           'veyron_speedy', 'veyron_jaq',
           'veyron_minnie',
@@ -3562,7 +3562,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       (None, 'firmware-fizz-10139.94.B', ['fizz']),
       (None, 'firmware-scarlet-10388.B', ['scarlet']),
       (None, 'firmware-poppy-10431.B', ['poppy', 'soraka', 'nautilus']),
-      (None, 'firmware-nami-10775.B', ['nami']),
+      (INACTIVE, 'firmware-nami-10775.B', ['nami']),
       (None, 'firmware-nocturne-10984.B', ['nocturne']),
       (None, 'firmware-grunt-11031.B', ['grunt']),
   ]
