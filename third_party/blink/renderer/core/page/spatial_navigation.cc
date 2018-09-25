@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -712,32 +713,27 @@ HTMLFrameOwnerElement* FrameOwnerElement(FocusCandidate& candidate) {
              : nullptr;
 };
 
-// The rect of the visual viewport given in the root frame's coordinate space.
+// The visual viewport's rect (given in the root frame's coordinate space).
 LayoutRect RootViewport(const LocalFrame* current_frame) {
-  LocalFrameView* root_frame_view = current_frame->LocalFrameRoot().View();
-  const LayoutRect root_doc_rect(
-      root_frame_view->GetScrollableArea()->VisibleContentRect());
-  // Convert the root frame's visible rect from document space -> frame space.
-  // For the root frame, frame space == root frame space, obviously.
-  LayoutRect frame_rect = root_frame_view->DocumentToFrame(root_doc_rect);
-  return frame_rect;
+  return LayoutRect(
+      current_frame->GetPage()->GetVisualViewport().VisibleRect());
 }
 
 // Spatnav uses this rectangle to measure distances to focus candidates.
 // The search origin is either activeElement F itself, if it's being at least
 // partially visible, or else, its first [partially] visible scroller. If both
 // F and its enclosing scroller are completely off-screen, we recurse to the
-// scroller’s scroller ... all the way up unil the root frame's document.
+// scroller’s scroller ... all the way up until the root frame's document.
 // The root frame's document is a good base case because it's, per definition,
 // a visible scrollable area.
-LayoutRect SearchOrigin(const LayoutRect visible_root_frame,
+LayoutRect SearchOrigin(const LayoutRect viewport_rect_of_root_frame,
                         Node* focus_node,
                         const WebFocusType direction) {
   if (!focus_node) {
     // Search from one of the visual viewport's edges towards the navigated
     // direction. For example, UP makes spatnav search upwards, starting at the
     // visual viewport's bottom.
-    return OppositeEdge(direction, visible_root_frame);
+    return OppositeEdge(direction, viewport_rect_of_root_frame);
   }
 
   LayoutRect box_in_root_frame;
@@ -759,16 +755,17 @@ LayoutRect SearchOrigin(const LayoutRect visible_root_frame,
     // We found the first box that encloses focus and is [partially] visible.
     if (area_element || IsScrollableAreaOrDocument(focus_node)) {
       // When searching a container, we start from one of its sides.
-      return OppositeEdge(direction,
-                          Intersection(box_in_root_frame, visible_root_frame),
-                          thickness);
+      return OppositeEdge(
+          direction,
+          Intersection(box_in_root_frame, viewport_rect_of_root_frame),
+          thickness);
     }
-    return Intersection(box_in_root_frame, visible_root_frame);
+    return Intersection(box_in_root_frame, viewport_rect_of_root_frame);
   }
 
   // Try a higher "focus-enclosing" scroller.
   Node* container = ScrollableAreaOrDocumentOf(focus_node);
-  return SearchOrigin(visible_root_frame, container, direction);
+  return SearchOrigin(viewport_rect_of_root_frame, container, direction);
 }
 
 }  // namespace blink
