@@ -409,10 +409,23 @@ void AccountReconcilor::StartReconcile() {
 }
 
 void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
-    const std::vector<gaia::ListedAccount>& gaia_accounts) {
+    const std::string& primary_account,
+    const std::vector<std::string>& chrome_accounts,
+    std::vector<gaia::ListedAccount>&& gaia_accounts) {
   DCHECK(base::FeatureList::IsEnabled(kUseMultiloginEndpoint));
-  NOTIMPLEMENTED();
-  // TODO(valeriyas): implement.
+
+  std::vector<std::string> accounts_to_send;
+  if (delegate_->ReorderChromeAccountsForReconcileIfNeeded(
+          chrome_accounts, primary_account, gaia_accounts, &accounts_to_send)) {
+    PerformSetCookiesAction(accounts_to_send);
+  } else {
+    OnSetAccountsInCookieCompleted(GoogleServiceAuthError::AuthErrorNone());
+  }
+  // TODO(valeriyas): Log operation here.
+  if (!is_reconcile_started_)
+    delegate_->OnReconcileFinished(gaia_accounts[0].id, reconcile_is_noop_);
+  first_execution_ = false;
+  ScheduleStartReconcileIfChromeAccountsChanged();
 }
 
 void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
@@ -467,7 +480,9 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
   }
 
   if (base::FeatureList::IsEnabled(kUseMultiloginEndpoint)) {
-    FinishReconcileWithMultiloginEndpoint(std::move(verified_gaia_accounts));
+    FinishReconcileWithMultiloginEndpoint(primary_account,
+                                          LoadValidAccountsFromTokenService(),
+                                          std::move(verified_gaia_accounts));
   } else {
     FinishReconcile(primary_account, LoadValidAccountsFromTokenService(),
                     std::move(verified_gaia_accounts));
@@ -684,8 +699,15 @@ void AccountReconcilor::OnSetAccountsInCookieCompleted(
     if (error.state() != GoogleServiceAuthError::State::NONE &&
         !error_during_last_reconcile_.IsPersistentError()) {
       error_during_last_reconcile_ = error;
+      delegate_->OnReconcileError(error_during_last_reconcile_);
     }
-    CalculateIfReconcileIsDone();
+    is_reconcile_started_ = false;
+
+    timer_->Stop();
+    base::TimeDelta duration = base::Time::Now() - reconcile_start_time_;
+    signin_metrics::LogSigninAccountReconciliationDuration(
+        duration, (error_during_last_reconcile_.state() ==
+                   GoogleServiceAuthError::State::NONE));
     ScheduleStartReconcileIfChromeAccountsChanged();
   }
 }

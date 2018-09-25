@@ -36,6 +36,7 @@
 #include "components/payments/core/features.h"
 #include "components/search_provider_logos/switches.h"
 #include "components/security_state/core/features.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -395,6 +396,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"custom-search-engines", flag_descriptions::kCustomSearchEnginesName,
      flag_descriptions::kCustomSearchEnginesDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCustomSearchEngines)},
+    {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
+     flag_descriptions::kUseMultiloginEndpointDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
 };
 
 // Add all switches from experimental flags to |command_line|.

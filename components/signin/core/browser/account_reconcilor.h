@@ -115,10 +115,13 @@ class AccountReconcilor : public KeyedService,
   friend class Lock;
   friend class AccountReconcilorTest;
   friend class DiceBrowserTestBase;
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, SigninManagerRegistration);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, Reauth);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, ProfileAlreadyConnected);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestDice, TableRowTest);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           SigninManagerRegistration);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest, Reauth);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           ProfileAlreadyConnected);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestTable, TableRowTest);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestMirrorMultilogin, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceTokenServiceRegistration);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileWhithoutSignin);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileNoop);
@@ -136,41 +139,55 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            MigrationClearSecondaryTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MigrationClearAllTokens);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, TokensNotLoaded);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           TokensNotLoaded);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileCookiesDisabled);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileContentSettings);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileContentSettingsGaiaUrl);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileContentSettingsNonGaiaUrl);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileContentSettingsInvalidPattern);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, GetAccountsFromCookieSuccess);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, GetAccountsFromCookieFailure);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoop);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopWithDots);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopMultiple);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToCookie);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           GetAccountsFromCookieSuccess);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           GetAccountsFromCookieFailure);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileNoopWithDots);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileNoopMultiple);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileAddToCookie);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, AuthErrorTriggersListAccount);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            SignoutAfterErrorDoesNotRecordUma);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           TokenErrorOnPrimary);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileRemoveFromCookie);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileAddToCookieTwice);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileBadPrimary);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileOnlyOnce);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, Lock);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileBadPrimary);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileOnlyOnce);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest, Lock);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMethodParamTest,
                            StartReconcileWithSessionInfoExpiredDefault);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            AddAccountToCookieCompletedWithBogusAccount);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, NoLoopWithBadPrimary);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, WontMergeAccountsWithError);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           NoLoopWithBadPrimary);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           WontMergeAccountsWithError);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DelegateTimeoutIsCalled);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DelegateTimeoutIsNotCalled);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           DelegateTimeoutIsNotCalled);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DelegateTimeoutIsNotCalledIfTimeoutIsNotReached);
 
@@ -240,7 +257,9 @@ class AccountReconcilor : public KeyedService,
                           const GoogleServiceAuthError& error) override;
 
   void FinishReconcileWithMultiloginEndpoint(
-      const std::vector<gaia::ListedAccount>& gaia_accounts);
+      const std::string& primary_account,
+      const std::vector<std::string>& chrome_accounts,
+      std::vector<gaia::ListedAccount>&& gaia_accounts);
 
   // Lock related methods.
   void IncrementLockCount();

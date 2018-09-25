@@ -221,6 +221,11 @@ extern const char kToolbarContainerDescription[];
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];
 
+// Title and description for the flag to enable Gaia Auth Mutlilogin endpoint
+// for identity consistency.
+extern const char kUseMultiloginEndpointName[];
+extern const char kUseMultiloginEndpointDescription[];
+
 // Title and description for the flag to force the consent bump.
 extern const char kForceUnifiedConsentBumpName[];
 extern const char kForceUnifiedConsentBumpDescription[];
