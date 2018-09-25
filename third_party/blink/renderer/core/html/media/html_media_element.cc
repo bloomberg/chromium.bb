@@ -3805,20 +3805,16 @@ void HTMLMediaElement::MarkCaptionAndSubtitleTracksAsUnconfigured() {
   }
 }
 
-unsigned HTMLMediaElement::webkitAudioDecodedByteCount() const {
+uint64_t HTMLMediaElement::webkitAudioDecodedByteCount() const {
   if (!GetWebMediaPlayer())
     return 0;
-  // TODO(dtapuska): https://crbug.com/887593 Should the IDL change to be a
-  // unsigned long long?
-  return static_cast<unsigned>(GetWebMediaPlayer()->AudioDecodedByteCount());
+  return GetWebMediaPlayer()->AudioDecodedByteCount();
 }
 
-unsigned HTMLMediaElement::webkitVideoDecodedByteCount() const {
+uint64_t HTMLMediaElement::webkitVideoDecodedByteCount() const {
   if (!GetWebMediaPlayer())
     return 0;
-  // TODO(dtapuska): https://crbug.com/887593 Should the IDL change to be a
-  // unsigned long long?
-  return static_cast<unsigned>(GetWebMediaPlayer()->VideoDecodedByteCount());
+  return GetWebMediaPlayer()->VideoDecodedByteCount();
 }
 
 bool HTMLMediaElement::IsURLAttribute(const Attribute& attribute) const {
