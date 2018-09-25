@@ -301,6 +301,7 @@ TEST_F(BaseFetchContextTest, CanRequest) {
   KURL url(NullURL(), "http://baz.test");
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
   resource_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
 
@@ -340,7 +341,9 @@ TEST_F(BaseFetchContextTest, CheckCSPForRequest) {
 TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
   KURL url(NullURL(), "http://www.example.com/");
   ResourceRequest request(url);
+  request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
   ResourceRequest keepalive_request(url);
+  keepalive_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
   keepalive_request.SetKeepalive(true);
 
   EXPECT_EQ(base::nullopt,
@@ -404,6 +407,7 @@ TEST_F(BaseFetchContextTest, UACSSTest) {
   KURL data_url("data:image/png;base64,test");
 
   ResourceRequest resource_request(test_url);
+  resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
   ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::uacss;
 
@@ -437,6 +441,7 @@ TEST_F(BaseFetchContextTest, UACSSTest_BypassCSP) {
   KURL data_url("data:image/png;base64,test");
 
   ResourceRequest resource_request(data_url);
+  resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
   ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::uacss;
 

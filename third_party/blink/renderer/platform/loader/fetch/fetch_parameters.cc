@@ -78,7 +78,7 @@ void FetchParameters::SetCrossOriginAccessControl(
       network::mojom::FetchRequestMode::kCORS);
   resource_request_.SetFetchCredentialsMode(credentials_mode);
 
-  options_.security_origin = origin;
+  resource_request_.SetRequestorOrigin(origin);
 
   // TODO: Credentials should be removed only when the request is cross origin.
   resource_request_.RemoveUserAndPassFromURL();

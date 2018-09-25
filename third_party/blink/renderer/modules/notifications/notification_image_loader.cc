@@ -115,7 +115,6 @@ void NotificationImageLoader::Start(ExecutionContext* context,
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
-  resource_request.SetRequestorOrigin(context->GetSecurityOrigin());
 
   threadable_loader_ = new ThreadableLoader(
       *context, this, resource_loader_options);

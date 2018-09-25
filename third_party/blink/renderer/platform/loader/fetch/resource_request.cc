@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -49,7 +48,6 @@ ResourceRequest::ResourceRequest(const String& url_string)
 ResourceRequest::ResourceRequest(const KURL& url)
     : url_(url),
       timeout_interval_(default_timeout_interval_),
-      requestor_origin_(nullptr),
       http_method_(HTTPNames::GET),
       allow_stored_credentials_(true),
       report_upload_progress_(false),
@@ -98,6 +96,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
     bool skip_service_worker) const {
   std::unique_ptr<ResourceRequest> request =
       std::make_unique<ResourceRequest>(new_url);
+  request->SetRequestorOrigin(RequestorOrigin());
   request->SetHTTPMethod(new_method);
   request->SetSiteForCookies(new_site_for_cookies);
   String referrer =
@@ -175,15 +174,6 @@ const KURL& ResourceRequest::SiteForCookies() const {
 
 void ResourceRequest::SetSiteForCookies(const KURL& site_for_cookies) {
   site_for_cookies_ = site_for_cookies;
-}
-
-scoped_refptr<const SecurityOrigin> ResourceRequest::RequestorOrigin() const {
-  return requestor_origin_;
-}
-
-void ResourceRequest::SetRequestorOrigin(
-    scoped_refptr<const SecurityOrigin> requestor_origin) {
-  requestor_origin_ = std::move(requestor_origin);
 }
 
 const AtomicString& ResourceRequest::HttpMethod() const {

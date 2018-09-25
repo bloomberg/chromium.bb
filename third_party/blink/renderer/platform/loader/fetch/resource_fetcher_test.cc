@@ -103,10 +103,7 @@ class ResourceFetcherTest : public testing::Test {
 
  protected:
   MockFetchContext* Context() { return platform_->Context(); }
-  void AddResourceToMemoryCache(
-      Resource* resource,
-      scoped_refptr<const SecurityOrigin> source_origin) {
-    resource->SetSourceOrigin(source_origin);
+  void AddResourceToMemoryCache(Resource* resource) {
     GetMemoryCache()->Add(resource);
   }
 
@@ -134,8 +131,8 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
 
   // Start by calling StartLoad() directly, rather than via RequestResource().
   // This shouldn't crash.
-  fetcher->StartLoad(
-      RawResource::CreateForTest(secure_url, ResourceType::kRaw));
+  fetcher->StartLoad(RawResource::CreateForTest(
+      secure_url, SecurityOrigin::CreateUniqueOpaque(), ResourceType::kRaw));
 }
 
 TEST_F(ResourceFetcherTest, UseExistingResource) {
@@ -166,8 +163,9 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
       SecurityOrigin::CreateUniqueOpaque();
   Context()->SetSecurityOrigin(source_origin);
   KURL url("http://127.0.0.1:8000/foo.html");
-  Resource* resource = RawResource::CreateForTest(url, ResourceType::kRaw);
-  AddResourceToMemoryCache(resource, source_origin);
+  Resource* resource =
+      RawResource::CreateForTest(url, source_origin, ResourceType::kRaw);
+  AddResourceToMemoryCache(resource);
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
@@ -197,8 +195,9 @@ TEST_F(ResourceFetcherTest, Vary) {
   Context()->SetSecurityOrigin(source_origin);
 
   KURL url("http://127.0.0.1:8000/foo.html");
-  Resource* resource = RawResource::CreateForTest(url, ResourceType::kRaw);
-  AddResourceToMemoryCache(resource, source_origin);
+  Resource* resource =
+      RawResource::CreateForTest(url, source_origin, ResourceType::kRaw);
+  AddResourceToMemoryCache(resource);
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
@@ -263,8 +262,9 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
 
   KURL url("http://127.0.0.1:8000/foo.html");
-  Resource* resource = RawResource::CreateForTest(url, ResourceType::kRaw);
-  AddResourceToMemoryCache(resource, source_origin);
+  Resource* resource =
+      RawResource::CreateForTest(url, source_origin, ResourceType::kRaw);
+  AddResourceToMemoryCache(resource);
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
@@ -772,8 +772,9 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
   Context()->SetSecurityOrigin(source_origin);
 
   KURL url("http://127.0.0.1:8000/foo.html");
-  Resource* resource = RawResource::CreateForTest(url, ResourceType::kRaw);
-  AddResourceToMemoryCache(resource, source_origin);
+  Resource* resource =
+      RawResource::CreateForTest(url, source_origin, ResourceType::kRaw);
+  AddResourceToMemoryCache(resource);
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(304);

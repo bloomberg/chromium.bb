@@ -170,8 +170,8 @@ class FrameFetchContextTest : public testing::Test {
 
   // Call the method for the actual test cases as only this fixture is specified
   // as a friend class.
-  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest& request) {
-    fetch_context->SetFirstPartyCookieAndRequestorOrigin(request);
+  void SetFirstPartyCookie(ResourceRequest& request) {
+    fetch_context->SetFirstPartyCookie(request);
   }
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder;
@@ -266,6 +266,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     resource_request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
     resource_request.SetKeepalive(keepalive);
+    resource_request.SetRequestorOrigin(fetch_context->GetSecurityOrigin());
     ResourceLoaderOptions options;
     return fetch_context->CanRequest(
         ResourceType::kImage, resource_request, input_url, options,
@@ -941,73 +942,6 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
                 conditional, ResourceType::kMock, FetchParameters::kNoDefer));
 }
 
-TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
-  struct TestCase {
-    const char* document_url;
-    bool document_sandboxed;
-    const char* requestor_origin;  // "" => null
-    network::mojom::RequestContextFrameType frame_type;
-    const char* serialized_origin;  // "" => null
-  } cases[] = {
-      // No document origin => unique request origin
-      {"", false, "", network::mojom::RequestContextFrameType::kNone, "null"},
-      {"", true, "", network::mojom::RequestContextFrameType::kNone, "null"},
-
-      // Document origin => request origin
-      {"http://example.test", false, "",
-       network::mojom::RequestContextFrameType::kNone, "http://example.test"},
-      {"http://example.test", true, "",
-       network::mojom::RequestContextFrameType::kNone, "http://example.test"},
-
-      // If the request already has a requestor origin, then
-      // 'SetFirstPartyCookieAndRequestorOrigin' leaves it alone:
-      {"http://example.test", false, "http://not-example.test",
-       network::mojom::RequestContextFrameType::kNone,
-       "http://not-example.test"},
-      {"http://example.test", true, "http://not-example.test",
-       network::mojom::RequestContextFrameType::kNone,
-       "http://not-example.test"},
-  };
-
-  int index = 0;
-  for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << index++ << " " << test.document_url
-                                    << " => " << test.serialized_origin);
-    // Set up a new document to ensure sandbox flags are cleared:
-    dummy_page_holder = DummyPageHolder::Create(IntSize(500, 500));
-    dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
-    document = &dummy_page_holder->GetDocument();
-    fetch_context =
-        static_cast<FrameFetchContext*>(&document->Fetcher()->Context());
-    FrameFetchContext::ProvideDocumentToContext(*fetch_context, document.Get());
-
-    // Setup the test:
-    document->SetURL(KURL(test.document_url));
-    document->SetSecurityOrigin(SecurityOrigin::Create(document->Url()));
-
-    if (test.document_sandboxed)
-      document->EnforceSandboxFlags(kSandboxOrigin);
-
-    ResourceRequest request("http://example.test/");
-    request.SetFrameType(test.frame_type);
-    if (strlen(test.requestor_origin) > 0) {
-      request.SetRequestorOrigin(
-          SecurityOrigin::Create(KURL(test.requestor_origin)));
-    }
-
-    // Compare the populated |requestorOrigin| against |test.serializedOrigin|
-    SetFirstPartyCookieAndRequestorOrigin(request);
-    if (strlen(test.serialized_origin) == 0) {
-      EXPECT_TRUE(!request.RequestorOrigin());
-    } else {
-      EXPECT_EQ(String(test.serialized_origin),
-                request.RequestorOrigin()->ToString());
-    }
-
-    EXPECT_EQ(document->SiteForCookies(), request.SiteForCookies());
-  }
-}
-
 TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
   Settings* settings = document->GetSettings();
   FrameFetchContext* childFetchContext = CreateChildFrame();
@@ -1495,8 +1429,7 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
   // Should not crash.
 }
 
-TEST_F(FrameFetchContextTest,
-       SetFirstPartyCookieAndRequestorOriginWhenDetached) {
+TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
   const KURL url("https://www.example.com/hoge/fuga");
   ResourceRequest request(url);
   const KURL document_url("https://www2.example.com/foo/bar");
@@ -1507,10 +1440,10 @@ TEST_F(FrameFetchContextTest,
 
   dummy_page_holder = nullptr;
 
-  SetFirstPartyCookieAndRequestorOrigin(request);
+  SetFirstPartyCookie(request);
 
   EXPECT_EQ(document_url, request.SiteForCookies());
-  EXPECT_EQ(origin, request.RequestorOrigin());
+  EXPECT_EQ(document_url.GetString(), request.SiteForCookies().GetString());
 }
 
 TEST_F(FrameFetchContextTest, ArchiveWhenDetached) {

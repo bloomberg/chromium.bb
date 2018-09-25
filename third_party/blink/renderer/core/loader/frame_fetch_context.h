@@ -246,7 +246,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   ContentSettingsClient* GetContentSettingsClient() const;
   Settings* GetSettings() const;
   String GetUserAgent() const;
-  scoped_refptr<const SecurityOrigin> GetRequestorOrigin();
   const ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
   bool ShouldSendClientHint(mojom::WebClientHintsType,
@@ -256,7 +255,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // the |ContentSettingsClient| with the list of client hints and the
   // persistence duration.
   void ParseAndPersistClientHints(const ResourceResponse&);
-  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&);
+  void SetFirstPartyCookie(ResourceRequest&);
 
   // Returns true if execution of scripts from the url are allowed. Compared to
   // AllowScriptFromSource(), this method does not generate any

@@ -149,11 +149,8 @@ void EventSource::Connect() {
                      last_event_id_utf8.length()));
   }
 
-  const SecurityOrigin* origin = execution_context.GetSecurityOrigin();
-
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
-  resource_loader_options.security_origin = origin;
 
   probe::willSendEventSourceRequest(&execution_context, this);
   loader_ =

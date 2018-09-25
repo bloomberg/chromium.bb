@@ -419,6 +419,10 @@ bool Resource::MustRefetchDueToIntegrityMetadata(
                                        params.IntegrityMetadata());
 }
 
+const scoped_refptr<const SecurityOrigin>& Resource::GetOrigin() const {
+  return LastResourceRequest().RequestorOrigin();
+}
+
 static double CurrentAge(const ResourceResponse& response,
                          double response_timestamp) {
   // RFC2616 13.2.3
@@ -537,13 +541,14 @@ void Resource::SetResponse(const ResourceResponse& response) {
 std::unique_ptr<CachedMetadataSender> Resource::CreateCachedMetadataSender()
     const {
   if (GetResponse().WasFetchedViaServiceWorker()) {
-    // TODO(leszeks): Check whether it's correct that the source_origin can be
-    // null.
-    if (!source_origin_ || GetResponse().CacheStorageCacheName().IsNull()) {
+    scoped_refptr<const SecurityOrigin> origin =
+        GetResourceRequest().RequestorOrigin();
+    // TODO(leszeks): Check whether it's correct that |origin| can be nullptr.
+    if (!origin || GetResponse().CacheStorageCacheName().IsNull()) {
       return std::make_unique<NullCachedMetadataSender>();
     }
-    return std::make_unique<ServiceWorkerCachedMetadataSender>(
-        this, source_origin_.get());
+    return std::make_unique<ServiceWorkerCachedMetadataSender>(this,
+                                                               origin.get());
   }
   return std::make_unique<CachedMetadataSenderImpl>(this);
 }
@@ -771,12 +776,17 @@ void Resource::FinishPendingClients() {
   DCHECK(clients_awaiting_callback_.IsEmpty() || scheduled);
 }
 
-Resource::MatchStatus Resource::CanReuse(
-    const FetchParameters& params,
-    scoped_refptr<const SecurityOrigin> new_source_origin) const {
+Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
   const ResourceRequest& new_request = params.GetResourceRequest();
   const ResourceLoaderOptions& new_options = params.Options();
+  scoped_refptr<const SecurityOrigin> existing_origin =
+      GetResourceRequest().RequestorOrigin();
+  scoped_refptr<const SecurityOrigin> new_origin =
+      new_request.RequestorOrigin();
   DCHECK_EQ(GetDataBufferingPolicy(), kBufferData);
+
+  DCHECK(existing_origin);
+  DCHECK(new_origin);
 
   // Never reuse opaque responses from a service worker for requests that are
   // not no-cors. https://crbug.com/625575
@@ -850,11 +860,9 @@ Resource::MatchStatus Resource::CanReuse(
   if (GetResourceRequest().HttpBody() != new_request.HttpBody())
     return MatchStatus::kUnknownFailure;
 
-  DCHECK(source_origin_);
-  DCHECK(new_source_origin);
 
   // Don't reuse an existing resource when the source origin is different.
-  if (!source_origin_->IsSameSchemeHostPort(new_source_origin.get()))
+  if (!existing_origin->IsSameSchemeHostPort(new_origin.get()))
     return MatchStatus::kUnknownFailure;
 
   // securityOrigin has more complicated checks which callers are responsible

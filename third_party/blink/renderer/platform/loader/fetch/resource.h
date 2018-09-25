@@ -340,9 +340,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
   String CacheIdentifier() const { return cache_identifier_; }
 
-  void SetSourceOrigin(scoped_refptr<const SecurityOrigin> source_origin) {
-    source_origin_ = source_origin;
-  }
+  // https://fetch.spec.whatwg.org/#concept-request-origin
+  const scoped_refptr<const SecurityOrigin>& GetOrigin() const;
 
   virtual void DidSendData(unsigned long long /* bytesSent */,
                            unsigned long long /* totalBytesToBeSent */) {}
@@ -362,9 +361,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
 
   // Returns |kOk| when |this| can be resused for the given arguments.
-  virtual MatchStatus CanReuse(
-      const FetchParameters& params,
-      scoped_refptr<const SecurityOrigin> new_source_origin) const;
+  virtual MatchStatus CanReuse(const FetchParameters& params) const;
 
   // TODO(yhirano): Remove this once out-of-blink CORS is fully enabled.
   void SetResponseType(network::mojom::FetchResponseType response_type) {
@@ -518,21 +515,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   ResourceType type_;
   ResourceStatus status_;
-
-  // A SecurityOrigin representing the origin from which the loading of the
-  // Resource was initiated. This is calculated and set on Resource creation.
-  //
-  // Unlike |security_origin| on |options_|, which:
-  // - holds a SecurityOrigin to override the FetchContext's SecurityOrigin
-  //   (in case of e.g. that the script initiated the loading is in an isolated
-  //   world)
-  //
-  // Used for isolating resources for different origins in the MemoryCache.
-  //
-  // Note: A Resource returned from the memory cache has an origin for the first
-  // initiator that fetched the Resource. It may be different from the origin
-  // that you need for any runtime security check in Blink.
-  scoped_refptr<const SecurityOrigin> source_origin_;
 
   Member<CachedMetadataHandler> cache_handler_;
 
