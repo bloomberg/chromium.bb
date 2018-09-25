@@ -741,26 +741,6 @@ function shouldHaveHadError(message)
     testFailed("expectError() not called before shouldHaveHadError()");
 }
 
-// With Oilpan tests that rely on garbage collection need to go through
-// the event loop in order to get precise garbage collections. Oilpan
-// uses conservative stack scanning when not at the event loop and that
-// can artificially keep objects alive. Therefore, tests that need to check
-// that something is dead need to use this asynchronous collectGarbage
-// function.
-function asyncGC(callback) {
-    if (!callback) {
-        return new Promise(resolve => asyncGC(resolve));
-    }
-    var documentsBefore = internals.numberOfLiveDocuments();
-    GCController.asyncCollectAll(function () {
-        var documentsAfter = internals.numberOfLiveDocuments();
-        if (documentsAfter < documentsBefore)
-            asyncGC(callback);
-        else
-            callback();
-    });
-}
-
 function gc() {
     if (typeof GCController !== "undefined")
         GCController.collectAll();
@@ -775,15 +755,6 @@ function gc() {
         for (var i = 0; i < 1000; i++)
             gcRec(10);
     }
-}
-
-function asyncMinorGC(callback) {
-    if (typeof GCController !== "undefined")
-        GCController.minorCollect();
-    else
-        testFailed("Minor GC is available only when you enable the --expose-gc option in V8.");
-    // FIXME: we need a better way of waiting for chromium events to happen
-    setTimeout(callback, 0);
 }
 
 function setPrintTestResultsLazily() {
