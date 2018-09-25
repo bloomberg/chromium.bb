@@ -468,7 +468,6 @@ class StubRenderWidgetOwnerDelegate : public RenderWidgetOwnerDelegate {
     return false;
   }
   void SetActiveForWidget(bool active) override {}
-  void SetBackgroundOpaqueForWidget(bool opaque) override {}
   bool SupportsMultipleWindowsForWidget() override { return true; }
   void DidHandleGestureEventForWidget(
       const blink::WebGestureEvent& event) override {}
