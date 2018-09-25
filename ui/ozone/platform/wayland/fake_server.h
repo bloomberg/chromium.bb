@@ -182,6 +182,24 @@ class MockTouch : public ServerObject {
   DISALLOW_COPY_AND_ASSIGN(MockTouch);
 };
 
+// Manage zwp_text_input_v1.
+class MockZwpTextInput : public ServerObject {
+ public:
+  MockZwpTextInput(wl_resource* resource, const void* implementation);
+  ~MockZwpTextInput() override;
+
+  MOCK_METHOD0(Reset, void());
+  MOCK_METHOD1(Activate, void(wl_resource* window));
+  MOCK_METHOD0(Deactivate, void());
+  MOCK_METHOD0(ShowInputPanel, void());
+  MOCK_METHOD0(HideInputPanel, void());
+  MOCK_METHOD4(SetCursorRect,
+               void(int32_t x, int32_t y, int32_t width, int32_t height));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockZwpTextInput);
+};
+
 class MockDataOffer : public ServerObject {
  public:
   explicit MockDataOffer(wl_resource* resource);
@@ -392,6 +410,18 @@ class MockXdgShellV6 : public Global {
   DISALLOW_COPY_AND_ASSIGN(MockXdgShellV6);
 };
 
+// Manage zwp_text_input_manager_v1 object.
+class MockTextInputManagerV1 : public Global {
+ public:
+  MockTextInputManagerV1();
+  ~MockTextInputManagerV1() override;
+
+  std::unique_ptr<MockZwpTextInput> text_input;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTextInputManagerV1);
+};
+
 struct DisplayDeleter {
   void operator()(wl_display* display);
 };
@@ -425,6 +455,9 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
   MockSeat* seat() { return &seat_; }
   MockXdgShell* xdg_shell() { return &xdg_shell_; }
   MockOutput* output() { return &output_; }
+  MockTextInputManagerV1* text_input_manager_v1() {
+    return &zwp_text_input_manager_v1_;
+  }
 
  private:
   void DoPause();
@@ -449,6 +482,7 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
   MockSeat seat_;
   MockXdgShell xdg_shell_;
   MockXdgShellV6 zxdg_shell_v6_;
+  MockTextInputManagerV1 zwp_text_input_manager_v1_;
 
   base::MessagePumpLibevent::FdWatchController controller_;
 

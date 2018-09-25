@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "ui/ozone/platform/wayland/fake_server.h"
+
 #include <sys/socket.h>
+#include <text-input-unstable-v1-server-protocol.h>
 #include <wayland-server.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
@@ -21,11 +23,12 @@
 namespace wl {
 namespace {
 
-const uint32_t kCompositorVersion = 4;
-const uint32_t kOutputVersion = 2;
-const uint32_t kDataDeviceManagerVersion = 3;
-const uint32_t kSeatVersion = 4;
-const uint32_t kXdgShellVersion = 1;
+constexpr uint32_t kCompositorVersion = 4;
+constexpr uint32_t kOutputVersion = 2;
+constexpr uint32_t kDataDeviceManagerVersion = 3;
+constexpr uint32_t kSeatVersion = 4;
+constexpr uint32_t kTextInputManagerVersion = 1;
+constexpr uint32_t kXdgShellVersion = 1;
 
 bool ResourceHasImplementation(wl_resource* resource,
                                const wl_interface* interface,
@@ -471,6 +474,84 @@ const struct wl_touch_interface touch_impl = {
     &DestroyResource,  // release
 };
 
+// zwp_text_input_v1
+
+void TextInputV1Activate(wl_client* client,
+                         wl_resource* resource,
+                         wl_resource* seat,
+                         wl_resource* surface) {
+  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))
+      ->Activate(surface);
+}
+
+void TextInputV1Deactivate(wl_client* client,
+                           wl_resource* resource,
+                           wl_resource* seat) {
+  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))
+      ->Deactivate();
+}
+
+void TextInputV1ShowInputPanel(wl_client* client, wl_resource* resource) {
+  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))
+      ->ShowInputPanel();
+}
+
+void TextInputV1HideInputPanel(wl_client* client, wl_resource* resource) {
+  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))
+      ->HideInputPanel();
+}
+
+void TextInputV1Reset(wl_client* client, wl_resource* resource) {
+  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))->Reset();
+}
+
+void TextInputV1SetCursorRectangle(wl_client* client,
+                                   wl_resource* resource,
+                                   int32_t x,
+                                   int32_t y,
+                                   int32_t width,
+                                   int32_t height) {
+  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))
+      ->SetCursorRect(x, y, width, height);
+}
+
+const struct zwp_text_input_v1_interface zwp_text_input_v1_impl = {
+    &TextInputV1Activate,            // activate
+    &TextInputV1Deactivate,          // deactivate
+    &TextInputV1ShowInputPanel,      // show_input_panel
+    &TextInputV1HideInputPanel,      // hide_input_panel
+    &TextInputV1Reset,               // reset
+    nullptr,                         // set_surrounding_text
+    nullptr,                         // set_content_type
+    &TextInputV1SetCursorRectangle,  // set_cursor_rectangle
+    nullptr,                         // set_preferred_language
+    nullptr,                         // commit_state
+    nullptr,                         // invoke_action
+};
+
+// zwp_text_input_manager_v1
+
+void CreateTextInput(struct wl_client* client,
+                     struct wl_resource* resource,
+                     uint32_t id) {
+  auto* im =
+      static_cast<MockTextInputManagerV1*>(wl_resource_get_user_data(resource));
+  wl_resource* text_resource =
+      wl_resource_create(client, &zwp_text_input_v1_interface,
+                         wl_resource_get_version(resource), id);
+  if (!text_resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+  im->text_input.reset(
+      new MockZwpTextInput(text_resource, &zwp_text_input_v1_impl));
+}
+
+const struct zwp_text_input_manager_v1_interface
+    zwp_text_input_manager_v1_impl = {
+        &CreateTextInput,  // create_text_input
+};
+
 // xdg_surface, zxdg_surface_v6 and zxdg_toplevel shared methods.
 
 void SetTitle(wl_client* client, wl_resource* resource, const char* title) {
@@ -800,6 +881,15 @@ MockTouch::MockTouch(wl_resource* resource) : ServerObject(resource) {
 
 MockTouch::~MockTouch() {}
 
+MockZwpTextInput::MockZwpTextInput(wl_resource* resource,
+                                   const void* implementation)
+    : ServerObject(resource) {
+  wl_resource_set_implementation(resource, implementation, this,
+                                 &ServerObject::OnResourceDestroyed);
+}
+
+MockZwpTextInput::~MockZwpTextInput() {}
+
 MockDataOffer::MockDataOffer(wl_resource* resource)
     : ServerObject(resource),
       io_thread_("Worker thread"),
@@ -1006,6 +1096,13 @@ MockXdgShellV6::MockXdgShellV6()
 
 MockXdgShellV6::~MockXdgShellV6() {}
 
+MockTextInputManagerV1::MockTextInputManagerV1()
+    : Global(&zwp_text_input_manager_v1_interface,
+             &zwp_text_input_manager_v1_impl,
+             kTextInputManagerVersion) {}
+
+MockTextInputManagerV1::~MockTextInputManagerV1() {}
+
 void DisplayDeleter::operator()(wl_display* display) {
   wl_display_destroy(display);
 }
@@ -1052,6 +1149,8 @@ bool FakeServer::Start(uint32_t shell_version) {
     if (!zxdg_shell_v6_.Initialize(display_.get()))
       return false;
   }
+  if (!zwp_text_input_manager_v1_.Initialize(display_.get()))
+    return false;
 
   client_ = wl_client_create(display_.get(), server_fd.get());
   if (!client_)
