@@ -86,7 +86,7 @@ class ScrollingCoordinator;
 class ScrollingCoordinatorContext;
 class TracedValue;
 class TransformState;
-class UkmTimeAggregator;
+class LocalFrameUkmAggregator;
 class WebPluginContainerImpl;
 struct AnnotatedRegionValue;
 struct IntrinsicSizingInfo;
@@ -348,6 +348,9 @@ class CORE_EXPORT LocalFrameView final
   // Returns whether the lifecycle was successfully updated to the
   // desired state.
   bool UpdateLifecycleToLayoutClean();
+
+  // Record any UMA and UKM metrics that depend on the end of a main frame.
+  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time);
 
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
@@ -824,7 +827,7 @@ class CORE_EXPORT LocalFrameView final
 
   void LayoutFromRootObject(LayoutObject& root);
 
-  UkmTimeAggregator& EnsureUkmTimeAggregator();
+  LocalFrameUkmAggregator& EnsureUkmAggregator();
 
   LayoutSize size_;
 
@@ -959,7 +962,7 @@ class CORE_EXPORT LocalFrameView final
 
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
 
-  std::unique_ptr<UkmTimeAggregator> ukm_time_aggregator_;
+  std::unique_ptr<LocalFrameUkmAggregator> ukm_aggregator_;
 
   Member<PrintContext> print_context_;
 

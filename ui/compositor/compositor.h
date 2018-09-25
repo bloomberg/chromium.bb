@@ -407,6 +407,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
+  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
