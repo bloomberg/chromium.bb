@@ -95,7 +95,10 @@ void RollbackHelper::OnStateChanged(syncer::SyncService* sync_service) {
     return;
 
   scoped_sync_observer_.RemoveAll();
-  DoRollbackIfPossibleAndDie(sync_service);
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&RollbackHelper::DoRollbackIfPossibleAndDie,
+                                base::Unretained(this), sync_service));
 }
 
 void RollbackHelper::DoRollbackIfPossibleAndDie(
@@ -113,7 +116,8 @@ void RollbackHelper::DoRollbackIfPossibleAndDie(
     // USER_EVENTS. Therefore it is desired to restore sync everything when
     // rolling back unified consent to leave sync in the same state as the one
     // before migration.
-    sync_service->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+    sync_service->OnUserChoseDatatypes(/*sync_everything=*/true,
+                                       syncer::UserSelectableTypes());
   }
 
   base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
@@ -129,7 +133,8 @@ UnifiedConsentService::UnifiedConsentService(
     : service_client_(std::move(service_client)),
       pref_service_(pref_service),
       identity_manager_(identity_manager),
-      sync_service_(sync_service) {
+      sync_service_(sync_service),
+      weak_ptr_factory_(this) {
   DCHECK(service_client_);
   DCHECK(pref_service_);
   DCHECK(identity_manager_);
@@ -259,6 +264,7 @@ void UnifiedConsentService::RecordConsentBumpSuppressReason(
 }
 
 void UnifiedConsentService::Shutdown() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
   service_client_->RemoveObserver(this);
   identity_manager_->RemoveObserver(this);
   sync_service_->RemoveObserver(this);
@@ -322,19 +328,47 @@ void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
 
   syncer::SyncPrefs sync_prefs(pref_service_);
   if (IsUnifiedConsentGiven() != sync_prefs.HasKeepEverythingSynced()) {
-    // Make sync-everything consistent with the |kUnifiedConsentGiven| pref.
-    SetSyncEverythingIfPossible(IsUnifiedConsentGiven());
+    // |OnStateChanged| is called after every update in the sync service,
+    // therefore only allow to update the sync settings when the transport
+    // state is ACTIVE.
+    // Note: This is a safety measure. Theoretically this can be done when
+    // the sync engine is initialized.
+    if (sync_service_->GetTransportState() ==
+        syncer::SyncService::TransportState::ACTIVE) {
+      // Make sync-everything consistent with the |kUnifiedConsentGiven| pref.
+      PostTaskToUpdateSyncSettings(/*sync_everything=*/IsUnifiedConsentGiven());
+    }
   }
+}
+
+void UnifiedConsentService::UpdateSyncSettingsIfPossible(
+    bool sync_everything,
+    syncer::ModelTypeSet sync_data_types) {
+  if (sync_service_->GetDisableReasons() !=
+          syncer::SyncService::DISABLE_REASON_NONE ||
+      !sync_service_->IsEngineInitialized()) {
+    return;
+  }
+  sync_service_->OnUserChoseDatatypes(sync_everything, sync_data_types);
+}
+
+void UnifiedConsentService::PostTaskToUpdateSyncSettings(
+    bool sync_everything,
+    syncer::ModelTypeSet sync_data_types) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UnifiedConsentService::UpdateSyncSettingsIfPossible,
+                     weak_ptr_factory_.GetWeakPtr(), sync_everything,
+                     sync_data_types));
 }
 
 void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   bool enabled = pref_service_->GetBoolean(prefs::kUnifiedConsentGiven);
 
   if (!enabled) {
-    if (identity_manager_->HasPrimaryAccount()) {
-      // Sync-everything is set to false, so the user can select individual
-      // sync data types.
-      SetSyncEverythingIfPossible(false);
+    if (identity_manager_->HasPrimaryAccount() &&
+        syncer::SyncPrefs(pref_service_).HasKeepEverythingSynced()) {
+      UpdateSyncSettingsIfPossible(/*sync_everything=*/false);
     }
     return;
   }
@@ -356,7 +390,8 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
 
   // Enable all sync data types if possible, otherwise they will be enabled with
   // |OnStateChanged| once sync is active;
-  SetSyncEverythingIfPossible(true);
+  autofill::prefs::SetPaymentsIntegrationEnabled(pref_service_, true);
+  UpdateSyncSettingsIfPossible(/*sync_everything=*/true);
 
   // Enable all non-personalized services.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
@@ -370,25 +405,6 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
         ServiceState::kNotSupported) {
       service_client_->SetServiceEnabled(service, true);
     }
-  }
-}
-
-void UnifiedConsentService::SetSyncEverythingIfPossible(bool sync_everything) {
-  syncer::SyncPrefs sync_prefs(pref_service_);
-  if (sync_everything == sync_prefs.HasKeepEverythingSynced())
-    return;
-
-  if (!IsSyncConfigurable())
-    return;
-
-  if (sync_everything) {
-    autofill::prefs::SetPaymentsIntegrationEnabled(pref_service_, true);
-    sync_service_->OnUserChoseDatatypes(sync_everything,
-                                        syncer::UserSelectableTypes());
-  } else {
-    syncer::ModelTypeSet preferred = sync_service_->GetPreferredDataTypes();
-    preferred.RetainAll(syncer::UserSelectableTypes());
-    sync_service_->OnUserChoseDatatypes(false, preferred);
   }
 }
 
@@ -436,7 +452,8 @@ void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
 }
 
 void UnifiedConsentService::UpdateSettingsForMigration() {
-  if (!IsSyncConfigurable()) {
+  if (sync_service_->GetTransportState() !=
+      syncer::SyncService::TransportState::ACTIVE) {
     SetMigrationState(MigrationState::kInProgressWaitForSyncInit);
     return;
   }
@@ -463,8 +480,8 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
       sync_service_->GetPreferredDataTypes();
   preferred_types_without_user_events.RetainAll(syncer::UserSelectableTypes());
   preferred_types_without_user_events.Remove(syncer::USER_EVENTS);
-  sync_service_->OnUserChoseDatatypes(false /*sync everything */,
-                                      preferred_types_without_user_events);
+  PostTaskToUpdateSyncSettings(/*sync_everything=*/false,
+                               preferred_types_without_user_events);
 
   SetMigrationState(MigrationState::kCompleted);
 }
@@ -490,11 +507,6 @@ bool UnifiedConsentService::AreAllOnByDefaultPrivacySettingsOn() {
       return false;
   }
   return true;
-}
-
-bool UnifiedConsentService::IsSyncConfigurable() {
-  return sync_service_->GetTransportState() ==
-         syncer::SyncService::TransportState::ACTIVE;
 }
 
 void UnifiedConsentService::RecordSettingsHistogram() {

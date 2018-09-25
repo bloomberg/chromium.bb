@@ -166,6 +166,9 @@ class UnifiedConsentServiceTest : public testing::Test {
         identity_test_environment_.identity_manager(), &sync_service_);
     service_client_ = (FakeUnifiedConsentServiceClient*)
                           consent_service_->service_client_.get();
+
+    // Run until idle so the migration can finish.
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetUnifiedConsentFeatureState(
@@ -283,6 +286,7 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
   // Initalize sync engine and therefore activate sync.
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
   sync_service_.FireStateChanged();
+  base::RunLoop().RunUntilIdle();
 
   // UnifiedConsentService starts syncing everything.
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
@@ -396,6 +400,8 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndAllServicesOn) {
   // When sync is active, the migration should continue and finish.
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
   sync_service_.FireStateChanged();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
 
   // No metric for the consent bump suppress reason should have been recorded at
@@ -564,6 +570,8 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasSyncingEverything) {
 
   // Rollback
   UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_);
+  base::RunLoop().RunUntilIdle();
+
   // Unified consent prefs should be cleared.
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(unified_consent::MigrationState::kNotInitialized,
