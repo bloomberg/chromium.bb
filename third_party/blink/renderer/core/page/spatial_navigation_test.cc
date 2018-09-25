@@ -46,6 +46,23 @@ class SpatialNavigationTest : public RenderingTest {
   }
 };
 
+TEST_F(SpatialNavigationTest, RootFramesVisualViewport) {
+  // Test RootViewport with a pinched viewport.
+  VisualViewport& visual_viewport = GetFrame().GetPage()->GetVisualViewport();
+  visual_viewport.SetScale(2);
+  visual_viewport.SetLocation(FloatPoint(200, 200));
+
+  LocalFrameView* root_frame_view = GetFrame().LocalFrameRoot().View();
+  const LayoutRect roots_visible_doc_rect(
+      root_frame_view->GetScrollableArea()->VisibleContentRect());
+  // Convert the root frame's visible rect from document space -> frame space.
+  // For the root frame, frame space == root frame space, obviously.
+  LayoutRect viewport_rect_of_root_frame =
+      root_frame_view->DocumentToFrame(roots_visible_doc_rect);
+
+  EXPECT_EQ(viewport_rect_of_root_frame, RootViewport(&GetFrame()));
+}
+
 TEST_F(SpatialNavigationTest, FindContainerWhenEnclosingContainerIsDocument) {
   SetBodyInnerHTML(
       "<!DOCTYPE html>"
