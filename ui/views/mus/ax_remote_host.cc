@@ -102,9 +102,15 @@ void AXRemoteHost::HandleEvent(View* view, ax::mojom::Event event_type) {
   if (!enabled_)
     return;
 
-  AXAuraObjWrapper* aura_obj =
-      view ? AXAuraObjCache::GetInstance()->GetOrCreate(view)
-           : tree_source_->GetRoot();
+  if (!view) {
+    SendEvent(tree_source_->GetRoot(), event_type);
+    return;
+  }
+
+  // Can return null for views without a widget.
+  AXAuraObjWrapper* aura_obj = AXAuraObjCache::GetInstance()->GetOrCreate(view);
+  if (!aura_obj)
+    return;
   SendEvent(aura_obj, event_type);
 }
 
