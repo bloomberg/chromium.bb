@@ -8,10 +8,11 @@
 #include "ui/gl/test/gl_image_test_support.h"
 
 #if defined(VR_USE_COMMAND_BUFFER)
-#include "gpu/config/gpu_info_collector.h"      // nogncheck
-#include "gpu/config/gpu_preferences.h"         // nogncheck
-#include "gpu/config/gpu_util.h"                // nogncheck
-#include "gpu/ipc/in_process_command_buffer.h"  // nogncheck
+#include "gpu/command_buffer/client/gles2_lib.h"  // nogncheck
+#include "gpu/config/gpu_info_collector.h"        // nogncheck
+#include "gpu/config/gpu_preferences.h"           // nogncheck
+#include "gpu/config/gpu_util.h"                  // nogncheck
+#include "gpu/ipc/in_process_command_buffer.h"    // nogncheck
 #endif  // defined(VR_USE_COMMAND_BUFFER)
 
 namespace vr {
@@ -36,6 +37,7 @@ void VrGlTestSuite::Initialize() {
       gpu::kGpuFeatureStatusEnabled;
   gpu::InProcessCommandBuffer::InitializeDefaultServiceForTesting(
       gpu_feature_info);
+  gles2::Initialize();
 #endif  // defined(VR_USE_COMMAND_BUFFER)
 }
 

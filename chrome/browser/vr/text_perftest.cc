@@ -36,6 +36,7 @@ class TextPerfTest : public testing::Test {
 
   void TearDown() override {
     text_element_.reset();
+    provider_.reset();
     gl_test_environment_.reset();
   }
 
@@ -59,8 +60,8 @@ class TextPerfTest : public testing::Test {
   cc::LapTimer timer_;
 
  private:
-  std::unique_ptr<GlTestEnvironment> gl_test_environment_;
   std::unique_ptr<SkiaSurfaceProvider> provider_;
+  std::unique_ptr<GlTestEnvironment> gl_test_environment_;
 };
 
 TEST_F(TextPerfTest, RenderLoremIpsum100Chars) {

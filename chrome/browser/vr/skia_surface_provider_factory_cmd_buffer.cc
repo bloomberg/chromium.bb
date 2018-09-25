@@ -4,14 +4,12 @@
 
 #include "chrome/browser/vr/skia_surface_provider_factory.h"
 
-#include "base/logging.h"
+#include "chrome/browser/vr/cmd_buffer_surface_provider.h"
 
 namespace vr {
 
 std::unique_ptr<SkiaSurfaceProvider> SkiaSurfaceProviderFactory::Create() {
-  // TODO(crbug/884256): Implement a surface provider using the command buffer.
-  NOTIMPLEMENTED();
-  return nullptr;
+  return std::make_unique<CmdBufferSurfaceProvider>();
 }
 
 }  // namespace vr

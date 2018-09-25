@@ -203,7 +203,15 @@ component("vr_ui") {
   ]
 
   if (use_command_buffer) {
-    sources += [ "skia_surface_provider_factory_cmd_buffer.cc" ]
+    sources += [
+      "cmd_buffer_surface_provider.cc",
+      "cmd_buffer_surface_provider.h",
+      "skia_surface_provider_factory_cmd_buffer.cc",
+    ]
+    deps += [
+      "//gpu/command_buffer/client:gles2_implementation",
+      "//gpu/skia_bindings",
+    ]
   } else {
     sources += [
       "native_gl_surface_provider.cc",
