@@ -912,8 +912,24 @@ void RenderWidget::OnSetActive(bool active) {
 }
 
 void RenderWidget::OnSetBackgroundOpaque(bool opaque) {
-  if (owner_delegate_)
-    owner_delegate_->SetBackgroundOpaqueForWidget(opaque);
+  // Background opaque-ness modification is only supported for the main frame.
+  // The |owner_delegate_| is used as proxy for this RenderWidget being attached
+  // to the main frame.
+  if (!owner_delegate_)
+    return;
+
+  blink::WebWidget* web_widget = GetWebWidget();
+  // This is true since we only do this for RenderWidgets attached to the main
+  // frame.
+  DCHECK(web_widget->IsWebFrameWidget());
+  auto* web_frame_widget = static_cast<blink::WebFrameWidget*>(web_widget);
+  if (opaque) {
+    web_frame_widget->ClearBaseBackgroundColorOverride();
+    web_frame_widget->ClearBackgroundColorOverride();
+  } else {
+    web_frame_widget->SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
+    web_frame_widget->SetBackgroundColorOverride(SK_ColorTRANSPARENT);
+  }
 }
 
 void RenderWidget::OnSetFocus(bool enable) {

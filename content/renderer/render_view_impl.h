@@ -379,7 +379,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   bool RenderWidgetWillHandleMouseEventForWidget(
       const blink::WebMouseEvent& event) override;
   void SetActiveForWidget(bool active) override;
-  void SetBackgroundOpaqueForWidget(bool opaque) override;
   bool SupportsMultipleWindowsForWidget() override;
   void DidHandleGestureEventForWidget(
       const blink::WebGestureEvent& event) override;
