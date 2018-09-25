@@ -127,7 +127,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
           {"previews_host", previews_server().spec()},
           {"blacklisted_path_suffixes", ".mp4,.jpg"},
           {"trigger_on_localhost", "true"},
-          {"navigation_timeout_milliseconds", use_timeout ? "2000" : "0"}};
+          {"navigation_timeout_milliseconds", use_timeout ? "250" : "0"}};
       base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
           "TrialName1", "GroupName1", feature_parameters);
 
@@ -275,7 +275,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
       const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::DelayedHttpResponse> response =
         std::make_unique<net::test_server::DelayedHttpResponse>(
-            base::TimeDelta::FromSeconds(3));
+            base::TimeDelta::FromMilliseconds(500));
     response->set_code(net::HttpStatusCode::HTTP_OK);
     return std::move(response);
   }
