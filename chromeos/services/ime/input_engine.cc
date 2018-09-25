@@ -4,13 +4,30 @@
 
 #include "chromeos/services/ime/input_engine.h"
 
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
+#include "chromeos/services/ime/rulebased/controller.h"
 
 namespace chromeos {
 namespace ime {
 
-InputEngine::InputEngine() {}
+namespace {
+
+std::string GetIdFromImeSpec(const std::string& ime_spec) {
+  std::string prefix("m17n:");
+  return base::StartsWith(ime_spec, prefix, base::CompareCase::SENSITIVE)
+             ? ime_spec.substr(prefix.length())
+             : base::EmptyString();
+}
+
+}  // namespace
+
+InputEngine::InputEngine() {
+  rule_based_controller_ = std::make_unique<rulebased::Controller>();
+}
 
 InputEngine::~InputEngine() {}
 
@@ -27,8 +44,7 @@ bool InputEngine::BindRequest(const std::string& ime_spec,
 }
 
 bool InputEngine::IsImeSupported(const std::string& ime_spec) {
-  // TODO(https://crbug.com/837156): Add all supported IME tpyes.
-  return false;
+  return rule_based_controller_->IsImeSupported(GetIdFromImeSpec(ime_spec));
 }
 
 void InputEngine::ProcessText(const std::string& message,
@@ -43,11 +59,92 @@ void InputEngine::ProcessMessage(const std::vector<uint8_t>& message,
   NOTIMPLEMENTED();  // Protobuf message is not used in the basic engine.
 }
 
-const std::string& InputEngine::Process(const std::string& message,
-                                        const std::string& ime_spec) {
-  // TODO(https://crbug.com/859432) Implement the m17n model to handle message
-  // by ime_spec.
-  return base::EmptyString();
+const std::string InputEngine::Process(const std::string& message,
+                                       const std::string& ime_spec) {
+  // The |ime_spec|'s format for rule based imes is: "m17n:<id>".
+  std::string id = GetIdFromImeSpec(ime_spec);
+  if (id.empty())
+    return base::EmptyString();
+
+  rule_based_controller_->Activate(id);
+
+  const char* false_response = "{\"result\":false}";
+
+  // The request message is in JSON format as:
+  // {
+  //   'method': <string>,  // 'reset' or 'keyEvent'
+  //   'type': <string>,    // 'keydown' or 'keyup'
+  //   'code': <string>,    // e.g. 'KeyA', 'Backspace', etc.
+  //   'shift': <boolean>,
+  //   'altgr': <boolean>,
+  //   'caps': <boolean>,
+  //   'ctrl': <boolean>,
+  //   'alt': <boolean>
+  // }
+  // TODO(shuchen): make parser/writer util class for the JSON-based protocol.
+  int error_code;
+  std::string error_string;
+  std::unique_ptr<base::Value> message_value =
+      base::JSONReader::ReadAndReturnError(message, base::JSON_PARSE_RFC,
+                                           &error_code, &error_string);
+  if (!message_value) {
+    LOG(ERROR) << "Read message error: " << error_code << "; " << error_string;
+    return false_response;
+  }
+  base::Value* method = message_value->FindKey("method");
+  if (!method)
+    return false_response;
+
+  const std::string& method_str = method->GetString();
+  if (method_str == "reset") {
+    rule_based_controller_->Reset();
+    return "{\"result\":true}";
+  }
+
+  if (method_str == "keyEvent") {
+    base::Value* type = message_value->FindKey("type");
+    if (!type || type->GetString() != "keydown")
+      return false_response;
+  }
+
+  base::Value* code = message_value->FindKey("code");
+  base::Value* shift = message_value->FindKey("shift");
+  base::Value* altgr = message_value->FindKey("altgr");
+  base::Value* caps = message_value->FindKey("caps");
+  if (!code || !shift || !altgr || !caps)
+    return false_response;
+
+  uint8_t modifiers = 0;
+  if (shift->GetBool())
+    modifiers |= rulebased::MODIFIER_SHIFT;
+  if (altgr->GetBool())
+    modifiers |= rulebased::MODIFIER_ALTGR;
+  if (caps->GetBool())
+    modifiers |= rulebased::MODIFIER_CAPSLOCK;
+
+  rulebased::ProcessKeyResult res =
+      rule_based_controller_->ProcessKey(code->GetString(), modifiers);
+
+  // The response message is in JSON format as:
+  // {
+  //   'result': <boolean>,
+  //   'operations': [
+  //     {
+  //       'method': 'commitText',
+  //       'arguments': <string>
+  //     }
+  //   ]
+  // }
+  std::string response_str = "{\"result\":";
+  response_str += (res.key_handled ? "true" : "false");
+  if (res.commit_text.empty())
+    response_str += "}";
+  else
+    response_str +=
+        ",\"operations\":[{\"method\":\"commitText\",\"arguments\":[\"" +
+        res.commit_text + "\"]}]}";
+
+  return response_str;
 }
 
 }  // namespace ime
