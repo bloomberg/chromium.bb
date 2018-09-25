@@ -22,11 +22,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -5089,6 +5091,31 @@ void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
                                                    context_menu_params);
 }
 
+namespace {
+// Normalizes the line endings: \r\n -> \n, lone \r -> \n.
+base::string16 NormalizeLineBreaks(const base::string16& source) {
+  static const base::NoDestructor<base::string16> kReturnNewline(
+      base::ASCIIToUTF16("\r\n"));
+  static const base::NoDestructor<base::string16> kReturn(
+      base::ASCIIToUTF16("\r"));
+  static const base::NoDestructor<base::string16> kNewline(
+      base::ASCIIToUTF16("\n"));
+
+  std::vector<base::StringPiece16> pieces;
+
+  for (const auto& rn_line : base::SplitStringPieceUsingSubstr(
+           source, *kReturnNewline, base::KEEP_WHITESPACE,
+           base::SPLIT_WANT_ALL)) {
+    auto r_lines = base::SplitStringPieceUsingSubstr(
+        rn_line, *kReturn, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::move(std::begin(r_lines), std::end(r_lines),
+              std::back_inserter(pieces));
+  }
+
+  return base::JoinString(pieces, *kNewline);
+}
+}  // namespace
+
 void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
                                           const base::string16& message,
                                           const base::string16& default_prompt,
@@ -5138,16 +5165,19 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
 
   is_showing_javascript_dialog_ = true;
 
+  base::string16 normalized_message = NormalizeLineBreaks(message);
+
   for (auto* handler : page_handlers) {
     handler->DidRunJavaScriptDialog(
-        render_frame_host->GetLastCommittedURL(), message, default_prompt,
-        dialog_type, has_non_devtools_handlers,
+        render_frame_host->GetLastCommittedURL(), normalized_message,
+        default_prompt, dialog_type, has_non_devtools_handlers,
         base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false));
   }
 
   if (dialog_manager_) {
     dialog_manager_->RunJavaScriptDialog(
-        this, render_frame_host, dialog_type, message, default_prompt,
+        this, render_frame_host, dialog_type, normalized_message,
+        default_prompt,
         base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false),
         &suppress_this_message);
   }

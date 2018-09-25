@@ -1730,6 +1730,26 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       JavaScriptDialogsNormalizeText) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestWCDelegateForDialogsAndFullscreen test_delegate;
+  wc->SetDelegate(&test_delegate);
+
+  GURL url("about:blank");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // A dialog with mixed linebreaks.
+  std::string alert = "alert('1\\r2\\r\\n3\\n4')";
+  test_delegate.WillWaitForDialog();
+  EXPECT_TRUE(content::ExecuteScript(wc, alert));
+  test_delegate.Wait();
+  EXPECT_EQ("1\n2\n3\n4", test_delegate.last_message());
+
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        CreateWebContentsWithRendererProcess) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContents* base_web_contents = shell()->web_contents();
