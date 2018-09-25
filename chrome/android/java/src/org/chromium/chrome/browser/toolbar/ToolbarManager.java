@@ -148,6 +148,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private static final ActionEvent ACCELERATOR_BUTTON_TAP_ACTION =
             new ActionEvent("MobileToolbarOmniboxAcceleratorTap");
 
+    /** The amount of time to show the Duet help bubble for. */
+    private static final int DUET_IPH_BUBBLE_SHOW_DURATION_MS = 6000;
+
     /**
      * The number of ms to wait before reporting to UMA omnibox interaction metrics.
      */
@@ -947,7 +950,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                         R.string.iph_duet_icons_moved, R.string.iph_duet_icons_moved, true,
                         new ViewRectProvider(mToolbar));
             }
-            bubble.setDismissOnTouchInteraction(true);
+            bubble.setAutoDismissTimeout(DUET_IPH_BUBBLE_SHOW_DURATION_MS);
             bubble.addOnDismissListener(
                     () -> tracker.dismissed(FeatureConstants.CHROME_DUET_FEATURE));
             bubble.show();
