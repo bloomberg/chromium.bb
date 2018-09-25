@@ -62,6 +62,12 @@ void ChromeContentBrowserClientChromeOsPart::OverrideWebkitPrefs(
   // apps.
   content::WebContents* contents =
       content::WebContents::FromRenderViewHost(rvh);
+
+  // A webcontents may not be the delegate of the render view host such as in
+  // the case of interstitial pages.
+  if (!contents)
+    return;
+
   auto* browser = chrome::FindBrowserWithWebContents(contents);
   if (!browser || browser->is_app())
     return;
