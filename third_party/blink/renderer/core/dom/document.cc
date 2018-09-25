@@ -6217,9 +6217,9 @@ bool Document::AllowedToUseDynamicMarkUpInsertion(
   if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
     return true;
   }
-  if (!frame_ ||
-      frame_->IsFeatureEnabled(mojom::FeaturePolicyFeature::kDocumentWrite,
-                               ReportOptions::kReportOnFailure)) {
+  if (!frame_ || frame_->DeprecatedIsFeatureEnabled(
+                     mojom::FeaturePolicyFeature::kDocumentWrite,
+                     ReportOptions::kReportOnFailure)) {
     return true;
   }
 

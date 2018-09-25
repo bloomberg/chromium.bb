@@ -750,8 +750,8 @@ bool AllowedToUsePaymentRequest(const Frame* frame) {
     return false;
 
   // 2. If Feature Policy is enabled, return the policy for "payment" feature.
-  return frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kPayment,
-                                 ReportOptions::kReportOnFailure);
+  return frame->DeprecatedIsFeatureEnabled(
+      mojom::FeaturePolicyFeature::kPayment, ReportOptions::kReportOnFailure);
 }
 
 void WarnIgnoringQueryQuotaForCanMakePayment(

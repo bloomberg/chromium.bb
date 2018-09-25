@@ -26,7 +26,7 @@ bool AreFeaturesEnabled(LocalFrame* frame,
                         const Vector<mojom::FeaturePolicyFeature>& features) {
   return std::all_of(features.begin(), features.end(),
                      [frame](mojom::FeaturePolicyFeature feature) {
-                       return frame->IsFeatureEnabled(feature);
+                       return frame->DeprecatedIsFeatureEnabled(feature);
                      });
 }
 
