@@ -16,6 +16,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/gcm/gcm_product_util.h"
@@ -128,7 +129,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
-      chrome::GetChannel(),
+      content::GetNetworkConnectionTracker(), chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       IdentityManagerFactory::GetForProfile(profile),
       std::unique_ptr<GCMClientFactory>(new GCMClientFactory),

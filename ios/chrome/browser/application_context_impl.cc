@@ -36,6 +36,7 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/update_query_params.h"
 #include "components/variations/service/variations_service.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager_impl.h"
 #include "ios/chrome/browser/chrome_paths.h"
@@ -425,7 +426,8 @@ void ApplicationContextImpl::CreateGCMDriver() {
       // been shut down, base::Unretained() is safe here.
       base::BindRepeating(&RequestProxyResolvingSocketFactory,
                           base::Unretained(this)),
-      GetSharedURLLoaderFactory(), ::GetChannel(),
+      GetSharedURLLoaderFactory(),
+      GetApplicationContext()->GetNetworkConnectionTracker(), ::GetChannel(),
       IOSChromeGCMProfileServiceFactory::GetProductCategoryForSubtypes(),
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),

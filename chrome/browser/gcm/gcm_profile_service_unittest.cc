@@ -35,6 +35,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -76,6 +77,7 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
       base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
+      network::TestNetworkConnectionTracker::GetInstance(),
       chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       IdentityManagerFactory::GetForProfile(profile),
