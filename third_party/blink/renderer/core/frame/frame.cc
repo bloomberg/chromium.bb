@@ -256,18 +256,15 @@ bool Frame::ConsumeTransientUserActivation(
              : UserGestureIndicator::ConsumeUserGesture();
 }
 
+bool Frame::DeprecatedIsFeatureEnabled(
+    mojom::FeaturePolicyFeature feature) const {
+  return GetSecurityContext()->IsFeatureEnabled(feature,
+                                                ReportOptions::kDoNotReport);
+}
+
 bool Frame::DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature feature,
                                        ReportOptions report_on_failure) const {
-  FeaturePolicy* feature_policy = GetSecurityContext()->GetFeaturePolicy();
-  // The policy should always be initialized before checking it to ensure we
-  // properly inherit the parent policy.
-  DCHECK(feature_policy);
-
-  if (feature_policy->IsFeatureEnabled(feature))
-    return true;
-  if (report_on_failure == ReportOptions::kReportOnFailure)
-    DeprecatedReportFeaturePolicyViolation(feature);
-  return false;
+  return GetSecurityContext()->IsFeatureEnabled(feature, report_on_failure);
 }
 
 void Frame::SetOwner(FrameOwner* owner) {

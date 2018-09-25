@@ -376,6 +376,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DeprecatedReportFeaturePolicyViolation(
       mojom::FeaturePolicyFeature) const override;
 
+  const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -410,8 +412,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // FrameScheduler::Delegate overrides:
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
-
-  const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 

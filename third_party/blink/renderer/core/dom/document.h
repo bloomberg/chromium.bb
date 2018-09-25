@@ -1466,6 +1466,8 @@ class CORE_EXPORT Document : public ContainerNode,
     return agent_cluster_id_;
   }
 
+  void ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature) const override;
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
