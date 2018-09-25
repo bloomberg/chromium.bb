@@ -1035,19 +1035,16 @@ bool MasteringMetadata::Write(IMkvWriter* writer) const {
       !WriteEbmlElement(writer, libwebm::kMkvLuminanceMin, luminance_min_)) {
     return false;
   }
-  if (r_ &&
-      !r_->Write(writer, libwebm::kMkvPrimaryRChromaticityX,
-                 libwebm::kMkvPrimaryRChromaticityY)) {
+  if (r_ && !r_->Write(writer, libwebm::kMkvPrimaryRChromaticityX,
+                       libwebm::kMkvPrimaryRChromaticityY)) {
     return false;
   }
-  if (g_ &&
-      !g_->Write(writer, libwebm::kMkvPrimaryGChromaticityX,
-                 libwebm::kMkvPrimaryGChromaticityY)) {
+  if (g_ && !g_->Write(writer, libwebm::kMkvPrimaryGChromaticityX,
+                       libwebm::kMkvPrimaryGChromaticityY)) {
     return false;
   }
-  if (b_ &&
-      !b_->Write(writer, libwebm::kMkvPrimaryBChromaticityX,
-                 libwebm::kMkvPrimaryBChromaticityY)) {
+  if (b_ && !b_->Write(writer, libwebm::kMkvPrimaryBChromaticityX,
+                       libwebm::kMkvPrimaryBChromaticityY)) {
     return false;
   }
   if (white_point_ &&

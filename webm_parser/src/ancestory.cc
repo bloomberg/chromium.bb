@@ -54,10 +54,13 @@ bool Ancestory::ById(Id id, Ancestory* ancestory) {
       Id::kEbml,
   };
   static constexpr Id kSeekAncestory[] = {
-      Id::kSegment, Id::kSeekHead, Id::kSeek,
+      Id::kSegment,
+      Id::kSeekHead,
+      Id::kSeek,
   };
   static constexpr Id kInfoAncestory[] = {
-      Id::kSegment, Id::kInfo,
+      Id::kSegment,
+      Id::kInfo,
   };
   static constexpr Id kBlockMoreAncestory[] = {
       Id::kSegment,        Id::kCluster,   Id::kBlockGroup,
@@ -67,10 +70,16 @@ bool Ancestory::ById(Id id, Ancestory* ancestory) {
       Id::kSegment, Id::kCluster, Id::kBlockGroup, Id::kSlices, Id::kTimeSlice,
   };
   static constexpr Id kVideoAncestory[] = {
-      Id::kSegment, Id::kTracks, Id::kTrackEntry, Id::kVideo,
+      Id::kSegment,
+      Id::kTracks,
+      Id::kTrackEntry,
+      Id::kVideo,
   };
   static constexpr Id kAudioAncestory[] = {
-      Id::kSegment, Id::kTracks, Id::kTrackEntry, Id::kAudio,
+      Id::kSegment,
+      Id::kTracks,
+      Id::kTrackEntry,
+      Id::kAudio,
   };
   static constexpr Id kContentEncAesSettingsAncestory[] = {
       Id::kSegment,
@@ -82,17 +91,26 @@ bool Ancestory::ById(Id id, Ancestory* ancestory) {
       Id::kContentEncAesSettings,
   };
   static constexpr Id kCueTrackPositionsAncestory[] = {
-      Id::kSegment, Id::kCues, Id::kCuePoint, Id::kCueTrackPositions,
+      Id::kSegment,
+      Id::kCues,
+      Id::kCuePoint,
+      Id::kCueTrackPositions,
   };
   static constexpr Id kChapterDisplayAncestory[] = {
       Id::kSegment,     Id::kChapters,       Id::kEditionEntry,
       Id::kChapterAtom, Id::kChapterDisplay,
   };
   static constexpr Id kTargetsAncestory[] = {
-      Id::kSegment, Id::kTags, Id::kTag, Id::kTargets,
+      Id::kSegment,
+      Id::kTags,
+      Id::kTag,
+      Id::kTargets,
   };
   static constexpr Id kSimpleTagAncestory[] = {
-      Id::kSegment, Id::kTags, Id::kTag, Id::kSimpleTag,
+      Id::kSegment,
+      Id::kTags,
+      Id::kTag,
+      Id::kSimpleTag,
   };
 
   switch (id) {

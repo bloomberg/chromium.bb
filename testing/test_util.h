@@ -17,7 +17,7 @@ namespace mkvparser {
 class IMkvReader;
 class MkvReader;
 class Segment;
-}
+}  // namespace mkvparser
 
 namespace test {
 

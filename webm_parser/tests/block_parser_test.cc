@@ -69,7 +69,8 @@ const TestData ebml_lacing_one_frame = {
     // Data.
     {
         0x81,  // Track number = 1.
-        0x00, 0x00,  // Timecode = 0.
+        0x00,
+        0x00,  // Timecode = 0.
         0x86,  // Flags = key_frame | ebml_lacing.
         0x00,  // Lace count - 1 = 0 (1 frame).
 
@@ -97,7 +98,8 @@ const TestData xiph_lacing_one_frame = {
     // Data.
     {
         0x81,  // Track number = 1.
-        0x00, 0x00,  // Timecode = 0.
+        0x00,
+        0x00,  // Timecode = 0.
         0x82,  // Flags = key_frame | xiph_lacing.
         0x00,  // Lace count - 1 = 0 (1 frame).
 
@@ -125,7 +127,8 @@ const TestData fixed_lacing_one_frame = {
     // Data.
     {
         0x81,  // Track number = 1.
-        0x00, 0x00,  // Timecode = 0.
+        0x00,
+        0x00,  // Timecode = 0.
         0x84,  // Flags = key_frame | fixed_lacing.
         0x00,  // Lace count - 1 = 0 (1 frame).
 
@@ -148,6 +151,7 @@ const TestData fixed_lacing_one_frame = {
 };
 
 // Test data for an EBML-laced block.
+// clang-format off
 const TestData ebml_lacing = {
     // Data.
     {
@@ -318,6 +322,7 @@ const TestData xiph_lacing = {
     // expected_frame_sizes
     {510, 256, 2, 3},
 };
+// clang-format on
 
 // Test data for a fixed-laced block.
 const TestData fixed_lacing = {
@@ -380,7 +385,8 @@ const TestData no_flags = {
     // Data.
     {
         0x81,  // Track number = 1.
-        0x00, 0x00,  // Timecode = 0.
+        0x00,
+        0x00,  // Timecode = 0.
         0x00,  // Flags = 0.
 
         // Lace data (1 frame).
@@ -407,7 +413,8 @@ const TestData block_flags = {
     // Data.
     {
         0x82,  // Track number = 2.
-        0xFE, 0xDC,  // Timecode = -292.
+        0xFE,
+        0xDC,  // Timecode = -292.
         0x08,  // Flags = invisible.
 
         // Lace data (1 frame).
@@ -433,8 +440,10 @@ const TestData block_flags = {
 const TestData simple_block_flags = {
     // Data.
     {
-        0x41, 0x23,  // Track number = 291.
-        0x12, 0x34,  // Timecode = 4660.
+        0x41,
+        0x23,  // Track number = 291.
+        0x12,
+        0x34,  // Timecode = 4660.
         0x89,  // Flags = key_frame | invisible | discardable.
 
         // Lace data (1 frame).
