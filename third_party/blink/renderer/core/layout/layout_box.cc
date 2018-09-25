@@ -2113,7 +2113,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForGetComputedStyle() const {
 
   LayoutBoxModelObject* cb = ToLayoutBoxModelObject(Container());
   LayoutUnit height = ContainingBlockLogicalHeightForPositioned(cb);
-  if (StyleRef().GetPosition() != EPosition::kAbsolute)
+  if (IsInFlowPositioned())
     height -= cb->PaddingLogicalHeight();
   return height;
 }
