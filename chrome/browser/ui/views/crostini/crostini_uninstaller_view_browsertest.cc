@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -20,6 +21,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/crx_file/id_util.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -83,8 +85,26 @@ class CrostiniUninstallerViewBrowserTest : public CrostiniDialogBrowserTest {
   WaitingFakeConciergeClient* waiting_fake_concierge_client_;
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(CrostiniUninstallerViewBrowserTest);
+};
+
+class CrostiniUninstalledUninstallerViewBrowserTest
+    : public CrostiniUninstallerViewBrowserTest {
+ public:
+  CrostiniUninstalledUninstallerViewBrowserTest() = default;
+
+  void SetUpOnMainThread() override {
+    browser()->profile()->GetPrefs()->SetBoolean(
+        crostini::prefs::kCrostiniEnabled, true);
+    // Skips installing the Cros-Termina component.
+  }
+
+  void InitCrosTermina() override {
+    // Skips setting up the Cros-Termina component.
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CrostiniUninstalledUninstallerViewBrowserTest);
 };
 
 // Test the dialog is actually launched from the app launcher.
@@ -107,6 +127,33 @@ IN_PROC_BROWSER_TEST_F(CrostiniUninstallerViewBrowserTest, UninstallFlow) {
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
   EXPECT_FALSE(HasAcceptButton());
   EXPECT_FALSE(HasCancelButton());
+
+  WaitForViewDestroyed();
+
+  histogram_tester.ExpectBucketCount(
+      "Crostini.UninstallResult",
+      static_cast<base::HistogramBase::Sample>(
+          CrostiniUninstallerView::UninstallResult::kSuccess),
+      1);
+}
+
+IN_PROC_BROWSER_TEST_F(CrostiniUninstalledUninstallerViewBrowserTest,
+                       OfflineUninstallFlowWithoutTermina) {
+  base::HistogramTester histogram_tester;
+
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
+  base::RunLoop().RunUntilIdle();
+
+  ShowUi("default");
+  EXPECT_NE(nullptr, ActiveView());
+  EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
+  EXPECT_EQ(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
+            ActiveView()->GetDialogButtons());
+
+  EXPECT_TRUE(HasAcceptButton());
+  EXPECT_TRUE(HasCancelButton());
+
+  ActiveView()->GetDialogClientView()->AcceptWindow();
 
   WaitForViewDestroyed();
 

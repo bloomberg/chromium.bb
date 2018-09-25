@@ -73,16 +73,7 @@ void CrostiniDialogBrowserTest::CreatedBrowserMainParts(
 }
 
 void CrostiniDialogBrowserTest::SetUp() {
-  base::FilePath component_user_dir;
-  ASSERT_TRUE(base::PathService::Get(component_updater::DIR_COMPONENT_USER,
-                                     &component_user_dir));
-  ASSERT_TRUE(cros_termina_resources_.Set(
-      component_user_dir.Append("cros-components")
-          .Append(imageloader::kTerminaComponentName)));
-
-  image_loader_client_->SetMountPathForComponent(
-      imageloader::kTerminaComponentName, cros_termina_resources_.GetPath());
-
+  InitCrosTermina();
   SetCrostiniUIAllowedForTesting(true);
   DialogBrowserTest::SetUp();
 }
@@ -97,6 +88,18 @@ void CrostiniDialogBrowserTest::SetUpOnMainThread() {
   image_loader_client_->RegisterComponent(
       imageloader::kTerminaComponentName, "1.1",
       cros_termina_resources_.GetPath().value(), base::DoNothing());
+}
+
+void CrostiniDialogBrowserTest::InitCrosTermina() {
+  base::FilePath component_user_dir;
+  ASSERT_TRUE(base::PathService::Get(component_updater::DIR_COMPONENT_USER,
+                                     &component_user_dir));
+  ASSERT_TRUE(cros_termina_resources_.Set(
+      component_user_dir.Append("cros-components")
+          .Append(imageloader::kTerminaComponentName)));
+
+  image_loader_client_->SetMountPathForComponent(
+      imageloader::kTerminaComponentName, cros_termina_resources_.GetPath());
 }
 
 void CrostiniDialogBrowserTest::SetConnectionType(
