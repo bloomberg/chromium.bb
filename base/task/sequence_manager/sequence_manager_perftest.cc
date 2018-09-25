@@ -107,7 +107,7 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
     // ThreadControllerWithMessagePumpImpl doesn't provide a default tas runner.
     scoped_refptr<TaskQueue> default_task_queue =
         manager_->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("default"));
-    manager_->SetDefaultTaskRunner(default_task_queue);
+    manager_->SetDefaultTaskRunner(default_task_queue->task_runner());
   }
 
   void TearDown() override {
@@ -239,7 +239,7 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
   std::unique_ptr<SequenceManager> manager_;
   std::unique_ptr<RunLoop> run_loop_;
   std::unique_ptr<TimeDomain> time_domain_;
-  std::vector<scoped_refptr<SingleThreadTaskRunner>> queues_;
+  std::vector<scoped_refptr<TestTaskQueue>> queues_;
   RepeatingClosure delayed_task_closure_;
   RepeatingClosure immediate_task_closure_;
   // TODO(alexclarke): parameterize so we can measure with and without a

@@ -79,7 +79,7 @@ NonMainThreadSchedulerImpl::MonotonicallyIncreasingVirtualTime() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 NonMainThreadSchedulerImpl::ControlTaskRunner() {
-  return helper_.ControlNonMainThreadTaskQueue();
+  return helper_.ControlNonMainThreadTaskQueue()->task_runner();
 }
 
 void NonMainThreadSchedulerImpl::RegisterTimeDomain(
