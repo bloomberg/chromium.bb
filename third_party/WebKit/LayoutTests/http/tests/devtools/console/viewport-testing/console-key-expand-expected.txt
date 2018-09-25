@@ -1,0 +1,40 @@
+Tests that console artifacts can be expanded, collapsed via keyboard.
+
+
+Running: testExpandingTraces
+Evaluating: console.warn("warning")
+Message count: 1
+
+Force selecting index 0
+Viewport virtual selection: 0
+Is trace expanded: NO
+
+ArrowRight:
+Viewport virtual selection: 0
+Is trace expanded: YES
+
+ArrowLeft:
+Viewport virtual selection: 0
+Is trace expanded: NO
+
+Running: testExpandingGroups
+Evaluating: console.group("group"); console.log("log child");
+Message count: 2
+
+Force selecting index 0
+Viewport virtual selection: 0
+Is group expanded: YES
+console-key-expand.js:27 group
+console-key-expand.js:27 log child
+
+ArrowLeft:
+Viewport virtual selection: 0
+Is group expanded: NO
+console-key-expand.js:27 group
+
+ArrowRight:
+Viewport virtual selection: 0
+Is group expanded: YES
+console-key-expand.js:27 group
+console-key-expand.js:27 log child
+
