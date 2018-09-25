@@ -136,7 +136,6 @@ public class NewTabPageTest {
         mInterestFeedEnabled = interestFeedEnabled;
         if (mInterestFeedEnabled) {
             Features.getInstance().enable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
-            FeedNewTabPage.setInTestMode(true);
         } else {
             Features.getInstance().disable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
         }
@@ -144,6 +143,11 @@ public class NewTabPageTest {
 
     @Before
     public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityWithURL("about:blank");
+        if (mInterestFeedEnabled) {
+            ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(true));
+        }
+
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         mSiteSuggestions = NewTabPageTestUtils.createFakeSiteSuggestions(mTestServer);
@@ -151,7 +155,7 @@ public class NewTabPageTest {
         mMostVisitedSites.setTileSuggestions(mSiteSuggestions);
         mSuggestionsDeps.getFactory().mostVisitedSites = mMostVisitedSites;
 
-        mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         mTab = mActivityTestRule.getActivity().getActivityTab();
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
 
@@ -165,7 +169,9 @@ public class NewTabPageTest {
     @After
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        if (mInterestFeedEnabled) FeedNewTabPage.setInTestMode(false);
+        if (mInterestFeedEnabled) {
+            ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(false));
+        }
     }
 
     @Test

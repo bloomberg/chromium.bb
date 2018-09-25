@@ -26,6 +26,8 @@ import java.util.concurrent.Executors;
 
 /** Holds singleton {@link FeedProcessScope} and some of the scope's host implementations. */
 public class FeedProcessScopeFactory {
+    private static boolean sIsDisableForPolicy =
+            !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
     private static PrefChangeRegistrar sPrefChangeRegistrar;
     private static FeedProcessScope sFeedProcessScope;
     private static FeedScheduler sFeedScheduler;
@@ -58,11 +60,19 @@ public class FeedProcessScopeFactory {
         return sFeedOfflineIndicator;
     }
 
+    /**
+     * @return Whether the dependencies provided by this class are allowed to be created. The feed
+     *         process is disabled if supervised user or enterprise policy has once been added
+     *         within the current session.
+     */
+    public static boolean isFeedProcessEnabled() {
+        return !sIsDisableForPolicy
+                && PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
+    }
+
     private static void initialize() {
         assert sFeedProcessScope == null && sFeedScheduler == null && sFeedOfflineIndicator == null;
-        if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED)) {
-            return;
-        }
+        if (!isFeedProcessEnabled()) return;
 
         sPrefChangeRegistrar = new PrefChangeRegistrar();
         sPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED,
@@ -151,6 +161,7 @@ public class FeedProcessScopeFactory {
         // Should only be subscribed while it was enabled. A change should mean articles are now
         // disabled.
         assert !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
+        sIsDisableForPolicy = true;
         destroy();
     }
 
