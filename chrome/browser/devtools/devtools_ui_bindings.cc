@@ -63,17 +63,10 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_channel.h"
-#include "net/base/completion_once_callback.h"
 #include "net/base/escape.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/url_util.h"
-#include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_response_writer.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -213,68 +206,6 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
 
   response->Set("headers", std::move(headers));
   return response;
-}
-
-// ResponseWriter -------------------------------------------------------------
-
-class ResponseWriter : public net::URLFetcherResponseWriter {
- public:
-  ResponseWriter(base::WeakPtr<DevToolsUIBindings> bindings, int stream_id);
-  ~ResponseWriter() override;
-
-  // URLFetcherResponseWriter overrides:
-  int Initialize(net::CompletionOnceCallback callback) override;
-  int Write(net::IOBuffer* buffer,
-            int num_bytes,
-            net::CompletionOnceCallback callback) override;
-  int Finish(int net_error, net::CompletionOnceCallback callback) override;
-
- private:
-  base::WeakPtr<DevToolsUIBindings> bindings_;
-  int stream_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
-};
-
-ResponseWriter::ResponseWriter(base::WeakPtr<DevToolsUIBindings> bindings,
-                               int stream_id)
-    : bindings_(bindings),
-      stream_id_(stream_id) {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-}
-
-ResponseWriter::~ResponseWriter() {
-}
-
-int ResponseWriter::Initialize(net::CompletionOnceCallback callback) {
-  return net::OK;
-}
-
-int ResponseWriter::Write(net::IOBuffer* buffer,
-                          int num_bytes,
-                          net::CompletionOnceCallback callback) {
-  std::string chunk = std::string(buffer->data(), num_bytes);
-  bool encoded = false;
-  if (!base::IsStringUTF8(chunk)) {
-    encoded = true;
-    base::Base64Encode(chunk, &chunk);
-  }
-
-  base::Value* id = new base::Value(stream_id_);
-  base::Value* chunkValue = new base::Value(chunk);
-  base::Value* encodedValue = new base::Value(encoded);
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&DevToolsUIBindings::CallClientFunction, bindings_,
-                     "DevToolsAPI.streamWrite", base::Owned(id),
-                     base::Owned(chunkValue), base::Owned(encodedValue)));
-  return num_bytes;
-}
-
-int ResponseWriter::Finish(int net_error,
-                           net::CompletionOnceCallback callback) {
-  return net::OK;
 }
 
 GURL SanitizeFrontendURL(const GURL& url,
@@ -606,9 +537,6 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
 }
 
 DevToolsUIBindings::~DevToolsUIBindings() {
-  for (const auto& pair : pending_requests_)
-    delete pair.first;
-
   if (agent_host_.get())
     agent_host_->DetachClient(this);
 
@@ -783,21 +711,6 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
             }
           }
         })");
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    net::URLFetcher* fetcher =
-        net::URLFetcher::Create(gurl, net::URLFetcher::GET, this,
-                                traffic_annotation)
-            .release();
-    pending_requests_[fetcher] = callback;
-    fetcher->SetRequestContext(profile_->GetRequestContext());
-    fetcher->SetExtraRequestHeaders(headers);
-    fetcher->SaveResponseWithWriter(
-        std::unique_ptr<net::URLFetcherResponseWriter>(
-            new ResponseWriter(weak_factory_.GetWeakPtr(), stream_id)));
-    fetcher->Start();
-    return;
-  }
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = gurl;
@@ -1192,19 +1105,6 @@ void DevToolsUIBindings::JsonReceived(const DispatchCallback& callback,
   }
   base::Value message_value(message);
   callback.Run(&message_value);
-}
-
-void DevToolsUIBindings::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-
-  DCHECK(source);
-  PendingRequestsMap::iterator it = pending_requests_.find(source);
-  DCHECK(it != pending_requests_.end());
-
-  auto response = BuildObjectForResponse(source->GetResponseHeaders());
-  it->second.Run(response.get());
-  pending_requests_.erase(it);
-  delete source;
 }
 
 void DevToolsUIBindings::DeviceCountChanged(int count) {
