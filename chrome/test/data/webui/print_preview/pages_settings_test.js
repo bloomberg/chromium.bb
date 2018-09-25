@@ -174,6 +174,10 @@ cr.define('pages_settings_test', function() {
           })
           .then(function() {
             validateErrorState(syntaxError);
+            return setupInput('--', 100);
+          })
+          .then(function() {
+            validateErrorState(syntaxError);
           });
     });
 
