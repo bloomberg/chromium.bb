@@ -242,3 +242,10 @@ QUIC_FLAG(bool,
 
 // This flag fixes a bug where a zombie stream cannot be correctly reset.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_reset_zombie_streams, false)
+
+// When true, fix initialization and updating of
+// |time_of_first_packet_sent_after_receiving_| in QuicConnection.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_fix_time_of_first_packet_sent_after_receiving,
+    true)

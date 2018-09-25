@@ -3625,6 +3625,119 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
 }
 
+TEST_P(QuicConnectionTest, IdleTimeoutAfterFirstSentPacket) {
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  QuicConfig config;
+  connection_.SetFromConfig(config);
+  EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+  QuicTime initial_ddl =
+      clock_.ApproximateNow() +
+      QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1);
+  EXPECT_EQ(initial_ddl, connection_.GetTimeoutAlarm()->deadline());
+  EXPECT_TRUE(connection_.connected());
+
+  // Advance the time and send the first packet to the peer.
+  clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(20));
+  QuicPacketNumber last_packet;
+  SendStreamDataToPeer(1, "foo", 0, NO_FIN, &last_packet);
+  EXPECT_EQ(1u, last_packet);
+  // This will be the updated deadline for the connection to idle time out.
+  QuicTime new_ddl = clock_.ApproximateNow() +
+                     QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1);
+
+  // Simulate the timeout alarm firing, the connection should not be closed as
+  // a new packet has been sent.
+  EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(0);
+  QuicTime::Delta delay = initial_ddl - clock_.ApproximateNow();
+  clock_.AdvanceTime(delay);
+  connection_.GetTimeoutAlarm()->Fire();
+  // Verify the timeout alarm deadline is updated.
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+  EXPECT_EQ(new_ddl, connection_.GetTimeoutAlarm()->deadline());
+
+  // Simulate the timeout alarm firing again, the connection now should be
+  // closed.
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
+                                           ConnectionCloseSource::FROM_SELF));
+  clock_.AdvanceTime(new_ddl - clock_.ApproximateNow());
+  connection_.GetTimeoutAlarm()->Fire();
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+  EXPECT_FALSE(connection_.connected());
+
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, IdleTimeoutAfterSendTwoPackets) {
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  QuicConfig config;
+  connection_.SetFromConfig(config);
+  EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+  QuicTime initial_ddl =
+      clock_.ApproximateNow() +
+      QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1);
+  EXPECT_EQ(initial_ddl, connection_.GetTimeoutAlarm()->deadline());
+  EXPECT_TRUE(connection_.connected());
+
+  // Immediately send the first packet, this is a rare case but test code will
+  // hit this issue often as MockClock used for tests doesn't move with code
+  // execution until manually adjusted.
+  QuicPacketNumber last_packet;
+  SendStreamDataToPeer(1, "foo", 0, NO_FIN, &last_packet);
+  EXPECT_EQ(1u, last_packet);
+
+  // Advance the time and send the second packet to the peer.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
+  SendStreamDataToPeer(1, "foo", 0, NO_FIN, &last_packet);
+  EXPECT_EQ(2u, last_packet);
+
+  if (GetQuicReloadableFlag(
+          quic_fix_time_of_first_packet_sent_after_receiving)) {
+    // Simulate the timeout alarm firing, the connection will be closed.
+    EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
+                                             ConnectionCloseSource::FROM_SELF));
+    clock_.AdvanceTime(initial_ddl - clock_.ApproximateNow());
+    connection_.GetTimeoutAlarm()->Fire();
+  } else {
+    // Simulate the timeout alarm firing, the connection will not be closed.
+    EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(0);
+    clock_.AdvanceTime(initial_ddl - clock_.ApproximateNow());
+    connection_.GetTimeoutAlarm()->Fire();
+    EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+    EXPECT_TRUE(connection_.connected());
+
+    // Advance another 20ms, and fire the alarm again. The connection will be
+    // closed.
+    EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
+                                             ConnectionCloseSource::FROM_SELF));
+    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
+    connection_.GetTimeoutAlarm()->Fire();
+  }
+
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+  EXPECT_FALSE(connection_.connected());
+
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+}
+
 TEST_P(QuicConnectionTest, HandshakeTimeout) {
   // Use a shorter handshake timeout than idle timeout for this test.
   const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(5);

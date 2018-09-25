@@ -1184,16 +1184,17 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Statistics for this session.
   QuicConnectionStats stats_;
 
-  // The time that we got a packet for this connection.
+  // Timestamps used for timeouts.
+  // The time of the first retransmittable packet that was sent after the most
+  // recently received packet.
+  QuicTime time_of_first_packet_sent_after_receiving_;
+  // The time that a packet is received for this connection. Initialized to
+  // connection creation time.
   // This is used for timeouts, and does not indicate the packet was processed.
   QuicTime time_of_last_received_packet_;
 
   // The time the previous ack-instigating packet was received and processed.
   QuicTime time_of_previous_received_packet_;
-
-  // The the send time of the first retransmittable packet sent after
-  // |time_of_last_received_packet_|.
-  QuicTime last_send_for_timeout_;
 
   // Sent packet manager which tracks the status of packets sent by this
   // connection and contains the send and receive algorithms to determine when
