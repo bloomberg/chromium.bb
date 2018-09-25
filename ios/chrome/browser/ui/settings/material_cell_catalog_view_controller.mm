@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/cells/password_details_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
@@ -115,6 +116,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSyncEncryptionChecked,
   ItemTypeSyncPassphraseError,
   ItemTypeContentSuggestions,
+  ItemTypeImageDetailTextItem,
 };
 
 // Image fixed horizontal size.
@@ -256,6 +258,25 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       @"adipiscing elit, sed do eiusmod tempor "
       @"incididunt ut labore et dolore magna aliqua.";
   [model addItem:multilineDetailItem
+      toSectionWithIdentifier:SectionIdentifierMultilineCell];
+  [model addItem:[self settingsImageDetailTextItem]
+      toSectionWithIdentifier:SectionIdentifierMultilineCell];
+  SettingsImageDetailTextItem* settingsImageDetailTextItem =
+      [self settingsImageDetailTextItem];
+  settingsImageDetailTextItem.text = @"Short title";
+  [model addItem:settingsImageDetailTextItem
+      toSectionWithIdentifier:SectionIdentifierMultilineCell];
+  settingsImageDetailTextItem = [self settingsImageDetailTextItem];
+  settingsImageDetailTextItem.detailText = @"Short detail text";
+  [model addItem:settingsImageDetailTextItem
+      toSectionWithIdentifier:SectionIdentifierMultilineCell];
+  settingsImageDetailTextItem = [self settingsImageDetailTextItem];
+  settingsImageDetailTextItem.detailText =
+      @"Text multiline that works nice with a very very very very very long "
+      @"text Text multiline that works nice with a very very very very very "
+      @"long text Text multiline that works nice with a very very very very "
+      @"very long text";
+  [model addItem:settingsImageDetailTextItem
       toSectionWithIdentifier:SectionIdentifierMultilineCell];
 
   // Switch cells.
@@ -402,7 +423,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 
   // Content Suggestions cells.
   [model addSectionWithIdentifier:SectionIdentifierContentSuggestionsCell];
-  [model addItem:[self ContentSuggestionsItem]
+  [model addItem:[self contentSuggestionsItem]
       toSectionWithIdentifier:SectionIdentifierContentSuggestionsCell];
   [model addItem:[self contentSuggestionsFooterItem]
       toSectionWithIdentifier:SectionIdentifierContentSuggestionsCell];
@@ -427,6 +448,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
+    case ItemTypeImageDetailTextItem:
     case ItemTypeContentSuggestions:
     case ItemTypeFooter:
     case ItemTypeSwitchDynamicHeight:
@@ -794,13 +816,25 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   return footerItem;
 }
 
-- (ContentSuggestionsItem*)ContentSuggestionsItem {
+- (ContentSuggestionsItem*)contentSuggestionsItem {
   ContentSuggestionsItem* articleItem = [[ContentSuggestionsItem alloc]
       initWithType:ItemTypeContentSuggestions
              title:@"This is an incredible article, you should read it!"
                url:GURL()];
   articleItem.publisher = @"Top Publisher.com";
   return articleItem;
+}
+
+- (SettingsImageDetailTextItem*)settingsImageDetailTextItem {
+  SettingsImageDetailTextItem* settingsImageDetailTextItem =
+      [[SettingsImageDetailTextItem alloc]
+          initWithType:ItemTypeImageDetailTextItem];
+  settingsImageDetailTextItem.image =
+      [UIImage imageNamed:@"ios_default_avatar"];
+  settingsImageDetailTextItem.text =
+      @"Text multiline that works nice with a very very very very very long "
+      @"text";
+  return settingsImageDetailTextItem;
 }
 
 - (ContentSuggestionsFooterItem*)contentSuggestionsFooterItem {
