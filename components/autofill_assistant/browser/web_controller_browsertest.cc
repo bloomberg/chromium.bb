@@ -99,18 +99,23 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     std::move(done_callback).Run();
   }
 
-  void SelectOption(const std::vector<std::string>& selectors,
+  bool SelectOption(const std::vector<std::string>& selectors,
                     const std::string& option) {
     base::RunLoop run_loop;
+    bool result;
     web_controller_->SelectOption(
         selectors, option,
         base::BindOnce(&WebControllerBrowserTest::OnSelectOption,
-                       base::Unretained(this), run_loop.QuitClosure()));
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       &result));
     run_loop.Run();
+    return result;
   }
 
-  void OnSelectOption(base::Closure done_callback, bool result) {
-    ASSERT_TRUE(result);
+  void OnSelectOption(base::Closure done_callback,
+                      bool* result_output,
+                      bool result) {
+    *result_output = result;
     std::move(done_callback).Run();
   }
 
@@ -300,7 +305,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
   std::vector<std::string> selectors;
   selectors.emplace_back("#select");
-  SelectOption(selectors, "two");
+  EXPECT_FALSE(SelectOption(selectors, "incorrect_label"));
+  ASSERT_TRUE(SelectOption(selectors, "two"));
 
   const std::string javascript = R"(
     let select = document.querySelector("#select");
@@ -308,15 +314,19 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
   )";
   EXPECT_EQ("Two", content::EvalJs(shell(), javascript));
 
-  SelectOption(selectors, "one");
+  ASSERT_TRUE(SelectOption(selectors, "one"));
   EXPECT_EQ("One", content::EvalJs(shell(), javascript));
+
+  selectors.clear();
+  selectors.emplace_back("#incorrect_selector");
+  EXPECT_FALSE(SelectOption(selectors, "two"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIframe) {
   std::vector<std::string> selectors;
   selectors.emplace_back("#iframe");
   selectors.emplace_back("select[name=state]");
-  SelectOption(selectors, "NY");
+  ASSERT_TRUE(SelectOption(selectors, "NY"));
 
   const std::string javascript = R"(
     let iframe = document.querySelector("iframe").contentDocument;

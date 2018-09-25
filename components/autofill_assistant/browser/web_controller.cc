@@ -46,12 +46,12 @@ const char* const kSelectOptionScript =
         }
       }
       if (!found) {
-        return { result: false };
+        return false;
       }
       const e = document.createEvent('HTMLEvents');
       e.initEvent('change', true, true);
       this.dispatchEvent(e);
-      return { result: true };
+      return true;
     })";
 
 }  // namespace
@@ -559,7 +559,10 @@ void WebController::OnSelectOption(
     OnResult(false, std::move(callback));
     return;
   }
-  OnResult(true, std::move(callback));
+
+  // Read the result returned from Javascript code.
+  DCHECK(result->GetResult()->GetValue()->is_bool());
+  OnResult(result->GetResult()->GetValue()->GetBool(), std::move(callback));
 }
 
 void WebController::FocusElement(const std::vector<std::string>& selectors,
