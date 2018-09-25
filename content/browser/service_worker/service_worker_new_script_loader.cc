@@ -248,6 +248,8 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     version_->SetMainScriptHttpResponseInfo(*response_info);
   }
 
+  network_loader_state_ = NetworkLoaderState::kWaitingForBody;
+
   WriteHeaders(
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info)));
 
@@ -259,11 +261,9 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     network::ResourceResponseHead new_response_head = response_head;
     new_response_head.ssl_info.reset();
     client_->OnReceiveResponse(new_response_head);
-  } else {
-    client_->OnReceiveResponse(response_head);
+    return;
   }
-
-  network_loader_state_ = NetworkLoaderState::kWaitingForBody;
+  client_->OnReceiveResponse(response_head);
 }
 
 void ServiceWorkerNewScriptLoader::OnReceiveRedirect(
