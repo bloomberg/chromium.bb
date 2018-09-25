@@ -499,10 +499,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected void onInitialLayoutInflationComplete() {
         mInflateInitialLayoutEndMs = SystemClock.elapsedRealtime();
         // Set the status bar color to white by default.
-        setStatusBarColor(null,
-                DeviceFormFactor.isNonMultiDisplayContextOnTablet(this)
-                        ? Color.BLACK
-                        : ColorUtils.getDefaultThemeColor(getResources(), true, false));
+        setStatusBarColor(ColorUtils.getDefaultThemeColor(getResources(), false), true);
 
         ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
         mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
