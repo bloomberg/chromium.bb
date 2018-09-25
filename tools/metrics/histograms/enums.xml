@@ -43739,14 +43739,13 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SBDownloadFeedbackUploadResult">
-  <int value="0" label="SUCCESS"/>
-  <int value="1" label="UPLOAD_SUCCESS"/>
-  <int value="2" label="UPLOAD_CANCELLED"/>
-  <int value="3" label="UPLOAD_METADATA_NET_ERROR"/>
-  <int value="4" label="UPLOAD_METADATA_RESPONSE_ERROR"/>
-  <int value="5" label="UPLOAD_FILE_NET_ERROR"/>
-  <int value="6" label="UPLOAD_FILE_RESPONSE_ERROR"/>
-  <int value="7" label="UPLOAD_COMPLETE_RESPONSE_ERROR"/>
+  <int value="0" label="UPLOAD_SUCCESS"/>
+  <int value="1" label="UPLOAD_CANCELLED"/>
+  <int value="2" label="UPLOAD_METADATA_NET_ERROR"/>
+  <int value="3" label="UPLOAD_METADATA_RESPONSE_ERROR"/>
+  <int value="4" label="UPLOAD_FILE_NET_ERROR"/>
+  <int value="5" label="UPLOAD_FILE_RESPONSE_ERROR"/>
+  <int value="6" label="UPLOAD_COMPLETE_RESPONSE_ERROR"/>
 </enum>
 
 <enum name="SBFileTypeUpdateResult">
