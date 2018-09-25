@@ -28,7 +28,6 @@
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
-#import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
@@ -85,7 +84,6 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       ChromeOmniboxEditController(command_updater),
       omnibox_view_(new OmniboxViewMac(this, profile, command_updater, field)),
       field_(field),
-      zoom_decoration_(new ZoomDecoration(this)),
       browser_(browser),
       location_bar_visible_(true) {
   edit_bookmarks_enabled_.Init(
@@ -211,7 +209,6 @@ bool LocationBarViewMac::IsContentSettingBubbleShowing(size_t index) {
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
   UpdateBookmarkStarVisibility();
-  UpdateZoomDecoration(/*default_zoom_changed=*/false);
   Layout();
 }
 
@@ -220,12 +217,6 @@ bool LocationBarViewMac::IsEditable() {
 }
 
 void LocationBarViewMac::ZoomChangedForActiveTab(bool can_show_bubble) {
-  bool changed = UpdateZoomDecoration(/*default_zoom_changed=*/false);
-  if (changed)
-    OnDecorationsChanged();
-
-  if (can_show_bubble && zoom_decoration_->IsVisible())
-    zoom_decoration_->ShowBubble(YES);
 }
 
 NSPoint LocationBarViewMac::GetBubblePointForDecoration(
@@ -234,14 +225,6 @@ NSPoint LocationBarViewMac::GetBubblePointForDecoration(
 }
 
 void LocationBarViewMac::OnDecorationsChanged() {
-  // TODO(shess): The field-editor frame and cursor rects should not
-  // change, here.
-  std::vector<LocationBarDecoration*> decorations = GetDecorations();
-  for (auto* decoration : decorations)
-    UpdateAccessibilityView(decoration);
-  [field_ updateMouseTracking];
-  [field_ resetFieldEditorFrameIfNeeded];
-  [field_ setNeedsDisplay:YES];
 }
 
 // TODO(shess): This function should over time grow to closely match
@@ -254,7 +237,6 @@ void LocationBarViewMac::Layout() {
   // the constructor.  I am still wrestling with how best to deal with
   // right-hand decorations, which are not a static set.
   [cell clearDecorations];
-  [cell addTrailingDecoration:zoom_decoration_.get()];
 
   // Get the keyword to use for keyword-search and hinting.
   const base::string16 keyword = omnibox_view_->model()->keyword();
@@ -288,7 +270,6 @@ void LocationBarViewMac::Update(const WebContents* contents) {
   UpdateManagePasswordsIconAndBubble();
   UpdateBookmarkStarVisibility();
   UpdateSaveCreditCardIcon();
-  UpdateZoomDecoration(/*default_zoom_changed=*/false);
   RefreshContentSettingsDecorations();
   if (contents) {
     omnibox_view_->OnTabChanged(contents);
@@ -339,19 +320,6 @@ WebContents* LocationBarViewMac::GetWebContents() {
 }
 
 void LocationBarViewMac::UpdatePageActionIcon(PageActionIconType type) {
-  // TODO(https://crbug.com/788051): Return page action icons for updating here
-  // as update methods are migrated out of LocationBar to the
-  // PageActionIconContainer interface.
-  switch (type) {
-    case PageActionIconType::kFind:
-      // TODO(crbug/651643): Implement for mac.
-      NOTIMPLEMENTED();
-      break;
-    case PageActionIconType::kZoom:
-      UpdateZoomDecoration(/*default_zoom_changed=*/false);
-      OnChanged();
-      break;
-  }
 }
 
 PageInfoVerboseType LocationBarViewMac::GetPageInfoVerboseType() const {
@@ -436,77 +404,19 @@ bool LocationBarViewMac::RefreshContentSettingsDecorations() {
   return false;
 }
 
-bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
-  WebContents* web_contents = GetWebContents();
-  if (!web_contents)
-    return false;
-
-  return zoom_decoration_->UpdateIfNecessary(
-      zoom::ZoomController::FromWebContents(web_contents), default_zoom_changed,
-      IsLocationBarDark());
-}
-
 void LocationBarViewMac::UpdateAccessibilityView(
     LocationBarDecoration* decoration) {
-  if (!decoration->IsVisible())
-    return;
-  // This uses |frame| instead of |bounds| because the accessibility views are
-  // parented to the toolbar.
-  NSRect apparent_frame =
-      [[field_ cell] frameForDecoration:decoration inFrame:[field_ frame]];
-
-  // This is a bit subtle:
-  // The decorations' accessibility views can become key to allow keyboard
-  // access to the location bar decorations, but Cocoa's automatic key view loop
-  // sorts by top-left coordinate. Since the omnibox's top-left coordinate is
-  // before its leading decorations, the omnibox would sort before its own
-  // leading decorations, which was logical but visually unintuitive. Therefore,
-  // for leading decorations, this method moves their frame to be "just before"
-  // the omnibox in automatic key view loop order, and gives them an apparent
-  // frame (see DecorationAccessibilityView) so that they still paint their
-  // focus rings at the right place.
-  //
-  // TODO(lgrey): This hack doesn't work in RTL layouts, but the layout of the
-  // omnibox is currently screwed up in RTL layouts anyway. See
-  // https://crbug.com/715627.
-  NSRect real_frame = apparent_frame;
-  int left_index = [[field_ cell] leadingDecorationIndex:decoration];
-
-  // If there are ever too many leading views, the fake x-coords might land
-  // before the button preceding the omnibox in the key view order. This
-  // threshold is just a guess.
-  DCHECK_LT(left_index, 10);
-  if (left_index != -1) {
-    CGFloat delta = left_index + 1;
-    real_frame.origin.x =
-        cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
-            ? NSMaxX([field_ frame]) + delta - NSWidth(real_frame)
-            : NSMinX([field_ frame]) - delta;
-  }
-  decoration->UpdateAccessibilityView(apparent_frame);
-  [decoration->GetAccessibilityView() setFrame:real_frame];
-  [decoration->GetAccessibilityView() setNeedsDisplayInRect:apparent_frame];
 }
 
 std::vector<LocationBarDecoration*> LocationBarViewMac::GetDecorations() {
   std::vector<LocationBarDecoration*> decorations;
-
-  // TODO(ellyjones): page actions and keyword hints are not included right
-  // now. Keyword hints have no useful tooltip (issue 752592), and page actions
-  // are likewise.
-  decorations.push_back(zoom_decoration_.get());
   return decorations;
 }
 
 void LocationBarViewMac::OnDefaultZoomLevelChanged() {
-  if (UpdateZoomDecoration(/*default_zoom_changed=*/true))
-    OnDecorationsChanged();
 }
 
 std::vector<NSView*> LocationBarViewMac::GetDecorationAccessibilityViews() {
-  std::vector<LocationBarDecoration*> decorations = GetDecorations();
   std::vector<NSView*> views;
-  for (auto* decoration : decorations)
-    views.push_back(decoration->GetAccessibilityView());
   return views;
 }

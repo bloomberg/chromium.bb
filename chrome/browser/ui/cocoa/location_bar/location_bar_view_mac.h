@@ -26,8 +26,6 @@
 class CommandUpdater;
 class LocationBarDecoration;
 class Profile;
-class ZoomDecoration;
-class ZoomDecorationTest;
 
 namespace {
 class LocationBarViewMacTest;
@@ -159,8 +157,6 @@ class LocationBarViewMac : public LocationBar,
   // Returns true if the location bar is dark.
   bool IsLocationBarDark() const;
 
-  ZoomDecoration* zoom_decoration() const { return zoom_decoration_.get(); }
-
   Browser* browser() const { return browser_; }
 
   // ZoomManagerObserver:
@@ -174,7 +170,6 @@ class LocationBarViewMac : public LocationBar,
 
  private:
   friend class LocationBarViewMacTest;
-  friend ZoomDecorationTest;
 
   // Posts |notification| to the default notification center.
   void PostNotification(NSString* notification);
@@ -184,10 +179,6 @@ class LocationBarViewMac : public LocationBar,
   // Updates visibility of the content settings icons based on the current
   // tab contents state.
   bool RefreshContentSettingsDecorations();
-
-  // Updates the zoom decoration in the omnibox with the current zoom level.
-  // Returns whether any updates were made.
-  bool UpdateZoomDecoration(bool default_zoom_changed);
 
   // Returns pointers to all of the LocationBarDecorations owned by this
   // LocationBarViewMac. This helper function is used for positioning and
@@ -202,10 +193,6 @@ class LocationBarViewMac : public LocationBar,
   std::unique_ptr<OmniboxViewMac> omnibox_view_;
 
   AutocompleteTextField* field_;  // owned by tab controller
-
-  // A zoom icon at the end of the omnibox, which shows at non-standard zoom
-  // levels.
-  std::unique_ptr<ZoomDecoration> zoom_decoration_;
 
   Browser* browser_;
 
