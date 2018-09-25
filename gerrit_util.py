@@ -16,6 +16,7 @@ import json
 import logging
 import netrc
 import os
+import random
 import re
 import socket
 import stat
@@ -417,6 +418,17 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
                 conn.req_host, conn.req_params['method'],
                 conn.req_params['uri'],
                 http_version, http_version, response.status, response.reason)
+    if response.status == 404:
+      # TODO(crbug/881860): remove this hack.
+      # HACK: try different Gerrit mirror as a workaround for potentially
+      # out-of-date mirror hit through default routing.
+      if conn.req_host == 'chromium-review.googlesource.com':
+        conn.req_params['uri'] = _UseGerritMirror(
+            conn.req_params['uri'], 'chromium-review.googlesource.com')
+        # And don't increase sleep_time in this case, since we suspect we've
+        # just asked wrong git mirror before.
+        sleep_time /= 2.0
+
     if TRY_LIMIT - idx > 1:
       LOGGER.info('Will retry in %d seconds (%d more times)...',
                   sleep_time, TRY_LIMIT - idx - 1)
@@ -914,3 +926,31 @@ def ChangeIdentifier(project, change_number):
   """
   assert int(change_number)
   return '%s~%s' % (urllib.quote(project, safe=''), change_number)
+
+
+# TODO(crbug/881860): remove this hack.
+_GERRIT_MIRROR_PREFIXES = ['us1', 'us2', 'us3']
+assert all(3 == len(p) for p in _GERRIT_MIRROR_PREFIXES)
+
+
+def _UseGerritMirror(url, host):
+  """Returns new url which uses randomly selected mirror for a gerrit host.
+
+  url's host should be for a given host or a result of prior call to this
+  function.
+
+  Assumes url has a single occurence of the host substring.
+  """
+  assert host in url
+  suffix = '-mirror-' + host
+  prefixes = set(_GERRIT_MIRROR_PREFIXES)
+  prefix_len = len(_GERRIT_MIRROR_PREFIXES[0])
+  st = url.find(suffix)
+  if st == -1:
+    actual_host = host
+  else:
+    # Already uses some mirror.
+    assert st >= prefix_len, (uri, host, st, prefix_len)
+    prefixes.remove(url[st-prefix_len:st])
+    actual_host = url[st-prefix_len:st+len(suffix)]
+  return url.replace(actual_host, random.choice(list(prefixes)) + suffix)
