@@ -105,7 +105,9 @@
       <extensions-runtime-hosts-dialog
           delegate="[[delegate]]" item-id="[[itemId]]"
           current-site="[[hostDialogModel_]]"
-          on-close="onHostDialogClose_">
+          update-host-access="[[dialogShouldUpdateHostAccess_(oldHostAccess_)]]"
+          on-close="onHostDialogClose_"
+          on-cancel="onHostDialogCancel_">
       </extensions-runtime-hosts-dialog>
     </template>
   </template>

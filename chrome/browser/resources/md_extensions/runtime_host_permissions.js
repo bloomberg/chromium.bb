@@ -71,6 +71,17 @@ cr.define('extensions', function() {
       },
 
       /**
+       * The old host access setting; used when we don't immediately commit the
+       * change to host access so that we can reset it if the user cancels.
+       * @type {?string}
+       * @private
+       */
+      oldHostAccess_: {
+        type: String,
+        value: null,
+      },
+
+      /**
        * Proxying the enum to be used easily by the html template.
        * @private
        */
@@ -88,12 +99,23 @@ cr.define('extensions', function() {
       const select = /** @type {!HTMLSelectElement} */ (event.target);
       const access =
           /** @type {chrome.developerPrivate.HostAccess} */ (select.value);
-      this.delegate.setItemHostAccess(this.itemId, access);
-      // Force the UI to update (in order to potentially hide or show the
-      // specific runtime hosts).
-      // TODO(devlin): Perhaps this should be handled by the backend updating
-      // and sending an onItemStateChanged event?
-      this.set('permissions.hostAccess', access);
+
+      if (access == chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES &&
+          (!this.permissions.runtimeHostPermissions ||
+           this.permissions.runtimeHostPermissions.length == 0)) {
+        // If the user is transitioning to the "on specific sites" option, show
+        // the "add host" dialog. This serves two purposes:
+        // - The user is prompted to add a host immediately, since otherwise
+        //   "on specific sites" is meaningless, and
+        // - The way the C++ code differentiates between "on click" and "on
+        //   specific sites" is by checking if there are any specific sites.
+        //   This ensures there will be at least one, so that the host access
+        //   is properly calculated.
+        this.oldHostAccess_ = assert(this.permissions.hostAccess);
+        this.doShowHostDialog_(select, null);
+      } else {
+        this.delegate.setItemHostAccess(this.itemId, access);
+      }
     },
 
     /**
@@ -135,6 +157,25 @@ cr.define('extensions', function() {
       cr.ui.focusWithoutInk(
           assert(this.hostDialogAnchorElement_, 'Host Anchor'));
       this.hostDialogAnchorElement_ = null;
+    },
+
+    /** @private */
+    onHostDialogCancel_: function() {
+      // The user canceled the dialog. Set host-access back to the old value,
+      // if the dialog was shown when just transitioning to a new state.
+      if (this.oldHostAccess_) {
+        assert(this.permissions.hostAccess == this.oldHostAccess_);
+        this.$['host-access'].value = this.oldHostAccess_;
+        this.oldHostAccess_ = null;
+      }
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    dialogShouldUpdateHostAccess_: function() {
+      return !!this.oldHostAccess_;
     },
 
     /**
