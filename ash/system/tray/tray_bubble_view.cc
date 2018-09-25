@@ -206,7 +206,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       bubble_border_(new BubbleBorder(
           arrow(),
           init_params.has_shadow ? BubbleBorder::NO_ASSETS
-                                 : BubbleBorder::NO_SHADOW,
+                                 : BubbleBorder::BIG_SHADOW,
           init_params.bg_color.value_or(gfx::kPlaceholderColor))),
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
