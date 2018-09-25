@@ -291,15 +291,8 @@ InvalidationModeMask SVGResources::RemoveClientFromCache(
   if (!HasResourceData())
     return 0;
 
-  if (linked_resource_) {
-    DCHECK(!clipper_filter_masker_data_);
-    DCHECK(!marker_data_);
-    DCHECK(!fill_stroke_data_);
-    linked_resource_->RemoveClientFromCache(client);
-    // The only linked resources are gradients and patterns, i.e
-    // always a paint server.
-    return SVGResourceClient::kPaintInvalidation;
-  }
+  // We never call this method for the elements where this would be non-null.
+  DCHECK(!linked_resource_);
 
   InvalidationModeMask invalidation_flags =
       RemoveClientFromCacheAffectingObjectBounds(client);
