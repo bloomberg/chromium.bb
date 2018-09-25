@@ -367,8 +367,9 @@ class BuilderStage(object):
     failure_msg_manager = failure_message_lib.FailureMessageManager()
     failure_messages = failure_msg_manager.ConstructStageFailureMessages(
         stage_failures)
-    master_build_id = next(failure.master_build_id for
-                           failure in stage_failures)
+    master_build_id = None
+    if stage_failures:
+      master_build_id = stage_failures[0].master_build_id
     aborted = builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
         db, build_id, master_build_id)
 
