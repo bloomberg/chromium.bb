@@ -162,7 +162,6 @@
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
-#import "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
@@ -1442,13 +1441,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   };
 
   [self setLastTapPointFromCommand:originPoint];
-  // When the tab switcher presentation experiment is enabled, the new tab can
-  // be opened before BVC has been made visible onscreen.  Test for this case by
-  // checking if the parent container VC is currently in the process of being
-  // presented.
+  // The new tab can be opened before BVC has been made visible onscreen.  Test
+  // for this case by checking if the parent container VC is currently in the
+  // process of being presented.
   DCHECK(self.visible || self.dismissingModal ||
-         (TabSwitcherPresentsBVCEnabled() &&
-          self.parentViewController.isBeingPresented));
+         self.parentViewController.isBeingPresented);
 
   // In most cases, we want to take a snapshot of the current tab before opening
   // a new tab. However, if the current tab is not fully visible (did not finish
@@ -1565,7 +1562,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     //
     // To ensure the completion is called, nil is passed to the call to dismiss,
     // and the completion is called explicitly below.
-    if (!TabSwitcherPresentsBVCEnabled() || !self.dismissingModal) {
+    if (!self.dismissingModal) {
       [self dismissViewControllerAnimated:NO completion:nil];
     }
     // Dismissed controllers will be so after a delay. Queue the completion
@@ -1911,7 +1908,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
                            completion:(void (^)())completion {
-  if (TabSwitcherPresentsBVCEnabled() && !self.presentedViewController) {
+  if (!self.presentedViewController) {
     // TODO(crbug.com/801165): On iOS10, UIDocumentMenuViewController and
     // WKFileUploadPanel somehow combine to call dismiss twice instead of once.
     // The second call would dismiss the BVC itself, so look for that case and
@@ -1928,16 +1925,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 
   // Some calling code invokes |dismissViewControllerAnimated:completion:|
-  // multiple times.  When the BVC is displayed using VC containment, multiple
-  // calls are effectively idempotent because only the first call has any effect
-  // and subsequent calls do nothing.  However, when the BVC is presented,
-  // subsequent calls end up dismissing the BVC itself.  This is never what we
-  // want, so check for this case and return early.  It is not enough to check
+  // multiple times. Because the BVC is presented, subsequent calls end up
+  // dismissing the BVC itself. This is never what should happen, so check for
+  // this case and return early.  It is not enough to check
   // |self.dismissingModal| because some dismissals do not go through
   // -[BrowserViewController dismissViewControllerAnimated:completion:|.
   // TODO(crbug.com/782338): Fix callers and remove this early return.
-  if (TabSwitcherPresentsBVCEnabled() &&
-      (self.dismissingModal || self.presentedViewController.isBeingDismissed)) {
+  if (self.dismissingModal || self.presentedViewController.isBeingDismissed) {
     return;
   }
 

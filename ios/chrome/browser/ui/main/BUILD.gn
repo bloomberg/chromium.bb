@@ -10,8 +10,6 @@ source_set("main") {
     "browser_view_wrangler.mm",
     "bvc_container_view_controller.h",
     "bvc_container_view_controller.mm",
-    "main_containing_view_controller.h",
-    "main_containing_view_controller.mm",
     "main_coordinator.h",
     "main_coordinator.mm",
     "main_presenting_view_controller.h",
@@ -19,7 +17,6 @@ source_set("main") {
     "view_controller_swapping.h",
   ]
   deps = [
-    ":feature_flags",
     ":tab_switcher",
     "//base",
     "//ios/chrome/app/resources:launchscreen_xib",
@@ -41,17 +38,6 @@ source_set("main") {
   libs = [ "UIKit.framework" ]
 }
 
-source_set("feature_flags") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "main_feature_flags.cc",
-    "main_feature_flags.h",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
 source_set("tab_switcher") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -71,7 +57,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "browser_view_wrangler_unittest.mm",
-    "main_containing_view_controller_unittest.mm",
     "main_coordinator_unittest.mm",
     "main_presenting_view_controller_unittest.mm",
   ]

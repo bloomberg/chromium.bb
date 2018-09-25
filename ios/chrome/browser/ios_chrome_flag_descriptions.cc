@@ -250,12 +250,6 @@ const char kSSOWithWKWebViewName[] = "SSO with WKWebView";
 const char kSSOWithWKWebViewDescription[] =
     "Using WKWebView instead of UIWebView in SSO";
 
-const char kTabSwitcherPresentsBVCName[] = "TabSwitcher Presents BVC";
-const char kTabSwitcherPresentsBVCDescription[] =
-    "When enabled, the tab switcher will present the BVC, so that when the "
-    "BVC is visible, the tab switcher will remain in the VC hierarchy "
-    "underneath it.";
-
 const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
