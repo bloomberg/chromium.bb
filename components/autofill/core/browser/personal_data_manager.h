@@ -213,9 +213,6 @@ class PersonalDataManager : public KeyedService,
   // Gets the field types availabe in the stored address and credit card data.
   void GetNonEmptyTypes(ServerFieldTypeSet* non_empty_types);
 
-  // Returns true if the credit card information is stored with a password.
-  bool HasPassword();
-
   // Returns whether the personal data has been loaded from the web database.
   virtual bool IsDataLoaded() const;
 
