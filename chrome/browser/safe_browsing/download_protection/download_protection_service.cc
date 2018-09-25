@@ -507,4 +507,17 @@ void DownloadProtectionService::OnDangerousDownloadOpened(
           username);
 }
 
+bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
+    Profile* profile,
+    download::DownloadItem* download,
+    DownloadCommands::Command download_command) {
+  PrefService* prefs = profile->GetPrefs();
+  if (!profile->IsOffTheRecord() && ExtendedReportingPrefExists(*prefs) &&
+      IsExtendedReportingEnabled(*prefs)) {
+    feedback_service_->BeginFeedbackForDownload(download, download_command);
+    return true;
+  }
+  return false;
+}
+
 }  // namespace safe_browsing

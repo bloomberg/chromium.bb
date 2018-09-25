@@ -32,7 +32,6 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/views/download/download_feedback_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -216,21 +215,8 @@ void DownloadItemView::OnExtractIconComplete(gfx::Image* icon_bitmap) {
 
 void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
     DownloadCommands::Command download_command) {
-  PrefService* prefs = shelf_->browser()->profile()->GetPrefs();
   if (model_->ShouldAllowDownloadFeedback() &&
-      !shelf_->browser()->profile()->IsOffTheRecord()) {
-    if (safe_browsing::ExtendedReportingPrefExists(*prefs)) {
-      SubmitDownloadWhenFeedbackServiceEnabled(
-          download_command, safe_browsing::IsExtendedReportingEnabled(*prefs));
-    } else {
-      // Show dialog, because the dialog hasn't been shown before.
-      DownloadFeedbackDialogView::Show(
-          shelf_->get_parent()->GetNativeWindow(), shelf_->browser()->profile(),
-          shelf_->GetNavigator(),
-          base::Bind(
-              &DownloadItemView::SubmitDownloadWhenFeedbackServiceEnabled,
-              weak_ptr_factory_.GetWeakPtr(), download_command));
-    }
+      SubmitDownloadToFeedbackService(download_command)) {
   } else {
     DownloadCommands(model_.get()).ExecuteCommand(download_command);
   }
@@ -771,8 +757,8 @@ bool DownloadItemView::SubmitDownloadToFeedbackService(
     return false;
   // TODO(shaktisahu): Enable feedback service for offline item.
   if (model_->download()) {
-    download_protection_service->feedback_service()->BeginFeedbackForDownload(
-        model_->download(), download_command);
+    return download_protection_service->MaybeBeginFeedbackForDownload(
+        shelf_->browser()->profile(), model_->download(), download_command);
   }
   // WARNING: we are deleted at this point.  Don't access 'this'.
   return true;
@@ -780,16 +766,6 @@ bool DownloadItemView::SubmitDownloadToFeedbackService(
   NOTREACHED();
   return false;
 #endif
-}
-
-void DownloadItemView::SubmitDownloadWhenFeedbackServiceEnabled(
-    DownloadCommands::Command download_command,
-    bool feedback_enabled) {
-  if (feedback_enabled && SubmitDownloadToFeedbackService(download_command))
-    return;
-
-  DownloadCommands(model_.get()).ExecuteCommand(download_command);
-  // WARNING: 'this' is deleted at this point. Don't access 'this'.
 }
 
 void DownloadItemView::LoadIcon() {
