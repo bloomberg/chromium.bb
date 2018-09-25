@@ -916,57 +916,6 @@ def _get_gerrit_project_config_file(remote_url):
     yield project_config_file
 
 
-def _is_git_numberer_enabled(remote_url, remote_ref):
-  """Returns True if Git Numberer is enabled on this ref."""
-  # TODO(tandrii): this should be deleted once repos below are 100% on Gerrit.
-  KNOWN_PROJECTS_WHITELIST = [
-      'chromium/src',
-      'external/webrtc',
-      'v8/v8',
-      'infra/experimental',
-      # For webrtc.googlesource.com/src.
-      'src',
-  ]
-
-  assert remote_ref and remote_ref.startswith('refs/'), remote_ref
-  url_parts = urlparse.urlparse(remote_url)
-  project_name = url_parts.path.lstrip('/').rstrip('git./')
-  for known in KNOWN_PROJECTS_WHITELIST:
-    if project_name.endswith(known):
-      break
-  else:
-    # Early exit to avoid extra fetches for repos that aren't using Git
-    # Numberer.
-    return False
-
-  with _get_gerrit_project_config_file(remote_url) as project_config_file:
-    if project_config_file is None:
-      # Failed to fetch project.config, which shouldn't happen on open source
-      # repos KNOWN_PROJECTS_WHITELIST.
-      return False
-    def get_opts(x):
-      code, out = RunGitWithCode(
-          ['config', '-f', project_config_file, '--get-all',
-           'plugin.git-numberer.validate-%s-refglob' % x])
-      if code == 0:
-        return out.strip().splitlines()
-      return []
-    enabled, disabled = map(get_opts, ['enabled', 'disabled'])
-
-  logging.info('validator config enabled %s disabled %s refglobs for '
-               '(this ref: %s)', enabled, disabled, remote_ref)
-
-  def match_refglobs(refglobs):
-    for refglob in refglobs:
-      if remote_ref == refglob or fnmatch.fnmatch(remote_ref, refglob):
-        return True
-    return False
-
-  if match_refglobs(disabled):
-    return False
-  return match_refglobs(enabled)
-
-
 def ShortBranchName(branch):
   """Convert a name like 'refs/heads/foo' to just 'foo'."""
   return branch.replace('refs/heads/', '', 1)
