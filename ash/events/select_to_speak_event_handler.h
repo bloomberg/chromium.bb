@@ -1,29 +1,23 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_HANDLER_H_
-#define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_HANDLER_H_
+#ifndef ASH_EVENTS_SELECT_TO_SPEAK_EVENT_HANDLER_H_
+#define ASH_EVENTS_SELECT_TO_SPEAK_EVENT_HANDLER_H_
 
-#include <memory>
-
+#include "ash/ash_export.h"
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "base/macros.h"
-#include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 
-namespace chromeos {
+namespace ash {
 
-class SelectToSpeakEventDelegateForTesting {
+// SelectToSpeakEventHandler sends touch, mouse and key events to
+// the Select-to-Speak extension (via the delegate) when it is enabled.
+class ASH_EXPORT SelectToSpeakEventHandler : public ui::EventHandler {
  public:
-  virtual ~SelectToSpeakEventDelegateForTesting() = default;
-
-  virtual void OnForwardEventToSelectToSpeakExtension(
-      const ui::MouseEvent& event) = 0;
-};
-
-class SelectToSpeakEventHandler : public ui::EventHandler {
- public:
-  SelectToSpeakEventHandler();
+  explicit SelectToSpeakEventHandler(
+      mojom::SelectToSpeakEventHandlerDelegatePtr delegate_ptr);
   ~SelectToSpeakEventHandler() override;
 
   // Called when the Select-to-Speak extension changes state. |is_selecting| is
@@ -32,11 +26,11 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
   // in an inactive state.
   void SetSelectToSpeakStateSelecting(bool is_selecting);
 
-  void CaptureForwardedEventsForTesting(
-      SelectToSpeakEventDelegateForTesting* delegate);
+  // For testing usage only.
+  void FlushMojoForTest();
 
  private:
-  // EventHandler
+  // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
@@ -45,12 +39,6 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
   bool IsSelectToSpeakEnabled();
 
   void CancelEvent(ui::Event* event);
-
-  // Converts an event in pixels to the same event in DIPs.
-  void ConvertMouseEventToDIPs(ui::MouseEvent* mouse_event);
-
-  // Forwards a mouse event to the Select-to-Speak extension.
-  void ForwardMouseEventToExtension(ui::MouseEvent* event);
 
   enum State {
     // The search key is not down, no selection has been requested.
@@ -114,11 +102,12 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
 
   ui::EventPointerType touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
 
-  SelectToSpeakEventDelegateForTesting* event_delegate_for_testing_ = nullptr;
+  // The delegate used to send key events to the Select-to-Speak extension.
+  mojom::SelectToSpeakEventHandlerDelegatePtr delegate_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakEventHandler);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_HANDLER_H_
+#endif  // ASH_EVENTS_SELECT_TO_SPEAK_EVENT_HANDLER_H_

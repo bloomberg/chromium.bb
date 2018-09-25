@@ -1,63 +1,39 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler.h"
+#include "ash/events/select_to_speak_event_handler.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/event_handler_common.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/web_contents.h"
-#include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_host.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
-#include "ui/aura/client/screen_position_client.h"
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
+#include "ash/shell.h"
+#include "base/macros.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/content_accelerators/accelerator_util.h"
-#include "ui/display/display.h"
-#include "ui/events/blink/web_input_event.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 
-namespace chromeos {
-
-namespace {
-
-gfx::PointF GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
-  aura::Window* root =
-      static_cast<aura::Window*>(event.target())->GetRootWindow();
-  aura::client::ScreenPositionClient* spc =
-      aura::client::GetScreenPositionClient(root);
-  if (!spc)
-    return event.root_location_f();
-
-  gfx::PointF screen_location(event.root_location_f());
-  spc->ConvertPointToScreen(root, &screen_location);
-  return screen_location;
-}
-}  // namespace
+namespace ash {
 
 const ui::KeyboardCode kSpeakSelectionKey = ui::VKEY_S;
 
-SelectToSpeakEventHandler::SelectToSpeakEventHandler() {
-  if (aura::Env::HasInstance()) {
-    aura::Env::GetInstance()->AddPreTargetHandler(
-        this, ui::EventTarget::Priority::kAccessibility);
-  }
+SelectToSpeakEventHandler::SelectToSpeakEventHandler(
+    mojom::SelectToSpeakEventHandlerDelegatePtr delegate_ptr)
+    : delegate_ptr_(std::move(delegate_ptr)) {
+  DCHECK(delegate_ptr_.is_bound());
+  Shell::Get()->AddPreTargetHandler(this,
+                                    ui::EventTarget::Priority::kAccessibility);
 }
 
 SelectToSpeakEventHandler::~SelectToSpeakEventHandler() {
-  if (aura::Env::HasInstance())
-    aura::Env::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
+}
+
+bool SelectToSpeakEventHandler::IsSelectToSpeakEnabled() {
+  return Shell::Get()->accessibility_controller()->IsSelectToSpeakEnabled();
 }
 
 void SelectToSpeakEventHandler::SetSelectToSpeakStateSelecting(
@@ -79,24 +55,13 @@ void SelectToSpeakEventHandler::SetSelectToSpeakStateSelecting(
   }
 }
 
-void SelectToSpeakEventHandler::CaptureForwardedEventsForTesting(
-    SelectToSpeakEventDelegateForTesting* delegate) {
-  event_delegate_for_testing_ = delegate;
-}
-
-bool SelectToSpeakEventHandler::IsSelectToSpeakEnabled() {
-  if (event_delegate_for_testing_)
-    return true;
-  return chromeos::AccessibilityManager::Get()->IsSelectToSpeakEnabled();
+void SelectToSpeakEventHandler::FlushMojoForTest() {
+  delegate_ptr_.FlushForTesting();
 }
 
 void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   DCHECK(IsSelectToSpeakEnabled());
   DCHECK(event);
-
-  // We can only call TtsController on the UI thread, make sure we
-  // don't ever try to run this code on some other thread.
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ui::KeyboardCode key_code = event->key_code();
   bool cancel_event = false;
@@ -149,11 +114,8 @@ void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     state_ = INACTIVE;
   }
 
-  // Forward the key to the extension.
-  extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
-      extension_misc::kSelectToSpeakExtensionId);
-  if (host)
-    chromeos::ForwardKeyToExtension(*event, host);
+  // Forward the key to the chrome process for the extension.
+  delegate_ptr_->DispatchKeyEvent(ui::Event::Clone(*event));
 
   if (cancel_event)
     CancelEvent(event);
@@ -190,8 +152,7 @@ void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
       state_ = INACTIVE;
   }
 
-  ui::MouseEvent mutable_event(*event);
-  ForwardMouseEventToExtension(&mutable_event);
+  delegate_ptr_->DispatchMouseEvent(ui::Event::Clone(*event));
 
   if (event->type() == ui::ET_MOUSE_PRESSED ||
       event->type() == ui::ET_MOUSE_RELEASED)
@@ -254,32 +215,12 @@ void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   ui::MouseEvent mutable_event(type, event->location(), event->root_location(),
                                event->time_stamp(), flags, flags);
 
-  ForwardMouseEventToExtension(&mutable_event);
+  delegate_ptr_->DispatchMouseEvent(ui::Event::Clone(mutable_event));
 
   if (event->type() != ui::ET_TOUCH_MOVED) {
     // Don't cancel move events in case focus needs to change.
     CancelEvent(event);
   }
-}
-
-void SelectToSpeakEventHandler::ForwardMouseEventToExtension(
-    ui::MouseEvent* event) {
-  if (event_delegate_for_testing_) {
-    event_delegate_for_testing_->OnForwardEventToSelectToSpeakExtension(*event);
-    return;
-  }
-  extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
-      extension_misc::kSelectToSpeakExtensionId);
-  if (!host)
-    return;
-
-  content::RenderViewHost* rvh = host->render_view_host();
-  if (!rvh)
-    return;
-
-  const blink::WebMouseEvent web_event =
-      ui::MakeWebMouseEvent(*event, base::Bind(&GetScreenLocationFromEvent));
-  rvh->GetWidget()->ForwardMouseEvent(web_event);
 }
 
 void SelectToSpeakEventHandler::CancelEvent(ui::Event* event) {
@@ -290,4 +231,4 @@ void SelectToSpeakEventHandler::CancelEvent(ui::Event* event) {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

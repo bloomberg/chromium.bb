@@ -6,6 +6,7 @@ module ash.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "ui/accessibility/ax_enums.mojom";
+import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Alert sent to the accessibility api.
@@ -59,6 +60,19 @@ enum SelectToSpeakState {
   kSelectToSpeakStateSpeaking,
 };
 
+// Allows a client to implement Select-to-Speak.
+// TODO(katie): Consider combining DispatchMouseEvent and DispatchKeyEvent
+// into a single DispatchEvent function.
+interface SelectToSpeakEventHandlerDelegate {
+  // Sends a KeyEvent to the Select-to-Speak extension in Chrome. The event
+  // is cast to a key event with a type CHECK.
+  DispatchKeyEvent(ui.mojom.Event event);
+
+  // Sends a MouseEvent to the Select-to-Speak extension in Chrome. The event
+  // is cast to a mouse event with a type CHECK.
+  DispatchMouseEvent(ui.mojom.Event event);
+};
+
 // Interface for ash client (e.g. Chrome) to control and query accessibility
 // features.
 interface AccessibilityController {
@@ -93,6 +107,10 @@ interface AccessibilityController {
   // Sets the current Select-to-Speak state. This should be used by the Select-
   // to-Speak extension to inform ash of its updated state.
   SetSelectToSpeakState(SelectToSpeakState state);
+
+  // Set the delegate used by the Select-to-Speak event handler.
+  SetSelectToSpeakEventHandlerDelegate(
+      SelectToSpeakEventHandlerDelegate delegate);
 };
 
 // Interface for ash to request accessibility service from its client (e.g.
