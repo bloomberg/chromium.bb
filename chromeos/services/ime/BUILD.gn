@@ -15,6 +15,11 @@ source_set("lib") {
     "ime_service.h",
     "input_engine.cc",
     "input_engine.h",
+    "rulebased/controller.cc",
+    "rulebased/controller.h",
+    "rulebased/def/ar.h",
+    "rulebased/rules_data.cc",
+    "rulebased/rules_data.h",
   ]
 
   deps = [
@@ -39,6 +44,19 @@ service_manifest("manifest") {
 }
 
 source_set("unit_tests") {
+  testonly = true
+  deps = [
+    ":lib",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest:gtest",
+  ]
+  sources = [
+    "rulebased/rulebased_unittest.cc",
+  ]
+}
+
+source_set("services_unittests") {
   testonly = true
   deps = [
     ":lib",

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 
 #include "chromeos/services/ime/ime_service.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
@@ -15,6 +16,7 @@
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 
@@ -28,6 +30,11 @@ const std::vector<uint8_t> extra{0x66, 0x77, 0x88};
 
 void ConnectCallback(bool* success, bool result) {
   *success = result;
+}
+
+void TestProcessTextCallback(std::string* res_out,
+                             const std::string& response) {
+  *res_out = response;
 }
 
 class TestClientChannel : mojom::InputChannel {
@@ -132,7 +139,7 @@ class ImeServiceTest : public service_manager::test::ServiceTest {
 // Tests that the service is instantiated and it will return false when
 // activating an IME engine with an invalid IME spec.
 TEST_F(ImeServiceTest, ConnectInvalidImeEngine) {
-  bool success = true;
+  bool success = false;
   TestClientChannel test_channel;
   mojom::InputChannelPtr to_engine_ptr;
 
@@ -142,6 +149,73 @@ TEST_F(ImeServiceTest, ConnectInvalidImeEngine) {
       base::BindOnce(&ConnectCallback, &success));
   ime_manager_.FlushForTesting();
   EXPECT_FALSE(success);
+}
+
+// Tests that the rule-based Arabic keyboard can work correctly.
+TEST_F(ImeServiceTest, RuleBasedArabic) {
+  bool success = true;
+  TestClientChannel test_channel;
+  mojom::InputChannelPtr to_engine_ptr;
+
+  ime_manager_->ConnectToImeEngine("m17n:ar", mojo::MakeRequest(&to_engine_ptr),
+                                   test_channel.CreateInterfacePtrAndBind(),
+                                   extra,
+                                   base::BindOnce(&ConnectCallback, &success));
+  ime_manager_.FlushForTesting();
+  EXPECT_TRUE(success);
+
+  // Test Shift+KeyA.
+  std::string response;
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"keyEvent\",\"type\":\"keydown\",\"code\":\"KeyA\","
+      "\"shift\":true,\"altgr\":false,\"caps\":false}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr.FlushForTesting();
+  const wchar_t* expected_response =
+      L"{\"result\":true,\"operations\":[{\"method\":\"commitText\","
+      L"\"arguments\":[\"\u0650\"]}]}";
+  EXPECT_EQ(base::WideToUTF8(expected_response), response);
+
+  // Test KeyB.
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"keyEvent\",\"type\":\"keydown\",\"code\":\"KeyB\","
+      "\"shift\":false,\"altgr\":false,\"caps\":false}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr.FlushForTesting();
+  expected_response =
+      L"{\"result\":true,\"operations\":[{\"method\":\"commitText\","
+      L"\"arguments\":[\"\u0644\u0627\"]}]}";
+  EXPECT_EQ(base::WideToUTF8(expected_response), response);
+
+  // Test unhandled key.
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"keyEvent\",\"type\":\"keydown\",\"code\":\"Enter\","
+      "\"shift\":false,\"altgr\":false,\"caps\":false}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr.FlushForTesting();
+  EXPECT_EQ("{\"result\":false}", response);
+
+  // Test keyup.
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"keyEvent\",\"type\":\"keyup\",\"code\":\"Enter\","
+      "\"shift\":false,\"altgr\":false,\"caps\":false}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr.FlushForTesting();
+  EXPECT_EQ("{\"result\":false}", response);
+
+  // Test reset.
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"reset\"}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr.FlushForTesting();
+  EXPECT_EQ("{\"result\":true}", response);
+
+  // Test invalid request.
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"keyEvent\",\"type\":\"keydown\"}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr.FlushForTesting();
+  EXPECT_EQ("{\"result\":false}", response);
 }
 
 }  // namespace ime
