@@ -50,6 +50,7 @@ struct FrameInfo {
 };
 
 struct Session {
+  static const base::TimeDelta kDefaultImplicitWaitTimeout;
   static const base::TimeDelta kDefaultPageLoadTimeout;
   static const base::TimeDelta kDefaultScriptTimeout;
 
