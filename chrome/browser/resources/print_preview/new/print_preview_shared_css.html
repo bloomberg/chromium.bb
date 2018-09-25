@@ -15,7 +15,6 @@
           margin-top: 3px;
           margin-bottom: 3px;
         };
-        --cr-radio-button-size: 16px;
         --md-select-width: calc(100% - 17px);
         --print-preview-settings-border: 1px solid rgb(232, 234, 237);
         --print-preview-dialog-margin: 34px;
@@ -24,8 +23,7 @@
       }
 
       /* Default state ********************************************************/
-      input[type='checkbox'],
-      input[type='radio'] {
+      input[type='checkbox'] {
         margin-bottom: 0;
         margin-inline-end: 1px;
         margin-inline-start: 0;
@@ -48,13 +46,11 @@
         user-select: none;
       }
 
-      .checkbox cr-checkbox,
-      .radio cr-radio-button {
+      .checkbox cr-checkbox {
         margin-bottom: 3px;
         margin-top: 3px;
         min-height: 32px;
         --cr-checkbox-ripple-size: 38px;
-        --cr-radio-button-ink-size: 38px;
         --cr-checkbox-label-container: {
           overflow: hidden;
           padding-inline-start: 15px;
