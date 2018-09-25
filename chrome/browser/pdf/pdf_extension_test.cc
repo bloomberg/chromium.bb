@@ -40,7 +40,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/download_item.h"
 #include "components/viz/common/features.h"
@@ -380,10 +379,6 @@ class PDFExtensionHitTestTest : public PDFExtensionTest,
   }
 
   base::test::ScopedFeatureList feature_list_;
-
-#if defined(OS_MACOSX)
-  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
-#endif
 };
 
 // Disabled because it's flaky.
