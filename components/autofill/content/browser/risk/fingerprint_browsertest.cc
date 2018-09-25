@@ -199,9 +199,6 @@ class AutofillRiskFingerprintTest : public content::ContentBrowserTest {
   const gfx::Rect unavailable_screen_bounds_;
 
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
-
-  // A message loop to block on the asynchronous loading of the fingerprint.
-  base::MessageLoopForUI message_loop_;
 };
 
 // Test that getting a fingerprint works on some basic level.

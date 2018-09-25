@@ -28,6 +28,11 @@ namespace chrome_browser_application_mac {
 
 void RegisterBrowserCrApp() {
   [BrowserCrApplication sharedApplication];
+
+  // If there was an invocation to NSApp prior to this method, then the NSApp
+  // will not be a BrowserCrApplication, but will instead be an NSApplication.
+  // This is undesirable and we must enforce that this doesn't happen.
+  CHECK([NSApp isKindOfClass:[BrowserCrApplication class]]);
 };
 
 void Terminate() {
