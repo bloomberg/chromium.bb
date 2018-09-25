@@ -14,19 +14,11 @@ namespace vr {
 
 namespace {
 
-static const gfx::Transform kIdentity;
+constexpr gfx::Transform kIdentity;
 
 }  // namespace
 
-// TODO(crbug/771794): Test temporarily disabled on Windows because it crashes
-// on trybots. Fix before enabling Windows support.
-#if defined(OS_WIN)
-#define MAYBE(x) DISABLED_##x
-#else
-#define MAYBE(x) x
-#endif
-
-TEST_F(UiPixelTest, MAYBE(DrawVrBrowsingMode)) {
+TEST_F(UiPixelTest, DrawVrBrowsingMode) {
   // Set up scene.
   UiInitialState ui_initial_state;
   ui_initial_state.in_web_vr = false;

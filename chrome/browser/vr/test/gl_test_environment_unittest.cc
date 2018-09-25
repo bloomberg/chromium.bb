@@ -10,13 +10,9 @@
 namespace vr {
 
 TEST(GlTestEnvironmentTest, InitializeAndCleanup) {
-// TODO(crbug/771794): Test temporarily disabled on Windows because it crashes
-// on trybots. Fix before enabling Windows support.
-#ifndef OS_WIN
   GlTestEnvironment gl_test_environment(gfx::Size(100, 100));
   EXPECT_NE(gl_test_environment.GetFrameBufferForTesting(), 0u);
   EXPECT_EQ(glGetError(), (GLenum)GL_NO_ERROR);
-#endif
   // We just test that clean up doesn't crash.
 }
 

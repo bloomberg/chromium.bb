@@ -1286,23 +1286,10 @@
       'Win10 Tests x64',
     ],
   },
-  'vr_common_unittests': {
-    'remove_from': [
-      # chromium.win
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-    ],
-  },
-
   'vr_pixeltests': {
     'remove_from': [
       # chromium.fyi
       'VR Linux',
-      # chromium.win
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 Tests (1)',
-      'Win7 Tests (dbg)(1)',
     ],
   },
   'wayland_client_perftests': {
