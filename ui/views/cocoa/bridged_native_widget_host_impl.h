@@ -15,6 +15,7 @@
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/views/cocoa/bridge_factory_host.h"
+#include "ui/views/cocoa/drag_drop_client_mac.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
@@ -91,6 +92,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   BridgedNativeWidgetImpl* bridge_impl() const { return bridge_impl_.get(); }
 
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
+
+  DragDropClientMac* drag_drop_client() const {
+    return drag_drop_client_.get();
+  }
 
   // Create and set the bridge object to be in this process.
   void CreateLocalBridge(base::scoped_nsobject<NativeWidgetMacNSWindow> window,
@@ -190,6 +195,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  gfx::DecoratedText* decorated_word,
                  gfx::Point* baseline_point) override;
   double SheetPositionY() override;
+  views_bridge_mac::DragDropClient* GetDragDropClient() override;
 
   // BridgeFactoryHost::Observer:
   void OnBridgeFactoryHostDestroying(BridgeFactoryHost* host) override;
@@ -293,6 +299,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   Widget::InitParams::Type widget_type_ = Widget::InitParams::TYPE_WINDOW;
 
   views::View* root_view_ = nullptr;  // Weak. Owned by |native_widget_mac_|.
+  std::unique_ptr<DragDropClientMac> drag_drop_client_;
 
   // The mojo pointer to a BridgedNativeWidget, which may exist in another
   // process.

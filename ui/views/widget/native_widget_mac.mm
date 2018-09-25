@@ -145,8 +145,6 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   DCHECK(GetWidget()->GetRootView());
   bridge_host_->SetRootView(GetWidget()->GetRootView());
   bridge()->CreateContentView(GetWidget()->GetRootView()->bounds());
-  if (bridge_impl())
-    bridge_impl()->CreateDragDropClient(GetWidget()->GetRootView());
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
     bridge()->MakeFirstResponder();
     bridge_host_->SetFocusManager(focus_manager);
@@ -220,7 +218,7 @@ void NativeWidgetMac::ReorderNativeViews() {
 
 void NativeWidgetMac::ViewRemoved(View* view) {
   DragDropClientMac* client =
-      bridge_impl() ? bridge_impl()->drag_drop_client() : nullptr;
+      bridge_host_ ? bridge_host_->drag_drop_client() : nullptr;
   if (client)
     client->drop_helper()->ResetTargetViewIfEquals(view);
 }
@@ -513,8 +511,8 @@ void NativeWidgetMac::RunShellDrag(View* view,
                                    const gfx::Point& location,
                                    int operation,
                                    ui::DragDropTypes::DragEventSource source) {
-  bridge_impl()->drag_drop_client()->StartDragAndDrop(view, data, operation,
-                                                      source);
+  bridge_host_->drag_drop_client()->StartDragAndDrop(view, data, operation,
+                                                     source);
 }
 
 void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {

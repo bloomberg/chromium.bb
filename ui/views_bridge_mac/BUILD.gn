@@ -12,6 +12,7 @@ component("views_bridge_mac") {
     "cocoa_mouse_capture.h",
     "cocoa_mouse_capture.mm",
     "cocoa_mouse_capture_delegate.h",
+    "drag_drop_client.h",
     "views_bridge_mac_export.h",
   ]
   defines = [ "VIEWS_BRIDGE_MAC_IMPLEMENTATION" ]

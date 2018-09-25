@@ -156,7 +156,9 @@ class DragDropClientMacTest : public WidgetTest {
  public:
   DragDropClientMacTest() : widget_(new Widget) {}
 
-  DragDropClientMac* drag_drop_client() { return bridge_->drag_drop_client(); }
+  DragDropClientMac* drag_drop_client() {
+    return bridge_host_->drag_drop_client();
+  }
 
   NSDragOperation DragUpdate(NSPasteboard* pasteboard) {
     DragDropClientMac* client = drag_drop_client();

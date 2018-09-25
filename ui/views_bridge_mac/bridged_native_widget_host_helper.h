@@ -15,6 +15,8 @@
 
 namespace views_bridge_mac {
 
+class DragDropClient;
+
 // This is a helper class for the mojo interface BridgedNativeWidgetHost.
 // This provides an easier-to-use interface than the mojo for selected
 // functions. It also is temporarily exposing functionality that is not yet
@@ -54,6 +56,10 @@ class VIEWS_BRIDGE_MAC_EXPORT BridgedNativeWidgetHostHelper {
   // TODO(ccameron): This should be either moved to the mojo interface or
   // separated out in such a way as to avoid needing to go through mojo.
   virtual double SheetPositionY() = 0;
+
+  // Return a pointer to host's DragDropClientMac.
+  // TODO(ccameron): Drag-drop behavior needs to be implemented over mojo.
+  virtual DragDropClient* GetDragDropClient() = 0;
 };
 
 }  // namespace views_bridge_mac

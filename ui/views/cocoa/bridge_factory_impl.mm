@@ -40,6 +40,10 @@ class Bridge : public BridgedNativeWidgetHostHelper {
     *found_word = false;
   }
   double SheetPositionY() override { return 0; }
+  views_bridge_mac::DragDropClient* GetDragDropClient() override {
+    // Drag-drop only doesn't work across mojo yet.
+    return nullptr;
+  }
 
   mojom::BridgedNativeWidgetHostPtr host_ptr_;
   std::unique_ptr<BridgedNativeWidgetImpl> bridge_impl_;
