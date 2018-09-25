@@ -79,6 +79,7 @@ class MockRenderThread : public RenderThread {
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;
   int32_t GetClientId() override;
+  bool IsOnline() override;
   void SetRendererProcessType(
       blink::scheduler::RendererProcessType type) override;
   blink::WebString GetUserAgent() const override;
