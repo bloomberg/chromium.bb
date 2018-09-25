@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/web/public/features.h"
+#import "ios/web/public/features.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
@@ -222,9 +223,16 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     return snapshot;
 
   [_delegate willUpdateSnapshotForWebState:_webState];
-  snapshot = [self generateSnapshotForView:_webState->GetView()
-                                  withRect:frame
-                                  overlays:overlays];
+  UIView* view = nil;
+  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
+    // The webstate view is getting resized because of fullscreen. Using its
+    // superview ensure that we have a view with a with a consistent size.
+    view = _webState->GetView().superview;
+  } else {
+    view = _webState->GetView();
+  }
+  snapshot =
+      [self generateSnapshotForView:view withRect:frame overlays:overlays];
   [_coalescingSnapshotContext setCachedSnapshot:snapshot
                                    withOverlays:overlays
                                visibleFrameOnly:visibleFrameOnly];
@@ -266,7 +274,14 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   if (_delegate && ![_delegate canTakeSnapshotForWebState:_webState])
     return CGRectZero;
 
-  UIView* view = _webState->GetView();
+  UIView* view = nil;
+  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
+    // The webstate view is getting resized because of fullscreen. Using its
+    // superview ensure that we have a view with a with a consistent size.
+    view = _webState->GetView().superview;
+  } else {
+    view = _webState->GetView();
+  }
   CGRect frame = [view bounds];
   UIEdgeInsets headerInsets = UIEdgeInsetsZero;
   if (visibleFrameOnly) {
