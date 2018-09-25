@@ -7,10 +7,8 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/browsing_history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/history/history_clear_browsing_data_coordinator.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/history_mediator.h"
@@ -132,7 +130,6 @@
 }
 
 - (void)displayPrivacySettings {
-  if (IsUIRefreshPhase1Enabled()) {
     self.historyClearBrowsingDataCoordinator =
         [[HistoryClearBrowsingDataCoordinator alloc]
             initWithBaseViewController:self.historyNavigationController
@@ -143,10 +140,6 @@
     self.historyClearBrowsingDataCoordinator.loader = self.loader;
     self.historyClearBrowsingDataCoordinator.dispatcher = self.dispatcher;
     [self.historyClearBrowsingDataCoordinator start];
-  } else {
-    [self.dispatcher showClearBrowsingDataSettingsFromViewController:
-                         self.historyNavigationController];
-  }
 }
 
 @end

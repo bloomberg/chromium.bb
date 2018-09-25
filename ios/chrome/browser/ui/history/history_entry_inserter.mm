@@ -129,20 +129,13 @@
   NSInteger insertionIndex = _firstSectionIndex + index;
   [_listModel insertSectionWithIdentifier:sectionIdentifier
                                   atIndex:insertionIndex];
-  if (IsUIRefreshPhase1Enabled()) {
+
     TableViewTextHeaderFooterItem* header =
         [[TableViewTextHeaderFooterItem alloc] initWithType:kItemTypeEnumZero];
     header.text =
         base::SysUTF16ToNSString(history::GetRelativeDateLocalized(timestamp));
     [_listModel setHeader:header forSectionWithIdentifier:sectionIdentifier];
 
-  } else {
-    CollectionViewTextItem* header =
-        [[CollectionViewTextItem alloc] initWithType:kItemTypeEnumZero];
-    header.text =
-        base::SysUTF16ToNSString(history::GetRelativeDateLocalized(timestamp));
-    [_listModel setHeader:header forSectionWithIdentifier:sectionIdentifier];
-  }
   [self.delegate historyEntryInserter:self
               didInsertSectionAtIndex:insertionIndex];
   return sectionIdentifier;

@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
@@ -178,22 +177,6 @@ newUserFeedbackController:(ios::ChromeBrowserState*)browserState
       initWithRootViewController:controller
                     browserState:browserState
                         delegate:delegate];
-  return nc;
-}
-
-+ (SettingsNavigationController*)
-newClearBrowsingDataController:(ios::ChromeBrowserState*)browserState
-                      delegate:
-                          (id<SettingsNavigationControllerDelegate>)delegate {
-  ClearBrowsingDataCollectionViewController* controller =
-      [[ClearBrowsingDataCollectionViewController alloc]
-          initWithBrowserState:browserState];
-  controller.dispatcher = [delegate dispatcherForSettings];
-  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
-      initWithRootViewController:controller
-                    browserState:browserState
-                        delegate:delegate];
-  [controller navigationItem].rightBarButtonItem = [nc doneButton];
   return nc;
 }
 
