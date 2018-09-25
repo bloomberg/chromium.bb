@@ -59,6 +59,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
@@ -448,6 +449,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // before the process shuts down.
   void DelayProcessShutdownForUnload(const base::TimeDelta& timeout);
 
+  // Binds request to the FileSystemManager instance owned by the render process
+  // host, and is used by workers via RendererInterfaceBinders.
+  void BindFileSystemManager(blink::mojom::FileSystemManagerRequest request);
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
     return file_system_manager_impl_.get();
   }
