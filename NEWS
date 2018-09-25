@@ -1,6 +1,9 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 3.8.0 (2018-12-XX)
+* Noteworthy changes in release 3.8.0 (2018-12-03)
+
+For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/18?closed=1][the list of closed
+issues]].
 
 ** New features
 
