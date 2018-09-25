@@ -36,10 +36,11 @@ TEST(FrameMetricsWindowedAnalyzerTest, AllResultsTheSame) {
             value * TestWindowedAnalyzerClient::result_scale;
         EXPECT_EQ(analyzer.ComputeWorstMean().value, expected_value)
             << value << " x " << weight;
-        EXPECT_EQ(analyzer.ComputeWorstRMS().value, expected_value)
+        EXPECT_NEAR_SQRT_APPROX(analyzer.ComputeWorstRMS().value,
+                                expected_value)
             << value << " x " << weight;
-        EXPECT_NEAR_SMR(analyzer.ComputeWorstSMR().value, expected_value,
-                        weight)
+        EXPECT_NEAR_SQRT_APPROX(analyzer.ComputeWorstSMR().value,
+                                expected_value)
             << value << " x " << weight;
       }
     }
@@ -58,9 +59,9 @@ TEST(FrameMetricsWindowedAnalyzerTest, AllResultsTheSame) {
       // Makes sure our precision is good enough.
       EXPECT_EQ(analyzer.ComputeWorstMean().value, expected_value)
           << value << " x " << weight;
-      EXPECT_EQ(analyzer.ComputeWorstRMS().value, expected_value)
+      EXPECT_NEAR_SQRT_APPROX(analyzer.ComputeWorstRMS().value, expected_value)
           << value << " x " << weight;
-      EXPECT_NEAR_SMR(analyzer.ComputeWorstSMR().value, expected_value, weight)
+      EXPECT_NEAR_SQRT_APPROX(analyzer.ComputeWorstSMR().value, expected_value)
           << value << " x " << weight;
     }
   }
@@ -126,12 +127,12 @@ TEST(FrameMetricsWindowedAnalyzerTest, AllResultsDifferent) {
   EXPECT_EQ(worst_mean_client.window_end, worst_mean.window_end);
 
   FrameRegionResult worst_smr = analyzer.ComputeWorstSMR();
-  EXPECT_NEAR_SMR(expected_worst_smr, worst_smr.value, kSampleWeight);
+  EXPECT_NEAR_SQRT_APPROX(expected_worst_smr, worst_smr.value);
   EXPECT_EQ(worst_smr_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(worst_smr_client.window_end, worst_smr.window_end);
 
   FrameRegionResult worst_rms = analyzer.ComputeWorstRMS();
-  EXPECT_DOUBLE_EQ(expected_worst_rms, worst_rms.value);
+  EXPECT_NEAR_SQRT_APPROX(expected_worst_rms, worst_rms.value);
   EXPECT_EQ(worst_rms_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(worst_rms_client.window_end, worst_rms.window_end);
 }
@@ -160,12 +161,12 @@ TEST(FrameMetricsWindowedAnalyzerTest, SmallSampleSize) {
   EXPECT_EQ(short_client.window_end, worst_mean.window_end);
 
   FrameRegionResult worst_smr = analyzer.ComputeWorstSMR();
-  EXPECT_NEAR_SMR(expected_initial_value, worst_smr.value, kSampleWeight);
+  EXPECT_NEAR_SQRT_APPROX(expected_initial_value, worst_smr.value);
   EXPECT_EQ(short_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(short_client.window_end, worst_smr.window_end);
 
   FrameRegionResult worst_rms = analyzer.ComputeWorstRMS();
-  EXPECT_DOUBLE_EQ(expected_initial_value, worst_rms.value);
+  EXPECT_NEAR_SQRT_APPROX(expected_initial_value, worst_rms.value);
   EXPECT_EQ(short_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(short_client.window_end, worst_rms.window_end);
 }
@@ -197,12 +198,12 @@ TEST(FrameMetricsWindowedAnalyzerTest, BadFirstSamples) {
   EXPECT_EQ(short_client.window_end, worst_mean.window_end);
 
   worst_smr = analyzer.ComputeWorstSMR();
-  EXPECT_NEAR_SMR(expected_initial_value, worst_smr.value, kSampleWeight);
+  EXPECT_NEAR_SQRT_APPROX(expected_initial_value, worst_smr.value);
   EXPECT_EQ(short_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(short_client.window_end, worst_smr.window_end);
 
   worst_rms = analyzer.ComputeWorstRMS();
-  EXPECT_DOUBLE_EQ(expected_initial_value, worst_rms.value);
+  EXPECT_NEAR_SQRT_APPROX(expected_initial_value, worst_rms.value);
   EXPECT_EQ(short_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(short_client.window_end, worst_rms.window_end);
 
@@ -223,12 +224,12 @@ TEST(FrameMetricsWindowedAnalyzerTest, BadFirstSamples) {
   EXPECT_EQ(long_client.window_end, worst_mean.window_end);
 
   worst_smr = analyzer.ComputeWorstSMR();
-  EXPECT_NEAR_SMR(expected_final_value, worst_smr.value, kSampleWeight);
+  EXPECT_NEAR_SQRT_APPROX(expected_final_value, worst_smr.value);
   EXPECT_EQ(long_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(long_client.window_end, worst_smr.window_end);
 
   worst_rms = analyzer.ComputeWorstRMS();
-  EXPECT_DOUBLE_EQ(expected_final_value, worst_rms.value);
+  EXPECT_NEAR_SQRT_APPROX(expected_final_value, worst_rms.value);
   EXPECT_EQ(long_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(long_client.window_end, worst_rms.window_end);
 }
@@ -258,12 +259,12 @@ TEST(FrameMetricsWindowedAnalyzerTest, ResetWorstValues) {
   EXPECT_EQ(initial_client.window_end, worst_mean.window_end);
 
   worst_smr = analyzer.ComputeWorstSMR();
-  EXPECT_NEAR_SMR(expected_initial_value, worst_smr.value, kSampleWeight);
+  EXPECT_NEAR_SQRT_APPROX(expected_initial_value, worst_smr.value);
   EXPECT_EQ(initial_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(initial_client.window_end, worst_smr.window_end);
 
   worst_rms = analyzer.ComputeWorstRMS();
-  EXPECT_DOUBLE_EQ(expected_initial_value, worst_rms.value);
+  EXPECT_NEAR_SQRT_APPROX(expected_initial_value, worst_rms.value);
   EXPECT_EQ(initial_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(initial_client.window_end, worst_rms.window_end);
 
@@ -278,12 +279,12 @@ TEST(FrameMetricsWindowedAnalyzerTest, ResetWorstValues) {
   EXPECT_EQ(initial_client.window_end, worst_mean.window_end);
 
   worst_smr = analyzer.ComputeWorstSMR();
-  EXPECT_NEAR_SMR(expected_initial_value, worst_smr.value, kSampleWeight);
+  EXPECT_NEAR_SQRT_APPROX(expected_initial_value, worst_smr.value);
   EXPECT_EQ(initial_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(initial_client.window_end, worst_smr.window_end);
 
   worst_rms = analyzer.ComputeWorstRMS();
-  EXPECT_DOUBLE_EQ(expected_initial_value, worst_rms.value);
+  EXPECT_NEAR_SQRT_APPROX(expected_initial_value, worst_rms.value);
   EXPECT_EQ(initial_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(initial_client.window_end, worst_rms.window_end);
 
@@ -309,12 +310,12 @@ TEST(FrameMetricsWindowedAnalyzerTest, ResetWorstValues) {
   EXPECT_EQ(final_client.window_end, worst_mean.window_end);
 
   worst_smr = analyzer.ComputeWorstSMR();
-  EXPECT_NEAR_SMR(expected_final_value, worst_smr.value, kSampleWeight);
+  EXPECT_NEAR_SQRT_APPROX(expected_final_value, worst_smr.value);
   EXPECT_EQ(final_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(final_client.window_end, worst_smr.window_end);
 
   worst_rms = analyzer.ComputeWorstRMS();
-  EXPECT_DOUBLE_EQ(expected_final_value, worst_rms.value);
+  EXPECT_NEAR_SQRT_APPROX(expected_final_value, worst_rms.value);
   EXPECT_EQ(final_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(final_client.window_end, worst_rms.window_end);
 }

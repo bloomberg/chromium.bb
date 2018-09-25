@@ -146,6 +146,14 @@ class FrameMetrics : public SkippedFrameTracker::Client {
   void AddFrameDisplayed(base::TimeTicks source_timestamp,
                          base::TimeTicks display_timestamp);
 
+  // Compute the square root by using method described in paper:
+  // http://www.lomont.org/Math/Papers/2003/InvSqrt.pdf.
+  // It finds a result within 0.0001 and 0.1 of the true square root for |x| <
+  // 100 and |x| < 2^15 respectively. It's more than 2 times faster for Nexus 4
+  // and other lower end android devices and ~3-5% faster on desktop. Crash when
+  // x is less than 0.
+  static double FastApproximateSqrt(double x);
+
  protected:
   void TraceStats() const;
 

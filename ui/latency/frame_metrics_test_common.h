@@ -15,10 +15,8 @@
 // Some convenience macros for checking expected error.
 #define EXPECT_ABS_LT(a, b) EXPECT_LT(std::abs(a), std::abs(b))
 #define EXPECT_ABS_LE(a, b) EXPECT_LE(std::abs(a), std::abs(b))
-#define EXPECT_NEAR_SMR(expected, actual, weight) \
-  EXPECT_NEAR(expected, actual, MaxErrorSMR(expected, weight))
-#define EXPECT_NEAR_VARIANCE_OF_ROOT(expected, actual, mean, weight) \
-  EXPECT_NEAR(expected, actual, MaxErrorSMR(mean, weight));
+#define EXPECT_NEAR_SQRT_APPROX(expected, actual) \
+  EXPECT_NEAR(expected, actual, MaxErrorSQRTApprox(expected, actual))
 
 namespace ui {
 namespace frame_metrics {
@@ -84,8 +82,8 @@ void AddPatternHelper(SharedWindowedAnalyzerClient* shared_client,
 // between ~5 and ~13 decimal places.
 // The precision should be even better when the sample's |weight| > 1 since
 // the implementation should only do any rounding after scaling by weight.
-inline double MaxErrorSMR(double expected_value, uint64_t weight) {
-  return std::max(.5, 1e-8 * expected_value / weight);
+inline double MaxErrorSQRTApprox(double expected_value, double value) {
+  return std::max(0.5, std::max(expected_value, value) * 1e-3);
 }
 
 // This class initializes the ratio boundaries on construction in a way that
