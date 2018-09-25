@@ -102,9 +102,8 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
   UseCounter::CountCrossOriginIframe(
       document, WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
 
-  if (!document.GetFrame()->DeprecatedIsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kMidiFeature,
-          ReportOptions::kReportOnFailure)) {
+  if (!document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kMidiFeature,
+                                 ReportOptions::kReportOnFailure)) {
     UseCounter::Count(document, WebFeature::kMidiDisabledByFeaturePolicy);
     document.AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kWarningMessageLevel, kFeaturePolicyConsoleWarning));

@@ -22,11 +22,11 @@ namespace blink {
 namespace {
 const double kWaitingIntervalThreshold = 0.01;
 
-bool AreFeaturesEnabled(LocalFrame* frame,
+bool AreFeaturesEnabled(Document* document,
                         const Vector<mojom::FeaturePolicyFeature>& features) {
   return std::all_of(features.begin(), features.end(),
-                     [frame](mojom::FeaturePolicyFeature feature) {
-                       return frame->DeprecatedIsFeatureEnabled(feature);
+                     [document](mojom::FeaturePolicyFeature feature) {
+                       return document->IsFeatureEnabled(feature);
                      });
 }
 
@@ -45,9 +45,9 @@ Sensor::Sensor(ExecutionContext* execution_context,
   // [SecureContext] in idl.
   DCHECK(execution_context->IsSecureContext());
   DCHECK(!features.IsEmpty());
-  LocalFrame* frame = ToDocument(execution_context)->GetFrame();
+  Document* document = ToDocument(execution_context);
 
-  if (!frame || !AreFeaturesEnabled(frame, features)) {
+  if (!AreFeaturesEnabled(document, features)) {
     exception_state.ThrowSecurityError(
         "Access to sensor features is disallowed by feature policy");
     return;
