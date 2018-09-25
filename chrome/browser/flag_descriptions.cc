@@ -2935,6 +2935,12 @@ const char kHostedAppsInWindowsDescription[] =
     "Allows hosted apps to be opened in windows instead of being limited to "
     "tabs.";
 
+const char kCreateAppWindowsInAppShimProcessName[] =
+    "Create native windows in the app process";
+const char kCreateAppWindowsInAppShimProcessDescription[] =
+    "Create native windows the app shim process, instead of of the browser "
+    "process.";
+
 const char kMacRTLName[] = "Enable RTL";
 const char kMacRTLDescription[] = "Mirrors the UI for RTL language users";
 

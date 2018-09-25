@@ -68,6 +68,8 @@ UI_BASE_EXPORT bool IsMultiProcessMash();
 UI_BASE_EXPORT bool IsSingleProcessMash();
 
 #if defined(OS_MACOSX)
+UI_BASE_EXPORT extern const base::Feature kHostWindowsInAppShimProcess;
+
 // Returns true if the NSWindows for apps will be created in the app's process,
 // and will forward input to the browser process.
 UI_BASE_EXPORT bool HostWindowsInAppShimProcess();
