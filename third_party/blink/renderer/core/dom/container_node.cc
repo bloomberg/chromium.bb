@@ -706,6 +706,7 @@ Node* ContainerNode::RemoveChild(Node* old_child,
     Node* next = child->nextSibling();
     {
       SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(GetDocument());
+      StyleEngine::DOMRemovalScope style_scope(GetDocument().GetStyleEngine());
       RemoveBetween(prev, next, *child);
       NotifyNodeRemoved(*child);
     }
@@ -768,9 +769,11 @@ void ContainerNode::ParserRemoveChild(Node& old_child) {
 
   Node* prev = old_child.previousSibling();
   Node* next = old_child.nextSibling();
-  RemoveBetween(prev, next, old_child);
-
-  NotifyNodeRemoved(old_child);
+  {
+    StyleEngine::DOMRemovalScope style_scope(GetDocument().GetStyleEngine());
+    RemoveBetween(prev, next, old_child);
+    NotifyNodeRemoved(old_child);
+  }
   ChildrenChanged(ChildrenChange::ForRemoval(old_child, prev, next,
                                              kChildrenChangeSourceParser));
 }
@@ -805,6 +808,7 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
     TreeOrderedMap::RemoveScope tree_remove_scope;
     {
       SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(GetDocument());
+      StyleEngine::DOMRemovalScope style_scope(GetDocument().GetStyleEngine());
       EventDispatchForbiddenScope assert_no_event_dispatch;
       ScriptForbiddenScope forbid_script;
 
