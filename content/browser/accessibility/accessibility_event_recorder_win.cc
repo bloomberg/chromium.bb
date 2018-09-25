@@ -210,33 +210,8 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     return;
   }
 
-  std::string event_str = AccessibilityEventToStringUTF8(event);
-  if (event_str.empty()) {
-    VLOG(1) << "Ignoring event " << event;
-    return;
-  }
-
-  base::win::ScopedVariant childid_self(CHILDID_SELF);
-  base::win::ScopedVariant role;
-  iaccessible->get_accRole(childid_self, role.Receive());
-  base::win::ScopedVariant state;
-  iaccessible->get_accState(childid_self, state.Receive());
-  int ia_state = V_I4(state.ptr());
-  std::string hwnd_class_name = base::UTF16ToUTF8(gfx::GetClassName(hwnd));
-
-  // Caret is special:
-  // Log all caret events  that occur, with their window class, so that we can
-  // test to make sure they are only occurring on the desired window class.
-  if (ROLE_SYSTEM_CARET == V_I4(role.ptr())) {
-    base::string16 state_str = IAccessibleStateToString(ia_state);
-    std::string log = base::StringPrintf(
-        "%s role=ROLE_SYSTEM_CARET %ls window_class=%s", event_str.c_str(),
-        state_str.c_str(), hwnd_class_name.c_str());
-    OnEvent(log);
-    return;
-  }
-
   if (only_web_events_) {
+    std::string hwnd_class_name = base::UTF16ToUTF8(gfx::GetClassName(hwnd));
     if (hwnd_class_name != "Chrome_RenderWidgetHostHWND")
       return;
 
@@ -252,10 +227,22 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
       return;
   }
 
+  std::string event_str = AccessibilityEventToStringUTF8(event);
+  if (event_str.empty()) {
+    VLOG(1) << "Ignoring event " << event;
+    return;
+  }
+
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  base::win::ScopedVariant role;
+  iaccessible->get_accRole(childid_self, role.Receive());
   base::win::ScopedBstr name_bstr;
   iaccessible->get_accName(childid_self, name_bstr.Receive());
   base::win::ScopedBstr value_bstr;
   iaccessible->get_accValue(childid_self, value_bstr.Receive());
+  base::win::ScopedVariant state;
+  iaccessible->get_accState(childid_self, state.Receive());
+  int ia_state = V_I4(state.ptr());
 
   // Avoid flakiness. Events fired on a WINDOW are out of the control
   // of a test.

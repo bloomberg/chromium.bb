@@ -565,11 +565,6 @@ void AXNodeData::AddAction(ax::mojom::Action action_enum) {
   actions = ModifyFlag(actions, static_cast<uint32_t>(action_enum), true);
 }
 
-void AXNodeData::RemoveState(ax::mojom::State state_enum) {
-  DCHECK_NE(state_enum, ax::mojom::State::kNone);
-  state = ModifyFlag(state, static_cast<uint32_t>(state_enum), false);
-}
-
 std::string AXNodeData::ToString() const {
   std::string result;
 
