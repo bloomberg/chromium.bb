@@ -557,7 +557,7 @@ class BBJSONGenerator(object):
         result, test_name, tester_name, tester_config, waterfall)
     return result
 
-  def substitute_gpu_args(self, tester_config, args):
+  def substitute_gpu_args(self, tester_config, swarming_config, args):
     substitutions = {
       # Any machine in waterfalls.pyl which desires to run GPU tests
       # must provide the os_type key.
@@ -565,7 +565,7 @@ class BBJSONGenerator(object):
       'gpu_vendor_id': '0',
       'gpu_device_id': '0',
     }
-    dimension_set = tester_config['swarming']['dimension_sets'][0]
+    dimension_set = swarming_config['dimension_sets'][0]
     if 'gpu' in dimension_set:
       # First remove the driver version, then split into vendor and device.
       gpu = dimension_set['gpu']
@@ -610,7 +610,7 @@ class BBJSONGenerator(object):
       '--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc',
     ] + args
     result['args'] = self.maybe_fixup_args_array(self.substitute_gpu_args(
-      tester_config, args))
+      tester_config, result['swarming'], args))
     return result
 
   def get_test_generator_map(self):
@@ -729,7 +729,13 @@ class BBJSONGenerator(object):
     if not 'swarming_mixins' in test:
       return test
 
-    must_be_list(test['swarming_mixins'], 'test', test['test'])
+    test_name = test.get('name')
+    if not test_name:
+      test_name = test.get('test')
+    if not test_name: # pragma: no cover
+      # Not the best name, but we should say something.
+      test_name = str(test)
+    must_be_list(test['swarming_mixins'], 'test', test_name)
     for mixin in test['swarming_mixins']:
       valid_mixin(mixin)
       test = self.apply_swarming_mixin(self.swarming_mixins[mixin], test)
