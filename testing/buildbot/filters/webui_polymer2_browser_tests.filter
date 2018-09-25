@@ -37,6 +37,10 @@
 -SettingsA11ySignOut.*
 
 # ChromeOS only test failures.
+-ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_DistinguishedName
+-ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_ErrorCard
+-ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_Success
+-ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_UIErrors
 -CrSettingsBluetoothPageTest.All
 -CrSettingsCrostiniPageTest.All
 -CrSettingsDevicePageTest.DisplayTest
@@ -72,7 +76,6 @@
 # enabled by default and run the full set of tests, and collect any missing
 # failing tests.
 
-ActiveDirectoryJoinTest.*
 AudioPlayerBrowserTest.*
 BluetoothInternalsTest.*
 CertificateViewerModalUITest.*
