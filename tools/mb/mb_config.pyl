@@ -377,11 +377,8 @@
 
     'chromium.perf': {
       'Android Builder Perf': 'official_goma_minimal_symbols_android',
-      # TODO(crbug.com/828465): Remove 'Android arm64 Builder Perf'
       'Android arm64 Builder Perf': 'official_goma_minimal_symbols_android_arm64',
       'android_arm64-builder-perf': 'official_goma_minimal_symbols_android_arm64',
-      'Android Compile Perf': 'official_goma_minimal_symbols_android',
-      'Android arm64 Compile Perf': 'official_goma_minimal_symbols_android_arm64',
       'android-builder-perf': 'official_goma_minimal_symbols_android',
       'linux-builder-perf': 'official_goma_perf',
       # TODO(crbug.com/828468): Remove 'Mac Builder Perf'
