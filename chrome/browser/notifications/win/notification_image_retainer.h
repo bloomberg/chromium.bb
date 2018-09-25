@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 
@@ -51,13 +52,6 @@ class NotificationImageRetainer
       bool override_file_destruction);
 
  private:
-  // Returns the temporary directory within the user data directory. The
-  // regular temporary directory is not used to minimize the risk of files
-  // getting deleted by accident. It is also not profile-bound because the
-  // notification bridge handles images for multiple profiles and the separation
-  // is handled by RegisterTemporaryImage.
-  base::FilePath DetermineImageDirectory();
-
   // The path to where to store the temporary files.
   base::FilePath image_directory_;
 
