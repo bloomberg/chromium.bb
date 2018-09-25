@@ -103,6 +103,7 @@
 #include "ui/views/metrics.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_constants.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -167,17 +168,15 @@ int GetInkDropCornerRadius(const views::View* host_view) {
       views::EMPHASIS_MAXIMUM, host_view->size());
 }
 
-// Create a SkPath matching the bookmark inkdrops to be used for the focus ring.
-// TODO(pbos): Consolidate inkdrop effects, highlights and ripples along with
-// focus rings so that they are derived from the same actual SkPath or other
-// shared primitive.
-SkPath CreateBookmarkFocusRingPath(views::InkDropHostView* host_view) {
+// Returns a gfx::Path for bookmark inkdrops and focus rings.
+std::unique_ptr<gfx::Path> CreateBookmarkHighlightPath(
+    views::InkDropHostView* host_view) {
   gfx::Rect rect(host_view->size());
   rect.Inset(GetInkDropInsets());
 
-  SkPath path;
+  auto path = std::make_unique<gfx::Path>();
   const int radius = GetInkDropCornerRadius(host_view);
-  path.addRoundRect(gfx::RectToSkRect(rect), radius, radius);
+  path->addRoundRect(gfx::RectToSkRect(rect), radius, radius);
   return path;
 }
 
@@ -194,12 +193,6 @@ std::unique_ptr<views::InkDropRipple> CreateBookmarkButtonInkDropRipple(
       host_view->size(), GetInkDropInsets(), center_point,
       GetToolbarInkDropBaseColor(host_view),
       host_view->ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropMask> CreateBookmarkButtonInkDropMask(
-    const views::InkDropHostView* host_view) {
-  return std::make_unique<views::RoundRectInkDropMask>(
-      host_view->size(), GetInkDropInsets(), GetInkDropCornerRadius(host_view));
 }
 
 std::unique_ptr<views::InkDropHighlight> CreateBookmarkButtonInkDropHighlight(
@@ -260,8 +253,8 @@ class BookmarkButtonBase : public views::LabelButton {
 
   // LabelButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    if (focus_ring())
-      focus_ring()->SetPath(CreateBookmarkFocusRingPath(this));
+    SetProperty(views::kHighlightPathKey,
+                CreateBookmarkHighlightPath(this).release());
     LabelButton::OnBoundsChanged(previous_bounds);
   }
 
@@ -277,10 +270,6 @@ class BookmarkButtonBase : public views::LabelButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     return CreateBookmarkButtonInkDropHighlight(this);
-  }
-
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return CreateBookmarkButtonInkDropMask(this);
   }
 
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
@@ -388,8 +377,8 @@ class BookmarkMenuButtonBase : public views::MenuButton {
 
   // MenuButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    if (focus_ring())
-      focus_ring()->SetPath(CreateBookmarkFocusRingPath(this));
+    SetProperty(views::kHighlightPathKey,
+                CreateBookmarkHighlightPath(this).release());
     MenuButton::OnBoundsChanged(previous_bounds);
   }
 
@@ -405,10 +394,6 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     return CreateBookmarkButtonInkDropHighlight(this);
-  }
-
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return CreateBookmarkButtonInkDropMask(this);
   }
 
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
