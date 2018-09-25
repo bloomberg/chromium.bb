@@ -2133,9 +2133,7 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
 #if NEW_MULTI_LVL_BOOST_VBR_ALLOC
 #define LEAF_REDUCTION_FACTOR 0.75
 static double lvl_budget_factor[MAX_PYRAMID_LVL - 1][MAX_PYRAMID_LVL - 1] = {
-  { 1.0, 0.0, 0.0 },
-  { 1.0, 0.5, 0.0 },
-  { 1.0, 0.5, 0.25 },
+  { 1.0, 0.0, 0.0 }, { 0.6, 0.4, 0 }, { 0.45, 0.35, 0.20 }
 };
 #endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
 #endif  // USE_SYMM_MULTI_LAYER
@@ -2145,15 +2143,11 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &twopass->gf_group;
-  FIRSTPASS_STATS frame_stats;
   int i;
   int frame_index = 0;
-  int target_frame_size;
   int key_frame;
   const int max_bits = frame_max_bits(&cpi->rc, &cpi->oxcf);
   int64_t total_group_bits = gf_group_bits;
-  double modified_err = 0.0;
-  double err_fraction;
   int ext_arf_boost[MAX_EXT_ARFS];
 
   define_gf_group_structure(cpi);
@@ -2172,6 +2166,7 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
       gf_group->bit_allocation[frame_index] = gf_arf_bits;
 
     // Step over the golden frame / overlay frame
+    FIRSTPASS_STATS frame_stats;
     if (EOF == input_stats(twopass, &frame_stats)) return;
   }
 
@@ -2196,21 +2191,23 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     }
   }
 
+  // Save.
+  const int tmp_frame_index = frame_index;
+  int budget_reduced_from_leaf_level = 0;
+
   // Allocate bits to the other frames in the group.
   for (i = 0; i < rc->baseline_gf_interval - rc->source_alt_ref_pending; ++i) {
+    FIRSTPASS_STATS frame_stats;
     if (EOF == input_stats(twopass, &frame_stats)) break;
 
-    modified_err = calculate_modified_err(cpi, twopass, oxcf, &frame_stats);
-
-    if (group_error > 0)
-      err_fraction = modified_err / DOUBLE_DIVIDE_CHECK(group_error);
-    else
-      err_fraction = 0.0;
-
-    target_frame_size = (int)((double)total_group_bits * err_fraction);
-
-    target_frame_size =
-        clamp(target_frame_size, 0, AOMMIN(max_bits, (int)total_group_bits));
+    const double modified_err =
+        calculate_modified_err(cpi, twopass, oxcf, &frame_stats);
+    const double err_fraction =
+        (group_error > 0) ? modified_err / DOUBLE_DIVIDE_CHECK(group_error)
+                          : 0.0;
+    const int target_frame_size =
+        clamp((int)((double)total_group_bits * err_fraction), 0,
+              AOMMIN(max_bits, (int)total_group_bits));
 
     if (gf_group->update_type[frame_index] == BRF_UPDATE) {
       // Boost up the allocated bits on BWDREF_FRAME
@@ -2231,25 +2228,11 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
              gf_group->pyramid_height >= 0 &&
              "non-valid height for a pyramid structure");
 
-      int arf_pos = gf_group->arf_pos_in_gf[frame_index];
+      const int arf_pos = gf_group->arf_pos_in_gf[frame_index];
       gf_group->bit_allocation[frame_index] = 0;
 
       gf_group->bit_allocation[arf_pos] = target_frame_size;
-#if MULTI_LVL_BOOST_VBR_CQ
-      const int this_lvl = gf_group->pyramid_level[arf_pos];
-      const int dist2top = gf_group->pyramid_height - 1 - this_lvl;
-#if NEW_MULTI_LVL_BOOST_VBR_ALLOC
-      const double lvl_ratio = LEAF_REDUCTION_FACTOR *
-                               (double)gf_group->pyramid_lvl_nodes[0] /
-                               (double)gf_group->pyramid_lvl_nodes[this_lvl];
-      const double lvl_boost =
-          AOMMIN(lvl_ratio, 3.0) *
-          lvl_budget_factor[gf_group->pyramid_height - 2][dist2top];
-      gf_group->bit_allocation[arf_pos] += (int)(target_frame_size * lvl_boost);
-#else
-      gf_group->bit_allocation[arf_pos] += (target_frame_size >> dist2top);
-#endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
-#endif  // MULTI_LVL_BOOST_VBR_CQ
+      // Note: Boost, if needed, is added in the next loop.
 #endif  // USE_SYMM_MULTI_LAYER
     } else {
       assert(gf_group->update_type[frame_index] == LF_UPDATE ||
@@ -2258,8 +2241,10 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 #if MULTI_LVL_BOOST_VBR_CQ
       if (cpi->new_bwdref_update_rule) {
 #if NEW_MULTI_LVL_BOOST_VBR_ALLOC
-        gf_group->bit_allocation[frame_index] -=
+        const int this_budget_reduction =
             (int)(target_frame_size * LEAF_REDUCTION_FACTOR);
+        gf_group->bit_allocation[frame_index] -= this_budget_reduction;
+        budget_reduced_from_leaf_level += this_budget_reduction;
 #else
         gf_group->bit_allocation[frame_index] -= (target_frame_size >> 1);
 #endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
@@ -2275,6 +2260,47 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
         ++frame_index;
     }
   }
+
+#if USE_SYMM_MULTI_LAYER
+#if MULTI_LVL_BOOST_VBR_CQ
+  if (budget_reduced_from_leaf_level > 0) {
+    // Restore.
+    frame_index = tmp_frame_index;
+
+    // Re-distribute this extra budget to overlay frames in the group.
+    for (i = 0; i < rc->baseline_gf_interval - rc->source_alt_ref_pending;
+         ++i) {
+      if (cpi->new_bwdref_update_rule &&
+          gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
+        assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL &&
+               gf_group->pyramid_height >= 0 &&
+               "non-valid height for a pyramid structure");
+        const int arf_pos = gf_group->arf_pos_in_gf[frame_index];
+        const int this_lvl = gf_group->pyramid_level[arf_pos];
+        const int dist2top = gf_group->pyramid_height - 1 - this_lvl;
+#if NEW_MULTI_LVL_BOOST_VBR_ALLOC
+        const double lvl_boost_factor =
+            lvl_budget_factor[gf_group->pyramid_height - 2][dist2top];
+        const int extra_size =
+            (int)(budget_reduced_from_leaf_level * lvl_boost_factor /
+                  gf_group->pyramid_lvl_nodes[this_lvl]);
+#else
+        const int target_frame_size = gf_group->bit_allocation[arf_pos];
+        const int extra_size = target_frame_size >> dist2top;
+#endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
+        gf_group->bit_allocation[arf_pos] += extra_size;
+      }
+      ++frame_index;
+
+      // Skip all the extra-ARF's.
+      if (cpi->num_extra_arfs) {
+        while (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE)
+          ++frame_index;
+      }
+    }
+  }
+#endif  // MULTI_LVL_BOOST_VBR_CQ
+#endif  // USE_SYMM_MULTI_LAYER
 
 #if USE_SYMM_MULTI_LAYER
   if (cpi->new_bwdref_update_rule == 0 && rc->source_alt_ref_pending) {
