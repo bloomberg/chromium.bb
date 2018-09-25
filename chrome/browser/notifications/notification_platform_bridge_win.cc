@@ -155,14 +155,11 @@ class NotificationPlatformBridgeWinImpl
   // NotificationTemplateBuilder). This function is only used when displaying
   // notification in production code, which explains why the UMA metrics record
   // within are classified with the display path.
-  HRESULT GetToastNotification(
+  mswr::ComPtr<winui::Notifications::IToastNotification> GetToastNotification(
       const message_center::Notification& notification,
       const NotificationTemplateBuilder& notification_template_builder,
       const std::string& profile_id,
-      bool incognito,
-      winui::Notifications::IToastNotification** toast_notification) {
-    *toast_notification = nullptr;
-
+      bool incognito) {
     ScopedHString ref_class_name =
         ScopedHString::Create(RuntimeClass_Windows_Data_Xml_Dom_XmlDocument);
     mswr::ComPtr<IInspectable> inspectable;
@@ -171,7 +168,7 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::RO_ACTIVATE_FAILED);
       DLOG(ERROR) << "Unable to activate the XML Document " << std::hex << hr;
-      return hr;
+      return nullptr;
     }
 
     mswr::ComPtr<winxml::Dom::IXmlDocumentIO> document_io;
@@ -181,7 +178,7 @@ class NotificationPlatformBridgeWinImpl
           DisplayStatus::CONVERSION_FAILED_INSPECTABLE_TO_XML_IO);
       DLOG(ERROR) << "Failed to get XmlDocument as IXmlDocumentIO " << std::hex
                   << hr;
-      return hr;
+      return nullptr;
     }
 
     base::string16 notification_template =
@@ -192,7 +189,7 @@ class NotificationPlatformBridgeWinImpl
       LogDisplayHistogram(DisplayStatus::LOAD_XML_FAILED);
       DLOG(ERROR) << "Unable to load the template's XML into the document "
                   << std::hex << hr;
-      return hr;
+      return nullptr;
     }
 
     mswr::ComPtr<winxml::Dom::IXmlDocument> document;
@@ -200,7 +197,7 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::CONVERSION_FAILED_XML_IO_TO_XML);
       DLOG(ERROR) << "Unable to get as XMLDocument " << std::hex << hr;
-      return hr;
+      return nullptr;
     }
 
     mswr::ComPtr<winui::Notifications::IToastNotificationFactory>
@@ -212,25 +209,26 @@ class NotificationPlatformBridgeWinImpl
       LogDisplayHistogram(DisplayStatus::CREATE_FACTORY_FAILED);
       DLOG(ERROR) << "Unable to create the IToastNotificationFactory "
                   << std::hex << hr;
-      return hr;
+      return nullptr;
     }
 
+    mswr::ComPtr<winui::Notifications::IToastNotification> toast_notification;
     hr = toast_notification_factory->CreateToastNotification(
-        document.Get(), toast_notification);
+        document.Get(), toast_notification.GetAddressOf());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::CREATE_TOAST_NOTIFICATION_FAILED);
       DLOG(ERROR) << "Unable to create the IToastNotification " << std::hex
                   << hr;
-      return hr;
+      return nullptr;
     }
 
     mswr::ComPtr<winui::Notifications::IToastNotification2> toast2;
-    hr = (*toast_notification)->QueryInterface(IID_PPV_ARGS(&toast2));
+    hr = toast_notification->QueryInterface(IID_PPV_ARGS(&toast2));
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::CREATE_TOAST_NOTIFICATION2_FAILED);
       DLOG(ERROR) << "Failed to get IToastNotification2 object " << std::hex
                   << hr;
-      return hr;
+      return nullptr;
     }
 
     // Set the Group and Tag values for the notification, in order to support
@@ -249,14 +247,14 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::SETTING_GROUP_FAILED);
       DLOG(ERROR) << "Failed to set Group " << std::hex << hr;
-      return hr;
+      return nullptr;
     }
 
     hr = toast2->put_Tag(tag.get());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::SETTING_TAG_FAILED);
       DLOG(ERROR) << "Failed to set Tag " << std::hex << hr;
-      return hr;
+      return nullptr;
     }
 
     // By default, Windows 10 will always show the notification on screen.
@@ -278,7 +276,7 @@ class NotificationPlatformBridgeWinImpl
         if (FAILED(hr)) {
           LogDisplayHistogram(DisplayStatus::GET_GROUP_FAILED);
           DLOG(ERROR) << "Failed to get group value " << std::hex << hr;
-          return hr;
+          return nullptr;
         }
         ScopedHString scoped_group(hstring_group);
 
@@ -287,7 +285,7 @@ class NotificationPlatformBridgeWinImpl
         if (FAILED(hr)) {
           LogDisplayHistogram(DisplayStatus::GET_TAG_FAILED);
           DLOG(ERROR) << "Failed to get tag value " << std::hex << hr;
-          return hr;
+          return nullptr;
         }
         ScopedHString scoped_tag(hstring_tag);
 
@@ -298,12 +296,12 @@ class NotificationPlatformBridgeWinImpl
         if (FAILED(hr)) {
           LogDisplayHistogram(DisplayStatus::SUPPRESS_POPUP_FAILED);
           DLOG(ERROR) << "Failed to set suppress value " << std::hex << hr;
-          return hr;
+          return nullptr;
         }
       }
     }
 
-    return S_OK;
+    return toast_notification;
   }
 
   void Display(NotificationHandler::Type notification_type,
@@ -360,14 +358,11 @@ class NotificationPlatformBridgeWinImpl
     std::unique_ptr<NotificationTemplateBuilder> notification_template =
         NotificationTemplateBuilder::Build(
             image_retainer_->AsWeakPtr(), launch_id, profile_id, *notification);
-    mswr::ComPtr<winui::Notifications::IToastNotification> toast;
-    hr = GetToastNotification(*notification, *notification_template, profile_id,
-                              incognito, &toast);
-    if (FAILED(hr)) {
-      // A histogram should have already been logged for this failure.
-      DLOG(ERROR) << "Unable to get a toast notification " << std::hex << hr;
+    mswr::ComPtr<winui::Notifications::IToastNotification> toast =
+        GetToastNotification(*notification, *notification_template, profile_id,
+                             incognito);
+    if (!toast)
       return;
-    }
 
     // Activation via user interaction with the toast is handled in
     // HandleActivation() by way of the notification_helper.
@@ -408,8 +403,9 @@ class NotificationPlatformBridgeWinImpl
              const std::string& notification_id) {
     DCHECK(notification_task_runner_->RunsTasksInCurrentSequence());
 
-    mswr::ComPtr<winui::Notifications::IToastNotificationHistory> history;
-    if (!GetIToastNotificationHistory(&history)) {
+    mswr::ComPtr<winui::Notifications::IToastNotificationHistory> history =
+        GetIToastNotificationHistory();
+    if (!history) {
       LogCloseHistogram(CloseStatus::GET_TOAST_HISTORY_FAILED);
       DLOG(ERROR) << "Failed to get IToastNotificationHistory";
       return;
@@ -431,9 +427,8 @@ class NotificationPlatformBridgeWinImpl
     }
   }
 
-  bool GetIToastNotificationHistory(
-      winui::Notifications::IToastNotificationHistory** notification_history)
-      const WARN_UNUSED_RESULT {
+  mswr::ComPtr<winui::Notifications::IToastNotificationHistory>
+  GetIToastNotificationHistory() const WARN_UNUSED_RESULT {
     mswr::ComPtr<winui::Notifications::IToastNotificationManagerStatics>
         toast_manager;
     HRESULT hr = CreateActivationFactory(
@@ -444,7 +439,7 @@ class NotificationPlatformBridgeWinImpl
           HistoryStatus::CREATE_TOAST_NOTIFICATION_MANAGER_FAILED);
       DLOG(ERROR) << "Unable to create the ToastNotificationManager "
                   << std::hex << hr;
-      return false;
+      return nullptr;
     }
 
     mswr::ComPtr<winui::Notifications::IToastNotificationManagerStatics2>
@@ -457,26 +452,30 @@ class NotificationPlatformBridgeWinImpl
           HistoryStatus::QUERY_TOAST_MANAGER_STATISTICS2_FAILED);
       DLOG(ERROR) << "Failed to get IToastNotificationManagerStatics2 "
                   << std::hex << hr;
-      return false;
+      return nullptr;
     }
 
-    hr = toast_manager2->get_History(notification_history);
+    mswr::ComPtr<winui::Notifications::IToastNotificationHistory>
+        notification_history;
+    hr = toast_manager2->get_History(notification_history.GetAddressOf());
     if (FAILED(hr)) {
       LogHistoryHistogram(HistoryStatus::GET_TOAST_HISTORY_FAILED);
       DLOG(ERROR) << "Failed to get IToastNotificationHistory " << std::hex
                   << hr;
-      return false;
+      return nullptr;
     }
 
     LogHistoryHistogram(HistoryStatus::SUCCESS);
-    return true;
+
+    return notification_history;
   }
 
   std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
   GetDisplayedFromActionCenter(const std::string& profile_id,
                                bool incognito) const {
-    mswr::ComPtr<winui::Notifications::IToastNotificationHistory> history;
-    if (!GetIToastNotificationHistory(&history)) {
+    mswr::ComPtr<winui::Notifications::IToastNotificationHistory> history =
+        GetIToastNotificationHistory();
+    if (!history) {
       LogGetDisplayedStatus(GetDisplayedStatus::GET_TOAST_HISTORY_FAILED);
       DLOG(ERROR) << "Failed to get IToastNotificationHistory";
       return {};
@@ -920,13 +919,12 @@ void NotificationPlatformBridgeWin::SetNotifierForTesting(
   NotificationPlatformBridgeWinImpl::notifier_for_testing_ = notifier;
 }
 
-HRESULT NotificationPlatformBridgeWin::GetToastNotificationForTesting(
+mswr::ComPtr<winui::Notifications::IToastNotification>
+NotificationPlatformBridgeWin::GetToastNotificationForTesting(
     const message_center::Notification& notification,
     const NotificationTemplateBuilder& notification_template_builder,
     const std::string& profile_id,
-    bool incognito,
-    winui::Notifications::IToastNotification** toast_notification) {
-  return impl_->GetToastNotification(notification,
-                                     notification_template_builder, profile_id,
-                                     incognito, toast_notification);
+    bool incognito) {
+  return impl_->GetToastNotification(
+      notification, notification_template_builder, profile_id, incognito);
 }
