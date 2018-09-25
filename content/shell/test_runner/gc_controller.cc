@@ -63,11 +63,15 @@ void GCController::CollectAll(const gin::Arguments& args) {
 }
 
 void GCController::AsyncCollectAll(const gin::Arguments& args) {
-  if (args.PeekNext().IsEmpty()) {
-    NOTREACHED() << "AsyncCollectAll should be called with callback argument.";
+  v8::HandleScope scope(args.isolate());
+
+  if (args.PeekNext().IsEmpty() || !args.PeekNext()->IsFunction()) {
+    args.ThrowTypeError(
+        "asyncCollectAll should be called with a callback argument being a "
+        "v8::Function.");
+    return;
   }
 
-  v8::HandleScope scope(args.isolate());
   v8::UniquePersistent<v8::Function> func(
       args.isolate(), v8::Local<v8::Function>::Cast(args.PeekNext()));
 
