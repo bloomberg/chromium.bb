@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
 namespace blink {
 
@@ -18,11 +17,6 @@ ServiceWorkerContainerClient::ServiceWorkerContainerClient(
     Document& document,
     std::unique_ptr<WebServiceWorkerProvider> provider)
     : Supplement<Document>(document), provider_(std::move(provider)) {}
-
-ServiceWorkerContainerClient::ServiceWorkerContainerClient(
-    WorkerClients& clients,
-    std::unique_ptr<WebServiceWorkerProvider> provider)
-    : Supplement<WorkerClients>(clients), provider_(std::move(provider)) {}
 
 ServiceWorkerContainerClient::~ServiceWorkerContainerClient() = default;
 
@@ -33,15 +27,6 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::From(
     ExecutionContext* context) {
   if (!context)
     return nullptr;
-  if (context->IsWorkerGlobalScope()) {
-    WorkerClients* worker_clients = ToWorkerGlobalScope(context)->Clients();
-    DCHECK(worker_clients);
-    ServiceWorkerContainerClient* client =
-        Supplement<WorkerClients>::From<ServiceWorkerContainerClient>(
-            worker_clients);
-    DCHECK(client);
-    return client;
-  }
   Document* document = ToDocument(context);
   if (!document->GetFrame() || !document->GetFrame()->Client())
     return nullptr;
@@ -55,13 +40,6 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::From(
     Supplement<Document>::ProvideTo(*document, client);
   }
   return client;
-}
-
-void ProvideServiceWorkerContainerClientToWorker(
-    WorkerClients* clients,
-    std::unique_ptr<WebServiceWorkerProvider> provider) {
-  clients->ProvideSupplement(
-      new ServiceWorkerContainerClient(*clients, std::move(provider)));
 }
 
 }  // namespace blink

@@ -46,7 +46,6 @@ namespace blink {
 struct WebPaymentHandlerResponse;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerNetworkProvider;
-class WebServiceWorkerProvider;
 class WebServiceWorkerResponse;
 class WebString;
 
@@ -290,10 +289,6 @@ class WebServiceWorkerContextClient {
   CreateServiceWorkerFetchContext(WebServiceWorkerNetworkProvider*) {
     return nullptr;
   }
-
-  // Called on the main thread.
-  virtual std::unique_ptr<WebServiceWorkerProvider>
-  CreateServiceWorkerProvider() = 0;
 };
 
 }  // namespace blink

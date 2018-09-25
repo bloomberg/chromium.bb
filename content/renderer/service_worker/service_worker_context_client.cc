@@ -44,7 +44,6 @@
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
-#include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -1276,15 +1275,6 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
           ->renderer()
           ->CreateWebSocketHandshakeThrottleProvider(),
       std::move(preference_watcher_request_));
-}
-
-std::unique_ptr<blink::WebServiceWorkerProvider>
-ServiceWorkerContextClient::CreateServiceWorkerProvider() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(provider_context_);
-
-  return std::make_unique<WebServiceWorkerProviderImpl>(
-      provider_context_.get());
 }
 
 void ServiceWorkerContextClient::DispatchOrQueueFetchEvent(
