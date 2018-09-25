@@ -37,7 +37,10 @@ namespace {
 v8::Local<v8::Object> GetOrCreateObject(const v8::Local<v8::Object>& object,
                                         const std::string& field,
                                         v8::Isolate* isolate) {
-  v8::Local<v8::String> key = v8::String::NewFromUtf8(isolate, field.c_str());
+  v8::Local<v8::String> key =
+      v8::String::NewFromUtf8(isolate, field.c_str(),
+                              v8::NewStringType::kInternalized)
+          .ToLocalChecked();
   // If the object has a callback property, it is assumed it is an unavailable
   // API, so it is safe to delete. This is checked before GetOrCreateObject is
   // called.
@@ -60,7 +63,9 @@ v8::Local<v8::Object> GetOrCreateObject(const v8::Local<v8::Object>& object,
 // an empty object.
 v8::Local<v8::Object> GetOrCreateChrome(ScriptContext* context) {
   v8::Local<v8::String> chrome_string(
-      v8::String::NewFromUtf8(context->isolate(), "chrome"));
+      v8::String::NewFromUtf8(context->isolate(), "chrome",
+                              v8::NewStringType::kInternalized)
+          .ToLocalChecked());
   v8::Local<v8::Object> global(context->v8_context()->Global());
   v8::Local<v8::Value> chrome(global->Get(chrome_string));
   if (chrome->IsUndefined()) {
@@ -280,7 +285,9 @@ void JsExtensionBindingsSystem::RegisterBinding(
     return;
 
   v8::Local<v8::String> v8_bind_name =
-      v8::String::NewFromUtf8(context->isolate(), bind_name.c_str());
+      v8::String::NewFromUtf8(context->isolate(), bind_name.c_str(),
+                              v8::NewStringType::kInternalized)
+          .ToLocalChecked();
   if (bind_object->HasRealNamedProperty(v8_bind_name)) {
     // The bind object may already have the property if the API has been
     // registered before (or if the extension has put something there already,
