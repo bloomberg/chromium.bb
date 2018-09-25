@@ -455,10 +455,9 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
  * @param {!AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.checkable = AutomationPredicate.roles([
-  Role.CHECK_BOX, Role.RADIO_BUTTON, Role.MENU_ITEM_CHECK_BOX,
-  Role.MENU_ITEM_RADIO, Role.SWITCH, Role.TOGGLE_BUTTON, Role.TREE_ITEM
-]);
+AutomationPredicate.checkable = function(node) {
+  return !!node.checked;
+};
 
 /**
  * Returns if the node is clickable.
