@@ -743,27 +743,24 @@ static LayoutUnit ComputeContentSize(
   Vector<NGPositionedFloat> positioned_floats;
   NGUnpositionedFloatVector unpositioned_floats;
 
-  scoped_refptr<NGInlineBreakToken> break_token;
   NGExclusionSpace empty_exclusion_space;
   NGLineLayoutOpportunity line_opportunity(available_inline_size);
   LayoutUnit result;
   LayoutUnit previous_floats_inline_size =
       input.float_left_inline_size + input.float_right_inline_size;
   DCHECK_GE(previous_floats_inline_size, 0);
-  while (!break_token || !break_token->IsFinished()) {
+  NGLineBreaker line_breaker(
+      node, mode, space, &positioned_floats, &unpositioned_floats,
+      nullptr /* container_builder */, &empty_exclusion_space, 0u,
+      line_opportunity, nullptr /* break_token */);
+  do {
     unpositioned_floats.clear();
 
     NGLineInfo line_info;
-    NGLineBreaker line_breaker(
-        node, mode, space, &positioned_floats, &unpositioned_floats,
-        nullptr /* container_builder */, &empty_exclusion_space, 0u,
-        line_opportunity, break_token.get());
     line_breaker.NextLine(&line_info);
-
     if (line_info.Results().IsEmpty())
       break;
 
-    break_token = line_breaker.CreateBreakToken(line_info, nullptr);
     LayoutUnit inline_size = line_info.Width();
     DCHECK_EQ(inline_size, line_info.ComputeWidth().ClampNegativeToZero());
 
@@ -829,7 +826,7 @@ static LayoutUnit ComputeContentSize(
     // NOTE: floats_inline_size will be zero for the min-content calculation,
     // and will just take the inline size of the un-breakable line.
     result = std::max(result, inline_size + floats_inline_size);
-  }
+  } while (!line_breaker.IsFinished());
 
   return result;
 }
