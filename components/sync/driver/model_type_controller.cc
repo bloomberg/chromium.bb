@@ -116,10 +116,7 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
     DCHECK(!model_stop_callbacks_.empty());
     // This reply to OnSyncStarting() has arrived after the type has been
     // requested to stop.
-    DVLOG(1) << "Sync start completion received late for "
-             << ModelTypeToString(type()) << ", it has been stopped meanwhile";
     RecordStartFailure(ABORTED);
-    state_ = NOT_RUNNING;
 
     // We make a copy in case running the callbacks has side effects and
     // modifies the vector, although we don't expect that in practice.
@@ -127,7 +124,19 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
         std::move(model_stop_callbacks_);
     DCHECK(model_stop_callbacks_.empty());
 
-    delegate_->OnSyncStopping(model_stop_metadata_fate_);
+    if (IsSuccessfulResult(result)) {
+      state_ = NOT_RUNNING;
+      DVLOG(1) << "Successful sync start completion received late for "
+               << ModelTypeToString(type())
+               << ", it has been stopped meanwhile";
+      delegate_->OnSyncStopping(model_stop_metadata_fate_);
+    } else {
+      state_ = FAILED;
+      DVLOG(1) << "Sync start completion error received late for "
+               << ModelTypeToString(type())
+               << ", it has been stopped meanwhile";
+    }
+
     delegate_ = nullptr;
 
     for (StopCallback& stop_callback : model_stop_callbacks) {

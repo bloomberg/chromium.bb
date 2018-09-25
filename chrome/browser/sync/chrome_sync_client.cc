@@ -70,6 +70,7 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
@@ -184,6 +185,12 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return HistoryServiceFactory::GetForProfile(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  }
+  const syncer::DeviceInfo* GetLocalDeviceInfo() override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return ProfileSyncServiceFactory::GetForProfile(profile_)
+        ->GetLocalDeviceInfoProvider()
+        ->GetLocalDeviceInfo();
   }
   bool ShouldSyncURL(const GURL& url) const override {
     if (url == chrome::kChromeUIHistoryURL) {

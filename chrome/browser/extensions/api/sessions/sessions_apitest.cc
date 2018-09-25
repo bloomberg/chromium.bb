@@ -48,6 +48,7 @@ namespace extensions {
 
 namespace {
 
+const char kTestCacheGuid[] = "TestCacheGuid";
 // Fake session tabs (used to construct arbitrary device info) and tab IDs
 // (used to construct arbitrary tab info) to use in all tests.
 const char* const kSessionTags[] = {"tag0", "tag1", "tag2", "tag3", "tag4"};
@@ -196,7 +197,7 @@ std::unique_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
   ON_CALL(*factory, CreateLocalDeviceInfoProvider())
       .WillByDefault(testing::Invoke([]() {
         return std::make_unique<syncer::LocalDeviceInfoProviderMock>(
-            kSessionTags[0], "machine name", "Chromium 10k", "Chrome 10k",
+            kTestCacheGuid, "machine name", "Chromium 10k", "Chrome 10k",
             sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
       }));
 
@@ -262,7 +263,7 @@ void ExtensionSessionsTest::CreateTestExtension() {
 void ExtensionSessionsTest::CreateSessionModels() {
   syncer::DataTypeActivationRequest request;
   request.error_handler = base::DoNothing();
-  request.cache_guid = "TestCacheGuid";
+  request.cache_guid = kTestCacheGuid;
   request.authenticated_account_id = "SomeAccountId";
 
   std::unique_ptr<syncer::DataTypeActivationResponse> activation_response;

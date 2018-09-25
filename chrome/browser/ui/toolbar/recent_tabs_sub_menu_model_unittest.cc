@@ -159,25 +159,28 @@ class RecentTabsSubMenuModelTest
 
     BrowserWithTestWindowTest::SetUp();
 
-    local_device_ = std::make_unique<syncer::LocalDeviceInfoProviderMock>(
-        "RecentTabsSubMenuModelTest", "Test Machine", "Chromium 10k",
-        "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
-
     sync_prefs_ = std::make_unique<syncer::SyncPrefs>(profile()->GetPrefs());
 
     mock_sync_service_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetForProfile(profile()));
 
-    EXPECT_CALL(*mock_sync_service_, AddObserver(_))
-        .WillRepeatedly(Invoke(&fake_sync_service_observer_list_,
-                               &FakeSyncServiceObserverList::AddObserver));
-    EXPECT_CALL(*mock_sync_service_, RemoveObserver(_))
-        .WillRepeatedly(Invoke(&fake_sync_service_observer_list_,
-                               &FakeSyncServiceObserverList::RemoveObserver));
+    // Needed because ProfileSyncService::Initialize() is not exercised.
+    mock_sync_service_->SetLocalDeviceInfoProviderForTest(
+        std::make_unique<syncer::LocalDeviceInfoProviderMock>(
+            "RecentTabsSubMenuModelTest", "Test Machine", "Chromium 10k",
+            "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+            "device_id"));
+
+    ON_CALL(*mock_sync_service_, AddObserver(_))
+        .WillByDefault(Invoke(&fake_sync_service_observer_list_,
+                              &FakeSyncServiceObserverList::AddObserver));
+    ON_CALL(*mock_sync_service_, RemoveObserver(_))
+        .WillByDefault(Invoke(&fake_sync_service_observer_list_,
+                              &FakeSyncServiceObserverList::RemoveObserver));
 
     manager_ = std::make_unique<sync_sessions::SessionsSyncManager>(
         mock_sync_service_->GetSyncClient()->GetSyncSessionsClient(),
-        sync_prefs_.get(), local_device_.get(),
+        sync_prefs_.get(),
         base::Bind(&FakeSyncServiceObserverList::NotifyForeignSessionUpdated,
                    base::Unretained(&fake_sync_service_observer_list_)));
 
@@ -192,7 +195,6 @@ class RecentTabsSubMenuModelTest
   void TearDown() override {
     manager_.reset();
     sync_prefs_.reset();
-    local_device_.reset();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -254,7 +256,6 @@ class RecentTabsSubMenuModelTest
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
 
-  std::unique_ptr<syncer::LocalDeviceInfoProviderMock> local_device_;
   std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
   FakeSyncServiceObserverList fake_sync_service_observer_list_;
   browser_sync::ProfileSyncServiceMock* mock_sync_service_ = nullptr;

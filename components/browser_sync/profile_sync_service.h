@@ -270,8 +270,6 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsCryptographerReady(
       const syncer::BaseTransaction* trans) const override;
   syncer::UserShare* GetUserShare() const override;
-  const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider()
-      const override;
   void ReenableDatatype(syncer::ModelType type) override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) const override;
@@ -305,6 +303,10 @@ class ProfileSyncService : public syncer::SyncService,
   // Check whether a given sync type preference provider has been added.
   bool HasPreferenceProvider(
       syncer::SyncTypePreferenceProvider* provider) const;
+
+  const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const;
+  void SetLocalDeviceInfoProviderForTest(
+      std::unique_ptr<syncer::LocalDeviceInfoProvider> provider);
 
   // Returns the SyncableService or USS bridge for syncer::SESSIONS.
   syncer::SyncableService* GetSessionsSyncableService();

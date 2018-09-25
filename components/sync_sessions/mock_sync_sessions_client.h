@@ -19,6 +19,7 @@ class MockSyncSessionsClient : public SyncSessionsClient {
 
   MOCK_METHOD0(GetFaviconService, favicon::FaviconService*());
   MOCK_METHOD0(GetHistoryService, history::HistoryService*());
+  MOCK_METHOD0(GetLocalDeviceInfo, const syncer::DeviceInfo*());
   MOCK_CONST_METHOD1(ShouldSyncURL, bool(const GURL& url));
   MOCK_METHOD0(GetSyncedWindowDelegatesGetter, SyncedWindowDelegatesGetter*());
   MOCK_METHOD0(GetLocalSessionEventRouter, LocalSessionEventRouter*());

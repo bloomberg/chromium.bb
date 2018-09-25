@@ -153,11 +153,6 @@ UserShare* FakeSyncService::GetUserShare() const {
   return user_share_.get();
 }
 
-const LocalDeviceInfoProvider* FakeSyncService::GetLocalDeviceInfoProvider()
-    const {
-  return nullptr;
-}
-
 void FakeSyncService::ReenableDatatype(ModelType type) {}
 
 syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {
