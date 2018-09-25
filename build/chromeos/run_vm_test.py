@@ -52,7 +52,6 @@ class RemoteTest(object):
     self._test_launcher_summary_output = args.test_launcher_summary_output
     self._vm_logs_dir = args.vm_logs_dir
 
-    self._test_env = os.environ.copy()
     self._retries = 0
     self._timeout = None
 
@@ -68,6 +67,19 @@ class RemoteTest(object):
           '--results-dest-dir', args.vm_logs_dir,
       ]
 
+    self._test_env = os.environ.copy()
+    # deploy_chrome needs a set of GN args used to build chrome to determine if
+    # certain libraries need to be pushed to the VM. It looks for the args via
+    # an env var. To trigger the default deploying behavior, give it a dummy set
+    # of args.
+    # TODO(crbug.com/823996): Make the GN-dependent deps controllable via cmd
+    # line args.
+    if not self._test_env.get('GN_ARGS'):
+      self._test_env['GN_ARGS'] = 'is_chromeos = true'
+    if not self._test_env.get('USE'):
+      self._test_env['USE'] = 'highdpi'
+    self._test_env['PATH'] = (
+        self._test_env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin'))
   @property
   def suite_name(self):
     raise NotImplementedError('Child classes need to define suite name.')
@@ -355,19 +367,6 @@ class BrowserSanityTest(RemoteTest):
         '--deploy',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
     ]
-
-    # deploy_chrome needs a set of GN args used to build chrome to determine if
-    # certain libraries need to be pushed to the VM. It looks for the args via
-    # an env var. To trigger the default deploying behavior, give it a dummy set
-    # of args.
-    # TODO(crbug.com/823996): Make the GN-dependent deps controllable via cmd
-    # line args.
-    if not self._test_env.get('GN_ARGS'):
-      self._test_env['GN_ARGS'] = 'is_chromeos = true'
-    if not self._test_env.get('USE'):
-      self._test_env['USE'] = 'highdpi'
-    self._test_env['PATH'] = (
-        self._test_env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin'))
 
 
 def vm_test(args, unknown_args):
