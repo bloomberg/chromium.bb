@@ -119,13 +119,7 @@ int GetWindowId(base::DictionaryValue* window) {
 
 }  // namespace
 
-#if defined(OS_WIN)
-// Crashes under Dr. Memory, see https://crbug.com/605880.
-#define MAYBE_GetWindow DISABLED_GetWindow
-#else
-#define MAYBE_GetWindow GetWindow
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetWindow) {
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
   int window_id = ExtensionTabUtil::GetWindowId(browser());
 
   // Invalid window ID error.
