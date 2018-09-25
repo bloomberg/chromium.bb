@@ -34,7 +34,6 @@
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -178,14 +177,10 @@ enum WindowLocation {
 willPositionSheet:(NSWindow*)sheet
        usingRect:(NSRect)defaultSheetLocation {
   CGFloat defaultSheetY = defaultSheetLocation.origin.y;
-  if ([self hasToolbar]) {
-    defaultSheetY = NSMinY([[toolbarController_ view] frame]);
-  } else {
-    // The toolbar is not shown in popup and application modes. The sheet
-    // should be located at the top of the window, under the title of the
-    // window.
-    defaultSheetY = NSMaxY([[window contentView] frame]);
-  }
+  // The toolbar is not shown in popup and application modes. The sheet
+  // should be located at the top of the window, under the title of the
+  // window.
+  defaultSheetY = NSMaxY([[window contentView] frame]);
 
   // AppKit may shift the window up to fit the sheet on screen, but it will
   // never adjust the height of the sheet, or the origin of the sheet relative
@@ -222,8 +217,6 @@ willPositionSheet:(NSWindow*)sheet
       [[BrowserWindowLayout alloc] init]);
   [self updateLayoutParameters:layout];
   [self applyLayout:layout];
-
-  [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
 
   // Will update the location of the permission bubble when showing/hiding the
   // top level toolbar in fullscreen.
@@ -280,17 +273,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)adjustToolbarAndBookmarkBarForCompression:(CGFloat)compression {
-  CGFloat newHeight =
-      [toolbarController_ desiredHeightForCompression:compression];
-  NSRect toolbarFrame = [[toolbarController_ view] frame];
-  CGFloat deltaH = newHeight - toolbarFrame.size.height;
-
-  if (deltaH == 0)
-    return;
-
-  toolbarFrame.size.height = newHeight;
-  [[toolbarController_ view] setFrame:toolbarFrame];
-  [self layoutSubviews];
 }
 
 // Fullscreen methods
@@ -824,7 +806,6 @@ willPositionSheet:(NSWindow*)sheet
   [layout setFullscreenButtonFrame:[self fullscreenButtonFrame]];
 
   [layout setHasToolbar:[self hasToolbar]];
-  [layout setToolbarHeight:NSHeight([[toolbarController_ view] bounds])];
 }
 
 - (void)applyLayout:(BrowserWindowLayout*)layout {
@@ -832,9 +813,6 @@ willPositionSheet:(NSWindow*)sheet
 
   if (!NSIsEmptyRect(output.tabStripLayout.frame))
     [self applyTabStripLayout:output.tabStripLayout];
-
-  if (!NSIsEmptyRect(output.toolbarFrame))
-    [[toolbarController_ view] setFrame:output.toolbarFrame];
 
   [self layoutTabContentArea:output.contentAreaFrame];
 
@@ -854,8 +832,6 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)updateSubviewZOrderNormal {
   base::scoped_nsobject<NSMutableArray> subviews([[NSMutableArray alloc] init]);
-  if ([toolbarController_ view])
-    [subviews addObject:[toolbarController_ view]];
   if ([self tabContentArea])
     [subviews addObject:[self tabContentArea]];
 
@@ -870,9 +846,6 @@ willPositionSheet:(NSWindow*)sheet
 
   if (floatingBarBackingView_)
     [subviews addObject:floatingBarBackingView_];
-
-  if ([toolbarController_ view])
-    [subviews addObject:[toolbarController_ view]];
 
   [self setContentViewSubviews:subviews];
 }
