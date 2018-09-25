@@ -86,12 +86,9 @@ bool LayoutSVGResourceFilter::RemoveClientFromCache(SVGResourceClient& client) {
 
 FloatRect LayoutSVGResourceFilter::ResourceBoundingBox(
     const LayoutObject* object) {
-  if (SVGFilterElement* element = ToSVGFilterElement(GetElement()))
-    return SVGLengthContext::ResolveRectangle<SVGFilterElement>(
-        element, element->filterUnits()->CurrentValue()->EnumValue(),
-        object->ObjectBoundingBox());
-
-  return FloatRect();
+  const auto* filter_element = ToSVGFilterElement(GetElement());
+  return SVGLengthContext::ResolveRectangle(filter_element, FilterUnits(),
+                                            object->ObjectBoundingBox());
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::FilterUnits() const {

@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/svg/svg_clip_path_element.h"
 #include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
@@ -212,6 +213,13 @@ void LayoutSVGResourceClipper::CalculateLocalClipBounds() {
     local_clip_bounds_.Unite(layout_object->LocalToSVGParentTransform().MapRect(
         layout_object->VisualRectInLocalSVGCoordinates()));
   }
+}
+
+SVGUnitTypes::SVGUnitType LayoutSVGResourceClipper::ClipPathUnits() const {
+  return ToSVGClipPathElement(GetElement())
+      ->clipPathUnits()
+      ->CurrentValue()
+      ->EnumValue();
 }
 
 AffineTransform LayoutSVGResourceClipper::CalculateClipTransform(
