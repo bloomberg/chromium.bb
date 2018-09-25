@@ -9,6 +9,10 @@
 <dom-module id="print-preview-link-container">
   <template>
     <style include="print-preview-shared throbber cr-hidden-style">
+      :host([disabled]) {
+        pointer-events: none;
+      }
+
       .throbber {
         margin: 8px;
         min-height: 16px;

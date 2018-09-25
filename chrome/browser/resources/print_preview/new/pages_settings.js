@@ -139,7 +139,14 @@ Polymer({
         this.onRangeChange_();
         return this.pagesToPrint_;
       }
+
       const limits = range.split('-');
+      if (limits.length > 2) {
+        this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
+        this.onRangeChange_();
+        return this.pagesToPrint_;
+      }
+
       let min = Number.parseInt(limits[0], 10);
       if ((limits[0].length > 0 && Number.isNaN(min)) || min < 1) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
