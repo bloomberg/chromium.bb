@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -983,14 +984,11 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Sets the icon drawable for the ntp button if the ntp button feature is enabled.
      * Note: This method is called twice in ToolbarLayout's children - once in
      * #onNativeLibraryReady() & once in #onFinishInflate() (see https://crbug.com/862887).
-     * As a result, for users who have a shared preference enabling the NTP button but don't yet
-     * have a shared preference for the icon variant, the old home button icon will appear until
-     * #onNativeLibraryReady(). After a cold start, the icon variant will be cached and the old home
-     * button icon will not appear.
      * @param ntpButton The button that needs to be changed.
      */
     protected void changeIconToNTPIcon(TintedImageButton ntpButton) {
-        ntpButton.setImageResource(mToolbarDataProvider.getHomeButtonIcon());
+        if (FeatureUtilities.isNewTabPageButtonEnabled())
+            ntpButton.setImageResource(R.drawable.ic_home);
     }
 
     @Override
