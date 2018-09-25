@@ -500,7 +500,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnablePortals(
       base::FeatureList::IsEnabled(blink::features::kPortals));
 
-  if (command_line.HasSwitch(switches::kDisableBackgroundFetch))
+  if (!base::FeatureList::IsEnabled(features::kBackgroundFetch))
     WebRuntimeFeatures::EnableBackgroundFetch(false);
 
   WebRuntimeFeatures::EnableNoHoverAfterLayoutChange(
