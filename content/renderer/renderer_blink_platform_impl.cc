@@ -33,7 +33,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
-#include "content/common/render_message_filter.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -292,6 +291,8 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 
   GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&web_database_host_info_));
+  GetInterfaceProvider()->GetInterface(
+      mojo::MakeRequest(&code_cache_host_info_));
 }
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
@@ -460,22 +461,18 @@ void RendererBlinkPlatformImpl::CacheMetadata(const blink::WebURL& url,
   // browser may cache it and return it on subsequent responses to speed
   // the processing of this resource.
   std::vector<uint8_t> copy(data, data + size);
-  RenderThreadImpl::current()
-      ->render_message_filter()
-      ->DidGenerateCacheableMetadata(url, response_time, copy);
+  GetCodeCacheHost().DidGenerateCacheableMetadata(url, response_time, copy);
 }
 
 void RendererBlinkPlatformImpl::FetchCachedCode(
     const GURL& url,
     base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>
         callback) {
-  RenderThreadImpl::current()->render_message_filter()->FetchCachedCode(
-      url, std::move(callback));
+  GetCodeCacheHost().FetchCachedCode(url, std::move(callback));
 }
 
 void RendererBlinkPlatformImpl::ClearCodeCacheEntry(const GURL& url) {
-  RenderThreadImpl::current()->render_message_filter()->ClearCodeCacheEntry(
-      url);
+  GetCodeCacheHost().ClearCodeCacheEntry(url);
 }
 
 void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
@@ -489,11 +486,9 @@ void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
   // CacheStorage. The browser may cache it and return it on subsequent
   // responses to speed the processing of this resource.
   std::vector<uint8_t> copy(data, data + size);
-  RenderThreadImpl::current()
-      ->render_message_filter()
-      ->DidGenerateCacheableMetadataInCacheStorage(
-          url, response_time, copy, cacheStorageOrigin,
-          cacheStorageCacheName.Utf8());
+  GetCodeCacheHost().DidGenerateCacheableMetadataInCacheStorage(
+      url, response_time, copy, cacheStorageOrigin,
+      cacheStorageCacheName.Utf8());
 }
 
 WebString RendererBlinkPlatformImpl::DefaultLocale() {
@@ -1205,6 +1200,16 @@ void RendererBlinkPlatformImpl::InitializeWebDatabaseHostIfNeeded() {
 blink::mojom::WebDatabaseHost& RendererBlinkPlatformImpl::GetWebDatabaseHost() {
   InitializeWebDatabaseHostIfNeeded();
   return **web_database_host_;
+}
+
+blink::mojom::CodeCacheHost& RendererBlinkPlatformImpl::GetCodeCacheHost() {
+  if (!code_cache_host_) {
+    code_cache_host_ = blink::mojom::ThreadSafeCodeCacheHostPtr::Create(
+        std::move(code_cache_host_info_),
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::WithBaseSyncPrimitives()}));
+  }
+  return **code_cache_host_;
 }
 
 }  // namespace content

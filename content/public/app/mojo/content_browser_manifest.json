@@ -43,6 +43,7 @@
           "blink.mojom.BlobRegistry",
           "blink.mojom.BroadcastChannelProvider",
           "blink.mojom.ClipboardHost",
+          "blink.mojom.CodeCacheHost",
           "blink.mojom.FontUniqueNameLookup",
           "blink.mojom.EmbeddedFrameSinkProvider",
           "blink.mojom.FileUtilitiesHost",
