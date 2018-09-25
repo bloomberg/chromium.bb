@@ -20222,6 +20222,10 @@ Called by update_net_error_codes.py.-->
   <int value="2542" label="PaymentAddressLanguageCode"/>
   <int value="2543" label="DocumentDomainBlockedCrossOriginAccess"/>
   <int value="2544" label="DocumentDomainEnabledCrossOriginAccess"/>
+  <int value="2545" label="SerialGetPorts"/>
+  <int value="2546" label="SerialRequestPort"/>
+  <int value="2547" label="SerialPortOpen"/>
+  <int value="2548" label="SerialPortClose"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

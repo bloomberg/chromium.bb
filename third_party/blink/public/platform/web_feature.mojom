@@ -1995,6 +1995,10 @@ enum WebFeature {
   kPaymentAddressLanguageCode = 2542,
   kDocumentDomainBlockedCrossOriginAccess = 2543,
   kDocumentDomainEnabledCrossOriginAccess = 2544,
+  kSerialGetPorts = 2545,
+  kSerialRequestPort = 2546,
+  kSerialPortOpen = 2547,
+  kSerialPortClose = 2548,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

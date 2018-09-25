@@ -3473,6 +3473,7 @@ interface WorkerNavigator
     getter permissions
     getter platform
     getter product
+    getter serial
     getter storage
     getter usb
     getter userAgent
