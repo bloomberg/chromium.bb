@@ -30,7 +30,6 @@ source_set("overscroll_actions") {
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/page_info:coordinator",
     "//ios/chrome/browser/ui/static_content",
-    "//ios/chrome/browser/ui/toolbar/legacy",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/chrome/browser/ui/util",
