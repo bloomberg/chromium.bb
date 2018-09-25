@@ -268,16 +268,14 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
   else if (message->IsSharedCrossOrigin())
     access_control_status = kSharableCrossOrigin;
 
-  ErrorEvent* event =
-      ErrorEvent::Create(ToCoreStringWithNullCheck(message->Get()),
-                         std::move(location), &script_state->World());
+  ErrorEvent* event = ErrorEvent::Create(
+      ToCoreStringWithNullCheck(message->Get()), std::move(location),
+      ScriptValue::From(script_state, data), &script_state->World());
 
   String message_for_console = ExtractMessageForConsole(isolate, data);
   if (!message_for_console.IsEmpty())
     event->SetUnsanitizedMessage("Uncaught " + message_for_console);
 
-  StoreExceptionForInspector(script_state, event, data,
-                             script_state->GetContext()->Global());
   context->DispatchErrorEvent(event, access_control_status);
 }
 
@@ -311,9 +309,9 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
     return;
   }
 
-  ErrorEvent* event =
-      ErrorEvent::Create(ToCoreStringWithNullCheck(message->Get()),
-                         std::move(location), &script_state->World());
+  ErrorEvent* event = ErrorEvent::Create(
+      ToCoreStringWithNullCheck(message->Get()), std::move(location),
+      ScriptValue::From(script_state, data), &script_state->World());
 
   AccessControlStatus cors_status = message->IsSharedCrossOrigin()
                                         ? kSharableCrossOrigin
@@ -322,8 +320,6 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
   // If execution termination has been triggered as part of constructing
   // the error event from the v8::Message, quietly leave.
   if (!isolate->IsExecutionTerminating()) {
-    StoreExceptionForInspector(script_state, event, data,
-                               script_state->GetContext()->Global());
     ExecutionContext::From(script_state)
         ->DispatchErrorEvent(event, cors_status);
   }

@@ -33,7 +33,6 @@ class ScriptWrappable;
   X(CustomElementLifecycle, CreatedCallback)          \
   X(CustomElementLifecycle, DetachedCallback)         \
   X(DOMException, Error)                              \
-  X(ErrorEvent, Error)                                \
   X(Global, Event)                                    \
   X(IDBCursor, Request)                               \
   X(IntersectionObserver, Callback)                   \

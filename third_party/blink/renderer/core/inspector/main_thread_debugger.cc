@@ -196,8 +196,12 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
   const String default_message = "Uncaught";
   if (script_state && script_state->ContextIsValid()) {
     ScriptState::Scope scope(script_state);
-    v8::Local<v8::Value> exception = LoadExceptionForInspector(
-        script_state, event, script_state->GetContext()->Global());
+    ScriptValue error = event->error(script_state);
+    v8::Local<v8::Value> exception =
+        error.IsEmpty()
+            ? v8::Local<v8::Value>(v8::Null(script_state->GetIsolate()))
+            : error.V8Value();
+
     SourceLocation* location = event->Location();
     String message = event->MessageForConsole();
     String url = location->Url();
