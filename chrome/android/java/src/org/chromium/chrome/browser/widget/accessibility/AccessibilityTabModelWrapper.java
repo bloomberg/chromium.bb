@@ -109,27 +109,24 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         mStandardButtonIcon = new TintedImageView(getContext());
         mStandardButtonIcon.setImageResource(R.drawable.btn_normal_tabs);
         mStandardButtonIcon.setScaleY(-1.0f);
+        mStandardButtonIcon.setContentDescription(
+                getResources().getString(R.string.accessibility_tab_switcher_standard_stack));
         mIncognitoButtonIcon = new TintedImageView(getContext());
         mIncognitoButtonIcon.setImageResource(R.drawable.btn_incognito_tabs);
         mIncognitoButtonIcon.setScaleY(-1.0f);
+        mIncognitoButtonIcon.setContentDescription(getResources().getString(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                        ? R.string.accessibility_tab_switcher_private_stack
+                        : R.string.accessibility_tab_switcher_incognito_stack));
 
         setDividerDrawable(null);
         ((ListView) findViewById(R.id.list_view)).setDivider(null);
 
         mLayout = findViewById(R.id.tab_wrapper);
         mStackButtonWrapper = findViewById(R.id.tab_layout);
-        mStandardButton =
-                mStackButtonWrapper.newTab()
-                        .setCustomView(mStandardButtonIcon)
-                        .setContentDescription(R.string.accessibility_tab_switcher_standard_stack);
+        mStandardButton = mStackButtonWrapper.newTab().setCustomView(mStandardButtonIcon);
         mStackButtonWrapper.addTab(mStandardButton);
-        mIncognitoButton =
-                mStackButtonWrapper.newTab()
-                        .setCustomView(mIncognitoButtonIcon)
-                        .setContentDescription(
-                                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                                        ? R.string.accessibility_tab_switcher_private_stack
-                                        : R.string.accessibility_tab_switcher_incognito_stack);
+        mIncognitoButton = mStackButtonWrapper.newTab().setCustomView(mIncognitoButtonIcon);
         mStackButtonWrapper.addTab(mIncognitoButton);
         mStackButtonWrapper.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
