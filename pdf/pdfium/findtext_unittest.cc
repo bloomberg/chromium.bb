@@ -20,13 +20,14 @@ namespace {
 
 class TestDocumentLoader : public DocumentLoader {
  public:
-  explicit TestDocumentLoader(Client* client) : client_(client) {
+  TestDocumentLoader(Client* client, const base::FilePath::StringType& pdf_name)
+      : client_(client) {
     base::FilePath pdf_path;
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &pdf_path));
     pdf_path = pdf_path.Append(FILE_PATH_LITERAL("pdf"))
                    .Append(FILE_PATH_LITERAL("test"))
                    .Append(FILE_PATH_LITERAL("data"))
-                   .Append(FILE_PATH_LITERAL("hello_world2.pdf"));
+                   .Append(pdf_name);
     CHECK(base::ReadFileToString(pdf_path, &pdf_data_));
   }
   ~TestDocumentLoader() override = default;
@@ -66,9 +67,11 @@ class TestDocumentLoader : public DocumentLoader {
   std::string pdf_data_;
 };
 
+const base::FilePath::CharType* g_test_pdf_name;
+
 std::unique_ptr<DocumentLoader> CreateTestDocumentLoader(
     DocumentLoader::Client* client) {
-  return std::make_unique<TestDocumentLoader>(client);
+  return std::make_unique<TestDocumentLoader>(client, g_test_pdf_name);
 }
 
 class TestClient : public PDFEngine::Client {
@@ -137,11 +140,11 @@ class FindTextTest : public testing::Test {
  protected:
   void SetUp() override {
     InitializePDFium();
-    PDFiumEngine::SetCreateDocumentLoaderFunctionForTesting(
-        &CreateTestDocumentLoader);
   }
+
   void TearDown() override {
     PDFiumEngine::SetCreateDocumentLoaderFunctionForTesting(nullptr);
+    g_test_pdf_name = nullptr;
     FPDF_DestroyLibrary();
   }
 
@@ -154,10 +157,18 @@ class FindTextTest : public testing::Test {
     FPDF_InitLibraryWithConfig(&config);
   }
 
+  void SetDocumentForTest(const base::FilePath::CharType* test_pdf_name) {
+    g_test_pdf_name = test_pdf_name;
+    PDFiumEngine::SetCreateDocumentLoaderFunctionForTesting(
+        &CreateTestDocumentLoader);
+  }
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(FindTextTest);
 };
 
 TEST_F(FindTextTest, FindText) {
+  SetDocumentForTest(FILE_PATH_LITERAL("hello_world2.pdf"));
   pp::URLLoader dummy_loader;
   TestClient client;
   PDFiumEngine engine(&client, true);
@@ -177,4 +188,24 @@ TEST_F(FindTextTest, FindText) {
   engine.StartFind("o", /*case_sensitive=*/true);
 }
 
+TEST_F(FindTextTest, FindHyphenatedText) {
+  SetDocumentForTest(FILE_PATH_LITERAL("spanner.pdf"));
+  pp::URLLoader dummy_loader;
+  TestClient client;
+  PDFiumEngine engine(&client, true);
+  ASSERT_TRUE(engine.New("https://chromium.org/dummy.pdf", ""));
+  ASSERT_TRUE(engine.HandleDocumentLoad(dummy_loader));
+
+  {
+    InSequence sequence;
+
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(1, false));
+    EXPECT_CALL(client, NotifySelectedFindResultChanged(0));
+    for (int i = 1; i < 6; ++i)
+      EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(i + 1, false));
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(6, true));
+  }
+
+  engine.StartFind("application", /*case_sensitive=*/true);
+}
 }  // namespace chrome_pdf

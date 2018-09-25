@@ -1918,28 +1918,65 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
                        character_to_start_searching_from, text_length, data);
   api_string_adapter.Close(written);
 
+  base::string16 stripped_page_text;
+  stripped_page_text.reserve(page_text.size());
+  // Values in |stripped_indices| are in the stripped text index space and
+  // indicate a character was removed from the page text before the given
+  // index. If multiple characters are removed in a row then there will be
+  // multiple entries with the same value.
+  std::vector<size_t> stripped_indices;
+  for (size_t i = 0; i < page_text.size(); i++) {
+    base::char16 c = page_text[i];
+    if (IsIgnorableCharacter(c))
+      stripped_indices.push_back(stripped_page_text.size());
+    else
+      stripped_page_text.push_back(c);
+  }
+
   std::vector<PDFEngine::Client::SearchStringResult> results =
-      client_->SearchString(page_text.c_str(), term.c_str(), case_sensitive);
+      client_->SearchString(stripped_page_text.c_str(), term.c_str(),
+                            case_sensitive);
   for (const auto& result : results) {
+    // Need to convert from stripped page text start to page text start, by
+    // incrementing for all the characters stripped before it in the string.
+    auto stripped_indices_begin = std::upper_bound(
+        stripped_indices.begin(), stripped_indices.end(), result.start_index);
+    size_t page_text_result_start_index =
+        result.start_index +
+        std::distance(stripped_indices.begin(), stripped_indices_begin);
+
+    // Need to convert the stripped page length into a page text length, since
+    // the matching range may have stripped characters within it. This
+    // conversion only cares about skipped characters in the result interval.
+    auto stripped_indices_end =
+        std::upper_bound(stripped_indices_begin, stripped_indices.end(),
+                         result.start_index + result.length);
+    int term_stripped_count =
+        std::distance(stripped_indices_begin, stripped_indices_end);
+    int page_text_result_length = result.length + term_stripped_count;
+
     // Need to map the indexes from the page text, which may have generated
     // characters like space etc, to character indices from the page.
     int text_to_start_searching_from = FPDFText_GetTextIndexFromCharIndex(
         pages_[current_page]->GetTextPage(), character_to_start_searching_from);
-    int temp_start = result.start_index + text_to_start_searching_from;
+    int temp_start =
+        page_text_result_start_index + text_to_start_searching_from;
     int start = FPDFText_GetCharIndexFromTextIndex(
         pages_[current_page]->GetTextPage(), temp_start);
     int end = FPDFText_GetCharIndexFromTextIndex(
-        pages_[current_page]->GetTextPage(), temp_start + result.length);
+        pages_[current_page]->GetTextPage(),
+        temp_start + page_text_result_length);
 
     // If |term| occurs at the end of a page, then |end| will be -1 due to the
     // index being out of bounds. Compensate for this case so the range
     // character count calculation below works out.
-    if (temp_start + result.length == original_text_length) {
+    if (temp_start + page_text_result_length == original_text_length) {
       DCHECK_EQ(-1, end);
       end = original_text_length;
     }
     DCHECK_LT(start, end);
-    DCHECK_EQ(term.size(), static_cast<size_t>(end - start));
+    DCHECK_EQ(term.size() + term_stripped_count,
+              static_cast<size_t>(end - start));
     AddFindResult(PDFiumRange(pages_[current_page].get(), start, end - start));
   }
 }
