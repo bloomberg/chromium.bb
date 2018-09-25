@@ -188,10 +188,9 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
        LocalBackgroundImageCopyCreated) {
   const GURL kUrl("chrome-search://local-ntp/background.jpg");
 
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath path(user_data_dir.AppendASCII("test_file"));
-  base::FilePath copy_path(user_data_dir.AppendASCII(
+  base::FilePath profile_path = profile()->GetPath();
+  base::FilePath path(profile_path.AppendASCII("test_file"));
+  base::FilePath copy_path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
 
   base::WriteFile(path, "background_image", 16);
@@ -209,9 +208,8 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
 
 TEST_F(InstantServiceTestCustomBackgroundsEnabled,
        ChangingSearchProviderRemovesLocalBackgroundImageCopy) {
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath path(user_data_dir.AppendASCII(
+  base::FilePath profile_path = profile()->GetPath();
+  base::FilePath path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
 
   base::WriteFile(path, "background_image", 16);
@@ -232,9 +230,8 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
        SettingUrlRemovesLocalBackgroundImageCopy) {
   const GURL kUrl("https://www.foo.com");
 
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath path(user_data_dir.AppendASCII(
+  base::FilePath profile_path = profile()->GetPath();
+  base::FilePath path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
 
   base::WriteFile(path, "background_image", 16);
@@ -334,9 +331,8 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled, LocalFileExists) {
   sync_preferences::TestingPrefServiceSyncable* pref_service =
       profile()->GetTestingPrefService();
 
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath path(user_data_dir.AppendASCII(
+  base::FilePath profile_path = profile()->GetPath();
+  base::FilePath path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
   base::WriteFile(path, "background_image", 16);
   base::TaskScheduler::GetInstance()->FlushForTesting();
@@ -367,4 +363,32 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled, LocalFilePrefSet) {
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
   EXPECT_EQ(kUrl, theme_info->custom_background_url);
+}
+
+TEST_F(InstantServiceTestCustomBackgroundsEnabled,
+       LocalFileCopiedToProfileDirectory) {
+  const GURL kUrl("chrome-search://local-ntp/background.jpg?123456789");
+
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+
+  base::FilePath user_data_dir;
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::FilePath old_path(user_data_dir.AppendASCII(
+      chrome::kChromeSearchLocalNtpBackgroundFilename));
+  base::FilePath new_path(profile()->GetPath().AppendASCII(
+      chrome::kChromeSearchLocalNtpBackgroundFilename));
+  base::WriteFile(old_path, "background_image", 16);
+  base::TaskScheduler::GetInstance()->FlushForTesting();
+
+  pref_service->SetUserPref(
+      prefs::kNtpCustomBackgroundDict,
+      std::make_unique<base::Value>(GetBackgroundInfoAsDict(kUrl)));
+  thread_bundle()->RunUntilIdle();
+
+  ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_EQ(kUrl, theme_info->custom_background_url);
+
+  EXPECT_FALSE(base::PathExists(old_path));
+  EXPECT_TRUE(base::PathExists(new_path));
 }
