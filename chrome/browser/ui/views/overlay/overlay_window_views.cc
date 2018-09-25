@@ -320,6 +320,9 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
 }
 
 void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
+  if (always_hide_play_pause_button_ && is_visible)
+    play_pause_controls_view_->SetVisible(false);
+
   GetCloseControlsLayer()->SetVisible(is_visible);
   GetControlsScrimLayer()->SetVisible(
       (playback_state_ == kNoVideo) ? false : is_visible);
@@ -533,6 +536,10 @@ void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
       GetControlsParentLayer()->SetVisible(false);
       break;
   }
+}
+
+void OverlayWindowViews::SetAlwaysHidePlayPauseButton(bool is_visible) {
+  always_hide_play_pause_button_ = !is_visible;
 }
 
 void OverlayWindowViews::SetPictureInPictureCustomControls(

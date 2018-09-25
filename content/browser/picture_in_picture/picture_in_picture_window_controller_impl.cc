@@ -186,6 +186,14 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   return true;
 }
 
+void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
+    bool is_visible) {
+  if (!window_)
+    return;
+
+  window_->SetAlwaysHidePlayPauseButton(is_visible);
+}
+
 void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
     bool should_pause_video) {
   if (IsPlayerActive() && should_pause_video) {

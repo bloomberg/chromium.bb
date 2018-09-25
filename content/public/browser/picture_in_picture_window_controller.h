@@ -62,6 +62,7 @@ class PictureInPictureWindowController {
   virtual WebContents* GetInitiatorWebContents() = 0;
   virtual void UpdatePlaybackState(bool is_playing,
                                    bool reached_end_of_stream) = 0;
+  virtual void SetAlwaysHidePlayPauseButton(bool is_visible) = 0;
 
   // Commands.
   // Returns true if the player is active (i.e. currently playing) after this

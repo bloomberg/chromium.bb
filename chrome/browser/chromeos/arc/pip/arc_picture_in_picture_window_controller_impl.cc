@@ -80,4 +80,9 @@ bool ArcPictureInPictureWindowControllerImpl::TogglePlayPause() {
   return false;
 }
 
+void ArcPictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
+    bool is_visible) {
+  // Should be a no-op on ARC. This is managed on the Android side.
+}
+
 }  // namespace arc

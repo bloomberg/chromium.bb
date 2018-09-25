@@ -38,6 +38,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect GetBounds() const override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
   void SetPlaybackState(PlaybackState playback_state) override;
+  void SetAlwaysHidePlayPauseButton(bool is_visible) override;
   void SetPictureInPictureCustomControls(
       const std::vector<blink::PictureInPictureControlInfo>& controls) override;
   ui::Layer* GetWindowBackgroundLayer() override;
@@ -137,6 +138,10 @@ class OverlayWindowViews : public content::OverlayWindow,
   // sizing and placement. This is different from checking whether the window
   // components has been initialized.
   bool has_been_shown_ = false;
+
+  // Whether or not the play/pause button will always be hidden. This is the
+  // case for media streams video that user is not allowed to play/pause.
+  bool always_hide_play_pause_button_ = false;
 
   // Current playback state on the video in Picture-in-Picture window. It is
   // used to show/hide controls.
