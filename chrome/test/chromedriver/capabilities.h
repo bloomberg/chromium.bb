@@ -96,7 +96,39 @@ struct Capabilities {
   // Return true if android package is specified.
   bool IsAndroid() const;
 
+  // Accepts all W3C defined capabilities (including those not yet supported by
+  // ChromeDriver) and all ChromeDriver-specific extensions.
   Status Parse(const base::DictionaryValue& desired_caps);
+
+  // Check if all specified capabilities are supported by ChromeDriver.
+  // The long term goal is to support all standard capabilities, thus making
+  // this method unnecessary.
+  Status CheckSupport() const;
+
+  //
+  // W3C defined capabilities
+  //
+
+  bool accept_insecure_certs;
+
+  std::string browser_name;
+  std::string browser_version;
+  std::string platform_name;
+
+  std::string page_load_strategy;
+
+  // Data from "proxy" capability are stored in "switches" field.
+
+  // The default values for the timeout fields came from W3C spec.
+  base::TimeDelta script_timeout = base::TimeDelta::FromSeconds(30);
+  base::TimeDelta page_load_timeout = base::TimeDelta::FromSeconds(300);
+  base::TimeDelta implicit_wait_timeout = base::TimeDelta::FromSeconds(0);
+
+  std::string unhandled_prompt_behavior;
+
+  //
+  // ChromeDriver specific capabilities
+  //
 
   std::string android_activity;
 
@@ -147,13 +179,7 @@ struct Capabilities {
   // If set, enable minidump for chrome crashes and save to this directory.
   std::string minidump_path;
 
-  std::string page_load_strategy;
-
-  std::string unexpected_alert_behaviour;
-
   bool network_emulation_enabled;
-
-  bool accept_insecure_certs;
 
   PerfLoggingPrefs perf_logging_prefs;
 
