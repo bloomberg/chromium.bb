@@ -86,7 +86,12 @@ ARRAY_BUFFER_AND_VIEW_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
     'DataView',
     'SharedArrayBuffer',
 ]))
-
+# We have an unfortunate hack that treats types whose name ends with
+# 'Constructor' as aliases to IDL interface object. This white list is used to
+# disable the hack.
+_CALLBACK_CONSTRUCTORS = frozenset((
+    'CustomElementConstructor',
+))
 
 IdlType.is_array_buffer_or_view = property(
     lambda self: self.base_type in ARRAY_BUFFER_AND_VIEW_TYPES)
@@ -458,7 +463,8 @@ def includes_for_type(idl_type, extended_attributes=None):
         # and these do not have header files, as they are part of the generated
         # bindings for the interface
         return set()
-    if base_idl_type.endswith('Constructor'):
+    if (base_idl_type.endswith('Constructor') and
+            base_idl_type not in _CALLBACK_CONSTRUCTORS):
         # FIXME: replace with a [ConstructorAttribute] extended attribute
         base_idl_type = idl_type.constructor_type_name
     if idl_type.is_custom_callback_function:
