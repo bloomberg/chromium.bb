@@ -163,7 +163,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       previous_paint_phase_descendant_block_backgrounds_was_empty_(false),
       has_descendant_with_clip_path_(false),
       has_non_isolated_descendant_with_blend_mode_(false),
-      has_descendant_with_sticky_or_fixed_(false),
+      has_fixed_position_descendant_(false),
+      has_sticky_position_descendant_(false),
       has_non_contained_absolute_position_descendant_(false),
       self_painting_status_changed_(false),
       filter_on_effect_node_dirty_(false),
@@ -711,7 +712,8 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     has_visible_descendant_ = false;
     has_non_isolated_descendant_with_blend_mode_ = false;
     has_descendant_with_clip_path_ = false;
-    has_descendant_with_sticky_or_fixed_ = false;
+    has_fixed_position_descendant_ = false;
+    has_sticky_position_descendant_ = false;
     has_non_contained_absolute_position_descendant_ = false;
     has_self_painting_layer_descendant_ = false;
     is_non_stacked_with_in_flow_stacked_descendant_ = false;
@@ -740,10 +742,12 @@ void PaintLayer::UpdateDescendantDependentFlags() {
       has_descendant_with_clip_path_ |= child->HasDescendantWithClipPath() ||
                                         child->GetLayoutObject().HasClipPath();
 
-      has_descendant_with_sticky_or_fixed_ |=
-          child->HasDescendantWithStickyOrFixed() ||
-          child_style.GetPosition() == EPosition::kSticky ||
+      has_fixed_position_descendant_ |=
+          child->HasFixedPositionDescendant() ||
           child_style.GetPosition() == EPosition::kFixed;
+      has_sticky_position_descendant_ |=
+          child->HasStickyPositionDescendant() ||
+          child_style.GetPosition() == EPosition::kSticky;
 
       if (!can_contain_abs) {
         has_non_contained_absolute_position_descendant_ |=

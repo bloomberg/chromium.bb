@@ -830,9 +830,13 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     DCHECK(!needs_descendant_dependent_flags_update_);
     return has_descendant_with_clip_path_;
   }
-  bool HasDescendantWithStickyOrFixed() const {
+  bool HasFixedPositionDescendant() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
-    return has_descendant_with_sticky_or_fixed_;
+    return has_fixed_position_descendant_;
+  }
+  bool HasStickyPositionDescendant() const {
+    DCHECK(!needs_descendant_dependent_flags_update_);
+    return has_sticky_position_descendant_;
   }
   bool HasNonContainedAbsolutePositionDescendant() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
@@ -1298,7 +1302,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // inputs.
   unsigned has_descendant_with_clip_path_ : 1;
   unsigned has_non_isolated_descendant_with_blend_mode_ : 1;
-  unsigned has_descendant_with_sticky_or_fixed_ : 1;
+  unsigned has_fixed_position_descendant_ : 1;
+  unsigned has_sticky_position_descendant_ : 1;
   unsigned has_non_contained_absolute_position_descendant_ : 1;
 
   unsigned self_painting_status_changed_ : 1;

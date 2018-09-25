@@ -1338,4 +1338,33 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
             gfx::RectF(100, 700, 200, 200));
 }
 
+TEST_P(PaintPropertyTreeUpdateTest,
+       EffectAndClipWithNonContainedOutOfFlowDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="clip" style="overflow: hidden; width: 100px; height: 100px">
+      <div id="effect" style="opacity: 0.5">
+        <div id="descendant" style="position: fixed">Fixed</div>
+      </div>
+    </div>
+  )HTML");
+
+  const auto* clip_properties = PaintPropertiesForElement("clip");
+  EXPECT_NE(nullptr, clip_properties->OverflowClip());
+  const auto* effect_properties = PaintPropertiesForElement("effect");
+  ASSERT_NE(nullptr, effect_properties->Effect());
+  // The effect's OutputClip is nullptr because of the fixed descendant.
+  EXPECT_EQ(nullptr, effect_properties->Effect()->OutputClip());
+
+  auto* descendant = GetDocument().getElementById("descendant");
+  descendant->setAttribute(HTMLNames::styleAttr, "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(clip_properties->OverflowClip(),
+            effect_properties->Effect()->OutputClip());
+
+  descendant->setAttribute(HTMLNames::styleAttr, "position: absolute");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  // The effect's OutputClip is nullptr because of the absolute descendant.
+  EXPECT_EQ(nullptr, effect_properties->Effect()->OutputClip());
+}
+
 }  // namespace blink
