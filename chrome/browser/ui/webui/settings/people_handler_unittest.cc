@@ -505,6 +505,56 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndSigninFailed) {
       LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
 }
 
+TEST_F(PeopleHandlerTest, RestartSyncAfterDashboardClear) {
+  // Clearing sync from the dashboard results in DISABLE_REASON_USER_CHOICE
+  // being set.
+  ON_CALL(*mock_pss_, GetDisableReasons())
+      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
+  ON_CALL(*mock_pss_, IsFirstSetupComplete()).WillByDefault(Return(true));
+  ON_CALL(*mock_pss_, GetTransportState())
+      .WillByDefault(Return(syncer::SyncService::TransportState::DISABLED));
+
+  // Attempting to open the setup UI should restart sync.
+  EXPECT_CALL(*mock_pss_, RequestStart()).WillOnce([&]() {
+    // RequestStart() clears DISABLE_REASON_USER_CHOICE, and immediately starts
+    // initialzing the engine.
+    ON_CALL(*mock_pss_, GetDisableReasons())
+        .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
+    ON_CALL(*mock_pss_, GetTransportState())
+        .WillByDefault(
+            Return(syncer::SyncService::TransportState::INITIALIZING));
+  });
+
+  handler_->HandleShowSetupUI(nullptr);
+  ExpectPageStatusChanged(PeopleHandler::kSpinnerPageStatus);
+}
+
+TEST_F(PeopleHandlerTest,
+       RestartSyncAfterDashboardClearWithStandaloneTransport) {
+  // Clearing sync from the dashboard results in DISABLE_REASON_USER_CHOICE
+  // being set. However, the sync engine has restarted in standalone transport
+  // mode.
+  ON_CALL(*mock_pss_, GetDisableReasons())
+      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
+  ON_CALL(*mock_pss_, IsFirstSetupComplete()).WillByDefault(Return(true));
+  ON_CALL(*mock_pss_, GetTransportState())
+      .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
+
+  // Attempting to open the setup UI should re-enable sync-the-feature.
+  EXPECT_CALL(*mock_pss_, RequestStart()).WillOnce([&]() {
+    // RequestStart() clears DISABLE_REASON_USER_CHOICE. Since the engine is
+    // already running, it just gets reconfigured.
+    ON_CALL(*mock_pss_, GetDisableReasons())
+        .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
+    ON_CALL(*mock_pss_, GetTransportState())
+        .WillByDefault(
+            Return(syncer::SyncService::TransportState::CONFIGURING));
+  });
+
+  handler_->HandleShowSetupUI(nullptr);
+  ExpectPageStatusChanged(PeopleHandler::kSpinnerPageStatus);
+}
+
 // Tests that signals not related to user intention to configure sync don't
 // trigger sync engine start.
 TEST_F(PeopleHandlerTest, OnlyStartEngineWhenConfiguringSync) {
