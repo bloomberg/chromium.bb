@@ -3468,11 +3468,10 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
         site_config.templates.no_vmtest_builder,
     )
 
-  site_config.AddWithoutTemplate(
-      'prototype-firmwarebranch',
+  # Requires that you set boards, and workspace_branch.
+  site_config.AddTemplate(
+      'firmwarebranch',
       site_config.templates.firmware,
-      boards=['poppy'],
-      workspace_branch='firmware-poppy-10431.B',
       build_type=constants.GENERIC_TYPE,
       uprev=True,
       overlays=constants.BOTH_OVERLAYS,
@@ -3482,6 +3481,107 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       description='TOT builder to build a firmware branch.',
       doc='https://goto.google.com/tot-for-firmware-branches',
   )
+
+  # Defines "active", "branch", "boards" for firmwarebranch builds.
+  #
+  # Active:
+  #   None: Do not schedule automatically.
+  ACTIVE = '1d'  # pylint: disable=unused-variable
+  INACTIVE = '30d'  # pylint: disable=unused-variable
+  firmware_branch_builders = [
+      (None, 'firmware-falco_peppy-4389.B', ['falco', 'peppy']),
+      (None, 'firmware-pit-4482.B', ['peach_pit', 'peach_pi']),
+      (None, 'firmware-wolf-4389.24.B', ['wolf']),
+      (None, 'firmware-leon-4389.61.B', ['leon']),
+      (None, 'firmware-monroe-4921.B', ['monroe']),
+      (None, 'firmware-panther-4920.24.B', ['panther']),
+      (None, 'firmware-skate-3824.129.B', ['daisy_skate']),
+      (None, 'firmware-zako-5219.B', ['zako']),
+      (None, 'firmware-squawks-5216.152.B', ['squawks']),
+      (None, 'firmware-nyan-5771.B', ['nyan_big', 'nyan_blaze']),
+      (None, 'firmware-glimmer-5216.198.B', ['glimmer']),
+      (None, 'firmware-clapper-5216.199.B', ['clapper']),
+      (None, 'firmware-enguarde-5216.201.B', ['enguarde']),
+      (None, 'firmware-zako-5219.17.B', ['zako']),
+      (None, 'firmware-mccloud-5827.B', ['mccloud']),
+      (None, 'firmware-tricky-5829.B', ['tricky']),
+      (None, 'firmware-quawks-5216.204.B', ['quawks']),
+      (None, 'firmware-expresso-5216.223.B', ['expresso']),
+      (None, 'firmware-kip-5216.227.B', ['kip']),
+      (None, 'firmware-swanky-5216.238.B', ['swanky']),
+      (None, 'firmware-gnawty-5216.239.B', ['gnawty']),
+      (None, 'firmware-winky-5216.265.B', ['winky']),
+      (None, 'firmware-kitty-5771.61.B', ['nyan_kitty']),
+      (None, 'firmware-samus-6300.B', ['samus']),
+      (None, 'firmware-auron-6301.B', ['jecht']),
+      (None, 'firmware-candy-5216.310.B', ['candy']),
+      (None, 'firmware-veyron-6588.B', [
+          'veyron_jerry', 'veyron_mighty',
+          'veyron_speedy', 'veyron_jaq',
+          'veyron_minnie',
+          'veyron_mickey', 'veyron_rialto', 'veyron_tiger',
+          'veyron_fievel']),
+      (None, 'firmware-paine-6301.58.B', ['auron_paine']),
+      (None, 'firmware-yuna-6301.59.B', ['auron_yuna']),
+      (None, 'firmware-guado-6301.108.B', ['guado']),
+      (None, 'firmware-tidus-6301.109.B', ['tidus']),
+      (None, 'firmware-rikku-6301.110.B', ['rikku']),
+      (None, 'firmware-banjo-5216.334.B', ['banjo']),
+      (None, 'firmware-lulu-6301.136.B', ['lulu']),
+      (None, 'firmware-orco-5216.362.B', ['orco']),
+      (None, 'firmware-gandof-6301.155.B', ['gandof']),
+      (None, 'firmware-ninja-5216.383.B', ['ninja']),
+      (None, 'firmware-sumo-5216.382.B', ['sumo']),
+      (None, 'firmware-strago-7287.B', [
+          'wizpig', 'setzer', 'banon', 'kefka', 'relm']),
+      (None, 'firmware-heli-5216.392.B', ['heli']),
+      (None, 'firmware-cyan-7287.57.B', ['cyan']),
+      (None, 'firmware-celes-7287.92.B', ['celes']),
+      (None, 'firmware-ultima-7287.131.B', ['ultima']),
+      (None, 'firmware-reks-7287.133.B', ['reks']),
+      (None, 'firmware-buddy-6301.202.B', ['buddy']),
+      (None, 'firmware-glados-7820.B', [
+          'glados', 'chell', 'lars',
+          'sentry', 'cave', 'asuka', 'caroline']),
+      (None, 'firmware-terra-7287.154.B', ['terra']),
+      (None, 'firmware-edgar-7287.167.B', ['edgar']),
+      (None, 'firmware-gale-8281.B', ['gale']),
+      (None, 'firmware-oak-8438.B', ['oak', 'elm', 'hana']),
+      (None, 'firmware-gru-8785.B', ['gru', 'kevin', 'bob']),
+      (None, 'firmware-reef-9042.B', ['reef', 'pyro', 'sand', 'snappy']),
+      (None, 'firmware-cr50-9308.B', ['reef']),
+      (None, 'firmware-eve-9584.B', ['eve']),
+      (None, 'firmware-eve-campfire-9584.131.B', ['eve']),
+      (None, 'firmware-cr50-9308.24.B', ['reef']),
+      (None, 'firmware-cr50-release-9308.25.B', ['reef']),
+      (None, 'firmware-cr50-mp-release-9308.87.B', ['reef']),
+      (None, 'firmware-coral-10068.B', ['coral']),
+      (None, 'firmware-servo-9040.B', ['falco']),
+      (None, 'firmware-servo-11011.B', ['oak']),
+      (None, 'firmware-fizz-10139.B', ['fizz']),
+      (None, 'firmware-fizz-10139.94.B', ['fizz']),
+      (None, 'firmware-scarlet-10388.B', ['scarlet']),
+      (None, 'firmware-poppy-10431.B', ['poppy', 'soraka', 'nautilus']),
+      (None, 'firmware-nami-10775.B', ['nami']),
+      (None, 'firmware-nocturne-10984.B', ['nocturne']),
+      (None, 'firmware-grunt-11031.B', ['grunt']),
+  ]
+
+  for active, branch, boards in firmware_branch_builders:
+    schedule = {}
+    if active:
+      schedule = {
+          'active_waterfall': waterfall.WATERFALL_SWARMING,
+          'schedule': 'with %s interval' % active,
+      }
+
+    site_config.Add(
+        '%s-firmwarebranch' % branch,
+        site_config.templates.firmwarebranch,
+        boards=boards,
+        workspace_branch=branch,
+        **schedule
+    )
 
 
 def FactoryBuilders(site_config, boards_dict, ge_build_config):
