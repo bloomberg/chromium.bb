@@ -218,14 +218,15 @@ Node::InsertionNotificationRequest HTMLLinkElement::InsertedInto(
   if (!insertion_point.isConnected())
     return kInsertionDone;
   DCHECK(isConnected());
+
+  GetDocument().GetStyleEngine().AddStyleSheetCandidateNode(*this);
+
   if (!ShouldLoadLink() && IsInShadowTree()) {
     String message = "HTML element <link> is ignored in shadow tree.";
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kWarningMessageLevel, message));
     return kInsertionDone;
   }
-
-  GetDocument().GetStyleEngine().AddStyleSheetCandidateNode(*this);
 
   Process();
 
