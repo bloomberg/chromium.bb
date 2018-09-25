@@ -1199,8 +1199,7 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
   DocumentMarkerController& marker_controller = GetDocument()->Markers();
   DocumentMarkerVector markers =
       marker_controller.MarkersFor(ToText(*GetNode()));
-  for (size_t i = 0; i < markers.size(); ++i) {
-    DocumentMarker* marker = markers[i];
+  for (DocumentMarker* marker : markers) {
     if (MarkerTypeIsUsedForAccessibility(marker->GetType())) {
       marker_types.push_back(marker->GetType());
       const Position start_position(*GetNode(), marker->StartOffset());
@@ -1292,9 +1291,8 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
   if (auto* radio_button = ToHTMLInputElementOrNull(node_)) {
     HeapVector<Member<HTMLInputElement>> html_radio_buttons =
         FindAllRadioButtonsWithSameName(radio_button);
-    for (size_t i = 0; i < html_radio_buttons.size(); ++i) {
-      AXObject* ax_radio_button =
-          AXObjectCache().GetOrCreate(html_radio_buttons[i]);
+    for (HTMLInputElement* radio_button : html_radio_buttons) {
+      AXObject* ax_radio_button = AXObjectCache().GetOrCreate(radio_button);
       if (ax_radio_button)
         radio_buttons.push_back(ax_radio_button);
     }
@@ -1305,8 +1303,7 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
   // radio buttons.
   AXObject* parent = ParentObject();
   if (parent && parent->RoleValue() == ax::mojom::Role::kRadioGroup) {
-    for (size_t i = 0; i < parent->Children().size(); ++i) {
-      AXObject* child = parent->Children()[i];
+    for (AXObject* child : parent->Children()) {
       DCHECK(child);
       if (child->RoleValue() == ax::mojom::Role::kRadioButton &&
           !child->AccessibilityIsIgnored()) {
@@ -1692,7 +1689,7 @@ String AXNodeObject::StringValue() const {
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
     if (selected_index >= 0 &&
-        static_cast<size_t>(selected_index) < list_items.size()) {
+        static_cast<wtf_size_t>(selected_index) < list_items.size()) {
       const AtomicString& overridden_description =
           list_items[selected_index]->FastGetAttribute(aria_labelAttr);
       if (!overridden_description.IsNull())
@@ -1875,9 +1872,8 @@ String AXNodeObject::TextAlternative(bool recursive,
   name_from = ax::mojom::NameFrom::kUninitialized;
 
   if (name_sources && found_text_alternative) {
-    for (size_t i = 0; i < name_sources->size(); ++i) {
-      if (!(*name_sources)[i].text.IsNull() && !(*name_sources)[i].superseded) {
-        NameSource& name_source = (*name_sources)[i];
+    for (NameSource& name_source : *name_sources) {
+      if (!name_source.text.IsNull() && !name_source.superseded) {
         name_from = name_source.type;
         if (!name_source.related_objects.IsEmpty())
           *related_objects = name_source.related_objects;
@@ -2158,8 +2154,8 @@ void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
 
   if (child->AccessibilityIsIgnored()) {
     const auto& children = child->Children();
-    size_t length = children.size();
-    for (size_t i = 0; i < length; ++i)
+    wtf_size_t length = children.size();
+    for (wtf_size_t i = 0; i < length; ++i)
       children_.insert(index + i, children[i]);
   } else {
     DCHECK_EQ(child->ParentObject(), this);
@@ -3025,8 +3021,8 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
       Description(name_from, description_from, nullptr, &related_objects);
   if (description_objects) {
     description_objects->clear();
-    for (size_t i = 0; i < related_objects.size(); i++)
-      description_objects->push_back(related_objects[i]->object);
+    for (NameSourceRelatedObject* related_object : related_objects)
+      description_objects->push_back(related_object->object);
   }
 
   result = CollapseWhitespace(result);
@@ -3248,10 +3244,8 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
   description_from = ax::mojom::DescriptionFrom::kUninitialized;
 
   if (found_description) {
-    for (size_t i = 0; i < description_sources->size(); ++i) {
-      if (!(*description_sources)[i].text.IsNull() &&
-          !(*description_sources)[i].superseded) {
-        DescriptionSource& description_source = (*description_sources)[i];
+    for (DescriptionSource& description_source : *description_sources) {
+      if (!description_source.text.IsNull() && !description_source.superseded) {
         description_from = description_source.type;
         if (!description_source.related_objects.IsEmpty())
           *related_objects = description_source.related_objects;

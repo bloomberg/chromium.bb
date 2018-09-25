@@ -1116,7 +1116,7 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
 
   // Bubbling phase.
   event.SetEventPhase(Event::kBubblingPhase);
-  for (size_t i = 1; i < event_path.size(); i++) {
+  for (wtf_size_t i = 1; i < event_path.size(); i++) {
     event.SetCurrentTarget(event_path[i]);
     event_path[i]->FireEventListeners(event);
     if (event.PropagationStopped())
@@ -1424,8 +1424,8 @@ String AXObject::GetName(ax::mojom::NameFrom& name_from,
 
   if (name_objects) {
     name_objects->clear();
-    for (size_t i = 0; i < related_objects.size(); i++)
-      name_objects->push_back(related_objects[i]->object);
+    for (NameSourceRelatedObject* related_object : related_objects)
+      name_objects->push_back(related_object->object);
   }
 
   return text;
