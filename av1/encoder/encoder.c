@@ -5419,16 +5419,6 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
   return res;
 }
 
-static int frame_is_reference(const AV1_COMP *cpi) {
-  const AV1_COMMON *cm = &cpi->common;
-
-  return cm->frame_type == KEY_FRAME || cpi->refresh_last_frame ||
-         cpi->refresh_golden_frame || cpi->refresh_bwd_ref_frame ||
-         cpi->refresh_alt2_ref_frame || cpi->refresh_alt_ref_frame ||
-         !cm->error_resilient_mode || cm->lf.mode_ref_delta_update ||
-         cm->seg.update_map || cm->seg.update_data;
-}
-
 static void adjust_frame_rate(AV1_COMP *cpi,
                               const struct lookahead_entry *source) {
   int64_t this_duration;
@@ -6194,7 +6184,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 
   if (*size > 0) {
-    cpi->droppable = !frame_is_reference(cpi);
+    cpi->droppable = is_frame_droppable(cpi);
   }
 
   aom_usec_timer_mark(&cmptimer);
