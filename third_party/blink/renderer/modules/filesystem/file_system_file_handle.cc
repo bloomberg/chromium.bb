@@ -60,9 +60,9 @@ FileSystemFileHandle::FileSystemFileHandle(DOMFileSystemBase* file_system,
 ScriptPromise FileSystemFileHandle::createWriter(ScriptState* script_state) {
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
-  FileSystemDispatcher::GetThreadSpecificInstance().CreateFileWriter(
-      filesystem()->CreateFileSystemURL(this),
-      std::make_unique<CreateWriterCallbacks>(resolver));
+  FileSystemDispatcher::From(ExecutionContext::From(script_state))
+      .CreateFileWriter(filesystem()->CreateFileSystemURL(this),
+                        std::make_unique<CreateWriterCallbacks>(resolver));
   return result;
 }
 
@@ -70,12 +70,13 @@ ScriptPromise FileSystemFileHandle::getFile(ScriptState* script_state) {
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
   KURL file_system_url = filesystem()->CreateFileSystemURL(this);
-  FileSystemDispatcher::GetThreadSpecificInstance().CreateSnapshotFile(
-      file_system_url,
-      SnapshotFileCallback::Create(filesystem(), name(), file_system_url,
-                                   new OnDidCreateSnapshotFilePromise(resolver),
-                                   new PromiseErrorCallback(resolver),
-                                   ExecutionContext::From(script_state)));
+  FileSystemDispatcher::From(ExecutionContext::From(script_state))
+      .CreateSnapshotFile(file_system_url,
+                          SnapshotFileCallback::Create(
+                              filesystem(), name(), file_system_url,
+                              new OnDidCreateSnapshotFilePromise(resolver),
+                              new PromiseErrorCallback(resolver),
+                              ExecutionContext::From(script_state)));
   return result;
 }
 

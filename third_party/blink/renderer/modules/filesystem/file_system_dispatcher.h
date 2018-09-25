@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace WTF {
 class String;
@@ -18,18 +19,25 @@ class String;
 namespace blink {
 
 class KURL;
+class ExecutionContext;
 
 // Sends messages via mojo to the blink::mojom::FileSystemManager service
-// running in the browser process. It is currently created and stored in a
-// thread local variable. A thread specific instance can be obtained using
-// GetThreadSpecificInstance().
-class FileSystemDispatcher {
+// running in the browser process. It is owned by ExecutionContext, and
+// instances are created lazily by calling FileSystemDispatcher::From().
+class FileSystemDispatcher
+    : public GarbageCollectedFinalized<FileSystemDispatcher>,
+      public Supplement<ExecutionContext> {
+  USING_GARBAGE_COLLECTED_MIXIN(FileSystemDispatcher);
+
  public:
   using StatusCallback = base::OnceCallback<void(base::File::Error error)>;
   using WriteCallback =
       base::RepeatingCallback<void(int64_t bytes, bool complete)>;
 
-  static FileSystemDispatcher& GetThreadSpecificInstance();
+  static const char kSupplementName[];
+
+  static FileSystemDispatcher& From(ExecutionContext* context);
+  virtual ~FileSystemDispatcher();
 
   void OpenFileSystem(const KURL& url,
                       mojom::blink::FileSystemType type,
@@ -133,12 +141,15 @@ class FileSystemDispatcher {
   void CreateFileWriter(const KURL& file_path,
                         std::unique_ptr<CreateFileWriterCallbacks>);
 
+  using ChooseEntryCallbacks =
+      WebCallbacks<Vector<mojom::blink::FileSystemEntryPtr>, base::File::Error>;
+  void ChooseEntry(std::unique_ptr<ChooseEntryCallbacks> callbacks);
+
  private:
   class WriteListener;
   class ReadDirectoryListener;
-  friend class WTF::ThreadSpecific<FileSystemDispatcher>;
 
-  FileSystemDispatcher();
+  explicit FileSystemDispatcher(ExecutionContext& context);
 
   mojom::blink::FileSystemManager& GetFileSystemManager();
 

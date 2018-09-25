@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_SYNC_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_SYNC_H_
 
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/filesystem/file_writer_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -41,12 +42,16 @@ namespace blink {
 class Blob;
 class ExceptionState;
 
-class FileWriterSync final : public ScriptWrappable, public FileWriterBase {
+class FileWriterSync final : public ScriptWrappable,
+                             public FileWriterBase,
+                             public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
 
  public:
-  static FileWriterSync* Create() { return new FileWriterSync(); }
+  static FileWriterSync* Create(ExecutionContext* context) {
+    return new FileWriterSync(context);
+  }
   ~FileWriterSync() override;
   void Trace(blink::Visitor*) override;
 
@@ -65,7 +70,7 @@ class FileWriterSync final : public ScriptWrappable, public FileWriterBase {
   void DoCancel() override;
 
  private:
-  FileWriterSync();
+  explicit FileWriterSync(ExecutionContext* context);
   void PrepareForWrite();
 
   base::File::Error error_;

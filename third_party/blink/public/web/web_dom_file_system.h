@@ -31,7 +31,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOM_FILE_SYSTEM_H_
 
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_file_system.h"
+#include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"

@@ -42,10 +42,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
-class WebFileSystem;
-}  // namespace blink
-
-namespace blink {
 
 class DirectoryReaderBase;
 class EntryBase;
@@ -83,7 +79,6 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
   const String& name() const { return name_; }
   mojom::blink::FileSystemType GetType() const { return type_; }
   KURL RootURL() const { return filesystem_root_url_; }
-  WebFileSystem* FileSystem() const;
   const SecurityOrigin* GetSecurityOrigin() const;
 
   // The clonable flag is used in the structured clone algorithm to test
