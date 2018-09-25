@@ -780,8 +780,6 @@ bool Node::NeedsDistributionRecalc() const {
 }
 
 bool Node::MayContainLegacyNodeTreeWhereDistributionShouldBeSupported() const {
-  if (!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
-    return true;
   if (isConnected() && !GetDocument().MayContainV0Shadow()) {
     // TODO(crbug.com/787717): Some built-in elements still use <content>
     // elements in their user-agent shadow roots. DCHECK() fails if such an
@@ -1215,7 +1213,7 @@ bool Node::IsStyledElement() const {
 
 bool Node::CanParticipateInFlatTree() const {
   // TODO(hayato): Return false for pseudo elements.
-    return !IsShadowRoot() && !IsActiveV0InsertionPoint(*this);
+  return !IsShadowRoot() && !IsActiveV0InsertionPoint(*this);
 }
 
 bool Node::IsActiveSlotOrActiveV0InsertionPoint() const {

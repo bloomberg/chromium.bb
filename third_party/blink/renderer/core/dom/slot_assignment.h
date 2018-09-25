@@ -58,13 +58,9 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 
   void Trace(blink::Visitor*);
 
-  // For Incremental Shadow DOM
   bool NeedsAssignmentRecalc() const { return needs_assignment_recalc_; }
   void SetNeedsAssignmentRecalc();
   void RecalcAssignment();
-
-  // For Non-Incremental Shadow DOM
-  void RecalcDistribution();
 
  private:
   explicit SlotAssignment(ShadowRoot& owner);

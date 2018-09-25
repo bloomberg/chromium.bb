@@ -176,8 +176,7 @@ void ShadowRootV0::Distribute() {
       pool.DistributeTo(point, &GetShadowRoot());
       if (ShadowRoot* shadow_root =
               ShadowRootWhereNodeCanBeDistributedForV0(*point)) {
-        if (!(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
-              shadow_root->IsV1()))
+        if (!shadow_root->IsV1())
           shadow_root->SetNeedsDistributionRecalc();
       }
     }

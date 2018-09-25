@@ -114,33 +114,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   void Trace(blink::Visitor*) override;
 
-  // For Incremental Shadow DOM
   void ClearAssignedNodes();
   void RecalcFlatTreeChildren();
-
-  // For Non-Incremental Shadow DOM
-  void RecalcDistributedNodes();
-  void AppendDistributedNode(Node&);
-  void AppendDistributedNodesFrom(const HTMLSlotElement& other);
-  void UpdateDistributedNodesWithFallback();
-  void LazyReattachDistributedNodesIfNeeded();
-  void ClearDistribution();
-  void SaveAndClearDistribution();
-  Node* DistributedNodeNextTo(const Node&) const;
-  Node* DistributedNodePreviousTo(const Node&) const;
-
-  Node* FirstDistributedNode() const {
-    DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-    DCHECK(SupportsAssignment());
-    return distributed_nodes_.IsEmpty() ? nullptr
-                                        : distributed_nodes_.front().Get();
-  }
-  Node* LastDistributedNode() const {
-    DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-    DCHECK(SupportsAssignment());
-    return distributed_nodes_.IsEmpty() ? nullptr
-                                        : distributed_nodes_.back().Get();
-  }
 
  private:
   HTMLSlotElement(Document&);
