@@ -86,6 +86,18 @@ ProcessCoordinationUnitImpl::GetAssociatedPageCoordinationUnits() const {
   return page_cus;
 }
 
+void ProcessCoordinationUnitImpl::OnFrameLifecycleStateChanged(
+    FrameCoordinationUnitImpl* frame_cu,
+    mojom::LifecycleState old_state) {
+  DCHECK(base::ContainsKey(frame_coordination_units_, frame_cu));
+  DCHECK_NE(old_state, frame_cu->lifecycle_state());
+
+  if (old_state == mojom::LifecycleState::kFrozen)
+    DecrementNumFrozenFrames();
+  else if (frame_cu->lifecycle_state() == mojom::LifecycleState::kFrozen)
+    IncrementNumFrozenFrames();
+}
+
 void ProcessCoordinationUnitImpl::OnEventReceived(mojom::Event event) {
   for (auto& observer : observers())
     observer.OnProcessEventReceived(this, event);
@@ -101,14 +113,37 @@ void ProcessCoordinationUnitImpl::OnPropertyChanged(
 void ProcessCoordinationUnitImpl::AddFrameImpl(
     FrameCoordinationUnitImpl* frame_cu) {
   const bool inserted = frame_coordination_units_.insert(frame_cu).second;
-  if (inserted)
+  if (inserted) {
     frame_cu->AddProcessCoordinationUnit(this);
+    if (frame_cu->lifecycle_state() == mojom::LifecycleState::kFrozen)
+      IncrementNumFrozenFrames();
+  }
 }
 
 void ProcessCoordinationUnitImpl::RemoveFrame(
     FrameCoordinationUnitImpl* frame_cu) {
   DCHECK(base::ContainsKey(frame_coordination_units_, frame_cu));
   frame_coordination_units_.erase(frame_cu);
+
+  if (frame_cu->lifecycle_state() == mojom::LifecycleState::kFrozen)
+    DecrementNumFrozenFrames();
+}
+
+void ProcessCoordinationUnitImpl::DecrementNumFrozenFrames() {
+  --num_frozen_frames_;
+  DCHECK_GE(num_frozen_frames_, 0);
+}
+
+void ProcessCoordinationUnitImpl::IncrementNumFrozenFrames() {
+  ++num_frozen_frames_;
+  DCHECK_LE(num_frozen_frames_,
+            static_cast<int>(frame_coordination_units_.size()));
+
+  if (num_frozen_frames_ ==
+      static_cast<int>(frame_coordination_units_.size())) {
+    for (auto& observer : observers())
+      observer.OnAllFramesInProcessFrozen(this);
+  }
 }
 
 }  // namespace resource_coordinator

@@ -70,7 +70,15 @@ void FrameCoordinationUnitImpl::SetNetworkAlmostIdle(bool idle) {
 }
 
 void FrameCoordinationUnitImpl::SetLifecycleState(mojom::LifecycleState state) {
+  if (state == lifecycle_state_)
+    return;
+
+  mojom::LifecycleState old_state = lifecycle_state_;
   lifecycle_state_ = state;
+
+  if (process_coordination_unit_)
+    process_coordination_unit_->OnFrameLifecycleStateChanged(this, old_state);
+
   // The page will have the same lifecycle state as the main frame.
   if (IsMainFrame() && GetPageCoordinationUnit()) {
     // TODO(fdoray): Store the lifecycle state as a member on the
