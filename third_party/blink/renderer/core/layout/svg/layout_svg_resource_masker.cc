@@ -110,13 +110,12 @@ SVGUnitTypes::SVGUnitType LayoutSVGResourceMasker::MaskContentUnits() const {
 }
 
 FloatRect LayoutSVGResourceMasker::ResourceBoundingBox(
-    const LayoutObject* object) {
+    const FloatRect& reference_box) {
   SVGMaskElement* mask_element = ToSVGMaskElement(GetElement());
   DCHECK(mask_element);
 
-  FloatRect object_bounding_box = object->ObjectBoundingBox();
   FloatRect mask_boundaries = SVGLengthContext::ResolveRectangle(
-      mask_element, MaskUnits(), object_bounding_box);
+      mask_element, MaskUnits(), reference_box);
 
   // Resource was not layouted yet. Give back clipping rect of the mask.
   if (SelfNeedsLayout())
@@ -128,9 +127,8 @@ FloatRect LayoutSVGResourceMasker::ResourceBoundingBox(
   FloatRect mask_rect = mask_content_boundaries_;
   if (MaskContentUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
     AffineTransform transform;
-    transform.Translate(object_bounding_box.X(), object_bounding_box.Y());
-    transform.ScaleNonUniform(object_bounding_box.Width(),
-                              object_bounding_box.Height());
+    transform.Translate(reference_box.X(), reference_box.Y());
+    transform.ScaleNonUniform(reference_box.Width(), reference_box.Height());
     mask_rect = transform.MapRect(mask_rect);
   }
 

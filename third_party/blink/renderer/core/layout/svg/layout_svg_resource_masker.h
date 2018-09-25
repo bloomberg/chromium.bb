@@ -40,7 +40,7 @@ class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
 
   void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
 
-  FloatRect ResourceBoundingBox(const LayoutObject*);
+  FloatRect ResourceBoundingBox(const FloatRect& reference_box);
 
   SVGUnitTypes::SVGUnitType MaskUnits() const;
   SVGUnitTypes::SVGUnitType MaskContentUnits() const;
