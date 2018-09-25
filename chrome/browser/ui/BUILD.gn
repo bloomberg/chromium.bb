@@ -104,7 +104,6 @@ jumbo_split_static_library("ui") {
       "cocoa/constrained_window/constrained_window_sheet_info.mm",
       "cocoa/constrained_window/constrained_window_web_dialog_sheet.h",
       "cocoa/constrained_window/constrained_window_web_dialog_sheet.mm",
-      "cocoa/create_native_web_modal_manager_cocoa.mm",
       "cocoa/drag_util.h",
       "cocoa/drag_util.mm",
       "cocoa/extensions/extension_keybinding_registry_cocoa.h",
@@ -224,8 +223,6 @@ jumbo_split_static_library("ui") {
       "cocoa/view_id_util.h",
       "cocoa/view_id_util.mm",
       "cocoa/view_resizer.h",
-      "cocoa/web_contents_modal_dialog_manager_views_mac.h",
-      "cocoa/web_contents_modal_dialog_manager_views_mac.mm",
 
       # TODO(estade): this class should be deleted in favor of a combobox model.
       # See crbug.com/590850
