@@ -89,8 +89,7 @@ LocalSiteCharacteristicsDataStore::GetAllInMemoryOrigins() {
 
 void LocalSiteCharacteristicsDataStore::GetDatabaseSize(
     DatabaseSizeCallback on_have_data) {
-  // TODO(siggi): implement me.
-  std::move(on_have_data).Run(base::nullopt, base::nullopt);
+  database_->GetDatabaseSize(std::move(on_have_data));
 }
 
 bool LocalSiteCharacteristicsDataStore::GetDataForOrigin(

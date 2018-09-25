@@ -175,8 +175,9 @@ cr.define('database_tab', function() {
   }
 
   return {
-    getSortFunctionForKey: getSortFunctionForKey,
     formatLoadTimeEstimate: formatLoadTimeEstimate,
+    getSortFunctionForKey: getSortFunctionForKey,
+    kilobytesToString: kilobytesToString,
   };
 });
 
@@ -193,10 +194,22 @@ Polymer({
     rows_: {
       type: Array,
     },
+
+    /**
+     * The database size response.
+     * @private {!mojom.SiteCharacteristicsDatabaseSize}
+     */
+    size_: {
+      type: Object,
+      value: {numRows: -1, onDiskSizeKb: -1},
+    },
   },
 
   /** @private {number} */
-  updateTimer_: 0,
+  updateTableTimer_: 0,
+
+  /** @private {number} */
+  updateSizesTimer_: 0,
 
   /** @private {!Object} */
   requestedOrigins_: {},
@@ -215,10 +228,25 @@ Polymer({
 
     // Update immediately.
     this.updateDbRows_();
+    this.updateDbSizes_();
 
-    // Set an interval timer to update periodically.
-    this.updateTimer_ =
+    // Set an interval timer to update the database periodically.
+    this.updateTableTimer_ =
         setInterval(this.updateDbRows_.bind(this), UPDATE_INTERVAL_MS);
+
+    // Set another interval timer to update the database sizes, but much less
+    // frequently, as this requires iterating the entire database.
+    this.updateSizesTimer_ =
+        setInterval(this.updateDbSizes_.bind(this), UPDATE_INTERVAL_MS * 30);
+  },
+
+  /** @override */
+  detached: function() {
+    // Clear the update timers to avoid memory leaks.
+    clearInterval(this.updateTableTimer_);
+    this.updateTableTimer_ = 0;
+    clearInterval(this.updateSizesTimer_);
+    this.updateSizesTimer_ = 0;
   },
 
   /**
@@ -240,6 +268,19 @@ Polymer({
             this.requestedOrigins_[dbRow.origin] = true;
           this.rows_ = dbRows;
         });
+  },
+
+  /**
+   * Issues a request for the database sizes and renders on response.
+   * @private
+   */
+  updateDbSizes_: function() {
+    this.uiHandler_.getSiteCharacteristicsDatabaseSize().then(response => {
+      // Bail if the SiteCharacteristicsDatabase is turned off.
+      if (!response.dbSize)
+        return;
+      this.size_ = response.dbSize;
+    });
   },
 
   /**
@@ -318,5 +359,24 @@ Polymer({
    */
   getLoadTimeEstimate_: function(item, propertyName) {
     return database_tab.formatLoadTimeEstimate(item, propertyName);
+  },
+
+  /**
+   * @param {number} value A value in units of kilobytes, or -1 indicating not
+   *     available.
+   * @return {string} A human readable string representing value.
+   * @private
+   */
+  kilobytesToString_: function(value) {
+    return value == -1 ? 'N/A' : database_tab.kilobytesToString(value);
+  },
+
+  /**
+   * @param {number} value A numeric value or -1, indicating not available.
+   * @return {string} A human readable string representing value.
+   * @private
+   */
+  optionalIntegerToString_: function(value) {
+    return value == -1 ? 'N/A' : value.toString();
   },
 });
