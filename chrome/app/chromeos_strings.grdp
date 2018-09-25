@@ -4145,7 +4145,7 @@
     Place your finger
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor on the device.">
-    Touch the sensor with your index finger. It's on the top left of your Chromebook.
+    Touch the sensor with your finger. It's on the edge of your Chromebook.
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_PROGRESS_TITLE" desc="The title of the dialog that shows where the fingerprint sensor is.">
     Lift, then touch again
@@ -4184,7 +4184,7 @@
     Finger 3
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_MOVE_FINGER" desc="Text in the fingerprint setup screen telling users what to move finger to capture the different parts of fingerprint.">
-    Move your index finger slightly to add the different parts of your fingerprint.
+    Move your finger slightly to add the different parts of your fingerprint.
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_TRY_AGAIN" desc="Text in the fingerprint setup screen telling users what to scan their finger again.">
     Try again.
