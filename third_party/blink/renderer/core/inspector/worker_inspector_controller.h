@@ -33,9 +33,12 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/unguessable_token.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/core/inspector/inspector_session.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -48,6 +51,7 @@ class WorkerThreadDebugger;
 
 class WorkerInspectorController final
     : public GarbageCollectedFinalized<WorkerInspectorController>,
+      public TraceEvent::EnabledStateObserver,
       public InspectorSession::Client,
       private WebThread::TaskObserver {
  public:
@@ -81,10 +85,24 @@ class WorkerInspectorController final
   void WillProcessTask() override;
   void DidProcessTask() override;
 
+  // blink::TraceEvent::EnabledStateObserver implementation:
+  void OnTraceLogEnabled() override;
+  void OnTraceLogDisabled() override;
+
+  void EmitTraceEvent();
+
   WorkerThreadDebugger* debugger_;
   WorkerThread* thread_;
   Member<CoreProbeSink> probe_sink_;
   HeapHashMap<int, Member<InspectorSession>> sessions_;
+
+  // These fields are set up in the constructor and then read
+  // on a random thread from EmitTraceEvent().
+  base::UnguessableToken worker_devtools_token_;
+  base::UnguessableToken parent_devtools_token_;
+  KURL url_;
+  PlatformThreadId worker_thread_id_;
+
   DISALLOW_COPY_AND_ASSIGN(WorkerInspectorController);
 };
 
