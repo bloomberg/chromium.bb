@@ -3436,13 +3436,53 @@ static INLINE void signal_parse_sb_row_done(AV1Decoder *const pbi,
 #endif
 }
 
+// This function is very similar to decode_tile(). It would be good to figure
+// out how to share code.
+static void parse_tile_row_mt(AV1Decoder *pbi, ThreadData *const td,
+                              TileDataDec *const tile_data) {
+  AV1_COMMON *const cm = &pbi->common;
+  const int sb_mi_size = mi_size_wide[cm->seq_params.sb_size];
+  const int num_planes = av1_num_planes(cm);
+  TileInfo tile_info = tile_data->tile_info;
+  int tile_row = tile_info.tile_row;
+
+  av1_zero_above_context(cm, &td->xd, tile_info.mi_col_start,
+                         tile_info.mi_col_end, tile_row);
+  av1_reset_loop_filter_delta(&td->xd, num_planes);
+  av1_reset_loop_restoration(&td->xd, num_planes);
+
+  for (int mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
+       mi_row += cm->seq_params.mib_size) {
+    av1_zero_left_context(&td->xd);
+
+    for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
+         mi_col += cm->seq_params.mib_size) {
+      set_cb_buffer(pbi, &td->xd, pbi->cb_buffer_base, num_planes, mi_row,
+                    mi_col);
+
+      // Bit-stream parsing of the superblock
+      decode_partition(pbi, td, mi_row, mi_col, td->bit_reader,
+                       cm->seq_params.sb_size, 0x1);
+
+      if (aom_reader_has_overflowed(td->bit_reader)) {
+        aom_merge_corrupted_flag(&td->xd.corrupted, 1);
+        return;
+      }
+    }
+    signal_parse_sb_row_done(pbi, tile_data, sb_mi_size);
+  }
+
+  int corrupted =
+      (check_trailing_bits_after_symbol_coder(td->bit_reader)) ? 1 : 0;
+  aom_merge_corrupted_flag(&td->xd.corrupted, corrupted);
+}
+
 static int row_mt_worker_hook(void *arg1, void *arg2) {
   DecWorkerData *const thread_data = (DecWorkerData *)arg1;
   AV1Decoder *const pbi = (AV1Decoder *)arg2;
   AV1_COMMON *cm = &pbi->common;
   ThreadData *const td = thread_data->td;
   uint8_t allow_update_cdf;
-  const int sb_mi_size = mi_size_wide[cm->seq_params.sb_size];
   AV1DecRowMTInfo *frame_row_mt_info = &pbi->frame_row_mt_info;
   td->xd.corrupted = 0;
 
@@ -3464,9 +3504,10 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
   }
   thread_data->error_info.setjmp = 1;
 
-  const int num_planes = av1_num_planes(cm);
   allow_update_cdf = cm->large_scale_tile ? 0 : 1;
   allow_update_cdf = allow_update_cdf && !cm->disable_cdf_update;
+
+  set_decode_func_pointers(td, 0x1);
 
   assert(cm->tile_cols > 0);
   while (1) {
@@ -3478,36 +3519,8 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
       tile_worker_hook_init(pbi, thread_data, tile_buffer, tile_data,
                             allow_update_cdf);
 
-      set_decode_func_pointers(td, 0x1);
-
       // decode tile
-      TileInfo tile_info = tile_data->tile_info;
-      int tile_row = tile_info.tile_row;
-
-      av1_zero_above_context(cm, &td->xd, tile_info.mi_col_start,
-                             tile_info.mi_col_end, tile_row);
-      av1_reset_loop_filter_delta(&td->xd, num_planes);
-      av1_reset_loop_restoration(&td->xd, num_planes);
-
-      for (int mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
-           mi_row += cm->seq_params.mib_size) {
-        av1_zero_left_context(&td->xd);
-
-        for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
-             mi_col += cm->seq_params.mib_size) {
-          set_cb_buffer(pbi, &td->xd, pbi->cb_buffer_base, num_planes, mi_row,
-                        mi_col);
-
-          // Bit-stream parsing of the superblock
-          decode_partition(pbi, td, mi_row, mi_col, td->bit_reader,
-                           cm->seq_params.sb_size, 0x1);
-        }
-        signal_parse_sb_row_done(pbi, tile_data, sb_mi_size);
-      }
-
-      int corrupted =
-          (check_trailing_bits_after_symbol_coder(td->bit_reader)) ? 1 : 0;
-      aom_merge_corrupted_flag(&td->xd.corrupted, corrupted);
+      parse_tile_row_mt(pbi, td, tile_data);
     } else {
       break;
     }
