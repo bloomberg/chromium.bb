@@ -15,6 +15,8 @@ template("system_webview_apk_tmpl") {
       "//android_webview:assets",
       "//android_webview/apk:webview_license_activity_java",
       "//android_webview/apk:webview_license_provider_java",
+      "//android_webview/glue",
+      "//android_webview/support_library:support_lib_glue_java",
       "//base:base_java",
     ]
 

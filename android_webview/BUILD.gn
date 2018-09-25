@@ -1082,12 +1082,7 @@ if (public_android_sdk) {
     version_name = chrome_version_name
     android_manifest = system_webview_android_manifest
     android_manifest_dep = ":system_webview_manifest"
-    deps = [
-      ":platform_service_bridge_upstream_implementation_java",
-      ":system_webview_resources",
-      "//android_webview/glue",
-      "//android_webview/support_library:support_lib_glue_java",
-    ]
+    deps = upstream_only_webview_deps
     apk_name = "SystemWebView"
   }
 }
