@@ -302,7 +302,8 @@ EventRewriterChromeOS::DeviceType EventRewriterChromeOS::GetDeviceType(
       return EventRewriterChromeOS::kDeviceAppleKeyboard;
   }
 
-  if (!found_apple && keyboard_device.type == INPUT_DEVICE_EXTERNAL) {
+  if (!found_apple && (keyboard_device.type == INPUT_DEVICE_USB ||
+                       keyboard_device.type == INPUT_DEVICE_BLUETOOTH)) {
     // ui::InputDevice is a generic input device, and we're not sure if it's
     // actually a keyboard.
     return found_keyboard

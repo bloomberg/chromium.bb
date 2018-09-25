@@ -634,7 +634,7 @@ ui::InputDeviceType InputDeviceTypeFromBusType(int bustype) {
       return ui::InputDeviceType::INPUT_DEVICE_INTERNAL;
     case BUS_USB:
     case 0x1D:  // Used in kLogitechTouchKeyboardK400 but not listed in input.h.
-      return ui::InputDeviceType::INPUT_DEVICE_EXTERNAL;
+      return ui::InputDeviceType::INPUT_DEVICE_USB;
     default:
       NOTREACHED() << "Unexpected bus type";
       return ui::InputDeviceType::INPUT_DEVICE_UNKNOWN;

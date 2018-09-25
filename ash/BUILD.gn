@@ -239,6 +239,8 @@ component("ash") {
     "assistant/util/views_util.h",
     "autoclick/autoclick_controller.cc",
     "autoclick/autoclick_controller.h",
+    "bluetooth_devices_observer.cc",
+    "bluetooth_devices_observer.h",
     "cancel_mode.cc",
     "cancel_mode.h",
     "cast_config_controller.cc",

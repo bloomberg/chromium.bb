@@ -306,8 +306,8 @@ TEST_F(KeyboardTest, OnKeyboardTypeChanged) {
       ui::DeviceDataManager::GetInstance();
   ASSERT_TRUE(device_data_manager != nullptr);
   // Make sure that DeviceDataManager has one external keyboard.
-  const std::vector<ui::InputDevice> keyboards{ui::InputDevice(
-      2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard")};
+  const std::vector<ui::InputDevice> keyboards{
+      ui::InputDevice(2, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard")};
   device_data_manager->OnKeyboardDevicesUpdated(keyboards);
 
   ash::TabletModeController* tablet_mode_controller =

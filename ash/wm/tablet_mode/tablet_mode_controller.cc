@@ -140,6 +140,9 @@ TabletModeController::TabletModeController()
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
+    bluetooth_devices_observer_ = std::make_unique<BluetoothDevicesObserver>(
+        base::BindRepeating(&TabletModeController::UpdateBluetoothDevice,
+                            base::Unretained(this)));
   }
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
@@ -562,7 +565,9 @@ void TabletModeController::HandleMouseAddedOrRemoved() {
   bool has_external_mouse = false;
   for (const ui::InputDevice& mouse :
        ui::InputDeviceManager::GetInstance()->GetMouseDevices()) {
-    if (mouse.type == ui::INPUT_DEVICE_EXTERNAL) {
+    if (mouse.type == ui::INPUT_DEVICE_USB ||
+        (mouse.type == ui::INPUT_DEVICE_BLUETOOTH &&
+         bluetooth_devices_observer_->IsConnectedBluetoothDevice(mouse))) {
       has_external_mouse = true;
       break;
     }
@@ -613,6 +618,21 @@ void TabletModeController::UpdateInternalMouseAndKeyboardEventBlocker() {
 bool TabletModeController::LidAngleIsInTabletModeRange() {
   return can_detect_lid_angle_ && !lid_is_closed_ &&
          lid_angle_ >= kEnterTabletModeAngle;
+}
+
+void TabletModeController::UpdateBluetoothDevice(
+    device::BluetoothDevice* device) {
+  // We only care about mouse type bluetooth device change. Note KEYBOARD
+  // type is also included here as sometimes a bluetooth keyboard comes with a
+  // touch pad.
+  if (device->GetDeviceType() != device::BluetoothDeviceType::MOUSE &&
+      device->GetDeviceType() !=
+          device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO &&
+      device->GetDeviceType() != device::BluetoothDeviceType::KEYBOARD) {
+    return;
+  }
+
+  HandleMouseAddedOrRemoved();
 }
 
 }  // namespace ash
