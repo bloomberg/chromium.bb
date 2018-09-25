@@ -2407,6 +2407,120 @@ be describing additional metrics about the same event.
       Measure of memory consumed by live objects in V8.
     </summary>
   </metric>
+  <metric name="V8.Main">
+    <summary>
+      Measure of memory consumed by the main isolate of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in the main isolate of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap">
+    <summary>
+      Measure of memory consumed by the main heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in the main heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.CodeSpace">
+    <summary>
+      Measure of memory consumed by the code space of the main heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.CodeSpace.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in the code space of the main
+      heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.LargeObjectSpace">
+    <summary>
+      Measure of memory consumed by the large object space of the main heap of
+      V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.LargeObjectSpace.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in the large object space of
+      the main heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.MapSpace">
+    <summary>
+      Measure of memory consumed by the map space of the main heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.MapSpace.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in the map space of the main
+      heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.NewLargeObjectSpace">
+    <summary>
+      Measure of memory consumed by the new large object space of the main heap
+      of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.NewLargeObjectSpace.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in the new large object space
+      of the main heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.NewSpace">
+    <summary>
+      Measure of memory consumed by the new space of the main heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.NewSpace.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in the new space of the main
+      heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.OldSpace">
+    <summary>
+      Measure of memory consumed by the old space of the main heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.OldSpace.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in the old space of the main
+      heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.ReadOnlySpace">
+    <summary>
+      Measure of memory consumed by the read-only space of the main heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.ReadOnlySpace.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in the read-only space of the
+      main heap of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Malloc">
+    <summary>
+      Measure of memory allocated by malloc in the main isolate of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Workers">
+    <summary>
+      Measure of memory consumed by worker isolates of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Workers.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in worker isolates of V8.
+    </summary>
+  </metric>
   <metric name="WebCache">
     <summary>
       Measure of memory consumed by all resources in Blink Web Cache.
