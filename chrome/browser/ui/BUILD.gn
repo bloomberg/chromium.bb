@@ -2151,7 +2151,6 @@ jumbo_split_static_library("ui") {
       "cocoa/confirm_quit_panel_controller.mm",
       "cocoa/dock_icon.h",
       "cocoa/dock_icon.mm",
-      "cocoa/download/download_started_animation_mac.mm",
       "cocoa/first_run_dialog.h",
       "cocoa/first_run_dialog.mm",
       "cocoa/first_run_dialog_controller.h",

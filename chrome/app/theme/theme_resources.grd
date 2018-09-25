@@ -96,9 +96,6 @@
         <structure type="chrome_scaled_image" name="IDR_DEVICE_DISABLED" file="cros/device_disabled.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_DOWNLOADS_FAVICON" file="common/favicon_downloads.png" />
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_ANIMATION_BEGIN" file="legacy/download_animation_begin.png" />
-      </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_ANNOTATE" file="cros/downloads/annotate.png" />
         <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_CANCEL" file="cros/downloads/cancel.png" />
