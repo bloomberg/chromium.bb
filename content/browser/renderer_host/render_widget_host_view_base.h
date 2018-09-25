@@ -229,9 +229,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   virtual gfx::Size GetCompositorViewportPixelSize() const;
 
-  // Whether or not Blink's viewport size should be shrunk by the height of the
-  // URL-bar.
-  virtual bool DoBrowserControlsShrinkBlinkSize() const;
+  // Whether or not the renderer's viewport size should be shrunk by the height
+  // of the URL-bar.
+  virtual bool DoBrowserControlsShrinkRendererSize() const;
 
   // The height of the URL-bar browser controls.
   virtual float GetTopControlsHeight() const;

@@ -116,7 +116,8 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                            const GURL& url) override;
   int GetTopControlsHeight() const override;
   int GetBottomControlsHeight() const override;
-  bool DoBrowserControlsShrinkBlinkSize() const override;
+  bool DoBrowserControlsShrinkRendererSize(
+      const content::WebContents* contents) const override;
 
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;

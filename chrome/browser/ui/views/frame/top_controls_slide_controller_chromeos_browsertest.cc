@@ -250,6 +250,10 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
 
       // Widget should not allow things to show outside its bounds.
       EXPECT_TRUE(browser_view->frame()->GetLayer()->GetMasksToBounds());
+
+      // The browser controls doesn't shrink the blink viewport size.
+      EXPECT_FALSE(browser_view->DoBrowserControlsShrinkRendererSize(
+          browser_view->GetActiveWebContents()));
     } else {
       // Top container start at the top.
       EXPECT_EQ(top_container_bounds.y(), 0);
@@ -261,6 +265,10 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
                 browser_view->contents_container()->height());
 
       EXPECT_FALSE(browser_view->frame()->GetLayer()->GetMasksToBounds());
+
+      // The browser controls does shrink the blink viewport size.
+      EXPECT_TRUE(browser_view->DoBrowserControlsShrinkRendererSize(
+          browser_view->GetActiveWebContents()));
     }
   }
 
@@ -297,6 +305,8 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisabledForHostedApps) {
 
   // Renderer will get a zero-height top controls.
   EXPECT_EQ(browser_view->GetTopControlsHeight(), 0);
+  EXPECT_FALSE(browser_view->DoBrowserControlsShrinkRendererSize(
+      browser_view->GetActiveWebContents()));
 }
 
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
@@ -311,6 +321,8 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   // The browser reports a zero height for top-chrome UIs when the behavior is
   // disabled, so the render doesn't think it needs to move the top controls.
   EXPECT_EQ(browser_view()->GetTopControlsHeight(), 0);
+  EXPECT_FALSE(browser_view()->DoBrowserControlsShrinkRendererSize(
+      browser_view()->GetActiveWebContents()));
 
   // Now enable tablet mode.
   ToggleTabletMode();
@@ -321,23 +333,31 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
   EXPECT_NE(browser_view()->GetTopControlsHeight(), 0);
+  EXPECT_TRUE(browser_view()->DoBrowserControlsShrinkRendererSize(
+      browser_view()->GetActiveWebContents()));
 
   // Immersive fullscreen mode disables the behavior.
   chrome::ToggleFullscreenMode(browser());
   EXPECT_TRUE(browser_view()->IsFullscreen());
   EXPECT_FALSE(top_controls_slide_controller()->IsEnabled());
   EXPECT_EQ(browser_view()->GetTopControlsHeight(), 0);
+  EXPECT_FALSE(browser_view()->DoBrowserControlsShrinkRendererSize(
+      browser_view()->GetActiveWebContents()));
 
   // Exit immersive mode.
   chrome::ToggleFullscreenMode(browser());
   EXPECT_FALSE(browser_view()->IsFullscreen());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
   EXPECT_NE(browser_view()->GetTopControlsHeight(), 0);
+  EXPECT_TRUE(browser_view()->DoBrowserControlsShrinkRendererSize(
+      browser_view()->GetActiveWebContents()));
 
   ToggleTabletMode();
   EXPECT_FALSE(GetTabletModeEnabled());
   EXPECT_FALSE(top_controls_slide_controller()->IsEnabled());
   EXPECT_EQ(browser_view()->GetTopControlsHeight(), 0);
+  EXPECT_FALSE(browser_view()->DoBrowserControlsShrinkRendererSize(
+      browser_view()->GetActiveWebContents()));
 }
 
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestScrollingPage) {
@@ -431,6 +451,16 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   waiter.WaitForRatio(0.f);
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 0);
   CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyHidden);
+
+  // The `DoBrowserControlsShrinkRendererSize` bit is separately tracked for
+  // each tab.
+  auto* tab_strip_model = browser()->tab_strip_model();
+  auto* scrollable_page_contents = tab_strip_model->GetWebContentsAt(0);
+  auto* ntp_contents = tab_strip_model->GetWebContentsAt(1);
+  EXPECT_TRUE(
+      browser_view()->DoBrowserControlsShrinkRendererSize(ntp_contents));
+  EXPECT_FALSE(browser_view()->DoBrowserControlsShrinkRendererSize(
+      scrollable_page_contents));
 }
 
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestClosingATab) {

@@ -59,6 +59,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Functions for controlling the browser top controls slide behavior with page
   // gesture scrolling.
   virtual void SetTopControlsShownRatio(float ratio) {}
+  virtual bool DoBrowserControlsShrinkRendererSize() const;
   virtual int GetTopControlsHeight() const;
   virtual void SetTopControlsGestureScrollInProgress(bool in_progress) {}
 

@@ -120,6 +120,37 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void SetTopControlsShownRatio(content::WebContents* web_contents,
                                         float ratio) = 0;
 
+  // Whether or not the renderer's viewport size should be shrunk by the height
+  // of the browser's top controls.
+  // As top-chrome is slided up or down, we don't actually resize the web
+  // contents (for perf reasons) but we have to do a bunch of adjustments on the
+  // renderer side to make it appear to the user like we're resizing things
+  // smoothly:
+  //
+  // 1) Expose content beyond the web contents rect by expanding the clip.
+  // 2) Push bottom-fixed elements around until we get a resize. As top-chrome
+  //    hides, we push the fixed elements down by an equivalent amount so that
+  //    they appear to stay fixed to the viewport bottom.
+  //
+  // Only when the user releases their finger to finish the scroll do we
+  // actually resize the web contents and clear these adjustments. So web
+  // contents has two possible sizes, viewport filling and shrunk by the top
+  // controls.
+  //
+  // The GetTopControlsHeight is a static number that never changes (as long as
+  // the top-chrome slide with gesture scrolls feature is enabled). To get the
+  // actual "showing" height as the user sees, you multiply this by the shown
+  // ratio. However, it's not enough to know this value, the renderer also needs
+  // to know which direction it should be doing the above-mentioned adjustments.
+  // That's what the DoBrowserControlsShrinkRendererSize bit is for. It tells
+  // the renderer whether it's currently in the "viewport filling" or the
+  // "shrunk by top controls" state.
+  // The returned value should never change while sliding top-chrome is in
+  // progress (either due to an in-progress gesture scroll, or due to a
+  // renderer-initiated animation of the top controls shown ratio).
+  virtual bool DoBrowserControlsShrinkRendererSize(
+      const content::WebContents* contents) const = 0;
+
   // Returns the height of the browser's top controls. This height doesn't
   // change with the current shown ratio above. Renderers will call this to
   // calculate the top-chrome shown ratio from the gesture scroll offset.

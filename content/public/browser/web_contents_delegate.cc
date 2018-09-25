@@ -256,7 +256,8 @@ int WebContentsDelegate::GetBottomControlsHeight() const {
   return 0;
 }
 
-bool WebContentsDelegate::DoBrowserControlsShrinkBlinkSize() const {
+bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
+    const WebContents* web_contents) const {
   return false;
 }
 

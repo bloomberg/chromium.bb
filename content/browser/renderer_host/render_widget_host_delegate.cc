@@ -12,6 +12,10 @@
 
 namespace content {
 
+bool RenderWidgetHostDelegate::DoBrowserControlsShrinkRendererSize() const {
+  return false;
+}
+
 int RenderWidgetHostDelegate::GetTopControlsHeight() const {
   return 0;
 }

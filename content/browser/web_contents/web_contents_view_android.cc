@@ -521,9 +521,10 @@ int WebContentsViewAndroid::GetBottomControlsHeight() const {
   return delegate ? delegate->GetBottomControlsHeight() : 0;
 }
 
-bool WebContentsViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
+bool WebContentsViewAndroid::DoBrowserControlsShrinkRendererSize() const {
   auto* delegate = web_contents_->GetDelegate();
-  return delegate ? delegate->DoBrowserControlsShrinkBlinkSize() : false;
+  return delegate &&
+         delegate->DoBrowserControlsShrinkRendererSize(web_contents_);
 }
 
 bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {

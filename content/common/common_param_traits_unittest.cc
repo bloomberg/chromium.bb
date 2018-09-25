@@ -256,9 +256,9 @@ TEST(IPCMessageTest, RenderWidgetSurfaceProperties) {
   content::RenderWidgetSurfaceProperties input;
   input.size = gfx::Size(23, 45);
   input.device_scale_factor = 0.8;
-#ifdef OS_ANDROID
   input.top_controls_height = 16.5;
   input.top_controls_shown_ratio = 0.4;
+#ifdef OS_ANDROID
   input.bottom_controls_height = 23.4;
   input.bottom_controls_shown_ratio = 0.8;
   input.selection.start.set_type(gfx::SelectionBound::Type::CENTER);
@@ -275,9 +275,9 @@ TEST(IPCMessageTest, RenderWidgetSurfaceProperties) {
 
   EXPECT_EQ(input.size, output.size);
   EXPECT_EQ(input.device_scale_factor, output.device_scale_factor);
-#ifdef OS_ANDROID
   EXPECT_EQ(input.top_controls_height, output.top_controls_height);
   EXPECT_EQ(input.top_controls_shown_ratio, output.top_controls_shown_ratio);
+#ifdef OS_ANDROID
   EXPECT_EQ(input.bottom_controls_height, output.bottom_controls_height);
   EXPECT_EQ(input.bottom_controls_shown_ratio,
             output.bottom_controls_shown_ratio);

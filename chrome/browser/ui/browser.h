@@ -473,6 +473,8 @@ class Browser : public TabStripModelObserver,
   void SetTopControlsShownRatio(content::WebContents* web_contents,
                                 float ratio) override;
   int GetTopControlsHeight() const override;
+  bool DoBrowserControlsShrinkRendererSize(
+      const content::WebContents* contents) const override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   bool CanOverscrollContent() const override;
   bool ShouldPreserveAbortedURLs(content::WebContents* source) override;

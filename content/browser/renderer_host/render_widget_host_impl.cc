@@ -812,7 +812,7 @@ bool RenderWidgetHostImpl::GetVisualProperties(
       visual_properties->bottom_controls_height *= device_scale;
     }
     visual_properties->browser_controls_shrink_blink_size =
-        view_->DoBrowserControlsShrinkBlinkSize();
+        view_->DoBrowserControlsShrinkRendererSize();
     visual_properties->visible_viewport_size = view_->GetVisibleViewportSize();
     // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
     // scale factor of the surface. Fix this.

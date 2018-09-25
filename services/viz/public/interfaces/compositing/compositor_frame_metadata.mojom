@@ -42,10 +42,8 @@ struct CompositorFrameMetadata {
   [EnableIf=is_android]
   bool root_overflow_y_hidden;
 
-  [EnableIf=is_android]
   float top_controls_height;
 
-  [EnableIf=is_android]
   float top_controls_shown_ratio;
 
   [EnableIf=is_android]
