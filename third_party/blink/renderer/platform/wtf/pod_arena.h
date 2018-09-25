@@ -23,8 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_ARENA_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_ARENA_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_ARENA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_ARENA_H_
 
 #include <stdint.h>
 #include <memory>
@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-namespace blink {
+namespace WTF {
 
 // An arena which allocates only Plain Old Data (POD), or classes and
 // structs bottoming out in Plain Old Data. NOTE: the constructors of
@@ -191,6 +191,6 @@ class PODArena final : public RefCounted<PODArena> {
   Vector<std::unique_ptr<Chunk>> chunks_;
 };
 
-}  // namespace blink
+}  // namespace WTF
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_ARENA_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_ARENA_H_

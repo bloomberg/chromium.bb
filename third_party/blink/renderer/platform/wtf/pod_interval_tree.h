@@ -23,17 +23,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_TREE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_TREE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_INTERVAL_TREE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_INTERVAL_TREE_H_
 
-#include "third_party/blink/renderer/platform/pod_arena.h"
-#include "third_party/blink/renderer/platform/pod_interval.h"
-#include "third_party/blink/renderer/platform/pod_red_black_tree.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/pod_arena.h"
+#include "third_party/blink/renderer/platform/wtf/pod_interval.h"
+#include "third_party/blink/renderer/platform/wtf/pod_red_black_tree.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-namespace blink {
+namespace WTF {
 
 #ifndef NDEBUG
 template <class T>
@@ -253,6 +253,6 @@ struct ValueToString<PODInterval<T, UserData>> {
 };
 #endif
 
-}  // namespace blink
+}  // namespace WTF
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_TREE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_INTERVAL_TREE_H_

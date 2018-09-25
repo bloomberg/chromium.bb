@@ -25,15 +25,14 @@
 
 // Tests for the interval tree class.
 
-#include "third_party/blink/renderer/platform/pod_interval_tree.h"
+#include "third_party/blink/renderer/platform/wtf/pod_interval_tree.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/geometry/float_polygon.h"
-#include "third_party/blink/renderer/platform/testing/tree_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/pod_tree_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-namespace blink {
+namespace WTF {
 
 using TreeTestHelpers::InitRandom;
 using TreeTestHelpers::NextRandom;
@@ -196,13 +195,6 @@ TEST(PODIntervalTreeTest, TestTreeDoesNotRequireMostOperators) {
 // in release builds.
 // #define DEBUG_INSERTION_AND_DELETION_TEST
 
-#ifndef NDEBUG
-template <>
-struct ValueToString<int> {
-  static String ToString(const int& value) { return String::Number(value); }
-};
-#endif
-
 namespace {
 
 void TreeInsertionAndDeletionTest(int32_t seed, int tree_size) {
@@ -342,4 +334,4 @@ TEST(PODIntervalTreeTest, RandomDeletionAndInsertionRegressionTest4) {
   ASSERT_TRUE(tree.CheckInvariants());
 }
 
-}  // namespace blink
+}  // namespace WTF

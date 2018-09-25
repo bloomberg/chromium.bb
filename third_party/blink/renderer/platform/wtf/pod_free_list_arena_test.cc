@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/pod_free_list_arena.h"
+#include "third_party/blink/renderer/platform/wtf/pod_free_list_arena.h"
 
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/testing/arena_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/pod_arena_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-namespace blink {
+namespace WTF {
 
 using ArenaTestHelpers::TrackedAllocator;
 
@@ -163,4 +163,4 @@ TEST_F(PODFreeListArenaTest, ReusesPreviouslyFreedObjects) {
   }
 }
 
-}  // namespace blink
+}  // namespace WTF

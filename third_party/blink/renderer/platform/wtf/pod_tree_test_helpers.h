@@ -23,21 +23,28 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/testing/tree_test_helpers.h"
+// Simple pseudorandom number generator helper functions, used by the
+// red-black and interval tree tests.
+//
+// These are **not** thread safe!
 
-#include <cstdlib>
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_TREE_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_TREE_TEST_HELPERS_H_
 
-namespace blink {
+#include <stdint.h>
+
+namespace WTF {
 namespace TreeTestHelpers {
 
-void InitRandom(const int32_t seed) {
-  srand(seed);
-}
+// Initializes the pseudo-random number generator with a specific seed.
+void InitRandom(const int32_t seed);
 
-int32_t NextRandom(const int32_t maximum_value) {
-  // rand_r is not available on Windows
-  return rand() % maximum_value;
-}
+// Produces the next pseudo-random number in the sequence, in the
+// range from [0..maximumValue). Negative numbers are not allowed and will
+// produce undefined results.
+int32_t NextRandom(const int32_t maximum_value);
 
 }  // namespace TreeTestHelpers
-}  // namespace blink
+}  // namespace WTF
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_TREE_TEST_HELPERS_H_
