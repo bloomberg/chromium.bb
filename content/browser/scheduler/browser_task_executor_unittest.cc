@@ -37,13 +37,15 @@ class BrowserTaskExecutorTest : public testing::Test {
 };
 
 TEST_F(BrowserTaskExecutorTest, EnsureUIThreadTraitPointsToExpectedQueue) {
-  EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-            BrowserThreadImpl::GetTaskRunnerForThread(BrowserThread::UI));
+  EXPECT_EQ(
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+      BrowserTaskExecutor::GetProxyTaskRunnerForThread(BrowserThread::UI));
 }
 
 TEST_F(BrowserTaskExecutorTest, EnsureIOThreadTraitPointsToExpectedQueue) {
-  EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-            BrowserThreadImpl::GetTaskRunnerForThread(BrowserThread::IO));
+  EXPECT_EQ(
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+      BrowserTaskExecutor::GetProxyTaskRunnerForThread(BrowserThread::IO));
 }
 
 }  // namespace content

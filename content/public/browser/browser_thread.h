@@ -186,7 +186,8 @@ class CONTENT_EXPORT BrowserThread {
   static std::string GetDCheckCurrentlyOnErrorMessage(ID expected);
 
  protected:
-  // For DeleteSoon().
+  // For DeleteSoon(). Requires that the BrowserThread with the provided
+  // |identifier| was started.
   static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForThread(
       ID identifier);
 
