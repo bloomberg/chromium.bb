@@ -12,10 +12,19 @@ const PagesInputErrorState = {
   OUT_OF_BOUNDS: 2,
 };
 
+/** @enum {number} */
+const PagesValue = {
+  ALL: 0,
+  CUSTOM: 1,
+};
+
 Polymer({
   is: 'print-preview-pages-settings',
 
-  behaviors: [SettingsBehavior, print_preview_new.InputBehavior],
+  behaviors: [
+    SettingsBehavior, print_preview_new.InputBehavior,
+    print_preview_new.SelectBehavior
+  ],
 
   properties: {
     /** @type {!print_preview.DocumentInfo} */
@@ -33,13 +42,13 @@ Polymer({
       computed: 'computeAllPagesArray_(documentInfo.pageCount)',
     },
 
+    disabled: Boolean,
+
     /** @private {boolean} */
     customSelected_: {
       type: Boolean,
       value: false,
     },
-
-    disabled: Boolean,
 
     /** @private {number} */
     errorState_: {
@@ -60,6 +69,15 @@ Polymer({
       type: Array,
       computed: 'computeRangesToPrint_(pagesToPrint_, allPagesArray_)',
     },
+
+    /**
+     * Mirroring the enum so that it can be used from HTML bindings.
+     * @private
+     */
+    pagesValueEnum_: {
+      type: Object,
+      value: PagesValue,
+    },
   },
 
   observers: [
@@ -69,6 +87,11 @@ Polymer({
 
   listeners: {
     'input-change': 'onInputChange_',
+  },
+
+  // Initialize in attached() since this doesn't observe settings.pages.
+  attached: function() {
+    this.selectedValue = PagesValue.ALL.toString();
   },
 
   /** @return {!CrInputElement} The cr-input field element for InputBehavior. */
@@ -82,6 +105,14 @@ Polymer({
    */
   onInputChange_: function(e) {
     this.inputString_ = /** @type {string} */ (e.detail);
+  },
+
+  onProcessSelectChange: function(value) {
+    this.customSelected_ = value === PagesValue.CUSTOM.toString();
+    if (this.customSelected_) {
+      /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
+          .inputElement.focus();
+    }
   },
 
   /**
@@ -274,28 +305,13 @@ Polymer({
   },
 
   /** @private */
-  onAllRadioClick_: function() {
-    this.customSelected_ = false;
-  },
+  onSelectBlur_: function(event) {
+    if (!this.customSelected_ ||
+        event.relatedTarget === this.$.pageSettingsCustomInput) {
+      return;
+    }
 
-  /**
-   * @param {Event} event Contains information about where focus came from.
-   * @private
-   */
-  onCustomRadioFocus_: function(event) {
-    if (event.relatedTarget !== this.$.pageSettingsCustomInput)
-      this.onCustomRadioClick_();
-  },
-
-  /** @private */
-  onCustomRadioClick_: function() {
-    /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
-        .inputElement.focus();
-  },
-
-  /** @private */
-  onCustomInputFocus_: function() {
-    this.customSelected_ = true;
+    this.onCustomInputBlur_(event);
   },
 
   /**
@@ -305,9 +321,11 @@ Polymer({
   onCustomInputBlur_: function(event) {
     this.resetAndUpdate();
 
-    if (this.inputString_.trim() == '' &&
-        event.relatedTarget != this.$$('#custom-radio-button')) {
+    if (this.inputString_ === '' &&
+        event.relatedTarget != this.$.customInputWrapper &&
+        event.relatedTarget != this.$$('.md-select')) {
       this.customSelected_ = false;
+      this.selectedValue = PagesValue.ALL.toString();
     }
   },
 
