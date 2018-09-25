@@ -436,18 +436,20 @@ void FileSystemDispatcher::CreateFileWriter(
 }
 
 void FileSystemDispatcher::ChooseEntry(
+    mojom::blink::ChooseFileSystemEntryType type,
     std::unique_ptr<ChooseEntryCallbacks> callbacks) {
-  GetFileSystemManager().ChooseEntry(WTF::Bind(
-      [](std::unique_ptr<ChooseEntryCallbacks> callbacks,
-         base::File::Error result,
-         Vector<mojom::blink::FileSystemEntryPtr> entries) {
-        if (result != base::File::FILE_OK) {
-          callbacks->OnError(result);
-        } else {
-          callbacks->OnSuccess(std::move(entries));
-        }
-      },
-      std::move(callbacks)));
+  GetFileSystemManager().ChooseEntry(
+      type, WTF::Bind(
+                [](std::unique_ptr<ChooseEntryCallbacks> callbacks,
+                   base::File::Error result,
+                   Vector<mojom::blink::FileSystemEntryPtr> entries) {
+                  if (result != base::File::FILE_OK) {
+                    callbacks->OnError(result);
+                  } else {
+                    callbacks->OnSuccess(std::move(entries));
+                  }
+                },
+                std::move(callbacks)));
 }
 
 mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
