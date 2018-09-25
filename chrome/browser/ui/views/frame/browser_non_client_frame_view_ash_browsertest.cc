@@ -1187,6 +1187,26 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_FALSE(frame_view2->caption_button_container_->visible());
 }
 
+// Regression test for https://crbug.com/879851.
+// Tests that we don't accidentally change the color of app frame title bars.
+// Update expectation if change is intentional.
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, AppFrameColor) {
+  browser()->window()->Close();
+
+  // Open a new app window.
+  Browser* app_browser = new Browser(Browser::CreateParams::CreateForApp(
+      "test_browser_app", true /* trusted_source */, gfx::Rect(),
+      browser()->profile(), true /* user_gesture */));
+  aura::Window* window = app_browser->window()->GetNativeWindow();
+  window->Show();
+
+  SkColor active_frame_color = window->GetProperty(ash::kFrameActiveColorKey);
+  EXPECT_EQ(active_frame_color, SkColorSetRGB(253, 254, 255))
+      << "RGB: " << SkColorGetR(active_frame_color) << ", "
+      << SkColorGetG(active_frame_color) << ", "
+      << SkColorGetB(active_frame_color);
+}
+
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        ImmersiveModeTopViewInset) {
   browser()->window()->Close();

@@ -1008,7 +1008,7 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
     active_color =
         browser_view()->browser()->hosted_app_controller()->GetThemeColor();
     window->SetProperty(ash::kFrameIsThemedByHostedAppKey, !!active_color);
-  } else {
+  } else if (!browser_view()->browser()->is_app()) {
     active_color = kMdWebUiFrameColor;
   }
 
