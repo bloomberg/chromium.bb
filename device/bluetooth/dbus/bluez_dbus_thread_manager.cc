@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/dbus/dbus_thread_manager_linux.h"
+#include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
@@ -10,12 +10,12 @@
 
 namespace bluez {
 
-static DBusThreadManagerLinux* g_linux_dbus_manager = NULL;
+static BluezDBusThreadManager* g_bluez_dbus_thread_manager = NULL;
 
-DBusThreadManagerLinux::DBusThreadManagerLinux() {
+BluezDBusThreadManager::BluezDBusThreadManager() {
   base::Thread::Options thread_options;
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  dbus_thread_.reset(new base::Thread("D-Bus thread"));
+  dbus_thread_.reset(new base::Thread("Bluez D-Bus thread"));
   dbus_thread_->StartWithOptions(thread_options);
 
   // Create the connection to the system bus.
@@ -26,7 +26,7 @@ DBusThreadManagerLinux::DBusThreadManagerLinux() {
   system_bus_ = new dbus::Bus(system_bus_options);
 }
 
-DBusThreadManagerLinux::~DBusThreadManagerLinux() {
+BluezDBusThreadManager::~BluezDBusThreadManager() {
   // Shut down the bus. During the browser shutdown, it's ok to shut down
   // the bus synchronously.
   if (system_bus_.get())
@@ -36,38 +36,38 @@ DBusThreadManagerLinux::~DBusThreadManagerLinux() {
   if (dbus_thread_)
     dbus_thread_->Stop();
 
-  if (!g_linux_dbus_manager)
+  if (!g_bluez_dbus_thread_manager)
     return;  // Called form Shutdown() or local test instance.
 
   // There should never be both a global instance and a local instance.
-  CHECK(this == g_linux_dbus_manager);
+  CHECK(this == g_bluez_dbus_thread_manager);
 }
 
-dbus::Bus* DBusThreadManagerLinux::GetSystemBus() {
+dbus::Bus* BluezDBusThreadManager::GetSystemBus() {
   return system_bus_.get();
 }
 
 // static
-void DBusThreadManagerLinux::Initialize() {
-  CHECK(!g_linux_dbus_manager);
-  g_linux_dbus_manager = new DBusThreadManagerLinux();
+void BluezDBusThreadManager::Initialize() {
+  CHECK(!g_bluez_dbus_thread_manager);
+  g_bluez_dbus_thread_manager = new BluezDBusThreadManager();
 }
 
 // static
-void DBusThreadManagerLinux::Shutdown() {
-  // Ensure that we only shutdown LinuxDBusManager once.
-  CHECK(g_linux_dbus_manager);
-  DBusThreadManagerLinux* dbus_thread_manager = g_linux_dbus_manager;
-  g_linux_dbus_manager = NULL;
+void BluezDBusThreadManager::Shutdown() {
+  // Ensure that we only shutdown BluezDBusThreadManager once.
+  CHECK(g_bluez_dbus_thread_manager);
+  BluezDBusThreadManager* dbus_thread_manager = g_bluez_dbus_thread_manager;
+  g_bluez_dbus_thread_manager = NULL;
   delete dbus_thread_manager;
-  VLOG(1) << "LinuxDBusManager Shutdown completed";
+  VLOG(1) << "BluezDBusThreadManager Shutdown completed";
 }
 
 // static
-DBusThreadManagerLinux* DBusThreadManagerLinux::Get() {
-  CHECK(g_linux_dbus_manager)
-      << "LinuxDBusManager::Get() called before Initialize()";
-  return g_linux_dbus_manager;
+BluezDBusThreadManager* BluezDBusThreadManager::Get() {
+  CHECK(g_bluez_dbus_thread_manager)
+      << "BluezDBusThreadManager::Get() called before Initialize()";
+  return g_bluez_dbus_thread_manager;
 }
 
 }  // namespace bluez
