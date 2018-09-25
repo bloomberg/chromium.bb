@@ -305,3 +305,7 @@ void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery() {
   }
   remote_locations_.swap(remote_locations);
 }
+
+void ChromeDevToolsManagerDelegate::ResetAndroidDeviceManagerForTesting() {
+  device_manager_.reset();
+}

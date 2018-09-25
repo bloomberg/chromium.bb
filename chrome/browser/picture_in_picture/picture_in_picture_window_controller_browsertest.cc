@@ -1443,8 +1443,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 
   // Attaching devtools triggers the change in timing that leads to the crash.
-  DevToolsWindowTesting::OpenDevToolsWindowSync(browser(),
-                                                true /*is_docked=*/);
+  DevToolsWindow* window = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser(), true /*is_docked=*/);
 
   {
     bool result = false;
@@ -1467,6 +1467,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   content::WebContentsDestroyedWatcher destroyed_watcher(active_web_contents);
   browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
   destroyed_watcher.Wait();
+
+  // Make sure the window and therefore Chrome_DevToolsADBThread shutdown
+  // gracefully.
+  DevToolsWindowTesting::CloseDevToolsWindowSync(window);
 }
 
 #if defined(OS_CHROMEOS)
