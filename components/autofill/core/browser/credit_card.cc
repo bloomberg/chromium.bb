@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -310,6 +311,25 @@ void CreditCard::SetServerStatus(ServerStatus status) {
 CreditCard::ServerStatus CreditCard::GetServerStatus() const {
   DCHECK_NE(LOCAL_CARD, record_type());
   return server_status_;
+}
+
+AutofillMetadata CreditCard::GetMetadata() const {
+  AutofillMetadata metadata = AutofillDataModel::GetMetadata();
+  metadata.id = (record_type_ == LOCAL_CARD ? guid() : server_id_);
+  metadata.billing_address_id = billing_address_id_;
+  return metadata;
+}
+
+bool CreditCard::SetMetadata(const AutofillMetadata metadata) {
+  // Make sure the ids matches.
+  if (metadata.id != (record_type_ == LOCAL_CARD ? guid() : server_id_))
+    return false;
+
+  if (!AutofillDataModel::SetMetadata(metadata))
+    return false;
+
+  billing_address_id_ = metadata.billing_address_id;
+  return true;
 }
 
 base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {

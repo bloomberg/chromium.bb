@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -1688,6 +1689,80 @@ TEST(AutofillProfileTest, SetClientValidityFromBitfieldValue_Mixed) {
   EXPECT_EQ(AutofillProfile::INVALID,
             profile.GetValidityState(PHONE_HOME_WHOLE_NUMBER,
                                      AutofillProfile::AutofillProfile::CLIENT));
+}
+
+TEST(AutofillProfileTest, GetMetadata) {
+  AutofillProfile local_profile = test::GetFullProfile();
+  local_profile.set_use_count(2);
+  local_profile.set_use_date(base::Time::FromDoubleT(25));
+  local_profile.set_has_converted(false);
+  AutofillMetadata local_metadata = local_profile.GetMetadata();
+  EXPECT_EQ(local_profile.guid(), local_metadata.id);
+  EXPECT_EQ(local_profile.has_converted(), local_metadata.has_converted);
+  EXPECT_EQ(local_profile.use_count(), local_metadata.use_count);
+  EXPECT_EQ(local_profile.use_date(), local_metadata.use_date);
+
+  AutofillProfile server_profile = test::GetServerProfile();
+  server_profile.set_use_count(10);
+  server_profile.set_use_date(base::Time::FromDoubleT(100));
+  server_profile.set_has_converted(true);
+  AutofillMetadata server_metadata = server_profile.GetMetadata();
+  EXPECT_EQ(server_profile.server_id(), server_metadata.id);
+  EXPECT_EQ(server_profile.has_converted(), server_metadata.has_converted);
+  EXPECT_EQ(server_profile.use_count(), server_metadata.use_count);
+  EXPECT_EQ(server_profile.use_date(), server_metadata.use_date);
+}
+
+TEST(AutofillProfileTest, SetMetadata_MatchingId) {
+  AutofillProfile local_profile = test::GetFullProfile();
+  AutofillMetadata local_metadata;
+  local_metadata.id = local_profile.guid();
+  local_metadata.use_count = 100;
+  local_metadata.use_date = base::Time::FromDoubleT(50);
+  local_metadata.has_converted = true;
+  EXPECT_TRUE(local_profile.SetMetadata(local_metadata));
+  EXPECT_EQ(local_metadata.id, local_profile.guid());
+  EXPECT_EQ(local_metadata.has_converted, local_profile.has_converted());
+  EXPECT_EQ(local_metadata.use_count, local_profile.use_count());
+  EXPECT_EQ(local_metadata.use_date, local_profile.use_date());
+
+  AutofillProfile server_profile = test::GetServerProfile();
+  AutofillMetadata server_metadata;
+  server_metadata.id = server_profile.server_id();
+  server_metadata.use_count = 100;
+  server_metadata.use_date = base::Time::FromDoubleT(50);
+  server_metadata.has_converted = true;
+  EXPECT_TRUE(server_profile.SetMetadata(server_metadata));
+  EXPECT_EQ(server_metadata.id, server_profile.server_id());
+  EXPECT_EQ(server_metadata.has_converted, server_profile.has_converted());
+  EXPECT_EQ(server_metadata.use_count, server_profile.use_count());
+  EXPECT_EQ(server_metadata.use_date, server_profile.use_date());
+}
+
+TEST(AutofillProfileTest, SetMetadata_NotMatchingId) {
+  AutofillProfile local_profile = test::GetFullProfile();
+  AutofillMetadata local_metadata;
+  local_metadata.id = "WrongId";
+  local_metadata.use_count = 100;
+  local_metadata.use_date = base::Time::FromDoubleT(50);
+  local_metadata.has_converted = true;
+  EXPECT_FALSE(local_profile.SetMetadata(local_metadata));
+  EXPECT_NE(local_metadata.id, local_profile.guid());
+  EXPECT_NE(local_metadata.has_converted, local_profile.has_converted());
+  EXPECT_NE(local_metadata.use_count, local_profile.use_count());
+  EXPECT_NE(local_metadata.use_date, local_profile.use_date());
+
+  AutofillProfile server_profile = test::GetServerProfile();
+  AutofillMetadata server_metadata;
+  server_metadata.id = "WrongId";
+  server_metadata.use_count = 100;
+  server_metadata.use_date = base::Time::FromDoubleT(50);
+  server_metadata.has_converted = true;
+  EXPECT_FALSE(server_profile.SetMetadata(server_metadata));
+  EXPECT_NE(server_metadata.id, server_profile.guid());
+  EXPECT_NE(server_metadata.has_converted, server_profile.has_converted());
+  EXPECT_NE(server_metadata.use_count, server_profile.use_count());
+  EXPECT_NE(server_metadata.use_date, server_profile.use_date());
 }
 
 }  // namespace autofill

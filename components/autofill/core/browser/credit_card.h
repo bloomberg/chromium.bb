@@ -19,6 +19,8 @@
 
 namespace autofill {
 
+struct AutofillMetadata;
+
 // A midline horizontal ellipsis (U+22EF).
 extern const base::char16 kMidlineEllipsis[];
 
@@ -105,6 +107,10 @@ class CreditCard : public AutofillDataModel {
   // Sets/gets the status of a server card.
   void SetServerStatus(ServerStatus status);
   ServerStatus GetServerStatus() const;
+
+  // AutofillDataModel:
+  AutofillMetadata GetMetadata() const override;
+  bool SetMetadata(const AutofillMetadata metadata) override;
 
   // FormGroup:
   void GetMatchingTypes(const base::string16& text,

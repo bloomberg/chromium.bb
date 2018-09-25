@@ -57,6 +57,7 @@ jumbo_static_library("browser") {
     "autofill_manager.cc",
     "autofill_manager.h",
     "autofill_manager_test_delegate.h",
+    "autofill_metadata.h",
     "autofill_metrics.cc",
     "autofill_metrics.h",
     "autofill_popup_delegate.h",
