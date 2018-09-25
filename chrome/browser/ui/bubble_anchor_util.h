@@ -35,13 +35,6 @@ constexpr int kNoToolbarLeftOffset = 40;
 // based browsers. The anchor rect is in screen coordinates.
 gfx::Rect GetPageInfoAnchorRect(Browser* browser);
 
-#if defined(OS_MACOSX)
-
-// Returns the app menu anchor rect for |browser|, which is assumed to have a
-// Cocoa browser window.
-gfx::Rect GetAppMenuAnchorRectCocoa(Browser* browser);
-#endif
-
 }  // namespace bubble_anchor_util
 
 #endif  // CHROME_BROWSER_UI_BUBBLE_ANCHOR_UTIL_H_

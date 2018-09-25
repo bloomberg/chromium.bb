@@ -20,9 +20,4 @@ class LocationBarDecoration;
 void KeepBubbleAnchored(views::BubbleDialogDelegateView* bubble,
                         LocationBarDecoration* decoration = nullptr);
 
-// Simplified version of KeepBubbleAnchored() for bubbles that manage their own
-// anchoring. Causes |decoration| to be set active until |bubble| is closed.
-void TrackBubbleState(views::BubbleDialogDelegateView* bubble,
-                      LocationBarDecoration* decoration);
-
 #endif  // CHROME_BROWSER_UI_COCOA_BUBBLE_ANCHOR_HELPER_VIEWS_H_
