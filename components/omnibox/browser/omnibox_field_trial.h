@@ -31,6 +31,7 @@ extern const base::Feature kOmniboxReverseAnswers;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestions;
 extern const base::Feature kExperimentalKeywordMode;
+extern const base::Feature kOmniboxPedalSuggestions;
 extern const base::Feature kEnableClipboardProvider;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
 extern const base::Feature kZeroSuggestRedirectToChrome;
@@ -154,6 +155,13 @@ class OmniboxFieldTrial {
     EMPHASIZE_WHEN_TITLE_MATCHES = 1,
     EMPHASIZE_WHEN_ONLY_TITLE_MATCHES = 2,
     EMPHASIZE_NEVER = 3
+  };
+
+  // These are the discrete possibilities for pedal behavior.
+  enum class PedalSuggestionMode {
+    NONE,
+    IN_SUGGESTION,
+    DEDICATED,
   };
 
   // ---------------------------------------------------------
@@ -428,6 +436,9 @@ class OmniboxFieldTrial {
   // or the #upcoming-ui-features flag is enabled.
   static bool IsTabSwitchSuggestionsEnabled();
 
+  // Returns the #omnibox-pedal-suggestions feature's mode parameter as enum.
+  static PedalSuggestionMode GetPedalSuggestionMode();
+
   // Returns true if either the steady-state elision flag or the
   // #upcoming-ui-features flag is enabled.
   static bool IsHideSteadyStateUrlSchemeAndSubdomainsEnabled();
@@ -503,6 +514,7 @@ class OmniboxFieldTrial {
   // Parameter names used by UI experiments.
   static const char kUIMaxAutocompleteMatchesParam[];
   static const char kUIVerticalMarginParam[];
+  static const char kPedalSuggestionModeParam[];
 
   // Parameter names used by Zero Suggest Redirect to Chrome.
   static const char kZeroSuggestRedirectToChromeExperimentIdParam[];
