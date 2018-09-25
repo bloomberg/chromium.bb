@@ -70,6 +70,22 @@ const base::Feature kOmniboxTabSwitchSuggestions{
 const base::Feature kExperimentalKeywordMode{"ExperimentalKeywordMode",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable pedal suggestion as either in-suggestion side button
+// or dedicated suggestion beneath triggering suggestion.
+const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr base::FeatureParam<OmniboxFieldTrial::PedalSuggestionMode>::Option
+    kPedalSuggestionModeOptions[] = {
+        {OmniboxFieldTrial::PedalSuggestionMode::IN_SUGGESTION,
+         "in_suggestion"},
+        {OmniboxFieldTrial::PedalSuggestionMode::DEDICATED, "dedicated"},
+};
+constexpr base::FeatureParam<OmniboxFieldTrial::PedalSuggestionMode>
+    pedal_suggestion_mode{&kOmniboxPedalSuggestions,
+                          OmniboxFieldTrial::kPedalSuggestionModeParam,
+                          OmniboxFieldTrial::PedalSuggestionMode::DEDICATED,
+                          &kPedalSuggestionModeOptions};
+
 // Feature used to enable clipboard provider, which provides the user with
 // suggestions of the URL in the user's clipboard (if any) upon omnibox focus.
 const base::Feature kEnableClipboardProvider {
@@ -748,6 +764,15 @@ bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 
+OmniboxFieldTrial::PedalSuggestionMode
+OmniboxFieldTrial::GetPedalSuggestionMode() {
+  // Disabled case is handled specially, as no parameter values are specified.
+  if (!base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions)) {
+    return PedalSuggestionMode::NONE;
+  }
+  return omnibox::pedal_suggestion_mode.Get();
+}
+
 bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled() {
 #if defined(OS_MACOSX)
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
@@ -857,6 +882,8 @@ const char
 const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam[] =
     "UIMaxAutocompleteMatches";
 const char OmniboxFieldTrial::kUIVerticalMarginParam[] = "UIVerticalMargin";
+const char OmniboxFieldTrial::kPedalSuggestionModeParam[] =
+    "PedalSuggestionMode";
 
 const char OmniboxFieldTrial::kZeroSuggestRedirectToChromeExperimentIdParam[] =
     "ZeroSuggestRedirectToChromeExperimentID";
