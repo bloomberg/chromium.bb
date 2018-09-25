@@ -134,14 +134,22 @@ class UnifiedConsentService : public KeyedService,
 
   // Updates the sync settings if sync isn't disabled and the sync engine is
   // initialized.
+  // When |sync_everything| is false:
+  //  - All sync data types in |enable_data_types| will be enabled.
+  //  - All sync data types in |disable_data_types| will be disabled.
+  //  - All data types in neither of the two sets will remain in the same state.
+  // When |sync_everything| is true, |enable_data_types| and
+  // |disable_data_types| will be ignored.
   void UpdateSyncSettingsIfPossible(
       bool sync_everything,
-      syncer::ModelTypeSet sync_data_types = syncer::UserSelectableTypes());
+      syncer::ModelTypeSet enable_data_types = syncer::ModelTypeSet(),
+      syncer::ModelTypeSet disable_data_types = syncer::ModelTypeSet());
 
   // Posts a task to call |UpdateSyncSettingsIfPossible|.
   void PostTaskToUpdateSyncSettings(
       bool sync_everything,
-      syncer::ModelTypeSet sync_data_types = syncer::UserSelectableTypes());
+      syncer::ModelTypeSet enable_data_types = syncer::ModelTypeSet(),
+      syncer::ModelTypeSet disable_data_types = syncer::ModelTypeSet());
 
   // Called when |prefs::kUnifiedConsentGiven| pref value changes.
   // When set to true, it enables syncing of all data types and it enables all

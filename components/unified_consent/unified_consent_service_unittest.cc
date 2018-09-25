@@ -167,6 +167,7 @@ class UnifiedConsentServiceTest : public testing::Test {
     service_client_ = (FakeUnifiedConsentServiceClient*)
                           consent_service_->service_client_.get();
 
+    sync_service_.FireStateChanged();
     // Run until idle so the migration can finish.
     base::RunLoop().RunUntilIdle();
   }
