@@ -238,6 +238,10 @@ int32_t MockRenderThread::GetClientId() {
   return 1;
 }
 
+bool MockRenderThread::IsOnline() {
+  return true;
+}
+
 void MockRenderThread::SetRendererProcessType(
     blink::scheduler::RendererProcessType type) {}
 

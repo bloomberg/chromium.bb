@@ -217,6 +217,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;
   int32_t GetClientId() override;
+  bool IsOnline() override;
   void SetRendererProcessType(
       blink::scheduler::RendererProcessType type) override;
   blink::WebString GetUserAgent() const override;
@@ -757,6 +758,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool needs_to_record_first_active_paint_;
   base::TimeTicks was_backgrounded_time_;
   int process_foregrounded_count_;
+  bool online_status_ = true;
 
   int32_t client_id_;
 
