@@ -136,6 +136,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
+#include "components/os_crypt/os_crypt_pref_names_mac.h"
 #include "device/fido/mac/browsing_data_deletion.h"
 #endif  // defined(OS_MACOSX)
 
@@ -606,7 +607,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // time. The perf history is a simple summing of decode statistics with no
     // record of when the stats were written nor what site the video was played
     // on.
-    if (delete_begin_ == base::Time()) {
+    if (IsForAllTime()) {
       // TODO(chcunningham): Add UMA to track how often this gets deleted.
       media::VideoDecodePerfHistory* video_decode_perf_history =
           profile_->GetVideoDecodePerfHistory();
@@ -648,7 +649,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // doesn't make sense to apply the time period of deleting in the last X
     // hours/days to the safebrowsing cookies since they aren't the result of
     // any user action.
-    if (delete_begin_ == base::Time()) {
+    if (IsForAllTime()) {
       safe_browsing::SafeBrowsingService* sb_service =
           g_browser_process->safe_browsing_service();
       if (sb_service) {
@@ -794,6 +795,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     device::fido::mac::DeleteWebAuthnCredentials(
         authenticator_config.keychain_access_group,
         authenticator_config.metadata_secret, delete_begin_, delete_end_);
+
+    // When clearing passwords for all time, reset preferences that are used to
+    // prevent overwriting the encryption key in the Keychain.
+    if (IsForAllTime()) {
+      PrefService* local_state = g_browser_process->local_state();
+      if (local_state) {
+        local_state->ClearPref(os_crypt::prefs::kKeyCreated);
+        local_state->ClearPref(os_crypt::prefs::kKeyOverwritingPreventions);
+      }
+    }
 #endif  // defined(OS_MACOSX)
   }
 
@@ -1145,6 +1156,10 @@ void ChromeBrowsingDataRemoverDelegate::OnKeywordsLoaded(
                                            delete_end_);
   template_url_sub_.reset();
   std::move(done).Run();
+}
+
+bool ChromeBrowsingDataRemoverDelegate::IsForAllTime() const {
+  return delete_begin_ == base::Time() && delete_end_ == base::Time::Max();
 }
 
 #if defined(OS_CHROMEOS)
