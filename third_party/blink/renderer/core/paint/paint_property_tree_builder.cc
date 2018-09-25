@@ -689,8 +689,7 @@ static bool NeedsEffect(const LayoutObject& object) {
   if (blend_mode != SkBlendMode::kSrcOver)
     return true;
 
-  float opacity = style.Opacity();
-  if (opacity != 1.0f)
+  if (style.Opacity() != 1.0f || style.HasWillChangeOpacityHint())
     return true;
 
   if (CompositingReasonFinder::RequiresCompositingForOpacityAnimation(style))
