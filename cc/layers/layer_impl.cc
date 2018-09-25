@@ -81,7 +81,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       scrollbars_hidden_(false),
       needs_show_scrollbars_(false),
       raster_even_if_not_drawn_(false),
-      has_transform_node_(false) {
+      has_transform_node_(false),
+      is_rounded_corner_mask_(false) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);
@@ -306,6 +307,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetElementId(element_id_);
 
   layer->has_transform_node_ = has_transform_node_;
+  layer->is_rounded_corner_mask_ = is_rounded_corner_mask_;
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
   layer->main_thread_scrolling_reasons_ = main_thread_scrolling_reasons_;
   layer->should_flatten_screen_space_transform_from_property_tree_ =

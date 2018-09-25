@@ -94,6 +94,7 @@ Layer::Layer()
       may_contain_video_(false),
       needs_show_scrollbars_(false),
       has_transform_node_(false),
+      is_rounded_corner_mask_(false),
       subtree_has_copy_request_(false),
       safe_opaque_background_color_(0) {}
 
@@ -1239,6 +1240,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // deprecated. http://crbug.com/709137
   layer->SetElementId(inputs_.element_id);
   layer->SetHasTransformNode(has_transform_node_);
+  layer->set_is_rounded_corner_mask(is_rounded_corner_mask_);
   layer->SetBackgroundColor(inputs_.background_color);
   layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
   layer->SetBounds(inputs_.bounds);

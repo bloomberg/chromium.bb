@@ -528,6 +528,8 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
       contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
                                     : nullptr;
   contents_layer_->SetMaskLayer(border_cc_layer);
+  if (border_cc_layer)
+    border_cc_layer->set_is_rounded_corner_mask(true);
 
   contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
@@ -741,12 +743,15 @@ void GraphicsLayer::SetContentsOpaque(bool opaque) {
     contents_layer_->SetContentsOpaque(opaque);
 }
 
-void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
+void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer,
+                                 bool is_rounded_corner_mask) {
   if (mask_layer == mask_layer_)
     return;
 
   mask_layer_ = mask_layer;
   layer_->SetMaskLayer(mask_layer_ ? mask_layer_->CcLayer() : nullptr);
+  if (mask_layer_)
+    mask_layer_->CcLayer()->set_is_rounded_corner_mask(is_rounded_corner_mask);
 }
 
 void GraphicsLayer::SetContentsClippingMaskLayer(
@@ -762,6 +767,9 @@ void GraphicsLayer::SetContentsClippingMaskLayer(
       contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
                                     : nullptr;
   contents_layer->SetMaskLayer(contents_clipping_mask_cc_layer);
+  // Contents clipping mask layesrs (aka child clipping mask layer) is always
+  // a rounded corner mask.
+  contents_layer->set_is_rounded_corner_mask(true);
   UpdateContentsRect();
 }
 
