@@ -152,10 +152,13 @@ WebString WebDocument::Title() const {
   return WebString(ConstUnwrap<Document>()->title());
 }
 
-WebString WebDocument::ContentAsTextForTesting() const {
+WebString WebDocument::ContentAsTextForTesting(bool use_inner_text) const {
   Element* document_element = ConstUnwrap<Document>()->documentElement();
   if (!document_element)
     return WebString();
+  if (use_inner_text)
+    return document_element->innerText();
+
   // TODO(editing-dev): We should use |Element::innerText()|.
   const_cast<Document*>(ConstUnwrap<Document>())
       ->UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(document_element);
