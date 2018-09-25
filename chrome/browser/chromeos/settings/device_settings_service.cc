@@ -143,10 +143,10 @@ void DeviceSettingsService::Store(
     const base::Closure& callback) {
   // On Active Directory managed devices policy is written only by authpolicyd.
   CHECK(device_mode_ != policy::DEVICE_MODE_ENTERPRISE_AD);
-  Enqueue(linked_ptr<SessionManagerOperation>(new StoreSettingsOperation(
+  Enqueue(std::make_unique<StoreSettingsOperation>(
       base::Bind(&DeviceSettingsService::HandleCompletedAsyncOperation,
                  weak_factory_.GetWeakPtr(), callback),
-      std::move(policy))));
+      std::move(policy)));
 }
 
 DeviceSettingsService::OwnershipStatus
@@ -243,9 +243,10 @@ void DeviceSettingsService::PropertyChangeComplete(bool success) {
 }
 
 void DeviceSettingsService::Enqueue(
-    const linked_ptr<SessionManagerOperation>& operation) {
-  pending_operations_.push_back(operation);
-  if (pending_operations_.front().get() == operation.get())
+    std::unique_ptr<SessionManagerOperation> operation) {
+  const bool was_empty = pending_operations_.empty();
+  pending_operations_.push_back(std::move(operation));
+  if (was_empty)
     StartNextOperation();
 }
 
@@ -255,11 +256,10 @@ void DeviceSettingsService::EnqueueLoad(bool request_key_load) {
     request_key_load = false;
     cloud_validations = false;
   }
-  linked_ptr<SessionManagerOperation> operation(new LoadSettingsOperation(
+  Enqueue(std::make_unique<LoadSettingsOperation>(
       request_key_load, cloud_validations, false /*force_immediate_load*/,
       base::Bind(&DeviceSettingsService::HandleCompletedAsyncOperation,
                  weak_factory_.GetWeakPtr(), base::Closure())));
-  Enqueue(operation);
 }
 
 void DeviceSettingsService::EnsureReload(bool request_key_load) {

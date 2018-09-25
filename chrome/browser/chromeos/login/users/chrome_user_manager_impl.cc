@@ -393,10 +393,11 @@ UserImageManager* ChromeUserManagerImpl::GetUserImageManager(
   UserImageManagerMap::iterator ui = user_image_managers_.find(account_id);
   if (ui != user_image_managers_.end())
     return ui->second.get();
-  linked_ptr<UserImageManagerImpl> mgr(
-      new UserImageManagerImpl(account_id.GetUserEmail(), this));
-  user_image_managers_[account_id] = mgr;
-  return mgr.get();
+  auto mgr =
+      std::make_unique<UserImageManagerImpl>(account_id.GetUserEmail(), this);
+  UserImageManagerImpl* mgr_raw = mgr.get();
+  user_image_managers_[account_id] = std::move(mgr);
+  return mgr_raw;
 }
 
 SupervisedUserManager* ChromeUserManagerImpl::GetSupervisedUserManager() {

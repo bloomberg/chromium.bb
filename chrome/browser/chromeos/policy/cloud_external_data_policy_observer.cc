@@ -176,10 +176,8 @@ void CloudExternalDataPolicyObserver::Observe(
 
   ProfilePolicyConnector* policy_connector =
       ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
-  logged_in_user_observers_[user_id] = make_linked_ptr(
-      new PolicyServiceObserver(this,
-                                user_id,
-                                policy_connector->policy_service()));
+  logged_in_user_observers_[user_id] = std::make_unique<PolicyServiceObserver>(
+      this, user_id, policy_connector->policy_service());
 }
 
 void CloudExternalDataPolicyObserver::OnPolicyUpdated(
@@ -282,7 +280,7 @@ void CloudExternalDataPolicyObserver::HandleExternalDataPolicyUpdate(
 
   delegate_->OnExternalDataSet(policy_, user_id);
 
-  linked_ptr<WeakPtrFactory>& weak_ptr_factory = fetch_weak_ptrs_[user_id];
+  std::unique_ptr<WeakPtrFactory>& weak_ptr_factory = fetch_weak_ptrs_[user_id];
   weak_ptr_factory.reset(new WeakPtrFactory(this));
   if (entry->external_data_fetcher) {
     entry->external_data_fetcher->Fetch(base::Bind(
