@@ -210,6 +210,8 @@ CORE_EXPORT NGLineBoxStrut ComputeLinePadding(const NGConstraintSpace&,
 // values and over-constrainedness. This uses the available size from the
 // constraint space and inline size to compute the margins that are auto, if
 // any, and adjusts the given NGBoxStrut accordingly.
+// available_inline_size, inline_size, and margins are all in the
+// containing_block's writing mode.
 CORE_EXPORT void ResolveInlineMargins(
     const ComputedStyle& child_style,
     const ComputedStyle& containing_block_style,
