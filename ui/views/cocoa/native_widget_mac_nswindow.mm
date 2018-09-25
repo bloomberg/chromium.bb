@@ -9,10 +9,10 @@
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
-#import "ui/views/cocoa/bridged_native_widget_host.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #import "ui/views/cocoa/window_touch_bar_delegate.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @interface NSWindow (Private)

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views/cocoa/cocoa_mouse_capture.h"
+#import "ui/views_bridge_mac/cocoa_mouse_capture.h"
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "ui/base/cocoa/weak_ptr_nsobject.h"
-#import "ui/views/cocoa/cocoa_mouse_capture_delegate.h"
+#import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
 
-namespace views {
+namespace views_bridge_mac {
 
 // The ActiveEventTap is a RAII handle on the resources being used to capture
 // events. There is either 0 or 1 active instance of this class. If a second
@@ -125,4 +125,4 @@ void CocoaMouseCapture::OnOtherClientGotCapture() {
   active_handle_.reset();
 }
 
-}  // namespace views
+}  // namespace views_bridge_mac

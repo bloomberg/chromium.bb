@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_COCOA_MOUSE_CAPTURE_DELEGATE_H_
-#define UI_VIEWS_COCOA_COCOA_MOUSE_CAPTURE_DELEGATE_H_
+#ifndef UI_VIEWS_BRIDGE_MAC_COCOA_MOUSE_CAPTURE_DELEGATE_H_
+#define UI_VIEWS_BRIDGE_MAC_COCOA_MOUSE_CAPTURE_DELEGATE_H_
 
 @class NSEvent;
 @class NSWindow;
 
-namespace views {
+namespace views_bridge_mac {
 
 // Delegate for receiving captured events from a CocoaMouseCapture.
 class CocoaMouseCaptureDelegate {
@@ -26,6 +26,6 @@ class CocoaMouseCaptureDelegate {
   virtual NSWindow* GetWindow() const = 0;
 };
 
-}  // namespace views
+}  // namespace views_bridge_mac
 
-#endif  // UI_VIEWS_COCOA_COCOA_MOUSE_CAPTURE_DELEGATE_H_
+#endif  // UI_VIEWS_BRIDGE_MAC_COCOA_MOUSE_CAPTURE_DELEGATE_H_

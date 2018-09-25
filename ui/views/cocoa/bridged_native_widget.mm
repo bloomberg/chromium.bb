@@ -28,13 +28,13 @@
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 #import "ui/native_theme/native_theme_mac.h"
 #import "ui/views/cocoa/bridged_content_view.h"
-#import "ui/views/cocoa/bridged_native_widget_host.h"
-#import "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/cocoa_window_move_loop.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
+#import "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
+#import "ui/views_bridge_mac/cocoa_mouse_capture.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 using views_bridge_mac::mojom::WindowVisibilityState;

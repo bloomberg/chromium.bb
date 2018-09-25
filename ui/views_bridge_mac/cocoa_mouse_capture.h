@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_COCOA_MOUSE_CAPTURE_H_
-#define UI_VIEWS_COCOA_COCOA_MOUSE_CAPTURE_H_
+#ifndef UI_VIEWS_BRIDGE_MAC_COCOA_MOUSE_CAPTURE_H_
+#define UI_VIEWS_BRIDGE_MAC_COCOA_MOUSE_CAPTURE_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/views/views_export.h"
+#include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 @class NSWindow;
 
-namespace views {
+namespace views_bridge_mac {
 
 class CocoaMouseCaptureDelegate;
 
@@ -21,7 +21,7 @@ class CocoaMouseCaptureDelegate;
 // menu should dismiss the menu and "swallow" the mouse event. All events are
 // forwarded, but only events to the same application are "swallowed", which is
 // consistent with how native NSMenus behave.
-class VIEWS_EXPORT CocoaMouseCapture {
+class VIEWS_BRIDGE_MAC_EXPORT CocoaMouseCapture {
  public:
   explicit CocoaMouseCapture(CocoaMouseCaptureDelegate* delegate);
   ~CocoaMouseCapture();
@@ -48,6 +48,6 @@ class VIEWS_EXPORT CocoaMouseCapture {
   DISALLOW_COPY_AND_ASSIGN(CocoaMouseCapture);
 };
 
-}  // namespace views
+}  // namespace views_bridge_mac
 
 #endif  // UI_VIEWS_COCOA_COCOA_MOUSE_CAPTURE_H_

@@ -6,7 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "ui/views/cocoa/bridged_native_widget.h"
-#include "ui/views/cocoa/bridged_native_widget_host.h"
+#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 
 namespace views_bridge_mac {
 

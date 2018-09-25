@@ -24,6 +24,7 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
+#include "ui/views_bridge_mac/cocoa_mouse_capture.h"
 
 using views_bridge_mac::mojom::BridgedNativeWidgetInitParams;
 using views_bridge_mac::mojom::WindowVisibilityState;
@@ -419,8 +420,14 @@ void BridgedNativeWidgetHostImpl::RankNSViewsRecursive(
     RankNSViewsRecursive(view->child_at(i), rank);
 }
 
+// static
+NSView* BridgedNativeWidgetHostImpl::GetGlobalCaptureView() {
+  // TODO(ccameron): This will not work across process boundaries.
+  return [CocoaMouseCapture::GetGlobalCaptureWindow() contentView];
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidgetHostImpl, views::BridgedNativeWidgetHostHelper:
+// BridgedNativeWidgetHostImpl, views_bridge_mac::BridgedNativeWidgetHostHelper:
 
 NSView* BridgedNativeWidgetHostImpl::GetNativeViewAccessible() {
   return root_view_ ? root_view_->GetNativeViewAccessible() : nil;
