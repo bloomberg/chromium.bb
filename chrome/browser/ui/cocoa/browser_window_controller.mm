@@ -47,7 +47,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
-#import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
@@ -286,20 +285,11 @@ bool IsTabDetachingInFullscreenEnabled() {
     // of the toolbar/tabstrip is known.
     windowShim_->SetBounds(windowRect);
 
-    // Create a sub-controller for the docked devTools and add its view to the
-    // hierarchy.
-    devToolsController_.reset([[DevToolsController alloc] init]);
-    [[devToolsController_ view] setFrame:[[self tabContentArea] bounds]];
-    [[self tabContentArea] addSubview:[devToolsController_ view]];
-
     // Create the overlayable contents controller.  This provides the switch
     // view that TabStripControllerCocoa needs.
     overlayableContentsController_.reset(
         [[OverlayableContentsController alloc] init]);
-    [[overlayableContentsController_ view]
-        setFrame:[[devToolsController_ view] bounds]];
-    [[devToolsController_ view]
-        addSubview:[overlayableContentsController_ view]];
+    [[self tabContentArea] addSubview:[overlayableContentsController_ view]];
 
     // Create a controller for the tab strip, giving it the model object for
     // this window's Browser and the tab strip view. The controller will handle
@@ -494,8 +484,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)updateDevToolsForContents:(WebContents*)contents {
-  [devToolsController_ updateDevToolsForWebContents:contents
-                                        withProfile:browser_->profile()];
 }
 
 // Called when the user wants to close a window or from the shutdown process.
@@ -1217,10 +1205,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   return NO;
 }
 
-- (DevToolsController*)devToolsController {
-  return devToolsController_;
-}
-
 - (NSWindow*)createFullscreenWindow {
   NSWindow* window = [[[FullscreenWindow alloc]
       initForScreen:[[self window] screen]] autorelease];
@@ -1277,8 +1261,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
-  [devToolsController_ updateDevToolsForWebContents:contents
-                                        withProfile:browser_->profile()];
 }
 
 - (void)onTabChanged:(TabChangeType)change withContents:(WebContents*)contents {

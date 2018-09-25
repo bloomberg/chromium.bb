@@ -105,8 +105,6 @@ jumbo_split_static_library("ui") {
       "cocoa/constrained_window/constrained_window_web_dialog_sheet.h",
       "cocoa/constrained_window/constrained_window_web_dialog_sheet.mm",
       "cocoa/create_native_web_modal_manager_cocoa.mm",
-      "cocoa/dev_tools_controller.h",
-      "cocoa/dev_tools_controller.mm",
       "cocoa/drag_util.h",
       "cocoa/drag_util.mm",
       "cocoa/extensions/extension_keybinding_registry_cocoa.h",

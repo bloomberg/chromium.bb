@@ -36,7 +36,6 @@ class BrowserWindow;
 class BrowserWindowCocoa;
 @class BrowserWindowFullscreenTransition;
 @class BrowserWindowTouchBarController;
-@class DevToolsController;
 class ExtensionKeybindingRegistryCocoa;
 class ExclusiveAccessController;
 class ExclusiveAccessContext;
@@ -73,7 +72,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   std::unique_ptr<BrowserWindowCocoa> windowShim_;
   base::scoped_nsobject<ToolbarController> toolbarController_;
   base::scoped_nsobject<TabStripControllerCocoa> tabStripController_;
-  base::scoped_nsobject<DevToolsController> devToolsController_;
   base::scoped_nsobject<OverlayableContentsController>
       overlayableContentsController_;
   base::scoped_nsobject<FullscreenToolbarControllerCocoa>
@@ -262,8 +260,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 // Returns YES if the bookmark bar is currently animating.
 - (BOOL)isBookmarkBarAnimating;
-
-- (DevToolsController*)devToolsController;
 
 // The user changed the theme.
 - (void)userChangedTheme;
