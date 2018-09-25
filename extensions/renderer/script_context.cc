@@ -138,10 +138,10 @@ void ScriptContext::Invalidate() {
 
   // Swap |invalidate_observers_| to a local variable to clear it, and to make
   // sure it's not mutated as we iterate.
-  std::vector<base::Closure> observers;
+  std::vector<base::OnceClosure> observers;
   observers.swap(invalidate_observers_);
-  for (const base::Closure& observer : observers) {
-    observer.Run();
+  for (base::OnceClosure& observer : observers) {
+    std::move(observer).Run();
   }
   DCHECK(invalidate_observers_.empty())
       << "Invalidation observers cannot be added during invalidation";
@@ -149,9 +149,9 @@ void ScriptContext::Invalidate() {
   v8_context_.Reset();
 }
 
-void ScriptContext::AddInvalidationObserver(const base::Closure& observer) {
+void ScriptContext::AddInvalidationObserver(base::OnceClosure observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  invalidate_observers_.push_back(observer);
+  invalidate_observers_.push_back(std::move(observer));
 }
 
 const std::string& ScriptContext::GetExtensionID() const {
