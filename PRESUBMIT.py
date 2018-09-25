@@ -877,7 +877,7 @@ def _CheckNoDISABLETypoInTests(input_api, output_api):
       r'^\s*TEST[^(]*\([a-zA-Z0-9_]+,\s*DISABLE_[a-zA-Z0-9_]+\)',
       input_api.re.MULTILINE)
 
-  for f in input_api.AffectedFiles():
+  for f in input_api.AffectedFiles(False):
     if not 'test' in f.LocalPath() or not f.LocalPath().endswith('.cc'):
       continue
 
