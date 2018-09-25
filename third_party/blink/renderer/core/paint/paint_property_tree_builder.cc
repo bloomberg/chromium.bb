@@ -1491,7 +1491,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
   if (!object_.IsBoxModelObject() && !properties_)
     return;
 
-  if (object_.IsLayoutBlockFlow()) {
+  if (object_.IsLayoutBlock()) {
     context_.paint_offset_for_float = context_.current.paint_offset;
     // TODO(crbug.com/858843): For now floating object's PhysicalLocation() is
     // in the scrolling contents space, so if there is scrollbar on the left,
