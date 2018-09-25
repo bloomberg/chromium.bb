@@ -111,8 +111,6 @@ jumbo_split_static_library("ui") {
       "cocoa/create_native_web_modal_manager_cocoa.mm",
       "cocoa/dev_tools_controller.h",
       "cocoa/dev_tools_controller.mm",
-      "cocoa/device_chooser_content_view_cocoa.h",
-      "cocoa/device_chooser_content_view_cocoa.mm",
       "cocoa/drag_util.h",
       "cocoa/drag_util.mm",
       "cocoa/extensions/extension_keybinding_registry_cocoa.h",
