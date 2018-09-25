@@ -72,6 +72,7 @@ CORSURLLoader::CORSURLLoader(
   binding_.set_connection_error_handler(base::BindOnce(
       &CORSURLLoader::OnConnectionError, base::Unretained(this)));
   DCHECK(network_loader_factory_);
+  DCHECK(origin_access_list_);
   SetCORSFlagIfNeeded();
 }
 
@@ -448,8 +449,8 @@ void CORSURLLoader::SetCORSFlagIfNeeded() {
   DCHECK(request_.request_initiator);
 
   // The source origin and destination URL pair may be in the allow list.
-  if (origin_access_list_ && origin_access_list_->IsAllowed(
-                                 *request_.request_initiator, request_.url)) {
+  if (origin_access_list_->IsAllowed(*request_.request_initiator,
+                                     request_.url)) {
     return;
   }
 

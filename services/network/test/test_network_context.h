@@ -128,6 +128,11 @@ class TestNetworkContext : public mojom::NetworkContext {
       VerifyCertForSignedExchangeCallback callback) override {}
   void IsHSTSActiveForHost(const std::string& host,
                            IsHSTSActiveForHostCallback callback) override {}
+  void SetCorsOriginAccessListsForOrigin(
+      const url::Origin& source_origin,
+      std::vector<mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure) override {}
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,

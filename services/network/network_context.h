@@ -26,6 +26,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
@@ -240,6 +241,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       VerifyCertForSignedExchangeCallback callback) override;
   void IsHSTSActiveForHost(const std::string& host,
                            IsHSTSActiveForHostCallback callback) override;
+  void SetCorsOriginAccessListsForOrigin(
+      const url::Origin& source_origin,
+      std::vector<mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<mojom::CorsOriginPatternPtr> block_patterns,
+      SetCorsOriginAccessListsForOriginCallback callback) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,
@@ -404,6 +410,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     std::string sct_list;
   };
   std::map<int, std::unique_ptr<PendingCertVerify>> cert_verifier_requests_;
+
+  // Manages allowed origin access lists.
+  cors::OriginAccessList cors_origin_access_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };
