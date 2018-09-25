@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -1870,6 +1871,49 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // once we handle frame-ancestors CSP in the browser process and commit it
   // with the original URL.
   //   EXPECT_EQ(blocked_url, nav_handle_observer.last_committed_url());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       NotifiesProcessHostOfAudibleAudio) {
+  const auto RunPostedTasks = []() {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop.QuitClosure());
+    run_loop.Run();
+  };
+
+  // Note: Just using the beforeunload.html test document to spin-up a
+  // renderer. Any document will do.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("render_frame_host", "beforeunload.html")));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  auto* frame = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  auto* process = static_cast<RenderProcessHostImpl*>(frame->GetProcess());
+  ASSERT_EQ(0, process->get_media_stream_count_for_testing());
+
+  // Audible audio output should cause the media stream count to increment.
+  frame->OnAudibleStateChanged(true);
+  RunPostedTasks();
+  EXPECT_EQ(1, process->get_media_stream_count_for_testing());
+
+  // Silence should cause the media stream count to decrement.
+  frame->OnAudibleStateChanged(false);
+  RunPostedTasks();
+  EXPECT_EQ(0, process->get_media_stream_count_for_testing());
+
+  // Start audible audio output again, and then crash the renderer. Expect the
+  // media stream count to be zero after the crash.
+  frame->OnAudibleStateChanged(true);
+  RunPostedTasks();
+  EXPECT_EQ(1, process->get_media_stream_count_for_testing());
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(0);
+  crash_observer.Wait();
+  RunPostedTasks();
+  EXPECT_EQ(0, process->get_media_stream_count_for_testing());
 }
 
 }  // namespace content
