@@ -337,6 +337,7 @@ ALWAYS_INLINE internal::PartitionBucket* PartitionGenericSizeToBucket(
   internal::PartitionBucket* bucket =
       root->bucket_lookups[(order << kGenericNumBucketsPerOrderBits) +
                            order_index + !!sub_order_index];
+  CHECK(bucket);
   DCHECK(!bucket->slot_size || bucket->slot_size >= size);
   DCHECK(!(bucket->slot_size % kGenericSmallestBucket));
   return bucket;
