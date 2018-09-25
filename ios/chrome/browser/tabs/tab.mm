@@ -100,6 +100,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
@@ -462,8 +463,8 @@ NSString* const kTabUrlKey = @"url";
 - (OpenInController*)openInController {
   if (!_openInController) {
     _openInController = [[OpenInController alloc]
-        initWithRequestContext:_browserState->GetRequestContext()
-                 webController:self.webController];
+        initWithURLLoaderFactory:_browserState->GetSharedURLLoaderFactory()
+                   webController:self.webController];
     _openInController.baseView = self.view;
   }
   return _openInController;
