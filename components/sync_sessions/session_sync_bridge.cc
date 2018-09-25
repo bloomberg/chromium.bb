@@ -339,18 +339,9 @@ void SessionSyncBridge::OnSyncStarting(
 
   const syncer::DeviceInfo* device_info =
       sessions_client_->GetLocalDeviceInfo();
-  // DeviceInfo must be available by the time sync starts.
-  // TODO(crbug.com/867801): The DCHECKs later below should suffice but such
-  // condition is currently not guaranteed due to posting of tasks, which means
-  // |request| might be slightly stale if sync was disabled and re-enabled
-  // quickly. As a temporary mitigation, we report an error in this case.
-  if (!device_info || device_info->guid() != request.cache_guid) {
-    DLOG(WARNING) << "Stale datatype activation request, treating as error.";
-    change_processor()->ReportError(
-        syncer::ModelError(FROM_HERE, "Stale cache GUID"));
-    return;
-  }
 
+  // DeviceInfo must be available by the time sync starts, because there's no
+  // task posting involved in the sessions controller.
   DCHECK(device_info);
   DCHECK_EQ(device_info->guid(), request.cache_guid);
 

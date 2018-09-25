@@ -36,6 +36,7 @@
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/sync_engine.h"
+#include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
@@ -43,6 +44,7 @@
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_sessions/session_data_type_controller.h"
 #include "components/sync_sessions/session_model_type_controller.h"
+#include "components/sync_sessions/session_sync_service.h"
 
 using base::FeatureList;
 using bookmarks::BookmarkModel;
@@ -249,11 +251,10 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         controllers.push_back(
             std::make_unique<sync_sessions::SessionModelTypeController>(
                 sync_client_->GetPrefService(),
-                std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-                    ui_thread_,
-                    base::BindRepeating(
-                        &syncer::SyncClient::GetControllerDelegateForModelType,
-                        base::Unretained(sync_client_), syncer::SESSIONS)),
+                std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+                    sync_client_->GetSessionSyncService()
+                        ->GetControllerDelegate()
+                        .get()),
                 history_disabled_pref_));
       } else {
         controllers.push_back(std::make_unique<SessionDataTypeController>(
