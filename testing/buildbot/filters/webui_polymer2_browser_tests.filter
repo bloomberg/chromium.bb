@@ -37,14 +37,6 @@
 -SettingsA11ySignOut.*
 
 # ChromeOS only test failures.
--AudioPlayerBrowserTest.ChangeTracks
--AudioPlayerBrowserTest.ChangeTracksPlayList
--AudioPlayerBrowserTest.ChangeTracksPlayListIcon
--AudioPlayerBrowserTest.ChangeVolumeLevel
--AudioPlayerBrowserTest.OpenAudioOnDownloads
--AudioPlayerBrowserTest.OpenAudioOnDrive
--AudioPlayerBrowserTest.TogglePlayState
--AudioPlayerBrowserTestInGuestMode.OpenAudioOnDownloads
 -CrSettingsBluetoothPageTest.All
 -CrSettingsCrostiniPageTest.All
 -CrSettingsDevicePageTest.DisplayTest
@@ -66,14 +58,6 @@
 -DemoSetupTest.OnlineSetupFlowSuccess
 -DemoSetupTest.ShowOfflineSetupOptionOnNetworkList
 -EulaTest.LoadOffline
--OpenAudioFiles/FilesAppBrowserTest.Test/audioOpenDownloads
--OpenAudioFiles/FilesAppBrowserTest.Test/audioOpenDownloads_GuestMode
--OpenAudioFiles/FilesAppBrowserTest.Test/audioOpenDrive
--OpenAudioFiles/FilesAppBrowserTest.Test/audioOpenDrive_DriveFs
--OpenAudioFiles/FilesAppBrowserTest.Test/audioRepeatAllModeMultipleFileDrive
--OpenAudioFiles/FilesAppBrowserTest.Test/audioRepeatAllModeSingleFileDrive
--OpenAudioFiles/FilesAppBrowserTest.Test/audioRepeatOneModeMultipleFileDrive
--OpenAudioFiles/FilesAppBrowserTest.Test/audioRepeatOneModeSingleFileDrive
 -TabIndex/FilesAppBrowserTest.Test/tabindexSaveFileDialogDownloads
 -TabIndex/FilesAppBrowserTest.Test/tabindexSaveFileDialogDownloads_GuestMode
 -TabIndex/FilesAppBrowserTest.Test/tabindexSaveFileDialogDrive
@@ -89,10 +73,7 @@
 # failing tests.
 
 ActiveDirectoryJoinTest.*
-AudioPlayerBrowserTest.ChangeTracksPlayList
-AudioPlayerBrowserTest.ChangeTracksPlayListIcon
-AudioPlayerBrowserTest.ChangeVolumeLevel
-AudioPlayerBrowserTestInGuestMode.*
+AudioPlayerBrowserTest.*
 BluetoothInternalsTest.*
 CertificateViewerModalUITest.*
 CertificateViewerModalUITestAsync.*
@@ -289,6 +270,7 @@ MultiProfileFilesAppBrowserTest.*
 NetInternalsTest.*
 NoBackgroundTasksTest.*
 NTP4WebUITest.*
+OpenAudioFiles.*
 PasswordsAndFormsBrowserTest.*
 PrintPreviewAdvancedDialogTest.*
 PrintPreviewAdvancedItemTest.*
