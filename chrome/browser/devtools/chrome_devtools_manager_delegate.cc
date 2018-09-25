@@ -305,3 +305,11 @@ void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery() {
   }
   remote_locations_.swap(remote_locations);
 }
+
+void ChromeDevToolsManagerDelegate::ResetAndroidDeviceManagerForTesting() {
+  device_manager_.reset();
+
+  // We also need |device_discovery_| to go away because there may be a pending
+  // task using a raw pointer to the DeviceManager we just deleted.
+  device_discovery_.reset();
+}
