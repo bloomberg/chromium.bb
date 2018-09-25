@@ -1972,7 +1972,6 @@ test("browser_tests") {
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
         "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_browsertest.mm",
         "../browser/ui/cocoa/view_id_util_browsertest.mm",
-        "../browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac_browsertest.mm",
 
         ## TODO(crbug/845389): Re-Enable the following, which were temporarily
         ## omitted from the build, but still in use by the Cocoa browser.

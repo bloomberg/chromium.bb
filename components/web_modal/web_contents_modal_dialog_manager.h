@@ -30,14 +30,6 @@ class WebContentsModalDialogManager
   WebContentsModalDialogManagerDelegate* delegate() const { return delegate_; }
   void SetDelegate(WebContentsModalDialogManagerDelegate* d);
 
-#if defined(OS_MACOSX)
-  // Note: This method is not defined inside components/web_modal/ as its
-  // definition (needed for Cocoa builds) depends on chrome/browser/ui/cocoa/.
-  static SingleWebContentsDialogManager* CreateNativeWebModalManager(
-      gfx::NativeWindow dialog,
-      SingleWebContentsDialogManagerDelegate* native_delegate);
-#endif
-
   // Allow clients to supply their own native dialog manager. Suitable for
   // bubble clients.
   void ShowDialogWithManager(
