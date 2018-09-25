@@ -58,6 +58,7 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // view's coordinate system, *not* in the FocusRing's coordinate system. Note
   // that this path will not be mirrored in RTL, so your View's computation of
   // it should take RTL into account.
+  // TODO(pbos): Replace calls with setting kHighlightPathKey on the parent.
   void SetPath(const SkPath& path);
 
   // Sets whether the FocusRing should show an invalid state for the View it

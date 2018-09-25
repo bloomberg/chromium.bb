@@ -10,6 +10,7 @@
 
 namespace gfx {
 class Insets;
+class Path;
 }  // namespace gfx
 
 namespace views {
@@ -29,6 +30,12 @@ VIEWS_EXPORT extern const ui::ClassProperty<gfx::Insets*>* const kMarginsKey;
 // enable the bubble's contents to be included in the focus order.
 VIEWS_EXPORT extern const ui::ClassProperty<BubbleDialogDelegateView*>* const
     kAnchoredDialogKey;
+
+// A property to store a highlight path related to the view. This is nominally
+// used by the default inkdrop and focus ring that are both used to highlight
+// the view in different ways.
+VIEWS_EXPORT extern const ui::ClassProperty<gfx::Path*>* const
+    kHighlightPathKey;
 
 }  // namespace views
 
