@@ -37,6 +37,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
@@ -63,6 +64,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/guest_view_events.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/browser/runtime_data.h"
@@ -73,6 +75,7 @@
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -592,8 +595,31 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     bool is_navigation,
     network::mojom::URLLoaderFactoryRequest* factory_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!MayHaveProxies())
-    return false;
+  if (!MayHaveProxies()) {
+    bool skip_proxy = true;
+    // There are a few internal WebUIs that use WebView tag that are whitelisted
+    // for webRequest.
+    if (frame) {
+      auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
+      if (web_contents && WebViewGuest::IsGuest(web_contents)) {
+        auto* guest_web_contents =
+            WebViewGuest::GetTopLevelWebContents(web_contents);
+        auto& guest_url = guest_web_contents->GetURL();
+        if (guest_url.SchemeIs(content::kChromeUIScheme)) {
+          auto* feature = FeatureProvider::GetAPIFeature("webRequestInternal");
+          if (feature
+                  ->IsAvailableToContext(nullptr, Feature::WEBUI_CONTEXT,
+                                         guest_url)
+                  .is_available()) {
+            skip_proxy = false;
+          }
+        }
+      }
+    }
+
+    if (skip_proxy)
+      return false;
+  }
 
   auto proxied_request = std::move(*factory_request);
   network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
