@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_constants.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
@@ -83,5 +84,11 @@ static_assert(kTrayMenuWidth == kUnifiedFeaturePodHorizontalSidePadding * 2 +
                                     kUnifiedFeaturePodSize.width() *
                                         kUnifiedFeaturePodItemsInRow,
               "Total feature pod width does not match kTrayMenuWidth");
+
+// static
+int TrayConstants::GetTrayIconSize() {
+  return features::IsSystemTrayUnifiedEnabled() ? kUnifiedTrayIconSize
+                                                : kTrayIconSize;
+}
 
 }  // namespace ash

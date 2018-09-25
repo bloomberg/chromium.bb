@@ -27,16 +27,16 @@ namespace {
 // instead if it exceeds this limit.
 constexpr size_t kTrayNotificationMaxCount = 9;
 
-constexpr double kTrayNotificationCircleIconRadius = kTrayIconSize / 2 - 2;
+constexpr double kTrayNotificationCircleIconRadius = 8;
 
 // The size of the number font inside the icon. Should be updated when
-// kTrayIconSize is changed.
+// kUnifiedTrayIconSize is changed.
 constexpr int kNumberIconFontSize = 11;
 
 gfx::FontList GetNumberIconFontList() {
   // |kNumberIconFontSize| is hard-coded as 11, which whould be updated when
   // the tray icon size is changed.
-  DCHECK_EQ(16, kTrayIconSize);
+  DCHECK_EQ(20, kUnifiedTrayIconSize);
 
   gfx::Font default_font;
   int font_size_delta = kNumberIconFontSize - default_font.GetFontSize();
@@ -49,7 +49,8 @@ gfx::FontList GetNumberIconFontList() {
 class NumberIconImageSource : public gfx::CanvasImageSource {
  public:
   explicit NumberIconImageSource(size_t count)
-      : CanvasImageSource(gfx::Size(kTrayIconSize, kTrayIconSize), false),
+      : CanvasImageSource(gfx::Size(kUnifiedTrayIconSize, kUnifiedTrayIconSize),
+                          false),
         count_(count) {
     DCHECK_LE(count_, kTrayNotificationMaxCount + 1);
   }
@@ -117,7 +118,7 @@ QuietModeView::QuietModeView() : TrayItemView(nullptr) {
   // DCHECK_EQ(kTrayIconSize,
   //     gfx::GetDefaultSizeOfVectorIcon(kSystemTrayDoNotDisturbIcon));
   image_view()->SetImage(gfx::CreateVectorIcon(
-      kSystemTrayDoNotDisturbIcon, kTrayIconSize,
+      kSystemTrayDoNotDisturbIcon,
       TrayIconColor(Shell::Get()->session_controller()->GetSessionState())));
   Update();
 }

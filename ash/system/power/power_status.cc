@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/power_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -341,17 +342,24 @@ void PowerStatus::CalculateBatteryImageInfo(BatteryImageInfo* info) const {
   info->alert_if_low = !IsLinePowerConnected();
 
   if (!IsUsbChargerConnected() && !IsBatteryPresent()) {
-    info->icon_badge = &kSystemTrayBatteryXIcon;
+    info->icon_badge = features::IsSystemTrayUnifiedEnabled()
+                           ? &kUnifiedMenuBatteryXIcon
+                           : &kSystemTrayBatteryXIcon;
     info->charge_percent = 0;
     return;
   }
 
-  if (IsUsbChargerConnected())
-    info->icon_badge = &kSystemTrayBatteryUnreliableIcon;
-  else if (IsLinePowerConnected())
-    info->icon_badge = &kSystemTrayBatteryBoltIcon;
-  else
+  if (IsUsbChargerConnected()) {
+    info->icon_badge = features::IsSystemTrayUnifiedEnabled()
+                           ? &kUnifiedMenuBatteryUnreliableIcon
+                           : &kSystemTrayBatteryUnreliableIcon;
+  } else if (IsLinePowerConnected()) {
+    info->icon_badge = features::IsSystemTrayUnifiedEnabled()
+                           ? &kUnifiedMenuBatteryBoltIcon
+                           : &kSystemTrayBatteryBoltIcon;
+  } else {
     info->icon_badge = nullptr;
+  }
 
   info->charge_percent = GetBatteryPercent();
 
@@ -359,7 +367,9 @@ void PowerStatus::CalculateBatteryImageInfo(BatteryImageInfo* info) const {
   // have a badge assigned.
   if (GetBatteryPercent() < kCriticalBatteryChargePercentage &&
       !info->icon_badge) {
-    info->icon_badge = &kSystemTrayBatteryAlertIcon;
+    info->icon_badge = features::IsSystemTrayUnifiedEnabled()
+                           ? &kUnifiedMenuBatteryAlertIcon
+                           : &kSystemTrayBatteryAlertIcon;
   }
 }
 

@@ -167,6 +167,7 @@ constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 
 constexpr int kUnifiedNotificationCenterSpacing = 16;
+constexpr int kUnifiedTrayIconSize = 20;
 constexpr int kUnifiedTrayCornerRadius = 20;
 constexpr int kUnifiedTrayContentPadding = 5;
 constexpr int kUnifiedTopShortcutSpacing = 16;
@@ -236,6 +237,8 @@ class TrayConstants {
   static int separator_width() {
     return UseNewUi() ? kSeparatorWidthNewUi : kSeparatorWidth;
   }
+
+  static int GetTrayIconSize();
 
  private:
   static bool UseNewUi() {
