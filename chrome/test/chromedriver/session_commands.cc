@@ -134,8 +134,9 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
   caps->SetBoolean("acceptInsecureCerts", capabilities.accept_insecure_certs);
   caps->SetBoolean("nativeEvents", true);
   caps->SetBoolean("hasTouchScreen", session->chrome->HasTouchScreen());
-  caps->SetString("unexpectedAlertBehaviour",
-                  session->unexpected_alert_behaviour);
+  caps->SetString(session->w3c_compliant ? "unhandledPromptBehavior"
+                                         : "unexpectedAlertBehaviour",
+                  session->unhandled_prompt_behavior);
 
   // add setWindowRect based on whether we are desktop/android/remote
   if (capabilities.IsAndroid() || capabilities.IsRemoteBrowser()) {
@@ -262,9 +263,11 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   Status status = capabilities.Parse(*desired_caps);
   if (status.IsError())
     return status;
+  status = capabilities.CheckSupport();
+  if (status.IsError())
+    return status;
 
-  desired_caps->GetString("unexpectedAlertBehaviour",
-                           &session->unexpected_alert_behaviour);
+  session->unhandled_prompt_behavior = capabilities.unhandled_prompt_behavior;
 
   Log::Level driver_level = Log::kWarning;
   if (capabilities.logging_prefs.count(WebDriverLog::kDriverType))

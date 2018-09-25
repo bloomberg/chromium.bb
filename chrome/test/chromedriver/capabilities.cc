@@ -197,22 +197,26 @@ Status ParseMobileEmulation(const base::Value& option,
 Status ParsePageLoadStrategy(const base::Value& option,
                              Capabilities* capabilities) {
   if (!option.GetAsString(&capabilities->page_load_strategy))
-    return Status(kUnknownError, "must be a string");
-  if (capabilities->page_load_strategy == PageLoadStrategy::kNormal ||
-      capabilities->page_load_strategy == PageLoadStrategy::kNone)
+    return Status(kInvalidArgument, "'pageLoadStrategy' must be a string");
+  if (capabilities->page_load_strategy == PageLoadStrategy::kNone ||
+      capabilities->page_load_strategy == PageLoadStrategy::kEager ||
+      capabilities->page_load_strategy == PageLoadStrategy::kNormal)
     return Status(kOk);
-  return Status(kUnknownError, "page load strategy unsupported");
+  return Status(kInvalidArgument, "invalid 'pageLoadStrategy'");
 }
 
-Status ParseUnexpectedAlertBehaviour(const base::Value& option,
-                             Capabilities* capabilities) {
-  if (!option.GetAsString(&capabilities->unexpected_alert_behaviour))
-    return Status(kUnknownError, "must be a string");
-  if (capabilities->unexpected_alert_behaviour == kAccept ||
-      capabilities->unexpected_alert_behaviour == kDismiss ||
-      capabilities->unexpected_alert_behaviour == kIgnore)
+Status ParseUnhandledPromptBehavior(const base::Value& option,
+                                    Capabilities* capabilities) {
+  if (!option.GetAsString(&capabilities->unhandled_prompt_behavior))
+    return Status(kInvalidArgument,
+                  "'unhandledPromptBehavior' must be a string");
+  if (capabilities->unhandled_prompt_behavior == kDismiss ||
+      capabilities->unhandled_prompt_behavior == kAccept ||
+      capabilities->unhandled_prompt_behavior == kDismissAndNotify ||
+      capabilities->unhandled_prompt_behavior == kAcceptAndNotify ||
+      capabilities->unhandled_prompt_behavior == kIgnore)
     return Status(kOk);
-  return Status(kUnknownError, "unexpected alert behaviour unsupported");
+  return Status(kInvalidArgument, "invalid 'unhandledPromptBehavior'");
 }
 
 Status ParseSwitches(const base::Value& option,
@@ -669,13 +673,13 @@ PerfLoggingPrefs::PerfLoggingPrefs()
 PerfLoggingPrefs::~PerfLoggingPrefs() {}
 
 Capabilities::Capabilities()
-    : android_use_running_app(false),
+    : accept_insecure_certs(false),
+      page_load_strategy(PageLoadStrategy::kNormal),
+      android_use_running_app(false),
       detach(false),
       extension_load_timeout(base::TimeDelta::FromSeconds(10)),
       force_devtools_screenshot(true),
-      page_load_strategy(PageLoadStrategy::kNormal),
       network_emulation_enabled(false),
-      accept_insecure_certs(false),
       use_automation_extension(true) {}
 
 Capabilities::~Capabilities() {}
@@ -690,29 +694,44 @@ bool Capabilities::IsRemoteBrowser() const {
 
 Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
   std::map<std::string, Parser> parser_map;
+
+  // W3C defined capabilities.
+  parser_map["acceptInsecureCerts"] =
+      base::BindRepeating(&ParseBoolean, &accept_insecure_certs);
+  parser_map["browserName"] = base::BindRepeating(&ParseString, &browser_name);
+  parser_map["browserVersion"] =
+      base::BindRepeating(&ParseString, &browser_version);
+  parser_map["platformName"] =
+      base::BindRepeating(&ParseString, &platform_name);
+  parser_map["pageLoadStrategy"] = base::BindRepeating(&ParsePageLoadStrategy);
+  parser_map["proxy"] = base::BindRepeating(&ParseProxy);
+  // TODO(https://crbug.com/chromedriver/1997): Parse "timeouts".
+  // TODO(https://crbug.com/chromedriver/2596): "unexpectedAlertBehaviour" is
+  // legacy name of "unhandledPromptBehavior", remove when we stop supporting
+  // legacy mode.
+  parser_map["unexpectedAlertBehaviour"] =
+      base::BindRepeating(&ParseUnhandledPromptBehavior);
+  parser_map["unhandledPromptBehavior"] =
+      base::BindRepeating(&ParseUnhandledPromptBehavior);
+
+  // ChromeDriver specific capabilities.
   // goog:chromeOptions is the current spec conformance, but chromeOptions is
   // still supported
   if (desired_caps.GetDictionary("goog:chromeOptions", nullptr)) {
-    parser_map["goog:chromeOptions"] = base::Bind(&ParseChromeOptions);
+    parser_map["goog:chromeOptions"] = base::BindRepeating(&ParseChromeOptions);
   } else {
-    parser_map["chromeOptions"] = base::Bind(&ParseChromeOptions);
+    parser_map["chromeOptions"] = base::BindRepeating(&ParseChromeOptions);
   }
-
-  parser_map["loggingPrefs"] = base::Bind(&ParseLoggingPrefs);
-  parser_map["proxy"] = base::Bind(&ParseProxy);
-  parser_map["pageLoadStrategy"] = base::Bind(&ParsePageLoadStrategy);
-  parser_map["unexpectedAlertBehaviour"] =
-      base::Bind(&ParseUnexpectedAlertBehaviour);
-  parser_map["acceptInsecureCerts"] =
-      base::BindRepeating(&ParseBoolean, &accept_insecure_certs);
+  parser_map["loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);
   // Network emulation requires device mode, which is only enabled when
   // mobile emulation is on.
   if (desired_caps.GetDictionary("goog:chromeOptions.mobileEmulation",
                                  nullptr) ||
       desired_caps.GetDictionary("chromeOptions.mobileEmulation", nullptr)) {
     parser_map["networkConnectionEnabled"] =
-        base::Bind(&ParseBoolean, &network_emulation_enabled);
+        base::BindRepeating(&ParseBoolean, &network_emulation_enabled);
   }
+
   for (std::map<std::string, Parser>::iterator it = parser_map.begin();
        it != parser_map.end(); ++it) {
     const base::Value* capability = NULL;
@@ -748,5 +767,29 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
                     "but devtools events logging was not enabled");
     }
   }
+  return Status(kOk);
+}
+
+Status Capabilities::CheckSupport() const {
+  // TODO(https://crbug.com/chromedriver/1902): pageLoadStrategy=eager not yet
+  // supported.
+  if (page_load_strategy.length() > 0 &&
+      page_load_strategy != PageLoadStrategy::kNormal &&
+      page_load_strategy != PageLoadStrategy::kNone) {
+    return Status(kInvalidArgument, "'pageLoadStrategy=" + page_load_strategy +
+                                        "' not yet supported");
+  }
+
+  // TODO(https://crbug.com/chromedriver/2597): Some unhandledPromptBehavior
+  // modes not yet supported.
+  if (unhandled_prompt_behavior.length() > 0 &&
+      unhandled_prompt_behavior != kAccept &&
+      unhandled_prompt_behavior != kDismiss &&
+      unhandled_prompt_behavior != kIgnore) {
+    return Status(kInvalidArgument,
+                  "'unhandledPromptBehavior=" + unhandled_prompt_behavior +
+                      "' not yet supported");
+  }
+
   return Status(kOk);
 }
