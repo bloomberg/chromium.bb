@@ -28,24 +28,20 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
-#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
-#include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
-#include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
@@ -70,7 +66,6 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
@@ -81,8 +76,7 @@
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
-#include "components/sync_sessions/session_sync_bridge.h"
-#include "components/sync_sessions/sync_sessions_client.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
@@ -115,10 +109,6 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/sync/glue/synced_window_delegates_getter_android.h"
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -158,78 +148,7 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
 
 }  // namespace
 
-// Chrome implementation of SyncSessionsClient. Needs to be in a separate class
-// due to possible multiple inheritance issues, wherein ChromeSyncClient might
-// inherit from other interfaces with same methods.
-class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
- public:
-  explicit SyncSessionsClientImpl(Profile* profile) : profile_(profile) {
-    window_delegates_getter_.reset(
-#if defined(OS_ANDROID)
-        // Android doesn't have multi-profile support, so no need to pass the
-        // profile in.
-        new SyncedWindowDelegatesGetterAndroid());
-#else   // defined(OS_ANDROID)
-        new browser_sync::BrowserSyncedWindowDelegatesGetter(profile));
-#endif  // defined(OS_ANDROID)
-  }
-  ~SyncSessionsClientImpl() override {}
-
-  // SyncSessionsClient implementation.
-  favicon::FaviconService* GetFaviconService() override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    return FaviconServiceFactory::GetForProfile(
-        profile_, ServiceAccessType::IMPLICIT_ACCESS);
-  }
-  history::HistoryService* GetHistoryService() override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    return HistoryServiceFactory::GetForProfile(
-        profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  }
-  const syncer::DeviceInfo* GetLocalDeviceInfo() override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    return ProfileSyncServiceFactory::GetForProfile(profile_)
-        ->GetLocalDeviceInfoProvider()
-        ->GetLocalDeviceInfo();
-  }
-  bool ShouldSyncURL(const GURL& url) const override {
-    if (url == chrome::kChromeUIHistoryURL) {
-      // The history page is treated specially as we want it to trigger syncable
-      // events for UI purposes.
-      return true;
-    }
-    return url.is_valid() && !url.SchemeIs(content::kChromeUIScheme) &&
-           !url.SchemeIs(chrome::kChromeNativeScheme) && !url.SchemeIsFile();
-  }
-
-  sync_sessions::SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter()
-      override {
-    return window_delegates_getter_.get();
-  }
-
-  sync_sessions::LocalSessionEventRouter* GetLocalSessionEventRouter()
-      override {
-    syncer::SyncableService::StartSyncFlare flare(
-        sync_start_util::GetFlareForSyncableService(profile_->GetPath()));
-    sync_sessions::SyncSessionsWebContentsRouter* router =
-        sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
-            profile_);
-    router->InjectStartSyncFlare(flare);
-    return router;
-  }
-
- private:
-  Profile* profile_;
-  std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
-      window_delegates_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncSessionsClientImpl);
-};
-
-ChromeSyncClient::ChromeSyncClient(Profile* profile)
-    : profile_(profile),
-      sync_sessions_client_(std::make_unique<SyncSessionsClientImpl>(profile)) {
-}
+ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {}
 
 ChromeSyncClient::~ChromeSyncClient() {
 }
@@ -331,6 +250,11 @@ history::HistoryService* ChromeSyncClient::GetHistoryService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+sync_sessions::SessionSyncService* ChromeSyncClient::GetSessionSyncService() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return SessionSyncServiceFactory::GetForProfile(profile_);
 }
 
 bool ChromeSyncClient::HasPasswordStore() {
@@ -468,10 +392,6 @@ ChromeSyncClient::GetExtensionsActivity() {
   return extensions_activity_monitor_.GetExtensionsActivity();
 }
 
-sync_sessions::SyncSessionsClient* ChromeSyncClient::GetSyncSessionsClient() {
-  return sync_sessions_client_.get();
-}
-
 base::WeakPtr<syncer::SyncableService>
 ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   if (!profile_) {  // For tests.
@@ -553,7 +473,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
       sync_sessions::FaviconCache* favicons =
-          ProfileSyncServiceFactory::GetForProfile(profile_)->GetFaviconCache();
+          SessionSyncServiceFactory::GetForProfile(profile_)->GetFaviconCache();
       return favicons ? favicons->AsWeakPtr()
                       : base::WeakPtr<syncer::SyncableService>();
     }
@@ -573,8 +493,9 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::SESSIONS: {
-      return ProfileSyncServiceFactory::GetForProfile(profile_)->
-          GetSessionsSyncableService()->AsWeakPtr();
+      return SessionSyncServiceFactory::GetForProfile(profile_)
+          ->GetSyncableService()
+          ->AsWeakPtr();
     }
     case syncer::PASSWORDS: {
       return password_store_.get()
@@ -625,8 +546,8 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegate();
     case syncer::SESSIONS: {
-      return ProfileSyncServiceFactory::GetForProfile(profile_)
-          ->GetSessionSyncControllerDelegate();
+      return SessionSyncServiceFactory::GetForProfile(profile_)
+          ->GetControllerDelegate();
     }
 
     // We don't exercise this function for certain datatypes, because their

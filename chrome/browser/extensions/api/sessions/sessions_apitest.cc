@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -35,6 +36,7 @@
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/test/engine/mock_model_type_worker.h"
 #include "components/sync_sessions/session_store.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/extension_builder.h"
 
@@ -268,8 +270,8 @@ void ExtensionSessionsTest::CreateSessionModels() {
 
   std::unique_ptr<syncer::DataTypeActivationResponse> activation_response;
   base::RunLoop loop;
-  ProfileSyncServiceFactory::GetForProfile(browser_->profile())
-      ->GetSessionSyncControllerDelegate()
+  SessionSyncServiceFactory::GetForProfile(browser_->profile())
+      ->GetControllerDelegate()
       ->OnSyncStarting(
           request, base::BindLambdaForTesting(
                        [&](std::unique_ptr<syncer::DataTypeActivationResponse>

@@ -88,7 +88,6 @@ class FakeSyncService : public SyncService {
   base::WeakPtr<JsController> GetJsController() override;
   void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
-  GlobalIdMapper* GetGlobalIdMapper() const override;
 
   // DataTypeEncryptionHandler implementation.
   bool IsPassphraseRequired() const override;

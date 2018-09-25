@@ -9,10 +9,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "components/sync/driver/fake_sync_client.h"
-#include "components/sync/driver/sync_api_component_factory.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
+#include "components/sync_sessions/session_sync_prefs.h"
 #include "components/sync_sessions/session_sync_test_helper.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/test_synced_window_delegates_getter.h"
@@ -113,21 +113,6 @@ testing::AssertionResult ChangeTypeMatches(
   return testing::AssertionSuccess();
 }
 
-class SessionNotificationObserver {
- public:
-  SessionNotificationObserver() : notified_of_update_(false) {}
-  void NotifyOfUpdate() { notified_of_update_ = true; }
-
-  bool notified_of_update() const { return notified_of_update_; }
-
-  void Reset() {
-    notified_of_update_ = false;
-  }
-
- private:
-  bool notified_of_update_;
-};
-
 class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
  public:
   explicit TestSyncChangeProcessor(SyncChangeList* output) : output_(output) {}
@@ -188,9 +173,14 @@ class SessionsSyncManagerTest : public testing::Test {
                            "Chromium 10k",
                            "Chrome 10k",
                            sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                           "device_id") {}
+                           "device_id"),
+        session_sync_prefs_(&pref_service_) {}
 
   void SetUp() override {
+    SessionSyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+
+    ON_CALL(mock_sync_sessions_client_, GetSessionSyncPrefs())
+        .WillByDefault(testing::Return(&session_sync_prefs_));
     ON_CALL(mock_sync_sessions_client_, GetLocalDeviceInfo())
         .WillByDefault(testing::Return(&local_device_info_));
     ON_CALL(mock_sync_sessions_client_, GetSyncedWindowDelegatesGetter())
@@ -198,19 +188,13 @@ class SessionsSyncManagerTest : public testing::Test {
     ON_CALL(mock_sync_sessions_client_, GetLocalSessionEventRouter())
         .WillByDefault(testing::Return(window_getter_.router()));
 
-    sync_client_ = std::make_unique<syncer::FakeSyncClient>();
-    sync_prefs_ =
-        std::make_unique<syncer::SyncPrefs>(sync_client_->GetPrefService());
-    manager_ = std::make_unique<SessionsSyncManager>(
-        &mock_sync_sessions_client_, sync_prefs_.get(),
-        base::Bind(&SessionNotificationObserver::NotifyOfUpdate,
-                   base::Unretained(&observer_)));
+    manager_ =
+        std::make_unique<SessionsSyncManager>(&mock_sync_sessions_client_);
   }
 
   void TearDown() override {
     test_processor_ = nullptr;
     helper()->Reset();
-    sync_prefs_.reset();
     manager_.reset();
   }
 
@@ -218,8 +202,6 @@ class SessionsSyncManagerTest : public testing::Test {
 
   SessionsSyncManager* manager() { return manager_.get(); }
   SessionSyncTestHelper* helper() { return &helper_; }
-  SessionNotificationObserver* observer() { return &observer_; }
-  syncer::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
   MockSyncSessionsClient* mock_sync_sessions_client() {
     return &mock_sync_sessions_client_;
   }
@@ -388,10 +370,9 @@ class SessionsSyncManagerTest : public testing::Test {
 
  private:
   const syncer::DeviceInfo local_device_info_;
-  std::unique_ptr<syncer::FakeSyncClient> sync_client_;
+  TestingPrefServiceSimple pref_service_;
+  SessionSyncPrefs session_sync_prefs_;
   testing::NiceMock<MockSyncSessionsClient> mock_sync_sessions_client_;
-  std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
-  SessionNotificationObserver observer_;
   std::unique_ptr<SessionsSyncManager> manager_;
   SessionSyncTestHelper helper_;
   TestSyncChangeProcessor* test_processor_ = nullptr;
@@ -1549,7 +1530,6 @@ TEST_F(SessionsSyncManagerTest, GarbageCollectionHonoursUpdate) {
 // Test that NOTIFICATION_FOREIGN_SESSION_UPDATED is sent when processing
 // sync changes.
 TEST_F(SessionsSyncManagerTest, NotifiedOfUpdates) {
-  ASSERT_FALSE(observer()->notified_of_update());
   InitWithNoSyncData();
 
   std::vector<sync_pb::SessionSpecifics> tabs1;
@@ -1558,20 +1538,18 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfUpdates) {
 
   SyncChangeList changes;
   changes.push_back(MakeRemoteChange(meta, SyncChange::ACTION_ADD));
+  EXPECT_CALL(*mock_sync_sessions_client(), NotifyForeignSessionUpdated());
   manager()->ProcessSyncChanges(FROM_HERE, changes);
-  EXPECT_TRUE(observer()->notified_of_update());
 
   changes.clear();
-  observer()->Reset();
   AddTabsToChangeList(tabs1, SyncChange::ACTION_ADD, &changes);
+  EXPECT_CALL(*mock_sync_sessions_client(), NotifyForeignSessionUpdated());
   manager()->ProcessSyncChanges(FROM_HERE, changes);
-  EXPECT_TRUE(observer()->notified_of_update());
 
   changes.clear();
-  observer()->Reset();
   changes.push_back(MakeRemoteChange(meta, SyncChange::ACTION_DELETE));
+  EXPECT_CALL(*mock_sync_sessions_client(), NotifyForeignSessionUpdated());
   manager()->ProcessSyncChanges(FROM_HERE, changes);
-  EXPECT_TRUE(observer()->notified_of_update());
 }
 
 // Test that NOTIFICATION_FOREIGN_SESSION_UPDATED is sent when handling
@@ -1587,10 +1565,8 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfLocalRemovalOfForeignSession) {
   changes.push_back(MakeRemoteChange(meta, SyncChange::ACTION_ADD));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
-  observer()->Reset();
-  ASSERT_FALSE(observer()->notified_of_update());
+  EXPECT_CALL(*mock_sync_sessions_client(), NotifyForeignSessionUpdated());
   manager()->GetOpenTabsUIDelegate()->DeleteForeignSession(tag);
-  ASSERT_TRUE(observer()->notified_of_update());
 }
 
 // Tests receipt of duplicate tab IDs in the same window.  This should never

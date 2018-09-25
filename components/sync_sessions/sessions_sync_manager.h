@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync_sessions/abstract_sessions_sync_manager.h"
@@ -54,9 +53,7 @@ class SessionsSyncManager : public AbstractSessionsSyncManager,
                             public syncer::SyncableService,
                             public LocalSessionEventHandlerImpl::Delegate {
  public:
-  SessionsSyncManager(SyncSessionsClient* sessions_client,
-                      syncer::SessionSyncPrefs* sync_prefs,
-                      const base::RepeatingClosure& sessions_updated_callback);
+  explicit SessionsSyncManager(SyncSessionsClient* sessions_client);
   ~SessionsSyncManager() override;
 
   // AbstractSessionsSyncManager implementation.
@@ -188,8 +185,6 @@ class SessionsSyncManager : public AbstractSessionsSyncManager,
   // proves that we are still relevant.
   bool local_tab_pool_out_of_sync_;
 
-  syncer::SessionSyncPrefs* sync_prefs_;
-
   std::unique_ptr<syncer::SyncErrorFactory> error_handler_;
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
@@ -205,9 +200,6 @@ class SessionsSyncManager : public AbstractSessionsSyncManager,
 
   std::unique_ptr<sync_sessions::LostNavigationsRecorder>
       lost_navigations_recorder_;
-
-  // Callback to inform interested observer that new sessions data has arrived.
-  base::RepeatingClosure sessions_updated_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionsSyncManager);
 };

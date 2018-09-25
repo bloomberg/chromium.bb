@@ -60,21 +60,13 @@ class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 }  // namespace network
 
-namespace sync_sessions {
-class AbstractSessionsSyncManager;
-class FaviconCache;
-class OpenTabsUIDelegate;
-}  // namespace sync_sessions
-
 namespace syncer {
 class BackendMigrator;
 class BaseTransaction;
 class DeviceInfoSyncBridge;
 class DeviceInfoTracker;
-class LocalDeviceInfoProvider;
 class ModelTypeControllerDelegate;
 class NetworkResources;
-class SyncableService;
 class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
 struct CommitCounters;
@@ -292,7 +284,6 @@ class ProfileSyncService : public syncer::SyncService,
                        callback) override;
   AccountInfo GetAuthenticatedAccountInfo() const override;
   bool IsAuthenticatedAccountPrimary() const override;
-  syncer::GlobalIdMapper* GetGlobalIdMapper() const override;
 
   // Add a sync type preference provider. Each provider may only be added once.
   void AddPreferenceProvider(syncer::SyncTypePreferenceProvider* provider);
@@ -307,11 +298,6 @@ class ProfileSyncService : public syncer::SyncService,
   const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const;
   void SetLocalDeviceInfoProviderForTest(
       std::unique_ptr<syncer::LocalDeviceInfoProvider> provider);
-
-  // Returns the SyncableService or USS bridge for syncer::SESSIONS.
-  syncer::SyncableService* GetSessionsSyncableService();
-  base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetSessionSyncControllerDelegate();
 
   // Returns the ModelTypeControllerDelegate for syncer::DEVICE_INFO.
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -444,8 +430,6 @@ class ProfileSyncService : public syncer::SyncService,
   // once (before this object is destroyed).
   void Shutdown() override;
 
-  sync_sessions::FaviconCache* GetFaviconCache();
-
   // Overrides the NetworkResources used for Sync connections.
   // TODO(treib): Inject this in the ctor instead. As it is, it's possible that
   // the real NetworkResources were already used before the test had a chance
@@ -460,6 +444,12 @@ class ProfileSyncService : public syncer::SyncService,
   // It should be used to persist data to disk when the process might be
   // killed in the near future.
   void FlushDirectory() const;
+
+  // Notifies observers that foreign sessions have been updated.
+  // TODO(crbug.com/883199): This doesn't belong here, just like
+  // OnForeignSessionUpdated() doesn't belong in the observer. Let's move them
+  // to OpenTabsUIDelegate by introducing a similar observer mechanism.
+  virtual void NotifyForeignSessionUpdated();
 
   // Returns a serialized NigoriKey proto generated from the bootstrap token in
   // SyncPrefs. Will return the empty string if no bootstrap token exists.
@@ -548,7 +538,6 @@ class ProfileSyncService : public syncer::SyncService,
   void NotifyObservers();
 
   void NotifySyncCycleCompleted();
-  void NotifyForeignSessionUpdated();
   void NotifyShutdown();
 
   void ClearStaleErrors();
@@ -745,10 +734,6 @@ class ProfileSyncService : public syncer::SyncService,
   invalidation::IdentityProvider* const invalidations_identity_provider_;
 
   std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_;
-
-  // Locally owned SyncableService or ModelTypeSyncBridge implementations.
-  std::unique_ptr<sync_sessions::AbstractSessionsSyncManager>
-      sessions_sync_manager_;
 
   std::unique_ptr<syncer::DeviceInfoSyncBridge> device_info_sync_bridge_;
 

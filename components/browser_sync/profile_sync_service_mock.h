@@ -56,6 +56,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(RequestStart, void());
   MOCK_METHOD1(RequestStop, void(ProfileSyncService::SyncStopDataFate));
 
+  MOCK_METHOD0(NotifyForeignSessionUpdated, void());
   MOCK_METHOD1(AddObserver, void(syncer::SyncServiceObserver*));
   MOCK_METHOD1(RemoveObserver, void(syncer::SyncServiceObserver*));
   MOCK_METHOD0(GetJsController, base::WeakPtr<syncer::JsController>());

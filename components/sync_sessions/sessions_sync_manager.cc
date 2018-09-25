@@ -22,6 +22,7 @@
 #include "components/sync/model/sync_merge_result.h"
 #include "components/sync/model/time.h"
 #include "components/sync_sessions/local_session_event_router.h"
+#include "components/sync_sessions/session_sync_prefs.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/tab_node_pool.h"
 
@@ -137,9 +138,7 @@ class SyncChangeListWriteBatch
 // |local_device| is owned by ProfileSyncService, its lifetime exceeds
 // lifetime of SessionSyncManager.
 SessionsSyncManager::SessionsSyncManager(
-    sync_sessions::SyncSessionsClient* sessions_client,
-    syncer::SessionSyncPrefs* sync_prefs,
-    const base::RepeatingClosure& sessions_updated_callback)
+    sync_sessions::SyncSessionsClient* sessions_client)
     : sessions_client_(sessions_client),
       session_tracker_(sessions_client),
       favicon_cache_(sessions_client->GetFaviconService(),
@@ -152,9 +151,7 @@ SessionsSyncManager::SessionsSyncManager(
           base::BindRepeating(&SessionsSyncManager::DeleteForeignSessionFromUI,
                               base::Unretained(this))),
       local_tab_pool_out_of_sync_(true),
-      sync_prefs_(sync_prefs),
-      stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
-      sessions_updated_callback_(sessions_updated_callback) {}
+      stale_session_threshold_days_(kDefaultStaleSessionThresholdDays) {}
 
 SessionsSyncManager::~SessionsSyncManager() {}
 
@@ -391,8 +388,7 @@ syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
     }
   }
 
-  if (!sessions_updated_callback_.is_null())
-    sessions_updated_callback_.Run();
+  sessions_client_->NotifyForeignSessionUpdated();
   return syncer::SyncError();
 }
 
@@ -502,7 +498,8 @@ void SessionsSyncManager::InitializeCurrentMachineTag(
     const std::string& cache_guid) {
   DCHECK(current_machine_tag_.empty());
   std::string persisted_guid;
-  persisted_guid = sync_prefs_->GetSyncSessionsGUID();
+  persisted_guid =
+      sessions_client_->GetSessionSyncPrefs()->GetSyncSessionsGUID();
   if (!persisted_guid.empty()) {
     current_machine_tag_ = persisted_guid;
     DVLOG(1) << "Restoring persisted session sync guid: " << persisted_guid;
@@ -510,7 +507,8 @@ void SessionsSyncManager::InitializeCurrentMachineTag(
     DCHECK(!cache_guid.empty());
     current_machine_tag_ = BuildMachineTag(cache_guid);
     DVLOG(1) << "Creating session sync guid: " << current_machine_tag_;
-    sync_prefs_->SetSyncSessionsGUID(current_machine_tag_);
+    sessions_client_->GetSessionSyncPrefs()->SetSyncSessionsGUID(
+        current_machine_tag_);
   }
 }
 
@@ -532,8 +530,8 @@ void SessionsSyncManager::DeleteForeignSessionInternal(
                            SyncData::CreateLocalDelete(tag, syncer::SESSIONS)));
   }
   AppendDeletionsForTabNodes(tab_node_ids_to_delete, tag, change_output);
-  if (!sessions_updated_callback_.is_null())
-    sessions_updated_callback_.Run();
+
+  sessions_client_->NotifyForeignSessionUpdated();
 }
 
 void SessionsSyncManager::DeleteForeignSessionFromUI(const std::string& tag) {

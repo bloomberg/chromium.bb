@@ -64,8 +64,6 @@ PrefGroupsMap ComputePrefGroups(bool user_events_separate_pref_group) {
 
 }  // namespace
 
-SessionSyncPrefs::~SessionSyncPrefs() {}
-
 CryptoSyncPrefs::~CryptoSyncPrefs() {}
 
 SyncPrefObserver::~SyncPrefObserver() {}
@@ -130,7 +128,6 @@ void SyncPrefs::RegisterProfilePrefs(
 #endif
 
   registry->RegisterBooleanPref(prefs::kSyncHasAuthError, false);
-  registry->RegisterStringPref(prefs::kSyncSessionsGUID, std::string());
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
   registry->RegisterIntegerPref(prefs::kSyncMemoryPressureWarningCount, -1);
   registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
@@ -320,16 +317,6 @@ std::string SyncPrefs::GetKeystoreEncryptionBootstrapToken() const {
 void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetString(prefs::kSyncKeystoreEncryptionBootstrapToken, token);
-}
-
-std::string SyncPrefs::GetSyncSessionsGUID() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return pref_service_->GetString(prefs::kSyncSessionsGUID);
-}
-
-void SyncPrefs::SetSyncSessionsGUID(const std::string& guid) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_->SetString(prefs::kSyncSessionsGUID, guid);
 }
 
 // static

@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
@@ -35,11 +37,11 @@
 #include "components/sessions/core/persistent_tab_restore_service.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
-#include "components/sync/driver/sync_client.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/synced_session.h"
 #include "content/public/browser/browser_thread.h"
@@ -147,7 +149,9 @@ class FakeSyncServiceObserverList {
 class RecentTabsSubMenuModelTest
     : public BrowserWithTestWindowTest {
  public:
-  RecentTabsSubMenuModelTest() {}
+  RecentTabsSubMenuModelTest() {
+    override_features_.InitAndDisableFeature(switches::kSyncUSSSessions);
+  }
 
   void SetUp() override {
     // Set up our mock sync service factory before the sync service (and any
@@ -159,10 +163,11 @@ class RecentTabsSubMenuModelTest
 
     BrowserWithTestWindowTest::SetUp();
 
-    sync_prefs_ = std::make_unique<syncer::SyncPrefs>(profile()->GetPrefs());
-
     mock_sync_service_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetForProfile(profile()));
+    manager_ = static_cast<sync_sessions::SessionsSyncManager*>(
+        SessionSyncServiceFactory::GetForProfile(profile())
+            ->GetSyncableService());
 
     // Needed because ProfileSyncService::Initialize() is not exercised.
     mock_sync_service_->SetLocalDeviceInfoProviderForTest(
@@ -177,12 +182,10 @@ class RecentTabsSubMenuModelTest
     ON_CALL(*mock_sync_service_, RemoveObserver(_))
         .WillByDefault(Invoke(&fake_sync_service_observer_list_,
                               &FakeSyncServiceObserverList::RemoveObserver));
-
-    manager_ = std::make_unique<sync_sessions::SessionsSyncManager>(
-        mock_sync_service_->GetSyncClient()->GetSyncSessionsClient(),
-        sync_prefs_.get(),
-        base::Bind(&FakeSyncServiceObserverList::NotifyForeignSessionUpdated,
-                   base::Unretained(&fake_sync_service_observer_list_)));
+    ON_CALL(*mock_sync_service_, NotifyForeignSessionUpdated())
+        .WillByDefault(
+            Invoke(&fake_sync_service_observer_list_,
+                   &FakeSyncServiceObserverList::NotifyForeignSessionUpdated));
 
     manager_->MergeDataAndStartSyncing(
         syncer::SESSIONS, syncer::SyncDataList(),
@@ -190,12 +193,6 @@ class RecentTabsSubMenuModelTest
             new syncer::FakeSyncChangeProcessor),
         std::unique_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock));
-  }
-
-  void TearDown() override {
-    manager_.reset();
-    sync_prefs_.reset();
-    BrowserWithTestWindowTest::TearDown();
   }
 
   void WaitForLoadFromLastSession() { content::RunAllTasksUntilIdle(); }
@@ -242,7 +239,7 @@ class RecentTabsSubMenuModelTest
   }
 
   void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {
-    helper->ExportToSessionsSyncManager(manager_.get());
+    helper->ExportToSessionsSyncManager(manager_);
   }
 
  private:
@@ -252,14 +249,15 @@ class RecentTabsSubMenuModelTest
         context, BuildMockProfileSyncService);
   }
 
+  base::test::ScopedFeatureList override_features_;
+
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
 
-  std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
   FakeSyncServiceObserverList fake_sync_service_observer_list_;
   browser_sync::ProfileSyncServiceMock* mock_sync_service_ = nullptr;
-  std::unique_ptr<sync_sessions::SessionsSyncManager> manager_;
+  sync_sessions::SessionsSyncManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentTabsSubMenuModelTest);
 };

@@ -102,28 +102,21 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
 
 SessionSyncBridge::SessionSyncBridge(
     SyncSessionsClient* sessions_client,
-    syncer::SessionSyncPrefs* sync_prefs,
-    const syncer::RepeatingModelTypeStoreFactory& store_factory,
-    const base::RepeatingClosure& foreign_sessions_updated_callback,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : ModelTypeSyncBridge(std::move(change_processor)),
       sessions_client_(sessions_client),
       local_session_event_router_(
           sessions_client->GetLocalSessionEventRouter()),
-      foreign_sessions_updated_callback_(foreign_sessions_updated_callback),
       favicon_cache_(sessions_client->GetFaviconService(),
                      sessions_client->GetHistoryService(),
                      kMaxSyncFavicons),
       session_store_factory_(SessionStore::CreateFactory(
           sessions_client,
-          sync_prefs,
-          store_factory,
           base::BindRepeating(&FaviconCache::UpdateMappingsFromForeignTab,
                               base::Unretained(&favicon_cache_)))),
       weak_ptr_factory_(this) {
   DCHECK(sessions_client_);
   DCHECK(local_session_event_router_);
-  DCHECK(foreign_sessions_updated_callback_);
 }
 
 SessionSyncBridge::~SessionSyncBridge() {
@@ -265,7 +258,7 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
   SessionStore::WriteBatch::Commit(std::move(batch));
 
   if (!entity_changes.empty()) {
-    foreign_sessions_updated_callback_.Run();
+    sessions_client_->NotifyForeignSessionUpdated();
   }
 
   return base::nullopt;
@@ -461,7 +454,7 @@ void SessionSyncBridge::DeleteForeignSessionWithBatch(
   change_processor()->Delete(header_storage_key,
                              batch->GetMetadataChangeList());
 
-  foreign_sessions_updated_callback_.Run();
+  sessions_client_->NotifyForeignSessionUpdated();
 }
 
 std::unique_ptr<SessionStore::WriteBatch>

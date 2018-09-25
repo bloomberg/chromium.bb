@@ -206,10 +206,6 @@ base::WeakPtr<JsController> FakeSyncService::GetJsController() {
 void FakeSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
-GlobalIdMapper* FakeSyncService::GetGlobalIdMapper() const {
-  return nullptr;
-}
-
 bool FakeSyncService::IsPassphraseRequired() const {
   return false;
 }

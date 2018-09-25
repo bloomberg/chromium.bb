@@ -59,11 +59,7 @@
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/sync_sessions/favicon_cache.h"
-#include "components/sync_sessions/session_data_type_controller.h"
-#include "components/sync_sessions/session_sync_bridge.h"
-#include "components/sync_sessions/sessions_sync_manager.h"
-#include "components/sync_sessions/sync_sessions_client.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "components/version_info/version_info_values.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -257,33 +253,6 @@ void ProfileSyncService::Initialize() {
       sync_service_url_, local_device_->GetSyncUserAgent(), url_loader_factory_,
       syncer::SyncStoppedReporter::ResultCallback());
 
-  // Not all |sync_client_|s will return a sync_sessions::SyncSessionsClient.
-  sync_sessions::SyncSessionsClient* sync_sessions_client =
-      sync_client_->GetSyncSessionsClient();
-  if (sync_sessions_client) {
-    if (base::FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
-      DCHECK(sync_client_->GetSyncSessionsClient());
-      sessions_sync_manager_ =
-          std::make_unique<sync_sessions::SessionSyncBridge>(
-              sync_client_->GetSyncSessionsClient(), &sync_prefs_,
-              model_type_store_factory,
-              base::BindRepeating(
-                  &ProfileSyncService::NotifyForeignSessionUpdated,
-                  sync_enabled_weak_factory_.GetWeakPtr()),
-              std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-                  syncer::SESSIONS,
-                  base::BindRepeating(&syncer::ReportUnrecoverableError,
-                                      channel_)));
-    } else {
-      sessions_sync_manager_ =
-          std::make_unique<sync_sessions::SessionsSyncManager>(
-              sync_client_->GetSyncSessionsClient(), &sync_prefs_,
-              base::BindRepeating(
-                  &ProfileSyncService::NotifyForeignSessionUpdated,
-                  sync_enabled_weak_factory_.GetWeakPtr()));
-    }
-  }
-
   device_info_sync_bridge_ = std::make_unique<syncer::DeviceInfoSyncBridge>(
       local_device_.get(), model_type_store_factory,
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
@@ -293,22 +262,6 @@ void ProfileSyncService::Initialize() {
 
   data_type_controllers_ = BuildDataTypeControllerMap(
       sync_client_->CreateDataTypeControllers(local_device_.get()));
-
-  // If |sessions_sync_manager_| is null, make sure that certain data types
-  // are not enabled. This is because these data types will call into functions
-  // defined in ProfileSyncService which uses a |sessions_sync_manager_|.
-  if (!sessions_sync_manager_) {
-    DCHECK(data_type_controllers_.find(syncer::USER_EVENTS) ==
-           data_type_controllers_.end());
-    DCHECK(data_type_controllers_.find(syncer::FAVICON_IMAGES) ==
-           data_type_controllers_.end());
-    DCHECK(data_type_controllers_.find(syncer::FAVICON_TRACKING) ==
-           data_type_controllers_.end());
-    DCHECK(data_type_controllers_.find(syncer::PROXY_TABS) ==
-           data_type_controllers_.end());
-    DCHECK(data_type_controllers_.find(syncer::SESSIONS) ==
-           data_type_controllers_.end());
-  }
 
   if (gaia_cookie_manager_service_)
     gaia_cookie_manager_service_->AddObserver(this);
@@ -400,13 +353,7 @@ sync_sessions::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
     return nullptr;
   }
 
-  DCHECK(sessions_sync_manager_);
-  return sessions_sync_manager_->GetOpenTabsUIDelegate();
-}
-
-sync_sessions::FaviconCache* ProfileSyncService::GetFaviconCache() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return sessions_sync_manager_->GetFaviconCache();
+  return sync_client_->GetSessionSyncService()->GetRawOpenTabsUIDelegate();
 }
 
 syncer::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker() const {
@@ -898,11 +845,6 @@ void ProfileSyncService::NotifySyncCycleCompleted() {
     observer.OnSyncCycleCompleted(this);
 }
 
-void ProfileSyncService::NotifyForeignSessionUpdated() {
-  for (auto& observer : observers_)
-    observer.OnForeignSessionUpdated(this);
-}
-
 void ProfileSyncService::NotifyShutdown() {
   for (auto& observer : observers_)
     observer.OnSyncShutdown(this);
@@ -1085,7 +1027,7 @@ void ProfileSyncService::OnSyncCycleCompleted(
       !syncer::HasSyncerError(snapshot.model_neutral_state())) {
     // Trigger garbage collection of old sessions now that we've downloaded
     // any new session data.
-    sessions_sync_manager_->ScheduleGarbageCollection();
+    sync_client_->GetSessionSyncService()->ScheduleGarbageCollection();
   }
   DVLOG(2) << "Notifying observers sync cycle completed";
   NotifySyncCycleCompleted();
@@ -2057,10 +1999,6 @@ bool ProfileSyncService::IsAuthenticatedAccountPrimary() const {
   return auth_manager_->GetActiveAccountInfo().is_primary;
 }
 
-syncer::GlobalIdMapper* ProfileSyncService::GetGlobalIdMapper() const {
-  return sessions_sync_manager_->GetGlobalIdMapper();
-}
-
 base::WeakPtr<syncer::JsController> ProfileSyncService::GetJsController() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_js_controller_.AsWeakPtr();
@@ -2169,23 +2107,6 @@ std::string ProfileSyncService::GetAccessTokenForTest() const {
   return auth_manager_->access_token();
 }
 
-syncer::SyncableService* ProfileSyncService::GetSessionsSyncableService() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!sessions_sync_manager_)
-    return nullptr;
-  return sessions_sync_manager_->GetSyncableService();
-}
-
-base::WeakPtr<syncer::ModelTypeControllerDelegate>
-ProfileSyncService::GetSessionSyncControllerDelegate() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!sessions_sync_manager_)
-    return nullptr;
-  return sessions_sync_manager_->GetModelTypeSyncBridge()
-      ->change_processor()
-      ->GetControllerDelegate();
-}
-
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 ProfileSyncService::GetDeviceInfoSyncControllerDelegate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -2240,6 +2161,12 @@ void ProfileSyncService::FlushDirectory() const {
   // If sync is not initialized yet, we fail silently.
   if (engine_initialized_)
     engine_->FlushDirectory();
+}
+
+void ProfileSyncService::NotifyForeignSessionUpdated() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : observers_)
+    observer.OnForeignSessionUpdated(this);
 }
 
 base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {

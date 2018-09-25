@@ -34,7 +34,8 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
-#include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
+#include "chrome/browser/sync/model_type_store_service_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -130,7 +131,8 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
         BrowserContextDependencyManager::GetInstance()) {
   // The ProfileSyncService depends on various SyncableServices being around
   // when it is shut down.  Specify those dependencies here to build the proper
-  // destruction order.
+  // destruction order. Note that some of the dependencies are listed here but
+  // actually plumbed in ChromeSyncClient, which this factory constructs.
   DependsOn(AboutSigninInternalsFactory::GetInstance());
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(BookmarkModelFactory::GetInstance());
@@ -151,12 +153,13 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(invalidation::DeprecatedProfileInvalidationProviderFactory::
                 GetInstance());
   DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
+  DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
   DependsOn(SpellcheckServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  DependsOn(sync_sessions::SyncSessionsWebContentsRouterFactory::GetInstance());
+  DependsOn(SessionSyncServiceFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -167,12 +170,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(chromeos::SyncedPrintersManagerFactory::GetInstance());
   DependsOn(sync_wifi::WifiCredentialSyncableServiceFactory::GetInstance());
 #endif  // defined(OS_CHROMEOS)
-
-  // The following have not been converted to KeyedServices yet,
-  // and for now they are explicitly destroyed after the
-  // BrowserContextDependencyManager is told to DestroyBrowserContextServices,
-  // so they will be around when the ProfileSyncService is destroyed.
-
 }
 
 ProfileSyncServiceFactory::~ProfileSyncServiceFactory() {
