@@ -2452,7 +2452,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # Warm change details cache now to avoid RPCs later, reducing latency for
     # developers.
     self._GetChangeDetail(
-        ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT'])
+        ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT', 'LABELS'])
 
     status = self._GetChangeDetail()['status']
     if status in ('MERGED', 'ABANDONED'):

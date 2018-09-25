@@ -1088,7 +1088,8 @@ class TestGitCl(TestCase):
       calls += [
         (('GetChangeDetail', 'chromium-review.googlesource.com',
           'my%2Frepo~123456',
-          ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT']),
+          ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT', 'LABELS']
+         ),
          {
            'owner': {'email': (other_cl_owner or 'owner@example.com')},
            'change_id': '123456789',
