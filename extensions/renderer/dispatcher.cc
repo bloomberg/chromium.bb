@@ -446,7 +446,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   LoggingNativeHandler* logging = new LoggingNativeHandler(context);
   logging->Initialize();
   context->AddInvalidationObserver(
-      base::Bind(&NativeHandler::Invalidate, base::Owned(logging)));
+      base::BindOnce(&NativeHandler::Invalidate, base::Owned(logging)));
 
   // Execute the main function with its dependencies passed in as arguments.
   v8::Local<v8::Value> args[] = {
