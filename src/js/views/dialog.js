@@ -143,17 +143,8 @@ camera.views.Dialog.prototype.closeDialog_ = function() {
  * @override
  */
 camera.views.Dialog.prototype.onKeyPressed = function(event) {
-  switch (camera.util.getShortcutIdentifier(event)) {
-    case 'Enter':
-      if (document.activeElement != this.positiveButton_)
-        break;
-      this.router.back({isPositive: true});
-      event.preventDefault();
-      break;
-    case 'Escape':
-      this.closeDialog_();
-      event.preventDefault();
-      break;
+  if (camera.util.getShortcutIdentifier(event) == 'Escape') {
+    this.closeDialog_();
+    event.preventDefault();
   }
 };
-
