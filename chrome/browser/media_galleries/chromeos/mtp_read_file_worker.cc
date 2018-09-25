@@ -12,7 +12,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -30,7 +29,6 @@ namespace {
 uint32_t WriteDataChunkIntoSnapshotFileOnFileThread(
     const base::FilePath& snapshot_file_path,
     const std::string& data) {
-  base::AssertBlockingAllowed();
   return base::AppendToFile(snapshot_file_path, data.c_str(), data.size())
              ? base::checked_cast<uint32_t>(data.size())
              : 0;

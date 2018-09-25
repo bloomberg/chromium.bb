@@ -25,7 +25,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_device_task_helper_map_service.h"
 #include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
@@ -356,7 +356,7 @@ void CloseStorageAndDestroyTaskHelperOnUIThread(
 std::pair<int, base::File::Error> OpenFileDescriptor(
     const base::FilePath& file_path,
     const int flags) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   if (base::DirectoryExists(file_path))
     return std::make_pair(-1, base::File::FILE_ERROR_NOT_A_FILE);
@@ -370,7 +370,7 @@ std::pair<int, base::File::Error> OpenFileDescriptor(
 
 // Closes |file_descriptor| on a background task runner.
 void CloseFileDescriptor(const int file_descriptor) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   IGNORE_EINTR(close(file_descriptor));
 }
