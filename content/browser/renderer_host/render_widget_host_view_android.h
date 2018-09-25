@@ -392,8 +392,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool Animate(base::TimeTicks frame_time);
   void RequestDisallowInterceptTouchEvent();
 
-  bool SyncCompositorOnMessageReceived(const IPC::Message& message);
-
   void ComputeEventLatencyOSTouchHistograms(const ui::MotionEvent& event);
 
   void CreateOverscrollControllerIfPossible();
