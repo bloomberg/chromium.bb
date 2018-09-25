@@ -8,13 +8,9 @@
 
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -32,62 +28,22 @@
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/chromeos/accessibility/ax_host_service.h"
-#include "components/session_manager/core/session_manager.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/widget/widget_delegate.h"
 #endif
 
-using content::BrowserContext;
 using extensions::AutomationEventRouter;
-
-namespace {
-
-// Returns default browser context for sending events in case it was not
-// provided. This works around a crash in profile creation during OOBE when
-// accessibility is enabled. https://crbug.com/738003
-BrowserContext* GetDefaultEventContext() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager)
-    return nullptr;
-
-#if defined(OS_CHROMEOS)
-  session_manager::SessionManager* session_manager =
-      session_manager::SessionManager::Get();
-  // It is not guaranteed that user profile creation is completed for
-  // some session states. In this case use default profile.
-  const session_manager::SessionState session_state =
-      session_manager ? session_manager->session_state()
-                      : session_manager::SessionState::UNKNOWN;
-  switch (session_state) {
-    case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
-    case session_manager::SessionState::ACTIVE:
-    case session_manager::SessionState::LOCKED:
-      break;
-    case session_manager::SessionState::UNKNOWN:
-    case session_manager::SessionState::OOBE:
-    case session_manager::SessionState::LOGIN_PRIMARY:
-    case session_manager::SessionState::LOGIN_SECONDARY:
-      const base::FilePath defult_profile_dir =
-          profiles::GetDefaultProfileDir(profile_manager->user_data_dir());
-      return profile_manager->GetProfileByPath(defult_profile_dir);
-  }
-#endif
-
-  return ProfileManager::GetLastUsedProfile();
-}
-
-}  // namespace
 
 // static
 AutomationManagerAura* AutomationManagerAura::GetInstance() {
   return base::Singleton<AutomationManagerAura>::get();
 }
 
-void AutomationManagerAura::Enable(BrowserContext* context) {
+void AutomationManagerAura::Enable() {
   enabled_ = true;
   Reset(false);
 
-  SendEvent(context, current_tree_->GetRoot(), ax::mojom::Event::kLoadComplete);
+  SendEvent(current_tree_->GetRoot(), ax::mojom::Event::kLoadComplete);
   views::AXAuraObjCache::GetInstance()->SetDelegate(this);
 
 #if defined(OS_CHROMEOS)
@@ -98,7 +54,7 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
       views::AXAuraObjWrapper* focus =
           views::AXAuraObjCache::GetInstance()->GetOrCreate(active_window);
       if (focus)
-        SendEvent(context, focus, ax::mojom::Event::kChildrenChanged);
+        SendEvent(focus, ax::mojom::Event::kChildrenChanged);
     }
   }
   // Gain access to out-of-process native windows.
@@ -115,14 +71,13 @@ void AutomationManagerAura::Disable() {
 #endif
 }
 
-void AutomationManagerAura::HandleEvent(BrowserContext* context,
-                                        views::View* view,
+void AutomationManagerAura::HandleEvent(views::View* view,
                                         ax::mojom::Event event_type) {
   if (!enabled_)
     return;
 
   if (!view) {
-    SendEvent(nullptr, current_tree_->GetRoot(), event_type);
+    SendEvent(current_tree_->GetRoot(), event_type);
     return;
   }
 
@@ -146,18 +101,17 @@ void AutomationManagerAura::SendEventOnObjectById(int32_t id,
                                                   ax::mojom::Event event_type) {
   views::AXAuraObjWrapper* obj = views::AXAuraObjCache::GetInstance()->Get(id);
   if (obj)
-    SendEvent(nullptr, obj, event_type);
+    SendEvent(obj, event_type);
 }
 
-void AutomationManagerAura::HandleAlert(content::BrowserContext* context,
-                                        const std::string& text) {
+void AutomationManagerAura::HandleAlert(const std::string& text) {
   if (!enabled_)
     return;
 
   views::AXAuraObjWrapper* obj =
       static_cast<AXRootObjWrapper*>(current_tree_->GetRoot())
           ->GetAlertForText(text);
-  SendEvent(context, obj, ax::mojom::Event::kAlert);
+  SendEvent(obj, ax::mojom::Event::kAlert);
 }
 
 void AutomationManagerAura::PerformAction(const ui::AXActionData& data) {
@@ -181,12 +135,12 @@ void AutomationManagerAura::OnChildWindowRemoved(
   if (!parent)
     parent = current_tree_->GetRoot();
 
-  SendEvent(nullptr, parent, ax::mojom::Event::kChildrenChanged);
+  SendEvent(parent, ax::mojom::Event::kChildrenChanged);
 }
 
 void AutomationManagerAura::OnEvent(views::AXAuraObjWrapper* aura_obj,
                                     ax::mojom::Event event_type) {
-  SendEvent(nullptr, aura_obj, event_type);
+  SendEvent(aura_obj, event_type);
 }
 
 AutomationManagerAura::AutomationManagerAura()
@@ -206,22 +160,13 @@ void AutomationManagerAura::Reset(bool reset_serializer) {
                          new AuraAXTreeSerializer(current_tree_.get()));
 }
 
-void AutomationManagerAura::SendEvent(BrowserContext* context,
-                                      views::AXAuraObjWrapper* aura_obj,
+void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
                                       ax::mojom::Event event_type) {
   if (!enabled_)
     return;
 
   if (!current_tree_serializer_)
     return;
-
-  if (!context)
-    context = GetDefaultEventContext();
-
-  if (!context) {
-    LOG(WARNING) << "Accessibility notification but no browser context";
-    return;
-  }
 
   if (processing_events_) {
     pending_events_.push_back(std::make_pair(aura_obj, event_type));
@@ -271,9 +216,7 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   auto pending_events_copy = pending_events_;
   pending_events_.clear();
   for (size_t i = 0; i < pending_events_copy.size(); ++i) {
-    SendEvent(context,
-              pending_events_copy[i].first,
-              pending_events_copy[i].second);
+    SendEvent(pending_events_copy[i].first, pending_events_copy[i].second);
   }
 }
 
@@ -354,6 +297,6 @@ void AutomationManagerAura::PerformHitTest(
   views::AXAuraObjWrapper* window_wrapper =
       views::AXAuraObjCache::GetInstance()->GetOrCreate(window);
   if (window_wrapper)
-    SendEvent(nullptr, window_wrapper, action.hit_test_event_to_fire);
+    SendEvent(window_wrapper, action.hit_test_event_to_fire);
 #endif
 }

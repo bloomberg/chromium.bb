@@ -1528,8 +1528,7 @@ void ExistingUserController::ShowError(int error_id,
 
 void ExistingUserController::SendAccessibilityAlert(
     const std::string& alert_text) {
-  AutomationManagerAura::GetInstance()->HandleAlert(
-      ProfileHelper::GetSigninProfile(), alert_text);
+  AutomationManagerAura::GetInstance()->HandleAlert(alert_text);
 }
 
 void ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin(
