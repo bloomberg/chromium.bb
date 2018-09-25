@@ -2072,6 +2072,15 @@ class DISABLETypoInTest(unittest.TestCase):
                                                    MockOutputApi())
     self.assertEqual(0, len(results))
 
+  def testIngoreDeletedFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockFile('some/path/foo.cc', 'TEST_F(FoobarTest, Foo)', action='D'),
+    ]
+
+    results = PRESUBMIT._CheckNoDISABLETypoInTests(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(0, len(results))
 
 if __name__ == '__main__':
   unittest.main()
