@@ -42,8 +42,8 @@ from py_utils import discover
 # bisecting Chrome builds with their web tests. For questions or to report
 # issues, please contact johnchen@chromium.org.
 BUILDER_ADDITIONAL_COMPILE_TARGETS = {
-    'Android Compile Perf': ['microdump_stackwalk', 'angle_perftests'],
-    'Android arm64 Compile Perf': ['microdump_stackwalk', 'angle_perftests'],
+    'android-builder-perf': ['microdump_stackwalk', 'angle_perftests'],
+    'android_arm64-builder-perf': ['microdump_stackwalk', 'angle_perftests'],
     'Linux Builder Perf': ['chromedriver'],
     'Mac Builder Perf': ['chromedriver'],
     'Win Builder Perf': ['chromedriver'],
