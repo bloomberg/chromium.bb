@@ -993,8 +993,12 @@ public class BottomSheet extends FrameLayout
                 mPersistentControlsToken);
 
         for (BottomSheetObserver o : mObservers) o.onSheetClosed(reason);
-        announceForAccessibility(getResources().getString(
-                getCurrentSheetContent().getSheetClosedAccessibilityStringId()));
+        // If the sheet contents are cleared out before #onSheetClosed is called, do not try to
+        // retrieve the accessibility string.
+        if (getCurrentSheetContent() != null) {
+            announceForAccessibility(getResources().getString(
+                    getCurrentSheetContent().getSheetClosedAccessibilityStringId()));
+        }
         clearFocus();
         mActivity.removeViewObscuringAllTabs(this);
 
