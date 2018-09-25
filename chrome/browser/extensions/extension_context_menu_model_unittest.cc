@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -1310,90 +1309,6 @@ TEST_F(ExtensionContextMenuModelTest, TestClickingPageAccessLearnMore) {
 
   EXPECT_EQ(GURL(chrome_extension_constants::kRuntimeHostPermissionsHelpURL),
             web_contents->GetLastCommittedURL());
-}
-
-TEST_F(ExtensionContextMenuModelTest, HistogramTest_Basic) {
-  InitializeEmptyExtensionService();
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension").Build();
-  InitializeAndAddExtension(*extension);
-  constexpr char kHistogramName[] = "Extensions.ContextMenuAction";
-  {
-    base::HistogramTester tester;
-    {
-      // The menu is constructed, but never shown.
-      ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                     ExtensionContextMenuModel::VISIBLE,
-                                     nullptr);
-    }
-    tester.ExpectTotalCount(kHistogramName, 0);
-  }
-
-  {
-    base::HistogramTester tester;
-    {
-      // The menu is constructed and shown, but no action is taken.
-      ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                     ExtensionContextMenuModel::VISIBLE,
-                                     nullptr);
-      menu.OnMenuWillShow(&menu);
-      menu.MenuClosed(&menu);
-    }
-    tester.ExpectUniqueSample(
-        kHistogramName, ExtensionContextMenuModel::ContextMenuAction::kNoAction,
-        1 /* expected_count */);
-  }
-
-  {
-    base::HistogramTester tester;
-    {
-      // The menu is constructed, shown, and an action taken.
-      ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                     ExtensionContextMenuModel::VISIBLE,
-                                     nullptr);
-      menu.OnMenuWillShow(&menu);
-      menu.ExecuteCommand(ExtensionContextMenuModel::MANAGE_EXTENSIONS, 0);
-      menu.MenuClosed(&menu);
-    }
-
-    tester.ExpectUniqueSample(
-        kHistogramName,
-        ExtensionContextMenuModel::ContextMenuAction::kManageExtensions,
-        1 /* expected_count */);
-  }
-}
-
-TEST_F(ExtensionContextMenuModelTest, HistogramTest_CustomCommand) {
-  constexpr char kHistogramName[] = "Extensions.ContextMenuAction";
-
-  InitializeEmptyExtensionService();
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension")
-          .SetAction(ExtensionBuilder::ActionType::BROWSER_ACTION)
-          .Build();
-  InitializeAndAddExtension(*extension);
-
-  // Create a MenuManager for adding context items.
-  MenuManager* manager = static_cast<MenuManager*>(
-      (MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), &MenuManagerFactory::BuildServiceInstanceForTesting)));
-  ASSERT_TRUE(manager);
-
-  MenuBuilder builder(extension, GetBrowser(), manager);
-  builder.AddContextItem(MenuItem::BROWSER_ACTION);
-  std::unique_ptr<ExtensionContextMenuModel> menu = builder.BuildMenu();
-  EXPECT_EQ(1, CountExtensionItems(*menu));
-
-  base::HistogramTester tester;
-  menu->OnMenuWillShow(menu.get());
-  menu->ExecuteCommand(
-      ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0), 0);
-  menu->MenuClosed(menu.get());
-
-  tester.ExpectUniqueSample(
-      kHistogramName,
-      ExtensionContextMenuModel::ContextMenuAction::kCustomCommand,
-      1 /* expected_count */);
 }
 
 }  // namespace extensions
