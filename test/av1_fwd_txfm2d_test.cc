@@ -23,10 +23,10 @@
 #include "av1/encoder/hybrid_fwd_txfm.h"
 
 using libaom_test::ACMRandom;
-using libaom_test::TYPE_TXFM;
 using libaom_test::bd;
 using libaom_test::compute_avg_abs_error;
 using libaom_test::input_base;
+using libaom_test::TYPE_TXFM;
 
 using std::vector;
 

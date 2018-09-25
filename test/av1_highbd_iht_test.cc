@@ -25,8 +25,8 @@
 
 namespace {
 
-using ::testing::tuple;
 using libaom_test::ACMRandom;
+using ::testing::tuple;
 
 typedef void (*HbdHtFunc)(const int16_t *input, int32_t *output, int stride,
                           TX_TYPE tx_type, int bd);
