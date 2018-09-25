@@ -41,6 +41,7 @@
     "modules/remoteplayback/RemotePlayback",
     "modules/screen_orientation/ScreenOrientation",
     "modules/sensor/Sensor",
+    "modules/serial/Serial",
     "modules/service_worker/ServiceWorker",
     "modules/service_worker/ServiceWorkerContainer",
     "modules/service_worker/ServiceWorkerGlobalScope",

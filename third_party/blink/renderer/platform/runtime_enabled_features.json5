@@ -1136,6 +1136,10 @@
       status: "experimental",
     },
     {
+      name: "Serial",
+      status: "experimental",
+    },
+    {
       name: "ServiceWorkerScriptFullCodeCache",
     },
     {

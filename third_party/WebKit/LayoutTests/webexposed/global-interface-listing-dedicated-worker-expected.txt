@@ -1041,6 +1041,21 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method formData
 [Worker]     method json
 [Worker]     method text
+[Worker] interface Serial : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter onconnect
+[Worker]     getter ondisconnect
+[Worker]     method constructor
+[Worker]     method getPorts
+[Worker]     setter onconnect
+[Worker]     setter ondisconnect
+[Worker] interface SerialPort
+[Worker]     attribute @@toStringTag
+[Worker]     getter in
+[Worker]     getter out
+[Worker]     method close
+[Worker]     method constructor
+[Worker]     method open
 [Worker] interface ServiceWorkerRegistration : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter active
@@ -3485,6 +3500,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter permissions
 [Worker]     getter platform
 [Worker]     getter product
+[Worker]     getter serial
 [Worker]     getter storage
 [Worker]     getter usb
 [Worker]     getter userAgent
