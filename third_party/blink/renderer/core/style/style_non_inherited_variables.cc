@@ -30,6 +30,7 @@ CSSVariableData* StyleNonInheritedVariables::GetVariable(
 void StyleNonInheritedVariables::SetRegisteredVariable(
     const AtomicString& name,
     const CSSValue* parsed_value) {
+  needs_resolution_ = true;
   registered_data_.Set(name, const_cast<CSSValue*>(parsed_value));
 }
 

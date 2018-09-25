@@ -1739,11 +1739,12 @@ void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
   ApplyMatchedProperties<kResolveVariables, kCheckNeedsApplyPass>(
       state, match_result.UserRules(), true, apply_inherited_only,
       needs_apply_pass);
+
+  CSSVariableResolver(state).ComputeRegisteredVariables();
+
   if (apply_animations == kIncludeAnimations) {
     ApplyAnimatedCustomProperties(state);
   }
-
-  CSSVariableResolver(state).ResolveVariableDefinitions();
 }
 
 void StyleResolver::ApplyMatchedAnimationProperties(
@@ -1852,8 +1853,7 @@ void StyleResolver::ApplyMatchedStandardProperties(
               ->GetFontDescription() != state.Style()->GetFontDescription())
     apply_inherited_only = false;
 
-  // Registered custom properties are computed after high priority properties.
-  CSSVariableResolver(state).ComputeRegisteredVariables();
+  CSSVariableResolver(state).ResolveVariableDefinitions();
 
   // Now do the normal priority UA properties.
   ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(

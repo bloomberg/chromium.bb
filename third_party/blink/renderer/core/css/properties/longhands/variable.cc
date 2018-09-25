@@ -70,18 +70,9 @@ void Variable::ApplyValue(StyleResolverState& state,
   } else {
     state.Style()->SetVariable(name, declaration.Value(),
                                is_inherited_property);
-
-    if (registration && !declaration.Value()->NeedsVariableResolution()) {
-      const CSSValue* parsed_value = declaration.Value()->ParseForSyntax(
-          registration->Syntax(), state.GetDocument().GetSecureContextMode());
-      if (parsed_value) {
-        state.Style()->SetRegisteredVariable(name, parsed_value,
-                                             is_inherited_property);
-      } else if (is_inherited_property) {
-        ApplyInheritValue(state, name, registration);
-      } else {
-        ApplyInitialValue(state, name, registration);
-      }
+    if (registration) {
+      state.Style()->SetRegisteredVariable(name, nullptr,
+                                           is_inherited_property);
     }
   }
 }
