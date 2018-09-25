@@ -15026,6 +15026,21 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Dismiss by deactivation"/>
 </enum>
 
+<enum name="ExtensionContextMenuAction">
+  <int value="0" label="kNoAction"/>
+  <int value="1" label="kCustomCommand"/>
+  <int value="2" label="kHomePage"/>
+  <int value="3" label="kOptions"/>
+  <int value="4" label="kToggleVisibility"/>
+  <int value="5" label="kUninstall"/>
+  <int value="6" label="kManageExtensions"/>
+  <int value="7" label="kInspectPopup"/>
+  <int value="8" label="kPageAccessRunOnClick"/>
+  <int value="9" label="kPageAccessRunOnSite"/>
+  <int value="10" label="kPageAccessRunOnAllSites"/>
+  <int value="11" label="kPageAccessLearnMore"/>
+</enum>
+
 <enum name="ExtensionCreationFlags">
   <int value="0" label="REQUIRE_KEY"/>
   <int value="1" label="REQUIRE_MODERN_MANIFEST_VERSION"/>
