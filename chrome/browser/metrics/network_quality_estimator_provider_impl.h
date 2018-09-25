@@ -9,25 +9,25 @@
 #include "base/threading/thread_checker.h"
 #include "components/metrics/net/network_metrics_provider.h"
 
-namespace network {
-class NetworkQualityTracker;
-}
+class IOThread;
 
 namespace metrics {
 
 // Implements NetworkMetricsProvider::NetworkQualityEstimatorProvider. Provides
-// NetworkQualityTracker. Lives on UI thread.
+// NetworkQualityEstimator by querying the IOThread. Lives on UI thread.
 class NetworkQualityEstimatorProviderImpl
     : public NetworkMetricsProvider::NetworkQualityEstimatorProvider {
  public:
-  NetworkQualityEstimatorProviderImpl();
+  explicit NetworkQualityEstimatorProviderImpl(IOThread* io_thread);
   ~NetworkQualityEstimatorProviderImpl() override;
 
  private:
   // NetworkMetricsProvider::NetworkQualityEstimatorProvider:
-  void PostReplyNetworkQualityTracker(
-      base::OnceCallback<void(network::NetworkQualityTracker*)> callback)
-      override;
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() override;
+  void PostReplyNetworkQualityEstimator(
+      base::Callback<void(net::NetworkQualityEstimator*)> io_callback) override;
+
+  IOThread* io_thread_;
 
   base::ThreadChecker thread_checker_;
 

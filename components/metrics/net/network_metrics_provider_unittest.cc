@@ -13,7 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/network_change_notifier.h"
-#include "services/network/test/test_network_quality_tracker.h"
+#include "net/nqe/network_quality_estimator_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -24,18 +24,38 @@
 
 namespace metrics {
 
-class NetworkMetricsProviderTest : public testing::Test {
+namespace {
+
+class TestNetworkQualityEstimatorProvider
+    : public NetworkMetricsProvider::NetworkQualityEstimatorProvider {
  public:
-  network::NetworkQualityTracker* GetNetworkQualityTracker() const {
-    return test_network_quality_tracker_.get();
+  explicit TestNetworkQualityEstimatorProvider(
+      net::TestNetworkQualityEstimator* estimator)
+      : estimator_(estimator) {}
+  ~TestNetworkQualityEstimatorProvider() override {}
+
+ private:
+  // NetworkMetricsProvider::NetworkQualityEstimatorProvider:
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() override {
+    return base::ThreadTaskRunnerHandle::Get();
   }
 
+  void PostReplyNetworkQualityEstimator(
+      base::Callback<void(net::NetworkQualityEstimator*)> callback) override {
+    callback.Run(estimator_);
+  }
+
+  net::TestNetworkQualityEstimator* estimator_;
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimatorProvider);
+};
+
+}  // namespace
+
+class NetworkMetricsProviderTest : public testing::Test {
  protected:
   NetworkMetricsProviderTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        test_network_quality_tracker_(
-            std::make_unique<network::TestNetworkQualityTracker>()) {
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
 #if defined(OS_CHROMEOS)
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
@@ -44,17 +64,17 @@ class NetworkMetricsProviderTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-
-  std::unique_ptr<network::TestNetworkQualityTracker>
-      test_network_quality_tracker_;
 };
 
 // Verifies that the effective connection type is correctly set.
 TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
+  net::TestNetworkQualityEstimator estimator;
+  std::unique_ptr<NetworkMetricsProvider::NetworkQualityEstimatorProvider>
+      estimator_provider(base::WrapUnique(
+          new TestNetworkQualityEstimatorProvider(&estimator)));
   SystemProfileProto system_profile;
-  NetworkMetricsProvider network_metrics_provider;
-  network_metrics_provider.SetNetworkQualityTracker(GetNetworkQualityTracker());
-  base::RunLoop().RunUntilIdle();
+  NetworkMetricsProvider network_metrics_provider(
+      std::move(estimator_provider));
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             network_metrics_provider.effective_connection_type_);
@@ -68,8 +88,18 @@ TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
   EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             system_profile.network().max_effective_connection_type());
 
-  GetNetworkQualityTracker()->ReportEffectiveConnectionTypeForTesting(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  // Set RTT so that the effective connection type is computed as 2G.
+  estimator.set_recent_http_rtt(base::TimeDelta::FromMilliseconds(1500));
+  estimator.SetStartTimeNullHttpRtt(base::TimeDelta::FromMilliseconds(1500));
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            network_metrics_provider.effective_connection_type_);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            network_metrics_provider.min_effective_connection_type_);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            network_metrics_provider.max_effective_connection_type_);
+  // Running a request would cause the effective connection type to be computed
+  // as 2G, and observers to be notified.
+  estimator.RunOneRequest();
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             network_metrics_provider.effective_connection_type_);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
@@ -82,8 +112,12 @@ TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
   EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G,
             system_profile.network().max_effective_connection_type());
 
-  GetNetworkQualityTracker()->ReportEffectiveConnectionTypeForTesting(
-      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  // Set RTT so that the effective connection type is computed as SLOW_2G.
+  estimator.set_recent_http_rtt(base::TimeDelta::FromMilliseconds(3000));
+  estimator.SetStartTimeNullHttpRtt(base::TimeDelta::FromMilliseconds(3000));
+  // Running a request would cause the effective connection type to be computed
+  // as SLOW_2G, and observers to be notified.
+  estimator.RunOneRequest();
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
             network_metrics_provider.effective_connection_type_);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
@@ -110,10 +144,13 @@ TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
 // Verifies that the effective connection type is not set to UNKNOWN when there
 // is a change in the connection type.
 TEST_F(NetworkMetricsProviderTest, ECTAmbiguousOnConnectionTypeChange) {
+  net::TestNetworkQualityEstimator estimator;
+  std::unique_ptr<NetworkMetricsProvider::NetworkQualityEstimatorProvider>
+      estimator_provider(base::WrapUnique(
+          new TestNetworkQualityEstimatorProvider(&estimator)));
   SystemProfileProto system_profile;
-  NetworkMetricsProvider network_metrics_provider;
-  network_metrics_provider.SetNetworkQualityTracker(GetNetworkQualityTracker());
-  base::RunLoop().RunUntilIdle();
+  NetworkMetricsProvider network_metrics_provider(
+      std::move(estimator_provider));
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             network_metrics_provider.effective_connection_type_);
@@ -122,8 +159,12 @@ TEST_F(NetworkMetricsProviderTest, ECTAmbiguousOnConnectionTypeChange) {
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             network_metrics_provider.max_effective_connection_type_);
 
-  GetNetworkQualityTracker()->ReportEffectiveConnectionTypeForTesting(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  // Set RTT so that the effective connection type is computed as 2G.
+  estimator.set_recent_http_rtt(base::TimeDelta::FromMilliseconds(1500));
+  estimator.SetStartTimeNullHttpRtt(base::TimeDelta::FromMilliseconds(1500));
+  // Running a request would cause the effective connection type to be computed
+  // as 2G, and observers to be notified.
+  estimator.RunOneRequest();
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             network_metrics_provider.effective_connection_type_);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
@@ -152,32 +193,39 @@ TEST_F(NetworkMetricsProviderTest, ECTAmbiguousOnConnectionTypeChange) {
 
 // Verifies that the effective connection type is not set to UNKNOWN when the
 // connection type is OFFLINE.
-TEST_F(NetworkMetricsProviderTest, ECTNotAmbiguousOnUnknownOrOffline) {
+TEST_F(NetworkMetricsProviderTest, ECTNotAmbiguousOnOffline) {
   for (net::EffectiveConnectionType force_ect :
        {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE}) {
-    NetworkMetricsProvider network_metrics_provider;
-    network_metrics_provider.SetNetworkQualityTracker(
-        GetNetworkQualityTracker());
-    base::RunLoop().RunUntilIdle();
+    std::unique_ptr<net::NetworkQualityEstimatorParams> params =
+        std::make_unique<net::NetworkQualityEstimatorParams>(
+            std::map<std::string, std::string>());
+    net::NetworkQualityEstimatorParams* params_ptr = params.get();
+    net::TestNetworkQualityEstimator estimator(std::move(params));
 
+    std::unique_ptr<NetworkMetricsProvider::NetworkQualityEstimatorProvider>
+        estimator_provider(base::WrapUnique(
+            new TestNetworkQualityEstimatorProvider(&estimator)));
     SystemProfileProto system_profile;
-    GetNetworkQualityTracker()->ReportEffectiveConnectionTypeForTesting(
+    NetworkMetricsProvider network_metrics_provider(
+        std::move(estimator_provider));
+
+    params_ptr->SetForcedEffectiveConnectionType(
         net::EFFECTIVE_CONNECTION_TYPE_2G);
+    estimator.RunOneRequest();
 
-    network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
-
-    GetNetworkQualityTracker()->ReportEffectiveConnectionTypeForTesting(
-        force_ect);
-
+    params_ptr->SetForcedEffectiveConnectionType(force_ect);
+    estimator.RunOneRequest();
     network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
     EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G,
               system_profile.network().min_effective_connection_type());
     EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G,
               system_profile.network().max_effective_connection_type());
 
-    GetNetworkQualityTracker()->ReportEffectiveConnectionTypeForTesting(
+    params_ptr->SetForcedEffectiveConnectionType(
         net::EFFECTIVE_CONNECTION_TYPE_4G);
+    estimator.RunOneRequest();
+
     network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
     EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_4G,
               system_profile.network().min_effective_connection_type());
@@ -188,10 +236,14 @@ TEST_F(NetworkMetricsProviderTest, ECTNotAmbiguousOnUnknownOrOffline) {
 
 // Verifies that the connection type is ambiguous boolean is correctly set.
 TEST_F(NetworkMetricsProviderTest, ConnectionTypeIsAmbiguous) {
+  net::TestNetworkQualityEstimator estimator;
+  std::unique_ptr<NetworkMetricsProvider::NetworkQualityEstimatorProvider>
+      estimator_provider(base::WrapUnique(
+          new TestNetworkQualityEstimatorProvider(&estimator)));
   SystemProfileProto system_profile;
-  NetworkMetricsProvider network_metrics_provider;
-  network_metrics_provider.SetNetworkQualityTracker(GetNetworkQualityTracker());
-  base::RunLoop().RunUntilIdle();
+  NetworkMetricsProvider network_metrics_provider(
+      std::move(estimator_provider));
+  estimator.RunOneRequest();
 
   EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
             network_metrics_provider.connection_type_);
