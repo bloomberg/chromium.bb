@@ -39,7 +39,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
 #include "chrome/browser/ui/cocoa/restart_browser.h"
-#include "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
@@ -258,7 +257,7 @@ void BrowserWindowCocoa::SetTopControlsGestureScrollInProgress(
 }
 
 StatusBubble* BrowserWindowCocoa::GetStatusBubble() {
-  return [controller_ statusBubble];
+  return nullptr;
 }
 
 void BrowserWindowCocoa::UpdateTitleBar() {
