@@ -14,7 +14,9 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
@@ -61,6 +63,7 @@
 #include "services/file/file_service.h"
 #include "services/file/public/mojom/constants.mojom.h"
 #include "services/file/user_id_map.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -102,6 +105,52 @@ class ContentServiceDelegateHolder : public base::SupportsUserData::Data {
   ContentServiceDelegateImpl delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentServiceDelegateHolder);
+};
+
+// A class used to make an asynchronous Mojo call with cloned patterns for each
+// StoragePartition iteration. |this| instance will be destructed when all
+// existing asynchronous Mojo calls made in SetLists() are done, and |closure|
+// will be invoked on destructing |this|.
+class CorsOriginPatternSetter
+    : public base::RefCounted<CorsOriginPatternSetter> {
+ public:
+  CorsOriginPatternSetter(
+      const url::Origin& source_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure)
+      : source_origin_(source_origin),
+        allow_patterns_(std::move(allow_patterns)),
+        block_patterns_(std::move(block_patterns)),
+        closure_(std::move(closure)) {}
+
+  void SetLists(StoragePartition* partition) {
+    partition->GetNetworkContext()->SetCorsOriginAccessListsForOrigin(
+        source_origin_, ClonePatterns(allow_patterns_),
+        ClonePatterns(block_patterns_),
+        base::BindOnce([](scoped_refptr<CorsOriginPatternSetter> setter) {},
+                       base::RetainedRef(this)));
+  }
+
+ private:
+  friend class base::RefCounted<CorsOriginPatternSetter>;
+
+  static std::vector<network::mojom::CorsOriginPatternPtr> ClonePatterns(
+      const std::vector<network::mojom::CorsOriginPatternPtr>& patterns) {
+    std::vector<network::mojom::CorsOriginPatternPtr> cloned_patterns;
+    cloned_patterns.reserve(patterns.size());
+    for (const auto& item : patterns)
+      cloned_patterns.push_back(item.Clone());
+    return cloned_patterns;
+  }
+
+  ~CorsOriginPatternSetter() { std::move(closure_).Run(); }
+
+  const url::Origin source_origin_;
+  const std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns_;
+  const std::vector<network::mojom::CorsOriginPatternPtr> block_patterns_;
+
+  base::OnceClosure closure_;
 };
 
 // Key names on BrowserContext.
@@ -631,10 +680,32 @@ ServiceManagerConnection* BrowserContext::GetServiceManagerConnectionFor(
 }
 
 // static
-SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList(
+const SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList(
     BrowserContext* browser_context) {
   return UserDataAdapter<SharedCorsOriginAccessList>::Get(
       browser_context, kSharedCorsOriginAccessListKey);
+}
+
+// static
+void BrowserContext::SetCorsOriginAccessListsForOrigin(
+    BrowserContext* browser_context,
+    const url::Origin& source_origin,
+    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+    base::OnceClosure closure) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    UserDataAdapter<SharedCorsOriginAccessList>::Get(
+        browser_context, kSharedCorsOriginAccessListKey)
+        ->SetForOrigin(source_origin, std::move(allow_patterns),
+                       std::move(block_patterns), std::move(closure));
+  } else {
+    auto setter = base::MakeRefCounted<CorsOriginPatternSetter>(
+        source_origin, std::move(allow_patterns), std::move(block_patterns),
+        std::move(closure));
+    ForEachStoragePartition(
+        browser_context, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
+                                             base::RetainedRef(setter.get())));
+  }
 }
 
 BrowserContext::BrowserContext()

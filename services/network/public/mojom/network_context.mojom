@@ -12,6 +12,7 @@ import "mojo/public/mojom/base/values.mojom";
 import "net/interfaces/address_list.mojom";
 import "net/interfaces/ip_endpoint.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "services/network/public/mojom/cors_origin_pattern.mojom";
 import "services/network/public/mojom/ct_log_info.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
@@ -207,10 +208,12 @@ struct NetworkConditions {
   // response received.
   mojo_base.mojom.TimeDelta latency;
 
-  // Maximal aggregated download throughput (bytes/sec). 0 disables download throttling.
+  // Maximal aggregated download throughput (bytes/sec). 0 disables download
+  // throttling.
   double download_throughput;
 
-  // Maximal aggregated upload throughput (bytes/sec). 0 disables upload throttling.
+  // Maximal aggregated upload throughput (bytes/sec). 0 disables upload
+  // throttling.
   double upload_throughput;
 };
 
@@ -627,6 +630,16 @@ interface NetworkContext {
   // Returns true if it is known that |host| has requested to always be
   // accessed via HTTPS.
   IsHSTSActiveForHost(string host) => (bool result);
+
+  // Sets allowed and blocked origins respectively for the URLLoaderFactory
+  // consumers to access beyond the same-origin policy. The list is managed per
+  // each |source_origin|, and each call will flash old set lists for the
+  // |source_origin|. The passed |patterns| will be set instead. If an empty
+  // array is given for |allow_patterns| and/or |block_patterns|, the
+  // |source_origin|'s origin list for each is set to empty respectively.
+  SetCorsOriginAccessListsForOrigin(
+      url.mojom.Origin source_origin, array<CorsOriginPattern> allow_patterns,
+      array<CorsOriginPattern> block_patterns) => ();
 
   [Sync]
   // Adds explicitly-specified data as if it was processed from an

@@ -558,7 +558,7 @@ void NetworkContext::CreateURLLoaderFactory(
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
   url_loader_factories_.emplace(std::make_unique<cors::CORSURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
-      std::move(request), nullptr));
+      std::move(request), &cors_origin_access_list_));
 }
 
 void NetworkContext::SetClient(mojom::NetworkContextClientPtr client) {
@@ -989,6 +989,16 @@ void NetworkContext::IsHSTSActiveForHost(const std::string& host,
   }
 
   std::move(callback).Run(security_state->ShouldUpgradeToSSL(host));
+}
+
+void NetworkContext::SetCorsOriginAccessListsForOrigin(
+    const url::Origin& source_origin,
+    std::vector<mojom::CorsOriginPatternPtr> allow_patterns,
+    std::vector<mojom::CorsOriginPatternPtr> block_patterns,
+    SetCorsOriginAccessListsForOriginCallback callback) {
+  cors_origin_access_list_.SetAllowListForOrigin(source_origin, allow_patterns);
+  cors_origin_access_list_.SetBlockListForOrigin(source_origin, block_patterns);
+  std::move(callback).Run();
 }
 
 void NetworkContext::AddHSTSForTesting(const std::string& host,
