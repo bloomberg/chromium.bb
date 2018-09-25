@@ -113,7 +113,9 @@ class AppLauncherTabHelperTest : public PlatformTest {
                                             delegate_);
     // Allow is the default policy for this test.
     abuse_detector_.policy = ExternalAppLaunchPolicyAllow;
-    web_state_.SetNavigationManager(std::make_unique<FakeNavigationManager>());
+    auto navigation_manager = std::make_unique<FakeNavigationManager>();
+    navigation_manager_ = navigation_manager.get();
+    web_state_.SetNavigationManager(std::move(navigation_manager));
     tab_helper_ = AppLauncherTabHelper::FromWebState(&web_state_);
   }
 
@@ -151,12 +153,17 @@ class AppLauncherTabHelperTest : public PlatformTest {
     if (!is_reading_list_initialized_)
       InitializeReadingListModel();
 
-    GURL test_source_url("http://google.com");
+    web_state_.SetCurrentURL(GURL("https://chromium.org"));
+    GURL pending_url("http://google.com");
+    navigation_manager_->AddItem(pending_url, ui::PAGE_TRANSITION_LINK);
+    web::NavigationItem* item = navigation_manager_->GetItemAtIndex(0);
+    navigation_manager_->SetPendingItem(item);
+    item->SetOriginalRequestURL(pending_url);
+
     ReadingListModel* model = ReadingListModelFactory::GetForBrowserState(
         chrome_browser_state_.get());
     EXPECT_TRUE(model->DeleteAllEntries());
-    model->AddEntry(test_source_url, "unread",
-                    reading_list::ADDED_VIA_CURRENT_APP);
+    model->AddEntry(pending_url, "unread", reading_list::ADDED_VIA_CURRENT_APP);
     abuse_detector_.policy = is_app_blocked ? ExternalAppLaunchPolicyBlock
                                             : ExternalAppLaunchPolicyAllow;
     ui::PageTransition transition_type =
@@ -167,17 +174,19 @@ class AppLauncherTabHelperTest : public PlatformTest {
     NSURL* url = [NSURL
         URLWithString:@"itms-apps://itunes.apple.com/us/app/appname/id123"];
     web::WebStatePolicyDecider::RequestInfo request_info(
-        transition_type, test_source_url,
+        transition_type, pending_url,
         /*target_frame_is_main=*/true, /*has_user_gesture=*/true);
     EXPECT_FALSE(tab_helper_->ShouldAllowRequest(
         [NSURLRequest requestWithURL:url], request_info));
 
-    const ReadingListEntry* entry = model->GetEntryByURL(test_source_url);
+    const ReadingListEntry* entry = model->GetEntryByURL(pending_url);
     return entry->IsRead() == expected_read_status;
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment;
   web::TestWebState web_state_;
+  FakeNavigationManager* navigation_manager_ = nullptr;
+
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_ = nil;
   FakeAppLauncherAbuseDetector* abuse_detector_ = nil;
   FakeAppLauncherTabHelperDelegate* delegate_ = nil;
