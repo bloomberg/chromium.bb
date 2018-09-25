@@ -25,6 +25,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
@@ -222,6 +223,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
       override;
   std::unique_ptr<blink::CodeCacheLoader> CreateCodeCacheLoader() override;
+
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapSharedURLLoaderFactory(
@@ -261,6 +263,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Return the mojo interface for making WebDatabaseHost calls.
   blink::mojom::WebDatabaseHost& GetWebDatabaseHost();
 
+  // Return the mojo interface for making CodeCache calls.
+  blink::mojom::CodeCacheHost& GetCodeCacheHost();
+
   blink::scheduler::WebThreadBase* compositor_thread_;
 
   std::unique_ptr<blink::WebThread> main_thread_;
@@ -299,6 +304,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   blink::mojom::WebDatabaseHostPtrInfo web_database_host_info_;
   scoped_refptr<blink::mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
+
+  blink::mojom::CodeCacheHostPtrInfo code_cache_host_info_;
+  scoped_refptr<blink::mojom::ThreadSafeCodeCacheHostPtr> code_cache_host_;
 
 #if defined(OS_LINUX)
   sk_sp<font_service::FontLoader> font_loader_;
