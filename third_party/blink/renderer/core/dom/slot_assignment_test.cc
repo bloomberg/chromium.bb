@@ -80,10 +80,9 @@ void RemoveWhiteSpaceOnlyTextNode(ContainerNode& container) {
 
 }  // namespace
 
-class SlotAssignmentTest : public testing::Test,
-                           private ScopedIncrementalShadowDOMForTest {
+class SlotAssignmentTest : public testing::Test {
  public:
-  SlotAssignmentTest() : ScopedIncrementalShadowDOMForTest(true) {}
+  SlotAssignmentTest() {}
 
  protected:
   Document& GetDocument() const { return *document_; }

@@ -222,7 +222,6 @@ SlotAssignment::SlotAssignment(ShadowRoot& owner)
 }
 
 void SlotAssignment::SetNeedsAssignmentRecalc() {
-  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   needs_assignment_recalc_ = true;
   if (owner_->isConnected()) {
     owner_->GetDocument().GetSlotAssignmentEngine().AddShadowRootNeedingRecalc(
@@ -231,8 +230,6 @@ void SlotAssignment::SetNeedsAssignmentRecalc() {
 }
 
 void SlotAssignment::RecalcAssignment() {
-  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-
   if (!needs_assignment_recalc_)
     return;
 #if DCHECK_IS_ON()
@@ -291,64 +288,6 @@ void SlotAssignment::RecalcAssignment() {
 
   for (auto& slot : Slots())
     slot->RecalcFlatTreeChildren();
-}
-
-void SlotAssignment::RecalcAssignmentForDistribution() {
-  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-
-  for (Member<HTMLSlotElement> slot : Slots())
-    slot->SaveAndClearDistribution();
-
-  const bool is_user_agent = owner_->IsUserAgent();
-
-  HTMLSlotElement* user_agent_default_slot = nullptr;
-  HTMLSlotElement* user_agent_custom_assign_slot = nullptr;
-  if (is_user_agent) {
-    user_agent_default_slot =
-        FindSlotByName(HTMLSlotElement::UserAgentDefaultSlotName());
-    user_agent_custom_assign_slot =
-        FindSlotByName(HTMLSlotElement::UserAgentCustomAssignSlotName());
-  }
-
-  for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
-    if (!child.IsSlotable()) {
-      child.LazyReattachIfAttached();
-      continue;
-    }
-
-    HTMLSlotElement* slot = nullptr;
-    if (!is_user_agent) {
-      slot = FindSlotByName(child.SlotName());
-    } else {
-      if (user_agent_custom_assign_slot && ShouldAssignToCustomSlot(child)) {
-        slot = user_agent_custom_assign_slot;
-      } else {
-        slot = user_agent_default_slot;
-      }
-    }
-
-    if (slot)
-      slot->AppendAssignedNode(child);
-    else
-      child.LazyReattachIfAttached();
-  }
-}
-
-void SlotAssignment::RecalcDistribution() {
-  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-
-  RecalcAssignmentForDistribution();
-  const HeapVector<Member<HTMLSlotElement>>& slots = Slots();
-
-  for (auto slot : slots)
-    slot->RecalcDistributedNodes();
-
-  // Update each slot's distribution in reverse tree order so that a child slot
-  // is visited before its parent slot.
-  for (auto slot = slots.rbegin(); slot != slots.rend(); ++slot) {
-    (*slot)->UpdateDistributedNodesWithFallback();
-    (*slot)->LazyReattachDistributedNodesIfNeeded();
-  }
 }
 
 const HeapVector<Member<HTMLSlotElement>>& SlotAssignment::Slots() {

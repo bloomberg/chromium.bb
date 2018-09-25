@@ -2170,11 +2170,10 @@ void Document::UpdateStyleAndLayoutTree() {
   if (View()->ShouldThrottleRendering())
     return;
 
-  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
-    // RecalcSlotAssignments should be done before checking
-    // NeedsLayoutTreeUpdate().
-    GetSlotAssignmentEngine().RecalcSlotAssignments();
-  }
+  // RecalcSlotAssignments should be done before checking
+  // NeedsLayoutTreeUpdate().
+  GetSlotAssignmentEngine().RecalcSlotAssignments();
+
 #if DCHECK_IS_ON()
   NestingLevelIncrementer slot_assignment_recalc_forbidden_scope(
       slot_assignment_recalc_forbidden_recursion_depth_);
@@ -7587,8 +7586,7 @@ SlotAssignmentEngine& Document::GetSlotAssignmentEngine() {
 bool Document::IsSlotAssignmentOrLegacyDistributionDirty() {
   if (ChildNeedsDistributionRecalc())
     return true;
-  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
-      GetSlotAssignmentEngine().HasPendingSlotAssignmentRecalc()) {
+  if (GetSlotAssignmentEngine().HasPendingSlotAssignmentRecalc()) {
     return true;
   }
   return false;

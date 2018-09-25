@@ -1678,23 +1678,7 @@ InspectorDOMAgent::BuildDistributedNodesForSlot(HTMLSlotElement* slot_element) {
   // is removed.
   std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
       distributed_nodes = protocol::Array<protocol::DOM::BackendNode>::create();
-  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
-    for (auto& node : slot_element->AssignedNodes()) {
-      if (IsWhitespace(node))
-        continue;
-
-      std::unique_ptr<protocol::DOM::BackendNode> backend_node =
-          protocol::DOM::BackendNode::create()
-              .setNodeType(node->getNodeType())
-              .setNodeName(node->nodeName())
-              .setBackendNodeId(IdentifiersFactory::IntIdForNode(node))
-              .build();
-      distributed_nodes->addItem(std::move(backend_node));
-    }
-    return distributed_nodes;
-  }
-  for (Node* node = slot_element->FirstDistributedNode(); node;
-       node = slot_element->DistributedNodeNextTo(*node)) {
+  for (auto& node : slot_element->AssignedNodes()) {
     if (IsWhitespace(node))
       continue;
 
