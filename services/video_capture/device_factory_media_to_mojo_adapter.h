@@ -43,6 +43,8 @@ class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
   void AddTextureVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
       mojom::TextureVirtualDeviceRequest virtual_device) override;
+  void RegisterVirtualDevicesChangedObserver(
+      mojom::DevicesChangedObserverPtr observer) override;
 
  private:
   struct ActiveDeviceEntry {

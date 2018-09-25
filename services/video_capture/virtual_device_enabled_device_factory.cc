@@ -157,6 +157,7 @@ void VirtualDeviceEnabledDeviceFactory::AddSharedMemoryVirtualDevice(
                                   std::move(producer_binding));
   virtual_devices_by_id_.insert(
       std::make_pair(device_id, std::move(device_entry)));
+  EmitDevicesChangedEvent();
 }
 
 void VirtualDeviceEnabledDeviceFactory::AddTextureVirtualDevice(
@@ -183,6 +184,15 @@ void VirtualDeviceEnabledDeviceFactory::AddTextureVirtualDevice(
                                   std::move(producer_binding));
   virtual_devices_by_id_.insert(
       std::make_pair(device_id, std::move(device_entry)));
+  EmitDevicesChangedEvent();
+}
+
+void VirtualDeviceEnabledDeviceFactory::RegisterVirtualDevicesChangedObserver(
+    mojom::DevicesChangedObserverPtr observer) {
+  observer.set_connection_error_handler(base::BindOnce(
+      &VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected,
+      weak_factory_.GetWeakPtr(), &observer));
+  devices_changed_observers_.push_back(std::move(observer));
 }
 
 void VirtualDeviceEnabledDeviceFactory::OnGetDeviceInfos(
@@ -202,12 +212,32 @@ void VirtualDeviceEnabledDeviceFactory::
         const std::string& device_id) {
   virtual_devices_by_id_.at(device_id).StopDevice();
   virtual_devices_by_id_.erase(device_id);
+  EmitDevicesChangedEvent();
 }
 
 void VirtualDeviceEnabledDeviceFactory::
     OnVirtualDeviceConsumerConnectionErrorOrClose(
         const std::string& device_id) {
   virtual_devices_by_id_.at(device_id).StopDevice();
+}
+
+void VirtualDeviceEnabledDeviceFactory::EmitDevicesChangedEvent() {
+  for (auto& observer : devices_changed_observers_)
+    observer->OnDevicesChanged();
+}
+
+void VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected(
+    mojom::DevicesChangedObserverPtr* observer) {
+  auto iter = std::find_if(
+      devices_changed_observers_.begin(), devices_changed_observers_.end(),
+      [observer](const mojom::DevicesChangedObserverPtr& entry) {
+        return &entry == observer;
+      });
+  if (iter == devices_changed_observers_.end()) {
+    DCHECK(false);
+    return;
+  }
+  devices_changed_observers_.erase(iter);
 }
 
 }  // namespace video_capture
