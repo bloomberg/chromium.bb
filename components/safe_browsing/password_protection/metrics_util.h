@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class TimeTicks;
@@ -182,6 +183,9 @@ void LogNumberOfReuseBeforeSyncPasswordChange(size_t reuse_count);
 void LogReferrerChainSize(
     LoginReputationClientResponse::VerdictType verdict_type,
     int referrer_chain_size);
+
+// Logs the content area size in DIPs.
+void LogContentsSize(const gfx::Size& size);
 
 }  // namespace safe_browsing
 
