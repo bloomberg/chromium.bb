@@ -945,12 +945,13 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
       catalog::ServiceOptions::InstanceSharingType::SINGLETON;
   const Identity original_target(params->target());
 
-  // Services that request "all_users" class from the Service Manager are
+  // Services that have "shared_instance_across_users" value of
+  // "instance_sharing" option are
   // allowed to field connection requests from any user. They also run with a
   // synthetic user id generated here. The user id provided via Connect() is
-  // ignored. Additionally services with the "all_users" class are not tied to
-  // the lifetime of the service that started them, instead they are owned by
-  // the Service Manager.
+  // ignored. Additionally services with the "shared_instance_across_users"
+  // value are not tied to the lifetime of the service that started them,
+  // instead they are owned by the Service Manager.
   Identity source_identity_for_creation;
 
   InstanceType instance_type;

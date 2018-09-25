@@ -424,8 +424,9 @@ TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
   EXPECT_EQ(result, mojom::ConnectResult::ACCESS_DENIED);
 }
 
-// Verifies that a client with the "all_users" capability class can receive
-// connections from clients run as other users.
+// Verifies that a client with the "shared_instance_across_users" value of
+// "instance_sharing" option can receive connections from clients run as other
+// users.
 TEST_F(ConnectTest, AllUsersSingleton) {
   // Connect to an instance with an explicitly different user_id. This supplied
   // user id should be ignored by the service manager (which will generate its
