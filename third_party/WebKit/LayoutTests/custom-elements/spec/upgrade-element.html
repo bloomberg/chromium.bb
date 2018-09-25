@@ -9,10 +9,6 @@
 
 'use strict'
 
-setup({
-  allow_uncaught_exception: true,
-});
-
 // 6. If C non-conformantly uses an API decorated with the [CEReactions] extended attribute,
 // then the reactions enqueued at the beginning of upgrade will execute during this step,
 // before C finishes and control returns to this algorithm.
@@ -83,7 +79,7 @@ test_with_window((w) => {
   let error_log = [];
   let doc = w.document;
   doc.body.appendChild(doc.createElement('a-a'));
-  window.onerror = function (msg, url, lineNo, columnNo, error) {
+  w.onerror = function (msg, url, lineNo, columnNo, error) {
     error_log.push(error.name);
     return true;
   };

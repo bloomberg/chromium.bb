@@ -106,7 +106,7 @@ void CustomElementRegistry::Trace(blink::Visitor* visitor) {
 CustomElementDefinition* CustomElementRegistry::define(
     ScriptState* script_state,
     const AtomicString& name,
-    V8CustomElementConstructor* constructor,
+    const ScriptValue& constructor,
     const ElementDefinitionOptions& options,
     ExceptionState& exception_state) {
   CSSStyleSheet* style_sheet = nullptr;
@@ -115,12 +115,11 @@ CustomElementDefinition* CustomElementRegistry::define(
     style_sheet = options.style();
   ScriptCustomElementDefinitionBuilder builder(script_state, this, style_sheet,
                                                constructor, exception_state);
-  return DefineInternal(script_state, name, builder, options, exception_state);
+  return define(name, builder, options, exception_state);
 }
 
 // http://w3c.github.io/webcomponents/spec/custom/#dfn-element-definition
-CustomElementDefinition* CustomElementRegistry::DefineInternal(
-    ScriptState* script_state,
+CustomElementDefinition* CustomElementRegistry::define(
     const AtomicString& name,
     CustomElementDefinitionBuilder& builder,
     const ElementDefinitionOptions& options,
@@ -171,6 +170,9 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
     local_name = extends;
   }
 
+  // TODO(dominicc): Add a test where the prototype getter destroys
+  // the context.
+
   // 8. If this CustomElementRegistry's element definition is
   // running flag is set, then throw a "NotSupportedError"
   // DOMException and abort these steps.
@@ -186,7 +188,11 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
     // running flag.
     base::AutoReset<bool> defining(&element_definition_is_running_, true);
 
-    // 10. Run the following substeps while catching any exceptions: ...
+    // 10.1-2
+    if (!builder.CheckPrototype())
+      return nullptr;
+
+    // 10.3-6
     if (!builder.RememberOriginalProperties())
       return nullptr;
 
@@ -195,16 +201,6 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
     // CustomElementRegistry's element definition is running
     // flag."
     // (|defining|'s destructor does this.)
-  }
-
-  // During step 10, property getters might have detached the frame. Abort in
-  // the case.
-  if (!script_state->ContextIsValid()) {
-    // Intentionally do not throw an exception so that, when Blink will support
-    // detached frames, the behavioral change whether Blink throws or not will
-    // not be observable from author.
-    // TODO(yukishiino): Support detached frames.
-    return nullptr;
   }
 
   CustomElementDescriptor descriptor(name, local_name);
