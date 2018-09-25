@@ -133,6 +133,7 @@ js_compile_bundle("chrome_bundle_all_frames") {
   closure_entry_point = "__crWeb.chromeBundleAllFrames"
   sources = [
     "//components/autofill/ios/browser/resources/autofill_controller.js",
+    "//components/autofill/ios/browser/resources/suggestion_controller.js",
     "//components/autofill/ios/form_util/resources/fill.js",
     "//components/autofill/ios/form_util/resources/form.js",
     "//components/autofill/ios/form_util/resources/form_handlers.js",

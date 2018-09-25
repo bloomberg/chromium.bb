@@ -169,17 +169,6 @@ AutofillSuggestionState::AutofillSuggestionState(
 
 - (void)processPage:(web::WebState*)webState {
   [self resetSuggestionState];
-
-  web::URLVerificationTrustLevel trustLevel =
-      web::URLVerificationTrustLevel::kNone;
-  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-  if (trustLevel != web::URLVerificationTrustLevel::kAbsolute) {
-    DLOG(WARNING) << "Page load not handled on untrusted page";
-    return;
-  }
-
-  if (web::UrlHasWebScheme(pageURL) && webState->ContentIsHTML())
-    [_jsSuggestionManager inject];
 }
 
 - (void)setWebViewProxy:(id<CRWWebViewProxy>)webViewProxy {

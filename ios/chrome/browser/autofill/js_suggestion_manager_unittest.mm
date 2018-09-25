@@ -8,9 +8,9 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/web/chrome_web_client.h"
 #include "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/test/js_test_util.h"
-#import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "testing/gtest_mac.h"
@@ -22,12 +22,12 @@
 namespace {
 
 // Test fixture to test suggestions.
-class JsSuggestionManagerTest : public web::WebJsTest<ChromeWebTest> {
+class JsSuggestionManagerTest : public ChromeWebTest {
  protected:
+  void SetUp() override;
+
   JsSuggestionManagerTest()
-      : web::WebJsTest<ChromeWebTest>(@[ @"suggestion_controller" ]) {}
-  // Loads the given HTML and initializes the Autofill JS scripts.
-  void LoadHtml(NSString* html);
+      : ChromeWebTest(std::make_unique<ChromeWebClient>()) {}
   // Helper method that initializes a form with three fields. Can be used to
   // test whether adding an attribute on the second field causes it to be
   // skipped (or not, as is appropriate) by selectNextElement.
@@ -39,17 +39,15 @@ class JsSuggestionManagerTest : public web::WebJsTest<ChromeWebTest> {
   JsSuggestionManager* manager_;
 };
 
-void JsSuggestionManagerTest::LoadHtml(NSString* html) {
-  WebJsTest<ChromeWebTest>::LoadHtml(html);
-  manager_ =
-      static_cast<JsSuggestionManager*>([web_state()->GetJSInjectionReceiver()
-          instanceOfClass:[JsSuggestionManager class]]);
-  [manager_ inject];
+void JsSuggestionManagerTest::SetUp() {
+  ChromeWebTest::SetUp();
+  manager_ = [[JsSuggestionManager alloc]
+      initWithReceiver:web_state()->GetJSInjectionReceiver()];
 }
 
 TEST_F(JsSuggestionManagerTest, InitAndInject) {
   LoadHtml(@"<html></html>");
-  EXPECT_TRUE([manager_ hasBeenInjected]);
+  EXPECT_NSEQ(@"object", ExecuteJavaScript(@"typeof __gCrWeb.suggestion"));
 }
 
 TEST_F(JsSuggestionManagerTest, SelectElementInTabOrder) {
@@ -69,7 +67,7 @@ TEST_F(JsSuggestionManagerTest, SelectElementInTabOrder) {
        "<input id='-1 (1)' tabIndex=-1 href='http://www.w3schools.com'>-1 </a>"
        "<input id='0 (3)' tabIndex=0 href='http://www.w3schools.com'>0 (3)</a>"
        "</body></html>";
-  LoadHtmlAndInject(htmlFragment);
+  LoadHtml(htmlFragment);
 
   // clang-format off
   NSDictionary* next_expected_ids = @ {
@@ -90,19 +88,20 @@ TEST_F(JsSuggestionManagerTest, SelectElementInTabOrder) {
 
   for (NSString* element_id : next_expected_ids) {
     NSString* expected_id = [next_expected_ids objectForKey:element_id];
-    EXPECT_NSEQ(expected_id,
-                ExecuteJavaScriptWithFormat(
-                    @"var elements=document.getElementsByTagName('input');"
-                     "var element=document.getElementById('%@');"
-                     "var next = __gCrWeb.suggestion.getNextElementInTabOrder("
-                     "    element, elements);"
-                     "next ? next.id : 'null';",
-                    element_id))
+    NSString* script = [NSString
+        stringWithFormat:
+            @"var elements=document.getElementsByTagName('input');"
+             "var element=document.getElementById('%@');"
+             "var next = __gCrWeb.suggestion.getNextElementInTabOrder("
+             "    element, elements);"
+             "next ? next.id : 'null';",
+            element_id];
+    EXPECT_NSEQ(expected_id, ExecuteJavaScript(script))
         << "Wrong when selecting next element of element with element id "
         << base::SysNSStringToUTF8(element_id);
   }
   EXPECT_NSEQ(@YES,
-              ExecuteJavaScriptWithFormat(
+              ExecuteJavaScript(
                   @"var elements=document.getElementsByTagName('input');"
                    "var element=document.getElementsByTagName('a')[0];"
                    "var next = __gCrWeb.suggestion.getNextElementInTabOrder("
@@ -116,11 +115,12 @@ TEST_F(JsSuggestionManagerTest, SelectElementInTabOrder) {
       // If the expected next element is null, the focus is not moved.
       expected_id = element_id;
     }
-    EXPECT_NSEQ(expected_id, ExecuteJavaScriptWithFormat(
-                                 @"document.getElementById('%@').focus();"
-                                  "__gCrWeb.suggestion.selectNextElement();"
-                                  "document.activeElement.id",
-                                 element_id))
+    NSString* script = [NSString stringWithFormat:
+                                     @"document.getElementById('%@').focus();"
+                                      "__gCrWeb.suggestion.selectNextElement();"
+                                      "document.activeElement.id",
+                                     element_id];
+    EXPECT_NSEQ(expected_id, ExecuteJavaScript(script))
         << "Wrong when selecting next element with active element "
         << base::SysNSStringToUTF8(element_id);
   }
@@ -128,10 +128,11 @@ TEST_F(JsSuggestionManagerTest, SelectElementInTabOrder) {
   for (NSString* element_id : next_expected_ids) {
     // If the expected next element is null, there is no next element.
     BOOL expected = ![next_expected_ids[element_id] isEqualToString:@"null"];
-    EXPECT_NSEQ(@(expected), ExecuteJavaScriptWithFormat(
-                                 @"document.getElementById('%@').focus();"
-                                  "__gCrWeb.suggestion.hasNextElement()",
-                                 element_id))
+    NSString* script = [NSString stringWithFormat:
+                                     @"document.getElementById('%@').focus();"
+                                      "__gCrWeb.suggestion.hasNextElement()",
+                                     element_id];
+    EXPECT_NSEQ(@(expected), ExecuteJavaScript(script))
         << "Wrong when checking hasNextElement() for "
         << base::SysNSStringToUTF8(element_id);
   }
@@ -155,20 +156,20 @@ TEST_F(JsSuggestionManagerTest, SelectElementInTabOrder) {
 
   for (NSString* element_id : prev_expected_ids) {
     NSString* expected_id = [prev_expected_ids objectForKey:element_id];
-    EXPECT_NSEQ(
-        expected_id,
-        ExecuteJavaScriptWithFormat(
+    NSString* script = [NSString
+        stringWithFormat:
             @"var elements=document.getElementsByTagName('input');"
              "var element=document.getElementById('%@');"
              "var prev = __gCrWeb.suggestion.getPreviousElementInTabOrder("
              "    element, elements);"
              "prev ? prev.id : 'null';",
-            element_id))
+            element_id];
+    EXPECT_NSEQ(expected_id, ExecuteJavaScript(script))
         << "Wrong when selecting prev element of element with element id "
         << base::SysNSStringToUTF8(element_id);
   }
   EXPECT_NSEQ(
-      @YES, ExecuteJavaScriptWithFormat(
+      @YES, ExecuteJavaScript(
                 @"var elements=document.getElementsByTagName('input');"
                  "var element=document.getElementsByTagName('a')[0];"
                  "var prev = __gCrWeb.suggestion.getPreviousElementInTabOrder("
@@ -182,11 +183,13 @@ TEST_F(JsSuggestionManagerTest, SelectElementInTabOrder) {
       // If the expected previous element is null, the focus is not moved.
       expected_id = element_id;
     }
-    EXPECT_NSEQ(expected_id, ExecuteJavaScriptWithFormat(
-                                 @"document.getElementById('%@').focus();"
-                                  "__gCrWeb.suggestion.selectPreviousElement();"
-                                  "document.activeElement.id",
-                                 element_id))
+    NSString* script =
+        [NSString stringWithFormat:
+                      @"document.getElementById('%@').focus();"
+                       "__gCrWeb.suggestion.selectPreviousElement();"
+                       "document.activeElement.id",
+                      element_id];
+    EXPECT_NSEQ(expected_id, ExecuteJavaScript(script))
         << "Wrong when selecting previous element with active element "
         << base::SysNSStringToUTF8(element_id);
   }
@@ -194,10 +197,12 @@ TEST_F(JsSuggestionManagerTest, SelectElementInTabOrder) {
   for (NSString* element_id : prev_expected_ids) {
     // If the expected next element is null, there is no next element.
     BOOL expected = ![prev_expected_ids[element_id] isEqualToString:@"null"];
-    EXPECT_NSEQ(@(expected), ExecuteJavaScriptWithFormat(
-                                 @"document.getElementById('%@').focus();"
-                                  "__gCrWeb.suggestion.hasPreviousElement()",
-                                 element_id))
+    NSString* script =
+        [NSString stringWithFormat:
+                      @"document.getElementById('%@').focus();"
+                       "__gCrWeb.suggestion.hasPreviousElement()",
+                      element_id];
+    EXPECT_NSEQ(@(expected), ExecuteJavaScript(script))
         << "Wrong when checking hasPreviousElement() for "
         << base::SysNSStringToUTF8(element_id);
   }
@@ -210,9 +215,7 @@ TEST_F(JsSuggestionManagerTest, SequentialNavigation) {
             "<input type='email' name='email'/>"
             "</form></body></html>");
 
-  [manager_
-      executeJavaScript:@"document.getElementsByName('firstname')[0].focus()"
-      completionHandler:nil];
+  ExecuteJavaScript(@"document.getElementsByName('firstname')[0].focus()");
   [manager_ selectNextElement];
   EXPECT_NSEQ(@"lastname", GetActiveElementName());
   __block BOOL block_was_called = NO;
@@ -240,12 +243,8 @@ void JsSuggestionManagerTest::SequentialNavigationSkipCheck(NSString* attribute,
                                        "<input type='text' name='lastname'/>"
                                        "</form></body></html>",
                                       attribute]);
-  [manager_
-      executeJavaScript:@"document.getElementsByName('firstname')[0].focus()"
-      completionHandler:nil];
-  NSString* const kActiveElementNameJS = @"document.activeElement.name";
-  EXPECT_NSEQ(@"firstname",
-              web::test::ExecuteJavaScript(manager_, kActiveElementNameJS));
+  ExecuteJavaScript(@"document.getElementsByName('firstname')[0].focus()");
+  EXPECT_NSEQ(@"firstname", GetActiveElementName());
   [manager_ selectNextElement];
   NSString* activeElementNameJS = GetActiveElementName();
   if (shouldSkip)

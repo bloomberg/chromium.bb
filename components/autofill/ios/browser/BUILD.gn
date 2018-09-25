@@ -35,7 +35,6 @@ source_set("browser") {
   ]
 
   deps = [
-    ":injected_js",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -69,13 +68,6 @@ source_set("test_support") {
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//ios/web/public",
-  ]
-}
-
-js_compile_checked("injected_js") {
-  visibility = [ ":browser" ]
-  sources = [
-    "resources/suggestion_controller.js",
   ]
 }
 

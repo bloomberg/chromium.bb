@@ -22,14 +22,22 @@ NSString* JSONEscape(NSString* str) {
 }
 }  // namespace
 
-@implementation JsSuggestionManager
+@implementation JsSuggestionManager {
+  // The injection receiver used to evaluate JavaScript.
+  CRWJSInjectionReceiver* _receiver;
+}
+
+- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver {
+  DCHECK(receiver);
+  self = [super init];
+  if (self) {
+    _receiver = receiver;
+  }
+  return self;
+}
 
 #pragma mark -
 #pragma mark ProtectedMethods
-
-- (NSString*)scriptPath {
-  return @"suggestion_controller";
-}
 
 - (void)selectNextElement {
   [self selectElementAfterForm:@"" field:@""];
@@ -39,7 +47,7 @@ NSString* JSONEscape(NSString* str) {
   NSString* selectNextElementJS = [NSString
       stringWithFormat:@"__gCrWeb.suggestion.selectNextElement(%@, %@)",
                        JSONEscape(formName), JSONEscape(fieldName)];
-  [self executeJavaScript:selectNextElementJS completionHandler:nil];
+  [_receiver executeJavaScript:selectNextElementJS completionHandler:nil];
 }
 
 - (void)selectPreviousElement {
@@ -50,7 +58,7 @@ NSString* JSONEscape(NSString* str) {
   NSString* selectPreviousElementJS = [NSString
       stringWithFormat:@"__gCrWeb.suggestion.selectPreviousElement(%@, %@)",
                        JSONEscape(formName), JSONEscape(fieldName)];
-  [self executeJavaScript:selectPreviousElementJS completionHandler:nil];
+  [_receiver executeJavaScript:selectPreviousElementJS completionHandler:nil];
 }
 
 - (void)fetchPreviousAndNextElementsPresenceWithCompletionHandler:
@@ -65,7 +73,6 @@ NSString* JSONEscape(NSString* str) {
                                   completionHandler:
                                       (void (^)(BOOL, BOOL))completionHandler {
   DCHECK(completionHandler);
-  DCHECK([self hasBeenInjected]);
   NSString* escapedFormName = JSONEscape(formName);
   NSString* escapedFieldName = JSONEscape(fieldName);
   NSString* JS = [NSString
@@ -74,33 +81,35 @@ NSString* JSONEscape(NSString* str) {
                        @".toString()",
                        escapedFormName, escapedFieldName, escapedFormName,
                        escapedFieldName];
-  [self executeJavaScript:JS completionHandler:^(id result, NSError* error) {
-    // The result maybe an empty string here due to 2 reasons:
-    // 1) When there is an exception running the JS
-    // 2) There is a race when the page is changing due to which
-    // JSSuggestionManager has not yet injected __gCrWeb.suggestion object
-    // Handle this case gracefully.
-    // If a page has overridden Array.toString, the string returned may not
-    // contain a ",", hence this is a defensive measure to early return.
-    NSArray* components = [result componentsSeparatedByString:@","];
-    if (components.count != 2) {
-      completionHandler(NO, NO);
-      return;
-    }
+  [_receiver executeJavaScript:JS
+             completionHandler:^(id result, NSError* error) {
+               // The result maybe an empty string here due to 2 reasons:
+               // 1) When there is an exception running the JS
+               // 2) There is a race when the page is changing due to which
+               // JSSuggestionManager has not yet injected __gCrWeb.suggestion
+               // object Handle this case gracefully. If a page has overridden
+               // Array.toString, the string returned may not contain a ",",
+               // hence this is a defensive measure to early return.
+               NSArray* components = [result componentsSeparatedByString:@","];
+               if (components.count != 2) {
+                 completionHandler(NO, NO);
+                 return;
+               }
 
-    DCHECK([components[0] isEqualToString:@"true"] ||
-           [components[0] isEqualToString:@"false"]);
-    BOOL hasPreviousElement = [components[0] isEqualToString:@"true"];
-    DCHECK([components[1] isEqualToString:@"true"] ||
-           [components[1] isEqualToString:@"false"]);
-    BOOL hasNextElement = [components[1] isEqualToString:@"true"];
-    completionHandler(hasPreviousElement, hasNextElement);
-  }];
+               DCHECK([components[0] isEqualToString:@"true"] ||
+                      [components[0] isEqualToString:@"false"]);
+               BOOL hasPreviousElement =
+                   [components[0] isEqualToString:@"true"];
+               DCHECK([components[1] isEqualToString:@"true"] ||
+                      [components[1] isEqualToString:@"false"]);
+               BOOL hasNextElement = [components[1] isEqualToString:@"true"];
+               completionHandler(hasPreviousElement, hasNextElement);
+             }];
 }
 
 - (void)closeKeyboard {
-  [self executeJavaScript:@"document.activeElement.blur()"
-        completionHandler:nil];
+  [_receiver executeJavaScript:@"document.activeElement.blur()"
+             completionHandler:nil];
 }
 
 @end

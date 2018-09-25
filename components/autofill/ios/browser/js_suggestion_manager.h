@@ -5,13 +5,17 @@
 #ifndef COMPONENTS_AUTOFILL_IOS_BROWSER_JS_SUGGESTION_MANAGER_H_
 #define COMPONENTS_AUTOFILL_IOS_BROWSER_JS_SUGGESTION_MANAGER_H_
 
-#import "ios/web/public/web_state/js/crw_js_injection_manager.h"
-
-@class CRWJSInjectionReceiver;
+#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
 // Loads the JavaScript file, suggestion_manager.js, which contains form parsing
 // and autofill functions.
-@interface JsSuggestionManager : CRWJSInjectionManager
+@interface JsSuggestionManager : NSObject
+
+// Designated initializer. |receiver| should not be nil.
+- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 // Focuses the next focusable element in tab order. No action if there is no
 // such element.
