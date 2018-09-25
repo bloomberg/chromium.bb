@@ -55,14 +55,12 @@
 #include "chrome/browser/ui/cocoa/fullscreen_placeholder_view.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
-#import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -297,16 +295,8 @@ bool IsTabDetachingInFullscreenEnabled() {
     // managing the creation of new tabs.
     [self createTabStripController];
 
-    // Create a controller for the toolbar, giving it the toolbar model object
-    // and the toolbar view from the nib. The controller will handle
-    // registering for the appropriate command state changes from the back-end.
-    // Adds the toolbar to the content area.
-    toolbarController_.reset([[ToolbarController alloc]
-        initWithCommands:browser->command_controller()
-                 profile:browser->profile()
-                 browser:browser]);
-    [[toolbarController_ toolbarView] setResizeDelegate:self];
-    [toolbarController_ setHasToolbar:[self hasToolbar] hasLocationBar:NO];
+    locationBar_.reset(new LocationBarViewMac(
+        browser_->command_controller(), browser_->profile(), browser_.get()));
 
     [self updateFullscreenCollectionBehavior];
 
@@ -378,7 +368,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   // that retains NSViewControllers and is autoreleased, so there is no way to
   // guarantee that the [super dealloc] call below will also call dealloc on the
   // controllers.
-  [toolbarController_ browserWillBeDestroyed];
   [tabStripController_ browserWillBeDestroyed];
 
   [super dealloc];
@@ -420,16 +409,12 @@ bool IsTabDetachingInFullscreenEnabled() {
   return windowShim_.get();
 }
 
-- (ToolbarController*)toolbarController {
-  return toolbarController_.get();
-}
-
 - (TabStripControllerCocoa*)tabStripController {
   return tabStripController_.get();
 }
 
 - (LocationBarViewMac*)locationBarBridge {
-  return [toolbarController_ locationBarBridge];
+  return locationBar_.get();
 }
 
 - (NSView*)floatingBarBackingView {
@@ -810,33 +795,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   BOOL autoresizesSubviews = [chromeContentView autoresizesSubviews];
   [chromeContentView setAutoresizesSubviews:NO];
 
-  // On Yosemite the toolbar can flicker when hiding or showing the bookmarks
-  // bar. Here, |chromeContentView| is set to not autoresize its subviews during
-  // the window resize. Because |chromeContentView| is not flipped, if the
-  // window is getting shorter, the toolbar will move up within the window.
-  // Soon after, a call to layoutSubviews corrects its position. Passing NO to
-  // setFrame:display: should keep the toolbarView's intermediate position
-  // hidden, as should the prior call to disable screen updates. For some
-  // reason, neither prevents the toolbarView's intermediate position from
-  // becoming visible. Its subsequent appearance in its correct location causes
-  // the flicker. It may be that the Appkit assumes that updating the window
-  // immediately is not a big deal given that everything in it is layer-backed.
-  // Indeed, turning off layer backing for all ancestors of the toolbarView
-  // causes the flicker to go away.
-  //
-  // By shifting the toolbarView enough so that it's in its correct location
-  // immediately after the call to setFrame:display:, the toolbar will be in
-  // the right spot when the Appkit prematurely flushes the window contents to
-  // the screen. http://crbug.com/444080 .
-  if ([self hasToolbar]) {
-    NSView* toolbarView = [toolbarController_ view];
-    NSRect currentWindowFrame = [window frame];
-    NSRect toolbarViewFrame = [toolbarView frame];
-    toolbarViewFrame.origin.y += windowFrame.size.height -
-        currentWindowFrame.size.height;
-    [toolbarView setFrame:toolbarViewFrame];
-  }
-
   [window setFrame:windowFrame display:NO];
   [chromeContentView setAutoresizesSubviews:autoresizesSubviews];
   return YES;
@@ -851,7 +809,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   // If we are asked to size the bookmark
   // bar directly, its superview must be this controller's content view.
   DCHECK(view);
-  DCHECK(view == [toolbarController_ view]);
 
   // Change the height of the view and call |-layoutSubViews|. We set the height
   // here without regard to where the view is on the screen or whether it needs
@@ -878,19 +835,15 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)updateToolbarWithContents:(WebContents*)tab {
-  [toolbarController_ updateToolbarWithContents:tab];
 }
 
 - (void)resetTabState:(WebContents*)tab {
-  [toolbarController_ resetTabState:tab];
 }
 
 - (void)setStarredState:(BOOL)isStarred {
-  [toolbarController_ setStarredState:isStarred];
 }
 
 - (void)setCurrentPageIsTranslated:(BOOL)on {
-  [toolbarController_ setTranslateIconLit:on];
 }
 
 - (void)onActiveTabChanged:(content::WebContents*)oldContents
@@ -902,7 +855,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
-  [toolbarController_ zoomChangedForActiveTab:canShowBubble];
 }
 
 // Accept tabs from a BrowserWindowController with the same Profile.
@@ -1015,7 +967,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
-  [toolbarController_ setIsLoading:isLoading force:force];
 }
 
 - (void)firstResponderUpdated:(NSResponder*)responder {
@@ -1279,12 +1230,6 @@ bool IsTabDetachingInFullscreenEnabled() {
     [[self fullscreenToolbarController]
         revealToolbarForWebContents:contents
                        inForeground:inForeground];
-
-  if (inForeground) {
-    AppToolbarButton* appMenuButton =
-        static_cast<AppToolbarButton*>([toolbarController_ appMenuButton]);
-    [appMenuButton animateIfPossibleWithDelay:YES];
-  }
 }
 
 - (void)userChangedTheme {
@@ -1405,9 +1350,7 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 // Delegate method: see |NSWindowDelegate| protocol.
 - (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)obj {
-  // Ask the toolbar controller if it wants to return a custom field editor
-  // for the specific object.
-  return [toolbarController_ customFieldEditorForObject:obj];
+  return nil;
 }
 
 // (Private/TestingAPI)
@@ -1440,17 +1383,7 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 // (Private/TestingAPI)
 - (NSRect)omniboxPopupAnchorRect {
-  // Start with toolbar rect.
-  NSView* toolbarView = [toolbarController_ view];
-  NSRect anchorRect = [toolbarView frame];
-
-  // Adjust to account for height and possible bookmark bar. Compress by 1
-  // to account for the separator.
-  anchorRect.origin.y =
-      NSMaxY(anchorRect) - [toolbarController_ desiredHeightForCompression:1];
-
-  // Shift to window base coordinates.
-  return [[toolbarView superview] convertRect:anchorRect toView:nil];
+  return NSZeroRect;
 }
 
 - (BOOL)isLayoutSubviewsBlocked {

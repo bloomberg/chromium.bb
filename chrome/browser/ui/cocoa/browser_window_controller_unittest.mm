@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
@@ -39,15 +38,10 @@ using ::testing::Return;
 
 @interface BrowserWindowController (ExposedForTesting)
 // Implementations are below.
-- (NSView*)toolbarView;
 - (void)dontFocusLocationBar:(BOOL)selectAll;
 @end
 
 @implementation BrowserWindowController (ExposedForTesting)
-
-- (NSView*)toolbarView {
-  return [toolbarController_ view];
-}
 
 - (void)dontFocusLocationBar:(BOOL)selectAll {
 }
@@ -170,11 +164,6 @@ TEST_F(BrowserWindowControllerTest, TestTheme) {
 
 namespace {
 
-// Returns the frame of the view in window coordinates.
-NSRect FrameInWindowForView(NSView* view) {
-  return [[view superview] convertRect:[view frame] toView:nil];
-}
-
 // Whether the view's frame is within the bounds of the superview.
 BOOL ViewContainmentValid(NSView* view) {
   if (NSIsEmptyRect([view frame]))
@@ -210,13 +199,6 @@ BOOL ViewHierarchyContainmentValid(NSView* view) {
 // completely fill the area under the tabstrip.
 void CheckViewPositions(BrowserWindowController* controller) {
   EXPECT_TRUE(ViewHierarchyContainmentValid([[controller window] contentView]));
-
-  NSRect tabstrip = FrameInWindowForView([controller tabStripView]);
-  NSRect toolbar = FrameInWindowForView([controller toolbarView]);
-
-  // Toolbar should start immediately under the tabstrip, but the tabstrip is
-  // not necessarily fixed with respect to the content view.
-  EXPECT_EQ(NSMinY(tabstrip), NSMaxY(toolbar));
 }
 
 }  // end namespace
@@ -351,7 +333,6 @@ TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
 TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   TabStripView* tabstrip = [controller_ tabStripView];
   NSView* contentView = [[tabstrip window] contentView];
-  NSView* toolbar = [controller_ toolbarView];
 
   // We need to muck with the views a bit to put us in a consistent state before
   // we start resizing.  In particular, we need to move the tab strip to be
@@ -363,14 +344,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
 
   // Force a layout and check each view's frame.
   [controller_ layoutSubviews];
-  CheckViewPositions(controller_);
-
-  // Expand the toolbar to 64px and recheck
-  [controller_ resizeView:toolbar newHeight:64];
-  CheckViewPositions(controller_);
-
-  // Shrink the infobar to 0px and toolbar to 39px and recheck
-  [controller_ resizeView:toolbar newHeight:39];
   CheckViewPositions(controller_);
 }
 

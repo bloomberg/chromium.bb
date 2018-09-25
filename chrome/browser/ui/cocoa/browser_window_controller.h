@@ -47,7 +47,6 @@ class LocationBarViewMac;
 @class OverlayableContentsController;
 @class TabStripControllerCocoa;
 @class TabStripView;
-@class ToolbarController;
 
 namespace content {
 class WebContents;
@@ -70,7 +69,7 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   std::unique_ptr<Browser> browser_;
   NSWindow* savedRegularWindow_;
   std::unique_ptr<BrowserWindowCocoa> windowShim_;
-  base::scoped_nsobject<ToolbarController> toolbarController_;
+  std::unique_ptr<LocationBarViewMac> locationBar_;
   base::scoped_nsobject<TabStripControllerCocoa> tabStripController_;
   base::scoped_nsobject<OverlayableContentsController>
       overlayableContentsController_;
@@ -187,9 +186,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 // Access the C++ bridge between the NSWindow and the rest of Chromium.
 - (BrowserWindow*)browserWindow;
-
-// Return a weak pointer to the toolbar controller.
-- (ToolbarController*)toolbarController;
 
 // Return a weak pointer to the tab strip controller.
 - (TabStripControllerCocoa*)tabStripController;

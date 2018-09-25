@@ -10,7 +10,6 @@ assert(is_mac)
 translated_xibs = [
   "SaveAccessoryView.xib",
   "TaskManager.xib",
-  "Toolbar.xib",
 ]
 
 mac_xib_bundle_data("chrome_xibs") {
