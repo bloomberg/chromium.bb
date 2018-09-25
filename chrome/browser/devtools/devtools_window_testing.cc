@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -44,10 +43,6 @@ DevToolsWindowTesting::~DevToolsWindowTesting() {
     close_callback_.Run();
     close_callback_ = base::Closure();
   }
-
-  // Needed for Chrome_DevToolsADBThread to shut down gracefully in tests.
-  ChromeDevToolsManagerDelegate::GetInstance()
-      ->ResetAndroidDeviceManagerForTesting();
 }
 
 // static

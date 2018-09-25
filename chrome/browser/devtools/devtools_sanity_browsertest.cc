@@ -2237,8 +2237,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestOpenInNewTabFilter) {
         base::StringPrintf("while testing URL: %s", pair.first.c_str()));
     EXPECT_EQ(opened_url, pair.second);
   }
-
-  CloseDevToolsWindow();
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, LoadNetworkResourceForFrontend) {

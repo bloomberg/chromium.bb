@@ -46,9 +46,6 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   static bool AllowInspection(Profile* profile,
                               const extensions::Extension* extension);
 
-  // Resets |device_manager_|.
-  void ResetAndroidDeviceManagerForTesting();
-
  private:
   friend class DevToolsManagerDelegateTest;
 
