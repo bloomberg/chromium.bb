@@ -66,7 +66,7 @@ constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
 
 std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcher::CreateForGetCatalog(
     Callback callback,
-    const int64_t catalog_version,
+    const std::string catalog_version,
     const std::string country_code,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
   GURL url = GetCatalogURL();
@@ -77,7 +77,7 @@ std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcher::CreateForGetCatalog(
 std::unique_ptr<ExploreSitesFetcher>
 ExploreSitesFetcher::CreateForGetCategories(
     Callback callback,
-    const int64_t catalog_version,
+    const std::string catalog_version,
     const std::string country_code,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
   GURL url = GetCategoriesURL();
@@ -88,7 +88,7 @@ ExploreSitesFetcher::CreateForGetCategories(
 ExploreSitesFetcher::ExploreSitesFetcher(
     Callback callback,
     const GURL& url,
-    const int64_t catalog_version,
+    const std::string catalog_version,
     const std::string country_code,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : callback_(std::move(callback)),
@@ -116,7 +116,7 @@ ExploreSitesFetcher::ExploreSitesFetcher(
                                                  traffic_annotation);
 
   GetCatalogRequest request;
-  request.set_created_at_millis(catalog_version);
+  request.set_version_token(catalog_version);
   request.set_country_code(country_code);
   std::string request_message;
   request.SerializeToString(&request_message);

@@ -42,9 +42,9 @@ class ExploreSitesGetCatalogTaskTest : public TaskTestBase {
 
   void PopulateTestingCatalog();
   void ValidateTestingCatalog(GetCatalogTask::CategoryList* catalog);
-  void SetDownloadingAndCurrentVersion(int downloading_version,
-                                       int current_version);
-  std::pair<int, int> GetCurrentAndDownloadingVersion();
+  void SetDownloadingAndCurrentVersion(std::string downloading_version_token,
+                                       std::string current_version_token);
+  std::pair<std::string, std::string> GetCurrentAndDownloadingVersion();
   int GetNumberOfCategoriesInDB();
   int GetNumberOfSitesInDB();
 
@@ -61,16 +61,16 @@ void ExploreSitesGetCatalogTaskTest::PopulateTestingCatalog() {
   ExecuteSync(base::BindLambdaForTesting([](sql::Database* db) {
     sql::MetaTable meta_table;
     ExploreSitesSchema::InitMetaTable(db, &meta_table);
-    meta_table.SetValue("current_catalog", 5678);
+    meta_table.SetValue("current_catalog", "5678");
     meta_table.DeleteKey("downloading_catalog");
     sql::Statement insert(db->GetUniqueStatement(R"(
 INSERT INTO categories
-(category_id, version, type, label)
+(category_id, version_token, type, label)
 VALUES
-(1, 1234, 1, "label_1"), -- older catalog
-(2, 1234, 2, "label_2"), -- older catalog
-(3, 5678, 1, "label_1"), -- current catalog
-(4, 5678, 2, "label_2"); -- current catalog)"));
+(1, "1234", 1, "label_1"), -- older catalog
+(2, "1234", 2, "label_2"), -- older catalog
+(3, "5678", 1, "label_1"), -- current catalog
+(4, "5678", 2, "label_2"); -- current catalog)"));
     if (!insert.Run())
       return false;
 
@@ -94,7 +94,7 @@ void ExploreSitesGetCatalogTaskTest::ValidateTestingCatalog(
   EXPECT_EQ(2U, catalog->size());
   ExploreSitesCategory* cat = &catalog->at(0);
   EXPECT_EQ(3, cat->category_id);
-  EXPECT_EQ(5678, cat->version);
+  EXPECT_EQ("5678", cat->version_token);
   EXPECT_EQ(1, cat->category_type);
   EXPECT_EQ("label_1", cat->label);
 
@@ -106,7 +106,7 @@ void ExploreSitesGetCatalogTaskTest::ValidateTestingCatalog(
 
   cat = &catalog->at(1);
   EXPECT_EQ(4, cat->category_id);
-  EXPECT_EQ(5678, cat->version);
+  EXPECT_EQ("5678", cat->version_token);
   EXPECT_EQ(2, cat->category_type);
   EXPECT_EQ("label_2", cat->label);
 
@@ -118,21 +118,21 @@ void ExploreSitesGetCatalogTaskTest::ValidateTestingCatalog(
 }
 
 void ExploreSitesGetCatalogTaskTest::SetDownloadingAndCurrentVersion(
-    int downloading_version,
-    int current_version) {
+    std::string downloading_version_token,
+    std::string current_version_token) {
   ExecuteSync(base::BindLambdaForTesting([&](sql::Database* db) {
     sql::MetaTable meta_table;
     ExploreSitesSchema::InitMetaTable(db, &meta_table);
-    meta_table.SetValue("downloading_catalog", downloading_version);
-    meta_table.SetValue("current_catalog", current_version);
+    meta_table.SetValue("downloading_catalog", downloading_version_token);
+    meta_table.SetValue("current_catalog", current_version_token);
     return true;
   }));
 }
 
-std::pair<int, int>
+std::pair<std::string, std::string>
 ExploreSitesGetCatalogTaskTest::GetCurrentAndDownloadingVersion() {
-  int64_t current_catalog = -1;
-  int64_t downloading_catalog = -1;
+  std::string current_catalog = "";
+  std::string downloading_catalog = "";
   ExecuteSync(base::BindLambdaForTesting([&](sql::Database* db) {
     sql::MetaTable meta_table;
     ExploreSitesSchema::InitMetaTable(db, &meta_table);
@@ -208,7 +208,7 @@ TEST_F(ExploreSitesGetCatalogTaskTest, CatalogWithVersionUpdate) {
   PopulateTestingCatalog();
   // Update the testing catalog so that the older catalog is current and the
   // downloading catalog is ready to upgrade.
-  SetDownloadingAndCurrentVersion(5678, 1234);
+  SetDownloadingAndCurrentVersion("5678", "1234");
   auto callback = base::BindLambdaForTesting(
       [&](std::unique_ptr<GetCatalogTask::CategoryList> catalog) {
         ValidateTestingCatalog(catalog.get());
@@ -216,7 +216,8 @@ TEST_F(ExploreSitesGetCatalogTaskTest, CatalogWithVersionUpdate) {
   GetCatalogTask task(store(), true /* update_current */, callback);
   RunTask(&task);
 
-  EXPECT_EQ(std::make_pair(5678, -1), GetCurrentAndDownloadingVersion());
+  EXPECT_EQ(std::make_pair(std::string("5678"), std::string()),
+            GetCurrentAndDownloadingVersion());
   // The task should have pruned the database.
   EXPECT_EQ(2, GetNumberOfCategoriesInDB());
   EXPECT_EQ(2, GetNumberOfSitesInDB());
@@ -226,7 +227,7 @@ TEST_F(ExploreSitesGetCatalogTaskTest, CatalogWithoutVersionUpdate) {
   PopulateTestingCatalog();
   // Make "1234" the downloading version, we should not see any changes in the
   // DB if the |update_current| flag is false.
-  SetDownloadingAndCurrentVersion(1234, 5678);
+  SetDownloadingAndCurrentVersion("1234", "5678");
   auto callback = base::BindLambdaForTesting(
       [&](std::unique_ptr<GetCatalogTask::CategoryList> catalog) {
         ValidateTestingCatalog(catalog.get());
@@ -234,14 +235,15 @@ TEST_F(ExploreSitesGetCatalogTaskTest, CatalogWithoutVersionUpdate) {
   GetCatalogTask task(store(), false /* update_current */, callback);
   RunTask(&task);
 
-  EXPECT_EQ(std::make_pair(5678, 1234), GetCurrentAndDownloadingVersion());
+  EXPECT_EQ(std::make_pair(std::string("5678"), std::string("1234")),
+            GetCurrentAndDownloadingVersion());
   EXPECT_EQ(4, GetNumberOfCategoriesInDB());
   EXPECT_EQ(4, GetNumberOfSitesInDB());
 }
 
 TEST_F(ExploreSitesGetCatalogTaskTest, InvalidCatalogVersions) {
   PopulateTestingCatalog();
-  SetDownloadingAndCurrentVersion(-1, -1);
+  SetDownloadingAndCurrentVersion("", "");
   auto callback = base::BindLambdaForTesting(
       [&](std::unique_ptr<GetCatalogTask::CategoryList> catalog) {
         EXPECT_EQ(0U, catalog->size());

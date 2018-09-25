@@ -66,13 +66,13 @@ void ExploreSitesServiceImpl::Shutdown() {}
 void ExploreSitesServiceImpl::OnTaskQueueIsIdle() {}
 
 void ExploreSitesServiceImpl::AddUpdatedCatalog(
-    int64_t catalog_timestamp,
+    std::string version_token,
     std::unique_ptr<Catalog> catalog_proto) {
   if (!IsExploreSitesEnabled())
     return;
 
   task_queue_.AddTask(std::make_unique<ImportCatalogTask>(
-      explore_sites_store_.get(), catalog_timestamp, std::move(catalog_proto)));
+      explore_sites_store_.get(), version_token, std::move(catalog_proto)));
 }
 
 }  // namespace explore_sites

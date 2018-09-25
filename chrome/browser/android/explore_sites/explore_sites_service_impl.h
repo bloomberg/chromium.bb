@@ -38,7 +38,7 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   // TaskQueue::Delegate implementation:
   void OnTaskQueueIsIdle() override;
 
-  void AddUpdatedCatalog(int64_t catalog_timestamp,
+  void AddUpdatedCatalog(std::string version_token,
                          std::unique_ptr<Catalog> catalog_proto);
 
   // True when Chrome starts up, this is reset after the catalog is requested

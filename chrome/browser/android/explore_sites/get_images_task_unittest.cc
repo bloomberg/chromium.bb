@@ -67,10 +67,10 @@ void ExploreSitesGetImagesTaskTest::PopulateTestingCatalog() {
     meta_table.DeleteKey("downloading_catalog");
     sql::Statement insert(db->GetUniqueStatement(R"(
 INSERT INTO categories
-(category_id, version, type, label)
+(category_id, version_token, type, label)
 VALUES
-(3, 5678, 1, "label_1"),
-(4, 5678, 2, "label_2");)"));
+(3, "5678", 1, "label_1"),
+(4, "5678", 2, "label_2");)"));
     if (!insert.Run())
       return false;
 

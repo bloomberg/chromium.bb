@@ -32,14 +32,14 @@ class ExploreSitesFetcher {
   // Creates a fetcher for the GetCatalog RPC.
   static std::unique_ptr<ExploreSitesFetcher> CreateForGetCatalog(
       Callback callback,
-      const int64_t catalog_version,
+      const std::string catalog_version,
       const std::string country_code,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
   // Creates a fetcher for the GetCategories RPC.
   static std::unique_ptr<ExploreSitesFetcher> CreateForGetCategories(
       Callback callback,
-      const int64_t catalog_version,
+      const std::string catalog_version,
       const std::string country_code,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
@@ -49,7 +49,7 @@ class ExploreSitesFetcher {
   explicit ExploreSitesFetcher(
       Callback callback,
       const GURL& url,
-      const int64_t catalog_version,
+      const std::string catalog_version,
       const std::string country_code,
       scoped_refptr<network ::SharedURLLoaderFactory> loader_factory);
 

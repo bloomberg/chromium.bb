@@ -153,7 +153,7 @@ ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcher(
     base::OnceCallback<void(void)> respond_callback,
     std::string* data_received) {
   std::unique_ptr<ExploreSitesFetcher> fetcher =
-      ExploreSitesFetcher::CreateForGetCatalog(StoreResult(), 0, "KE",
+      ExploreSitesFetcher::CreateForGetCatalog(StoreResult(), "", "KE",
                                                test_shared_url_loader_factory_);
 
   std::move(respond_callback).Run();
