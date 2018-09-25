@@ -67,7 +67,7 @@ source_set("layout_test_utils") {
   ]
 }
 
-static_library("content_shell_lib") {
+jumbo_static_library("content_shell_lib") {
   testonly = true
   sources = [
     "android/shell_manager.cc",
@@ -222,6 +222,15 @@ static_library("content_shell_lib") {
     "renderer/shell_render_view_observer.h",
     "utility/shell_content_utility_client.cc",
     "utility/shell_content_utility_client.h",
+  ]
+
+  jumbo_excluded_sources = [
+    # IPC uses multiple inclusions in different macro contexts to
+    # generate the code. This is not compatible with jumbo
+    # compilations since all other files need the "clean" version of
+    # the message headers.
+    "common/layout_test/layout_test_messages.cc",
+    "common/shell_messages.cc",
   ]
 
   configs += [
