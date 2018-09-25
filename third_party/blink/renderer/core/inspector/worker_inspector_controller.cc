@@ -62,10 +62,20 @@ WorkerInspectorController::WorkerInspectorController(
     WorkerThreadDebugger* debugger)
     : debugger_(debugger), thread_(thread), probe_sink_(new CoreProbeSink()) {
   probe_sink_->addInspectorTraceEvents(new InspectorTraceEvents());
+  if (thread->GlobalScope()->IsWorkerGlobalScope()) {
+    WorkerGlobalScope* scope = ToWorkerGlobalScope(thread->GlobalScope());
+    worker_devtools_token_ = thread->GetDevToolsWorkerToken();
+    parent_devtools_token_ = scope->GetParentDevToolsToken();
+    url_ = scope->Url();
+    worker_thread_id_ = thread->GetPlatformThreadId();
+  }
+  TraceEvent::AddEnabledStateObserver(this);
+  EmitTraceEvent();
 }
 
 WorkerInspectorController::~WorkerInspectorController() {
   DCHECK(!thread_);
+  TraceEvent::RemoveEnabledStateObserver(this);
 }
 
 void WorkerInspectorController::ConnectFrontend(int session_id) {
@@ -155,6 +165,23 @@ void WorkerInspectorController::WillProcessTask() {}
 void WorkerInspectorController::DidProcessTask() {
   for (auto& it : sessions_)
     it.value->flushProtocolNotifications();
+}
+
+void WorkerInspectorController::OnTraceLogEnabled() {
+  EmitTraceEvent();
+}
+
+void WorkerInspectorController::OnTraceLogDisabled() {}
+
+void WorkerInspectorController::EmitTraceEvent() {
+  if (worker_devtools_token_.is_empty())
+    return;
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD,
+                       "data",
+                       InspectorTracingSessionIdForWorkerEvent::Data(
+                           worker_devtools_token_, parent_devtools_token_, url_,
+                           worker_thread_id_));
 }
 
 void WorkerInspectorController::Trace(blink::Visitor* visitor) {

@@ -1312,15 +1312,17 @@ std::unique_ptr<TracedValue> InspectorTimeStampEvent::Data(
 }
 
 std::unique_ptr<TracedValue> InspectorTracingSessionIdForWorkerEvent::Data(
-    LocalFrame* frame,
-    const String& url,
-    WorkerThread* worker_thread) {
+    const base::UnguessableToken& worker_devtools_token,
+    const base::UnguessableToken& parent_devtools_token,
+    const KURL& url,
+    PlatformThreadId worker_thread_id) {
   std::unique_ptr<TracedValue> value = TracedValue::Create();
-  value->SetString("frame", IdentifiersFactory::FrameId(frame));
-  value->SetString("url", url);
-  value->SetString("workerId", IdentifiersFactory::IdFromToken(
-                                   worker_thread->GetDevToolsWorkerToken()));
-  value->SetDouble("workerThreadId", worker_thread->GetPlatformThreadId());
+  value->SetString("frame",
+                   IdentifiersFactory::IdFromToken(parent_devtools_token));
+  value->SetString("url", url.GetString());
+  value->SetString("workerId",
+                   IdentifiersFactory::IdFromToken(worker_devtools_token));
+  value->SetDouble("workerThreadId", worker_thread_id);
   return value;
 }
 
