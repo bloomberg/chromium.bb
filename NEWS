@@ -1,5 +1,24 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 3.8.0 (2018-12-XX)
+
+** New features
+
+** Bug fixes
+
+** Braille table improvements
+
+** Other changes
+
+** Deprecation notice
+
+** Backwards incompatible changes
+
+** New, renamed or removed tables
+*** New
+*** Renamed
+*** Removed
+
 * Noteworthy changes in release 3.7.0 (2018-09-03)
 This release implements major improvements for back-translation thanks
 to concerted efforts by Bue Vester-Andersen, Bert Frees, Timothy Lee
