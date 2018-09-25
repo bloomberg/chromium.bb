@@ -414,7 +414,7 @@ bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
 }
 
 PageActionIconContainer* BrowserWindowCocoa::GetPageActionIconContainer() {
-  return [controller_ locationBarBridge];
+  return nullptr;
 }
 
 LocationBar* BrowserWindowCocoa::GetLocationBar() const {
@@ -422,7 +422,6 @@ LocationBar* BrowserWindowCocoa::GetLocationBar() const {
 }
 
 void BrowserWindowCocoa::SetFocusToLocationBar(bool select_all) {
-  [controller_ focusLocationBar:select_all ? YES : NO];
 }
 
 void BrowserWindowCocoa::UpdateReloadStopState(bool is_loading, bool force) {
@@ -546,10 +545,6 @@ void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads(
 
 void BrowserWindowCocoa::UserChangedTheme() {
   [controller_ userChangedTheme];
-  LocationBarViewMac* locationBar = [controller_ locationBarBridge];
-  if (locationBar) {
-    locationBar->OnThemeChanged();
-  }
 }
 
 void BrowserWindowCocoa::ShowAppMenu() {

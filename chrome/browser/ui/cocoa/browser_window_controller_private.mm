@@ -32,7 +32,6 @@
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_cocoa.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
-#include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -718,7 +717,7 @@ willPositionSheet:(NSWindow*)sheet
   [fullscreenToolbarController_ enterFullscreenMode];
 
   if (!floatingBarBackingView_.get() &&
-      ([self hasTabStrip] || [self hasToolbar] || [self hasLocationBar])) {
+      ([self hasTabStrip] || [self hasToolbar])) {
     floatingBarBackingView_.reset(
         [[FloatingBarBackingView alloc] initWithFrame:NSZeroRect]);
     [floatingBarBackingView_
@@ -827,8 +826,6 @@ willPositionSheet:(NSWindow*)sheet
 
   [layout setHasToolbar:[self hasToolbar]];
   [layout setToolbarHeight:NSHeight([[toolbarController_ view] bounds])];
-
-  [layout setHasLocationBar:[self hasLocationBar]];
 }
 
 - (void)applyLayout:(BrowserWindowLayout*)layout {
@@ -893,21 +890,6 @@ willPositionSheet:(NSWindow*)sheet
     return;
   }
 
-  // Removing the location bar from the window causes it to resign first
-  // responder. Remember the location bar's focus state in order to restore
-  // it before returning.
-  BOOL locationBarHadFocus = [toolbarController_ locationBarHasFocus];
-  FullscreenToolbarVisibilityLockController* visibilityLockController = nil;
-  if (locationBarHadFocus) {
-    // The location bar, by being focused, has a visibility lock on the toolbar,
-    // and the location bar's removal from the view hierarchy will allow the
-    // toolbar to hide. Create a temporary visibility lock on the toolbar for
-    // the duration of the view hierarchy change.
-    visibilityLockController = [self fullscreenToolbarVisibilityLockController];
-    [visibilityLockController lockToolbarVisibilityForOwner:self
-                                              withAnimation:NO];
-  }
-
   // Remove all subviews that aren't the tabContentArea.
   for (NSView* view in [[[self.chromeContentView subviews] copy] autorelease]) {
     if (view != tabContentArea)
@@ -929,14 +911,6 @@ willPositionSheet:(NSWindow*)sheet
     [self.chromeContentView addSubview:view
                             positioned:NSWindowAbove
                             relativeTo:nil];
-  }
-
-  // Restore the location bar's focus state and remove the temporary visibility
-  // lock.
-  if (locationBarHadFocus) {
-    [self focusLocationBar:YES];
-    [visibilityLockController releaseToolbarVisibilityForOwner:self
-                                                 withAnimation:NO];
   }
 }
 

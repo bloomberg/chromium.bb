@@ -56,8 +56,6 @@
 #include "chrome/browser/ui/cocoa/fullscreen_placeholder_view.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
-#import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
@@ -318,8 +316,7 @@ bool IsTabDetachingInFullscreenEnabled() {
                  profile:browser->profile()
                  browser:browser]);
     [[toolbarController_ toolbarView] setResizeDelegate:self];
-    [toolbarController_ setHasToolbar:[self hasToolbar]
-                       hasLocationBar:[self hasLocationBar]];
+    [toolbarController_ setHasToolbar:[self hasToolbar] hasLocationBar:NO];
 
     [self updateFullscreenCollectionBehavior];
 
@@ -1062,7 +1059,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar:(BOOL)selectAll {
-  [toolbarController_ focusLocationBar:selectAll];
 }
 
 - (void)focusTabContents {
@@ -1649,8 +1645,7 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (BOOL)floatingBarHasFocus {
-  NSResponder* focused = [[self window] firstResponder];
-  return [focused isKindOfClass:[AutocompleteTextFieldEditor class]];
+  return NO;
 }
 
 - (BOOL)isFullscreenForTabContentOrExtension {
@@ -1683,10 +1678,6 @@ bool IsTabDetachingInFullscreenEnabled() {
       [[self fullscreenToolbarController] computeLayout];
   return layout.toolbarStyle != FullscreenToolbarStyle::TOOLBAR_NONE &&
          [self supportsWindowFeature:Browser::FEATURE_TOOLBAR];
-}
-
-- (BOOL)hasLocationBar {
-  return [self supportsWindowFeature:Browser::FEATURE_LOCATIONBAR];
 }
 
 - (BOOL)supportsBookmarkBar {

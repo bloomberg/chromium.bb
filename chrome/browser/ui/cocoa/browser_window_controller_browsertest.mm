@@ -32,7 +32,6 @@
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -548,7 +547,6 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 
   // Insert a non-NTP new tab in the foreground.
   AddTabAtIndex(0, GURL("http://google.com"), ui::PAGE_TRANSITION_LINK);
-  ASSERT_FALSE([[controller() toolbarController] isLocationBarFocused]);
   EXPECT_TRUE([fullscreenToolbarController isRevealingToolbar]);
   [fullscreenToolbarController resetToolbarFlag];
 
@@ -559,19 +557,16 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 
   // Insert a NTP new tab in the foreground.
   AddTabAtIndex(0, GURL("about:blank"), ui::PAGE_TRANSITION_LINK);
-  ASSERT_TRUE([[controller() toolbarController] isLocationBarFocused]);
   EXPECT_TRUE([fullscreenToolbarController isRevealingToolbar]);
   [fullscreenToolbarController resetToolbarFlag];
 
   AddTabAtBackground(1, GURL("http://google.com"));
-  ASSERT_TRUE([[controller() toolbarController] isLocationBarFocused]);
   EXPECT_TRUE([fullscreenToolbarController isRevealingToolbar]);
   [fullscreenToolbarController resetToolbarFlag];
 
   // Switch to a non-NTP tab.
   TabStripModel* model = browser()->tab_strip_model();
   model->ActivateTabAt(1, true);
-  ASSERT_FALSE([[controller() toolbarController] isLocationBarFocused]);
   EXPECT_TRUE([fullscreenToolbarController isRevealingToolbar]);
   [fullscreenToolbarController resetToolbarFlag];
 }

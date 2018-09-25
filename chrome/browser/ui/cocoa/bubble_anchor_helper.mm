@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 
 bool HasVisibleLocationBarForBrowser(Browser* browser) {

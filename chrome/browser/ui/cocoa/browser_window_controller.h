@@ -340,11 +340,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // otherwise). (E.g., normal browser windows do, pop-ups do not.)
 - (BOOL)hasToolbar;
 
-// Called to check whether or not this window has a location bar (YES if it
-// does, NO otherwise). (E.g., normal browser windows do, pop-ups may or may
-// not.)
-- (BOOL)hasLocationBar;
-
 // Called to check whether or not this window can have bookmark bar (YES if it
 // does, NO otherwise). (E.g., normal browser windows may, pop-ups may not.)
 - (BOOL)supportsBookmarkBar;
