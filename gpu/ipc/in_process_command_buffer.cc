@@ -89,6 +89,7 @@ namespace {
 
 base::AtomicSequenceNumber g_next_route_id;
 base::AtomicSequenceNumber g_next_image_id;
+base::AtomicSequenceNumber g_next_transfer_buffer_id;
 
 CommandBufferId NextCommandBufferId() {
   return CommandBufferIdFromChannelAndRoute(kInProcessCommandBufferClientId,
@@ -934,7 +935,7 @@ scoped_refptr<Buffer> InProcessCommandBuffer::CreateTransferBuffer(
     size_t size,
     int32_t* id) {
   scoped_refptr<Buffer> buffer = MakeMemoryBuffer(size);
-  *id = ++next_transfer_buffer_id_;
+  *id = g_next_transfer_buffer_id.GetNext() + 1;
   ScheduleGpuTask(
       base::BindOnce(&InProcessCommandBuffer::RegisterTransferBufferOnGpuThread,
                      gpu_thread_weak_ptr_factory_.GetWeakPtr(), *id, buffer));
