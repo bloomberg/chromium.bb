@@ -3413,6 +3413,8 @@ jumbo_split_static_library("browser") {
       "browser_switcher/browser_switcher_service_factory.h",
       "browser_switcher/browser_switcher_sitelist.cc",
       "browser_switcher/browser_switcher_sitelist.h",
+      "browser_switcher/ieem_sitelist_parser.cc",
+      "browser_switcher/ieem_sitelist_parser.h",
     ]
   }
 
