@@ -3663,6 +3663,7 @@ jumbo_split_static_library("ui") {
       "//chrome/browser/ui/webui/reset_password:mojo_bindings",
       "//chrome/common/safe_browsing:proto",
       "//components/safe_browsing:csd_proto",
+      "//components/safe_browsing/password_protection:password_protection_metrics_util",
     ]
   }
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -40,5 +41,6 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(
   view->GetWidget()->GetNativeWindow()->SetProperty(
       aura::client::kCreatedByUserGesture, user_gesture);
 #endif
+  safe_browsing::LogContentsSize(view->GetContentsSize());
   return view;
 }

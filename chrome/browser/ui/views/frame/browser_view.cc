@@ -119,6 +119,7 @@
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/translate/core/browser/language_state.h"
@@ -2085,6 +2086,7 @@ void BrowserView::OnWindowBeginUserBoundsChange() {
 void BrowserView::OnWindowEndUserBoundsChange() {
   if (!interactive_resize_)
     return;
+  safe_browsing::LogContentsSize(GetContentsSize());
   auto now = base::TimeTicks::Now();
   DCHECK(!interactive_resize_->begin_timestamp.is_null());
   UMA_HISTOGRAM_TIMES("BrowserWindow.Resize.Duration",
