@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,6 +31,11 @@
 @property(nonatomic, strong)
     ManualFillAccessoryViewController* manualFillAccessoryViewController;
 
+// The object in charge of interacting with the web view. Used to fill the data
+// in the forms.
+@property(nonatomic, strong)
+    ManualFillInjectionHandler* manualFillInjectionHandler;
+
 // The WebStateList for this instance. Used to instantiate the child
 // coordinators lazily.
 @property(nonatomic, assign) WebStateList* webStateList;
@@ -44,6 +50,7 @@
 @synthesize manualFillAccessoryViewController =
     _manualFillAccessoryViewController;
 @synthesize webStateList = _webStateList;
+@synthesize manualFillInjectionHandler = _manualFillInjectionHandler;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
@@ -55,6 +62,9 @@
                               browserState:browserState];
   if (self) {
     _webStateList = webStateList;
+
+    _manualFillInjectionHandler =
+        [[ManualFillInjectionHandler alloc] initWithWebStateList:webStateList];
 
     _formInputAccessoryViewController =
         [[FormInputAccessoryViewController alloc] init];
@@ -91,7 +101,8 @@
       [[ManualFillPasswordCoordinator alloc]
           initWithBaseViewController:self.baseViewController
                         browserState:self.browserState
-                        webStateList:self.webStateList];
+                        webStateList:self.webStateList
+                    injectionHandler:self.manualFillInjectionHandler];
   [self.formInputAccessoryViewController
       presentView:passwordCoordinator.viewController.view];
   [self.childCoordinators addObject:passwordCoordinator];
