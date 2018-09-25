@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
@@ -103,6 +104,38 @@ bool IsExtensionRequiredByPolicy(const Extension* extension,
   ManagementPolicy* policy = ExtensionSystem::Get(profile)->management_policy();
   return !policy->UserMayModifySettings(extension, nullptr) ||
          policy->MustRemainInstalled(extension, nullptr);
+}
+
+ExtensionContextMenuModel::ContextMenuAction CommandIdToContextMenuAction(
+    int command_id) {
+  using ContextMenuAction = ExtensionContextMenuModel::ContextMenuAction;
+
+  switch (command_id) {
+    case ExtensionContextMenuModel::HOME_PAGE:
+      return ContextMenuAction::kHomePage;
+    case ExtensionContextMenuModel::OPTIONS:
+      return ContextMenuAction::kOptions;
+    case ExtensionContextMenuModel::TOGGLE_VISIBILITY:
+      return ContextMenuAction::kToggleVisibility;
+    case ExtensionContextMenuModel::UNINSTALL:
+      return ContextMenuAction::kUninstall;
+    case ExtensionContextMenuModel::MANAGE_EXTENSIONS:
+      return ContextMenuAction::kManageExtensions;
+    case ExtensionContextMenuModel::INSPECT_POPUP:
+      return ContextMenuAction::kInspectPopup;
+    case ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_CLICK:
+      return ContextMenuAction::kPageAccessRunOnClick;
+    case ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_SITE:
+      return ContextMenuAction::kPageAccessRunOnSite;
+    case ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_ALL_SITES:
+      return ContextMenuAction::kPageAccessRunOnAllSites;
+    case ExtensionContextMenuModel::PAGE_ACCESS_LEARN_MORE:
+      return ContextMenuAction::kPageAccessLearnMore;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return ContextMenuAction::kNoAction;
 }
 
 // A stub for the uninstall dialog.
@@ -241,8 +274,11 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
     DCHECK(extension_items_);
     extension_items_->ExecuteCommand(command_id, GetActiveWebContents(),
                                      nullptr, content::ContextMenuParams());
+    action_taken_ = ContextMenuAction::kCustomCommand;
     return;
   }
+
+  action_taken_ = CommandIdToContextMenuAction(command_id);
 
   switch (command_id) {
     case NAME: {
@@ -284,6 +320,18 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
     default:
      NOTREACHED() << "Unknown option";
      break;
+  }
+}
+
+void ExtensionContextMenuModel::OnMenuWillShow(ui::SimpleMenuModel* menu) {
+  action_taken_ = ContextMenuAction::kNoAction;
+}
+
+void ExtensionContextMenuModel::MenuClosed(ui::SimpleMenuModel* menu) {
+  if (action_taken_) {
+    ContextMenuAction action = *action_taken_;
+    UMA_HISTOGRAM_ENUMERATION("Extensions.ContextMenuAction", action);
+    action_taken_ = base::nullopt;
   }
 }
 
