@@ -58,14 +58,7 @@ void WaitForDomAction::OnCheckElementExists(ActionDelegate* delegate,
                                             int rounds,
                                             ProcessActionCallback callback,
                                             bool result) {
-  bool for_absence = proto_.wait_for_dom().check_for_absence();
-  if (for_absence && !result) {
-    UpdateProcessedAction(true);
-    std::move(callback).Run(std::move(processed_action_proto_));
-    return;
-  }
-
-  if (!for_absence && result) {
+  if (result) {
     UpdateProcessedAction(true);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;

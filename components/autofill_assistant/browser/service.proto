@@ -302,10 +302,6 @@ message WaitForDomProto {
 
   // Fail after waiting this amount of time.
   optional int32 timeout_ms = 2;
-
-  // If true, wait for the given element to be absent, otherwise wait for
-  // existence.
-  optional bool check_for_absence = 3;
 }
 
 // Volatile upload of a portion of the dom for backend analysis, does not store
