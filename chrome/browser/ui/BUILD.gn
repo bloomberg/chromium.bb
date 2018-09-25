@@ -75,8 +75,6 @@ jumbo_split_static_library("ui") {
       "cocoa/browser_window_utils.mm",
       "cocoa/bubble_anchor_helper.h",
       "cocoa/bubble_anchor_helper.mm",
-      "cocoa/bubble_anchor_helper_views.h",
-      "cocoa/bubble_anchor_helper_views.mm",
       "cocoa/bubble_combobox.h",
       "cocoa/bubble_combobox.mm",
       "cocoa/bubble_view.h",
