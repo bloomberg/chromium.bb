@@ -78,13 +78,11 @@ class WebController {
   virtual void FocusElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback);
 
-  // Get the value of all fields in |selector_list| and return the result
-  // through |callback|. The list of returned values will have the same size as
-  // |selectors_list|, and will be the empty string in case of error or empty
-  // value.
-  virtual void GetFieldsValue(
-      const std::vector<std::vector<std::string>>& selectors_list,
-      base::OnceCallback<void(const std::vector<std::string>&)> callback);
+  // Get the value of |selectors| and return the result through |callback|. The
+  // returned value will be the empty string in case of error or empty value.
+  virtual void GetFieldValue(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(const std::string&)> callback);
 
   // Set the |values| of all fields in |selectors_list| and return the result
   // through |callback|. Selectors and values are one on one matched, i.e. the
@@ -176,6 +174,8 @@ class WebController {
       FindElementCallback callback,
       std::unique_ptr<dom::PushNodesByBackendIdsToFrontendResult> result);
   void OnResult(bool result, base::OnceCallback<void(bool)> callback);
+  void OnResult(const std::string& result,
+                base::OnceCallback<void(const std::string&)> callback);
   void OnFindElementForFillingForm(
       const std::string& autofill_data_guid,
       const std::vector<std::string>& selectors,
@@ -204,6 +204,12 @@ class WebController {
       std::unique_ptr<FindElementResult> element_result);
   void OnSelectOption(base::OnceCallback<void(bool)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFindElementForGetFieldValue(
+      base::OnceCallback<void(const std::string&)> callback,
+      std::unique_ptr<FindElementResult> element_result);
+  void OnGetValueAttribute(
+      base::OnceCallback<void(const std::string&)> callback,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.

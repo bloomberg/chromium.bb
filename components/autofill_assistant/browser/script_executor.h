@@ -51,10 +51,9 @@ class ScriptExecutor : public ActionDelegate {
                     base::OnceCallback<void(bool)> callback) override;
   void FocusElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
-  void GetFieldsValue(
-      const std::vector<std::vector<std::string>>& selectors_list,
-      base::OnceCallback<void(const std::vector<std::string>&)> callback)
-      override;
+  void GetFieldValue(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(const std::string&)> callback) override;
   void SetFieldsValue(
       const std::vector<std::vector<std::string>>& selectors_list,
       const std::vector<std::string>& values,

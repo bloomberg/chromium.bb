@@ -67,13 +67,11 @@ class ActionDelegate {
   virtual void FocusElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback) = 0;
 
-  // Get the value of all fields in |selector_list| and return the result
-  // through |callback|. The list of returned values will have the same size as
-  // |selectors_list|, and will be the empty string in case of error or empty
-  // value.
-  virtual void GetFieldsValue(
-      const std::vector<std::vector<std::string>>& selectors_list,
-      base::OnceCallback<void(const std::vector<std::string>&)> callback) = 0;
+  // Get the value of |selectors| and return the result through |callback|. The
+  // returned value will be the empty string in case of error or empty value.
+  virtual void GetFieldValue(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(const std::string&)> callback) = 0;
 
   // Set the |values| of all fields in |selectors_list| and return the result
   // through |callback|. Selectors and values are one on one matched, i.e. the

@@ -30,6 +30,8 @@ class AutofillAction : public Action {
                      ProcessActionCallback callback) override;
 
  private:
+  enum FieldValueStatus { UNKNOWN, EMPTY, NOT_EMPTY };
+
   // Called when the user selected the data.
   void OnDataSelected(ActionDelegate* delegate,
                       ProcessActionCallback callback,
@@ -57,11 +59,12 @@ class AutofillAction : public Action {
                            bool allow_fallback);
 
   // Called when we get the value of the required fields.
-  void OnGetRequiredFieldsValue(const std::string& guid,
-                                ActionDelegate* delegate,
-                                ProcessActionCallback action_callback,
-                                bool allow_fallback,
-                                const std::vector<std::string>& values);
+  void OnGetRequiredFieldValue(const std::string& guid,
+                               ActionDelegate* delegate,
+                               ProcessActionCallback action_callback,
+                               bool allow_fallback,
+                               int index,
+                               const std::string& value);
 
   // Get the value of |address_field| associated to profile |profile|. Return
   // empty string if there is no data available.
@@ -83,6 +86,7 @@ class AutofillAction : public Action {
 
   // True if autofilling a card, otherwise we are autofilling an address.
   bool is_autofill_card_;
+  std::vector<FieldValueStatus> required_fields_value_status_;
   base::WeakPtrFactory<AutofillAction> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAction);
