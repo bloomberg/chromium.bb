@@ -77,7 +77,7 @@ public class FeedNewTabPageTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityWithURL("about:blank");
-        FeedNewTabPage.setInTestMode(true);
+        ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(true));
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mSiteSuggestions = NewTabPageTestUtils.createFakeSiteSuggestions(mTestServer);
@@ -198,11 +198,9 @@ public class FeedNewTabPageTest {
     @MediumTest
     @Feature({"FeedNewTabPage"})
     public void testFeedDisabledByPolicy() throws Exception {
-        // TODO(huayinz): Re-enable the part commented out on this test and replace
-        // sOverrideFeedEnabledForTesting with the real preference once we have a decision for
-        // whether to re-enable the Feed on supervised/enterprise account removed within a session.
-        FeedNewTabPageMediator mediator = mNtp.getMediatorForTesting();
-        mediator.overrideFeedEnabledForTesting(true);
+        final boolean pref = ThreadUtils.runOnUiThreadBlocking(
+                () -> PrefServiceBridge.getInstance().getBoolean(
+                        Pref.NTP_ARTICLES_SECTION_ENABLED));
 
         // Policy is disabled. Verify the NTP root view contains only the Stream view as child.
         ViewGroup rootView = (ViewGroup) mNtp.getView();
@@ -214,7 +212,8 @@ public class FeedNewTabPageTest {
 
         // Simulate that policy is enabled. Verify the NTP root view contains only the view for
         // policy as child.
-        ThreadUtils.runOnUiThreadBlocking(() -> mediator.updateContentForTesting(false));
+        ThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
+                Pref.NTP_ARTICLES_SECTION_ENABLED, false));
         ViewUtils.waitForStableView(rootView);
         Assert.assertNotNull(mNtp.getScrollViewForPolicy());
         Assert.assertNull(mNtp.getStream());
@@ -233,28 +232,27 @@ public class FeedNewTabPageTest {
         Assert.assertEquals(1, rootView2.getChildCount());
         Assert.assertEquals(ntp2.getScrollViewForPolicy(), rootView2.getChildAt(0));
 
-        /*
-        // Simulate that policy is disabled. Verify the NTP root view contains only the Stream view
-        // as child.
+        // Simulate that policy is disabled. Verify the NTP root view is the view for policy. We
+        // don't re-enable the Feed until the next restart.
         ThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_SECTION_ENABLED, true));
         ViewUtils.waitForStableView(rootView2);
-        Assert.assertNotNull(ntp2.getStream());
-        Assert.assertNull(ntp2.getScrollViewForPolicy());
+        Assert.assertNotNull(ntp2.getScrollViewForPolicy());
+        Assert.assertNull(ntp2.getStream());
         Assert.assertEquals(1, rootView2.getChildCount());
-        Assert.assertEquals(ntp2.getStream().getView(), rootView2.getChildAt(0));
+        Assert.assertEquals(ntp2.getScrollViewForPolicy(), rootView2.getChildAt(0));
 
-        // Switch to the old tab. Verify the NTP root view contains only the Stream view as child.
+        // Switch to the old tab. Verify the NTP root view is the view for policy.
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), mTab.getId());
         ViewUtils.waitForStableView(rootView);
-        Assert.assertNotNull(mNtp.getStream());
-        Assert.assertNull(mNtp.getScrollViewForPolicy());
+        Assert.assertNotNull(mNtp.getScrollViewForPolicy());
+        Assert.assertNull(mNtp.getStream());
         Assert.assertEquals(1, rootView.getChildCount());
-        Assert.assertEquals(mNtp.getStream().getView(), rootView.getChildAt(0));
-        */
+        Assert.assertEquals(mNtp.getScrollViewForPolicy(), rootView.getChildAt(0));
 
         // Reset state.
-        mediator.overrideFeedEnabledForTesting(false);
+        ThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
+                Pref.NTP_ARTICLES_SECTION_ENABLED, pref));
     }
 
     private boolean getPreferenceForArticleSectionHeader() throws Exception {

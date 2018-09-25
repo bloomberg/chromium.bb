@@ -35,8 +35,6 @@ import org.chromium.chrome.browser.signin.SigninPromoUtil;
  */
 class FeedNewTabPageMediator
         implements NewTabPageLayout.ScrollDelegate, ContextMenuManager.TouchEnabledDelegate {
-    private static boolean sOverrideFeedEnabledForTesting;
-
     private final FeedNewTabPage mCoordinator;
     private final SnapScrollHelper mSnapScrollHelper;
     private final PrefChangeRegistrar mPrefChangeRegistrar;
@@ -87,13 +85,7 @@ class FeedNewTabPageMediator
 
     /** Update the content based on supervised user or enterprise policy. */
     private void updateContent() {
-        // TODO(huayinz): Replace sOverrideFeedEnabledForTesting with the real preference in test
-        // once we have a decision for whether to re-enable the Feed on supervised/enterprise
-        // account removed within a session.
-        if (!sOverrideFeedEnabledForTesting) {
-            mFeedEnabled =
-                    PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
-        }
+        mFeedEnabled = FeedProcessScopeFactory.isFeedProcessEnabled();
         if ((mFeedEnabled && mCoordinator.getStream() != null)
                 || (!mFeedEnabled && mCoordinator.getScrollViewForPolicy() != null))
             return;
@@ -326,17 +318,6 @@ class FeedNewTabPageMediator
             SigninPromoUtil.setupPromoViewFromCache(mSigninPromoController, mProfileDataCache,
                     mCoordinator.getSigninPromoView(), null);
         }
-    }
-
-    @VisibleForTesting
-    void overrideFeedEnabledForTesting(boolean override) {
-        sOverrideFeedEnabledForTesting = override;
-    }
-
-    @VisibleForTesting
-    void updateContentForTesting(boolean feedEnabled) {
-        mFeedEnabled = feedEnabled;
-        updateContent();
     }
 
     // TODO(huayinz): Return the Model for testing in Coordinator instead once a Model is created.
