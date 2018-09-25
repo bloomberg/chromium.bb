@@ -1319,6 +1319,8 @@ jumbo_split_static_library("browser") {
     "resource_coordinator/browser_child_process_watcher.h",
     "resource_coordinator/chrome_browser_main_extra_parts_resource_coordinator.cc",
     "resource_coordinator/chrome_browser_main_extra_parts_resource_coordinator.h",
+    "resource_coordinator/discard_before_unload_helper.cc",
+    "resource_coordinator/discard_before_unload_helper.h",
     "resource_coordinator/exponential_moving_average.cc",
     "resource_coordinator/exponential_moving_average.h",
     "resource_coordinator/page_signal_receiver.cc",
