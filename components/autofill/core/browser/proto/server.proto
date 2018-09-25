@@ -179,10 +179,15 @@ message AutofillRandomizedFieldMetadata {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 34
+// Next available id: 35
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
+
+  // The secondary form signature is calculated based on field types instead of
+  // names and is used if the primary one is unstable, i.e. the field names
+  // change on every page load.
+  optional fixed64 secondary_form_signature = 34;
 
   // True if the autofill feature was used to fill this form, false otherwise.
   required bool autofill_used = 3;
