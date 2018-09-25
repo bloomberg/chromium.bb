@@ -2043,6 +2043,10 @@ test("browser_tests") {
         "../browser/renderer_context_menu/spelling_options_submenu_observer_browsertest.cc",
       ]
     }
+    if (is_win || (is_linux && !is_chromeos)) {
+      sources +=
+          [ "../browser/browser_switcher/ieem_sitelist_parser_browsertest.cc" ]
+    }
     if (!is_posix || is_chromeos) {
       sources -= [ "../common/time_format_browsertest.cc" ]
     }
