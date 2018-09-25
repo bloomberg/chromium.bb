@@ -289,8 +289,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   ps->PreparePasswordHashData(GetSyncUsername(profile));
 #endif
 
-  password_manager_util::DeleteBlacklistedDuplicates(ps.get(),
-                                                     profile->GetPrefs(), 60);
+  password_manager_util::RemoveUselessCredentials(ps, profile->GetPrefs(), 60);
   auto network_context_getter = base::BindRepeating(
       [](Profile* profile) -> network::mojom::NetworkContext* {
         if (!g_browser_process->profile_manager()->IsValidProfile(profile))

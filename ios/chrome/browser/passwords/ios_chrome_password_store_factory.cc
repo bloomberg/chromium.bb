@@ -99,7 +99,7 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
     LOG(WARNING) << "Could not initialize password store.";
     return nullptr;
   }
-  password_manager_util::DeleteBlacklistedDuplicates(
+  password_manager_util::RemoveUselessCredentials(
       store, ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
       60);
   return store;
