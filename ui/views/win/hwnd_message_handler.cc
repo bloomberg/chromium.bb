@@ -1017,7 +1017,10 @@ void HWNDMessageHandler::OnCaretBoundsChanged(
 }
 
 void HWNDMessageHandler::OnTextInputStateChanged(
-    const ui::TextInputClient* client) {}
+    const ui::TextInputClient* client) {
+  if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
+    OnCaretBoundsChanged(client);
+}
 
 void HWNDMessageHandler::OnInputMethodDestroyed(
     const ui::InputMethod* input_method) {
