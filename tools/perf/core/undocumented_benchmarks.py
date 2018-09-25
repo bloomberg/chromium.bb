@@ -40,8 +40,6 @@ UNDOCUMENTED_BENCHMARKS = {
   'speedometer-future',
   'speedometer2',
   'speedometer2-future',
-  'start_with_url.cold.startup_pages',
-  'start_with_url.warm.startup_pages',
   'startup.mobile',
   'supersize_archive',
   'system_health.webview_startup',
