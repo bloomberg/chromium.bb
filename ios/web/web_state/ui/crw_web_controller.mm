@@ -4358,6 +4358,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
               decisionHandler(WKNavigationActionPolicyCancel);
               if (action.targetFrame.mainFrame) {
                 [_pendingNavigationInfo setCancelled:YES];
+                _webStateImpl->SetIsLoading(false);
               }
             }
           }));
