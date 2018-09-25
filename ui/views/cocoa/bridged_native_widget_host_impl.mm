@@ -5,6 +5,7 @@
 #include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 
 #include "base/mac/foundation_util.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
@@ -145,7 +146,8 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
 
   // Initialize |bridge_ptr_| to point to a bridge created by |factory|.
   views_bridge_mac::mojom::BridgedNativeWidgetHostPtr host_ptr;
-  host_mojo_binding_.Bind(mojo::MakeRequest(&host_ptr));
+  host_mojo_binding_.Bind(mojo::MakeRequest(&host_ptr),
+                          ui::WindowResizeHelperMac::Get()->task_runner());
   bridge_factory_host_->GetFactory()->CreateBridge(
       id_, mojo::MakeRequest(&bridge_ptr_), std::move(host_ptr));
 
