@@ -2639,6 +2639,22 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedByPolicy) {
   EXPECT_TRUE(IsResult(DownloadCheckResult::WHITELISTED_BY_POLICY));
 }
 
+TEST_F(DownloadProtectionServiceTest, CheckOffTheRecordDoesNotSendFeedback) {
+  NiceMockDownloadItem item;
+  EXPECT_FALSE(download_service_->MaybeBeginFeedbackForDownload(
+      profile_->GetOffTheRecordProfile(), &item, DownloadCommands::KEEP));
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       CheckNotExtendedReportedDisabledDoesNotSendFeedback) {
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetBoolean(GetExtendedReportingPrefName(*prefs), false);
+
+  NiceMockDownloadItem item;
+  EXPECT_FALSE(download_service_->MaybeBeginFeedbackForDownload(
+      profile_.get(), &item, DownloadCommands::KEEP));
+}
+
 // ------------ class DownloadProtectionServiceFlagTest ----------------
 class DownloadProtectionServiceFlagTest : public DownloadProtectionServiceTest {
  protected:

@@ -2570,8 +2570,6 @@ jumbo_split_static_library("ui") {
       "views/device_chooser_content_view.cc",
       "views/device_chooser_content_view.h",
       "views/download/download_danger_prompt_views.cc",
-      "views/download/download_feedback_dialog_view.cc",
-      "views/download/download_feedback_dialog_view.h",
       "views/download/download_in_progress_dialog_view.cc",
       "views/download/download_in_progress_dialog_view.h",
       "views/download/download_item_view.cc",
