@@ -33,7 +33,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
 #include "ppapi/buildflags/buildflags.h"
 
@@ -121,7 +120,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest
                                            const std::string& version,
                                            const base::FilePath& path) {
     return ExtensionBuilder("test")
-        .SetManifestKey(manifest_keys::kVersion, version)
+        .SetVersion(version)
         .SetID(id)
         .SetPath(path)
         .SetLocation(Manifest::INTERNAL)
