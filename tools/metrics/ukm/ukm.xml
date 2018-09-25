@@ -547,16 +547,23 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Blink.UpdateTime">
-  <owner>vmpstr@chromium.org</owner>
+  <owner>schenney@chromium.org</owner>
   <summary>
     Metrics that measure various update times in Blink. This includes paint,
-    compositing, and layout update times. The metrics are recorded once per
-    second and at the destruction of the local frame root.
+    compositing, and layout update times. The metrics are recorded once per 30
+    seconds and at the destruction of the local frame root.
   </summary>
   <metric name="Compositing.Average">
     <summary>
       The average time taken by the compositing phase in microseconds in the
       event period.
+    </summary>
+  </metric>
+  <metric name="Compositing.AverageRatio">
+    <summary>
+      The average over frames within the sample window of the ratio of time
+      taken in the compositing phase to the total time for the main frame. An
+      int in the range [0,100].
     </summary>
   </metric>
   <metric name="Compositing.WorstCase">
@@ -565,10 +572,23 @@ be describing additional metrics about the same event.
       the event period.
     </summary>
   </metric>
+  <metric name="Compositing.WorstCaseRatio">
+    <summary>
+      The highest proportion of a frame ever used by the compositing phase
+      within the sample window. An int in the range [0,100].
+    </summary>
+  </metric>
   <metric name="CompositingCommit.Average">
     <summary>
       The average time taken by the compositing commit at the end of the blink
       lifecycle, in microseconds in the event period.
+    </summary>
+  </metric>
+  <metric name="CompositingCommit.AverageRatio">
+    <summary>
+      The average over frames within the sample window of the ratio of time
+      taken by the compositing commit at the end of the blink lifecycle to the
+      total time for the main frame. An int in the range [0,100].
     </summary>
   </metric>
   <metric name="CompositingCommit.WorstCase">
@@ -577,16 +597,49 @@ be describing additional metrics about the same event.
       blink lifecycle, in microseconds in the event period.
     </summary>
   </metric>
+  <metric name="CompositingCommit.WorstCaseRatio">
+    <summary>
+      The highest proportion of a frame ever taken by the compositing commit at
+      the end of the blink lifecycle to the total time for the main frame. An
+      int in the range [0,100].
+    </summary>
+  </metric>
   <metric name="IntersectionObservation.Average">
     <summary>
       The average time taken to compute IntersectionObserver observations in
       microseconds in the event period.
     </summary>
   </metric>
+  <metric name="IntersectionObservation.AverageRatio">
+    <summary>
+      The average over frames within the sample window of the ratio of time
+      taken compute IntersectionObserver observations to the total time for the
+      main frame. An int in the range [0,100].
+    </summary>
+  </metric>
   <metric name="IntersectionObservation.WorstCase">
     <summary>
-      The longest single time taken by to compute IntersectionObserver
-      observations in microseconds in the event period.
+      The longest single time taken to compute IntersectionObserver observations
+      in microseconds in the event period.
+    </summary>
+  </metric>
+  <metric name="IntersectionObservation.WorstCaseRatio">
+    <summary>
+      The highest proportion of a frame ever taken to compute
+      IntersectionObserver observations within the sample window. An int in the
+      range [0,100].
+    </summary>
+  </metric>
+  <metric name="MainFrame.Average">
+    <summary>
+      The average time between a BeginMainFrame and the commit of paint results,
+      in microseconds.
+    </summary>
+  </metric>
+  <metric name="MainFrame.WorstCase">
+    <summary>
+      The longest single time between a BeginMainFrame and the commit of paint
+      results, in microseconds.
     </summary>
   </metric>
   <metric name="Paint.Average">
@@ -595,10 +648,23 @@ be describing additional metrics about the same event.
       period.
     </summary>
   </metric>
+  <metric name="Paint.AverageRatio">
+    <summary>
+      The average over frames within the sample window of the ratio of time
+      taken in the paint phase to the total time for the main frame. An int in
+      the range [0,100].
+    </summary>
+  </metric>
   <metric name="Paint.WorstCase">
     <summary>
       The longest single time taken by the paint phase in microseconds in the
       event period.
+    </summary>
+  </metric>
+  <metric name="Paint.WorstCaseRatio">
+    <summary>
+      The highest proportion of a frame ever used by the paint phase within the
+      sample window. An int in the range [0,100].
     </summary>
   </metric>
   <metric name="PrePaint.Average">
@@ -607,10 +673,23 @@ be describing additional metrics about the same event.
       period.
     </summary>
   </metric>
+  <metric name="PrePaint.AverageRatio">
+    <summary>
+      The average over frames within the sample window of the ratio of time
+      taken in the pre-paint phase to the total time for the main frame. An int
+      in the range [0,100].
+    </summary>
+  </metric>
   <metric name="PrePaint.WorstCase">
     <summary>
       The longest single time taken by the pre-paint phase in microseconds in
       the event period.
+    </summary>
+  </metric>
+  <metric name="PrePaint.WorstCaseRatio">
+    <summary>
+      The highest proportion of a frame ever used by the pre-paint phase within
+      the sample window. An int in the range [0,100].
     </summary>
   </metric>
   <metric name="StyleAndLayout.Average">
@@ -619,10 +698,23 @@ be describing additional metrics about the same event.
       the event period.
     </summary>
   </metric>
+  <metric name="StyleAndLayout.AverageRatio">
+    <summary>
+      The average over frames within the sample window of the ratio of time
+      taken to update style and layout to the total time for the main frame. An
+      int in the range [0,100].
+    </summary>
+  </metric>
   <metric name="StyleAndLayout.WorstCase">
     <summary>
       The longest single time taken by the style and layout phases in
       microseconds in the event period.
+    </summary>
+  </metric>
+  <metric name="StyleAndLayout.WorstCaseRatio">
+    <summary>
+      The highest proportion of a frame ever used to compute style and layout
+      within the sample window. An int in the range [0,100].
     </summary>
   </metric>
 </event>

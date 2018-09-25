@@ -89,6 +89,9 @@ class LayerTreeHostClient {
   virtual void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) = 0;
+  // Record UMA and UKM metrics that require the time from the start of
+  // BeginMainFrame to the Commit, or early out.
+  virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) = 0;
 
  protected:
   virtual ~LayerTreeHostClient() {}
