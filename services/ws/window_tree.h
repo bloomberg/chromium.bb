@@ -208,6 +208,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   bool IsWindowRootOfAnotherClient(aura::Window* window) const;
 
+  // Returns true if |window| has an ancestor that intercepts events.
+  bool DoesAnyAncestorInterceptEvents(ServerWindow* window);
+
   // Called when one of the windows known to the client loses capture.
   // |lost_capture| is the window that had capture.
   void OnCaptureLost(aura::Window* lost_capture);

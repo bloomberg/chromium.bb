@@ -962,6 +962,21 @@ TEST(WindowTreeTest, Capture) {
   EXPECT_TRUE(setup.window_tree_test_helper()->ReleaseCapture(window));
 }
 
+TEST(WindowTreeTest, CaptureDisallowedWhenEmbedderInterceptsEvents) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  aura::Window* window = setup.window_tree_test_helper()->NewWindow();
+  top_level->AddChild(window);
+  window->Show();
+  std::unique_ptr<EmbeddingHelper> embedding_helper =
+      setup.CreateEmbedding(window, mojom::kEmbedFlagEmbedderInterceptsEvents);
+  ASSERT_TRUE(embedding_helper);
+  EXPECT_FALSE(embedding_helper->window_tree_test_helper->SetCapture(window));
+}
+
 TEST(WindowTreeTest, TransferCaptureToClient) {
   EventRecordingWindowDelegate window_delegate;
   WindowServiceTestSetup setup;
@@ -1164,52 +1179,6 @@ TEST(WindowTreeTest, EventsGoToCaptureWindow) {
             drag_event.window_id);
   EXPECT_EQ("POINTER_MOVED -4,-4",
             LocatedEventToEventTypeAndLocation(drag_event.event.get()));
-}
-
-TEST(WindowTreeTest, InterceptEventsOnEmbeddedWindowWithCapture) {
-  EventRecordingWindowDelegate window_delegate;
-  WindowServiceTestSetup setup;
-  aura::Window* window = setup.window_tree_test_helper()->NewWindow();
-  ASSERT_TRUE(window);
-  setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
-  aura::Window* top_level =
-      setup.window_tree_test_helper()->NewTopLevelWindow();
-  ASSERT_TRUE(top_level);
-  top_level->AddChild(window);
-  top_level->Show();
-  window->Show();
-
-  // Create an embedding, and a new window in the embedding.
-  std::unique_ptr<EmbeddingHelper> embedding_helper =
-      setup.CreateEmbedding(window, mojom::kEmbedFlagEmbedderInterceptsEvents);
-  ASSERT_TRUE(embedding_helper);
-  aura::Window* window_in_child =
-      embedding_helper->window_tree_test_helper->NewWindow();
-  ASSERT_TRUE(window_in_child);
-  window_in_child->Show();
-  window->AddChild(window_in_child);
-  EXPECT_TRUE(
-      embedding_helper->window_tree_test_helper->SetCapture(window_in_child));
-
-  // Do an initial move (which generates some additional events) and clear
-  // everything out.
-  ui::test::EventGenerator event_generator(setup.root());
-  event_generator.MoveMouseTo(5, 5);
-  setup.window_tree_client()->ClearInputEvents();
-  window_delegate.ClearEvents();
-  embedding_helper->window_tree_client.ClearInputEvents();
-
-  // Move the mouse. Even though the window in the embedding has capture, the
-  // event should go to the parent client (setup.window_tree_client()), because
-  // the embedding was created such that the embedder (parent) intercepts the
-  // events.
-  event_generator.MoveMouseTo(6, 6);
-  EXPECT_TRUE(window_delegate.events().empty());
-  EXPECT_EQ("POINTER_MOVED",
-            EventToEventType(
-                setup.window_tree_client()->PopInputEvent().event.get()));
-  EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
-  EXPECT_TRUE(embedding_helper->window_tree_client.input_events().empty());
 }
 
 TEST(WindowTreeTest, PointerDownResetOnCaptureChange) {

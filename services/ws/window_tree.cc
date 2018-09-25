@@ -451,6 +451,15 @@ bool WindowTree::IsWindowRootOfAnotherClient(aura::Window* window) const {
          server_window->embedded_window_tree() != this;
 }
 
+bool WindowTree::DoesAnyAncestorInterceptEvents(ServerWindow* window) {
+  if (window->embedding() && window->embedding()->embedding_tree() != this &&
+      window->embedding()->embedding_tree_intercepts_events()) {
+    return true;
+  }
+  ServerWindow* parent = ServerWindow::GetMayBeNull(window->window()->parent());
+  return parent && DoesAnyAncestorInterceptEvents(parent);
+}
+
 void WindowTree::OnCaptureLost(aura::Window* lost_capture) {
   DCHECK(IsWindowKnown(lost_capture));
   window_tree_client_->OnCaptureChanged(kInvalidTransportId,
@@ -771,6 +780,14 @@ bool WindowTree::SetCaptureImpl(const ClientWindowId& window_id) {
   }
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+
+  if (DoesAnyAncestorInterceptEvents(server_window)) {
+    // If an ancestor is intercepting events, than the descendants are not
+    // allowed to set capture. This is primarily to prevent renderers from
+    // setting capture.
+    DVLOG(1) << "SetCapture failed (ancestor intercepts events)";
+    return false;
+  }
 
   wm::CaptureController* capture_controller = wm::CaptureController::Get();
   DCHECK(capture_controller);
