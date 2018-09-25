@@ -22,7 +22,7 @@
    * Register our event handlers.
    */
   function initialize() {
-    $('omnibox-input-form').addEventListener('submit', startOmniboxQuery, false);
+    $('input-text').addEventListener('input', startOmniboxQuery, false);
     $('prevent-inline-autocomplete')
         .addEventListener('change', startOmniboxQuery);
     $('prefer-keyword').addEventListener('change', startOmniboxQuery);
