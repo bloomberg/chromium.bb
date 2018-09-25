@@ -838,9 +838,9 @@ uint32_t RenderWidgetHostViewAura::GetCaptureSequenceNumber() const {
   return latest_capture_sequence_number_;
 }
 
-bool RenderWidgetHostViewAura::DoBrowserControlsShrinkBlinkSize() const {
-  return !top_controls_gesture_scroll_in_progress_ &&
-         top_controls_shown_ratio_ > 0;
+bool RenderWidgetHostViewAura::DoBrowserControlsShrinkRendererSize() const {
+  return host()->delegate() &&
+         host()->delegate()->DoBrowserControlsShrinkRendererSize();
 }
 
 float RenderWidgetHostViewAura::GetTopControlsHeight() const {
@@ -996,11 +996,9 @@ void RenderWidgetHostViewAura::GestureEventAck(
   const blink::WebInputEvent::Type event_type = event.GetType();
   if (event_type == blink::WebGestureEvent::kGestureScrollBegin ||
       event_type == blink::WebGestureEvent::kGestureScrollEnd) {
-    top_controls_gesture_scroll_in_progress_ =
-        event_type == blink::WebGestureEvent::kGestureScrollBegin;
     if (host()->delegate()) {
       host()->delegate()->SetTopControlsGestureScrollInProgress(
-          top_controls_gesture_scroll_in_progress_);
+          event_type == blink::WebGestureEvent::kGestureScrollBegin);
     }
   }
 
@@ -2094,9 +2092,10 @@ void RenderWidgetHostViewAura::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
   DCHECK(window_);
 
-  top_controls_shown_ratio_ = metadata.top_controls_shown_ratio;
-  if (host()->delegate())
-    host()->delegate()->SetTopControlsShownRatio(top_controls_shown_ratio_);
+  if (host()->delegate()) {
+    host()->delegate()->SetTopControlsShownRatio(
+        metadata.top_controls_shown_ratio);
+  }
 
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                               metadata.local_surface_id);

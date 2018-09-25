@@ -76,6 +76,11 @@ void TestBrowserWindow::SetTopControlsShownRatio(
     content::WebContents* web_contents,
     float ratio) {}
 
+bool TestBrowserWindow::DoBrowserControlsShrinkRendererSize(
+    const content::WebContents* contents) const {
+  return false;
+}
+
 int TestBrowserWindow::GetTopControlsHeight() const {
   return 0;
 }

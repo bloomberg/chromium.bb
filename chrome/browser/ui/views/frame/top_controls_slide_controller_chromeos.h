@@ -48,10 +48,12 @@ class TopControlsSlideControllerChromeOS
   float GetShownRatio() const override;
   void SetShownRatio(content::WebContents* contents, float ratio) override;
   void OnBrowserFullscreenStateWillChange(bool new_fullscreen_state) override;
+  bool DoBrowserControlsShrinkRendererSize(
+      const content::WebContents* contents) const override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
 
   // TabletModeClientObserver:
-  void OnTabletModeToggled(bool enabled) override;
+  void OnTabletModeToggled(bool tablet_mode_enabled) override;
 
   // TabStripModelObserver:
   // TODO(afakhry): The below overrides are deprecated, but we have to keep
@@ -79,6 +81,8 @@ class TopControlsSlideControllerChromeOS
                const content::NotificationDetails& details) override;
 
  private:
+  void OnEnabledStateChanged(bool new_state);
+
   // Refreshes the status of the browser top controls.
   void Refresh();
 
@@ -94,10 +98,9 @@ class TopControlsSlideControllerChromeOS
   // BrowserView is laid out into its final bounds.
   void OnEndSliding();
 
-  // Shows the top-chrome completely and updates the renderer of |contents| so
-  // that the values of the |shown_ratio_| and the renderer's
-  // |LayerTreeImpl::top_controls_shown_ratio_| are synchronized.
-  void ShowTopChrome(content::WebContents* contents, bool animate);
+  // Updates whether the currently active tab has shrunk its renderer's viewport
+  // size.
+  void UpdateDoBrowserControlsShrinkRendererSize();
 
   BrowserView* browser_view_;
 
@@ -105,13 +108,20 @@ class TopControlsSlideControllerChromeOS
   // controls that is currently applied.
   float shown_ratio_ = 1.f;
 
-  // The following two values are cached here since they need to be queried
-  // whenever we get an update from the renderer to adjust the shown ratio.
-  // These updates result from touch gesture scrolls, so we need to minimize the
-  // work we do to get these values, so sliding the browser top controls feels
-  // smooth.
-  bool tablet_mode_enabled_;
-  bool browser_frame_is_fullscreen_;
+  // Indicates whether sliding the top controls with gesture scrolls is
+  // currently enabled, which is true when tablet mode is enabled and the
+  // browser window is not full-screened. This value is cached here since it
+  // needs to be queried whenever we get an update from the renderer to adjust
+  // the shown ratio. These updates result from touch gesture scrolls, so we
+  // need to minimize the work we do to get these values, so sliding the browser
+  // top controls feels smooth.
+  bool is_enabled_ = false;
+
+  // Whether we need to wait for the renderer to set the shown ratio to 1.f
+  // before we toggle |is_enabled_| to false. It is used to postpone disabling
+  // top-chrome sliding until the renderer responds so that we can make sure
+  // both the renderer and the browser are both synchronized.
+  bool defer_disabling_ = false;
 
   // Indicates whether a touch gesture scrolling is in progress. This value is
   // updated by the renderer when it receives a GestureEventAck of type either

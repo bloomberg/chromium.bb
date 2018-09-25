@@ -514,9 +514,9 @@ gfx::Size RenderWidgetHostViewAndroid::GetCompositorViewportPixelSize() const {
   return view_.GetPhysicalBackingSize();
 }
 
-bool RenderWidgetHostViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
+bool RenderWidgetHostViewAndroid::DoBrowserControlsShrinkRendererSize() const {
   auto* delegate_view = GetRenderViewHostDelegateView();
-  return delegate_view ? delegate_view->DoBrowserControlsShrinkBlinkSize()
+  return delegate_view ? delegate_view->DoBrowserControlsShrinkRendererSize()
                        : false;
 }
 
@@ -1566,7 +1566,7 @@ void RenderWidgetHostViewAndroid::RequestDisallowInterceptTouchEvent() {
 void RenderWidgetHostViewAndroid::TransformPointToRootSurface(
     gfx::PointF* point) {
   *point += gfx::Vector2d(
-      0, DoBrowserControlsShrinkBlinkSize() ? GetTopControlsHeight() : 0);
+      0, DoBrowserControlsShrinkRendererSize() ? GetTopControlsHeight() : 0);
 }
 
 // TODO(jrg): Find out the implications and answer correctly here,

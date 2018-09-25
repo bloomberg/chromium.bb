@@ -563,7 +563,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // needed by embedder because it's always accompanied by view size change.
   virtual int GetTopControlsHeight() const;
   virtual int GetBottomControlsHeight() const;
-  virtual bool DoBrowserControlsShrinkBlinkSize() const;
+  virtual bool DoBrowserControlsShrinkRendererSize(
+      const WebContents* web_contents) const;
 
   // Propagates to the browser that gesture scrolling has changed state. This is
   // used by the browser to assist in controlling the behavior of sliding the

@@ -246,6 +246,12 @@ void BrowserWindowCocoa::SetTopControlsShownRatio(
   NOTIMPLEMENTED();
 }
 
+bool BrowserWindowCocoa::DoBrowserControlsShrinkRendererSize(
+    const content::WebContents* contents) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 int BrowserWindowCocoa::GetTopControlsHeight() const {
   NOTIMPLEMENTED();
   return 0;

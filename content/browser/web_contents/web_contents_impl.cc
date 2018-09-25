@@ -2104,6 +2104,10 @@ void WebContentsImpl::SetTopControlsShownRatio(float ratio) {
     delegate_->SetTopControlsShownRatio(this, ratio);
 }
 
+bool WebContentsImpl::DoBrowserControlsShrinkRendererSize() const {
+  return delegate_ && delegate_->DoBrowserControlsShrinkRendererSize(this);
+}
+
 int WebContentsImpl::GetTopControlsHeight() const {
   return delegate_ ? delegate_->GetTopControlsHeight() : 0;
 }

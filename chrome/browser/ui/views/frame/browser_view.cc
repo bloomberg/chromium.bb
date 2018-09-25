@@ -757,6 +757,13 @@ void BrowserView::SetTopControlsShownRatio(content::WebContents* web_contents,
     top_controls_slide_controller_->SetShownRatio(web_contents, ratio);
 }
 
+bool BrowserView::DoBrowserControlsShrinkRendererSize(
+    const content::WebContents* contents) const {
+  return top_controls_slide_controller_ &&
+         top_controls_slide_controller_->DoBrowserControlsShrinkRendererSize(
+             contents);
+}
+
 int BrowserView::GetTopControlsHeight() const {
   if (top_controls_slide_controller_ &&
       top_controls_slide_controller_->IsEnabled()) {

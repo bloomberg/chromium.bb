@@ -1958,6 +1958,11 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
 
+  metadata.top_controls_height =
+      browser_controls_offset_manager_->TopControlsHeight();
+  metadata.top_controls_shown_ratio =
+      browser_controls_offset_manager_->TopControlsShownRatio();
+
 #if defined(OS_ANDROID)
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
   metadata.root_layer_size = active_tree_->ScrollableSize();
@@ -1967,10 +1972,6 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
         !outer_viewport_scroll_node->user_scrollable_vertical;
   }
 
-  metadata.top_controls_height =
-      browser_controls_offset_manager_->TopControlsHeight();
-  metadata.top_controls_shown_ratio =
-      browser_controls_offset_manager_->TopControlsShownRatio();
   metadata.bottom_controls_height =
       browser_controls_offset_manager_->BottomControlsHeight();
   metadata.bottom_controls_shown_ratio =

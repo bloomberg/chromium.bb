@@ -54,6 +54,8 @@ class BrowserWindowCocoa
   gfx::NativeWindow GetNativeWindow() const override;
   void SetTopControlsShownRatio(content::WebContents* web_contents,
                                 float ratio) override;
+  bool DoBrowserControlsShrinkRendererSize(
+      const content::WebContents* contents) const override;
   int GetTopControlsHeight() const override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   StatusBubble* GetStatusBubble() override;

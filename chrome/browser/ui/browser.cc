@@ -1221,6 +1221,11 @@ int Browser::GetTopControlsHeight() const {
   return window_->GetTopControlsHeight();
 }
 
+bool Browser::DoBrowserControlsShrinkRendererSize(
+    const content::WebContents* contents) const {
+  return window_->DoBrowserControlsShrinkRendererSize(contents);
+}
+
 void Browser::SetTopControlsGestureScrollInProgress(bool in_progress) {
   window_->SetTopControlsGestureScrollInProgress(in_progress);
 }

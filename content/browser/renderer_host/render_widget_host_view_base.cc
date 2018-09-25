@@ -125,7 +125,7 @@ gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() const {
                                 GetDeviceScaleFactor());
 }
 
-bool RenderWidgetHostViewBase::DoBrowserControlsShrinkBlinkSize() const {
+bool RenderWidgetHostViewBase::DoBrowserControlsShrinkRendererSize() const {
   return false;
 }
 
