@@ -355,7 +355,7 @@ AutomationPredicate.container = function(node) {
 AutomationPredicate.structuralContainer = AutomationPredicate.roles([
   Role.ALERT_DIALOG, Role.CLIENT, Role.DIALOG, Role.ROOT_WEB_AREA,
   Role.WEB_VIEW, Role.WINDOW, Role.EMBEDDED_OBJECT, Role.IFRAME,
-  Role.IFRAME_PRESENTATIONAL, Role.UNKNOWN
+  Role.IFRAME_PRESENTATIONAL, Role.IGNORED, Role.UNKNOWN
 ]);
 
 /**
