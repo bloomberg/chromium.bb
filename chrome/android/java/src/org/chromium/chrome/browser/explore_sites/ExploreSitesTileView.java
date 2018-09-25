@@ -30,9 +30,8 @@ public class ExploreSitesTileView extends TileWithTextView {
     }
 
     public void initialize(ExploreSitesSite site) {
-        super.initialize(site.getTitle(), site.getUrl(), /* showOfflineBadge = */ false,
-                getDrawableForBitmap(site.getIcon(), site.getTitle()), TITLE_LINES,
-                TileWithTextView.Style.MODERN);
+        super.initialize(site.getTitle(), /* showOfflineBadge = */ false,
+                getDrawableForBitmap(site.getIcon(), site.getTitle()), TITLE_LINES);
     }
 
     public void updateIcon(Bitmap iconImage, String text) {

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.explore_sites;
 import android.graphics.Bitmap;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.UrlConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,10 @@ public class ExploreSitesCategory {
 
     public List<ExploreSitesSite> getSites() {
         return mSites;
+    }
+
+    public String getUrl() {
+        return UrlConstants.EXPLORE_URL + "#" + getId();
     }
 
     // Creates a new category and appends to the given list. Also returns the created category to
