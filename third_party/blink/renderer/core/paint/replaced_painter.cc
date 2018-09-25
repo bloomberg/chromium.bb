@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
