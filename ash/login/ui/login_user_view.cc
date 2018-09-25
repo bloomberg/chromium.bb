@@ -323,6 +323,10 @@ LoginBubble* LoginUserView::TestApi::menu() const {
   return view_->menu_.get();
 }
 
+views::View* LoginUserView::TestApi::user_domain() const {
+  return view_->user_domain_;
+}
+
 bool LoginUserView::TestApi::is_opaque() const {
   return view_->is_opaque_;
 }
