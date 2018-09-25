@@ -30,11 +30,8 @@ void ProcessCoordinationUnitImpl::AddFrame(const CoordinationUnitID& cu_id) {
   DCHECK(cu_id.type == CoordinationUnitType::kFrame);
   auto* frame_cu =
       FrameCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
-  if (!frame_cu)
-    return;
-  if (AddFrame(frame_cu)) {
-    frame_cu->AddProcessCoordinationUnit(this);
-  }
+  if (frame_cu)
+    AddFrame(frame_cu);
 }
 
 void ProcessCoordinationUnitImpl::SetCPUUsage(double cpu_usage) {
@@ -101,17 +98,17 @@ void ProcessCoordinationUnitImpl::OnPropertyChanged(
     observer.OnProcessPropertyChanged(this, property_type, value);
 }
 
-bool ProcessCoordinationUnitImpl::AddFrame(
+void ProcessCoordinationUnitImpl::AddFrame(
     FrameCoordinationUnitImpl* frame_cu) {
-  bool success = frame_coordination_units_.count(frame_cu)
-                     ? false
-                     : frame_coordination_units_.insert(frame_cu).second;
-  return success;
+  const bool inserted = frame_coordination_units_.insert(frame_cu).second;
+  if (inserted)
+    frame_cu->AddProcessCoordinationUnit(this);
 }
 
-bool ProcessCoordinationUnitImpl::RemoveFrame(
+void ProcessCoordinationUnitImpl::RemoveFrame(
     FrameCoordinationUnitImpl* frame_cu) {
-  return frame_coordination_units_.erase(frame_cu) > 0;
+  DCHECK(base::ContainsKey(frame_coordination_units_, frame_cu));
+  frame_coordination_units_.erase(frame_cu);
 }
 
 }  // namespace resource_coordinator

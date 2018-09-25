@@ -61,8 +61,8 @@ class ProcessCoordinationUnitImpl
   void OnPropertyChanged(mojom::PropertyType property_type,
                          int64_t value) override;
 
-  bool AddFrame(FrameCoordinationUnitImpl* frame_cu);
-  bool RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
+  void AddFrame(FrameCoordinationUnitImpl* frame_cu);
+  void RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
 
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;
