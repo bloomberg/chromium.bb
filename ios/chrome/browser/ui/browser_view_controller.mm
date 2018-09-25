@@ -202,7 +202,6 @@
 #import "ios/chrome/browser/ui/toolbar/adaptive/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/toolbar_coordinator_adaptor.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
-#import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"

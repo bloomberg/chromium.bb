@@ -176,7 +176,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/tab_grid:egtest_support",
     "//ios/chrome/browser/ui/toolbar/buttons",
-    "//ios/chrome/browser/ui/toolbar/legacy",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/chrome/test/app:test_support",

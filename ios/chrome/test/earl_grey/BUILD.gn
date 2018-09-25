@@ -254,7 +254,6 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/toolbar/buttons",
-    "//ios/chrome/browser/ui/toolbar/legacy",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/browser/ui/tools_menu/public",
