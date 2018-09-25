@@ -54,6 +54,10 @@ const char* const kSelectOptionScript =
       return true;
     })";
 
+// Javascript code to retrieve the 'value' attribute of a node.
+const char* const kGetValueAttributeScript =
+    "function () { return this.value; }";
+
 }  // namespace
 
 // static
@@ -390,6 +394,13 @@ void WebController::OnResult(bool result,
   std::move(callback).Run(result);
 }
 
+void WebController::OnResult(
+    const std::string& result,
+    base::OnceCallback<void(const std::string&)> callback) {
+  devtools_client_->GetDOM()->Disable();
+  std::move(callback).Run(result);
+}
+
 void WebController::OnFindElementForFocusElement(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<FindElementResult> element_result) {
@@ -574,15 +585,51 @@ void WebController::FocusElement(const std::vector<std::string>& selectors,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebController::GetFieldsValue(
-    const std::vector<std::vector<std::string>>& selectors_list,
-    base::OnceCallback<void(const std::vector<std::string>&)> callback) {
-  // TODO(crbug.com/806868): Implement get fields value operation.
-  std::vector<std::string> values;
-  for (size_t i = 0; i < selectors_list.size(); i++) {
-    values.emplace_back("");
+void WebController::GetFieldValue(
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(const std::string&)> callback) {
+  FindElement(
+      selectors,
+      base::BindOnce(&WebController::OnFindElementForGetFieldValue,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnFindElementForGetFieldValue(
+    base::OnceCallback<void(const std::string&)> callback,
+    std::unique_ptr<FindElementResult> element_result) {
+  const std::string object_id = element_result->object_id;
+  if (object_id.empty()) {
+    OnResult("", std::move(callback));
+    return;
   }
-  std::move(callback).Run(values);
+
+  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
+  argument.emplace_back(
+      runtime::CallArgument::Builder().SetObjectId(object_id).Build());
+  devtools_client_->GetRuntime()->Enable();
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetArguments(std::move(argument))
+          .SetFunctionDeclaration(std::string(kGetValueAttributeScript))
+          .SetReturnByValue(true)
+          .Build(),
+      base::BindOnce(&WebController::OnGetValueAttribute,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnGetValueAttribute(
+    base::OnceCallback<void(const std::string&)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  devtools_client_->GetRuntime()->Disable();
+  if (!result || result->HasExceptionDetails()) {
+    OnResult("", std::move(callback));
+    return;
+  }
+
+  // Read the result returned from Javascript code.
+  DCHECK(result->GetResult()->GetValue()->is_string());
+  OnResult(result->GetResult()->GetValue()->GetString(), std::move(callback));
 }
 
 void WebController::SetFieldsValue(

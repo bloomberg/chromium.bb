@@ -175,33 +175,42 @@ void AutofillAction::CheckRequiredFields(const std::string& guid,
     return;
   }
 
-  std::vector<std::vector<std::string>> selectors_list;
-  for (const auto& required_address_field :
-       proto_.use_address().required_fields()) {
-    selectors_list.emplace_back(std::vector<std::string>());
+  int required_fields_size = proto_.use_address().required_fields_size();
+  required_fields_value_status_.clear();
+  required_fields_value_status_.resize(required_fields_size, UNKNOWN);
+  for (int i = 0; i < required_fields_size; i++) {
+    const auto& required_address_field =
+        proto_.use_address().required_fields(i);
     DCHECK(required_address_field.has_address_field());
     DCHECK(!required_address_field.element().selectors().empty());
+    std::vector<std::string> selectors;
     for (const auto& selector : required_address_field.element().selectors()) {
-      selectors_list.back().emplace_back(selector);
+      selectors.emplace_back(selector);
     }
+    delegate->GetFieldValue(
+        selectors,
+        base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
+                       weak_ptr_factory_.GetWeakPtr(), guid, delegate,
+                       std::move(action_callback), allow_fallback, i));
   }
-
-  delegate->GetFieldsValue(
-      selectors_list,
-      base::BindOnce(&AutofillAction::OnGetRequiredFieldsValue,
-                     weak_ptr_factory_.GetWeakPtr(), guid, delegate,
-                     std::move(action_callback), allow_fallback));
 }
 
-void AutofillAction::OnGetRequiredFieldsValue(
+void AutofillAction::OnGetRequiredFieldValue(
     const std::string& guid,
     ActionDelegate* delegate,
     ProcessActionCallback action_callback,
     bool allow_fallback,
-    const std::vector<std::string>& values) {
+    int index,
+    const std::string& value) {
   DCHECK(!is_autofill_card_);
-  DCHECK_EQ(proto_.use_address().required_fields_size(),
-            static_cast<int>(values.size()));
+  required_fields_value_status_[index] = value.empty() ? EMPTY : NOT_EMPTY;
+
+  // Wait for the value of all required fields.
+  for (const auto& status : required_fields_value_status_) {
+    if (status == UNKNOWN) {
+      return;
+    }
+  }
 
   const autofill::AutofillProfile* profile = delegate->GetAutofillProfile(guid);
   DCHECK(profile);
@@ -211,8 +220,8 @@ void AutofillAction::OnGetRequiredFieldsValue(
   bool validation_successful = true;
   std::vector<std::vector<std::string>> failed_selectors;
   std::vector<std::string> fallback_values;
-  for (size_t i = 0; i < values.size(); i++) {
-    if (values[i].empty()) {
+  for (size_t i = 0; i < required_fields_value_status_.size(); i++) {
+    if (required_fields_value_status_[i] == EMPTY) {
       if (!allow_fallback) {
         // Validation failed and we don't want to try the fallback, so we fail
         // the action.

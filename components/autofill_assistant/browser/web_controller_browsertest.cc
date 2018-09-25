@@ -162,6 +162,24 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     ASSERT_FALSE(result->object_id.empty());
   }
 
+  std::string GetFieldValue(const std::vector<std::string>& selectors) {
+    base::RunLoop run_loop;
+    std::string result;
+    web_controller_->GetFieldValue(
+        selectors, base::BindOnce(&WebControllerBrowserTest::OnGetFieldValue,
+                                  base::Unretained(this),
+                                  run_loop.QuitClosure(), &result));
+    run_loop.Run();
+    return result;
+  }
+
+  void OnGetFieldValue(const base::Closure& done_callback,
+                       std::string* value_output,
+                       const std::string& value) {
+    *value_output = value;
+    std::move(done_callback).Run();
+  }
+
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   std::unique_ptr<WebController> web_controller_;
@@ -344,6 +362,16 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, BuildNodeTree) {
 
   EXPECT_EQ(node.type(), NodeProto::ELEMENT);
   EXPECT_EQ(node.value(), "BODY");
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetFieldValue) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#input");
+  EXPECT_EQ("helloworld", GetFieldValue(selectors));
+
+  selectors.clear();
+  selectors.emplace_back("#invalid_selector");
+  EXPECT_EQ("", GetFieldValue(selectors));
 }
 
 }  // namespace
