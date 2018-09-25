@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_marquee_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
@@ -21,6 +22,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_column_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fieldset_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_flex_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
@@ -52,6 +54,8 @@ inline LayoutMultiColumnFlowThread* GetFlowThread(const LayoutBox& box) {
     const ComputedStyle& style = node.Style();                               \
     if (node.GetLayoutBox()->IsLayoutNGFlexibleBox())                        \
       return NGFlexLayoutAlgorithm(node, space, token).func args;            \
+    if (node.GetLayoutBox()->IsLayoutNGFieldset())                           \
+      return NGFieldsetLayoutAlgorithm(node, space, token).func args;        \
     /* If there's a legacy layout box, we can only do block fragmentation if \
      * we would have done block fragmentation with the legacy engine.        \
      * Otherwise writing data back into the legacy tree will fail. Look for  \
@@ -433,7 +437,7 @@ NGBoxStrut NGBlockNode::GetScrollbarSizes() const {
 }
 
 NGLayoutInputNode NGBlockNode::NextSibling() const {
-  LayoutObject* next_sibling = box_->NextSibling();
+  LayoutObject* next_sibling = GetLayoutObjectForNextSiblingNode(box_);
   if (next_sibling) {
     DCHECK(!next_sibling->IsInline());
     return NGBlockNode(ToLayoutBox(next_sibling));
@@ -448,6 +452,21 @@ NGLayoutInputNode NGBlockNode::FirstChild() const {
     return nullptr;
   if (AreNGBlockFlowChildrenInline(block))
     return NGInlineNode(ToLayoutBlockFlow(block));
+  return NGBlockNode(ToLayoutBox(child));
+}
+
+NGBlockNode NGBlockNode::GetRenderedLegend() const {
+  if (!IsFieldsetContainer())
+    return nullptr;
+  return NGBlockNode(LayoutFieldset::FindInFlowLegend(*ToLayoutBlock(box_)));
+}
+
+NGBlockNode NGBlockNode::GetFieldsetContent() const {
+  if (!IsFieldsetContainer())
+    return nullptr;
+  auto* child = GetLayoutObjectForFirstChildNode(ToLayoutBlock(box_));
+  if (!child)
+    return nullptr;
   return NGBlockNode(ToLayoutBox(child));
 }
 

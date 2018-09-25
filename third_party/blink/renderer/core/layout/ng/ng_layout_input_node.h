@@ -73,6 +73,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsListMarker() const;
   bool ListMarkerOccupiesWholeLine() const;
   bool IsTableCell() const;
+  bool IsFieldsetContainer() const;
   bool IsAnonymousBlock() const;
 
   // If the node is a quirky container for margin collapsing, see:

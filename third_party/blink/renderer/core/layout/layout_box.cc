@@ -5204,16 +5204,6 @@ bool LayoutBox::IsCustomItemShrinkToFit() const {
   return ToLayoutCustom(Parent())->Phase() == LayoutCustomPhase::kCustom;
 }
 
-bool LayoutBox::IsRenderedLegend() const {
-  if (!IsHTMLLegendElement(GetNode()))
-    return false;
-  if (IsFloatingOrOutOfFlowPositioned())
-    return false;
-  const auto* parent = Parent();
-  return parent && parent->IsFieldset() &&
-         ToLayoutFieldset(parent)->FindInFlowLegend() == this;
-}
-
 void LayoutBox::AddVisualEffectOverflow() {
   if (!StyleRef().HasVisualOverflowingEffect())
     return;

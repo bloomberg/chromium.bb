@@ -107,6 +107,10 @@ bool NGLayoutInputNode::IsTableCell() const {
   return IsBlock() && box_->IsTableCell();
 }
 
+bool NGLayoutInputNode::IsFieldsetContainer() const {
+  return IsBlock() && box_->IsLayoutNGFieldset();
+}
+
 bool NGLayoutInputNode::IsAnonymousBlock() const {
   return box_->IsAnonymousBlock();
 }

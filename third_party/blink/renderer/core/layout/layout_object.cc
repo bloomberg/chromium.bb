@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
@@ -483,6 +484,23 @@ bool LayoutObject::HasClipRelatedProperty() const {
   if (IsBox() && ToLayoutBox(this)->HasControlClip())
     return true;
   return false;
+}
+
+bool LayoutObject::IsRenderedLegend() const {
+  if (!IsBox() || !IsHTMLLegendElement(GetNode()))
+    return false;
+  if (IsFloatingOrOutOfFlowPositioned())
+    return false;
+  const auto* parent = Parent();
+  if (RuntimeEnabledFeatures::LayoutNGFieldsetEnabled()) {
+    // If there is a rendered legend, it will be found inside the anonymous
+    // fieldset wrapper.
+    if (parent->IsAnonymous() && parent->Parent()->IsLayoutNGFieldset())
+      parent = parent->Parent();
+  }
+  return parent && parent->IsLayoutBlock() &&
+         IsHTMLFieldSetElement(parent->GetNode()) &&
+         LayoutFieldset::FindInFlowLegend(*ToLayoutBlock(parent)) == this;
 }
 
 LayoutObject* LayoutObject::NextInPreOrderAfterChildren() const {
