@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
+#include "third_party/blink/renderer/core/html/html_dimension.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/lazy_load_image_observer.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -60,6 +61,47 @@
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
+
+namespace {
+
+bool GetAbsoluteDimensionValue(const AtomicString& attribute_value,
+                               double* value) {
+  HTMLDimension dimension;
+  if (ParseDimensionValue(attribute_value, dimension) &&
+      dimension.IsAbsolute()) {
+    *value = dimension.Value();
+    return true;
+  }
+  return false;
+}
+
+bool IsLazyLoadingImageAllowed(const LocalFrame* frame,
+                               HTMLImageElement* html_image) {
+  // Minimum width or height attribute of the image to start lazyloading.
+  const unsigned kMinDimensionToLazyLoad = 10;
+
+  // Do not lazyload image elements created from javascript.
+  if (!html_image->ElementCreatedByParser())
+    return false;
+
+  if (EqualIgnoringASCIICase(
+          html_image->FastGetAttribute(HTMLNames::lazyloadAttr), "off"))
+    return false;
+
+  // Avoid lazyloading if width and height attributes are small. This
+  // heuristic helps avoid double fetching tracking pixels.
+  double width, height;
+  if (GetAbsoluteDimensionValue(html_image->getAttribute(HTMLNames::widthAttr),
+                                &width) &&
+      GetAbsoluteDimensionValue(html_image->getAttribute(HTMLNames::heightAttr),
+                                &height) &&
+      width <= kMinDimensionToLazyLoad && height <= kMinDimensionToLazyLoad) {
+    return false;
+  }
+  return frame->IsLazyLoadingImageAllowed();
+}
+
+}  // namespace
 
 static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
     ImageLoader* loader) {
@@ -451,10 +493,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
       if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
         params.SetClientLoFiPlaceholder();
       } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        if (html_image->ElementCreatedByParser() &&
-            !EqualIgnoringASCIICase(
-                html_image->FastGetAttribute(HTMLNames::lazyloadAttr), "off") &&
-            frame->IsLazyLoadingImageAllowed()) {
+        if (IsLazyLoadingImageAllowed(frame, html_image)) {
           params.SetAllowImagePlaceholder();
           lazy_image_load_state_ = LazyImageLoadState::kDeferred;
         }

@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
+#include "third_party/blink/renderer/core/html/html_dimension.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"
@@ -115,6 +116,15 @@ static bool MediaAttributeMatches(const MediaValuesCached& media_values,
   return media_query_evaluator.Eval(*media_queries);
 }
 
+static bool IsDimensionSmallAndAbsoluteForLazyLoad(
+    const String& attribute_value) {
+  // Minimum height or width of the image to start lazyloading.
+  const unsigned kMinDimensionToLazyLoad = 10;
+  HTMLDimension dimension;
+  return ParseDimensionValue(attribute_value, dimension) &&
+         dimension.IsAbsolute() && dimension.Value() <= kMinDimensionToLazyLoad;
+}
+
 class TokenPreloadScanner::StartTagScanner {
   STACK_ALLOCATED();
 
@@ -144,6 +154,8 @@ class TokenPreloadScanner::StartTagScanner {
         integrity_attr_set_(false),
         integrity_features_(features),
         lazyload_attr_set_to_off_(false),
+        width_attr_small_absolute_(false),
+        height_attr_small_absolute_(false),
         scanner_type_(scanner_type) {
     if (Match(tag_impl_, imgTag) || Match(tag_impl_, sourceTag)) {
       source_size_ = SizesAttributeParser(media_values_, String()).length();
@@ -273,7 +285,11 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetNonce(nonce_);
     request->SetCharset(Charset());
     request->SetDefer(defer_);
-    request->SetIsLazyloadAttrOff(lazyload_attr_set_to_off_);
+
+    if (lazyload_attr_set_to_off_ ||
+        (width_attr_small_absolute_ && height_attr_small_absolute_)) {
+      request->SetIsLazyloadImageDisabled(true);
+    }
 
     // The only link tags that should keep the integrity metadata are
     // stylesheets until crbug.com/677022 is resolved.
@@ -343,6 +359,16 @@ class TokenPreloadScanner::StartTagScanner {
                RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
                EqualIgnoringASCIICase(attribute_value, "off")) {
       lazyload_attr_set_to_off_ = true;
+    } else if (!width_attr_small_absolute_ &&
+               Match(attribute_name, widthAttr) &&
+               RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
+      width_attr_small_absolute_ =
+          IsDimensionSmallAndAbsoluteForLazyLoad(attribute_value);
+    } else if (!height_attr_small_absolute_ &&
+               Match(attribute_name, heightAttr) &&
+               RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
+      height_attr_small_absolute_ =
+          IsDimensionSmallAndAbsoluteForLazyLoad(attribute_value);
     }
   }
 
@@ -637,6 +663,8 @@ class TokenPreloadScanner::StartTagScanner {
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
   bool lazyload_attr_set_to_off_;
+  bool width_attr_small_absolute_;
+  bool height_attr_small_absolute_;
   TokenPreloadScanner::ScannerType scanner_type_;
 };
 
