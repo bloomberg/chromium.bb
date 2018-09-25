@@ -37,7 +37,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
         AsyncTask<Void> task = new AsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
-                SigninHelper.updateAccountRenameData(appContext);
+                SigninHelper.updateAccountRenameData();
                 return null;
             }
 
@@ -57,7 +57,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
             startBrowserIfNeededAndValidateAccounts(context);
         } else {
             // Notify SigninHelper of changed accounts (via shared prefs).
-            SigninHelper.markAccountsChangedPref(context);
+            SigninHelper.markAccountsChangedPref();
         }
     }
 
@@ -68,7 +68,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
                 ThreadUtils.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        SigninHelper.get(context).validateAccountSettings(true);
+                        SigninHelper.get().validateAccountSettings(true);
                     }
                 });
             }
@@ -77,7 +77,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
             public void onStartupFailure() {
                 // Startup failed. So notify SigninHelper of changed accounts via
                 // shared prefs.
-                SigninHelper.markAccountsChangedPref(context);
+                SigninHelper.markAccountsChangedPref();
             }
         };
         try {
