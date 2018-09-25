@@ -28,9 +28,13 @@ PanelTest.prototype = {
 
 #if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
 #define MAYBE_ActivateMenu DISABLED_ActivateMenu
-#define MAYBE_LinkMenu DISABLED_LinkMenu
 #else
 #define MAYBE_ActivateMenu ActivateMenu
+#endif
+
+#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
+#define MAYBE_LinkMenu DISABLED_LinkMenu
+#else
 #define MAYBE_LinkMenu LinkMenu
 #endif
     */});
