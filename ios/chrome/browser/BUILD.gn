@@ -133,7 +133,6 @@ source_set("browser") {
     "//ios/chrome/browser/ui/external_search:feature_flags",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/history:feature_flags",
-    "//ios/chrome/browser/ui/main:feature_flags",
     "//ios/chrome/browser/ui/omnibox",
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/browser/ui/toolbar_container:feature_flags",

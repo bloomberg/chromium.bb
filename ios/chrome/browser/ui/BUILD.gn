@@ -370,7 +370,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/keyboard",
-    "//ios/chrome/browser/ui/main:feature_flags",
     "//ios/chrome/browser/ui/main:tab_switcher",
     "//ios/chrome/browser/ui/main_content:main_content_ui",
     "//ios/chrome/browser/ui/main_content:main_content_ui_broadcasting_util",

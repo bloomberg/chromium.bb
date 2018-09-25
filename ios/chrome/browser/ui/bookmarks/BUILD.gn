@@ -105,7 +105,6 @@ source_set("bookmarks") {
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/list_model",
-    "//ios/chrome/browser/ui/main:feature_flags",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/signin_interaction/public",

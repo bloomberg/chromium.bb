@@ -54,7 +54,6 @@
 #include "ios/chrome/browser/ui/external_search/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/history/features.h"
-#include "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -190,10 +189,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"drag_and_drop", flag_descriptions::kDragAndDropName,
      flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDragAndDrop)},
-    {"tab_switcher_presents_bvc",
-     flag_descriptions::kTabSwitcherPresentsBVCName,
-     flag_descriptions::kTabSwitcherPresentsBVCDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kTabSwitcherPresentsBVC)},
     {"external-search", flag_descriptions::kExternalSearchName,
      flag_descriptions::kExternalSearchDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kExternalSearch)},
