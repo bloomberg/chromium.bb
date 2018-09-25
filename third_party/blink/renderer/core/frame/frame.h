@@ -64,6 +64,7 @@ class SecurityContext;
 class Settings;
 class WindowProxy;
 class WindowProxyManager;
+enum class ReportOptions;
 struct FrameLoadRequest;
 
 enum class FrameDetachType { kRemove, kSwap };
@@ -71,9 +72,6 @@ enum class FrameDetachType { kRemove, kSwap };
 // Status of user gesture.
 enum class UserGestureStatus { kActive, kNone };
 
-// Whether to report policy violations when checking whether a feature is
-// enabled.
-enum class ReportOptions { kReportOnFailure, kDoNotReport };
 
 // Frame is the base class of LocalFrame and RemoteFrame and should only contain
 // functionality shared between both. In particular, any method related to
@@ -231,9 +229,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // Report-To endpoints, via ReportFeaturePolicyViolation(), if the feature is
   // disabled.
   // TODO(iclelland): Replace these with methods on SecurityContext/Document
-  bool DeprecatedIsFeatureEnabled(
-      mojom::FeaturePolicyFeature,
-      ReportOptions report_on_failure = ReportOptions::kDoNotReport) const;
+  bool DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature) const;
+  bool DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature,
+                                  ReportOptions report_on_failure) const;
   virtual void DeprecatedReportFeaturePolicyViolation(
       mojom::FeaturePolicyFeature) const {}
 

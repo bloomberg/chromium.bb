@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
-#include "third_party/blink/renderer/core/frame/feature_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -1443,25 +1442,7 @@ const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
 
 void LocalFrame::DeprecatedReportFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature) const {
-  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled())
-    return;
-  const String& feature_name = GetNameForFeature(feature);
-  FeaturePolicyViolationReportBody* body = new FeaturePolicyViolationReportBody(
-      feature_name, "Feature policy violation", SourceLocation::Capture());
-  Report* report =
-      new Report("feature-policy", GetDocument()->Url().GetString(), body);
-  ReportingContext::From(GetDocument())->QueueReport(report);
-
-  bool is_null;
-  int line_number = body->lineNumber(is_null);
-  line_number = is_null ? 0 : line_number;
-  int column_number = body->columnNumber(is_null);
-  column_number = is_null ? 0 : column_number;
-
-  // Send the feature policy violation report to the Reporting API.
-  GetReportingService()->QueueFeaturePolicyViolationReport(
-      GetDocument()->Url(), feature_name, "Feature policy violation",
-      body->sourceFile(), line_number, column_number);
+  GetSecurityContext()->ReportFeaturePolicyViolation(feature);
 }
 
 }  // namespace blink

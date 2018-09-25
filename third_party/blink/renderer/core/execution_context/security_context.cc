@@ -120,4 +120,17 @@ void SecurityContext::InitializeFeaturePolicy(
   feature_policy_->SetHeaderPolicy(parsed_header);
 }
 
+bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
+                                       ReportOptions report_on_failure) const {
+  // The policy should always be initialized before checking it to ensure we
+  // properly inherit the parent policy.
+  DCHECK(feature_policy_);
+
+  if (feature_policy_->IsFeatureEnabled(feature))
+    return true;
+  if (report_on_failure == ReportOptions::kReportOnFailure)
+    ReportFeaturePolicyViolation(feature);
+  return false;
+}
+
 }  // namespace blink
