@@ -9,9 +9,11 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/i18n/number_formatting.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -89,6 +91,8 @@ class NumberIconImageSource : public gfx::CanvasImageSource {
 
 NotificationCounterView::NotificationCounterView() : TrayItemView(nullptr) {
   CreateImageView();
+  image_view()->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL));
   SetVisible(false);
   Shell::Get()->session_controller()->AddObserver(this);
 }
