@@ -53,7 +53,6 @@
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
-#import "ios/chrome/browser/ui/history/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -192,10 +191,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"external-search", flag_descriptions::kExternalSearchName,
      flag_descriptions::kExternalSearchDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kExternalSearch)},
-    {"history-batch-updates-filter",
-     flag_descriptions::kHistoryBatchUpdatesFilterName,
-     flag_descriptions::kHistoryBatchUpdatesFilterDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kHistoryBatchUpdatesFilter)},
     {"slim-navigation-manager", flag_descriptions::kSlimNavigationManagerName,
      flag_descriptions::kSlimNavigationManagerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kSlimNavigationManager)},
