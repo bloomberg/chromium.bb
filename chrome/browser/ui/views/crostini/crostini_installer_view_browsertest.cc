@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, ActiveView());
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kSuccess),
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow_Offline) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, ActiveView());
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kErrorOffline),
@@ -208,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, Cancel) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, ActiveView());
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kNotStarted),
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenCancel) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, ActiveView());
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kErrorStartingTermina),

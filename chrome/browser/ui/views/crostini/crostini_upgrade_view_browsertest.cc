@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest, HitOK) {
 
   WaitForViewDestroyed();
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.UpgradeSource",
       static_cast<base::HistogramBase::Sample>(CrostiniUISurface::kAppList), 1);
 }
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest,
 
   WaitForViewDestroyed();
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.UpgradeSource",
       static_cast<base::HistogramBase::Sample>(CrostiniUISurface::kAppList), 1);
 }
