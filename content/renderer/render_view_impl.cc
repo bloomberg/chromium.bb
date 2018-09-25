@@ -534,6 +534,10 @@ void RenderViewImpl::Initialize(
 
   ApplyBlinkSettings(command_line, webview()->GetSettings());
 
+  // We have either a main frame or a proxy routing id.
+  DCHECK_NE(params->main_frame_routing_id != MSG_ROUTING_NONE,
+            params->proxy_routing_id != MSG_ROUTING_NONE);
+
   if (params->main_frame_routing_id != MSG_ROUTING_NONE) {
     CHECK(params->main_frame_interface_provider.is_valid());
     service_manager::mojom::InterfaceProviderPtr main_frame_interface_provider(
@@ -545,21 +549,15 @@ void RenderViewImpl::Initialize(
         GetWidget()->GetWebScreenInfo(), GetWidget()->compositor_deps(),
         opener_frame, params->devtools_main_frame_token,
         params->replicated_frame_state, params->has_committed_real_load);
-  }
 
-  // TODO(dcheng): Shouldn't these be mutually exclusive at this point? See
-  // https://crbug.com/720116 where the browser is apparently sending both
-  // routing IDs...
-  if (params->proxy_routing_id != MSG_ROUTING_NONE) {
+    main_render_frame_->Initialize();
+  } else {
     CHECK(params->swapped_out);
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
                                        params->replicated_frame_state,
                                        params->devtools_main_frame_token);
   }
-
-  if (main_render_frame_)
-    main_render_frame_->Initialize();
 
   // If this RenderView's creation was initiated by an opener page in this
   // process, (e.g. window.open()), we won't be visible until we ask the opener,
