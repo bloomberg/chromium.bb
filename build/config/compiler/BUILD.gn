@@ -1056,29 +1056,16 @@ config("compiler_cpu_abi") {
         ]
       }
     } else if (current_cpu == "ppc64") {
-      if (v8_current_cpu == "ppc") {
-        cflags += [ "-m32" ]
-        ldflags += [ "-m32" ]
-      } else if (v8_current_cpu == "ppc64") {
-        if (current_os == "aix") {
-          cflags += [ "-maix64" ]
-          ldflags += [ "-maix64" ]
-        } else {
-          cflags += [ "-m64" ]
-          ldflags += [ "-m64" ]
-        }
-      }
-    } else if (current_cpu == "s390x") {
-      if (v8_current_cpu == "s390" && host_byteorder == "little") {
-        cflags += [ "-m32" ]
-        ldflags += [ "-m32" ]
-      } else if (v8_current_cpu == "s390") {
-        cflags += [ "-m31" ]
-        ldflags += [ "-m31" ]
-      } else if (v8_current_cpu == "s390x") {
+      if (current_os == "aix") {
+        cflags += [ "-maix64" ]
+        ldflags += [ "-maix64" ]
+      } else {
         cflags += [ "-m64" ]
         ldflags += [ "-m64" ]
       }
+    } else if (current_cpu == "s390x") {
+      cflags += [ "-m64" ]
+      ldflags += [ "-m64" ]
     }
   }
 
