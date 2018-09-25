@@ -22,6 +22,7 @@
 #import "ios/web/public/features.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -101,6 +102,12 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 - (UIImage*)generateSnapshotForView:(UIView*)view
                            withRect:(CGRect)rect
                            overlays:(NSArray<SnapshotOverlay*>*)overlays;
+
+// Returns an image of the |snapshot| overlaid with |overlays| with the given
+// |frame|.
+- (UIImage*)snapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                        snapshot:(UIImage*)snapshot
+                           frame:(CGRect)frame;
 
 // Property providing access to the snapshot's cache. May be nil.
 @property(nonatomic, readonly) SnapshotCache* snapshotCache;
@@ -204,6 +211,45 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
   [self.snapshotCache setImage:snapshot withSessionID:_snapshotSessionId];
   return snapshot;
+}
+
+- (void)updateWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
+  DCHECK(_webState);
+  CGRect frame = [self snapshotFrameVisibleFrameOnly:YES];
+  if (CGRectIsEmpty(frame))
+    return;
+  NSArray<SnapshotOverlay*>* overlays =
+      [_delegate snapshotOverlaysForWebState:_webState];
+  UIImage* snapshot =
+      [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays
+                                            visibleFrameOnly:YES];
+  if (snapshot) {
+    if (completion)
+      completion(snapshot);
+    return;
+  }
+
+  [_delegate willUpdateSnapshotForWebState:_webState];
+  __weak SnapshotGenerator* weakSelf = self;
+  _webState->TakeSnapshot(base::BindOnce(^(gfx::Image image) {
+    SnapshotGenerator* strongSelf = weakSelf;
+    if (!strongSelf)
+      return;
+    UIImage* snapshot = image.ToUIImage();
+    if (overlays.count > 0) {
+      snapshot = [strongSelf snapshotWithOverlays:overlays
+                                         snapshot:snapshot
+                                            frame:frame];
+    }
+    [strongSelf.snapshotCache setImage:snapshot
+                         withSessionID:_snapshotSessionId];
+    [_coalescingSnapshotContext setCachedSnapshot:snapshot
+                                     withOverlays:overlays
+                                 visibleFrameOnly:YES];
+    [_delegate didUpdateSnapshotForWebState:_webState withImage:snapshot];
+    if (completion)
+      completion(snapshot);
+  }));
 }
 
 - (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay
@@ -349,6 +395,37 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   CGContextRestoreGState(context);
   UIGraphicsEndImageContext();
   return image;
+}
+
+- (UIImage*)snapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                        snapshot:(UIImage*)snapshot
+                           frame:(CGRect)frame {
+  CGSize size = frame.size;
+  DCHECK(std::isnormal(size.width) && (size.width > 0))
+      << ": size.width=" << size.width;
+  DCHECK(std::isnormal(size.height) && (size.height > 0))
+      << ": size.height=" << size.height;
+  const CGFloat kScale =
+      std::max<CGFloat>(1.0, [self.snapshotCache snapshotScaleForDevice]);
+  UIGraphicsBeginImageContextWithOptions(size, YES, kScale);
+  CGContext* context = UIGraphicsGetCurrentContext();
+  DCHECK(context);
+  CGContextSaveGState(context);
+  [snapshot drawAtPoint:CGPointZero];
+  for (SnapshotOverlay* overlay in overlays) {
+    // Render the overlay view at the desired offset. It is achieved
+    // by shifting origin of context because view frame is ignored when
+    // drawing to context.
+    CGContextSaveGState(context);
+    CGContextTranslateCTM(context, 0, overlay.yOffset - frame.origin.y);
+    [overlay.view drawViewHierarchyInRect:overlay.view.bounds
+                       afterScreenUpdates:YES];
+    CGContextRestoreGState(context);
+  }
+  UIImage* snapshotWithOverlays = UIGraphicsGetImageFromCurrentImageContext();
+  CGContextRestoreGState(context);
+  UIGraphicsEndImageContext();
+  return snapshotWithOverlays;
 }
 
 #pragma mark - Properties.
