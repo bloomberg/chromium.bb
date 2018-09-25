@@ -18,6 +18,8 @@
 #include "base/time/time.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/time.h"
+#include "components/sync/device_info/device_info.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
@@ -101,7 +103,6 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
 SessionSyncBridge::SessionSyncBridge(
     SyncSessionsClient* sessions_client,
     syncer::SessionSyncPrefs* sync_prefs,
-    syncer::LocalDeviceInfoProvider* local_device_info_provider,
     const syncer::RepeatingModelTypeStoreFactory& store_factory,
     const base::RepeatingClosure& foreign_sessions_updated_callback,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
@@ -116,7 +117,6 @@ SessionSyncBridge::SessionSyncBridge(
       session_store_factory_(SessionStore::CreateFactory(
           sessions_client,
           sync_prefs,
-          local_device_info_provider,
           store_factory,
           base::BindRepeating(&FaviconCache::UpdateMappingsFromForeignTab,
                               base::Unretained(&favicon_cache_)))),
@@ -344,8 +344,26 @@ void SessionSyncBridge::OnSyncStarting(
     const syncer::DataTypeActivationRequest& request) {
   DCHECK(!syncing_);
 
-  session_store_factory_.Run(base::BindOnce(
-      &SessionSyncBridge::OnStoreInitialized, weak_ptr_factory_.GetWeakPtr()));
+  const syncer::DeviceInfo* device_info =
+      sessions_client_->GetLocalDeviceInfo();
+  // DeviceInfo must be available by the time sync starts.
+  // TODO(crbug.com/867801): The DCHECKs later below should suffice but such
+  // condition is currently not guaranteed due to posting of tasks, which means
+  // |request| might be slightly stale if sync was disabled and re-enabled
+  // quickly. As a temporary mitigation, we report an error in this case.
+  if (!device_info || device_info->guid() != request.cache_guid) {
+    DLOG(WARNING) << "Stale datatype activation request, treating as error.";
+    change_processor()->ReportError(
+        syncer::ModelError(FROM_HERE, "Stale cache GUID"));
+    return;
+  }
+
+  DCHECK(device_info);
+  DCHECK_EQ(device_info->guid(), request.cache_guid);
+
+  session_store_factory_.Run(
+      *device_info, base::BindOnce(&SessionSyncBridge::OnStoreInitialized,
+                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SessionSyncBridge::OnStoreInitialized(

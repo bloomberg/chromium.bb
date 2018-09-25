@@ -36,6 +36,7 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/passive_model_worker.h"
@@ -119,6 +120,13 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
     return ios::HistoryServiceFactory::GetForBrowserState(
         browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
+  }
+
+  const syncer::DeviceInfo* GetLocalDeviceInfo() override {
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
+    return ProfileSyncServiceFactory::GetForBrowserState(browser_state_)
+        ->GetLocalDeviceInfoProvider()
+        ->GetLocalDeviceInfo();
   }
 
   bool ShouldSyncURL(const GURL& url) const override {

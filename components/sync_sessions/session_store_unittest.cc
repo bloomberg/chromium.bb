@@ -14,7 +14,7 @@
 #include "base/test/mock_callback.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/device_info/local_device_info_provider_mock.h"
+#include "components/sync/device_info/device_info.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/test/test_matchers.h"
@@ -163,29 +163,28 @@ std::map<std::string, SessionSpecifics> ReadAllPersistedDataFrom(
 class SessionStoreFactoryTest : public ::testing::Test {
  protected:
   SessionStoreFactoryTest()
-      : underlying_store_(
+      : local_device_info_(kCacheGuid,
+                           kClientName,
+                           "Chromium 10k",
+                           "Chrome 10k",
+                           sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                           "device_id"),
+        underlying_store_(
             syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(
                 syncer::SESSIONS)),
         factory_(SessionStore::CreateFactory(
             &mock_sync_sessions_client_,
             &mock_sync_prefs_,
-            &mock_device_info_provider_,
             syncer::ModelTypeStoreTestUtil::FactoryForForwardingStore(
                 underlying_store_.get()),
             mock_restored_foreign_tab_callback_.Get())) {}
 
   ~SessionStoreFactoryTest() override {}
 
-  void InitializeDeviceInfoProvider() {
-    mock_device_info_provider_.Initialize(std::make_unique<syncer::DeviceInfo>(
-        kCacheGuid, kClientName, "Chromium 10k", "Chrome 10k",
-        sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id"));
-  }
-
   base::MessageLoop message_loop_;
+  const syncer::DeviceInfo local_device_info_;
   testing::NiceMock<MockSyncSessionsClient> mock_sync_sessions_client_;
   testing::NiceMock<MockSessionSyncPrefs> mock_sync_prefs_;
-  syncer::LocalDeviceInfoProviderMock mock_device_info_provider_;
   testing::NiceMock<
       base::MockCallback<SessionStore::RestoredForeignTabCallback>>
       mock_restored_foreign_tab_callback_;
@@ -194,47 +193,19 @@ class SessionStoreFactoryTest : public ::testing::Test {
   SessionStore::Factory factory_;
 };
 
-TEST_F(SessionStoreFactoryTest, ShouldWaitForDeviceInfo) {
-  MockFactoryCompletionCallback completion;
-  EXPECT_CALL(completion, Run(_, _, _)).Times(0);
-  factory_.Run(completion.Get());
-  EXPECT_CALL(completion, Run(NoModelError(), /*store=*/NotNull(),
-                              MetadataBatchContains(_, IsEmpty())));
+TEST_F(SessionStoreFactoryTest, ShouldCreateStore) {
   EXPECT_CALL(mock_sync_prefs_, GetSyncSessionsGUID());
   EXPECT_CALL(mock_sync_prefs_,
               SetSyncSessionsGUID(std::string("session_sync") + kCacheGuid));
-  InitializeDeviceInfoProvider();
-  completion.Wait();
-  ASSERT_THAT(completion.GetResult(), NotNull());
-  EXPECT_THAT(completion.GetResult()->local_session_info().client_name,
-              Eq(kClientName));
-  // Second deviceinfo should be ignored.
-  EXPECT_CALL(completion, Run(_, _, _)).Times(0);
-  EXPECT_CALL(mock_sync_prefs_, GetSyncSessionsGUID()).Times(0);
-  EXPECT_CALL(mock_sync_prefs_, SetSyncSessionsGUID(_)).Times(0);
-  InitializeDeviceInfoProvider();
-}
-
-TEST_F(SessionStoreFactoryTest,
-       ShouldCreateStoreIfDeviceInfoInitiallyAvailable) {
-  EXPECT_CALL(mock_sync_prefs_, GetSyncSessionsGUID());
-  EXPECT_CALL(mock_sync_prefs_,
-              SetSyncSessionsGUID(std::string("session_sync") + kCacheGuid));
-  InitializeDeviceInfoProvider();
 
   MockFactoryCompletionCallback completion;
   EXPECT_CALL(completion, Run(NoModelError(), /*store=*/NotNull(),
                               MetadataBatchContains(_, IsEmpty())));
-  factory_.Run(completion.Get());
+  factory_.Run(local_device_info_, completion.Get());
   completion.Wait();
   ASSERT_THAT(completion.GetResult(), NotNull());
   EXPECT_THAT(completion.GetResult()->local_session_info().client_name,
               Eq(kClientName));
-  // Second deviceinfo should be ignored.
-  EXPECT_CALL(completion, Run(_, _, _)).Times(0);
-  EXPECT_CALL(mock_sync_prefs_, GetSyncSessionsGUID()).Times(0);
-  EXPECT_CALL(mock_sync_prefs_, SetSyncSessionsGUID(_)).Times(0);
-  InitializeDeviceInfoProvider();
 }
 
 TEST_F(SessionStoreFactoryTest, ShouldReadSessionsGuidFromPrefs) {
@@ -243,10 +214,8 @@ TEST_F(SessionStoreFactoryTest, ShouldReadSessionsGuidFromPrefs) {
   EXPECT_CALL(mock_sync_prefs_, GetSyncSessionsGUID())
       .WillOnce(Return(kCachedGuid));
 
-  InitializeDeviceInfoProvider();
-
   NiceMock<MockFactoryCompletionCallback> completion;
-  factory_.Run(completion.Get());
+  factory_.Run(local_device_info_, completion.Get());
   completion.Wait();
   ASSERT_THAT(completion.GetResult(), NotNull());
   EXPECT_THAT(completion.GetResult()->local_session_info().session_tag,
@@ -267,8 +236,7 @@ class SessionStoreTest : public SessionStoreFactoryTest {
 
   std::unique_ptr<SessionStore> CreateSessionStore() {
     NiceMock<MockFactoryCompletionCallback> completion;
-    InitializeDeviceInfoProvider();
-    factory_.Run(completion.Get());
+    factory_.Run(local_device_info_, completion.Get());
     completion.Wait();
     EXPECT_THAT(completion.GetResult(), NotNull());
     return completion.StealResult();
@@ -336,7 +304,7 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreMetadata) {
                               MetadataBatchContains(
                                   HasEncryptionKeyName(kEncryptionKeyName1),
                                   ElementsAre(Pair(kStorageKey1, _)))));
-  factory_.Run(completion.Get());
+  factory_.Run(local_device_info_, completion.Get());
   completion.Wait();
   EXPECT_THAT(completion.GetResult(), NotNull());
   EXPECT_NE(session_store(), completion.GetResult());

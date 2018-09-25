@@ -17,7 +17,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/sync/base/hash_util.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/sync_merge_result.h"
@@ -27,7 +26,6 @@
 #include "components/sync_sessions/tab_node_pool.h"
 
 using syncer::DeviceInfo;
-using syncer::LocalDeviceInfoProvider;
 using syncer::SyncChange;
 using syncer::SyncData;
 
@@ -141,7 +139,6 @@ class SyncChangeListWriteBatch
 SessionsSyncManager::SessionsSyncManager(
     sync_sessions::SyncSessionsClient* sessions_client,
     syncer::SessionSyncPrefs* sync_prefs,
-    LocalDeviceInfoProvider* local_device,
     const base::RepeatingClosure& sessions_updated_callback)
     : sessions_client_(sessions_client),
       session_tracker_(sessions_client),
@@ -156,7 +153,6 @@ SessionsSyncManager::SessionsSyncManager(
                               base::Unretained(this))),
       local_tab_pool_out_of_sync_(true),
       sync_prefs_(sync_prefs),
-      local_device_(local_device),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       sessions_updated_callback_(sessions_updated_callback) {}
 
@@ -198,8 +194,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
 
   // SessionDataTypeController ensures that the local device info
   // is available before activating this datatype.
-  DCHECK(local_device_);
-  const DeviceInfo* local_device_info = local_device_->GetLocalDeviceInfo();
+  const DeviceInfo* local_device_info = sessions_client_->GetLocalDeviceInfo();
   if (!local_device_info) {
     merge_result.set_error(error_handler_->CreateAndUploadError(
         FROM_HERE, "Failed to get local device info."));
@@ -221,7 +216,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   // a conveniently safe time to assert sync is ready and the cache_guid is
   // initialized.
   if (current_machine_tag_.empty()) {
-    InitializeCurrentMachineTag(local_device_->GetLocalSyncCacheGUID());
+    InitializeCurrentMachineTag(local_device_info->guid());
   }
 
   session_tracker_.InitLocalSession(current_machine_tag_, current_session_name_,
@@ -246,8 +241,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   }
 
 #if defined(OS_ANDROID)
-  std::string sync_machine_tag(
-      BuildMachineTag(local_device_->GetLocalSyncCacheGUID()));
+  std::string sync_machine_tag(BuildMachineTag(local_device_info->guid()));
   if (current_machine_tag().compare(sync_machine_tag) != 0)
     DeleteForeignSessionInternal(sync_machine_tag, batch.sync_change_list());
 #endif

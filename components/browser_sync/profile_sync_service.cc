@@ -266,7 +266,7 @@ void ProfileSyncService::Initialize() {
       sessions_sync_manager_ =
           std::make_unique<sync_sessions::SessionSyncBridge>(
               sync_client_->GetSyncSessionsClient(), &sync_prefs_,
-              local_device_.get(), model_type_store_factory,
+              model_type_store_factory,
               base::BindRepeating(
                   &ProfileSyncService::NotifyForeignSessionUpdated,
                   sync_enabled_weak_factory_.GetWeakPtr()),
@@ -278,7 +278,6 @@ void ProfileSyncService::Initialize() {
       sessions_sync_manager_ =
           std::make_unique<sync_sessions::SessionsSyncManager>(
               sync_client_->GetSyncSessionsClient(), &sync_prefs_,
-              local_device_.get(),
               base::BindRepeating(
                   &ProfileSyncService::NotifyForeignSessionUpdated,
                   sync_enabled_weak_factory_.GetWeakPtr()));
@@ -413,12 +412,6 @@ sync_sessions::FaviconCache* ProfileSyncService::GetFaviconCache() {
 syncer::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return device_info_sync_bridge_.get();
-}
-
-const syncer::LocalDeviceInfoProvider*
-ProfileSyncService::GetLocalDeviceInfoProvider() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return local_device_.get();
 }
 
 syncer::WeakHandle<syncer::JsEventHandler>
@@ -1937,6 +1930,17 @@ bool ProfileSyncService::HasPreferenceProvider(
     syncer::SyncTypePreferenceProvider* provider) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return preference_providers_.count(provider) > 0;
+}
+
+const syncer::LocalDeviceInfoProvider*
+ProfileSyncService::GetLocalDeviceInfoProvider() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return local_device_.get();
+}
+
+void ProfileSyncService::SetLocalDeviceInfoProviderForTest(
+    std::unique_ptr<syncer::LocalDeviceInfoProvider> provider) {
+  local_device_ = std::move(provider);
 }
 
 namespace {

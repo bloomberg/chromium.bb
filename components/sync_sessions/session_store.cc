@@ -91,43 +91,6 @@ std::string GetSessionTagWithPrefs(const std::string& cache_guid,
   return new_guid;
 }
 
-void OnLocalDeviceInfoAvailable(
-    syncer::SessionSyncPrefs* sync_prefs,
-    const syncer::LocalDeviceInfoProvider* provider,
-    const base::RepeatingCallback<void(const SessionStore::SessionInfo&)>&
-        callback) {
-  const syncer::DeviceInfo* device_info = provider->GetLocalDeviceInfo();
-  const std::string cache_guid = provider->GetLocalSyncCacheGUID();
-  DCHECK(device_info);
-  DCHECK(!cache_guid.empty());
-
-  SessionStore::SessionInfo session_info;
-  session_info.client_name = device_info->client_name();
-  session_info.device_type = device_info->device_type();
-  session_info.session_tag = GetSessionTagWithPrefs(cache_guid, sync_prefs);
-  callback.Run(session_info);
-}
-
-// Listens to local device information and triggers the provided callback
-// when the object is constructed (once DeviceInfo is available). Caller is
-// responsible for storing the returned subscription as a mechanism to cancel
-// the creation request (the subscription must not outlive |provider|).
-std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
-SubscribeToSessionInfo(
-    syncer::SessionSyncPrefs* sync_prefs,
-    syncer::LocalDeviceInfoProvider* provider,
-    const base::RepeatingCallback<void(const SessionStore::SessionInfo&)>&
-        callback) {
-  if (provider->GetLocalDeviceInfo()) {
-    OnLocalDeviceInfoAvailable(sync_prefs, provider, callback);
-    return nullptr;
-  }
-
-  return provider->RegisterOnInitializedCallback(base::BindRepeating(
-      &OnLocalDeviceInfoAvailable, base::Unretained(sync_prefs),
-      base::Unretained(provider), callback));
-}
-
 void ForwardError(syncer::OnceModelErrorHandler error_handler,
                   const base::Optional<syncer::ModelError>& error) {
   if (error) {
@@ -140,59 +103,41 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
   // Raw pointers must not be null and must outlive this object.
   FactoryImpl(SyncSessionsClient* sessions_client,
               syncer::SessionSyncPrefs* sync_prefs,
-              syncer::LocalDeviceInfoProvider* local_device_info_provider,
               const syncer::RepeatingModelTypeStoreFactory& store_factory,
               const SessionStore::RestoredForeignTabCallback&
                   restored_foreign_tab_callback)
       : sessions_client_(sessions_client),
+        sync_prefs_(sync_prefs),
         store_factory_(store_factory),
         restored_foreign_tab_callback_(restored_foreign_tab_callback) {
     DCHECK(sessions_client);
     DCHECK(sync_prefs);
-    DCHECK(local_device_info_provider);
     DCHECK(store_factory_);
-    local_device_info_subscription_ = SubscribeToSessionInfo(
-        sync_prefs, local_device_info_provider,
-        base::BindRepeating(&FactoryImpl::OnSessionInfoAvailable,
-                            base::Unretained(this)));
   }
 
   ~FactoryImpl() {}
 
-  void Create(SessionStore::FactoryCompletionCallback callback) {
-    if (!session_info_.has_value()) {
-      DVLOG(1) << "Deferring creation of store until session info is available";
-      deferred_creations_.push_back(std::move(callback));
-      return;
-    }
+  void Create(const syncer::DeviceInfo& device_info,
+              SessionStore::FactoryCompletionCallback callback) {
+    const std::string cache_guid = device_info.guid();
+    DCHECK(!cache_guid.empty());
 
-    CreateImpl(std::move(callback));
-  }
+    SessionStore::SessionInfo session_info;
+    session_info.client_name = device_info.client_name();
+    session_info.device_type = device_info.device_type();
+    session_info.session_tag = GetSessionTagWithPrefs(cache_guid, sync_prefs_);
 
- private:
-  void OnSessionInfoAvailable(const SessionStore::SessionInfo& session_info) {
-    local_device_info_subscription_.reset();
-    session_info_ = session_info;
-
-    std::vector<SessionStore::FactoryCompletionCallback> deferred_creations;
-    std::swap(deferred_creations, deferred_creations_);
-    for (SessionStore::FactoryCompletionCallback& callback :
-         deferred_creations) {
-      CreateImpl(std::move(callback));
-    }
-  }
-
-  void CreateImpl(SessionStore::FactoryCompletionCallback callback) {
-    DCHECK(session_info_.has_value());
-    DCHECK(deferred_creations_.empty());
     DVLOG(1) << "Initiating creation of session store";
+
     store_factory_.Run(
         syncer::SESSIONS,
         base::BindOnce(&FactoryImpl::OnStoreCreated, base::AsWeakPtr(this),
-                       std::move(callback)));
+                       session_info, std::move(callback)));
   }
 
-  void OnStoreCreated(SessionStore::FactoryCompletionCallback callback,
+ private:
+  void OnStoreCreated(const SessionStore::SessionInfo& session_info,
+                      SessionStore::FactoryCompletionCallback callback,
                       const base::Optional<syncer::ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store) {
     if (error) {
@@ -205,10 +150,11 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
     ModelTypeStore* store_copy = store.get();
     store_copy->ReadAllData(
         base::BindOnce(&FactoryImpl::OnReadAllData, base::AsWeakPtr(this),
-                       std::move(callback), std::move(store)));
+                       session_info, std::move(callback), std::move(store)));
   }
 
-  void OnReadAllData(SessionStore::FactoryCompletionCallback callback,
+  void OnReadAllData(const SessionStore::SessionInfo& session_info,
+                     SessionStore::FactoryCompletionCallback callback,
                      std::unique_ptr<ModelTypeStore> store,
                      const base::Optional<syncer::ModelError>& error,
                      std::unique_ptr<ModelTypeStore::RecordList> record_list) {
@@ -219,11 +165,12 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
     }
 
     store->ReadAllMetadata(base::BindOnce(
-        &FactoryImpl::OnReadAllMetadata, base::AsWeakPtr(this),
+        &FactoryImpl::OnReadAllMetadata, base::AsWeakPtr(this), session_info,
         std::move(callback), std::move(store), std::move(record_list)));
   }
 
   void OnReadAllMetadata(
+      const SessionStore::SessionInfo& session_info,
       SessionStore::FactoryCompletionCallback callback,
       std::unique_ptr<ModelTypeStore> store,
       std::unique_ptr<ModelTypeStore::RecordList> record_list,
@@ -248,7 +195,7 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
     }
 
     auto session_store = std::make_unique<SessionStore>(
-        sessions_client_, *session_info_, std::move(store),
+        sessions_client_, session_info, std::move(store),
         std::move(initial_data), metadata_batch->GetAllMetadata(),
         restored_foreign_tab_callback_);
 
@@ -257,12 +204,9 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
   }
 
   SyncSessionsClient* const sessions_client_;
+  syncer::SessionSyncPrefs* const sync_prefs_;
   const syncer::RepeatingModelTypeStoreFactory store_factory_;
   const SessionStore::RestoredForeignTabCallback restored_foreign_tab_callback_;
-  base::Optional<SessionStore::SessionInfo> session_info_;
-  std::vector<SessionStore::FactoryCompletionCallback> deferred_creations_;
-  std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
-      local_device_info_subscription_;
 };
 
 }  // namespace
@@ -271,12 +215,11 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
 SessionStore::Factory SessionStore::CreateFactory(
     SyncSessionsClient* sessions_client,
     syncer::SessionSyncPrefs* sync_prefs,
-    syncer::LocalDeviceInfoProvider* local_device_info_provider,
     const syncer::RepeatingModelTypeStoreFactory& store_factory,
     const RestoredForeignTabCallback& restored_foreign_tab_callback) {
-  auto factory = std::make_unique<FactoryImpl>(
-      sessions_client, sync_prefs, local_device_info_provider, store_factory,
-      restored_foreign_tab_callback);
+  auto factory =
+      std::make_unique<FactoryImpl>(sessions_client, sync_prefs, store_factory,
+                                    restored_foreign_tab_callback);
   return base::BindRepeating(&FactoryImpl::Create, std::move(factory));
 }
 

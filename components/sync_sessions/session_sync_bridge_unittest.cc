@@ -18,7 +18,7 @@
 #include "base/test/mock_callback.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/device_info/local_device_info_provider_mock.h"
+#include "components/sync/device_info/device_info.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/metadata_batch.h"
@@ -166,11 +166,19 @@ sync_pb::SessionSpecifics CreateTabSpecifics(const std::string& session_tag,
 class SessionSyncBridgeTest : public ::testing::Test {
  protected:
   SessionSyncBridgeTest()
-      : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(
+      : local_device_info_("TestCacheGuid",
+                           "Wayne Gretzky's Hacking Box",
+                           "Chromium 10k",
+                           "Chrome 10k",
+                           sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                           "device_id"),
+        store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(
             syncer::SESSIONS)),
         favicon_cache_(/*favicon_service=*/nullptr,
                        /*history_service=*/nullptr,
                        /*max_sync_favicon_limit=*/0) {
+    ON_CALL(mock_sync_sessions_client_, GetLocalDeviceInfo())
+        .WillByDefault(Return(&local_device_info_));
     ON_CALL(mock_sync_sessions_client_, GetSyncedWindowDelegatesGetter())
         .WillByDefault(Return(&window_getter_));
     ON_CALL(mock_sync_sessions_client_, GetLocalSessionEventRouter())
@@ -194,7 +202,6 @@ class SessionSyncBridgeTest : public ::testing::Test {
     // Instantiate the bridge.
     bridge_ = std::make_unique<SessionSyncBridge>(
         &mock_sync_sessions_client_, &mock_sync_prefs_,
-        &mock_device_info_provider_,
         /*store_factory=*/
         syncer::ModelTypeStoreTestUtil::FactoryForForwardingStore(store_.get()),
         mock_foreign_sessions_updated_callback_.Get(),
@@ -209,12 +216,6 @@ class SessionSyncBridgeTest : public ::testing::Test {
   }
 
   void StartSyncing(const std::vector<SessionSpecifics>& remote_data = {}) {
-    // DeviceInfo is provided when sync is being enabled, which should lead to
-    // ModelReadyToSync().
-    mock_device_info_provider_.Initialize(std::make_unique<syncer::DeviceInfo>(
-        "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
-        "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id"));
-
     syncer::DataTypeActivationRequest request;
     request.error_handler = base::DoNothing();
     request.cache_guid = "TestCacheGuid";
@@ -321,12 +322,12 @@ class SessionSyncBridgeTest : public ::testing::Test {
 
  private:
   base::MessageLoop message_loop_;
+  const syncer::DeviceInfo local_device_info_;
   const std::unique_ptr<syncer::ModelTypeStore> store_;
 
   // Dependencies.
   testing::NiceMock<MockSyncSessionsClient> mock_sync_sessions_client_;
   testing::NiceMock<MockSessionSyncPrefs> mock_sync_prefs_;
-  syncer::LocalDeviceInfoProviderMock mock_device_info_provider_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   testing::NiceMock<base::MockCallback<base::RepeatingClosure>>
       mock_foreign_sessions_updated_callback_;

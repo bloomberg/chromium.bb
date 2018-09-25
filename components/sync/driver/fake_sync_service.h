@@ -72,7 +72,6 @@ class FakeSyncService : public SyncService {
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
   bool IsCryptographerReady(const BaseTransaction* trans) const override;
   UserShare* GetUserShare() const override;
-  const LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const override;
   void ReenableDatatype(ModelType type) override;
   SyncTokenStatus GetSyncTokenStatus() const override;
   bool QueryDetailedSyncStatus(SyncStatus* result) const override;

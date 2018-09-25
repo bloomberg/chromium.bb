@@ -34,7 +34,6 @@
 #include "components/sync_sessions/synced_session_tracker.h"
 
 namespace syncer {
-class LocalDeviceInfoProvider;
 class SyncErrorFactory;
 }  // namespace syncer
 
@@ -57,7 +56,6 @@ class SessionsSyncManager : public AbstractSessionsSyncManager,
  public:
   SessionsSyncManager(SyncSessionsClient* sessions_client,
                       syncer::SessionSyncPrefs* sync_prefs,
-                      syncer::LocalDeviceInfoProvider* local_device,
                       const base::RepeatingClosure& sessions_updated_callback);
   ~SessionsSyncManager() override;
 
@@ -194,9 +192,6 @@ class SessionsSyncManager : public AbstractSessionsSyncManager,
 
   std::unique_ptr<syncer::SyncErrorFactory> error_handler_;
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
-
-  // Local device info provider, owned by ProfileSyncService.
-  const syncer::LocalDeviceInfoProvider* const local_device_;
 
   // Unique client tag.
   std::string current_machine_tag_;
