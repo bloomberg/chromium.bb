@@ -23,16 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_ARENA_TEST_HELPERS_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_ARENA_TEST_HELPERS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_ARENA_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_ARENA_TEST_HELPERS_H_
 
-#include "third_party/blink/renderer/platform/pod_arena.h"
 #include "third_party/blink/renderer/platform/wtf/not_found.h"
+#include "third_party/blink/renderer/platform/wtf/pod_arena.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include <gtest/gtest.h>
 
-namespace blink {
+namespace WTF {
 namespace ArenaTestHelpers {
 
 // An allocator for the PODArena which tracks the regions which have
@@ -66,6 +66,6 @@ class TrackedAllocator final : public PODArena::FastMallocAllocator {
 };
 
 }  // namespace ArenaTestHelpers
-}  // namespace blink
+}  // namespace WTF
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_ARENA_TEST_HELPERS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_ARENA_TEST_HELPERS_H_

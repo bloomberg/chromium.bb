@@ -23,15 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_INTERVAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_INTERVAL_H_
 
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #ifndef NDEBUG
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #endif
 
-namespace blink {
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+
+namespace WTF {
 
 // Class representing a closed interval which can hold an arbitrary
 // Plain Old Datatype (POD) as its endpoints and a piece of user
@@ -70,8 +71,6 @@ namespace blink {
 //
 // Note that this class requires a copy constructor and assignment
 // operator in order to be stored in the red-black tree.
-
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 #ifndef NDEBUG
 template <class T>
@@ -143,11 +142,31 @@ class PODInterval {
  private:
   T low_;
   T high_;
-  GC_PLUGIN_IGNORE("crbug.com/513116")
+// https://crbug.com/513116.
+#if defined(__clang__)
+  __attribute__((annotate("blink_gc_plugin_ignore"))) UserData data_;
+#else
   UserData data_;
+#endif
   T max_high_;
 };
 
-}  // namespace blink
+#ifndef NDEBUG
+template <>
+struct ValueToString<float> {
+  STATIC_ONLY(ValueToString);
+  static String ToString(const float value) { return String::Number(value); }
+};
+template <>
+struct ValueToString<double> {
+  static String ToString(const double value) { return String::Number(value); }
+};
+template <>
+struct ValueToString<int> {
+  static String ToString(const int& value) { return String::Number(value); }
+};
+#endif
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_H_
+}  // namespace WTF
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_INTERVAL_H_

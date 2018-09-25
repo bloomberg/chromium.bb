@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_FREE_LIST_ARENA_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_FREE_LIST_ARENA_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_FREE_LIST_ARENA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_FREE_LIST_ARENA_H_
 
-#include "third_party/blink/renderer/platform/pod_arena.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/pod_arena.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
-namespace blink {
+namespace WTF {
 
 template <class T>
 class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
@@ -123,6 +123,6 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
   friend class PODFreeListArenaTest;
 };
 
-}  // namespace blink
+}  // namespace WTF
 
 #endif
