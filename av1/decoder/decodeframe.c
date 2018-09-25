@@ -1721,7 +1721,7 @@ static PARTITION_TYPE read_partition(MACROBLOCKD *xd, int mi_row, int mi_col,
 
 // TODO(slavarnway): eliminate bsize and subsize in future commits
 static void decode_partition(AV1Decoder *const pbi, ThreadData *const td,
-                             int mi_row, int mi_col, aom_reader *r,
+                             int mi_row, int mi_col, aom_reader *reader,
                              BLOCK_SIZE bsize, int parse_decode_flag) {
   AV1_COMMON *const cm = &pbi->common;
   MACROBLOCKD *const xd = &td->xd;
@@ -1754,14 +1754,14 @@ static void decode_partition(AV1Decoder *const pbi, ThreadData *const td,
         for (int rrow = rrow0; rrow < rrow1; ++rrow) {
           for (int rcol = rcol0; rcol < rcol1; ++rcol) {
             const int runit_idx = rcol + rrow * rstride;
-            loop_restoration_read_sb_coeffs(cm, xd, r, plane, runit_idx);
+            loop_restoration_read_sb_coeffs(cm, xd, reader, plane, runit_idx);
           }
         }
       }
     }
 
     partition = (bsize < BLOCK_8X8) ? PARTITION_NONE
-                                    : read_partition(xd, mi_row, mi_col, r,
+                                    : read_partition(xd, mi_row, mi_col, reader,
                                                      has_rows, has_cols, bsize);
   } else {
     partition = get_partition(cm, mi_row, mi_col, bsize);
@@ -1780,12 +1780,12 @@ static void decode_partition(AV1Decoder *const pbi, ThreadData *const td,
 
 #define DEC_BLOCK_STX_ARG
 #define DEC_BLOCK_EPT_ARG partition,
-#define DEC_BLOCK(db_r, db_c, db_subsize)                                     \
-  block_visit[parse_decode_flag](pbi, td, DEC_BLOCK_STX_ARG(db_r), (db_c), r, \
-                                 DEC_BLOCK_EPT_ARG(db_subsize))
-#define DEC_PARTITION(db_r, db_c, db_subsize)                                 \
-  decode_partition(pbi, td, DEC_BLOCK_STX_ARG(db_r), (db_c), r, (db_subsize), \
-                   parse_decode_flag)
+#define DEC_BLOCK(db_r, db_c, db_subsize)                                  \
+  block_visit[parse_decode_flag](pbi, td, DEC_BLOCK_STX_ARG(db_r), (db_c), \
+                                 reader, DEC_BLOCK_EPT_ARG(db_subsize))
+#define DEC_PARTITION(db_r, db_c, db_subsize)                        \
+  decode_partition(pbi, td, DEC_BLOCK_STX_ARG(db_r), (db_c), reader, \
+                   (db_subsize), parse_decode_flag)
 
   switch (partition) {
     case PARTITION_NONE: DEC_BLOCK(mi_row, mi_col, subsize); break;
