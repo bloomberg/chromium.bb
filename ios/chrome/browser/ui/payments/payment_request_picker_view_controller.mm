@@ -138,6 +138,12 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
   [self addChildViewController:self.appBarViewController];
   ConfigureAppBarViewControllerWithCardStyle(self.appBarViewController);
   self.appBarViewController.headerView.trackingScrollView = self.tableView;
+  // Match the width of the parent view.
+  CGRect frame = self.appBarViewController.view.frame;
+  frame.origin.x = 0;
+  frame.size.width =
+      self.appBarViewController.parentViewController.view.bounds.size.width;
+  self.appBarViewController.view.frame = frame;
   [self.view addSubview:self.appBarViewController.view];
   [self.appBarViewController didMoveToParentViewController:self];
 }
