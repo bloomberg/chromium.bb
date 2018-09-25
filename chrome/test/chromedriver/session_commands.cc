@@ -269,6 +269,10 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
 
   session->unhandled_prompt_behavior = capabilities.unhandled_prompt_behavior;
 
+  session->implicit_wait = capabilities.implicit_wait_timeout;
+  session->page_load_timeout = capabilities.page_load_timeout;
+  session->script_timeout = capabilities.script_timeout;
+
   Log::Level driver_level = Log::kWarning;
   if (capabilities.logging_prefs.count(WebDriverLog::kDriverType))
     driver_level = capabilities.logging_prefs[WebDriverLog::kDriverType];

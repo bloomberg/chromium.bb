@@ -2159,6 +2159,25 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
 class ChromeDesiredCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes desired capabilities."""
 
+  def testDefaultTimeouts(self):
+    driver = self.CreateDriver()
+    timeouts = driver.GetTimeouts()
+    # Compare against defaults in W3C spec
+    self.assertEquals(timeouts['implicit'], 0)
+    self.assertEquals(timeouts['pageLoad'], 300000)
+    self.assertEquals(timeouts['script'], 30000)
+
+  def testTimeouts(self):
+    driver = self.CreateDriver(timeouts = {
+        'implicit': 123,
+        'pageLoad': 456,
+        'script':   789
+    })
+    timeouts = driver.GetTimeouts()
+    self.assertEquals(timeouts['implicit'], 123)
+    self.assertEquals(timeouts['pageLoad'], 456)
+    self.assertEquals(timeouts['script'], 789)
+
   def testUnexpectedAlertBehaviour(self):
     driver = self.CreateDriver(unexpected_alert_behaviour="accept")
     self.assertEquals("accept",

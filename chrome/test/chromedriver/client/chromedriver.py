@@ -132,7 +132,7 @@ class ChromeDriver(object):
                send_w3c_capability=None, send_w3c_request=None,
                page_load_strategy=None, unexpected_alert_behaviour=None,
                devtools_events_to_log=None, accept_insecure_certs=None,
-               test_name=None):
+               timeouts=None, test_name=None):
     self._executor = command_executor.CommandExecutor(server_url)
     self.w3c_compliant = False
 
@@ -229,6 +229,9 @@ class ChromeDriver(object):
 
     if accept_insecure_certs is not None:
       params['acceptInsecureCerts'] = accept_insecure_certs
+
+    if timeouts is not None:
+      params['timeouts'] = timeouts
 
     if test_name is not None:
       params['goog:testName'] = test_name
@@ -359,6 +362,9 @@ class ChromeDriver(object):
   def FindElements(self, strategy, target):
     return self.ExecuteCommand(
         Command.FIND_ELEMENTS, {'using': strategy, 'value': target})
+
+  def GetTimeouts(self):
+    return self.ExecuteCommand(Command.GET_TIMEOUTS)
 
   def SetTimeouts(self, params):
     return self.ExecuteCommand(Command.SET_TIMEOUTS, params)

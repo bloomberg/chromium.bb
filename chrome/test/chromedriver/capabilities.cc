@@ -219,6 +219,30 @@ Status ParseUnhandledPromptBehavior(const base::Value& option,
   return Status(kInvalidArgument, "invalid 'unhandledPromptBehavior'");
 }
 
+Status ParseTimeouts(const base::Value& option, Capabilities* capabilities) {
+  const base::DictionaryValue* timeouts;
+  if (!option.GetAsDictionary(&timeouts))
+    return Status(kInvalidArgument, "'timeouts' must be a JSON object");
+
+  std::map<std::string, Parser> parser_map;
+  parser_map["script"] =
+      base::BindRepeating(&ParseTimeDelta, &capabilities->script_timeout);
+  parser_map["pageLoad"] =
+      base::BindRepeating(&ParseTimeDelta, &capabilities->page_load_timeout);
+  parser_map["implicit"] = base::BindRepeating(
+      &ParseTimeDelta, &capabilities->implicit_wait_timeout);
+
+  for (const auto& it : timeouts->DictItems()) {
+    if (parser_map.find(it.first) == parser_map.end())
+      return Status(kInvalidArgument,
+                    "unrecognized 'timeouts' option: " + it.first);
+    Status status = parser_map[it.first].Run(it.second, capabilities);
+    if (status.IsError())
+      return Status(kInvalidArgument, "cannot parse " + it.first, status);
+  }
+  return Status(kOk);
+}
+
 Status ParseSwitches(const base::Value& option,
                      Capabilities* capabilities) {
   const base::ListValue* switches_list = NULL;
@@ -705,7 +729,7 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
       base::BindRepeating(&ParseString, &platform_name);
   parser_map["pageLoadStrategy"] = base::BindRepeating(&ParsePageLoadStrategy);
   parser_map["proxy"] = base::BindRepeating(&ParseProxy);
-  // TODO(https://crbug.com/chromedriver/1997): Parse "timeouts".
+  parser_map["timeouts"] = base::BindRepeating(&ParseTimeouts);
   // TODO(https://crbug.com/chromedriver/2596): "unexpectedAlertBehaviour" is
   // legacy name of "unhandledPromptBehavior", remove when we stop supporting
   // legacy mode.

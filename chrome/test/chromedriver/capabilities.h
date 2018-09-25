@@ -20,6 +20,7 @@
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/net/net_util.h"
+#include "chrome/test/chromedriver/session.h"
 
 namespace base {
 class CommandLine;
@@ -119,10 +120,9 @@ struct Capabilities {
 
   // Data from "proxy" capability are stored in "switches" field.
 
-  // The default values for the timeout fields came from W3C spec.
-  base::TimeDelta script_timeout = base::TimeDelta::FromSeconds(30);
-  base::TimeDelta page_load_timeout = base::TimeDelta::FromSeconds(300);
-  base::TimeDelta implicit_wait_timeout = base::TimeDelta::FromSeconds(0);
+  base::TimeDelta script_timeout = Session::kDefaultScriptTimeout;
+  base::TimeDelta page_load_timeout = Session::kDefaultPageLoadTimeout;
+  base::TimeDelta implicit_wait_timeout = Session::kDefaultImplicitWaitTimeout;
 
   std::string unhandled_prompt_behavior;
 
