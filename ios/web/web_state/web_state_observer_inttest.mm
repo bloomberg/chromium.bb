@@ -490,10 +490,9 @@ ACTION_P4(VerifyRestorationStartedContext, web_state, url, context, nav_id) {
   EXPECT_NE(0, *nav_id);
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_TRUE((*context)->HasUserGesture());
-  // Transition type is not restored (crbug.com/888011).
   ui::PageTransition actual_transition = (*context)->GetPageTransition();
-  EXPECT_TRUE(PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_LINK,
-                                       actual_transition))
+  EXPECT_TRUE(PageTransitionCoreTypeIs(
+      ui::PageTransition::PAGE_TRANSITION_RELOAD, actual_transition))
       << "Got unexpected transition: " << actual_transition;
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->HasCommitted());
@@ -526,10 +525,9 @@ ACTION_P5(VerifyRestorationFinishedContext,
   EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_TRUE((*context)->HasUserGesture());
-  // Transition type is not restored (crbug.com/888011).
   ui::PageTransition actual_transition = (*context)->GetPageTransition();
-  EXPECT_TRUE(PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_LINK,
-                                       actual_transition))
+  EXPECT_TRUE(PageTransitionCoreTypeIs(
+      ui::PageTransition::PAGE_TRANSITION_RELOAD, actual_transition))
       << "Got unexpected transition: " << actual_transition;
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_TRUE((*context)->HasCommitted());
