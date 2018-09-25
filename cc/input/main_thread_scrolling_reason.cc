@@ -71,6 +71,10 @@ void MainThreadScrollingReason::AddToTracedValue(
     traced_value.AppendString("Non-invertible transform");
   if (reasons & kPageBasedScrolling)
     traced_value.AppendString("Page-based scrolling");
+  if (reasons & kWheelEventHandlerRegion)
+    traced_value.AppendString("Wheel event handler region");
+  if (reasons & kTouchEventHandlerRegion)
+    traced_value.AppendString("Touch event handler region");
 
   traced_value.EndArray();
 }
