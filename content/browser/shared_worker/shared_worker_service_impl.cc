@@ -41,6 +41,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -363,29 +364,50 @@ void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
 // TODO(nhiroki): Align this function with AddAdditionalRequestHeaders() in
 // navigation_request.cc, FrameFetchContext, and WorkerFetchContext.
 void SharedWorkerServiceImpl::AddAdditionalRequestHeaders(
-    net::HttpRequestHeaders* headers,
+    network::ResourceRequest* resource_request,
     BrowserContext* browser_context) {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
+  // TODO(nhiroki): Return early when the request is neither HTTP nor HTTPS
+  // (i.e., Blob URL or Data URL). This should be checked by
+  // SchemeIsHTTPOrHTTPS(), but currently cross-origin workers on extensions
+  // are allowed and the check doesn't work well. See https://crbug.com/867302.
+
   // Set the "Accept" header.
-  headers->SetHeaderIfMissing(network::kAcceptHeader,
-                              network::kDefaultAcceptHeader);
+  resource_request->headers.SetHeaderIfMissing(network::kAcceptHeader,
+                                               network::kDefaultAcceptHeader);
 
   // Set the "DNT" header if necessary.
   RendererPreferences renderer_preferences;
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
       browser_context, &renderer_preferences);
   if (renderer_preferences.enable_do_not_track)
-    headers->SetHeaderIfMissing(kDoNotTrackHeader, "1");
+    resource_request->headers.SetHeaderIfMissing(kDoNotTrackHeader, "1");
 
   // Set the "Save-Data" header if necessary.
   if (GetContentClient()->browser()->IsDataSaverEnabled(browser_context) &&
       !base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
                                                "holdback_web", false)) {
-    headers->SetHeaderIfMissing("Save-Data", "on");
+    resource_request->headers.SetHeaderIfMissing("Save-Data", "on");
   }
 
-  // TODO(nhiroki): Set the "Sec-Metadata" header (https://crbug.com/715632).
+  // Set the "Sec-Metadata" header if necessary.
+  if (base::FeatureList::IsEnabled(features::kSecMetadata) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    // The worker's origin can be different from the constructor's origin, for
+    // example, when the worker created from the extension.
+    // TODO(hiroshige): Add DCHECK to make sure the same-originness once the
+    // cross-origin workers are deprecated (https://crbug.com/867302).
+    std::string site_value = "cross-site";
+    if (resource_request->request_initiator->IsSameOriginWith(
+            url::Origin::Create(resource_request->url))) {
+      site_value = "same-origin";
+    }
+    std::string value = base::StringPrintf(
+        "destination=\"sharedworker\", site=\"%s\"", site_value.c_str());
+    resource_request->headers.SetHeaderIfMissing("Sec-Metadata", value);
+  }
 }
 
 void SharedWorkerServiceImpl::CreateWorker(
@@ -439,7 +461,7 @@ void SharedWorkerServiceImpl::CreateWorker(
 
       auto* render_process_host = RenderProcessHost::FromID(process_id);
       DCHECK(!IsShuttingDown(render_process_host));
-      AddAdditionalRequestHeaders(&resource_request->headers,
+      AddAdditionalRequestHeaders(resource_request.get(),
                                   render_process_host->GetBrowserContext());
     }
 
