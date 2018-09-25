@@ -192,23 +192,21 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
 
     SetMultiDeviceApiEnabled();
 
-    // Lock the screen. This should not trigger a scan.
+    // Lock the screen. This should never trigger a scan.
     SetScreenLockedState(true /* is_locked */);
     EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
     EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
 
-    // Try to start a scan. Regardless of screen lock state, this should cause a
-    // scan if the device is offline. The timer should not have been started.
+    // Try to start a scan. Because the screen is locked, this should not
+    // cause a scan to be started.
     host_scan_scheduler_->AttemptScanIfOffline();
-    EXPECT_EQ(is_online ? 0u : 1u, fake_host_scanner_->num_scans_started());
+    EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
     EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
-
-    fake_host_scanner_->StopScan();
 
     // Unlock the screen. If the device is offline, a new scan should have
     // started. The timer should be untouched.
     SetScreenLockedState(false /* is_locked */);
-    EXPECT_EQ(is_online ? 0u : 2u, fake_host_scanner_->num_scans_started());
+    EXPECT_EQ(is_online ? 0u : 1u, fake_host_scanner_->num_scans_started());
     EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
   }
 
