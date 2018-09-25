@@ -4,6 +4,7 @@
 
 #include "content/browser/scheduler/browser_task_executor.h"
 
+#include "base/no_destructor.h"
 #include "content/browser/browser_thread_impl.h"
 
 namespace content {
@@ -11,6 +12,45 @@ namespace {
 
 // |g_browser_task_executor| is intentionally leaked on shutdown.
 BrowserTaskExecutor* g_browser_task_executor = nullptr;
+
+// An implementation of SingleThreadTaskRunner to be used in conjunction with
+// BrowserThread. BrowserThreadTaskRunners are vended by
+// base::Create*TaskRunnerWithTraits({BrowserThread::UI/IO}).
+//
+// TODO(gab): Consider replacing this with direct calls to task runners
+// |BrowserThreadImpl::GetTaskRunnerForThread()| -- only works if none are
+// requested before starting the threads.
+class BrowserThreadTaskRunner : public base::SingleThreadTaskRunner {
+ public:
+  explicit BrowserThreadTaskRunner(BrowserThread::ID identifier)
+      : id_(identifier) {}
+
+  // SingleThreadTaskRunner implementation.
+  bool PostDelayedTask(const base::Location& from_here,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override {
+    return BrowserThreadImpl::GetTaskRunnerForThread(id_)->PostDelayedTask(
+        from_here, std::move(task), delay);
+  }
+
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
+    return BrowserThreadImpl::GetTaskRunnerForThread(id_)
+        ->PostNonNestableDelayedTask(from_here, std::move(task), delay);
+  }
+
+  bool RunsTasksInCurrentSequence() const override {
+    return BrowserThread::CurrentlyOn(id_);
+  }
+
+ private:
+  ~BrowserThreadTaskRunner() override {}
+
+  const BrowserThread::ID id_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserThreadTaskRunner);
+};
 
 }  // namespace
 
@@ -90,8 +130,24 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
 scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
     const BrowserTaskTraitsExtension& extension) {
   BrowserThread::ID thread_id = extension.browser_thread();
+  DCHECK_GE(thread_id, 0);
   DCHECK_LT(thread_id, BrowserThread::ID::ID_COUNT);
-  return BrowserThreadImpl::GetTaskRunnerForThread(thread_id);
+  return GetProxyTaskRunnerForThread(thread_id);
+}
+
+// static
+scoped_refptr<base::SingleThreadTaskRunner>
+BrowserTaskExecutor::GetProxyTaskRunnerForThread(BrowserThread::ID id) {
+  using TaskRunnerMap = std::array<scoped_refptr<base::SingleThreadTaskRunner>,
+                                   BrowserThread::ID_COUNT>;
+  static const base::NoDestructor<TaskRunnerMap> task_runners([] {
+    TaskRunnerMap task_runners;
+    for (int i = 0; i < BrowserThread::ID_COUNT; ++i)
+      task_runners[i] = base::MakeRefCounted<BrowserThreadTaskRunner>(
+          static_cast<BrowserThread::ID>(i));
+    return task_runners;
+  }());
+  return (*task_runners)[id];
 }
 
 }  // namespace content
