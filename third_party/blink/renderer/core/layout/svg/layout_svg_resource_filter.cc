@@ -85,10 +85,10 @@ bool LayoutSVGResourceFilter::RemoveClientFromCache(SVGResourceClient& client) {
 }
 
 FloatRect LayoutSVGResourceFilter::ResourceBoundingBox(
-    const LayoutObject* object) {
+    const FloatRect& reference_box) const {
   const auto* filter_element = ToSVGFilterElement(GetElement());
   return SVGLengthContext::ResolveRectangle(filter_element, FilterUnits(),
-                                            object->ObjectBoundingBox());
+                                            reference_box);
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::FilterUnits() const {

@@ -392,16 +392,20 @@ void SVGLayoutSupport::AdjustVisualRectWithResources(
   if (!resources)
     return;
 
-  if (LayoutSVGResourceFilter* filter = resources->Filter())
-    visual_rect = filter->ResourceBoundingBox(&layout_object);
+  if (LayoutSVGResourceFilter* filter = resources->Filter()) {
+    visual_rect =
+        filter->ResourceBoundingBox(layout_object.ObjectBoundingBox());
+  }
 
   if (LayoutSVGResourceClipper* clipper = resources->Clipper()) {
     visual_rect.Intersect(
         clipper->ResourceBoundingBox(layout_object.ObjectBoundingBox()));
   }
 
-  if (LayoutSVGResourceMasker* masker = resources->Masker())
-    visual_rect.Intersect(masker->ResourceBoundingBox(&layout_object));
+  if (LayoutSVGResourceMasker* masker = resources->Masker()) {
+    visual_rect.Intersect(
+        masker->ResourceBoundingBox(layout_object.ObjectBoundingBox()));
+  }
 }
 
 bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
