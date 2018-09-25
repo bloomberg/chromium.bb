@@ -81,7 +81,7 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
     break_iterator_.SetStartOffset(offset_);
-    previous_line_had_forced_break_ = break_token->IsForcedBreak();
+    is_after_forced_break_ = break_token->IsForcedBreak();
     items_data_.AssertOffset(item_index_, offset_);
     ignore_floats_ = break_token->IgnoreFloats();
   }
@@ -146,6 +146,14 @@ void NGLineBreaker::PrepareNextLine() {
   // NGLineInfo is not supposed to be re-used becase it's not much gain and to
   // avoid rare code path.
   DCHECK(item_results_->IsEmpty());
+
+  if (item_index_) {
+    // We're past the first line
+    previous_line_had_forced_break_ = is_after_forced_break_;
+    is_after_forced_break_ = false;
+    is_first_formatted_line_ = false;
+    use_first_line_style_ = false;
+  }
 
   line_info_->SetStartOffset(offset_);
   line_info_->SetLineStyle(node_, items_data_, constraint_space_,

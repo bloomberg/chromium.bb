@@ -51,6 +51,8 @@ class CORE_EXPORT NGLineBreaker {
   // the line.
   void NextLine(NGLineInfo*);
 
+  bool IsFinished() const { return item_index_ >= Items().size(); }
+
   // Create an NGInlineBreakToken for the last line returned by NextLine().
   scoped_refptr<NGInlineBreakToken> CreateBreakToken(
       const NGLineInfo&,
