@@ -20,22 +20,22 @@
         {
           "object": "NGPhysicalBoxFragment LayoutInline (anonymous)",
           "rect": [8, 68, 140, 20],
-          "reason": "appeared"
+          "reason": "subtree"
         },
         {
           "object": "NGPhysicalTextFragment 'JOCULAR'",
           "rect": [8, 68, 140, 20],
-          "reason": "appeared"
+          "reason": "subtree"
         },
         {
           "object": "NGPhysicalBoxFragment LayoutInline (anonymous)",
           "rect": [8, 8, 140, 20],
-          "reason": "disappeared"
+          "reason": "subtree"
         },
         {
           "object": "NGPhysicalTextFragment 'JOCULAR'",
           "rect": [8, 8, 140, 20],
-          "reason": "disappeared"
+          "reason": "subtree"
         }
       ]
     }

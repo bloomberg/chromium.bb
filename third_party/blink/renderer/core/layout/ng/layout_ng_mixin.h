@@ -88,8 +88,9 @@ class LayoutNGMixin : public Base {
 
  private:
   void AddScrollingOverflowFromChildren();
-  void SetPaintFragment(NGPaintFragment* last_paint_fragment,
-                        scoped_refptr<NGPaintFragment>);
+  void SetPaintFragment(scoped_refptr<const NGPhysicalFragment> fragment,
+                        NGPhysicalOffset offset,
+                        scoped_refptr<NGPaintFragment>* current);
 
  protected:
   void AddOutlineRects(Vector<LayoutRect>&,

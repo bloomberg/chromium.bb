@@ -165,23 +165,67 @@ NGPaintFragment::NGPaintFragment(
 
 NGPaintFragment::~NGPaintFragment() = default;
 
-scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
+scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
     scoped_refptr<const NGPhysicalFragment> fragment,
-    NGPhysicalOffset offset) {
+    NGPhysicalOffset offset,
+    NGPaintFragment* parent,
+    scoped_refptr<NGPaintFragment> previous_instance,
+    bool* populate_children) {
   DCHECK(fragment);
 
-  scoped_refptr<NGPaintFragment> paint_fragment =
-      base::AdoptRef(new NGPaintFragment(std::move(fragment), offset, nullptr));
+  // If the previous instance is given, check if it is re-usable.
+  // Re-using NGPaintFragment allows the paint system to identify objects.
+  if (previous_instance) {
+    DCHECK_EQ(previous_instance->parent_, parent);
 
-  HashMap<const LayoutObject*, NGPaintFragment*> last_fragment_map;
-  paint_fragment->PopulateDescendants(NGPhysicalOffset(),
-                                      &last_fragment_map);
+    // If the physical fragment was re-used, re-use the paint fragment as well.
+    if (&previous_instance->PhysicalFragment() == fragment.get()) {
+      previous_instance->offset_ = offset;
+      previous_instance->next_for_same_layout_object_ = nullptr;
+      // No need to re-populate children because NGPhysicalFragment is
+      // immutable and thus children should not have been changed.
+      *populate_children = false;
+      return previous_instance;
+    }
+
+    // If the LayoutObject are the same, the new paint fragment should have the
+    // same DisplayItemClient identity as the previous instance.
+    if (previous_instance->GetLayoutObject() == fragment->GetLayoutObject()) {
+      previous_instance->physical_fragment_ = std::move(fragment);
+      previous_instance->offset_ = offset;
+      previous_instance->next_for_same_layout_object_ = nullptr;
+      if (!*populate_children)
+        previous_instance->children_.clear();
+      return previous_instance;
+    }
+  }
+
+  return base::AdoptRef(
+      new NGPaintFragment(std::move(fragment), offset, parent));
+}
+
+scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
+    scoped_refptr<const NGPhysicalFragment> fragment,
+    NGPhysicalOffset offset,
+    scoped_refptr<NGPaintFragment> previous_instance) {
+  DCHECK(fragment);
+
+  bool populate_children = fragment->IsContainer();
+  scoped_refptr<NGPaintFragment> paint_fragment =
+      CreateOrReuse(std::move(fragment), offset, nullptr,
+                    std::move(previous_instance), &populate_children);
+
+  if (populate_children) {
+    HashMap<const LayoutObject*, NGPaintFragment*> last_fragment_map;
+    paint_fragment->PopulateDescendants(NGPhysicalOffset(), &last_fragment_map);
+  }
 
   return paint_fragment;
 }
 
-void NGPaintFragment::UpdatePhysicalFragmentFromCachedLayoutResult(
-    scoped_refptr<const NGPhysicalFragment> fragment) {
+void NGPaintFragment::UpdateFromCachedLayoutResult(
+    scoped_refptr<const NGPhysicalFragment> fragment,
+    NGPhysicalOffset offset) {
   DCHECK(fragment);
 
 #if DCHECK_IS_ON()
@@ -196,7 +240,9 @@ void NGPaintFragment::UpdatePhysicalFragmentFromCachedLayoutResult(
   }
 #endif
 
-  physical_fragment_ = fragment;
+  DCHECK_EQ(physical_fragment_.get(), fragment.get());
+  physical_fragment_ = std::move(fragment);
+  offset_ = offset;
 }
 
 NGPaintFragment* NGPaintFragment::Last(const NGBreakToken& break_token) {
@@ -215,6 +261,29 @@ NGPaintFragment* NGPaintFragment::Last() {
       return fragment;
     fragment = next;
   }
+}
+
+scoped_refptr<NGPaintFragment>* NGPaintFragment::Find(
+    scoped_refptr<NGPaintFragment>* fragment,
+    const NGBreakToken* break_token) {
+  DCHECK(fragment);
+
+  if (!break_token)
+    return fragment;
+
+  while (true) {
+    // TODO(kojii): Sometimes an unknown break_token is given. Need to
+    // investigate why, and handle appropriately. For now, just keep it to avoid
+    // crashes and use-after-free.
+    if (!*fragment)
+      return fragment;
+
+    scoped_refptr<NGPaintFragment>* next = &(*fragment)->next_fragmented_;
+    if ((*fragment)->PhysicalFragment().BreakToken() == break_token)
+      return next;
+    fragment = next;
+  }
+  NOTREACHED();
 }
 
 void NGPaintFragment::SetNext(scoped_refptr<NGPaintFragment> fragment) {
@@ -258,17 +327,21 @@ LayoutRect NGPaintFragment::ChildrenInkOverflow() const {
 void NGPaintFragment::PopulateDescendants(
     const NGPhysicalOffset inline_offset_to_container_box,
     HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map) {
-  DCHECK(children_.IsEmpty());
   const NGPhysicalFragment& fragment = PhysicalFragment();
-  if (!fragment.IsContainer())
-    return;
+  DCHECK(fragment.IsContainer());
   const NGPhysicalContainerFragment& container =
       ToNGPhysicalContainerFragment(fragment);
   children_.ReserveCapacity(container.Children().size());
 
-  for (const auto& child_fragment : container.Children()) {
-    scoped_refptr<NGPaintFragment> child = base::AdoptRef(new NGPaintFragment(
-        child_fragment.get(), child_fragment.Offset(), this));
+  unsigned child_index = 0;
+  for (const NGLink& child_fragment : container.Children()) {
+    bool populate_children = child_fragment->IsContainer() &&
+                             !child_fragment->IsBlockFormattingContextRoot();
+    scoped_refptr<NGPaintFragment> child = CreateOrReuse(
+        child_fragment.get(), child_fragment.Offset(), this,
+        child_index < children_.size() ? std::move(children_[child_index])
+                                       : nullptr,
+        &populate_children);
 
     if (!child_fragment->IsFloating() &&
         !child_fragment->IsOutOfFlowPositioned() &&
@@ -281,18 +354,20 @@ void NGPaintFragment::PopulateDescendants(
           inline_offset_to_container_box + child_fragment.Offset();
     }
 
-    // Recurse children, except when this is a block formatting context root.
-    // TODO(kojii): At the block formatting context root, children may be for
-    // NGPaint, LayoutNG but not for NGPaint, or legacy. In order to get the
-    // maximum test coverage, split the NGPaintFragment tree at all possible
-    // engine boundaries.
-    if (!child_fragment->IsBlockFormattingContextRoot()) {
+    if (populate_children) {
       child->PopulateDescendants(child->inline_offset_to_container_box_,
                                  last_fragment_map);
     }
 
-    children_.push_back(std::move(child));
+    if (child_index < children_.size())
+      children_[child_index] = std::move(child);
+    else
+      children_.push_back(std::move(child));
+    ++child_index;
   }
+
+  if (child_index < children_.size())
+    children_.resize(child_index);
 }
 
 // Add to a linked list for each LayoutObject.
@@ -300,6 +375,7 @@ void NGPaintFragment::AssociateWithLayoutObject(
     LayoutObject* layout_object,
     HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map) {
   DCHECK(layout_object);
+  DCHECK(!next_for_same_layout_object_);
 
   // TODO(kojii): The LayoutObject is inline, except for column container
   // fragment. We should have better way to distinguish it, probably after we

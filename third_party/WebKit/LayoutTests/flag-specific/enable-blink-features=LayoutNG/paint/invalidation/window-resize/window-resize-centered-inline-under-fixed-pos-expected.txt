@@ -25,12 +25,7 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 250],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 250],
-          "reason": "disappeared"
+          "reason": "subtree"
         },
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV class='child'",
@@ -68,12 +63,7 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 250],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 250],
-          "reason": "disappeared"
+          "reason": "subtree"
         },
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV class='child'",
@@ -116,12 +106,7 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 600],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 250],
-          "reason": "disappeared"
+          "reason": "subtree"
         },
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV class='child'",
@@ -169,12 +154,7 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 600],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 600],
-          "reason": "disappeared"
+          "reason": "subtree"
         },
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV class='child'",

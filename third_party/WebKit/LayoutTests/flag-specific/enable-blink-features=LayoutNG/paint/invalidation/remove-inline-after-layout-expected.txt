@@ -40,12 +40,7 @@
         {
           "object": "NGPhysicalTextFragment ' '",
           "rect": [108, 193, 4, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment ' '",
-          "rect": [108, 193, 4, 19],
-          "reason": "disappeared"
+          "reason": "subtree"
         }
       ]
     }
