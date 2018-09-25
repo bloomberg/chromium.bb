@@ -31,8 +31,6 @@
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
-#import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button.h"
@@ -88,9 +86,6 @@ const CGFloat kElementPadding = 4;
 // wide inset.
 const CGFloat kButtonInset = 2;
 
-// The minimum width of the location bar in pixels.
-const CGFloat kMinimumLocationBarWidth = 100.0;
-
 }  // namespace
 
 @interface ToolbarController()
@@ -108,7 +103,6 @@ const CGFloat kMinimumLocationBarWidth = 100.0;
 // Height of the toolbar in pixels when the bookmark bar is closed.
 - (CGFloat)baseToolbarHeight;
 - (void)toolbarFrameChanged;
-- (void)showLocationBarOnly;
 - (void)maintainMinimumLocationBarWidth;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
 - (void)updateAppMenuButtonSeverity:(AppMenuIconController::Severity)severity
@@ -350,22 +344,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [self initCommandStatus:commands_];
   [reloadButton_ setCommandUpdater:commands_];
 
-  locationBarView_.reset(new LocationBarViewMac(locationBar_, commands_,
-                                                profile_, browser_));
-  [locationBar_ setFont:[NSFont systemFontOfSize:14]];
-
-  // Add the location bar's accessibility views as direct subviews of the
-  // toolbar. They are logical children of the location bar, but the location
-  // bar's actual Cocoa control is an NSCell, so it cannot have child views.
-  // The |locationBarView_| is responsible for positioning the accessibility
-  // views.
-  std::vector<NSView*> accessibility_views =
-      locationBarView_->GetDecorationAccessibilityViews();
-  for (const auto& view : accessibility_views) {
-    [[self toolbarView] addSubview:view
-                        positioned:NSWindowAbove
-                        relativeTo:locationBar_];
-  }
+  locationBarView_.reset(new LocationBarViewMac(commands_, profile_, browser_));
 
   // Register pref observers for the optional home and page/options buttons
   // and then add them to the toolbar based on those prefs.
@@ -491,17 +470,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [[homeButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
-  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_LOCATION);
-  [[locationBar_ cell]
-      accessibilitySetOverrideValue:description
-                       forAttribute:NSAccessibilityDescriptionAttribute];
-  // Expose Cmd+L shortcut in help for now.
-  // TODO(aleventhal) Key shortcuts attribute should eventually get
-  // its own field. Follow what WebKit does for aria-keyshortcuts, see
-  // https://bugs.webkit.org/show_bug.cgi?id=159215 (WebKit bug).
-  [[locationBar_ cell]
-      accessibilitySetOverrideValue:@"\u2318L"  // Expose Cmd+L shortcut.
-                       forAttribute:NSAccessibilityHelpAttribute];
   description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_APP);
   [[appMenuButton_ cell]
       accessibilitySetOverrideValue:description
@@ -550,19 +518,13 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)locationBarWasAddedToWindow {
-  // Allow the |locationBarView_| to update itself to match the browser window
-  // theme.
-  locationBarView_->OnAddedToWindow();
 }
 
 - (BOOL)locationBarHasFocus {
-  return [autocompleteTextFieldEditor_ window] != nil;
+  return NO;
 }
 
 - (void)focusLocationBar:(BOOL)selectAll {
-  if (locationBarView_.get()) {
-    locationBarView_->FocusLocation(selectAll ? true : false);
-  }
 }
 
 // Called when the state for a command changes to |enabled|. Update the
@@ -594,16 +556,11 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)updateToolbarWithContents:(WebContents*)tab {
-  locationBarView_->Update(tab);
-
-  [locationBar_ updateMouseTracking];
-
   BOOL needReloadMenu = chrome::IsDebuggerAttachedToCurrentTab(browser_);
   [reloadButton_ setMenuEnabled:needReloadMenu];
 }
 
 - (void)resetTabState:(WebContents*)tab {
-  locationBarView_->ResetTabState(tab);
 }
 
 - (void)setStarredState:(BOOL)isStarred {
@@ -613,7 +570,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
-  locationBarView_->ZoomChangedForActiveTab(canShowBubble);
 }
 
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
@@ -625,37 +581,13 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 
   hasToolbar_ = toolbar;
 
-  // If there's a toolbar, there must be a location bar.
-  DCHECK((toolbar && locBar) || !toolbar);
-  hasLocationBar_ = toolbar ? YES : locBar;
+  hasLocationBar_ = NO;
 
   // Decide whether to hide/show based on whether there's a location bar.
-  [[self view] setHidden:!hasLocationBar_];
-
-  // Make location bar not editable when in a pop-up or an app window.
-  locationBarView_->SetEditable(toolbar);
-
-  // If necessary, resize the location bar and hide the toolbar icons to display
-  // the toolbar with only the location bar inside it.
-  if (!hasToolbar_ && hasLocationBar_)
-    [self showLocationBarOnly];
+  [[self view] setHidden:!toolbar];
 }
 
 - (id)customFieldEditorForObject:(id)obj {
-  if (obj == locationBar_) {
-    // Lazily construct Field editor, Cocoa UI code always runs on the
-    // same thread, so there shoudn't be a race condition here.
-    if (autocompleteTextFieldEditor_.get() == nil) {
-      autocompleteTextFieldEditor_.reset(
-          [[AutocompleteTextFieldEditor alloc] init]);
-    }
-
-    // This needs to be called every time, otherwise notifications
-    // aren't sent correctly.
-    DCHECK(autocompleteTextFieldEditor_.get());
-    [autocompleteTextFieldEditor_.get() setFieldEditor:YES];
-    return autocompleteTextFieldEditor_.get();
-  }
   return nil;
 }
 
@@ -676,19 +608,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   if (hide == [homeButton_ isHidden])
     return;  // Nothing to do, view state matches pref state.
 
-  // Always shift the text field by the width of the home button minus one pixel
-  // since the frame edges of each button are right on top of each other. When
-  // hiding the button, reverse the direction of the movement (to the left).
-  CGFloat moveX = [homeButton_ frame].size.width;
-  // Ensure proper spacing between the home button and the location bar.
-  moveX += kElementPadding;
-  if (hide)
-    moveX *= -1;  // Reverse the direction of the move.
-  CGRect locationBarFrame = [locationBar_ frame];
-  locationBarFrame.size.width -= moveX;
-  if (!cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
-    locationBarFrame.origin.x += moveX;
-  [locationBar_ setFrame:locationBarFrame];
   [homeButton_ setHidden:hide];
 }
 
@@ -720,66 +639,12 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)maintainMinimumLocationBarWidth {
-  CGFloat locationBarWidth = NSWidth([locationBar_ frame]);
-  locationBarAtMinSize_ = locationBarWidth <= kMinimumLocationBarWidth;
-  if (locationBarAtMinSize_) {
-    CGFloat dX = kMinimumLocationBarWidth - locationBarWidth;
-    [self adjustLocationSizeBy:dX animate:NO];
-  }
 }
 
 - (void)toolbarFrameChanged {
 }
 
-// Hide the back, forward, reload, home, and app menu buttons of the toolbar.
-// This allows the location bar to occupy the entire width. There is no way to
-// undo this operation, and once it is called, no other programmatic changes
-// to the toolbar or location bar width should be made. This message is
-// invalid if the toolbar is shown or the location bar is hidden.
-- (void)showLocationBarOnly {
-  // -showLocationBarOnly is only ever called once, shortly after
-  // initialization, so the regular buttons should all be visible.
-  DCHECK(!hasToolbar_ && hasLocationBar_);
-  DCHECK(![backButton_ isHidden]);
-
-  // Ensure the location bar fills the toolbar.
-  NSRect toolbarFrame = [[self view] frame];
-  toolbarFrame.size.height = [ToolbarController locationBarHeight];
-  [[self view] setFrame:toolbarFrame];
-
-  [locationBar_ setFrame:NSMakeRect(0, 0, NSWidth([[self view] frame]),
-                                    [ToolbarController locationBarHeight])];
-
-  [backButton_ setHidden:YES];
-  [forwardButton_ setHidden:YES];
-  [reloadButton_ setHidden:YES];
-  [appMenuButton_ setHidden:YES];
-  [homeButton_ setHidden:YES];
-}
-
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate {
-  NSRect locationFrame = [locationBar_ frame];
-
-  CGFloat location_bar_flex = NSWidth(locationFrame) - kMinimumLocationBarWidth;
-
-  [locationBar_ stopAnimation];
-
-  if (dX == 0)
-    return;
-
-  if (dX < 0) {
-    // Clip to the minimum width. Speculative fix for crbug.com/746944.
-    dX = std::max(dX, -location_bar_flex);
-  }
-  // Ensure that the location bar is in its proper place.
-  locationFrame.size.width += dX;
-  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
-    locationFrame.origin.x -= dX;
-
-  if (animate)
-    [locationBar_ animateToFrame:locationFrame];
-  else
-    [locationBar_ setFrame:locationFrame];
 }
 
 - (NSPoint)bookmarkBubblePoint {
@@ -818,8 +683,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (BOOL)isLocationBarFocused {
-  OmniboxEditModel* model = locationBarView_->GetOmniboxView()->model();
-  return model->has_focus();
+  return NO;
 }
 
 // (URLDropTargetController protocol)

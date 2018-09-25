@@ -16,8 +16,6 @@
 #include "components/prefs/pref_member.h"
 #import "ui/base/cocoa/tracking_area.h"
 
-@class AutocompleteTextField;
-@class AutocompleteTextFieldEditor;
 @class BackForwardMenuController;
 class Browser;
 class CommandUpdater;
@@ -53,7 +51,7 @@ class NotificationBridge;
   IBOutlet ReloadButtonCocoa* reloadButton_;
   IBOutlet ToolbarButtonCocoa* homeButton_;
   IBOutlet MenuButton* appMenuButton_;
-  IBOutlet AutocompleteTextField* locationBar_;
+  IBOutlet id locationBar_;
   IBOutlet id browserActionsContainerView_;
 
  @private
@@ -63,8 +61,6 @@ class NotificationBridge;
   std::unique_ptr<ToolbarControllerInternal::CommandObserverBridge>
       commandObserver_;
   std::unique_ptr<LocationBarViewMac> locationBarView_;
-  base::scoped_nsobject<AutocompleteTextFieldEditor>
-      autocompleteTextFieldEditor_;
   base::scoped_nsobject<BackForwardMenuController> backMenuController_;
   base::scoped_nsobject<BackForwardMenuController> forwardMenuController_;
 

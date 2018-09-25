@@ -76,10 +76,10 @@
                         <action selector="commandDispatchUsingKeyModifiers:" target="-1" id="155"/>
                     </connections>
                 </button>
-                <textField focusRingType="exterior" verticalHuggingPriority="750" tag="33004" id="4" customClass="AutocompleteTextField">
+                <textField focusRingType="exterior" verticalHuggingPriority="750" tag="33004" id="4">
                     <rect key="frame" x="119" y="4" width="454" height="29"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" state="on" borderStyle="bezel" focusRingType="exterior" alignment="left" drawsBackground="YES" id="13" customClass="AutocompleteTextFieldCell">
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" state="on" borderStyle="bezel" focusRingType="exterior" alignment="left" drawsBackground="YES" id="13">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
