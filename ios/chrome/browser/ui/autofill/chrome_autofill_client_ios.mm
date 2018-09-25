@@ -161,13 +161,13 @@ void ChromeAutofillClientIOS::ConfirmSaveAutofillProfile(
 
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
           /*upload_save_card_callback=*/
           base::OnceCallback<void(const base::string16&)>(),
-          /*local_save_card_callback=*/callback, GetPrefs())));
+          /*local_save_card_callback=*/std::move(callback), GetPrefs())));
 }
 
 void ChromeAutofillClientIOS::ShowLocalCardMigrationDialog(
@@ -214,8 +214,8 @@ void ChromeAutofillClientIOS::ConfirmCreditCardFillAssist(
 }
 
 void ChromeAutofillClientIOS::LoadRiskData(
-    const base::Callback<void(const std::string&)>& callback) {
-  callback.Run(ios::GetChromeBrowserProvider()->GetRiskData());
+    base::OnceCallback<void(const std::string&)> callback) {
+  std::move(callback).Run(ios::GetChromeBrowserProvider()->GetRiskData());
 }
 
 bool ChromeAutofillClientIOS::HasCreditCardScanFeature() {

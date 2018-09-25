@@ -61,7 +61,7 @@ SaveCardBubbleControllerImpl::~SaveCardBubbleControllerImpl() {
 
 void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
     const CreditCard& card,
-    const base::Closure& save_card_callback) {
+    base::OnceClosure save_card_callback) {
   // Don't show the bubble if it's already visible.
   if (save_card_bubble_view_)
     return;
@@ -79,7 +79,7 @@ void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
       GetSecurityLevel());
 
   card_ = card;
-  local_save_card_callback_ = save_card_callback;
+  local_save_card_callback_ = std::move(save_card_callback);
   current_bubble_type_ = BubbleType::LOCAL_SAVE;
   ShowBubble();
 }
@@ -314,8 +314,7 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
       can_animate_ = base::FeatureList::IsEnabled(
           features::kAutofillSaveCardSignInAfterLocalSave);
 
-      local_save_card_callback_.Run();
-      local_save_card_callback_.Reset();
+      std::move(local_save_card_callback_).Run();
       break;
     case BubbleType::MANAGE_CARDS:
       AutofillMetrics::LogManageCardsPromptMetric(

@@ -290,7 +290,7 @@ void AwAutofillClient::ConfirmSaveAutofillProfile(
 
 void AwAutofillClient::ConfirmSaveCreditCardLocally(
     const autofill::CreditCard& card,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   NOTIMPLEMENTED();
 }
 
@@ -309,7 +309,7 @@ void AwAutofillClient::ConfirmCreditCardFillAssist(
 }
 
 void AwAutofillClient::LoadRiskData(
-    const base::Callback<void(const std::string&)>& callback) {
+    base::OnceCallback<void(const std::string&)> callback) {
   NOTIMPLEMENTED();
 }
 

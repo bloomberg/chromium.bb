@@ -33,7 +33,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       base::OnceCallback<void(const base::string16&)> upload_save_card_callback,
-      base::Closure local_save_card_callback,
+      base::OnceClosure local_save_card_callback,
       PrefService* pref_service);
 
   ~AutofillSaveCardInfoBarDelegateMobile() override;
@@ -80,7 +80,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
 
   // The callback to save the credit card locally to the device if |upload_| is
   // false and the user accepts the infobar.
-  base::Closure local_save_card_callback_;
+  base::OnceClosure local_save_card_callback_;
 
   // Weak reference to read & write |kAutofillAcceptSaveCreditCardPromptState|,
   PrefService* pref_service_;

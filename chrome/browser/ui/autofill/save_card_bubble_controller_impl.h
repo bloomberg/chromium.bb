@@ -36,9 +36,8 @@ class SaveCardBubbleControllerImpl
   // Sets up the controller for local save and shows the bubble.
   // |save_card_callback| will be invoked if and when the Save button is
   // pressed.
-  // TODO(crbug.com/852562): Migrate this to BindOnce/OnceClosure.
   void ShowBubbleForLocalSave(const CreditCard& card,
-                              const base::Closure& save_card_callback);
+                              base::OnceClosure save_card_callback);
 
   // Sets up the controller for upload and shows the bubble.
   // |save_card_callback| will be invoked if and when the Save button is
@@ -158,7 +157,7 @@ class SaveCardBubbleControllerImpl
   // Callback to run if user presses Save button in the local save bubble. If
   // both callbacks return true for .is_null() then no bubble is available to
   // show and the icon is not visible.
-  base::Closure local_save_card_callback_;
+  base::OnceClosure local_save_card_callback_;
 
   // Governs whether the upload or local save version of the UI should be shown.
   bool is_upload_save_ = false;

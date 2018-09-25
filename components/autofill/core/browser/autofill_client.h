@@ -157,7 +157,7 @@ class AutofillClient : public RiskDataLoader {
   // Runs |callback| if the |card| should be imported as personal data.
   // |metric_logger| can be used to log user actions.
   virtual void ConfirmSaveCreditCardLocally(const CreditCard& card,
-                                            const base::Closure& callback) = 0;
+                                            base::OnceClosure callback) = 0;
 
   // Runs |callback| if the |card| should be uploaded to Payments. Displays the
   // contents of |legal_message| to the user. Displays a cardholder name
