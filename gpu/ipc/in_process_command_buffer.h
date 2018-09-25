@@ -330,7 +330,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   int32_t last_put_offset_ = -1;
   Capabilities capabilities_;
   GpuMemoryBufferManager* gpu_memory_buffer_manager_ = nullptr;
-  int32_t  next_transfer_buffer_id_ = 1;
   uint64_t next_fence_sync_release_ = 1;
   uint64_t flushed_fence_sync_release_ = 0;
   std::vector<SyncToken> next_flush_sync_token_fences_;
