@@ -234,10 +234,6 @@ void AssistantMainStage::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void AssistantMainStage::ChildVisibilityChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
 void AssistantMainStage::OnViewBoundsChanged(views::View* view) {
   if (view == active_query_view_) {
     UpdateTopPadding();

@@ -31,7 +31,6 @@ class AssistantHeaderView : public views::View,
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
-  void ChildVisibilityChanged(views::View* child) override;
 
   // AssistantInteractionModelObserver:
   void OnResponseChanged(const AssistantResponse& response) override;

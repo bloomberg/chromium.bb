@@ -75,10 +75,6 @@ gfx::Size AssistantHeaderView::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }
 
-void AssistantHeaderView::ChildVisibilityChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
 void AssistantHeaderView::InitLayout() {
   layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
