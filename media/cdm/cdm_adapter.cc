@@ -659,6 +659,7 @@ int CdmAdapter::GetInterfaceVersion() {
 void CdmAdapter::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     std::unique_ptr<SimpleCdmPromise> promise) {
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (certificate.size() < limits::kMinCertificateLength ||
@@ -677,9 +678,12 @@ void CdmAdapter::GetStatusForPolicy(
     HdcpVersion min_hdcp_version,
     std::unique_ptr<KeyStatusCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  DVLOG(2) << __func__ << ": promise_id = " << promise_id;
   if (!cdm_->GetStatusForPolicy(promise_id,
                                 ToCdmHdcpVersion(min_hdcp_version))) {
+    DVLOG(1) << __func__ << ": GetStatusForPolicy not supported";
     cdm_promise_adapter_.RejectPromise(
         promise_id, CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
         "GetStatusForPolicy not supported.");
@@ -694,6 +698,8 @@ void CdmAdapter::CreateSessionAndGenerateRequest(
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  DVLOG(2) << __func__ << ": promise_id = " << promise_id;
+
   cdm_->CreateSessionAndGenerateRequest(
       promise_id, ToCdmSessionType(session_type),
       ToCdmInitDataType(init_data_type), init_data.data(), init_data.size());
@@ -705,6 +711,9 @@ void CdmAdapter::LoadSession(CdmSessionType session_type,
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  DVLOG(2) << __func__ << ": session_id = " << session_id
+           << ", promise_id = " << promise_id;
+
   cdm_->LoadSession(promise_id, ToCdmSessionType(session_type),
                     session_id.data(), session_id.size());
 }
@@ -717,6 +726,9 @@ void CdmAdapter::UpdateSession(const std::string& session_id,
   DCHECK(!response.empty());
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  DVLOG(2) << __func__ << ": session_id = " << session_id
+           << ", promise_id = " << promise_id;
+
   cdm_->UpdateSession(promise_id, session_id.data(), session_id.size(),
                       response.data(), response.size());
 }
@@ -727,6 +739,9 @@ void CdmAdapter::CloseSession(const std::string& session_id,
   DCHECK(!session_id.empty());
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  DVLOG(2) << __func__ << ": session_id = " << session_id
+           << ", promise_id = " << promise_id;
+
   cdm_->CloseSession(promise_id, session_id.data(), session_id.size());
 }
 
@@ -736,6 +751,9 @@ void CdmAdapter::RemoveSession(const std::string& session_id,
   DCHECK(!session_id.empty());
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  DVLOG(2) << __func__ << ": session_id = " << session_id
+           << ", promise_id = " << promise_id;
+
   cdm_->RemoveSession(promise_id, session_id.data(), session_id.size());
 }
 
@@ -758,19 +776,24 @@ Decryptor* CdmAdapter::GetDecryptor() {
   // TODO(xhwang): Fix External Clear Key key system to be able to set
   // |use_hw_secure_codecs| so that we don't have to check both.
   // TODO(xhwang): Update this logic to support transcryption.
-  if (cdm_config_.use_hw_secure_codecs || cdm_proxy_created_)
+  if (cdm_config_.use_hw_secure_codecs || cdm_proxy_created_) {
+    DVLOG(2) << __func__ << ": GetDecryptor() returns null";
     return nullptr;
+  }
 
   return this;
 }
 
 int CdmAdapter::GetCdmId() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return helper_->GetCdmProxyCdmId();
+  int cdm_id = helper_->GetCdmProxyCdmId();
+  DVLOG(2) << __func__ << ": cdm_id = " << cdm_id;
+  return cdm_id;
 }
 
 void CdmAdapter::RegisterNewKeyCB(StreamType stream_type,
                                   const NewKeyCB& key_added_cb) {
+  DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   switch (stream_type) {
     case kAudio:
@@ -821,6 +844,7 @@ void CdmAdapter::CancelDecrypt(StreamType stream_type) {
 
 void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
                                         const DecoderInitCB& init_cb) {
+  DVLOG(2) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!audio_init_cb_);
 
@@ -847,6 +871,7 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
 
 void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
                                         const DecoderInitCB& init_cb) {
+  DVLOG(2) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!video_init_cb_);
 
@@ -940,7 +965,9 @@ void CdmAdapter::DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
 }
 
 void CdmAdapter::ResetDecoder(StreamType stream_type) {
+  DVLOG(2) << __func__ << ": stream_type = " << stream_type;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
   cdm_->ResetDecoder(ToCdmStreamType(stream_type));
 }
 
@@ -985,12 +1012,15 @@ cdm::Time CdmAdapter::GetCurrentWallTime() {
 
 void CdmAdapter::OnResolveKeyStatusPromise(uint32_t promise_id,
                                            cdm::KeyStatus key_status) {
+  DVLOG(2) << __func__ << ": promise_id = " << promise_id
+           << ", key_status = " << key_status;
   DCHECK(task_runner_->BelongsToCurrentThread());
   cdm_promise_adapter_.ResolvePromise(promise_id,
                                       ToCdmKeyInformationKeyStatus(key_status));
 }
 
 void CdmAdapter::OnResolvePromise(uint32_t promise_id) {
+  DVLOG(2) << __func__ << ": promise_id = " << promise_id;
   DCHECK(task_runner_->BelongsToCurrentThread());
   cdm_promise_adapter_.ResolvePromise(promise_id);
 }
@@ -998,6 +1028,7 @@ void CdmAdapter::OnResolvePromise(uint32_t promise_id) {
 void CdmAdapter::OnResolveNewSessionPromise(uint32_t promise_id,
                                             const char* session_id,
                                             uint32_t session_id_size) {
+  DVLOG(2) << __func__ << ": promise_id = " << promise_id;
   DCHECK(task_runner_->BelongsToCurrentThread());
   cdm_promise_adapter_.ResolvePromise(promise_id,
                                       std::string(session_id, session_id_size));
@@ -1008,6 +1039,11 @@ void CdmAdapter::OnRejectPromise(uint32_t promise_id,
                                  uint32_t system_code,
                                  const char* error_message,
                                  uint32_t error_message_size) {
+  std::string error_message_str(error_message, error_message_size);
+  DVLOG(2) << __func__ << ": promise_id = " << promise_id
+           << ", exception = " << exception << ", system_code = " << system_code
+           << ", error_message = " << error_message_str;
+
   // This is the central place for library CDM promise rejection. Cannot report
   // this in more generic classes like CdmPromise or CdmPromiseAdapter because
   // they may be used multiple times in one promise chain that involves IPC.
@@ -1021,9 +1057,9 @@ void CdmAdapter::OnRejectPromise(uint32_t promise_id,
   }
 
   DCHECK(task_runner_->BelongsToCurrentThread());
-  cdm_promise_adapter_.RejectPromise(
-      promise_id, ToMediaExceptionType(exception), system_code,
-      std::string(error_message, error_message_size));
+  cdm_promise_adapter_.RejectPromise(promise_id,
+                                     ToMediaExceptionType(exception),
+                                     system_code, error_message_str);
 }
 
 void CdmAdapter::OnSessionMessage(const char* session_id,
@@ -1031,11 +1067,13 @@ void CdmAdapter::OnSessionMessage(const char* session_id,
                                   cdm::MessageType message_type,
                                   const char* message,
                                   uint32_t message_size) {
+  std::string session_id_str(session_id, session_id_size);
+  DVLOG(2) << __func__ << ": session_id = " << session_id_str;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
   const uint8_t* message_ptr = reinterpret_cast<const uint8_t*>(message);
   session_message_cb_.Run(
-      std::string(session_id, session_id_size),
-      ToMediaMessageType(message_type),
+      session_id_str, ToMediaMessageType(message_type),
       std::vector<uint8_t>(message_ptr, message_ptr + message_size));
 }
 
@@ -1044,6 +1082,8 @@ void CdmAdapter::OnSessionKeysChange(const char* session_id,
                                      bool has_additional_usable_key,
                                      const cdm::KeyInformation* keys_info,
                                      uint32_t keys_info_count) {
+  std::string session_id_str(session_id, session_id_size);
+  DVLOG(2) << __func__ << ": session_id = " << session_id_str;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   CdmKeysInfo keys;
@@ -1064,16 +1104,19 @@ void CdmAdapter::OnSessionKeysChange(const char* session_id,
       new_video_key_cb_.Run();
   }
 
-  session_keys_change_cb_.Run(std::string(session_id, session_id_size),
-                              has_additional_usable_key, std::move(keys));
+  session_keys_change_cb_.Run(session_id_str, has_additional_usable_key,
+                              std::move(keys));
 }
 
 void CdmAdapter::OnExpirationChange(const char* session_id,
                                     uint32_t session_id_size,
                                     cdm::Time new_expiry_time) {
+  std::string session_id_str(session_id, session_id_size);
+  DVLOG(2) << __func__ << ": session_id = " << session_id_str
+           << ", new_expiry_time = " << new_expiry_time;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  session_expiration_update_cb_.Run(std::string(session_id, session_id_size),
+  session_expiration_update_cb_.Run(session_id_str,
                                     base::Time::FromDoubleT(new_expiry_time));
 }
 
@@ -1247,6 +1290,9 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
 }
 
 void CdmAdapter::RequestStorageId(uint32_t version) {
+  DVLOG(2) << __func__ << ": version = " << version;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   if (!cdm_config_.allow_persistent_state ||
       !(version == kCurrentStorageIdVersion ||
         version == kRequestLatestStorageIdVersion)) {
