@@ -17,8 +17,8 @@ BrowserTaskExecutor* g_browser_task_executor = nullptr;
 // BrowserThread. BrowserThreadTaskRunners are vended by
 // base::Create*TaskRunnerWithTraits({BrowserThread::UI/IO}).
 //
-// TODO(gab): Consider replacing this with direct calls to task runners
-// |BrowserThreadImpl::GetTaskRunnerForThread()| -- only works if none are
+// TODO(gab): Consider replacing this with direct calls to task runners obtained
+// via |BrowserThreadImpl::GetTaskRunnerForThread()| -- only works if none are
 // requested before starting the threads.
 class BrowserThreadTaskRunner : public base::SingleThreadTaskRunner {
  public:
