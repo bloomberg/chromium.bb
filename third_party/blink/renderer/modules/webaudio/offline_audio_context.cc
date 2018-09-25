@@ -379,6 +379,8 @@ void OfflineAudioContext::FireCompletionEvent() {
   }
 
   is_rendering_started_ = false;
+
+  PerformCleanupOnMainThread();
 }
 
 bool OfflineAudioContext::HandlePreOfflineRenderTasks() {
