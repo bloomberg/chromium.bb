@@ -161,12 +161,14 @@ void SharedWorkerHost::Start(
     DCHECK(!main_script_loader_factory);
     DCHECK(main_script_load_params);
     DCHECK(subresource_loader_factories);
+    DCHECK(!subresource_loader_factories->default_factory_info());
   } else if (base::FeatureList::IsEnabled(
                  blink::features::kServiceWorkerServicification)) {
     // S13nServiceWorker (non-NetworkService):
     DCHECK(service_worker_provider_info);
     DCHECK(main_script_loader_factory);
     DCHECK(subresource_loader_factories);
+    DCHECK(subresource_loader_factories->default_factory_info());
     DCHECK(!subresource_loader_params);
     DCHECK(!main_script_load_params);
   } else {
@@ -218,34 +220,22 @@ void SharedWorkerHost::Start(
       mojom::kNavigation_SharedWorkerSpec, process_id_,
       mojo::MakeRequest(&interface_provider)));
 
-  // Add the default factory to the bundle for subresource loading to pass to
-  // the renderer. The bundle is only provided if
-  // NetworkService/S13nServiceWorker is enabled.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    DCHECK(subresource_loader_factories);
-    DCHECK(!subresource_loader_factories->default_factory_info());
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // If the caller has supplied a default URLLoaderFactory override (for,
-      // e.g., AppCache), use that.
-      network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-      if (subresource_loader_params &&
-          subresource_loader_params->loader_factory_info.is_valid()) {
-        default_factory_info =
-            std::move(subresource_loader_params->loader_factory_info);
-      } else {
-        CreateNetworkFactory(mojo::MakeRequest(&default_factory_info));
-      }
-      subresource_loader_factories->default_factory_info() =
-          std::move(default_factory_info);
+  // Set the default factory to the bundle for subresource loading to pass to
+  // the renderer when NetworkService is on. When S13nServiceWorker is on, the
+  // default factory is already provided by SharedWorkerServiceImpl.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // If the caller has supplied a default URLLoaderFactory override (for,
+    // e.g., AppCache), use that.
+    network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+    if (subresource_loader_params &&
+        subresource_loader_params->loader_factory_info.is_valid()) {
+      default_factory_info =
+          std::move(subresource_loader_params->loader_factory_info);
     } else {
-      // Use the non-NetworkService network factory for the process when
-      // NetworkService is off.
-      network::mojom::URLLoaderFactoryPtr default_factory;
-      RenderProcessHost::FromID(process_id_)
-          ->CreateURLLoaderFactory(mojo::MakeRequest(&default_factory));
-      subresource_loader_factories->default_factory_info() =
-          default_factory.PassInterface();
+      CreateNetworkFactory(mojo::MakeRequest(&default_factory_info));
     }
+    subresource_loader_factories->default_factory_info() =
+        std::move(default_factory_info);
   }
 
   // NetworkService (PlzWorker):
