@@ -18,6 +18,7 @@
 #include "jni/ExploreSitesBridge_jni.h"
 #include "jni/ExploreSitesCategory_jni.h"
 #include "jni/ExploreSitesSite_jni.h"
+#include "ui/gfx/android/java_bitmap.h"
 
 namespace explore_sites {
 using base::android::ConvertUTF8ToJavaString;
@@ -49,6 +50,19 @@ void CatalogReady(ScopedJavaGlobalRef<jobject>(j_result_obj),
     }
   }
   base::android::RunObjectCallbackAndroid(j_callback_obj, j_result_obj);
+}
+
+void ImageReady(ScopedJavaGlobalRef<jobject>(j_callback_obj),
+                std::unique_ptr<SkBitmap> bitmap) {
+  if (!bitmap) {
+    DVLOG(1) << "Site icon is empty.";
+    base::android::RunObjectCallbackAndroid(j_callback_obj, nullptr);
+    return;
+  }
+
+  ScopedJavaLocalRef<jobject> j_bitmap = gfx::ConvertToJavaBitmap(bitmap.get());
+
+  base::android::RunObjectCallbackAndroid(j_callback_obj, j_bitmap);
 }
 
 }  // namespace
@@ -83,4 +97,27 @@ jint JNI_ExploreSitesBridge_GetVariation(JNIEnv* env,
       chrome::android::explore_sites::GetExploreSitesVariation());
 }
 
+// static
+void JNI_ExploreSitesBridge_GetIcon(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& j_caller,
+    const JavaParamRef<jobject>& j_profile,
+    const jint j_site_id,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  DCHECK(profile);
+
+  ExploreSitesService* service =
+      ExploreSitesServiceFactory::GetForBrowserContext(profile);
+  if (!service) {
+    DLOG(ERROR) << "Unable to create the ExploreSitesService!";
+    base::android::RunObjectCallbackAndroid(j_callback_obj, nullptr);
+    return;
+  }
+  int site_id = static_cast<int>(j_site_id);
+
+  service->GetSiteImage(
+      site_id, base::BindOnce(&ImageReady,
+                              ScopedJavaGlobalRef<jobject>(j_callback_obj)));
+}
 }  // namespace explore_sites

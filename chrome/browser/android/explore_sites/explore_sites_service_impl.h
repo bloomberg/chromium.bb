@@ -41,6 +41,11 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   void AddUpdatedCatalog(std::string version_token,
                          std::unique_ptr<Catalog> catalog_proto);
 
+  static void OnDecodeDone(BitmapCallback callback,
+                           const SkBitmap& decoded_image);
+  static void DecodeImageBytes(BitmapCallback callback,
+                               EncodedImageList images);
+
   // True when Chrome starts up, this is reset after the catalog is requested
   // the first time in Chrome. This prevents the ESP from changing out from
   // under a viewer.
