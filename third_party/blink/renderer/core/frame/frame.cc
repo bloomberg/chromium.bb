@@ -82,8 +82,9 @@ void Frame::Detach(FrameDetachType type) {
 
   DetachImpl(type);
   // Due to re-entrancy, |this| could have completed detaching already.
+  // TODO(dcheng): This DCHECK is not always true. See https://crbug.com/838348.
   DCHECK(IsDetached() == !client_);
-  if (IsDetached())
+  if (!client_)
     return;
 
   detach_stack_ = base::debug::StackTrace();
