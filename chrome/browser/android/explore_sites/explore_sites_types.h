@@ -38,14 +38,14 @@ struct ExploreSitesSite {
 struct ExploreSitesCategory {
   // Creates a category.  Sites should be populated separately.
   ExploreSitesCategory(int category_id,
-                       int version,
+                       std::string version_token,
                        int category_type,
                        std::string label);
   ExploreSitesCategory(ExploreSitesCategory&& other);
   virtual ~ExploreSitesCategory();
 
   int category_id;
-  int version;
+  std::string version_token;
   int category_type;
   std::string label;
 

@@ -15,7 +15,7 @@ namespace {
 
 static const char kSelectCategorySql[] = R"(SELECT category_id, type, label
 FROM categories
-WHERE version = ?
+WHERE version_token = ?
 ORDER BY category_id ASC;)";
 
 static const char kSelectSiteSql[] = R"(SELECT site_id, url, title
@@ -24,39 +24,39 @@ WHERE category_id = ?)";
 
 const char kDeleteSiteSql[] = R"(DELETE FROM sites
 WHERE category_id NOT IN
-(SELECT category_id FROM categories WHERE version = ?);)";
+(SELECT category_id FROM categories WHERE version_token = ?);)";
 
-const char kDeleteCategorySql[] = "DELETE FROM categories WHERE version <> ?;";
+const char kDeleteCategorySql[] =
+    "DELETE FROM categories WHERE version_token <> ?;";
 
 }  // namespace
 
-int64_t UpdateCurrentCatalogIfNewer(sql::MetaTable* meta_table,
-                                    int64_t current_catalog_timestamp) {
+std::string UpdateCurrentCatalogIfNewer(sql::MetaTable* meta_table,
+                                        std::string current_version_token) {
   DCHECK(meta_table);
-  int64_t downloading_catalog_timestamp = -1LL;
+  std::string downloading_version_token;
   if (!meta_table->GetValue("downloading_catalog",
-                            &downloading_catalog_timestamp) ||
-      downloading_catalog_timestamp < 0 ||
-      downloading_catalog_timestamp <= current_catalog_timestamp) {
-    return current_catalog_timestamp;
+                            &downloading_version_token)) {
+    return current_version_token;
   }
 
-  if (!meta_table->SetValue("current_catalog", downloading_catalog_timestamp))
-    return -1;
+  if (!meta_table->SetValue("current_catalog", downloading_version_token))
+    return "";
   meta_table->DeleteKey("downloading_catalog");
 
-  return downloading_catalog_timestamp;
+  return downloading_version_token;
 }
 
-void RemoveOutdatedCatalogEntries(sql::Database* db, int64_t timestamp) {
+void RemoveOutdatedCatalogEntries(sql::Database* db,
+                                  std::string version_token) {
   sql::Statement delete_sites(
       db->GetCachedStatement(SQL_FROM_HERE, kDeleteSiteSql));
-  delete_sites.BindInt64(0, timestamp);
+  delete_sites.BindString(0, version_token);
   delete_sites.Run();
 
   sql::Statement delete_categories(
       db->GetCachedStatement(SQL_FROM_HERE, kDeleteCategorySql));
-  delete_categories.BindInt64(0, timestamp);
+  delete_categories.BindString(0, version_token);
   delete_categories.Run();
 }
 
@@ -71,7 +71,7 @@ std::unique_ptr<GetCatalogTask::CategoryList> GetCatalogSync(
   // If we are downloading a catalog that is the same version as the one
   // currently in use, don't change it.  This is an error, should have been
   // caught before we got here.
-  int64_t catalog_timestamp = 0;
+  std::string catalog_timestamp;
   meta_table.GetValue("current_catalog", &catalog_timestamp);
 
   if (update_current) {
@@ -79,6 +79,8 @@ std::unique_ptr<GetCatalogTask::CategoryList> GetCatalogSync(
     transaction.Begin();
     catalog_timestamp =
         UpdateCurrentCatalogIfNewer(&meta_table, catalog_timestamp);
+    if (catalog_timestamp == "")
+      return nullptr;
     RemoveOutdatedCatalogEntries(db, catalog_timestamp);
     if (!transaction.Commit())
       return nullptr;
@@ -86,7 +88,7 @@ std::unique_ptr<GetCatalogTask::CategoryList> GetCatalogSync(
 
   sql::Statement category_statement(
       db->GetCachedStatement(SQL_FROM_HERE, kSelectCategorySql));
-  category_statement.BindInt64(0, catalog_timestamp);
+  category_statement.BindString(0, catalog_timestamp);
 
   auto result = std::make_unique<GetCatalogTask::CategoryList>();
   while (category_statement.Step()) {

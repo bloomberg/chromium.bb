@@ -23,7 +23,7 @@ namespace explore_sites {
 class ImportCatalogTask : public Task {
  public:
   ImportCatalogTask(ExploreSitesStore* store,
-                    int64_t catalog_timestamp,
+                    std::string version_token,
                     std::unique_ptr<Catalog> catalog_proto);
   ~ImportCatalogTask() override;
 
@@ -37,7 +37,7 @@ class ImportCatalogTask : public Task {
   void FinishedExecuting(bool result);
 
   ExploreSitesStore* store_;  // outlives this class.
-  int64_t catalog_timestamp_;
+  std::string version_token_;
   std::unique_ptr<Catalog> catalog_proto_;
 
   bool complete_ = false;
