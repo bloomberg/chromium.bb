@@ -292,6 +292,7 @@ extern const char kConnectedDevicesSubPage[];
 extern const char kNetworkDetailSubPage[];
 extern const char kPowerSubPage[];
 extern const char kSmbSharesPage[];
+extern const char kSmbSharesPageAddDialog[];
 extern const char kStylusSubPage[];
 #endif
 #if defined(OS_WIN)
