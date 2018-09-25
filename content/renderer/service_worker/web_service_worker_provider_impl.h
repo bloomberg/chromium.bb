@@ -55,8 +55,7 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   bool ValidateScopeAndScriptURL(const blink::WebURL& pattern,
                                  const blink::WebURL& script_url,
                                  blink::WebString* error_message) override;
-  // Sets the ServiceWorkerContainer#controller for this provider. It's not
-  // used when this WebServiceWorkerProvider is for a service worker context.
+  // Sets the ServiceWorkerContainer#controller for this provider.
   void SetController(blink::mojom::ServiceWorkerObjectInfoPtr controller,
                      const std::set<blink::mojom::WebFeature>& features,
                      bool should_notify_controller_change);

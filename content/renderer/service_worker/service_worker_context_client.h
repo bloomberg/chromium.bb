@@ -48,7 +48,6 @@ namespace blink {
 struct PlatformNotificationData;
 class WebDataConsumerHandle;
 class WebServiceWorkerContextProxy;
-class WebServiceWorkerProvider;
 class WebServiceWorkerResponse;
 class WebURLResponse;
 }
@@ -214,8 +213,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   CreateServiceWorkerNetworkProvider() override;
   std::unique_ptr<blink::WebWorkerFetchContext> CreateServiceWorkerFetchContext(
       blink::WebServiceWorkerNetworkProvider*) override;
-  std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
-      override;
 
   // Dispatches the fetch event if the worker is running normally, and queues it
   // instead if the worker has already requested to be terminated by the

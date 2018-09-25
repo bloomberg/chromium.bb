@@ -103,16 +103,13 @@ String ServiceWorkerRegistration::updateViaCache() const {
 }
 
 ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
-  ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::From(GetExecutionContext());
-  if (!client || !client->Provider()) {
+  if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Failed to update a ServiceWorkerRegistration: No "
                              "associated provider is available."));
   }
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   handle_->Registration()->Update(
@@ -123,9 +120,7 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
 }
 
 ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
-  ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::From(GetExecutionContext());
-  if (!client || !client->Provider()) {
+  if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
@@ -133,7 +128,6 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
                              "ServiceWorkerRegistration: No "
                              "associated provider is available."));
   }
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   handle_->Registration()->Unregister(

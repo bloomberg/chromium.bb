@@ -65,9 +65,7 @@ void ServiceWorker::postMessage(ScriptState* script_state,
                                 const ScriptValue& message,
                                 const PostMessageOptions& options,
                                 ExceptionState& exception_state) {
-  ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::From(GetExecutionContext());
-  if (!client || !client->Provider()) {
+  if (!GetExecutionContext()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Failed to post a message: No associated provider is available.");

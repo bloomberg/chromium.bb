@@ -11,7 +11,6 @@
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -53,16 +52,10 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
   // Work-around for mocking a method that return unique_ptr.
   MOCK_METHOD0(CreateServiceWorkerNetworkProviderProxy,
                WebServiceWorkerNetworkProvider*());
-  MOCK_METHOD0(CreateServiceWorkerProviderProxy, WebServiceWorkerProvider*());
   std::unique_ptr<WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() override {
     return std::unique_ptr<WebServiceWorkerNetworkProvider>(
         CreateServiceWorkerNetworkProviderProxy());
-  }
-  std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()
-      override {
-    return std::unique_ptr<WebServiceWorkerProvider>(
-        CreateServiceWorkerProviderProxy());
   }
   void WorkerContextDestroyed() override { termination_event_.Signal(); }
 
@@ -206,12 +199,10 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhilePausedAfterDownload) {
 
   // Load the script.
   EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(1);
-  EXPECT_CALL(*mock_client_, CreateServiceWorkerProviderProxy()).Times(0);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Terminate before resuming after download.
-  EXPECT_CALL(*mock_client_, CreateServiceWorkerProviderProxy()).Times(0);
   EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
   worker_->TerminateWorkerContext();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
@@ -246,7 +237,6 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
 
   // Load the script.
   EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(0);
-  EXPECT_CALL(*mock_client_, CreateServiceWorkerProviderProxy()).Times(0);
   EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
@@ -277,8 +267,6 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
 
   // Load the script.
   EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(1);
-  EXPECT_CALL(*mock_client_, CreateServiceWorkerProviderProxy())
-      .WillOnce(testing::Return(nullptr));
   // This is called on the worker thread.
   EXPECT_CALL(*mock_installed_scripts_manager_,
               IsScriptInstalled(KURL(start_data_.script_url)))
@@ -322,13 +310,10 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_PauseAfterDownload) {
 
   // Load the script.
   EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(1);
-  EXPECT_CALL(*mock_client_, CreateServiceWorkerProviderProxy()).Times(0);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Resume after download.
-  EXPECT_CALL(*mock_client_, CreateServiceWorkerProviderProxy())
-      .WillOnce(testing::Return(nullptr));
   // This is called on the worker thread.
   EXPECT_CALL(*mock_installed_scripts_manager_,
               IsScriptInstalled(KURL(start_data_.script_url)))

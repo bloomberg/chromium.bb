@@ -44,27 +44,16 @@ class WebURL;
 class WebServiceWorkerProviderClient;
 struct WebServiceWorkerError;
 
-// WebServiceWorkerProvider essentially attaches to a document or worker
-// execution context, and "provides" it with service worker functionality. This
-// functionality is mostly the functions on ServiceWorkerContainer.idl.
+// WebServiceWorkerProvider attaches to a Document
+// and "provides" it with functionality needed to implement
+// ServiceWorkerContainer.idl functions.
 //
-// It is currently implemented by the Blink embedder (for Chromium it is
-// content::WebServiceWorkerProviderImpl).
+// It is implemented by content::WebServiceWorkerProviderImpl.
 //
-// Once an execution context has an attached WebServiceWorkerProvider, it's able
-// to request the browser process to do things like register/update/get service
-// worker registrations.
-//
-// WebServiceWorkerProvider is created in two places:
-// 1) It is created in ServiceWorkerContainerClient::From(), which is used to
-// instantiate navigator.serviceWorker for documents.
-// 2) It is created for service worker execution contexts during startup.
-// The instance should eventually be used for WorkerNavigator.serviceWorker but
-// it is not really wired up yet (https://crbug.com/371690).
-//
-// WebServiceWorkerProvider is owned by ServiceWorkerContainerClient, which is a
-// garbage collected Supplement for Document (in case (1) above) or
-// WorkerClients (in case (2) above).
+// WebServiceWorkerProvider is created in ServiceWorkerContainerClient::From(),
+// which is used to instantiate navigator.serviceWorker. It is
+// owned by ServiceWorkerContainerClient, which is a
+// garbage collected Supplement for Document.
 //
 // Each ServiceWorkerContainer instance has a WebServiceWorkerProvider.
 // ServiceWorkerContainer is called the "client" of the
@@ -73,8 +62,7 @@ class WebServiceWorkerProvider {
  public:
   // Sets the "client" for this provider. The client will be notified of
   // controller changes, message events, and feature usages apropos of the
-  // document this WebServiceWorkerProvider is for. It's not used when this
-  // WebServiceWorkerProvider is for a service worker context.
+  // document this WebServiceWorkerProvider is for.
   virtual void SetClient(WebServiceWorkerProviderClient*) {}
 
   using WebServiceWorkerRegistrationCallbacks =

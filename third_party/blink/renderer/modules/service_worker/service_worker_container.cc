@@ -490,6 +490,7 @@ ServiceWorkerContainer::ServiceWorkerContainer(
   if (!execution_context)
     return;
 
+  DCHECK(execution_context->IsDocument());
   if (ServiceWorkerContainerClient* client =
           ServiceWorkerContainerClient::From(execution_context)) {
     provider_ = client->Provider();

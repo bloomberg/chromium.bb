@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -20,11 +19,10 @@ class ExecutionContext;
 class WebServiceWorkerProvider;
 
 // This mainly exists to provide access to WebServiceWorkerProvider.
-// Owned by Document (or WorkerClients).
+// Owned by Document.
 class MODULES_EXPORT ServiceWorkerContainerClient final
     : public GarbageCollectedFinalized<ServiceWorkerContainerClient>,
       public Supplement<Document>,
-      public Supplement<WorkerClients>,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
 
@@ -32,8 +30,6 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
   static const char kSupplementName[];
 
   ServiceWorkerContainerClient(Document&,
-                               std::unique_ptr<WebServiceWorkerProvider>);
-  ServiceWorkerContainerClient(WorkerClients&,
                                std::unique_ptr<WebServiceWorkerProvider>);
   virtual ~ServiceWorkerContainerClient();
 
@@ -43,7 +39,6 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
 
   void Trace(blink::Visitor* visitor) override {
     Supplement<Document>::Trace(visitor);
-    Supplement<WorkerClients>::Trace(visitor);
   }
 
   const char* NameInHeapSnapshot() const override {
@@ -55,10 +50,6 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContainerClient);
 };
-
-MODULES_EXPORT void ProvideServiceWorkerContainerClientToWorker(
-    WorkerClients*,
-    std::unique_ptr<WebServiceWorkerProvider>);
 
 }  // namespace blink
 
