@@ -35,7 +35,8 @@ class ScriptPrecondition {
       const std::vector<std::vector<std::string>>& elements_exist,
       const std::set<std::string>& domain_match,
       std::vector<std::unique_ptr<re2::RE2>> path_pattern,
-      const std::vector<ScriptParameterMatchProto>& parameter_match);
+      const std::vector<ScriptParameterMatchProto>& parameter_match,
+      const std::vector<FormValueMatchProto>& form_value_match);
   ~ScriptPrecondition();
 
   // Check whether the conditions satisfied and return the result through
@@ -50,10 +51,16 @@ class ScriptPrecondition {
   bool MatchPath(const GURL& url) const;
   bool MatchParameters(
       const std::map<std::string, std::string>& parameters) const;
+  void OnGetFieldValue(const std::string& value);
+
+  // Return if all checks have been completed and we have not returned anything
+  // yet.
+  void MaybeRunCheckPreconditionCallback();
 
   std::vector<std::vector<std::string>> elements_exist_;
   base::OnceCallback<void(bool)> check_preconditions_callback_;
-  size_t pending_elements_exist_check_;
+  size_t pending_preconditions_check_count_;
+  bool all_preconditions_check_satisfied_;
 
   // Domain (exact match) excluding the last '/' character.
   std::set<std::string> domain_match_;
@@ -63,6 +70,9 @@ class ScriptPrecondition {
 
   // Condition on parameters, identified by name, as found in the intent.
   std::vector<ScriptParameterMatchProto> parameter_match_;
+
+  // Conditions on form fields value.
+  std::vector<FormValueMatchProto> form_value_match_;
 
   base::WeakPtrFactory<ScriptPrecondition> weak_ptr_factory_;
 
