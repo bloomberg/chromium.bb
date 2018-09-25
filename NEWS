@@ -9,6 +9,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Braille table improvements
 
 ** Other changes
+- Updated the lou_allround test tool to include all the mode flags
+  described in the documentation of the lou_translateString() function.
+  Thanks to Bue Vester-Andersen
 
 ** Deprecation notice
 
