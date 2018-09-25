@@ -1,4 +1,5 @@
 if (this.importScripts) {
+    importScripts('../../../resources/gc.js');
     importScripts('../../../resources/js-test.js');
     importScripts('shared.js');
 }
