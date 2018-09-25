@@ -5550,6 +5550,22 @@ registerLoadRequestForURL:(const GURL&)requestURL
   BOOL sameDocumentNavigation = currentItem->IsCreatedFromPushState() ||
                                 currentItem->IsCreatedFromHashChange();
 
+  if (holder->back_forward_list_item()) {
+    // Check if holder's WKBackForwardListItem still correctly represents
+    // navigation item. With LegacyNavigationManager, replaceState operation
+    // creates a new navigation item, leaving the old item committed. That
+    // old committed item will be associated with WKBackForwardListItem whose
+    // state was replaced. So old item won't have correct WKBackForwardListItem.
+    if (net::GURLWithNSURL(holder->back_forward_list_item().URL) !=
+        currentItem->GetURL()) {
+      // The state was replaced for this item. The item should not be a part of
+      // committed items, but it's too late to remove the item. Cleaup
+      // WKBackForwardListItem and mark item with "state replaced" flag.
+      currentItem->SetHasStateBeenReplaced(true);
+      holder->set_back_forward_list_item(nil);
+    }
+  }
+
   // If the request has POST data and is not a repost form, configure and
   // run the POST request.
   if (POSTData.length && !repostedForm) {
