@@ -106,19 +106,7 @@ std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() const {
   accounts.reserve(account_ids_with_tokens.size());
 
   for (const std::string& account_id : account_ids_with_tokens) {
-    AccountInfo account_info =
-        account_tracker_service_->GetAccountInfo(account_id);
-
-    DCHECK(!account_info.IsEmpty() || account_id == kSupervisedUserPseudoEmail);
-    if (account_id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
-      // Populate the information manually to maintain the invariant that the
-      // account ID, gaia ID, and email are always set.
-      account_info.account_id = account_id;
-      account_info.email = kSupervisedUserPseudoEmail;
-      account_info.gaia = kSupervisedUserPseudoGaiaID;
-    }
-
-    accounts.push_back(account_info);
+    accounts.push_back(GetAccountInfoForAccountWithRefreshToken(account_id));
   }
 
   return accounts;
@@ -205,6 +193,34 @@ void IdentityManager::SetPrimaryAccountSynchronously(
   }
 }
 
+// Populates and returns an AccountInfo object corresponding to |account_id|,
+// which must be an account with a refresh token.
+AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
+    std::string account_id) const {
+  DCHECK(HasAccountWithRefreshToken(account_id));
+
+  AccountInfo account_info =
+      account_tracker_service_->GetAccountInfo(account_id);
+
+  // In the context of supervised users, the ProfileOAuth2TokenService is used
+  // without the AccountTrackerService being used. This is the only case in
+  // which the AccountTrackerService will potentially not know about the
+  // account. In this context, |account_id| is always set to
+  // kSupervisedUserPseudoEmail. Populate the information manually in this case
+  // to maintain the invariant that the account ID, gaia ID, and email are
+  // always set.
+  // TODO(860492): Remove this special case once supervised user support is
+  // removed.
+  DCHECK(!account_info.IsEmpty() || account_id == kSupervisedUserPseudoEmail);
+  if (account_id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
+    account_info.account_id = account_id;
+    account_info.email = kSupervisedUserPseudoEmail;
+    account_info.gaia = kSupervisedUserPseudoGaiaID;
+  }
+
+  return account_info;
+}
+
 void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountSet(account_info);
@@ -220,23 +236,7 @@ void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
 
 void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
   AccountInfo account_info =
-      account_tracker_service_->GetAccountInfo(account_id);
-
-  // In the context of supervised users, the ProfileOAuth2TokenService is used
-  // without the AccountTrackerService being used. This is the only case in
-  // which the AccountTrackerService will potentially not know about the
-  // account. In this context, |account_id| is always set to
-  // kSupervisedUserPseudoEmail.
-  // TODO(860492): Remove this special case once supervised user support is
-  // removed.
-  DCHECK(!account_info.IsEmpty() || account_id == kSupervisedUserPseudoEmail);
-  if (account_id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
-    // Populate the information manually to maintain the invariant that the
-    // account ID, gaia ID, and email are always set.
-    account_info.account_id = account_id;
-    account_info.email = kSupervisedUserPseudoEmail;
-    account_info.gaia = kSupervisedUserPseudoGaiaID;
-  }
+      GetAccountInfoForAccountWithRefreshToken(account_id);
 
   // Compute the validity of the new refresh token: PO2TS sets an account's
   // refresh token to be invalid (error CREDENTIALS_REJECTED_BY_CLIENT) if the
@@ -249,7 +249,6 @@ void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
                              CREDENTIALS_REJECTED_BY_CLIENT)) {
     is_valid = false;
   }
-
 
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenUpdatedForAccount(account_info, is_valid);
