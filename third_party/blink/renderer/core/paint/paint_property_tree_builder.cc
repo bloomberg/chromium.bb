@@ -732,6 +732,32 @@ static bool NeedsEffect(const LayoutObject& object) {
   return false;
 }
 
+// An effect node can use the current clip as its output clip if the clip won't
+// end before the effect ends. Having explicit output clip can let the later
+// stages use more optimized code path.
+static bool EffectCanUseCurrentClipAsOutputClip(const LayoutObject& object) {
+  DCHECK(NeedsEffect(object));
+
+  if (!object.HasLayer()) {
+    // An SVG object's effect never interleaves with clips.
+    DCHECK(object.IsSVG());
+    return true;
+  }
+
+  const auto* layer = ToLayoutBoxModelObject(object).Layer();
+  // Out-of-flow descendants not contained by this object may escape clips.
+  if (layer->HasNonContainedAbsolutePositionDescendant())
+    return false;
+  if (layer->HasFixedPositionDescendant() &&
+      !object.CanContainFixedPositionObjects())
+    return false;
+  // Some descendants under a pagination container (e.g. composited objects
+  // in SPv1 and column spanners) may escape fragment clips.
+  if (layer->EnclosingPaginationLayer())
+    return false;
+  return true;
+}
+
 void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
   DCHECK(properties_);
   const ComputedStyle& style = object_.StyleRef();
@@ -765,10 +791,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         clip_path_clip = IntRect();
       }
 
-      // Use the current clip as output_clip for SVG children because their
-      // effects never interleave with clips.
-      const auto* output_clip =
-          object_.IsSVGChild() ? context_.current.clip : nullptr;
+      const auto* output_clip = EffectCanUseCurrentClipAsOutputClip(object_)
+                                    ? context_.current.clip
+                                    : nullptr;
 
       if (mask_clip || clip_path_clip) {
         IntRect combined_clip = mask_clip ? *mask_clip : *clip_path_clip;

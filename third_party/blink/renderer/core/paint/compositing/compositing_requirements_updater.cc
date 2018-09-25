@@ -427,7 +427,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   bool will_have_foreground_layer = false;
 
   bool needs_recursion_for_composited_scrolling_plus_fixed_or_sticky =
-      layer->HasDescendantWithStickyOrFixed() &&
+      (layer->HasFixedPositionDescendant() ||
+       layer->HasStickyPositionDescendant()) &&
       (has_non_root_composited_scrolling_ancestor ||
        (layer->GetScrollableArea() &&
         layer->GetScrollableArea()->NeedsCompositedScrolling()));
