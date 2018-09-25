@@ -58,7 +58,6 @@
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
@@ -347,9 +346,6 @@ bool IsTabDetachingInFullscreenEnabled() {
       }
     }
 
-    // Create the bridge for the status bubble.
-    statusBubble_ = new StatusBubbleMac([self window], self);
-
     extensionKeybindingRegistry_.reset(
         new ExtensionKeybindingRegistryCocoa(browser_->profile(),
             [self window],
@@ -445,10 +441,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   return tabStripController_.get();
 }
 
-- (StatusBubbleMac*)statusBubble {
-  return statusBubble_;
-}
-
 - (LocationBarViewMac*)locationBarBridge {
   return [toolbarController_ locationBarBridge];
 }
@@ -494,11 +486,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   DCHECK_EQ([notification object], [self window]);
   DCHECK(browser_->tab_strip_model()->empty());
   [savedRegularWindow_ close];
-
-  // We delete statusBubble here because we need to kill off the dependency
-  // that its window has on our window before our window goes away.
-  delete statusBubble_;
-  statusBubble_ = NULL;
 
   // We can't actually use |-autorelease| here because there's an embedded
   // run loop in the |-performClose:| which contains its own autorelease pool.
@@ -903,13 +890,6 @@ bool IsTabDetachingInFullscreenEnabled() {
     priority:(ui::AcceleratorManager::HandlerPriority)priority {
   return extensionKeybindingRegistry_->ProcessKeyEvent(
       content::NativeWebKeyboardEvent(event), priority);
-}
-
-// StatusBubble delegate method: tell the status bubble the frame it should
-// position itself in.
-- (NSRect)statusBubbleBaseFrame {
-  NSView* view = [overlayableContentsController_ view];
-  return [view convertRect:[view bounds] toView:nil];
 }
 
 - (void)updateToolbarWithContents:(WebContents*)tab {
@@ -1404,13 +1384,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 // Delegate method called when window is resized.
 - (void)windowDidResize:(NSNotification*)notification {
   [self saveWindowPositionIfNeeded];
-
-  // Resize (and possibly move) the status bubble. Note that we may get called
-  // when the status bubble does not exist.
-  if (statusBubble_) {
-    statusBubble_->UpdateSizeAndPosition();
-  }
-
   [self updatePermissionBubbleAnchor];
 }
 

@@ -188,8 +188,6 @@ jumbo_split_static_library("ui") {
       "cocoa/ssl_client_certificate_selector_cocoa.h",
       "cocoa/ssl_client_certificate_selector_cocoa.mm",
       "cocoa/spinner_util.h",
-      "cocoa/status_bubble_mac.h",
-      "cocoa/status_bubble_mac.mm",
       "cocoa/styled_text_field.h",
       "cocoa/styled_text_field.mm",
       "cocoa/styled_text_field_cell.h",

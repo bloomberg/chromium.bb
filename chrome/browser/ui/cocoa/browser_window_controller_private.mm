@@ -33,7 +33,6 @@
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -344,10 +343,6 @@ willPositionSheet:(NSWindow*)sheet
   [sourceWindow setWindowController:nil];
   [self setWindow:destWindow];
   [destWindow setWindowController:[self nsWindowController]];
-
-  // Move the status bubble over, if we have one.
-  if (statusBubble_)
-    statusBubble_->SwitchParentWindow(destWindow);
 
   [self updatePermissionBubbleAnchor];
 

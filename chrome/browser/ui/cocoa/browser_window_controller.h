@@ -46,7 +46,6 @@ class ExclusiveAccessContext;
 @class FullscreenWindow;
 class LocationBarViewMac;
 @class OverlayableContentsController;
-class StatusBubbleMac;
 @class TabStripControllerCocoa;
 @class TabStripView;
 @class ToolbarController;
@@ -83,12 +82,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   base::scoped_nsobject<BrowserWindowFullscreenTransition>
       fullscreenTransition_;
   base::scoped_nsobject<BrowserWindowTouchBarController> touchBarController_;
-
-  // Strong. StatusBubble is a special case of a strong reference that
-  // we don't wrap in a scoped_ptr because it is acting the same
-  // as an NSWindowController in that it wraps a window that must
-  // be shut down before our destructors are called.
-  StatusBubbleMac* statusBubble_;
 
   BOOL initializing_;  // YES while we are currently in initWithBrowser:
   BOOL ownsBrowser_;  // Only ever NO when testing
@@ -203,9 +196,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Return a weak pointer to the tab strip controller.
 - (TabStripControllerCocoa*)tabStripController;
 
-// Access the C++ bridge object representing the status bubble for the window.
-- (StatusBubbleMac*)statusBubble;
-
 // Access the C++ bridge object representing the location bar.
 - (LocationBarViewMac*)locationBarBridge;
 
@@ -283,9 +273,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Only extensions with the given |priority| are considered.
 - (BOOL)handledByExtensionCommand:(NSEvent*)event
     priority:(ui::AcceleratorManager::HandlerPriority)priority;
-
-// Delegate method for the status bubble to query its base frame.
-- (NSRect)statusBubbleBaseFrame;
 
 // Dismiss the permission bubble
 - (void)dismissPermissionBubble;
