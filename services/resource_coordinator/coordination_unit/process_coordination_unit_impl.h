@@ -53,16 +53,17 @@ class ProcessCoordinationUnitImpl
 
   base::ProcessId process_id() const { return process_id_; }
 
- private:
-  friend class FrameCoordinationUnitImpl;
+  // Removes |frame_cu| from the set of frames hosted by this process. Invoked
+  // from the destructor of FrameCoordinationUnitImpl.
+  void RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
 
+ private:
   // CoordinationUnitInterface implementation.
   void OnEventReceived(mojom::Event event) override;
   void OnPropertyChanged(mojom::PropertyType property_type,
                          int64_t value) override;
 
-  void AddFrame(FrameCoordinationUnitImpl* frame_cu);
-  void RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
+  void AddFrameImpl(FrameCoordinationUnitImpl* frame_cu);
 
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;

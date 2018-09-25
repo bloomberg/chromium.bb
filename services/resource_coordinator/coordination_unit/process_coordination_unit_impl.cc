@@ -31,7 +31,7 @@ void ProcessCoordinationUnitImpl::AddFrame(const CoordinationUnitID& cu_id) {
   auto* frame_cu =
       FrameCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
   if (frame_cu)
-    AddFrame(frame_cu);
+    AddFrameImpl(frame_cu);
 }
 
 void ProcessCoordinationUnitImpl::SetCPUUsage(double cpu_usage) {
@@ -98,7 +98,7 @@ void ProcessCoordinationUnitImpl::OnPropertyChanged(
     observer.OnProcessPropertyChanged(this, property_type, value);
 }
 
-void ProcessCoordinationUnitImpl::AddFrame(
+void ProcessCoordinationUnitImpl::AddFrameImpl(
     FrameCoordinationUnitImpl* frame_cu) {
   const bool inserted = frame_coordination_units_.insert(frame_cu).second;
   if (inserted)
