@@ -6302,4 +6302,24 @@ TEST_P(PaintPropertyTreeBuilderTest, NonScrollableSticky) {
       inner_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, WillChangeOpacityInducesAnEffectNode) {
+  SetBodyInnerHTML(R"HTML(
+    <style>.transluscent { opacity: 0.5; }</style>
+    <div id="div" style="width:10px; height:10px; will-change: opacity;"></div>
+  )HTML");
+
+  const auto* properties = PaintPropertiesForElement("div");
+  ASSERT_TRUE(properties);
+  ASSERT_TRUE(properties->Effect());
+  EXPECT_FLOAT_EQ(properties->Effect()->Opacity(), 1.f);
+
+  auto* div = GetDocument().getElementById("div");
+  div->setAttribute(HTMLNames::classAttr, "transluscent");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(ToLayoutBox(div->GetLayoutObject())->Layer()->NeedsRepaint());
+
+  ASSERT_TRUE(properties->Effect());
+  EXPECT_FLOAT_EQ(properties->Effect()->Opacity(), 0.5f);
+}
+
 }  // namespace blink
