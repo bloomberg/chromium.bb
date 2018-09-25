@@ -198,6 +198,9 @@ float* FilterGroup::GetOutputBuffer() {
 }
 
 int64_t FilterGroup::GetRenderingDelayMicroseconds() {
+  if (output_samples_per_second_ == 0) {
+    return 0;
+  }
   return delay_frames_ * base::Time::kMicrosecondsPerSecond /
          output_samples_per_second_;
 }
