@@ -30,7 +30,6 @@ namespace syncer {
 
 class BaseTransaction;
 class JsController;
-class GlobalIdMapper;
 class ProtocolEventObserver;
 class SyncClient;
 class SyncCycleSnapshot;
@@ -383,9 +382,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // directly, figure out how to expose this to tests, and remove this
   // function.
   virtual UserShare* GetUserShare() const = 0;
-
-  // TODO(crbug.com/865936): Move this down into ProfileSyncService.
-  virtual GlobalIdMapper* GetGlobalIdMapper() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // DETAILED STATE FOR DEBUG UI

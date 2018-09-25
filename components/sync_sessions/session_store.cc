@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/time.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_util.h"
@@ -25,6 +24,7 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync_sessions/session_sync_prefs.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 
 namespace sync_sessions {
@@ -77,7 +77,8 @@ std::unique_ptr<syncer::EntityData> MoveToEntityData(
 }
 
 std::string GetSessionTagWithPrefs(const std::string& cache_guid,
-                                   syncer::SessionSyncPrefs* sync_prefs) {
+                                   SessionSyncPrefs* sync_prefs) {
+  DCHECK(sync_prefs);
   const std::string persisted_guid = sync_prefs->GetSyncSessionsGUID();
   if (!persisted_guid.empty()) {
     DVLOG(1) << "Restoring persisted session sync guid: " << persisted_guid;
@@ -102,17 +103,11 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
  public:
   // Raw pointers must not be null and must outlive this object.
   FactoryImpl(SyncSessionsClient* sessions_client,
-              syncer::SessionSyncPrefs* sync_prefs,
-              const syncer::RepeatingModelTypeStoreFactory& store_factory,
               const SessionStore::RestoredForeignTabCallback&
                   restored_foreign_tab_callback)
       : sessions_client_(sessions_client),
-        sync_prefs_(sync_prefs),
-        store_factory_(store_factory),
         restored_foreign_tab_callback_(restored_foreign_tab_callback) {
     DCHECK(sessions_client);
-    DCHECK(sync_prefs);
-    DCHECK(store_factory_);
   }
 
   ~FactoryImpl() {}
@@ -125,11 +120,12 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
     SessionStore::SessionInfo session_info;
     session_info.client_name = device_info.client_name();
     session_info.device_type = device_info.device_type();
-    session_info.session_tag = GetSessionTagWithPrefs(cache_guid, sync_prefs_);
+    session_info.session_tag = GetSessionTagWithPrefs(
+        cache_guid, sessions_client_->GetSessionSyncPrefs());
 
     DVLOG(1) << "Initiating creation of session store";
 
-    store_factory_.Run(
+    sessions_client_->GetStoreFactory().Run(
         syncer::SESSIONS,
         base::BindOnce(&FactoryImpl::OnStoreCreated, base::AsWeakPtr(this),
                        session_info, std::move(callback)));
@@ -204,8 +200,6 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
   }
 
   SyncSessionsClient* const sessions_client_;
-  syncer::SessionSyncPrefs* const sync_prefs_;
-  const syncer::RepeatingModelTypeStoreFactory store_factory_;
   const SessionStore::RestoredForeignTabCallback restored_foreign_tab_callback_;
 };
 
@@ -214,12 +208,9 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
 // static
 SessionStore::Factory SessionStore::CreateFactory(
     SyncSessionsClient* sessions_client,
-    syncer::SessionSyncPrefs* sync_prefs,
-    const syncer::RepeatingModelTypeStoreFactory& store_factory,
     const RestoredForeignTabCallback& restored_foreign_tab_callback) {
-  auto factory =
-      std::make_unique<FactoryImpl>(sessions_client, sync_prefs, store_factory,
-                                    restored_foreign_tab_callback);
+  auto factory = std::make_unique<FactoryImpl>(sessions_client,
+                                               restored_foreign_tab_callback);
   return base::BindRepeating(&FactoryImpl::Create, std::move(factory));
 }
 

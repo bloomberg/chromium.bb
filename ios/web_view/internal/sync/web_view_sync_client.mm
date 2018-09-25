@@ -120,6 +120,10 @@ history::HistoryService* WebViewSyncClient::GetHistoryService() {
   return nullptr;
 }
 
+sync_sessions::SessionSyncService* WebViewSyncClient::GetSessionSyncService() {
+  return nullptr;
+}
+
 bool WebViewSyncClient::HasPasswordStore() {
   return true;
 }
@@ -159,10 +163,6 @@ invalidation::InvalidationService* WebViewSyncClient::GetInvalidationService() {
 
 scoped_refptr<syncer::ExtensionsActivity>
 WebViewSyncClient::GetExtensionsActivity() {
-  return nullptr;
-}
-
-sync_sessions::SyncSessionsClient* WebViewSyncClient::GetSyncSessionsClient() {
   return nullptr;
 }
 

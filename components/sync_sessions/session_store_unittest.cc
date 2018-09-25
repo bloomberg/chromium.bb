@@ -12,13 +12,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/hash_util.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/test/test_matchers.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
+#include "components/sync_sessions/session_sync_prefs.h"
 #include "components/sync_sessions/test_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,15 +51,6 @@ using testing::_;
 
 const char kCacheGuid[] = "SomeCacheGuid";
 const char kClientName[] = "Some Client Name";
-
-class MockSessionSyncPrefs : public syncer::SessionSyncPrefs {
- public:
-  MockSessionSyncPrefs() = default;
-  ~MockSessionSyncPrefs() override = default;
-
-  MOCK_CONST_METHOD0(GetSyncSessionsGUID, std::string());
-  MOCK_METHOD1(SetSyncSessionsGUID, void(const std::string& guid));
-};
 
 // A mock callback that a) can be used as mock to verify call expectations and
 // b) conveniently exposes the last instantiated session store.
@@ -169,22 +161,30 @@ class SessionStoreFactoryTest : public ::testing::Test {
                            "Chrome 10k",
                            sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
                            "device_id"),
+        session_sync_prefs_(&pref_service_),
         underlying_store_(
             syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(
-                syncer::SESSIONS)),
-        factory_(SessionStore::CreateFactory(
-            &mock_sync_sessions_client_,
-            &mock_sync_prefs_,
-            syncer::ModelTypeStoreTestUtil::FactoryForForwardingStore(
-                underlying_store_.get()),
-            mock_restored_foreign_tab_callback_.Get())) {}
+                syncer::SESSIONS)) {
+    SessionSyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+
+    ON_CALL(mock_sync_sessions_client_, GetSessionSyncPrefs())
+        .WillByDefault(Return(&session_sync_prefs_));
+    ON_CALL(mock_sync_sessions_client_, GetStoreFactory())
+        .WillByDefault(
+            Return(syncer::ModelTypeStoreTestUtil::FactoryForForwardingStore(
+                underlying_store_.get())));
+
+    factory_ = SessionStore::CreateFactory(
+        &mock_sync_sessions_client_, mock_restored_foreign_tab_callback_.Get());
+  }
 
   ~SessionStoreFactoryTest() override {}
 
   base::MessageLoop message_loop_;
   const syncer::DeviceInfo local_device_info_;
+  TestingPrefServiceSimple pref_service_;
+  SessionSyncPrefs session_sync_prefs_;
   testing::NiceMock<MockSyncSessionsClient> mock_sync_sessions_client_;
-  testing::NiceMock<MockSessionSyncPrefs> mock_sync_prefs_;
   testing::NiceMock<
       base::MockCallback<SessionStore::RestoredForeignTabCallback>>
       mock_restored_foreign_tab_callback_;
@@ -194,9 +194,7 @@ class SessionStoreFactoryTest : public ::testing::Test {
 };
 
 TEST_F(SessionStoreFactoryTest, ShouldCreateStore) {
-  EXPECT_CALL(mock_sync_prefs_, GetSyncSessionsGUID());
-  EXPECT_CALL(mock_sync_prefs_,
-              SetSyncSessionsGUID(std::string("session_sync") + kCacheGuid));
+  ASSERT_THAT(session_sync_prefs_.GetSyncSessionsGUID(), IsEmpty());
 
   MockFactoryCompletionCallback completion;
   EXPECT_CALL(completion, Run(NoModelError(), /*store=*/NotNull(),
@@ -206,13 +204,13 @@ TEST_F(SessionStoreFactoryTest, ShouldCreateStore) {
   ASSERT_THAT(completion.GetResult(), NotNull());
   EXPECT_THAT(completion.GetResult()->local_session_info().client_name,
               Eq(kClientName));
+  EXPECT_THAT(session_sync_prefs_.GetSyncSessionsGUID(),
+              Eq(std::string("session_sync") + kCacheGuid));
 }
 
 TEST_F(SessionStoreFactoryTest, ShouldReadSessionsGuidFromPrefs) {
   const std::string kCachedGuid = "cachedguid1";
-  EXPECT_CALL(mock_sync_prefs_, SetSyncSessionsGUID(_)).Times(0);
-  EXPECT_CALL(mock_sync_prefs_, GetSyncSessionsGUID())
-      .WillOnce(Return(kCachedGuid));
+  session_sync_prefs_.SetSyncSessionsGUID(kCachedGuid);
 
   NiceMock<MockFactoryCompletionCallback> completion;
   factory_.Run(local_device_info_, completion.Get());
@@ -220,6 +218,7 @@ TEST_F(SessionStoreFactoryTest, ShouldReadSessionsGuidFromPrefs) {
   ASSERT_THAT(completion.GetResult(), NotNull());
   EXPECT_THAT(completion.GetResult()->local_session_info().session_tag,
               Eq(kCachedGuid));
+  EXPECT_THAT(session_sync_prefs_.GetSyncSessionsGUID(), Eq(kCachedGuid));
 }
 
 // Test fixture that creates an initial session store.
@@ -228,9 +227,7 @@ class SessionStoreTest : public SessionStoreFactoryTest {
   const std::string kLocalSessionTag = "localsessiontag";
 
   SessionStoreTest() {
-    ON_CALL(mock_sync_prefs_, GetSyncSessionsGUID())
-        .WillByDefault(Return(kLocalSessionTag));
-
+    session_sync_prefs_.SetSyncSessionsGUID(kLocalSessionTag);
     session_store_ = CreateSessionStore();
   }
 

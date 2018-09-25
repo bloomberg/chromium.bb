@@ -23,6 +23,7 @@ include_rules = [
   "+components/signin/ios",
   "+components/strings/grit",
   "+components/sync",
+  "+components/sync_sessions",
   "+components/translate/core",
   "+components/translate/ios",
   "+components/version_info",

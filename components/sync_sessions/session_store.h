@@ -21,7 +21,6 @@
 
 namespace syncer {
 class DeviceInfo;
-class SessionSyncPrefs;
 }  // namespace syncer
 
 namespace sync_sessions {
@@ -53,12 +52,10 @@ class SessionStore {
       base::RepeatingCallback<void(const sync_pb::SessionTab&, base::Time)>;
 
   // Creates a factory object that is capable of constructing instances of type
-  // |SessionStore| and handling the involved IO. All pointer arguments must not
-  // be null and must outlive the factory as well as the instantiated stores.
+  // |SessionStore| and handling the involved IO. |sessions_client| must not be
+  // null and must outlive the factory as well as the instantiated stores.
   static Factory CreateFactory(
       SyncSessionsClient* sessions_client,
-      syncer::SessionSyncPrefs* sync_prefs,
-      const syncer::RepeatingModelTypeStoreFactory& store_factory,
       const RestoredForeignTabCallback& restored_foreign_tab_callback);
 
   // Verifies whether a proto is malformed (e.g. required fields are missing).

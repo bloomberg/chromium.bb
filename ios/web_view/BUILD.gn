@@ -270,6 +270,7 @@ ios_web_view_deps = [
   "//components/signin/ios/browser:active_state_manager",
   "//components/strings:components_strings_grit",
   "//components/sync",
+  "//components/sync_sessions",
   "//components/translate/core/browser",
   "//components/translate/core/common",
   "//components/translate/ios/browser",
