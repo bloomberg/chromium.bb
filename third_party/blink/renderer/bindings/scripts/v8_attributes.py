@@ -463,6 +463,8 @@ def setter_context(interface, attribute, interfaces, context):
         'has_type_checking_interface': has_type_checking_interface,
         'is_setter_call_with_execution_context': has_extended_attribute_value(
             attribute, 'SetterCallWith', 'ExecutionContext'),
+        'is_setter_call_with_script_state': has_extended_attribute_value(
+            attribute, 'SetterCallWith', 'ScriptState'),
         'is_setter_raises_exception': is_setter_raises_exception,
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue'),
