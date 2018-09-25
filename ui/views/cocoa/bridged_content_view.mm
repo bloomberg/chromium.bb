@@ -252,7 +252,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)insertTextInternal:(id)text;
 
 // Returns the native Widget's drag drop client. Possibly null.
-- (views::DragDropClientMac*)dragDropClient;
+- (views_bridge_mac::DragDropClient*)dragDropClient;
 
 // Menu action handlers.
 - (void)undo:(id)sender;
@@ -621,7 +621,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   }
 }
 
-- (views::DragDropClientMac*)dragDropClient {
+- (views_bridge_mac::DragDropClient*)dragDropClient {
   return bridge_ ? bridge_->drag_drop_client() : nullptr;
 }
 
@@ -769,18 +769,18 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
-  views::DragDropClientMac* client = [self dragDropClient];
+  views_bridge_mac::DragDropClient* client = [self dragDropClient];
   return client ? client->DragUpdate(sender) : ui::DragDropTypes::DRAG_NONE;
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-  views::DragDropClientMac* client = [self dragDropClient];
+  views_bridge_mac::DragDropClient* client = [self dragDropClient];
   if (client)
     client->DragExit();
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
-  views::DragDropClientMac* client = [self dragDropClient];
+  views_bridge_mac::DragDropClient* client = [self dragDropClient];
   return client && client->Drop(sender) != NSDragOperationNone;
 }
 
@@ -1541,7 +1541,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)draggingSession:(NSDraggingSession*)session
            endedAtPoint:(NSPoint)screenPoint
               operation:(NSDragOperation)operation {
-  views::DragDropClientMac* client = [self dragDropClient];
+  views_bridge_mac::DragDropClient* client = [self dragDropClient];
   if (client)
     client->EndDrag();
 }

@@ -19,7 +19,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
-#import "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
@@ -36,8 +35,9 @@ namespace mojom {
 class BridgedNativeWidgetHost;
 }  // namespace mojom
 
-class CocoaMouseCapture;
 class BridgedNativeWidgetHostHelper;
+class CocoaMouseCapture;
+class DragDropClient;
 
 }  // namespace views_bridge_mac
 
@@ -47,8 +47,6 @@ class BridgedNativeWidgetTestApi;
 }
 
 class CocoaWindowMoveLoop;
-class DragDropClientMac;
-class View;
 
 using views_bridge_mac::mojom::BridgedNativeWidgetHost;
 using views_bridge_mac::BridgedNativeWidgetHostHelper;
@@ -93,12 +91,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // process boundary, it will not be possible to explicitly set an NSWindow in
   // this way.
   void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
-
-  // Create the drag drop client for this widget.
-  // TODO(ccameron): This function takes a views::View (and is not rolled into
-  // CreateContentView) because drag-drop has not been routed through |host_|
-  // yet.
-  void CreateDragDropClient(views::View* view);
 
   // Set the parent NSView for the widget.
   // TODO(ccameron): Like SetWindow, this will need to pass a handle instead of
@@ -170,7 +162,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   BridgedNativeWidgetHostHelper* host_helper() { return host_helper_; }
   NSWindow* ns_window();
 
-  DragDropClientMac* drag_drop_client() { return drag_drop_client_.get(); }
+  views_bridge_mac::DragDropClient* drag_drop_client();
   bool is_translucent_window() const { return is_translucent_window_; }
 
   // The parent widget specified in Widget::InitParams::parent. If non-null, the
@@ -304,7 +296,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   base::scoped_nsobject<ModalShowAnimationWithLayer> show_animation_;
   std::unique_ptr<CocoaMouseCapture> mouse_capture_;
   std::unique_ptr<CocoaWindowMoveLoop> window_move_loop_;
-  std::unique_ptr<DragDropClientMac> drag_drop_client_;
   ui::ModalType modal_type_ = ui::MODAL_TYPE_NONE;
   bool is_translucent_window_ = false;
   bool widget_is_top_level_ = false;

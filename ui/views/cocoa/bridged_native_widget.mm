@@ -456,7 +456,6 @@ void BridgedNativeWidgetImpl::SetBounds(const gfx::Rect& new_bounds,
 void BridgedNativeWidgetImpl::DestroyContentView() {
   if (!bridged_view_)
     return;
-  drag_drop_client_.reset();
   [bridged_view_ clearView];
   bridged_view_.reset();
   [window_ setContentView:nil];
@@ -479,10 +478,6 @@ void BridgedNativeWidgetImpl::CreateContentView(const gfx::Rect& bounds) {
   [bridged_view_ setWantsLayer:YES];
 
   [window_ setContentView:bridged_view_];
-}
-
-void BridgedNativeWidgetImpl::CreateDragDropClient(View* view) {
-  drag_drop_client_.reset(new DragDropClientMac(this, view));
 }
 
 void BridgedNativeWidgetImpl::CloseWindow() {
@@ -1003,6 +998,10 @@ bool BridgedNativeWidgetImpl::ShouldRunCustomAnimationFor(
 
 NSWindow* BridgedNativeWidgetImpl::ns_window() {
   return window_.get();
+}
+
+views_bridge_mac::DragDropClient* BridgedNativeWidgetImpl::drag_drop_client() {
+  return host_helper_->GetDragDropClient();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -249,6 +249,15 @@ void BridgedNativeWidgetHostImpl::SetFullscreen(bool fullscreen) {
 
 void BridgedNativeWidgetHostImpl::SetRootView(views::View* root_view) {
   root_view_ = root_view;
+  if (root_view_) {
+    // TODO(ccameron): Drag-drop functionality does not yet run over mojo.
+    if (bridge_impl_) {
+      drag_drop_client_.reset(
+          new DragDropClientMac(bridge_impl_.get(), root_view_));
+    }
+  } else {
+    drag_drop_client_.reset();
+  }
 }
 
 void BridgedNativeWidgetHostImpl::CreateCompositor(
@@ -453,6 +462,11 @@ bool BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuController(
 
 double BridgedNativeWidgetHostImpl::SheetPositionY() {
   return native_widget_mac_->SheetPositionY();
+}
+
+views_bridge_mac::DragDropClient*
+BridgedNativeWidgetHostImpl::GetDragDropClient() {
+  return drag_drop_client_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
