@@ -25,10 +25,9 @@
 namespace {
 
 #if defined(OS_WIN)
-std::unique_ptr<SkBitmap> GetElevationIcon() {
-  std::unique_ptr<SkBitmap> icon;
+SkBitmap GetElevationIcon() {
   if (!base::win::UserAccountControlIsEnabled())
-    return icon;
+    return SkBitmap();
 
   SHSTOCKICONINFO icon_info = { sizeof(SHSTOCKICONINFO) };
   typedef HRESULT (STDAPICALLTYPE *GetStockIconInfo)(SHSTOCKICONID,
@@ -42,11 +41,11 @@ std::unique_ptr<SkBitmap> GetElevationIcon() {
   // TODO(pkasting): Run on a background thread since this call spins a nested
   // message loop.
   if (FAILED((*func)(SIID_SHIELD, SHGSI_ICON | SHGSI_SMALLICON, &icon_info)))
-    return icon;
+    return SkBitmap();
 
-  icon.reset(IconUtil::CreateSkBitmapFromHICON(
+  SkBitmap icon = IconUtil::CreateSkBitmapFromHICON(
       icon_info.hIcon,
-      gfx::Size(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON))));
+      gfx::Size(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON)));
   DestroyIcon(icon_info.hIcon);
   return icon;
 }
@@ -75,8 +74,8 @@ ElevationIconSetter::~ElevationIconSetter() {
 }
 
 void ElevationIconSetter::SetButtonIcon(base::OnceClosure callback,
-                                        std::unique_ptr<SkBitmap> icon) {
-  if (icon) {
+                                        const SkBitmap& icon) {
+  if (!icon.isNull()) {
     float device_scale_factor = 1.0f;
 #if defined(OS_WIN)
     // Windows gives us back a correctly-scaled image for the current DPI, so
@@ -85,7 +84,7 @@ void ElevationIconSetter::SetButtonIcon(base::OnceClosure callback,
 #endif
     button_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::ImageSkia(gfx::ImageSkiaRep(*icon, device_scale_factor)));
+        gfx::ImageSkia(gfx::ImageSkiaRep(icon, device_scale_factor)));
     button_->SizeToPreferredSize();
     if (button_->parent())
       button_->parent()->Layout();

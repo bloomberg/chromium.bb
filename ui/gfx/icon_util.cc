@@ -232,16 +232,16 @@ base::win::ScopedHICON IconUtil::CreateHICONFromSkBitmap(
   return icon;
 }
 
-SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
+SkBitmap IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   // We start with validating parameters.
   if (!icon || s.IsEmpty())
-    return NULL;
+    return SkBitmap();
   ScopedICONINFO icon_info;
   if (!::GetIconInfo(icon, &icon_info))
-    return NULL;
+    return SkBitmap();
   if (!icon_info.fIcon)
-    return NULL;
-  return new SkBitmap(CreateSkBitmapFromHICONHelper(icon, s));
+    return SkBitmap();
+  return CreateSkBitmapFromHICONHelper(icon, s);
 }
 
 // static
@@ -273,9 +273,8 @@ std::unique_ptr<gfx::ImageFamily> IconUtil::CreateImageFamilyFromIconResource(
       base::win::ScopedHICON icon_handle(static_cast<HICON>(LoadImage(
           module, MAKEINTRESOURCE(resource_id), IMAGE_ICON, entry->bWidth,
           entry->bHeight, LR_DEFAULTCOLOR | LR_DEFAULTSIZE)));
-      std::unique_ptr<SkBitmap> bitmap(
-          IconUtil::CreateSkBitmapFromHICON(icon_handle.get()));
-      result->Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
+      result->Add(gfx::Image::CreateFrom1xBitmap(
+          IconUtil::CreateSkBitmapFromHICON(icon_handle.get())));
     } else {
       // 256x256 icons are stored with width and height set to 0.
       // See: http://en.wikipedia.org/wiki/ICO_(file_format)
@@ -295,26 +294,26 @@ std::unique_ptr<gfx::ImageFamily> IconUtil::CreateImageFamilyFromIconResource(
   return result;
 }
 
-SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon) {
+SkBitmap IconUtil::CreateSkBitmapFromHICON(HICON icon) {
   // We start with validating parameters.
   if (!icon)
-    return NULL;
+    return SkBitmap();
 
   ScopedICONINFO icon_info;
   BITMAP bitmap_info = { 0 };
 
   if (!::GetIconInfo(icon, &icon_info))
-    return NULL;
+    return SkBitmap();
 
   if (!::GetObject(icon_info.hbmMask, sizeof(bitmap_info), &bitmap_info))
-    return NULL;
+    return SkBitmap();
 
   // For non-color cursors, the mask contains both an AND and an XOR mask and
   // the height includes both. Thus, the mask width is the same as image width,
   // but we need to divide mask height by 2 to get the image height.
   const int height = bitmap_info.bmHeight / (icon_info.hbmColor ? 1 : 2);
   gfx::Size icon_size(bitmap_info.bmWidth, height);
-  return new SkBitmap(CreateSkBitmapFromHICONHelper(icon, icon_size));
+  return CreateSkBitmapFromHICONHelper(icon, icon_size);
 }
 
 base::win::ScopedHICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
@@ -375,6 +374,8 @@ gfx::Point IconUtil::GetHotSpotFromHICON(HICON icon) {
 
   return hotspot;
 }
+
+// static
 SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
                                                  const gfx::Size& s) {
   DCHECK(icon);
