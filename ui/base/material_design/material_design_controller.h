@@ -10,6 +10,8 @@
 
 namespace ui {
 
+class MaterialDesignControllerObserver;
+
 namespace test {
 class MaterialDesignControllerTestAPI;
 }  // namespace test
@@ -38,6 +40,10 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Get the current Mode that should be used by the system.
   static Mode GetMode();
 
+  static void AddObserver(MaterialDesignControllerObserver* observer);
+
+  static void RemoveObserver(MaterialDesignControllerObserver* observer);
+
   // Returns true if the touch-optimized UI material design mode is enabled.
   static bool IsTouchOptimizedUiEnabled();
 
@@ -50,10 +56,21 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Returns the per-platform default material design variant.
   static Mode DefaultMode();
 
+  // Exposed for TabletModeClient on ChromeOS + ash.
+  static void OnTabletModeToggled(bool enabled);
+
   static bool is_mode_initialized() { return is_mode_initialized_; }
 
  private:
   friend class test::MaterialDesignControllerTestAPI;
+
+  // Resets the initialization state to uninitialized. To be used by tests to
+  // allow calling Initialize() more than once.
+  static void Uninitialize();
+
+  // Set |mode_| to |mode| and updates |is_mode_initialized_| to true. Can be
+  // used by tests to directly set the mode.
+  static void SetMode(Mode mode);
 
   // Tracks whether |mode_| has been initialized. This is necessary to avoid
   // checking the |mode_| early in initialization before a call to Initialize().
@@ -63,17 +80,9 @@ class UI_BASE_EXPORT MaterialDesignController {
   // The current Mode to be used by the system.
   static Mode mode_;
 
-  // Declarations only. Do not allow construction of an object.
-  MaterialDesignController();
-  ~MaterialDesignController();
-
-  // Resets the initialization state to uninitialized. To be used by tests to
-  // allow calling Initialize() more than once.
-  static void Uninitialize();
-
-  // Set |mode_| to |mode| and updates |is_mode_initialized_| to true. Can be
-  // used by tests to directly set the mode.
-  static void SetMode(Mode mode);
+  // Whether |mode_| should toggle between MATERIAL_REFRESH and
+  // MATERIAL_TOUCH_REFRESH depending on the tablet state.
+  static bool is_refresh_dynamic_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(MaterialDesignController);
 };

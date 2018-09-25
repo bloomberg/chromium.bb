@@ -9,10 +9,13 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_features.h"
@@ -38,6 +41,13 @@
 
 namespace ui {
 namespace {
+
+base::ObserverList<MaterialDesignControllerObserver>* GetObservers() {
+  static base::NoDestructor<
+      base::ObserverList<MaterialDesignControllerObserver>>
+      observers;
+  return observers.get();
+}
 
 #if defined(OS_CHROMEOS)
 
@@ -87,10 +97,13 @@ bool MaterialDesignController::is_mode_initialized_ = false;
 MaterialDesignController::Mode MaterialDesignController::mode_ =
     MaterialDesignController::MATERIAL_NORMAL;
 
+bool MaterialDesignController::is_refresh_dynamic_ui_ = false;
+
 // static
 void MaterialDesignController::Initialize() {
   TRACE_EVENT0("startup", "MaterialDesignController::InitializeMode");
   CHECK(!is_mode_initialized_);
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string switch_value =
       command_line->GetSwitchValueASCII(switches::kTopChromeMD);
@@ -106,6 +119,11 @@ void MaterialDesignController::Initialize() {
   } else if (switch_value ==
              switches::kTopChromeMDMaterialRefreshTouchOptimized) {
     SetMode(MATERIAL_TOUCH_REFRESH);
+  } else if (switch_value == switches::kTopChromeMDMaterialRefreshDynamic) {
+    is_refresh_dynamic_ui_ = true;
+
+    // TabletModeClient's default state is in non-tablet mode.
+    SetMode(MATERIAL_REFRESH);
   } else if (force_material_refresh) {
     bool has_touchscreen = false;
 #if defined(OS_CHROMEOS)
@@ -120,8 +138,8 @@ void MaterialDesignController::Initialize() {
     SetMode(MATERIAL_TOUCH_OPTIMIZED);
   } else if (switch_value == switches::kTopChromeMDMaterialAuto) {
 #if defined(OS_WIN)
-    // TODO(girard): add support for switching between modes when
-    // the device switches to "tablet mode".
+    // TODO(thomasanderson): add support for switching between modes when the
+    // device switches to "tablet mode".
     if (base::win::IsTabletDevice(nullptr, ui::GetHiddenWindow()))
       SetMode(MATERIAL_HYBRID);
 #endif
@@ -153,6 +171,18 @@ void MaterialDesignController::Initialize() {
 MaterialDesignController::Mode MaterialDesignController::GetMode() {
   CHECK(is_mode_initialized_);
   return mode_;
+}
+
+// static
+void MaterialDesignController::AddObserver(
+    MaterialDesignControllerObserver* observer) {
+  GetObservers()->AddObserver(observer);
+}
+
+// static
+void MaterialDesignController::RemoveObserver(
+    MaterialDesignControllerObserver* observer) {
+  GetObservers()->RemoveObserver(observer);
 }
 
 // static
@@ -193,14 +223,24 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 }
 
 // static
+void MaterialDesignController::OnTabletModeToggled(bool enabled) {
+  if (is_refresh_dynamic_ui_)
+    SetMode(enabled ? MATERIAL_TOUCH_REFRESH : MATERIAL_REFRESH);
+}
+
+// static
 void MaterialDesignController::Uninitialize() {
   is_mode_initialized_ = false;
 }
 
 // static
 void MaterialDesignController::SetMode(MaterialDesignController::Mode mode) {
-  mode_ = mode;
-  is_mode_initialized_ = true;
+  if (!is_mode_initialized_ || mode_ != mode) {
+    is_mode_initialized_ = true;
+    mode_ = mode;
+    for (auto& observer : *GetObservers())
+      observer.OnModeChanged();
+  }
 }
 
 }  // namespace ui

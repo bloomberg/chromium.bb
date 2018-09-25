@@ -1842,6 +1842,7 @@ const char kTopChromeMdMaterialHybrid[] = "Hybrid";
 const char kTopChromeMdMaterialTouchOptimized[] = "Touchable";
 const char kTopChromeMdMaterialRefresh[] = "Refresh";
 const char kTopChromeMdMaterialRefreshTouchOptimized[] = "Touchable Refresh";
+const char kTopChromeMdMaterialRefreshDynamic[] = "Dynamic Refresh";
 
 const char kThreadedScrollingName[] = "Threaded scrolling";
 const char kThreadedScrollingDescription[] =

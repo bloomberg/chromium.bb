@@ -218,6 +218,7 @@ jumbo_component("base") {
     "layout.h",
     "material_design/material_design_controller.cc",
     "material_design/material_design_controller.h",
+    "material_design/material_design_controller_observer.h",
     "models/button_menu_item_model.cc",
     "models/button_menu_item_model.h",
     "models/combobox_model.cc",
