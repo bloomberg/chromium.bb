@@ -85,10 +85,6 @@ jumbo_split_static_library("ui") {
       "cocoa/clickhold_button_cell.mm",
       "cocoa/cocoa_util.h",
       "cocoa/cocoa_util.mm",
-      "cocoa/constrained_window/constrained_window_alert.h",
-      "cocoa/constrained_window/constrained_window_alert.mm",
-      "cocoa/constrained_window/constrained_window_button.h",
-      "cocoa/constrained_window/constrained_window_button.mm",
       "cocoa/constrained_window/constrained_window_control_utils.h",
       "cocoa/constrained_window/constrained_window_control_utils.mm",
       "cocoa/constrained_window/constrained_window_custom_sheet.h",
@@ -2233,7 +2229,6 @@ jumbo_split_static_library("ui") {
       "//chrome/browser/apps/app_shim",
       "//extensions/components/native_app_window",
       "//third_party/google_toolbox_for_mac",
-      "//third_party/molokocacao",
       "//third_party/mozilla",
       "//ui/accelerated_widget_mac:accelerated_widget_mac",
     ]
