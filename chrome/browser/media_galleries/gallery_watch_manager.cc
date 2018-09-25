@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager_observer.h"
@@ -118,7 +118,7 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
     const base::FilePath& path,
     const base::Callback<void(bool)>& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // This can occur if the GalleryWatchManager attempts to watch the same path
   // again before recieving the callback. It's benign.
@@ -144,7 +144,6 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
 void GalleryWatchManager::FileWatchManager::RemoveFileWatch(
     const base::FilePath& path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::AssertBlockingAllowed();
 
   size_t erased = watchers_.erase(path);
   DCHECK_EQ(erased, 1u);
@@ -159,7 +158,6 @@ void GalleryWatchManager::FileWatchManager::OnFilePathChanged(
     const base::FilePath& path,
     bool error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::AssertBlockingAllowed();
 
   if (error)
     RemoveFileWatch(path);
