@@ -162,11 +162,10 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       model_.SetInputModality(InputModality::kKeyboard);
       break;
     case AssistantVisibility::kVisible:
-      if (source == AssistantSource::kLauncherSearchBox) {
+      if (source == AssistantSource::kLauncherSearchBox ||
+          source == AssistantSource::kLongPressLauncher) {
         if (IsTabletMode())
           StartVoiceInteraction();
-      } else if (source == AssistantSource::kLongPressLauncher) {
-        StartVoiceInteraction();
       } else if (source == AssistantSource::kStylus) {
         model_.SetInputModality(InputModality::kStylus);
       }
