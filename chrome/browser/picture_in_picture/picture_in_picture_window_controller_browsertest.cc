@@ -1174,15 +1174,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 #if !defined(OS_ANDROID)
 
-// TODO(mlamouri): enable this tests on other platforms when aspect ratio is
-// implemented.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
 // Tests that when a new surface id is sent to the Picture-in-Picture window, it
 // doesn't move back to its default position.
-// TODO(https://crbug.com/862505): test is currently flaky.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       DISABLED_SurfaceIdChangeDoesNotMoveWindow) {
+                       SurfaceIdChangeDoesNotMoveWindow) {
   LoadTabAndEnterPictureInPicture(browser());
 
   content::WebContents* active_web_contents =
@@ -1208,7 +1203,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  // Simulate a new surface layer and a change in aspect ratio and wait for ack.
+  // Simulate a new surface layer and a change in aspect ratio then wait for
+  // ack.
   {
     WidgetBoundsChangeWaiter waiter(overlay_window);
 
@@ -1227,8 +1223,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_LT(overlay_window->GetBounds().x(), 100);
   EXPECT_LT(overlay_window->GetBounds().y(), 100);
 }
-
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 // Tests that the Picture-in-Picture state is properly updated when the window
 // is closed at a system level.
