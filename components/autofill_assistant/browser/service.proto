@@ -69,6 +69,8 @@ message ScriptPreconditionProto {
   repeated string domain = 6;
   // Combined with AND: all matches must be true for precondition to hold.
   repeated ScriptParameterMatchProto script_parameter_match = 7;
+  // Combined with AND: all matches must be true for precondition to hold.
+  repeated FormValueMatchProto form_value_match = 9;
 }
 
 message ScriptParameterMatchProto {
@@ -81,6 +83,12 @@ message ScriptParameterMatchProto {
   // Checks whether the script parameter has exact value. Empty or missing value
   // is treated as wildcard - any value will pass.
   optional string value_equals = 3;
+}
+
+message FormValueMatchProto {
+  // Required. The selector associated to the form element whose value should be
+  // checked.
+  optional ElementReferenceProto element = 1;
 }
 
 enum PolicyType {

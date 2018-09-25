@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -61,6 +62,11 @@ class ScriptPreconditionTest : public testing::Test {
     SetUrl("http://www.example.com/path");
     ON_CALL(mock_web_controller_, GetUrl())
         .WillByDefault(Invoke(this, &ScriptPreconditionTest::GetUrl));
+    ON_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("exists"), _))
+        .WillByDefault(RunOnceCallback<1>("foo"));
+    ON_CALL(mock_web_controller_,
+            OnGetFieldValue(ElementsAre("does_not_exist"), _))
+        .WillByDefault(RunOnceCallback<1>(""));
   }
 
  protected:
@@ -194,6 +200,16 @@ TEST_F(ScriptPreconditionTest, MultipleConditions) {
 
   // Selector doesn't match.
   proto.mutable_elements_exist(0)->set_selectors(0, "does_not_exist");
+  EXPECT_FALSE(Check(proto));
+}
+
+TEST_F(ScriptPreconditionTest, FormValueMatch) {
+  ScriptPreconditionProto proto;
+  FormValueMatchProto* match = proto.add_form_value_match();
+  match->mutable_element()->add_selectors("exists");
+  EXPECT_TRUE(Check(proto));
+
+  match->mutable_element()->set_selectors(0, "does_not_exist");
   EXPECT_FALSE(Check(proto));
 }
 
