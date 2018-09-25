@@ -98,11 +98,6 @@ KeyedService* DevToolsAndroidBridge::Factory::BuildServiceInstanceFor(
   return new DevToolsAndroidBridge(profile);
 }
 
-void DevToolsAndroidBridge::Shutdown() {
-  // Needed for Chrome_DevToolsADBThread to shut down gracefully in tests.
-  device_manager_.reset();
-}
-
 scoped_refptr<content::DevToolsAgentHost>
 DevToolsAndroidBridge::GetBrowserAgentHost(
     scoped_refptr<RemoteBrowser> browser) {

@@ -134,8 +134,6 @@ class DevToolsAndroidBridge : public KeyedService {
       base::Callback<void(scoped_refptr<TCPDeviceProvider>)>;
   void set_tcp_provider_callback_for_test(TCPProviderCallback callback);
 
-  void Shutdown() override;
-
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
@@ -164,7 +162,7 @@ class DevToolsAndroidBridge : public KeyedService {
   }
 
   Profile* const profile_;
-  std::unique_ptr<AndroidDeviceManager> device_manager_;
+  const std::unique_ptr<AndroidDeviceManager> device_manager_;
 
   using DeviceMap =
       std::map<std::string, scoped_refptr<AndroidDeviceManager::Device> >;
