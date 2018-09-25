@@ -311,7 +311,7 @@ class UpdateServiceTest : public ExtensionsTest {
 
     scoped_refptr<Extension> extension1 =
         ExtensionBuilder("Foo")
-            .SetManifestKey("version", "1.0")
+            .SetVersion("1.0")
             .SetID(crx_file::id_util::GenerateId("foo_extension"))
             .SetPath(temp_dir.GetPath())
             .Build();
@@ -409,11 +409,11 @@ TEST_F(UpdateServiceTest, UninstallPings) {
 
   // Build 3 extensions.
   scoped_refptr<Extension> extension1 =
-      ExtensionBuilder("1").SetManifestKey("version", "1.2").Build();
+      ExtensionBuilder("1").SetVersion("1.2").Build();
   scoped_refptr<Extension> extension2 =
-      ExtensionBuilder("2").SetManifestKey("version", "2.3").Build();
+      ExtensionBuilder("2").SetVersion("2.3").Build();
   scoped_refptr<Extension> extension3 =
-      ExtensionBuilder("3").SetManifestKey("version", "3.4").Build();
+      ExtensionBuilder("3").SetVersion("3.4").Build();
   EXPECT_TRUE(extension1->id() != extension2->id() &&
               extension1->id() != extension3->id() &&
               extension2->id() != extension3->id());

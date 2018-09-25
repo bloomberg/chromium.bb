@@ -19,6 +19,7 @@ struct ExtensionBuilder::ManifestData {
   std::vector<std::string> permissions;
   base::Optional<ActionType> action;
   base::Optional<BackgroundPage> background_page;
+  base::Optional<std::string> version;
 
   // A ContentScriptEntry includes a string name, and a vector of string
   // match patterns.
@@ -31,7 +32,7 @@ struct ExtensionBuilder::ManifestData {
     DictionaryBuilder manifest;
     manifest.Set("name", name)
         .Set("manifest_version", 2)
-        .Set("version", "0.1")
+        .Set("version", version.value_or("0.1"))
         .Set("description", "some description");
 
     switch (type) {
@@ -182,6 +183,12 @@ ExtensionBuilder& ExtensionBuilder::AddContentScript(
     const std::vector<std::string>& match_patterns) {
   CHECK(manifest_data_);
   manifest_data_->content_scripts.emplace_back(script_name, match_patterns);
+  return *this;
+}
+
+ExtensionBuilder& ExtensionBuilder::SetVersion(const std::string& version) {
+  CHECK(manifest_data_);
+  manifest_data_->version = version;
   return *this;
 }
 
