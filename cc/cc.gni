@@ -11,7 +11,7 @@ cc_add_configs = [
   "//build/config/compiler:wexit_time_destructors",
 ]
 
-if (!is_debug && (is_win || is_android)) {
+if (!is_debug) {
   cc_remove_configs += [ "//build/config/compiler:default_optimization" ]
   cc_add_configs += [ "//build/config/compiler:optimize_max" ]
 }
