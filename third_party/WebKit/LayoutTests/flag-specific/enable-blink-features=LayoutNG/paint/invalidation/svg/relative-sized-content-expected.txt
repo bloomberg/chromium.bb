@@ -20,7 +20,7 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
           "rect": [8, 72, 402, 402],
-          "reason": "appeared"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
@@ -31,11 +31,6 @@
           "object": "LayoutSVGRoot svg",
           "rect": [109, 73, 300, 400],
           "reason": "incremental"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
-          "rect": [8, 72, 102, 402],
-          "reason": "disappeared"
         }
       ]
     }

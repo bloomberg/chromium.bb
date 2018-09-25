@@ -46,20 +46,24 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   static scoped_refptr<NGPaintFragment> Create(
       scoped_refptr<const NGPhysicalFragment>,
-      NGPhysicalOffset offset);
+      NGPhysicalOffset offset,
+      scoped_refptr<NGPaintFragment> previous_instance = nullptr);
 
   const NGPhysicalFragment& PhysicalFragment() const {
     return *physical_fragment_;
   }
 
-  void UpdatePhysicalFragmentFromCachedLayoutResult(
-      scoped_refptr<const NGPhysicalFragment>);
+  void UpdateFromCachedLayoutResult(
+      scoped_refptr<const NGPhysicalFragment> fragment,
+      NGPhysicalOffset offset);
 
   // Next/last fragment for  when this is fragmented.
   NGPaintFragment* Next() { return next_fragmented_.get(); }
   void SetNext(scoped_refptr<NGPaintFragment>);
   NGPaintFragment* Last();
   NGPaintFragment* Last(const NGBreakToken&);
+  static scoped_refptr<NGPaintFragment>* Find(scoped_refptr<NGPaintFragment>*,
+                                              const NGBreakToken*);
 
   // The parent NGPaintFragment. This is nullptr for a root; i.e., when parent
   // is not for NGPaint. In the first phase, this means that this is a root of
@@ -245,6 +249,12 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   static bool FlippedLocalVisualRectFor(const LayoutObject*, LayoutRect*);
 
  private:
+  static scoped_refptr<NGPaintFragment> CreateOrReuse(
+      scoped_refptr<const NGPhysicalFragment> fragment,
+      NGPhysicalOffset offset,
+      NGPaintFragment* parent,
+      scoped_refptr<NGPaintFragment> previous_instance,
+      bool* populate_children);
   void PopulateDescendants(
       const NGPhysicalOffset inline_offset_to_container_box,
       HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);

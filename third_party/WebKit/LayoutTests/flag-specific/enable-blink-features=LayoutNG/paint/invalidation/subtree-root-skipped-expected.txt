@@ -25,12 +25,7 @@
         {
           "object": "NGPhysicalTextFragment 'Selection is here'",
           "rect": [8, 30, 103, 19],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Selection is here'",
-          "rect": [8, 30, 103, 19],
-          "reason": "chunk disappeared"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'PASS'",

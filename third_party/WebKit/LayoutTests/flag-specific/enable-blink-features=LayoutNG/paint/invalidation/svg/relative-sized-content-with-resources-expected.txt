@@ -20,7 +20,7 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
           "rect": [8, 72, 402, 402],
-          "reason": "appeared"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGEllipse circle",
@@ -46,11 +46,6 @@
           "object": "LayoutSVGEllipse circle",
           "rect": [8, 154, 170, 238],
           "reason": "subtree"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
-          "rect": [8, 72, 102, 402],
-          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGRoot svg",

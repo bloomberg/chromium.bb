@@ -249,19 +249,20 @@ LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
 
 template <typename Base>
 void LayoutNGMixin<Base>::SetPaintFragment(
-    NGPaintFragment* last_paint_fragment,
-    scoped_refptr<NGPaintFragment> paint_fragment) {
-  if (paint_fragment) {
+    scoped_refptr<const NGPhysicalFragment> fragment,
+    NGPhysicalOffset offset,
+    scoped_refptr<NGPaintFragment>* current) {
+  DCHECK(current);
+
+  if (fragment) {
     // When paint fragment is replaced, the subtree needs paint invalidation to
     // re-compute paint properties in NGPaintFragment.
     Base::SetSubtreeShouldDoFullPaintInvalidation();
   }
 
-  if (last_paint_fragment) {
-    last_paint_fragment->SetNext(std::move(paint_fragment));
-  } else {
-    paint_fragment_ = std::move(paint_fragment);
-  }
+  *current = fragment ? NGPaintFragment::Create(std::move(fragment), offset,
+                                                std::move(*current))
+                      : nullptr;
 }
 
 template <typename Base>
@@ -272,19 +273,9 @@ void LayoutNGMixin<Base>::SetPaintFragment(
   // TODO(kojii): There are cases where the first call has break_token.
   // Investigate why and handle appropriately.
   // DCHECK(!break_token || paint_fragment_);
-  NGPaintFragment* last_paint_fragment = nullptr;
-  if (break_token && paint_fragment_) {
-    last_paint_fragment = paint_fragment_->Last(*break_token);
-    // TODO(kojii): Sometimes an unknown break_token is given. Need to
-    // investigate why, and handle appropriately. For now, just keep it to avoid
-    // crashes and use-after-free.
-    if (!last_paint_fragment)
-      last_paint_fragment = paint_fragment_->Last();
-    DCHECK(last_paint_fragment);
-  }
-  SetPaintFragment(
-      last_paint_fragment,
-      fragment ? NGPaintFragment::Create(fragment, offset) : nullptr);
+  scoped_refptr<NGPaintFragment>* current =
+      NGPaintFragment::Find(&paint_fragment_, break_token);
+  SetPaintFragment(std::move(fragment), offset, current);
 }
 
 template <typename Base>
@@ -296,29 +287,12 @@ void LayoutNGMixin<Base>::UpdatePaintFragmentFromCachedLayoutResult(
   // TODO(kojii): There are cases where the first call has break_token.
   // Investigate why and handle appropriately.
   // DCHECK(!break_token || paint_fragment_);
-  NGPaintFragment* paint_fragment = nullptr;
-  NGPaintFragment* last_paint_fragment = nullptr;
-  if (!break_token) {
-    paint_fragment = paint_fragment_.get();
-  } else if (paint_fragment_) {
-    last_paint_fragment = paint_fragment_->Last(*break_token);
-    // TODO(kojii): Sometimes an unknown break_token is given. Need to
-    // investigate why, and handle appropriately. For now, just keep it to avoid
-    // crashes and use-after-free.
-    if (!last_paint_fragment)
-      last_paint_fragment = paint_fragment_->Last();
-    DCHECK(last_paint_fragment);
-    paint_fragment = last_paint_fragment->Next();
-  }
-
-  if (!paint_fragment) {
-    SetPaintFragment(
-        last_paint_fragment,
-        NGPaintFragment::Create(std::move(fragment), fragment_offset));
-    return;
-  }
-
-  paint_fragment->UpdatePhysicalFragmentFromCachedLayoutResult(fragment);
+  scoped_refptr<NGPaintFragment>* current =
+      NGPaintFragment::Find(&paint_fragment_, break_token);
+  DCHECK(current);
+  DCHECK(*current);
+  (*current)->UpdateFromCachedLayoutResult(std::move(fragment),
+                                           fragment_offset);
 }
 
 template <typename Base>
