@@ -48,21 +48,40 @@ bool ExtractSyncEntity(ModelType type,
   if (!entry.GetServerParentId().IsNull()) {
     entity->set_parent_id_string(entry.GetServerParentId().GetServerId());
   }
-  if (entry.GetServerUniquePosition().IsValid()) {
+
+  if (!entry.GetUniqueServerTag().empty()) {
+    // Permanent nodes don't have unique_positions and are assigned unique
+    // server tags.
+    entity->set_server_defined_unique_tag(entry.GetUniqueServerTag());
+  } else if (entry.GetServerUniquePosition().IsValid()) {
     *entity->mutable_unique_position() =
         entry.GetServerUniquePosition().ToProto();
   } else {
-    // All boookmarks should have valid unique_positions including legacy
-    // bookmarks that are missing the field. Directory should have taken care of
-    // assigning proper unique_position during the first sync flow.
+    // All boookmarks (except permanent ones with server tag) should have valid
+    // unique_positions including legacy bookmarks that are missing the field.
+    // Directory should have taken care of assigning proper unique_position
+    // during the first sync flow.
     DCHECK_NE(BOOKMARKS, type);
   }
-  entity->set_server_defined_unique_tag(entry.GetUniqueServerTag());
 
   // It looks like there are fancy other ways to get e.g. passwords specifics
   // out of Entry. Do we need to special-case them when we ship those types?
   entity->mutable_specifics()->CopyFrom(entry.GetServerSpecifics());
   return true;
+}
+
+void AppendAllDescendantIds(const ReadTransaction* trans,
+                            const ReadNode& node,
+                            std::vector<int64_t>* all_descendant_ids) {
+  std::vector<int64_t> child_ids;
+  node.GetChildIds(&child_ids);
+
+  for (int child_id : child_ids) {
+    all_descendant_ids->push_back(child_id);
+    ReadNode child(trans);
+    child.InitByIdLookup(child_id);
+    AppendAllDescendantIds(trans, child, all_descendant_ids);
+  }
 }
 
 }  // namespace
@@ -96,7 +115,7 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
                                             &context);
 
   std::vector<int64_t> child_ids;
-  root.GetChildIds(&child_ids);
+  AppendAllDescendantIds(&trans, root, &child_ids);
 
   // Process |batch_size| entities at a time to reduce memory usage.
   size_t i = 0;
