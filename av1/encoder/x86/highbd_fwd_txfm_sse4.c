@@ -419,7 +419,6 @@ static INLINE void write_buffer_16x8(const __m128i *res, int32_t *output,
 
 static void fdct8x8_sse4_1(__m128i *in, __m128i *out, int bit,
                            const int col_num) {
-  (void)(col_num);
   const int32_t *cospi = cospi_arr(bit);
   const __m128i cospi32 = _mm_set1_epi32(cospi[32]);
   const __m128i cospim32 = _mm_set1_epi32(-cospi[32]);
@@ -432,17 +431,25 @@ static void fdct8x8_sse4_1(__m128i *in, __m128i *out, int bit,
   const __m128i rnding = _mm_set1_epi32(1 << (bit - 1));
   __m128i u[8], v[8];
 
+  int startidx = 0 * col_num;
+  int endidx = 7 * col_num;
   // Even 8 points 0, 2, ..., 14
   // stage 0
   // stage 1
-  u[0] = _mm_add_epi32(in[0], in[14]);
-  v[7] = _mm_sub_epi32(in[0], in[14]);  // v[7]
-  u[1] = _mm_add_epi32(in[2], in[12]);
-  u[6] = _mm_sub_epi32(in[2], in[12]);
-  u[2] = _mm_add_epi32(in[4], in[10]);
-  u[5] = _mm_sub_epi32(in[4], in[10]);
-  u[3] = _mm_add_epi32(in[6], in[8]);
-  v[4] = _mm_sub_epi32(in[6], in[8]);  // v[4]
+  u[0] = _mm_add_epi32(in[startidx], in[endidx]);
+  v[7] = _mm_sub_epi32(in[startidx], in[endidx]);  // v[7]
+  startidx += col_num;
+  endidx -= col_num;
+  u[1] = _mm_add_epi32(in[startidx], in[endidx]);
+  u[6] = _mm_sub_epi32(in[startidx], in[endidx]);
+  startidx += col_num;
+  endidx -= col_num;
+  u[2] = _mm_add_epi32(in[startidx], in[endidx]);
+  u[5] = _mm_sub_epi32(in[startidx], in[endidx]);
+  startidx += col_num;
+  endidx -= col_num;
+  u[3] = _mm_add_epi32(in[startidx], in[endidx]);
+  v[4] = _mm_sub_epi32(in[startidx], in[endidx]);  // v[4]
 
   // stage 2
   v[0] = _mm_add_epi32(u[0], u[3]);
@@ -498,42 +505,50 @@ static void fdct8x8_sse4_1(__m128i *in, __m128i *out, int bit,
   v[1] = _mm_mullo_epi32(u[7], cospi8);
   v[0] = _mm_add_epi32(v[0], v[1]);
   v[0] = _mm_add_epi32(v[0], rnding);
-  out[2] = _mm_srai_epi32(v[0], bit);  // buf0[4]
+  out[1 * col_num] = _mm_srai_epi32(v[0], bit);  // buf0[4]
 
   v[0] = _mm_mullo_epi32(u[4], cospi8);
   v[1] = _mm_mullo_epi32(u[7], cospi56);
   v[0] = _mm_sub_epi32(v[1], v[0]);
   v[0] = _mm_add_epi32(v[0], rnding);
-  out[14] = _mm_srai_epi32(v[0], bit);  // buf0[7]
+  out[7 * col_num] = _mm_srai_epi32(v[0], bit);  // buf0[7]
 
   v[0] = _mm_mullo_epi32(u[5], cospi24);
   v[1] = _mm_mullo_epi32(u[6], cospi40);
   v[0] = _mm_add_epi32(v[0], v[1]);
   v[0] = _mm_add_epi32(v[0], rnding);
-  out[10] = _mm_srai_epi32(v[0], bit);  // buf0[5]
+  out[5 * col_num] = _mm_srai_epi32(v[0], bit);  // buf0[5]
 
   v[0] = _mm_mullo_epi32(u[5], cospi40);
   v[1] = _mm_mullo_epi32(u[6], cospi24);
   v[0] = _mm_sub_epi32(v[1], v[0]);
   v[0] = _mm_add_epi32(v[0], rnding);
-  out[6] = _mm_srai_epi32(v[0], bit);  // buf0[6]
+  out[3 * col_num] = _mm_srai_epi32(v[0], bit);  // buf0[6]
 
-  out[0] = u[0];   // buf0[0]
-  out[8] = u[1];   // buf0[1]
-  out[4] = u[2];   // buf0[2]
-  out[12] = u[3];  // buf0[3]
+  out[0 * col_num] = u[0];  // buf0[0]
+  out[4 * col_num] = u[1];  // buf0[1]
+  out[2 * col_num] = u[2];  // buf0[2]
+  out[6 * col_num] = u[3];  // buf0[3]
 
   // Odd 8 points: 1, 3, ..., 15
   // stage 0
   // stage 1
-  u[0] = _mm_add_epi32(in[1], in[15]);
-  v[7] = _mm_sub_epi32(in[1], in[15]);  // v[7]
-  u[1] = _mm_add_epi32(in[3], in[13]);
-  u[6] = _mm_sub_epi32(in[3], in[13]);
-  u[2] = _mm_add_epi32(in[5], in[11]);
-  u[5] = _mm_sub_epi32(in[5], in[11]);
-  u[3] = _mm_add_epi32(in[7], in[9]);
-  v[4] = _mm_sub_epi32(in[7], in[9]);  // v[4]
+  startidx = 0 * col_num;
+  endidx = 7 * col_num;
+  u[0] = _mm_add_epi32(in[startidx + 1], in[endidx + 1]);
+  v[7] = _mm_sub_epi32(in[startidx + 1], in[endidx + 1]);  // v[7]
+  startidx += col_num;
+  endidx -= col_num;
+  u[1] = _mm_add_epi32(in[startidx + 1], in[endidx + 1]);
+  u[6] = _mm_sub_epi32(in[startidx + 1], in[endidx + 1]);
+  startidx += col_num;
+  endidx -= col_num;
+  u[2] = _mm_add_epi32(in[startidx + 1], in[endidx + 1]);
+  u[5] = _mm_sub_epi32(in[startidx + 1], in[endidx + 1]);
+  startidx += col_num;
+  endidx -= col_num;
+  u[3] = _mm_add_epi32(in[startidx + 1], in[endidx + 1]);
+  v[4] = _mm_sub_epi32(in[startidx + 1], in[endidx + 1]);  // v[4]
 
   // stage 2
   v[0] = _mm_add_epi32(u[0], u[3]);
@@ -589,30 +604,30 @@ static void fdct8x8_sse4_1(__m128i *in, __m128i *out, int bit,
   v[1] = _mm_mullo_epi32(u[7], cospi8);
   v[0] = _mm_add_epi32(v[0], v[1]);
   v[0] = _mm_add_epi32(v[0], rnding);
-  out[3] = _mm_srai_epi32(v[0], bit);  // buf0[4]
+  out[1 * col_num + 1] = _mm_srai_epi32(v[0], bit);  // buf0[4]
 
   v[0] = _mm_mullo_epi32(u[4], cospi8);
   v[1] = _mm_mullo_epi32(u[7], cospi56);
   v[0] = _mm_sub_epi32(v[1], v[0]);
   v[0] = _mm_add_epi32(v[0], rnding);
-  out[15] = _mm_srai_epi32(v[0], bit);  // buf0[7]
+  out[7 * col_num + 1] = _mm_srai_epi32(v[0], bit);  // buf0[7]
 
   v[0] = _mm_mullo_epi32(u[5], cospi24);
   v[1] = _mm_mullo_epi32(u[6], cospi40);
   v[0] = _mm_add_epi32(v[0], v[1]);
   v[0] = _mm_add_epi32(v[0], rnding);
-  out[11] = _mm_srai_epi32(v[0], bit);  // buf0[5]
+  out[5 * col_num + 1] = _mm_srai_epi32(v[0], bit);  // buf0[5]
 
   v[0] = _mm_mullo_epi32(u[5], cospi40);
   v[1] = _mm_mullo_epi32(u[6], cospi24);
   v[0] = _mm_sub_epi32(v[1], v[0]);
   v[0] = _mm_add_epi32(v[0], rnding);
-  out[7] = _mm_srai_epi32(v[0], bit);  // buf0[6]
+  out[3 * col_num + 1] = _mm_srai_epi32(v[0], bit);  // buf0[6]
 
-  out[1] = u[0];   // buf0[0]
-  out[9] = u[1];   // buf0[1]
-  out[5] = u[2];   // buf0[2]
-  out[13] = u[3];  // buf0[3]
+  out[0 * col_num + 1] = u[0];  // buf0[0]
+  out[4 * col_num + 1] = u[1];  // buf0[1]
+  out[2 * col_num + 1] = u[2];  // buf0[2]
+  out[6 * col_num + 1] = u[3];  // buf0[3]
 }
 
 static void fadst8x8_sse4_1(__m128i *in, __m128i *out, int bit,
@@ -808,10 +823,10 @@ void av1_fwd_txfm2d_8x8_sse4_1(const int16_t *input, int32_t *coeff, int stride,
   switch (tx_type) {
     case DCT_DCT:
       load_buffer_8x8(input, in, stride, 0, 0, shift[0]);
-      fdct8x8_sse4_1(in, out, fwd_cos_bit_col[txw_idx][txh_idx], 0);
+      fdct8x8_sse4_1(in, out, fwd_cos_bit_col[txw_idx][txh_idx], 2);
       col_txfm_8x8_rounding(out, -shift[1]);
       transpose_8x8(out, in);
-      fdct8x8_sse4_1(in, out, fwd_cos_bit_row[txw_idx][txh_idx], 0);
+      fdct8x8_sse4_1(in, out, fwd_cos_bit_row[txw_idx][txh_idx], 2);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
@@ -820,13 +835,13 @@ void av1_fwd_txfm2d_8x8_sse4_1(const int16_t *input, int32_t *coeff, int stride,
       fadst8x8_sse4_1(in, out, fwd_cos_bit_col[txw_idx][txh_idx], 0);
       col_txfm_8x8_rounding(out, -shift[1]);
       transpose_8x8(out, in);
-      fdct8x8_sse4_1(in, out, fwd_cos_bit_row[txw_idx][txh_idx], 0);
+      fdct8x8_sse4_1(in, out, fwd_cos_bit_row[txw_idx][txh_idx], 2);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
     case DCT_ADST:
       load_buffer_8x8(input, in, stride, 0, 0, shift[0]);
-      fdct8x8_sse4_1(in, out, fwd_cos_bit_col[txw_idx][txh_idx], 0);
+      fdct8x8_sse4_1(in, out, fwd_cos_bit_col[txw_idx][txh_idx], 2);
       col_txfm_8x8_rounding(out, -shift[1]);
       transpose_8x8(out, in);
       fadst8x8_sse4_1(in, out, fwd_cos_bit_row[txw_idx][txh_idx], 0);
@@ -847,13 +862,13 @@ void av1_fwd_txfm2d_8x8_sse4_1(const int16_t *input, int32_t *coeff, int stride,
       fadst8x8_sse4_1(in, out, fwd_cos_bit_col[txw_idx][txh_idx], 0);
       col_txfm_8x8_rounding(out, -shift[1]);
       transpose_8x8(out, in);
-      fdct8x8_sse4_1(in, out, fwd_cos_bit_row[txw_idx][txh_idx], 0);
+      fdct8x8_sse4_1(in, out, fwd_cos_bit_row[txw_idx][txh_idx], 2);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
     case DCT_FLIPADST:
       load_buffer_8x8(input, in, stride, 0, 1, shift[0]);
-      fdct8x8_sse4_1(in, out, fwd_cos_bit_col[txw_idx][txh_idx], 0);
+      fdct8x8_sse4_1(in, out, fwd_cos_bit_col[txw_idx][txh_idx], 2);
       col_txfm_8x8_rounding(out, -shift[1]);
       transpose_8x8(out, in);
       fadst8x8_sse4_1(in, out, fwd_cos_bit_row[txw_idx][txh_idx], 0);
@@ -986,12 +1001,12 @@ static INLINE void load_buffer_8x16(const int16_t *input, __m128i *out,
   load_buffer_8x8(botL, out + 16, stride, flipud, fliplr, shift);
 }
 
-static INLINE void load_buffer_32x16(const int16_t *input, __m128i *out,
+static INLINE void load_buffer_32x8n(const int16_t *input, __m128i *out,
                                      int stride, int flipud, int fliplr,
-                                     int shift) {
+                                     int shift, const int height) {
   const int16_t *in = input;
   __m128i *output = out;
-  for (int col = 0; col < 16; col++) {
+  for (int col = 0; col < height; col++) {
     in = input + col * stride;
     output = out + col * 8;
     load_buffer_4x4(in, output, 4, flipud, fliplr, shift);
@@ -1784,7 +1799,7 @@ void av1_fwd_txfm2d_16x8_sse4_1(const int16_t *input, int32_t *coeff,
 
   for (int i = 0; i < 2; i++) {
     load_buffer_8x8(input + i * 8, in, stride, ud_flip, 0, shift[0]);
-    col_txfm(in, in, bit, 0);
+    col_txfm(in, in, bit, 2);
     col_txfm_8x8_rounding(in, -shift[1]);
     transpose_8x8(in, out + i * 16);
   }
@@ -1824,7 +1839,7 @@ void av1_fwd_txfm2d_8x16_sse4_1(const int16_t *input, int32_t *coeff,
   transpose_8x8(in + 16, out + 16);
 
   for (int i = 0; i < 2; i++) {
-    row_txfm(out + i * 16, out, bit, 0);
+    row_txfm(out + i * 16, out, bit, 2);
     transpose_8x8(out, in);
     av1_round_shift_rect_array_32_sse4_1(in, in, 16, -shift[2], NewSqrt2);
     write_buffer_8x8(in, coeff + i * 64);
@@ -1879,7 +1894,7 @@ void av1_fwd_txfm2d_32x16_sse4_1(const int16_t *input, int32_t *coeff,
   int bitrow = fwd_cos_bit_row[txw_idx][txh_idx];
 
   // column transform
-  load_buffer_32x16(input, in, stride, 0, 0, shift[0]);
+  load_buffer_32x8n(input, in, stride, 0, 0, shift[0], 16);
   col_txfm(in, in, bitcol, 8);
   col_txfm_16x16_rounding(&in[0], -shift[1]);
   col_txfm_16x16_rounding(&in[64], -shift[1]);
@@ -1892,5 +1907,75 @@ void av1_fwd_txfm2d_32x16_sse4_1(const int16_t *input, int32_t *coeff,
   transpose_8nx8n(in, outcoef128, 16, 32);
   av1_round_shift_rect_array_32_sse4_1(outcoef128, outcoef128, 128, -shift[2],
                                        NewSqrt2);
+  (void)bd;
+}
+
+void av1_fwd_txfm2d_8x32_sse4_1(const int16_t *input, int32_t *coeff,
+                                int stride, TX_TYPE tx_type, int bd) {
+  assert(DCT_DCT == tx_type);
+  __m128i in[64];
+  __m128i *outcoef128 = (__m128i *)coeff;
+  const int8_t *shift = fwd_txfm_shift_ls[TX_8X32];
+  const int txw_idx = get_txw_idx(TX_8X32);
+  const int txh_idx = get_txh_idx(TX_8X32);
+  const fwd_transform_1d_sse4_1 col_txfm = col_highbd_txfm8x32_arr[tx_type];
+  const fwd_transform_1d_sse4_1 row_txfm = col_highbd_txfm8x8_arr[tx_type];
+  int bitcol = fwd_cos_bit_col[txw_idx][txh_idx];
+  int bitrow = fwd_cos_bit_row[txw_idx][txh_idx];
+
+  const int txfm_size_col = tx_size_wide[TX_8X32];
+  const int txfm_size_row = tx_size_high[TX_8X32];
+  const int num_col = txfm_size_col >> 2;
+
+  // column transform
+  load_buffer_8x16(input, in, stride, 0, 0, shift[0]);
+  load_buffer_8x16(input + (txfm_size_row >> 1) * stride, in + txfm_size_row,
+                   stride, 0, 0, shift[0]);
+
+  for (int i = 0; i < num_col; i++) {
+    col_txfm((in + i), (in + i), bitcol, num_col);
+  }
+  col_txfm_16x16_rounding(in, -shift[1]);
+  transpose_8nx8n(in, outcoef128, txfm_size_col, txfm_size_row);
+
+  // row transform
+  for (int i = 0; i < txfm_size_col; i += 2) {
+    row_txfm((outcoef128 + i), (in + i), bitrow, txfm_size_col);
+  }
+  transpose_8nx8n(in, outcoef128, txfm_size_row, txfm_size_col);
+  (void)bd;
+}
+
+void av1_fwd_txfm2d_32x8_sse4_1(const int16_t *input, int32_t *coeff,
+                                int stride, TX_TYPE tx_type, int bd) {
+  assert(DCT_DCT == tx_type);
+  __m128i in[64];
+  __m128i *outcoef128 = (__m128i *)coeff;
+  const int8_t *shift = fwd_txfm_shift_ls[TX_32X8];
+  const int txw_idx = get_txw_idx(TX_32X8);
+  const int txh_idx = get_txh_idx(TX_32X8);
+  const fwd_transform_1d_sse4_1 col_txfm = col_highbd_txfm8x8_arr[tx_type];
+  const fwd_transform_1d_sse4_1 row_txfm = col_highbd_txfm8x32_arr[tx_type];
+  int bitcol = fwd_cos_bit_col[txw_idx][txh_idx];
+  int bitrow = fwd_cos_bit_row[txw_idx][txh_idx];
+
+  const int txfm_size_col = tx_size_wide[TX_32X8];
+  const int txfm_size_row = tx_size_high[TX_32X8];
+  const int num_col = txfm_size_row >> 2;
+
+  // column transform
+  load_buffer_32x8n(input, in, stride, 0, 0, shift[0], 8);
+  for (int i = 0; i < txfm_size_row; i += 2) {
+    col_txfm((in + i), (in + i), bitcol, txfm_size_row);
+  }
+
+  col_txfm_16x16_rounding(&in[0], -shift[1]);
+  transpose_8nx8n(in, outcoef128, txfm_size_col, txfm_size_row);
+
+  // row transform
+  for (int i = 0; i < num_col; i++) {
+    row_txfm((outcoef128 + i), (in + i), bitrow, num_col);
+  }
+  transpose_8nx8n(in, outcoef128, txfm_size_row, txfm_size_col);
   (void)bd;
 }
