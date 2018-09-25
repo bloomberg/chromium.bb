@@ -338,7 +338,7 @@ static INLINE void build_prediction_by_above_pred(
   MB_MODE_INFO backup_mbmi = *above_mbmi;
 
   av1_setup_build_prediction_by_above_pred(xd, rel_mi_col, above_mi_width,
-                                           above_mbmi, ctxt, num_planes);
+                                           &backup_mbmi, ctxt, num_planes);
   mi_x = above_mi_col << MI_SIZE_LOG2;
   mi_y = ctxt->mi_row << MI_SIZE_LOG2;
 
@@ -351,9 +351,9 @@ static INLINE void build_prediction_by_above_pred(
                    block_size_high[BLOCK_64X64] >> (pd->subsampling_y + 1));
 
     if (av1_skip_u4x4_pred_in_obmc(bsize, pd, 0)) continue;
-    build_inter_predictors(ctxt->cm, xd, j, above_mbmi, 1, bw, bh, mi_x, mi_y);
+    build_inter_predictors(ctxt->cm, xd, j, &backup_mbmi, 1, bw, bh, mi_x,
+                           mi_y);
   }
-  *above_mbmi = backup_mbmi;
 }
 
 void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -394,7 +394,7 @@ static INLINE void build_prediction_by_left_pred(
   MB_MODE_INFO backup_mbmi = *left_mbmi;
 
   av1_setup_build_prediction_by_left_pred(xd, rel_mi_row, left_mi_height,
-                                          left_mbmi, ctxt, num_planes);
+                                          &backup_mbmi, ctxt, num_planes);
   mi_x = ctxt->mi_col << MI_SIZE_LOG2;
   mi_y = left_mi_row << MI_SIZE_LOG2;
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
@@ -406,9 +406,9 @@ static INLINE void build_prediction_by_left_pred(
     int bh = (left_mi_height << MI_SIZE_LOG2) >> pd->subsampling_y;
 
     if (av1_skip_u4x4_pred_in_obmc(bsize, pd, 1)) continue;
-    build_inter_predictors(ctxt->cm, xd, j, left_mbmi, 1, bw, bh, mi_x, mi_y);
+    build_inter_predictors(ctxt->cm, xd, j, &backup_mbmi, 1, bw, bh, mi_x,
+                           mi_y);
   }
-  *left_mbmi = backup_mbmi;
 }
 
 void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
