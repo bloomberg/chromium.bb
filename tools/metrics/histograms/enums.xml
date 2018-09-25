@@ -30357,6 +30357,7 @@ from previous Chrome versions.
   <int value="1739456903" label="PWAFullCodeCache:enabled"/>
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1752168018" label="enable-stale-while-revalidate"/>
+  <int value="1755024316" label="HostWindowsInAppShimProcess:disabled"/>
   <int value="1760946944" label="MacViewsAutofillPopup:disabled"/>
   <int value="1762320532" label="AutofillKeyboardAccessory:enabled"/>
   <int value="1766676896" label="affiliation-based-matching:disabled"/>
@@ -30544,6 +30545,7 @@ from previous Chrome versions.
   <int value="2098907258" label="UseSurfaceLayerForVideo:disabled"/>
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2104788328" label="use-winrt-midi-api"/>
+  <int value="2106855416" label="HostWindowsInAppShimProcess:enabled"/>
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
   <int value="2119964154" label="enable-download-resumption"/>
