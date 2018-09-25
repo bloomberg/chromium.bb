@@ -546,7 +546,6 @@ group("gn_all") {
     deps += [
       "//third_party/breakpad:crash_inspector",
       "//third_party/breakpad:dump_syms",
-      "//third_party/molokocacao",
     ]
     deps -= [
       # Mojo in GN contains some things which are never compiled in GYP on Mac,
