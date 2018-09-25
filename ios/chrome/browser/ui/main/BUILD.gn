@@ -56,8 +56,6 @@ source_set("tab_switcher") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "tab_switcher.h",
-    "tab_switcher_mode.h",
-    "tab_switcher_mode.mm",
   ]
   deps = [
     "//base",
