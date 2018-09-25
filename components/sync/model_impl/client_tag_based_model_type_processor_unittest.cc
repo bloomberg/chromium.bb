@@ -1216,6 +1216,20 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldResolveConflictToRemoteDeletion) {
+  InitializeToReadyState();
+  bridge()->WriteItem(kKey1, kValue1);
+  bridge()->SetConflictResolution(ConflictResolution::UseRemote());
+  worker()->TombstoneFromServer(kHash1);
+
+  // Updated client data and metadata; no new commit request.
+  EXPECT_EQ(0U, db().data_count());
+  EXPECT_EQ(0U, db().metadata_count());
+  EXPECT_EQ(2U, db().data_change_count());
+  EXPECT_EQ(2U, db().metadata_change_count());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToNewVersion) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);

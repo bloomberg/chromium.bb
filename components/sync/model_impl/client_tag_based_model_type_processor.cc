@@ -776,8 +776,12 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
       // Squash the pending commit.
       entity->RecordForcedUpdate(update);
       // Update client data to match server.
-      changes->push_back(
-          EntityChange::CreateUpdate(entity->storage_key(), update.entity));
+      if (update.entity->is_deleted()) {
+        changes->push_back(EntityChange::CreateDelete(entity->storage_key()));
+      } else {
+        changes->push_back(
+            EntityChange::CreateUpdate(entity->storage_key(), update.entity));
+      }
       break;
     case ConflictResolution::USE_NEW:
       // Record that we received the update.
