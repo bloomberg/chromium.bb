@@ -145,7 +145,7 @@ DispatchEventResult EventDispatcher::Dispatch() {
       UseCounter::Count(node_->GetDocument(),
                         WebFeature::kPerformanceEventTimingConstructor);
       eventTiming = std::make_unique<EventTiming>(frame->DomWindow());
-      eventTiming->WillDispatchEvent(event_);
+      eventTiming->WillDispatchEvent(*event_);
     }
   }
   event_->GetEventPath().EnsureWindowEventContext();
@@ -197,7 +197,7 @@ DispatchEventResult EventDispatcher::Dispatch() {
   DispatchEventPostProcess(activation_target,
                            pre_dispatch_event_handler_result);
   if (eventTiming)
-    eventTiming->DidDispatchEvent(event_);
+    eventTiming->DidDispatchEvent(*event_);
 
   return EventTarget::GetDispatchEventResult(*event_);
 }
