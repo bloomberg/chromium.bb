@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_signature_header_field.h"
 #include "net/cert/x509_certificate.h"
@@ -129,34 +130,69 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
   void TestVerifierGivenValidInput(
       const SignedExchangeEnvelope& envelope,
       scoped_refptr<net::X509Certificate> certificate) {
-    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
-              SignedExchangeSignatureVerifier::Verify(
-                  envelope, certificate, VerificationTime(),
-                  nullptr /* devtools_proxy */));
+    {
+      base::HistogramTester histogram_tester;
+      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
+                SignedExchangeSignatureVerifier::Verify(
+                    envelope, certificate, VerificationTime(),
+                    nullptr /* devtools_proxy */));
+      histogram_tester.ExpectUniqueSample(
+          "SignedExchange.TimeUntilExpiration",
+          kSignatureHeaderExpires - kSignatureHeaderDate, 1);
+      histogram_tester.ExpectTotalCount(
+          "SignedExchange.SignatureVerificationError.NotYetValid", 0);
+      histogram_tester.ExpectTotalCount(
+          "SignedExchange.SignatureVerificationError.Expired", 0);
+    }
+    {
+      base::HistogramTester histogram_tester;
+      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
+                SignedExchangeSignatureVerifier::Verify(
+                    envelope, certificate,
+                    base::Time::UnixEpoch() +
+                        base::TimeDelta::FromSeconds(kSignatureHeaderDate - 1),
+                    nullptr /* devtools_proxy */
+                    ));
+      histogram_tester.ExpectTotalCount("SignedExchange.TimeUntilExpiration",
+                                        0);
+      histogram_tester.ExpectUniqueSample(
+          "SignedExchange.SignatureVerificationError.NotYetValid", 1, 1);
+      histogram_tester.ExpectTotalCount(
+          "SignedExchange.SignatureVerificationError.Expired", 0);
+    }
 
-    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
-              SignedExchangeSignatureVerifier::Verify(
-                  envelope, certificate,
-                  base::Time::UnixEpoch() +
-                      base::TimeDelta::FromSeconds(kSignatureHeaderDate - 1),
-                  nullptr /* devtools_proxy */
-                  ));
-
-    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
-              SignedExchangeSignatureVerifier::Verify(
-                  envelope, certificate,
-                  base::Time::UnixEpoch() +
-                      base::TimeDelta::FromSeconds(kSignatureHeaderExpires),
-                  nullptr /* devtools_proxy */
-                  ));
-
-    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
-              SignedExchangeSignatureVerifier::Verify(
-                  envelope, certificate,
-                  base::Time::UnixEpoch() +
-                      base::TimeDelta::FromSeconds(kSignatureHeaderExpires + 1),
-                  nullptr /* devtools_proxy */
-                  ));
+    {
+      base::HistogramTester histogram_tester;
+      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
+                SignedExchangeSignatureVerifier::Verify(
+                    envelope, certificate,
+                    base::Time::UnixEpoch() +
+                        base::TimeDelta::FromSeconds(kSignatureHeaderExpires),
+                    nullptr /* devtools_proxy */
+                    ));
+      histogram_tester.ExpectUniqueSample("SignedExchange.TimeUntilExpiration",
+                                          0, 1);
+      histogram_tester.ExpectTotalCount(
+          "SignedExchange.SignatureVerificationError.NotYetValid", 0);
+      histogram_tester.ExpectTotalCount(
+          "SignedExchange.SignatureVerificationError.Expired", 0);
+    }
+    {
+      base::HistogramTester histogram_tester;
+      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
+                SignedExchangeSignatureVerifier::Verify(
+                    envelope, certificate,
+                    base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(
+                                                  kSignatureHeaderExpires + 1),
+                    nullptr /* devtools_proxy */
+                    ));
+      histogram_tester.ExpectTotalCount("SignedExchange.TimeUntilExpiration",
+                                        0);
+      histogram_tester.ExpectTotalCount(
+          "SignedExchange.SignatureVerificationError.NotYetValid", 0);
+      histogram_tester.ExpectUniqueSample(
+          "SignedExchange.SignatureVerificationError.Expired", 1, 1);
+    }
 
     SignedExchangeEnvelope invalid_expires_envelope(envelope);
     auto invalid_expires_signature =
