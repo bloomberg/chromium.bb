@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 
 namespace syncer {
@@ -18,7 +19,13 @@ DeprecatedInvalidatorRegistrar::DeprecatedInvalidatorRegistrar()
 
 DeprecatedInvalidatorRegistrar::~DeprecatedInvalidatorRegistrar() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK(handler_to_ids_map_.empty());
+  // Substitute CHECK(handler_to_ids_map_.empty()) with histogram,
+  // in order to investigate bug https://crbug.com/880226
+  for (const auto& handler_to_id : handler_to_ids_map_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "DeprecatedInvalidatorRegistrar.CrashStatus",
+        OwnerNameToHandlerType(handler_to_id.first->GetOwnerName()));
+  }
 }
 
 void DeprecatedInvalidatorRegistrar::RegisterHandler(
