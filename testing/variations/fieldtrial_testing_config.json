@@ -72,7 +72,7 @@
             ]
         }
     ],
-    "AdvancedProtectionStatus": [
+    "AdvancedProtectionStatusRollout": [
         {
             "platforms": [
                 "chromeos",
