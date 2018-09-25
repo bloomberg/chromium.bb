@@ -4,10 +4,6 @@
 
 #import "ios/chrome/browser/ui/util/page_animation_util.h"
 
-#import <QuartzCore/QuartzCore.h>
-#import <UIKit/UIKit.h>
-
-#import "base/logging.h"
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/common/material_timing.h"
 
@@ -26,44 +22,6 @@ const CGFloat kAnimateOutAnchorY = 0;
 }
 
 namespace page_animation_util {
-
-const CGFloat kCardMargin = 0.0;
-
-void SetNewTabAnimationStartPositionForView(UIView* view, BOOL isPortrait) {
-  NOTREACHED();
-}
-
-void AnimateInPaperWithAnimationAndCompletion(UIView* view,
-                                              CGFloat paperOffset,
-                                              CGFloat contentOffset,
-                                              CGPoint origin,
-                                              BOOL isOffTheRecord,
-                                              void (^extraAnimation)(void),
-                                              void (^completion)(void)) {
-  NOTREACHED();
-}
-
-void AnimateInCardWithAnimationAndCompletion(UIView* view,
-                                             void (^extraAnimation)(void),
-                                             void (^completion)(void)) {
-  NOTREACHED();
-}
-
-void AnimateNewBackgroundPageWithCompletion(CardView* currentPageCard,
-                                            CGRect displayFrame,
-                                            CGRect imageFrame,
-                                            BOOL isPortrait,
-                                            void (^completion)(void)) {
-  NOTREACHED();
-}
-
-void AnimateNewBackgroundTabWithCompletion(CardView* currentPageCard,
-                                           CardView* newCard,
-                                           CGRect displayFrame,
-                                           BOOL isPortrait,
-                                           void (^completion)(void)) {
-  NOTREACHED();
-}
 
 void UpdateLayerAnchorWithTransform(CALayer* layer,
                                     CGPoint newAnchor,
@@ -118,18 +76,6 @@ void AnimateOutWithCompletion(UIView* view,
   [layer addAnimation:AnimationGroupMake(@[ scaleAnimation, fadeAnimation ])
                forKey:@"animateOut"];
   [CATransaction commit];
-}
-
-CGAffineTransform AnimateOutTransform(CGFloat fraction,
-                                      BOOL clockwise,
-                                      BOOL isPortrait) {
-  NOTREACHED();
-  return CGAffineTransformIdentity;
-}
-
-CGFloat AnimateOutTransformBreadth() {
-  NOTREACHED();
-  return 0.0;
 }
 
 }  // namespace page_animation_util
