@@ -20,7 +20,7 @@
 #include "components/metrics/metrics_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#include "device/bluetooth/dbus/dbus_thread_manager_linux.h"
+#include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 #include "media/audio/audio_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -98,7 +98,7 @@ void ChromeBrowserMainPartsLinux::PostProfileInit() {
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopStart() {
 #if !defined(OS_CHROMEOS)
-  bluez::DBusThreadManagerLinux::Initialize();
+  bluez::BluezDBusThreadManager::Initialize();
   bluez::BluezDBusManager::Initialize();
 #endif
 
@@ -108,7 +108,7 @@ void ChromeBrowserMainPartsLinux::PostMainMessageLoopStart() {
 void ChromeBrowserMainPartsLinux::PostDestroyThreads() {
 #if !defined(OS_CHROMEOS)
   bluez::BluezDBusManager::Shutdown();
-  bluez::DBusThreadManagerLinux::Shutdown();
+  bluez::BluezDBusThreadManager::Shutdown();
 #endif
 
   ChromeBrowserMainPartsPosix::PostDestroyThreads();

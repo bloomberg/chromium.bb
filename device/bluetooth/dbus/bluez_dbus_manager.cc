@@ -31,12 +31,11 @@
 #include "device/bluetooth/dbus/bluetooth_media_client.h"
 #include "device/bluetooth/dbus/bluetooth_media_transport_client.h"
 #include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
+#include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#elif defined(OS_LINUX)
-#include "device/bluetooth/dbus/dbus_thread_manager_linux.h"
 #endif
 
 namespace bluez {
@@ -242,7 +241,7 @@ void BluezDBusManager::Initialize() {
   CreateGlobalInstance(chromeos::DBusThreadManager::Get()->GetSystemBus(),
                        chromeos::DBusThreadManager::Get()->IsUsingFakes());
 #elif defined(OS_LINUX)
-  CreateGlobalInstance(bluez::DBusThreadManagerLinux::Get()->GetSystemBus(),
+  CreateGlobalInstance(BluezDBusThreadManager::Get()->GetSystemBus(),
                        false /* use_dbus_stubs */);
 #endif
 }

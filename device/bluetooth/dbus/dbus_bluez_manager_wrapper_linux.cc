@@ -5,20 +5,20 @@
 #include "device/bluetooth/dbus/dbus_bluez_manager_wrapper_linux.h"
 
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#include "device/bluetooth/dbus/dbus_thread_manager_linux.h"
+#include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 
 namespace bluez {
 
 // static
 void DBusBluezManagerWrapperLinux::Initialize() {
-  DBusThreadManagerLinux::Initialize();
+  BluezDBusThreadManager::Initialize();
   BluezDBusManager::Initialize();
 }
 
 // static
 void DBusBluezManagerWrapperLinux::Shutdown() {
   bluez::BluezDBusManager::Shutdown();
-  bluez::DBusThreadManagerLinux::Shutdown();
+  bluez::BluezDBusThreadManager::Shutdown();
 }
 
 }  // namespace bluez

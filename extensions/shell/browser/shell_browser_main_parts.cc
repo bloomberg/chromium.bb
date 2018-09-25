@@ -65,7 +65,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #elif defined(OS_LINUX)
-#include "device/bluetooth/dbus/dbus_thread_manager_linux.h"
+#include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -141,7 +141,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   // TODO(michaelpg): Verify this works for target environments.
   ui::InitializeInputMethodForTesting();
 
-  bluez::DBusThreadManagerLinux::Initialize();
+  bluez::BluezDBusThreadManager::Initialize();
   bluez::BluezDBusManager::Initialize();
 #else
   ui::InitializeInputMethodForTesting();
@@ -311,7 +311,7 @@ void ShellBrowserMainParts::PostDestroyThreads() {
 #elif defined(OS_LINUX)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
-  bluez::DBusThreadManagerLinux::Shutdown();
+  bluez::BluezDBusThreadManager::Shutdown();
 #endif
 }
 
