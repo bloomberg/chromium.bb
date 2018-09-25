@@ -36,6 +36,14 @@ std::string AccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
   return std::string();
 }
 
+bool AccountReconcilorDelegate::ReorderChromeAccountsForReconcileIfNeeded(
+    const std::vector<std::string>& chrome_accounts,
+    const std::string primary_account,
+    const std::vector<gaia::ListedAccount>& gaia_accounts,
+    std::vector<std::string>* accounts_to_send) const {
+  return false;
+}
+
 AccountReconcilorDelegate::RevokeTokenOption
 AccountReconcilorDelegate::ShouldRevokeSecondaryTokensBeforeReconcile(
     const std::vector<gaia::ListedAccount>& gaia_accounts) {

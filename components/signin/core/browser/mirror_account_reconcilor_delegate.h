@@ -31,6 +31,12 @@ class MirrorAccountReconcilorDelegate : public AccountReconcilorDelegate,
       bool first_execution,
       bool will_logout) const override;
 
+  bool ReorderChromeAccountsForReconcileIfNeeded(
+      const std::vector<std::string>& chrome_accounts,
+      const std::string primary_account,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      std::vector<std::string>* accounts_to_send) const override;
+
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const std::string& account_id,
                              const std::string& username) override;

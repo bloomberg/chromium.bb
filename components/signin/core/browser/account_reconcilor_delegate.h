@@ -61,6 +61,16 @@ class AccountReconcilorDelegate {
       bool first_execution,
       bool will_logout) const;
 
+  // Reorders chrome accounts in the order they should appear in cookies with
+  // respect to existing cookies. Returns true if the resulting vector is not
+  // the same as existing vector of gaia accounts (i.e. cookies should be
+  // rebuilt).
+  virtual bool ReorderChromeAccountsForReconcileIfNeeded(
+      const std::vector<std::string>& chrome_accounts,
+      const std::string primary_account,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      std::vector<std::string>* accounts_to_send) const;
+
   // Returns whether secondary accounts should be cleared at the beginning of
   // the reconcile.
   virtual RevokeTokenOption ShouldRevokeSecondaryTokensBeforeReconcile(

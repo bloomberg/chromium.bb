@@ -49,6 +49,39 @@ std::string MirrorAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
   return primary_account;
 }
 
+bool MirrorAccountReconcilorDelegate::ReorderChromeAccountsForReconcileIfNeeded(
+    const std::vector<std::string>& chrome_accounts,
+    const std::string primary_account,
+    const std::vector<gaia::ListedAccount>& gaia_accounts,
+    std::vector<std::string>* accounts_to_send) const {
+  DCHECK(accounts_to_send);
+  accounts_to_send->clear();
+  accounts_to_send->reserve(chrome_accounts.size());
+  bool needs_reordering = false;
+
+  DCHECK(!primary_account.empty());
+  accounts_to_send->push_back(primary_account);
+
+  for (const std::string& chrome_account : chrome_accounts) {
+    if (chrome_account == primary_account)
+      continue;
+    accounts_to_send->push_back(chrome_account);
+  }
+
+  if (gaia_accounts.size() != accounts_to_send->size()) {
+    needs_reordering = true;
+  } else {
+    for (size_t i = 0; i < accounts_to_send->size(); ++i) {
+      const gaia::ListedAccount& gaia_account = gaia_accounts[i];
+      if (gaia_account.id != accounts_to_send->at(i) || !gaia_account.valid) {
+        needs_reordering = true;
+        break;
+      }
+    }
+  }
+  return needs_reordering;
+}
+
 void MirrorAccountReconcilorDelegate::GoogleSigninSucceeded(
     const std::string& account_id,
     const std::string& username) {
