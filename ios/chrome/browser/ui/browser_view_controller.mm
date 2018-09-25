@@ -1583,6 +1583,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _printController = nil;
   [self.dispatcher dismissPopupMenuAnimated:NO];
   [_contextMenuCoordinator stop];
+  [_passKitCoordinator stop];
   [self dismissRateThisAppDialog];
 
   if (self.presentedViewController) {
