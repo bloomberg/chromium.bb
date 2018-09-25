@@ -39,7 +39,12 @@
       }
     ]
   },
-  "WebRTC Chromium FYI Linux Builder": {},
+  "WebRTC Chromium FYI Linux Builder": {
+    "additional_compile_targets": [
+      "frame_analyzer",
+      "remoting/webapp:webapp"
+    ]
+  },
   "WebRTC Chromium FYI Linux Builder (dbg)": {
     "additional_compile_targets": [
       "browser_tests",
@@ -125,7 +130,12 @@
       }
     ]
   },
-  "WebRTC Chromium FYI Mac Builder": {},
+  "WebRTC Chromium FYI Mac Builder": {
+    "additional_compile_targets": [
+      "frame_analyzer",
+      "remoting/webapp:webapp"
+    ]
+  },
   "WebRTC Chromium FYI Mac Builder (dbg)": {
     "additional_compile_targets": [
       "browser_tests",
@@ -211,7 +221,12 @@
       }
     ]
   },
-  "WebRTC Chromium FYI Win Builder": {},
+  "WebRTC Chromium FYI Win Builder": {
+    "additional_compile_targets": [
+      "frame_analyzer",
+      "remoting/webapp:webapp"
+    ]
+  },
   "WebRTC Chromium FYI Win Builder (dbg)": {
     "additional_compile_targets": [
       "browser_tests",
