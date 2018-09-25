@@ -31,7 +31,6 @@ class AX_EXPORT AXSystemCaretWin : private AXPlatformNodeDelegateBase {
 
   Microsoft::WRL::ComPtr<IAccessible> GetCaret() const;
   void MoveCaretTo(const gfx::Rect& bounds);
-  void Hide();
 
  private:
   // |AXPlatformNodeDelegate| members.
