@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -210,6 +211,13 @@ class GaiaCookieManagerServiceTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void Advance(scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner,
+               base::TimeDelta advance_by) {
+    test_task_runner->FastForwardBy(advance_by +
+                                    base::TimeDelta::FromMilliseconds(1));
+    test_task_runner->RunUntilIdle();
+  }
+
   bool IsLoadPending(const std::string& url) {
     return signin_client_->test_url_loader_factory()->IsPending(
         GURL(url).spec());
@@ -285,6 +293,10 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_ =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(helper, StartFetchingMergeSession());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
@@ -293,12 +305,7 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
   helper.AddAccountToCookie("acc1@gmail.com", GaiaConstants::kChromeSource);
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
-  base::RunLoop run_loop;
-  // Transient error incurs a retry after 1 second.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(1100));
-  run_loop.Run();
+  Advance(test_task_runner, helper.GetBackoffEntry()->GetTimeUntilRelease());
   SimulateMergeSessionSuccess(&helper, "token");
   DCHECK(!helper.is_running());
 }
@@ -308,6 +315,10 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   MockObserver observer(&helper);
   base::HistogramTester histograms;
 
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_ =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(helper, StartFetchingMergeSession()).Times(2);
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
@@ -316,28 +327,10 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   helper.AddAccountToCookie("acc1@gmail.com", GaiaConstants::kChromeSource);
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
-  // Transient error incurs a retry after 1 second.
-  EXPECT_LT(helper.GetBackoffEntry()->GetTimeUntilRelease(),
-      base::TimeDelta::FromMilliseconds(1100));
-  {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(1100));
-    run_loop.Run();
-  }
+  Advance(test_task_runner, helper.GetBackoffEntry()->GetTimeUntilRelease());
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
-  // Next transient error incurs a retry after 3 seconds.
-  EXPECT_LT(helper.GetBackoffEntry()->GetTimeUntilRelease(),
-      base::TimeDelta::FromMilliseconds(3100));
-  {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(3100));
-    run_loop.Run();
-  }
+  Advance(test_task_runner, helper.GetBackoffEntry()->GetTimeUntilRelease());
   SimulateMergeSessionSuccess(&helper, "token");
   DCHECK(!helper.is_running());
   histograms.ExpectUniqueSample("OAuth2Login.MergeSessionRetry",
@@ -359,6 +352,10 @@ TEST_F(GaiaCookieManagerServiceTest, FailedUbertoken) {
 TEST_F(GaiaCookieManagerServiceTest, AccessTokenSuccess) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
+
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_ =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
 
   const std::string account_id1 = "12345";
   const std::string account_id2 = "23456";
@@ -382,16 +379,9 @@ TEST_F(GaiaCookieManagerServiceTest, AccessTokenSuccess) {
 
   // Transient error, retry.
   SimulateAccessTokenFailure(&helper, &request1, error);
-  EXPECT_LT(helper.GetBackoffEntry()->GetTimeUntilRelease(),
-            base::TimeDelta::FromMilliseconds(1100));
 
   DCHECK(helper.is_running());
-  base::RunLoop run_loop;
-  // Transient error incurs a retry after 1 second.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(1100));
-  run_loop.Run();
+  Advance(test_task_runner, helper.GetBackoffEntry()->GetTimeUntilRelease());
 
   SimulateAccessTokenSuccess(&helper, &request1);
 }
@@ -401,6 +391,10 @@ TEST_F(GaiaCookieManagerServiceTest,
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_ =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+
   const std::string account_id1 = "12345";
   const std::string account_id2 = "23456";
 
@@ -409,7 +403,8 @@ TEST_F(GaiaCookieManagerServiceTest,
   testing::InSequence mock_sequence;
   EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
   EXPECT_CALL(helper, StartFetchingAccessToken(account_id2)).Times(1);
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1))
+      .Times(signin::kMaxFetcherRetries - 1);
   EXPECT_CALL(helper, OnSetAccountsFinished(error)).Times(1);
   EXPECT_CALL(helper, SetAccountsInCookieWithTokens()).Times(0);
 
@@ -424,19 +419,9 @@ TEST_F(GaiaCookieManagerServiceTest,
             base::TimeDelta::FromMilliseconds(1100));
 
   // Transient error, retry, fail when maximum number of retries is reached.
-  // Expect retry call only for the first retry, because the subsequent retry
-  // will be postponed for the exponential time.
   for (int i = 0; i < signin::kMaxFetcherRetries - 1; ++i) {
     SimulateAccessTokenFailure(&helper, &request1, error);
-    if (helper.GetBackoffEntry()->GetTimeUntilRelease() <
-        base::TimeDelta::FromMilliseconds(1100)) {
-      DCHECK(helper.is_running());
-      base::RunLoop run_loop2;
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, run_loop2.QuitClosure(),
-          base::TimeDelta::FromMilliseconds(1100));
-      run_loop2.Run();
-    }
+    Advance(test_task_runner, helper.GetBackoffEntry()->GetTimeUntilRelease());
   }
   SimulateAccessTokenFailure(&helper, &request1, error);
   // Check that no Multilogin is triggered.
@@ -476,6 +461,10 @@ TEST_F(GaiaCookieManagerServiceTest, FetcherRetriesZeroedBetweenCalls) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_ =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+
   const std::string account_id1 = "12345";
   const std::string account_id2 = "23456";
 
@@ -506,7 +495,8 @@ TEST_F(GaiaCookieManagerServiceTest, FetcherRetriesZeroedBetweenCalls) {
   EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
   EXPECT_CALL(helper, StartFetchingAccessToken(account_id2)).Times(1);
   // retry call
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1))
+      .Times(signin::kMaxFetcherRetries - 1);
   // retry call
   EXPECT_CALL(helper, SetAccountsInCookieWithTokens()).Times(1);
   EXPECT_CALL(helper,
@@ -519,26 +509,12 @@ TEST_F(GaiaCookieManagerServiceTest, FetcherRetriesZeroedBetweenCalls) {
 
   RequestMockImpl request1(account_id1);
   RequestMockImpl request2(account_id2);
-
-  EXPECT_LT(helper.GetBackoffEntry()->GetTimeUntilRelease(),
-            base::TimeDelta::FromMilliseconds(1100));
-
   // Transient error, retry.
-  // Expect retry call only for the first retry, because the subsequent retry
-  // will be postponed for the exponential time.
   // Succeed when only one retry is left. Simulate Multilogin failure. Check
   // that it retries.
   for (int i = 0; i < signin::kMaxFetcherRetries - 1; ++i) {
     SimulateAccessTokenFailure(&helper, &request1, error);
-    if (helper.GetBackoffEntry()->GetTimeUntilRelease() <
-        base::TimeDelta::FromMilliseconds(1100)) {
-      DCHECK(helper.is_running());
-      base::RunLoop run_loop2;
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, run_loop2.QuitClosure(),
-          base::TimeDelta::FromMilliseconds(1100));
-      run_loop2.Run();
-    }
+    Advance(test_task_runner, helper.GetBackoffEntry()->GetTimeUntilRelease());
   }
   SimulateAccessTokenSuccess(&helper, &request1);
   SimulateAccessTokenSuccess(&helper, &request2);
@@ -556,6 +532,10 @@ TEST_F(GaiaCookieManagerServiceTest, FetcherRetriesZeroedBetweenCalls) {
 TEST_F(GaiaCookieManagerServiceTest, MultiloginSuccessAndCookiesSet) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
+
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_ =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
 
   const std::string account_id1 = "12345";
   const std::string account_id2 = "23456";
@@ -625,11 +605,7 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginSuccessAndCookiesSet) {
   SimulateMultiloginFailure(&helper, error);
 
   DCHECK(helper.is_running());
-  base::RunLoop run_loop2;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop2.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(1100));
-  run_loop2.Run();
+  Advance(test_task_runner, helper.GetBackoffEntry()->GetTimeUntilRelease());
 
   SimulateMultiloginSuccess(&helper, result);
 }
@@ -667,6 +643,10 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginFailureMaxRetriesReached) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_ =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+
   const std::string account_id1 = "12345";
   const std::string account_id2 = "23456";
   const std::vector<std::string> account_ids = {account_id1, account_id2};
@@ -683,7 +663,8 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginFailureMaxRetriesReached) {
   EXPECT_CALL(helper, StartFetchingAccessToken(account_id2)).Times(1);
   // This is the retry call, the first call is skipped as we call
   // StartFetchingMultiLogim explicitly instead.
-  EXPECT_CALL(helper, SetAccountsInCookieWithTokens()).Times(1);
+  EXPECT_CALL(helper, SetAccountsInCookieWithTokens())
+      .Times(signin::kMaxFetcherRetries - 1);
   EXPECT_CALL(helper, OnSetAccountsFinished(error)).Times(1);
 
   // Needed to insert request in the queue.
@@ -691,23 +672,10 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginFailureMaxRetriesReached) {
 
   helper.StartFetchingMultiLogin(accounts);
 
-  EXPECT_LT(helper.GetBackoffEntry()->GetTimeUntilRelease(),
-            base::TimeDelta::FromMilliseconds(1100));
-
   // Transient error, retry, fail when maximum number of retries is reached.
-  // Expect retry call only for the first retry, because the subsequent retry
-  // will be postponed for the exponential time.
   for (int i = 0; i < signin::kMaxFetcherRetries - 1; ++i) {
     SimulateMultiloginFailure(&helper, error);
-    if (helper.GetBackoffEntry()->GetTimeUntilRelease() <
-        base::TimeDelta::FromMilliseconds(1100)) {
-      DCHECK(helper.is_running());
-      base::RunLoop run_loop2;
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, run_loop2.QuitClosure(),
-          base::TimeDelta::FromMilliseconds(1100));
-      run_loop2.Run();
-    }
+    Advance(test_task_runner, helper.GetBackoffEntry()->GetTimeUntilRelease());
   }
   SimulateMultiloginFailure(&helper, error);
 }
