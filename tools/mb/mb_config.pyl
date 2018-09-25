@@ -387,8 +387,6 @@
       # TODO(crbug.com/828472): Remove 'Win Builder Perf'
       'Win Builder Perf': 'official_goma_x86',
       'win32-builder-perf': 'official_goma_x86',
-      # TODO(crbug.com/828466): Remove 'Win x64 Builder Perf'
-      'Win x64 Builder Perf': 'official_goma',
       'win64-builder-perf': 'official_goma',
     },
 
