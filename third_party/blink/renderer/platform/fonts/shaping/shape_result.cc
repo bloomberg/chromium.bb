@@ -1150,13 +1150,13 @@ void ShapeResult::ComputeGlyphBounds(const ShapeResult::RunInfo& run) {
   Vector<Glyph, 256> glyphs(num_glyphs);
   for (unsigned i = 0; i < num_glyphs; i++)
     glyphs[i] = run.glyph_data_[i].glyph;
-  Vector<FloatRect, 256> bounds_list(num_glyphs);
+  Vector<SkRect, 256> bounds_list(num_glyphs);
   current_font_data.BoundsForGlyphs(glyphs, &bounds_list);
 
   GlyphBoundsAccumulator bounds(width_);
   for (unsigned i = 0; i < num_glyphs; i++) {
     const HarfBuzzRunGlyphData& glyph_data = run.glyph_data_[i];
-    bounds.Unite<is_horizontal_run>(glyph_data, bounds_list[i]);
+    bounds.Unite<is_horizontal_run>(glyph_data, FloatRect(bounds_list[i]));
     bounds.origin += glyph_data.advance;
   }
 #endif
