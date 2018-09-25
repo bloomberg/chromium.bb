@@ -554,6 +554,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsOfType(kLayoutObjectEmbeddedObject);
   }
   bool IsFieldset() const { return IsOfType(kLayoutObjectFieldset); }
+  bool IsLayoutNGFieldset() const { return IsOfType(kLayoutObjectNGFieldset); }
   bool IsFileUploadControl() const {
     return IsOfType(kLayoutObjectFileUploadControl);
   }
@@ -948,6 +949,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsEffectiveRootScroller() const {
     return bitfields_.IsEffectiveRootScroller();
   }
+
+  // Return true if this is the "rendered legend" of a fieldset. They get
+  // special treatment, in that they establish a new formatting context, and
+  // shrink to fit if no logical width is specified.
+  bool IsRenderedLegend() const;
 
   // The pseudo element style can be cached or uncached.  Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
@@ -2108,6 +2114,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectMedia,
     kLayoutObjectMenuList,
     kLayoutObjectNGBlockFlow,
+    kLayoutObjectNGFieldset,
     kLayoutObjectNGFlexibleBox,
     kLayoutObjectNGMixin,
     kLayoutObjectNGListItem,

@@ -1213,11 +1213,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool IsGridItem() const { return Parent() && Parent()->IsLayoutGrid(); }
 
-  // Return true if this is the "rendered legend" of a fieldset. They get
-  // special treatment, in that they establish a new formatting context, and
-  // shrink to fit if no logical width is specified.
-  bool IsRenderedLegend() const;
-
   LayoutUnit LineHeight(
       bool first_line,
       LineDirectionMode,

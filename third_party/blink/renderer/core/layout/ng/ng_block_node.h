@@ -31,6 +31,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
  public:
   explicit NGBlockNode(LayoutBox* box) : NGLayoutInputNode(box, kBlock) {}
 
+  NGBlockNode(std::nullptr_t) : NGLayoutInputNode(nullptr) {}
+
   scoped_refptr<NGLayoutResult> Layout(
       const NGConstraintSpace& constraint_space,
       NGBreakToken* break_token = nullptr);
@@ -63,6 +65,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   NGBoxStrut GetScrollbarSizes() const;
 
   NGLayoutInputNode FirstChild() const;
+
+  NGBlockNode GetRenderedLegend() const;
+  NGBlockNode GetFieldsetContent() const;
 
   bool IsInlineLevel() const;
   bool IsAtomicInlineLevel() const;
