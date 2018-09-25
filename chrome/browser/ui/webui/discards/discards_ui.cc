@@ -238,6 +238,8 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
   void GetSiteCharacteristicsDatabase(
       const std::vector<std::string>& explicitly_requested_origins,
       GetSiteCharacteristicsDatabaseCallback callback) override;
+  void GetSiteCharacteristicsDatabaseSize(
+      GetSiteCharacteristicsDatabaseSizeCallback callback) override;
 
   void SetAutoDiscardable(int32_t id,
                           bool is_auto_discardable,
@@ -352,6 +354,32 @@ void DiscardsDetailsProviderImpl::GetSiteCharacteristicsDatabase(
 
   // Return the result.
   std::move(callback).Run(std::move(result));
+}
+
+void DiscardsDetailsProviderImpl::GetSiteCharacteristicsDatabaseSize(
+    GetSiteCharacteristicsDatabaseSizeCallback callback) {
+  if (!data_store_inspector_) {
+    // Early return with a nullptr if there's no inspector.
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // Adapt the inspector callback to the mojom callback with this lambda.
+  auto inspector_callback = base::BindOnce(
+      [](GetSiteCharacteristicsDatabaseSizeCallback callback,
+         base::Optional<int64_t> num_rows,
+         base::Optional<int64_t> on_disk_size_kb) {
+        mojom::SiteCharacteristicsDatabaseSizePtr result =
+            mojom::SiteCharacteristicsDatabaseSize::New();
+        result->num_rows = num_rows.has_value() ? num_rows.value() : -1;
+        result->on_disk_size_kb =
+            on_disk_size_kb.has_value() ? on_disk_size_kb.value() : -1;
+
+        std::move(callback).Run(std::move(result));
+      },
+      std::move(callback));
+
+  data_store_inspector_->GetDatabaseSize(std::move(inspector_callback));
 }
 
 }  // namespace
