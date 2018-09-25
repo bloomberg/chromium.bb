@@ -212,6 +212,7 @@ AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
     const HTMLAnchorElement* anchor_element) {
   if (!base::FeatureList::IsEnabled(features::kRecordAnchorMetricsClicked) ||
       !anchor_element->Href().ProtocolIsInHTTPFamily() ||
+      !GetRootDocument(*anchor_element)->Url().ProtocolIsInHTTPFamily() ||
       !anchor_element->GetDocument().BaseURL().ProtocolIsInHTTPFamily()) {
     return base::nullopt;
   }
@@ -235,6 +236,7 @@ void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
   DCHECK(document.GetFrame());
   if (!base::FeatureList::IsEnabled(features::kRecordAnchorMetricsVisible) ||
       document.ParentDocument() || !document.View() ||
+      !document.Url().ProtocolIsInHTTPFamily() ||
       !document.BaseURL().ProtocolIsInHTTPFamily()) {
     return;
   }
