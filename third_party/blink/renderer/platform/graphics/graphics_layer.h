@@ -119,7 +119,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void RemoveFromParent();
 
   GraphicsLayer* MaskLayer() const { return mask_layer_; }
-  void SetMaskLayer(GraphicsLayer*);
+  void SetMaskLayer(GraphicsLayer*, bool is_rounded_corner_mask);
 
   GraphicsLayer* ContentsClippingMaskLayer() const {
     return contents_clipping_mask_layer_;
