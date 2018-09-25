@@ -335,12 +335,6 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
   return result;
 }
 
-content::RenderWidget::CreateRenderWidgetFunction g_create_render_widget =
-    nullptr;
-
-content::RenderWidget::RenderWidgetInitializedCallback
-    g_render_widget_initialized = nullptr;
-
 ui::TextInputType ConvertWebTextInputType(blink::WebTextInputType type) {
   // Check the type is in the range representable by ui::TextInputType.
   DCHECK_LE(type, static_cast<int>(ui::TEXT_INPUT_TYPE_MAX))
@@ -388,7 +382,7 @@ static bool PreferCompositingToLCDText(CompositorDependencies* compositor_deps,
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
-                           WidgetType popup_type,
+                           WidgetType widget_type,
                            const ScreenInfo& screen_info,
                            blink::WebDisplayMode display_mode,
                            bool swapped_out,
@@ -415,7 +409,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
       can_compose_inline_(true),
       composition_range_(gfx::Range::InvalidRange()),
-      popup_type_(popup_type),
+      widget_type_(widget_type),
       pending_window_rect_count_(0),
       screen_info_(screen_info),
       monitor_composition_info_(false),
@@ -473,15 +467,6 @@ RenderWidget::~RenderWidget() {
 }
 
 // static
-void RenderWidget::InstallCreateHook(
-    CreateRenderWidgetFunction create_render_widget,
-    RenderWidgetInitializedCallback render_widget_initialized) {
-  CHECK(!g_create_render_widget && !g_render_widget_initialized);
-  g_create_render_widget = create_render_widget;
-  g_render_widget_initialized = render_widget_initialized;
-}
-
-// static
 RenderWidget* RenderWidget::FromRoutingID(int32_t routing_id) {
   RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
   RoutingIDWidgetMap::iterator it = widgets->find(routing_id);
@@ -519,57 +504,12 @@ RenderWidget* RenderWidget::CreateForPopup(
   return widget.get();
 }
 
-// static
-RenderWidget* RenderWidget::CreateForFrame(
-    int widget_routing_id,
-    bool hidden,
-    const ScreenInfo& screen_info,
-    CompositorDependencies* compositor_deps,
-    blink::WebLocalFrame* frame) {
-  CHECK_NE(widget_routing_id, MSG_ROUTING_NONE);
-  RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
-  // For the mainframe, the RenderWidget is attached to the RenderView.
-  // TODO(ajwong): Remove this when the widget is always attached to a frame.
-  // https://crbug.com/545684
-  if (!frame->Parent()) {
-    RenderViewImpl* view =
-        static_cast<RenderViewImpl*>(render_frame->GetRenderView());
-    // Use the WidgetClient() from the RenderViewImpl, rather than getting its
-    // RenderWidget directly. Layout tests may inject a different
-    // WebWidgetClient on the RenderViewImpl that intercepts calls before they
-    // get to the RenderWidget.
-    view->AttachWebFrameWidget(
-        RenderWidget::CreateWebFrameWidget(view->WidgetClient(), frame));
-    view->GetWidget()->UpdateWebViewWithDeviceScaleFactor();
-    return view->GetWidget();
-  }
-  scoped_refptr<RenderWidget> widget(
-      g_create_render_widget
-          ? g_create_render_widget(widget_routing_id, compositor_deps,
-                                   WidgetType::kFrame, screen_info,
-                                   blink::kWebDisplayModeUndefined, false,
-                                   hidden, false)
-          : new RenderWidget(widget_routing_id, compositor_deps,
-                             WidgetType::kFrame, screen_info,
-                             blink::kWebDisplayModeUndefined, false, hidden,
-                             false));
-  widget->for_oopif_ = true;
-  // Init increments the reference count on |widget|, keeping it alive after
-  // this function returns.
-  widget->Init(base::NullCallback(),
-               RenderWidget::CreateWebFrameWidget(widget.get(), frame));
-  widget->UpdateWebViewWithDeviceScaleFactor();
-
-  if (g_render_widget_initialized)
-    g_render_widget_initialized(widget.get());
-  return widget.get();
-}
-
-// static
-blink::WebFrameWidget* RenderWidget::CreateWebFrameWidget(
-    blink::WebWidgetClient* widget_client,
-    blink::WebLocalFrame* frame) {
-  return blink::WebFrameWidget::Create(widget_client, frame);
+void RenderWidget::InitForChildLocalRoot(
+    blink::WebFrameWidget* web_frame_widget) {
+  for_oopif_ = true;
+  // Init() increments the reference count on |this|, making it
+  // self-referencing.
+  Init(base::NullCallback(), web_frame_widget);
 }
 
 void RenderWidget::CloseForFrame() {
@@ -1797,7 +1737,7 @@ void RenderWidget::SetPendingWindowRect(const WebRect& rect) {
 
   // Popups don't get size updates back from the browser so just store the set
   // values.
-  if (popup_type_ != WidgetType::kFrame) {
+  if (widget_type_ != WidgetType::kFrame) {
     window_screen_rect_ = rect;
     view_screen_rect_ = rect;
   }
@@ -2001,7 +1941,7 @@ void RenderWidget::OnSetViewportIntersection(
     const gfx::Rect& compositor_visible_rect,
     bool occluded_or_obscured) {
   if (auto* frame_widget = GetFrameWidget()) {
-    DCHECK_EQ(popup_type_, WidgetType::kFrame);
+    DCHECK_EQ(widget_type_, WidgetType::kFrame);
     compositor_visible_rect_ = compositor_visible_rect;
     frame_widget->SetRemoteViewportIntersection(viewport_intersection,
                                                 occluded_or_obscured);
@@ -2011,7 +1951,7 @@ void RenderWidget::OnSetViewportIntersection(
 
 void RenderWidget::OnSetIsInert(bool inert) {
   if (auto* frame_widget = GetFrameWidget()) {
-    DCHECK_EQ(popup_type_, WidgetType::kFrame);
+    DCHECK_EQ(widget_type_, WidgetType::kFrame);
     frame_widget->SetIsInert(inert);
   }
 }
@@ -2019,7 +1959,7 @@ void RenderWidget::OnSetIsInert(bool inert) {
 void RenderWidget::OnSetInheritedEffectiveTouchAction(
     cc::TouchAction touch_action) {
   if (auto* frame_widget = GetFrameWidget()) {
-    DCHECK_EQ(popup_type_, WidgetType::kFrame);
+    DCHECK_EQ(widget_type_, WidgetType::kFrame);
     frame_widget->SetInheritedEffectiveTouchAction(touch_action);
   }
 }
@@ -2027,7 +1967,7 @@ void RenderWidget::OnSetInheritedEffectiveTouchAction(
 void RenderWidget::OnUpdateRenderThrottlingStatus(bool is_throttled,
                                                   bool subtree_throttled) {
   if (auto* frame_widget = GetFrameWidget()) {
-    DCHECK_EQ(popup_type_, WidgetType::kFrame);
+    DCHECK_EQ(widget_type_, WidgetType::kFrame);
     frame_widget->UpdateRenderThrottlingStatus(is_throttled, subtree_throttled);
   }
 }

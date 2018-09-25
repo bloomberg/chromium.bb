@@ -2542,7 +2542,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
       web_view, &web_frame_client, nullptr, nullptr);
   web_frame_client.Bind(local_frame);
-  blink::WebFrameWidget::Create(&web_widget_client, local_frame);
+  blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, local_frame);
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),

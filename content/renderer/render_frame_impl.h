@@ -47,6 +47,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/stop_find_action.h"
+#include "content/public/common/widget_type.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "content/renderer/content_security_policy_util.h"
@@ -270,8 +271,25 @@ class CONTENT_EXPORT RenderFrameImpl
   };
 
   using CreateRenderFrameImplFunction = RenderFrameImpl* (*)(CreateParams);
+  using CreateRenderWidgetForChildLocalRootFunction =
+      RenderWidget* (*)(int32_t,
+                        CompositorDependencies*,
+                        WidgetType,
+                        const ScreenInfo&,
+                        blink::WebDisplayMode display_mode,
+                        bool,
+                        bool,
+                        bool);
+  using RenderWidgetForChildLocalRootInitializedCallback =
+      void (*)(RenderWidget*);
+
+  // LayoutTests override the creation of RenderFrames and RenderWidgets in
+  // order to inject their own (subclass) type and change behaviour inside the
+  // tests.
   static void InstallCreateHook(
-      CreateRenderFrameImplFunction create_render_frame_impl);
+      CreateRenderFrameImplFunction create_frame,
+      CreateRenderWidgetForChildLocalRootFunction create_widget,
+      RenderWidgetForChildLocalRootInitializedCallback widget_initialized);
 
   // Looks up and returns the WebFrame corresponding to a given opener frame
   // routing ID.

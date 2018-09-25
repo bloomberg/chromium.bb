@@ -585,6 +585,10 @@ WebFrameLoadType NavigationTypeToLoadType(
 
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
+RenderFrameImpl::CreateRenderWidgetForChildLocalRootFunction
+    g_create_render_widget = nullptr;
+RenderFrameImpl::RenderWidgetForChildLocalRootInitializedCallback
+    g_render_widget_initialized = nullptr;
 
 WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
   DCHECK(!path.IsAbsolute());
@@ -1285,12 +1289,25 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       replicated_state.frame_policy.sandbox_flags);
   if (has_committed_real_load)
     web_frame->SetCommittedFirstRealLoad();
-  render_frame->render_widget_ = RenderWidget::CreateForFrame(
-      widget_routing_id, hidden, screen_info, compositor_deps, web_frame);
-  // TODO(avi): This DCHECK is to track cleanup for https://crbug.com/545684
-  DCHECK_EQ(render_view->GetWidget(), render_frame->render_widget_)
-      << "Main frame is no longer reusing the RenderView as its widget! "
-      << "Does the RenderFrame need to register itself with the RenderWidget?";
+
+  // The RenderViewImpl and its RenderWidget already exist by the time we get
+  // here.
+  // TODO(crbug.com/419087): We probably want to create the RenderWidget here
+  // though (when we make the WebFrameWidget?).
+  RenderWidget* render_widget = render_view->GetWidget();
+
+  // Non-owning pointer that is self-referencing and destroyed by calling
+  // Close(). The RenderViewImpl has a RenderWidget already, but not a
+  // WebFrameWidget, which is now attached here.
+  auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
+      render_view->WidgetClient(), web_frame);
+  render_view->AttachWebFrameWidget(web_frame_widget);
+  // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent an
+  // empty ScreenInfo, but the WebView has already been created and initialized
+  // by RenderViewImpl, so this is surely redundant?
+  render_widget->UpdateWebViewWithDeviceScaleFactor();
+
+  render_frame->render_widget_ = render_widget;
   render_frame->in_frame_tree_ = true;
   return render_frame;
 }
@@ -1309,8 +1326,12 @@ void RenderFrameImpl::CreateFrame(
     const mojom::CreateFrameWidgetParams& widget_params,
     const FrameOwnerProperties& frame_owner_properties,
     bool has_committed_real_load) {
-  blink::WebLocalFrame* web_frame;
-  RenderFrameImpl* render_frame;
+  // TODO(danakj): Split this method into two pieces. The first block makes a
+  // WebLocalFrame and collects the RenderView and RenderFrame for it. The
+  // second block uses that to make/setup a RenderWidget, if needed.
+  RenderViewImpl* render_view = nullptr;
+  RenderFrameImpl* render_frame = nullptr;
+  blink::WebLocalFrame* web_frame = nullptr;
   if (proxy_routing_id == MSG_ROUTING_NONE) {
     // TODO(alexmos): This path is currently used only:
     // 1) When recreating a RenderFrame after a crash.
@@ -1332,6 +1353,7 @@ void RenderFrameImpl::CreateFrame(
     if (previous_sibling_proxy)
       previous_sibling_web_frame = previous_sibling_proxy->web_frame();
 
+    render_view = parent_proxy->render_view();
     // Create the RenderFrame and WebLocalFrame, linking the two.
     render_frame = RenderFrameImpl::Create(
         parent_proxy->render_view(), routing_id, std::move(interface_provider),
@@ -1362,7 +1384,15 @@ void RenderFrameImpl::CreateFrame(
     if (!proxy)
       return;
 
-    render_frame = RenderFrameImpl::Create(proxy->render_view(), routing_id,
+    // This path is creating a local frame. It may or may not be a local root,
+    // depending if the frame's parent is local or remote. It may also be the
+    // main frame, as in the case where a navigation to the current process'
+    // origin replaces a remote main frame (the proxy's web_frame()) with a
+    // local one.
+    const bool proxy_is_main_frame = !proxy->web_frame()->Parent();
+
+    render_view = proxy->render_view();
+    render_frame = RenderFrameImpl::Create(render_view, routing_id,
                                            std::move(interface_provider),
                                            devtools_frame_token);
     render_frame->InitializeBlameContext(nullptr);
@@ -1372,16 +1402,119 @@ void RenderFrameImpl::CreateFrame(
         render_frame, render_frame->blink_interface_registry_.get(),
         proxy->web_frame(), replicated_state.frame_policy.sandbox_flags,
         replicated_state.frame_policy.container_policy);
+    // The new |web_frame| is a main frame iff the proxy's frame was.
+    DCHECK_EQ(proxy_is_main_frame, !web_frame->Parent());
   }
-  CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->Parent());
 
-  if (widget_params.routing_id != MSG_ROUTING_NONE) {
-    // TODO(fsamuel): It's not clear if we should be passing in the
-    // web ScreenInfo or the original ScreenInfo here.
-    render_frame->render_widget_ = RenderWidget::CreateForFrame(
-        widget_params.routing_id, widget_params.hidden,
-        render_frame->render_view_->GetWebScreenInfo(), compositor_deps,
-        web_frame);
+  DCHECK(render_view);
+  DCHECK(render_frame);
+  DCHECK(web_frame);
+
+  const bool is_main_frame = !web_frame->Parent();
+
+  // Child frames require there to be a |parent_routing_id| present, for the
+  // remote parent frame. Though it is only used if the |proxy_routing_id| is
+  // not given, which happens in some corner cases.
+  if (!is_main_frame)
+    DCHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
+
+  // We now have a WebLocalFrame for the new frame. The next step is to set
+  // up a RenderWidget for it, if it is needed.
+  //
+  // If there is no widget routing id, then the new frame is not a local root,
+  // and does not need a RenderWidget. In that case we'll do nothing. Otherwise
+  // it does.
+  if (is_main_frame) {
+    // For a main frame, we use the RenderWidget already attached to the
+    // RenderView (this is being changed by https://crbug.com/419087).
+
+    // Main frames are always local roots, so they should always have a routing
+    // id. Surprisingly, this routing id is *not* used though, as the routing id
+    // on the existing RenderWidget is not changed. (I don't know why.)
+    // TODO(crbug.com/888105): It's a bug that the RenderWidget is not using
+    // this routing id.
+    DCHECK_NE(widget_params.routing_id, MSG_ROUTING_NONE);
+
+    // The RenderViewImpl and its RenderWidget already exist by the time we
+    // get here (we get them from the RenderFrameProxy).
+    // TODO(crbug.com/419087): We probably want to create the RenderWidget
+    // here though (when we make the WebFrameWidget?).
+    RenderWidget* render_widget = render_view->GetWidget();
+
+    // Non-owning pointer that is self-referencing and destroyed by calling
+    // Close(). The RenderViewImpl has a RenderWidget already, but not a
+    // WebFrameWidget, which is now attached here.
+    auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
+        render_view->WidgetClient(), web_frame);
+    render_view->AttachWebFrameWidget(web_frame_widget);
+    // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent
+    // an empty ScreenInfo, but the WebView has already been created and
+    // initialized by RenderViewImpl, so this is surely redundant? It will be
+    // pulling the device scale factor off the WebView itself.
+    render_widget->UpdateWebViewWithDeviceScaleFactor();
+
+    render_frame->render_widget_ = render_widget;
+  } else if (widget_params.routing_id != MSG_ROUTING_NONE) {
+    // This frame is a child local root, so we require a separate RenderWidget
+    // for it from any other frames in the frame tree. Each local root defines
+    // a separate context/coordinate space/world for compositing, painting,
+    // input, etc. And each local root has a RenderWidget which provides
+    // such services independent from other RenderWidgets.
+    // Notably, we do not attempt to reuse the main frame's RenderWidget (if the
+    // main frame in this frame tree is local) as that RenderWidget is
+    // functioning in a different local root. Because this is a child local
+    // root, it implies there is some remote frame ancestor between this frame
+    // and the main frame, thus its coordinate space etc is not known relative
+    // to the main frame.
+
+    // TODO(crbug.com/419087): This is grabbing something off the view's
+    // widget but if the main frame is remote this widget would not be valid?
+    const ScreenInfo& screen_info_from_main_frame =
+        render_view->GetWidget()->GetWebScreenInfo();
+
+    // Makes a new RenderWidget for the child local root. It provides the
+    // local root with a new compositing, painting, and input coordinate
+    // space/context.
+    scoped_refptr<RenderWidget> render_widget;
+    if (g_create_render_widget) {
+      // LayoutTest hooks inject a different type (subclass) for RenderWidget,
+      // allowing it to override the behaviour of the WebWidgetClient which
+      // RenderWidget provides.
+      render_widget = g_create_render_widget(
+          widget_params.routing_id, compositor_deps, WidgetType::kFrame,
+          screen_info_from_main_frame, blink::kWebDisplayModeUndefined,
+          /*swapped_out=*/false, widget_params.hidden,
+          /*never_visible=*/false);
+    } else {
+      render_widget = base::MakeRefCounted<RenderWidget>(
+          widget_params.routing_id, compositor_deps, WidgetType::kFrame,
+          screen_info_from_main_frame, blink::kWebDisplayModeUndefined,
+          /*swapped_out=*/false, widget_params.hidden,
+          /*never_visible=*/false);
+    }
+
+    // Non-owning pointer that is self-referencing and destroyed by calling
+    // Close(). We use the new RenderWidget as the client for this
+    // WebFrameWidget, *not* the RenderWidget of the MainFrame, which is
+    // accessible from the RenderViewImpl.
+    auto* web_frame_widget = blink::WebFrameWidget::CreateForChildLocalRoot(
+        render_widget.get(), web_frame);
+
+    // Adds a reference on RenderWidget, making it self-referencing. So it
+    // will not be destroyed by scoped_refptr unless Close() has been called
+    // and run.
+    render_widget->InitForChildLocalRoot(web_frame_widget);
+    // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent
+    // an empty ScreenInfo, but the WebView has already been created and
+    // initialized by RenderViewImpl, so this is surely redundant? It will be
+    // pulling the device scale factor off the WebView itself.
+    render_widget->UpdateWebViewWithDeviceScaleFactor();
+
+    // LayoutTest hooks to set up the injected type for RenderWidget.
+    if (g_render_widget_initialized)
+      g_render_widget_initialized(render_widget.get());
+
+    render_frame->render_widget_ = std::move(render_widget);
   }
 
   if (has_committed_real_load)
@@ -1425,9 +1558,15 @@ RenderFrameImpl* RenderFrameImpl::FromWebFrame(blink::WebFrame* web_frame) {
 
 // static
 void RenderFrameImpl::InstallCreateHook(
-    CreateRenderFrameImplFunction create_render_frame_impl) {
-  CHECK(!g_create_render_frame_impl);
-  g_create_render_frame_impl = create_render_frame_impl;
+    CreateRenderFrameImplFunction create_frame,
+    CreateRenderWidgetForChildLocalRootFunction create_widget,
+    RenderWidgetForChildLocalRootInitializedCallback widget_initialized) {
+  DCHECK(!g_create_render_frame_impl);
+  DCHECK(!g_create_render_widget);
+  DCHECK(!g_render_widget_initialized);
+  g_create_render_frame_impl = create_frame;
+  g_create_render_widget = create_widget;
+  g_render_widget_initialized = widget_initialized;
 }
 
 // static

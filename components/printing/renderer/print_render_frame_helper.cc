@@ -632,10 +632,6 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
     blink::WebLocalFrame* frame_;
   };
 
-  HeaderAndFooterClient frame_client;
-  blink::WebLocalFrame* frame = blink::WebLocalFrame::CreateMainFrame(
-      web_view, &frame_client, nullptr, nullptr);
-
   class NonCompositingWebWidgetClient : public blink::WebWidgetClient {
    public:
     // blink::WebWidgetClient implementation.
@@ -645,8 +641,12 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
     }
   };
 
+  HeaderAndFooterClient frame_client;
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::CreateMainFrame(
+      web_view, &frame_client, nullptr, nullptr);
+
   NonCompositingWebWidgetClient web_widget_client;
-  blink::WebFrameWidget::Create(&web_widget_client, frame);
+  blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
 
   base::Value html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_PRINT_HEADER_FOOTER_TEMPLATE_PAGE));
@@ -876,7 +876,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
   blink::WebLocalFrame* main_frame =
       blink::WebLocalFrame::CreateMainFrame(web_view, this, nullptr, nullptr);
   frame_.Reset(main_frame);
-  blink::WebFrameWidget::Create(this, main_frame);
+  blink::WebFrameWidget::CreateForMainFrame(this, main_frame);
   node_to_print_.Reset();
 
   // When loading is done this will call didStopLoading() and that will do the

@@ -262,7 +262,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
   WebLocalFrame* web_frame =
       WebLocalFrame::CreateMainFrame(web_view_, this, nullptr, nullptr);
-  WebFrameWidget::Create(this, web_frame);
+  WebFrameWidget::CreateForMainFrame(this, web_frame);
 }
 
 WebViewPlugin::WebViewHelper::~WebViewHelper() {
