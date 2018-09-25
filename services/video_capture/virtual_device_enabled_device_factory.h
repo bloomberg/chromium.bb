@@ -37,6 +37,8 @@ class VirtualDeviceEnabledDeviceFactory : public mojom::DeviceFactory {
   void AddTextureVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
       mojom::TextureVirtualDeviceRequest virtual_device) override;
+  void RegisterVirtualDevicesChangedObserver(
+      mojom::DevicesChangedObserverPtr observer) override;
 
  private:
   class VirtualDeviceEntry;
@@ -49,10 +51,14 @@ class VirtualDeviceEnabledDeviceFactory : public mojom::DeviceFactory {
       const std::string& device_id);
   void OnVirtualDeviceConsumerConnectionErrorOrClose(
       const std::string& device_id);
+  void EmitDevicesChangedEvent();
+  void OnDevicesChangedObserverDisconnected(
+      mojom::DevicesChangedObserverPtr* observer);
 
   std::map<std::string, VirtualDeviceEntry> virtual_devices_by_id_;
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   const std::unique_ptr<mojom::DeviceFactory> device_factory_;
+  std::vector<mojom::DevicesChangedObserverPtr> devices_changed_observers_;
 
   base::WeakPtrFactory<VirtualDeviceEnabledDeviceFactory> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(VirtualDeviceEnabledDeviceFactory);

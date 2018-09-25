@@ -145,6 +145,11 @@ void DeviceFactoryMediaToMojoAdapter::AddTextureVirtualDevice(
   NOTIMPLEMENTED();
 }
 
+void DeviceFactoryMediaToMojoAdapter::RegisterVirtualDevicesChangedObserver(
+    mojom::DevicesChangedObserverPtr observer) {
+  NOTIMPLEMENTED();
+}
+
 void DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice(
     const std::string& device_id,
     mojom::DeviceRequest device_request,

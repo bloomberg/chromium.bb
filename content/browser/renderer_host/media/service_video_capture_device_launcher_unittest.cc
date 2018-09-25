@@ -51,6 +51,10 @@ class MockDeviceFactory : public video_capture::mojom::DeviceFactory {
                                    virtual_device) override {
     NOTIMPLEMENTED();
   }
+  void RegisterVirtualDevicesChangedObserver(
+      video_capture::mojom::DevicesChangedObserverPtr observer) override {
+    NOTIMPLEMENTED();
+  }
 
   MOCK_METHOD1(DoGetDeviceInfos, void(GetDeviceInfosCallback& callback));
   MOCK_METHOD3(DoCreateDevice,
