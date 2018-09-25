@@ -281,10 +281,11 @@ std::unique_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
     base::RepeatingCallback<
         void(network::mojom::ProxyResolvingSocketFactoryRequest)>
         get_socket_factory_callback,
-    GCMStatsRecorder* recorder) {
+    GCMStatsRecorder* recorder,
+    network::NetworkConnectionTracker* network_connection_tracker) {
   return std::make_unique<ConnectionFactoryImpl>(
       endpoints, backoff_policy, std::move(get_socket_factory_callback),
-      recorder);
+      recorder, network_connection_tracker);
 }
 
 GCMClientImpl::CheckinInfo::CheckinInfo()
@@ -320,6 +321,7 @@ GCMClientImpl::GCMClientImpl(
       start_mode_(DELAYED_START),
       clock_(internals_builder_->GetClock()),
       gcm_store_reset_(false),
+      network_connection_tracker_(nullptr),
       periodic_checkin_ptr_factory_(this),
       destroying_gcm_store_ptr_factory_(this),
       weak_ptr_factory_(this) {}
@@ -335,6 +337,7 @@ void GCMClientImpl::Initialize(
         void(network::mojom::ProxyResolvingSocketFactoryRequest)>
         get_socket_factory_callback,
     const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
+    network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<Encryptor> encryptor,
     GCMClient::Delegate* delegate) {
   DCHECK_EQ(UNINITIALIZED, state_);
@@ -342,6 +345,7 @@ void GCMClientImpl::Initialize(
 
   get_socket_factory_callback_ = std::move(get_socket_factory_callback);
   url_loader_factory_ = url_loader_factory;
+  network_connection_tracker_ = network_connection_tracker;
   chrome_build_info_ = chrome_build_info;
 
   gcm_store_.reset(
@@ -493,6 +497,7 @@ void GCMClientImpl::StartGCM() {
 }
 
 void GCMClientImpl::InitializeMCSClient() {
+  DCHECK(network_connection_tracker_);
   std::vector<GURL> endpoints;
   endpoints.push_back(gservices_settings_.GetMCSMainEndpoint());
   GURL fallback_endpoint = gservices_settings_.GetMCSFallbackEndpoint();
@@ -500,7 +505,7 @@ void GCMClientImpl::InitializeMCSClient() {
     endpoints.push_back(fallback_endpoint);
   connection_factory_ = internals_builder_->BuildConnectionFactory(
       endpoints, GetGCMBackoffPolicy(), get_socket_factory_callback_,
-      &recorder_);
+      &recorder_, network_connection_tracker_);
   connection_factory_->SetConnectionListener(this);
   mcs_client_ = internals_builder_->BuildMCSClient(
       chrome_build_info_.version, clock_, connection_factory_.get(),

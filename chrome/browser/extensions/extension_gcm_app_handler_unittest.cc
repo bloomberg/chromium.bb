@@ -59,6 +59,7 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -233,6 +234,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
         base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
         content::BrowserContext::GetDefaultStoragePartition(profile)
             ->GetURLLoaderFactoryForBrowserProcess(),
+        network::TestNetworkConnectionTracker::GetInstance(),
         chrome::GetChannel(),
         gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
         IdentityManagerFactory::GetForProfile(profile),

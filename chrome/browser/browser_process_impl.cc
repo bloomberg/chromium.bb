@@ -1382,7 +1382,8 @@ void BrowserProcessImpl::CreateGCMDriver() {
       base::WrapUnique(new gcm::GCMClientFactory), local_state(), store_path,
       base::BindRepeating(&RequestProxyResolvingSocketFactory),
       system_network_context_manager()->GetSharedURLLoaderFactory(),
-      chrome::GetChannel(), gcm::GetProductCategoryForSubtypes(local_state()),
+      content::GetNetworkConnectionTracker(), chrome::GetChannel(),
+      gcm::GetProductCategoryForSubtypes(local_state()),
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::UI}),
       base::CreateSingleThreadTaskRunnerWithTraits(
