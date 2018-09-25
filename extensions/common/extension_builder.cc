@@ -30,10 +30,10 @@ struct ExtensionBuilder::ManifestData {
 
   std::unique_ptr<base::DictionaryValue> GetValue() const {
     DictionaryBuilder manifest;
-    manifest.Set("name", name)
-        .Set("manifest_version", 2)
-        .Set("version", version.value_or("0.1"))
-        .Set("description", "some description");
+    manifest.Set(manifest_keys::kName, name)
+        .Set(manifest_keys::kManifestVersion, 2)
+        .Set(manifest_keys::kVersion, version.value_or("0.1"))
+        .Set(manifest_keys::kDescription, "some description");
 
     switch (type) {
       case Type::EXTENSION:
@@ -52,7 +52,7 @@ struct ExtensionBuilder::ManifestData {
       ListBuilder permissions_builder;
       for (const std::string& permission : permissions)
         permissions_builder.Append(permission);
-      manifest.Set("permissions", permissions_builder.Build());
+      manifest.Set(manifest_keys::kPermissions, permissions_builder.Build());
     }
 
     if (action) {
@@ -92,11 +92,12 @@ struct ExtensionBuilder::ManifestData {
           matches.Append(match);
         scripts_value.Append(
             DictionaryBuilder()
-                .Set("js", ListBuilder().Append(script.first).Build())
-                .Set("matches", matches.Build())
+                .Set(manifest_keys::kJs,
+                     ListBuilder().Append(script.first).Build())
+                .Set(manifest_keys::kMatches, matches.Build())
                 .Build());
       }
-      manifest.Set("content_scripts", scripts_value.Build());
+      manifest.Set(manifest_keys::kContentScripts, scripts_value.Build());
     }
 
     std::unique_ptr<base::DictionaryValue> result = manifest.Build();
