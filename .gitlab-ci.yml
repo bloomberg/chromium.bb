@@ -40,9 +40,9 @@
       --enable-libkms
       --enable-intel
       --enable-radeon
-      --enable-admgpu
+      --enable-amdgpu
       --enable-nouveau
-      --enable-vmwfgx
+      --enable-vmwgfx
       --enable-omap-experimental-api
       --enable-exynos-experimental-api
       --enable-freedreno
