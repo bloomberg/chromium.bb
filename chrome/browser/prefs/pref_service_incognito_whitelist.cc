@@ -211,22 +211,8 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kWebRTCNonProxiedUdpEnabled,
     prefs::kWebRTCIPHandlingPolicy,
 
-#if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
-    prefs::kHasSeenGoogleAppsPromoPage,
-#endif  // defined(GOOGLE_CHROME_BUILD)
-#endif  // defined(OS_WIN)
-
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
-    prefs::kOpenPdfDownloadInSystemReader,
-#endif
-
     prefs::kDefaultTasksByMimeType,
     prefs::kDefaultTasksBySuffix,
-
-    prefs::kWebAppCreateOnDesktop,
-    prefs::kWebAppCreateInAppsMenu,
-    prefs::kWebAppCreateInQuickLaunchBar,
 
     prefs::kDefaultAudioCaptureDevice,
     prefs::kDefaultVideoCaptureDevice,
@@ -241,12 +227,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kMediaGalleriesUniqueId,
     prefs::kMediaGalleriesRememberedGalleries,
 #endif  // !defined(OS_ANDROID)
-
-#if BUILDFLAG(ENABLE_APP_LIST)
-    prefs::kAppListLocalState,
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
-
-    prefs::kWatchdogExtensionActive,
 
 #if defined(OS_ANDROID)
     prefs::kPartnerBookmarkMappings,
