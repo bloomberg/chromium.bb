@@ -165,6 +165,20 @@ TEST_F(AXRemoteHostTest, AutomationEnabledTwice) {
   EXPECT_EQ(ax::mojom::Event::kLoadComplete, service.last_event_.event_type);
 }
 
+// Verifies that a remote app doesn't crash if a View triggers an accessibility
+// event before it is attached to a Widget. https://crbug.com/889121
+TEST_F(AXRemoteHostTest, SendEventOnViewWithNoWidget) {
+  TestAXHostService service(true /*automation_enabled*/);
+  AXRemoteHost* remote = CreateRemote(&service);
+  std::unique_ptr<Widget> widget = CreateTestWidget();
+  remote->FlushForTesting();
+
+  // Create a view that is not yet associated with the widget.
+  views::View view;
+  remote->HandleEvent(&view, ax::mojom::Event::kLocationChanged);
+  // No crash.
+}
+
 // Verifies that the AXRemoteHost stops monitoring widgets that are closed
 // asynchronously, like when ash requests close via DesktopWindowTreeHostMus.
 // https://crbug.com/869608
