@@ -292,9 +292,6 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->GetSyncBridge()
           ->change_processor()
           ->GetControllerDelegate();
-    case syncer::SESSIONS:
-      return SessionSyncServiceFactory::GetForBrowserState(browser_state_)
-          ->GetControllerDelegate();
 
     // We don't exercise this function for certain datatypes, because their
     // controllers get the delegate elsewhere.
@@ -303,6 +300,7 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     case syncer::AUTOFILL_WALLET_DATA:
     case syncer::AUTOFILL_WALLET_METADATA:
     case syncer::BOOKMARKS:
+    case syncer::SESSIONS:
     case syncer::TYPED_URLS:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
