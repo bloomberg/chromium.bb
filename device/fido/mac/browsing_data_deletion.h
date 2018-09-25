@@ -15,9 +15,9 @@ namespace fido {
 namespace mac {
 
 // DeleteWebAuthnCredentiuals deletes Touch ID authenticator credentials from
-// the macOS keychain that were created within the time interval `[begin, end)`
-// and with the given metadata secret (which is tied to a browser profile).
-// The |keychain_access_group| parameter is an identifier tied to Chrome's code
+// the macOS keychain that were created within the given time interval and with
+// the given metadata secret (which is tied to a browser profile). The
+// |keychain_access_group| parameter is an identifier tied to Chrome's code
 // signing identity that identifies the set of all keychain items associated
 // with the Touch ID WebAuthentication authenticator.
 //
@@ -30,8 +30,16 @@ namespace mac {
 bool COMPONENT_EXPORT(DEVICE_FIDO)
     DeleteWebAuthnCredentials(const std::string& keychain_access_group,
                               const std::string& profile_metadata_secret,
-                              base::Time begin,
-                              base::Time end);
+                              base::Time created_not_before,
+                              base::Time created_not_after);
+
+// CountWebAuthnCredentials returns the number of credentials that would get
+// deleted by a call to |DeleteWebAuthnCredentials| with identical arguments.
+size_t COMPONENT_EXPORT(DEVICE_FIDO)
+    CountWebAuthnCredentials(const std::string& keychain_access_group,
+                             const std::string& profile_metadata_secret,
+                             base::Time created_not_before,
+                             base::Time created_not_after);
 
 }  // namespace mac
 }  // namespace fido
