@@ -249,11 +249,23 @@ using web::test::ElementSelector;
 
 @implementation AutomationActionAutofill
 
-static const char PROFILE_NAME_FULL[] = "Yuki Nagato";
-static const char PROFILE_HOME_LINE1[] = "1600 Amphitheatre Parkway";
-static const char PROFILE_HOME_CITY[] = "Mountain View";
-static const char PROFILE_HOME_STATE[] = "CA";
-static const char PROFILE_HOME_ZIP[] = "94043";
+static const char PROFILE_NAME_FULL[] = "Milton C. Waddams";
+static const char PROFILE_NAME_FIRST[] = "Milton";
+static const char PROFILE_NAME_MIDDLE[] = "C.";
+static const char PROFILE_NAME_LAST[] = "Waddams";
+static const char PROFILE_HOME_LINE1[] = "4120 Freidrich Lane";
+static const char PROFILE_HOME_LINE2[] = "Apt 8";
+static const char PROFILE_HOME_CITY[] = "Austin";
+static const char PROFILE_HOME_STATE[] = "Texas";
+static const char PROFILE_COMPANY_NAME[] = "Initech";
+static const char PROFILE_EMAIL_ADDRESS[] = "red.swingline@initech.com";
+static const char PROFILE_HOME_ZIP[] = "78744";
+static const char PROFILE_PHONE_HOME_CITY_CODE[] = "512";
+static const char PROFILE_PHONE_HOME_WHOLE[] = "5125551234";
+static const char PROFILE_CREDIT_CARD_NUMBER[] = "9621327911759602";
+static const char PROFILE_CREDIT_CARD_NAME_FULL[] = "Milton Waddams";
+static const char PROFILE_CREDIT_CARD_EXP_MONTH[] = "5";
+static const char PROFILE_CREDIT_CARD_EXP_4_DIGIT_YEAR[] = "2027";
 
 // Loads the predefined autofill profile into the personal data manager, so that
 // autofill actions will be suggested when tapping on an autofillable form.
@@ -268,15 +280,43 @@ static const char PROFILE_HOME_ZIP[] = "94043";
   autofill::AutofillProfile profile(base::GenerateGUID(),
                                     "https://www.example.com/");
   profile.SetRawInfo(autofill::NAME_FULL, base::UTF8ToUTF16(PROFILE_NAME_FULL));
+  profile.SetRawInfo(autofill::NAME_FIRST,
+                     base::UTF8ToUTF16(PROFILE_NAME_FIRST));
+  profile.SetRawInfo(autofill::NAME_MIDDLE,
+                     base::UTF8ToUTF16(PROFILE_NAME_MIDDLE));
+  profile.SetRawInfo(autofill::NAME_LAST, base::UTF8ToUTF16(PROFILE_NAME_LAST));
   profile.SetRawInfo(autofill::ADDRESS_HOME_LINE1,
                      base::UTF8ToUTF16(PROFILE_HOME_LINE1));
+  profile.SetRawInfo(autofill::ADDRESS_HOME_LINE2,
+                     base::UTF8ToUTF16(PROFILE_HOME_LINE2));
   profile.SetRawInfo(autofill::ADDRESS_HOME_CITY,
                      base::UTF8ToUTF16(PROFILE_HOME_CITY));
   profile.SetRawInfo(autofill::ADDRESS_HOME_STATE,
                      base::UTF8ToUTF16(PROFILE_HOME_STATE));
+  profile.SetRawInfo(autofill::COMPANY_NAME,
+                     base::UTF8ToUTF16(PROFILE_COMPANY_NAME));
+  profile.SetRawInfo(autofill::EMAIL_ADDRESS,
+                     base::UTF8ToUTF16(PROFILE_EMAIL_ADDRESS));
   profile.SetRawInfo(autofill::ADDRESS_HOME_ZIP,
                      base::UTF8ToUTF16(PROFILE_HOME_ZIP));
+  profile.SetRawInfo(autofill::PHONE_HOME_CITY_CODE,
+                     base::UTF8ToUTF16(PROFILE_PHONE_HOME_CITY_CODE));
+  profile.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                     base::UTF8ToUTF16(PROFILE_PHONE_HOME_WHOLE));
   personal_data_manager->SaveImportedProfile(profile);
+
+  autofill::CreditCard credit_card(base::GenerateGUID(),
+                                   "https://www.example.com/");
+  credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
+                         base::UTF8ToUTF16(PROFILE_CREDIT_CARD_NUMBER));
+  credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
+                         base::UTF8ToUTF16(PROFILE_CREDIT_CARD_NAME_FULL));
+  credit_card.SetRawInfo(autofill::CREDIT_CARD_EXP_MONTH,
+                         base::UTF8ToUTF16(PROFILE_CREDIT_CARD_EXP_MONTH));
+  credit_card.SetRawInfo(
+      autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
+      base::UTF8ToUTF16(PROFILE_CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  personal_data_manager->AddCreditCard(credit_card);
 }
 
 - (void)execute {
