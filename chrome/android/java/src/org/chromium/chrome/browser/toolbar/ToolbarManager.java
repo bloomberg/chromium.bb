@@ -1408,6 +1408,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @return Whether we should be updating the toolbar primary color based on updates from the
+     * Tab.
+     */
+    public boolean getShouldUpdateToolbarPrimaryColor() {
+        return mShouldUpdateToolbarPrimaryColor;
+    }
+
+    /**
      * @return The primary toolbar color.
      */
     public int getPrimaryColor() {
