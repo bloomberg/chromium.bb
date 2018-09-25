@@ -559,7 +559,7 @@ const base::Feature kSupervisedUserCommittedInterstitials{
 // Enables or disables sliding (showing or hiding) the top-chrome UIs with page
 // scrolls in tablet mode.
 const base::Feature kSlideTopChromeWithPageScrolls{
-    "SlideTopChromeWithPageScrolls", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SlideTopChromeWithPageScrolls", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables chrome://sys-internals.
 const base::Feature kSysInternals{"SysInternals",
