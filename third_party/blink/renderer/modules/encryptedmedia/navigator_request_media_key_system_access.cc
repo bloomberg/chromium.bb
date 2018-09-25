@@ -303,7 +303,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   Document* document = ToDocument(execution_context);
 
   if (!document->GetFrame() ||
-      !document->GetFrame()->IsFeatureEnabled(
+      !document->GetFrame()->DeprecatedIsFeatureEnabled(
           mojom::FeaturePolicyFeature::kEncryptedMedia)) {
     UseCounter::Count(document,
                       WebFeature::kEncryptedMediaDisabledByFeaturePolicy);

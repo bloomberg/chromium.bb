@@ -122,7 +122,8 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
       return true;
     }
 
-    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay)) {
+    if (!frame->DeprecatedIsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kAutoplay)) {
       return false;
     }
   }
@@ -445,7 +446,8 @@ void AutoplayPolicy::MaybeSetAutoplayInitiated() {
       break;
     }
 
-    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay))
+    if (!frame->DeprecatedIsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kAutoplay))
       break;
   }
 }

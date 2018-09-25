@@ -746,7 +746,7 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
 
   if (!async_) {
     if (GetExecutionContext()->IsDocument() &&
-        !GetDocument()->GetFrame()->IsFeatureEnabled(
+        !GetDocument()->GetFrame()->DeprecatedIsFeatureEnabled(
             mojom::FeaturePolicyFeature::kSyncXHR,
             ReportOptions::kReportOnFailure)) {
       LogConsoleError(GetExecutionContext(),

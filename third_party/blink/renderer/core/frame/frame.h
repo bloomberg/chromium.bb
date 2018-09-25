@@ -230,11 +230,12 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // Optionally sends a report to any registered reporting observers or
   // Report-To endpoints, via ReportFeaturePolicyViolation(), if the feature is
   // disabled.
-  bool IsFeatureEnabled(
+  // TODO(iclelland): Replace these with methods on SecurityContext/Document
+  bool DeprecatedIsFeatureEnabled(
       mojom::FeaturePolicyFeature,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport) const;
-  virtual void ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature) const {
-  }
+  virtual void DeprecatedReportFeaturePolicyViolation(
+      mojom::FeaturePolicyFeature) const {}
 
   // Called to make a frame inert or non-inert. A frame is inert when there
   // is a modal dialog displayed within an ancestor frame, and this frame

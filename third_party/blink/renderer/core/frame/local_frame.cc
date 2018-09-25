@@ -1441,7 +1441,7 @@ const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
   return reporting_service_;
 }
 
-void LocalFrame::ReportFeaturePolicyViolation(
+void LocalFrame::DeprecatedReportFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature) const {
   if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled())
     return;

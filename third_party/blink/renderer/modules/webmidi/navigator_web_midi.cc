@@ -102,7 +102,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
   UseCounter::CountCrossOriginIframe(
       document, WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
 
-  if (!document.GetFrame()->IsFeatureEnabled(
+  if (!document.GetFrame()->DeprecatedIsFeatureEnabled(
           mojom::FeaturePolicyFeature::kMidiFeature,
           ReportOptions::kReportOnFailure)) {
     UseCounter::Count(document, WebFeature::kMidiDisabledByFeaturePolicy);

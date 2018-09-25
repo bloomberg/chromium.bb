@@ -746,7 +746,7 @@ void Deprecation::CountDeprecationFeaturePolicy(
     return;
 
   // If the feature is allowed, don't log a warning.
-  if (frame->IsFeatureEnabled(feature))
+  if (frame->DeprecatedIsFeatureEnabled(feature))
     return;
 
   // If the feature is disabled, log a warning but only if the request is from a

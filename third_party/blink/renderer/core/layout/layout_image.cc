@@ -58,7 +58,7 @@ bool CheckForOptimizedImagePolicy(const LocalFrame& frame,
   // Invert the image if the document does not have the 'legacy-image-formats'
   // feature enabled, and the image is not one of the allowed formats.
   if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !frame.IsFeatureEnabled(
+      !frame.DeprecatedIsFeatureEnabled(
           mojom::FeaturePolicyFeature::kLegacyImageFormats)) {
     if (!new_image->IsAcceptableContentType()) {
       return true;
@@ -67,7 +67,8 @@ bool CheckForOptimizedImagePolicy(const LocalFrame& frame,
   // Invert the image if the document does not have the image-compression'
   // feature enabled and the image is not sufficiently-well-compressed.
   if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !frame.IsFeatureEnabled(mojom::FeaturePolicyFeature::kImageCompression)) {
+      !frame.DeprecatedIsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kImageCompression)) {
     if (!new_image->IsAcceptableCompressionRatio())
       return true;
   }
@@ -79,7 +80,8 @@ bool CheckForMaxDownscalingImagePolicy(const LocalFrame& frame,
                                        LayoutImage* layout_image) {
   DCHECK(new_image);
   if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() ||
-      frame.IsFeatureEnabled(mojom::FeaturePolicyFeature::kMaxDownscalingImage))
+      frame.DeprecatedIsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kMaxDownscalingImage))
     return false;
   if (auto* image = new_image->GetImage()) {
     // Invert the image if the image's size is more than 2 times bigger than the

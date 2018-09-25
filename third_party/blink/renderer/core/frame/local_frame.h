@@ -372,7 +372,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   SmoothScrollSequencer& GetSmoothScrollSequencer();
 
-  void ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature) const override;
+  // TODO(iclelland): Replace this with a method on Document
+  void DeprecatedReportFeaturePolicyViolation(
+      mojom::FeaturePolicyFeature) const override;
 
  private:
   friend class FrameNavigationDisabler;
