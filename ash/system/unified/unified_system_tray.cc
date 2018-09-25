@@ -19,6 +19,7 @@
 #include "ash/system/power/tray_power.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/ime_mode_view.h"
 #include "ash/system/unified/notification_counter_view.h"
@@ -148,6 +149,7 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       notification_counter_item_(new NotificationCounterView()),
       quiet_mode_view_(new QuietModeView()),
       time_view_(new tray::TimeTrayItemView(nullptr, shelf)) {
+  tray_container()->SetMargin(kUnifiedTrayContentPadding, 0);
   tray_container()->AddChildView(ime_mode_view_);
   tray_container()->AddChildView(notification_counter_item_);
   tray_container()->AddChildView(quiet_mode_view_);

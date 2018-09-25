@@ -200,16 +200,14 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   int top_edge = padding;
   int left_edge = 0;
   int bottom_edge = padding;
-  int right_edge = extend_border_to_edge ? kPaddingFromEdgeOfShelf : 0;
+  int right_edge =
+      !features::IsSystemTrayUnifiedEnabled() && extend_border_to_edge
+          ? kPaddingFromEdgeOfShelf
+          : 0;
   // In the new UI, since all corners are rounded, add some extra space so that
   // borders don't overlap.
   if (chromeos::switches::ShouldUseShelfNewUi())
-    left_edge += ShelfConstants::control_border_radius() / 3;
-
-  // In UnifiedSystemTray, clock is on the right, so extra padding should be on
-  // the left.
-  if (features::IsSystemTrayUnifiedEnabled())
-    std::swap(left_edge, right_edge);
+    right_edge += ShelfConstants::control_border_radius() / 3;
 
   // Swap edges if alignment is not horizontal (bottom-to-top).
   if (!shelf_->IsHorizontalAlignment()) {
