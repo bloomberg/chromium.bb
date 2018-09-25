@@ -302,13 +302,24 @@ chrome.test.getConfig(config => chrome.test.runTests([
     const url = 'http://127.0.0.1//extensions/api_test/debugger/inspected.html';
     chrome.tabs.create({url: url}, function(tab) {
       var debuggee = {tabId: tab.id};
-      var failed = false;
+      var finished = false;
+      var failure = '';
+      var expectingFrameNavigated = false;
+
+      function finishIfError() {
+        if (chrome.runtime.lastError) {
+          failure = chrome.runtime.lastError.message;
+          finish(true);
+          return true;
+        }
+        return false;
+      }
 
       function onAttach() {
         chrome.debugger.sendCommand(debuggee, 'Network.enable', null,
-            () => chrome.test.assertNoLastError());
+            finishIfError);
         chrome.debugger.sendCommand(debuggee, 'Page.enable', null,
-            () => chrome.test.assertNoLastError());
+            finishIfError);
         var offlineParams = { offline: true, latency: 0,
             downloadThroughput: 0, uploadThroughput: 0 };
         chrome.debugger.sendCommand(debuggee,
@@ -317,31 +328,50 @@ chrome.test.getConfig(config => chrome.test.runTests([
       }
 
       function onOffline() {
-        chrome.test.assertNoLastError();
+        if (finishIfError())
+          return;
+        expectingFrameNavigated = true;
         chrome.debugger.sendCommand(debuggee, 'Page.reload', null,
-            () => chrome.test.assertNoLastError());
+            finishIfError);
       }
 
-      function cleanup(detach) {
+      function finish(detach) {
+        if (finished)
+          return;
+        finished = true;
         chrome.debugger.onDetach.removeListener(onDetach);
         chrome.debugger.onEvent.removeListener(onEvent);
         if (detach)
           chrome.debugger.detach(debuggee);
-        chrome.tabs.remove(tab.id);
+        chrome.tabs.remove(tab.id, () => {
+          if (failure)
+            chrome.test.fail(failure);
+          else
+            chrome.test.succeed();
+        });
       }
 
       function onDetach() {
-        failed = true;
-        cleanup(false);
-        chrome.test.fail('Detached before navigated to error page');
+        failure = 'Detached before navigated to error page';
+        finish(false);
       }
 
       function onEvent(_, method, params) {
-        if (failed || method !== 'Page.frameNavigated')
+        if (!expectingFrameNavigated || method !== 'Page.frameNavigated')
           return;
-        cleanup(true);
-        chrome.test.assertNoLastError();
-        chrome.test.succeed();
+
+        if (finishIfError())
+          return;
+
+        expectingFrameNavigated = false;
+        chrome.debugger.sendCommand(
+            debuggee, 'Page.navigate', {url: 'about:blank'}, onNavigateDone);
+      }
+
+      function onNavigateDone() {
+        if (finishIfError())
+          return;
+        finish(true);
       }
 
       chrome.debugger.onDetach.addListener(onDetach);
