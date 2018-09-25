@@ -148,6 +148,7 @@ CREATE TABLE `buildTable` (
   KEY `build_config_index` (`build_config`),
   KEY `last_updated_index` (`last_updated`),
   KEY `start_time` (`start_time`),
+  KEY `build_table_config_branch_id_index` (`build_config`,`branch`,`id`),
   CONSTRAINT `buildTable_ibfk_1` FOREIGN KEY (`master_build_id`) REFERENCES `buildTable` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
