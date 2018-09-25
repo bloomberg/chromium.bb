@@ -535,7 +535,9 @@ const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
      switches::kTopChromeMDMaterialRefresh},
     {flag_descriptions::kTopChromeMdMaterialRefreshTouchOptimized,
      switches::kTopChromeMD,
-     switches::kTopChromeMDMaterialRefreshTouchOptimized}};
+     switches::kTopChromeMDMaterialRefreshTouchOptimized},
+    {flag_descriptions::kTopChromeMdMaterialRefreshDynamic,
+     switches::kTopChromeMD, switches::kTopChromeMDMaterialRefreshDynamic}};
 
 const FeatureEntry::Choice kNewTabButtonPositionChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},

@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_features.h"
 
 namespace {
@@ -74,6 +75,7 @@ void TabletModeClient::OnTabletModeToggled(bool enabled) {
 
   SetMobileLikeBehaviorEnabled(enabled);
 
+  ui::MaterialDesignController::OnTabletModeToggled(enabled);
   for (auto& observer : observers_)
     observer.OnTabletModeToggled(enabled);
 }
