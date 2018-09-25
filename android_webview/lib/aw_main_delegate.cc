@@ -118,9 +118,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // metadata and controls.
   cl->AppendSwitch(switches::kDisableMediaSessionAPI);
 
-  // Background Fetch is not supported.
-  cl->AppendSwitch(switches::kDisableBackgroundFetch);
-
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
@@ -191,6 +188,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   CommandLineHelper::AddDisabledFeature(
       *cl, autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout
                .name);
+
+  CommandLineHelper::AddDisabledFeature(*cl, features::kBackgroundFetch.name);
 
   android_webview::RegisterPathProvider();
 
