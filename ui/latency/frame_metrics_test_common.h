@@ -76,21 +76,6 @@ void AddPatternHelper(SharedWindowedAnalyzerClient* shared_client,
   }
 }
 
-// Same as AddPatternHelper, but uses each value (+1) as its own weight.
-// The "Cubed" name comes from the fact that the squared_accumulator
-// for the RMS will effectively be a "cubed accumulator".
-template <typename AnalyzerType>
-void AddCubedPatternHelper(SharedWindowedAnalyzerClient* shared_client,
-                           AnalyzerType* analyzer,
-                           const std::vector<uint32_t>& values) {
-  for (auto i : values) {
-    shared_client->window_begin += base::TimeDelta::FromMicroseconds(1);
-    shared_client->window_end += base::TimeDelta::FromMicroseconds(1);
-    // weight is i+1 to avoid divide by zero.
-    AddSamplesHelper(analyzer, i, i + 1, 1);
-  }
-}
-
 // Mean and RMS can be exact for most values, however SMR loses a bit of
 // precision internally when accumulating the roots. Make sure the SMR
 // precision is at least within .5 (i.e. rounded to the nearest integer
