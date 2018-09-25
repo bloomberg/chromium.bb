@@ -152,11 +152,11 @@ static SupportedCodecs GetSupportedCodecs(
   // TODO(sandersd): Distinguish these from those that are directly supported,
   // as those may offer a higher level of protection.
   if (!supported_video_codecs.empty() || !is_secure) {
-    supported_codecs |= media::EME_CODEC_WEBM_OPUS;
-    supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
-    supported_codecs |= media::EME_CODEC_MP4_FLAC;
+    supported_codecs |= media::EME_CODEC_OPUS;
+    supported_codecs |= media::EME_CODEC_VORBIS;
+    supported_codecs |= media::EME_CODEC_FLAC;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    supported_codecs |= media::EME_CODEC_MP4_AAC;
+    supported_codecs |= media::EME_CODEC_AAC;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
   }
 
@@ -164,15 +164,15 @@ static SupportedCodecs GetSupportedCodecs(
   for (const auto& codec : supported_video_codecs) {
     switch (codec) {
       case media::VideoCodec::kCodecVP8:
-        supported_codecs |= media::EME_CODEC_WEBM_VP8;
+        supported_codecs |= media::EME_CODEC_VP8;
         break;
       case media::VideoCodec::kCodecVP9:
-        supported_codecs |= media::EME_CODEC_WEBM_VP9;
-        supported_codecs |= media::EME_CODEC_COMMON_VP9;
+        supported_codecs |= media::EME_CODEC_LEGACY_VP9;
+        supported_codecs |= media::EME_CODEC_VP9;
         break;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
       case media::VideoCodec::kCodecH264:
-        supported_codecs |= media::EME_CODEC_MP4_AVC1;
+        supported_codecs |= media::EME_CODEC_AVC1;
         break;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
       default:
