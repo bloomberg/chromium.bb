@@ -795,11 +795,6 @@
       "chromedriver"
     ]
   },
-  "Win x64 Builder Perf": {
-    "additional_compile_targets": [
-      "chromedriver"
-    ]
-  },
   "android-builder-perf": {
     "additional_compile_targets": [
       "microdump_stackwalk",
@@ -1849,6 +1844,11 @@
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
+    ]
+  },
+  "win64-builder-perf": {
+    "additional_compile_targets": [
+      "chromedriver"
     ]
   }
 }

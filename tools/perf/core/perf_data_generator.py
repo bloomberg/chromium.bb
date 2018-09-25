@@ -47,7 +47,7 @@ BUILDER_ADDITIONAL_COMPILE_TARGETS = {
     'Linux Builder Perf': ['chromedriver'],
     'Mac Builder Perf': ['chromedriver'],
     'Win Builder Perf': ['chromedriver'],
-    'Win x64 Builder Perf': ['chromedriver'],
+    'win64-builder-perf': ['chromedriver'],
 }
 
 
