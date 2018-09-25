@@ -57,6 +57,10 @@ class ProcessCoordinationUnitImpl
   // from the destructor of FrameCoordinationUnitImpl.
   void RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
 
+  // Invoked when the state of a frame hosted by this process changes.
+  void OnFrameLifecycleStateChanged(FrameCoordinationUnitImpl* frame_cu,
+                                    mojom::LifecycleState old_state);
+
  private:
   // CoordinationUnitInterface implementation.
   void OnEventReceived(mojom::Event event) override;
@@ -65,12 +69,18 @@ class ProcessCoordinationUnitImpl
 
   void AddFrameImpl(FrameCoordinationUnitImpl* frame_cu);
 
+  void DecrementNumFrozenFrames();
+  void IncrementNumFrozenFrames();
+
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;
 
   base::ProcessId process_id_ = base::kNullProcessId;
 
   std::set<FrameCoordinationUnitImpl*> frame_coordination_units_;
+
+  // The number of frames hosted by this process that are frozen.
+  int num_frozen_frames_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessCoordinationUnitImpl);
 };
