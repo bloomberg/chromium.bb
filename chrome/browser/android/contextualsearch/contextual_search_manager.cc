@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "jni/ContextualSearchManager_jni.h"
 #include "net/url_request/url_fetcher_impl.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -84,7 +85,7 @@ ContextualSearchManager::ContextualSearchManager(JNIEnv* env,
       env, obj, reinterpret_cast<intptr_t>(this));
   Profile* profile = ProfileManager::GetActiveUserProfile();
   delegate_.reset(new ContextualSearchDelegate(
-      profile->GetRequestContext(),
+      profile->GetURLLoaderFactory(),
       TemplateURLServiceFactory::GetForProfile(profile),
       base::Bind(&ContextualSearchManager::OnSearchTermResolutionResponse,
                  base::Unretained(this)),
