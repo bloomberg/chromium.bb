@@ -37,13 +37,14 @@ class WebContentsViewAuraTest : public RenderViewHostTestHarness {
     GetNativeView()->SetBounds(kBounds);
     GetNativeView()->Show();
     root_window()->AddChild(GetNativeView());
-    other_window_.reset(aura::test::CreateTestWindowWithDelegateAndType(
+
+    occluding_window_.reset(aura::test::CreateTestWindowWithDelegateAndType(
         nullptr, aura::client::WINDOW_TYPE_NORMAL, 0, kBounds, root_window(),
         false));
   }
 
   void TearDown() override {
-    other_window_.reset();
+    occluding_window_.reset();
     RenderViewHostTestHarness::TearDown();
   }
 
@@ -54,8 +55,8 @@ class WebContentsViewAuraTest : public RenderViewHostTestHarness {
 
   aura::Window* GetNativeView() { return web_contents()->GetNativeView(); }
 
-  // |other_window| occludes |web_contents()| when it's shown.
-  std::unique_ptr<aura::Window> other_window_;
+  // |occluding_window_| occludes |web_contents()| when it's shown.
+  std::unique_ptr<aura::Window> occluding_window_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
@@ -82,9 +83,9 @@ TEST_F(WebContentsViewAuraTest, OccludeView) {
   scoped_feature_list.InitAndEnableFeature(features::kWebContentsOcclusion);
 
   EXPECT_EQ(web_contents()->GetVisibility(), Visibility::VISIBLE);
-  other_window_->Show();
+  occluding_window_->Show();
   EXPECT_EQ(web_contents()->GetVisibility(), Visibility::OCCLUDED);
-  other_window_->Hide();
+  occluding_window_->Hide();
   EXPECT_EQ(web_contents()->GetVisibility(), Visibility::VISIBLE);
 }
 
@@ -109,11 +110,93 @@ TEST_F(WebContentsViewAuraTest, MirroringEnabledForOccludedView) {
   scoped_feature_list.InitAndEnableFeature(features::kWebContentsOcclusion);
 
   EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
-  other_window_->Show();
+  occluding_window_->Show();
   EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::OCCLUDED);
   GetNativeView()->SetProperty(aura::client::kMirroringEnabledKey, true);
   EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
   GetNativeView()->SetProperty(aura::client::kMirroringEnabledKey, false);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::OCCLUDED);
+}
+
+TEST_F(WebContentsViewAuraTest, MirroringEnabledForHiddenViewParent) {
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  root_window()->Hide();
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::HIDDEN);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, true);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, false);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::HIDDEN);
+  root_window()->Show();
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, true);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, false);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+}
+
+TEST_F(WebContentsViewAuraTest, MirroringEnabledForOccludedViewParent) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kWebContentsOcclusion);
+
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  occluding_window_->Show();
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::OCCLUDED);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, true);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, false);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::OCCLUDED);
+}
+
+TEST_F(WebContentsViewAuraTest, MirroringEnabledForHiddenViewHost) {
+  // Make root_window() the host of GetNativeView(), and introduce an
+  // |intermediate_window| in the hierarchy between root_window() and
+  // GetNativeView().
+  std::unique_ptr<aura::Window> intermediate_window(
+      aura::test::CreateTestWindowWithDelegateAndType(
+          nullptr, aura::client::WINDOW_TYPE_NORMAL, 0, kBounds, root_window(),
+          false));
+  GetNativeView()->SetProperty(aura::client::kHostWindowKey, root_window());
+  intermediate_window->AddChild(GetNativeView());
+  root_window()->StackChildAtBottom(intermediate_window.get());
+  intermediate_window->Show();
+
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  root_window()->Hide();
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::HIDDEN);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, true);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, false);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::HIDDEN);
+  root_window()->Show();
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, true);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, false);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+}
+
+TEST_F(WebContentsViewAuraTest, MirroringEnabledForOccludedViewHost) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kWebContentsOcclusion);
+
+  // Make root_window() the host of GetNativeView(), and introduce an
+  // |intermediate_window| in the hierarchy between root_window() and
+  // GetNativeView().
+  std::unique_ptr<aura::Window> intermediate_window(
+      aura::test::CreateTestWindowWithDelegateAndType(
+          nullptr, aura::client::WINDOW_TYPE_NORMAL, 0, kBounds, root_window(),
+          false));
+  GetNativeView()->SetProperty(aura::client::kHostWindowKey, root_window());
+  intermediate_window->AddChild(GetNativeView());
+  root_window()->StackChildAtBottom(intermediate_window.get());
+  intermediate_window->Show();
+
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  occluding_window_->Show();
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::OCCLUDED);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, true);
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+  root_window()->SetProperty(aura::client::kMirroringEnabledKey, false);
   EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::OCCLUDED);
 }
 
