@@ -7,20 +7,21 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_base.h"
-#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/net/wifi_access_point_info_provider.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "net/nqe/effective_connection_type.h"
-#include "services/network/public/cpp/network_quality_tracker.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
+
+namespace net {
+class NetworkQualityEstimator;
+}
 
 namespace metrics {
 
@@ -28,22 +29,26 @@ SystemProfileProto::Network::EffectiveConnectionType
 ConvertEffectiveConnectionType(
     net::EffectiveConnectionType effective_connection_type);
 
-// Registers as observer with net::NetworkChangeNotifier and
-// network::NetworkQualityTracker to keep track of the network environment.
+// Registers as observer with net::NetworkChangeNotifier and keeps track of
+// the network environment.
 class NetworkMetricsProvider
     : public MetricsProvider,
-      public net::NetworkChangeNotifier::NetworkChangeObserver,
-      public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Class that provides |this| with the network quality estimator.
   class NetworkQualityEstimatorProvider {
    public:
     virtual ~NetworkQualityEstimatorProvider() {}
 
-    // Returns the network quality tracker by calling |callback|. The
-    // returned network quality tracker is guaranteed to be be non-null.
-    virtual void PostReplyNetworkQualityTracker(
-        base::OnceCallback<void(network::NetworkQualityTracker*)> callback) = 0;
+    // Returns the network quality estimator by calling |io_callback|. The
+    // returned network quality estimator may be nullptr. |io_callback| must be
+    // called on the IO thread. |io_callback| can be destroyed on IO thread only
+    // after |this| is destroyed.
+    virtual void PostReplyNetworkQualityEstimator(
+        base::Callback<void(net::NetworkQualityEstimator*)> io_callback) = 0;
+
+    // Returns the task runner on which |this| should be used and destroyed.
+    virtual scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() = 0;
 
    protected:
     NetworkQualityEstimatorProvider() {}
@@ -65,9 +70,12 @@ class NetworkMetricsProvider
   FRIEND_TEST_ALL_PREFIXES(NetworkMetricsProviderTest,
                            ECTAmbiguousOnConnectionTypeChange);
   FRIEND_TEST_ALL_PREFIXES(NetworkMetricsProviderTest,
-                           ECTNotAmbiguousOnUnknownOrOffline);
+                           ECTNotAmbiguousOnOffline);
   FRIEND_TEST_ALL_PREFIXES(NetworkMetricsProviderTest,
                            ConnectionTypeIsAmbiguous);
+
+  // Listens to the changes in the effective conection type.
+  class EffectiveConnectionTypeObserver;
 
   // MetricsProvider:
   void ProvideCurrentSessionData(
@@ -97,14 +105,9 @@ class NetworkMetricsProvider
   // Logs metrics that are functions of other metrics being uploaded.
   void LogAggregatedMetrics();
 
-  // network::NetworkQualityTracker::EffectiveConnectionTypeObserver:
-  void OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType type) override;
-
-  // Sets the network quality tracker. |network_quality_tracker| is guaranteed
-  // to be non-null.
-  void SetNetworkQualityTracker(
-      network::NetworkQualityTracker* network_quality_tracker);
+  // Notifies |this| that the effective connection type of the current network
+  // has changed to |type|.
+  void OnEffectiveConnectionTypeChanged(net::EffectiveConnectionType type);
 
   // True if |connection_type_| changed during the lifetime of the log.
   bool connection_type_is_ambiguous_;
@@ -131,8 +134,10 @@ class NetworkMetricsProvider
   std::unique_ptr<NetworkQualityEstimatorProvider>
       network_quality_estimator_provider_;
 
-  // Provides the network quality estimates. May be null.
-  network::NetworkQualityTracker* network_quality_tracker_;
+  // Listens to the changes in the effective connection type. Initialized and
+  // destroyed on the IO thread. May be null.
+  std::unique_ptr<EffectiveConnectionTypeObserver>
+      effective_connection_type_observer_;
 
   // Last known effective connection type.
   net::EffectiveConnectionType effective_connection_type_;
@@ -142,7 +147,7 @@ class NetworkMetricsProvider
   net::EffectiveConnectionType min_effective_connection_type_;
   net::EffectiveConnectionType max_effective_connection_type_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<NetworkMetricsProvider> weak_ptr_factory_;
 

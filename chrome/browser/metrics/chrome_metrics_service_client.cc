@@ -608,7 +608,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::NetworkMetricsProvider>(
-          std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>()));
+          std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>(
+              g_browser_process->io_thread())));
 
   // Currently, we configure OmniboxMetricsProvider to not log events to UMA
   // if there is a single incognito session visible. In the future, it may
@@ -729,7 +730,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 void ChromeMetricsServiceClient::RegisterUKMProviders() {
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<metrics::NetworkMetricsProvider>(
-          std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>()));
+          std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>(
+              g_browser_process->io_thread())));
 
 #if defined(OS_CHROMEOS)
   ukm_service_->RegisterMetricsProvider(
