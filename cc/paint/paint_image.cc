@@ -271,6 +271,14 @@ PaintImage::FrameKey PaintImage::GetKeyForFrame(size_t frame_index) const {
   return FrameKey(content_id, frame_index, subset_rect_);
 }
 
+SkColorType PaintImage::GetColorType() const {
+  if (paint_image_generator_)
+    return paint_image_generator_->GetSkImageInfo().colorType();
+  if (GetSkImage())
+    return GetSkImage()->colorType();
+  return kUnknown_SkColorType;
+}
+
 const std::vector<FrameMetadata>& PaintImage::GetFrameMetadata() const {
   DCHECK_EQ(animation_type_, AnimationType::ANIMATED);
   DCHECK(paint_image_generator_);

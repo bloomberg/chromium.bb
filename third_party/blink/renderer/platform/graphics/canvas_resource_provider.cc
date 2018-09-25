@@ -733,9 +733,11 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::CreateResource() {
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCache() {
-  if (IsAccelerated() && context_provider_wrapper_)
-    return context_provider_wrapper_->ContextProvider()->ImageDecodeCache();
-  return &Image::SharedCCDecodeCache();
+  if (IsAccelerated() && context_provider_wrapper_) {
+    return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
+        kN32_SkColorType);
+  }
+  return &Image::SharedCCDecodeCache(kN32_SkColorType);
 }
 
 void CanvasResourceProvider::RecycleResource(

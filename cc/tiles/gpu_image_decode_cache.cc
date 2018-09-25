@@ -196,12 +196,22 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
   // If we can't decode/scale directly, we will handle this in 2 steps.
   // Step 1: Decode at the nearest (larger) directly supported size or the
   // original size if nearest neighbor quality is requested.
+  // Step 2: Scale to |pixmap| size. If decoded image is half float backed and
+  // the device does not support image resize, decode to N32 color type and
+  // convert to F16 afterward.
   SkISize decode_size =
       is_nearest_neighbor
           ? SkISize::Make(paint_image.width(), paint_image.height())
           : supported_size;
   SkImageInfo decode_info =
       pixmap.info().makeWH(decode_size.width(), decode_size.height());
+  SkFilterQuality filter_quality = CalculateDesiredFilterQuality(draw_image);
+  bool decode_to_f16_using_n32_intermediate =
+      decode_info.colorType() == kRGBA_F16_SkColorType &&
+      !ImageDecodeCacheUtils::CanResizeF16Image(filter_quality);
+  if (decode_to_f16_using_n32_intermediate)
+    decode_info = decode_info.makeColorType(kN32_SkColorType);
+
   SkBitmap decode_bitmap;
   if (!decode_bitmap.tryAllocPixels(decode_info))
     return false;
@@ -211,9 +221,11 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
     return false;
   }
 
-  // Step 2: Scale to |pixmap| size.
-  return decode_pixmap.scalePixels(pixmap,
-                                   CalculateDesiredFilterQuality(draw_image));
+  if (decode_to_f16_using_n32_intermediate) {
+    return ImageDecodeCacheUtils::ScaleToHalfFloatPixmapUsingN32Intermediate(
+        decode_pixmap, &pixmap, filter_quality);
+  }
+  return decode_pixmap.scalePixels(pixmap, filter_quality);
 }
 
 // Takes ownership of the backing texture of an SkImage. This allows us to

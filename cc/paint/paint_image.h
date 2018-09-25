@@ -165,6 +165,9 @@ class CC_PAINT_EXPORT PaintImage {
   int height() const { return GetSkImage()->height(); }
   SkColorSpace* color_space() const { return GetSkImage()->colorSpace(); }
 
+  // Returns the color type of this image.
+  SkColorType GetColorType() const;
+
   // Returns a unique id for the pixel data for the frame at |frame_index|.
   FrameKey GetKeyForFrame(size_t frame_index) const;
 

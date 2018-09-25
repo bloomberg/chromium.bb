@@ -219,6 +219,8 @@ cc_component("cc") {
     "tiles/image_controller.h",
     "tiles/image_decode_cache.cc",
     "tiles/image_decode_cache.h",
+    "tiles/image_decode_cache_utils.cc",
+    "tiles/image_decode_cache_utils.h",
     "tiles/mipmap_util.cc",
     "tiles/mipmap_util.h",
     "tiles/picture_layer_tiling.cc",
