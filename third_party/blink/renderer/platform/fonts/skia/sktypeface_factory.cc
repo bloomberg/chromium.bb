@@ -15,7 +15,8 @@ namespace blink {
 sk_sp<SkTypeface> SkTypeface_Factory::FromFontConfigInterfaceIdAndTtcIndex(
     int config_id,
     int ttc_index) {
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_WIN)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_WIN) && \
+    !defined(OS_FUCHSIA)
   sk_sp<SkFontConfigInterface> fci(SkFontConfigInterface::RefGlobal());
   SkFontConfigInterface::FontIdentity font_identity;
   font_identity.fID = config_id;
