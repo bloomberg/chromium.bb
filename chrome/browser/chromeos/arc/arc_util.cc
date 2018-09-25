@@ -20,7 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -86,7 +86,7 @@ base::LazyInstance<std::set<AccountId>>::DestructorAtExit
 // Returns whether ARC can run on the filesystem mounted at |path|.
 // This function should run only on threads where IO operations are allowed.
 bool IsArcCompatibleFilesystem(const base::FilePath& path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // If it can be verified it is not on ecryptfs, then it is ok.
   struct statfs statfs_buf;
