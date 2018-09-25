@@ -258,8 +258,9 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
     case base::Value::Type::STRING: {
       std::string val;
       CHECK(value->GetAsString(&val));
-      return v8::String::NewFromUtf8(
-          isolate, val.c_str(), v8::String::kNormalString, val.length());
+      return v8::String::NewFromUtf8(isolate, val.c_str(),
+                                     v8::NewStringType::kNormal, val.length())
+          .ToLocalChecked();
     }
 
     case base::Value::Type::LIST:
@@ -325,8 +326,9 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Object(
 
     v8::Maybe<bool> maybe = result->CreateDataProperty(
         context,
-        v8::String::NewFromUtf8(isolate, key.c_str(), v8::String::kNormalString,
-                                key.length()),
+        v8::String::NewFromUtf8(isolate, key.c_str(),
+                                v8::NewStringType::kNormal, key.length())
+            .ToLocalChecked(),
         child_v8);
     if (!maybe.IsJust() || !maybe.FromJust())
       LOG(ERROR) << "Failed to set property with key " << key;

@@ -75,10 +75,13 @@ void WebstoreBindings::InlineInstallResponse(int install_id,
   v8::Context::Scope context_scope(context()->v8_context());
   v8::Local<v8::Value> argv[] = {
       v8::Integer::New(isolate, install_id), v8::Boolean::New(isolate, success),
-      v8::String::NewFromUtf8(isolate, error.c_str()),
+      v8::String::NewFromUtf8(isolate, error.c_str(),
+                              v8::NewStringType::kNormal)
+          .ToLocalChecked(),
       v8::String::NewFromUtf8(
-          isolate,
-          api::webstore::kInstallResultCodes[static_cast<int>(result)])};
+          isolate, api::webstore::kInstallResultCodes[static_cast<int>(result)],
+          v8::NewStringType::kNormal)
+          .ToLocalChecked()};
   context()->module_system()->CallModuleMethodSafe(
       "webstore", "onInstallResponse", arraysize(argv), argv);
 }
@@ -98,7 +101,8 @@ void WebstoreBindings::InlineInstallStageChanged(
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
   v8::Local<v8::Value> argv[] = {
-      v8::String::NewFromUtf8(isolate, stage_string)};
+      v8::String::NewFromUtf8(isolate, stage_string, v8::NewStringType::kNormal)
+          .ToLocalChecked()};
   context()->module_system()->CallModuleMethodSafe(
       "webstore", "onInstallStageChanged", arraysize(argv), argv);
 }
@@ -143,7 +147,9 @@ void WebstoreBindings::Install(
   if (!GetWebstoreItemIdFromFrame(
       frame, preferred_store_link_url, &webstore_item_id, &error)) {
     args.GetIsolate()->ThrowException(
-        v8::String::NewFromUtf8(args.GetIsolate(), error.c_str()));
+        v8::String::NewFromUtf8(args.GetIsolate(), error.c_str(),
+                                v8::NewStringType::kNormal)
+            .ToLocalChecked());
     return;
   }
 

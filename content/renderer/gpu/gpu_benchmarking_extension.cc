@@ -457,8 +457,10 @@ static void PrintDocumentTofile(v8::Isolate* isolate,
   if (!base::PathIsWritable(path.DirName())) {
     std::string msg("Path is not writable: ");
     msg.append(path.DirName().MaybeAsASCII());
-    isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(
-        isolate, msg.c_str(), v8::String::kNormalString, msg.length())));
+    isolate->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, msg.c_str(),
+                                v8::NewStringType::kNormal, msg.length())
+            .ToLocalChecked()));
     return;
   }
   SkFILEWStream wStream(path.MaybeAsASCII().c_str());
@@ -607,8 +609,10 @@ void GpuBenchmarking::PrintPagesToXPS(v8::Isolate* isolate,
   PrintDocumentTofile(isolate, filename, &MakeXPSDocument);
 #else
   std::string msg("PrintPagesToXPS is unsupported.");
-  isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(
-      isolate, msg.c_str(), v8::String::kNormalString, msg.length())));
+  isolate->ThrowException(v8::Exception::Error(
+      v8::String::NewFromUtf8(isolate, msg.c_str(), v8::NewStringType::kNormal,
+                              msg.length())
+          .ToLocalChecked()));
 #endif
 }
 
@@ -627,8 +631,10 @@ void GpuBenchmarking::PrintToSkPicture(v8::Isolate* isolate,
       !base::PathIsWritable(dirpath)) {
     std::string msg("Path is not writable: ");
     msg.append(dirpath.MaybeAsASCII());
-    isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(
-        isolate, msg.c_str(), v8::String::kNormalString, msg.length())));
+    isolate->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, msg.c_str(),
+                                v8::NewStringType::kNormal, msg.length())
+            .ToLocalChecked()));
     return;
   }
 

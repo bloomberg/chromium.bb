@@ -172,7 +172,9 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
   void GetChrome(const v8::FunctionCallbackInfo<v8::Value>& args) {
     // Check for the chrome property. If one doesn't exist, create one.
     v8::Local<v8::String> chrome_string(
-        v8::String::NewFromUtf8(context()->isolate(), "chrome"));
+        v8::String::NewFromUtf8(context()->isolate(), "chrome",
+                                v8::NewStringType::kInternalized)
+            .ToLocalChecked());
     v8::Local<v8::Object> global(context()->v8_context()->Global());
     v8::Local<v8::Value> chrome(global->Get(chrome_string));
     if (chrome->IsUndefined()) {
