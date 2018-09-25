@@ -339,7 +339,9 @@ scheduler::WorkerScheduler* WorkerThread::GetScheduler() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 WorkerThread::GetControlTaskRunner() {
-  return worker_scheduler_->GetWorkerThreadScheduler()->ControlTaskQueue();
+  return worker_scheduler_->GetWorkerThreadScheduler()
+      ->ControlTaskQueue()
+      ->task_runner();
 }
 
 void WorkerThread::ChildThreadStartedOnWorkerThread(WorkerThread* child) {

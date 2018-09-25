@@ -123,23 +123,6 @@ scoped_refptr<SingleThreadTaskRunner> TaskQueue::CreateTaskRunner(
   return impl_->CreateTaskRunner(task_type);
 }
 
-bool TaskQueue::RunsTasksInCurrentSequence() const {
-  return task_runner()->RunsTasksInCurrentSequence();
-}
-
-bool TaskQueue::PostDelayedTask(const Location& from_here,
-                                OnceClosure task,
-                                TimeDelta delay) {
-  return task_runner()->PostDelayedTask(from_here, std::move(task), delay);
-}
-
-bool TaskQueue::PostNonNestableDelayedTask(const Location& from_here,
-                                           OnceClosure task,
-                                           TimeDelta delay) {
-  return task_runner()->PostNonNestableDelayedTask(from_here, std::move(task),
-                                                   delay);
-}
-
 std::unique_ptr<TaskQueue::QueueEnabledVoter>
 TaskQueue::CreateQueueEnabledVoter() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
