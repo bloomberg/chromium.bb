@@ -139,6 +139,7 @@ if (enable_pdf) {
       sources += [
         "pdfium/findtext_unittest.cc",
         "pdfium/pdfium_engine_exports_unittest.cc",
+        "pdfium/pdfium_print_unittest.cc",
       ]
       include_dirs = [ "//third_party/pdfium" ]
 
