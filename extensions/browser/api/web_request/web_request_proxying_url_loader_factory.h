@@ -193,6 +193,7 @@ class WebRequestProxyingURLLoaderFactory
   void OnTargetFactoryError();
   void OnProxyBindingError();
   void RemoveRequest(int32_t network_service_request_id, uint64_t request_id);
+  void MaybeRemoveProxy();
 
   void* const browser_context_;
   content::ResourceContext* const resource_context_;
