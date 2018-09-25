@@ -376,7 +376,7 @@ cc_component("cc") {
   defines = [ "CC_IMPLEMENTATION=1" ]
 }
 
-cc_static_library("test_support") {
+cc_test_static_library("test_support") {
   testonly = true
   sources = [
     "test/animation_test_common.cc",

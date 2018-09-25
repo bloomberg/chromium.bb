@@ -13,6 +13,7 @@
 #include <set>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
@@ -666,11 +667,11 @@ bool PictureLayerImpl::UpdateTiles() {
         !layer_tree_impl()->SmoothnessTakesPriority();
   }
 
-  static const Occlusion kEmptyOcclusion;
+  static const base::NoDestructor<Occlusion> kEmptyOcclusion;
   const Occlusion& occlusion_in_content_space =
       layer_tree_impl()->settings().use_occlusion_for_tile_prioritization
           ? draw_properties().occlusion_in_content_space
-          : kEmptyOcclusion;
+          : *kEmptyOcclusion;
 
   // Pass |occlusion_in_content_space| for |occlusion_in_layer_space| since
   // they are the same space in picture layer, as contents scale is always 1.

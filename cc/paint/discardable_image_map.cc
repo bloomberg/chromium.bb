@@ -12,6 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/containers/adapters.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_buffer.h"
@@ -456,9 +457,9 @@ void DiscardableImageMap::GetDiscardableImagesInRect(
 
 const DiscardableImageMap::Rects& DiscardableImageMap::GetRectsForImage(
     PaintImage::Id image_id) const {
-  static const Rects kEmptyRects;
+  static const base::NoDestructor<Rects> kEmptyRects;
   auto it = image_id_to_rects_.find(image_id);
-  return it == image_id_to_rects_.end() ? kEmptyRects : it->second;
+  return it == image_id_to_rects_.end() ? *kEmptyRects : it->second;
 }
 
 void DiscardableImageMap::Reset() {
