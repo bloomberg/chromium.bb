@@ -63,20 +63,20 @@ v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
       v8::Local<v8::Function>::Cast(listener);
   v8::Local<v8::Object> this_value = context->Global();
 
-  v8::Local<v8::Object> event_object;
-  if (!js_event->ToObject(context).ToLocal(&event_object))
-    return v8::Null(GetIsolate());
-  auto private_error = V8PrivateProperty::GetErrorEventError(GetIsolate());
-  v8::Local<v8::Value> error;
-  if (!private_error.GetOrUndefined(event_object).ToLocal(&error) ||
-      error->IsUndefined())
-    error = v8::Null(GetIsolate());
+  // The error attribute should be initialized to null for dedicated workers.
+  // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
+  ScriptValue error = error_event->error(script_state);
+  v8::Local<v8::Value> error_value =
+      (error.IsEmpty() ||
+       error_event->target()->InterfaceName() == EventTargetNames::Worker)
+          ? v8::Local<v8::Value>(v8::Null(GetIsolate()))
+          : error.V8Value();
 
   v8::Local<v8::Value> parameters[5] = {
       V8String(GetIsolate(), error_event->message()),
       V8String(GetIsolate(), error_event->filename()),
       v8::Integer::New(GetIsolate(), error_event->lineno()),
-      v8::Integer::New(GetIsolate(), error_event->colno()), error};
+      v8::Integer::New(GetIsolate(), error_event->colno()), error_value};
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
 
