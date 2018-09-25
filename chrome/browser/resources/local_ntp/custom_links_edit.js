@@ -121,19 +121,6 @@ function prepopulateFields(rid) {
 
 
 /**
- * Disables the "Done" button until the URL field is modified.
- */
-function disableSubmitUntilTextInput() {
-  $(IDS.DONE).disabled = true;
-  let reenable = (event) => {
-    $(IDS.DONE).disabled = false;
-    $(IDS.URL_FIELD).removeEventListener('input', reenable);
-  };
-  $(IDS.URL_FIELD).addEventListener('input', reenable);
-}
-
-
-/**
  * Shows the invalid URL error message until the URL field is modified.
  */
 function showInvalidUrlUntilTextInput() {
@@ -243,7 +230,7 @@ function handlePostMessage(event) {
       document.title = addLinkTitle;
       $(IDS.DIALOG_TITLE).textContent = addLinkTitle;
       $(IDS.DELETE).disabled = true;
-      disableSubmitUntilTextInput();
+      $(IDS.DONE).disabled = true;
       // Set accessibility names.
       $(IDS.DONE).setAttribute('aria-label', addLinkTitle);
       $(IDS.DONE).title = addLinkTitle;
@@ -352,6 +339,9 @@ function init() {
       .addEventListener('focusin', () => changeColor(IDS.URL_FIELD_NAME));
   $(IDS.URL_FIELD)
       .addEventListener('blur', () => changeColor(IDS.URL_FIELD_NAME));
+  // Disables the "Done" button when the URL field is empty.
+  $(IDS.URL_FIELD).addEventListener('input',
+      () => $(IDS.DONE).disabled = ($(IDS.URL_FIELD).value.trim() === ''));
 
   $(IDS.EDIT_DIALOG).showModal();
 
