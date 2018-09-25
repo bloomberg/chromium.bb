@@ -71,6 +71,12 @@ bool RelaunchRequiredDialogView::Close() {
   return true;
 }
 
+int RelaunchRequiredDialogView::GetDefaultDialogButton() const {
+  // Do not focus either button so that the user doesn't relaunch or dismiss by
+  // accident if typing when the dialog appears.
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 base::string16 RelaunchRequiredDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK

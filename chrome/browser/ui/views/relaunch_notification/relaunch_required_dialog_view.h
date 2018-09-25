@@ -41,6 +41,7 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
   // views::DialogDelegateView:
   bool Accept() override;
   bool Close() override;
+  int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
