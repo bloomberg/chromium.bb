@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
@@ -73,6 +74,13 @@ void JNI_ExploreSitesBridge_GetEspCatalog(
   service->GetCatalog(
       base::BindOnce(&CatalogReady, ScopedJavaGlobalRef<jobject>(j_result_obj),
                      ScopedJavaGlobalRef<jobject>(j_callback_obj)));
+}
+
+// static
+jint JNI_ExploreSitesBridge_GetVariation(JNIEnv* env,
+                                         const JavaParamRef<jclass>& j_caller) {
+  return static_cast<jint>(
+      chrome::android::explore_sites::GetExploreSitesVariation());
 }
 
 }  // namespace explore_sites

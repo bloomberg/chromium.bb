@@ -42,10 +42,11 @@ public class ExperimentalExploreSitesSection {
     }
 
     private void initialize() {
-        mCategorySection = mExploreSection.findViewById(R.id.explore_sites_tiles);
+        mCategorySection = mExploreSection.findViewById(R.id.experimental_explore_sites_tiles);
         ExploreSitesBridgeExperimental.getNtpCategories(mProfile, this::initializeTiles);
 
-        View moreCategoriesButton = mExploreSection.findViewById(R.id.explore_sites_more_button);
+        View moreCategoriesButton =
+                mExploreSection.findViewById(R.id.experimental_explore_sites_more_button);
         moreCategoriesButton.setOnClickListener(
                 (View v)
                         -> mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,

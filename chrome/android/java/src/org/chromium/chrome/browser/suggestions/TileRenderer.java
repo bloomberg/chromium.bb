@@ -24,9 +24,9 @@ import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
-import org.chromium.chrome.browser.widget.tile.TileWithTextView;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 
@@ -49,7 +49,7 @@ public class TileRenderer {
     private final ImageFetcher mImageFetcher;
     private final RoundedIconGenerator mIconGenerator;
 
-    @TileWithTextView.Style
+    @TileStyle
     private final int mStyle;
     private final int mTitleLinesCount;
     private final int mDesiredIconSize;
@@ -58,8 +58,8 @@ public class TileRenderer {
     @LayoutRes
     private final int mLayout;
 
-    public TileRenderer(Context context, @TileWithTextView.Style int style, int titleLines,
-            ImageFetcher imageFetcher) {
+    public TileRenderer(
+            Context context, @TileStyle int style, int titleLines, ImageFetcher imageFetcher) {
         mImageFetcher = imageFetcher;
         mStyle = style;
         mTitleLinesCount = titleLines;
@@ -133,7 +133,7 @@ public class TileRenderer {
         SuggestionsTileView tileView =
                 (SuggestionsTileView) LayoutInflater.from(parentView.getContext())
                         .inflate(mLayout, parentView, false);
-        tileView.initialize(tile, mTitleLinesCount, mStyle);
+        tileView.initialize(tile, mTitleLinesCount);
 
         // Note: It is important that the callbacks below don't keep a reference to the tile or
         // modify them as there is no guarantee that the same tile would be used to update the view.
@@ -206,9 +206,9 @@ public class TileRenderer {
     @LayoutRes
     private int getLayout() {
         switch (mStyle) {
-            case TileWithTextView.Style.MODERN:
+            case TileStyle.MODERN:
                 return R.layout.suggestions_tile_view;
-            case TileWithTextView.Style.MODERN_CONDENSED:
+            case TileStyle.MODERN_CONDENSED:
                 return R.layout.suggestions_tile_view_condensed;
         }
         assert false;

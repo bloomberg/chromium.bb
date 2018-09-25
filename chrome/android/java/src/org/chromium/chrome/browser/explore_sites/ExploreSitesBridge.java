@@ -37,6 +37,15 @@ public class ExploreSitesBridge {
         finishedCallback.onResult(null);
     }
 
+    /**
+     * Gets the current Finch variation that is configured by flag or experiment.
+     */
+    @ExploreSitesVariation
+    public static int getVariation() {
+        return nativeGetVariation();
+    }
+
+    static native int nativeGetVariation();
     private static native void nativeGetEspCatalog(Profile profile,
             List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);
 }

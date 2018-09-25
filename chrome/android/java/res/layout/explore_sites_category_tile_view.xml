@@ -3,17 +3,16 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<!-- A site suggestion tile. -->
-<org.chromium.chrome.browser.suggestions.SuggestionsTileView
+<org.chromium.chrome.browser.explore_sites.ExploreSitesCategoryTileView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="@dimen/tile_view_width_condensed"
+    android:layout_width="@dimen/tile_view_width"
     android:layout_height="wrap_content"
     android:paddingStart="@dimen/tile_view_padding"
     android:paddingEnd="@dimen/tile_view_padding" >
       <include
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        layout="@layout/tile_view_modern_condensed" />
-</org.chromium.chrome.browser.suggestions.SuggestionsTileView>
+        layout="@layout/tile_view_modern" />
+</org.chromium.chrome.browser.explore_sites.ExploreSitesCategoryTileView>
