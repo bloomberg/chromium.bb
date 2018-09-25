@@ -113,8 +113,8 @@ void WebViewAutofillClientIOS::ConfirmSaveAutofillProfile(
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
-    const base::RepeatingClosure& callback) {
-  [bridge_ confirmSaveCreditCardLocally:card callback:callback];
+    base::OnceClosure callback) {
+  [bridge_ confirmSaveCreditCardLocally:card callback:std::move(callback)];
 }
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
@@ -128,7 +128,7 @@ void WebViewAutofillClientIOS::ConfirmCreditCardFillAssist(
     const base::Closure& callback) {}
 
 void WebViewAutofillClientIOS::LoadRiskData(
-    const base::Callback<void(const std::string&)>& callback) {}
+    base::OnceCallback<void(const std::string&)> callback) {}
 
 bool WebViewAutofillClientIOS::HasCreditCardScanFeature() {
   return false;

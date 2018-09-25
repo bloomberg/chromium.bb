@@ -243,7 +243,7 @@ void ChromeAutofillClient::ConfirmSaveAutofillProfile(
 
 void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
 #if defined(OS_ANDROID)
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
@@ -251,14 +251,14 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
               false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
               /*upload_save_card_callback=*/
               base::OnceCallback<void(const base::string16&)>(),
-              /*local_save_card_callback=*/callback, GetPrefs())));
+              /*local_save_card_callback=*/std::move(callback), GetPrefs())));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(
       web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->ShowBubbleForLocalSave(card, callback);
+  controller->ShowBubbleForLocalSave(card, std::move(callback));
 #endif
 }
 
@@ -307,8 +307,8 @@ void ChromeAutofillClient::ConfirmCreditCardFillAssist(
 }
 
 void ChromeAutofillClient::LoadRiskData(
-    const base::Callback<void(const std::string&)>& callback) {
-  ::autofill::LoadRiskData(0, web_contents(), callback);
+    base::OnceCallback<void(const std::string&)> callback) {
+  ::autofill::LoadRiskData(0, web_contents(), std::move(callback));
 }
 
 bool ChromeAutofillClient::HasCreditCardScanFeature() {

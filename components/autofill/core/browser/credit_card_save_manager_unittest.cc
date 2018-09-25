@@ -92,7 +92,7 @@ class MockAutofillClient : public TestAutofillClient {
   ~MockAutofillClient() override {}
 
   MOCK_METHOD2(ConfirmSaveCreditCardLocally,
-               void(const CreditCard& card, const base::Closure& callback));
+               void(const CreditCard& card, base::OnceClosure callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);

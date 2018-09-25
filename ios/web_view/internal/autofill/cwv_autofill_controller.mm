@@ -305,20 +305,18 @@
 }
 
 - (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
-                            callback:(const base::RepeatingClosure&)callback {
+                            callback:(base::OnceClosure)callback {
   if ([_delegate respondsToSelector:@selector
                  (autofillController:decidePolicyForLocalStorageOfCreditCard
                                        :decisionHandler:)]) {
     CWVCreditCard* card = [[CWVCreditCard alloc] initWithCreditCard:creditCard];
-    __block base::RepeatingClosure scopedCallback = callback;
+    __block base::OnceClosure scopedCallback = std::move(callback);
     [_delegate autofillController:self
         decidePolicyForLocalStorageOfCreditCard:card
                                 decisionHandler:^(CWVStoragePolicy policy) {
                                   if (policy == CWVStoragePolicyAllow) {
-                                    if (scopedCallback) {
-                                      scopedCallback.Run();
-                                      scopedCallback.Reset();
-                                    }
+                                    if (scopedCallback)
+                                      std::move(scopedCallback).Run();
                                   }
                                 }];
   }

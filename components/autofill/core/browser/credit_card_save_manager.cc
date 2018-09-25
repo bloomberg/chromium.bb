@@ -88,9 +88,10 @@ void CreditCardSaveManager::OfferCardLocalSave(const CreditCard& card) {
   if (observer_for_testing_)
     observer_for_testing_->OnOfferLocalSave();
   client_->ConfirmSaveCreditCardLocally(
-      card, base::Bind(base::IgnoreResult(
-                           &PersonalDataManager::OnAcceptedLocalCreditCardSave),
-                       base::Unretained(personal_data_manager_), card));
+      card,
+      base::BindOnce(base::IgnoreResult(
+                         &PersonalDataManager::OnAcceptedLocalCreditCardSave),
+                     base::Unretained(personal_data_manager_), card));
 }
 
 void CreditCardSaveManager::AttemptToOfferCardUploadSave(
@@ -263,8 +264,8 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
         base::BindOnce(&CreditCardSaveManager::OnUserDidAcceptUpload,
                        weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(
-        base::Bind(&CreditCardSaveManager::OnDidGetUploadRiskData,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CreditCardSaveManager::OnDidGetUploadRiskData,
+                       weak_ptr_factory_.GetWeakPtr()));
     upload_decision_metrics_ |= AutofillMetrics::UPLOAD_OFFERED;
     AutofillMetrics::LogUploadOfferedCardOriginMetric(
         uploading_local_card_ ? AutofillMetrics::OFFERING_UPLOAD_OF_LOCAL_CARD

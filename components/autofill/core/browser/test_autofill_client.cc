@@ -100,8 +100,7 @@ void TestAutofillClient::ConfirmSaveAutofillProfile(
 
 void TestAutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
-    const base::Closure& callback) {
-}
+    base::OnceClosure callback) {}
 
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
@@ -118,8 +117,8 @@ void TestAutofillClient::ConfirmCreditCardFillAssist(
 }
 
 void TestAutofillClient::LoadRiskData(
-    const base::Callback<void(const std::string&)>& callback) {
-  callback.Run("some risk data");
+    base::OnceCallback<void(const std::string&)> callback) {
+  std::move(callback).Run("some risk data");
 }
 
 bool TestAutofillClient::HasCreditCardScanFeature() {

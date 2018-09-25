@@ -31,12 +31,12 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     base::OnceCallback<void(const base::string16&)> upload_save_card_callback,
-    base::Closure local_save_card_callback,
+    base::OnceClosure local_save_card_callback,
     PrefService* pref_service)
     : ConfirmInfoBarDelegate(),
       upload_(upload),
       upload_save_card_callback_(std::move(upload_save_card_callback)),
-      local_save_card_callback_(local_save_card_callback),
+      local_save_card_callback_(std::move(local_save_card_callback)),
       pref_service_(pref_service),
       had_user_interaction_(false),
       issuer_icon_id_(CreditCard::IconResourceId(card.network())),
@@ -155,12 +155,10 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::Accept() {
-  if (upload_) {
+  if (upload_)
     std::move(upload_save_card_callback_).Run(base::string16());
-  } else {
-    local_save_card_callback_.Run();
-    local_save_card_callback_.Reset();
-  }
+  else
+    std::move(local_save_card_callback_).Run();
   LogUserAction(AutofillMetrics::INFOBAR_ACCEPTED);
   return true;
 }

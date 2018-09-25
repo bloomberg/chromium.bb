@@ -114,7 +114,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     controller()->ShowBubbleForLocalSave(
         card ? CreditCard(*card)
              : autofill::test::GetCreditCard(),  // Visa by default
-        base::Bind(&LocalSaveCardCallback));
+        base::BindOnce(&LocalSaveCardCallback));
   }
 
   void ShowUploadBubble(bool should_request_name_from_user = false) {

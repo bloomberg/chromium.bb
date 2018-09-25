@@ -83,8 +83,8 @@ CvcUnmaskViewController::CvcUnmaskViewController(
 CvcUnmaskViewController::~CvcUnmaskViewController() {}
 
 void CvcUnmaskViewController::LoadRiskData(
-    const base::Callback<void(const std::string&)>& callback) {
-  autofill::LoadRiskData(0, web_contents_, callback);
+    base::OnceCallback<void(const std::string&)> callback) {
+  autofill::LoadRiskData(0, web_contents_, std::move(callback));
 }
 
 void CvcUnmaskViewController::ShowUnmaskPrompt(
