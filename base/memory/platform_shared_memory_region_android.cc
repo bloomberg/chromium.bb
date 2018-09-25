@@ -6,8 +6,10 @@
 
 #include <sys/mman.h>
 
+#include "base/bits.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/process/process_metrics.h"
 #include "third_party/ashmem/ashmem.h"
 
 namespace base {
@@ -159,7 +161,9 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   if (size == 0)
     return {};
 
-  if (size > static_cast<size_t>(std::numeric_limits<int>::max()))
+  // Align size as required by ashmem_create_region() API documentation.
+  size_t rounded_size = bits::Align(size, GetPageSize());
+  if (rounded_size > static_cast<size_t>(std::numeric_limits<int>::max()))
     return {};
 
   CHECK_NE(mode, Mode::kReadOnly) << "Creating a region in read-only mode will "
@@ -168,7 +172,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   UnguessableToken guid = UnguessableToken::Create();
 
   ScopedFD fd(ashmem_create_region(
-      SharedMemoryTracker::GetDumpNameForTracing(guid).c_str(), size));
+      SharedMemoryTracker::GetDumpNameForTracing(guid).c_str(), rounded_size));
   if (!fd.is_valid()) {
     DPLOG(ERROR) << "ashmem_create_region failed";
     return {};
