@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
@@ -234,42 +233,36 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
         skia_image = SkImage::MakeFromRaster(src_data_, nullptr, nullptr);
       }
       DCHECK(skia_image->colorSpace());
-      skia_image = skia_image->makeColorSpace(blob_color_space);
       image_ = StaticBitmapImage::Create(skia_image);
+      image_ = image_->ConvertToColorSpace(blob_color_space,
+                                           skia_image->colorType());
+      skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
     }
 
-    if (skia_image->peekPixels(&src_data_))
+    if (skia_image->peekPixels(&src_data_)) {
       static_bitmap_image_loaded_ = true;
 
-    // If the source image is 8 bit per channel but the blob is requested in
-    // 16 bpc PNG, we need to ensure the color type of the pixmap is
-    // kRGBA_F16_SkColorType to kick in 16 bit encoding in SkPngEncoder. Since
-    // SkPixmap only holds a pointer to data, we need a helper data member here.
-    if (mime_type_ == kMimeTypePng &&
-        encode_options_.pixelFormat() == kRGBA16ImagePixelFormatName &&
-        src_data_.colorType() == kN32_SkColorType) {
-      size_t data_length = src_data_.width() * src_data_.height() *
-                           SkColorTypeBytesPerPixel(kRGBA_F16_SkColorType);
-      png_16bit_data_helper_ = SkData::MakeUninitialized(data_length);
-      SkColorSpaceXform::ColorFormat src_format =
-          SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-      if (kN32_SkColorType == kBGRA_8888_SkColorType)
-        src_format = SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat;
-      if (SkColorSpaceXform::Apply(
-              src_data_.colorSpace(),
-              SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat,
-              png_16bit_data_helper_->writable_data(), src_data_.colorSpace(),
-              src_format, src_data_.addr(),
-              src_data_.width() * src_data_.height(),
-              SkColorSpaceXform::AlphaOp::kPreserve_AlphaOp)) {
+      // If the source image is 8 bit per channel but the blob is requested in
+      // 16 bpc PNG, we need to ensure the color type of the pixmap is
+      // kRGBA_F16_SkColorType to kick in 16 bit encoding in SkPngEncoder. Since
+      // SkPixmap only holds a pointer to data, we need a helper data member
+      // here.
+      if (mime_type_ == kMimeTypePng &&
+          encode_options_.pixelFormat() == kRGBA16ImagePixelFormatName &&
+          src_data_.colorType() == kN32_SkColorType) {
+        size_t data_length = src_data_.width() * src_data_.height() *
+                             SkColorTypeBytesPerPixel(kRGBA_F16_SkColorType);
+        png_16bit_data_helper_ = SkData::MakeUninitialized(data_length);
         SkImageInfo info = SkImageInfo::Make(
             src_data_.width(), src_data_.height(), kRGBA_F16_SkColorType,
             src_data_.alphaType(), src_data_.info().refColorSpace());
-        src_data_.reset(info, png_16bit_data_helper_->data(),
-                        info.minRowBytes());
+        SkPixmap src_data_f16(info, png_16bit_data_helper_->data(),
+                              info.minRowBytes());
+        src_data_.readPixels(src_data_f16);
+        src_data_ = src_data_f16;
+        skia_image = SkImage::MakeFromRaster(src_data_, nullptr, nullptr);
+        image_ = StaticBitmapImage::Create(skia_image);
       }
-      skia_image = SkImage::MakeFromRaster(src_data_, nullptr, nullptr);
-      image_ = StaticBitmapImage::Create(skia_image);
     }
   }
 
