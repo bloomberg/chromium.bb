@@ -36,7 +36,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_extension_loader.h"
 #include "chrome/browser/chromeos/accessibility/dictation_chromeos.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler.h"
+#include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler_delegate.h"
 #include "chrome/browser/chromeos/accessibility/switch_access_event_handler.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -80,6 +80,7 @@
 #include "extensions/common/host_id.h"
 #include "mash/public/mojom/launchable.mojom.h"
 #include "media/audio/sounds/sounds_manager.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/cpp/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -773,14 +774,6 @@ void AccessibilityManager::RequestSelectToSpeakStateChange() {
 
 void AccessibilityManager::OnSelectToSpeakStateChanged(
     ash::mojom::SelectToSpeakState state) {
-  // Forward the state change event to select_to_speak_event_handler_.
-  // The extension may have requested that the handler enter SELECTING state.
-  // Prepare to start capturing events from stylus, mouse or touch.
-  if (select_to_speak_event_handler_) {
-    select_to_speak_event_handler_->SetSelectToSpeakStateSelecting(
-        state == ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting);
-  }
-
   accessibility_controller_->SetSelectToSpeakState(state);
 
   if (select_to_speak_state_observer_for_test_)
@@ -798,6 +791,7 @@ void AccessibilityManager::OnSelectToSpeakChanged() {
 
   if (select_to_speak_enabled_ == enabled)
     return;
+
   select_to_speak_enabled_ = enabled;
 
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK,
@@ -806,11 +800,13 @@ void AccessibilityManager::OnSelectToSpeakChanged() {
 
   if (enabled) {
     select_to_speak_loader_->Load(profile_, base::Closure() /* done_cb */);
-    select_to_speak_event_handler_.reset(
-        new chromeos::SelectToSpeakEventHandler());
+    // Construct a delegate to connect SelectToSpeak and its EventHandler in
+    // ash.
+    select_to_speak_event_handler_delegate_ =
+        std::make_unique<chromeos::SelectToSpeakEventHandlerDelegate>();
   } else {
     select_to_speak_loader_->Unload();
-    select_to_speak_event_handler_.reset(nullptr);
+    select_to_speak_event_handler_delegate_.reset();
   }
 }
 
