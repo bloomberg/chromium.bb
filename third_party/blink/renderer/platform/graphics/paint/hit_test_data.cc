@@ -19,11 +19,14 @@ void HitTestData::RecordTouchActionRect(GraphicsContext& context,
   if (paint_controller.DisplayItemConstructionIsDisabled())
     return;
 
-  // A display item must be created to ensure a paint chunk exists. For example,
-  // without this, an empty div with a transform will incorrectly use the
-  // parent paint chunk instead of creating a new one.
-  paint_controller.CreateAndAppend<DrawingDisplayItem>(
-      client, DisplayItem::kHitTest, nullptr, false);
+  if (!paint_controller.UseCachedDrawingIfPossible(client,
+                                                   DisplayItem::kHitTest)) {
+    // A display item must be created to ensure a paint chunk exists. For
+    // example, without this, an empty div with a transform will incorrectly use
+    // the parent paint chunk instead of creating a new one.
+    paint_controller.CreateAndAppend<DrawingDisplayItem>(
+        client, DisplayItem::kHitTest, nullptr, false);
+  }
 
   auto& chunk = paint_controller.CurrentPaintChunk();
   chunk.EnsureHitTestData().touch_action_rects.push_back(action);
