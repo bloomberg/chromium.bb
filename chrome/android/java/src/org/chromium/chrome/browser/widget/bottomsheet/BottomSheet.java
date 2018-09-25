@@ -261,9 +261,6 @@ public class BottomSheet extends FrameLayout
     /** Whether or not scroll events are currently being blocked for the 'velocity' swipe logic. */
     private boolean mVelocityLogicBlockSwipe;
 
-    /** Whether or not the slim peek UI should be used for the current sheet content. */
-    private boolean mUseSlimPeek;
-
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
      * Home.
@@ -310,11 +307,6 @@ public class BottomSheet extends FrameLayout
          * @return Whether the peek state is enabled.
          */
         boolean isPeekStateEnabled();
-
-        /**
-         * @return Whether a slimmer peek UI should be used for this content.
-         */
-        boolean useSlimPeek();
 
         /**
          * @return The resource id of the content description for the bottom sheet. This is
@@ -802,9 +794,6 @@ public class BottomSheet extends FrameLayout
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
-        // TODO(twellington): Handle updates to the peek UI while the sheet is showing?
-        if (content != null && mUseSlimPeek != content.useSlimPeek()) updatePeekUI(content);
-
         List<Animator> animators = new ArrayList<>();
         mContentSwapAnimatorSet = new AnimatorSet();
         mContentSwapAnimatorSet.addListener(new AnimatorListenerAdapter() {
@@ -872,24 +861,6 @@ public class BottomSheet extends FrameLayout
         if (mSheetContent == null || isInOverviewMode() || SysUtils.isLowEndDevice()) {
             mContentSwapAnimatorSet.end();
         }
-    }
-
-    /**
-     * Updates the peek UI for the current BottomSheetcontent.
-     * @param content The current {@link BottomSheetContent}
-     */
-    private void updatePeekUI(BottomSheetContent content) {
-        mUseSlimPeek = content.useSlimPeek();
-
-        int peekHeightId = mUseSlimPeek ? R.dimen.bottom_control_container_slim_expanded_height
-                                        : R.dimen.bottom_control_container_peek_height;
-        mDefaultToolbarView.getLayoutParams().height =
-                getResources().getDimensionPixelSize(peekHeightId);
-
-        int toolbarHeightId = mUseSlimPeek ? R.dimen.bottom_control_container_slim_peek_height
-                                           : R.dimen.bottom_control_container_peek_height;
-        mToolbarHeight = getResources().getDimensionPixelSize(toolbarHeightId);
-        updateSheetStateRatios();
     }
 
     /**

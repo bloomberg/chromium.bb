@@ -62,11 +62,6 @@ public class ContextualSuggestionsBottomSheetContent implements BottomSheetConte
     }
 
     @Override
-    public boolean useSlimPeek() {
-        return false;
-    }
-
-    @Override
     public int getSheetContentDescriptionStringId() {
         return R.string.contextual_suggestions_button_description;
     }
