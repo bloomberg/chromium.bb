@@ -125,6 +125,19 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     cursor_position_ = rect;
   }
 
+  void SetSurroundingText(const base::string16& text,
+                          const gfx::Range& selection_range) override {
+    TestResult::GetInstance()->RecordAction(
+        base::ASCIIToUTF16("surroundingtext:") + text);
+
+    std::stringstream rs;
+    rs << "selectionrangestart:" << selection_range.start();
+    std::stringstream re;
+    re << "selectionrangeend:" << selection_range.end();
+    TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(rs.str()));
+    TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(re.str()));
+  };
+
  private:
   LinuxInputMethodContextDelegate* delegate_;
   std::vector<base::string16> actions_;
@@ -187,6 +200,9 @@ class TextInputClientForTesting : public DummyTextInputClient {
       : DummyTextInputClient(text_input_type){};
 
   base::string16 composition_text;
+  gfx::Range text_range;
+  gfx::Range selection_range;
+  base::string16 surrounding_text;
 
  protected:
   void SetCompositionText(const CompositionText& composition) override {
@@ -228,6 +244,22 @@ class TextInputClientForTesting : public DummyTextInputClient {
     ss << event.GetCharacter();
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16("keypress:") +
                                             base::ASCIIToUTF16(ss.str()));
+  }
+
+  bool GetTextRange(gfx::Range* range) const override {
+    *range = text_range;
+    return true;
+  }
+  bool GetSelectionRange(gfx::Range* range) const override {
+    *range = selection_range;
+    return true;
+  }
+  bool GetTextFromRange(const gfx::Range& range,
+                        base::string16* text) const override {
+    if (surrounding_text.empty())
+      return false;
+    *text = surrounding_text.substr(range.GetMin(), range.length());
+    return true;
   }
 };
 
@@ -757,6 +789,60 @@ TEST_F(InputMethodAuraLinuxTest, ReleaseKeyTest) {
   test_result_->ExpectAction("textinput:c");
   test_result_->ExpectAction("keydown:65");
   test_result_->ExpectAction("keypress:65");
+  test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, SurroundingText_NoSelectionTest) {
+  std::unique_ptr<TextInputClientForTesting> client(
+      new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
+  input_method_auralinux_->SetFocusedTextInputClient(client.get());
+  input_method_auralinux_->OnTextInputTypeChanged(client.get());
+
+  client->surrounding_text = base::ASCIIToUTF16("abcdef");
+  client->text_range = gfx::Range(0, 6);
+  client->selection_range = gfx::Range(3, 3);
+
+  input_method_auralinux_->OnCaretBoundsChanged(client.get());
+
+  test_result_->ExpectAction("surroundingtext:abcdef");
+  test_result_->ExpectAction("selectionrangestart:3");
+  test_result_->ExpectAction("selectionrangeend:3");
+  test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, SurroundingText_SelectionTest) {
+  std::unique_ptr<TextInputClientForTesting> client(
+      new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
+  input_method_auralinux_->SetFocusedTextInputClient(client.get());
+  input_method_auralinux_->OnTextInputTypeChanged(client.get());
+
+  client->surrounding_text = base::ASCIIToUTF16("abcdef");
+  client->text_range = gfx::Range(0, 6);
+  client->selection_range = gfx::Range(2, 5);
+
+  input_method_auralinux_->OnCaretBoundsChanged(client.get());
+
+  test_result_->ExpectAction("surroundingtext:abcdef");
+  test_result_->ExpectAction("selectionrangestart:2");
+  test_result_->ExpectAction("selectionrangeend:5");
+  test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, SurroundingText_PartialText) {
+  std::unique_ptr<TextInputClientForTesting> client(
+      new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
+  input_method_auralinux_->SetFocusedTextInputClient(client.get());
+  input_method_auralinux_->OnTextInputTypeChanged(client.get());
+
+  client->surrounding_text = base::ASCIIToUTF16("abcdefghij");
+  client->text_range = gfx::Range(5, 10);
+  client->selection_range = gfx::Range(7, 9);
+
+  input_method_auralinux_->OnCaretBoundsChanged(client.get());
+
+  test_result_->ExpectAction("surroundingtext:fghij");
+  test_result_->ExpectAction("selectionrangestart:7");
+  test_result_->ExpectAction("selectionrangeend:9");
   test_result_->Verify();
 }
 

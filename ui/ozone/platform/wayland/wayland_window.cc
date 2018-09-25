@@ -197,6 +197,9 @@ void WaylandWindow::ApplyPendingBounds() {
 }
 
 void WaylandWindow::Show() {
+  if (!is_tooltip_)  // Tooltip windows should not get keyboard focus
+    set_keyboard_focus(true);
+
   if (xdg_surface_)
     return;
   if (is_tooltip_) {
