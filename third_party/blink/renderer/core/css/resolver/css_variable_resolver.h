@@ -79,6 +79,29 @@ class CORE_EXPORT CSSVariableResolver {
     //
     // https://drafts.css-houdini.org/css-properties-values-api-1/#dependency-cycles-via-relative-units
     bool disallow_registered_root_font_units = false;
+
+    // Absolutize CSSVariableData during variable resolution.
+    //
+    // Absolutization is a process where the substitution tokens of a registered
+    // custom property are "synthetically" created to represent the computed
+    // value of the custom property. For instance, a <length>-registered custom
+    // property may be specified with the value "10em". However, this property
+    // should substitute into others as the computed value, hence an equivalent
+    // token stream is needed. Assuming a font-size of 12px (for instance),
+    // the absolutization process would produce a token stream of "120px".
+    //
+    // Absolutization must take place after high-priority properties have been
+    // applied, to be able to resolve the relative units correctly. However,
+    // registered custom properties must also be usable for the high-priority
+    // properties themselves (e.g. color). When a high-priority property refers
+    // to a custom property with an (inner) var()-reference, that custom
+    // property is resolved "on the fly" with absolutize=false. This means that
+    // 1) a non- absolute value is returned, and 2) the resolved token stream
+    // for that custom property is not stored on the ComputedStyle. Storing the
+    // token stream on the ComputedStyle can only be done with absolutize=true,
+    // otherwise can permanently end up with the wrong token stream if one
+    // unregistered property reference a registered property, for instance.
+    bool absolutize = false;
   };
 
   struct Result {
@@ -90,6 +113,7 @@ class CORE_EXPORT CSSVariableResolver {
     bool is_animation_tainted = false;
     bool has_font_units = false;
     bool has_root_font_units = false;
+    bool absolutized = false;
   };
 
   const CSSValue* ResolvePendingSubstitutions(
@@ -129,6 +153,12 @@ class CORE_EXPORT CSSVariableResolver {
                                                        const Options&,
                                                        bool resolve_urls,
                                                        bool& cycle_detected);
+  // Like ResolveCustomProperty, but returns the incoming CSSVariableData if
+  // no resolution is needed.
+  scoped_refptr<CSSVariableData> ResolveCustomPropertyIfNeeded(
+      AtomicString name,
+      CSSVariableData*,
+      const Options&);
   // Rewrites (in-place) kUrlTokens and kFunctionToken/CSSValueUrls to contain
   // absolute URLs.
   void ResolveRelativeUrls(Vector<CSSParserToken>& tokens,

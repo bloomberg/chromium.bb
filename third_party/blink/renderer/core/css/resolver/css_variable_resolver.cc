@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
@@ -54,6 +55,34 @@ CSSParserToken ResolveUrl(const CSSParserToken& token,
   return token.CopyWithUpdatedString(StringView(backing_strings.back()));
 }
 
+// Registered properties need to substitute as absolute values. This means
+// that 'em' units (for instance) are converted to 'px ' and calc()-expressions
+// are resolved. This function creates new tokens equivalent to the computed
+// value of the registered property.
+//
+// This is necessary to make things like font-relative units in inherited
+// (and registered) custom properties work correctly.
+scoped_refptr<CSSVariableData> ComputedVariableData(
+    const CSSVariableData& variable_data,
+    const CSSValue& computed_value) {
+  String text = computed_value.CssText();
+
+  CSSTokenizer tokenizer(text);
+  Vector<CSSParserToken> tokens;
+  tokens.AppendVector(tokenizer.TokenizeToEOF());
+
+  Vector<String> backing_strings;
+  backing_strings.push_back(text);
+
+  const bool has_font_units = false;
+  const bool has_root_font_units = false;
+  const bool absolutized = true;
+
+  return CSSVariableData::CreateResolved(
+      tokens, std::move(backing_strings), variable_data.IsAnimationTainted(),
+      has_font_units, has_root_font_units, absolutized);
+}
+
 }  // namespace
 
 bool CSSVariableResolver::ResolveFallback(CSSParserTokenRange range,
@@ -83,44 +112,70 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   if (!variable_data)
     return registration ? registration->InitialVariableData() : nullptr;
 
-  bool resolve_urls = ShouldResolveRelativeUrls(name, *variable_data);
+  scoped_refptr<CSSVariableData> resolved_data =
+      ResolveCustomPropertyIfNeeded(name, variable_data, options);
 
-  if (!variable_data->NeedsVariableResolution()) {
-    if (IsVariableDisallowed(*variable_data, options, registration))
+  if (resolved_data) {
+    if (IsVariableDisallowed(*resolved_data, options, registration))
       return nullptr;
-    if (!resolve_urls)
-      return variable_data;
   }
 
-  bool unused_cycle_detected;
-  scoped_refptr<CSSVariableData> new_variable_data = ResolveCustomProperty(
-      name, *variable_data, options, resolve_urls, unused_cycle_detected);
   if (!registration) {
-    SetVariable(name, registration, new_variable_data);
-    return new_variable_data;
+    if (resolved_data != variable_data && options.absolutize)
+      SetVariable(name, registration, resolved_data);
+    return resolved_data;
   }
 
-  const CSSValue* parsed_value = nullptr;
-  if (new_variable_data) {
-    parsed_value = new_variable_data->ParseForSyntax(
+  const CSSValue* value = GetRegisteredVariable(name, *registration);
+  const CSSValue* resolved_value = value;
+
+  // The computed value of a registered property must be stored as a CSSValue
+  // on ComputedStyle. If we have resolved this custom property before, we
+  // may already have a CSSValue. If not, we must produce that value now.
+  if (!resolved_value && resolved_data) {
+    resolved_value = resolved_data->ParseForSyntax(
         registration->Syntax(), state_.GetDocument().GetSecureContextMode());
-    if (!parsed_value)
-      new_variable_data = nullptr;
+    if (!resolved_value) {
+      // Parsing failed. Set resolved_data to nullptr to indicate that we
+      // currently don't have a token stream matching the registered syntax.
+      resolved_data = nullptr;
+    }
   }
 
   // If either parsing or resolution failed, and this property inherits,
   // take inherited values instead of falling back on initial.
-  if (registration->Inherits() && !new_variable_data) {
-    new_variable_data = state_.ParentStyle()->GetVariable(name, true);
-    parsed_value = state_.ParentStyle()->GetRegisteredVariable(name, true);
+  if (registration->Inherits() && !resolved_data) {
+    resolved_data = state_.ParentStyle()->GetVariable(name, true);
+    resolved_value = state_.ParentStyle()->GetRegisteredVariable(name, true);
   }
 
-  DCHECK(!!new_variable_data == !!parsed_value);
-  SetVariable(name, registration, new_variable_data);
-  SetRegisteredVariable(name, *registration, parsed_value);
-  if (!new_variable_data)
+  DCHECK(!!resolved_data == !!resolved_value);
+
+  // If so enabled by options, and the resolved_data isn't absolutized already
+  // (which is the case when resolved_data was inherited from the parent style),
+  // perform absolutization now.
+  if (options.absolutize) {
+    if (resolved_value && !resolved_data->IsAbsolutized()) {
+      resolved_value = &StyleBuilderConverter::ConvertRegisteredPropertyValue(
+          state_, *resolved_value);
+      resolved_data =
+          ComputedVariableData(*resolved_data.get(), *resolved_value);
+    }
+    if (resolved_data != variable_data)
+      SetVariable(name, registration, resolved_data);
+  }
+
+  // Even if options.absolutize=false, we store the resolved_value if we
+  // parsed it. This is required to calculate the animations update before
+  // the absolutization pass.
+  if (value != resolved_value)
+    SetRegisteredVariable(name, *registration, resolved_value);
+
+  if (!resolved_data) {
     return registration->InitialVariableData();
-  return new_variable_data;
+  }
+
+  return resolved_data;
 }
 
 scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
@@ -135,6 +190,7 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
   result.is_animation_tainted = variable_data.IsAnimationTainted();
   result.has_font_units = variable_data.HasFontUnits();
   result.has_root_font_units = variable_data.HasRootFontUnits();
+  result.absolutized = variable_data.IsAbsolutized();
   result.backing_strings.AppendVector(variable_data.BackingStrings());
   DCHECK(!variables_seen_.Contains(name));
   variables_seen_.insert(name);
@@ -156,7 +212,21 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
   return CSSVariableData::CreateResolved(
       result.tokens, std::move(result.backing_strings),
       result.is_animation_tainted, result.has_font_units,
-      result.has_root_font_units);
+      result.has_root_font_units, result.absolutized);
+}
+
+scoped_refptr<CSSVariableData>
+CSSVariableResolver::ResolveCustomPropertyIfNeeded(
+    AtomicString name,
+    CSSVariableData* variable_data,
+    const Options& options) {
+  DCHECK(variable_data);
+  bool resolve_urls = ShouldResolveRelativeUrls(name, *variable_data);
+  if (!variable_data->NeedsVariableResolution() && !resolve_urls)
+    return variable_data;
+  bool unused_cycle_detected;
+  return ResolveCustomProperty(name, *variable_data, options, resolve_urls,
+                               unused_cycle_detected);
 }
 
 void CSSVariableResolver::ResolveRelativeUrls(
@@ -289,6 +359,7 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
   result.is_animation_tainted |= variable_data->IsAnimationTainted();
   result.has_font_units |= variable_data->HasFontUnits();
   result.has_root_font_units |= variable_data->HasRootFontUnits();
+  result.absolutized &= variable_data->IsAbsolutized();
 
   Result trash;
   ResolveFallback(range, options, trash);
@@ -438,6 +509,7 @@ void CSSVariableResolver::ResolveVariableDefinitions() {
     return;
 
   Options options;
+  options.absolutize = true;
 
   int variable_count = 0;
   if (inherited_variables_ && inherited_variables_->NeedsResolution()) {
@@ -457,26 +529,15 @@ void CSSVariableResolver::ResolveVariableDefinitions() {
 }
 
 void CSSVariableResolver::ComputeRegisteredVariables() {
-  // const_cast is needed because Persistent<const ...> doesn't work properly.
+  Options options;
 
   if (inherited_variables_) {
-    for (auto& variable : inherited_variables_->registered_data_) {
-      if (variable.value) {
-        variable.value = const_cast<CSSValue*>(
-            &StyleBuilderConverter::ConvertRegisteredPropertyValue(
-                state_, *variable.value));
-      }
-    }
+    for (auto& variable : inherited_variables_->registered_data_)
+      ValueForCustomProperty(variable.key, options);
   }
-
   if (non_inherited_variables_) {
-    for (auto& variable : non_inherited_variables_->registered_data_) {
-      if (variable.value) {
-        variable.value = const_cast<CSSValue*>(
-            &StyleBuilderConverter::ConvertRegisteredPropertyValue(
-                state_, *variable.value));
-      }
-    }
+    for (auto& variable : non_inherited_variables_->registered_data_)
+      ValueForCustomProperty(variable.key, options);
   }
 }
 
