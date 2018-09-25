@@ -566,7 +566,6 @@ Resource* ResourceFetcher::ResourceForStaticData(
     resource->SetResourceBuffer(data);
   resource->SetIdentifier(CreateUniqueIdentifier());
   resource->SetCacheIdentifier(cache_identifier);
-  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
   resource->Finish(TimeTicks(), Context().GetLoadingTaskRunner().get());
 
   if (!substitute_data.IsValid())
@@ -584,7 +583,6 @@ Resource* ResourceFetcher::ResourceForBlockedRequest(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
   if (client)
     client->SetResource(resource, Context().GetLoadingTaskRunner().get());
-  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
   resource->FinishAsError(ResourceError::CancelledDueToAccessCheckError(
                               params.Url(), blocked_reason),
                           Context().GetLoadingTaskRunner().get());
@@ -738,20 +736,6 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (blocked_reason)
     return blocked_reason;
 
-  const scoped_refptr<const SecurityOrigin>& origin = options.security_origin;
-  if (origin && !origin->IsOpaque() &&
-      !origin->IsSameSchemeHostPort(Context().GetSecurityOrigin())) {
-    // |options.security_origin| may differ from the document's origin if
-    // this is a fetch initiated by an isolated world execution context, with a
-    // different SecurityOrigin. In this case, plumb it through as the
-    // RequestorOrigin so that the browser process can make policy decisions for
-    // this request, based on any special permissions the isolated world may
-    // have been granted.
-    // TODO(nick, dcheng): Find a way to formalize the isolated world origin
-    // check in https://crbug.com/792154.
-    resource_request.SetRequestorOrigin(origin);
-  }
-
   // For initial requests, call prepareRequest() here before revalidation
   // policy is determined.
   Context().PrepareRequest(resource_request,
@@ -763,10 +747,11 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (!RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
       options.cors_handling_by_resource_fetcher ==
           kEnableCORSHandlingByResourceFetcher) {
+    const scoped_refptr<const SecurityOrigin> origin =
+        resource_request.RequestorOrigin();
     DCHECK(!options.cors_flag);
     params.MutableOptions().cors_flag = CORS::CalculateCORSFlag(
-        params.Url(), origin ? origin.get() : Context().GetSecurityOrigin(),
-        resource_request.GetFetchRequestMode());
+        params.Url(), origin.get(), resource_request.GetFetchRequestMode());
     // Cross-origin requests are only allowed certain registered schemes.
     if (options.cors_flag && !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
                                  params.Url().Protocol())) {
@@ -817,6 +802,11 @@ Resource* ResourceFetcher::RequestResource(
       context_->RecordDataUriWithOctothorpe();
     }
   }
+
+  // |resource_request|'s origin can be null here, corresponding to the "client"
+  // value in the spec. In that case client's origin is used.
+  if (!resource_request.RequestorOrigin())
+    resource_request.SetRequestorOrigin(Context().GetSecurityOrigin());
 
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
       PrepareRequest(params, factory, substitute_data, identifier);
@@ -990,14 +980,6 @@ void ResourceFetcher::InitializeRevalidation(
   resource->SetRevalidatingRequest(revalidating_request);
 }
 
-scoped_refptr<const SecurityOrigin> ResourceFetcher::GetSourceOrigin(
-    const ResourceLoaderOptions& options) const {
-  if (options.security_origin)
-    return options.security_origin;
-
-  return Context().GetSecurityOrigin();
-}
-
 void ResourceFetcher::AddToMemoryCacheIfNeeded(const FetchParameters& params,
                                                Resource* resource) {
   if (!ShouldResourceBeAddedToMemoryCache(params, resource))
@@ -1021,7 +1003,6 @@ Resource* ResourceFetcher::CreateResourceForLoading(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
   resource->SetLinkPreload(params.IsLinkPreload());
   resource->SetCacheIdentifier(cache_identifier);
-  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
 
   AddToMemoryCacheIfNeeded(params, resource);
   return resource;
@@ -1119,8 +1100,7 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
     return nullptr;
   }
 
-  const Resource::MatchStatus match_status =
-      resource->CanReuse(params, GetSourceOrigin(params.Options()));
+  const Resource::MatchStatus match_status = resource->CanReuse(params);
   if (match_status != Resource::MatchStatus::kOk) {
     PrintPreloadWarning(resource, match_status);
     return nullptr;
@@ -1313,9 +1293,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   if (is_static_data)
     return kUse;
 
-  if (existing_resource.CanReuse(fetch_params,
-                                 GetSourceOrigin(fetch_params.Options())) !=
-      Resource::MatchStatus::kOk) {
+  if (existing_resource.CanReuse(fetch_params) != Resource::MatchStatus::kOk) {
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::DetermineRevalidationPolicy "
                                  "reloading due to Resource::CanReuse() "
                                  "returning false.";

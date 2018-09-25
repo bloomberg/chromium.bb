@@ -163,7 +163,6 @@ class PLATFORM_EXPORT ResourceLoader final
   void Restart(const ResourceRequest&);
 
   FetchContext& Context() const;
-  scoped_refptr<const SecurityOrigin> GetSourceOrigin() const;
 
   void CancelForRedirectAccessCheckError(const KURL&,
                                          ResourceRequestBlockedReason);

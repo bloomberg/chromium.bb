@@ -62,21 +62,21 @@ class RawResourceTest : public testing::Test {
 };
 
 TEST_F(RawResourceTest, DontIgnoreAcceptForCacheReuse) {
-  ResourceRequest jpeg_request;
-  jpeg_request.SetHTTPAccept("image/jpeg");
-
   scoped_refptr<const SecurityOrigin> source_origin =
       SecurityOrigin::CreateUniqueOpaque();
 
+  ResourceRequest jpeg_request;
+  jpeg_request.SetHTTPAccept("image/jpeg");
+  jpeg_request.SetRequestorOrigin(source_origin);
+
   RawResource* jpeg_resource(
       RawResource::CreateForTest(jpeg_request, ResourceType::kRaw));
-  jpeg_resource->SetSourceOrigin(source_origin);
 
   ResourceRequest png_request;
   png_request.SetHTTPAccept("image/png");
-  EXPECT_NE(
-      jpeg_resource->CanReuse(FetchParameters(png_request), source_origin),
-      Resource::MatchStatus::kOk);
+  png_request.SetRequestorOrigin(source_origin);
+  EXPECT_NE(jpeg_resource->CanReuse(FetchParameters(png_request)),
+            Resource::MatchStatus::kOk);
 }
 
 class DummyClient final : public GarbageCollectedFinalized<DummyClient>,
@@ -156,8 +156,9 @@ class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
 };
 
 TEST_F(RawResourceTest, AddClientDuringCallback) {
-  Resource* raw =
-      RawResource::CreateForTest("data:text/html,", ResourceType::kRaw);
+  Resource* raw = RawResource::CreateForTest(
+      KURL("data:text/html,"), SecurityOrigin::CreateUniqueOpaque(),
+      ResourceType::kRaw);
   raw->SetResponse(ResourceResponse(KURL("http://600.613/")));
   raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());
@@ -199,8 +200,9 @@ class RemovingClient : public GarbageCollectedFinalized<RemovingClient>,
 };
 
 TEST_F(RawResourceTest, RemoveClientDuringCallback) {
-  Resource* raw =
-      RawResource::CreateForTest("data:text/html,", ResourceType::kRaw);
+  Resource* raw = RawResource::CreateForTest(
+      KURL("data:text/html,"), SecurityOrigin::CreateUniqueOpaque(),
+      ResourceType::kRaw);
   raw->SetResponse(ResourceResponse(KURL("http://600.613/")));
   raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());

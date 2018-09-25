@@ -294,11 +294,16 @@ BaseFetchContext::CanRequestInternal(
   if (ShouldBlockRequestByInspector(resource_request.Url()))
     return ResourceRequestBlockedReason::kInspector;
 
-  const SecurityOrigin* security_origin = options.security_origin.get();
-  if (!security_origin)
-    security_origin = GetSecurityOrigin();
+  scoped_refptr<const SecurityOrigin> origin =
+      resource_request.RequestorOrigin();
 
-  if (security_origin && !security_origin->CanDisplay(url)) {
+  const auto request_mode = resource_request.GetFetchRequestMode();
+  // On navigation cases, Context().GetSecurityOrigin() may return nullptr, so
+  // the request's origin may be nullptr.
+  // TODO(yhirano): Figure out if it's actually fine.
+  DCHECK(request_mode == network::mojom::FetchRequestMode::kNavigate || origin);
+  if (request_mode != network::mojom::FetchRequestMode::kNavigate &&
+      !origin->CanDisplay(url)) {
     if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
       AddErrorConsoleMessage(
           "Not allowed to load local resource: " + url.GetString(), kJSSource);
@@ -308,9 +313,8 @@ BaseFetchContext::CanRequestInternal(
     return ResourceRequestBlockedReason::kOther;
   }
 
-  const auto request_mode = resource_request.GetFetchRequestMode();
   if (request_mode == network::mojom::FetchRequestMode::kSameOrigin &&
-      CORS::CalculateCORSFlag(url, security_origin, request_mode)) {
+      CORS::CalculateCORSFlag(url, origin.get(), request_mode)) {
     PrintAccessDeniedMessage(url);
     return ResourceRequestBlockedReason::kOrigin;
   }

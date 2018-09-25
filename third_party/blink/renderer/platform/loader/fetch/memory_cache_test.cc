@@ -193,8 +193,9 @@ static void TestResourcePruningAtEndOfTask(ResourceFetcher* fetcher,
   GetMemoryCache()->SetDelayBeforeLiveDecodedPrune(0);
 
   // Enforce pruning by adding |dummyResource| and then call prune().
-  Resource* dummy_resource =
-      RawResource::CreateForTest("http://dummy", ResourceType::kRaw);
+  Resource* dummy_resource = RawResource::CreateForTest(
+      KURL("http://dummy"), SecurityOrigin::CreateUniqueOpaque(),
+      ResourceType::kRaw);
   GetMemoryCache()->Add(dummy_resource);
   EXPECT_GT(GetMemoryCache()->size(), 1u);
   const unsigned kTotalCapacity = 1;

@@ -47,13 +47,13 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
 class EncodedFormData;
-class SecurityOrigin;
 
 // A ResourceRequest is a "request" object for ResourceLoader. Conceptually
 // it is https://fetch.spec.whatwg.org/#concept-request, but it contains
@@ -104,8 +104,17 @@ class PLATFORM_EXPORT ResourceRequest final {
   const KURL& SiteForCookies() const;
   void SetSiteForCookies(const KURL&);
 
-  scoped_refptr<const SecurityOrigin> RequestorOrigin() const;
-  void SetRequestorOrigin(scoped_refptr<const SecurityOrigin>);
+  // The origin of the request, specified at
+  // https://fetch.spec.whatwg.org/#concept-request-origin. This origin can be
+  // null upon request, corresponding to the "client" value in the spec. In that
+  // case client's origin will be set when requesting. See
+  // ResourceFetcher::RequestResource.
+  const scoped_refptr<const SecurityOrigin>& RequestorOrigin() const {
+    return requestor_origin_;
+  }
+  void SetRequestorOrigin(scoped_refptr<const SecurityOrigin> origin) {
+    requestor_origin_ = std::move(origin);
+  }
 
   const AtomicString& HttpMethod() const;
   void SetHTTPMethod(const AtomicString&);
@@ -386,11 +395,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   base::TimeDelta timeout_interval_;
   KURL site_for_cookies_;
 
-  // The SecurityOrigin specified by the ResourceLoaderOptions in case e.g.
-  // when the fetching was initiated in an isolated world. Set by
-  // ResourceFetcher but only when needed.
-  //
-  // TODO(crbug.com/811669): Merge with some of the other origin variables.
   scoped_refptr<const SecurityOrigin> requestor_origin_;
 
   AtomicString http_method_;

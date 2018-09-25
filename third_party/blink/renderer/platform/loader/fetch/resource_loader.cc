@@ -345,7 +345,7 @@ void ResourceLoader::Start() {
   }
 
   if (ShouldCheckCORSInResourceLoader()) {
-    const auto origin = GetSourceOrigin();
+    const auto origin = resource_->GetOrigin();
     response_tainting_ = CORS::CalculateResponseTainting(
         request.Url(), request.GetFetchRequestMode(), origin.get(),
         GetCORSFlag() ? CORSFlag::Set : CORSFlag::Unset);
@@ -552,16 +552,16 @@ bool ResourceLoader::WillFollowRedirect(
     }
 
     if (ShouldCheckCORSInResourceLoader()) {
-      scoped_refptr<const SecurityOrigin> source_origin = GetSourceOrigin();
+      scoped_refptr<const SecurityOrigin> origin = resource_->GetOrigin();
       base::Optional<network::CORSErrorStatus> cors_error =
           CORS::CheckRedirectLocation(
-              new_url, fetch_request_mode, source_origin.get(),
+              new_url, fetch_request_mode, origin.get(),
               GetCORSFlag() ? CORSFlag::Set : CORSFlag::Unset);
       if (!cors_error && GetCORSFlag()) {
         cors_error =
             CORS::CheckAccess(new_url, redirect_response.HttpStatusCode(),
                               redirect_response.HttpHeaderFields(),
-                              fetch_credentials_mode, *source_origin);
+                              fetch_credentials_mode, *origin);
       }
       if (cors_error) {
         HandleError(ResourceError(redirect_response.Url(), *cors_error));
@@ -571,13 +571,12 @@ bool ResourceLoader::WillFollowRedirect(
       // |request|’s current url’s origin and |request|’s origin is not same
       // origin with |request|’s current url’s origin, then set |request|’s
       // tainted origin flag.
-      if (resource_->Options().security_origin &&
+      if (origin &&
           !SecurityOrigin::AreSameSchemeHostPort(new_url,
                                                  redirect_response.Url()) &&
-          !resource_->Options().security_origin->CanRequest(
-              redirect_response.Url())) {
-        resource_->MutableOptions().security_origin =
-            SecurityOrigin::CreateUniqueOpaque();
+          !origin->CanRequest(redirect_response.Url())) {
+        origin = SecurityOrigin::CreateUniqueOpaque();
+        new_request->SetRequestorOrigin(origin);
       }
     }
     if (resource_type == ResourceType::kImage &&
@@ -661,9 +660,9 @@ bool ResourceLoader::WillFollowRedirect(
 
   if (ShouldCheckCORSInResourceLoader()) {
     bool new_cors_flag =
-        GetCORSFlag() ||
-        CORS::CalculateCORSFlag(new_request->Url(), GetSourceOrigin().get(),
-                                fetch_request_mode);
+        GetCORSFlag() || CORS::CalculateCORSFlag(new_request->Url(),
+                                                 resource_->GetOrigin().get(),
+                                                 fetch_request_mode);
     resource_->MutableOptions().cors_flag = new_cors_flag;
     // Cross-origin requests are only allowed certain registered schemes.
     if (GetCORSFlag() && !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
@@ -675,7 +674,7 @@ bool ResourceLoader::WillFollowRedirect(
       return false;
     }
     response_tainting_ = CORS::CalculateResponseTainting(
-        new_request->Url(), fetch_request_mode, GetSourceOrigin().get(),
+        new_request->Url(), fetch_request_mode, resource_->GetOrigin().get(),
         GetCORSFlag() ? CORSFlag::Set : CORSFlag::Unset);
   }
 
@@ -703,15 +702,6 @@ void ResourceLoader::DidSendData(unsigned long long bytes_sent,
 
 FetchContext& ResourceLoader::Context() const {
   return fetcher_->Context();
-}
-
-scoped_refptr<const SecurityOrigin> ResourceLoader::GetSourceOrigin() const {
-  scoped_refptr<const SecurityOrigin> origin =
-      resource_->Options().security_origin;
-  if (origin)
-    return origin;
-
-  return Context().GetSecurityOrigin();
 }
 
 void ResourceLoader::DidReceiveResponse(
@@ -806,7 +796,7 @@ void ResourceLoader::DidReceiveResponse(
       base::Optional<network::CORSErrorStatus> cors_error = CORS::CheckAccess(
           response.Url(), response.HttpStatusCode(),
           response.HttpHeaderFields(),
-          initial_request.GetFetchCredentialsMode(), *GetSourceOrigin());
+          initial_request.GetFetchCredentialsMode(), *resource_->GetOrigin());
       if (cors_error) {
         HandleError(ResourceError(response.Url(), *cors_error));
         return;
@@ -945,7 +935,7 @@ void ResourceLoader::HandleError(const ResourceError& error) {
     Context().AddErrorConsoleMessage(
         CORS::GetErrorString(
             *error.CORSErrorStatus(), resource_->GetResourceRequest().Url(),
-            resource_->LastResourceRequest().Url(), *GetSourceOrigin(),
+            resource_->LastResourceRequest().Url(), *resource_->GetOrigin(),
             resource_->GetType(), resource_->Options().initiator_info.name),
         FetchContext::kJSSource);
   }

@@ -360,8 +360,7 @@ static bool ShouldIgnoreHeaderForCacheReuse(AtomicString header_name) {
 }
 
 Resource::MatchStatus RawResource::CanReuse(
-    const FetchParameters& new_fetch_parameters,
-    scoped_refptr<const SecurityOrigin> new_source_origin) const {
+    const FetchParameters& new_fetch_parameters) const {
   const ResourceRequest& new_request =
       new_fetch_parameters.GetResourceRequest();
   // Ensure most headers match the existing headers before continuing. Note that
@@ -388,7 +387,7 @@ Resource::MatchStatus RawResource::CanReuse(
     }
   }
 
-  return Resource::CanReuse(new_fetch_parameters, std::move(new_source_origin));
+  return Resource::CanReuse(new_fetch_parameters);
 }
 
 RawResourceClientStateChecker::RawResourceClientStateChecker()

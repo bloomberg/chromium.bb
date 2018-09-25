@@ -135,7 +135,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,
                      std::unique_ptr<WebWorkerFetchContext>);
 
-  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&);
+  void SetFirstPartyCookie(ResourceRequest&);
 
   const Member<WorkerOrWorkletGlobalScope> global_scope_;
   const std::unique_ptr<WebWorkerFetchContext> web_context_;

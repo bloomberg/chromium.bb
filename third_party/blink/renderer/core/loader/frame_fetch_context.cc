@@ -231,7 +231,6 @@ struct FrameFetchContext::FrozenState final
               const base::Optional<mojom::IPAddressSpace>& address_space,
               const ContentSecurityPolicy* content_security_policy,
               KURL site_for_cookies,
-              scoped_refptr<const SecurityOrigin> requestor_origin,
               const ClientHintsPreferences& client_hints_preferences,
               float device_pixel_ratio,
               const String& user_agent,
@@ -242,7 +241,6 @@ struct FrameFetchContext::FrozenState final
         address_space(address_space),
         content_security_policy(content_security_policy),
         site_for_cookies(site_for_cookies),
-        requestor_origin(requestor_origin),
         client_hints_preferences(client_hints_preferences),
         device_pixel_ratio(device_pixel_ratio),
         user_agent(user_agent),
@@ -254,7 +252,6 @@ struct FrameFetchContext::FrozenState final
   const base::Optional<mojom::IPAddressSpace> address_space;
   const Member<const ContentSecurityPolicy> content_security_policy;
   const KURL site_for_cookies;
-  const scoped_refptr<const SecurityOrigin> requestor_origin;
   const ClientHintsPreferences client_hints_preferences;
   const float device_pixel_ratio;
   const String user_agent;
@@ -516,7 +513,7 @@ void FrameFetchContext::DispatchDidChangeResourcePriority(
 
 void FrameFetchContext::PrepareRequest(ResourceRequest& request,
                                        RedirectType redirect_type) {
-  SetFirstPartyCookieAndRequestorOrigin(request);
+  SetFirstPartyCookie(request);
 
   String user_agent = GetUserAgent();
   request.SetHTTPUserAgent(AtomicString(user_agent));
@@ -1036,8 +1033,7 @@ void FrameFetchContext::PopulateResourceRequest(
     request.AddHTTPHeaderField("CSP", "active");
 }
 
-void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
-    ResourceRequest& request) {
+void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {
   // Set the first party for cookies url if it has not been set yet (new
   // requests). This value will be updated during redirects, consistent with
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00#section-2.1.1?
@@ -1048,18 +1044,6 @@ void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
     } else {
       request.SetSiteForCookies(GetSiteForCookies());
     }
-  }
-
-  // * For subresources, the initiator origin is the origin of the
-  //   |document_| that contains them.
-  // * For loading a new document in the frame, the initiator is not set here.
-  //   In most of the cases, it is set in the FrameLoadRequest constructor.
-  //   Otherwise, it must be set immediately after the request has been created.
-  //   See the calls to ResourceRequest::SetRequestorOrigin().
-  if (request.GetFrameType() ==
-      network::mojom::RequestContextFrameType::kNone) {
-    if (!request.RequestorOrigin())
-      request.SetRequestorOrigin(GetRequestorOrigin());
   }
 }
 
@@ -1298,26 +1282,6 @@ String FrameFetchContext::GetUserAgent() const {
   return GetFrame()->Loader().UserAgent();
 }
 
-scoped_refptr<const SecurityOrigin> FrameFetchContext::GetRequestorOrigin() {
-  if (IsDetached())
-    return frozen_state_->requestor_origin;
-
-  // Should not be called during the document load, and |document_| should be
-  // always set beforehand for a subresource loading.
-  DCHECK(document_);
-
-  // If sandbox is enabled and allow-same-origin is not set in the attribute,
-  // |document|'s SecurityOrigin is set to the unique opaque origin, and
-  // FrameFetchContext::GetSecurityOrigin also respects the unique origin.
-  // But, we still need to set the unveiled document origin to the requestor
-  // origin. See also sandbox's spec;
-  // https://html.spec.whatwg.org/multipage/iframe-embed-object.html#attr-iframe-sandbox.
-  if (document_->IsSandboxed(kSandboxOrigin))
-    return SecurityOrigin::Create(document_->Url());
-
-  return GetSecurityOrigin();
-}
-
 const ClientHintsPreferences FrameFetchContext::GetClientHintsPreferences()
     const {
   if (IsDetached())
@@ -1439,7 +1403,7 @@ FetchContext* FrameFetchContext::Detach() {
   if (document_) {
     frozen_state_ = new FrozenState(
         Url(), GetParentSecurityOrigin(), GetAddressSpace(),
-        GetContentSecurityPolicy(), GetSiteForCookies(), GetRequestorOrigin(),
+        GetContentSecurityPolicy(), GetSiteForCookies(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());
     fetch_client_settings_object_ =
@@ -1449,9 +1413,8 @@ FetchContext* FrameFetchContext::Detach() {
     frozen_state_ = new FrozenState(
         NullURL(), GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(),
-        SecurityOrigin::CreateUniqueOpaque(), GetClientHintsPreferences(),
-        GetDevicePixelRatio(), GetUserAgent(), IsMainFrame(),
-        IsSVGImageChromeClient());
+        GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
+        IsMainFrame(), IsSVGImageChromeClient());
     fetch_client_settings_object_ = new FetchClientSettingsObjectSnapshot(
         NullURL(), nullptr, kReferrerPolicyDefault, String());
   }

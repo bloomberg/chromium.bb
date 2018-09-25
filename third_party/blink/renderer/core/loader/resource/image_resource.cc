@@ -185,8 +185,7 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
 }
 
 Resource::MatchStatus ImageResource::CanReuse(
-    const FetchParameters& params,
-    scoped_refptr<const SecurityOrigin> new_source_origin) const {
+    const FetchParameters& params) const {
   // If the image is a placeholder, but this fetch doesn't allow a
   // placeholder, then do not reuse this resource.
   if (params.GetImageRequestOptimization() !=
@@ -195,7 +194,7 @@ Resource::MatchStatus ImageResource::CanReuse(
     return MatchStatus::kImagePlaceholder;
   }
 
-  return Resource::CanReuse(params, std::move(new_source_origin));
+  return Resource::CanReuse(params);
 }
 
 bool ImageResource::CanUseCacheValidator() const {

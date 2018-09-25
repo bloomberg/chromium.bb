@@ -398,15 +398,12 @@ void WorkerFetchContext::PopulateResourceRequest(
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& out_request) {
   FrameLoader::UpgradeInsecureRequest(out_request, global_scope_);
-  SetFirstPartyCookieAndRequestorOrigin(out_request);
+  SetFirstPartyCookie(out_request);
 }
 
-void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
-    ResourceRequest& out_request) {
+void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {
   if (out_request.SiteForCookies().IsNull())
     out_request.SetSiteForCookies(GetSiteForCookies());
-  if (!out_request.RequestorOrigin())
-    out_request.SetRequestorOrigin(GetSecurityOrigin());
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

@@ -226,6 +226,7 @@ class CORE_EXPORT ThreadableLoader final
   // Corresponds to the CORS flag in the Fetch spec.
   bool cors_flag_ = false;
   scoped_refptr<const SecurityOrigin> security_origin_;
+  scoped_refptr<const SecurityOrigin> original_security_origin_;
 
   // Set to true when the response data is given to a data consumer handle.
   bool is_using_data_consumer_handle_;

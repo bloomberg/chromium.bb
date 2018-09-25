@@ -200,7 +200,6 @@ ThreadableLoader::ThreadableLoader(
       execution_context_(execution_context),
       resource_loader_options_(resource_loader_options),
       out_of_blink_cors_(RuntimeEnabledFeatures::OutOfBlinkCORSEnabled()),
-      security_origin_(resource_loader_options_.security_origin),
       is_using_data_consumer_handle_(false),
       async_(resource_loader_options.synchronous_policy ==
              kRequestAsynchronously),
@@ -219,6 +218,7 @@ ThreadableLoader::ThreadableLoader(
 }
 
 void ThreadableLoader::Start(const ResourceRequest& request) {
+  original_security_origin_ = security_origin_ = request.RequestorOrigin();
   // Setting an outgoing referer is only supported in the async code path.
   DCHECK(async_ || request.HttpReferrer().IsEmpty());
 
@@ -1060,7 +1060,7 @@ void ThreadableLoader::LoadRequest(
     }
   }
 
-  resource_loader_options.security_origin = security_origin_;
+  request.SetRequestorOrigin(original_security_origin_);
 
   if (!actual_request_.IsNull())
     resource_loader_options.data_buffering_policy = kBufferData;

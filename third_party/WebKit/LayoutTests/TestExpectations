@@ -1799,11 +1799,6 @@ crbug.com/870173 virtual/outofblink-cors/http/tests/security/secureContexts/unau
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/document-domain-canonicalizes.html [ Timeout ]
 
 # Failing tests in dictionary order.
-crbug.com/867834 virtual/outofblink-cors/external/wpt/fetch/api/cors/sandboxed-iframe.html [ Failure ]
-crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
-crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
-crbug.com/879991 virtual/outofblink-cors/http/tests/security/cors-check-for-cached-image.html [ Failure ]
-crbug.com/879991 virtual/outofblink-cors/http/tests/security/cors-check-for-cached-script.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/video-poster-cross-origin-crash2.html [ Failure ]
@@ -1811,11 +1806,6 @@ crbug.com/870173 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitel
 crbug.com/870173 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
-crbug.com/867834 virtual/outofblink-cors-ns/external/wpt/fetch/api/cors/sandboxed-iframe.html [ Failure ]
-crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
-crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
-crbug.com/879991 virtual/outofblink-cors-ns/http/tests/security/cors-check-for-cached-image.html [ Failure ]
-crbug.com/879991 virtual/outofblink-cors-ns/http/tests/security/cors-check-for-cached-script.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]

@@ -419,7 +419,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       scoped_refptr<SecurityOrigin> origin =
           SecurityOrigin::CreateUniqueOpaque();
       origin->GrantUniversalAccess();
-      resource_loader_options.security_origin = std::move(origin);
+      new_request.ToMutableResourceRequest().SetRequestorOrigin(origin);
     }
 
     const ResourceRequest& webcore_request = new_request.ToResourceRequest();
