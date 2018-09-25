@@ -535,6 +535,9 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int plane_start,
   filt_lvl_r[1] = cm->lf.filter_level_u;
   filt_lvl_r[2] = cm->lf.filter_level_v;
 
+  assert(plane_start >= AOM_PLANE_Y);
+  assert(plane_end <= MAX_MB_PLANE);
+
   for (plane = plane_start; plane < plane_end; plane++) {
     if (plane == 0 && !filt_lvl[0] && !filt_lvl_r[0])
       break;
@@ -546,7 +549,6 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int plane_start,
     for (seg_id = 0; seg_id < MAX_SEGMENTS; seg_id++) {
       for (int dir = 0; dir < 2; ++dir) {
         int lvl_seg = (dir == 0) ? filt_lvl[plane] : filt_lvl_r[plane];
-        assert(plane >= 0 && plane <= 2);
         const int seg_lf_feature_id = seg_lvl_lf_lut[plane][dir];
         if (segfeature_active(seg, seg_id, seg_lf_feature_id)) {
           const int data = get_segdata(&cm->seg, seg_id, seg_lf_feature_id);
