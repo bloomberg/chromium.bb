@@ -693,22 +693,11 @@ void av1_compute_stats_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
   }
 }
 
-static uint16_t find_average_highbd(const uint16_t *src, int h_start, int h_end,
-                                    int v_start, int v_end, int stride) {
-  uint64_t sum = 0;
-  for (int i = v_start; i < v_end; i++) {
-    for (int j = h_start; j < h_end; j++) {
-      sum += src[i * stride + j];
-    }
-  }
-  uint64_t avg = sum / ((v_end - v_start) * (h_end - h_start));
-  return (uint16_t)avg;
-}
-
-static AOM_FORCE_INLINE void compute_stats_highbd(
-    int wiener_win, const uint8_t *dgd8, const uint8_t *src8, int h_start,
-    int h_end, int v_start, int v_end, int dgd_stride, int src_stride,
-    int64_t *M, int64_t *H, aom_bit_depth_t bit_depth) {
+void av1_compute_stats_highbd_c(int wiener_win, const uint8_t *dgd8,
+                                const uint8_t *src8, int h_start, int h_end,
+                                int v_start, int v_end, int dgd_stride,
+                                int src_stride, int64_t *M, int64_t *H,
+                                aom_bit_depth_t bit_depth) {
   int i, j, k, l;
   int32_t Y[WIENER_WIN2];
   const int wiener_win2 = wiener_win * wiener_win;
@@ -1193,10 +1182,10 @@ static void search_wiener(const RestorationTileLimits *limits,
 
   const AV1_COMMON *const cm = rsc->cm;
   if (cm->seq_params.use_highbitdepth) {
-    compute_stats_highbd(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
-                         limits->h_start, limits->h_end, limits->v_start,
-                         limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H,
-                         cm->seq_params.bit_depth);
+    av1_compute_stats_highbd(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
+                             limits->h_start, limits->h_end, limits->v_start,
+                             limits->v_end, rsc->dgd_stride, rsc->src_stride, M,
+                             H, cm->seq_params.bit_depth);
   } else {
     av1_compute_stats(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
                       limits->h_start, limits->h_end, limits->v_start,
