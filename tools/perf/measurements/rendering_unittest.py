@@ -59,6 +59,4 @@ class RenderingUnitTest(page_test_test_case.PageTestTestCase):
     self.assertGreater(num_samples.get('percentage_smooth', 0), 1)
     for thread_group in THREAD_TIMES_THREAD_GROUPS:
       self.assertGreater(
-          num_samples.get('thread_%s_cpu_time_per_second' % thread_group, 0), 1)
-      self.assertGreater(
           num_samples.get('thread_%s_cpu_time_per_frame' % thread_group, 0), 1)
