@@ -1,5 +1,11 @@
 # Updating clang
 
+We distribute prebuilt packages of LLVM binaries, including clang and lld, that
+all developers and bots pull at `gclient runhooks` time. These binaries are
+just regular LLVM binaries built at a fixed upstream revision. This document
+describes how to build a package at a newer revision and update Chromium to it.
+An archive of all packages built so far is at https://is.gd/chromeclang
+
 1.  Check that https://ci.chromium.org/p/chromium/g/chromium.clang/console
     looks reasonably green.
 1.  Sync your Chromium tree to the latest revision to pick up any plugin
@@ -76,3 +82,31 @@
 1.  Commit roll CL from the first step
 1.  The bots will now pull the prebuilt binary, and goma will have a matching
     binary, too.
+
+## Adding files to the clang package
+
+The clang package is downloaded unconditionally by all bots and devs. It's
+called "clang" for historical reasons, but nowadays also contains other
+mission-critical toolchain pieces besides clang.
+
+We try to limit the contents of the clang package. They should meet these
+criteria:
+
+- things that are used by most developers use most of the time (e.g. a
+  compiler, a linker, sanitizer runtimes)
+- things needed for doing official builds
+
+If you want to add something to the clang package that doesn't (yet?) meet
+these criteria, you can make package.py upload it to a separate zip file
+and then download it on an opt-in basis by requiring users to run a script
+to download the additional zip file. You can structure your script in a way that
+it downloads your additional zip automatically if the script detects an
+old version on disk, that way users have to run the download script just
+once. `tools/clang/scripts/download_lld_mac.py` is an example for this
+(It doesn't do the "only download if old version is on disk or if requested"
+bit, and hence doesn't run as a default DEPS hook. TODO(thakis): Make
+coverage stuff a better example and link to that.)
+
+If you're adding a new feature that you expect will meet the inclusion criteria
+eventually but doesn't yet, start by having your things in a separate zip
+and move it to the main zip once the criteria are met.
