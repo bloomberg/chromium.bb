@@ -2318,6 +2318,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
     return;
   }
 
+  auto console_observer =
+      base::MakeRefCounted<ConsoleMessageContextObserver>(wrapper());
+  console_observer->Init();
+
   content::ResourceDispatcherHost::Get()->RegisterInterceptor(
       kNavigationPreloadHeaderName, "",
       base::Bind(&CancellingInterceptorCallback));
@@ -2332,6 +2336,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
 
   EXPECT_EQ(kNavigationPreloadAbortError,
             LoadNavigationPreloadTestPage(page_url, worker_url, "REJECTED"));
+
+  console_observer->WaitForConsoleMessages(1);
+  const base::string16 expected = base::ASCIIToUTF16("request was cancelled");
+  std::vector<base::string16> messages = console_observer->messages();
+  EXPECT_NE(base::string16::npos, messages[0].find(expected));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,

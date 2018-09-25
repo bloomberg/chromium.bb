@@ -435,11 +435,15 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
   DCHECK(WorkerGlobalScope()->IsContextThread());
   FetchEvent* fetch_event = pending_preload_fetch_events_.Take(fetch_event_id);
   DCHECK(fetch_event);
-  // Display an unsanitized console message.
-  if (!error->unsanitized_message.IsEmpty()) {
+  // Display an error message to the console, preferring the unsanitized one if
+  // available.
+  const WebString& error_message = error->unsanitized_message.IsEmpty()
+                                       ? error->message
+                                       : error->unsanitized_message;
+  if (!error_message.IsEmpty()) {
     WorkerGlobalScope()->AddConsoleMessage(ConsoleMessage::Create(
         kWorkerMessageSource, blink::MessageLevel::kErrorMessageLevel,
-        error->unsanitized_message));
+        error_message));
   }
   // Reject the preloadResponse promise.
   fetch_event->OnNavigationPreloadError(
