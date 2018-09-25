@@ -3320,7 +3320,7 @@ TEST_F(WebContentsImplTest, MediaWakeLock) {
   // on.
   rfh->OnMessageReceived(
       MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted(
-          0, kPlayerAudioVideoId, surface_id, gfx::Size(), 0));
+          0, kPlayerAudioVideoId, surface_id, gfx::Size(), 0, true));
   EXPECT_TRUE(has_video_wake_lock());
   EXPECT_FALSE(has_audio_wake_lock());
 
@@ -3412,6 +3412,7 @@ class TestOverlayWindow : public OverlayWindow {
   gfx::Rect GetBounds() const override { return gfx::Rect(); }
   void UpdateVideoSize(const gfx::Size& natural_size) override {}
   void SetPlaybackState(PlaybackState playback_state) override {}
+  void SetAlwaysHidePlayPauseButton(bool is_visible) override {}
   ui::Layer* GetWindowBackgroundLayer() override { return nullptr; }
   ui::Layer* GetVideoLayer() override { return nullptr; }
   gfx::Rect GetVideoBounds() override { return gfx::Rect(); }
@@ -3466,7 +3467,8 @@ TEST_F(WebContentsImplTest, EnterPictureInPicture) {
   rfh->OnMessageReceived(
       MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted(
           rfh->GetRoutingID(), kPlayerVideoOnlyId, surface_id /* surface_id */,
-          gfx::Size(42, 42) /* natural_size */, 1 /* request_id */));
+          gfx::Size(42, 42) /* natural_size */, 1 /* request_id */,
+          true /* show_play_pause_button */));
   EXPECT_TRUE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
   EXPECT_EQ(kPlayerVideoOnlyId,
             observer->GetPictureInPictureVideoMediaPlayerId()->delegate_id);

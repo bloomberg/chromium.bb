@@ -50,6 +50,7 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT bool TogglePlayPause() override;
   CONTENT_EXPORT void UpdatePlaybackState(bool is_playing,
                                           bool reached_end_of_stream) override;
+  CONTENT_EXPORT void SetAlwaysHidePlayPauseButton(bool is_visible) override;
 
  private:
   friend class WebContentsUserData<PictureInPictureWindowControllerImpl>;

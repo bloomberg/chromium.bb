@@ -450,8 +450,15 @@ void WebMediaPlayerMS::UnregisterContentsLayer(cc::Layer* layer) {
 }
 
 void WebMediaPlayerMS::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
-  // TODO(apacible): Add implementation. See http://crbug/746182.
-  NOTIMPLEMENTED();
+  // TODO(726619): Handle the behavior when Picture-in-Picture mode is
+  // disabled.
+  // The viz::SurfaceId may be updated when the video begins playback or when
+  // the size of the video changes.
+  if (client_ && IsInPictureInPicture() && !client_->IsInAutoPIP()) {
+    delegate_->DidPictureInPictureSurfaceChange(
+        delegate_id_, surface_id, NaturalSize(),
+        false /* show_play_pause_button */);
+  }
 }
 
 void WebMediaPlayerMS::TrackAdded(const blink::WebMediaStreamTrack& track) {
@@ -663,36 +670,39 @@ void WebMediaPlayerMS::SetVolume(double volume) {
 
 void WebMediaPlayerMS::EnterPictureInPicture(
     blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
-  // TODO(crbug.com/806249): Use Picture-in-Picture window size.
-  std::move(callback).Run(this->NaturalSize());
+  DCHECK(bridge_);
 
-  NOTIMPLEMENTED();
-  // TODO(apacible): Implement after video in surfaces is supported for
-  // WebMediaPlayerMS. See http://crbug/746182.
+  const viz::SurfaceId& surface_id = bridge_->GetSurfaceId();
+  DCHECK(surface_id.is_valid());
+
+  // Notifies the browser process that the player should now be in
+  // Picture-in-Picture mode.
+  delegate_->DidPictureInPictureModeStart(delegate_id_, surface_id,
+                                          NaturalSize(), std::move(callback),
+                                          false /* show_play_pause_button */);
 }
 
 void WebMediaPlayerMS::ExitPictureInPicture(
     blink::WebMediaPlayer::PipWindowClosedCallback callback) {
-  // TODO(crbug.com/806249): Run callback when Picture-in-Picture window closes.
-  std::move(callback).Run();
+  // Notifies the browser process that Picture-in-Picture has ended. It will
+  // clear out the states and close the window.
+  delegate_->DidPictureInPictureModeEnd(delegate_id_, std::move(callback));
 
-  NOTIMPLEMENTED();
-  // TODO(apacible): Implement after video in surfaces is supported for
-  // WebMediaPlayerMS. See http://crbug/746182.
+  // Internal cleanups.
+  OnPictureInPictureModeEnded();
 }
 
 void WebMediaPlayerMS::SetPictureInPictureCustomControls(
     const std::vector<blink::PictureInPictureControlInfo>& controls) {
-  NOTIMPLEMENTED();
-  // TODO(apacible): Implement after video in surfaces is supported for
-  // WebMediaPlayerMS. See http://crbug/746182.
+  delegate_->DidSetPictureInPictureCustomControls(delegate_id_, controls);
 }
 
 void WebMediaPlayerMS::RegisterPictureInPictureWindowResizeCallback(
-    blink::WebMediaPlayer::PipWindowResizedCallback) {
-  NOTIMPLEMENTED();
-  // TODO(apacible): Implement after video in surfaces is supported for
-  // WebMediaPlayerMS. See http://crbug/746182.
+    blink::WebMediaPlayer::PipWindowResizedCallback callback) {
+  DCHECK(IsInPictureInPicture() && !client_->IsInAutoPIP());
+
+  delegate_->RegisterPictureInPictureWindowResizeCallback(delegate_id_,
+                                                          std::move(callback));
 }
 
 void WebMediaPlayerMS::SetSinkId(
@@ -962,7 +972,12 @@ void WebMediaPlayerMS::OnBecamePersistentVideo(bool value) {
 }
 
 void WebMediaPlayerMS::OnPictureInPictureModeEnded() {
-  NOTIMPLEMENTED();
+  // It is possible for this method to be called when the player is no longer in
+  // Picture-in-Picture mode.
+  if (!client_ || !IsInPictureInPicture())
+    return;
+
+  client_->PictureInPictureStopped();
 }
 
 void WebMediaPlayerMS::OnPictureInPictureControlClicked(
@@ -1161,8 +1176,10 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
 }
 
 bool WebMediaPlayerMS::IsInPictureInPicture() const {
-  // TODO(apacible): Add implementation. See http://crbug/746182.
-  return false;
+  DCHECK(client_);
+  return (!client_->IsInAutoPIP() &&
+          client_->DisplayType() ==
+              WebMediaPlayer::DisplayType::kPictureInPicture);
 }
 
 void WebMediaPlayerMS::RepaintInternal() {

@@ -440,7 +440,8 @@ void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
   // the size of the video changes.
   if (client_ && IsInPictureInPicture() && !client_->IsInAutoPIP()) {
     delegate_->DidPictureInPictureSurfaceChange(
-        delegate_id_, surface_id, pipeline_metadata_.natural_size);
+        delegate_id_, surface_id, pipeline_metadata_.natural_size,
+        true /* show_play_pause_button */);
   }
 }
 
@@ -824,9 +825,9 @@ void WebMediaPlayerImpl::EnterPictureInPicture(
 
   // Notifies the browser process that the player should now be in
   // Picture-in-Picture mode.
-  delegate_->DidPictureInPictureModeStart(delegate_id_, surface_id,
-                                          pipeline_metadata_.natural_size,
-                                          std::move(callback));
+  delegate_->DidPictureInPictureModeStart(
+      delegate_id_, surface_id, pipeline_metadata_.natural_size,
+      std::move(callback), true /* show_play_pause_button */);
 }
 
 void WebMediaPlayerImpl::ExitPictureInPicture(
