@@ -83,6 +83,12 @@
 
   // Add the app bar at the end.
   [self addChildViewController:_appBarViewController];
+  // Match the width of the parent view.
+  CGRect frame = _appBarViewController.view.frame;
+  frame.origin.x = 0;
+  frame.size.width =
+      _appBarViewController.parentViewController.view.bounds.size.width;
+  _appBarViewController.view.frame = frame;
   [self.view addSubview:_appBarViewController.view];
   [_appBarViewController didMoveToParentViewController:self];
 
