@@ -1253,11 +1253,12 @@ bool CanViewSource(const Browser* browser) {
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-void CreateBookmarkAppFromCurrentWebContents(Browser* browser) {
+void CreateBookmarkAppFromCurrentWebContents(Browser* browser,
+                                             bool force_shortcut_app) {
   base::RecordAction(UserMetricsAction("CreateHostedApp"));
   extensions::TabHelper::FromWebContents(
-      browser->tab_strip_model()->GetActiveWebContents())->
-          CreateHostedAppFromWebContents();
+      browser->tab_strip_model()->GetActiveWebContents())
+      ->CreateHostedAppFromWebContents(force_shortcut_app);
 }
 
 bool CanCreateBookmarkApp(const Browser* browser) {

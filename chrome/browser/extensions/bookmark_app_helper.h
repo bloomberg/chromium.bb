@@ -87,6 +87,10 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   bool is_policy_installed_app() { return is_policy_installed_app_; }
 
+  // Forces the creation of a shortcut app instead of a PWA even if installation
+  // is available.
+  void set_shortcut_app_requested() { shortcut_app_requested_ = true; }
+
   // If called, the installed extension will be considered default installed.
   void set_is_default_app() { is_default_app_ = true; }
 
@@ -170,6 +174,8 @@ class BookmarkAppHelper : public content::NotificationObserver {
   base::Optional<LaunchType> forced_launch_type_;
 
   bool is_policy_installed_app_ = false;
+
+  bool shortcut_app_requested_ = false;
 
   bool is_default_app_ = false;
 
