@@ -151,34 +151,32 @@ class CONTENT_EXPORT RenderWidget
     TTFAP_5MIN_AFTER_BACKGROUNDED,
   };
 
+  // An Init*() method must be called after creating a RenderWidget, which will
+  // make the RenderWidget self-referencing. Then it can be deleted by calling
+  // Close().
+  RenderWidget(int32_t widget_routing_id,
+               CompositorDependencies* compositor_deps,
+               WidgetType widget_type,
+               const ScreenInfo& screen_info,
+               blink::WebDisplayMode display_mode,
+               bool swapped_out,
+               bool hidden,
+               bool never_visible,
+               mojom::WidgetRequest widget_request = nullptr);
+
   // Creates a new RenderWidget for a popup. |opener| is the RenderView that
   // this widget lives inside.
+  // TODO(danakj): Change this to InitForPopup() and use the public constructor
+  // from RenderViewImpl, moving code specific to that class out of the method.
   static RenderWidget* CreateForPopup(RenderViewImpl* opener,
                                       CompositorDependencies* compositor_deps,
                                       const ScreenInfo& screen_info);
 
-  // Creates a new RenderWidget that will be attached to a RenderFrame.
-  static RenderWidget* CreateForFrame(int widget_routing_id,
-                                      bool hidden,
-                                      const ScreenInfo& screen_info,
-                                      CompositorDependencies* compositor_deps,
-                                      blink::WebLocalFrame* frame);
-
-  // Used by content_layouttest_support to hook into the creation of
-  // RenderWidgets.
-  using CreateRenderWidgetFunction =
-      RenderWidget* (*)(int32_t,
-                        CompositorDependencies*,
-                        WidgetType,
-                        const ScreenInfo&,
-                        blink::WebDisplayMode display_mode,
-                        bool,
-                        bool,
-                        bool);
-  using RenderWidgetInitializedCallback = void (*)(RenderWidget*);
-  static void InstallCreateHook(
-      CreateRenderWidgetFunction create_render_widget,
-      RenderWidgetInitializedCallback render_widget_initialized_callback);
+  // Initialize a new RenderWidget that will be attached to a RenderFrame (via
+  // the WebFrameWidget), for a frame that is a local root, but not the main
+  // frame. This method increments the reference count on the RenderWidget,
+  // making it self-referencing, which can be released by calling Close().
+  void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget);
 
   void set_owner_delegate(RenderWidgetOwnerDelegate* owner_delegate) {
     DCHECK(!owner_delegate_);
@@ -531,22 +529,7 @@ class CONTENT_EXPORT RenderWidget
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
  protected:
-  RenderWidget(int32_t widget_routing_id,
-               CompositorDependencies* compositor_deps,
-               WidgetType popup_type,
-               const ScreenInfo& screen_info,
-               blink::WebDisplayMode display_mode,
-               bool swapped_out,
-               bool hidden,
-               bool never_visible,
-               mojom::WidgetRequest widget_request = nullptr);
-
-  // Avoid making RenderWidget other than as a refptr.
   ~RenderWidget() override;
-
-  static blink::WebFrameWidget* CreateWebFrameWidget(
-      blink::WebWidgetClient* widget_client,
-      blink::WebLocalFrame* frame);
 
   // Called by Create() functions and subclasses to finish initialization.
   // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
@@ -885,7 +868,7 @@ class CONTENT_EXPORT RenderWidget
   gfx::Range composition_range_;
 
   // The kind of popup this widget represents, NONE if not a popup.
-  WidgetType popup_type_;
+  WidgetType widget_type_;
 
   // While we are waiting for the browser to update window sizes, we track the
   // pending size temporarily.

@@ -237,9 +237,9 @@ RenderWidget* GetRenderWidget(
 
 void EnableWebTestProxyCreation() {
   RenderViewImpl::InstallCreateHook(CreateWebViewTestProxy);
-  RenderWidget::InstallCreateHook(CreateWebWidgetTestProxy,
-                                  RenderWidgetInitialized);
-  RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
+  RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy,
+                                     CreateWebWidgetTestProxy,
+                                     RenderWidgetInitialized);
 }
 
 void FetchManifest(blink::WebView* view, FetchManifestCallback callback) {

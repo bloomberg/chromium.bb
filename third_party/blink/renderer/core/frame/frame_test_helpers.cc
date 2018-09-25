@@ -179,7 +179,8 @@ WebMouseEvent CreateMouseEvent(WebInputEvent::Type type,
 WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
                                     WebTreeScopeType scope,
                                     TestWebFrameClient* client) {
-  auto owned_client = CreateDefaultClientIfNeeded(client);
+  std::unique_ptr<TestWebFrameClient> owned_client =
+      CreateDefaultClientIfNeeded(client);
   WebLocalFrameImpl* frame =
       ToWebLocalFrameImpl(parent.CreateLocalChild(scope, client, nullptr));
   client->Bind(frame, std::move(owned_client));
@@ -200,34 +201,33 @@ WebLocalFrameImpl* CreateLocalChild(
 
 WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
                                      TestWebFrameClient* client) {
-  auto owned_client = CreateDefaultClientIfNeeded(client);
+  std::unique_ptr<TestWebFrameClient> owned_client =
+      CreateDefaultClientIfNeeded(client);
   WebLocalFrameImpl* frame =
       ToWebLocalFrameImpl(WebLocalFrame::CreateProvisional(
           client, nullptr, &old_frame, WebSandboxFlags::kNone,
           ParsedFeaturePolicy()));
   client->Bind(frame, std::move(owned_client));
   // Create a local root, if necessary.
-  std::unique_ptr<WebWidgetClient> owned_widget_client;
-  WebWidgetClient* widget_client = nullptr;
   if (!frame->Parent()) {
     // TODO(dcheng): The main frame widget currently has a special case.
     // Eliminate this once WebView is no longer a WebWidget.
-    widget_client = frame->ViewImpl()->Client()->WidgetClient();
+    WebWidgetClient* widget_client =
+        frame->ViewImpl()->Client()->WidgetClient();
+    WebFrameWidget::CreateForMainFrame(widget_client, frame);
   } else if (frame->Parent()->IsWebRemoteFrame()) {
-    owned_widget_client = std::make_unique<TestWebWidgetClient>();
-    widget_client = owned_widget_client.get();
+    auto widget_client = std::make_unique<TestWebWidgetClient>();
+    WebFrameWidget* frame_widget =
+        WebFrameWidget::CreateForChildLocalRoot(widget_client.get(), frame);
+    frame_widget->Resize(WebSize());
+    client->BindWidgetClient(std::move(widget_client));
   }
-  if (widget_client) {
-    WebFrameWidget::Create(widget_client, frame);
-    if (frame->Parent())
-      frame->FrameWidget()->Resize(WebSize());
-  }
-  client->BindWidgetClient(std::move(owned_widget_client));
   return frame;
 }
 
 WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
-  auto owned_client = CreateDefaultClientIfNeeded(client);
+  std::unique_ptr<TestWebRemoteFrameClient> owned_client =
+      CreateDefaultClientIfNeeded(client);
   auto* frame = WebRemoteFrameImpl::Create(WebTreeScopeType::kDocument, client);
   client->Bind(frame, std::move(owned_client));
   return frame;
@@ -239,14 +239,16 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
                                     WebFrame* previous_sibling,
                                     TestWebFrameClient* client,
                                     TestWebWidgetClient* widget_client) {
-  auto owned_client = CreateDefaultClientIfNeeded(client);
-  auto* frame = ToWebLocalFrameImpl(parent.CreateLocalChild(
+  std::unique_ptr<TestWebFrameClient> owned_client =
+      CreateDefaultClientIfNeeded(client);
+  WebLocalFrameImpl* frame = ToWebLocalFrameImpl(parent.CreateLocalChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
       nullptr, previous_sibling, ParsedFeaturePolicy(), properties, nullptr));
   client->Bind(frame, std::move(owned_client));
 
-  auto owned_widget_client = CreateDefaultClientIfNeeded(widget_client);
-  WebFrameWidget::Create(widget_client, frame);
+  std::unique_ptr<TestWebWidgetClient> owned_widget_client =
+      CreateDefaultClientIfNeeded(widget_client);
+  WebFrameWidget::CreateForChildLocalRoot(widget_client, frame);
   // Set an initial size for subframes.
   if (frame->Parent())
     frame->FrameWidget()->Resize(WebSize());
@@ -259,7 +261,8 @@ WebRemoteFrameImpl* CreateRemoteChild(
     const WebString& name,
     scoped_refptr<SecurityOrigin> security_origin,
     TestWebRemoteFrameClient* client) {
-  auto owned_client = CreateDefaultClientIfNeeded(client);
+  std::unique_ptr<TestWebRemoteFrameClient> owned_client =
+      CreateDefaultClientIfNeeded(client);
   auto* frame = ToWebRemoteFrameImpl(parent.CreateRemoteChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone,
       ParsedFeaturePolicy(), client, nullptr));
@@ -289,7 +292,8 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   if (update_settings_func)
     update_settings_func(web_view_->GetSettings());
 
-  auto owned_web_frame_client = CreateDefaultClientIfNeeded(web_frame_client);
+  std::unique_ptr<TestWebFrameClient> owned_web_frame_client =
+      CreateDefaultClientIfNeeded(web_frame_client);
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
       web_view_, web_frame_client, nullptr, opener);
   web_frame_client->Bind(frame, std::move(owned_web_frame_client));
@@ -299,7 +303,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   WebWidgetClient* web_widget_client = test_web_widget_client;
   if (!web_widget_client)
     web_widget_client = test_web_view_client_->WidgetClient();
-  blink::WebFrameWidget::Create(web_widget_client, frame);
+  blink::WebFrameWidget::CreateForMainFrame(web_widget_client, frame);
   // Set an initial size for subframes.
   if (frame->Parent())
     frame->FrameWidget()->Resize(WebSize());
@@ -338,7 +342,7 @@ WebViewImpl* WebViewHelper::InitializeRemote(
 
   InitializeWebView(web_view_client, nullptr);
 
-  auto owned_web_remote_frame_client =
+  std::unique_ptr<TestWebRemoteFrameClient> owned_web_remote_frame_client =
       CreateDefaultClientIfNeeded(web_remote_frame_client);
   WebRemoteFrameImpl* frame = WebRemoteFrameImpl::CreateMainFrame(
       web_view_, web_remote_frame_client, nullptr);
