@@ -294,6 +294,7 @@ void UnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
     // Ensure that a notification is not removed or added during iteration.
     DCHECK_EQ(count, message_list_view_->GetNotificationCount());
   }
+  OnMessageCenterScrolled();
 }
 
 void UnifiedMessageCenterView::OnAllNotificationsCleared() {
