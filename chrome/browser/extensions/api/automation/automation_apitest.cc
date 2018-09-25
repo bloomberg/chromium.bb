@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopHitTestIframe) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusViews) {
-  AutomationManagerAura::GetInstance()->Enable(browser()->profile());
+  AutomationManagerAura::GetInstance()->Enable();
   // Trigger the shelf subtree to be computed.
   ash::Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
       ash::FOCUS_SHELF);
@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotRequested) {
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopActions) {
-  AutomationManagerAura::GetInstance()->Enable(browser()->profile());
+  AutomationManagerAura::GetInstance()->Enable();
   // Trigger the shelf subtree to be computed.
   ash::Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
       ash::FOCUS_SHELF);

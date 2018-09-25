@@ -544,7 +544,7 @@ AutomationInternalEnableDesktopFunction::Run() {
   AutomationEventRouter::GetInstance()->RegisterListenerWithDesktopPermission(
       extension_id(), source_process_id());
 
-  AutomationManagerAura::GetInstance()->Enable(browser_context());
+  AutomationManagerAura::GetInstance()->Enable();
   return RespondNow(NoArguments());
 #else
   return RespondNow(Error("getDesktop is unsupported by this platform"));

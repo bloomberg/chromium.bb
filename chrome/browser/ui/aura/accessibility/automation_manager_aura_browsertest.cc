@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, WebAppearsOnce) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
 
   AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
-  manager->Enable(browser()->profile());
+  manager->Enable();
   auto* tree = manager->current_tree_.get();
 
   ui_test_utils::NavigateToURL(
@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, WebAppearsOnce) {
 IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
                        TransientFocusChangesAreSuppressed) {
   AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
-  manager->Enable(browser()->profile());
+  manager->Enable();
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);

@@ -128,8 +128,7 @@ void ChromeViewsDelegate::NotifyAccessibilityEvent(
     views::View* view,
     ax::mojom::Event event_type) {
 #if defined(USE_AURA)
-  AutomationManagerAura::GetInstance()->HandleEvent(
-      GetProfileForWindow(view->GetWidget()), view, event_type);
+  AutomationManagerAura::GetInstance()->HandleEvent(view, event_type);
 #endif
 }
 
