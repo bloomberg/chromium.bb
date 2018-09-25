@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/shared_worker/mock_shared_worker.h"
 #include "content/browser/shared_worker/shared_worker_connector_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
@@ -21,17 +22,64 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "url/origin.h"
 
 using blink::MessagePortChannel;
 
 namespace content {
 
+namespace {
+
+// A mock URLLoaderFactory which just fails to create a loader. This is
+// sufficient because the tests don't exercise script loading.
+class NotImplementedNetworkURLLoaderFactory final
+    : public network::mojom::URLLoaderFactory {
+ public:
+  NotImplementedNetworkURLLoaderFactory() = default;
+
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& url_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    network::URLLoaderCompletionStatus status;
+    status.error_code = net::ERR_NOT_IMPLEMENTED;
+    client->OnComplete(status);
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+ private:
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotImplementedNetworkURLLoaderFactory);
+};
+
+}  // namespace
+
 class SharedWorkerHostTest : public testing::Test {
  public:
+  void SetUp() override {
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    mock_url_loader_factory_ =
+        std::make_unique<NotImplementedNetworkURLLoaderFactory>();
+    mock_render_process_host_.OverrideURLLoaderFactory(
+        mock_url_loader_factory_.get());
+  }
+
   SharedWorkerHostTest()
       : mock_render_process_host_(&browser_context_),
         service_(nullptr /* storage_partition */,
@@ -63,11 +111,50 @@ class SharedWorkerHostTest : public testing::Test {
 
   void StartWorker(SharedWorkerHost* host,
                    mojom::SharedWorkerFactoryPtr factory) {
-    host->Start(std::move(factory), nullptr /* service_worker_provider_info */,
-                {} /* main_script_loader_factory */,
-                nullptr /* subresource_loader_factories */,
-                nullptr /* main_script_load_params */,
-                base::nullopt /* subresource_loader_params */);
+    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr provider_info = nullptr;
+    network::mojom::URLLoaderFactoryAssociatedPtrInfo
+        main_script_loader_factory;
+    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params;
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
+    base::Optional<SubresourceLoaderParams> subresource_loader_params;
+
+    // Set up various mocks based on NetworkService/S13nServiceWorker
+    // configuration. See the comment on SharedWorkerHost::Start() for details.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      provider_info = mojom::ServiceWorkerProviderInfoForSharedWorker::New();
+      ServiceWorkerProviderHost::PreCreateForSharedWorker(
+          helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
+          &provider_info);
+
+      main_script_load_params =
+          blink::mojom::SharedWorkerMainScriptLoadParams::New();
+      subresource_loader_factories.reset(new URLLoaderFactoryBundleInfo());
+      subresource_loader_params = SubresourceLoaderParams();
+
+      network::mojom::URLLoaderFactoryPtr loader_factory_ptr;
+      mojo::MakeStrongBinding(
+          std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
+          mojo::MakeRequest(&loader_factory_ptr));
+
+      subresource_loader_params->loader_factory_info =
+          loader_factory_ptr.PassInterface();
+    } else if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+      provider_info = mojom::ServiceWorkerProviderInfoForSharedWorker::New();
+      ServiceWorkerProviderHost::PreCreateForSharedWorker(
+          helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
+          &provider_info);
+
+      mojo::MakeStrongAssociatedBinding(
+          std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
+          mojo::MakeRequest(&main_script_loader_factory));
+      subresource_loader_factories.reset(new URLLoaderFactoryBundleInfo());
+    }
+
+    host->Start(std::move(factory), std::move(provider_info),
+                std::move(main_script_loader_factory),
+                std::move(main_script_load_params),
+                std::move(subresource_loader_factories),
+                std::move(subresource_loader_params));
   }
 
   MessagePortChannel AddClient(SharedWorkerHost* host,
@@ -83,7 +170,11 @@ class SharedWorkerHostTest : public testing::Test {
  protected:
   TestBrowserThreadBundle test_browser_thread_bundle_;
   TestBrowserContext browser_context_;
+  // This URLLoaderFactory is used in MockRenderProcessHost.
+  std::unique_ptr<NotImplementedNetworkURLLoaderFactory>
+      mock_url_loader_factory_;
   MockRenderProcessHost mock_render_process_host_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 
   SharedWorkerServiceImpl service_;
 
@@ -192,13 +283,8 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
   // Create the factory.
   mojom::SharedWorkerFactoryPtr factory;
   MockSharedWorkerFactory factory_impl(mojo::MakeRequest(&factory));
-
   // Start the worker.
-  host->Start(std::move(factory), nullptr /* service_worker_provider_info */,
-              {} /* main_script_loader_factory */,
-              nullptr /* subresource_loader_factories */,
-              nullptr /* resource_load_info */,
-              base::nullopt /* subresource_loader_params */);
+  StartWorker(host.get(), std::move(factory));
 
   // Add a client.
   MockSharedWorkerClient client;
