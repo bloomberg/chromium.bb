@@ -258,17 +258,8 @@ camera.views.camera.Options.prototype.onSwitchTakePhotoClicked_ = function(
  * @private
  */
 camera.views.camera.Options.prototype.onToggleDeviceClicked_ = function(event) {
-  // TODO(yuli): Use camera.util.animateOnce to apply animation.
-  this.toggleDevice_.classList.remove('animate');
   this.videoDeviceIds_.then(deviceIds => {
-    var onTransitionEnd = (event) => {
-      this.toggleDevice_.removeEventListener('transitionend', onTransitionEnd);
-      this.toggleDevice_.classList.remove('animate');
-    };
-    this.toggleDevice_.addEventListener('transitionend', onTransitionEnd);
-    this.toggleDevice_.offsetWidth;  // Force recalculation for animation.
-    this.toggleDevice_.classList.add('animate');
-
+    camera.util.animateOnce(this.toggleDevice_);
     var index = deviceIds.indexOf(this.videoDeviceId_);
     if (index == -1) {
       index = 0;
