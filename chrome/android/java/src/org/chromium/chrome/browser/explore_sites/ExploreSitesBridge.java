@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
+import android.graphics.Bitmap;
+
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -29,6 +31,10 @@ public class ExploreSitesBridge {
         nativeGetEspCatalog(profile, result, callback);
     }
 
+    public static void getSiteImage(Profile profile, int siteID, Callback<Bitmap> callback) {
+        nativeGetIcon(profile, siteID, callback);
+    }
+
     /**
      * Causes a network request for updating the catalog.
      */
@@ -48,4 +54,7 @@ public class ExploreSitesBridge {
     static native int nativeGetVariation();
     private static native void nativeGetEspCatalog(Profile profile,
             List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);
+
+    private static native void nativeGetIcon(
+            Profile profile, int siteID, Callback<Bitmap> callback);
 }
