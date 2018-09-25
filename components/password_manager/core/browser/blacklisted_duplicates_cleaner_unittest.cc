@@ -81,7 +81,13 @@ TEST_F(BlacklistedDuplicatesCleanerTest, RemoveBlacklistedDuplicates) {
   prefs()->registry()->RegisterBooleanPref(
       prefs::kDuplicatedBlacklistedCredentialsRemoved, false);
 
-  password_manager_util::DeleteBlacklistedDuplicates(store(), prefs(), 0);
+  // In this test we are explicitly only testing the clean up of duplicated
+  // credentials and setting this true will prevent making another unrelated
+  // clean-up.
+  prefs()->registry()->RegisterBooleanPref(
+      prefs::kCredentialsWithWrongSignonRealmRemoved, true);
+
+  password_manager_util::RemoveUselessCredentials(store(), prefs(), 0);
   scoped_task_environment.RunUntilIdle();
 
   // Check that one of the next two forms was removed.
@@ -93,7 +99,7 @@ TEST_F(BlacklistedDuplicatesCleanerTest, RemoveBlacklistedDuplicates) {
   EXPECT_FALSE(
       prefs()->GetBoolean(prefs::kDuplicatedBlacklistedCredentialsRemoved));
 
-  password_manager_util::DeleteBlacklistedDuplicates(store(), prefs(), 0);
+  password_manager_util::RemoveUselessCredentials(store(), prefs(), 0);
   scoped_task_environment.RunUntilIdle();
   EXPECT_TRUE(
       prefs()->GetBoolean(prefs::kDuplicatedBlacklistedCredentialsRemoved));

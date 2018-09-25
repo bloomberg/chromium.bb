@@ -92,9 +92,15 @@ void UserTriggeredShowAllSavedPasswordsFromContextMenu(
 void UserTriggeredManualGenerationFromContextMenu(
     password_manager::PasswordManagerClient* password_manager_client);
 
-// Two blacklisted forms are considered equal if they have the same
-// signon_realm.
-void DeleteBlacklistedDuplicates(
+// This function handles the following clean-ups of credentials:
+// (1) Removing blacklisted duplicates: if two blacklisted credentials have the
+// same signon_realm, they are duplicates of each other. Deleting all but one
+// sharing the signon_realm does not affect Chrome's behaviour and hence
+// duplicates can be removed. Having duplicates makes un-blacklisting not work,
+// hence blacklisted duplicates need to be removed.
+// (2) Removing or fixing of HTTPS credentials with wrong signon_realm. See
+// https://crbug.com/881731 for details.
+void RemoveUselessCredentials(
     scoped_refptr<password_manager::PasswordStore> store,
     PrefService* prefs,
     int delay_in_seconds);

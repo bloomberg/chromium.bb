@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -20,6 +21,8 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,6 +46,13 @@ autofill::PasswordForm GetTestAndroidCredentials(const char* signon_realm) {
   form.username_value = base::ASCIIToUTF16(kTestUsername);
   form.password_value = base::ASCIIToUTF16(kTestPassword);
   return form;
+}
+
+bool StoreContains(password_manager::TestPasswordStore* store,
+                   const autofill::PasswordForm& form) {
+  const auto it = store->stored_passwords().find(form.signon_realm);
+  return it != store->stored_passwords().end() &&
+         base::ContainsValue(it->second, form);
 }
 
 // The argument is std::vector<autofill::PasswordForm*>*. The caller is
@@ -258,6 +268,125 @@ TEST(PasswordManagerUtil, ReportHttpMigrationMetrics) {
   }
 }
 #endif  // !defined(OS_IOS)
+
+// This test is supposed to check the behavior when:
+// 1. User blacklisted on http site two forms (they being considered
+// duplicated because they have the same signon_realm).
+// 2. They are faulty migrated, resulting in 2 blacklisted invalid credentials.
+// Check that both duplicated and invalid credentials are
+// correctly deleted.
+TEST(PasswordManagerUtil,
+     RemoveInvalidHttpsCredentialsAndBlacklistedDuplicates) {
+  for (auto scheme : {autofill::PasswordForm::Scheme::SCHEME_HTML,
+                      autofill::PasswordForm::Scheme::SCHEME_BASIC}) {
+    SCOPED_TRACE(testing::Message() << "scheme=" << static_cast<int>(scheme));
+
+    base::test::ScopedTaskEnvironment scoped_task_environment;
+    auto password_store =
+        base::MakeRefCounted<password_manager::TestPasswordStore>();
+    ASSERT_TRUE(password_store->Init(syncer::SyncableService::StartSyncFlare(),
+                                     nullptr));
+
+    autofill::PasswordForm http_blacklisted;
+    http_blacklisted.origin = GURL("http://example.com/something/");
+    http_blacklisted.signon_realm = "http://example.com/";
+    http_blacklisted.blacklisted_by_user = true;
+    http_blacklisted.date_created = base::Time::FromDoubleT(100);
+    http_blacklisted.scheme = scheme;
+    password_store->AddLogin(http_blacklisted);
+
+    // Duplicate version of |http_blacklisted|.
+    autofill::PasswordForm http_blacklisted_duplicate;
+    http_blacklisted_duplicate.origin = GURL("http://example.com/something-2/");
+    http_blacklisted_duplicate.signon_realm = "http://example.com/";
+    http_blacklisted_duplicate.blacklisted_by_user = true;
+    http_blacklisted_duplicate.date_created = base::Time::FromDoubleT(200);
+    http_blacklisted_duplicate.scheme = scheme;
+    password_store->AddLogin(http_blacklisted_duplicate);
+
+    // Migrated version of |http_blacklisted|.
+    autofill::PasswordForm invalid_blacklisted = http_blacklisted;
+    invalid_blacklisted.origin = GURL("https://example.com/something/");
+    invalid_blacklisted.signon_realm = "https://example.com/something/";
+    password_store->AddLogin(invalid_blacklisted);
+
+    // Migrated version of |http_blacklisted_duplicate|.
+    autofill::PasswordForm invalid_blacklisted_duplicate =
+        http_blacklisted_duplicate;
+    invalid_blacklisted_duplicate.origin =
+        GURL("https://example.com/something-2/");
+    invalid_blacklisted_duplicate.signon_realm =
+        "https://example.com/something-2/";
+    password_store->AddLogin(invalid_blacklisted_duplicate);
+
+    // These credentials have to be untouched by cleaning of invalid https but
+    // one of them has to be removed by function that removes blacklisted
+    // duplicates.
+    autofill::PasswordForm https_blacklisted;
+    https_blacklisted.blacklisted_by_user = true;
+    https_blacklisted.origin = GURL("https://google.com/something/");
+    https_blacklisted.signon_realm = "https://google.com/";
+    https_blacklisted.scheme = scheme;
+    password_store->AddLogin(https_blacklisted);
+
+    autofill::PasswordForm https_blacklisted_duplicate = https_blacklisted;
+    https_blacklisted_duplicate.origin =
+        GURL("https://google.com/something-2/");
+    https_blacklisted_duplicate.signon_realm = "https://google.com/";
+    password_store->AddLogin(https_blacklisted_duplicate);
+
+    scoped_task_environment.RunUntilIdle();
+    // Check that all credentials were successfully added.
+    ASSERT_TRUE(StoreContains(password_store.get(), http_blacklisted));
+    ASSERT_TRUE(
+        StoreContains(password_store.get(), http_blacklisted_duplicate));
+    ASSERT_TRUE(StoreContains(password_store.get(), invalid_blacklisted));
+    ASSERT_TRUE(
+        StoreContains(password_store.get(), invalid_blacklisted_duplicate));
+    ASSERT_TRUE(StoreContains(password_store.get(), https_blacklisted));
+    ASSERT_TRUE(
+        StoreContains(password_store.get(), https_blacklisted_duplicate));
+
+    TestingPrefServiceSimple prefs;
+    prefs.registry()->RegisterBooleanPref(
+        password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved,
+        false);
+
+    prefs.registry()->RegisterBooleanPref(
+        password_manager::prefs::kCredentialsWithWrongSignonRealmRemoved,
+        false);
+
+    RemoveUselessCredentials(password_store, &prefs, 0);
+    scoped_task_environment.RunUntilIdle();
+
+    // Check that invalid credentials were removed.
+    EXPECT_FALSE(StoreContains(password_store.get(), invalid_blacklisted));
+    EXPECT_FALSE(
+        StoreContains(password_store.get(), invalid_blacklisted_duplicate));
+
+    // One of them has to be removed.
+    EXPECT_NE(StoreContains(password_store.get(), http_blacklisted),
+              StoreContains(password_store.get(), http_blacklisted_duplicate));
+    // One of them has to be removed.
+    EXPECT_NE(StoreContains(password_store.get(), https_blacklisted),
+              StoreContains(password_store.get(), https_blacklisted_duplicate));
+
+    RemoveUselessCredentials(password_store, &prefs, 0);
+    scoped_task_environment.RunUntilIdle();
+
+    // Nothing must be removed by a second call.
+    EXPECT_FALSE(StoreContains(password_store.get(), invalid_blacklisted));
+    EXPECT_FALSE(
+        StoreContains(password_store.get(), invalid_blacklisted_duplicate));
+    EXPECT_NE(StoreContains(password_store.get(), http_blacklisted),
+              StoreContains(password_store.get(), http_blacklisted_duplicate));
+    EXPECT_NE(StoreContains(password_store.get(), https_blacklisted),
+              StoreContains(password_store.get(), https_blacklisted_duplicate));
+
+    password_store->ShutdownOnUIThread();
+    scoped_task_environment.RunUntilIdle();
+  }
+}
 
 TEST(PasswordManagerUtil, FindBestMatches) {
   const int kNotFound = -1;
