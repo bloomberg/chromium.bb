@@ -84,22 +84,22 @@
             },
             "rendering.desktop": {},
             "rendering.mobile": {
-                "end": 97
+                "end": 96
             }
         }
     },
     "7": {
         "benchmarks": {
             "rendering.mobile": {
-                "begin": 97,
-                "end": 211
+                "begin": 96,
+                "end": 210
             }
         }
     },
     "8": {
         "benchmarks": {
             "rendering.mobile": {
-                "begin": 211,
+                "begin": 210,
                 "end": 358
             }
         }
@@ -124,8 +124,6 @@
             "speedometer-future": {},
             "speedometer2": {},
             "speedometer2-future": {},
-            "start_with_url.cold.startup_pages": {},
-            "start_with_url.warm.startup_pages": {},
             "startup.mobile": {},
             "system_health.common_desktop": {},
             "system_health.common_mobile": {
@@ -188,7 +186,7 @@
         }
     },
     "extra_infos": {
-        "num_stories": 1908,
+        "num_stories": 1904,
         "predicted_min_shard_time": 7492.0,
         "predicted_min_shard_index": 11,
         "predicted_max_shard_time": 8258.0,
@@ -199,11 +197,11 @@
         "shard #3": 7740.0,
         "shard #4": 7796.0,
         "shard #5": 7906.0,
-        "shard #6": 7892.0,
-        "shard #7": 7878.0,
-        "shard #8": 7816.0,
+        "shard #6": 7830.0,
+        "shard #7": 7882.0,
+        "shard #8": 7874.0,
         "shard #9": 7874.0,
-        "shard #10": 7920.0,
+        "shard #10": 7856.0,
         "shard #11": 7492.0,
         "shard #12": 8160.0,
         "shard #13": 8008.0,
