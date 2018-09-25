@@ -9,6 +9,7 @@
  * TODO(crbug.com/647084): Enable checkTypes error for this file.
  * @suppress {checkTypes}
  */
+goog.provide('__crWeb.suggestion');
 
 /* Beginning of anonymous object. */
 (function() {

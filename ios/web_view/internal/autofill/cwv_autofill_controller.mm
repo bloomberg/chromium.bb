@@ -376,8 +376,6 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
                     inFrame:(web::WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
 
-  [_JSSuggestionManager inject];
-
   NSString* nsFormName = base::SysUTF8ToNSString(params.form_name);
   NSString* nsFieldName = base::SysUTF8ToNSString(params.field_name);
   NSString* nsFieldIdentifier =
