@@ -75,7 +75,11 @@ CORSURLLoader::CORSURLLoader(
   SetCORSFlagIfNeeded();
 }
 
-CORSURLLoader::~CORSURLLoader() = default;
+CORSURLLoader::~CORSURLLoader() {
+  // Close pipes first to ignore possible subsequent callback invocations
+  // cased by |network_loader_|
+  network_client_binding_.Close();
+}
 
 void CORSURLLoader::Start() {
   if (fetch_cors_flag_ &&
@@ -417,19 +421,12 @@ void CORSURLLoader::StartNetworkRequest(
 
 void CORSURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
   forwarding_client_->OnComplete(status);
-
-  // Close pipes to ignore possible subsequent callback invocations.
-  network_client_binding_.Close();
-
-  forwarding_client_.reset();
-  network_loader_.reset();
-
   std::move(delete_callback_).Run(this);
   // |this| is deleted here.
 }
 
 void CORSURLLoader::OnConnectionError() {
-  HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
+  HandleComplete(URLLoaderCompletionStatus(net::ERR_ABORTED));
 }
 
 // This should be identical to CalculateCORSFlag defined in
