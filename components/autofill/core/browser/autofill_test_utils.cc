@@ -428,6 +428,14 @@ CreditCard GetMaskedServerCardAmex() {
   return credit_card;
 }
 
+CreditCard GetFullServerCard() {
+  CreditCard credit_card(CreditCard::FULL_SERVER_CARD, "c123");
+  test::SetCreditCardInfo(&credit_card, "Full Carter",
+                          "4111111111111111" /* Visa */, "12", "2020", "1");
+  credit_card.set_card_type(CreditCard::CARD_TYPE_CREDIT);
+  return credit_card;
+}
+
 CreditCard GetRandomCreditCard(CreditCard::RecordType record_type) {
   static const char* const kNetworks[] = {
       kAmericanExpressCard,

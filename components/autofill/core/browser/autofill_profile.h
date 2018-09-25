@@ -25,6 +25,8 @@
 
 namespace autofill {
 
+struct AutofillMetadata;
+
 // A collection of FormGroups stored in a profile.  AutofillProfile also
 // implements the FormGroup interface so that owners of this object can request
 // form information from the profile, and the profile will delegate the request
@@ -72,6 +74,10 @@ class AutofillProfile : public AutofillDataModel,
   ~AutofillProfile() override;
 
   AutofillProfile& operator=(const AutofillProfile& profile);
+
+  // AutofillDataModel:
+  AutofillMetadata GetMetadata() const override;
+  bool SetMetadata(const AutofillMetadata metadata) override;
 
   // FormGroup:
   void GetMatchingTypes(const base::string16& text,

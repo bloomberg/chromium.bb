@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -283,6 +284,25 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   server_validity_states_ = profile.GetServerValidityMap();
 
   return *this;
+}
+
+AutofillMetadata AutofillProfile::GetMetadata() const {
+  AutofillMetadata metadata = AutofillDataModel::GetMetadata();
+  metadata.id = (record_type_ == LOCAL_PROFILE ? guid() : server_id_);
+  metadata.has_converted = has_converted_;
+  return metadata;
+}
+
+bool AutofillProfile::SetMetadata(const AutofillMetadata metadata) {
+  // Make sure the ids matches.
+  if (metadata.id != (record_type_ == LOCAL_PROFILE ? guid() : server_id_))
+    return false;
+
+  if (!AutofillDataModel::SetMetadata(metadata))
+    return false;
+
+  has_converted_ = metadata.has_converted;
+  return true;
 }
 
 // TODO(crbug.com/589535): Disambiguate similar field types before uploading.
