@@ -27,7 +27,6 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
                                                public ResourceClient,
                                                public MemoryCoordinatorClient {
   USING_GARBAGE_COLLECTED_MIXIN(ClassicPendingScript);
-  USING_PRE_FINALIZER(ClassicPendingScript, Prefinalize);
 
  public:
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
@@ -71,8 +70,6 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   void SetNotStreamingReasonForTest(ScriptStreamer::NotStreamingReason reason) {
     not_streamed_reason_ = reason;
   }
-
-  void Prefinalize();
 
  private:
   // See AdvanceReadyState implementation for valid state transitions.
@@ -155,12 +152,6 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
 
   // Specifies the reason that script was never streamed.
   ScriptStreamer::NotStreamingReason not_streamed_reason_;
-
-  // This is a temporary flag to confirm that ClassicPendingScript is not
-  // touched after its refinalizer call and thus https://crbug.com/715309
-  // doesn't break assumptions.
-  // TODO(hiroshige): Check the state in more general way.
-  bool prefinalizer_called_ = false;
 };
 
 }  // namespace blink

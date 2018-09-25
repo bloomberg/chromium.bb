@@ -100,7 +100,6 @@ ClassicPendingScript::~ClassicPendingScript() {}
 
 NOINLINE void ClassicPendingScript::CheckState() const {
   // TODO(hiroshige): Turn these CHECK()s into DCHECK() before going to beta.
-  CHECK(!prefinalizer_called_);
   CHECK(GetElement());
   CHECK_EQ(is_external_, !!GetResource());
   CHECK(GetResource() || !streamer_);
@@ -185,13 +184,6 @@ void ClassicPendingScript::RecordStreamingHistogram(
     DCHECK_NE(ScriptStreamer::kInvalid, reason);
     RecordNotStreamingReasonHistogram(type, reason);
   }
-}
-
-void ClassicPendingScript::Prefinalize() {
-  // TODO(hiroshige): Consider moving this to ScriptStreamer's prefinalizer.
-  // https://crbug.com/715309
-  CancelStreaming();
-  prefinalizer_called_ = true;
 }
 
 void ClassicPendingScript::DisposeInternal() {

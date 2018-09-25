@@ -510,6 +510,11 @@ ScriptStreamer::ScriptStreamer(
 
 ScriptStreamer::~ScriptStreamer() = default;
 
+void ScriptStreamer::Prefinalize() {
+  Cancel();
+  prefinalizer_called_ = true;
+}
+
 void ScriptStreamer::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_script_);
 }
