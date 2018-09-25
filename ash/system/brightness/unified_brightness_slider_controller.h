@@ -29,6 +29,10 @@ class UnifiedBrightnessSliderController : public UnifiedSliderListener {
   UnifiedSystemTrayModel* const model_;
   UnifiedSliderView* slider_ = nullptr;
 
+  // We have to store previous manually set value because |old_value| might be
+  // set by UnifiedSystemTrayModel::Observer.
+  double previous_percent_ = 100.0;
+
   DISALLOW_COPY_AND_ASSIGN(UnifiedBrightnessSliderController);
 };
 
