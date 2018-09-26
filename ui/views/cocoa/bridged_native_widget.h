@@ -259,9 +259,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // Notify descendants of a visibility change.
   void NotifyVisibilityChangeDown();
 
-  // Installs the NSView for hosting the composited layer.
-  void AddCompositorSuperview();
-
   // Query the display properties of the monitor that |window_| is on, and
   // forward them to |host_|.
   void UpdateWindowDisplay();
@@ -312,7 +309,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // |content_dip_size_|, which is the frame size most recently *sent to* the
   // compositor.
   gfx::Size compositor_frame_dip_size_;
-  base::scoped_nsobject<NSView> compositor_superview_;
   std::unique_ptr<ui::DisplayCALayerTree> display_ca_layer_tree_;
 
   // Tracks the bounds when the window last started entering fullscreen. Used to
