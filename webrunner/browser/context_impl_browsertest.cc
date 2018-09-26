@@ -6,16 +6,23 @@
 
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "net/test/embedded_test_server/default_handlers.h"
+#include "net/cookies/cookie_store.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_constants.h"
 #include "webrunner/browser/frame_impl.h"
 #include "webrunner/browser/webrunner_browser_test.h"
+#include "webrunner/browser/webrunner_url_request_context_getter.h"
 #include "webrunner/service/common.h"
 
 namespace webrunner {
@@ -101,6 +108,9 @@ class ContextImplTest : public WebRunnerBrowserTest {
     base::RunLoop().RunUntilIdle();
     return frame;
   }
+
+  // Synchronously gets a list of cookies for this BrowserContext.
+  net::CookieList GetCookies();
 
   // Navigates a |controller| to |url|, blocking until navigation is complete.
   void CheckLoadUrl(const std::string& url,
@@ -539,7 +549,6 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, Stop) {
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
-  net::test_server::RegisterDefaultHandlers(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Use a request handler that will accept the connection and stall
@@ -575,6 +584,79 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, Stop) {
       context_impl()->GetFrameImplForTest(&frame)->web_contents_->IsLoading());
 }
 
+void OnCookiesReceived(net::CookieList* output,
+                       base::OnceClosure on_received_cb,
+                       const net::CookieList& cookies) {
+  *output = cookies;
+  std::move(on_received_cb).Run();
+}
+
+net::CookieList ContextImplTest::GetCookies() {
+  net::CookieStore* cookie_store =
+      content::BrowserContext::GetDefaultStoragePartition(
+          context_impl()->browser_context_for_test())
+          ->GetURLRequestContext()
+          ->GetURLRequestContext()
+          ->cookie_store();
+
+  base::RunLoop run_loop;
+  net::CookieList cookies;
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(
+          &net::CookieStore::GetAllCookiesAsync, base::Unretained(cookie_store),
+          base::BindOnce(&OnCookiesReceived, base::Unretained(&cookies),
+                         run_loop.QuitClosure())));
+  run_loop.Run();
+  return cookies;
+}
+
+// Verifies that the BrowserContext has a working cookie store by setting
+// cookies in the content layer and then querying the CookieStore afterward.
+IN_PROC_BROWSER_TEST_F(ContextImplTest, VerifyPersistentCookieStore) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL cookie_url(embedded_test_server()->GetURL("/set-cookie?foo=bar"));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  chromium::web::NavigationControllerPtr nav;
+  frame->GetNavigationController(nav.NewRequest());
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_, MockableOnNavigationStateChanged(_))
+        .WillOnce(testing::InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
+
+    nav->LoadUrl(cookie_url.spec(), nullptr);
+    run_loop.Run();
+  }
+
+  auto cookies = GetCookies();
+  bool found = false;
+  for (auto c : cookies) {
+    if (c.Name() == "foo" && c.Value() == "bar") {
+      found = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(found);
+
+  // Check that the cookie persists beyond the lifetime of the Frame by
+  // releasing the Frame and re-querying the CookieStore.
+  frame.Unbind();
+  base::RunLoop().RunUntilIdle();
+
+  found = false;
+  for (auto c : cookies) {
+    if (c.Name() == "foo" && c.Value() == "bar") {
+      found = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(found);
+}
+
+// Suite for tests which run the BrowserContext in incognito mode (no data
+// directory).
 class IncognitoContextImplTest : public ContextImplTest {
  public:
   IncognitoContextImplTest() = default;
@@ -600,6 +682,34 @@ IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, NavigateFrame) {
   CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, controller.get());
 
   frame.Unbind();
+}
+
+IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, VerifyInMemoryCookieStore) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL cookie_url(embedded_test_server()->GetURL("/set-cookie?foo=bar"));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  chromium::web::NavigationControllerPtr nav;
+  frame->GetNavigationController(nav.NewRequest());
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_, MockableOnNavigationStateChanged(_))
+        .WillOnce(testing::InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
+
+    nav->LoadUrl(cookie_url.spec(), nullptr);
+    run_loop.Run();
+  }
+
+  auto cookies = GetCookies();
+  bool found = false;
+  for (auto c : cookies) {
+    if (c.Name() == "foo" && c.Value() == "bar") {
+      found = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(found);
 }
 
 }  // namespace webrunner
