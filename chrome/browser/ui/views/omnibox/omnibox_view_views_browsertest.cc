@@ -22,7 +22,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "content/public/browser/web_contents.h"
@@ -116,8 +115,6 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
     chrome::FocusLocationBar(browser());
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   }
-
-  test::ScopedMacViewsBrowserMode views_mode_{true};
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViewsTest);
 };

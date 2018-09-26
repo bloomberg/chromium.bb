@@ -38,7 +38,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -661,8 +660,6 @@ class DetachToBrowserTabDragControllerTest
   Browser* browser() const { return InProcessBrowserTest::browser(); }
 
  private:
-  test::ScopedMacViewsBrowserMode views_mode_{true};
-
 #if defined(OS_CHROMEOS)
   // The root window for the event generator.
   aura::Window* root_ = nullptr;

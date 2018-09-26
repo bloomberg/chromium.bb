@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_MACOSX)
@@ -38,8 +37,6 @@ class BrowserViewTest : public InProcessBrowserTest {
   }
 
  private:
-  test::ScopedMacViewsBrowserMode views_mode_{true};
-
   DISALLOW_COPY_AND_ASSIGN(BrowserViewTest);
 };
 

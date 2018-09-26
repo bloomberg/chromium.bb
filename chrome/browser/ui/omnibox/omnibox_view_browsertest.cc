@@ -33,7 +33,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.cc"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -393,8 +392,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
  private:
   policy::MockConfigurationPolicyProvider policy_provider_;
-
-  test::ScopedMacViewsBrowserMode views_mode_{true};
 
   // Non-owning pointer.
   TestToolbarModel* test_toolbar_model_ = nullptr;

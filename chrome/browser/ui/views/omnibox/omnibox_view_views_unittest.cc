@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/omnibox/query_in_omnibox_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/toolbar/test_toolbar_model.h"
@@ -578,7 +577,6 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   base::SimpleTestTickClock* clock() { return &clock_; }
 
  private:
-  test::ScopedMacViewsBrowserMode views_mode_{true};
   base::SimpleTestTickClock clock_;
 };
 

@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
@@ -62,10 +61,6 @@ class BrowserNonClientFrameViewBrowserTest
   GURL GetAppURL() { return GURL("https://test.org"); }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  // Test doesn't work (or make sense) in non-Views Mac. Force it to run in the
-  // Views browser.
-  test::ScopedMacViewsBrowserMode views_mode_{true};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewBrowserTest);
 };
