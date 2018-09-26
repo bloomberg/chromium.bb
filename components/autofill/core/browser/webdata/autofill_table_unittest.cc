@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -1894,6 +1895,98 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
 
   EXPECT_EQ(CreditCard::OK, outputs[0]->GetServerStatus());
   EXPECT_EQ(CreditCard::EXPIRED, outputs[1]->GetServerStatus());
+}
+
+TEST_F(AutofillTableTest, SetGetRemoveServerCardMetadata) {
+  // Create and set the metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.billing_address_id = "billing id";
+  EXPECT_TRUE(table_->AddServerCardMetadata(input));
+
+  // Make sure it was added correctly.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+
+  // Remove the metadata from the table.
+  EXPECT_TRUE(table_->RemoveServerCardMetadata(input.id));
+
+  // Make sure it was removed correctly.
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  EXPECT_EQ(0U, outputs.size());
+}
+
+TEST_F(AutofillTableTest, SetGetRemoveServerAddressMetadata) {
+  // Create and set the metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.has_converted = true;
+  table_->AddServerAddressMetadata(input);
+
+  // Make sure it was added correctly.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+
+  // Remove the metadata from the table.
+  EXPECT_TRUE(table_->RemoveServerAddressMetadata(input.id));
+
+  // Make sure it was removed correctly.
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  EXPECT_EQ(0U, outputs.size());
+}
+
+TEST_F(AutofillTableTest, RemoveWrongServerCardMetadata) {
+  // Crete and set some metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.billing_address_id = "billing id";
+  table_->AddServerCardMetadata(input);
+
+  // Make sure it was added correctly.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+
+  // Try removing some non-existent metadata.
+  EXPECT_FALSE(table_->RemoveServerCardMetadata("a_wrong_id"));
+
+  // Make sure the metadata was not removed.
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+}
+
+TEST_F(AutofillTableTest, RemoveWrongServerAddressMetadata) {
+  // Crete and set some metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.has_converted = true;
+  table_->AddServerAddressMetadata(input);
+
+  // Make sure it was added correctly.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+
+  // Try removing some non-existent metadata.
+  EXPECT_FALSE(table_->RemoveServerAddressMetadata("a_wrong_id"));
+
+  // Make sure the metadata was not removed.
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
 }
 
 TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
