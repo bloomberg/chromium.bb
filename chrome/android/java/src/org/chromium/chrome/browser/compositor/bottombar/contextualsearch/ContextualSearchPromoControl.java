@@ -354,21 +354,13 @@ public class ContextualSearchPromoControl extends OverlayPanelInflater {
 
         // "Allow" button.
         Button allowButton = (Button) view.findViewById(R.id.contextual_search_allow_button);
-        allowButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ContextualSearchPromoControl.this.handlePromoChoice(true);
-            }
-        });
+        allowButton.setOnClickListener(
+                v -> ContextualSearchPromoControl.this.handlePromoChoice(true));
 
         // "No thanks" button.
         Button noThanksButton = (Button) view.findViewById(R.id.contextual_search_no_thanks_button);
-        noThanksButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ContextualSearchPromoControl.this.handlePromoChoice(false);
-            }
-        });
+        noThanksButton.setOnClickListener(
+                v -> ContextualSearchPromoControl.this.handlePromoChoice(false));
 
         // Fill in text with link to Settings.
         TextView promoText = (TextView) view.findViewById(R.id.contextual_search_promo_text);
