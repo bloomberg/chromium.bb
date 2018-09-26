@@ -88,29 +88,3 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
-
-source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "request_desktop_mobile_site_egtest.mm",
-    "tools_popup_menu_egtest.mm",
-  ]
-  deps = [
-    ":tools_menu",
-    "//base",
-    "//components/strings",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser:browser",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui:ui_internal",
-    "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/tools_menu/public",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web/public/test",
-    "//ios/web/public/test/http_server",
-    "//ui/base",
-  ]
-  libs = [ "XCTest.framework" ]
-}
