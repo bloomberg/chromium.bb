@@ -642,7 +642,7 @@ UIColor* BackgroundColor() {
                                                   toView:_buttonNewTab.window];
   OpenNewTabCommand* command =
       [OpenNewTabCommand commandWithIncognito:_isIncognito originPoint:center];
-  [self.dispatcher openNewTab:command];
+  [self.dispatcher openURLInNewTab:command];
 }
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gesture {

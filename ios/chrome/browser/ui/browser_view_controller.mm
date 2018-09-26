@@ -4485,10 +4485,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                                    self.currentWebState]];
 }
 
-- (void)openNewTab:(OpenNewTabCommand*)command {
-  [self.dispatcher openURLInNewTab:command];
-}
-
 - (void)printTab {
   Tab* currentTab = [_model currentTab];
   // The UI should prevent users from printing non-printable pages. However,

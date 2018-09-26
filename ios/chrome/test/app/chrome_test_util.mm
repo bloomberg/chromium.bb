@@ -145,25 +145,6 @@ UIViewController* GetActiveViewController() {
   return active_view_controller;
 }
 
-id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController() {
-  DCHECK(!IsUIRefreshPhase1Enabled());
-  UIViewController* vc = GetActiveViewController();
-  BrowserViewController* bvc = base::mac::ObjCCast<BrowserViewController>(vc);
-  if (bvc)
-    return bvc.dispatcher;
-  if ([vc conformsToProtocol:@protocol(TabSwitcher)]) {
-    // In stack_view and the iPad tab switcher, the view controller has a
-    // dispatcher.
-    id<TabSwitcher> tabSwitcher = static_cast<id<TabSwitcher>>(vc);
-    return static_cast<id<ApplicationCommands, BrowserCommands>>(
-        tabSwitcher.dispatcher);
-  }
-  // In tab grid, the TabSwitcher object is not in the view hierarchy so it must
-  // be gotten through the MainController.
-  return static_cast<id<ApplicationCommands, BrowserCommands>>(
-      GetMainController().tabSwitcher.dispatcher);
-}
-
 id<ApplicationCommands, BrowserCommands>
 DispatcherForActiveBrowserViewController() {
   UIViewController* vc = GetActiveViewController();
