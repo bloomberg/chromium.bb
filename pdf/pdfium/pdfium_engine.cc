@@ -240,7 +240,7 @@ void* MapFont(FPDF_SYSFONTINFO*,
 
   // Map from the standard PDF fonts to TrueType font names.
   size_t i;
-  for (i = 0; i < arraysize(kPdfFontSubstitutions); ++i) {
+  for (i = 0; i < base::size(kPdfFontSubstitutions); ++i) {
     if (strcmp(face, kPdfFontSubstitutions[i].pdf_name) == 0) {
       description.set_face(kPdfFontSubstitutions[i].face);
       if (kPdfFontSubstitutions[i].bold)
@@ -251,7 +251,7 @@ void* MapFont(FPDF_SYSFONTINFO*,
     }
   }
 
-  if (i == arraysize(kPdfFontSubstitutions)) {
+  if (i == base::size(kPdfFontSubstitutions)) {
     // Convert to UTF-8 before calling set_face().
     std::string face_utf8;
     if (base::IsStringUTF8(face)) {
