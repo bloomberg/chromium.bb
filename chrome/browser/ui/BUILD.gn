@@ -1951,10 +1951,10 @@ jumbo_split_static_library("ui") {
       "webui/signin/user_manager_screen_handler.h",
       "webui/welcome/nux_helper.cc",
       "webui/welcome/nux_helper.h",
-      "webui/welcome_handler.cc",
-      "webui/welcome_handler.h",
-      "webui/welcome_ui.cc",
-      "webui/welcome_ui.h",
+      "webui/welcome/welcome_handler.cc",
+      "webui/welcome/welcome_handler.h",
+      "webui/welcome/welcome_ui.cc",
+      "webui/welcome/welcome_ui.h",
     ]
 
     if (enable_dice_support) {
@@ -2252,10 +2252,10 @@ jumbo_split_static_library("ui") {
       "webui/settings/chrome_cleanup_handler.cc",
       "webui/settings/chrome_cleanup_handler.h",
       "webui/settings_utils_win.cc",
-      "webui/welcome_win10_handler.cc",
-      "webui/welcome_win10_handler.h",
-      "webui/welcome_win10_ui.cc",
-      "webui/welcome_win10_ui.h",
+      "webui/welcome/welcome_win10_handler.cc",
+      "webui/welcome/welcome_win10_handler.h",
+      "webui/welcome/welcome_win10_ui.cc",
+      "webui/welcome/welcome_win10_ui.h",
     ]
     public_deps += [
       "//ui/views",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/welcome_ui.h"
+#include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 
 #include <memory>
 #include <string>
@@ -11,7 +11,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
-#include "chrome/browser/ui/webui/welcome_handler.h"
+#include "chrome/browser/ui/webui/welcome/welcome_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -34,13 +34,13 @@
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 namespace {
-  const bool kIsBranded =
+const bool kIsBranded =
 #if defined(GOOGLE_CHROME_BUILD)
-      true;
+    true;
 #else
-      false;
+    false;
 #endif
-}
+}  // namespace
 
 WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui) {

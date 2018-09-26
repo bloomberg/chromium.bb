@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/welcome_win10_ui.h"
+#include "chrome/browser/ui/webui/welcome/welcome_win10_ui.h"
 
 #include <memory>
 #include <string>
@@ -10,7 +10,7 @@
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/welcome_win10_handler.h"
+#include "chrome/browser/ui/webui/welcome/welcome_win10_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
