@@ -91,10 +91,6 @@ const CGFloat kLocBarBottomInset = 1;
   parameters_.inAnyFullscreen = inAnyFullscreen;
 }
 
-- (void)setFullscreenToolbarStyle:(FullscreenToolbarStyle)style {
-  parameters_.toolbarStyle = style;
-}
-
 - (void)setFullscreenMenubarOffset:(CGFloat)menubarOffset {
   parameters_.menubarOffset = menubarOffset;
 }
@@ -193,11 +189,6 @@ const CGFloat kLocBarBottomInset = 1;
   // Lay out the toolbar.
   if (parameters.hasToolbar) {
     CGFloat toolbarY = maxY;
-    if (parameters_.inAnyFullscreen &&
-        parameters_.toolbarStyle == FullscreenToolbarStyle::TOOLBAR_NONE) {
-      toolbarY = parameters_.windowSize.height + fullscreenYOffset_;
-    }
-
     output_.toolbarFrame = NSMakeRect(0, toolbarY - parameters_.toolbarHeight,
                                       width, parameters_.toolbarHeight);
     maxY = NSMinY(output_.toolbarFrame);
@@ -229,15 +220,6 @@ const CGFloat kLocBarBottomInset = 1;
   // Place the find bar immediately below the toolbar/attached bookmark bar.
   output_.findBarMaxY = maxY;
 
-  if (parameters_.inAnyFullscreen &&
-      (parameters_.toolbarStyle == FullscreenToolbarStyle::TOOLBAR_HIDDEN ||
-       parameters_.toolbarStyle == FullscreenToolbarStyle::TOOLBAR_NONE)) {
-    // If the toolbar is hidden or missing, reset |maxY| to top of screen, so
-    // that the toolbar slides over the things which appear to be in the
-    // content area.
-    maxY = parameters_.windowSize.height;
-  }
-
   // Lay out the info bar. It is never hidden.
   if (parameters_.infoBarHeight != 0) {
     CGFloat infoBarMaxY = maxY;
@@ -268,18 +250,6 @@ const CGFloat kLocBarBottomInset = 1;
     output_.downloadShelfFrame =
         NSMakeRect(0, 0, width, parameters.downloadShelfHeight);
     minY = NSMaxY(output_.downloadShelfFrame);
-  }
-
-  if (parameters_.inAnyFullscreen &&
-      parameters_.toolbarStyle == FullscreenToolbarStyle::TOOLBAR_PRESENT) {
-    // If in Canonical Fullscreen, content should be shifted down by an amount
-    // equal to all the widgets and views at the top of the window. It should
-    // not be further shifted by the appearance/disappearance of the AppKit
-    // menu bar.
-    maxY = parameters_.windowSize.height;
-    maxY -= NSHeight(output_.toolbarFrame) +
-            NSHeight(output_.tabStripLayout.frame) +
-            NSHeight(output_.bookmarkFrame) + parameters.infoBarHeight;
   }
 
   // All the remaining space becomes the frame of the content area.
