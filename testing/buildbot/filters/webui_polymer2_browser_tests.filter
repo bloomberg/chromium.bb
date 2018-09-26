@@ -269,7 +269,7 @@ MultiProfileFilesAppBrowserTest.*
 NetInternalsTest.*
 NoBackgroundTasksTest.*
 NTP4WebUITest.*
-OpenAudioFiles.*
+OpenAudioFiles/*
 PasswordsAndFormsBrowserTest.*
 PrintPreviewAdvancedDialogTest.*
 PrintPreviewAdvancedItemTest.*
