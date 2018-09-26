@@ -32,11 +32,12 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
     const KURL& url,
     Document& element_document,
     const ScriptFetchOptions& options,
+    CrossOriginAttributeValue cross_origin,
     const WTF::TextEncoding& encoding,
     ScriptElementBase* element,
     FetchParameters::DeferOption defer) {
   FetchParameters params = options.CreateFetchParameters(
-      url, element_document.GetSecurityOrigin(), encoding, defer);
+      url, element_document.GetSecurityOrigin(), cross_origin, encoding, defer);
 
   ClassicPendingScript* pending_script = new ClassicPendingScript(
       element, TextPosition(), ScriptSourceLocationType::kExternalFile, options,
@@ -277,8 +278,10 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   }
 
   if (intervened_) {
+    CrossOriginAttributeValue cross_origin =
+        GetCrossOriginAttributeValue(element->CrossOriginAttributeValue());
     PossiblyFetchBlockedDocWriteScript(resource, element->GetDocument(),
-                                       options_);
+                                       options_, cross_origin);
   }
 
   // We are now waiting for script streaming to finish.

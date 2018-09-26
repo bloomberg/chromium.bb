@@ -870,7 +870,7 @@ TEST_F(HTMLPreloadScannerTest, testCORS) {
        network::mojom::FetchCredentialsMode::kInclude},
       {"http://example.test", "<script type='module' src='/script'></script>",
        network::mojom::FetchRequestMode::kCORS,
-       network::mojom::FetchCredentialsMode::kOmit},
+       network::mojom::FetchCredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script type='module' crossorigin='anonymous' src='/script'></script>",
        network::mojom::FetchRequestMode::kCORS,

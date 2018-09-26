@@ -445,19 +445,19 @@ struct ModulePreloadTestParams {
 
 constexpr ModulePreloadTestParams kModulePreloadTestParams[] = {
     {"", nullptr, nullptr, kCrossOriginAttributeNotSet, kReferrerPolicyDefault,
-     false, network::mojom::FetchCredentialsMode::kOmit},
+     false, network::mojom::FetchCredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", nullptr, nullptr,
      kCrossOriginAttributeNotSet, kReferrerPolicyDefault, true,
-     network::mojom::FetchCredentialsMode::kOmit},
+     network::mojom::FetchCredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", nullptr, nullptr,
      kCrossOriginAttributeAnonymous, kReferrerPolicyDefault, true,
      network::mojom::FetchCredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", "nonce", nullptr,
      kCrossOriginAttributeNotSet, kReferrerPolicyNever, true,
-     network::mojom::FetchCredentialsMode::kOmit},
+     network::mojom::FetchCredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", nullptr, "sha384-abc",
      kCrossOriginAttributeNotSet, kReferrerPolicyDefault, true,
-     network::mojom::FetchCredentialsMode::kOmit}};
+     network::mojom::FetchCredentialsMode::kSameOrigin}};
 
 class LinkLoaderModulePreloadTest
     : public testing::TestWithParam<ModulePreloadTestParams> {};

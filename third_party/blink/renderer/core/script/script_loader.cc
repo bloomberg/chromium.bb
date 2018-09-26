@@ -202,13 +202,18 @@ bool ScriptLoader::BlockForNoModule(ScriptType script_type, bool nomodule) {
   return nomodule && script_type == ScriptType::kClassic;
 }
 
-// Step 16 of
-// https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
+// Corresponds to
+// https://html.spec.whatwg.org/multipage/urls-and-fetching.html#module-script-credentials-mode
+// which is a translation of the CORS settings attribute in the context of
+// module scripts. This is used in:
+//   - Step 17 of
+//     https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
+//   - Step 6 of obtaining a preloaded module script
+//     https://html.spec.whatwg.org/multipage/links.html#link-type-modulepreload.
 network::mojom::FetchCredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
     CrossOriginAttributeValue cross_origin) {
   switch (cross_origin) {
     case kCrossOriginAttributeNotSet:
-      return network::mojom::FetchCredentialsMode::kOmit;
     case kCrossOriginAttributeAnonymous:
       return network::mojom::FetchCredentialsMode::kSameOrigin;
     case kCrossOriginAttributeUseCredentials:
@@ -475,7 +480,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       //
       // Fetch a classic script given url, settings object, options, classic
       // script CORS setting, and encoding.</spec>
-      FetchClassicScript(url, element_document, options, encoding);
+      FetchClassicScript(url, element_document, options, cross_origin,
+                         encoding);
     } else {
       // - "module":
 
@@ -737,6 +743,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 void ScriptLoader::FetchClassicScript(const KURL& url,
                                       Document& element_document,
                                       const ScriptFetchOptions& options,
+                                      CrossOriginAttributeValue cross_origin,
                                       const WTF::TextEncoding& encoding) {
   FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
   if (!parser_inserted_ || element_->AsyncAttributeValue() ||
@@ -744,7 +751,7 @@ void ScriptLoader::FetchClassicScript(const KURL& url,
     defer = FetchParameters::kLazyLoad;
 
   ClassicPendingScript* pending_script = ClassicPendingScript::Fetch(
-      url, element_document, options, encoding, element_, defer);
+      url, element_document, options, cross_origin, encoding, element_, defer);
   prepared_pending_script_ = pending_script;
   resource_keep_alive_ = pending_script->GetResource();
 }

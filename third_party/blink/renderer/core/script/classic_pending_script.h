@@ -36,6 +36,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   static ClassicPendingScript* Fetch(const KURL&,
                                      Document&,
                                      const ScriptFetchOptions&,
+                                     CrossOriginAttributeValue,
                                      const WTF::TextEncoding&,
                                      ScriptElementBase*,
                                      FetchParameters::DeferOption);
