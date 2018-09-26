@@ -58,8 +58,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       storage::SpecialStoragePolicy* special_storage_policy);
 
   // DOMStorageContext implementation.
-  void GetLocalStorageUsage(
-      const GetLocalStorageUsageCallback& callback) override;
+  void GetLocalStorageUsage(GetLocalStorageUsageCallback callback) override;
   void GetSessionStorageUsage(GetSessionStorageUsageCallback callback) override;
   void DeleteLocalStorage(const GURL& origin,
                           base::OnceClosure callback) override;
