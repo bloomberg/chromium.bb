@@ -68,15 +68,12 @@ cr.define('pages_settings_test', function() {
       Polymer.dom.flush();
 
       const input = pagesSection.$.pageSettingsCustomInput.inputElement;
-      const pagesSelect = pagesSection.$$('select');
-      const readyForInput =
-          pagesSelect.value === pagesSection.pagesValueEnum_.CUSTOM.toString() ?
+      const readyForInput = pagesSection.$$('#custom-radio-button').checked ?
           Promise.resolve() :
-          test_util.eventToPromise('process-select-change', pagesSection);
+          test_util.eventToPromise('focus', input);
 
       // Select custom
-      pagesSelect.value = pagesSection.pagesValueEnum_.CUSTOM.toString();
-      pagesSelect.dispatchEvent(new CustomEvent('change'));
+      pagesSection.$$('#custom-radio-button').click();
       return readyForInput.then(() => {
         // Set input string
         input.value = inputString;
