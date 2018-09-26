@@ -54,10 +54,9 @@ class ScriptExecutor : public ActionDelegate {
   void GetFieldValue(
       const std::vector<std::string>& selectors,
       base::OnceCallback<void(const std::string&)> callback) override;
-  void SetFieldsValue(
-      const std::vector<std::vector<std::string>>& selectors_list,
-      const std::vector<std::string>& values,
-      base::OnceCallback<void(bool)> callback) override;
+  void SetFieldValue(const std::vector<std::string>& selectors,
+                     const std::string& value,
+                     base::OnceCallback<void(bool)> callback) override;
   const autofill::AutofillProfile* GetAutofillProfile(
       const std::string& guid) override;
   void BuildNodeTree(const std::vector<std::string>& selectors,

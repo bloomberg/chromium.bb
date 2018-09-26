@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
@@ -34,19 +34,15 @@ class AutofillAction : public Action {
 
   // Called when the user selected the data.
   void OnDataSelected(ActionDelegate* delegate,
-                      ProcessActionCallback callback,
                       const std::string& guid);
 
   // Fill the form using data with GUID |guid|. Return whether filling succeeded
   // or not through |callback|.
-  void FillFormWithData(const std::string& guid,
-                        ActionDelegate* delegate,
-                        ProcessActionCallback action_callback);
+  void FillFormWithData(const std::string& guid, ActionDelegate* delegate);
 
   // Called when the form has been filled.
   void OnFormFilled(const std::string& guid,
                     ActionDelegate* delegate,
-                    ProcessActionCallback action_callback,
                     bool successful);
 
   // Check whether all required fields have a non-empty value. If it is the
@@ -55,13 +51,11 @@ class AutofillAction : public Action {
   // the failed fields without Autofill.
   void CheckRequiredFields(const std::string& guid,
                            ActionDelegate* delegate,
-                           ProcessActionCallback action_callback,
                            bool allow_fallback);
 
   // Called when we get the value of the required fields.
   void OnGetRequiredFieldValue(const std::string& guid,
                                ActionDelegate* delegate,
-                               ProcessActionCallback action_callback,
                                bool allow_fallback,
                                int index,
                                const std::string& value);
@@ -74,10 +68,9 @@ class AutofillAction : public Action {
 
   // Called after trying to set form values without Autofill in case of fallback
   // after failed validation.
-  void OnSetFieldsValue(const std::string& guid,
-                        ActionDelegate* delegate,
-                        ProcessActionCallback action_callback,
-                        bool successful);
+  void OnSetFieldValue(const std::string& guid,
+                       ActionDelegate* delegate,
+                       bool successful);
 
   // Usage of the autofilled address. Ignored if autofilling a card.
   std::string name_;
@@ -87,6 +80,8 @@ class AutofillAction : public Action {
   // True if autofilling a card, otherwise we are autofilling an address.
   bool is_autofill_card_;
   std::vector<FieldValueStatus> required_fields_value_status_;
+  size_t pending_set_field_value_;
+  ProcessActionCallback process_action_callback_;
   base::WeakPtrFactory<AutofillAction> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAction);

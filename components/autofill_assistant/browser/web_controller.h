@@ -84,14 +84,11 @@ class WebController {
       const std::vector<std::string>& selectors,
       base::OnceCallback<void(const std::string&)> callback);
 
-  // Set the |values| of all fields in |selectors_list| and return the result
-  // through |callback|. Selectors and values are one on one matched, i.e. the
-  // value of selectors_list[i] should be set to values[i] (therefore, this
-  // method requires that selectors_list.size() == values.size()).
-  virtual void SetFieldsValue(
-      const std::vector<std::vector<std::string>>& selectors_list,
-      const std::vector<std::string>& values,
-      base::OnceCallback<void(bool)> callback);
+  // Set the |value| of field |selectors| and return the result through
+  // |callback|.
+  virtual void SetFieldValue(const std::vector<std::string>& selectors,
+                             const std::string& value,
+                             base::OnceCallback<void(bool)> callback);
 
   // Given an element |selectors| on the page as the root element, build a node
   // tree using the output parameter |node_tree_out| as a starting node.
@@ -209,6 +206,13 @@ class WebController {
       std::unique_ptr<FindElementResult> element_result);
   void OnGetValueAttribute(
       base::OnceCallback<void(const std::string&)> callback,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFindElementForSetFieldValue(
+      const std::string& value,
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<FindElementResult> element_result);
+  void OnSetValueAttribute(
+      base::OnceCallback<void(bool)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Weak pointer is fine here since it must outlive this web controller, which

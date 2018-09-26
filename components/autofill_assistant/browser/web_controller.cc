@@ -58,6 +58,11 @@ const char* const kSelectOptionScript =
 const char* const kGetValueAttributeScript =
     "function () { return this.value; }";
 
+// Javascript code to set the 'value' attribute of a node, where $1 will be
+// replaced with the value.
+const char* const kSetValueAttributeScript =
+    "function (value) { this.value = value; }";
+
 }  // namespace
 
 // static
@@ -603,14 +608,10 @@ void WebController::OnFindElementForGetFieldValue(
     return;
   }
 
-  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-  argument.emplace_back(
-      runtime::CallArgument::Builder().SetObjectId(object_id).Build());
   devtools_client_->GetRuntime()->Enable();
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
-          .SetArguments(std::move(argument))
           .SetFunctionDeclaration(std::string(kGetValueAttributeScript))
           .SetReturnByValue(true)
           .Build(),
@@ -632,13 +633,46 @@ void WebController::OnGetValueAttribute(
   OnResult(result->GetResult()->GetValue()->GetString(), std::move(callback));
 }
 
-void WebController::SetFieldsValue(
-    const std::vector<std::vector<std::string>>& selectors_list,
-    const std::vector<std::string>& values,
-    base::OnceCallback<void(bool)> callback) {
-  DCHECK_EQ(selectors_list.size(), values.size());
-  // TODO(crbug.com/806868): Implement set fields value operation.
-  std::move(callback).Run(true);
+void WebController::SetFieldValue(const std::vector<std::string>& selectors,
+                                  const std::string& value,
+                                  base::OnceCallback<void(bool)> callback) {
+  FindElement(selectors,
+              base::BindOnce(&WebController::OnFindElementForSetFieldValue,
+                             weak_ptr_factory_.GetWeakPtr(), value,
+                             std::move(callback)));
+}
+
+void WebController::OnFindElementForSetFieldValue(
+    const std::string& value,
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<FindElementResult> element_result) {
+  const std::string object_id = element_result->object_id;
+  if (object_id.empty()) {
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
+  argument.emplace_back(
+      runtime::CallArgument::Builder()
+          .SetValue(base::Value::ToUniquePtrValue(base::Value(value)))
+          .Build());
+  devtools_client_->GetRuntime()->Enable();
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetArguments(std::move(argument))
+          .SetFunctionDeclaration(std::string(kSetValueAttributeScript))
+          .Build(),
+      base::BindOnce(&WebController::OnSetValueAttribute,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnSetValueAttribute(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  devtools_client_->GetRuntime()->Disable();
+  OnResult(result && !result->HasExceptionDetails(), std::move(callback));
 }
 
 void WebController::BuildNodeTree(const std::vector<std::string>& selectors,
