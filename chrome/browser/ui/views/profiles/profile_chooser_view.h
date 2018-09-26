@@ -227,6 +227,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::LabelButton* passwords_button_;
   views::LabelButton* credit_cards_button_;
   views::LabelButton* addresses_button_;
+  views::LabelButton* signout_button_;
 
   // Buttons displayed in the gaia signin view.
   views::ImageButton* gaia_signin_cancel_button_;
