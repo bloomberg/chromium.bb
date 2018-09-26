@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/application_context.h"
 
 namespace network {
+class TestNetworkConnectionTracker;
 class TestURLLoaderFactory;
 class WeakWrapperSharedURLLoaderFactory;
 }  // namespace network
@@ -69,6 +70,8 @@ class TestingApplicationContext : public ApplicationContext {
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   bool was_last_shutdown_clean_;
   std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
+  std::unique_ptr<network::TestNetworkConnectionTracker>
+      test_network_connection_tracker_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       system_shared_url_loader_factory_;
 

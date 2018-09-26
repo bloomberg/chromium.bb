@@ -9,7 +9,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
 #include "ios/chrome/browser/reading_list/url_downloader.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 class GURL;
 class PrefService;
@@ -29,7 +29,7 @@ class ReadingListDistillerPageFactory;
 class ReadingListDownloadService
     : public KeyedService,
       public ReadingListModelObserver,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   ReadingListDownloadService(
       ReadingListModel* reading_list_model,
@@ -95,9 +95,8 @@ class ReadingListDownloadService
   // Callback for entry deletion.
   void OnDeleteEnd(const GURL& url, bool success);
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver:
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   ReadingListModel* reading_list_model_;
   base::FilePath chrome_profile_path_;
