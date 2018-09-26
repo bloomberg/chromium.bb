@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autofill/test_strike_database.h"
+#include "components/autofill/core/browser/test_strike_database.h"
 
-#include "chrome/browser/autofill/strike_data.pb.h"
+#include "components/autofill/core/browser/proto/strike_data.pb.h"
 
 namespace autofill {
 

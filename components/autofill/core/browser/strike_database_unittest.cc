@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autofill/strike_database.h"
+#include "components/autofill/core/browser/strike_database.h"
 
+#include <utility>
+#include <vector>
+
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/autofill/strike_data.pb.h"
-#include "chrome/browser/autofill/test_strike_database.h"
-#include "chrome/test/base/testing_profile.h"
-#include "components/leveldb_proto/proto_database.h"
-#include "components/leveldb_proto/proto_database_impl.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/autofill/core/browser/proto/strike_data.pb.h"
+#include "components/autofill/core/browser/test_strike_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
 
 class StrikeDatabaseTest : public ::testing::Test {
  public:
-  StrikeDatabaseTest()
-      : db_(profile_.GetPath().Append(FILE_PATH_LITERAL("StrikeDatabase"))) {}
+  StrikeDatabaseTest() : db_(InitFilePath()) {}
 
   void AddEntries(
       std::vector<std::pair<std::string, StrikeData>> entries_to_add) {
@@ -79,10 +78,17 @@ class StrikeDatabaseTest : public ::testing::Test {
   }
 
  private:
+  static const base::FilePath InitFilePath() {
+    base::ScopedTempDir temp_dir_;
+    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+    const base::FilePath file_path =
+        temp_dir_.GetPath().AppendASCII("StrikeDatabaseTest");
+    return file_path;
+  }
+
   int num_strikes_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<StrikeData> strike_data_;
-  TestingProfile profile_;
   TestStrikeDatabase db_;
 };
 
