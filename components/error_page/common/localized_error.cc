@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/error_page/common/error.h"
-#include "components/error_page/common/error_page_features.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/error_page/common/net_error_info.h"
@@ -943,12 +942,6 @@ void LocalizedError::GetStrings(
     // The presence of this string disables the easter egg. Acts as a flag.
     error_strings->SetString("disabledEasterEgg",
         l10n_util::GetStringUTF16(IDS_ERRORPAGE_FUN_DISABLED));
-  }
-
-  if (command_line->HasSwitch(error_page::switches::kEnableEasterEggBdayMode) ||
-      base::FeatureList::IsEnabled(
-          error_page::features::kDinoEasterEggBdayMode)) {
-    error_strings->SetBoolean("bdayMode", true);
   }
 
   summary->SetString("failedUrl", failed_url_string);
