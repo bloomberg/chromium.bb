@@ -901,7 +901,8 @@ bool TestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
   if (IsRecordingAllAllocations()) {
     if (should_validate_dumps) {
       result = ValidateDump(heaps_v2, kMallocAllocSize * kMallocAllocCount,
-                            kMallocAllocCount, "malloc", kMallocTypeTag,
+                            kMallocAllocCount, "malloc",
+                            HasPseudoFrames() ? kMallocTypeTag : nullptr,
                             HasPseudoFrames() ? kMallocEvent : "", thread_name);
       if (!result) {
         LOG(ERROR) << "Failed to validate malloc fixed allocations";
