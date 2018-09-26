@@ -1000,11 +1000,9 @@ class RenderFrameImpl::FrameURLLoaderFactory
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
         frame_->GetLoaderFactoryBundle();
     if (request.GetRequestContext() == WebURLRequest::kRequestContextPrefetch &&
-        frame_->prefetch_loader_factory_) {
+        frame_->prefetch_shared_loader_factory_) {
       // The frame should be alive when this factory is used.
-      loader_factory =
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              frame_->prefetch_loader_factory_.get());
+      loader_factory = frame_->prefetch_shared_loader_factory_;
     }
     return std::make_unique<WebURLLoaderImpl>(
         RenderThreadImpl::current()->resource_dispatcher(),
@@ -1699,6 +1697,9 @@ mojom::FrameHost* RenderFrameImpl::GetFrameHost() {
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
+  if (prefetch_shared_loader_factory_)
+    prefetch_shared_loader_factory_->Detach();
+
   // If file chooser is still waiting for answer, dispatch empty answer.
   if (file_chooser_completion_) {
     file_chooser_completion_->DidChooseFile(WebVector<WebString>());
@@ -3234,7 +3235,14 @@ void RenderFrameImpl::CommitNavigation(
     return;
   }
 
+  if (prefetch_shared_loader_factory_)
+    prefetch_shared_loader_factory_->Detach();
   prefetch_loader_factory_ = std::move(prefetch_loader_factory);
+  if (prefetch_loader_factory_) {
+    prefetch_shared_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            prefetch_loader_factory_.get());
+  }
 
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
