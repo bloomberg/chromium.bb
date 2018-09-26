@@ -155,6 +155,11 @@ class BackgroundFetchDelegateImpl
   void OnDownloadReceived(const std::string& guid,
                           download::DownloadParams::StartResult result);
 
+  // The callback passed to DownloadRequestLimiter::CanDownload().
+  void DidGetPermissionFromDownloadRequestLimiter(
+      GetPermissionForOriginCallback callback,
+      bool has_permission);
+
   // The profile this service is being created for.
   Profile* profile_;
 

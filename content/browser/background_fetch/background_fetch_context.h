@@ -151,7 +151,8 @@ class CONTENT_EXPORT BackgroundFetchContext
   void OnStorageWiped() override;
 
  private:
-  using GetPermissionCallback = base::OnceCallback<void(bool)>;
+  using GetPermissionCallback =
+      base::OnceCallback<void(BackgroundFetchPermission)>;
 
   FRIEND_TEST_ALL_PREFIXES(BackgroundFetchServiceTest,
                            JobsInitializedOnBrowserRestart);
@@ -278,7 +279,7 @@ class CONTENT_EXPORT BackgroundFetchContext
                         const SkBitmap& icon,
                         blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
                         int frame_tree_node_id,
-                        bool has_permission);
+                        BackgroundFetchPermission permission);
 
   // |this| is owned, indirectly, by the BrowserContext.
   BrowserContext* browser_context_;

@@ -183,16 +183,17 @@ void BackgroundFetchContext::DidGetPermission(
     const SkBitmap& icon,
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     int frame_tree_node_id,
-    bool has_permission) {
+    BackgroundFetchPermission permission) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&background_fetch::RecordBackgroundFetchUkmEvent,
                      registration_id.origin(), requests, options, icon,
-                     std::move(ukm_data), frame_tree_node_id, has_permission));
+                     std::move(ukm_data), frame_tree_node_id, permission));
 
-  if (has_permission) {
+  if (permission != BackgroundFetchPermission::BLOCKED) {
+    // TODO(crbug.com/886896): Passed paused flag to CreateRegistration.
     data_manager_->BackgroundFetchDataManager::CreateRegistration(
         registration_id, requests, options, icon,
         base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,

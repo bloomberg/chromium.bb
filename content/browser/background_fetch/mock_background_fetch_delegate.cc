@@ -63,7 +63,7 @@ void MockBackgroundFetchDelegate::GetPermissionForOrigin(
     GetPermissionForOriginCallback callback) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), true /* has_permission */));
+      base::BindOnce(std::move(callback), BackgroundFetchPermission::ALLOWED));
 }
 
 void MockBackgroundFetchDelegate::GetIconDisplaySize(
