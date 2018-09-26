@@ -65,7 +65,7 @@ CocoaWindowMoveLoop::~CocoaWindowMoveLoop() {
   owner_ = nullptr;
 }
 
-Widget::MoveLoopResult CocoaWindowMoveLoop::Run() {
+bool CocoaWindowMoveLoop::Run() {
   LoopExitReason exit_reason = ENDED_EXTERNALLY;
   exit_reason_ref_ = &exit_reason;
   NSWindow* window = owner_->ns_window();
@@ -123,8 +123,7 @@ Widget::MoveLoopResult CocoaWindowMoveLoop::Run() {
     owner_->EndMoveLoop();       // Deletes |this|.
   }
 
-  return exit_reason != MOUSE_UP ? Widget::MOVE_LOOP_CANCELED
-                                 : Widget::MOVE_LOOP_SUCCESSFUL;
+  return exit_reason == MOUSE_UP;
 }
 
 void CocoaWindowMoveLoop::End() {

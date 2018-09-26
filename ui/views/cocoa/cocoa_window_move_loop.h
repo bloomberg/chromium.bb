@@ -22,7 +22,8 @@ class CocoaWindowMoveLoop {
   ~CocoaWindowMoveLoop();
 
   // Initiates the drag until a mouse up event is observed, or End() is called.
-  Widget::MoveLoopResult Run();
+  // Returns true if a mouse up event ended the loop.
+  bool Run();
   void End();
 
  private:

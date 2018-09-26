@@ -202,6 +202,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // views_bridge_mac::mojom::BridgedNativeWidgetHost:
   void OnVisibilityChanged(bool visible) override;
+  void OnWindowNativeThemeChanged() override;
   void SetViewSize(const gfx::Size& new_size) override;
   void SetKeyboardAccessible(bool enabled) override;
   void SetIsFirstResponder(bool is_first_responder) override;
