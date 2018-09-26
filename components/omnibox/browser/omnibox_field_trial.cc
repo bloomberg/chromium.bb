@@ -70,7 +70,7 @@ const base::Feature kOmniboxTabSwitchSuggestions{
 const base::Feature kExperimentalKeywordMode{"ExperimentalKeywordMode",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable pedal suggestion as either in-suggestion side button
+// Feature used to enable Pedal suggestions as either in-suggestion side button
 // or dedicated suggestion beneath triggering suggestion.
 const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
