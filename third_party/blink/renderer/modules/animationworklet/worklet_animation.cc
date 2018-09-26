@@ -372,8 +372,7 @@ void WorkletAnimation::UpdateIfNecessary() {
 }
 
 void WorkletAnimation::EffectInvalidated() {
-  effect_needs_restart_ = true;
-  document_->GetWorkletAnimationController().InvalidateAnimation(*this);
+  InvalidateCompositingState();
 }
 
 void WorkletAnimation::Update(TimingUpdateReason reason) {
@@ -432,6 +431,11 @@ void WorkletAnimation::UpdateCompositingState() {
   } else if (play_state_ == Animation::kRunning) {
     UpdateOnCompositor();
   }
+}
+
+void WorkletAnimation::InvalidateCompositingState() {
+  effect_needs_restart_ = true;
+  document_->GetWorkletAnimationController().InvalidateAnimation(*this);
 }
 
 void WorkletAnimation::StartOnMain() {
