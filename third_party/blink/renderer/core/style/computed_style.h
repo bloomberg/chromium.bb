@@ -381,6 +381,10 @@ class ComputedStyle : public ComputedStyleBase,
     return static_cast<EFillBox>(BackgroundInternal().Clip());
   }
 
+  // Returns true if the Element should stick to the viewport bottom as the URL
+  // bar hides.
+  bool IsFixedToBottom() const { return !Bottom().IsAuto() && Top().IsAuto(); }
+
   // Border properties.
   // border-image-slice
   const LengthBox& BorderImageSlices() const {

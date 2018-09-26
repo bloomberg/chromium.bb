@@ -718,26 +718,29 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
   }
   viewport_rect_for_tile_priority_in_content_space_ =
       visible_rect_in_content_space;
-#if defined(OS_ANDROID)
-  // On android, if we're in a scrolling gesture, the pending tree does not
-  // reflect the fact that we may be hiding the top or bottom controls. Thus,
-  // it would believe that the viewport is smaller than it actually is which
-  // can cause activation flickering issues. So, if we're in this situation
-  // adjust the visible rect by the top/bottom controls height. This isn't
-  // ideal since we're not always in this case, but since we should be
-  // prioritizing the active tree anyway, it doesn't cause any serious issues.
-  // https://crbug.com/794456.
-  if (layer_tree_impl()->IsPendingTree() &&
-      layer_tree_impl()->IsActivelyScrolling()) {
-    float total_controls_height = layer_tree_impl()->top_controls_height() +
-                                  layer_tree_impl()->bottom_controls_height();
-    viewport_rect_for_tile_priority_in_content_space_.Inset(
-        0,                        // left
-        0,                        // top,
-        0,                        // right,
-        -total_controls_height);  // bottom
+
+  float total_controls_height = layer_tree_impl()->top_controls_height() +
+                                layer_tree_impl()->bottom_controls_height();
+  if (total_controls_height) {
+    // If sliding top controls are being used, the pending tree does not
+    // reflect the fact that we may be hiding the top or bottom controls. Thus,
+    // it would believe that the viewport is smaller than it actually is which
+    // can cause activation flickering issues. So, if we're in this situation
+    // adjust the visible rect by the amount the controls are expanded beyond
+    // the current viewport size (this is also called the "bounds delta" in
+    // LayerImpl and LTHI::UpdateViewportContainerBounds().
+    if (layer_tree_impl()->IsPendingTree() &&
+        layer_tree_impl()->browser_controls_shrink_blink_size()) {
+      float hidden_ratio =
+          1.f - layer_tree_impl()->CurrentBrowserControlsShownRatio();
+
+      viewport_rect_for_tile_priority_in_content_space_.Inset(
+          0,                                                   // left
+          0,                                                   // top,
+          0,                                                   // right,
+          std::ceilf(-total_controls_height * hidden_ratio));  // bottom
+    }
   }
-#endif
 }
 
 PictureLayerImpl* PictureLayerImpl::GetPendingOrActiveTwinLayer() const {
