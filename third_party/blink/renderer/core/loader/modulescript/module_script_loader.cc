@@ -112,6 +112,14 @@ void ModuleScriptLoader::FetchInternal(
 
   ResourceLoaderOptions options;
 
+  // TODO(domfarolino): Probably insert step 6 here, which sets the credentials
+  // mode of "worker"- and "sharedworker"-destined requests to "same-origin",
+  // ensuring cross-origin module workers result in a network error, once
+  // https://github.com/whatwg/html/pull/3656 is merged. Cross-origin
+  // workers are not supported anyways due to URL checks in
+  // AbstractWorker::ResolveURL, but it might be good to try and follow the spec
+  // here, and let this resolve in a network error as Fetch dictates?
+
   // Step 6. "Set up the module script request given request and options."
   // [spec text]
   // [SMSR]
