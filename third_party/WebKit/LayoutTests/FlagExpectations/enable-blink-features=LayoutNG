@@ -426,7 +426,6 @@ crbug.com/591099 idle-callback/test-runner-run-idle-tasks.html [ Crash Pass Time
 crbug.com/591099 images/color-profile-image-filter-all.html [ Failure ]
 crbug.com/591099 images/rendering-broken-block-flow-images.html [ Failure ]
 crbug.com/591099 images/rendering-broken-images.html [ Failure ]
-crbug.com/714962 inspector-protocol/css/css-get-platform-fonts.js [ Failure ]
 crbug.com/591099 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot-pseudo-element.js [ Failure ]
 crbug.com/591099 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot.js [ Failure ]
 crbug.com/714962 inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.js [ Failure ]
