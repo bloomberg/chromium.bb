@@ -84,9 +84,6 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
                              const AtomicString& slot_name,
                              SlotMutationType);
 
-  // For Non-Incremental Shadow DOM
-  void RecalcAssignmentForDistribution();
-
   HeapVector<Member<HTMLSlotElement>> slots_;
   Member<TreeOrderedMap> slot_map_;
   WeakMember<ShadowRoot> owner_;
