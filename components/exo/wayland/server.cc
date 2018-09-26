@@ -2678,12 +2678,37 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
                                        ->GetDisplayInfo(display.id())
                                        .device_scale_factor();
 
+      uint32_t display_id_hi = static_cast<uint32_t>(display.id() >> 32);
+      uint32_t display_id_lo = static_cast<uint32_t>(display.id());
+
       zcr_remote_shell_v1_send_workspace(
-          remote_shell_resource_, static_cast<uint32_t>(display.id() >> 32),
-          static_cast<uint32_t>(display.id()), bounds.x(), bounds.y(),
-          bounds.width(), bounds.height(), insets.left(), insets.top(),
-          insets.right(), insets.bottom(), DisplayTransform(display.rotation()),
+          remote_shell_resource_, display_id_hi, display_id_lo, bounds.x(),
+          bounds.y(), bounds.width(), bounds.height(), insets.left(),
+          insets.top(), insets.right(), insets.bottom(),
+          DisplayTransform(display.rotation()),
           wl_fixed_from_double(device_scale_factor), display.IsInternal());
+
+      if (wl_resource_get_version(remote_shell_resource_) >= 19) {
+        gfx::Size size_in_pixel = display.GetSizeInPixel();
+
+        wl_array data;
+        wl_array_init(&data);
+
+        const auto& bytes =
+            WMHelper::GetInstance()->GetDisplayIdentificationData(display.id());
+        for (uint8_t byte : bytes) {
+          uint8_t* ptr =
+              static_cast<uint8_t*>(wl_array_add(&data, sizeof(uint8_t)));
+          DCHECK(ptr);
+          *ptr = byte;
+        }
+
+        zcr_remote_shell_v1_send_display_info(
+            remote_shell_resource_, display_id_hi, display_id_lo,
+            size_in_pixel.width(), size_in_pixel.height(), &data);
+
+        wl_array_release(&data);
+      }
     }
 
     zcr_remote_shell_v1_send_configure(remote_shell_resource_, layout_mode_);
@@ -2965,7 +2990,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_get_notification_surface,
     remote_shell_get_input_method_surface};
 
-const uint32_t remote_shell_version = 18;
+const uint32_t remote_shell_version = 19;
 
 void bind_remote_shell(wl_client* client,
                        void* data,
