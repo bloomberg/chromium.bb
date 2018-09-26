@@ -236,15 +236,20 @@ Log::Level WebDriverLog::min_level() const {
 
 bool InitLogging() {
   g_start_time = base::TimeTicks::Now().ToInternalValue();
-
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
   if (cmd_line->HasSwitch("log-path")) {
     g_log_level = Log::kInfo;
     base::FilePath log_path = cmd_line->GetSwitchValuePath("log-path");
+
+    const base::FilePath::CharType* logMode = FILE_PATH_LITERAL("w");
+    if (cmd_line->HasSwitch("append-log")) {
+        logMode = FILE_PATH_LITERAL("a");
+    }
 #if defined(OS_WIN)
-    FILE* redir_stderr = _wfreopen(log_path.value().c_str(), L"w", stderr);
+    FILE* redir_stderr = _wfreopen(log_path.value().c_str(), logMode, stderr);
 #else
-    FILE* redir_stderr = freopen(log_path.value().c_str(), "w", stderr);
+    FILE* redir_stderr = freopen(log_path.value().c_str(), logMode, stderr);
 #endif
     if (!redir_stderr) {
       printf("Failed to redirect stderr to log file.\n");

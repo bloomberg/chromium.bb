@@ -360,6 +360,8 @@ int main(int argc, char *argv[]) {
         "log verbosely (equivalent to --log-level=ALL)",
         "silent",
         "log nothing (equivalent to --log-level=OFF)",
+        "append-log",
+        "append log file instead of rewriting",
         "replayable",
         "(experimental) log verbosely and don't truncate long "
         "strings so that the log can be replayed.",
