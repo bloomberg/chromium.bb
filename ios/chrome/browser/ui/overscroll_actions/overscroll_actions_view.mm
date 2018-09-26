@@ -68,8 +68,6 @@ const CGFloat kDisplayActionAnimationDuration = 0.5;
 const CGFloat kActionLabelFadeDuration = 0.1;
 // The final scale of the animation played when an action is triggered.
 const CGFloat kDisplayActionAnimationScale = 20;
-// The height of the shadow view.
-const CGFloat kShadowHeight = 2;
 // This controls how much the selection needs to be moved from the action center
 // in order to be snapped to the next action.
 // This value must stay in the interval [0,1].
@@ -189,8 +187,6 @@ enum class OverscrollViewState {
 @property(nonatomic, assign) CGFloat horizontalOffset;
 // The internal state of the OverscrollActionsView.
 @property(nonatomic, assign) OverscrollViewState overscrollState;
-// A shadow image view displayed at the bottom.
-@property(nonatomic, strong) UIImageView* shadowView;
 // Redefined to readwrite.
 @property(nonatomic, strong, readwrite) UIView* backgroundView;
 // Snapshot view added on top of the background image view.
@@ -269,7 +265,6 @@ enum class OverscrollViewState {
 @synthesize verticalOffset = _verticalOffset;
 @synthesize horizontalOffset = _horizontalOffset;
 @synthesize overscrollState = _overscrollState;
-@synthesize shadowView = _shadowView;
 @synthesize backgroundView = _backgroundView;
 @synthesize snapshotView = _snapshotView;
 @synthesize selectionCircleCroppingLayer = _selectionCircleCroppingLayer;
@@ -360,10 +355,6 @@ enum class OverscrollViewState {
           l10n_util::GetNSString(IDS_IOS_OVERSCROLL_CLOSE_TAB_LABEL);
       [self addSubview:_closeTabLabel];
     }
-
-    _shadowView =
-        [[UIImageView alloc] initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
-    [self addSubview:_shadowView];
 
     _backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
     [self addSubview:_backgroundView];
@@ -497,10 +488,6 @@ enum class OverscrollViewState {
   _selectionCircleCroppingLayer.frame = self.bounds;
   _highlightMaskLayer.frame = self.bounds;
 
-  CGRect shadowFrame = self.bounds;
-  shadowFrame.origin.y = self.bounds.size.height;
-  shadowFrame.size.height = kShadowHeight;
-  self.shadowView.frame = shadowFrame;
   [CATransaction commit];
 
   const BOOL disableActionsOnInitialLayout =
@@ -962,22 +949,18 @@ enum class OverscrollViewState {
 - (void)setStyle:(OverscrollStyle)style {
   switch (style) {
     case OverscrollStyle::NTP_NON_INCOGNITO:
-      [self.shadowView setHidden:YES];
       self.backgroundColor = ntp_home::kNTPBackgroundColor();
       break;
     case OverscrollStyle::NTP_INCOGNITO:
-      [self.shadowView setHidden:YES];
       self.backgroundColor = [UIColor colorWithWhite:0 alpha:0];
       break;
     case OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO:
-      [self.shadowView setHidden:NO];
       self.backgroundColor = [UIColor colorWithRed:242.0 / 256
                                              green:242.0 / 256
                                               blue:242.0 / 256
                                              alpha:1.0];
       break;
     case OverscrollStyle::REGULAR_PAGE_INCOGNITO:
-      [self.shadowView setHidden:NO];
       self.backgroundColor = [UIColor colorWithRed:80.0 / 256
                                              green:80.0 / 256
                                               blue:80.0 / 256

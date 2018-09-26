@@ -64,8 +64,7 @@ NS_INLINE CGFloat BottomPadding() {
         ChromeDirectionalEdgeInsetsMake(0, 0, BottomPadding(), 0));
 
     // Add a shadow.
-    UIImageView* shadowView = [[UIImageView alloc]
-        initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)];
+    UIImageView* shadowView = nil;
     [shadowView setUserInteractionEnabled:NO];
     [shadowView setTranslatesAutoresizingMaskIntoConstraints:NO];
     [popupContainer addSubview:shadowView];
