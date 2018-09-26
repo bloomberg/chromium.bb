@@ -9,6 +9,7 @@ import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
+import("//chrome/android/trichrome.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
@@ -107,6 +108,15 @@ jinja_template("system_webview_manifest") {
   input = "apk/java/AndroidManifest.xml"
   output = system_webview_android_manifest
   variables = [ "manifest_package=$system_webview_package_name" ]
+}
+
+jinja_template("trichrome_webview_manifest") {
+  input = "apk/java/AndroidManifest.xml"
+  output = trichrome_webview_android_manifest
+  variables = trichrome_jinja_variables + [
+                "manifest_package=$system_webview_package_name",
+                "library=libmonochrome.so",
+              ]
 }
 
 webview_repack_locales("repack_locales") {
@@ -1084,5 +1094,14 @@ if (public_android_sdk) {
     android_manifest_dep = ":system_webview_manifest"
     deps = upstream_only_webview_deps
     apk_name = "SystemWebView"
+  }
+
+  system_webview_apk_tmpl("trichrome_webview_apk") {
+    version_name = chrome_version_name
+    android_manifest = trichrome_webview_android_manifest
+    android_manifest_dep = ":trichrome_webview_manifest"
+    deps = upstream_only_webview_deps
+    apk_name = "TrichromeWebView"
+    use_trichrome_library = true
   }
 }
