@@ -56,6 +56,9 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
         main_rfh(), std::move(device_filters), std::move(callback)));
     mock_usb_chooser_view_.reset(new MockUsbChooserView());
     usb_chooser_controller_->set_view(mock_usb_chooser_view_.get());
+    // Make sure the device::mojom::UsbDeviceManager::SetClient() call has
+    // been received.
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -80,6 +83,7 @@ TEST_F(UsbChooserControllerTest, AddDevice) {
       CreateMockUsbDevice("a", "001");
   EXPECT_CALL(*mock_usb_chooser_view_, OnOptionAdded(0)).Times(1);
   device_client_.usb_service()->AddDevice(device_a);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, usb_chooser_controller_->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("a"), usb_chooser_controller_->GetOption(0));
 
@@ -87,6 +91,7 @@ TEST_F(UsbChooserControllerTest, AddDevice) {
       CreateMockUsbDevice("b", "002");
   EXPECT_CALL(*mock_usb_chooser_view_, OnOptionAdded(1)).Times(1);
   device_client_.usb_service()->AddDevice(device_b);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, usb_chooser_controller_->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("b"), usb_chooser_controller_->GetOption(1));
 
@@ -94,6 +99,7 @@ TEST_F(UsbChooserControllerTest, AddDevice) {
       CreateMockUsbDevice("c", "003");
   EXPECT_CALL(*mock_usb_chooser_view_, OnOptionAdded(2)).Times(1);
   device_client_.usb_service()->AddDevice(device_c);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, usb_chooser_controller_->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("c"), usb_chooser_controller_->GetOption(2));
 }
@@ -108,9 +114,11 @@ TEST_F(UsbChooserControllerTest, RemoveDevice) {
   scoped_refptr<device::MockUsbDevice> device_c =
       CreateMockUsbDevice("c", "003");
   device_client_.usb_service()->AddDevice(device_c);
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*mock_usb_chooser_view_, OnOptionRemoved(1)).Times(1);
   device_client_.usb_service()->RemoveDevice(device_b);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, usb_chooser_controller_->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("a"), usb_chooser_controller_->GetOption(0));
   EXPECT_EQ(base::ASCIIToUTF16("c"), usb_chooser_controller_->GetOption(1));
@@ -119,17 +127,20 @@ TEST_F(UsbChooserControllerTest, RemoveDevice) {
   scoped_refptr<device::MockUsbDevice> device_non_existent =
       CreateMockUsbDevice("d", "001");
   device_client_.usb_service()->RemoveDevice(device_non_existent);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, usb_chooser_controller_->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("a"), usb_chooser_controller_->GetOption(0));
   EXPECT_EQ(base::ASCIIToUTF16("c"), usb_chooser_controller_->GetOption(1));
 
   EXPECT_CALL(*mock_usb_chooser_view_, OnOptionRemoved(0)).Times(1);
   device_client_.usb_service()->RemoveDevice(device_a);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, usb_chooser_controller_->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("c"), usb_chooser_controller_->GetOption(0));
 
   EXPECT_CALL(*mock_usb_chooser_view_, OnOptionRemoved(0)).Times(1);
   device_client_.usb_service()->RemoveDevice(device_c);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, usb_chooser_controller_->NumOptions());
 }
 
@@ -137,13 +148,16 @@ TEST_F(UsbChooserControllerTest, AddAndRemoveDeviceWithSameName) {
   scoped_refptr<device::MockUsbDevice> device_a_1 =
       CreateMockUsbDevice("a", "001");
   device_client_.usb_service()->AddDevice(device_a_1);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::ASCIIToUTF16("a"), usb_chooser_controller_->GetOption(0));
+
   scoped_refptr<device::MockUsbDevice> device_b =
       CreateMockUsbDevice("b", "002");
   device_client_.usb_service()->AddDevice(device_b);
   scoped_refptr<device::MockUsbDevice> device_a_2 =
       CreateMockUsbDevice("a", "002");
   device_client_.usb_service()->AddDevice(device_a_2);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::ASCIIToUTF16("a (001)"),
             usb_chooser_controller_->GetOption(0));
   EXPECT_EQ(base::ASCIIToUTF16("b"), usb_chooser_controller_->GetOption(1));
@@ -151,6 +165,7 @@ TEST_F(UsbChooserControllerTest, AddAndRemoveDeviceWithSameName) {
             usb_chooser_controller_->GetOption(2));
 
   device_client_.usb_service()->RemoveDevice(device_a_1);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::ASCIIToUTF16("b"), usb_chooser_controller_->GetOption(0));
   EXPECT_EQ(base::ASCIIToUTF16("a"), usb_chooser_controller_->GetOption(1));
 }
@@ -161,6 +176,7 @@ TEST_F(UsbChooserControllerTest, UnknownDeviceName) {
   scoped_refptr<device::MockUsbDevice> device =
       new device::MockUsbDevice(vendor_id, product_id);
   device_client_.usb_service()->AddDevice(device);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::ASCIIToUTF16("Unknown device [007b:01c8]"),
             usb_chooser_controller_->GetOption(0));
 }
