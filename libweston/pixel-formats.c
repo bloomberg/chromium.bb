@@ -1,5 +1,6 @@
 /*
  * Copyright © 2016 Collabora, Ltd.
+ * Copyright (c) 2018 DisplayLink (UK) Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -49,6 +50,8 @@
 #define SAMPLER_TYPE(type) .sampler_type = 0
 #endif
 
+#define DRM_FORMAT(f) .format = DRM_FORMAT_ ## f, .drm_format_name = #f
+
 #include "weston-egl-ext.h"
 
 /**
@@ -58,28 +61,28 @@
  */
 static const struct pixel_format_info pixel_format_table[] = {
 	{
-		.format = DRM_FORMAT_XRGB4444,
+		DRM_FORMAT(XRGB4444),
 	},
 	{
-		.format = DRM_FORMAT_ARGB4444,
+		DRM_FORMAT(ARGB4444),
 		.opaque_substitute = DRM_FORMAT_XRGB4444,
 	},
 	{
-		.format = DRM_FORMAT_XBGR4444,
+		DRM_FORMAT(XBGR4444),
 	},
 	{
-		.format = DRM_FORMAT_ABGR4444,
+		DRM_FORMAT(ABGR4444),
 		.opaque_substitute = DRM_FORMAT_XBGR4444,
 	},
 	{
-		.format = DRM_FORMAT_RGBX4444,
+		DRM_FORMAT(RGBX4444),
 # if __BYTE_ORDER == __LITTLE_ENDIAN
 		GL_FORMAT(GL_RGBA),
 		GL_TYPE(GL_UNSIGNED_SHORT_4_4_4_4),
 #endif
 	},
 	{
-		.format = DRM_FORMAT_RGBA4444,
+		DRM_FORMAT(RGBA4444),
 		.opaque_substitute = DRM_FORMAT_RGBX4444,
 # if __BYTE_ORDER == __LITTLE_ENDIAN
 		GL_FORMAT(GL_RGBA),
@@ -87,37 +90,37 @@ static const struct pixel_format_info pixel_format_table[] = {
 #endif
 	},
 	{
-		.format = DRM_FORMAT_BGRX4444,
+		DRM_FORMAT(BGRX4444),
 	},
 	{
-		.format = DRM_FORMAT_BGRA4444,
+		DRM_FORMAT(BGRA4444),
 		.opaque_substitute = DRM_FORMAT_BGRX4444,
 	},
 	{
-		.format = DRM_FORMAT_XRGB1555,
+		DRM_FORMAT(XRGB1555),
 		.depth = 15,
 		.bpp = 16,
 	},
 	{
-		.format = DRM_FORMAT_ARGB1555,
+		DRM_FORMAT(ARGB1555),
 		.opaque_substitute = DRM_FORMAT_XRGB1555,
 	},
 	{
-		.format = DRM_FORMAT_XBGR1555,
+		DRM_FORMAT(XBGR1555),
 	},
 	{
-		.format = DRM_FORMAT_ABGR1555,
+		DRM_FORMAT(ABGR1555),
 		.opaque_substitute = DRM_FORMAT_XBGR1555,
 	},
 	{
-		.format = DRM_FORMAT_RGBX5551,
+		DRM_FORMAT(RGBX5551),
 # if __BYTE_ORDER == __LITTLE_ENDIAN
 		GL_FORMAT(GL_RGBA),
 		GL_TYPE(GL_UNSIGNED_SHORT_5_5_5_1),
 #endif
 	},
 	{
-		.format = DRM_FORMAT_RGBA5551,
+		DRM_FORMAT(RGBA5551),
 		.opaque_substitute = DRM_FORMAT_RGBX5551,
 # if __BYTE_ORDER == __LITTLE_ENDIAN
 		GL_FORMAT(GL_RGBA),
@@ -125,14 +128,14 @@ static const struct pixel_format_info pixel_format_table[] = {
 #endif
 	},
 	{
-		.format = DRM_FORMAT_BGRX5551,
+		DRM_FORMAT(BGRX5551),
 	},
 	{
-		.format = DRM_FORMAT_BGRA5551,
+		DRM_FORMAT(BGRA5551),
 		.opaque_substitute = DRM_FORMAT_BGRX5551,
 	},
 	{
-		.format = DRM_FORMAT_RGB565,
+		DRM_FORMAT(RGB565),
 		.depth = 16,
 		.bpp = 16,
 # if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -141,25 +144,25 @@ static const struct pixel_format_info pixel_format_table[] = {
 #endif
 	},
 	{
-		.format = DRM_FORMAT_BGR565,
+		DRM_FORMAT(BGR565),
 	},
 	{
-		.format = DRM_FORMAT_RGB888,
+		DRM_FORMAT(RGB888),
 	},
 	{
-		.format = DRM_FORMAT_BGR888,
+		DRM_FORMAT(BGR888),
 		GL_FORMAT(GL_RGB),
 		GL_TYPE(GL_UNSIGNED_BYTE),
 	},
 	{
-		.format = DRM_FORMAT_XRGB8888,
+		DRM_FORMAT(XRGB8888),
 		.depth = 24,
 		.bpp = 32,
 		GL_FORMAT(GL_BGRA_EXT),
 		GL_TYPE(GL_UNSIGNED_BYTE),
 	},
 	{
-		.format = DRM_FORMAT_ARGB8888,
+		DRM_FORMAT(ARGB8888),
 		.opaque_substitute = DRM_FORMAT_XRGB8888,
 		.depth = 32,
 		.bpp = 32,
@@ -167,48 +170,48 @@ static const struct pixel_format_info pixel_format_table[] = {
 		GL_TYPE(GL_UNSIGNED_BYTE),
 	},
 	{
-		.format = DRM_FORMAT_XBGR8888,
+		DRM_FORMAT(XBGR8888),
 		GL_FORMAT(GL_RGBA),
 		GL_TYPE(GL_UNSIGNED_BYTE),
 	},
 	{
-		.format = DRM_FORMAT_ABGR8888,
+		DRM_FORMAT(ABGR8888),
 		.opaque_substitute = DRM_FORMAT_XBGR8888,
 		GL_FORMAT(GL_RGBA),
 		GL_TYPE(GL_UNSIGNED_BYTE),
 	},
 	{
-		.format = DRM_FORMAT_RGBX8888,
+		DRM_FORMAT(RGBX8888),
 	},
 	{
-		.format = DRM_FORMAT_RGBA8888,
+		DRM_FORMAT(RGBA8888),
 		.opaque_substitute = DRM_FORMAT_RGBX8888,
 	},
 	{
-		.format = DRM_FORMAT_BGRX8888,
+		DRM_FORMAT(BGRX8888),
 	},
 	{
-		.format = DRM_FORMAT_BGRA8888,
+		DRM_FORMAT(BGRA8888),
 		.opaque_substitute = DRM_FORMAT_BGRX8888,
 	},
 	{
-		.format = DRM_FORMAT_XRGB2101010,
+		DRM_FORMAT(XRGB2101010),
 		.depth = 30,
 		.bpp = 32,
 	},
 	{
-		.format = DRM_FORMAT_ARGB2101010,
+		DRM_FORMAT(ARGB2101010),
 		.opaque_substitute = DRM_FORMAT_XRGB2101010,
 	},
 	{
-		.format = DRM_FORMAT_XBGR2101010,
+		DRM_FORMAT(XBGR2101010),
 # if __BYTE_ORDER == __LITTLE_ENDIAN
 		GL_FORMAT(GL_RGBA),
 		GL_TYPE(GL_UNSIGNED_INT_2_10_10_10_REV_EXT),
 #endif
 	},
 	{
-		.format = DRM_FORMAT_ABGR2101010,
+		DRM_FORMAT(ABGR2101010),
 		.opaque_substitute = DRM_FORMAT_XBGR2101010,
 # if __BYTE_ORDER == __LITTLE_ENDIAN
 		GL_FORMAT(GL_RGBA),
@@ -216,41 +219,41 @@ static const struct pixel_format_info pixel_format_table[] = {
 #endif
 	},
 	{
-		.format = DRM_FORMAT_RGBX1010102,
+		DRM_FORMAT(RGBX1010102),
 	},
 	{
-		.format = DRM_FORMAT_RGBA1010102,
+		DRM_FORMAT(RGBA1010102),
 		.opaque_substitute = DRM_FORMAT_RGBX1010102,
 	},
 	{
-		.format = DRM_FORMAT_BGRX1010102,
+		DRM_FORMAT(BGRX1010102),
 	},
 	{
-		.format = DRM_FORMAT_BGRA1010102,
+		DRM_FORMAT(BGRA1010102),
 		.opaque_substitute = DRM_FORMAT_BGRX1010102,
 	},
 	{
-		.format = DRM_FORMAT_YUYV,
+		DRM_FORMAT(YUYV),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_XUXV_WL),
 		.num_planes = 1,
 		.hsub = 2,
 	},
 	{
-		.format = DRM_FORMAT_YVYU,
+		DRM_FORMAT(YVYU),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_XUXV_WL),
 		.num_planes = 1,
 		.chroma_order = ORDER_VU,
 		.hsub = 2,
 	},
 	{
-		.format = DRM_FORMAT_UYVY,
+		DRM_FORMAT(UYVY),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_XUXV_WL),
 		.num_planes = 1,
 		.luma_chroma_order = ORDER_CHROMA_LUMA,
 		.hsub = 2,
 	},
 	{
-		.format = DRM_FORMAT_VYUY,
+		DRM_FORMAT(VYUY),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_XUXV_WL),
 		.num_planes = 1,
 		.luma_chroma_order = ORDER_CHROMA_LUMA,
@@ -258,14 +261,14 @@ static const struct pixel_format_info pixel_format_table[] = {
 		.hsub = 2,
 	},
 	{
-		.format = DRM_FORMAT_NV12,
+		DRM_FORMAT(NV12),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_UV_WL),
 		.num_planes = 2,
 		.hsub = 2,
 		.vsub = 2,
 	},
 	{
-		.format = DRM_FORMAT_NV21,
+		DRM_FORMAT(NV21),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_UV_WL),
 		.num_planes = 2,
 		.chroma_order = ORDER_VU,
@@ -273,14 +276,14 @@ static const struct pixel_format_info pixel_format_table[] = {
 		.vsub = 2,
 	},
 	{
-		.format = DRM_FORMAT_NV16,
+		DRM_FORMAT(NV16),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_UV_WL),
 		.num_planes = 2,
 		.hsub = 2,
 		.vsub = 1,
 	},
 	{
-		.format = DRM_FORMAT_NV61,
+		DRM_FORMAT(NV61),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_UV_WL),
 		.num_planes = 2,
 		.chroma_order = ORDER_VU,
@@ -288,25 +291,25 @@ static const struct pixel_format_info pixel_format_table[] = {
 		.vsub = 1,
 	},
 	{
-		.format = DRM_FORMAT_NV24,
+		DRM_FORMAT(NV24),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_UV_WL),
 		.num_planes = 2,
 	},
 	{
-		.format = DRM_FORMAT_NV42,
+		DRM_FORMAT(NV42),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_UV_WL),
 		.num_planes = 2,
 		.chroma_order = ORDER_VU,
 	},
 	{
-		.format = DRM_FORMAT_YUV410,
+		DRM_FORMAT(YUV410),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_U_V_WL),
 		.num_planes = 3,
 		.hsub = 4,
 		.vsub = 4,
 	},
 	{
-		.format = DRM_FORMAT_YVU410,
+		DRM_FORMAT(YVU410),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_U_V_WL),
 		.num_planes = 3,
 		.chroma_order = ORDER_VU,
@@ -314,14 +317,14 @@ static const struct pixel_format_info pixel_format_table[] = {
 		.vsub = 4,
 	},
 	{
-		.format = DRM_FORMAT_YUV411,
+		DRM_FORMAT(YUV411),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_U_V_WL),
 		.num_planes = 3,
 		.hsub = 4,
 		.vsub = 1,
 	},
 	{
-		.format = DRM_FORMAT_YVU411,
+		DRM_FORMAT(YVU411),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_U_V_WL),
 		.num_planes = 3,
 		.chroma_order = ORDER_VU,
@@ -329,14 +332,14 @@ static const struct pixel_format_info pixel_format_table[] = {
 		.vsub = 1,
 	},
 	{
-		.format = DRM_FORMAT_YUV420,
+		DRM_FORMAT(YUV420),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_U_V_WL),
 		.num_planes = 3,
 		.hsub = 2,
 		.vsub = 2,
 	},
 	{
-		.format = DRM_FORMAT_YVU420,
+		DRM_FORMAT(YVU420),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_U_V_WL),
 		.num_planes = 3,
 		.chroma_order = ORDER_VU,
@@ -344,14 +347,14 @@ static const struct pixel_format_info pixel_format_table[] = {
 		.vsub = 2,
 	},
 	{
-		.format = DRM_FORMAT_YUV422,
+		DRM_FORMAT(YUV422),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_U_V_WL),
 		.num_planes = 3,
 		.hsub = 2,
 		.vsub = 1,
 	},
 	{
-		.format = DRM_FORMAT_YVU422,
+		DRM_FORMAT(YVU422),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_U_V_WL),
 		.num_planes = 3,
 		.chroma_order = ORDER_VU,
@@ -359,12 +362,12 @@ static const struct pixel_format_info pixel_format_table[] = {
 		.vsub = 1,
 	},
 	{
-		.format = DRM_FORMAT_YUV444,
+		DRM_FORMAT(YUV444),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_U_V_WL),
 		.num_planes = 3,
 	},
 	{
-		.format = DRM_FORMAT_YVU444,
+		DRM_FORMAT(YVU444),
 		SAMPLER_TYPE(EGL_TEXTURE_Y_U_V_WL),
 		.num_planes = 3,
 		.chroma_order = ORDER_VU,

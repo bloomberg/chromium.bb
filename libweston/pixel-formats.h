@@ -1,5 +1,6 @@
 /*
  * Copyright © 2016 Collabora, Ltd.
+ * Copyright (c) 2018 DisplayLink (UK) Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,6 +37,9 @@
 struct pixel_format_info {
 	/** DRM/wl_shm format code */
 	uint32_t format;
+
+	/** The DRM format name without the DRM_FORMAT_ prefix. */
+	const char *drm_format_name;
 
 	/** If non-zero, number of planes in base (non-modified) format. */
 	int num_planes;
