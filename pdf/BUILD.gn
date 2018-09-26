@@ -110,18 +110,7 @@ if (enable_pdf) {
     }
   }
 
-  source_set("pdf_test_utils") {
-    testonly = true
-    sources = [
-      "test/test_client.cc",
-      "test/test_client.h",
-      "test/test_document_loader.cc",
-      "test/test_document_loader.h",
-    ]
-  }
-
   test("pdf_unittests") {
-    testonly = true
     sources = [
       "chunk_stream_unittest.cc",
       "document_loader_impl_unittest.cc",
@@ -132,7 +121,6 @@ if (enable_pdf) {
 
     deps = [
       ":pdf",
-      ":pdf_test_utils",
       "//base",
       "//base/test:test_support",
       "//ppapi/c",
@@ -152,8 +140,6 @@ if (enable_pdf) {
         "pdfium/findtext_unittest.cc",
         "pdfium/pdfium_engine_exports_unittest.cc",
         "pdfium/pdfium_print_unittest.cc",
-        "pdfium/pdfium_test_base.cc",
-        "pdfium/pdfium_test_base.h",
       ]
       include_dirs = [ "//third_party/pdfium" ]
 
