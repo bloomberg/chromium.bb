@@ -68,7 +68,7 @@ class ScriptExecutor : public ActionDelegate {
  private:
   void OnGetActions(bool result, const std::string& response);
   void ProcessNextAction();
-  void ProcessAction(std::unique_ptr<Action> action);
+  void ProcessAction(Action* action);
   void GetNextActions();
   void OnProcessedAction(std::unique_ptr<ProcessedActionProto> action);
 
@@ -76,7 +76,7 @@ class ScriptExecutor : public ActionDelegate {
   ScriptExecutorDelegate* delegate_;
   RunScriptCallback callback_;
 
-  std::deque<std::unique_ptr<Action>> actions_;
+  std::vector<std::unique_ptr<Action>> actions_;
   std::vector<ProcessedActionProto> processed_actions_;
   std::string last_server_payload_;
 

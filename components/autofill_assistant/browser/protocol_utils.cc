@@ -131,9 +131,10 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
 }
 
 // static
-bool ProtocolUtils::ParseActions(const std::string& response,
-                                 std::string* return_server_payload,
-                                 std::deque<std::unique_ptr<Action>>* actions) {
+bool ProtocolUtils::ParseActions(
+    const std::string& response,
+    std::string* return_server_payload,
+    std::vector<std::unique_ptr<Action>>* actions) {
   DCHECK(actions);
 
   ActionsResponseProto response_proto;
