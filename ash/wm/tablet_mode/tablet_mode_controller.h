@@ -82,6 +82,8 @@ class ASH_EXPORT TabletModeController
   // unittests; the event blocker prevents keyboard input when running ChromeOS
   // on linux. http://crbug.com/362881
   // Turn the always tablet mode window manager on or off.
+  // TODO(xdai): Make it a private function. This function is not supposed to be
+  // called by an external caller except for tests.
   void EnableTabletModeWindowManager(bool should_enable);
 
   // Test if the TabletModeWindowManager is enabled or not.
@@ -162,11 +164,6 @@ class ASH_EXPORT TabletModeController
   // a certain range of time before using unstable angle.
   bool CanUseUnstableLidAngle() const;
 
-  // True if it is possible to enter tablet mode in the current
-  // configuration. If this returns false, it should never be the case that
-  // tablet mode becomes enabled.
-  bool CanEnterTabletMode();
-
   // Attempts to enter tablet mode and update the internal keyboard and
   // touchpad.
   void AttemptEnterTabletMode();
@@ -222,9 +219,6 @@ class ASH_EXPORT TabletModeController
   // A helper class which when instantiated will block native events from the
   // internal keyboard and touchpad.
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> event_blocker_;
-
-  // Whether we have ever seen accelerometer data.
-  bool have_seen_accelerometer_data_ = false;
 
   // Whether the lid angle can be detected. If it's true, the device is a
   // convertible device (both screen acclerometer and keyboard acclerometer are

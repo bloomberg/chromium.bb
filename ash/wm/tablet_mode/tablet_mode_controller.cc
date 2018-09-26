@@ -93,7 +93,11 @@ bool IsAngleBetweenAccelerometerReadingsStable(
                  .Length()) <= kNoisyMagnitudeDeviation;
 }
 
-bool IsEnabled() {
+// Returns true if the device is capable of entering tablet mode. This only
+// returns true if the device has kAshEnableTabletMode flag, which means 1) the
+// device has accelerometer and 2) the device is a convertible or a tablet.
+// A device without this flag is not capable of entering tablet mode.
+bool IsTabletModeCapable() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnableTabletMode);
 }
@@ -130,26 +134,6 @@ TabletModeController::TabletModeController()
       scoped_session_observer_(this),
       weak_factory_(this) {
   Shell::Get()->AddShellObserver(this);
-  base::RecordAction(base::UserMetricsAction("Touchview_Initially_Disabled"));
-
-  // TODO(jonross): Do not create TabletModeController if the flag is
-  // unavailable. This will require refactoring
-  // IsTabletModeWindowManagerEnabled to check for the existence of the
-  // controller.
-  if (IsEnabled()) {
-    Shell::Get()->window_tree_host_manager()->AddObserver(this);
-    chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
-    ui::InputDeviceManager::GetInstance()->AddObserver(this);
-    bluetooth_devices_observer_ = std::make_unique<BluetoothDevicesObserver>(
-        base::BindRepeating(&TabletModeController::UpdateBluetoothDevice,
-                            base::Unretained(this)));
-  }
-  chromeos::PowerManagerClient* power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
-  power_manager_client->AddObserver(this);
-  power_manager_client->GetSwitchStates(base::BindOnce(
-      &TabletModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
-
   TabletMode::SetCallback(base::BindRepeating(
       &TabletModeController::IsTabletModeWindowManagerEnabled,
       base::Unretained(this)));
@@ -158,13 +142,13 @@ TabletModeController::TabletModeController()
 TabletModeController::~TabletModeController() {
   Shell::Get()->RemoveShellObserver(this);
 
-  if (IsEnabled()) {
+  if (AllowUiModeChange() && IsTabletModeCapable()) {
     Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
     ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+        this);
   }
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
 
   TabletMode::SetCallback(TabletMode::TabletModeCallback());
 }
@@ -209,7 +193,7 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
 }
 
 bool TabletModeController::IsTabletModeWindowManagerEnabled() const {
-  return tablet_mode_window_manager_.get() != NULL;
+  return tablet_mode_window_manager_.get() != nullptr;
 }
 
 void TabletModeController::AddWindow(aura::Window* window) {
@@ -259,8 +243,26 @@ bool TabletModeController::TriggerRecordLidAngleTimerForTesting() {
 
 void TabletModeController::OnShellInitialized() {
   force_ui_mode_ = GetTabletMode();
-  if (force_ui_mode_ == UiMode::kTabletMode)
-    AttemptEnterTabletMode();
+  if (!AllowUiModeChange()) {
+    // |force_ui_mode_| should have the top priority. If the user sets the
+    // |force_ui_mode_| to kTabletMode or kClamshell, always respect the user's
+    // choice.
+    EnableTabletModeWindowManager(force_ui_mode_ == UiMode::kTabletMode);
+  } else if (IsTabletModeCapable()) {
+    base::RecordAction(base::UserMetricsAction("Touchview_Initially_Disabled"));
+
+    Shell::Get()->window_tree_host_manager()->AddObserver(this);
+    chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
+    ui::InputDeviceManager::GetInstance()->AddObserver(this);
+
+    chromeos::PowerManagerClient* power_manager_client =
+        chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+    power_manager_client->AddObserver(this);
+    power_manager_client->GetSwitchStates(base::BindOnce(
+        &TabletModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
+  }
+  // Otherwise the device is not capable of entering tablet mode, do nothing to
+  // keep it in clamshell mode.
 }
 
 void TabletModeController::OnDisplayConfigurationChanged() {
@@ -283,7 +285,7 @@ void TabletModeController::OnChromeTerminating() {
   // metrics based on whether TabletMode mode is currently active.
   RecordTabletModeUsageInterval(CurrentTabletModeIntervalType());
 
-  if (CanEnterTabletMode()) {
+  if (IsTabletModeCapable()) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewActiveTotal",
                                 total_tablet_mode_time_.InMinutes(), 1,
                                 base::TimeDelta::FromDays(7).InMinutes(), 50);
@@ -305,7 +307,6 @@ void TabletModeController::OnAccelerometerUpdated(
   if (!AllowUiModeChange())
     return;
 
-  have_seen_accelerometer_data_ = true;
   can_detect_lid_angle_ =
       update->has(chromeos::ACCELEROMETER_SOURCE_SCREEN) &&
       update->has(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD);
@@ -488,13 +489,6 @@ bool TabletModeController::CanUseUnstableLidAngle() const {
   return elapsed_time >= kUnstableLidAngleDuration;
 }
 
-bool TabletModeController::CanEnterTabletMode() {
-  // If we have ever seen accelerometer data, then HandleHingeRotation may
-  // trigger tablet mode at some point in the future.
-  // All TabletMode-enabled devices can enter tablet mode.
-  return have_seen_accelerometer_data_ || IsEnabled();
-}
-
 void TabletModeController::AttemptEnterTabletMode() {
   if (IsTabletModeWindowManagerEnabled() || has_external_mouse_) {
     UpdateInternalMouseAndKeyboardEventBlocker();
@@ -515,7 +509,7 @@ void TabletModeController::AttemptLeaveTabletMode() {
 
 void TabletModeController::RecordTabletModeUsageInterval(
     TabletModeIntervalType type) {
-  if (!CanEnterTabletMode())
+  if (!IsTabletModeCapable())
     return;
 
   base::Time current_time = base::Time::Now();
