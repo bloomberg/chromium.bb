@@ -353,7 +353,8 @@ public class FullscreenManagerTest {
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
-    @Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON})
+    @Features.DisableFeatures(
+            {ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, ChromeFeatureList.OFFLINE_INDICATOR})
     public void testHidingBrowserControlsRemovesSurfaceFlingerOverlay()
             throws InterruptedException {
         FullscreenManagerTestUtils.disableBrowserOverrides();
