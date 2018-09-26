@@ -1689,7 +1689,11 @@ void RenderThreadImpl::ProcessPurgeAndSuspend() {
   if (!base::FeatureList::IsEnabled(features::kPurgeAndSuspend))
     return;
 
-  base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
+  if (base::MemoryPressureListener::AreNotificationsSuppressed())
+    return;
+
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   needs_to_record_first_active_paint_ = true;
 
   RendererMemoryMetrics memory_metrics;

@@ -740,6 +740,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   // depending on memory pressure.
   virtual void RequestPurgeMemory() {}
 
+  virtual void SetMemoryPressureNotificationsSuppressed(bool suppressed) {}
+
   // V8 Context Snapshot --------------------------------------------------
 
   // This method returns true only when

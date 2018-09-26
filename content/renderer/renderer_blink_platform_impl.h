@@ -230,6 +230,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebDataConsumerHandle> CreateDataConsumerHandle(
       mojo::ScopedDataPipeConsumerHandle handle) override;
   void RequestPurgeMemory() override;
+  void SetMemoryPressureNotificationsSuppressed(bool suppressed) override;
 
   // Returns non-null.
   // It is invalid to call this in an incomplete env where
