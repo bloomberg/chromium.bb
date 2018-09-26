@@ -115,6 +115,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                    const LayoutPoint& paint_offset);
   void PaintCarets(const PaintInfo&, const LayoutPoint& paint_offset);
 
+  void RecordHitTestData(const PaintInfo& paint_info,
+                         const LayoutPoint& paint_offset);
+
   bool IsInSelfHitTestingPhase(HitTestAction) const;
   bool VisibleToHitTestRequest(const HitTestRequest&) const;
 
