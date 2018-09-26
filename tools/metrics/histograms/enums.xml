@@ -20272,6 +20272,7 @@ Called by update_net_error_codes.py.-->
   <int value="26" label="kPictureInPicture"/>
   <int value="27" label="kVerticalScroll"/>
   <int value="28" label="kDocumentWrite"/>
+  <int value="29" label="kLazyLoad"/>
 </enum>
 
 <enum name="FeedbackSource">
