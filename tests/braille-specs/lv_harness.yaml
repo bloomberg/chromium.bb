@@ -2,8 +2,18 @@ display: unicode.dis
 table:
   locale: lv
   grade: 1
-  __assert-match: lv.tbl
+  __assert-match: lv.tbl # Lv-Lv-g1.utb
+
 tests:
+  - - All letters of alphabet
+    - a ā b c č d e ē f g ģ h i ī j k ķ l ļ m n ņ o p r s š t u ū v z ž
+    - ⠁ ⠡ ⠃ ⠉ ⠩ ⠙ ⠑ ⠱ ⠋ ⠛ ⠻ ⠓ ⠊ ⠪ ⠚ ⠅ ⠥ ⠇ ⠧ ⠍ ⠝ ⠽ ⠕ ⠏ ⠗ ⠎ ⠮ ⠞ ⠌ ⠬ ⠺ ⠜ ⠼
+  - - Uppercase of letters that are different from other languages
+    - U V Z
+    - ⠨⠌ ⠨⠺ ⠨⠜
+  - - Other letters
+    - q w x y ä į æ
+    - ⠟ ⠺ ⠭ ⠽ ⠵ ⠫ ⠸
   - - Pangram
     - Glāžšķūņa rūķīši dzērumā čiepj Baha koncertflīģeļu vākus.
     - ⠨⠛⠇⠡⠼⠮⠥⠬⠽⠁ ⠗⠬⠥⠪⠮⠊ ⠙⠜⠱⠗⠌⠍⠡ ⠩⠊⠑⠏⠚ ⠨⠃⠁⠓⠁ ⠅⠕⠝⠉⠑⠗⠞⠋⠇⠪⠻⠑⠧⠌ ⠺⠡⠅⠌⠎⠲
@@ -17,3 +27,65 @@ tests:
   - - Punctuation and other symbols
     - ', . ? ! ; : '' « » ( ) a-b'
     - ⠂ ⠲ ⠢ ⠖ ⠆ ⠒ ⠄ ⠦ ⠴ ⠶ ⠶ ⠁⠤⠃
+  # More symbols
+  - - '~'
+    - ⠒⠒
+  - - '`'
+    - ⠄
+  - - '-'
+    - ⠤
+  - - '—'
+    - ⠒
+  - - '[ ]'
+    - ⠷ ⠾
+  - - '{ }'
+    - ⠯ ⠽
+  - - '='
+    - ⠶
+  - - '/'
+    - ⠸⠇
+  - - '+'
+    - ⠖
+  - - '§'
+    - ⠰
+  - - '^'
+    - ⠨
+  - - '_'
+    - ⠠
+  - - '@'
+    - ⠈
+  - - '£'
+    - ⠘
+  - - '€'
+    - ⠨⠑
+  - - '•'
+    - ⠐
+  - - '†'
+    - ⠣
+  - - '¶'
+    - ⠹
+  - - '¬'
+    - ⠳
+  - - '*'
+    - ⠔
+  - - '< >'
+    - ⠪ ⠕
+  - - '\\'
+    - ⠿
+  - - '%'
+    - ⠼⠚⠴
+  - - '‰'
+    - ⠼⠚⠴⠴
+  - - '&'
+    - ⠌⠝
+  # Combinations of numbers and punctuation
+  - - '+371'
+    - ⠖⠼⠉⠛⠁
+  - - '2-3'
+    - ⠼⠃⠤⠼⠉
+  # No space after comma
+  - - 't, t'
+    - ⠞⠂⠞
+  # All caps
+  - - 'TEXT'
+    - ⠨⠨⠞⠑⠭⠞
