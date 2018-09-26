@@ -62,8 +62,10 @@ LocalSiteCharacteristicsNonRecordingDataStore::GetAllInMemoryOrigins() {
 
 void LocalSiteCharacteristicsNonRecordingDataStore::GetDatabaseSize(
     DatabaseSizeCallback on_have_data) {
-  if (!data_store_inspector_)
+  if (!data_store_inspector_) {
     std::move(on_have_data).Run(base::nullopt, base::nullopt);
+    return;
+  }
 
   data_store_inspector_->GetDatabaseSize(std::move(on_have_data));
 }
