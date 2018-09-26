@@ -785,22 +785,6 @@ TEST_P(CRWWebControllerDownloadTest, IFrameCreationWithNSHTTPURLResponse) {
       ui::PageTransition::PAGE_TRANSITION_AUTO_SUBFRAME));
 }
 
-// Tests that webView:decidePolicyForNavigationResponse:decisionHandler: does
-// not create the DownloadTask for unsupported data:// URLs.
-TEST_P(CRWWebControllerDownloadTest, DataUrlResponse) {
-  // Simulate download response.
-  NSURLResponse* response =
-      [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"data:data"]
-                                  statusCode:200
-                                 HTTPVersion:nil
-                                headerFields:nil];
-  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
-      response, /*for_main_frame=*/YES));
-
-  // Verify that download task was not created.
-  EXPECT_TRUE(delegate_.alive_download_tasks().empty());
-}
-
 // Tests |currentURLWithTrustLevel:| method.
 TEST_P(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
   GURL url("http://chromium.test");
