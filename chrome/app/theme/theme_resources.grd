@@ -168,9 +168,6 @@
         <structure type="chrome_scaled_image" name="IDR_INFO" file="legacy/info_small.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_3D_BLOCKED" file="common/infobar_3d_blocked.png" />
-      <if expr="is_macosx or is_android">
-        <structure type="chrome_scaled_image" name="IDR_INFOBAR_TRANSLATE" file="common/infobar_translate.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT" file="common/input_alert.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT_MENU" file="common/input_alert_menu.png" />
       <if expr="is_macosx">
