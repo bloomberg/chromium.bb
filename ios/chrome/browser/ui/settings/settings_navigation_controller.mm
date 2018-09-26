@@ -7,7 +7,6 @@
 #include "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
@@ -570,12 +569,9 @@ initWithRootViewController:(UIViewController*)rootViewController
     ConfigureAppBarViewControllerWithCardStyle(
         appBarContainer.appBarViewController);
 
-    // Override the header view's background color if the UIRefresh experiment
-    // is enabled.
-    if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      appBarContainer.appBarViewController.headerView.backgroundColor =
-          [UIColor groupTableViewBackgroundColor];
-    }
+    // Override the header view's background color.
+    appBarContainer.appBarViewController.headerView.backgroundColor =
+        [UIColor groupTableViewBackgroundColor];
 
     // Register the app bar container and return it.
     [self registerAppBarContainer:appBarContainer];

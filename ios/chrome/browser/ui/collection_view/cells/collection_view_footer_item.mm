@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 
-#import "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -144,8 +143,7 @@ const CGFloat kVerticalPadding = 16;
                action:^(const GURL& URL) {
                  [weakSelf.linkDelegate cell:weakSelf didTapLinkURL:URL];
                }];
-    if (cellStyle == CollectionViewCellStyle::kUIKit &&
-        experimental_flags::IsSettingsUIRebootEnabled()) {
+    if (cellStyle == CollectionViewCellStyle::kUIKit) {
       [_linkController setLinkColor:UIColorFromRGB(kUIKitFooterLinkColor)];
     } else {
       [_linkController setLinkColor:[[MDCPalette cr_bluePalette] tint500]];
@@ -155,8 +153,7 @@ const CGFloat kVerticalPadding = 16;
 }
 
 - (void)updateForStyle:(CollectionViewCellStyle)cellStyle {
-  if (cellStyle == CollectionViewCellStyle::kUIKit &&
-      experimental_flags::IsSettingsUIRebootEnabled()) {
+  if (cellStyle == CollectionViewCellStyle::kUIKit) {
     self.textLabel.font = [UIFont systemFontOfSize:kUIKitFooterFontSize];
     self.textLabel.textColor = UIColorFromRGB(kUIKitFooterTextColor);
   } else {

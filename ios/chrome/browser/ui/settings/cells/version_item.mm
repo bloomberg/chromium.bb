@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/cells/version_item.h"
 
-#import "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -51,20 +50,11 @@
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _textLabel.font = [UIFont systemFontOfSize:kUIKitFooterFontSize];
+    _textLabel.textColor = UIColorFromRGB(kUIKitFooterTextColor);
     _textLabel.backgroundColor = [UIColor clearColor];
     _textLabel.textAlignment = NSTextAlignmentCenter;
     [self addSubview:_textLabel];
-
-    // Fonts and colors vary when the UI reboot experiment is enabled.
-    if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      _textLabel.font = [UIFont systemFontOfSize:kUIKitFooterFontSize];
-      _textLabel.textColor = UIColorFromRGB(kUIKitFooterTextColor);
-    } else {
-      _textLabel.shadowOffset = CGSizeMake(1, 0);
-      _textLabel.shadowColor = [UIColor whiteColor];
-      _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-      _textLabel.textColor = [[MDCPalette greyPalette] tint900];
-    }
 
     // Set up the constraints.
     [NSLayoutConstraint activateConstraints:@[

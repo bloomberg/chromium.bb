@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 
-#import "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -171,8 +170,7 @@ const CGFloat kLabelAndFieldGap = 5;
 }
 
 - (void)updateForStyle:(CollectionViewCellStyle)cellStyle {
-  if (cellStyle == CollectionViewCellStyle::kUIKit &&
-      experimental_flags::IsSettingsUIRebootEnabled()) {
+  if (cellStyle == CollectionViewCellStyle::kUIKit) {
     self.textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
     self.textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
     self.textField.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
