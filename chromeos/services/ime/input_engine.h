@@ -15,6 +15,18 @@ namespace rulebased {
 class Controller;
 }
 
+class InputEngineContext {
+ public:
+  InputEngineContext(const std::string& ime);
+  ~InputEngineContext();
+
+  std::string ime_spec;
+  std::unique_ptr<rulebased::Controller> controller;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InputEngineContext);
+};
+
 // A basic implementation of InputEngine without using any decoder.
 class InputEngine : public mojom::InputChannel {
  public:
@@ -41,11 +53,10 @@ class InputEngine : public mojom::InputChannel {
 
  private:
   const std::string Process(const std::string& message,
-                            const std::string& ime_spec);
+                            const InputEngineContext* context);
 
-  mojo::BindingSet<mojom::InputChannel, std::string> channel_bindings_;
-
-  std::unique_ptr<rulebased::Controller> rule_based_controller_;
+  mojo::BindingSet<mojom::InputChannel, std::unique_ptr<InputEngineContext>>
+      channel_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEngine);
 };

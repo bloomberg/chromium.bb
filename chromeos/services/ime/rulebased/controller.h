@@ -33,14 +33,18 @@ class Controller {
   Controller();
   ~Controller();
 
+  static bool IsImeSupported(const std::string& id);
+
   void Activate(const std::string& id);
-  bool IsImeSupported(const std::string& id);
   void Reset();
   ProcessKeyResult ProcessKey(const std::string& code, uint8_t modifier_state);
+
+  uint32_t process_key_count() const { return process_key_count_; }
 
  private:
   std::unique_ptr<const RulesData> current_data_;
   std::string current_id_;
+  uint32_t process_key_count_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };
