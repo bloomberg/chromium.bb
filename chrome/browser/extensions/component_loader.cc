@@ -368,10 +368,7 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
 void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
   AddComponentFromDir(
       base::FilePath(extension_misc::kSpeechSynthesisExtensionPath),
-      extension_misc::kSpeechSynthesisExtensionId,
-      base::Bind(&ComponentLoader::EnableFileSystemInGuestMode,
-                 weak_factory_.GetWeakPtr(),
-                 extension_misc::kChromeVoxExtensionId));
+      extension_misc::kSpeechSynthesisExtensionId, base::RepeatingClosure());
 }
 #endif
 
