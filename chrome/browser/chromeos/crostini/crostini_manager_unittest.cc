@@ -607,24 +607,33 @@ TEST_F(CrostiniManagerRestartTest, OnlyMountTerminaPenguin) {
 }
 
 TEST_F(CrostiniManagerRestartTest, MultiRestartAllowed) {
-  CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  CrostiniManager::RestartId id1, id2, id3;
+  id1 = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
-  CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  id2 = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
-  CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  id3 = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
+
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(id1));
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(id2));
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(id3));
 
   run_loop()->Run();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_TRUE(fake_concierge_client_->start_container_called());
   EXPECT_EQ(3, restart_crostini_callback_count_);
+
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(id1));
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(id2));
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(id3));
 }
 
 TEST_F(CrostiniManagerRestartTest, MountForTerminaPenguin) {

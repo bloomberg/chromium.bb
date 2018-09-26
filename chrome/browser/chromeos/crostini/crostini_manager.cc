@@ -186,18 +186,15 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter>,
     restarter_service_->RunPendingCallbacks(this, result);
   }
 
-  void LoadComponentFinished(bool is_successful) {
-    ConciergeClientResult client_result =
-        is_successful ? ConciergeClientResult::SUCCESS
-                      : ConciergeClientResult::CONTAINER_START_FAILED;
+  void LoadComponentFinished(ConciergeClientResult result) {
     // Tell observers.
     for (auto& observer : observer_list_) {
-      observer.OnComponentLoaded(client_result);
+      observer.OnComponentLoaded(result);
     }
     if (is_aborted_)
       return;
-    if (client_result != ConciergeClientResult::SUCCESS) {
-      FinishRestart(client_result);
+    if (result != ConciergeClientResult::SUCCESS) {
+      FinishRestart(result);
       return;
     }
     CrostiniManager::GetInstance()->StartConcierge(
@@ -547,20 +544,20 @@ void CrostiniManager::MaybeUpgradeCrostiniAfterTerminaCheck(
   InstallTerminaComponent(base::DoNothing());
 }
 
-void CrostiniManager::InstallTerminaComponent(BoolCallback callback) {
-  if (chromeos::DBusThreadManager::Get()->IsUsingFakes()) {
-    // Running in test. We still PostTask to prevent races.
+void CrostiniManager::InstallTerminaComponent(CrostiniResultCallback callback) {
+  auto* cros_component_manager =
+      g_browser_process->platform_part()->cros_component_manager();
+  if (!cros_component_manager) {
+    // Running in a unit test. We still PostTask to prevent races.
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&CrostiniManager::OnInstallTerminaComponent,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       true,
-                       component_updater::CrOSComponentManager::Error::NONE,
+                       true, component_manager_load_error_for_testing_,
                        base::FilePath()));
     return;
   }
-  auto* cros_component_manager =
-      g_browser_process->platform_part()->cros_component_manager();
+
   DCHECK(cros_component_manager);
 
   bool major_update_required =
@@ -576,7 +573,8 @@ void CrostiniManager::InstallTerminaComponent(BoolCallback callback) {
       LOG(ERROR) << "Need to load a major component update, but we're offline.";
       // TODO(nverne): Show a dialog/notification here for online upgrade
       // required.
-      std::move(callback).Run(false);
+      std::move(callback).Run(
+          ConciergeClientResult::OFFLINE_WHEN_UPGRADE_REQUIRED);
       return;
     }
   }
@@ -602,7 +600,7 @@ void CrostiniManager::InstallTerminaComponent(BoolCallback callback) {
 }
 
 void CrostiniManager::OnInstallTerminaComponent(
-    CrostiniManager::BoolCallback callback,
+    CrostiniResultCallback callback,
     bool is_update_checked,
     component_updater::CrOSComponentManager::Error error,
     const base::FilePath& result) {
@@ -622,7 +620,9 @@ void CrostiniManager::OnInstallTerminaComponent(
     termina_update_check_needed_ = false;
   }
 
-  std::move(callback).Run(is_successful);
+  std::move(callback).Run(is_successful
+                              ? ConciergeClientResult::SUCCESS
+                              : ConciergeClientResult::LOAD_COMPONENT_FAILED);
 }
 
 void CrostiniManager::StartConcierge(StartConciergeCallback callback) {
@@ -1078,6 +1078,10 @@ void CrostiniManager::AbortRestartCrostini(
     Profile* profile,
     CrostiniManager::RestartId restart_id) {
   CrostiniRestarterServiceFactory::GetForProfile(profile)->Abort(restart_id);
+}
+
+bool CrostiniManager::IsRestartPending(RestartId restart_id) {
+  return restarters_by_id_.find(restart_id) != restarters_by_id_.end();
 }
 
 void CrostiniManager::AddShutdownContainerCallback(
