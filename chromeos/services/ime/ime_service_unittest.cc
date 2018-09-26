@@ -16,7 +16,6 @@
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 
@@ -139,7 +138,7 @@ class ImeServiceTest : public service_manager::test::ServiceTest {
 // Tests that the service is instantiated and it will return false when
 // activating an IME engine with an invalid IME spec.
 TEST_F(ImeServiceTest, ConnectInvalidImeEngine) {
-  bool success = false;
+  bool success = true;
   TestClientChannel test_channel;
   mojom::InputChannelPtr to_engine_ptr;
 
@@ -153,7 +152,7 @@ TEST_F(ImeServiceTest, ConnectInvalidImeEngine) {
 
 // Tests that the rule-based Arabic keyboard can work correctly.
 TEST_F(ImeServiceTest, RuleBasedArabic) {
-  bool success = true;
+  bool success = false;
   TestClientChannel test_channel;
   mojom::InputChannelPtr to_engine_ptr;
 
