@@ -180,7 +180,6 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
         base::WrapUnique(selection_controller_client_));
   }
 
- protected:
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
     if (!ui::TouchSelectionMenuRunner::GetInstance())
@@ -236,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, BasicSelection) {
 
 class GestureLongPressWaiter : public RenderWidgetHost::InputEventObserver {
  public:
-  GestureLongPressWaiter(RenderWidgetHost* rwh)
+  explicit GestureLongPressWaiter(RenderWidgetHost* rwh)
       : rwh_(static_cast<RenderWidgetHostImpl*>(rwh)->GetWeakPtr()),
         gesture_long_press_seen_(false) {
     rwh->AddInputEventObserver(this);
