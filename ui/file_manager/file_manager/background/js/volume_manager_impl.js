@@ -364,6 +364,15 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
       rootType = VolumeManagerCommon.RootType.DRIVE_OTHER;
       isReadOnly = true;
       isRootEntry = entry.fullPath === '/other';
+    } else if (
+        entry.fullPath === '/.files-by-id' ||
+        entry.fullPath.indexOf('/.files-by-id/') === 0) {
+      rootType = VolumeManagerCommon.RootType.DRIVE_OTHER;
+
+      // /.files-by-id/<id> is read-only, but /.files-by-id/<id>/foo is
+      // read-write.
+      isReadOnly = entry.fullPath.split('/').length < 4;
+      isRootEntry = entry.fullPath === '/.files-by-id';
     } else {
       // Accessing Drive files outside of /drive/root and /drive/other is not
       // allowed, but can happen. Therefore returning null.
