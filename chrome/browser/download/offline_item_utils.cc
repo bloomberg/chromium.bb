@@ -25,6 +25,9 @@ const char kDownloadNamespace[] = "LEGACY_DOWNLOAD";
 // The namespace for incognito downloads.
 const char kDownloadIncognitoNamespace[] = "LEGACY_DOWNLOAD_INCOGNITO";
 
+// Prefix that all download namespaces should start with.
+const char kDownloadNamespacePrefix[] = "LEGACY_DOWNLOAD";
+
 // The remaining time for a download item if it cannot be calculated.
 constexpr int64_t kUnknownRemainingTime = -1;
 
@@ -120,4 +123,8 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(DownloadItem* download_item) {
 
 std::string OfflineItemUtils::GetDownloadNamespace(bool is_off_the_record) {
   return is_off_the_record ? kDownloadIncognitoNamespace : kDownloadNamespace;
+}
+
+bool OfflineItemUtils::IsDownload(const ContentId& id) {
+  return id.name_space.find(kDownloadNamespacePrefix) != std::string::npos;
 }

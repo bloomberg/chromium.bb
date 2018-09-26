@@ -221,6 +221,9 @@ void ValidateFileCallback(
       offline_header.reason =
           offline_pages::OfflinePageHeader::Reason::NET_ERROR_SUGGESTION;
       break;
+    case offline_items_collection::LaunchLocation::DOWNLOAD_SHELF:
+      NOTREACHED();
+      break;
   }
   offline_header.need_to_persist = true;
   offline_header.id = base::Int64ToString(offline_id);
