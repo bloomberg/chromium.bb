@@ -160,6 +160,14 @@ class FrameSchedulerImplStopNonTimersInBackgroundEnabledTest
                                {}) {}
 };
 
+class FrameSchedulerImplStopNonTimersInBackgroundDisabledTest
+    : public FrameSchedulerImplTest {
+ public:
+  FrameSchedulerImplStopNonTimersInBackgroundDisabledTest()
+      : FrameSchedulerImplTest({},
+                               {blink::features::kStopNonTimersInBackground}) {}
+};
+
 namespace {
 
 class MockLifecycleObserver final : public FrameScheduler::Observer {
@@ -391,7 +399,8 @@ TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,
   EXPECT_EQ(5, counter);
 }
 
-TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
+TEST_F(FrameSchedulerImplStopNonTimersInBackgroundDisabledTest,
+       PageFreezeAndUnfreezeFlagDisabled) {
   int counter = 0;
   LoadingTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
@@ -1612,6 +1621,8 @@ class ThrottleableAndFreezableTaskTypesTest
 };
 
 TEST_F(ThrottleableAndFreezableTaskTypesTest, QueueTraitsFromFieldTrialParams) {
+  if (base::FeatureList::IsEnabled(blink::features::kStopNonTimersInBackground))
+    return;
   // These tests will start to fail if the default task queues or queue traits
   // change for these task types.
 
@@ -1627,7 +1638,6 @@ TEST_F(ThrottleableAndFreezableTaskTypesTest, QueueTraitsFromFieldTrialParams) {
       task_queue->GetQueueTraits(),
       MainThreadTaskQueue::QueueTraits().SetCanBeFrozen(true).SetCanBePaused(
           true));
-
   task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
   EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
                                               .SetCanBeThrottled(true)
@@ -1669,6 +1679,9 @@ class FreezableOnlyTaskTypesTest
 };
 
 TEST_F(FreezableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
+  if (base::FeatureList::IsEnabled(blink::features::kStopNonTimersInBackground))
+    return;
+
   // These tests will start to fail if the default task queues or queue traits
   // change for these task types.
 
@@ -1726,6 +1739,9 @@ class ThrottleableOnlyTaskTypesTest
 };
 
 TEST_F(ThrottleableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
+  if (base::FeatureList::IsEnabled(blink::features::kStopNonTimersInBackground))
+    return;
+
   // These tests will start to fail if the default task queues or queue traits
   // change for these task types.
 

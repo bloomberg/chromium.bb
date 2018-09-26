@@ -67,10 +67,16 @@ const base::Feature kStopInBackground {
 #endif
 };
 
-// Freeze non-timer task queues in background, after allowed grace time. Launch
-// bug: https://crbug.com/822954. "stop" is a legacy name.
-const base::Feature kStopNonTimersInBackground{
-    "stop-non-timers-in-background", base::FEATURE_DISABLED_BY_DEFAULT};
+// Freeze non-timer task queues in background, after allowed grace time.
+// "stop" is a legacy name.
+const base::Feature kStopNonTimersInBackground {
+  "stop-non-timers-in-background",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Writable files and native filesystem access. https://crbug.com/853326
 const base::Feature kWritableFilesAPI{"WritableFilesAPI",
