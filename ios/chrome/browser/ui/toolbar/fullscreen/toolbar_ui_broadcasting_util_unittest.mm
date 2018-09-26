@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_ui_broadcasting_util.h"
+#import "ios/chrome/browser/ui/toolbar/fullscreen/toolbar_ui_broadcasting_util.h"
 
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
+#import "ios/chrome/browser/ui/toolbar/fullscreen/toolbar_ui.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_broadcast_test_util.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

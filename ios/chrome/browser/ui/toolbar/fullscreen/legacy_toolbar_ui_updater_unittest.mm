@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
+#import "ios/chrome/browser/ui/toolbar/fullscreen/legacy_toolbar_ui_updater.h"
 
 #include <memory>
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
+#import "ios/chrome/browser/ui/toolbar/fullscreen/toolbar_ui.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
