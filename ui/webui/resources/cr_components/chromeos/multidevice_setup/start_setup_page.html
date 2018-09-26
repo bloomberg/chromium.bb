@@ -31,6 +31,10 @@
         width: 320px;
       }
 
+      #deviceSelectionContainer {
+        color: var(--paper-grey-600);
+      }
+
       #feature-details-container {
         border-left: 1px solid rgb(218, 220, 224);
         padding-left: 24px;
@@ -56,12 +60,17 @@
       .feature-detail span {
         padding-left: 28px;
       }
+
+      #footnote {
+        color: var(--paper-grey-600);
+      }
     </style>
+
     <ui-page header-text="[[headerText]]" icon-name="google-g">
       <span slot="message" inner-h-t-m-l="[[messageHtml]]"></span>
       <div slot="additional-content">
         <div id="selector-and-details-container">
-          <div class="flex">
+          <div id="deviceSelectionContainer" class="flex">
             [[getDeviceSelectionHeader_(devices)]]
             <div class="flex"></div>
             <div hidden$="[[!doesDeviceListHaveOneElement_(devices)]]">
