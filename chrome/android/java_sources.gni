@@ -2187,6 +2187,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessorySheetControllerTest.java",
   "junit/src/org/chromium/chrome/browser/background_task_scheduler/NativeBackgroundTaskTest.java",
   "junit/src/org/chromium/chrome/browser/browseractions/BrowserActionsIntentTest.java",
+  "junit/src/org/chromium/chrome/browser/browserservices/TrustedWebActivityDisclosureTest.java",
   "junit/src/org/chromium/chrome/browser/compositor/animation/CompositorAnimatorTest.java",
   "junit/src/org/chromium/chrome/browser/compositor/overlays/strip/StripLayoutHelperTest.java",
   "junit/src/org/chromium/chrome/browser/compositor/CompositorSurfaceManagerImplTest.java",
