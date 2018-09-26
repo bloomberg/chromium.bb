@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
@@ -26,22 +25,13 @@
 #include "headless/lib/browser/headless_devtools_agent_host_client.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/headless_content_main_delegate.h"
-#include "headless/public/internal/headless_devtools_client_impl.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "ui/aura/client/focus_client.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #include "ui/events/devices/device_data_manager.h"
-#include "ui/gfx/geometry/size.h"
 
 #if defined(USE_NSS_CERTS)
 #include "net/cert_net/nss_ocsp.h"
 #endif
-
-namespace content {
-class DevToolsAgentHost;
-}
 
 namespace headless {
 namespace {
