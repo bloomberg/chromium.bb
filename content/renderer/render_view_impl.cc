@@ -150,6 +150,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_page_importance_signals.h"
+#include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_action.h"
 #include "third_party/blink/public/web/web_range.h"
@@ -1505,12 +1506,60 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
 }
 
 WebWidget* RenderViewImpl::CreatePopup(blink::WebLocalFrame* creator) {
-  RenderWidget* popup_widget = RenderWidget::CreateForPopup(
-      this, GetWidget()->compositor_deps(), GetWidget()->screen_info());
-  if (!popup_widget)
+  mojom::WidgetPtr widget_channel;
+  mojom::WidgetRequest widget_channel_request =
+      mojo::MakeRequest(&widget_channel);
+
+  // Do a synchronous IPC to obtain a routing ID.
+  int32_t widget_routing_id = MSG_ROUTING_NONE;
+  bool success =
+      RenderThreadImpl::current_render_message_filter()->CreateNewWidget(
+          GetRoutingID(), std::move(widget_channel), &widget_routing_id);
+  if (!success) {
+    // When the renderer is being killed the mojo message will fail.
     return nullptr;
-  popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(GetWidget());
-  return popup_widget->GetWebWidget();
+  }
+
+  RenderWidget::ShowCallback opener_callback = base::BindOnce(
+      &RenderViewImpl::ShowCreatedPopupWidget, weak_ptr_factory_.GetWeakPtr());
+
+  // The RenderWidget associated with the RenderView. This should be the
+  // RenderWidget for the main frame, but may be a zombie RenderWidget when
+  // the main frame is remote (we don't need a RenderWidget for it then).
+  // However for now (https://crbug.com/419087) we know it exists and grab
+  // state off it for the popup.
+  // TODO(crbug.com/419087): This should probably be using the local root's
+  // RenderWidget for the frame making the popup.
+  RenderWidget* view_render_widget = GetWidget();
+
+  auto popup_widget = base::MakeRefCounted<RenderWidget>(
+      widget_routing_id, view_render_widget->compositor_deps(),
+      WidgetType::kPopup, view_render_widget->screen_info(),
+      blink::kWebDisplayModeUndefined,
+      /*swapped_out=*/false,
+      /*hidden=*/false,
+      /*never_visible=*/false, std::move(widget_channel_request));
+
+  // The returned WebPagePopup is self-referencing, so the pointer here is not
+  // an owning pointer.
+  blink::WebPagePopup* popup_web_widget =
+      blink::WebPagePopup::Create(popup_widget.get());
+
+  // Adds a self-reference on the |popup_widget| so it will not be destroyed
+  // when leaving scope. The WebPagePopup takes responsibility for Close()ing
+  // and thus destroying the RenderWidget.
+  popup_widget->InitForPopup(std::move(opener_callback), popup_web_widget);
+  // TODO(crbug.com/419087): RenderWidget has some weird logic for picking a
+  // WebWidget which doesn't apply to this case. So we verify. This can go away
+  // when RenderWidget::GetWebWidget() is just a simple accessor.
+  DCHECK_EQ(popup_widget->GetWebWidget(), popup_web_widget);
+
+  // Devtools emulation, which may be currently applied to the
+  // |view_render_widget|, should also apply to the new popup. This doesn't
+  // happen automatically.
+  popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(view_render_widget);
+
+  return popup_web_widget;
 }
 
 base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {

@@ -164,13 +164,12 @@ class CONTENT_EXPORT RenderWidget
                bool never_visible,
                mojom::WidgetRequest widget_request = nullptr);
 
-  // Creates a new RenderWidget for a popup. |opener| is the RenderView that
-  // this widget lives inside.
-  // TODO(danakj): Change this to InitForPopup() and use the public constructor
-  // from RenderViewImpl, moving code specific to that class out of the method.
-  static RenderWidget* CreateForPopup(RenderViewImpl* opener,
-                                      CompositorDependencies* compositor_deps,
-                                      const ScreenInfo& screen_info);
+  // Initialize a new RenderWidget for a popup. The |show_callback| is called
+  // when RenderWidget::Show() happens. This method increments the reference
+  // count on the RenderWidget, making it self-referencing, which can be
+  // released by calling Close().
+  void InitForPopup(ShowCallback show_callback,
+                    blink::WebPagePopup* web_page_popup);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
   // the WebFrameWidget), for a frame that is a local root, but not the main
