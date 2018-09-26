@@ -52,7 +52,6 @@ source_set("cells") {
     "//components/autofill/core/browser",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view/cells",

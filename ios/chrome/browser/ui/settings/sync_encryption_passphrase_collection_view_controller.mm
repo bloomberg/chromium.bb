@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -239,9 +238,6 @@ const CGFloat kSpinnerButtonPadding = 18;
     [self unregisterTextField:passphrase_];
   }
   passphrase_ = [[UITextField alloc] init];
-  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
-    [passphrase_ setFont:[MDCTypography body1Font]];
-  }
   [passphrase_ setSecureTextEntry:YES];
   [passphrase_ setBackgroundColor:[UIColor clearColor]];
   [passphrase_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
@@ -315,29 +311,6 @@ const CGFloat kSpinnerButtonPadding = 18;
                            forItem:item];
   }
   return MDCCellDefaultOneLineHeight;
-}
-
-#pragma mark - UICollectionViewDataSource
-
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  if (item.type == ItemTypeMessage) {
-    // Changing the font weight may reflow the text onto a different number of
-    // lines, but the collection view doesn't know that it needs to layout the
-    // cell again. Sidestep this bug by leaving the font at a normal weight
-    // under UIRefresh.
-    if (!experimental_flags::IsSettingsUIRebootEnabled()) {
-      CardMultilineCell* messageCell =
-          base::mac::ObjCCastStrict<CardMultilineCell>(cell);
-      messageCell.textLabel.font =
-          [[MDCTypography fontLoader] mediumFontOfSize:14];
-    }
-  }
-  return cell;
 }
 
 #pragma mark - UICollectionViewDelegate

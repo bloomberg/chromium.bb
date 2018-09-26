@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 
-#import "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -99,25 +98,17 @@ const CGFloat kIconImageSize = 28;
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+    _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
     _textLabel.numberOfLines = 0;
     [self.contentView addSubview:_textLabel];
 
     _switchView = [[UISwitch alloc] initWithFrame:CGRectZero];
     _switchView.translatesAutoresizingMaskIntoConstraints = NO;
+    _switchView.onTintColor = UIColorFromRGB(kUIKitSwitchTintColor);
     _switchView.accessibilityHint = l10n_util::GetNSString(
         IDS_IOS_TOGGLE_SETTING_SWITCH_ACCESSIBILITY_HINT);
     [self.contentView addSubview:_switchView];
-
-    // Fonts and colors vary depending on whether UIRefresh is enabled.
-    if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
-      _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
-      _switchView.onTintColor = UIColorFromRGB(kUIKitSwitchTintColor);
-    } else {
-      _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-      _textLabel.textColor = [[MDCPalette greyPalette] tint900];
-      _switchView.onTintColor = [[MDCPalette cr_bluePalette] tint500];
-    }
 
     // Set up the constraints assuming that the icon image is hidden..
     _iconVisibleConstraint = [_textLabel.leadingAnchor
@@ -157,24 +148,13 @@ const CGFloat kIconImageSize = 28;
 }
 
 + (UIColor*)defaultTextColorForState:(UIControlState)state {
-  if (experimental_flags::IsSettingsUIRebootEnabled()) {
-    return (state & UIControlStateDisabled)
-               ? UIColorFromRGB(kUIKitDetailTextColor)
-               : UIColorFromRGB(kUIKitMainTextColor);
-  } else {
-    MDCPalette* grey = [MDCPalette greyPalette];
-    return (state & UIControlStateDisabled) ? grey.tint500 : grey.tint900;
-  }
+  return (state & UIControlStateDisabled)
+             ? UIColorFromRGB(kUIKitDetailTextColor)
+             : UIColorFromRGB(kUIKitMainTextColor);
 }
 
 - (void)setIconImage:(UIImage*)image {
   BOOL hidden = (image == nil);
-
-  // If the settings reboot is not enabled, the icon must always be hidden.
-  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
-    hidden = YES;
-  }
-
   if (hidden == self.iconImageView.hidden) {
     return;
   }

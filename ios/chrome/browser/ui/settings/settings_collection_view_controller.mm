@@ -416,15 +416,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   // Basics section
   [model addSectionWithIdentifier:SectionIdentifierBasics];
-  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
-    SettingsTextItem* basicsHeader =
-        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
-    basicsHeader.text =
-        l10n_util::GetNSString(IDS_IOS_OPTIONS_GENERAL_TAB_LABEL);
-    basicsHeader.textColor = [[MDCPalette greyPalette] tint500];
-    [model setHeader:basicsHeader
-        forSectionWithIdentifier:SectionIdentifierBasics];
-  }
   [model addItem:[self searchEngineDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self savePasswordsDetailItem]
@@ -436,15 +427,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   // Advanced Section
   [model addSectionWithIdentifier:SectionIdentifierAdvanced];
-  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
-    SettingsTextItem* advancedHeader =
-        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
-    advancedHeader.text =
-        l10n_util::GetNSString(IDS_IOS_OPTIONS_ADVANCED_TAB_LABEL);
-    advancedHeader.textColor = [[MDCPalette greyPalette] tint500];
-    [model setHeader:advancedHeader
-        forSectionWithIdentifier:SectionIdentifierAdvanced];
-  }
   [model addItem:[self voiceSearchDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self privacyDetailItem]
@@ -469,14 +451,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   // Debug Section
   if ([self hasDebugSection]) {
     [model addSectionWithIdentifier:SectionIdentifierDebug];
-    if (!experimental_flags::IsSettingsUIRebootEnabled()) {
-      SettingsTextItem* debugHeader =
-          [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
-      debugHeader.text = @"Debug";
-      debugHeader.textColor = [[MDCPalette greyPalette] tint500];
-      [model setHeader:debugHeader
-          forSectionWithIdentifier:SectionIdentifierDebug];
-    }
   }
 
   if (experimental_flags::IsMemoryDebuggingEnabled()) {

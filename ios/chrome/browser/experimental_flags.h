@@ -62,10 +62,6 @@ bool IsBookmarksUIRebootEnabled();
 // TODO (crbug.com/884720): Remove all use of this flag.
 bool IsReadingListUIRebootEnabled();
 
-// Whether the Settings UI Reboot is enabled.
-// TODO (crbug.com/884721): Remove all use of this flag.
-bool IsSettingsUIRebootEnabled();
-
 // Whether the application group sandbox must be cleared before starting.
 // Calling this method will reset the flag to false, so the sandbox is cleared
 // only once.

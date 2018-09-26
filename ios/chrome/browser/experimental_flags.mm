@@ -134,8 +134,4 @@ bool IsReadingListUIRebootEnabled() {
   return true;
 }
 
-bool IsSettingsUIRebootEnabled() {
-  return true;
-}
-
 }  // namespace experimental_flags

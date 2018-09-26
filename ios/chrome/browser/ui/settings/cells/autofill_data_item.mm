@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 
-#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -92,31 +91,19 @@ const CGFloat kVerticalPadding = 16;
 - (void)setDefaultViewStyling {
   _textLabel.numberOfLines = 0;
   _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+  _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+  _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
 
   _leadingDetailTextLabel.numberOfLines = 0;
   _leadingDetailTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
+  _leadingDetailTextLabel.font =
+      [UIFont systemFontOfSize:kUIKitMultilineDetailFontSize];
+  _leadingDetailTextLabel.textColor =
+      UIColorFromRGB(kUIKitMultilineDetailTextColor);
 
-  // Fonts and colors vary when UI reboot is enabled.
-  if (experimental_flags::IsSettingsUIRebootEnabled()) {
-    _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
-    _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
-    _leadingDetailTextLabel.font =
-        [UIFont systemFontOfSize:kUIKitMultilineDetailFontSize];
-    _leadingDetailTextLabel.textColor =
-        UIColorFromRGB(kUIKitMultilineDetailTextColor);
-    _trailingDetailTextLabel.font =
-        [UIFont systemFontOfSize:kUIKitDetailFontSize];
-    _trailingDetailTextLabel.textColor = UIColorFromRGB(kUIKitDetailTextColor);
-  } else {
-    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-    _textLabel.textColor = [[MDCPalette greyPalette] tint900];
-    _leadingDetailTextLabel.font =
-        [[MDCTypography fontLoader] regularFontOfSize:14];
-    _leadingDetailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
-    _trailingDetailTextLabel.font =
-        [[MDCTypography fontLoader] regularFontOfSize:12];
-    _trailingDetailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
-  }
+  _trailingDetailTextLabel.font =
+      [UIFont systemFontOfSize:kUIKitDetailFontSize];
+  _trailingDetailTextLabel.textColor = UIColorFromRGB(kUIKitDetailTextColor);
 }
 
 // Sets constraints on subviews.

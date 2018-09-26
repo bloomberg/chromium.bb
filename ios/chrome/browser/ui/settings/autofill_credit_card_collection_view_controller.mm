@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
@@ -154,13 +153,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       initWithType:ItemTypeAutofillCardSwitchSubtitle];
   textItem.text =
       l10n_util::GetNSString(IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_SUBLABEL);
-  if (experimental_flags::IsSettingsUIRebootEnabled()) {
-    textItem.textFont = [UIFont systemFontOfSize:kUIKitMultilineDetailFontSize];
-    textItem.textColor = UIColorFromRGB(kUIKitMultilineDetailTextColor);
-  } else {
-    textItem.textFont = [[MDCTypography fontLoader] regularFontOfSize:14];
-    textItem.textColor = [[MDCPalette greyPalette] tint500];
-  }
+  textItem.textFont = [UIFont systemFontOfSize:kUIKitMultilineDetailFontSize];
+  textItem.textColor = UIColorFromRGB(kUIKitMultilineDetailTextColor);
   textItem.numberOfTextLines = 0;
   return textItem;
 }
