@@ -101,7 +101,7 @@ class MockVideoFrameResourceProvider
   MockVideoFrameResourceProvider(
       viz::ContextProvider* context_provider,
       viz::SharedBitmapReporter* shared_bitmap_reporter)
-      : blink::VideoFrameResourceProvider(cc::LayerTreeSettings()) {
+      : blink::VideoFrameResourceProvider(cc::LayerTreeSettings(), false) {
     blink::VideoFrameResourceProvider::Initialize(context_provider,
                                                   shared_bitmap_reporter);
   }
