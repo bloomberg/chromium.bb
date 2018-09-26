@@ -1099,13 +1099,6 @@ void RenderWidget::RecordTimeToFirstActivePaint() {
   }
 }
 
-void RenderWidget::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
-  if (!GetWebWidget())
-    return;
-
-  GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time);
-}
-
 void RenderWidget::WillBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
 
