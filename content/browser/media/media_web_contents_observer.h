@@ -74,6 +74,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   const base::Optional<MediaPlayerId>& GetPictureInPictureVideoMediaPlayerId()
       const;
 
+  // Reset the MediaPlayerId of the picture in picture video when user closes
+  // Picture-in-Picture window manually.
+  void ResetPictureInPictureVideoMediaPlayerId();
+
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;

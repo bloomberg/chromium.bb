@@ -123,6 +123,10 @@ MediaWebContentsObserver::GetPictureInPictureVideoMediaPlayerId() const {
   return pip_player_;
 }
 
+void MediaWebContentsObserver::ResetPictureInPictureVideoMediaPlayerId() {
+  pip_player_.reset();
+}
+
 bool MediaWebContentsObserver::OnMessageReceived(
     const IPC::Message& msg,
     RenderFrameHost* render_frame_host) {
@@ -380,7 +384,6 @@ void MediaWebContentsObserver::OnPictureInPictureSurfaceChanged(
     const gfx::Size& natural_size,
     bool show_play_pause_button) {
   DCHECK(surface_id.is_valid());
-  DCHECK(pip_player_);
 
   pip_player_ = MediaPlayerId(render_frame_host, delegate_id);
 
@@ -540,7 +543,7 @@ void MediaWebContentsObserver::ExitPictureInPictureInternal() {
 
   // Reset must happen after notifying the WebContents because it may interact
   // with it.
-  pip_player_.reset();
+  ResetPictureInPictureVideoMediaPlayerId();
 
   UpdateVideoLock();
 }
