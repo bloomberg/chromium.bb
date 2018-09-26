@@ -7,7 +7,6 @@
 
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_updating.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_coordinating.h"
-#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 
 @class CommandDispatcher;
 @protocol ToolbarCoordinatee;
