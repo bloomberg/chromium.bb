@@ -462,4 +462,8 @@ TEST_P(HTMLMediaElementTest, VisibilityObserverCreatedForLazyLoad) {
   EXPECT_EQ(HasLazyLoadObserver(), GetParam() == MediaTestParam::kVideo);
 }
 
+TEST_P(HTMLMediaElementTest, DomInteractive) {
+  EXPECT_FALSE(Media()->GetDocument().GetTiming().DomInteractive().is_null());
+}
+
 }  // namespace blink
