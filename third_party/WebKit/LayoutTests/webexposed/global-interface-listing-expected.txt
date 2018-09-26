@@ -1438,6 +1438,7 @@ interface DetectedText
     getter cornerPoints
     getter rawValue
     method constructor
+    method toJSON
 interface DeviceMotionEvent : Event
     attribute @@toStringTag
     getter acceleration
