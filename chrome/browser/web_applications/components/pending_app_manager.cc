@@ -13,14 +13,20 @@
 
 namespace web_app {
 
+const bool PendingAppManager::AppInfo::kDefaultCreateShortcuts = true;
+const bool PendingAppManager::AppInfo::kDefaultOverridePreviousUserUninstall =
+    false;
+
 PendingAppManager::AppInfo::AppInfo(GURL url,
                                     LaunchContainer launch_container,
                                     InstallSource install_source,
-                                    bool create_shortcuts)
+                                    bool create_shortcuts,
+                                    bool override_previous_user_uninstall)
     : url(std::move(url)),
       launch_container(launch_container),
       install_source(install_source),
-      create_shortcuts(create_shortcuts) {}
+      create_shortcuts(create_shortcuts),
+      override_previous_user_uninstall(override_previous_user_uninstall) {}
 
 PendingAppManager::AppInfo::AppInfo(PendingAppManager::AppInfo&& other) =
     default;
@@ -29,17 +35,20 @@ PendingAppManager::AppInfo::~AppInfo() = default;
 
 std::unique_ptr<PendingAppManager::AppInfo> PendingAppManager::AppInfo::Clone()
     const {
-  std::unique_ptr<AppInfo> other(
-      new AppInfo(url, launch_container, install_source, create_shortcuts));
+  std::unique_ptr<AppInfo> other(new AppInfo(url, launch_container,
+                                             install_source, create_shortcuts,
+                                             override_previous_user_uninstall));
   DCHECK_EQ(*this, *other);
   return other;
 }
 
 bool PendingAppManager::AppInfo::operator==(
     const PendingAppManager::AppInfo& other) const {
-  return std::tie(url, launch_container, install_source, create_shortcuts) ==
+  return std::tie(url, launch_container, install_source, create_shortcuts,
+                  override_previous_user_uninstall) ==
          std::tie(other.url, other.launch_container, other.install_source,
-                  other.create_shortcuts);
+                  other.create_shortcuts,
+                  other.override_previous_user_uninstall);
 }
 
 PendingAppManager::PendingAppManager() = default;
@@ -75,7 +84,9 @@ std::ostream& operator<<(std::ostream& out,
              << static_cast<int32_t>(app_info.launch_container)
              << "\n install_source: "
              << static_cast<int32_t>(app_info.install_source)
-             << "\n create_shortcuts: " << app_info.create_shortcuts;
+             << "\n create_shortcuts: " << app_info.create_shortcuts
+             << "\n override_previous_user_uninstall: "
+             << app_info.override_previous_user_uninstall;
 }
 
 }  // namespace web_app
