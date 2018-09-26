@@ -287,30 +287,6 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   return recorder_->getCanvas();
 }
 
-gpu::SyncToken SkiaOutputSurfaceImpl::FinishPaintCurrentFrame() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(recorder_);
-
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE,
-                            impl_on_gpu_->command_buffer_id(),
-                            ++sync_fence_release_);
-  sync_token.SetVerifyFlush();
-
-  auto ddl = recorder_->detach();
-  DCHECK(ddl);
-  recorder_.reset();
-  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
-  // impl_on_gpu_ is released on the GPU thread by a posted task from
-  // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto callback =
-      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
-                     base::Unretained(impl_on_gpu_.get()), std::move(ddl),
-                     std::move(yuv_resource_metadatas_), sync_fence_release_);
-  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(callback), std::move(resource_sync_tokens_)));
-  return sync_token;
-}
-
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
     ResourceMetadata metadata) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -436,27 +412,39 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
   return offscreen_surface_recorder_->getCanvas();
 }
 
-gpu::SyncToken SkiaOutputSurfaceImpl::FinishPaintRenderPass() {
+gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(current_render_pass_id_);
-  DCHECK(offscreen_surface_recorder_);
+  // If current_render_pass_id_ is not 0, we are painting a render pass.
+  // Otherwise we are painting a frame.
+  bool painting_render_pass = current_render_pass_id_ != 0;
+  auto& current_recorder =
+      painting_render_pass ? offscreen_surface_recorder_ : recorder_;
 
+  DCHECK(current_recorder);
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE,
                             impl_on_gpu_->command_buffer_id(),
                             ++sync_fence_release_);
   sync_token.SetVerifyFlush();
 
-  auto ddl = offscreen_surface_recorder_->detach();
-  offscreen_surface_recorder_.reset();
+  auto ddl = current_recorder->detach();
   DCHECK(ddl);
-
+  current_recorder.reset();
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto callback = base::BindOnce(
-      &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
-      base::Unretained(impl_on_gpu_.get()), current_render_pass_id_,
-      std::move(ddl), std::move(yuv_resource_metadatas_), sync_fence_release_);
+  base::OnceCallback<void()> callback;
+  if (painting_render_pass) {
+    callback =
+        base::BindOnce(&SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
+                       base::Unretained(impl_on_gpu_.get()),
+                       current_render_pass_id_, std::move(ddl),
+                       std::move(yuv_resource_metadatas_), sync_fence_release_);
+  } else {
+    callback =
+        base::BindOnce(&SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
+                       base::Unretained(impl_on_gpu_.get()), std::move(ddl),
+                       std::move(yuv_resource_metadatas_), sync_fence_release_);
+  }
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::move(resource_sync_tokens_)));
   current_render_pass_id_ = 0;

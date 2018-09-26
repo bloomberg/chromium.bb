@@ -74,7 +74,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
-  gpu::SyncToken FinishPaintCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) override;
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
       std::vector<ResourceMetadata> metadatas,
@@ -84,7 +83,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                                  const gfx::Size& surface_size,
                                  ResourceFormat format,
                                  bool mipmap) override;
-  gpu::SyncToken FinishPaintRenderPass() override;
+  gpu::SyncToken SubmitPaint() override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(const RenderPassId& id,
                                                   const gfx::Size& size,
                                                   ResourceFormat format,
