@@ -126,8 +126,6 @@ jumbo_split_static_library("ui") {
       "cocoa/fullscreen_window.h",
       "cocoa/fullscreen_window.mm",
       "cocoa/has_weak_browser_pointer.h",
-      "cocoa/hover_close_button.h",
-      "cocoa/hover_close_button.mm",
       "cocoa/javascript_app_modal_dialog_cocoa.h",
       "cocoa/javascript_app_modal_dialog_cocoa.mm",
       "cocoa/location_bar/location_bar_view_mac.h",
