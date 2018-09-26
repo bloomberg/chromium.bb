@@ -8,11 +8,7 @@
 <dom-module id="print-preview-number-settings-section">
   <template>
     <style include="print-preview-shared">
-      :host([error-displayed_]) print-preview-settings-section {
-        margin-bottom: 8px;
-      }
-
-      :host([error-displayed_]) #section-title {
+      :host(:not([input-valid])) #section-title {
         margin-top: calc(-14px - 2 * .75rem);
       }
 
@@ -32,7 +28,7 @@
         width: 100%;
       }
 
-      :host(:not([error-displayed_])) cr-input {
+      :host([input-valid]) cr-input {
         --cr-input-error-display: none;
       }
 

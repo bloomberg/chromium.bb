@@ -151,7 +151,7 @@ Polymer({
       return;
 
     this.setSettingValid('scaling', this.inputValid_);
-    if (this.inputValid_)
+    if (this.currentValue_ !== '' && this.inputValid_)
       this.setSetting('scaling', this.currentValue_);
   },
 

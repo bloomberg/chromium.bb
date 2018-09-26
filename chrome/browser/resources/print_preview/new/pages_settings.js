@@ -314,6 +314,24 @@ Polymer({
     this.onCustomInputBlur_(event);
   },
 
+  /** @private */
+  resetIfEmpty_: function() {
+    if (this.inputString_ === '') {
+      this.customSelected_ = false;
+      this.selectedValue = PagesValue.ALL.toString();
+    }
+  },
+
+  /**
+   * @param {!KeyboardEvent} e The keyboard event
+   */
+  onKeydown_: function(e) {
+    if (e.key == 'Enter') {
+      this.resetAndUpdate();
+      this.resetIfEmpty_();
+    }
+  },
+
   /**
    * @param {Event} event Contains information about where focus is going.
    * @private
@@ -321,11 +339,9 @@ Polymer({
   onCustomInputBlur_: function(event) {
     this.resetAndUpdate();
 
-    if (this.inputString_ === '' &&
-        event.relatedTarget != this.$.customInputWrapper &&
+    if (event.relatedTarget != this.$.customInputWrapper &&
         event.relatedTarget != this.$$('.md-select')) {
-      this.customSelected_ = false;
-      this.selectedValue = PagesValue.ALL.toString();
+      this.resetIfEmpty_();
     }
   },
 
