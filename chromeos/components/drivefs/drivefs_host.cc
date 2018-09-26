@@ -180,7 +180,7 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     mint_token_flow_ =
         host_->delegate_->CreateMintTokenFlow(this, client_id, app_id, scopes);
     DCHECK(mint_token_flow_);
-    host_->GetIdentityManager().GetPrimaryAccountWhenAvailable(base::BindOnce(
+    GetIdentityManager().GetPrimaryAccountWhenAvailable(base::BindOnce(
         &DriveFsHost::MountState::AccountReady, base::Unretained(this)));
   }
 
@@ -255,7 +255,7 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
 
   void AccountReady(const AccountInfo& info,
                     const identity::AccountState& state) {
-    host_->GetIdentityManager().GetAccessToken(
+    GetIdentityManager().GetAccessToken(
         host_->delegate_->GetAccountId().GetUserEmail(), {},
         kIdentityConsumerId,
         base::BindOnce(&DriveFsHost::MountState::GotChromeAccessToken,
@@ -293,6 +293,15 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     mint_token_flow_.reset();
   }
 
+  identity::mojom::IdentityManager& GetIdentityManager() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    if (!identity_manager_) {
+      host_->delegate_->GetConnector()->BindInterface(
+          identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
+    }
+    return *identity_manager_;
+  }
+
   // Owns |this|.
   DriveFsHost* const host_;
 
@@ -321,6 +330,9 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
 
   bool drivefs_has_mounted_ = false;
   bool drivefs_has_terminated_ = false;
+
+  // The connection to the identity service. Access via |GetIdentityManager()|.
+  identity::mojom::IdentityManagerPtr identity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MountState);
 };
@@ -399,15 +411,6 @@ void DriveFsHost::OnMountEvent(
   if (!mount_state_->OnMountEvent(event, error_code, mount_info)) {
     Unmount();
   }
-}
-
-identity::mojom::IdentityManager& DriveFsHost::GetIdentityManager() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!identity_manager_) {
-    delegate_->GetConnector()->BindInterface(
-        identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
-  }
-  return *identity_manager_;
 }
 
 }  // namespace drivefs
