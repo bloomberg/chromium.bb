@@ -760,7 +760,7 @@ int ResourceDispatcher::StartAsync(
     pending_requests_[request_id]->url_loader_client =
         std::make_unique<URLLoaderClientImpl>(
             request_id, this, loading_task_runner,
-            true /* bypass_redirect_checks */);
+            true /* bypass_redirect_checks */, request->url);
 
     if (request->resource_type == RESOURCE_TYPE_SHARED_WORKER) {
       // For shared workers, immediately post a task for continuing loading
@@ -782,9 +782,9 @@ int ResourceDispatcher::StartAsync(
     return request_id;
   }
 
-  std::unique_ptr<URLLoaderClientImpl> client(
-      new URLLoaderClientImpl(request_id, this, loading_task_runner,
-                              url_loader_factory->BypassRedirectChecks()));
+  std::unique_ptr<URLLoaderClientImpl> client(new URLLoaderClientImpl(
+      request_id, this, loading_task_runner,
+      url_loader_factory->BypassRedirectChecks(), request->url));
 
   if (pass_response_pipe_to_peer)
     client->SetPassResponsePipeToDispatcher(true);
