@@ -70,8 +70,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
-#include "third_party/blink/renderer/platform/json/json_parser.h"
-#include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -550,29 +548,23 @@ Response InspectorPageAgent::disable() {
   return Response::OK();
 }
 
-Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
-    const String& source,
-    Maybe<String> world_name,
-    String* identifier) {
+Response InspectorPageAgent::addScriptToEvaluateOnLoad(const String& source,
+                                                       String* identifier) {
   std::vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
   auto result = std::max_element(
       keys.begin(), keys.end(), [](const WTF::String& a, const WTF::String& b) {
         return Decimal::FromString(a) < Decimal::FromString(b);
       });
   if (result == keys.end()) {
-    *identifier = String::Number(1);
+    scripts_to_evaluate_on_load_.Set(String::Number(1), source);
   } else {
-    *identifier = String::Number(Decimal::FromString(*result).ToDouble() + 1);
+    scripts_to_evaluate_on_load_.Set(
+        String::Number(Decimal::FromString(*result).ToDouble() + 1), source);
   }
-
-  std::unique_ptr<JSONObject> script = JSONObject::Create();
-  script->SetString("source", source);
-  script->SetString("world_name", world_name.fromMaybe(""));
-  scripts_to_evaluate_on_load_.Set(*identifier, script->ToJSONString());
   return Response::OK();
 }
 
-Response InspectorPageAgent::removeScriptToEvaluateOnNewDocument(
+Response InspectorPageAgent::removeScriptToEvaluateOnLoad(
     const String& identifier) {
   if (scripts_to_evaluate_on_load_.Get(identifier).IsNull())
     return Response::Error("Script not found");
@@ -580,15 +572,15 @@ Response InspectorPageAgent::removeScriptToEvaluateOnNewDocument(
   return Response::OK();
 }
 
-Response InspectorPageAgent::addScriptToEvaluateOnLoad(const String& source,
-                                                       String* identifier) {
-  return addScriptToEvaluateOnNewDocument(source, Maybe<String>(""),
-                                          identifier);
+Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
+    const String& source,
+    String* identifier) {
+  return addScriptToEvaluateOnLoad(source, identifier);
 }
 
-Response InspectorPageAgent::removeScriptToEvaluateOnLoad(
+Response InspectorPageAgent::removeScriptToEvaluateOnNewDocument(
     const String& identifier) {
-  return removeScriptToEvaluateOnNewDocument(identifier);
+  return removeScriptToEvaluateOnLoad(identifier);
 }
 
 Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
@@ -851,45 +843,10 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
               return Decimal::FromString(a) < Decimal::FromString(b);
             });
 
-  HashMap<String, int> world_id_by_name;
   for (const WTF::String& key : keys) {
-    const String script = scripts_to_evaluate_on_load_.Get(key);
-    std::unique_ptr<JSONObject> object = JSONObject::From(ParseJSON(script));
-    String source;
-    DCHECK(object->GetString("source", &source));
-    String world_name;
-    DCHECK(object->GetString("world_name", &world_name));
-
-    if (world_name.IsEmpty()) {
-      frame->GetScriptController().ExecuteScriptInMainWorld(source);
-      continue;
-    }
-
-    auto it = world_id_by_name.find(world_name);
-    int world_id = 0;
-    if (it != world_id_by_name.end()) {
-      world_id = it->value;
-    } else {
-      scoped_refptr<DOMWrapperWorld> world =
-          frame->GetScriptController().CreateNewInspectorIsolatedWorld(
-              world_name);
-      if (!world)
-        continue;
-      world_id = world->GetWorldId();
-      world_id_by_name.Set(world_name, world_id);
-
-      scoped_refptr<SecurityOrigin> security_origin =
-          frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
-      security_origin->GrantUniversalAccess();
-      DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world_id,
-                                                      security_origin);
-    }
-
-    v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
-    frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-        world_id, source, KURL(), kNotSharableCrossOrigin);
+    const WTF::String& script = scripts_to_evaluate_on_load_.Get(key);
+    frame->GetScriptController().ExecuteScriptInMainWorld(script);
   }
-
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
     frame->GetScriptController().ExecuteScriptInMainWorld(
         script_to_evaluate_on_load_once_);
