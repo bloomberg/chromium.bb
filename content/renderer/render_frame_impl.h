@@ -145,6 +145,7 @@ class MediaPermission;
 }
 
 namespace network {
+class WeakWrapperSharedURLLoaderFactory;
 struct ResourceResponseHead;
 }
 
@@ -1620,6 +1621,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Set on CommitNavigation when Network Service is enabled, and used
   // by FrameURLLoaderFactory for prefetch requests.
   network::mojom::URLLoaderFactoryPtr prefetch_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      prefetch_shared_loader_factory_;
 
   // URLLoaderFactory instances used for subresource loading.
   // Depending on how the frame was created, |loader_factories_| could be:
