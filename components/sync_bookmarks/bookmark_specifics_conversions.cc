@@ -58,14 +58,21 @@ void SetBookmarkFaviconFromSpecifics(
       new base::RefCountedString());
   icon_bytes->data().assign(icon_bytes_str);
 
-  const GURL icon_url(specifics.icon_url());
+  GURL icon_url(specifics.icon_url());
 
-  if (icon_bytes->size() == 0) {
-    DCHECK(icon_url.is_empty());
+  if (icon_bytes->size() == 0 && icon_url.is_empty()) {
     // Empty icon URL and no bitmap data means no icon mapping.
     favicon_service->DeleteFaviconMappings({bookmark_node->url()},
                                            favicon_base::IconType::kFavicon);
     return;
+  }
+
+  if (icon_url.is_empty()) {
+    // WebUI pages such as "chrome://bookmarks/" are missing a favicon URL but
+    // they have a favicon. In addition, ancient clients (prior to M25) may not
+    // be syncing the favicon URL. If the icon URL is not synced, use the page
+    // URL as a fake icon URL as it is guaranteed to be unique.
+    icon_url = GURL(bookmark_node->url());
   }
 
   // The client may have cached the favicon at 2x. Use MergeFavicon() as not to
@@ -105,9 +112,9 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
   }
 
   if (favicon_bytes.get() && favicon_bytes->size() != 0) {
-    DCHECK(!node->icon_url()->is_empty());
     bm_specifics->set_favicon(favicon_bytes->front(), favicon_bytes->size());
-    bm_specifics->set_icon_url(node->icon_url()->spec());
+    bm_specifics->set_icon_url(node->icon_url() ? node->icon_url()->spec()
+                                                : std::string());
   } else {
     bm_specifics->clear_favicon();
     bm_specifics->clear_icon_url();
@@ -181,9 +188,9 @@ bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
       DLOG(ERROR) << "Invalid bookmark: invalid url in the specifics.";
       return false;
     }
-    if (specifics.favicon().empty() != specifics.icon_url().empty()) {
-      DLOG(ERROR) << "Invalid bookmark: specifics can have neither or both of "
-                     "favicon and icon_url.";
+    if (specifics.favicon().empty() && !specifics.icon_url().empty()) {
+      DLOG(ERROR) << "Invalid bookmark: specifics cannot have an icon_url "
+                     "without having a favicon.";
       return false;
     }
     if (!specifics.icon_url().empty() &&
