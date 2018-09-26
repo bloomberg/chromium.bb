@@ -69,6 +69,12 @@ class LayerTreeViewDelegate {
   // will be displayed.
   virtual void DidReceiveCompositorFrameAck() = 0;
 
+  // Requests that a UMA and UKM metric be recorded for the total frame time.
+  // Call this as soon as the total frame time becomes known for a given frame.
+  // For example, ProxyMain::BeginMainFrame calls it immediately before aborting
+  // or committing a frame (at the same time Tracing measurements are taken).
+  virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) = 0;
+
   // Indicates whether the LayerTreeView is about to close.
   virtual bool IsClosing() const = 0;
 

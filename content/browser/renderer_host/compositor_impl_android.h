@@ -130,6 +130,7 @@ class CONTENT_EXPORT CompositorImpl
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
+  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;

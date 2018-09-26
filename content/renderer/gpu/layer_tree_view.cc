@@ -673,6 +673,10 @@ void LayerTreeView::DidPresentCompositorFrame(
   }
 }
 
+void LayerTreeView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
+  delegate_->RecordEndOfFrameMetrics(frame_begin_time);
+}
+
 void LayerTreeView::RequestScheduleAnimation() {
   delegate_->RequestScheduleAnimation();
 }

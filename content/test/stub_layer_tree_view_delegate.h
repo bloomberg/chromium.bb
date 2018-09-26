@@ -20,6 +20,7 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
   void BeginMainFrame(base::TimeTicks frame_time) override {}
+  void RecordEndOfFrameMetrics(base::TimeTicks) override {}
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override {}
