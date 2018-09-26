@@ -11,6 +11,9 @@
 
 @protocol FormInputAccessoryConsumer<NSObject>
 
+// Removes the animations on the custom keyboard view.
+- (void)removeAnimationsOnKeyboardView;
+
 // Restores the keyboard and its default input accessory view, removing (if
 // necessary) any previously-added custom view.
 - (void)restoreKeyboardView;

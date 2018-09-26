@@ -14,6 +14,7 @@ group("all_tests") {
     ":ios_chrome_external_url_egtests",
     ":ios_chrome_flaky_egtests",
     ":ios_chrome_integration_egtests",
+    ":ios_chrome_manual_fill_egtests",
     ":ios_chrome_multitasking_egtests",
     ":ios_chrome_payments_egtests",
     ":ios_chrome_perf_egtests",
@@ -55,6 +56,13 @@ chrome_ios_eg_test("ios_chrome_autofill_automation_egtests") {
     ":test_support",
     "//components/autofill/ios/browser:autofill_test_bundle_data",
     "//ios/chrome/browser/autofill/automation:eg_tests",
+  ]
+}
+
+chrome_ios_eg_test("ios_chrome_manual_fill_egtests") {
+  deps = [
+    ":test_support",
+    "//ios/chrome/browser/ui/autofill/manual_fill:eg_tests",
   ]
 }
 
