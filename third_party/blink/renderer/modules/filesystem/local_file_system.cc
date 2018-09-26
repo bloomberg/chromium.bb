@@ -35,6 +35,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_file_system.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -115,14 +116,12 @@ void LocalFileSystem::RequestFileSystem(
 
 namespace {
 
-class ChooseEntryCallbacks
-    : public WebCallbacks<Vector<mojom::blink::FileSystemEntryPtr>,
-                          base::File::Error> {
+class ChooseEntryCallbacks : public WebFileSystem::ChooseEntryCallbacks {
  public:
   ChooseEntryCallbacks(ScriptPromiseResolver* resolver, bool return_multiple)
       : resolver_(resolver), return_multiple_(return_multiple) {}
 
-  void OnSuccess(Vector<mojom::blink::FileSystemEntryPtr> entries) override {
+  void OnSuccess(WebVector<WebFileSystem::FileSystemEntry> entries) override {
     ScriptState::Scope scope(resolver_->GetScriptState());
     if (return_multiple_) {
       Vector<ScriptPromise> result;
@@ -142,16 +141,15 @@ class ChooseEntryCallbacks
   }
 
  private:
-  ScriptPromise CreateFileHandle(
-      const mojom::blink::FileSystemEntryPtr& entry) {
+  ScriptPromise CreateFileHandle(const WebFileSystem::FileSystemEntry& entry) {
     auto* new_resolver =
         ScriptPromiseResolver::Create(resolver_->GetScriptState());
     ScriptPromise result = new_resolver->Promise();
     auto* fs = DOMFileSystem::CreateIsolatedFileSystem(
-        resolver_->GetExecutionContext(), entry->file_system_id);
+        resolver_->GetExecutionContext(), entry.file_system_id);
     // TODO(mek): Try to create handle directly rather than having to do more
     // IPCs to get the actual entries.
-    fs->GetFile(fs->root(), entry->base_name, FileSystemFlags(),
+    fs->GetFile(fs->root(), entry.base_name, FileSystemFlags(),
                 new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
                 new PromiseErrorCallback(new_resolver));
     return result;
@@ -170,8 +168,24 @@ void LocalFileSystem::ChooseEntry(ScriptPromiseResolver* resolver) {
     return;
   }
 
-  FileSystemDispatcher::From(resolver->GetExecutionContext())
-      .ChooseEntry(std::make_unique<ChooseEntryCallbacks>(resolver, false));
+  WebFileSystem* file_system = GetFileSystem();
+  if (!file_system) {
+    resolver->Reject(
+        FileError::CreateDOMException(base::File::FILE_ERROR_ABORT));
+    return;
+  }
+
+  file_system->ChooseEntry(
+      Supplement<LocalFrame>::GetSupplementable()->Client()->GetWebFrame(),
+      std::make_unique<ChooseEntryCallbacks>(resolver, false));
+}
+
+WebFileSystem* LocalFileSystem::GetFileSystem() const {
+  Platform* platform = Platform::Current();
+  if (!platform)
+    return nullptr;
+
+  return platform->FileSystem();
 }
 
 void LocalFileSystem::RequestFileSystemAccessInternal(
@@ -216,7 +230,8 @@ void LocalFileSystem::FileSystemAllowedInternal(
       KURL(NullURL(), context->GetSecurityOrigin()->ToString());
   std::unique_ptr<AsyncFileSystemCallbacks> async_callbacks =
       callbacks->Release();
-  FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context);
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
   if (sync_type == kSynchronous) {
     dispatcher.OpenFileSystemSync(storage_partition, type,
                                   std::move(async_callbacks));
@@ -230,7 +245,8 @@ void LocalFileSystem::ResolveURLInternal(ExecutionContext* context,
                                          const KURL& file_system_url,
                                          CallbackWrapper* callbacks,
                                          SynchronousType sync_type) {
-  FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context);
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
   std::unique_ptr<AsyncFileSystemCallbacks> async_callbacks =
       callbacks->Release();
   if (sync_type == kSynchronous) {

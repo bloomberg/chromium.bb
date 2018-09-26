@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_file_system.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -70,6 +71,13 @@ DOMFileSystemBase::~DOMFileSystemBase() = default;
 void DOMFileSystemBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
   ScriptWrappable::Trace(visitor);
+}
+
+WebFileSystem* DOMFileSystemBase::FileSystem() const {
+  Platform* platform = Platform::Current();
+  if (!platform)
+    return nullptr;
+  return platform->FileSystem();
 }
 
 const SecurityOrigin* DOMFileSystemBase::GetSecurityOrigin() const {
@@ -211,7 +219,8 @@ void DOMFileSystemBase::GetMetadata(
     SynchronousType synchronous_type) {
   std::unique_ptr<AsyncFileSystemCallbacks> callbacks(MetadataCallbacks::Create(
       success_callback, error_callback, context_, this));
-  FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
 
   if (synchronous_type == kSynchronous) {
     dispatcher.ReadMetadataSync(CreateFileSystemURL(entry),
@@ -276,7 +285,8 @@ void DOMFileSystemBase::Move(
       success_callback, error_callback, context_, parent->filesystem(),
       destination_path, source->isDirectory()));
 
-  FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
   const KURL& src = CreateFileSystemURL(source);
   const KURL& dest =
       parent->filesystem()->CreateFileSystemURL(destination_path);
@@ -307,7 +317,8 @@ void DOMFileSystemBase::Copy(
   const KURL& src = CreateFileSystemURL(source);
   const KURL& dest =
       parent->filesystem()->CreateFileSystemURL(destination_path);
-  FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
   if (synchronous_type == kSynchronous)
     dispatcher.CopySync(src, dest, std::move(callbacks));
   else
@@ -329,7 +340,8 @@ void DOMFileSystemBase::Remove(
   std::unique_ptr<AsyncFileSystemCallbacks> callbacks(
       VoidCallbacks::Create(success_callback, error_callback, context_, this));
   const KURL& url = CreateFileSystemURL(entry);
-  FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
   if (synchronous_type == kSynchronous)
     dispatcher.RemoveSync(url, /*recursive=*/false, std::move(callbacks));
   else
@@ -352,7 +364,8 @@ void DOMFileSystemBase::RemoveRecursively(
   std::unique_ptr<AsyncFileSystemCallbacks> callbacks(
       VoidCallbacks::Create(success_callback, error_callback, context_, this));
   const KURL& url = CreateFileSystemURL(entry);
-  FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
   if (synchronous_type == kSynchronous)
     dispatcher.RemoveSync(url, /*recursive=*/true, std::move(callbacks));
   else
@@ -366,7 +379,7 @@ void DOMFileSystemBase::GetParent(
   DCHECK(entry);
   String path = DOMFilePath::GetDirectory(entry->fullPath());
 
-  FileSystemDispatcher::From(context_).Exists(
+  FileSystemDispatcher::GetThreadSpecificInstance().Exists(
       CreateFileSystemURL(path), /*is_directory=*/true,
       EntryCallbacks::Create(success_callback, error_callback, context_, this,
                              path, true));
@@ -388,7 +401,8 @@ void DOMFileSystemBase::GetFile(
   std::unique_ptr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::Create(
       success_callback, error_callback, context_, this, absolute_path, false));
   const KURL& url = CreateFileSystemURL(absolute_path);
-  FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
 
   if (flags.createFlag()) {
     if (synchronous_type == kSynchronous)
@@ -420,7 +434,8 @@ void DOMFileSystemBase::GetDirectory(
   std::unique_ptr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::Create(
       success_callback, error_callback, context_, this, absolute_path, true));
   const KURL& url = CreateFileSystemURL(absolute_path);
-  FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
 
   if (flags.createFlag()) {
     if (synchronous_type == kSynchronous) {
@@ -449,7 +464,8 @@ void DOMFileSystemBase::ReadDirectory(
 
   std::unique_ptr<AsyncFileSystemCallbacks> callbacks(EntriesCallbacks::Create(
       success_callback, error_callback, context_, reader, path));
-  FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
+  FileSystemDispatcher& dispatcher =
+      FileSystemDispatcher::GetThreadSpecificInstance();
   const KURL& url = CreateFileSystemURL(path);
   if (synchronous_type == kSynchronous) {
     dispatcher.ReadDirectorySync(url, std::move(callbacks));

@@ -57,12 +57,9 @@ class ChromeBlobStorageContext;
 class CONTENT_EXPORT FileSystemManagerImpl
     : public blink::mojom::FileSystemManager {
  public:
-  // Constructed and held by the render frame host and render process host on
-  // the UI thread. Used by render frames (via the render frame host), workers
-  // and pepper (via the render process host).
+  // Used by the renderer process host on the UI thread.
   FileSystemManagerImpl(
       int process_id,
-      int frame_id,
       storage::FileSystemContext* file_system_context,
       scoped_refptr<ChromeBlobStorageContext> blob_storage_context);
   ~FileSystemManagerImpl() override;
@@ -125,7 +122,8 @@ class CONTENT_EXPORT FileSystemManagerImpl
                        GetPlatformPathCallback callback) override;
   void CreateWriter(const GURL& file_path,
                     CreateWriterCallback callback) override;
-  void ChooseEntry(ChooseEntryCallback callback) override;
+  void ChooseEntry(int32_t render_frame_id,
+                   ChooseEntryCallback callback) override;
 
  private:
   class FileSystemCancellableOperationImpl;
@@ -208,7 +206,6 @@ class CONTENT_EXPORT FileSystemManagerImpl
   void OnConnectionErrorForOpListeners(OperationListenerID listener_id);
 
   const int process_id_;
-  const int frame_id_;
   storage::FileSystemContext* const context_;
   ChildProcessSecurityPolicyImpl* const security_policy_;
   const scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;

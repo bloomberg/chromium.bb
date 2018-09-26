@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc.  All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,50 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_SYNC_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_SYNC_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_SYSTEM_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_SYSTEM_H_
 
-#include "third_party/blink/renderer/core/fileapi/file_error.h"
-#include "third_party/blink/renderer/modules/filesystem/file_writer_base.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "base/files/file.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_file_system_type.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
-class Blob;
-class ExceptionState;
+class WebFrame;
 
-class FileWriterSync final : public ScriptWrappable, public FileWriterBase {
-  DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
-
+class WebFileSystem {
  public:
-  static FileWriterSync* Create() { return new FileWriterSync(); }
-  ~FileWriterSync() override;
-  void Trace(blink::Visitor*) override;
+  struct FileSystemEntry {
+    WebString file_system_id;
+    WebString base_name;
+  };
 
-  void write(Blob*, ExceptionState&);
-  void seek(long long position, ExceptionState&);
-  void truncate(long long length, ExceptionState&);
+  // Prompts the user to select a file from the native filesystem. Returns an
+  // error code if something failed, or a list of the selected entries on
+  // success.
+  using ChooseEntryCallbacks =
+      WebCallbacks<WebVector<FileSystemEntry>, base::File::Error>;
+  virtual void ChooseEntry(WebFrame* frame,
+                           std::unique_ptr<ChooseEntryCallbacks>) = 0;
 
-  // FileWriterBase
-  void DidWriteImpl(int64_t bytes, bool complete) override;
-  void DidTruncateImpl() override;
-  void DidFailImpl(base::File::Error error) override;
-  void DoTruncate(const KURL& path, int64_t offset) override;
-  void DoWrite(const KURL& path,
-               const String& blob_id,
-               int64_t offset) override;
-  void DoCancel() override;
-
- private:
-  FileWriterSync();
-  void PrepareForWrite();
-
-  base::File::Error error_;
-  bool complete_;
+ protected:
+  virtual ~WebFileSystem() = default;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_SYNC_H_
+#endif

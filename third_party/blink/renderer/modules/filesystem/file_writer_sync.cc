@@ -98,33 +98,26 @@ void FileWriterSync::DidFailImpl(base::File::Error error) {
 }
 
 void FileWriterSync::DoTruncate(const KURL& path, int64_t offset) {
-  if (!GetExecutionContext())
-    return;
-  FileSystemDispatcher::From(GetExecutionContext())
-      .TruncateSync(
-          path, offset,
-          WTF::Bind(&FileWriterSync::DidFinish, WrapWeakPersistent(this)));
+  FileSystemDispatcher::GetThreadSpecificInstance().TruncateSync(
+      path, offset,
+      WTF::Bind(&FileWriterSync::DidFinish, WrapWeakPersistent(this)));
 }
 
 void FileWriterSync::DoWrite(const KURL& path,
                              const String& blob_id,
                              int64_t offset) {
-  if (!GetExecutionContext())
-    return;
-  FileSystemDispatcher::From(GetExecutionContext())
-      .WriteSync(
-          path, blob_id, offset,
-          WTF::BindRepeating(&FileWriterSync::DidWrite,
-                             WrapWeakPersistent(this)),
-          WTF::Bind(&FileWriterSync::DidFinish, WrapWeakPersistent(this)));
+  FileSystemDispatcher::GetThreadSpecificInstance().WriteSync(
+      path, blob_id, offset,
+      WTF::BindRepeating(&FileWriterSync::DidWrite, WrapWeakPersistent(this)),
+      WTF::Bind(&FileWriterSync::DidFinish, WrapWeakPersistent(this)));
 }
 
 void FileWriterSync::DoCancel() {
   NOTREACHED();
 }
 
-FileWriterSync::FileWriterSync(ExecutionContext* context)
-    : ContextClient(context), error_(base::File::FILE_OK), complete_(true) {}
+FileWriterSync::FileWriterSync()
+    : error_(base::File::FILE_OK), complete_(true) {}
 
 void FileWriterSync::PrepareForWrite() {
   DCHECK(complete_);
@@ -137,7 +130,6 @@ FileWriterSync::~FileWriterSync() = default;
 void FileWriterSync::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   FileWriterBase::Trace(visitor);
-  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink
