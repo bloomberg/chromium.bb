@@ -36145,6 +36145,24 @@ Called by update_net_trust_anchors.py.-->
       label="Account was not seeded before FireRefreshTokenAvailable"/>
 </enum>
 
+<enum name="OCSPResponseStatus">
+  <int value="0" label="Not checked"/>
+  <int value="1" label="Missing"/>
+  <int value="2" label="Provided"/>
+  <int value="3" label="Error response"/>
+  <int value="4" label="Bad producedAt"/>
+  <int value="5" label="No matching response"/>
+  <int value="6" label="Invalid date"/>
+  <int value="7" label="Parse response error"/>
+  <int value="8" label="Response data error"/>
+</enum>
+
+<enum name="OCSPRevocationStatus">
+  <int value="0" label="Good"/>
+  <int value="1" label="Revoked"/>
+  <int value="2" label="Unknown"/>
+</enum>
+
 <enum name="OfflineIndicatorCTREvent">
   <int value="0" label="Displayed"/>
   <int value="1" label="Clicked"/>
@@ -44956,6 +44974,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="CT verification error"/>
   <int value="11" label="OCSP error"/>
   <int value="12" label="Certificate requirements not met"/>
+</enum>
+
+<enum name="SignedExchangeSignatureVerificationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="No certificate"/>
+  <int value="2" label="No cert-sha256"/>
+  <int value="3" label="cert-sha256 mismatch"/>
+  <int value="4" label="Failed to reconstruct signed message"/>
+  <int value="5" label="Failed to verify signature"/>
+  <int value="6" label="Invalid integrity scheme"/>
+  <int value="7" label="Invalid timestamp"/>
+  <int value="8" label="Unsupported certificate type"/>
 </enum>
 
 <enum name="SigninAccessPoint">

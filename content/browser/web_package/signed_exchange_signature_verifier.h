@@ -31,6 +31,7 @@ class SignedExchangeDevToolsProxy;
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
 class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
  public:
+  // This enum is used for recording histograms. Treat as append-only.
   enum class Result {
     kSuccess,
     kErrNoCertificate,
@@ -40,7 +41,8 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     kErrSignatureVerificationFailed,
     kErrInvalidSignatureIntegrity,
     kErrInvalidTimestamp,
-    kErrUnsupportedCertType
+    kErrUnsupportedCertType,
+    kMaxValue = kErrUnsupportedCertType
   };
 
   static Result Verify(const SignedExchangeEnvelope& envelope,

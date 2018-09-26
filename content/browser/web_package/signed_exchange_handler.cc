@@ -4,6 +4,8 @@
 
 #include "content/browser/web_package/signed_exchange_handler.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -48,6 +50,16 @@ namespace content {
 namespace {
 
 constexpr char kDigestHeader[] = "Digest";
+constexpr char kHistogramSignatureVerificationResult[] =
+    "SignedExchange.SignatureVerificationResult";
+constexpr char kHistogramCertVerificationResult[] =
+    "SignedExchange.CertVerificationResult";
+constexpr char kHistogramCTVerificationResult[] =
+    "SignedExchange.CTVerificationResult";
+constexpr char kHistogramOCSPResponseStatus[] =
+    "SignedExchange.OCSPResponseStatus";
+constexpr char kHistogramOCSPRevocationStatus[] =
+    "SignedExchange.OCSPRevocationStatus";
 
 network::mojom::NetworkContext* g_network_context_for_testing = nullptr;
 
@@ -427,6 +439,8 @@ void SignedExchangeHandler::OnCertReceived(
       SignedExchangeSignatureVerifier::Verify(
           *envelope_, unverified_cert_chain_->cert(), GetVerificationTime(),
           devtools_proxy_.get());
+  UMA_HISTOGRAM_ENUMERATION(kHistogramSignatureVerificationResult,
+                            verify_result);
   if (verify_result != SignedExchangeSignatureVerifier::Result::kSuccess) {
     base::Optional<SignedExchangeError::Field> error_field =
         SignedExchangeError::GetFieldFromSignatureVerifierResult(verify_result);
@@ -483,12 +497,21 @@ bool SignedExchangeHandler::CheckOCSPStatus(
   //
   // OCSP verification is done in CertVerifier::Verify(), so we just check the
   // result here.
-
-  if (ocsp_result.response_status != net::OCSPVerifyResult::PROVIDED ||
-      ocsp_result.revocation_status != net::OCSPRevocationStatus::GOOD)
-    return false;
-
-  return true;
+  UMA_HISTOGRAM_ENUMERATION(kHistogramOCSPResponseStatus,
+                            ocsp_result.response_status,
+                            static_cast<base::HistogramBase::Sample>(
+                                net::OCSPVerifyResult::RESPONSE_STATUS_MAX) +
+                                1);
+  if (ocsp_result.response_status == net::OCSPVerifyResult::PROVIDED) {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramOCSPRevocationStatus,
+                              ocsp_result.revocation_status,
+                              static_cast<base::HistogramBase::Sample>(
+                                  net::OCSPRevocationStatus::MAX_VALUE) +
+                                  1);
+    if (ocsp_result.revocation_status == net::OCSPRevocationStatus::GOOD)
+      return true;
+  }
+  return false;
 }
 
 void SignedExchangeHandler::OnVerifyCert(
@@ -497,6 +520,11 @@ void SignedExchangeHandler::OnVerifyCert(
     const net::ct::CTVerifyResult& ct_result) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::OnCertVerifyComplete");
+  // net::Error codes are negative, so we put - in front of it.
+  base::UmaHistogramSparse(kHistogramCertVerificationResult, -error_code);
+  UMA_HISTOGRAM_ENUMERATION(kHistogramCTVerificationResult,
+                            ct_result.policy_compliance,
+                            net::ct::CTPolicyCompliance::CT_POLICY_MAX);
 
   if (error_code != net::OK) {
     SignedExchangeLoadResult result;
