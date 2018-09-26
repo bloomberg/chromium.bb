@@ -1383,4 +1383,30 @@ TEST_F(ContentSecurityPolicyTest, IsValidCSPAttrTest) {
       "\rbase-uri http://example.com", ""));
 }
 
+TEST_F(ContentSecurityPolicyTest, TrustedTypesNoDirective) {
+  csp->BindToExecutionContext(execution_context.Get());
+  csp->DidReceiveHeader("", kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy"));
+}
+
+TEST_F(ContentSecurityPolicyTest, TrustedTypesSimpleDirective) {
+  csp->BindToExecutionContext(execution_context.Get());
+  csp->DidReceiveHeader("trusted-types one two three",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("one"));
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("two"));
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("three"));
+  EXPECT_FALSE(csp->AllowTrustedTypePolicy("four"));
+}
+
+TEST_F(ContentSecurityPolicyTest, TrustedTypesEmpty) {
+  csp->BindToExecutionContext(execution_context.Get());
+  csp->DidReceiveHeader("trusted-types",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy"));
+}
+
 }  // namespace blink

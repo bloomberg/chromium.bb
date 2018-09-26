@@ -963,7 +963,7 @@ bool CSPDirectiveList::AllowBaseURI(
 }
 
 bool CSPDirectiveList::AllowTrustedTypePolicy(const String& policy_name) const {
-  if (trusted_types_->Allows(policy_name))
+  if (!trusted_types_ || trusted_types_->Allows(policy_name))
     return true;
 
   ReportViolation(
