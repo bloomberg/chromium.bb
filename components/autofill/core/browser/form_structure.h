@@ -132,8 +132,8 @@ class FormStructure {
   // directly.
   bool ShouldBeQueried() const;
 
-  // Returns true if we should upload votes for this form to the crowd-sourcing
-  // server.
+  // Returns true if we should upload Autofill votes for this form to the
+  // crowd-sourcing server. It is not applied for Password Manager votes.
   bool ShouldBeUploaded() const;
 
   // Sets the field types to be those set for |cached_form|.
