@@ -63,6 +63,21 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateSpecificsFromBookmarkNode) {
   }
 }
 
+TEST(BookmarkSpecificsConversionsTest,
+     ShouldCreateSpecificsWithoutUrlFromFolderNode) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node = model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("Title"));
+  ASSERT_THAT(node, NotNull());
+
+  sync_pb::EntitySpecifics specifics =
+      CreateSpecificsFromBookmarkNode(node, model.get());
+  const sync_pb::BookmarkSpecifics& bm_specifics = specifics.bookmark();
+  EXPECT_FALSE(bm_specifics.has_url());
+}
+
 TEST(BookmarkSpecificsConversionsTest, ShouldCreateBookmarkNodeFromSpecifics) {
   const GURL kUrl("http://www.url.com");
   const std::string kTitle = "Title";

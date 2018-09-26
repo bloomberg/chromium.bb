@@ -92,7 +92,9 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
     bookmarks::BookmarkModel* model) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
-  bm_specifics->set_url(node->url().spec());
+  if (!node->is_folder()) {
+    bm_specifics->set_url(node->url().spec());
+  }
   bm_specifics->set_title(base::UTF16ToUTF8(node->GetTitle()));
   bm_specifics->set_creation_time_us(
       node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
