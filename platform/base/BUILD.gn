@@ -10,5 +10,7 @@ source_set("base") {
     "time.cc",
   ]
 
-  deps = [ "../api" ]
+  deps = [
+    "../api",
+  ]
 }

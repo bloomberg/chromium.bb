@@ -15,5 +15,7 @@ source_set("api") {
     "time.h",
   ]
 
-  public_deps = [ "//base" ]
+  public_deps = [
+    "//base",
+  ]
 }

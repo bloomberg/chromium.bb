@@ -7,7 +7,9 @@ repository](https://github.com/webscreens/openscreenprotocol).
 ## Style guide
 
 Open Screen Library code should follow the
-[Open Screen Library Style Guide](docs/style_guide.md).
+[Open Screen Library Style Guide](docs/style_guide.md).  In addition, you should
+also run `//PRESUBMIT.sh` before uploading changes for review (which primarily
+checks formatting).
 
 ## Build dependencies
 

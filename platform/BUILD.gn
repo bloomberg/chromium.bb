@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 source_set("platform") {
-  deps = [ "base" ]
+  deps = [
+    "base",
+  ]
 
   if (target_os == "linux") {
     deps += [ "linux" ]

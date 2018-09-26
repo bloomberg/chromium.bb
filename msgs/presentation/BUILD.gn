@@ -8,7 +8,9 @@ source_set("presentation") {
     "messages.h",
   ]
 
-  deps = [ "//third_party/tinycbor" ]
+  deps = [
+    "//third_party/tinycbor",
+  ]
 }
 
 source_set("unittests") {

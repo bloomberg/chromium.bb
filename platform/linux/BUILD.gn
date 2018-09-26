@@ -8,7 +8,11 @@ source_set("linux") {
     "socket.cc",
   ]
 
-  public_deps = [ "../posix" ]
+  public_deps = [
+    "../posix",
+  ]
 
-  deps = [ "../api" ]
+  deps = [
+    "../api",
+  ]
 }

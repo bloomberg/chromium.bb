@@ -9,5 +9,7 @@ source_set("posix") {
     "socket.h",
   ]
 
-  deps = [ "../api" ]
+  deps = [
+    "../api",
+  ]
 }

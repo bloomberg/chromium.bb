@@ -3,9 +3,13 @@
 # found in the LICENSE file.
 
 executable("embedder_demo") {
-  sources = [ "embedder_demo.cc" ]
+  sources = [
+    "embedder_demo.cc",
+  ]
 
-  deps = [ ":mdns" ]
+  deps = [
+    ":mdns",
+  ]
 }
 
 source_set("mdns") {
@@ -25,7 +29,9 @@ source_set("mdns") {
     "//platform",
   ]
 
-  deps = [ "//third_party/mDNSResponder:core" ]
+  deps = [
+    "//third_party/mDNSResponder:core",
+  ]
 }
 
 source_set("mdns_unittests") {

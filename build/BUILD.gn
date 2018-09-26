@@ -18,9 +18,7 @@ config("compiler_defaults") {
       "-g",
       "-fPIC",
     ]
-    ldflags = [
-      "-pthread",
-    ]
+    ldflags = [ "-pthread" ]
   }
   if (is_debug) {
     defines = [ "_DEBUG" ]

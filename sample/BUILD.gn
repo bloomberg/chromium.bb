@@ -15,7 +15,9 @@ executable("hello") {
 
 source_set("hello_unittests") {
   testonly = true
-  sources = [ "hello_unittest.cc" ]
+  sources = [
+    "hello_unittest.cc",
+  ]
 
   deps = [
     "//third_party/googletest:gmock",
