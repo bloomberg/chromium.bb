@@ -31,6 +31,7 @@
 #endif
 
 #if defined(WAYLAND_GBM)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/common/linux/gbm_wrapper.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
@@ -115,8 +116,17 @@ class OzonePlatformWayland : public OzonePlatform {
       LOG(FATAL) << "Failed to initialize Wayland platform";
 
 #if defined(WAYLAND_GBM)
-    if (!args.single_process)
+    if (!args.single_process) {
+      if (!features::IsOzoneDrmMojo()) {
+        // Override kEnableOzoneDrmMojo to the enabled state, because
+        // Ozone/Wayland relies on the mojo communication when running in
+        // !single_process.
+        // TODO(msisov, rjkroege): Remove after http://crbug.com/806092.
+        base::FeatureList::GetInstance()->InitializeFromCommandLine(
+            features::kEnableOzoneDrmMojo.name, std::string());
+      }
       connector_.reset(new WaylandConnectionConnector(connection_.get()));
+    }
 #endif
 
     cursor_factory_.reset(new BitmapCursorFactoryOzone);

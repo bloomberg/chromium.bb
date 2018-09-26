@@ -1,5 +1,6 @@
 include_rules = [
   "+ui/base/ui_features.h",  # UI features doesn't bring in all of ui/base.
+  "+ui/base/ui_base_features.h",
   "+ui/base/ime/composition_text.h",
   "+ui/base/ime/linux/linux_input_method_context.h",
   "+ui/base/ime/linux/linux_input_method_context_factory.h",
