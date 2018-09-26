@@ -402,9 +402,10 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
 
     /**
      * @return Whether url bar hiding should be enabled in the custom tab. Default is false.
+     * It should be impossible to hide the url bar when the tab is opened for Payment Request.
      */
     public boolean shouldEnableUrlBarHiding() {
-        return mEnableUrlBarHiding;
+        return mEnableUrlBarHiding && !isForPaymentRequest();
     }
 
     /**

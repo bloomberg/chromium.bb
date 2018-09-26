@@ -28,6 +28,7 @@ import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.PaymentHandlerActivity;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.incognito.IncognitoDisclosureActivity;
@@ -289,6 +290,13 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         newIntent.setAction(Intent.ACTION_VIEW);
         newIntent.setData(uri);
         newIntent.setClassName(context, CustomTabActivity.class.getName());
+
+        // Use a custom tab with a unique theme for payment handlers.
+        if (intent.getIntExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
+                    CustomTabIntentDataProvider.CustomTabsUiType.DEFAULT)
+                == CustomTabIntentDataProvider.CustomTabsUiType.PAYMENT_REQUEST) {
+            newIntent.setClassName(context, PaymentHandlerActivity.class.getName());
+        }
 
         // If |uri| is a content:// URI, we want to propagate the URI permissions. This can't be
         // achieved by simply adding the FLAG_GRANT_READ_URI_PERMISSION to the Intent, since the

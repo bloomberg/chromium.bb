@@ -692,6 +692,7 @@ public class PaymentRequestImpl
                                && !mIsUserGestureShow)) {
                 mUI.show();
             } else {
+                mUI.dimBackground();
                 mDidRecordShowEvent = true;
                 mShouldRecordAbortReason = true;
                 mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
