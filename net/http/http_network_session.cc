@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
-#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -275,8 +274,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
         new base::MemoryPressureListener(base::BindRepeating(
             &HttpNetworkSession::OnMemoryPressure, base::Unretained(this))));
   }
-
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 HttpNetworkSession::~HttpNetworkSession() {
@@ -285,7 +282,6 @@ HttpNetworkSession::~HttpNetworkSession() {
   // TODO(bnc): CloseAllSessions() is also called in SpdySessionPool destructor,
   // one of the two calls should be removed.
   spdy_session_pool_.CloseAllSessions();
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
 void HttpNetworkSession::AddResponseDrainer(
@@ -533,10 +529,6 @@ void HttpNetworkSession::OnMemoryPressure(
       CloseIdleConnections();
       break;
   }
-}
-
-void HttpNetworkSession::OnPurgeMemory() {
-  CloseIdleConnections();
 }
 
 }  // namespace net
