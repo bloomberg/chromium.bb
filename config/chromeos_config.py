@@ -3485,8 +3485,8 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
   #
   # Active:
   #   None: Do not schedule automatically.
-  ACTIVE = '1d'  # pylint: disable=unused-variable
-  INACTIVE = '30d'  # pylint: disable=unused-variable
+  ACTIVE = 'with 24h interval'  # 1 day interval
+  INACTIVE = 'with 720h interval'  # 30 day interval
   firmware_branch_builders = [
       (None, 'firmware-falco_peppy-4389.B', ['falco', 'peppy']),
       (None, 'firmware-pit-4482.B', ['peach_pit', 'peach_pi']),
@@ -3561,7 +3561,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       (None, 'firmware-fizz-10139.94.B', ['fizz']),
       (None, 'firmware-scarlet-10388.B', ['scarlet']),
       (None, 'firmware-poppy-10431.B', ['poppy', 'soraka', 'nautilus']),
-      (INACTIVE, 'firmware-nami-10775.B', ['nami']),
+      (ACTIVE, 'firmware-nami-10775.B', ['nami']),
       (None, 'firmware-nocturne-10984.B', ['nocturne']),
       (None, 'firmware-grunt-11031.B', ['grunt']),
   ]
@@ -3571,7 +3571,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
     if active:
       schedule = {
           'active_waterfall': waterfall.WATERFALL_SWARMING,
-          'schedule': 'with %s interval' % active,
+          'schedule': active,
       }
 
     site_config.Add(
