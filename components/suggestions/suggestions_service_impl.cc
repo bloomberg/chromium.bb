@@ -445,6 +445,12 @@ SuggestionsServiceImpl::CreateSuggestionsRequest(
               SyncDisabled: true
             }
           }
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;

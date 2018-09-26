@@ -633,10 +633,15 @@ void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
         }
         policy {
           cookies_allowed: NO
-          setting: "This feature cannot be controlled by Chrome settings, "
-            "but users can sign out of Chrome to disable it.",
-          policy_exception_justification:
-            "Essential for Google account management"
+          setting:
+            "This feature cannot be controlled by Chrome settings, but users "
+            "can sign out of Chrome to disable it."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = std::move(url);

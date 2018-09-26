@@ -56,9 +56,13 @@ void UserInfoFetcher::Start(const std::string& access_token) {
           cookies_allowed: NO
           setting:
             "This feature cannot be controlled by Chrome settings, but users "
-            "can sign out of Chrome to disable it.",
-          policy_exception_justification:
-            "Essential for Google account management"
+            "can sign out of Chrome to disable it."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
 
   auto resource_request = std::make_unique<network::ResourceRequest>();

@@ -195,7 +195,10 @@ void AppLauncherLoginHandler::UpdateLogin() {
     }
   } else {
 #if !defined(OS_CHROMEOS)
-    if (!profile->IsLegacySupervised()) {
+    // Chromeos does not show this status header.
+    SigninManager* signin = SigninManagerFactory::GetForProfile(
+        profile->GetOriginalProfile());
+    if (!profile->IsLegacySupervised() && signin->IsSigninAllowed()) {
       base::string16 signed_in_link = l10n_util::GetStringUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
       signed_in_link =
@@ -233,7 +236,8 @@ bool AppLauncherLoginHandler::ShouldShow(Profile* profile) {
   // UI and the avatar menu don't exist on that platform.
   return false;
 #else
-  return !profile->IsOffTheRecord();
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  return !profile->IsOffTheRecord() && signin && signin->IsSigninAllowed();
 #endif
 }
 

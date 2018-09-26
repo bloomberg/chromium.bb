@@ -637,7 +637,11 @@
   },
 
   "SigninAllowed": {
-    "note": "This policy has been removed in Chrome 70."
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "SigninAllowed": true },
+    "pref_mappings": [
+      { "pref": "signin.allowed" }
+    ]
   },
 
   "EnableDeprecatedWebBasedSignin": {

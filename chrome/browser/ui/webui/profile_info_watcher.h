@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "components/prefs/pref_member.h"
 
 class Profile;
 class SigninManagerBase;
@@ -40,6 +41,8 @@ class ProfileInfoWatcher : public ProfileAttributesStorage::Observer {
 
   // Called when the authenticated username changes.
   base::Closure callback_;
+
+  BooleanPrefMember signin_allowed_pref_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoWatcher);
 };

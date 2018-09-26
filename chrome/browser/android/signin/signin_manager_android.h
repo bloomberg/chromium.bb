@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 
 class Profile;
@@ -68,6 +69,10 @@ class SigninManagerAndroid : public SigninManagerBase::Observer {
   void ClearLastSignedInUser(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
 
+  jboolean IsSigninAllowedByPolicy(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   jboolean IsForceSigninEnabled(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -99,6 +104,8 @@ class SigninManagerAndroid : public SigninManagerBase::Observer {
 
   void OnBrowsingDataRemoverDone();
 
+  void OnSigninAllowedPrefChanged();
+
   static void WipeData(Profile* profile,
                        bool all_data,
                        base::OnceClosure callback);
@@ -116,6 +123,8 @@ class SigninManagerAndroid : public SigninManagerBase::Observer {
   // Username that is pending sign-in. This is used to extract the domain name
   // for the policy dialog, when |username_| corresponds to a managed account.
   std::string username_;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   base::ThreadChecker thread_checker_;
 

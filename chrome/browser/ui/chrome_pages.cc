@@ -384,6 +384,10 @@ void ShowSearchEngineSettings(Browser* browser) {
 void ShowBrowserSignin(Browser* browser,
                        signin_metrics::AccessPoint access_point) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
+  SigninManagerBase* manager =
+      SigninManagerFactory::GetForProfile(original_profile);
+  DCHECK(manager->IsSigninAllowed());
+
   // If the browser's profile is an incognito profile, make sure to use
   // a browser window from the original profile. The user cannot sign in
   // from an incognito window.
@@ -423,8 +427,6 @@ void ShowBrowserSignin(Browser* browser,
 #if defined(OS_CHROMEOS)
     NOTREACHED();
 #else
-    SigninManagerBase* manager =
-        SigninManagerFactory::GetForProfile(original_profile);
     profiles::BubbleViewMode bubble_view_mode =
         manager->IsAuthenticated() ? profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH
                                    : profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
@@ -439,6 +441,7 @@ void ShowBrowserSigninOrSettings(Browser* browser,
   Profile* original_profile = browser->profile()->GetOriginalProfile();
   SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(original_profile);
+  DCHECK(manager->IsSigninAllowed());
   if (manager->IsAuthenticated())
     ShowSettings(browser);
   else
