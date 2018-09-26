@@ -23,7 +23,7 @@ PanelTest.prototype = {
   testGenCppIncludes: function() {
     ChromeVoxE2ETest.prototype.  testGenCppIncludes.call(this);
 
-    -// Flaky on dbg, see https://crbug.com/795840
+    // Flaky on dbg, see https://crbug.com/795840
     GEN_BLOCK(function() { /*!
 
 #if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
