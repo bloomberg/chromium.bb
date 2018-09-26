@@ -393,8 +393,6 @@ extern const base::Feature kAdaptiveScreenBrightnessLogging;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUserActivityEventLogging;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kUserActivityPrediction;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)

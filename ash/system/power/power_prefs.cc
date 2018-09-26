@@ -256,6 +256,7 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
       prefs->GetBoolean(prefs::kPowerWaitForInitialUserActivity);
   values.force_nonzero_brightness_for_user_activity =
       prefs->GetBoolean(prefs::kPowerForceNonzeroBrightnessForUserActivity);
+  values.smart_dim_enabled = prefs->GetBoolean(prefs::kPowerSmartDimEnabled);
 
   power_policy_controller_->ApplyPrefs(values);
 }

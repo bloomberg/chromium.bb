@@ -587,12 +587,6 @@ const base::Feature kAdaptiveScreenBrightnessLogging{
 // Chrome OS.
 const base::Feature kUserActivityEventLogging{"UserActivityEventLogging",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables user activity prediction for power management on
-// Chrome OS.
-const base::Feature kUserActivityPrediction{"UserActivityPrediction",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 #endif
 
 // Enables using the main HTTP cache for media files as well.

@@ -23,8 +23,8 @@ CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSettings;
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSetup;
 CHROMEOS_EXPORT extern const base::Feature kImeServiceConnectable;
 CHROMEOS_EXPORT extern const base::Feature kInstantTethering;
-
 CHROMEOS_EXPORT extern const base::Feature kMultiDeviceApi;
+CHROMEOS_EXPORT extern const base::Feature kUserActivityPrediction;
 
 }  // namespace features
 
