@@ -167,21 +167,26 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
         std::move(pending_tasks_and_callbacks_.front());
     pending_tasks_and_callbacks_.pop_front();
 
+    const web_app::PendingAppManager::AppInfo& app_info =
+        front->task->app_info();
     base::Optional<std::string> extension_id =
-        extension_ids_map_.LookupExtensionId(front->task->app_info().url);
+        extension_ids_map_.LookupExtensionId(app_info.url);
 
     if (extension_id) {
       base::Optional<bool> opt =
           IsExtensionPresentAndInstalled(extension_id.value());
       if (opt.has_value()) {
-        // TODO(crbug.com/878262): Handle the case where the app is already
-        // installed but from a different source.
-        std::move(front->callback)
-            .Run(front->task->app_info().url,
-                 opt.value()
-                     ? web_app::InstallResultCode::kAlreadyInstalled
-                     : web_app::InstallResultCode::kPreviouslyUninstalled);
-        continue;
+        bool installed = opt.value();
+        if (installed || !app_info.override_previous_user_uninstall) {
+          // TODO(crbug.com/878262): Handle the case where the app is already
+          // installed but from a different source.
+          std::move(front->callback)
+              .Run(app_info.url,
+                   installed
+                       ? web_app::InstallResultCode::kAlreadyInstalled
+                       : web_app::InstallResultCode::kPreviouslyUninstalled);
+          continue;
+        }
       }
     }
 

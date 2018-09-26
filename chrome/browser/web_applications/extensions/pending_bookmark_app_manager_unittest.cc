@@ -41,10 +41,14 @@ const char kXyzWebAppUrl[] = "https://xyz.example";
 
 const char kWrongUrl[] = "https://foobar.example";
 
-web_app::PendingAppManager::AppInfo GetFooAppInfo() {
+web_app::PendingAppManager::AppInfo GetFooAppInfo(
+    bool override_previous_user_uninstall = web_app::PendingAppManager::
+        AppInfo::kDefaultOverridePreviousUserUninstall) {
   return web_app::PendingAppManager::AppInfo(
       GURL(kFooWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab,
-      web_app::PendingAppManager::InstallSource::kExternalPolicy);
+      web_app::PendingAppManager::InstallSource::kExternalPolicy,
+      web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
+      override_previous_user_uninstall);
 }
 
 web_app::PendingAppManager::AppInfo GetBarAppInfo() {
@@ -882,7 +886,6 @@ TEST_F(PendingBookmarkAppManagerTest, ExtensionUninstalled) {
 
   EXPECT_EQ(1u, installation_task_run_count());
   EXPECT_TRUE(app_installed());
-
   ResetResults();
 
   // Simulate the extension for the app getting uninstalled.
@@ -926,7 +929,6 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
 
   EXPECT_EQ(1u, installation_task_run_count());
   EXPECT_TRUE(app_installed());
-
   ResetResults();
 
   // Simulate external extension for the app getting uninstalled by the user.
@@ -934,7 +936,6 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
   ExtensionRegistry::Get(profile())->RemoveEnabled(app_id);
   ExtensionPrefs::Get(profile())->OnExtensionUninstalled(
       app_id, Manifest::EXTERNAL_POLICY, false /* external_uninstall */);
-  ResetResults();
 
   // Trying to uninstall the app should fail and have no effect.
   pending_app_manager->UninstallApps(
@@ -946,17 +947,27 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
   EXPECT_EQ(GURL(kFooWebAppUrl), uninstall_callback_url());
   EXPECT_FALSE(last_uninstall_successful());
   EXPECT_EQ(0u, uninstalls_count());
+  ResetResults();
 
-  pending_app_manager->Install(
-      GetFooAppInfo(),
-      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
-                     base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
+  // The extension was uninstalled by the user. Installing again should succeed
+  // or fail depending on whether we set override_previous_user_uninstall. We
+  // try with override_previous_user_uninstall false first, true second.
+  for (unsigned int i = 0; i < 2; i++) {
+    bool override_previous_user_uninstall = i > 0;
 
-  // The extension was uninstalled by the user, we shouldn't try to install it
-  // again.
-  EXPECT_EQ(0u, installation_task_run_count());
-  EXPECT_FALSE(app_installed());
+    pending_app_manager->Install(
+        GetFooAppInfo(override_previous_user_uninstall),
+        base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                       base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
+    if (override_previous_user_uninstall) {
+      SuccessfullyLoad(GURL(kFooWebAppUrl));
+    }
+
+    EXPECT_EQ(i, installation_task_run_count());
+    EXPECT_EQ(override_previous_user_uninstall, app_installed());
+    ResetResults();
+  }
 }
 
 TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Succeeds) {
@@ -970,7 +981,6 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Succeeds) {
   SuccessfullyLoad(GURL(kFooWebAppUrl));
 
   EXPECT_TRUE(app_installed());
-
   ResetResults();
 
   pending_app_manager->UninstallApps(
