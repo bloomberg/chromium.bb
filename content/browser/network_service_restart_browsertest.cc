@@ -624,6 +624,130 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MultipleWorkerFetch) {
   EXPECT_EQ(last_request_relative_url(), "/title2.html");
 }
 
+// Make sure fetch from a page controlled by a service worker which doesn't have
+// a fetch handler works after crash.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       FetchFromServiceWorkerControlledPage_NoFetchHandler) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  ServiceWorkerStatusObserver observer;
+  ServiceWorkerContextWrapper* service_worker_context =
+      partition->GetServiceWorkerContext();
+  service_worker_context->AddObserver(&observer);
+
+  // Register a service worker which controls /service_worker/.
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('empty.js')"));
+
+  // Navigate to a controlled page.
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html")));
+
+  // Fetch from the controlled page.
+  const std::string script = "fetch_from_page('/echo');";
+  EXPECT_EQ("Echo", EvalJs(shell(), script));
+
+  // Crash the NetworkService process. Existing interfaces should receive error
+  // notifications at some point.
+  SimulateNetworkServiceCrash();
+  // Flush the interface to make sure the error notification was received.
+  partition->FlushNetworkInterfaceForTesting();
+
+  // Service worker should be stopped when network service crashes.
+  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+
+  // Fetch from the controlled page again.
+  EXPECT_EQ("Echo", EvalJs(shell(), script));
+
+  service_worker_context->RemoveObserver(&observer);
+}
+
+// Make sure fetch from a page controlled by a service worker which has a fetch
+// handler but falls back to the network works after crash.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       FetchFromServiceWorkerControlledPage_PassThrough) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  ServiceWorkerStatusObserver observer;
+  ServiceWorkerContextWrapper* service_worker_context =
+      partition->GetServiceWorkerContext();
+  service_worker_context->AddObserver(&observer);
+
+  // Register a service worker which controls /service_worker/.
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('fetch_event_pass_through.js')"));
+
+  // Navigate to a controlled page.
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html")));
+
+  // Fetch from the controlled page.
+  const std::string script = "fetch_from_page('/echo');";
+  EXPECT_EQ("Echo", EvalJs(shell(), script));
+
+  // Crash the NetworkService process. Existing interfaces should receive error
+  // notifications at some point.
+  SimulateNetworkServiceCrash();
+  // Flush the interface to make sure the error notification was received.
+  partition->FlushNetworkInterfaceForTesting();
+
+  // Service worker should be stopped when network service crashes.
+  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+
+  // Fetch from the controlled page again.
+  EXPECT_EQ("Echo", EvalJs(shell(), script));
+
+  service_worker_context->RemoveObserver(&observer);
+}
+
+// Make sure fetch from a page controlled by a service worker which has a fetch
+// handler and responds with fetch() works after crash.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       FetchFromServiceWorkerControlledPage_RespondWithFetch) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  ServiceWorkerStatusObserver observer;
+  ServiceWorkerContextWrapper* service_worker_context =
+      partition->GetServiceWorkerContext();
+  service_worker_context->AddObserver(&observer);
+
+  // Register a service worker which controls /service_worker/.
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE",
+            EvalJs(shell(), "register('fetch_event_respond_with_fetch.js')"));
+
+  // Navigate to a controlled page.
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html")));
+
+  // Fetch from the controlled page.
+  const std::string script = "fetch_from_page('/echo');";
+  EXPECT_EQ("Echo", EvalJs(shell(), script));
+
+  // Crash the NetworkService process. Existing interfaces should receive error
+  // notifications at some point.
+  SimulateNetworkServiceCrash();
+  // Flush the interface to make sure the error notification was received.
+  partition->FlushNetworkInterfaceForTesting();
+
+  // Service worker should be stopped when network service crashes.
+  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+
+  // Fetch from the controlled page again.
+  EXPECT_EQ("Echo", EvalJs(shell(), script));
+
+  service_worker_context->RemoveObserver(&observer);
+}
+
 // Make sure fetch from service worker context works after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, ServiceWorkerFetch) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
