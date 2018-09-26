@@ -140,19 +140,19 @@ test.TestEntryInfo.prototype.getMockFileSystemPopulateRow = function(prefix) {
  */
 test.ENTRIES = {
   hello: new test.TestEntryInfo(
-      test.EntryType.FILE, 'text.txt', 'hello.txt',
-      'text/plain', test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM',
-      'hello.txt', '51 bytes', 'Plain text'),
+      test.EntryType.FILE, 'text.txt', 'hello.txt', 'text/plain',
+      test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'hello.txt', '51 bytes',
+      'Plain text'),
 
   world: new test.TestEntryInfo(
-      test.EntryType.FILE, 'video.ogv', 'world.ogv',
-      'video/ogg', test.SharedOption.NONE, 'Jul 4, 2012, 10:35 AM',
-      'world.ogv', '59 KB', 'OGG video'),
+      test.EntryType.FILE, 'video.ogv', 'world.ogv', 'video/ogg',
+      test.SharedOption.NONE, 'Jul 4, 2012, 10:35 AM', 'world.ogv', '59 KB',
+      'OGG video'),
 
   unsupported: new test.TestEntryInfo(
-      test.EntryType.FILE, 'random.bin', 'unsupported.foo',
-      'application/x-foo', test.SharedOption.NONE, 'Jul 4, 2012, 10:36 AM',
-      'unsupported.foo', '8 KB', 'FOO file'),
+      test.EntryType.FILE, 'random.bin', 'unsupported.foo', 'application/x-foo',
+      test.SharedOption.NONE, 'Jul 4, 2012, 10:36 AM', 'unsupported.foo',
+      '8 KB', 'FOO file'),
 
   desktop: new test.TestEntryInfo(
       test.EntryType.FILE, 'image.png', 'My Desktop Background.png',
@@ -162,83 +162,75 @@ test.ENTRIES = {
   // An image file without an extension, to confirm that file type detection
   // using mime types works fine.
   image2: new test.TestEntryInfo(
-      test.EntryType.FILE, 'image2.png', 'image2',
-      'image/png', test.SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
-      'image2', '4 KB', 'PNG image'),
+      test.EntryType.FILE, 'image2.png', 'image2', 'image/png',
+      test.SharedOption.NONE, 'Jan 18, 2038, 1:02 AM', 'image2', '4 KB',
+      'PNG image'),
 
   image3: new test.TestEntryInfo(
-      test.EntryType.FILE, 'image3.jpg', 'image3.jpg',
-      'image/jpeg', test.SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
-      'image3.jpg', '3 KB', 'JPEG image'),
+      test.EntryType.FILE, 'image3.jpg', 'image3.jpg', 'image/jpeg',
+      test.SharedOption.NONE, 'Jan 18, 2038, 1:02 AM', 'image3.jpg', '3 KB',
+      'JPEG image'),
 
   // An ogg file without a mime type, to confirm that file type detection using
   // file extensions works fine.
   beautiful: new test.TestEntryInfo(
-      test.EntryType.FILE, 'music.ogg', 'Beautiful Song.ogg',
-      '', test.SharedOption.NONE, 'Nov 12, 2086, 12:00 PM',
-      'Beautiful Song.ogg', '14 KB', 'OGG audio'),
+      test.EntryType.FILE, 'music.ogg', 'Beautiful Song.ogg', '',
+      test.SharedOption.NONE, 'Nov 12, 2086, 12:00 PM', 'Beautiful Song.ogg',
+      '14 KB', 'OGG audio'),
 
   photos: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'photos',
-      '', test.SharedOption.NONE, 'Jan 1, 1980, 11:59 PM',
-      'photos', '--', 'Folder'),
+      test.EntryType.DIRECTORY, '', 'photos', '', test.SharedOption.NONE,
+      'Jan 1, 1980, 11:59 PM', 'photos', '--', 'Folder'),
 
   testDocument: new test.TestEntryInfo(
       test.EntryType.FILE, '', 'Test Document',
-      'application/vnd.google-apps.document',
-      test.SharedOption.NONE, 'Apr 10, 2013, 4:20 PM',
-      'Test Document.gdoc', '--', 'Google document'),
+      'application/vnd.google-apps.document', test.SharedOption.NONE,
+      'Apr 10, 2013, 4:20 PM', 'Test Document.gdoc', '--', 'Google document'),
 
   testSharedDocument: new test.TestEntryInfo(
       test.EntryType.FILE, '', 'Test Shared Document',
-      'application/vnd.google-apps.document',
-      test.SharedOption.SHARED, 'Mar 20, 2013, 10:40 PM',
-      'Test Shared Document.gdoc', '--', 'Google document'),
+      'application/vnd.google-apps.document', test.SharedOption.SHARED,
+      'Mar 20, 2013, 10:40 PM', 'Test Shared Document.gdoc', '--',
+      'Google document'),
 
   newlyAdded: new test.TestEntryInfo(
-      test.EntryType.FILE, 'music.ogg', 'newly added file.ogg',
-      'audio/ogg', test.SharedOption.NONE, 'Sep 4, 1998, 12:00 AM',
-      'newly added file.ogg', '14 KB', 'OGG audio'),
+      test.EntryType.FILE, 'music.ogg', 'newly added file.ogg', 'audio/ogg',
+      test.SharedOption.NONE, 'Sep 4, 1998, 12:00 AM', 'newly added file.ogg',
+      '14 KB', 'OGG audio'),
 
   directoryA: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'A',
-      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'A', '--', 'Folder'),
+      test.EntryType.DIRECTORY, '', 'A', '', test.SharedOption.NONE,
+      'Jan 1, 2000, 1:00 AM', 'A', '--', 'Folder'),
 
   directoryB: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'A/B',
-      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'B', '--', 'Folder'),
+      test.EntryType.DIRECTORY, '', 'A/B', '', test.SharedOption.NONE,
+      'Jan 1, 2000, 1:00 AM', 'B', '--', 'Folder'),
 
   directoryC: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'A/B/C',
-      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'C', '--', 'Folder'),
+      test.EntryType.DIRECTORY, '', 'A/B/C', '', test.SharedOption.NONE,
+      'Jan 1, 2000, 1:00 AM', 'C', '--', 'Folder'),
 
   directoryD: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'D',
-      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'D', '--', 'Folder'),
+      test.EntryType.DIRECTORY, '', 'D', '', test.SharedOption.NONE,
+      'Jan 1, 2000, 1:00 AM', 'D', '--', 'Folder'),
 
   directoryE: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'D/E',
-      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'E', '--', 'Folder'),
+      test.EntryType.DIRECTORY, '', 'D/E', '', test.SharedOption.NONE,
+      'Jan 1, 2000, 1:00 AM', 'E', '--', 'Folder'),
 
   directoryF: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'D/E/F',
-      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'F', '--', 'Folder'),
+      test.EntryType.DIRECTORY, '', 'D/E/F', '', test.SharedOption.NONE,
+      'Jan 1, 2000, 1:00 AM', 'F', '--', 'Folder'),
 
   zipArchive: new test.TestEntryInfo(
-      test.EntryType.FILE, 'archive.zip', 'archive.zip',
-      'application/x-zip', test.SharedOption.NONE, 'Jan 1, 2014, 1:00 AM',
-      'archive.zip', '533 bytes', 'Zip archive'),
+      test.EntryType.FILE, 'archive.zip', 'archive.zip', 'application/x-zip',
+      test.SharedOption.NONE, 'Jan 1, 2014, 1:00 AM', 'archive.zip',
+      '533 bytes', 'Zip archive'),
 
   hiddenFile: new test.TestEntryInfo(
-    test.EntryType.FILE, 'text.txt', '.hiddenfile.txt',
-    'text/plain', test.SharedOption.NONE, 'Sep 30, 2014, 3:30 PM',
-    '.hiddenfile.txt', '51 bytes', 'Plain text'),
+      test.EntryType.FILE, 'text.txt', '.hiddenfile.txt', 'text/plain',
+      test.SharedOption.NONE, 'Sep 30, 2014, 3:30 PM', '.hiddenfile.txt',
+      '51 bytes', 'Plain text'),
 
   mhtml: new test.TestEntryInfo(
       test.EntryType.FILE, 'text.txt', 'hello.mhtml', 'text/html',
