@@ -137,6 +137,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateStickyTranslation();
   ALWAYS_INLINE void UpdateTransform();
   ALWAYS_INLINE void UpdateTransformForNonRootSVG();
+  ALWAYS_INLINE bool EffectCanUseCurrentClipAsOutputClip() const;
   ALWAYS_INLINE void UpdateEffect();
   ALWAYS_INLINE void UpdateLinkHighlightEffect();
   ALWAYS_INLINE void UpdateFilter();
@@ -734,26 +735,35 @@ static bool NeedsEffect(const LayoutObject& object) {
 // An effect node can use the current clip as its output clip if the clip won't
 // end before the effect ends. Having explicit output clip can let the later
 // stages use more optimized code path.
-static bool EffectCanUseCurrentClipAsOutputClip(const LayoutObject& object) {
-  DCHECK(NeedsEffect(object));
+bool FragmentPaintPropertyTreeBuilder::EffectCanUseCurrentClipAsOutputClip()
+    const {
+  DCHECK(NeedsEffect(object_));
 
-  if (!object.HasLayer()) {
+  if (!object_.HasLayer()) {
     // An SVG object's effect never interleaves with clips.
-    DCHECK(object.IsSVG());
+    DCHECK(object_.IsSVG());
     return true;
   }
 
-  const auto* layer = ToLayoutBoxModelObject(object).Layer();
+  const auto* layer = ToLayoutBoxModelObject(object_).Layer();
   // Out-of-flow descendants not contained by this object may escape clips.
-  if (layer->HasNonContainedAbsolutePositionDescendant())
+  if (layer->HasNonContainedAbsolutePositionDescendant() &&
+      object_.ContainingBlockForAbsolutePosition()
+              ->FirstFragment()
+              .PostOverflowClip() != context_.current.clip)
     return false;
   if (layer->HasFixedPositionDescendant() &&
-      !object.CanContainFixedPositionObjects())
+      !object_.CanContainFixedPositionObjects() &&
+      object_.ContainingBlockForFixedPosition()
+              ->FirstFragment()
+              .PostOverflowClip() != context_.current.clip)
     return false;
+
   // Some descendants under a pagination container (e.g. composited objects
   // in SPv1 and column spanners) may escape fragment clips.
   if (layer->EnclosingPaginationLayer())
     return false;
+
   return true;
 }
 
@@ -790,7 +800,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         clip_path_clip = IntRect();
       }
 
-      const auto* output_clip = EffectCanUseCurrentClipAsOutputClip(object_)
+      const auto* output_clip = EffectCanUseCurrentClipAsOutputClip()
                                     ? context_.current.clip
                                     : nullptr;
 
