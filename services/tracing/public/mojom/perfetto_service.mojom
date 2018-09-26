@@ -96,10 +96,10 @@ interface ProducerClient {
     // TODO(oysteine): Make a TypeTrait for sending the full DataSourceConfig.
     // Called by Perfetto (via ProducerHost) to request a data source to start
     // logging.
-    CreateDataSourceInstance(uint64 id, DataSourceConfig data_source_config);
+    StartDataSource(uint64 id, DataSourceConfig data_source_config);
     // Requesting a data source to stop logging again, with the id previously
-    // sent in the CreateDataSourceInstance call.
-    TearDownDataSourceInstance(uint64 id) => ();
+    // sent in the StartDataSource call.
+    StopDataSource(uint64 id) => ();
     Flush(uint64 flush_request_id, array<uint64> data_source_ids);
 };
 
