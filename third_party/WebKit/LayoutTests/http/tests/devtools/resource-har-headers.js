@@ -25,9 +25,16 @@
     request.statusText = 'OK';
     request.resourceSize = 1000;
     request._transferSize = 539;  // 39 = header size at the end of the day
+    request.setPriority('VeryHigh');
   }
 
-  var testRequest = new SDK.NetworkRequest('testRequest', 'http://example.com/inspector-test.js', 1);
+  const fakeInitiator = {
+    type: 'parser',
+    url: 'http://example.com/inspector-test.js',
+    lineNumber: 117
+  };
+  var testRequest = new SDK.NetworkRequest(
+      'testRequest', 'http://example.com/inspector-test.js', 'http://example.com/fake-document-url', 1, 1, fakeInitiator);
   setRequestValues(testRequest);
   var headersText = testRequest.requestHeadersText();
   var requestResults = {

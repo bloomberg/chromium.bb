@@ -25,6 +25,12 @@ Resource:{
     }
 }
 HAR:{
+    _initiator : {
+        lineNumber : 117
+        type : "parser"
+        url : "http://example.com/inspector-test.js"
+    }
+    _priority : "VeryHigh"
     cache : {
     }
     request : {
