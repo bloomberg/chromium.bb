@@ -18,13 +18,7 @@ constexpr gfx::Transform kIdentity;
 
 }  // namespace
 
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DrawVrBrowsingMode DISABLED_DrawVrBrowsingMode
-#else
-#define MAYBE_DrawVrBrowsingMode DrawVrBrowsingMode
-#endif
-
-TEST_F(UiPixelTest, MAYBE_DrawVrBrowsingMode) {
+TEST_F(UiPixelTest, DrawVrBrowsingMode) {
   // Set up scene.
   UiInitialState ui_initial_state;
   ui_initial_state.in_web_vr = false;
