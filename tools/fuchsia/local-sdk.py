@@ -91,10 +91,6 @@ def main(args):
   shutil.rmtree(tempdir)
   os.chdir(original_dir)
 
-  subprocess.check_call([os.path.join(REPOSITORY_ROOT, 'third_party',
-                                      'fuchsia-sdk',
-                                      'gen_build_defs.py')])
-
   return 0
 
 
