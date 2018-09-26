@@ -4657,11 +4657,41 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
          REF_FRAMES * sizeof(WarpedMotionParams));
 }
 
-static void show_existing_frame_reset(AV1Decoder *const pbi,
-                                      int existing_frame_idx) {
+// Generate next_ref_frame_map.
+static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = pool->frame_bufs;
+
+  lock_buffer_pool(pool);
+  int ref_index = 0;
+  for (int mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
+    if (mask & 1) {
+      cm->next_ref_frame_map[ref_index] = cm->new_fb_idx;
+      ++frame_bufs[cm->new_fb_idx].ref_count;
+    } else {
+      cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
+    }
+    // Current thread holds the reference frame.
+    if (cm->ref_frame_map[ref_index] >= 0)
+      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
+    ++ref_index;
+  }
+
+  for (; ref_index < REF_FRAMES; ++ref_index) {
+    cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
+
+    // Current thread holds the reference frame.
+    if (cm->ref_frame_map[ref_index] >= 0)
+      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
+  }
+  unlock_buffer_pool(pool);
+  pbi->hold_ref_buf = 1;
+}
+
+static void show_existing_frame_reset(AV1Decoder *const pbi,
+                                      int existing_frame_idx) {
+  AV1_COMMON *const cm = &pbi->common;
 
   assert(cm->show_existing_frame);
 
@@ -4699,31 +4729,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
 
   cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 
-  // Generate next_ref_frame_map.
-  lock_buffer_pool(pool);
-  int ref_index = 0;
-  for (int mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
-    if (mask & 1) {
-      cm->next_ref_frame_map[ref_index] = cm->new_fb_idx;
-      ++frame_bufs[cm->new_fb_idx].ref_count;
-    } else {
-      cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
-    }
-    // Current thread holds the reference frame.
-    if (cm->ref_frame_map[ref_index] >= 0)
-      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
-    ++ref_index;
-  }
-
-  for (; ref_index < REF_FRAMES; ++ref_index) {
-    cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
-
-    // Current thread holds the reference frame.
-    if (cm->ref_frame_map[ref_index] >= 0)
-      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
-  }
-  unlock_buffer_pool(pool);
-  pbi->hold_ref_buf = 1;
+  generate_next_ref_frame_map(pbi);
 
   // Reload the adapted CDFs from when we originally coded this keyframe
   *cm->fc = cm->frame_contexts[existing_frame_idx];
@@ -5237,31 +5243,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        " state");
   }
 
-  // Generate next_ref_frame_map.
-  lock_buffer_pool(pool);
-  int ref_index = 0;
-  for (int mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
-    if (mask & 1) {
-      cm->next_ref_frame_map[ref_index] = cm->new_fb_idx;
-      ++frame_bufs[cm->new_fb_idx].ref_count;
-    } else {
-      cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
-    }
-    // Current thread holds the reference frame.
-    if (cm->ref_frame_map[ref_index] >= 0)
-      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
-    ++ref_index;
-  }
-
-  for (; ref_index < REF_FRAMES; ++ref_index) {
-    cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
-
-    // Current thread holds the reference frame.
-    if (cm->ref_frame_map[ref_index] >= 0)
-      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
-  }
-  unlock_buffer_pool(pool);
-  pbi->hold_ref_buf = 1;
+  generate_next_ref_frame_map(pbi);
 
   if (cm->allow_intrabc) {
     // Set parameters corresponding to no filtering.
