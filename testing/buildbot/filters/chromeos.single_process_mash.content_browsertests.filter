@@ -15,6 +15,81 @@
 -CompositedScrollingBrowserTest.Scroll3DTransformedScroller
 
 
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+# There are different timeouts due the same root cause above.
+
+# MainThreadFrameObserver::Wait() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-AccessibilityHitTestingBrowserTest.HitTestingWithPinchZoom
+-AutoscrollBrowserTest.AutoscrollDirectionChangeAfterFullyScrolled
+-AutoscrollBrowserTest.AutoscrollFlingGSBDeltaHints
+-AutoscrollBrowserTest.WheelScrollingWorksAfterAutoscrollCancel
+-BrowserSideFlingBrowserTest.TouchpadFling
+-BrowserSideFlingBrowserTest.TouchscreenFling
+-CompositorEventAckBrowserTest.MouseWheel
+-CompositorEventAckBrowserTest.PassiveTouchStartBlockingTouchEnd
+-CompositorEventAckBrowserTest.TouchStart
+-CompositorEventAckBrowserTest.TouchStartDuringFling
+-MainThreadEventQueueBrowserTest.MouseMove
+-MainThreadEventQueueBrowserTest.TouchMove
+-PointerLockBrowserTest.PointerLockEventRouting
+-PointerLockBrowserTest.PointerLockWheelEventRouting
+-PointerLockBrowserTest.PointerLockWidgetHidden
+-RenderWidgetHostViewBrowserTestBase.CompositorWorksWhenReusingRenderer
+-ScreenOrientationOOPIFBrowserTest.ScreenOrientation
+-ScrollLatencyBrowserTest.ScrollLatencyNotRecordedIfGSUIgnored
+-ScrollLatencyBrowserTest.SmoothWheelScroll
+-SitePerProcessBrowserTest.*
+-SitePerProcessGestureHitTestBrowserTest.*
+-SitePerProcessHitTestBrowserTest.*
+-SitePerProcessMouseWheelHitTestBrowserTest.*
+-TouchpadPinchBrowserTest.*
+-WheelEventListenerBrowserTest.DocumentMouseWheelEventListenersPassiveByDefault
+-WheelEventListenerBrowserTest.DocumentWheelEventListenersPassiveByDefault
+
+# DevToolsVideoConsumerTest::WaitUntilFrameReceived() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-DevToolsVideoConsumerTest.SetMinAndMaxFramesChangesDimensions
+
+# SurfaceHitTestReadyNotifier::WaitForSurfaceReady() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-SitePerProcessBrowserTouchActionTest.*
+-SitePerProcessEmulatedTouchBrowserTest.*
+-SitePerProcessHighDPIHitTestBrowserTest.*
+-SitePerProcessInternalsHitTestBrowserTest.*
+-SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.*
+-TouchAccessibilityBrowserTest.TouchExplorationInCrossSiteIframe
+
+# RenderWidgetHostInputEventRouter::IsViewInMap() never true.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-RenderWidgetHostTouchEmulatorBrowserTest.TouchEmulator
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedIframe/0
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedIframe/1
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedScrollMainframe/0
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedScrollMainframe/1
+-WebContentsViewAuraTest.ContentWindowClose
+
+# RenderWidgetHostViewBrowserTest::WaitForCopySourceReady() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-GLAndSoftwareCompositing/*
+
+# RenderFrameSubmissionObserver::Wait()/WaitForAnyFrameSubmission() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-TouchActionBrowserTest.*
+-TouchInputBrowserTest.*
+
+# RenderWidgetHostViewAura::CopyFromSurface crashes.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-SnapshotBrowserTest.SingleWindowTest
+-WebContentsViewAuraTest.ReplaceStateReloadPushState
+-WebContentsViewAuraTest.ScreenshotForSwappedOutRenderViews
+
+# WebContentsVideoCaptureDeviceBrowserTest::WaitForFrameWithColor() times out.
+# RWHVAura::CreateDelegatedFrameHostClient skipped. https://crbug.com/877496
+-WebContentsVideoCaptureDeviceBrowserTest.*
+-WebContentsVideoCaptureDeviceBrowserTestP.*
+
+
 # DCHECK(!event->IsPointerEvent()) fail. https://crbug.com/884342
 -MouseLatencyBrowserTest.CoalescedMouseWheelsCorrectlyTerminated
 
@@ -25,25 +100,24 @@
 # -SitePerProcessHitTestBrowserTest.CrossProcessMouseEnterAndLeaveTest/1
 # -SitePerProcessInternalsHitTestBrowserTest.NestedLocalNonFastScrollableDivCoordsAreLocal/3
 # -SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest/1
--SitePerProcessBrowserTouchActionTest.*
--SitePerProcessEmulatedTouchBrowserTest.*
--SitePerProcessGestureHitTestBrowserTest.*
--SitePerProcessHighDPIHitTestBrowserTest.*
--SitePerProcessHitTestBrowserTest.*
--SitePerProcessInternalsHitTestBrowserTest.*
--SitePerProcessMouseWheelHitTestBrowserTest.*
--SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.*
--TouchAccessibilityBrowserTest.*
--TouchSelectionForCrossProcessFramesTests/*
 
 
 # Hit test fails. https://crbug.com/884366
--PointerLockBrowserTest.PointerLockEventRouting
--PointerLockBrowserTest.PointerLockWheelEventRouting
--SitePerProcessHitTestBrowserTest.*
+# Leaving an example of the bug.
+# -SitePerProcessHitTestBrowserTest.HitTestNestedFrames/1
 -SitePerProcessHitTestDataGenerationBrowserTest.*
 
 
 # ShowWidgetMessageFilter::Wait() times out. https://crbug.com/884369
 # Leaving an example of the bug.
 # -SitePerProcessHitTestBrowserTest.PopupMenuTest/1
+
+
+# TestTouchSelectionControllerClientAura::Wait() times out.
+# https://crbug.com/884389
+-TouchSelectionControllerClientAuraScaleFactorTest.*
+-TouchSelectionControllerClientAuraTest.*
+
+
+# The test times out. https://crbug.com/884393
+-WebRtcCaptureFromElementBrowserTest.VerifyCanvasCaptureOffscreenCanvasFrames
