@@ -33,6 +33,9 @@ DownloadMimeTypeResult GetUmaResult(const std::string& mime_type) {
   if (mime_type == "application/vnd.android.package-archive")
     return DownloadMimeTypeResult::AndroidPackageArchive;
 
+  if (mime_type == "text/vcard")
+    return DownloadMimeTypeResult::VirtualContactFile;
+
   return DownloadMimeTypeResult::Other;
 }
 }  // namespace
