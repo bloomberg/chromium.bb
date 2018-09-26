@@ -55,7 +55,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public viz::GpuHostImpl::Delegate {
  public:
   enum GpuProcessKind {
-    GPU_PROCESS_KIND_UNSANDBOXED,
+    GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,  // Unsandboxed, no init GL bindings.
     GPU_PROCESS_KIND_SANDBOXED,
     GPU_PROCESS_KIND_COUNT
   };

@@ -579,7 +579,7 @@ void GpuProcessHost::CallOnIO(
     bool force_create,
     const base::Callback<void(GpuProcessHost*)>& callback) {
 #if !defined(OS_WIN)
-  DCHECK_NE(kind, GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED);
+  DCHECK_NE(kind, GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED_NO_GL);
 #endif
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
@@ -926,12 +926,14 @@ void GpuProcessHost::UpdateGpuInfo(
     const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu) {
-  auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
-  // Update GpuFeatureInfo first, because UpdateGpuInfo() will notify all
-  // listeners.
-  gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info,
-                                         gpu_feature_info_for_hardware_gpu);
-  gpu_data_manager->UpdateGpuInfo(gpu_info, gpu_info_for_hardware_gpu);
+  if (kind_ != GPU_PROCESS_KIND_UNSANDBOXED_NO_GL) {
+    auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
+    // Update GpuFeatureInfo first, because UpdateGpuInfo() will notify all
+    // listeners.
+    gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info,
+                                           gpu_feature_info_for_hardware_gpu);
+    gpu_data_manager->UpdateGpuInfo(gpu_info, gpu_info_for_hardware_gpu);
+  }
 }
 
 void GpuProcessHost::DidFailInitialize() {
@@ -1037,8 +1039,11 @@ bool GpuProcessHost::LaunchGpuProcess() {
   cmd_line->AppendArg(switches::kPrefetchArgumentGpu);
 #endif  // defined(OS_WIN)
 
-  if (kind_ == GPU_PROCESS_KIND_UNSANDBOXED)
+  if (kind_ == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL) {
     cmd_line->AppendSwitch(service_manager::switches::kDisableGpuSandbox);
+    cmd_line->AppendSwitchASCII(switches::kUseGL,
+                                gl::kGLImplementationDisabledName);
+  }
 
   // TODO(penghuang): Replace all GPU related switches with GpuPreferences.
   // https://crbug.com/590825
