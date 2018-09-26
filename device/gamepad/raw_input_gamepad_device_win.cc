@@ -109,8 +109,6 @@ void RawInputGamepadDeviceWin::UpdateGamepad(RAWINPUT* input) {
   DCHECK(hid_functions_->IsValid());
   NTSTATUS status;
 
-  report_id_++;
-
   // Query button state.
   if (buttons_length_ > 0) {
     // Clear the button state
@@ -291,9 +289,9 @@ bool RawInputGamepadDeviceWin::QueryHidInfo() {
       reinterpret_cast<RID_DEVICE_INFO*>(buffer.get());
 
   DCHECK_EQ(device_info->dwType, static_cast<DWORD>(RIM_TYPEHID));
-  vendor_id_ = device_info->hid.dwVendorId;
-  product_id_ = device_info->hid.dwProductId;
-  version_number_ = device_info->hid.dwVersionNumber;
+  vendor_id_ = static_cast<uint16_t>(device_info->hid.dwVendorId);
+  product_id_ = static_cast<uint16_t>(device_info->hid.dwProductId);
+  version_number_ = static_cast<uint16_t>(device_info->hid.dwVersionNumber);
   usage_ = device_info->hid.usUsage;
 
   return true;
