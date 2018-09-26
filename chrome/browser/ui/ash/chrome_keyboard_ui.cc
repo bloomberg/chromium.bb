@@ -112,7 +112,7 @@ void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
     if (view && window->Contains(view->GetNativeView())) {
       gfx::Rect view_bounds = view->GetViewBounds();
       gfx::Rect intersect = gfx::IntersectRects(
-          view_bounds, GetKeyboardWindow()->GetBoundsInScreen());
+          view_bounds, keyboard_controller()->GetWorkspaceOccludedBounds());
       int overlap = ShouldEnableInsets(window) ? intersect.height() : 0;
       if (overlap > 0 && overlap < view_bounds.height())
         view->SetInsets(gfx::Insets(0, 0, overlap, 0));
