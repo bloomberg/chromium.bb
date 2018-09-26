@@ -179,6 +179,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case Event::INVALID_STATUS_CHANGED:
     case Event::LIVE_REGION_CREATED:
     case Event::LIVE_REGION_NODE_CHANGED:
+    case Event::LOAD_START:
     case Event::MENU_ITEM_SELECTED:
     case Event::NAME_CHANGED:
     case Event::OTHER_ATTRIBUTE_CHANGED:

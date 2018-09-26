@@ -49,6 +49,7 @@ enum Event {
   kLiveRegionCreated,         // Implicit
   kLiveRegionChanged,         // Web
   kLoadComplete,              // Web
+  kLoadStart,                 // Web / AuraLinux
   kLocationChanged,           // Web
   kMediaStartedPlaying,       // Native / Automation
   kMediaStoppedPlaying,       // Native / Automation

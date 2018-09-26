@@ -54,6 +54,8 @@ const char* ToString(ax::mojom::Event event) {
       return "liveRegionChanged";
     case ax::mojom::Event::kLoadComplete:
       return "loadComplete";
+    case ax::mojom::Event::kLoadStart:
+      return "loadStart";
     case ax::mojom::Event::kLocationChanged:
       return "locationChanged";
     case ax::mojom::Event::kMediaStartedPlaying:
@@ -162,6 +164,8 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kLiveRegionChanged;
   if (0 == strcmp(event, "loadComplete"))
     return ax::mojom::Event::kLoadComplete;
+  if (0 == strcmp(event, "loadStart"))
+    return ax::mojom::Event::kLoadStart;
   if (0 == strcmp(event, "locationChanged"))
     return ax::mojom::Event::kLocationChanged;
   if (0 == strcmp(event, "mediaStartedPlaying"))
