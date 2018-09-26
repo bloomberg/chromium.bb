@@ -51,7 +51,7 @@ class MODULES_EXPORT MediaStreamRegistry final : public URLRegistry {
 
  private:
   MediaStreamRegistry();
-  PersistentHeapHashMap<String, Member<MediaStreamDescriptor>>
+  Persistent<HeapHashMap<String, Member<MediaStreamDescriptor>>>
       stream_descriptors_;
 };
 

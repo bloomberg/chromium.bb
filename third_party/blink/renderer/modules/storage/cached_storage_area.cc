@@ -96,7 +96,7 @@ String CachedStorageArea::GetItem(const String& key) {
 bool CachedStorageArea::SetItem(const String& key,
                                 const String& value,
                                 Source* source) {
-  DCHECK(areas_.Contains(source));
+  DCHECK(areas_->Contains(source));
 
   // A quick check to reject obviously overbudget items to avoid priming the
   // cache.
@@ -123,7 +123,7 @@ bool CachedStorageArea::SetItem(const String& key,
     optional_old_value = StringToUint8Vector(old_value, value_format);
 
   KURL page_url = source->GetPageUrl();
-  String source_id = areas_.at(source);
+  String source_id = areas_->at(source);
 
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
       source->CreateWebScopedVirtualTimePauser(
@@ -137,7 +137,7 @@ bool CachedStorageArea::SetItem(const String& key,
                             weak_factory_.GetWeakPtr(), key,
                             std::move(virtual_time_pauser)));
   if (IsSessionStorage() && old_value != value) {
-    for (const auto& area : areas_) {
+    for (const auto& area : *areas_) {
       if (area.key != source)
         area.key->EnqueueStorageEvent(key, old_value, value, page_url);
     }
@@ -146,7 +146,7 @@ bool CachedStorageArea::SetItem(const String& key,
 }
 
 void CachedStorageArea::RemoveItem(const String& key, Source* source) {
-  DCHECK(areas_.Contains(source));
+  DCHECK(areas_->Contains(source));
 
   EnsureLoaded();
   String old_value;
@@ -167,7 +167,7 @@ void CachedStorageArea::RemoveItem(const String& key, Source* source) {
     optional_old_value = StringToUint8Vector(old_value, value_format);
 
   KURL page_url = source->GetPageUrl();
-  String source_id = areas_.at(source);
+  String source_id = areas_->at(source);
 
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
       source->CreateWebScopedVirtualTimePauser(
@@ -180,7 +180,7 @@ void CachedStorageArea::RemoveItem(const String& key, Source* source) {
                                weak_factory_.GetWeakPtr(), key,
                                std::move(virtual_time_pauser)));
   if (IsSessionStorage()) {
-    for (const auto& area : areas_) {
+    for (const auto& area : *areas_) {
       if (area.key != source)
         area.key->EnqueueStorageEvent(key, old_value, String(), page_url);
     }
@@ -188,7 +188,7 @@ void CachedStorageArea::RemoveItem(const String& key, Source* source) {
 }
 
 void CachedStorageArea::Clear(Source* source) {
-  DCHECK(areas_.Contains(source));
+  DCHECK(areas_->Contains(source));
 
   bool already_empty = false;
   if (IsSessionStorage()) {
@@ -202,7 +202,7 @@ void CachedStorageArea::Clear(Source* source) {
   ignore_all_mutations_ = true;
 
   KURL page_url = source->GetPageUrl();
-  String source_id = areas_.at(source);
+  String source_id = areas_->at(source);
 
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
       source->CreateWebScopedVirtualTimePauser(
@@ -214,7 +214,7 @@ void CachedStorageArea::Clear(Source* source) {
       WTF::Bind(&CachedStorageArea::OnClearComplete, weak_factory_.GetWeakPtr(),
                 std::move(virtual_time_pauser)));
   if (IsSessionStorage() && !already_empty) {
-    for (const auto& area : areas_) {
+    for (const auto& area : *areas_) {
       if (area.key != source)
         area.key->EnqueueStorageEvent(String(), String(), String(), page_url);
     }
@@ -223,7 +223,7 @@ void CachedStorageArea::Clear(Source* source) {
 
 String CachedStorageArea::RegisterSource(Source* source) {
   String id = String::Number(base::RandUint64());
-  areas_.insert(source, id);
+  areas_->insert(source, id);
   return id;
 }
 
@@ -235,6 +235,7 @@ CachedStorageArea::CachedStorageArea(
       mojo_area_(area.get()),
       mojo_area_ptr_(std::move(area)),
       binding_(this),
+      areas_(new HeapHashMap<WeakMember<Source>, String>),
       weak_factory_(this) {
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
@@ -249,6 +250,7 @@ CachedStorageArea::CachedStorageArea(
       mojo_area_(area.get()),
       mojo_area_associated_ptr_(std::move(area)),
       binding_(this),
+      areas_(new HeapHashMap<WeakMember<Source>, String>),
       weak_factory_(this) {
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
@@ -287,7 +289,7 @@ void CachedStorageArea::KeyDeleted(const Vector<uint8_t>& key,
       Uint8VectorToString(key, FormatOption::kLocalStorageDetectFormat);
 
   bool from_local_area = false;
-  for (const auto& area : areas_) {
+  for (const auto& area : *areas_) {
     if (area.value == storage_area_id) {
       from_local_area = true;
     } else {
@@ -316,7 +318,7 @@ void CachedStorageArea::AllDeleted(const String& source) {
   UnpackSource(source, &page_url, &storage_area_id);
 
   bool from_local_area = false;
-  for (const auto& area : areas_) {
+  for (const auto& area : *areas_) {
     if (area.value == storage_area_id) {
       from_local_area = true;
     } else {
@@ -361,7 +363,7 @@ void CachedStorageArea::KeyAddedOrChanged(const Vector<uint8_t>& key,
       Uint8VectorToString(new_value, FormatOption::kLocalStorageDetectFormat);
 
   bool from_local_area = false;
-  for (const auto& area : areas_) {
+  for (const auto& area : *areas_) {
     if (area.value == storage_area_id) {
       from_local_area = true;
     } else {

@@ -67,9 +67,6 @@ class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebFrameWidgetImpl;
 
-using WebFrameWidgetsSet =
-    PersistentHeapHashSet<WeakMember<WebFrameWidgetImpl>>;
-
 class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                                  public PageWidgetEventHandler {
  public:

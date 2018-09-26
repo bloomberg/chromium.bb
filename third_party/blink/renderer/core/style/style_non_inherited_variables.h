@@ -45,7 +45,7 @@ class CORE_EXPORT StyleNonInheritedVariables {
 
   void SetRegisteredVariable(const AtomicString&, const CSSValue*);
   const CSSValue* RegisteredVariable(const AtomicString& name) const {
-    return registered_data_.at(name);
+    return registered_data_->at(name);
   }
 
   HashSet<AtomicString> GetCustomPropertyNames() const;
@@ -54,13 +54,13 @@ class CORE_EXPORT StyleNonInheritedVariables {
   void ClearNeedsResolution() { needs_resolution_ = false; }
 
  private:
-  StyleNonInheritedVariables() : needs_resolution_(false) {}
+  StyleNonInheritedVariables();
   StyleNonInheritedVariables(StyleNonInheritedVariables&);
 
   friend class CSSVariableResolver;
 
   HashMap<AtomicString, scoped_refptr<CSSVariableData>> data_;
-  PersistentHeapHashMap<AtomicString, Member<CSSValue>> registered_data_;
+  Persistent<HeapHashMap<AtomicString, Member<CSSValue>>> registered_data_;
   bool needs_resolution_;
 };
 

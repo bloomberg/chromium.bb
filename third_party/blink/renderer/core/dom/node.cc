@@ -2107,10 +2107,9 @@ void Node::RemoveAllEventListenersRecursively() {
 }
 
 using EventTargetDataMap =
-    PersistentHeapHashMap<WeakMember<Node>,
-                          TraceWrapperMember<EventTargetData>>;
+    HeapHashMap<WeakMember<Node>, TraceWrapperMember<EventTargetData>>;
 static EventTargetDataMap& GetEventTargetDataMap() {
-  DEFINE_STATIC_LOCAL(EventTargetDataMap, map, ());
+  DEFINE_STATIC_LOCAL(EventTargetDataMap, map, (new EventTargetDataMap));
   return map;
 }
 

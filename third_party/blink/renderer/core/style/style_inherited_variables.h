@@ -53,13 +53,13 @@ class CORE_EXPORT StyleInheritedVariables
   void ClearNeedsResolution() { needs_resolution_ = false; }
 
  private:
-  StyleInheritedVariables() : root_(nullptr), needs_resolution_(false) {}
+  StyleInheritedVariables();
   StyleInheritedVariables(StyleInheritedVariables& other);
 
   friend class CSSVariableResolver;
 
   HashMap<AtomicString, scoped_refptr<CSSVariableData>> data_;
-  PersistentHeapHashMap<AtomicString, Member<CSSValue>> registered_data_;
+  Persistent<HeapHashMap<AtomicString, Member<CSSValue>>> registered_data_;
   scoped_refptr<StyleInheritedVariables> root_;
   bool needs_resolution_;
 };

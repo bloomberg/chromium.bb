@@ -141,15 +141,9 @@ class PLATFORM_EXPORT HeapAllocator {
         size, IsEagerlyFinalizedType<Metadata>::value));
   }
 
-#if defined(OS_WIN) && defined(COMPILER_MSVC)
-  // MSVC eagerly instantiates the unused 'operator delete',
-  // provide a version that asserts and fails at run-time if
-  // used.
-  // Elsewhere we expect compilation to fail if 'delete' is
-  // attempted used and instantiated with a HeapAllocator-based
-  // object, as HeapAllocator::free is not provided.
+  // Compilers sometimes eagerly instantiates the unused 'operator delete', so
+  // we provide a version that asserts and fails at run-time if used.
   static void Free(void*) { NOTREACHED(); }
-#endif
 
   template <typename T>
   static void* NewArray(size_t bytes) {

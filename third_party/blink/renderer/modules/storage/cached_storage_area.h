@@ -158,7 +158,7 @@ class MODULES_EXPORT CachedStorageArea
       mojo_area_associated_ptr_;
   mojo::AssociatedBinding<mojom::blink::StorageAreaObserver> binding_;
 
-  PersistentHeapHashMap<WeakMember<Source>, String> areas_;
+  Persistent<HeapHashMap<WeakMember<Source>, String>> areas_;
 
   base::WeakPtrFactory<CachedStorageArea> weak_factory_;
 
