@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -31,6 +32,7 @@
 
 @interface FormInputAccessoryMediator ()<FormActivityObserver,
                                          CRWWebStateObserver,
+                                         KeyboardObserverHelperDelegate,
                                          WebStateListObserving>
 
 // The JS manager for interacting with the underlying form.
@@ -45,6 +47,9 @@
 // The form input handler. This is in charge of form navigation.
 @property(nonatomic, strong)
     FormInputAccessoryViewHandler* formInputAccessoryHandler;
+
+// The observer to determine when the keyboard dissapears and when it stays.
+@property(nonatomic, strong) KeyboardObserverHelper* keyboardObserver;
 
 // Last seen provider. Used to reenable suggestions.
 @property(nonatomic, weak) id<FormInputAccessoryViewProvider> lastProvider;
@@ -84,18 +89,6 @@
   BOOL _suggestionsHaveBeenShown;
 }
 
-@synthesize consumer = _consumer;
-@synthesize currentProvider = _currentProvider;
-@synthesize formInputAccessoryHandler = _formInputAccessoryHandler;
-@synthesize JSSuggestionManager = _JSSuggestionManager;
-@synthesize lastProvider = _lastProvider;
-@synthesize lastSuggestionView = _lastSuggestionView;
-@synthesize manualFillAccessoryViewController =
-    _manualFillAccessoryViewController;
-@synthesize providers = _providers;
-@synthesize suggestionsDisabled = _suggestionsDisabled;
-@synthesize webState = _webState;
-
 - (instancetype)initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
                     webStateList:(WebStateList*)webStateList {
   self = [super init];
@@ -131,6 +124,8 @@
                       selector:@selector(handleTextInputDidBeginEditing:)
                           name:UITextFieldTextDidBeginEditingNotification
                         object:nil];
+    _keyboardObserver = [[KeyboardObserverHelper alloc] init];
+    _keyboardObserver.delegate = self;
   }
   return self;
 }
@@ -158,6 +153,16 @@
     _webState = nullptr;
     _formActivityObserverBridge.reset();
   }
+}
+
+#pragma mark - KeyboardObserverHelperDelegate
+
+- (void)keyboardDidStayOnScreen {
+  [self.consumer removeAnimationsOnKeyboardView];
+}
+
+- (void)keyboardDidHide {
+  [self reset];
 }
 
 #pragma mark - FormActivityObserver
@@ -277,11 +282,11 @@
 // well as reenables suggestions.
 - (void)reset {
   [self.consumer restoreKeyboardView];
-  self.suggestionsDisabled = NO;
-
-  self.currentProvider = nil;
-
+  [self.manualFillAccessoryViewController reset];
   [self.formInputAccessoryHandler reset];
+
+  self.suggestionsDisabled = NO;
+  self.currentProvider = nil;
 }
 
 // Asynchronously queries the providers for an accessory view. Sends it to
