@@ -467,36 +467,3 @@ TEST_P(ToolbarActionsBarUnitTest, RuntimeHostsTooltip) {
   EXPECT_EQ("extension name\nHas access to this site",
             base::UTF16ToUTF8(controller->GetTooltip(web_contents)));
 }
-
-// ExtensionActionViewController::GetIcon() can potentially be called with a
-// null web contents if the tab strip model doesn't know of an active tab
-// (though it's a bit unclear when this is the case).
-// See https://crbug.com/888121
-TEST_P(ToolbarActionsBarUnitTest, TestGetIconWithNullWebContents) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
-  scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder("extension name")
-          .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
-          .AddPermission("https://example.com/")
-          .Build();
-
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile())->extension_service();
-  service->GrantPermissions(extension.get());
-  service->AddExtension(extension.get());
-
-  extensions::ScriptingPermissionsModifier permissions_modifier(profile(),
-                                                                extension);
-  permissions_modifier.SetWithholdHostPermissions(true);
-
-  // Try getting an icon with no active web contents. Nothing should crash, and
-  // a non-empty icon should be returned.
-  ToolbarActionViewController* controller =
-      toolbar_actions_bar()->GetActions()[0];
-  gfx::Image icon =
-      controller->GetIcon(nullptr, toolbar_actions_bar()->GetViewSize());
-  EXPECT_FALSE(icon.IsEmpty());
-}
