@@ -163,6 +163,11 @@ void AssistantWebView::OnWebContentsReady(
         embed_token.value());
     content_view_->AddObserver(this);
 
+    // The mask layer should always match the bounds of the content view. We
+    // enforce this prior to applying the mask to the |native_content_view_|
+    // layer to prevent a DCHECK failure in cc::Layer.
+    content_view_mask_->layer()->SetBounds(content_view_->GetLocalBounds());
+
     // Apply our layer mask which enforces corner radius.
     native_content_view_ =
         app_list::AnswerCardContentsRegistry::Get()->GetNativeView(
