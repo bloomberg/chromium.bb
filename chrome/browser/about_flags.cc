@@ -873,6 +873,17 @@ const FeatureEntry::FeatureVariation kAutofillPrimaryInfoStyleVariations[] = {
     {"(bold)", kAutofillPrimaryInfoStyleBold,
      base::size(kAutofillPrimaryInfoStyleBold), nullptr},
 };
+
+const FeatureEntry::FeatureParam kPedalSuggestionInSuggestion[] = {
+    {OmniboxFieldTrial::kPedalSuggestionModeParam, "in_suggestion"}};
+const FeatureEntry::FeatureParam kPedalSuggestionDedicated[] = {
+    {OmniboxFieldTrial::kPedalSuggestionModeParam, "dedicated"}};
+const FeatureEntry::FeatureVariation kPedalSuggestionVariations[] = {
+    {"In Suggestion (Side Button)", kPedalSuggestionInSuggestion,
+     base::size(kPedalSuggestionInSuggestion), nullptr},
+    {"Dedicated Suggestion Line", kPedalSuggestionDedicated,
+     base::size(kPedalSuggestionDedicated), nullptr},
+};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
@@ -3219,6 +3230,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTabSwitchSuggestionsName,
      flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
+    {"omnibox-pedal-suggestions",
+     flag_descriptions::kOmniboxPedalSuggestionsName,
+     flag_descriptions::kOmniboxPedalSuggestionsDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxPedalSuggestions,
+                                    kPedalSuggestionVariations,
+                                    "PedalSuggestionVariations")},
     {"enable-new-app-menu-icon", flag_descriptions::kEnableNewAppMenuIconName,
      flag_descriptions::kEnableNewAppMenuIconDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kAnimatedAppMenuIcon)},

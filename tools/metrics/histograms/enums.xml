@@ -28728,6 +28728,7 @@ from previous Chrome versions.
   <int value="-1535758690" label="AutoplayIgnoreWebAudio:disabled"/>
   <int value="-1532035450" label="DragTabsInTabletMode:disabled"/>
   <int value="-1532014193" label="disable-encryption-migration"/>
+  <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
   <int value="-1520855274" label="PWAFullCodeCache:disabled"/>
   <int value="-1517418368"
       label="AutofillUpstreamUpdatePromptExplanation:disabled"/>
@@ -29835,6 +29836,7 @@ from previous Chrome versions.
   <int value="664591021" label="EnableContinueReading:enabled"/>
   <int value="665409384"
       label="AutofillToolkitViewsCreditCardDialogsMac:enabled"/>
+  <int value="673588373" label="OmniboxPedalSuggestions:disabled"/>
   <int value="679931272" label="DcheckIsFatal:enabled"/>
   <int value="680070635"
       label="enable-fullscreen-handwriting-virtual-keyboard:disabled"/>

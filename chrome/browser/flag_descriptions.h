@@ -1686,6 +1686,9 @@ extern const char kOmniboxReverseAnswersDescription[];
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
+extern const char kOmniboxPedalSuggestionsName[];
+extern const char kOmniboxPedalSuggestionsDescription[];
+
 extern const char kOmniboxTailSuggestionsName[];
 extern const char kOmniboxTailSuggestionsDescription[];
 

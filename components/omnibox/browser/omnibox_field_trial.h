@@ -157,7 +157,7 @@ class OmniboxFieldTrial {
     EMPHASIZE_NEVER = 3
   };
 
-  // These are the discrete possibilities for pedal behavior.
+  // These are the discrete possibilities for Pedal behavior.
   enum class PedalSuggestionMode {
     NONE,
     IN_SUGGESTION,
