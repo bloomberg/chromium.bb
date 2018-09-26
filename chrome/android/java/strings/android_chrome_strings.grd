@@ -2831,6 +2831,15 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_NTP_EXPLORE_SITES_MORE" desc="Text on a button leading to a complete view of all categories for all popular websites">
         More categories
       </message>
+      <message name="IDS_EXPLORE_SITES_DEFAULT_CATEGORY_SPORTS" desc="The caption for a button that when clicked opens a UI in this tab that shows a list of websites with content related to sports. For example, soccer, cricket, football, running [CHAR-LIMIT=12]">
+        Sports
+      </message>
+      <message name="IDS_EXPLORE_SITES_DEFAULT_CATEGORY_SHOPPING" desc="The caption for a button that when clicked opens a UI in this tab that shows a list of websites with content related to shopping. [CHAR-LIMIT=12]">
+        Shopping
+      </message>
+      <message name="IDS_EXPLORE_SITES_DEFAULT_CATEGORY_COOKING" desc="The caption for a button that when clicked opens a UI in this tab that shows a list of websites with content related to food and cooking. [CHAR-LIMIT=12]">
+        Cooking
+      </message>
 
       <!-- Contextual suggestions strings -->
       <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time. The bubble points to a toolbar button that shows suggestions related to the webpage the user is currently viewing when pressed.">
