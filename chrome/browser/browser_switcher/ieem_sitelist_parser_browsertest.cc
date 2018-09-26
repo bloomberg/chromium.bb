@@ -146,4 +146,33 @@ IN_PROC_BROWSER_TEST_F(IeemSitelistParserTest, V1Full) {
                               std::move(expected_greylist), base::nullopt));
 }
 
+IN_PROC_BROWSER_TEST_F(IeemSitelistParserTest, V2Full) {
+  // Very subtle issue in the closing element for rules.
+  std::string xml =
+      "<site-list version=\"205\"><!-- File creation header -->"
+      "<created-by><tool>EnterpriseSitelistManager</tool><version>10240"
+      "</version><date-created>20150728.135021</date-created></created-by>"
+      "<!-- unknown tags --><unknown><test><mest>test</mest></test>"
+      "<!-- comments --></unknown><!-- no url attrib --><site><open-in>none"
+      "</open-in></site><!-- nested site list --><site-list><site "
+      "url=\"ignore!\"/></site-list><!-- nested site --><site "
+      "url=\"google.com\"><site url=\"nested ignore!\"></site></site><!-- "
+      "unknown tags in a site on multiple levels --><site url=\"good.site\">"
+      "<!-- nested comments --><somethings>klj<other some=\"none\"/>jkh"
+      "</somethings></site><!-- good sites --> <site url=\"www.cpandl.com\">"
+      "<compat-mode>IE8Enterprise</compat-mode><open-in>MSEdge</open-in></site>"
+      "<site url=\"contoso.com\"><compat-mode>default</compat-mode><open-in>"
+      "none</open-in></site><site url=\"relecloud.com\"/><site "
+      "url=\"relecloud.com/about\"><compat-mode>IE8Enterprise</compat-mode>"
+      "</site></site-list><!-- trailing gibberish <trailing><site "
+      "url=\"ignore after site list!\">  <compat-mode>IE8Enterprise\""
+      "</compat-mode></site><gibberish>Lorem ipsum sit...</gibberish>"
+      "</trailing>-->";
+  std::vector<std::string> expected_sitelist = {
+      "!google.com",  "!good.site",     "www.cpandl.com",
+      "!contoso.com", "!relecloud.com", "!relecloud.com/about",
+  };
+  TestParseXml(xml, ParsedXml(std::move(expected_sitelist), {}, base::nullopt));
+}
+
 }  // namespace browser_switcher

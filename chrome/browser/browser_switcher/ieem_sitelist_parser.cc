@@ -18,7 +18,6 @@ namespace {
 using namespace data_decoder;  // For |GetXmlElement...()| helper functions.
 
 const char kInvalidRootElement[] = "Invalid XML root element";
-const char kVersion2Unsupported[] = "IEEM Schema v2 is currently unsupported";
 
 const char kSchema1RulesElement[] = "rules";
 const char kSchema1EmieElement[] = "emie";
@@ -30,6 +29,9 @@ const char kSchema1DoNotTransitionAttribute[] = "doNotTransition";
 const char kSchema1TrueValue[] = "true";
 
 const char kSchema2SiteListElement[] = "site-list";
+const char kSchema2SiteElement[] = "site";
+const char kSchema2SiteUrlAttribute[] = "url";
+const char kSchema2SiteOpenInElement[] = "open-in";
 
 std::vector<const base::Value*> GetChildrenWithTag(const base::Value& node,
                                                    const std::string& tag) {
@@ -104,9 +106,25 @@ void ParseIeFileVersionOne(const base::Value& xml, ParsedXml* result) {
 // Parses Enterprise Mode schema 2 files according to:
 // https://technet.microsoft.com/itpro/internet-explorer/ie11-deploy-guide/enterprise-mode-schema-version-2-guidance
 void ParseIeFileVersionTwo(const base::Value& xml, ParsedXml* result) {
-  // TODO(crbug/884837): Implement v2 schema parsing.
   DCHECK(IsXmlElementNamed(xml, kSchema2SiteListElement));
-  result->error = kVersion2Unsupported;
+  // Iterate over <site> elements. Notably, skip <created-by> elements.
+  for (const base::Value* site_node :
+       GetChildrenWithTag(xml, kSchema2SiteElement)) {
+    std::string url =
+        GetXmlElementAttribute(*site_node, kSchema2SiteUrlAttribute);
+    base::TrimWhitespaceASCII(url, base::TRIM_ALL, &url);
+    if (url.empty())
+      continue;
+    // Read all sub-elements and keep the content of the <open-in> element.
+    std::string mode;
+    for (const base::Value* open_in_node :
+         GetChildrenWithTag(*site_node, kSchema2SiteOpenInElement)) {
+      GetXmlElementText(*open_in_node, &mode);
+    }
+    base::TrimWhitespaceASCII(mode, base::TRIM_ALL, &mode);
+    std::string prefix = (mode.empty() || mode == "none") ? "!" : "";
+    result->sitelist.push_back(prefix + url);
+  }
 }
 
 void RawXmlParsed(ParseIeemXmlCallback callback,
