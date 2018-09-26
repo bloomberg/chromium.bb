@@ -150,6 +150,9 @@
         "load:search:amazon": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },
+        "load:search:amazon:2018": {
+            "DEFAULT": "system_health_desktop_af501c33ad.wprgo"
+        },
         "load:search:baidu": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },
