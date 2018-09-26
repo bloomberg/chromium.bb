@@ -9,7 +9,6 @@
 #include "base/optional.h"
 #include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace blink {
 class WebGestureEvent;
