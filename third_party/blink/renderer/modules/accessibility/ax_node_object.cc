@@ -1885,6 +1885,23 @@ String AXNodeObject::TextAlternative(bool recursive,
   return String();
 }
 
+static bool ShouldInsertSpaceBetweenObjectsIfNeeded(AXObject* previous,
+                                                    AXObject* next) {
+  // If we're going between two layoutObjects that are in separate
+  // LayoutBoxes, add whitespace if it wasn't there already. Intuitively if
+  // you have <span>Hello</span><span>World</span>, those are part of the same
+  // LayoutBox so we should return "HelloWorld", but given
+  // <div>Hello</div><div>World</div> the strings are in separate boxes so we
+  // should return "Hello World".
+  if (!IsInSameNonInlineBlockFlow(next->GetLayoutObject(),
+                                  previous->GetLayoutObject()))
+    return true;
+
+  // According to the AccName spec, we need to separate controls from text nodes
+  // using a space.
+  return previous->IsControl() || next->IsControl();
+}
+
 String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
                                          bool recursive) const {
   if (!CanHaveChildren() && recursive)
@@ -1913,24 +1930,18 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
     if (child->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
       continue;
 
-    // If we're going between two layoutObjects that are in separate
-    // LayoutBoxes, add whitespace if it wasn't there already. Intuitively if
-    // you have <span>Hello</span><span>World</span>, those are part of the same
-    // LayoutBox so we should return "HelloWorld", but given
-    // <div>Hello</div><div>World</div> the strings are in separate boxes so we
-    // should return "Hello World".
-    if (previous && accumulated_text.length() &&
-        !IsHTMLSpace(accumulated_text[accumulated_text.length() - 1])) {
-      if (!IsInSameNonInlineBlockFlow(child->GetLayoutObject(),
-                                      previous->GetLayoutObject()))
-        accumulated_text.Append(' ');
-    }
-
     String result;
     if (child->IsPresentational())
       result = child->TextFromDescendants(visited, true);
     else
       result = RecursiveTextAlternative(*child, false, visited);
+
+    if (!result.IsEmpty() && previous && accumulated_text.length() &&
+        !IsHTMLSpace(accumulated_text[accumulated_text.length() - 1])) {
+      if (ShouldInsertSpaceBetweenObjectsIfNeeded(previous, child))
+        accumulated_text.Append(' ');
+    }
+
     accumulated_text.Append(result);
     previous = child;
   }
