@@ -39,16 +39,9 @@ template("fuchsia_sdk_fidl_pkg") {
              "SDK packages with namespace must specify namespace_path")
       namespace = invoker.namespace
       namespace_path = invoker.namespace_path
-
-      _library_name = "${namespace}.${_package_name}"
-    } else {
-      _library_name = _package_name
     }
 
-    sources = []
-    foreach(file, invoker.sources) {
-      sources += [ "sdk/fidl/${_library_name}/${file}" ]
-    }
+    sources = invoker.sources
   }
 }
 

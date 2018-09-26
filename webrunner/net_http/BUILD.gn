@@ -21,8 +21,8 @@ executable("http_service") {
   deps = [
     "//base:base",
     "//net:net",
-    "//third_party/fuchsia-sdk:oldhttp",
-    "//third_party/fuchsia-sdk:sys",
+    "//third_party/fuchsia-sdk/sdk:oldhttp",
+    "//third_party/fuchsia-sdk/sdk:sys",
   ]
 }
 

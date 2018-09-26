@@ -499,7 +499,7 @@ component("skia") {
       "ext/fontmgr_fuchsia.h",
     ]
     deps += [
-      "//third_party/fuchsia-sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:fonts",
       "//third_party/icu:icuuc",
     ]
   }
@@ -823,7 +823,7 @@ test("skia_unittests") {
   if (is_fuchsia) {
     sources += [ "ext/fontmgr_fuchsia_unittest.cc" ]
     deps += [
-      "//third_party/fuchsia-sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:fonts",
       "//third_party/test_fonts",
     ]
     data_deps = [
