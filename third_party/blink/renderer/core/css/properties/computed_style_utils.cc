@@ -514,18 +514,23 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
     const CSSProperty& property,
     const LayoutObject* layout_object) {
   std::pair<const Length*, const Length*> positions;
+  bool is_horizontal_property;
   switch (property.PropertyID()) {
     case CSSPropertyLeft:
       positions = std::make_pair(&style.Left(), &style.Right());
+      is_horizontal_property = true;
       break;
     case CSSPropertyRight:
       positions = std::make_pair(&style.Right(), &style.Left());
+      is_horizontal_property = true;
       break;
     case CSSPropertyTop:
       positions = std::make_pair(&style.Top(), &style.Bottom());
+      is_horizontal_property = false;
       break;
     case CSSPropertyBottom:
       positions = std::make_pair(&style.Bottom(), &style.Top());
+      is_horizontal_property = false;
       break;
     default:
       NOTREACHED();
@@ -539,8 +544,8 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
   if (offset.IsPercentOrCalc() && layout_object && layout_object->IsBox() &&
       layout_object->IsPositioned()) {
     LayoutUnit containing_block_size =
-        (property.IDEquals(CSSPropertyLeft) ||
-         property.IDEquals(CSSPropertyRight))
+        is_horizontal_property ==
+                layout_object->ContainingBlock()->IsHorizontalWritingMode()
             ? ToLayoutBox(layout_object)
                   ->ContainingBlockLogicalWidthForContent()
             : ToLayoutBox(layout_object)
@@ -567,8 +572,8 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
       if (opposite.IsPercentOrCalc()) {
         if (layout_object->IsBox()) {
           LayoutUnit containing_block_size =
-              (property.IDEquals(CSSPropertyLeft) ||
-               property.IDEquals(CSSPropertyRight))
+              is_horizontal_property == layout_object->ContainingBlock()
+                                            ->IsHorizontalWritingMode()
                   ? ToLayoutBox(layout_object)
                         ->ContainingBlockLogicalWidthForContent()
                   : ToLayoutBox(layout_object)

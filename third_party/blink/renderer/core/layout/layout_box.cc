@@ -2112,7 +2112,8 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForGetComputedStyle() const {
     return ContainingBlockLogicalHeightForContent(kExcludeMarginBorderPadding);
 
   LayoutBoxModelObject* cb = ToLayoutBoxModelObject(Container());
-  LayoutUnit height = ContainingBlockLogicalHeightForPositioned(cb);
+  LayoutUnit height = ContainingBlockLogicalHeightForPositioned(
+      cb, /* check_for_perpendicular_writing_mode */ false);
   if (IsInFlowPositioned())
     height -= cb->PaddingLogicalHeight();
   return height;
