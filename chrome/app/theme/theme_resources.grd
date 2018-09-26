@@ -154,18 +154,12 @@
         <structure type="chrome_scaled_image" name="IDR_HIDE_PASSWORD" file="cros/hide_password.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_HIDE_PASSWORD_HOVER" file="common/hide_password_hover.png" />
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_ACCOUNT_BUTTON_ERROR" file="legacy/avatar_menu_auth_error.png" />
-      </if>
       <if expr="not is_android and not chromeos">
         <!-- User Manager tutorial -->
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_YOUR_CHROME" file="common/user_manager_tutorial/your_chrome.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_GUESTS" file="common/user_manager_tutorial/guests.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_FRIENDS" file="common/user_manager_tutorial/family_and_friends.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_COMPLETE" file="common/user_manager_tutorial/complete.png" />
-      </if>
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_INFO" file="legacy/info_small.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_3D_BLOCKED" file="common/infobar_3d_blocked.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT" file="common/input_alert.png" />
@@ -203,10 +197,6 @@
       <if expr="not is_android">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CALCULATOR_ROUND" file="chromium/calculator_round_24.png" />
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TRANSLATION_ROUND" file="chromium/translate_round_32.png" />
-      </if>
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_OVERLAY_DROP_SHADOW" file="mac/overlay_drop_shadow.png" />
-        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_KEYWORD_HINT_TAB" file="mac/omnibox_keyword_hint_tab.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="common/prerender_succeed_icon.png" />
@@ -357,9 +347,6 @@
         <structure type="chrome_scaled_image" name="IDR_RESET_WARNING" file="cros/reset_warning.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_RESTORE_BUTTON_MASK" file="common/restore_button_mask.png" />
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_SAFEBROWSING_WARNING" file="legacy/safebrowsing_warning.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_SCREEN_CAPTURE_NOTIFICATION_GRIP" file="screen_capture_notification_grip.png" />
       <structure type="chrome_scaled_image" name="IDR_SCREENSHOT_NOTIFICATION_ICON" file="common/notification_screenshot_icon.png" />
       <if expr="chromeos">
@@ -379,11 +366,6 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_PLACEHOLDER" file="common/supervised_user_placeholder.png" />
       <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_CENTER" file="mac/tab_active_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="mac/tab_active_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="mac/tab_active_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="mac/tab_alpha_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="mac/tab_alpha_right.png" />
         <structure type="chrome_scaled_image" name="IDR_SWIPE_BACK" file="mac/back_large.png" />
         <structure type="chrome_scaled_image" name="IDR_SWIPE_FORWARD" file="mac/forward_large.png" />
       </if>
@@ -393,9 +375,11 @@
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1" file="common/close_1.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1_H" file="common/close_1_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1_P" file="common/close_1_pressed.png" />
-      <!-- Used by Mac OSX, and Chrome OS login pages. -->
-      <structure type="chrome_scaled_image" name="IDR_TAB_RECORDING_INDICATOR" file="legacy/tab_recording_indicator.png" />
+      <!-- Used by Chrome OS login page. -->
+      <if expr="chromeos">
+        <structure type="chrome_scaled_image" name="IDR_TAB_RECORDING_INDICATOR" file="legacy/tab_recording_indicator.png" />
 
+      </if>
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_UP" file="tab_drop_up.png" />
       <if expr="chromeos">
@@ -436,12 +420,6 @@
       </if>
       <!-- Instant Extended API toolbar background is common for all platforms. -->
       <structure type="chrome_scaled_image" name="IDR_THEME_WINDOW_CONTROL_BACKGROUND" file="notused.png" />
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="mac/toolbar_shade_top.png" />
-      </if>
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_TRANSLATE" file="legacy/translate.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_TRANSLATE_BUBBLE_ICON" file="common/translate_bubble_icon.png" />
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_CAPTURE" file="cros/snapshot_wide.png" />
