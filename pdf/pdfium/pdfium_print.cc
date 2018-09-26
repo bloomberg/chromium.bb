@@ -279,13 +279,13 @@ void PDFiumPrint::FitContentsToPrintableArea(FPDF_DOCUMENT doc,
   FitContentsToPrintableAreaIfRequired(doc, 1.0, print_settings);
 }
 
-pp::Buffer_Dev PDFiumPrint::PrintPagesAsPdf(
+std::vector<uint8_t> PDFiumPrint::PrintPagesAsPdf(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings,
     const PP_PdfPrintSettings_Dev& pdf_print_settings,
     bool raster) {
-  pp::Buffer_Dev buffer;
+  std::vector<uint8_t> buffer;
   ScopedFPDFDocument output_doc = CreatePrintPdf(
       page_ranges, page_range_count, print_settings, pdf_print_settings);
   if (raster)
@@ -371,13 +371,8 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
       ConvertUnit(source_page_height, kPointsPerInch, print_settings.dpi);
 
   pp::Size bitmap_size(width_in_pixels, height_in_pixels);
-  pp::ImageData image =
-      pp::ImageData(engine_->GetPluginInstance(),
-                    PP_IMAGEDATAFORMAT_BGRA_PREMUL, bitmap_size, false);
-
-  ScopedFPDFBitmap bitmap(
-      FPDFBitmap_CreateEx(bitmap_size.width(), bitmap_size.height(),
-                          FPDFBitmap_BGRx, image.data(), image.stride()));
+  ScopedFPDFBitmap bitmap(FPDFBitmap_Create(
+      bitmap_size.width(), bitmap_size.height(), /*alpha=*/false));
 
   // Clear the bitmap
   FPDFBitmap_FillRect(bitmap.get(), 0, 0, bitmap_size.width(),
@@ -450,17 +445,14 @@ bool PDFiumPrint::FlattenPrintData(FPDF_DOCUMENT doc) const {
   return true;
 }
 
-pp::Buffer_Dev PDFiumPrint::ConvertDocToBuffer(ScopedFPDFDocument doc) const {
+std::vector<uint8_t> PDFiumPrint::ConvertDocToBuffer(
+    ScopedFPDFDocument doc) const {
   DCHECK(doc);
 
-  pp::Buffer_Dev buffer;
+  std::vector<uint8_t> buffer;
   PDFiumMemBufferFileWrite output_file_write;
-  if (FPDF_SaveAsCopy(doc.get(), &output_file_write, 0)) {
-    size_t size = output_file_write.size();
-    buffer = pp::Buffer_Dev(engine_->GetPluginInstance(), size);
-    if (!buffer.is_null())
-      memcpy(buffer.data(), output_file_write.buffer().data(), size);
-  }
+  if (FPDF_SaveAsCopy(doc.get(), &output_file_write, 0))
+    buffer = output_file_write.TakeBuffer();
   return buffer;
 }
 

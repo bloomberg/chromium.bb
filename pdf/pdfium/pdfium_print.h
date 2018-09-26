@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ppapi/cpp/dev/buffer_dev.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdfview.h"
 
@@ -47,7 +46,7 @@ class PDFiumPrint {
                                          const gfx::Size& page_size,
                                          const gfx::Rect& printable_area);
 
-  pp::Buffer_Dev PrintPagesAsPdf(
+  std::vector<uint8_t> PrintPagesAsPdf(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count,
       const PP_PrintSettings_Dev& print_settings,
@@ -70,7 +69,7 @@ class PDFiumPrint {
       const PP_PrintSettings_Dev& print_settings);
 
   bool FlattenPrintData(FPDF_DOCUMENT doc) const;
-  pp::Buffer_Dev ConvertDocToBuffer(ScopedFPDFDocument doc) const;
+  std::vector<uint8_t> ConvertDocToBuffer(ScopedFPDFDocument doc) const;
 
   PDFiumEngine* const engine_;
 
