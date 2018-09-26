@@ -657,8 +657,7 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent) {
                                         : display_work_area_bounds.bottom();
   gfx::Rect app_list_overlay_view_bounds(
       display_nearest_view.bounds().x(), overlay_view_bounds_y,
-      display_nearest_view.bounds().width(),
-      display_nearest_view.bounds().height());
+      parent->bounds().width(), display_nearest_view.bounds().height());
 
   // The app list container fills the screen, so convert to local coordinates.
   gfx::Rect local_bounds = app_list_overlay_view_bounds;

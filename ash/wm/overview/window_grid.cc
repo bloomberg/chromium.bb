@@ -1143,7 +1143,10 @@ void WindowGrid::InitShieldWidget() {
       SK_ColorTRANSPARENT, initial_opacity, /*parent=*/nullptr,
       /*stack_on_top=*/true);
   aura::Window* widget_window = shield_widget_->GetNativeWindow();
-  const gfx::Rect bounds = widget_window->parent()->bounds();
+  aura::Window* parent_window = widget_window->parent();
+  const gfx::Rect bounds = ash::screen_util::SnapBoundsToDisplayEdge(
+      parent_window->bounds(), parent_window);
+  parent_window->SetBounds(bounds);
   widget_window->SetBounds(bounds);
   widget_window->SetName("OverviewModeShield");
 
