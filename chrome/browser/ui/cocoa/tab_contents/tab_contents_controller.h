@@ -11,8 +11,6 @@
 
 #include "base/mac/scoped_nsobject.h"
 
-class FullscreenObserver;
-
 namespace content {
 class WebContents;
 }
@@ -35,9 +33,6 @@ class WebContents;
 @interface TabContentsController : NSViewController {
  @private
    content::WebContents* contents_;  // weak
-   // When |fullscreenObserver_| is not-NULL, TabContentsController monitors for
-   // and auto-embeds fullscreen widgets as a subview.
-   std::unique_ptr<FullscreenObserver> fullscreenObserver_;
    // Set to true while TabContentsController is embedding a fullscreen widget
    // view as a subview instead of the normal WebContentsView render view.
    // Note: This will be false in the case of non-Flash fullscreen.
@@ -45,13 +40,6 @@ class WebContents;
 
    // Set to true if the window is a popup.
    BOOL isPopup_;
-
-   // Reference to the FullscreenPlaceholderView displayed in the main window
-   // for the tab when our WebContentsView is in the SeparateFullscreenWindow.
-   NSView* fullscreenPlaceholderView_;
-   // Reference to the fullscreen window created to display the WebContents
-   // view separately.
-   NSWindow* separateFullscreenWindow_;
 }
 @property(readonly, nonatomic) content::WebContents* webContents;
 

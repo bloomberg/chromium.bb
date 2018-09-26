@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#import "chrome/browser/ui/cocoa/browser/exclusive_access_controller_views.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
@@ -153,7 +152,6 @@ bool BrowserWindowCocoa::IsVisible() const {
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect real_bounds = [controller_ enforceMinWindowSize:bounds];
 
-  GetExclusiveAccessContext()->ExitFullscreen();
   NSRect cocoa_bounds = NSMakeRect(real_bounds.x(), 0,
                                    real_bounds.width(),
                                    real_bounds.height());
@@ -405,7 +403,7 @@ bool BrowserWindowCocoa::ShouldHideUIForFullscreen() const {
 }
 
 bool BrowserWindowCocoa::IsFullscreen() const {
-  return [controller_ isInAnyFullscreenMode];
+  return false;
 }
 
 bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
@@ -577,8 +575,6 @@ void BrowserWindowCocoa::HandleKeyboardEvent(
   // A priority system for exiting extension fullscreen when there is a
   // conflict is being experimented. See Issue 536047.
   if (event.windows_key_code == ui::VKEY_ESCAPE) {
-    [controller_ exitExtensionFullscreenIfPossible];
-
     // This is a press of an escape key with no modifiers except potentially
     // shift. This will not be handled by the performKeyEquivalent: path, so
     // handle it directly here.
@@ -666,7 +662,7 @@ void BrowserWindowCocoa::ExecuteExtensionCommand(
 }
 
 ExclusiveAccessContext* BrowserWindowCocoa::GetExclusiveAccessContext() {
-  return [controller_ exclusiveAccessController];
+  return nullptr;
 }
 
 void BrowserWindowCocoa::ShowImeWarningBubble(

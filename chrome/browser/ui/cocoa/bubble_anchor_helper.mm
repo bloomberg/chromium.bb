@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/bubble_anchor_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 
@@ -22,8 +21,5 @@ bool HasVisibleLocationBarForBrowser(Browser* browser) {
   if (!browser->exclusive_access_manager()->context()->IsFullscreen())
     return true;
 
-  // Return false only if the toolbar is fully hidden.
-  BrowserWindowController* bwc = [BrowserWindowController
-      browserWindowControllerForWindow:browser->window()->GetNativeWindow()];
-  return [[bwc fullscreenToolbarController] toolbarFraction] != 0;
+  return false;
 }

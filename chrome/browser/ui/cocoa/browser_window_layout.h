@@ -7,8 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
-
 namespace chrome {
 
 // The height of the tab strip.
@@ -29,9 +27,6 @@ struct LayoutParameters {
   // Whether the controller is in any fullscreen mode. This parameter should be
   // NO if the controller is in the process of entering fullscreen.
   BOOL inAnyFullscreen;
-  // The fullscreen toolbar style. See fullscreen_toolbar_controller.h for more
-  // details.
-  FullscreenToolbarStyle toolbarStyle;
   // The minY of the AppKit Menu Bar, relative to the top of the screen. Ranges
   // from 0 to -22. Only relevant in fullscreen mode.
   CGFloat menubarOffset;
@@ -148,7 +143,6 @@ struct LayoutOutput {
 // Whether the controller is in any fullscreen mode. |inAnyFullscreen| should
 // be NO if the controller is in the process of entering fullscreen.
 - (void)setInAnyFullscreen:(BOOL)inAnyFullscreen;
-- (void)setFullscreenToolbarStyle:(FullscreenToolbarStyle)toolbarStyle;
 - (void)setFullscreenMenubarOffset:(CGFloat)menubarOffset;
 - (void)setFullscreenToolbarFraction:(CGFloat)toolbarFraction;
 

@@ -40,27 +40,20 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
-#import "chrome/browser/ui/cocoa/browser/exclusive_access_controller_views.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
-#import "chrome/browser/ui/cocoa/browser_window_fullscreen_transition.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
-#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_cocoa.h"
-#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
-#include "chrome/browser/ui/cocoa/fullscreen_placeholder_view.h"
-#import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -265,10 +258,6 @@ void ClearCommandHandler(NSWindow* window) {
       windowRect.set_origin(WindowSizer::GetDefaultPopupOrigin(size));
     }
 
-    // Creates the manager for fullscreen and fullscreen bubbles.
-    exclusiveAccessController_.reset(
-        new ExclusiveAccessController(self, browser_.get()));
-
     // Size and position the window.  Note that it is not yet onscreen.  Popup
     // windows may get resized later on in this function, once the actual size
     // of the toolbar/tabstrip is known.
@@ -282,8 +271,6 @@ void ClearCommandHandler(NSWindow* window) {
 
     locationBar_.reset(new LocationBarViewMac(
         browser_->command_controller(), browser_->profile(), browser_.get()));
-
-    [self updateFullscreenCollectionBehavior];
 
     [self layoutSubviews];
 
@@ -327,18 +314,6 @@ void ClearCommandHandler(NSWindow* window) {
 
   DCHECK([self window]);
   ClearCommandHandler([self window]);
-
-  // Explicitly release |fullscreenToolbarController_| here, as it may call
-  // back to this BWC in |-dealloc|.
-  [fullscreenToolbarController_ exitFullscreenMode];
-  fullscreenToolbarController_.reset();
-
-  // Explicitly release |fullscreenTransition_| here since it may call back to
-  // this BWC in |-dealloc|. Reset the fullscreen variables.
-  if (fullscreenTransition_) {
-    [fullscreenTransition_ browserWillBeDestroyed];
-    [self resetCustomAppKitFullscreenVariables];
-  }
 
   // Under certain testing configurations we may not actually own the browser.
   if (ownsBrowser_ == NO)
@@ -387,10 +362,6 @@ void ClearCommandHandler(NSWindow* window) {
 
 - (LocationBarViewMac*)locationBarBridge {
   return locationBar_.get();
-}
-
-- (NSView*)floatingBarBackingView {
-  return floatingBarBackingView_;
 }
 
 - (OverlayableContentsController*)overlayableContentsController {
@@ -654,7 +625,7 @@ void ClearCommandHandler(NSWindow* window) {
 - (BOOL)adjustWindowHeightBy:(CGFloat)deltaH {
   // By not adjusting the window height when initializing, we can ensure that
   // the window opens with the same size that was saved on close.
-  if (initializing_ || [self isInAnyFullscreenMode] || deltaH == 0)
+  if (initializing_ || deltaH == 0)
     return NO;
 
   NSWindow* window = [self window];
@@ -820,10 +791,6 @@ void ClearCommandHandler(NSWindow* window) {
 
 - (void)onActiveTabChanged:(content::WebContents*)oldContents
                         to:(content::WebContents*)newContents {
-  if ([self isInAnyFullscreenMode]) {
-    [[self fullscreenToolbarController] revealToolbarForWebContents:newContents
-                                                       inForeground:YES];
-  }
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
@@ -873,30 +840,6 @@ void ClearCommandHandler(NSWindow* window) {
 }
 
 - (void)firstResponderUpdated:(NSResponder*)responder {
-  if (![self isInAppKitFullscreen] ||
-      [fullscreenToolbarController_ toolbarStyle] ==
-          FullscreenToolbarStyle::TOOLBAR_NONE) {
-    return;
-  }
-
-  if (!responder) {
-    [self releaseToolbarVisibilityForOwner:self withAnimation:YES];
-    return;
-  }
-
-  if (![responder isKindOfClass:[NSView class]])
-    return;
-
-  // If the view is in the download shelf or the tab content area, don't
-  // lock the toolbar.
-  NSView* view = base::mac::ObjCCastStrict<NSView>(responder);
-  if (![view isDescendantOf:[[self window] contentView]] ||
-      [view isDescendantOf:[self tabContentArea]]) {
-    [self releaseToolbarVisibilityForOwner:self withAnimation:YES];
-    return;
-  }
-
-  [self lockToolbarVisibilityForOwner:self withAnimation:YES];
 }
 
 // Make the location bar the first responder, if possible.
@@ -919,22 +862,6 @@ void ClearCommandHandler(NSWindow* window) {
 }
 
 - (void)detachedWindowEnterFullscreenIfNeeded:(TabWindowController*)source {
-  // Ensure that this is only called when the tab is detached into its own
-  // window (in which the overlay window will be present).
-  DCHECK([self overlayWindow]);
-
-  if (([[source window] styleMask] & NSFullScreenWindowMask)
-      == NSFullScreenWindowMask) {
-    [self updateFullscreenCollectionBehavior];
-
-    // Since the detached window in fullscreen will have the size of the
-    // screen, it will set |savedRegularWindowFrame_| to the screen size after
-    // it enters fullscreen. Make sure that we have the correct value for the
-    // |savedRegularWindowFrame_|.
-    NSRect regularWindowFrame = savedRegularWindowFrame_;
-    [[self window] toggleFullScreen:nil];
-    savedRegularWindowFrame_ = regularWindowFrame;
-  }
 }
 
 - (void)insertPlaceholderForTab:(TabViewCocoa*)tab frame:(NSRect)frame {
@@ -956,7 +883,7 @@ void ClearCommandHandler(NSWindow* window) {
 }
 
 - (BOOL)windowMovementAllowed {
-  return ![self isInAnyFullscreenMode] || [self overlayWindow];
+  return YES;
 }
 
 - (void)showNewTabButton:(BOOL)show {
@@ -968,13 +895,6 @@ void ClearCommandHandler(NSWindow* window) {
 
 - (BOOL)isBookmarkBarAnimating {
   return NO;
-}
-
-- (NSWindow*)createFullscreenWindow {
-  NSWindow* window = [[[FullscreenWindow alloc]
-      initForScreen:[[self window] screen]] autorelease];
-  SetUpBrowserWindowCommandHandler(window);
-  return window;
 }
 
 - (NSInteger)numberOfTabs {
@@ -992,8 +912,7 @@ void ClearCommandHandler(NSWindow* window) {
 }
 
 - (NSRect)regularWindowFrame {
-  return [self isInAnyFullscreenMode] ? savedRegularWindowFrame_
-                                      : [[self window] frame];
+  return [[self window] frame];
 }
 
 // (Override of |TabWindowController| method.)
@@ -1006,7 +925,7 @@ void ClearCommandHandler(NSWindow* window) {
 }
 
 - (CGFloat)menubarOffset {
-  return [[self fullscreenToolbarController] computeLayout].menubarOffset;
+  return 0;
 }
 
 // TabStripControllerDelegate protocol.
@@ -1030,10 +949,6 @@ void ClearCommandHandler(NSWindow* window) {
 
 - (void)onTabInsertedWithContents:(content::WebContents*)contents
                      inForeground:(BOOL)inForeground {
-  if ([self isInAnyFullscreenMode] && !inForeground)
-    [[self fullscreenToolbarController]
-        revealToolbarForWebContents:contents
-                       inForeground:inForeground];
 }
 
 - (void)userChangedTheme {
@@ -1109,7 +1024,6 @@ void ClearCommandHandler(NSWindow* window) {
 // Delegate method called when window is resized.
 - (void)windowDidResize:(NSNotification*)notification {
   [self saveWindowPositionIfNeeded];
-  [self updatePermissionBubbleAnchor];
 }
 
 // Delegate method called when window did move. (See below for why we don't use
@@ -1118,12 +1032,6 @@ void ClearCommandHandler(NSWindow* window) {
 - (void)windowDidMove:(NSNotification*)notification {
   [self saveWindowPositionIfNeeded];
 
-  // When dragging tabs, the window is repositioned with direct setFrame: calls
-  // which don't automatically reposition child windows. Most dialogs block tab
-  // dragging or dismiss on focus loss. Permission bubbles do not, so ensure
-  // they are anchored correctly.
-  if ([self isDragSessionActive])
-    [self updatePermissionBubbleAnchor];
 
   NSWindow* window = [self window];
   NSRect windowFrame = [window frame];
@@ -1202,15 +1110,6 @@ void ClearCommandHandler(NSWindow* window) {
   [sheet orderOut:self];
 }
 
-- (FullscreenToolbarControllerCocoa*)fullscreenToolbarController {
-  return fullscreenToolbarController_.get();
-}
-
-- (void)setFullscreenToolbarController:
-    (FullscreenToolbarControllerCocoa*)controller {
-  fullscreenToolbarController_.reset([controller retain]);
-}
-
 - (void)setBrowserWindowTouchBarController:
     (BrowserWindowTouchBarController*)touchBarController {
   touchBarController_.reset([touchBarController retain]);
@@ -1245,138 +1144,10 @@ void ClearCommandHandler(NSWindow* window) {
 }
 
 - (BOOL)isToolbarShowing {
-  return [fullscreenToolbarController_ mustShowFullscreenToolbar];
+  return NO;
 }
 
 @end  // @implementation BrowserWindowController
-
-@implementation BrowserWindowController(Fullscreen)
-
-- (void)enterBrowserFullscreen {
-  [self enterAppKitFullscreen];
-}
-
-- (void)updateUIForTabFullscreen:
-    (ExclusiveAccessContext::TabFullscreenState)state {
-  // Only need to update and layout toolbar in fullscreen mode.
-  if (![self isInAnyFullscreenMode])
-    return;
-  [fullscreenToolbarController_
-      layoutToolbarStyleIsExitingTabFullscreen:
-          state == ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN];
-}
-
-- (void)updateFullscreenExitBubble {
-  [self showFullscreenExitBubbleIfNecessary];
-}
-
-- (BOOL)exitExtensionFullscreenIfPossible {
-  if (browser_->exclusive_access_manager()
-          ->fullscreen_controller()
-          ->IsExtensionFullscreenOrPending()) {
-    browser_->extension_window_controller()->SetFullscreenMode(NO, GURL());
-    return YES;
-  }
-  return NO;
-}
-
-- (BOOL)isInImmersiveFullscreen {
-  return fullscreenWindow_.get() != nil || enteringImmersiveFullscreen_;
-}
-
-- (BOOL)isInAppKitFullscreen {
-  return !exitingAppKitFullscreen_ &&
-         (([[self window] styleMask] & NSFullScreenWindowMask) ==
-              NSFullScreenWindowMask ||
-          enteringAppKitFullscreen_);
-}
-
-- (BOOL)isInAnyFullscreenMode {
-  return [self isInImmersiveFullscreen] || [self isInAppKitFullscreen];
-}
-
-- (void)enterWebContentFullscreen {
-  // HTML5 Fullscreen should only use AppKit fullscreen in 10.10+.
-  // However, if the user is using multiple monitors and turned off
-  // "Separate Space in Each Display", use Immersive Fullscreen so
-  // that the other monitors won't blank out.
-  display::Screen* screen = display::Screen::GetScreen();
-  BOOL hasMultipleMonitors = screen && screen->GetNumDisplays() > 1;
-
-  if (base::mac::IsAtLeastOS10_10() &&
-      !(hasMultipleMonitors && ![NSScreen screensHaveSeparateSpaces])) {
-    [self enterAppKitFullscreen];
-  } else {
-    [self enterImmersiveFullscreen];
-  }
-
-  if (!exclusiveAccessController_->url().is_empty())
-    [self updateFullscreenExitBubble];
-}
-
-- (void)exitAnyFullscreen {
-  // TODO(erikchen): Fullscreen modes should stack. Should be able to exit
-  // Immersive Fullscreen and still be in AppKit Fullscreen.
-  if ([self isInAppKitFullscreen])
-    [self exitAppKitFullscreenAsync:NO];
-  if ([self isInImmersiveFullscreen])
-    [self exitImmersiveFullscreen];
-}
-
-- (void)exitFullscreenAnimationFinished {
-  if (appKitDidExitFullscreen_) {
-    [self windowDidExitFullScreen:nil];
-    appKitDidExitFullscreen_ = NO;
-  }
-}
-
-- (void)resizeFullscreenWindow {
-  DCHECK([self isInAnyFullscreenMode]);
-  if (![self isInAnyFullscreenMode])
-    return;
-
-  NSWindow* window = [self window];
-  [window setFrame:[[window screen] frame] display:YES];
-  [self layoutSubviews];
-}
-
-- (BOOL)isToolbarVisibilityLockedForOwner:(id)owner {
-  FullscreenToolbarVisibilityLockController* visibilityController =
-      [self fullscreenToolbarVisibilityLockController];
-  return [visibilityController isToolbarVisibilityLockedForOwner:owner];
-}
-
-- (void)lockToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
-  FullscreenToolbarVisibilityLockController* visibilityController =
-      [self fullscreenToolbarVisibilityLockController];
-  [visibilityController lockToolbarVisibilityForOwner:owner
-                                        withAnimation:animate];
-}
-
-- (void)releaseToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
-  FullscreenToolbarVisibilityLockController* visibilityController =
-      [self fullscreenToolbarVisibilityLockController];
-  [visibilityController releaseToolbarVisibilityForOwner:owner
-                                           withAnimation:animate];
-}
-
-- (BOOL)floatingBarHasFocus {
-  return NO;
-}
-
-- (BOOL)isFullscreenForTabContentOrExtension {
-  FullscreenController* controller =
-      browser_->exclusive_access_manager()->fullscreen_controller();
-  return controller->IsWindowFullscreenForTabOrPending() ||
-         controller->IsExtensionFullscreenOrPending();
-}
-
-- (ExclusiveAccessController*)exclusiveAccessController {
-  return exclusiveAccessController_.get();
-}
-
-@end  // @implementation BrowserWindowController(Fullscreen)
-
 
 @implementation BrowserWindowController(WindowType)
 
@@ -1390,10 +1161,7 @@ void ClearCommandHandler(NSWindow* window) {
 }
 
 - (BOOL)hasToolbar {
-  FullscreenToolbarLayout layout =
-      [[self fullscreenToolbarController] computeLayout];
-  return layout.toolbarStyle != FullscreenToolbarStyle::TOOLBAR_NONE &&
-         [self supportsWindowFeature:Browser::FEATURE_TOOLBAR];
+  return NO;
 }
 
 - (BOOL)supportsBookmarkBar {
@@ -1405,11 +1173,11 @@ void ClearCommandHandler(NSWindow* window) {
 }
 
 - (NSRect)savedRegularWindowFrame {
-  return savedRegularWindowFrame_;
+  return NSZeroRect;
 }
 
 - (BOOL)isFullscreenTransitionInProgress {
-  return enteringAppKitFullscreen_ || exitingAppKitFullscreen_;
+  return NO;
 }
 
 @end  // @implementation BrowserWindowController(WindowType)

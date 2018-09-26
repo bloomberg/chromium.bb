@@ -1974,7 +1974,6 @@ test("browser_tests") {
 
         ## TODO(crbug/845389): Re-Enable the following, which were temporarily
         ## omitted from the build, but still in use by the Cocoa browser.
-        # "../browser/ui/cocoa/browser_window_controller_browsertest.mm",
         # "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
 
         ## The following lines are for obsolete secondary UI that currently do
@@ -4131,10 +4130,7 @@ test("unit_tests") {
         "../browser/ui/cocoa/constrained_window/constrained_window_sheet_controller_unittest.mm",
         "../browser/ui/cocoa/find_pasteboard_unittest.mm",
         "../browser/ui/cocoa/first_run_dialog_controller_unittest.mm",
-        "../browser/ui/cocoa/floating_bar_backing_view_unittest.mm",
         "../browser/ui/cocoa/framed_browser_window_unittest.mm",
-        "../browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_unittest.mm",
-        "../browser/ui/cocoa/fullscreen_window_unittest.mm",
         "../browser/ui/cocoa/history_menu_bridge_unittest.mm",
         "../browser/ui/cocoa/history_menu_cocoa_controller_unittest.mm",
         "../browser/ui/cocoa/history_overlay_controller_unittest.mm",

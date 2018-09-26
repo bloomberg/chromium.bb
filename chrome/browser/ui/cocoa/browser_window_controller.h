@@ -33,15 +33,8 @@
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
-@class BrowserWindowFullscreenTransition;
 @class BrowserWindowTouchBarController;
 class ExtensionKeybindingRegistryCocoa;
-class ExclusiveAccessController;
-class ExclusiveAccessContext;
-@class FullscreenModeController;
-@class FullscreenToolbarControllerCocoa;
-@class FullscreenToolbarVisibilityLockController;
-@class FullscreenWindow;
 class LocationBarViewMac;
 @class OverlayableContentsController;
 
@@ -68,11 +61,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   std::unique_ptr<LocationBarViewMac> locationBar_;
   base::scoped_nsobject<OverlayableContentsController>
       overlayableContentsController_;
-  base::scoped_nsobject<FullscreenToolbarControllerCocoa>
-      fullscreenToolbarController_;
-  std::unique_ptr<ExclusiveAccessController> exclusiveAccessController_;
-  base::scoped_nsobject<BrowserWindowFullscreenTransition>
-      fullscreenTransition_;
   base::scoped_nsobject<BrowserWindowTouchBarController> touchBarController_;
 
   BOOL initializing_;  // YES while we are currently in initWithBrowser:
@@ -89,58 +77,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   // restrict the amount of shrinking by the amounts specified above. Reset to
   // NO on growth.
   BOOL isShrinkingFromZoomed_;
-
-  // Lazily created view which draws the background for the floating set of bars
-  // in presentation mode (for window types having a floating bar; it remains
-  // nil for those which don't).
-  // TODO(spqchan): Rename this to "fullscreenToolbarBackingView"
-  base::scoped_nsobject<NSView> floatingBarBackingView_;
-
-  // The borderless window used in fullscreen mode when Cocoa's System
-  // Fullscreen API is not being used (or not available, before OS 10.7).
-  base::scoped_nsobject<NSWindow> fullscreenWindow_;
-
-  // True between |-windowWillEnterFullScreen:| and |-windowDidEnterFullScreen:|
-  // to indicate that the window is in the process of transitioning into
-  // AppKit fullscreen mode.
-  BOOL enteringAppKitFullscreen_;
-
-  // True between |-windowWillExitFullScreen:| and |-windowDidExitFullScreen:|
-  // to indicate that the window is in the process of transitioning out of
-  // AppKit fullscreen mode.
-  BOOL exitingAppKitFullscreen_;
-
-  // True between |enterImmersiveFullscreen| and |-windowDidEnterFullScreen:|
-  // to indicate that the window is in the process of transitioning into
-  // AppKit fullscreen mode.
-  BOOL enteringImmersiveFullscreen_;
-
-  // When the window is in the process of entering AppKit Fullscreen, this
-  // property indicates whether the window is being fullscreened on the
-  // primary screen.
-  BOOL enteringAppKitFullscreenOnPrimaryScreen_;
-
-  // This flag is set to true when |customWindowsToEnterFullScreenForWindow:|
-  // and |customWindowsToExitFullScreenForWindow:| are called and did not
-  // return nil.
-  BOOL isUsingCustomAnimation_;
-
-  // True if a call to exit AppKit fullscreen was made during the transition to
-  // fullscreen.
-  BOOL shouldExitAfterEnteringFullscreen_;
-
-  // True if AppKit has finished exiting fullscreen before the exit animation
-  // is completed. This flag is used to ensure that |windowDidExitFullscreen|
-  // is called after the exit fullscreen animation is complete.
-  BOOL appKitDidExitFullscreen_;
-
-  // The size of the original (non-fullscreen) window.  This is saved just
-  // before entering fullscreen mode and is only valid when |-isFullscreen|
-  // returns YES.
-  NSRect savedRegularWindowFrame_;
-
-  // The proportion of the floating bar which is shown.
-  CGFloat floatingBarShownFraction_;
 
   // If this ivar is set to YES, layoutSubviews calls will be ignored. This is
   // used in fullscreen transition to prevent spurious resize messages from
@@ -184,9 +120,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 // Access the C++ bridge object representing the location bar.
 - (LocationBarViewMac*)locationBarBridge;
-
-// Returns a weak pointer to the floating bar backing view;
-- (NSView*)floatingBarBackingView;
 
 // Returns a weak pointer to the overlayable contents controller.
 - (OverlayableContentsController*)overlayableContentsController;
@@ -337,137 +270,7 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Returns the size of the original (non-fullscreen) window.
 - (NSRect)savedRegularWindowFrame;
 
-// Returns true if the browser is in the process of entering/exiting
-// fullscreen.
-- (BOOL)isFullscreenTransitionInProgress;
-
 @end  // @interface BrowserWindowController(WindowType)
-
-// Fullscreen terminology:
-//
-// ----------------------------------------------------------------------------
-// There are 2 APIs that cause the window to get resized, and possibly move
-// spaces.
-//
-// + AppKitFullscreen API: AppKit touts a feature known as "fullscreen". This
-// involves moving the current window to a different space, and resizing the
-// window to take up the entire size of the screen.
-//
-// + Immersive fullscreen: An alternative to AppKitFullscreen API. Uses on 10.9
-//  on certain HTML/Flash content. This is a method defined by Chrome.
-//
-// The Immersive fullscreen API can be called after the AppKitFullscreen API.
-// Calling the AppKitFullscreen API while immersive fullscreen API has been
-// invoked causes all fullscreen modes to exit.
-//
-// ----------------------------------------------------------------------------
-//
-// There are several "fullscreen modes" bantered around. Technically, any
-// fullscreen API can be combined with any sliding style.
-//
-// + System fullscreen***deprecated***: This term is confusing. Don't use it.
-// It either refers to the AppKitFullscreen API, or the behavior that users
-// expect to see when they click the fullscreen button, or some Chrome specific
-// implementation that uses the AppKitFullscreen API.
-//
-// + Canonical Fullscreen: When a user clicks on the fullscreen button, they
-// expect a fullscreen behavior similar to other AppKit apps.
-//  - AppKitFullscreen API + TOOLBAR_PRESENT/TOOLBAR_HIDDEN.
-//  - The button click directly invokes the AppKitFullscreen API. This class
-//  get a callback, and calls adjustUIForOmniboxFullscreen.
-//  - There is a menu item that is intended to invoke the same behavior. When
-//  the user clicks the menu item, or use its hotkey, this class invokes the
-//  AppKitFullscreen API.
-//
-// + HTML5 fullscreen. Uses AppKitFullscreen in 10.10+, otherwise Immersive.
-//
-// There are more fullscreen styles on OSX than other OSes. However, all OSes
-// share the same cross-platform code for entering fullscreen
-// (FullscreenController). It is important for OSX fullscreen logic to track
-// how the user triggered fullscreen mode.
-// There are currently 5 possible mechanisms:
-//   - User clicks the AppKit Fullscreen button.
-//     -- This invokes -[BrowserWindowController windowWillEnterFullscreen:]
-//   - User selects the menu item "Enter Full Screen".
-//     -- This invokes FullscreenController::ToggleFullscreenModeInternal(
-//        BROWSER)
-//   - User requests fullscreen via an extension.
-//     -- This invokes FullscreenController::ToggleFullscreenModeInternal(
-//        BROWSER)
-//     -- The corresponding URL will be the url of the extension.
-//   - User requests fullscreen via Flash or JavaScript apis.
-//     -- This invokes FullscreenController::ToggleFullscreenModeInternal(
-//        BROWSER)
-//     -- browser_->fullscreen_controller()->
-//        IsWindowFullscreenForTabOrPending() returns true.
-//     -- The corresponding URL will be the url of the web page.
-
-// Methods having to do with fullscreen mode.
-@interface BrowserWindowController(Fullscreen)
-
-// Enters Browser AppKit Fullscreen.
-- (void)enterBrowserFullscreen;
-
-// Updates the UI for tab fullscreen by adding or removing the tab strip and
-// toolbar from the current window. The window must already be in fullscreen.
-- (void)updateUIForTabFullscreen:
-    (ExclusiveAccessContext::TabFullscreenState)state;
-
-// Exits extension fullscreen if we're currently in the mode. Returns YES
-// if we exited fullscreen.
-- (BOOL)exitExtensionFullscreenIfPossible;
-
-// Updates the contents of the fullscreen exit bubble with |url| and
-// |bubbleType|.
-- (void)updateFullscreenExitBubble;
-
-// Returns YES if the browser window is currently in or entering fullscreen via
-// the built-in immersive mechanism.
-- (BOOL)isInImmersiveFullscreen;
-
-// Returns YES if the browser window is currently in or entering fullscreen via
-// the AppKit Fullscreen API.
-- (BOOL)isInAppKitFullscreen;
-
-// Enters Immersive Fullscreen for the given URL.
-- (void)enterWebContentFullscreen;
-
-// Exits the current fullscreen mode.
-- (void)exitAnyFullscreen;
-
-// Called by BrowserWindowFullscreenTransition when the exit animation is
-// finished.
-- (void)exitFullscreenAnimationFinished;
-
-// Resizes the fullscreen window to fit the screen it's currently on.  Called by
-// the FullscreenToolbarController when there is a change in monitor placement
-// or resolution.
-- (void)resizeFullscreenWindow;
-
-// Query/lock/release the requirement that the tab strip/toolbar/attached
-// bookmark bar bar cluster is visible (e.g., when one of its elements has
-// focus). This is required for the floating bar if it's hidden in fullscreen,
-// but should also be called when not in fullscreen mode; see the comments for
-// |barVisibilityLocks_| for more details. Double locks/releases by the same
-// owner are ignored. If |animate:| is YES, then an animation may be
-// performed. In the case of multiple calls, later calls have precedence with
-// the rule that |animate:NO| has precedence over |animate:YES|. If |owner| is
-// nil in isToolbarVisibilityLockedForOwner, the method returns YES if there are
-// any locks.
-- (BOOL)isToolbarVisibilityLockedForOwner:(id)owner;
-- (void)lockToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate;
-- (void)releaseToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate;
-
-// Returns YES if any of the views in the floating bar currently has focus.
-- (BOOL)floatingBarHasFocus;
-
-// Returns YES if the fullscreen is for tab content or an extension.
-- (BOOL)isFullscreenForTabContentOrExtension;
-
-// Accessor for the controller managing fullscreen ExclusiveAccessContext.
-- (ExclusiveAccessController*)exclusiveAccessController;
-
-@end  // @interface BrowserWindowController(Fullscreen)
 
 
 // Methods which are either only for testing, or only public for testing.
@@ -487,9 +290,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Returns if the window height was changed.
 - (BOOL)adjustWindowHeightBy:(CGFloat)deltaH;
 
-// Return an autoreleased NSWindow suitable for fullscreen use.
-- (NSWindow*)createFullscreenWindow;
-
 // Resets any saved state about window growth (due to showing the bookmark bar
 // or the download shelf), so that future shrinking will occur from the bottom.
 - (void)resetWindowGrowthState;
@@ -508,13 +308,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 // Returns the active tab contents controller's |blockFullscreenResize_| flag.
 - (BOOL)isActiveTabContentsControllerResizeBlocked;
-
-// Returns the fullscreen toolbar controller.
-- (FullscreenToolbarControllerCocoa*)fullscreenToolbarController;
-
-// Sets the fullscreen toolbar controller.
-- (void)setFullscreenToolbarController:
-    (FullscreenToolbarControllerCocoa*)controller;
 
 // Sets |touchbarController_|.
 - (void)setBrowserWindowTouchBarController:
