@@ -4,6 +4,8 @@
 
 static_library("core") {
   sources = [
+    "cached_image_fetcher.cc",
+    "cached_image_fetcher.h",
     "image_data_fetcher.cc",
     "image_data_fetcher.h",
     "image_decoder.h",
@@ -50,6 +52,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "cached_image_fetcher_unittest.cc",
     "image_data_fetcher_unittest.cc",
     "image_fetcher_impl_unittest.cc",
     "request_metadata_unittest.cc",
@@ -57,7 +60,11 @@ source_set("unit_tests") {
   deps = [
     ":core",
     ":test_support",
+    "storage",
     "storage:storage_unit_tests",
+    "storage/proto",
+    "//components/leveldb_proto:test_support",
+    "//components/prefs:test_support",
     "//net",
     "//net:test_support",
     "//testing/gmock",

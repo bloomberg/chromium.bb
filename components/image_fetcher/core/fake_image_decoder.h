@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_IMAGE_FETCHER_CORE_FAKE_IMAGE_DECODER_H_
 #define COMPONENTS_IMAGE_FETCHER_CORE_FAKE_IMAGE_DECODER_H_
 
+#include <string>
+
 #include "base/bind.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher_types.h"
@@ -26,9 +28,11 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
       const image_fetcher::ImageDecodedCallback& callback) override;
   void SetEnabled(bool enabled);
   void SetBeforeImageDecoded(const base::RepeatingClosure& callback);
+  void SetDecodingValid(bool valid);
 
  private:
   bool enabled_;
+  bool valid_;
   base::RepeatingClosure before_image_decoded_;
 };
 

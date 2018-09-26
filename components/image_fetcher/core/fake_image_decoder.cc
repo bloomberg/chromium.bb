@@ -11,7 +11,7 @@
 
 namespace image_fetcher {
 
-FakeImageDecoder::FakeImageDecoder() : enabled_(true) {}
+FakeImageDecoder::FakeImageDecoder() : enabled_(true), valid_(true) {}
 FakeImageDecoder::~FakeImageDecoder() = default;
 
 void FakeImageDecoder::DecodeImage(
@@ -20,7 +20,7 @@ void FakeImageDecoder::DecodeImage(
     const image_fetcher::ImageDecodedCallback& callback) {
   ASSERT_TRUE(enabled_);
   gfx::Image image;
-  if (!image_data.empty()) {
+  if (valid_ && !image_data.empty()) {
     image = gfx::test::CreateImage(2, 3);
   }
 
@@ -35,6 +35,10 @@ void FakeImageDecoder::DecodeImage(
 
 void FakeImageDecoder::SetEnabled(bool enabled) {
   enabled_ = enabled;
+}
+
+void FakeImageDecoder::SetDecodingValid(bool valid) {
+  valid_ = valid;
 }
 
 void FakeImageDecoder::SetBeforeImageDecoded(
