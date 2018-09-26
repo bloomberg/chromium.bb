@@ -53,8 +53,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   blink::WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
 
-  blink::WebThread* CurrentThread() override;
-
   bool IsThreadedAnimationEnabled() override;
 
   std::unique_ptr<blink::WebRTCCertificateGenerator>

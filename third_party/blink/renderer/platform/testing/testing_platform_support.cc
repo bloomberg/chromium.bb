@@ -108,10 +108,6 @@ WebString TestingPlatformSupport::DefaultLocale() {
   return WebString::FromUTF8("en-US");
 }
 
-WebThread* TestingPlatformSupport::CurrentThread() {
-  return old_platform_ ? old_platform_->CurrentThread() : nullptr;
-}
-
 WebBlobRegistry* TestingPlatformSupport::GetBlobRegistry() {
   return old_platform_ ? old_platform_->GetBlobRegistry() : nullptr;
 }

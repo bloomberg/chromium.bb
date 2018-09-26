@@ -301,12 +301,6 @@ TestBlinkWebUnitTestSupport::GetURLLoaderMockFactory() {
   return url_loader_factory_.get();
 }
 
-blink::WebThread* TestBlinkWebUnitTestSupport::CurrentThread() {
-  if (main_thread_->IsCurrentThread())
-    return main_thread_;
-  return BlinkPlatformImpl::CurrentThread();
-}
-
 bool TestBlinkWebUnitTestSupport::IsThreadedAnimationEnabled() {
   return threaded_animation_;
 }
