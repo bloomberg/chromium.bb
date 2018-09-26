@@ -242,7 +242,7 @@ jumbo_component("ime") {
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk:input",
+      "//third_party/fuchsia-sdk/sdk:input",
       "//ui/events",
       "//ui/events:dom_keycode_converter",
     ]
