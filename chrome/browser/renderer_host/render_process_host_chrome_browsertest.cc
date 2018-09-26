@@ -385,7 +385,14 @@ class ChromeRenderProcessHostBackgroundingTest
     VerifyProcessIsForegrounded(process_or_tab);                             \
   } while (0);
 
-IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest, MultipleTabs) {
+// Flaky on Mac: https://crbug.com/888308
+#if defined(OS_MACOSX)
+#define MAYBE_MultipleTabs DISABLED_MultipleTabs
+#else
+#define MAYBE_MultipleTabs MultipleTabs
+#endif
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
+                       MAYBE_MultipleTabs) {
   // Change the first tab to be the omnibox page (TYPE_WEBUI).
   GURL omnibox(chrome::kChromeUIOmniboxURL);
   ui_test_utils::NavigateToURL(browser(), omnibox);
