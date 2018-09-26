@@ -6,9 +6,7 @@ source_set("api") {
   sources = [
     "network_service_manager.h",
     "network_service_manager.cc",
-    "screen_connection.h",
     "screen_connection_client.h",
-    "screen_connection_client.cc",
     "screen_connection_server.h",
     "screen_info.cc",
     "screen_info.h",

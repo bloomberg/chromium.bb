@@ -10,13 +10,12 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/time.h"
 
 namespace openscreen {
 
 // Used to report an error from a ScreenListener implementation.
 struct ScreenPublisherError {
-  // TODO(mfoltz): Add additional error types, as implementations progress.
+  // TODO: Add additional error types, as implementations progress.
   enum class Code {
     kNone = 0,
   };
@@ -41,6 +40,10 @@ class ScreenPublisher {
     kStopping,
     kSuspended,
   };
+
+  // Microseconds after the epoch.
+  // TODO: Replace with a base::Time object.
+  typedef uint64_t timestamp_t;
 
   struct Metrics {
     Metrics();

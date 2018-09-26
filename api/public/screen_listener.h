@@ -11,14 +11,13 @@
 
 #include "api/public/screen_info.h"
 #include "base/macros.h"
-#include "base/time.h"
 
 namespace openscreen {
 
 // Used to report an error from a ScreenListener implementation.
 struct ScreenListenerError {
  public:
-  // TODO(mfoltz): Add additional error types, as implementations progress.
+  // TODO: Add additional error types, as implementations progress.
   enum class Code {
     kNone = 0,
   };
@@ -44,6 +43,10 @@ class ScreenListener {
     kSearching,
     kSuspended,
   };
+
+  // Microseconds after the epoch.
+  // TODO: Replace with a base::Time object.
+  typedef uint64_t timestamp_t;
 
   // Holds a set of metrics, captured over a specific range of time, about the
   // behavior of a ScreenListener instance.
