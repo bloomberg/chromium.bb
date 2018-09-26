@@ -294,6 +294,8 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
   } else {
     visual_bounds_in_screen_ = gfx::Rect();
   }
+
+  ui_->EnsureCaretInWorkArea(GetWorkspaceOccludedBounds());
 }
 
 void KeyboardController::MoveKeyboard(const gfx::Rect& new_bounds) {
@@ -422,7 +424,6 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
       for (KeyboardControllerObserver& observer : observer_list_)
         observer.OnKeyboardHidden(reason == HIDE_REASON_SYSTEM_TEMPORARY);
-      ui_->EnsureCaretInWorkArea(gfx::Rect());
 
       break;
     }
@@ -488,7 +489,6 @@ void KeyboardController::ShowAnimationFinished() {
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
   NotifyKeyboardBoundsChanging(GetKeyboardWindow()->bounds());
-  ui_->EnsureCaretInWorkArea(GetWorkspaceOccludedBounds());
 }
 
 void KeyboardController::SetContainerBehaviorInternal(
