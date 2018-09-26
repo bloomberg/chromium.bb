@@ -34,15 +34,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
   // called.
   virtual SkCanvas* BeginPaintCurrentFrame() = 0;
 
-  // Finish painting the current frame. It should be paired with
-  // BeginPaintCurrentFrame. This method will schedule a GPU task to play the
-  // DDL back on GPU thread on the SkSurface for the framebuffer. This method
-  // returns a sync token which can be waited on in a command buffer to ensure
-  // the paint operation is completed. This token is released when the GPU ops
-  // from painting the current frame have been seen and processed by the GPU
-  // main.
-  virtual gpu::SyncToken FinishPaintCurrentFrame() = 0;
-
   // Make a promise SkImage from the given |metadata|. The SkiaRenderer can use
   // the image with SkCanvas returned by |GetSkCanvasForCurrentFrame|, but Skia
   // will not read the content of the resource until the sync token in the
@@ -75,13 +66,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
                                          ResourceFormat format,
                                          bool mipmap) = 0;
 
-  // Finish painting a render pass. It should be paired with
-  // BeginPaintRenderPass. This method will schedule a GPU task to play the DDL
-  // back on GPU thread on a cached SkSurface. This method returns a sync token
-  // which can be waited on in a command buffer to ensure the paint operation is
-  // completed. This token is released when the GPU ops from painting the render
-  // pass have been seen and processed by the GPU main.
-  virtual gpu::SyncToken FinishPaintRenderPass() = 0;
+  // Finish painting the current frame or current render pass, depends on which
+  // BeginPaint function is called last. This method will schedule a GPU task to
+  // play the DDL back on GPU thread on a cached SkSurface. This method returns
+  // a sync token which can be waited on in a command buffer to ensure the paint
+  // operation is completed. This token is released when the GPU ops from
+  // painting the render pass have been seen and processed by the GPU main.
+  virtual gpu::SyncToken SubmitPaint() = 0;
 
   // Make a promise SkImage from a render pass id. The render pass has been
   // painted with BeginPaintRenderPass and FinishPaintRenderPass. The format

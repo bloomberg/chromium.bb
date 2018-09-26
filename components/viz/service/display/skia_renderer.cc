@@ -324,7 +324,6 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
   // How to setup is in ResourceProvider. (http://crbug.com/644851)
   if (is_using_ddl()) {
     root_canvas_ = skia_output_surface_->BeginPaintCurrentFrame();
-    is_drawing_render_pass_ = false;
     DCHECK(root_canvas_);
   } else {
     auto* gr_context = GetGrContext();
@@ -405,7 +404,6 @@ void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
     current_surface_ = non_root_surface_.get();
     current_canvas_ = non_root_surface_->getCanvas();
   }
-  is_drawing_render_pass_ = true;
 }
 
 void SkiaRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
@@ -934,8 +932,14 @@ void SkiaRenderer::CopyDrawnRenderPass(
   }
 
   if (is_using_ddl()) {
-    auto render_pass_id =
-        is_drawing_render_pass_ ? current_frame()->current_render_pass->id : 0;
+    // Root framebuffer uses id 0 in SkiaOutputSurface.
+    RenderPassId render_pass_id = 0;
+    // If we are in child render pass and we don't have overdraw, copy the
+    // current render pass.
+    if (root_canvas_ != current_canvas_ &&
+        current_canvas_ != nway_canvas_.get()) {
+      render_pass_id = current_frame()->current_render_pass->id;
+    }
     skia_output_surface_->CopyOutput(render_pass_id, window_copy_rect,
                                      std::move(request));
     return;
@@ -965,10 +969,7 @@ void SkiaRenderer::DidChangeVisibility() {
 
 void SkiaRenderer::FinishDrawingQuadList() {
   if (is_using_ddl()) {
-    gpu::SyncToken sync_token =
-        is_drawing_render_pass_
-            ? skia_output_surface_->FinishPaintRenderPass()
-            : skia_output_surface_->FinishPaintCurrentFrame();
+    gpu::SyncToken sync_token = skia_output_surface_->SubmitPaint();
     promise_images_.clear();
     yuv_promise_images_.clear();
     lock_set_for_external_use_.UnlockResources(sync_token);

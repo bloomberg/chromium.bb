@@ -125,7 +125,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   gfx::Rect scissor_rect_;
 
-  bool is_drawing_render_pass_ = false;
   sk_sp<SkSurface> root_surface_;
   sk_sp<SkSurface> non_root_surface_;
   sk_sp<SkSurface> overdraw_surface_;
