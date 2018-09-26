@@ -40,13 +40,15 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
      * @param activity The CustomTabActivity of the controller associated with.
      */
     public AutofillAssistantUiController(CustomTabActivity activity) {
-        Tab activityTab = activity.getActivityTab();
+        // Set mUiDelegate before nativeInit, as it can be accessed through native methods from
+        // nativeInit already.
+        mUiDelegate = new AutofillAssistantUiDelegate(activity, this);
 
-        Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
         // TODO(crbug.com/806868): Treat parameter
         // org.chromium.chrome.browser.autofill_assistant.ENABLED specially, and disable autofill
         // assistant if it is false or unset.
-
+        Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
+        Tab activityTab = activity.getActivityTab();
         mUiControllerAndroid = nativeInit(activityTab.getWebContents(),
                 parameters.keySet().toArray(new String[parameters.size()]),
                 parameters.values().toArray(new String[parameters.size()]));
@@ -76,7 +78,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             }
         });
 
-        mUiDelegate = new AutofillAssistantUiDelegate(activity, this);
     }
 
     @Override
