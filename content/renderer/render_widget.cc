@@ -803,8 +803,7 @@ void RenderWidget::OnWasHidden() {
     observer.WasHidden();
 }
 
-void RenderWidget::OnWasShown(bool needs_repainting,
-                              base::TimeTicks show_request_timestamp) {
+void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp) {
   TRACE_EVENT0("renderer", "RenderWidget::OnWasShown");
   // During shutdown we can just ignore this message.
   if (!GetWebWidget())
@@ -815,9 +814,6 @@ void RenderWidget::OnWasShown(bool needs_repainting,
   SetHidden(false);
   for (auto& observer : render_frames_)
     observer.WasShown();
-
-  if (!needs_repainting)
-    return;
 
   if (layer_tree_view_ && !show_request_timestamp.is_null()) {
     layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(

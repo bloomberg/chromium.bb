@@ -1203,9 +1203,9 @@ TEST_F(RenderWidgetHostTest, Background) {
 }
 #endif
 
-// Test that we don't paint when we're hidden, but we still send the ACK. Most
-// of the rest of the painting is tested in the GetBackingStore* ones.
-TEST_F(RenderWidgetHostTest, HiddenPaint) {
+// Test that the RenderWidgetHost tells the renderer when it is hidden and
+// shown, and can accept a racey update from the renderer after hiding.
+TEST_F(RenderWidgetHostTest, HideShowMessages) {
   // Hide the widget, it should have sent out a message to the renderer.
   EXPECT_FALSE(host_->is_hidden_);
   host_->WasHidden();
@@ -1224,13 +1224,8 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
   host_->WasShown(false /* record_presentation_time */);
   EXPECT_FALSE(host_->is_hidden_);
 
-  // It should have sent out a restored message with a request to paint.
-  const IPC::Message* restored = process_->sink().GetUniqueMessageMatching(
-      ViewMsg_WasShown::ID);
-  ASSERT_TRUE(restored);
-  std::tuple<bool, base::TimeTicks> needs_repaint;
-  ViewMsg_WasShown::Read(restored, &needs_repaint);
-  EXPECT_TRUE(std::get<0>(needs_repaint));
+  // It should have sent out a restored message.
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_WasShown::ID));
 }
 
 TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
