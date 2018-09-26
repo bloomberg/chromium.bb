@@ -12,7 +12,6 @@
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/views_utils.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_utils.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -106,7 +105,7 @@ const CGFloat kDesiredHeight = 48;
   DCHECK(browserState);
   [_label setText:text];
   self.accessibilityLabel = [_label accessibilityLabel];
-  TabSwitcherGetFavicon(url, browserState, ^(FaviconAttributes* attributes) {
+  recent_tabs::GetFavicon(url, browserState, ^(FaviconAttributes* attributes) {
     [_favicon configureWithAttributes:attributes];
   });
 }
