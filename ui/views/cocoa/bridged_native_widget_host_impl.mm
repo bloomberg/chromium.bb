@@ -13,6 +13,7 @@
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/native_theme/native_theme_mac.h"
 #include "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/cocoa/native_widget_mac_nswindow.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
@@ -496,6 +497,10 @@ void BridgedNativeWidgetHostImpl::OnVisibilityChanged(bool window_visible) {
   }
   native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(
       window_visible);
+}
+
+void BridgedNativeWidgetHostImpl::OnWindowNativeThemeChanged() {
+  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
 }
 
 void BridgedNativeWidgetHostImpl::OnScrollEvent(

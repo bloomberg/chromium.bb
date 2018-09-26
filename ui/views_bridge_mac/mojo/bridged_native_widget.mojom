@@ -27,6 +27,14 @@ enum WindowVisibilityState {
   kShowInactive
 };
 
+// Window transitions to animate, mirrors views::Widget::VisibilityTransition.
+enum VisibilityTransition {
+  kShow = 1,
+  kHide = 2,
+  kBoth = 3,
+  kNone = 4,
+};
+
 struct BridgedNativeWidgetInitParams {
   ui.mojom.ModalType modal_type;
   // If true, the underlying window potentially be seen through.
@@ -91,6 +99,10 @@ interface BridgedNativeWidget {
   // Sets the desired visibility of the window and updates the visibility of
   // descendant windows where necessary.
   SetVisibilityState(WindowVisibilityState new_state);
+
+  // Sets which transitions will animate. Currently this only affects non-native
+  // animations.
+  SetTransitionsToAnimate(VisibilityTransition transitions);
 
   // Sets the collection behavior so that the window will or will not be visible
   // on all spaces.

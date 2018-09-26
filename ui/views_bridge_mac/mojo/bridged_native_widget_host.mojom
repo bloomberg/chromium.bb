@@ -17,6 +17,9 @@ interface BridgedNativeWidgetHost {
   // Update the views::Widget, ui::Compositor and ui::Layer's visibility.
   OnVisibilityChanged(bool visible);
 
+  // Called when the window's native theme changes.
+  OnWindowNativeThemeChanged();
+
   // Resize the underlying views::View to |new_size|. Note that this will not
   // necessarily match the content bounds from OnWindowGeometryChanged.
   SetViewSize(gfx.mojom.Size new_size);

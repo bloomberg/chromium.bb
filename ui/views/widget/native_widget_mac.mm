@@ -566,7 +566,8 @@ Widget::MoveLoopResult NativeWidgetMac::RunMoveLoop(
   if (!bridge_impl())
     return Widget::MOVE_LOOP_CANCELED;
 
-  return bridge_impl()->RunMoveLoop(drag_offset);
+  return bridge_impl()->RunMoveLoop(drag_offset) ? Widget::MOVE_LOOP_SUCCESSFUL
+                                                 : Widget::MOVE_LOOP_CANCELED;
 }
 
 void NativeWidgetMac::EndMoveLoop() {
@@ -585,9 +586,25 @@ void NativeWidgetMac::SetVisibilityAnimationDuration(
 }
 
 void NativeWidgetMac::SetVisibilityAnimationTransition(
-    Widget::VisibilityTransition transition) {
-  if (bridge_impl())
-    bridge_impl()->set_transitions_to_animate(transition);
+    Widget::VisibilityTransition widget_transitions) {
+  views_bridge_mac::mojom::VisibilityTransition transitions =
+      views_bridge_mac::mojom::VisibilityTransition::kNone;
+  switch (widget_transitions) {
+    case Widget::ANIMATE_NONE:
+      transitions = views_bridge_mac::mojom::VisibilityTransition::kNone;
+      break;
+    case Widget::ANIMATE_SHOW:
+      transitions = views_bridge_mac::mojom::VisibilityTransition::kShow;
+      break;
+    case Widget::ANIMATE_HIDE:
+      transitions = views_bridge_mac::mojom::VisibilityTransition::kHide;
+      break;
+    case Widget::ANIMATE_BOTH:
+      transitions = views_bridge_mac::mojom::VisibilityTransition::kBoth;
+      break;
+  }
+  if (bridge())
+    bridge()->SetTransitionsToAnimate(transitions);
 }
 
 bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {

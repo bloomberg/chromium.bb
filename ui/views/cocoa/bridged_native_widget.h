@@ -20,7 +20,6 @@
 #include "ui/display/display_observer.h"
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
 #include "ui/views/views_export.h"
-#include "ui/views/widget/widget.h"
 #import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 
@@ -106,9 +105,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void SetBounds(const gfx::Rect& new_bounds);
 
   // Start moving the window, pinned to the mouse cursor, and monitor events.
-  // Return MOVE_LOOP_SUCCESSFUL on mouse up or MOVE_LOOP_CANCELED on premature
-  // termination via EndMoveLoop() or when window is destroyed during the drag.
-  Widget::MoveLoopResult RunMoveLoop(const gfx::Vector2d& drag_offset);
+  // Return true on mouse up or false on premature termination via EndMoveLoop()
+  // or when window is destroyed during the drag.
+  bool RunMoveLoop(const gfx::Vector2d& drag_offset);
   void EndMoveLoop();
 
   // Sets the cursor associated with the NSWindow. Retains |cursor|.
@@ -188,16 +187,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // Enables or disables all window animations.
   void SetAnimationEnabled(bool animate);
 
-  // Sets which transitions will animate. Currently this only affects non-native
-  // animations. TODO(tapted): Use scoping to disable native animations at
-  // appropriate times as well.
-  void set_transitions_to_animate(int transitions) {
-    transitions_to_animate_ = transitions;
-  }
-
   // Whether to run a custom animation for the provided |transition|.
   bool ShouldRunCustomAnimationFor(
-      Widget::VisibilityTransition transition) const;
+      views_bridge_mac::mojom::VisibilityTransition transition) const;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -224,6 +216,8 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
                  const gfx::Size& minimum_content_size) override;
   void SetVisibilityState(
       views_bridge_mac::mojom::WindowVisibilityState new_state) override;
+  void SetTransitionsToAnimate(
+      views_bridge_mac::mojom::VisibilityTransition transitions) override;
   void SetVisibleOnAllSpaces(bool always_visible) override;
   void SetFullscreen(bool fullscreen) override;
   void SetMiniaturized(bool miniaturized) override;
@@ -317,8 +311,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   gfx::Rect bounds_before_fullscreen_;
 
   // The transition types to animate when not relying on native NSWindow
-  // animation behaviors. Bitmask of Widget::VisibilityTransition.
-  int transitions_to_animate_ = Widget::ANIMATE_BOTH;
+  // animation behaviors.
+  views_bridge_mac::mojom::VisibilityTransition transitions_to_animate_ =
+      views_bridge_mac::mojom::VisibilityTransition::kBoth;
 
   // Whether this window wants to be fullscreen. If a fullscreen animation is in
   // progress then it might not be actually fullscreen.

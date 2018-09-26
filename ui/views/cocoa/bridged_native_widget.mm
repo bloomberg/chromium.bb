@@ -27,7 +27,6 @@
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
-#import "ui/native_theme/native_theme_mac.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/cocoa_window_move_loop.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
@@ -38,6 +37,7 @@
 #import "ui/views_bridge_mac/cocoa_mouse_capture.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
+using views_bridge_mac::mojom::VisibilityTransition;
 using views_bridge_mac::mojom::WindowVisibilityState;
 
 namespace {
@@ -490,7 +490,7 @@ void BridgedNativeWidgetImpl::CloseWindow() {
   }
 
   // For other modal types, animate the close.
-  if (ShouldRunCustomAnimationFor(Widget::ANIMATE_HIDE)) {
+  if (ShouldRunCustomAnimationFor(VisibilityTransition::kHide)) {
     [ViewsNSWindowCloseAnimator closeWindowWithAnimation:window];
     return;
   }
@@ -603,7 +603,7 @@ void BridgedNativeWidgetImpl::SetVisibilityState(
 
   // For non-sheet modal types, use the constrained window animations to make
   // the window appear.
-  if (ShouldRunCustomAnimationFor(Widget::ANIMATE_SHOW)) {
+  if (ShouldRunCustomAnimationFor(VisibilityTransition::kShow)) {
     show_animation_.reset(
         [[ModalShowAnimationWithLayer alloc] initWithBridgedNativeWidget:this]);
 
@@ -617,6 +617,13 @@ void BridgedNativeWidgetImpl::SetVisibilityState(
     [show_animation_ setAnimationBlockingMode:NSAnimationNonblocking];
     [show_animation_ startAnimation];
   }
+}
+
+void BridgedNativeWidgetImpl::SetTransitionsToAnimate(
+    VisibilityTransition transitions) {
+  // TODO(tapted): Use scoping to disable native animations at appropriate
+  // times as well.
+  transitions_to_animate_ = transitions;
 }
 
 void BridgedNativeWidgetImpl::AcquireCapture() {
@@ -645,8 +652,7 @@ bool BridgedNativeWidgetImpl::HasCapture() {
   return mouse_capture_ && mouse_capture_->IsActive();
 }
 
-Widget::MoveLoopResult BridgedNativeWidgetImpl::RunMoveLoop(
-    const gfx::Vector2d& drag_offset) {
+bool BridgedNativeWidgetImpl::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   DCHECK(!HasCapture());
   // https://crbug.com/876493
   CHECK(!window_move_loop_);
@@ -839,7 +845,7 @@ void BridgedNativeWidgetImpl::OnVisibilityChanged() {
 }
 
 void BridgedNativeWidgetImpl::OnSystemControlTintChanged() {
-  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
+  host_->OnWindowNativeThemeChanged();
 }
 
 void BridgedNativeWidgetImpl::OnBackingPropertiesChanged() {
@@ -948,15 +954,14 @@ void BridgedNativeWidgetImpl::SetAnimationEnabled(bool animate) {
 }
 
 bool BridgedNativeWidgetImpl::ShouldRunCustomAnimationFor(
-    Widget::VisibilityTransition transition) const {
+    VisibilityTransition transition) const {
   // The logic around this needs to change if new transition types are set.
   // E.g. it would be nice to distinguish "hide" from "close". Mac currently
   // treats "hide" only as "close". Hide (e.g. Cmd+h) should not animate on Mac.
-  constexpr int kSupported =
-      Widget::ANIMATE_SHOW | Widget::ANIMATE_HIDE | Widget::ANIMATE_NONE;
-  DCHECK_EQ(0, transitions_to_animate_ & ~kSupported);
-  if (!(transitions_to_animate_ & transition))
+  if (transitions_to_animate_ != transition &&
+      transitions_to_animate_ != VisibilityTransition::kBoth) {
     return false;
+  }
 
   // Custom animations are only used for tab-modals.
   bool widget_is_modal = false;
