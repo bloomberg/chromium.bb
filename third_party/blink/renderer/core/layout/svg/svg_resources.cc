@@ -297,16 +297,6 @@ InvalidationModeMask SVGResources::RemoveClientFromCache(
   InvalidationModeMask invalidation_flags =
       RemoveClientFromCacheAffectingObjectBounds(client);
 
-  if (marker_data_) {
-    if (LayoutSVGResourceMarker* marker = marker_data_->marker_start)
-      marker->RemoveClientFromCache(client);
-    if (LayoutSVGResourceMarker* marker = marker_data_->marker_mid)
-      marker->RemoveClientFromCache(client);
-    if (LayoutSVGResourceMarker* marker = marker_data_->marker_end)
-      marker->RemoveClientFromCache(client);
-    invalidation_flags |= SVGResourceClient::kBoundariesInvalidation;
-  }
-
   if (fill_stroke_data_) {
     if (LayoutSVGResourcePaintServer* fill = fill_stroke_data_->fill)
       fill->RemoveClientFromCache(client);
