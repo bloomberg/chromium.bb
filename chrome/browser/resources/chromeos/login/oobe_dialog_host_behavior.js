@@ -24,7 +24,7 @@ var OobeDialogHostBehavior = {
   /**
    * Triggers onBeforeShow for elements matched by |selector|.
    * and sets |fullScreenDialog| attribute on them.
-   * @param {string} selector CSS selector.
+   * @param {string=} selector CSS selector (optional).
    */
   propagateFullScreenMode: function(selector) {
     if (!selector)
@@ -51,7 +51,7 @@ var OobeDialogHostBehavior = {
 
   /**
    * Triggers updateLocalizedContent() for elements matched by |selector|.
-   * @param {string} selector CSS selector.
+   * @param {string=} selector CSS selector (optional).
    */
   propagateUpdateLocalizedContent: function(selector) {
     if (!selector)

@@ -3017,17 +3017,17 @@
   <message name="IDS_AD_MORE_OPTIONS_BUTTON" desc="Admin-facing. Text on the 'More options' button on the Active Directory domain join screen.">
     More options
   </message>
-  <message name="IDS_AD_UNLOCK_CONFIG" desc="Admin-facing. Text on the button which opens 'Enter unlocking password' dialog on the Active Directory domain join screen.">
-    Unlock configuration
+  <message name="IDS_AD_UNLOCK_TITLE_MESSAGE" desc="Admin-facing. Title on the configuration password step on the Active Directory domain join screen.">
+    Get configuration info
   </message>
-  <message name="IDS_AD_UNLOCK_CONFIG_UNLOCK_BUTTON" desc="Admin-facing. Text on the button to use entered password to unlock domain join configuration.">
-    Unlock
+  <message name="IDS_AD_UNLOCK_SUBTITLE_MESSAGE" desc="Admin-facing. Subtitle on the configuration password step on the Active Directory domain join screen.">
+    Enter admin-provided password to get configuration info
   </message>
   <message name="IDS_AD_UNLOCK_CONFIG_PASSWORD" desc="Admin-facing. Label for unlocking password input field on the Active Directory domain join screen.">
-    Password to unlock
+    Enter admin-provided password
   </message>
   <message name="IDS_AD_UNLOCK_INCORRECT_PASSWORD" desc="Admin-facing. Error that is shown when incorrect unlocking password was entered.">
-    Incorrect password
+    Wrong password, try again
   </message>
   <message name="IDS_AD_UNLOCK_PASSWORD_SKIP" desc="Admin-facing. Text on the button which skips entering unlocking password step.">
     Skip
@@ -3071,8 +3071,8 @@
   <message name="IDS_AD_DEVICE_NAME_TOO_LONG" desc="Admin-facing alert message. Admin entered a device name that was too long.">
     The device name is too long. Enter a shorter name to try again.
   </message>
-  <message name="IDS_AD_DEVICE_NAME_DOESNT_MATCH_REGEX" desc="Admin-facing. Alert message about device name does not match regular expression">
-    The device name must match regular expression <ph name="REGEX">$1<ex>^DEVICE_\d+$</ex></ph>.
+  <message name="IDS_AD_DEVICE_NAME_INVALID_FORMAT" desc="Admin-facing. Alert message about device name does not match regular expression">
+    Incorrect format, please try again
   </message>
   <message name="IDS_AD_USER_DENIED_TO_JOIN_DEVICE" desc="Admin-facing alert message. Admin doesn’t have privileges to add devices to the domain. 'Devices' refers to Chromebook computers. 'Domain' is the Windows domain that accounts are registered to.">
     Can't join the domain. Check your account to see if you have sufficient privileges to add devices.
@@ -3098,9 +3098,6 @@
   <!-- User facing strings for Active Directory screens. -->
   <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the Active Directory Authentication user screen. Include the domain (realm) the device joined to.">
     Sign in to <ph name="REALM">$1<ex>example.com</ex></ph>
-  </message>
-  <message name="IDS_AD_ENROLLMENT_LOGIN_USER" desc="Label for userPrincipalName input field on the Active Directory domain join user screen. Looks like user@example.com where example.com is the realm.">
-    Username (e.g. user@example.com)
   </message>
   <message name="IDS_AD_AUTH_LOGIN_USER" desc="Label for userPrincipalName input field on the Active Directory authentication user screen.">
     Username
@@ -3132,8 +3129,8 @@
   <message name="IDS_AD_PASSWORD_CHANGE_PASSWORDS_MISMATCH_ERROR" desc="Error message in case new password fields does not match on the Active Directory password change dialog.">
     Passwords do not match.
   </message>
-  <message name="IDS_AD_CONFIRM_BUTTON" desc="Text on the 'Confirm' button on the 'More options' dialog.">
-    Confirm
+  <message name="IDS_AD_SAVE_BUTTON" desc="Text on the 'Save' button on the 'More options' dialog.">
+    Save
   </message>
   <message name="IDS_AD_CANCEL_BUTTON" desc="Text on the 'Cancel' button on the 'More options' dialog.">
     Cancel
