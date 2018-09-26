@@ -599,7 +599,13 @@ const base::Feature kWebXrHitTest{"WebXRHitTest",
 
 // Controls whether the orientation sensor based device is enabled.
 const base::Feature kWebXrOrientationSensorDevice{
-    "WebXROrientationSensorDevice", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebXROrientationSensorDevice",
+#if defined(OS_ANDROID)
+    base::FEATURE_ENABLED_BY_DEFAULT
+#else
+    base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Wipe corrupt v2 IndexedDB databases.
 const base::Feature kWipeCorruptV2IDBDatabases{
