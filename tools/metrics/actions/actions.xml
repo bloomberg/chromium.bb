@@ -440,7 +440,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AboutFlags_top-chrome-md@1">
-  <obsolete>Deprecated in favor of  Launch.FlagsAtStartup histogram.</obsolete>
+  <obsolete>Deprecated in favor of Launch.FlagsAtStartup histogram.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <owner>tdanderson@chromium.org</owner>
   <description>
@@ -450,7 +450,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AboutFlags_top-chrome-md@2">
-  <obsolete>Deprecated in favor of  Launch.FlagsAtStartup histogram.</obsolete>
+  <obsolete>Deprecated in favor of Launch.FlagsAtStartup histogram.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <owner>tdanderson@chromium.org</owner>
   <description>
@@ -460,7 +460,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AboutFlags_top-chrome-md@3">
-  <obsolete>Deprecated in favor of  Launch.FlagsAtStartup histogram.</obsolete>
+  <obsolete>Deprecated in favor of Launch.FlagsAtStartup histogram.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <owner>tdanderson@chromium.org</owner>
   <description>
@@ -10478,8 +10478,8 @@ should be able to be added at any place in this file.
   <owner>donnd@chromium.org</owner>
   <description>
     User chose to process text using one of the assist actions available in the
-    mobile action bar.  These actions trigger an intent to interacte with
-    another activity, e.g. Translate.
+    mobile action bar. These actions trigger an intent to interacte with another
+    activity, e.g. Translate.
   </description>
 </action>
 
@@ -10626,22 +10626,21 @@ should be able to be added at any place in this file.
 <action name="MobileComeToForeground">
   <owner>tedchoc@chromium.org</owner>
   <description>
-    Chrome has come to the foreground.  Only emitted if the foreground content
-    is an Activity that views web content, e.g., not settings.  This will be
-    emitted everytime the Activity goes from entirely hidden to at least
-    partially visible.  Partially visible means that at least some portion of
-    the Activity is visible, but the Activity is not interactable, e.g. being
-    covered by the share dialog, javascript alert dialogs, the voice input
-    dialog, etc.
+    Chrome has come to the foreground. Only emitted if the foreground content is
+    an Activity that views web content, e.g., not settings. This will be emitted
+    everytime the Activity goes from entirely hidden to at least partially
+    visible. Partially visible means that at least some portion of the Activity
+    is visible, but the Activity is not interactable, e.g. being covered by the
+    share dialog, javascript alert dialogs, the voice input dialog, etc.
 
     Please note, this has the potential to be called many times for a given
-    session.  For further details, see the Android activity concept of onPause
+    session. For further details, see the Android activity concept of onPause
     and onResume for a better understanding of what circumstances can trigger
     this.
 
     Session tracking is based on the same visibility concept, but a session can
     span multiple live Android Activities, while this metric will be logged when
-    each applicable Activity goes to the foreground (per above).  Since session
+    each applicable Activity goes to the foreground (per above). Since session
     tracking uses onPause and onResume, this metric is also tied to that to
     ensure we capture the event.
   </description>
@@ -10805,7 +10804,7 @@ should be able to be added at any place in this file.
   <description>
     Records when the system started a VIEW intent on a navigation click. This
     happens when there is another application in the system that's not a browser
-    and that can handle this URL (e.g. Maps app for  http://maps.google.com/
+    and that can handle this URL (e.g. Maps app for http://maps.google.com/
     url).
   </description>
 </action>
@@ -10871,7 +10870,7 @@ should be able to be added at any place in this file.
 <action name="MobileFreTOSLinkTapped">
   <owner>justincohen@chromium.org</owner>
   <description>
-    User tapped on the TOS link on the first run welcome view.  This metric is
+    User tapped on the TOS link on the first run welcome view. This metric is
     only recorded if and after the TOS are accepted. This metric is specific to
     iOS.
   </description>
@@ -10880,22 +10879,22 @@ should be able to be added at any place in this file.
 <action name="MobileGoToBackground">
   <owner>tedchoc@chromium.org</owner>
   <description>
-    Chrome has gone to the background.  Only emitted if the previously
+    Chrome has gone to the background. Only emitted if the previously
     foregrounded content was an Activity that views web content, e.g., not
-    settings.  Chrome may be partially visible at this point, but is not
-    directly in the foreground/interactable.  Partially visible means that at
-    least some portion of the Activity is visible, but the Activity is not
-    interactable, e.g. being covered by the share dialog, javascript alert
-    dialogs, the voice input dialog, etc.
+    settings. Chrome may be partially visible at this point, but is not directly
+    in the foreground/interactable. Partially visible means that at least some
+    portion of the Activity is visible, but the Activity is not interactable,
+    e.g. being covered by the share dialog, javascript alert dialogs, the voice
+    input dialog, etc.
 
     Please note, this has the potential to be called many times for a given
-    session.  For further details, see the Android activity concept of onPause
+    session. For further details, see the Android activity concept of onPause
     and onResume for a better understanding of what circumstances can trigger
     this.
 
     Session tracking is based on the same visibility concept, but a session can
     span multiple live Android Activities, while this metric will be logged when
-    each applicable Activity goes to the background (per above).  Since session
+    each applicable Activity goes to the background (per above). Since session
     tracking uses onPause and onResume, this metric is also tied to that to
     ensure we capture the event.
   </description>
@@ -11066,9 +11065,9 @@ should be able to be added at any place in this file.
 <action name="MobileMenuReload">
   <owner>tedchoc@chromium.org</owner>
   <description>
-    User pressed the reload option in the app menu.  This was added in M55.
-    Prior to M55, the menu reload counts were combined with the toolbar counts,
-    which were all reported as MobileToolbarReload.
+    User pressed the reload option in the app menu. This was added in M55. Prior
+    to M55, the menu reload counts were combined with the toolbar counts, which
+    were all reported as MobileToolbarReload.
   </description>
 </action>
 
@@ -11380,13 +11379,13 @@ should be able to be added at any place in this file.
 
 <action name="MobileOmniboxSearch">
   <obsolete>
-    Removed Sep 2016 because the name kept misleading people.  Replaced with
+    Removed Sep 2016 because the name kept misleading people. Replaced with
     MobileOmniboxUse, which has the same semantics.
   </obsolete>
   <owner>mpearson@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <description>
-    User used the omnibox to go somewhere.  The action doesn't have to lead to a
+    User used the omnibox to go somewhere. The action doesn't have to lead to a
     search page (except on iOS, where this is only recorded for search-type
     navigations).
   </description>
@@ -11396,7 +11395,7 @@ should be able to be added at any place in this file.
   <owner>mpearson@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <description>
-    User used the omnibox to go somewhere.  The action doesn't have to lead to a
+    User used the omnibox to go somewhere. The action doesn't have to lead to a
     search page.
   </description>
 </action>
@@ -11540,9 +11539,9 @@ should be able to be added at any place in this file.
 <action name="MobileReceivedExternalIntent">
   <owner>tedchoc@chromium.org</owner>
   <description>
-    A VIEW intent was received by the tabbed mode activity.  This will combine
-    intents sent by external application as well as Chrome itself.  This does
-    not cover all intent types handled by Chrome.  Use
+    A VIEW intent was received by the tabbed mode activity. This will combine
+    intents sent by external application as well as Chrome itself. This does not
+    cover all intent types handled by Chrome. Use
     MobileTabbedModeViewIntentFromApp and MobileTabbedModeViewIntentFromChrome
     for a complete picture.
   </description>
@@ -11559,7 +11558,7 @@ should be able to be added at any place in this file.
 <action name="MobileReceivedExternalIntent.Chrome">
   <owner>tedchoc@chromium.org</owner>
   <description>
-    A VIEW intent was received by the tabbed mode activity from Chrome.  This is
+    A VIEW intent was received by the tabbed mode activity from Chrome. This is
     only recorded for intent types that are also allowed from external apps.
   </description>
 </action>
@@ -11735,7 +11734,7 @@ should be able to be added at any place in this file.
 <action name="MobileStartup.MainIntentReceived">
   <owner>tedchoc@chromium.org</owner>
   <description>
-    An ACTION_MAIN intent was received by Chrome.  This is the best indicator we
+    An ACTION_MAIN intent was received by Chrome. This is the best indicator we
     have to signal the user tapped on the Chrome icon from the launcher.
   </description>
 </action>
@@ -11927,8 +11926,8 @@ should be able to be added at any place in this file.
 <action name="MobileToolbarReload">
   <owner>tedchoc@chromium.org</owner>
   <description>
-    User pressed the reload icon in the toolbar.  Pre-M55, MobileToolbarReload
-    accounted for all reload actions.  M55+, this metric only refers to reloads
+    User pressed the reload icon in the toolbar. Pre-M55, MobileToolbarReload
+    accounted for all reload actions. M55+, this metric only refers to reloads
     that occurred from the toolbar.
   </description>
 </action>
@@ -14793,11 +14792,11 @@ should be able to be added at any place in this file.
   <owner>vasilii@chromium.org</owner>
   <description>
     The user submitted a password form, but the website appeared to reject the
-    credentials.  This action reflects the password manager component's logic
-    for whether or not to offer to save a password.  At the time of writing,
-    failure means that either the form submission was canceled with a failure
-    message, or the form submission succeeded, but the user was directed back to
-    a page that still contained a login form.
+    credentials. This action reflects the password manager component's logic for
+    whether or not to offer to save a password. At the time of writing, failure
+    means that either the form submission was canceled with a failure message,
+    or the form submission succeeded, but the user was directed back to a page
+    that still contained a login form.
   </description>
 </action>
 
@@ -14815,8 +14814,8 @@ should be able to be added at any place in this file.
   <owner>vasilii@chromium.org</owner>
   <description>
     The user submitted a password form and the website appeared to accept the
-    credentials.  This action reflects the password manager component's logic
-    for whether or not to offer to save a password.
+    credentials. This action reflects the password manager component's logic for
+    whether or not to offer to save a password.
   </description>
 </action>
 
@@ -19343,7 +19342,7 @@ should be able to be added at any place in this file.
   <description>
     User hit the &quot;X&quot; button to close the tab. The return button is an
     explicit &quot;close this tab and return to the previous app&quot; button
-    that may appear to the left of the Omnibox.  This is different from regular
+    that may appear to the left of the Omnibox. This is different from regular
     tab closing buttons because those doesn't send the user back to the previous
     app.
   </description>

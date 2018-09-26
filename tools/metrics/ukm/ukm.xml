@@ -722,7 +722,7 @@ be describing additional metrics about the same event.
   <owner>donnd@chromium.org</owner>
   <summary>
     Metrics related to a Contextual Search Tap event on a page, for use with
-    Ranker.  These metrics are recorded each time the user triggers the
+    Ranker. These metrics are recorded each time the user triggers the
     Contextual Search UI via a tap gesture (when enabled).
   </summary>
   <metric name="DidOptIn">
@@ -754,8 +754,8 @@ be describing additional metrics about the same event.
   <metric name="FontSize">
     <summary>
       Emits a value from 0-10 representing the effective font size on the
-      screen.  A value of 0 means the font size cannot be obtained.  A value of
-      1 represents a very small font and a value of 10 represents a large font.
+      screen. A value of 0 means the font size cannot be obtained. A value of 1
+      represents a very small font and a value of 10 represents a large font.
     </summary>
   </metric>
   <metric name="IsEntity">
@@ -768,7 +768,7 @@ be describing additional metrics about the same event.
   <metric name="IsEntityEligible">
     <summary>
       Emits a 1 or 0 to indicate whether the IsEntity boolean ever had a chance
-      of being true or not.  When we're dealing with languages other than ones
+      of being true or not. When we're dealing with languages other than ones
       where our simple entity-detection can work this signal is false.
     </summary>
   </metric>
@@ -841,19 +841,19 @@ be describing additional metrics about the same event.
   <metric name="OutcomeWasQuickActionClicked">
     <summary>
       Emits a 1 or 0 to indicate whether the user clicked within the overlay
-      panel when a Quick-Action was shown.  This is a secondary outcome metric.
+      panel when a Quick-Action was shown. This is a secondary outcome metric.
     </summary>
   </metric>
   <metric name="OutcomeWasQuickAnswerSeen">
     <summary>
       Emits a 1 or 0 to indicate whether the user could see a Quick-Answer
-      caption within the overlay panel.  This is a tertiary outcome metric.
+      caption within the overlay panel. This is a tertiary outcome metric.
     </summary>
   </metric>
   <metric name="PortionOfElement">
     <summary>
       Emits an integer in the range 0-10 inclusive that expresses the portion of
-      the enclosing element that is the word tapped.  A zero will be emitted if
+      the enclosing element that is the word tapped. A zero will be emitted if
       the ratio cannot be calculated. A value of 10 means the word spans the
       entire element, and a value of 1 means the word is 10% or less than the
       entire element.
@@ -951,7 +951,7 @@ be describing additional metrics about the same event.
   <owner>zea@chromium.org</owner>
   <summary>
     Metrics related to Contextual Suggestions shown in the Chrome Assistive
-    Surface, aka EoC shown in CAS.  These metrics are recorded each time the
+    Surface, aka EoC shown in CAS. These metrics are recorded each time the
     Contextual Suggestions UI is dismissed. Each record always contains a value
     for every metric known at the time of the implementation.
   </summary>
@@ -982,15 +982,15 @@ be describing additional metrics about the same event.
   <metric name="FetchState">
     <summary>
       Emits an integer in the range 0-7 to indicate the ending state of the data
-      fetcher and results returned.  A value of 0 indicates not-started, a 7
-      indicates fetch-completed with suggestions.  See the code for details.
+      fetcher and results returned. A value of 0 indicates not-started, a 7
+      indicates fetch-completed with suggestions. See the code for details.
     </summary>
   </metric>
   <metric name="ShowDurationBucketMin">
     <summary>
       Emits an integer in the range 0-N to indicate the duration that the sheet
-      was shown before a positive or negative action was taken.  A value of 0
-      indicates that the UI was never shown.  A value greater than 0 indicates
+      was shown before a positive or negative action was taken. A value of 0
+      indicates that the UI was never shown. A value greater than 0 indicates
       that some user interaction occurred taking at least the indicated number
       of milliseconds, but less than twice that amount. This exponential
       bucketing is done for privacy reasons, and uses the UKM
@@ -2627,8 +2627,8 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="IsSilent">
     <summary>
-      Boolean value representing  whether default notification indicators
-      (sound, vibration, light) should be suppressed.
+      Boolean value representing whether default notification indicators (sound,
+      vibration, light) should be suppressed.
     </summary>
   </metric>
   <metric name="NumActionButtonClicks">
@@ -4895,7 +4895,7 @@ be describing additional metrics about the same event.
     <summary>
       The approximate amount of time the user spends in presentation in seconds.
       Times are reported accurately when low, for example, under a minute, and
-      get rounded to minutes and then hours as they get larger.  This is done by
+      get rounded to minutes and then hours as they get larger. This is done by
       SessionTracker::GetRoundedDurationInSeconds.
     </summary>
   </metric>
