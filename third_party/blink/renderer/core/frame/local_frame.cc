@@ -950,7 +950,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
       !GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
       target_frame == Tree().Top()) {
     DEFINE_STATIC_LOCAL(EnumerationHistogram, framebust_histogram,
-                        ("WebCore.Framebust", 8));
+                        ("WebCore.Framebust2", 8));
     const unsigned kUserGestureBit = 0x1;
     const unsigned kAllowedBit = 0x2;
     const unsigned kAdBit = 0x4;
