@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol ToolbarOwner;
 @class ToolbarUIState;
 class WebStateList;
 
@@ -27,7 +26,7 @@ class WebStateList;
 @property(nonatomic, strong, readonly, nonnull) ToolbarUIState* toolbarUI;
 
 // Designated initializer that uses navigation events from |webStateList| and
-// the height provided by |toolbarOwner| to update |state|'s broadcast value.
+// the height provided by |owner| to update |state|'s broadcast value.
 - (nullable instancetype)
 initWithToolbarUI:(nonnull ToolbarUIState*)toolbarUI
      toolbarOwner:(nonnull id<ToolbarHeightProviderForFullscreen>)owner

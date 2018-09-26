@@ -31,10 +31,6 @@
 - (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher {
   self.didEndCalled = YES;
 }
-
-- (id<ToolbarOwner>)tabSwitcherTransitionToolbarOwner {
-  return nil;
-}
 @end
 
 namespace {

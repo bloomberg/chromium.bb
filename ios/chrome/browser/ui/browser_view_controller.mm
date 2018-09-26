@@ -205,7 +205,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
@@ -2621,18 +2620,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (CGFloat)headerHeightForTab:(Tab*)tab {
-  id nativeController = [self nativeControllerForTab:tab];
-  if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)] &&
-      [nativeController respondsToSelector:@selector(toolbarFrame)] &&
-      CGRectGetHeight([nativeController toolbarFrame]) > 0.0 &&
-      ![self canShowTabStrip]) {
-    // On iPhone, don't add any header height for ToolbarOwner native
-    // controllers when they're displaying their own toolbar.
-    if (self.usesFullscreenContainer)
-      return StatusBarHeight();
-    return 0;
-  }
-
   NSArray<HeaderDefinition*>* views = [self headerViews];
 
   CGFloat height = self.headerOffset;
@@ -3124,9 +3111,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
 
   CGFloat headerHeight = [self headerHeightForTab:tab];
-  id nativeController = [self nativeControllerForTab:tab];
-  if ([nativeController respondsToSelector:@selector(toolbarFrame)])
-    headerHeight += CGRectGetHeight([nativeController toolbarFrame]);
   return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
 }
 
@@ -4806,22 +4790,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   id nativeController = [self nativeControllerForTab:[_model currentTab]];
   DCHECK([nativeController isKindOfClass:[NewTabPageController class]]);
   [nativeController focusFakebox];
-}
-
-#pragma mark - ToolbarOwner (Public)
-
-- (CGRect)toolbarFrame {
-  // TODO(crbug.com/800266): Check when it is possible to remove the
-  // ToolbarOwner protocol.
-  NOTREACHED();
-  return CGRectZero;
-}
-
-- (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
-  // TODO(crbug.com/800266): Check when it is possible to remove the
-  // ToolbarOwner protocol.
-  NOTREACHED();
-  return nil;
 }
 
 #pragma mark - TabModelObserver methods

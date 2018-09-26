@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -26,7 +25,7 @@
   // The bridge for WebState observation.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 }
-// The ToolbarOwner passed on initialization.
+// The owner passed on initialization.
 @property(nonatomic, readonly, strong) id<ToolbarHeightProviderForFullscreen>
     owner;
 // The WebStateList whose navigations are driving this updater.
@@ -34,7 +33,7 @@
 // The active WebState in |webStateList|.
 @property(nonatomic, assign) web::WebState* webState;
 
-// Updates |state| using |toolbarOwner|.
+// Updates |state| using |owner|.
 - (void)updateState;
 
 @end

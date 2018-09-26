@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
