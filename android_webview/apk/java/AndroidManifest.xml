@@ -80,5 +80,11 @@
         {% endfor %}
         <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
                    android:value="0" />
+        {% if trichrome_library is defined %}
+        <uses-static-library
+            android:name="{{ trichrome_library }}"
+            android:version="{{ trichrome_version }}"
+            android:certDigest="{{ trichrome_certdigest }}" />
+        {% endif %}
     </application>
 </manifest>
