@@ -473,35 +473,11 @@ RenderWidget* RenderWidget::FromRoutingID(int32_t routing_id) {
   return it == widgets->end() ? NULL : it->second;
 }
 
-// static
-RenderWidget* RenderWidget::CreateForPopup(
-    RenderViewImpl* opener,
-    CompositorDependencies* compositor_deps,
-    const ScreenInfo& screen_info) {
-  mojom::WidgetPtr widget_channel;
-  mojom::WidgetRequest widget_channel_request =
-      mojo::MakeRequest(&widget_channel);
-
-  // Do a synchronous IPC to obtain a routing ID.
-  int32_t routing_id = MSG_ROUTING_NONE;
-  bool success =
-      RenderThreadImpl::current_render_message_filter()->CreateNewWidget(
-          opener->GetRoutingID(), std::move(widget_channel), &routing_id);
-  if (!success) {
-    // When the renderer is being killed the mojo message will fail.
-    return nullptr;
-  }
-
-  scoped_refptr<RenderWidget> widget(
-      new RenderWidget(routing_id, compositor_deps, WidgetType::kPopup,
-                       screen_info, blink::kWebDisplayModeUndefined, false,
-                       false, false, std::move(widget_channel_request)));
-  ShowCallback opener_callback = base::BindOnce(
-      &RenderViewImpl::ShowCreatedPopupWidget, opener->GetWeakPtr());
-  blink::WebWidget* web_widget = WebPagePopup::Create(widget.get());
-  widget->Init(std::move(opener_callback), web_widget);
-  DCHECK(!widget->HasOneRef());  // RenderWidget::Init() adds a reference.
-  return widget.get();
+void RenderWidget::InitForPopup(ShowCallback show_callback,
+                                blink::WebPagePopup* web_page_popup) {
+  // Init() increments the reference count on |this|, making it
+  // self-referencing.
+  Init(std::move(show_callback), web_page_popup);
 }
 
 void RenderWidget::InitForChildLocalRoot(
