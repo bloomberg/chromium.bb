@@ -207,7 +207,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   extensions::ExtensionManagementFactory::GetInstance();
   chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   chrome_apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
-  chrome_apps::EnsureAPIBrowserContextKeyedServiceFactoriesBuilt();
+  chrome_apps::api::EnsureAPIBrowserContextKeyedServiceFactoriesBuilt();
 #endif
 
 #if BUILDFLAG(ENABLE_APP_LIST)

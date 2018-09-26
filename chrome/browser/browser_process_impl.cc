@@ -268,7 +268,7 @@ void BrowserProcessImpl::Init() {
   extensions_browser_client_ =
       std::make_unique<extensions::ChromeExtensionsBrowserClient>();
   extensions_browser_client_->AddAPIProvider(
-      std::make_unique<apps::ChromeAppsBrowserAPIProvider>());
+      std::make_unique<chrome_apps::ChromeAppsBrowserAPIProvider>());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 #endif
 

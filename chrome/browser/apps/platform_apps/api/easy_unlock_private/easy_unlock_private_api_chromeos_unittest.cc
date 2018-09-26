@@ -19,7 +19,8 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 
-namespace apps {
+namespace chrome_apps {
+namespace api {
 namespace {
 
 using cryptauth::FakeConnection;
@@ -111,4 +112,5 @@ TEST_F(EasyUnlockPrivateApiTest, ExtensionUnloaded) {
 }
 
 }  // namespace
-}  // namespace apps
+}  // namespace api
+}  // namespace chrome_apps
