@@ -18,3 +18,10 @@ class UpdateConfigBuilder(simple_builders.SimpleBuilder):
     """Run through the stages of a config-updater build."""
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(config_stages.CheckTemplateStage)
+
+class LuciSchedulerBuilder(simple_builders.SimpleBuilder):
+  """Create config updater builders."""
+
+  def RunStages(self):
+    """Run through the stages of a luci-scheduler-updater build."""
+    self._RunStage(config_stages.DeployLuciSchedulerStage)

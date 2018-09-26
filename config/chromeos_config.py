@@ -4157,6 +4157,25 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.AddWithoutTemplate(
+      'luci-scheduler-updater',
+      site_config.templates.internal,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
+      description=('Deploy changes to luci_scheduler.cfg.'),
+      build_type=constants.GENERIC_TYPE,
+      boards=[],
+      builder_class_name='config_builders.LuciSchedulerBuilder',
+      active_waterfall=constants.WATERFALL_SWARMING,
+      binhost_test=True,
+      schedule='triggered',
+      triggered_gitiles=[[
+          'https://chromium.googlesource.com/chromiumos/chromite',
+          ['refs/heads/master']
+      ]],
+  )
+
+  site_config.AddWithoutTemplate(
       constants.BRANCH_UTIL_CONFIG,
       site_config.templates.paladin,
       site_config.templates.internal_paladin,

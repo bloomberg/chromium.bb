@@ -10,6 +10,8 @@ from __future__ import print_function
 import errno
 import os
 import re
+import shutil
+import textwrap
 import traceback
 
 from chromite.cbuildbot import repository
@@ -364,3 +366,92 @@ class UpdateConfigStage(generic_stages.BuilderStage):
                      self.template_gs_path)
     finally:
       git.CleanAndDetachHead(self.chromite_dir)
+
+
+class DeployLuciSchedulerStage(generic_stages.BuilderStage):
+  """Stage that deploys updates to luci_scheduler.cfg.
+
+  We autogenerate luci_scheduler.cfg, and submit that file into chromite
+  for review purposes. However, it must be submitted into the LUCI Project
+  config "chromeos" to be deployed. This stage autodeploys scheduler changes
+  from chromite.
+  """
+
+  category = constants.CI_INFRA_STAGE
+
+  # Where is the LUCI Project config defined.
+  PROJECT_URL = os.path.join(constants.INTERNAL_GOB_URL,
+                             'chromeos/manifest-internal')
+  PROJECT_BRANCH = 'infra/config'
+
+
+  def __init__(self, builder_run, **kwargs):
+    super(DeployLuciSchedulerStage, self).__init__(builder_run, **kwargs)
+    self.project_dir = None
+
+  def _RunUnitTest(self):
+    """Run chromeos_config_unittest to confirm a clean scheduler config."""
+    logging.debug("Running chromeos_config_unittest, to confirm sane state.")
+    test_path = path_util.ToChrootPath(os.path.join(
+        constants.CHROMITE_DIR, 'config', 'chromeos_config_unittest'))
+    cmd = ['cros_sdk', '--', test_path]
+    cros_build_lib.RunCommand(cmd, cwd=constants.CHROMITE_DIR)
+
+  def _CheckoutLuciProject(self):
+    """Checkout to the corresponding branch in the temp repository.
+
+    Raises:
+      BranchNotFoundException if failed to checkout to the branch.
+    """
+    self.project_dir = GetProjectWorkDir('luci_config')
+    osutils.RmDir(self.project_dir, ignore_missing=True, sudo=True)
+    osutils.SafeMakedirs(self.project_dir)
+
+    git.Clone(self.project_dir, self.PROJECT_URL, branch=self.PROJECT_BRANCH)
+
+    logging.info('Checked out %s:%s in %s',
+                 self.PROJECT_URL, self.PROJECT_BRANCH, self.project_dir)
+
+  def _UpdateLuciProject(self):
+    """Create and return a diff patch file for config changes."""
+    source_file = os.path.join(
+        constants.CHROMITE_DIR, 'config', 'luci-scheduler.cfg')
+
+    target_file = os.path.join(self.project_dir, 'luci-scheduler.cfg')
+
+    if osutils.ReadFile(source_file) == osutils.ReadFile(target_file):
+      logging.PrintBuildbotStepText('luci-scheduler.cfg current: No Update.')
+      return
+
+    chromite_rev = git.RunGit(constants.CHROMITE_DIR, [
+        'rev-parse', 'HEAD:config/luci-scheduler.cfg']).output.rstrip()
+
+    message = textwrap.dedent('''\
+      luci-scheduler.cfg: Chromite %s
+
+      Auto update to match generated file in chromite.
+      ''' % chromite_rev)
+
+    shutil.copyfile(source_file, target_file)
+
+    git.RunGit(self.project_dir, ['add', '-A'])
+    git.RunGit(self.project_dir, ['commit', '-m', message])
+
+    push_to = git.RemoteRef('origin', 'infra/config')
+    logging.info('Pushing to branch (%s) with message: %s %s',
+                 push_to, message,
+                 ' (dryrun)' if self._run.options.debug else '')
+    git.RunGit(self.project_dir, ['config', 'push.default', 'tracking'],
+               print_cmd=True)
+    git.PushBranch(self.PROJECT_BRANCH, self.project_dir,
+                   dryrun=self._run.options.debug)
+    logging.PrintBuildbotStepText('luci-scheduler.cfg: Updated.')
+
+  def PerformStage(self):
+    """Perform the DeployLuciSchedulerStage."""
+    logging.info('Update luci_scheduler.cfg at %s:%s.',
+                 self.PROJECT_URL, self.PROJECT_BRANCH)
+
+    self._RunUnitTest()
+    self._CheckoutLuciProject()
+    self._UpdateLuciProject()
