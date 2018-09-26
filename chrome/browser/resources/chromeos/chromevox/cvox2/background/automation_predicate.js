@@ -197,7 +197,8 @@ AutomationPredicate.leaf = function(node) {
       node.state[State.INVISIBLE] || node.children.every(function(n) {
         return n.state[State.INVISIBLE];
       }) ||
-      !!AutomationPredicate.math(node);
+      // Explicitly only check the clickable attribute here (for Android).
+      node.clickable || !!AutomationPredicate.math(node);
 };
 
 /**
