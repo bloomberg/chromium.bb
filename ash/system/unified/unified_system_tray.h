@@ -85,6 +85,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   void CloseBubble() override;
   base::string16 GetAccessibleNameForBubble() override;
   base::string16 GetAccessibleNameForTray() override;
+  void HideBubble(const TrayBubbleView* bubble_view) override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
   void UpdateAfterShelfAlignmentChange() override;
