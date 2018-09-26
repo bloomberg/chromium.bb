@@ -33,17 +33,6 @@
 #include "unistr.h"
 #include "version-etc.h"
 
-static int forward_flag = 0;
-static int backward_flag = 0;
-
-static FILE *input;
-
-static const struct option longopts[] = {
-	{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
-	{ "forward", no_argument, NULL, 'f' }, { "backward", no_argument, NULL, 'b' },
-	{ NULL, 0, NULL, 0 },
-};
-
 const char version_etc_copyright[] =
 		"Copyright %s %d ViewPlus Technologies, Inc. and JJB Software, Inc.";
 
@@ -140,6 +129,17 @@ main(int argc, char **argv) {
 	int optc;
 
 	set_program_name(argv[0]);
+
+	static int forward_flag = 0;
+	static int backward_flag = 0;
+
+	static FILE *input;
+
+	static const struct option longopts[] = {
+		{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
+		{ "forward", no_argument, NULL, 'f' }, { "backward", no_argument, NULL, 'b' },
+		{ NULL, 0, NULL, 0 },
+	};
 
 	while ((optc = getopt_long(argc, argv, "hvfb", longopts, NULL)) != -1) {
 		switch (optc) {
