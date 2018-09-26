@@ -266,7 +266,6 @@ extern const char kEnableAppInfoDialogMac[];
 extern const char kEnableFullscreenTabDetaching[];
 extern const char kEnableFullscreenToolbarReveal[];
 extern const char kEnableHostedAppsInWindows[];
-extern const char kEnableMacViewsNativeAppWindows[];
 extern const char kEnableUserMetrics[];
 extern const char kHostedAppQuitNotification[];
 extern const char kMetricsClientID[];

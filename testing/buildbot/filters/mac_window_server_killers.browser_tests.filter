@@ -132,7 +132,7 @@
 -NaClBrowserTestNewlib.*
 -NaClBrowserTestPnacl.*
 -Native/ExtensionBindingsApiTest.*
--NativeAppWindowCocoaBrowserTestInstance/NativeAppWindowCocoaBrowserTest.*
+-NativeAppWindowCocoaBrowserTest.*
 -NativeBindings/ExternallyConnectableMessagingTest.*
 -NavigationEntryRemoverTest.*
 -NetInternalsTest.*

@@ -885,10 +885,6 @@ const char kEnableFullscreenToolbarReveal[] =
 // Allows hosted apps to be opened in windows on Mac.
 const char kEnableHostedAppsInWindows[] = "enable-hosted-apps-in-windows";
 
-// Enables use of toolkit-views based native app windows.
-const char kEnableMacViewsNativeAppWindows[] =
-    "enable-mac-views-native-app-windows";
-
 // Shows a notification when quitting Chrome with hosted apps running. Default
 // behavior is to also quit all hosted apps.
 const char kHostedAppQuitNotification[] = "enable-hosted-app-quit-notification";
