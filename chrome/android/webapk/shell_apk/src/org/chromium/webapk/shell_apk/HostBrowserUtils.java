@@ -31,9 +31,6 @@ public class HostBrowserUtils {
 
     private static final int MINIMUM_REQUIRED_CHROME_VERSION = 57;
 
-    /** Version name for developer builds. */
-    private static final String DEVELOPER_BUILD_VERSION_NAME = "Developer Build";
-
     private static final String TAG = "cr_HostBrowserUtils";
 
     /**
@@ -222,9 +219,6 @@ public class HostBrowserUtils {
         String versionName = info.versionName;
         int dotIndex = versionName.indexOf(".");
         if (dotIndex < 0) {
-            if (DEVELOPER_BUILD_VERSION_NAME.equals(versionName)) {
-                return MINIMUM_REQUIRED_CHROME_VERSION;
-            }
             return -1;
         }
         try {
