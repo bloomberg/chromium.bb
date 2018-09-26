@@ -98,6 +98,7 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
       network::mojom::FetchRequestMode::kNoCORS);
   resource_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kInclude);
+  resource_request.SetSkipServiceWorker(true);
 
   threadable_loader_ =
       new ThreadableLoader(*execution_context, this, resource_loader_options);
