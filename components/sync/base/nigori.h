@@ -20,7 +20,7 @@ namespace syncer {
 
 class Nigori;
 
-struct KeyDerivationParams {
+class KeyDerivationParams {
  public:
   static KeyDerivationParams CreateForPbkdf2();
   static KeyDerivationParams CreateForScrypt(const std::string& salt);
@@ -33,6 +33,7 @@ struct KeyDerivationParams {
   KeyDerivationParams(KeyDerivationParams&& other);
   KeyDerivationParams& operator=(const KeyDerivationParams& other);
   bool operator==(const KeyDerivationParams& other) const;
+  bool operator!=(const KeyDerivationParams& other) const;
 
  private:
   KeyDerivationParams(KeyDerivationMethod method,
