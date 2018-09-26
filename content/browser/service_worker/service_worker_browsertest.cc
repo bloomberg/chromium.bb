@@ -1788,14 +1788,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, IdleTimerWithDevTools) {
 
   // Navigate to a new page and request a sub resource. This should succeed
   // normally.
-  {
-    const GURL url = embedded_test_server()->GetURL(
-        "/service_worker/fetch_from_page.html?url=/service_worker/empty.html");
-    EXPECT_TRUE(NavigateToURL(shell(), url));
-    const base::string16 title = base::ASCIIToUTF16("DONE");
-    TitleWatcher watcher(shell()->web_contents(), title);
-    EXPECT_EQ(title, watcher.WaitAndGetTitle());
-  }
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html")));
+  EXPECT_EQ("Echo", EvalJs(shell(), "fetch_from_page('/echo');"));
 
   // Simulate to attach DevTools.
   base::RunLoop loop;
@@ -1830,12 +1826,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, IdleTimerWithDevTools) {
   // idle. However, the browser process notifies the renderer to let it continue
   // to work because DevTools is attached, and it'll result in running all
   // queued events.
-  EXPECT_EQ(200, EvalJs(shell(), R"(
-      (async () => {
-         let response = await fetch(params.get('url'));
-         return response.status;
-      })()
-  )"));
+  EXPECT_EQ("Echo", EvalJs(shell(), "fetch_from_page('/echo');"));
 }
 
 class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
@@ -3427,26 +3418,20 @@ class ServiceWorkerURLLoaderThrottleTest : public ServiceWorkerBrowserTest {
     ServiceWorkerBrowserTest::TearDownOnMainThread();
   }
 
-  void NavigateAndWaitForDone(const GURL& url) {
-    const base::string16 title = base::ASCIIToUTF16("DONE");
-    TitleWatcher watcher(shell()->web_contents(), title);
-    watcher.AlsoWaitForTitle(base::ASCIIToUTF16("ERROR"));
-    EXPECT_TRUE(NavigateToURL(shell(), url));
-    EXPECT_EQ(title, watcher.WaitAndGetTitle());
-  }
-
   void RegisterServiceWorker(const std::string& worker_url) {
-    GURL url = embedded_test_server()->GetURL(
-        "/service_worker/create_service_worker.html?worker_url=" + worker_url);
-    NavigateAndWaitForDone(url);
+    EXPECT_TRUE(NavigateToURL(
+        shell(), embedded_test_server()->GetURL(
+                     "/service_worker/create_service_worker.html")));
+    EXPECT_EQ("DONE", EvalJs(shell(), "register('" + worker_url + "');"));
   }
 
   void RegisterServiceWorkerWithScope(const std::string& worker_url,
                                       const std::string& scope) {
-    GURL url = embedded_test_server()->GetURL(
-        "/service_worker/create_service_worker.html?worker_url=" + worker_url +
-        "&scope=" + scope);
-    NavigateAndWaitForDone(url);
+    EXPECT_TRUE(NavigateToURL(
+        shell(), embedded_test_server()->GetURL(
+                     "/service_worker/create_service_worker.html")));
+    EXPECT_EQ("DONE", EvalJs(shell(), "register('" + worker_url + "', '" +
+                                          scope + "');"));
   }
 };
 
