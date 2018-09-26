@@ -120,7 +120,6 @@
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
-#import "ios/chrome/browser/ui/main/main_coordinator.h"
 #import "ios/chrome/browser/ui/main/tab_switcher.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/orientation_limiting_navigation_controller.h"
@@ -399,15 +398,10 @@ enum class ShowTabSwitcherSnapshotResult {
   StartupTasks* _startupTasks;
 }
 
-// Pointer to the object that manages view controllers, provided by the main
-// coordinator.
-@property(weak, nonatomic, readonly) id<ViewControllerSwapping>
-    viewControllerSwapper;
-
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the main view controller. This property should not be accessed before the
 // browser has started up to the FOREGROUND stage.
-@property(nonatomic, readonly) MainCoordinator* mainCoordinator;
+@property(nonatomic, readonly) TabGridCoordinator* mainCoordinator;
 
 // A property to track whether the QR Scanner should be started upon tab
 // switcher dismissal. It can only be YES if the QR Scanner experiment is
@@ -901,11 +895,7 @@ enum class ShowTabSwitcherSnapshotResult {
   return _browserViewWrangler;
 }
 
-- (id<ViewControllerSwapping>)viewControllerSwapper {
-  return self.mainCoordinator.viewControllerSwapper;
-}
-
-- (MainCoordinator*)mainCoordinator {
+- (TabGridCoordinator*)mainCoordinator {
   if (_browserInitializationStage == INITIALIZATION_STAGE_BASIC) {
     NOTREACHED() << "mainCoordinator accessed too early in initialization.";
     return nil;
@@ -1271,9 +1261,7 @@ enum class ShowTabSwitcherSnapshotResult {
 
   // Lazy init of mainCoordinator.
   [self.mainCoordinator start];
-  TabGridCoordinator* tabGridCoordinator =
-      base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
-  _tabSwitcher = tabGridCoordinator.tabSwitcher;
+  _tabSwitcher = self.mainCoordinator.tabSwitcher;
   // Call -restoreInternalState so that the grid shows the correct panel.
   [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel
                                          otrTabModel:self.otrTabModel
@@ -1437,13 +1425,7 @@ enum class ShowTabSwitcherSnapshotResult {
 }
 
 - (void)prepareTabSwitcher {
-  if ([self.viewControllerSwapper
-          respondsToSelector:(@selector(prepareToShowTabSwitcher:))]) {
-    [self.viewControllerSwapper prepareToShowTabSwitcher:_tabSwitcher];
-  } else {
-    NOTREACHED() << "Grid view controller swapper doesn't implement "
-                 << "-prepareToShowTabSwitcher: as expected.";
-  }
+  [self.mainCoordinator prepareToShowTabSwitcher:_tabSwitcher];
 }
 
 - (void)displayTabSwitcher {
@@ -1599,7 +1581,7 @@ enum class ShowTabSwitcherSnapshotResult {
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController {
   if (!baseViewController) {
-    DCHECK_EQ(self.currentBVC, self.viewControllerSwapper.activeViewController);
+    DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
     baseViewController = self.currentBVC;
   }
   DCHECK(![baseViewController presentedViewController]);
@@ -1624,7 +1606,7 @@ enum class ShowTabSwitcherSnapshotResult {
 - (void)showGoogleServicesSettingsFromViewController:
     (UIViewController*)baseViewController {
   if (!baseViewController) {
-    DCHECK_EQ(self.currentBVC, self.viewControllerSwapper.activeViewController);
+    DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
     baseViewController = self.currentBVC;
   }
   DCHECK(![baseViewController presentedViewController]);
@@ -1892,8 +1874,8 @@ enum class ShowTabSwitcherSnapshotResult {
       [weakCurrentBVC.dispatcher focusOmnibox];
     };
   }
-  [self.viewControllerSwapper showTabViewController:self.currentBVC
-                                         completion:completion];
+  [self.mainCoordinator showTabViewController:self.currentBVC
+                                   completion:completion];
   [self.currentBVC.dispatcher
       setIncognitoContentVisible:(self.currentBVC == self.otrBVC)];
 }
@@ -1999,7 +1981,7 @@ enum class ShowTabSwitcherSnapshotResult {
   _tabSwitcherIsActive = YES;
   [_tabSwitcher setDelegate:self];
 
-  [self.viewControllerSwapper
+  [self.mainCoordinator
       showTabSwitcher:_tabSwitcher
            completion:^{
              // Snapshotting may have been paused if the user initiated showing
@@ -2100,7 +2082,7 @@ enum class ShowTabSwitcherSnapshotResult {
   // The tab switcher dismissal animation runs
   // as part of the BVC presentation process.  The BVC is presented before the
   // animations begin, so it should be the current active VC at this point.
-  DCHECK_EQ(self.viewControllerSwapper.activeViewController, self.currentBVC);
+  DCHECK_EQ(self.mainCoordinator.activeViewController, self.currentBVC);
 
   if (_modeToDisplayOnTabSwitcherDismissal ==
       TabSwitcherDismissalMode::NORMAL) {
@@ -2418,9 +2400,7 @@ enum class ShowTabSwitcherSnapshotResult {
     // History coordinator can be started on top of the tab grid. This is not
     // true of the other tab switchers.
     DCHECK(self.mainCoordinator);
-    TabGridCoordinator* tabGridCoordinator =
-        base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
-    [tabGridCoordinator stopChildCoordinatorsWithCompletion:completion];
+    [self.mainCoordinator stopChildCoordinatorsWithCompletion:completion];
   };
 
   // As a top level rule, if the settings are showing, they need to be
@@ -2592,7 +2572,7 @@ enum class ShowTabSwitcherSnapshotResult {
 }
 
 - (UIImage*)currentPageScreenshot {
-  UIView* lastView = self.viewControllerSwapper.activeViewController.view;
+  UIView* lastView = self.mainCoordinator.activeViewController.view;
   DCHECK(lastView);
   CGFloat scale = 0.0;
   // For screenshots of the tab switcher we need to use a scale of 1.0 to avoid
@@ -2653,7 +2633,7 @@ enum class ShowTabSwitcherSnapshotResult {
   // TODO(crbug.com/754642): Implement TopPresentedViewControllerFrom()
   // privately.
   return top_view_controller::TopPresentedViewControllerFrom(
-      self.viewControllerSwapper.viewController);
+      self.mainCoordinator.viewController);
 }
 
 - (void)setTabSwitcherActive:(BOOL)active {
