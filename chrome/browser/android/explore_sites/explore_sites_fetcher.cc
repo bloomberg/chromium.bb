@@ -41,7 +41,7 @@ namespace {
 // Content type needed in order to communicate with the server in binary
 // proto format.
 const char kRequestContentType[] = "application/x-protobuf";
-const char kRequestMethod[] = "POST";
+const char kRequestMethod[] = "GET";
 
 constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
     net::DefineNetworkTrafficAnnotation("explore_sites", R"(
@@ -102,25 +102,25 @@ ExploreSitesFetcher::ExploreSitesFetcher(
                          version.components()[2],  // Build
                          version.components()[3],  // Patch
                          channel_name.c_str());
+  GURL final_url =
+      net::AppendOrReplaceQueryParameter(url, "country_code", country_code);
+  final_url = net::AppendOrReplaceQueryParameter(final_url, "version_token",
+                                                 catalog_version);
+
   auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = final_url;
   resource_request->method = kRequestMethod;
   bool is_stable_channel =
       chrome::GetChannel() == version_info::Channel::STABLE;
   std::string api_key = is_stable_channel ? google_apis::GetAPIKey()
                                           : google_apis::GetNonStableAPIKey();
-  resource_request->headers.SetHeader("x-google-api-key", api_key);
+  resource_request->headers.SetHeader("x-goog-api-key", api_key);
   resource_request->headers.SetHeader("X-Client-Version", client_version);
+  resource_request->headers.SetHeader("Content-Type", kRequestContentType);
   // TODO(freedjm): Implement Accept-Language support.
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
-
-  GetCatalogRequest request;
-  request.set_version_token(catalog_version);
-  request.set_country_code(country_code);
-  std::string request_message;
-  request.SerializeToString(&request_message);
-  url_loader_->AttachStringForUpload(request_message, kRequestContentType);
 
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),

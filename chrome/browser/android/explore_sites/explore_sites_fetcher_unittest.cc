@@ -38,6 +38,8 @@ class ExploreSitesFetcherTest : public testing::Test {
   ExploreSitesRequestStatus RunFetcherWithData(const std::string& response_data,
                                                std::string* data_received);
 
+  network::ResourceRequest last_resource_request;
+
  private:
   ExploreSitesFetcher::Callback StoreResult();
   network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
@@ -52,7 +54,6 @@ class ExploreSitesFetcherTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
-  network::ResourceRequest last_resource_request_;
 
   ExploreSitesRequestStatus last_status_;
   std::unique_ptr<std::string> last_data_;
@@ -79,7 +80,8 @@ ExploreSitesFetcherTest::ExploreSitesFetcherTest()
 void ExploreSitesFetcherTest::SetUp() {
   test_url_loader_factory_.SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        last_resource_request_ = request;
+        EXPECT_TRUE(request.url.is_valid() && !request.url.is_empty());
+        last_resource_request = request;
       }));
 }
 
@@ -153,7 +155,7 @@ ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcher(
     base::OnceCallback<void(void)> respond_callback,
     std::string* data_received) {
   std::unique_ptr<ExploreSitesFetcher> fetcher =
-      ExploreSitesFetcher::CreateForGetCatalog(StoreResult(), "", "KE",
+      ExploreSitesFetcher::CreateForGetCatalog(StoreResult(), "123", "KE",
                                                test_shared_url_loader_factory_);
 
   std::move(respond_callback).Run();
@@ -215,6 +217,10 @@ TEST_F(ExploreSitesFetcherTest, Success) {
             RunFetcherWithData("Any data.", &data));
   EXPECT_FALSE(data.empty());
   EXPECT_EQ(data, "Any data.");
+
+  EXPECT_EQ(last_resource_request.url.spec(),
+            "https://exploresites-pa.googleapis.com/v1/"
+            "getcatalog?country_code=KE&version_token=123");
 }
 
 }  // namespace explore_sites
