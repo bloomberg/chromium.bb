@@ -44,7 +44,12 @@ class QuickUnlockStorage : public KeyedService {
   // called if HasStrongAuth returns false.
   base::TimeDelta TimeSinceLastStrongAuth() const;
 
+  // Returns the time until next strong authentication required. This should
+  // not be called if HasStrongAuth returns false.
+  base::TimeDelta TimeUntilNextStrongAuth() const;
+
   // Returns true if fingerprint unlock is currently available.
+  // This checks whether there's fingerprint setup, as well as HasStrongAuth.
   bool IsFingerprintAuthenticationAvailable() const;
 
   // Returns true if PIN unlock is currently available.

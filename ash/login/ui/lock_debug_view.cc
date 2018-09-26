@@ -335,6 +335,8 @@ class LockDebugView::DebugDataDispatcherTransformer
         case mojom::FingerprintUnlockState::AUTH_FAILED:
           return mojom::FingerprintUnlockState::AUTH_DISABLED;
         case mojom::FingerprintUnlockState::AUTH_DISABLED:
+          return mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT;
+        case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
           return mojom::FingerprintUnlockState::UNAVAILABLE;
       }
     };

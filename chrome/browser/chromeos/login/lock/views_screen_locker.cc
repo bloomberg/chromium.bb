@@ -52,6 +52,8 @@ ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
       return ash::mojom::FingerprintUnlockState::AUTH_FAILED;
     case ScreenLocker::FingerprintState::kRemoved:
       return ash::mojom::FingerprintUnlockState::AUTH_DISABLED;
+    case ScreenLocker::FingerprintState::kTimeout:
+      return ash::mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT;
   }
 }
 

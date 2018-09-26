@@ -395,6 +395,15 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
 void ScreenLocker::OnPinAttemptDone(const UserContext& user_context,
                                     bool success) {
   if (success) {
+    // Mark strong auth if this is cryptohome based pin.
+    if (quick_unlock::PinBackend::GetInstance()->ShouldUseCryptohome(
+            user_context.GetAccountId())) {
+      quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+          quick_unlock::QuickUnlockFactory::GetForAccountId(
+              user_context.GetAccountId());
+      if (quick_unlock_storage)
+        quick_unlock_storage->MarkStrongAuth();
+    }
     OnAuthSuccess(user_context);
   } else {
     // PIN authentication has failed; try submitting as a normal password.
@@ -672,6 +681,10 @@ void ScreenLocker::ScreenLockReady() {
   } else {
     VLOG(1) << "Fingerprint is not available on lock screen";
   }
+
+  UpdateFingerprintState(
+      "ScreenLockReady",
+      user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
 }
 
 bool ScreenLocker::IsUserLoggedIn(const AccountId& account_id) const {
@@ -754,6 +767,48 @@ void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
     AuthFailure failure(AuthFailure::UNLOCK_FAILED);
     auth_status_consumer_->OnAuthFailure(failure);
   }
+}
+
+void ScreenLocker::UpdateFingerprintState(const std::string& source,
+                                          const AccountId& account_id) {
+  VLOG(1) << "Updating fingerprint state (source=" << source << ")";
+  update_fingerprint_state_timer_.Stop();
+  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      quick_unlock::QuickUnlockFactory::GetForAccountId(account_id);
+
+  // If strong auth is required, disable fingerprint.
+  if (quick_unlock_storage && !quick_unlock_storage->HasStrongAuth() &&
+      quick_unlock_storage->fingerprint_storage()->IsFingerprintAvailable()) {
+    VLOG(1) << "Require strong auth to make fingerprint unlock available.";
+    delegate_->SetFingerprintState(account_id, FingerprintState::kTimeout);
+
+    // Prefs based pin will be unavailable when strong auth is required.
+    quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
+        account_id, base::BindOnce(&ScreenLocker::OnPinCanAuthenticate,
+                                   weak_factory_.GetWeakPtr(), account_id));
+    return;
+  }
+
+  // If fingerprint is available, call this function again when strong auth
+  // will expire.
+  if (quick_unlock_storage &&
+      quick_unlock_storage->IsFingerprintAuthenticationAvailable()) {
+    const base::TimeDelta next_strong_auth =
+        quick_unlock_storage->TimeUntilNextStrongAuth();
+    VLOG(1) << "Scheduling next fingerprint state update in "
+            << next_strong_auth;
+    update_fingerprint_state_timer_.Start(
+        FROM_HERE, next_strong_auth,
+        base::BindOnce(&ScreenLocker::UpdateFingerprintState,
+                       base::Unretained(this),
+                       "update_fingerprint_state_timer_", account_id));
+  }
+}
+
+void ScreenLocker::OnPinCanAuthenticate(const AccountId& account_id,
+                                        bool can_authenticate) {
+  LoginScreenClient::Get()->login_screen()->SetPinEnabledForUser(
+      account_id, can_authenticate);
 }
 
 }  // namespace chromeos

@@ -1294,7 +1294,9 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         if (state->enable_tap_auth)
           to_update_auth |= LoginAuthUserView::AUTH_TAP;
         if (state->fingerprint_state !=
-            mojom::FingerprintUnlockState::UNAVAILABLE) {
+                mojom::FingerprintUnlockState::UNAVAILABLE &&
+            state->fingerprint_state !=
+                mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT) {
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
         }
 
