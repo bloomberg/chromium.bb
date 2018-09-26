@@ -111,11 +111,13 @@ class TestGpuService : public mojom::GpuService {
   void GetVideoMemoryUsageStats(
       GetVideoMemoryUsageStatsCallback callback) override {}
 
+#if defined(OS_WIN)
   void RequestCompleteGpuInfo(
       RequestCompleteGpuInfoCallback callback) override {}
 
   void GetGpuSupportedRuntimeVersion(
       GetGpuSupportedRuntimeVersionCallback callback) override {}
+#endif
 
   void RequestHDRStatus(RequestHDRStatusCallback callback) override {}
 

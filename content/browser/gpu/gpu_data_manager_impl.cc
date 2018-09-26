@@ -102,6 +102,19 @@ void GpuDataManagerImpl::UpdateGpuInfo(
   private_->UpdateGpuInfo(gpu_info, gpu_info_for_hardware_gpu);
 }
 
+#if defined(OS_WIN)
+void GpuDataManagerImpl::UpdateDxDiagNode(
+    const gpu::DxDiagNode& dx_diagnostics) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateDxDiagNode(dx_diagnostics);
+}
+
+void GpuDataManagerImpl::UpdateDX12VulkanInfo(const gpu::GPUInfo& gpu_info) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateDX12VulkanInfo(gpu_info);
+}
+#endif
+
 void GpuDataManagerImpl::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info,
     const base::Optional<gpu::GpuFeatureInfo>&
