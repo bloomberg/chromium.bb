@@ -300,27 +300,25 @@ public class AccountSigninView extends FrameLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mSigninChooseView = (AccountSigninChooseView) findViewById(R.id.account_signin_choose_view);
+        mSigninChooseView = findViewById(R.id.account_signin_choose_view);
         mSigninChooseView.setAddNewAccountObserver(() -> {
             mListener.onNewAccount();
             RecordUserAction.record("Signin_AddAccountToDevice");
         });
 
-        mPositiveButton = (ButtonCompat) findViewById(R.id.positive_button);
-        mNegativeButton = (Button) findViewById(R.id.negative_button);
-        mMoreButton = (Button) findViewById(R.id.more_button);
-        mSigninConfirmationView =
-                (AccountSigninConfirmationView) findViewById(R.id.signin_confirmation_view);
-        mSigninAccountImage = (ImageView) findViewById(R.id.signin_account_image);
-        mSigninAccountName = (TextView) findViewById(R.id.signin_account_name);
-        mSigninAccountEmail = (TextView) findViewById(R.id.signin_account_email);
-        mSigninSyncTitle = (TextView) findViewById(R.id.signin_sync_title);
-        mSigninSyncDescription = (TextView) findViewById(R.id.signin_sync_description);
-        mSigninPersonalizeServiceTitle =
-                (TextView) findViewById(R.id.signin_personalize_service_title);
+        mPositiveButton = findViewById(R.id.positive_button);
+        mNegativeButton = findViewById(R.id.negative_button);
+        mMoreButton = findViewById(R.id.more_button);
+        mSigninConfirmationView = findViewById(R.id.signin_confirmation_view);
+        mSigninAccountImage = findViewById(R.id.signin_account_image);
+        mSigninAccountName = findViewById(R.id.signin_account_name);
+        mSigninAccountEmail = findViewById(R.id.signin_account_email);
+        mSigninSyncTitle = findViewById(R.id.signin_sync_title);
+        mSigninSyncDescription = findViewById(R.id.signin_sync_description);
+        mSigninPersonalizeServiceTitle = findViewById(R.id.signin_personalize_service_title);
         mSigninPersonalizeServiceDescription =
-                (TextView) findViewById(R.id.signin_personalize_service_description);
-        mSigninSettingsControl = (TextView) findViewById(R.id.signin_settings_control);
+                findViewById(R.id.signin_personalize_service_description);
+        mSigninSettingsControl = findViewById(R.id.signin_settings_control);
         // For the spans to be clickable.
         mSigninSettingsControl.setMovementMethod(LinkMovementMethod.getInstance());
     }
