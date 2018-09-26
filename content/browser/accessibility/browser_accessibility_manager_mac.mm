@@ -356,6 +356,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     case Event::DESCRIPTION_CHANGED:
     case Event::DOCUMENT_TITLE_CHANGED:
     case Event::LIVE_REGION_NODE_CHANGED:
+    case Event::LOAD_START:
     case Event::NAME_CHANGED:
     case Event::OTHER_ATTRIBUTE_CHANGED:
     case Event::RELATED_NODE_CHANGED:
