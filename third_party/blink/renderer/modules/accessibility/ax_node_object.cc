@@ -2702,6 +2702,25 @@ String AXNodeObject::NativeTextAlternative(
       }
     }
 
+    // title attr
+    if (name_sources) {
+      name_sources->push_back(NameSource(*found_text_alternative, titleAttr));
+      name_sources->back().type = name_from;
+    }
+    name_from = ax::mojom::NameFrom::kTitle;
+    const AtomicString& title = input_element->getAttribute(titleAttr);
+    if (!title.IsNull()) {
+      text_alternative = title;
+      if (name_sources) {
+        NameSource& source = name_sources->back();
+        source.attribute_value = title;
+        source.text = text_alternative;
+        *found_text_alternative = true;
+      } else {
+        return text_alternative;
+      }
+    }
+
     // localised default value ("Submit")
     name_from = ax::mojom::NameFrom::kValue;
     text_alternative = input_element->GetLocale().QueryString(

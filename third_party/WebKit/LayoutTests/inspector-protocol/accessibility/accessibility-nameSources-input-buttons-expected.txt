@@ -907,6 +907,10 @@ Tests name sources in input[type=button].
       },
       {
         "type": "attribute",
+        "attribute": "title"
+      },
+      {
+        "type": "attribute",
         "value": {
           "type": "computedString",
           "value": "Submit"
@@ -977,6 +981,11 @@ Tests name sources in input[type=button].
           "value": "image-input-value2"
         },
         "attribute": "value"
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
       },
       {
         "type": "attribute",
@@ -1055,6 +1064,11 @@ Tests name sources in input[type=button].
       {
         "type": "attribute",
         "attribute": "value",
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
         "superseded": true
       },
       {
@@ -1142,6 +1156,11 @@ Tests name sources in input[type=button].
       },
       {
         "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      },
+      {
+        "type": "attribute",
         "value": {
           "type": "computedString",
           "value": "Submit"
@@ -1188,7 +1207,7 @@ Tests name sources in input[type=button].
   },
   "name": {
     "type": "computedString",
-    "value": "Submit",
+    "value": "image-input-title5",
     "sources": [
       {
         "type": "relatedElement",
@@ -1214,13 +1233,26 @@ Tests name sources in input[type=button].
         "type": "attribute",
         "value": {
           "type": "computedString",
+          "value": "image-input-title5"
+        },
+        "attribute": "title",
+        "attributeValue": {
+          "type": "string",
+          "value": "image-input-title5"
+        }
+      },
+      {
+        "type": "attribute",
+        "value": {
+          "type": "computedString",
           "value": "Submit"
         },
         "attribute": "type",
         "attributeValue": {
           "type": "string",
           "value": "image"
-        }
+        },
+        "superseded": true
       },
       {
         "type": "contents",
@@ -1240,10 +1272,6 @@ Tests name sources in input[type=button].
         "superseded": true
       }
     ]
-  },
-  "description": {
-    "type": "computedString",
-    "value": "image-input-title5"
   },
   "properties": [
     {
