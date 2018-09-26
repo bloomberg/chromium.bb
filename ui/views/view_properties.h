@@ -47,5 +47,5 @@ VIEWS_EXPORT extern const ui::ClassProperty<gfx::Path*>* const
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Insets*);
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
                                         views::BubbleDialogDelegateView*);
-
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Path*);
 #endif  // UI_VIEWS_VIEW_PROPERTIES_H_
