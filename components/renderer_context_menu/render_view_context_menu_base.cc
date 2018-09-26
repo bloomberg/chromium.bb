@@ -358,7 +358,7 @@ void RenderViewContextMenuBase::ExecuteCommand(int id, int event_flags) {
   command_executed_ = false;
 }
 
-void RenderViewContextMenuBase::MenuWillShow(ui::SimpleMenuModel* source) {
+void RenderViewContextMenuBase::OnMenuWillShow(ui::SimpleMenuModel* source) {
   for (int i = 0; i < source->GetItemCount(); ++i) {
     if (source->IsVisibleAt(i) &&
         source->GetTypeAt(i) != ui::MenuModel::TYPE_SEPARATOR &&

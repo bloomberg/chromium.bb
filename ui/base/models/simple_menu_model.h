@@ -56,7 +56,10 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
     virtual void ExecuteCommand(int command_id, int event_flags) = 0;
 
     // Notifies the delegate that the menu is about to show.
-    virtual void MenuWillShow(SimpleMenuModel* source);
+    // Slight hack: Prefix with "On" to make sure this doesn't conflict with
+    // MenuModel::MenuWillShow(), since many classes derive from both
+    // SimpleMenuModel and SimpleMenuModel::Delegate.
+    virtual void OnMenuWillShow(SimpleMenuModel* source);
 
     // Notifies the delegate that the menu has closed.
     virtual void MenuClosed(SimpleMenuModel* source);

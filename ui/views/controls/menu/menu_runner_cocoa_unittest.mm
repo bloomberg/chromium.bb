@@ -45,7 +45,7 @@ class TestModel : public ui::SimpleMenuModel {
     bool IsCommandIdEnabled(int command_id) const override { return true; }
     void ExecuteCommand(int command_id, int event_flags) override {}
 
-    void MenuWillShow(SimpleMenuModel* source) override {
+    void OnMenuWillShow(SimpleMenuModel* source) override {
       if (!model_->menu_open_callback_.is_null())
         std::move(model_->menu_open_callback_).Run();
     }
