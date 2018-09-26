@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -159,7 +158,6 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  test::ScopedMacViewsBrowserMode views_mode_{true};
 
 #if defined(USE_AURA)
   std::unique_ptr<aura::test::TestCursorClient> cursor_client_;

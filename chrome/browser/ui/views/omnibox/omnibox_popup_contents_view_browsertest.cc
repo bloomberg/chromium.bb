@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
@@ -144,7 +143,6 @@ class OmniboxPopupContentsViewTest
   }
 
  private:
-  test::ScopedMacViewsBrowserMode views_mode_{true};
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsViewTest);

@@ -13,7 +13,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 
 // Tests hosted app windows that use the OpaqueBrowserFrameView implementation
 // for their non client frames.
@@ -65,8 +64,6 @@ class HostedAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
   HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
  private:
-  test::ScopedMacViewsBrowserMode force_mac_views_{true};
-
   DISALLOW_COPY_AND_ASSIGN(HostedAppOpaqueBrowserFrameViewTest);
 };
 

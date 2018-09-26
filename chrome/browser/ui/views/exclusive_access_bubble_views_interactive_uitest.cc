@@ -6,7 +6,6 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -33,8 +32,6 @@ class ExclusiveAccessBubbleViewsTest : public FullscreenControllerTest,
   bool was_observing_in_destroying_ = false;
 
  private:
-  test::ScopedMacViewsBrowserMode views_mode_{true};
-
   DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessBubbleViewsTest);
 };
 
