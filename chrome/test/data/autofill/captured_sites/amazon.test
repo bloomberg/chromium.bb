@@ -1,6 +1,56 @@
 {
   "name": "Amazon.com: The Path to Power (The Years of Lyndon Johnson, Volume 1) (9780679729457): Robert A. Caro: Books",
   "startingURL": "https://www.amazon.com/Path-Power-Years-Lyndon-Johnson/dp/0679729453/ref=sr_1_1?_encoding=UTF8&ref_=nav_ya_signin&",
+  "autofillProfile": [
+    {
+      "type": "ADDRESS_HOME_CITY",
+      "value": "Austin"
+    },
+    {
+      "type": "ADDRESS_HOME_LINE1",
+      "value": "4120 Freidrich Lane"
+    },
+    {
+      "type": "ADDRESS_HOME_LINE2",
+      "value": "Apt 8"
+    },
+    {
+      "type": "ADDRESS_HOME_STATE",
+      "value": "Texas"
+    },
+    {
+      "type": "ADDRESS_HOME_ZIP",
+      "value": "78744"
+    },
+    {
+      "type": "EMAIL_ADDRESS",
+      "value": "red.swingline@initech.com"
+    },
+    {
+      "type": "HTML_TYPE_CREDIT_CARD_EXP_MONTH",
+      "value": "05"
+    },
+    {
+      "type": "HTML_TYPE_CREDIT_CARD_EXP_YEAR",
+      "value": "2027"
+    },
+    {
+      "type": "CREDIT_CARD_NAME_FULL",
+      "value": "Milton Waddams"
+    },
+    {
+      "type": "HTML_TYPE_CREDIT_CARD_NUMBER",
+      "value": "9621327911759602"
+    },
+    {
+      "type": "NAME_FULL",
+      "value": "Milton C. Waddams"
+    },
+    {
+      "type": "PHONE_HOME_CITY_AND_NUMBER",
+      "value": "5125551234"
+    }
+  ],
   "actions": [
     {
       "selectorType": "xpath",

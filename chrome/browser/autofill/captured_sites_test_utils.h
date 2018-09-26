@@ -148,6 +148,9 @@ class TestRecipeReplayChromeFeatureActionExecutor {
   virtual bool AutofillForm(content::RenderFrameHost* frame,
                             const std::string& focus_element_css_selector,
                             const int attempts = 1);
+  virtual bool AddAutofillProfileInfo(const std::string& field_type,
+                                      const std::string& field_value);
+  virtual bool SetupAutofillProfile();
   // Chrome Password Manager feature methods.
   virtual bool AddCredential(const std::string& origin,
                              const std::string& username,
@@ -272,6 +275,8 @@ class TestRecipeReplayer {
   void NavigateAwayAndDismissBeforeUnloadDialog();
   bool HasChromeStoredCredential(const base::DictionaryValue& action,
                                  bool* stored_cred);
+  bool SetupSavedAutofillProfile(
+      const base::Value& saved_autofill_profile_container);
   bool SetupSavedPasswords(const base::Value& saved_password_list_container);
 
   Browser* browser_;
