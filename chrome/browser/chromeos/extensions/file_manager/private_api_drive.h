@@ -171,7 +171,8 @@ class FileManagerPrivateSearchDriveMetadataFunction
       drive::FileError error,
       std::unique_ptr<drive::MetadataSearchResultVector> results);
 
-  void OnSearchDriveFs(std::unique_ptr<base::ListValue> results);
+  void OnSearchDriveFs(const std::string& query_text,
+                       std::unique_ptr<base::ListValue> results);
 
   // Called when |results| in OnSearchMetadata() are converted to a list of
   // entry definitions.

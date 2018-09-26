@@ -11,8 +11,12 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/i18n/string_search.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -35,6 +39,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/drive/chromeos/search_metadata.h"
 #include "components/drive/event_logger.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -1248,16 +1253,32 @@ bool FileManagerPrivateSearchDriveMetadataFunction::RunAsync() {
         this, std::move(query), filter_dirs,
         base::BindOnce(
             &FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs,
-            this));
+            this, params->search_params.query));
   }
   return true;
 }
 
 void FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs(
+    const std::string& query_text,
     std::unique_ptr<base::ListValue> results) {
   if (!results) {
     SendResponse(false);
     return;
+  }
+
+  std::vector<base::string16> keywords =
+      base::SplitString(base::UTF8ToUTF16(query_text),
+                        base::StringPiece16(base::kWhitespaceUTF16),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::vector<std::unique_ptr<
+      base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>>
+      queries;
+  queries.reserve(keywords.size());
+  for (const auto& keyword : keywords) {
+    queries.push_back(
+        std::make_unique<
+            base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>(
+            keyword));
   }
 
   auto results_list = std::make_unique<base::ListValue>();
@@ -1268,8 +1289,10 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs(
     base::Value* value = entry.FindKey("fileFullPath");
     if (value && value->GetAsString(&highlight)) {
       base::FilePath path(highlight);
-      highlight = path.BaseName().value();
-      // TODO(crbug/854481): Implement highlighting of the found term.
+      if (!drive::internal::FindAndHighlight(path.BaseName().value(), queries,
+                                             &highlight)) {
+        highlight = path.BaseName().value();
+      }
     }
     dict.SetKey("entry", std::move(entry));
     dict.SetKey("highlightedBaseName", base::Value(highlight));
