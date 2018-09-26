@@ -350,8 +350,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
   [animator addAnimations:^{
     self.clearButtonView.alpha = 0;
-    self.clearButtonView.frame = CGRectLayoutOffset(
-        self.clearButtonView.frame, kToolbarButtonAnimationOffset);
   }];
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     [self resetClearButton];
@@ -1088,12 +1086,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (CGFloat)clearButtonAnimationOffset {
   DCHECK(!IsRefreshLocationBarEnabled());
-
-  if ([self isTextFieldLTR]) {
-    return kToolbarButtonAnimationOffset;
-  } else {
-    return -kToolbarButtonAnimationOffset;
-  }
+  return 0;
 }
 
 // Calculates editing rect from |bounds| rect by adjusting for in-bounds

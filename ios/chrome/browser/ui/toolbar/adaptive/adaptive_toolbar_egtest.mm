@@ -699,25 +699,6 @@ void FocusOmnibox() {
       assertWithMatcher:grey_not(grey_enabled())];
 }
 
-// Tests that it is possible to navigate to chrome://flags to disable it if
-// needed.
-// TODO(crbug.com/800266): Remove the test when the flag is enabled by default.
-- (void)testNavigationToFlags {
-  if (IsIPadIdiom()) {
-    // TODO(crbug.com/753098): grey_typeText() doesn't work on iPad.
-    return;
-  }
-  if (IsSplitToolbarMode()) {
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            kToolbarOmniboxButtonIdentifier)]
-        performAction:grey_tap()];
-  }
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText(@"chrome://flags\n")];
-
-  [ChromeEarlGrey waitForWebViewContainingText:"Experiments"];
-}
-
 // Tests that tapping the omnibox button focuses the omnibox.
 - (void)testOmniboxButton {
   if (!IsSplitToolbarMode()) {

@@ -25,10 +25,6 @@
 
 - (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
 
-// Informs the button that the Tools Menu's visibility is |toolsMenuVisible|.
-// TODO(crbug.com/800266): Remove this method.
-- (void)setToolsMenuIsVisible:(BOOL)toolsMenuVisible;
-
 // Triggers an animation on the button to draw the user's attention to the
 // button.
 - (void)triggerAnimation;

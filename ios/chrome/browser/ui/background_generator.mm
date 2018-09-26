@@ -49,13 +49,3 @@ UIImage* GetRadialGradient(CGRect backgroundRect,
   UIGraphicsEndImageContext();
   return background;
 }
-
-void InstallBackgroundInView(UIView* view) {
-  // TODO(crbug.com/800266): This function should be removed.
-  UIImageView* imageView = [[UIImageView alloc] initWithFrame:view.bounds];
-  imageView.image = [UIImage imageNamed:@"stack_view_background_noise"];
-  imageView.contentMode = UIViewContentModeScaleAspectFill;
-  imageView.autoresizingMask =
-      UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-  [view insertSubview:imageView atIndex:0];
-}

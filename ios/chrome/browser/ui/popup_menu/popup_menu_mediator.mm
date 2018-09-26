@@ -430,10 +430,6 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   [self.popupMenu itemsHaveChanged:@[ self.readingListItem ]];
 }
 
-- (void)unseenStateChanged:(BOOL)unseenItemsExist {
-  // TODO(crbug.com/800266): Remove this method.
-}
-
 #pragma mark - Popup updates (Private)
 
 // Updates the popup menu to have its state in sync with the current page

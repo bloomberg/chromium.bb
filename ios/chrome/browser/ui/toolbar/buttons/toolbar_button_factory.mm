@@ -103,11 +103,6 @@
   return tabGridButton;
 }
 
-- (ToolbarButton*)stackViewButton {
-  NOTREACHED();
-  return nil;
-}
-
 - (ToolbarToolsMenuButton*)toolsMenuButton {
   ToolbarToolsMenuButton* toolsMenuButton =
       [[ToolbarToolsMenuButton alloc] initWithFrame:CGRectZero];
@@ -188,16 +183,6 @@
   return bookmarkButton;
 }
 
-- (ToolbarButton*)voiceSearchButton {
-  NOTREACHED();
-  return nil;
-}
-
-- (ToolbarButton*)contractButton {
-  NOTREACHED();
-  return nil;
-}
-
 - (ToolbarButton*)omniboxButton {
   ToolbarSearchButton* omniboxButton = [ToolbarSearchButton
       toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_search"]];
@@ -217,11 +202,6 @@
   omniboxButton.visibilityMask =
       self.visibilityConfiguration.omniboxButtonVisibility;
   return omniboxButton;
-}
-
-- (ToolbarButton*)locationBarLeadingButton {
-  NOTREACHED();
-  return nil;
 }
 
 - (UIButton*)cancelButton {
@@ -262,16 +242,6 @@
   constraint.active = YES;
   button.configuration = self.toolbarConfiguration;
   button.exclusiveTouch = YES;
-}
-
-- (NSArray<UIImage*>*)voiceSearchImages {
-  NOTREACHED();
-  return nil;
-}
-
-- (NSArray<UIImage*>*)TTSImages {
-  NOTREACHED();
-  return nil;
 }
 
 @end
