@@ -112,6 +112,9 @@ def _MakeTreeViewList(symbols, include_all_symbols):
   small_symbol_pss = collections.defaultdict(
       lambda: collections.defaultdict(float))
 
+  # For delta symbols, most counts should 0, so use that as default. Else use 1.
+  default_symbol_count = 0 if symbols.IsDelta() else 1
+
   if include_all_symbols:
     main_symbols, extra_symbols = symbols, []
   else:
@@ -124,9 +127,9 @@ def _MakeTreeViewList(symbols, include_all_symbols):
     symbol_size = round(symbol.pss, 2)
     if symbol_size.is_integer():
       symbol_size = int(symbol_size)
-    symbol_count = 1
-    if symbol.IsDelta() and symbol.diff_status == models.DIFF_STATUS_REMOVED:
-      symbol_count = -1
+    symbol_count = default_symbol_count
+    if symbol.IsDelta():
+      symbol_count = models.DIFF_COUNT_DELTA[symbol.diff_status]
 
     path = symbol.source_path or symbol.object_path
     file_node = _GetOrAddFileNode(
@@ -146,7 +149,7 @@ def _MakeTreeViewList(symbols, include_all_symbols):
     # count as -1 rather than the default, 1.
     # We don't care about accurate counts for other symbol types currently,
     # so this data is only included for methods.
-    if is_dex_method and symbol_count != 1:
+    if is_dex_method and symbol_count != default_symbol_count:
       symbol_entry[_COMPACT_SYMBOL_COUNT_KEY] = symbol_count
     if symbol.flags:
       symbol_entry[_COMPACT_SYMBOL_FLAGS_KEY] = symbol.flags
