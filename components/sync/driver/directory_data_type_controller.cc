@@ -95,8 +95,8 @@ void DirectoryDataTypeController::RecordMemoryUsageAndCountsHistograms() {
       sync_client_->GetSyncService()->GetUserShare()->directory.get();
   SyncRecordModelTypeMemoryHistogram(
       type(), directory->EstimateMemoryUsageByType(type()));
-  SyncRecordModelTypeCountHistogram(type(),
-                                    directory->CountEntriesByType(type()));
+  int count_excl_root_node = directory->CountEntriesByType(type()) - 1;
+  SyncRecordModelTypeCountHistogram(type(), count_excl_root_node);
 }
 
 // static
