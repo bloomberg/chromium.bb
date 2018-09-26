@@ -318,6 +318,30 @@ class SmbProviderClientImpl : public SmbProviderClient {
     CallDefaultMethod(&method_call, &callback);
   }
 
+  void StartReadDirectory(int32_t mount_id,
+                          const base::FilePath& directory_path,
+                          StartReadDirectoryCallback callback) override {
+    smbprovider::ReadDirectoryOptionsProto options;
+    options.set_mount_id(mount_id);
+    options.set_directory_path(directory_path.value());
+    CallMethod(smbprovider::kStartReadDirectoryMethod, options,
+               &SmbProviderClientImpl::HandleStartReadDirectoryCallback,
+               &callback);
+  }
+
+  void ContinueReadDirectory(int32_t mount_id,
+                             int32_t read_dir_token,
+                             ReadDirectoryCallback callback) override {
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kContinueReadDirectoryMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt32(mount_id);
+    writer.AppendInt32(read_dir_token);
+    CallMethod(&method_call,
+               &SmbProviderClientImpl::HandleContinueReadDirectoryCallback,
+               &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
@@ -555,6 +579,58 @@ class SmbProviderClientImpl : public SmbProviderClient {
     }
 
     std::move(callback).Run(smbprovider::ERROR_COPY_PENDING, copy_token);
+  }
+
+  void HandleStartReadDirectoryCallback(StartReadDirectoryCallback callback,
+                                        dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "StartReadDirectory: failed to call smbprovider";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED,
+                              -1 /* read_dir_token */,
+                              smbprovider::DirectoryEntryListProto());
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+
+    smbprovider::ErrorType error = GetErrorFromReader(&reader);
+
+    smbprovider::DirectoryEntryListProto entries;
+    int32_t read_dir_token;
+    if (!reader.PopArrayOfBytesAsProto(&entries) ||
+        !reader.PopInt32(&read_dir_token)) {
+      LOG(ERROR) << "StartReadDirectory: Failed to parse protobuf.";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED,
+                              -1 /* read_dir_token */,
+                              smbprovider::DirectoryEntryListProto());
+      return;
+    }
+
+    std::move(callback).Run(error, read_dir_token, entries);
+  }
+
+  void HandleContinueReadDirectoryCallback(ReadDirectoryCallback callback,
+                                           dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "ContinueReadDirectory: failed to call smbprovider";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED,
+                              smbprovider::DirectoryEntryListProto());
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+
+    smbprovider::ErrorType error = GetErrorFromReader(&reader);
+
+    smbprovider::DirectoryEntryListProto entries;
+    if (!reader.PopArrayOfBytesAsProto(&entries)) {
+      LOG(ERROR) << "ContinueReadDirectory: Failed to parse protobuf.";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED,
+                              smbprovider::DirectoryEntryListProto());
+      return;
+    }
+
+    std::move(callback).Run(error, entries);
   }
 
   // Default callback handler for D-Bus calls.

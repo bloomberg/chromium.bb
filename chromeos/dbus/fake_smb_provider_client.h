@@ -119,6 +119,14 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
                     int32_t copy_token,
                     StatusCallback callback) override;
 
+  void StartReadDirectory(int32_t mount_id,
+                          const base::FilePath& directory_path,
+                          StartReadDirectoryCallback callback) override;
+
+  void ContinueReadDirectory(int32_t mount_id,
+                             int32_t read_dir_token,
+                             ReadDirectoryCallback callback) override;
+
   // Adds |share| to the list of shares for |server_url| in |shares_|.
   void AddToShares(const std::string& server_url, const std::string& share);
 
