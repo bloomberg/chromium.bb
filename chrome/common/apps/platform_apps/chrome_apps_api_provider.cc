@@ -13,7 +13,7 @@
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/permissions/permissions_info.h"
 
-namespace apps {
+namespace chrome_apps {
 
 ChromeAppsAPIProvider::ChromeAppsAPIProvider() {}
 ChromeAppsAPIProvider::~ChromeAppsAPIProvider() = default;
@@ -61,4 +61,4 @@ void ChromeAppsAPIProvider::RegisterManifestHandlers() {
   // No apps-specific manifest handlers (yet).
 }
 
-}  // namespace apps
+}  // namespace chrome_apps

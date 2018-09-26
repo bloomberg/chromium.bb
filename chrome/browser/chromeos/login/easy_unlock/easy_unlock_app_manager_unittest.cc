@@ -37,7 +37,7 @@
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace easy_unlock_private_api = apps::api::easy_unlock_private;
+namespace easy_unlock_private_api = chrome_apps::api::easy_unlock_private;
 namespace screenlock_private_api = extensions::api::screenlock_private;
 namespace app_runtime_api = extensions::api::app_runtime;
 

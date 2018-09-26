@@ -97,7 +97,7 @@ TestingBrowserProcess::TestingBrowserProcess()
   extensions_browser_client_.reset(
       new extensions::ChromeExtensionsBrowserClient);
   extensions_browser_client_->AddAPIProvider(
-      std::make_unique<apps::ChromeAppsBrowserAPIProvider>());
+      std::make_unique<chrome_apps::ChromeAppsBrowserAPIProvider>());
   extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 #endif
