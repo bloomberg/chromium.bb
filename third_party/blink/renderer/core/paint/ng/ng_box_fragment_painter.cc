@@ -191,6 +191,32 @@ void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
   PaintOverflowControlsIfNeeded(info, paint_offset);
 }
 
+void NGBoxFragmentPainter::RecordHitTestData(const PaintInfo& paint_info,
+                                             const LayoutPoint& paint_offset) {
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  const NGPhysicalFragment& physical_fragment = PhysicalFragment();
+  auto touch_action = physical_fragment.EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return;
+
+  // TODO(pdr): If we are painting the background into the scrolling contents
+  // layer, we need to use the overflow rect instead of the border box rect. We
+  // may want to move the call to RecordTouchActionRect into
+  // BoxPainter::PaintBoxDecorationBackgroundWithRect and share the logic
+  // the background painting code already uses.
+  NGPhysicalOffsetRect border_box = physical_fragment.LocalRect();
+  if (physical_fragment.IsInline())
+    border_box.offset += box_fragment_.InlineOffsetToContainerBox();
+  border_box.offset += NGPhysicalOffset(paint_offset);
+  HitTestData::RecordTouchActionRect(
+      paint_info.context, box_fragment_,
+      TouchActionRect(border_box.ToLayoutRect(), touch_action));
+}
+
 void NGBoxFragmentPainter::PaintObject(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
@@ -207,6 +233,9 @@ void NGBoxFragmentPainter::PaintObject(
     if (!suppress_box_decoration_background && is_visible &&
         style.HasBoxDecorationBackground())
       PaintBoxDecorationBackground(paint_info, paint_offset);
+
+    if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+      RecordHitTestData(paint_info, paint_offset);
 
     // Record the scroll hit test after the background so background squashing
     // is not affected. Hit test order would be equivalent if this were
