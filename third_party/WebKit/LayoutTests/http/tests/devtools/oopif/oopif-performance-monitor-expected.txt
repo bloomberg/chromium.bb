@@ -28,6 +28,7 @@ Resources
 ScriptDuration
 ScriptPromises
 TaskDuration
+TaskOtherDuration
 Timestamp
 UACSSResources
 V8CompileDuration

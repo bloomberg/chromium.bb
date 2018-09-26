@@ -26,6 +26,7 @@ title: test1
 	ScriptDuration
 	V8CompileDuration
 	TaskDuration
+	TaskOtherDuration
 	JSHeapUsedSize
 	JSHeapTotalSize
 	FirstMeaningfulPaint
@@ -58,6 +59,7 @@ title: test1
 	ScriptDuration
 	V8CompileDuration
 	TaskDuration
+	TaskOtherDuration
 	JSHeapUsedSize
 	JSHeapTotalSize
 	FirstMeaningfulPaint
@@ -90,6 +92,7 @@ title:
 	ScriptDuration
 	V8CompileDuration
 	TaskDuration
+	TaskOtherDuration
 	JSHeapUsedSize
 	JSHeapTotalSize
 	FirstMeaningfulPaint
