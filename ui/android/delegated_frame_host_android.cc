@@ -177,9 +177,7 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
 }
 
 bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
-  return content_layer_ && content_layer_->fallback_surface_id() &&
-         content_layer_->fallback_surface_id()->is_valid() &&
-         view_->GetWindowAndroid() &&
+  return pending_local_surface_id_.is_valid() && view_->GetWindowAndroid() &&
          view_->GetWindowAndroid()->GetCompositor();
 }
 
@@ -405,7 +403,6 @@ void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
     return;
   }
 
-  content_layer_->SetFallbackSurfaceId(surface_info.id());
   active_local_surface_id_ = surface_info.id().local_surface_id();
   active_device_scale_factor_ = surface_info.device_scale_factor();
 
@@ -465,9 +462,7 @@ void DelegatedFrameHostAndroid::ProcessCopyOutputRequest(
 }
 
 viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
-  return content_layer_ && content_layer_->fallback_surface_id()
-             ? *content_layer_->fallback_surface_id()
-             : viz::SurfaceId();
+  return viz::SurfaceId(frame_sink_id_, active_local_surface_id_);
 }
 
 bool DelegatedFrameHostAndroid::HasPrimarySurface() const {

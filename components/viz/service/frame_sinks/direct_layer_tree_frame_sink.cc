@@ -132,15 +132,6 @@ static HitTestRegionList CreateHitTestData(const CompositorFrame& frame) {
         const SurfaceDrawQuad* surface_quad =
             SurfaceDrawQuad::MaterialCast(quad);
 
-        // Skip the quad if the FrameSinkId between fallback and primary is not
-        // the same, because we don't know which FrameSinkId would be used to
-        // draw this quad.
-        if (surface_quad->surface_range.start() &&
-            surface_quad->surface_range.start()->frame_sink_id() !=
-                surface_quad->surface_range.end().frame_sink_id()) {
-          continue;
-        }
-
         // Skip the quad if the transform is not invertible (i.e. it will not
         // be able to receive events).
         gfx::Transform target_to_quad_transform;
