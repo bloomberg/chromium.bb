@@ -221,26 +221,6 @@ public final class MainActivityTest {
         assertWebApkLaunched(startUrl);
     }
 
-    /** Tests that a WebAPK should not be launched as a tab in a developer build of Chrome. */
-    @Test
-    public void testShouldNotLaunchInTabWithDevBuild() throws Exception {
-        final String startUrl = "https://www.google.com/";
-        final String devVersionName = "Developer Build";
-
-        Bundle bundle = new Bundle();
-        bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
-        bundle.putString(WebApkMetaDataKeys.SCOPE, startUrl);
-        bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
-        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
-
-        mPackageManager.getPackageInfo(BROWSER_PACKAGE_NAME, 0).versionName = devVersionName;
-
-        Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(startUrl));
-        Robolectric.buildActivity(MainActivity.class, launchIntent).create();
-
-        assertWebApkLaunched(startUrl);
-    }
-
     /** Asserts that {@link BROWSER_PACKAGE_NAME} was launched in WebAPK mode. */
     private void assertWebApkLaunched(String expectedStartUrl) {
         Intent startActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
@@ -270,7 +250,7 @@ public final class MainActivityTest {
     private static PackageInfo newPackageInfo(String packageName) {
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.packageName = packageName;
-        packageInfo.versionName = "Developer Build";
+        packageInfo.versionName = "10000.0.0.0";
         packageInfo.applicationInfo = new ApplicationInfo();
         packageInfo.applicationInfo.enabled = true;
         return packageInfo;
