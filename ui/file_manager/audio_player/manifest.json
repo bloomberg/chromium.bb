@@ -8,13 +8,10 @@
   "display_in_launcher": false,
   "incognito" : "split",
   "icons": {
-    "16": "icons/audio-player-favicon-16.png",
-    "32": "icons/audio-player-32.png",
+    "16": "icons/audio-player-16.png",
     "48": "icons/audio-player-48.png",
-    "64": "icons/audio-player-64.png",
-    "96": "icons/audio-player-96.png",
     "128": "icons/audio-player-128.png",
-    "256": "icons/audio-player-256.png"
+    "192": "icons/audio-player-192.png"
   },
   "permissions": [
     "commandLinePrivate",
