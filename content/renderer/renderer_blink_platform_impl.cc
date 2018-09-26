@@ -1178,11 +1178,13 @@ void RendererBlinkPlatformImpl::WorkerContextCreated(
 
 //------------------------------------------------------------------------------
 void RendererBlinkPlatformImpl::RequestPurgeMemory() {
-  // TODO(tasak|bashi): We should use ChildMemoryCoordinator here, but
-  // ChildMemoryCoordinator isn't always available as it's only initialized
-  // when kMemoryCoordinatorV0 is enabled.
-  // Use ChildMemoryCoordinator when memory coordinator is always enabled.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+}
+
+void RendererBlinkPlatformImpl::SetMemoryPressureNotificationsSuppressed(
+    bool suppressed) {
+  base::MemoryPressureListener::SetNotificationsSuppressed(suppressed);
 }
 
 void RendererBlinkPlatformImpl::InitializeWebDatabaseHostIfNeeded() {
