@@ -185,7 +185,6 @@ void LocalCardMigrationDialogView::ButtonPressed(views::Button* sender,
   }
 }
 
-// TODO(crbug/867194): Add metrics for legal message link clicking.
 void LocalCardMigrationDialogView::StyledLabelLinkClicked(
     views::StyledLabel* label,
     const gfx::Range& range,
@@ -193,6 +192,9 @@ void LocalCardMigrationDialogView::StyledLabelLinkClicked(
   if (!controller_)
     return;
 
+  controller_->OnLegalMessageLinkClicked();
+  // TODO(crbug.com/867194): Should be controller's responsibility to open
+  // links.
   legal_message_container_->OnLinkClicked(label, range, web_contents_);
 }
 
