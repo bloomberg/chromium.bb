@@ -8,13 +8,21 @@ general use and is not localized.
 -->
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="sorted_table_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
-<script src="chrome://resources/js/cr.js"></script>
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="sorted_table_behavior.html">
 
 <dom-module id="database-tab">
   <template>
     <style>
+      .add-origin-container {
+        display: flex;
+        padding-top: 10px;
+      }
+
       table {
         border-collapse: collapse;
       }
@@ -159,6 +167,19 @@ general use and is not localized.
         </template>
       </tbody>
     </table>
+    <div class="add-origin-container">
+      <cr-input id="addOriginInput" label="Add Origin" value="{{newOrigin_}}"
+           on-keydown="onOriginKeydown_" placeholder="https://example.org"
+           invalid="[[!isEmptyOrValidOrigin_(newOrigin_)]]"
+           error-message="The origin must be a valid URL without a path."
+           autofocus>
+        <button slot="suffix" label="Add Origin"
+            on-click="onAddOriginClick_"
+            disabled="[[!isValidOrigin_(newOrigin_)]]">
+          <iron-icon icon="cr:check"></iron-icon>
+        </button>
+      </cr-input>
+    </div>
   </template>
   <script src="database_tab.js"></script>
 </dom-module>

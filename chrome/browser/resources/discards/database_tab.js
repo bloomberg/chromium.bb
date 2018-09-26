@@ -203,6 +203,14 @@ Polymer({
       type: Object,
       value: {numRows: -1, onDiskSizeKb: -1},
     },
+
+    /**
+     * An origin that can be added to requestedOrigins_ by onAddOriginClick_.
+     * @private {!string}
+     */
+    newOrigin_: {
+      type: String,
+    },
   },
 
   /** @private {number} */
@@ -271,6 +279,38 @@ Polymer({
   },
 
   /**
+   * Adds the current new origin to requested origins and starts an update.
+   * @private
+   */
+  addNewOrigin_: function() {
+    this.requestedOrigins_[this.newOrigin_] = true;
+    this.newOrigin_ = '';
+    this.updateDbRows_();
+  },
+
+  /**
+   * An on-click handler that adds the current new origin to requested origins.
+   * @private
+   */
+  onAddOriginClick_: function() {
+    this.addNewOrigin_();
+
+    // Set the focus back to the input field for convenience.
+    this.$.addOriginInput.focus();
+  },
+
+  /**
+   * A key-down handler that adds the current new origin to requested origins.
+   * @private
+   */
+  onOriginKeydown_: function(e) {
+    if (e.key === 'Enter' && this.isValidOrigin_(this.newOrigin_)) {
+      this.addNewOrigin_();
+      e.stopPropagation();
+    }
+  },
+
+  /**
    * Issues a request for the database sizes and renders on response.
    * @private
    */
@@ -305,6 +345,26 @@ Polymer({
       const comp = sortFunction(a, b);
       return sortReverse ? -comp : comp;
     };
+  },
+
+  /**
+   * @param {string} origin A potentially valid origin string.
+   * @return {boolean} Whether the origin is valid.
+   * @private
+   */
+  isValidOrigin_: function(origin) {
+    const re = /(https?|ftp):\/\/[a-z+.]/;
+
+    return re.test(origin);
+  },
+
+  /**
+   * @param {string} origin A potentially valid origin string.
+   * @return {boolean} Whether the origin is valid or empty.
+   * @private
+   */
+  isEmptyOrValidOrigin_: function(origin) {
+    return !origin || this.isValidOrigin_(origin);
   },
 
   /**
