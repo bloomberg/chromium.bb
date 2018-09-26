@@ -3,6 +3,7 @@
  * Copyright © 2011 Intel Corporation
  * Copyright © 2017, 2018 Collabora, Ltd.
  * Copyright © 2017, 2018 General Electric Company
+ * Copyright (c) 2018 DisplayLink (UK) Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -5390,22 +5391,25 @@ drm_output_detach_head(struct weston_output *output_base,
 static int
 parse_gbm_format(const char *s, uint32_t default_value, uint32_t *gbm_format)
 {
-	int ret = 0;
+	const struct pixel_format_info *pinfo;
 
-	if (s == NULL)
+	if (s == NULL) {
 		*gbm_format = default_value;
-	else if (strcmp(s, "xrgb8888") == 0)
-		*gbm_format = GBM_FORMAT_XRGB8888;
-	else if (strcmp(s, "rgb565") == 0)
-		*gbm_format = GBM_FORMAT_RGB565;
-	else if (strcmp(s, "xrgb2101010") == 0)
-		*gbm_format = GBM_FORMAT_XRGB2101010;
-	else {
-		weston_log("fatal: unrecognized pixel format: %s\n", s);
-		ret = -1;
+
+		return 0;
 	}
 
-	return ret;
+	pinfo = pixel_format_get_info_by_drm_name(s);
+	if (!pinfo) {
+		weston_log("fatal: unrecognized pixel format: %s\n", s);
+
+		return -1;
+	}
+
+	/* GBM formats and DRM formats are identical. */
+	*gbm_format = pinfo->format;
+
+	return 0;
 }
 
 static uint32_t
