@@ -330,28 +330,6 @@ class SimulatedCacheInterceptor : public net::URLRequestInterceptor {
   DISALLOW_COPY_AND_ASSIGN(SimulatedCacheInterceptor);
 };
 
-class RequestInterceptor : public net::URLRequestInterceptor {
- public:
-  using InterceptCallback = base::Callback<void(net::URLRequest*)>;
-
-  explicit RequestInterceptor(const InterceptCallback& callback)
-      : callback_(callback) {}
-  ~RequestInterceptor() override {}
-
-  // URLRequestInterceptor implementation:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    callback_.Run(request);
-    return nullptr;
-  }
-
- private:
-  InterceptCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestInterceptor);
-};
-
 // Returns whether monitoring was successfully set up. If yes,
 // StopMonitorBodyReadFromNetBeforePausedHistogram() needs to be called later to
 // stop monitoring.
@@ -539,15 +517,6 @@ class URLLoaderTest : public testing::Test {
     EXPECT_EQ(net::OK, Load(MultipleWritesInterceptor::GetURL(), &actual_body));
 
     EXPECT_EQ(actual_body, expected_body);
-  }
-
-  // Adds an interceptor that can examine the URLRequest object.
-  void AddRequestObserver(
-      const GURL& url,
-      const RequestInterceptor::InterceptCallback& callback) {
-    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        url, std::unique_ptr<net::URLRequestInterceptor>(
-                 new RequestInterceptor(callback)));
   }
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
