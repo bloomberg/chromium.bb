@@ -83,6 +83,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // Returns the container line box for inline fragments.
   const NGPaintFragment* ContainerLineBox() const;
 
+  // Returns true if this fragment is line box and marked dirty.
+  bool IsDirty() const { return is_dirty_inline_; }
+
   // Returns offset to its container box for inline and line box fragments.
   const NGPhysicalOffset& InlineOffsetToContainerBox() const {
     DCHECK(PhysicalFragment().IsInline() || PhysicalFragment().IsLineBox());
@@ -255,6 +258,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       NGPaintFragment* parent,
       scoped_refptr<NGPaintFragment> previous_instance,
       bool* populate_children);
+
   void PopulateDescendants(
       const NGPhysicalOffset inline_offset_to_container_box,
       HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
@@ -268,6 +272,16 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       const NGPhysicalOffset&) const;
   PositionWithAffinity PositionForPointInInlineLevelBox(
       const NGPhysicalOffset&) const;
+
+  // Dirty line boxes containing |layout_object|.
+  static void MarkLineBoxesDirtyFor(const LayoutObject& layout_object);
+
+  // Mark this line box was changed, in order to re-use part of an inline
+  // formatting context.
+  void MarkLineBoxDirty();
+
+  // Returns true when associated fragment of |layout_object| has line box.
+  static bool TryMarkLineBoxDirtyFor(const LayoutObject& layout_object);
 
   //
   // Following fields are computed in the layout phase.
@@ -284,6 +298,12 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   NGPaintFragment* next_for_same_layout_object_ = nullptr;
   NGPhysicalOffset inline_offset_to_container_box_;
+
+  // For a line box, this indicates it is dirty. This helps to determine if the
+  // fragment is re-usable when part of an inline formatting context is changed.
+  // For an inline box, this flag helps to avoid traversing up to its line box
+  // every time.
+  unsigned is_dirty_inline_ : 1;
 
   //
   // Following fields are computed in the pre-paint phase.
