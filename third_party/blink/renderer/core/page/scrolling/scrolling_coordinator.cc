@@ -309,7 +309,7 @@ static cc::LayerPositionConstraint ComputePositionConstraint(
     if (layer->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed) {
       const LayoutObject& fixed_position_object = layer->GetLayoutObject();
       bool fixed_to_right = !fixed_position_object.Style()->Right().IsAuto();
-      bool fixed_to_bottom = !fixed_position_object.Style()->Bottom().IsAuto();
+      bool fixed_to_bottom = fixed_position_object.Style()->IsFixedToBottom();
       cc::LayerPositionConstraint constraint;
       constraint.set_is_fixed_position(true);
       constraint.set_is_fixed_to_right_edge(fixed_to_right);

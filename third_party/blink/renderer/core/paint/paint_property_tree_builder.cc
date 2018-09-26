@@ -377,7 +377,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
 
     state.affected_by_outer_viewport_bounds_delta =
         object_.StyleRef().GetPosition() == EPosition::kFixed &&
-        !object_.StyleRef().Bottom().IsAuto();
+        object_.StyleRef().IsFixedToBottom();
 
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
