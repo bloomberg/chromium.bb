@@ -346,7 +346,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       visual_properties_ack_pending_(false),
       auto_resize_enabled_(false),
       waiting_for_screen_rects_ack_(false),
-      needs_repainting_on_restore_(false),
       is_unresponsive_(false),
       in_flight_event_count_(0),
       in_get_backing_store_(false),
@@ -727,12 +726,9 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   SendScreenRects();
   RestartInputEventAckTimeoutIfNecessary();
 
-  // Always repaint on restore.
-  bool needs_repainting = true;
-  needs_repainting_on_restore_ = false;
-  Send(new ViewMsg_WasShown(
-      routing_id_, needs_repainting,
-      record_presentation_time ? base::TimeTicks::Now() : base::TimeTicks()));
+  Send(new ViewMsg_WasShown(routing_id_, record_presentation_time
+                                             ? base::TimeTicks::Now()
+                                             : base::TimeTicks()));
 
   process_->UpdateClientPriority(this);
 

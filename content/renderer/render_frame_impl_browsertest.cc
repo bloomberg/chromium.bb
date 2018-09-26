@@ -211,7 +211,7 @@ TEST_F(RenderFrameImplTest, FrameResize) {
 TEST_F(RenderFrameImplTest, FrameWasShown) {
   RenderFrameTestObserver observer(frame());
 
-  ViewMsg_WasShown was_shown_message(0, true, base::TimeTicks());
+  ViewMsg_WasShown was_shown_message(0, base::TimeTicks());
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());
@@ -241,7 +241,7 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
   RenderFrameTestObserver observer(grandchild);
 
-  ViewMsg_WasShown was_shown_message(0, true, base::TimeTicks());
+  ViewMsg_WasShown was_shown_message(0, base::TimeTicks());
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());
@@ -254,7 +254,7 @@ TEST_F(RenderFrameImplTest, FrameWasShownAfterWidgetClose) {
   ViewMsg_Close close_message(0);
   frame_widget()->OnMessageReceived(close_message);
 
-  ViewMsg_WasShown was_shown_message(0, true, base::TimeTicks());
+  ViewMsg_WasShown was_shown_message(0, base::TimeTicks());
   // Test passes if this does not crash.
   RenderWidget* render_widget =
       static_cast<RenderViewImpl*>(view_)->GetWidget();
