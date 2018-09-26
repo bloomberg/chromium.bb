@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/seneschal_client.h"
@@ -102,6 +103,10 @@ void SharePath(Profile* profile,
                base::OnceCallback<void(bool, std::string)> callback) {
   DCHECK(profile);
   DCHECK(callback);
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kCrostiniFiles)) {
+    std::move(callback).Run(false, "Flag crostini-files not enabled");
+  }
   // TODO(joelhockey): Save new path into prefs once management UI is ready.
   CallSeneschalSharePath(profile, vm_name, path, std::move(callback));
 }
@@ -109,6 +114,10 @@ void SharePath(Profile* profile,
 std::vector<std::string> GetSharedPaths(Profile* profile) {
   DCHECK(profile);
   std::vector<std::string> result;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kCrostiniFiles)) {
+    return result;
+  }
   const base::ListValue* shared_paths =
       profile->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
   for (const auto& path : *shared_paths) {
