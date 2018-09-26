@@ -1878,9 +1878,6 @@ if (enable_java_templates) {
   #     is true for non-test APKs.
   #   firebase_app_id: The value for BuildConfig.FIREBASE_APP_ID (optional).
   #     Identifier is sent with crash reports to enable Java stack deobfuscation.
-  #   requires_sdk_api_level_23: If defined and true, the apk is intended for
-  #     installation only on Android M or later. In these releases the system
-  #     linker does relocation unpacking, so we can enable it unconditionally.
   #   aapt_locale_whitelist: If set, all locales not in this list will be
   #     stripped from resources.arsc.
   #   resource_blacklist_regex: Causes all drawable images matching the regex to
@@ -2005,15 +2002,10 @@ if (enable_java_templates) {
 
     _load_library_from_apk =
         defined(invoker.load_library_from_apk) && invoker.load_library_from_apk
-    _requires_sdk_api_level_23 = defined(invoker.requires_sdk_api_level_23) &&
-                                 invoker.requires_sdk_api_level_23
 
     assert(_use_chromium_linker || true)  # Mark as used.
-    assert(_requires_sdk_api_level_23 || true)
-    assert(!_load_library_from_apk || _use_chromium_linker ||
-               _requires_sdk_api_level_23,
-           "load_library_from_apk requires use_chromium_linker " +
-               "or requires_sdk_api_level_23")
+    assert(!_load_library_from_apk || _use_chromium_linker,
+           "load_library_from_apk requires use_chromium_linker")
 
     # Make sure that uncompress_shared_libraries is set to true if
     # load_library_from_apk is true.
@@ -2908,7 +2900,6 @@ if (enable_java_templates) {
                                "proguard_configs",
                                "proguard_enabled",
                                "proguard_jar_path",
-                               "requires_sdk_api_level_23",
                                "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
                                "secondary_abi_loadable_modules",
@@ -3004,7 +2995,6 @@ if (enable_java_templates) {
                                "proguard_configs",
                                "proguard_enabled",
                                "proguard_jar_path",
-                               "requires_sdk_api_level_23",
                                "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
                                "secondary_abi_loadable_modules",
