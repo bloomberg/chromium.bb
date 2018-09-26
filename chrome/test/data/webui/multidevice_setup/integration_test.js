@@ -30,7 +30,7 @@ cr.define('multidevice_setup', () => {
 
       setup(() => {
         multiDeviceSetupElement = document.createElement('multidevice-setup');
-        multiDeviceSetupElement.multideviceSetup = new FakeMojoService();
+        multiDeviceSetupElement.multideviceSetup_ = new FakeMojoService();
         multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
 
         document.body.appendChild(multiDeviceSetupElement);
@@ -66,7 +66,7 @@ cr.define('multidevice_setup', () => {
         });
 
         setVisiblePage(START);
-        multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed = true;
+        multiDeviceSetupElement.multideviceSetup_.shouldSetHostSucceed = true;
         multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.OOBE;
 
         backwardButton.click();
@@ -83,7 +83,7 @@ cr.define('multidevice_setup', () => {
                 });
 
             setVisiblePage(START);
-            multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed =
+            multiDeviceSetupElement.multideviceSetup_.shouldSetHostSucceed =
                 true;
             multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.OOBE;
 
@@ -98,7 +98,7 @@ cr.define('multidevice_setup', () => {
         multiDeviceSetupElement.addEventListener('setup-exited', () => done());
 
         setVisiblePage(START);
-        multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed = true;
+        multiDeviceSetupElement.multideviceSetup_.shouldSetHostSucceed = true;
         multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
 
         backwardButton.click();
@@ -108,7 +108,7 @@ cr.define('multidevice_setup', () => {
         multiDeviceSetupElement.addEventListener('setup-exited', () => done());
 
         setVisiblePage(PASSWORD);
-        multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed = true;
+        multiDeviceSetupElement.multideviceSetup_.shouldSetHostSucceed = true;
         multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
 
         backwardButton.click();
@@ -125,7 +125,7 @@ cr.define('multidevice_setup', () => {
                 });
 
             setVisiblePage(PASSWORD);
-            multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed =
+            multiDeviceSetupElement.multideviceSetup_.shouldSetHostSucceed =
                 true;
             multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
 

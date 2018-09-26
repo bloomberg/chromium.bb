@@ -88,11 +88,13 @@ cr.define('multidevice_setup', function() {
         computed: 'shouldForwardButtonBeDisabled_(' +
             'passwordPageForwardButtonDisabled_, visiblePageName_)',
       },
-    },
 
-    behaviors: [
-      MojoApiBehavior,
-    ],
+      /**
+       * Interface to the MultiDeviceSetup Mojo service.
+       * @private {!chromeos.multideviceSetup.mojom.MultiDeviceSetupImpl}
+       */
+      multideviceSetup_: Object
+    },
 
     listeners: {
       'backward-navigation-requested': 'onBackwardNavigationRequested_',
@@ -100,8 +102,15 @@ cr.define('multidevice_setup', function() {
     },
 
     /** @override */
+    created: function() {
+      this.multideviceSetup_ =
+          multidevice_setup.MojoInterfaceProviderImpl.getInstance()
+              .getInterfacePtr();
+    },
+
+    /** @override */
     attached: function() {
-      this.multideviceSetup.getEligibleHostDevices()
+      this.multideviceSetup_.getEligibleHostDevices()
           .then((responseParams) => {
             if (responseParams.eligibleHostDevices.length == 0) {
               console.warn('Potential host list is empty.');
@@ -138,7 +147,7 @@ cr.define('multidevice_setup', function() {
         case PageName.PASSWORD:
           this.$.passwordPage.clearPasswordTextInput();
           let deviceId = /** @type {string} */ (this.selectedDeviceId_);
-          this.multideviceSetup.setHostDevice(deviceId, this.authToken_)
+          this.multideviceSetup_.setHostDevice(deviceId, this.authToken_)
               .then((responseParams) => {
                 if (!responseParams.success) {
                   console.warn(

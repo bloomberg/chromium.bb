@@ -10,7 +10,7 @@ js_type_check("closure_compile") {
   deps = [
     ":button_bar",
     ":fake_mojo_service",
-    ":mojo_api_behavior",
+    ":mojo_api",
     ":multidevice_setup",
     ":multidevice_setup_browser_proxy",
     ":setup_failed_page",
@@ -49,14 +49,14 @@ js_library("fake_mojo_service") {
   ]
 }
 
-js_library("mojo_api_behavior") {
+js_library("mojo_api") {
 }
 
 js_library("multidevice_setup") {
   deps = [
     ":button_bar",
     ":fake_mojo_service",
-    ":mojo_api_behavior",
+    ":mojo_api",
     ":password_page",
     ":setup_failed_page",
     ":setup_succeeded_page",
