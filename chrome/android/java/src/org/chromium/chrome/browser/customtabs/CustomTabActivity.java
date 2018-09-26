@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.provider.Browser;
+import android.support.annotation.CallSuper;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
@@ -83,7 +84,6 @@ import org.chromium.chrome.browser.incognito.IncognitoTabHost;
 import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.page_info.PageInfoController;
-import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
@@ -780,7 +780,13 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         return asyncParams.getWebContents();
     }
 
-    private void initializeMainTab(Tab tab) {
+    /**
+     * Initializes tab handlers and observers, e.g., for metrics.
+     *
+     * @param tab The tab to initialize.
+     */
+    @CallSuper
+    protected void initializeMainTab(Tab tab) {
         TabRedirectHandler.from(tab).updateIntent(getIntent());
         tab.getView().requestFocus();
 
@@ -803,12 +809,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         // Immediately add the observer to PageLoadMetrics to catch early events that may
         // be generated in the middle of tab initialization.
         mTabObserverRegistrar.addObserversForTab(tab);
-
-        // Let ServiceWorkerPaymentAppBridge observe the opened tab for payment request.
-        if (mIntentDataProvider.isForPaymentRequest()) {
-            ServiceWorkerPaymentAppBridge.addTabObserverForPaymentRequestTab(tab);
-        }
-
         prepareTabBackground(tab);
     }
 
@@ -1143,13 +1143,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     public final void finishAndClose(boolean reparenting) {
         if (mIsClosing) return;
         mIsClosing = true;
-
-        // Notify the window is closing so as to abort invoking payment app early.
-        if (mIntentDataProvider.isForPaymentRequest()
-                && getActivityTab().getWebContents() != null) {
-            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(
-                    getActivityTab().getWebContents());
-        }
 
         if (!reparenting) {
             // Closing the activity destroys the renderer as well. Re-create a spare renderer some

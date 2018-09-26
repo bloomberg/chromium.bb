@@ -387,6 +387,15 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
+        <activity android:name="org.chromium.chrome.browser.customtabs.PaymentHandlerActivity"
+            android:theme="@style/TranslucentMainTheme"
+            android:exported="false"
+            {{ self.chrome_activity_common() }}
+            {{ self.supports_video_persistence() }}
+        >
+            {{ self.supports_vr() }}
+            {{ self.extra_web_rendering_activity_definitions() }}
+        </activity>
         <!-- SeparateTaskCustomTabActivity is a wrapper of CustomTabActivity. It provides the
              general feeling of supporting multi tasks, even for versions that did not fully support
              it.
