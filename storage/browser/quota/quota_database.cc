@@ -13,7 +13,6 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "sql/database.h"
@@ -564,8 +563,8 @@ bool QuotaDatabase::LazyOpen(bool create_if_needed) {
 }
 
 bool QuotaDatabase::EnsureDatabaseVersion() {
-  static const size_t kTableCount = arraysize(kTables);
-  static const size_t kIndexCount = arraysize(kIndexes);
+  static const size_t kTableCount = base::size(kTables);
+  static const size_t kIndexCount = base::size(kIndexes);
   if (!sql::MetaTable::DoesTableExist(db_.get()))
     return CreateSchema(db_.get(), meta_table_.get(),
                         kQuotaDatabaseCurrentSchemaVersion,
