@@ -117,12 +117,8 @@ Surface* SurfaceManager::CreateSurface(
   if (it == surface_map_.end()) {
     std::unique_ptr<Surface> surface = std::make_unique<Surface>(
         surface_info, this, surface_client, needs_sync_tokens);
-    // If no default deadline is specified then don't track deadlines.
-    if (activation_deadline_in_frames_) {
-      surface->SetDependencyDeadline(
-          std::make_unique<SurfaceDependencyDeadline>(
-              surface.get(), begin_frame_source, tick_clock_));
-    }
+    surface->SetDependencyDeadline(std::make_unique<SurfaceDependencyDeadline>(
+        surface.get(), begin_frame_source, tick_clock_));
     surface_map_[surface_info.id()] = std::move(surface);
     // We can get into a situation where multiple CompositorFrames arrive for a
     // FrameSink before the client can add any references for the frame. When
