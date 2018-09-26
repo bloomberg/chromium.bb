@@ -14,20 +14,24 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "content/public/browser/web_contents.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
-#include "headless/lib/browser/headless_web_contents_impl.h"
+#include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_export.h"
 
 namespace ui {
 class Compositor;
 }  // namespace ui
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace headless {
 
 class HeadlessBrowserContextImpl;
 class HeadlessBrowserMainParts;
 class HeadlessURLRequestContextGetter;
+class HeadlessWebContentsImpl;
 
 extern const base::FilePath::CharType kDefaultProfileName[];
 

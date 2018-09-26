@@ -22,6 +22,7 @@
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_permission_manager.h"
 #include "headless/lib/browser/headless_url_request_context_getter.h"
+#include "headless/lib/browser/headless_web_contents_impl.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/resource/resource_bundle.h"
 
