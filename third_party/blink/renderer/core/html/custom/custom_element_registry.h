@@ -29,6 +29,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 class ScriptValue;
 class V0CustomElementRegistrationContext;
+class V8CustomElementConstructor;
 
 class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -40,12 +41,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
 
   CustomElementDefinition* define(ScriptState*,
                                   const AtomicString& name,
-                                  const ScriptValue& constructor,
-                                  const ElementDefinitionOptions&,
-                                  ExceptionState&);
-
-  CustomElementDefinition* define(const AtomicString& name,
-                                  CustomElementDefinitionBuilder&,
+                                  V8CustomElementConstructor* constructor,
                                   const ElementDefinitionOptions&,
                                   ExceptionState&);
 
@@ -71,9 +67,13 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  friend class CustomElementRegistryTest;
-
   CustomElementRegistry(const LocalDOMWindow*);
+
+  CustomElementDefinition* DefineInternal(ScriptState*,
+                                          const AtomicString& name,
+                                          CustomElementDefinitionBuilder&,
+                                          const ElementDefinitionOptions&,
+                                          ExceptionState&);
 
   bool V0NameIsDefined(const AtomicString& name);
 
@@ -105,6 +105,11 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   WhenDefinedPromiseMap when_defined_promise_map_;
 
   TraceWrapperMember<CustomElementReactionStack> reaction_stack_;
+
+  FRIEND_TEST_ALL_PREFIXES(
+      CustomElementTest,
+      CreateElement_TagNameCaseHandlingCreatingCustomElement);
+  friend class CustomElementRegistryTest;
 
   DISALLOW_COPY_AND_ASSIGN(CustomElementRegistry);
 };
