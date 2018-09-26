@@ -15,9 +15,24 @@
 # already exists.
 
 {
+  'amd_8870m': {
+    'dimensions': {
+      'gpu': '1002:6821',
+    }
+  },
   'arm_tester': {
     'dimensions': {
       'cpu': 'armv7l-32',
+    }
+  },
+  'gpu_pool': {
+    'dimensions': {
+      'pool': 'Chrome-GPU',
+    }
+  },
+  'intel_iris_5100': {
+    'dimensions': {
+      'gpu': '8086:0a2e',
     }
   },
   'linux-trusty': {
@@ -40,6 +55,11 @@
       'os': 'Mac-10.13',
     }
   },
+  'mac_10.14': {
+    'dimensions': {
+      'os': 'Mac-10.14',
+    }
+  },
   'mac_mini_10.12': {
     'dimensions': {
       'gpu': '8086:0a2e',
@@ -49,6 +69,11 @@
   'no_gpu': {
     'dimensions': {
       'gpu': 'none',
+    }
+  },
+  'nvidia_750m_mac_edition': {
+    'dimensions': {
+      'gpu': '10de:0fe9',
     }
   },
   'win10': {
