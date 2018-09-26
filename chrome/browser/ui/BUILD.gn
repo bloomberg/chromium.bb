@@ -2149,7 +2149,6 @@ jumbo_split_static_library("ui") {
       "views/frame/browser_non_client_frame_view_mac.h",
       "views/frame/browser_non_client_frame_view_mac.mm",
       "views/frame/native_browser_frame_factory_mac.mm",
-      "views/infobars/legacy_infobars_mac.cc",
       "views/tab_contents/chrome_web_contents_view_delegate_views_mac.h",
       "views/tab_contents/chrome_web_contents_view_delegate_views_mac.mm",
       "views/tabs/window_finder_mac.mm",
