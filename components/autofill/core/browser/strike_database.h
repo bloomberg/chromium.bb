@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOFILL_STRIKE_DATABASE_H_
-#define CHROME_BROWSER_AUTOFILL_STRIKE_DATABASE_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_STRIKE_DATABASE_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_STRIKE_DATABASE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
@@ -32,7 +33,7 @@ class StrikeDatabase {
 
   using StrikeDataProto = leveldb_proto::ProtoDatabase<StrikeData>;
 
-  StrikeDatabase(const base::FilePath& database_dir);
+  explicit StrikeDatabase(const base::FilePath& database_dir);
   ~StrikeDatabase();
 
   // Passes the number of strikes for |key| to |outer_callback|. In the case
@@ -90,4 +91,4 @@ class StrikeDatabase {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_AUTOFILL_STRIKE_DATABASE_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_STRIKE_DATABASE_H_
