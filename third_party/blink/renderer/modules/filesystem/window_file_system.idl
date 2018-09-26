@@ -41,6 +41,5 @@
     // https://github.com/WICG/writable-files/blob/master/EXPLAINER.md
     // TODO(crbug.com/878581): This needs some kind of options dictionary.
     [RuntimeEnabled=WritableFiles, CallWith=ScriptState, SecureContext]
-    Promise<(FileSystemBaseHandle or sequence<FileSystemBaseHandle>)>
-        chooseFileSystemEntries(optional ChooseFileSystemEntriesOptions options);
+    Promise<(FileSystemBaseHandle or sequence<FileSystemBaseHandle>)> chooseFileSystemEntries();
 };

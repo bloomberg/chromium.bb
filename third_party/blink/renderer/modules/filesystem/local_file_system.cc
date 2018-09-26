@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/modules/filesystem/choose_file_system_entries_options.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_client.h"
@@ -120,13 +119,12 @@ class ChooseEntryCallbacks
     : public WebCallbacks<Vector<mojom::blink::FileSystemEntryPtr>,
                           base::File::Error> {
  public:
-  ChooseEntryCallbacks(ScriptPromiseResolver* resolver,
-                       const ChooseFileSystemEntriesOptions& options)
-      : resolver_(resolver), options_(options) {}
+  ChooseEntryCallbacks(ScriptPromiseResolver* resolver, bool return_multiple)
+      : resolver_(resolver), return_multiple_(return_multiple) {}
 
   void OnSuccess(Vector<mojom::blink::FileSystemEntryPtr> entries) override {
     ScriptState::Scope scope(resolver_->GetScriptState());
-    if (options_.multiple()) {
+    if (return_multiple_) {
       Vector<ScriptPromise> result;
       result.ReserveInitialCapacity(entries.size());
       for (const auto& entry : entries)
@@ -153,43 +151,19 @@ class ChooseEntryCallbacks
         resolver_->GetExecutionContext(), entry->file_system_id);
     // TODO(mek): Try to create handle directly rather than having to do more
     // IPCs to get the actual entries.
-    if (options_.type() == "openDirectory") {
-      fs->GetDirectory(
-          fs->root(), entry->base_name, FileSystemFlags(),
-          new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
-          new PromiseErrorCallback(new_resolver));
-    } else {
-      fs->GetFile(fs->root(), entry->base_name, FileSystemFlags(),
-                  new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
-                  new PromiseErrorCallback(new_resolver));
-    }
+    fs->GetFile(fs->root(), entry->base_name, FileSystemFlags(),
+                new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
+                new PromiseErrorCallback(new_resolver));
     return result;
   }
 
   Persistent<ScriptPromiseResolver> resolver_;
-  ChooseFileSystemEntriesOptions options_;
+  bool return_multiple_;
 };
-
-mojom::blink::ChooseFileSystemEntryType ConvertChooserType(const String& input,
-                                                           bool multiple) {
-  if (input == "openFile") {
-    return multiple
-               ? mojom::blink::ChooseFileSystemEntryType::kOpenMultipleFiles
-               : mojom::blink::ChooseFileSystemEntryType::kOpenFile;
-  }
-  if (input == "saveFile")
-    return mojom::blink::ChooseFileSystemEntryType::kSaveFile;
-  if (input == "openDirectory")
-    return mojom::blink::ChooseFileSystemEntryType::kOpenDirectory;
-  NOTREACHED();
-  return mojom::blink::ChooseFileSystemEntryType::kOpenFile;
-}
 
 }  // namespace
 
-void LocalFileSystem::ChooseEntry(
-    ScriptPromiseResolver* resolver,
-    const ChooseFileSystemEntriesOptions& options) {
+void LocalFileSystem::ChooseEntry(ScriptPromiseResolver* resolver) {
   if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
     resolver->Reject(
         FileError::CreateDOMException(base::File::FILE_ERROR_ABORT));
@@ -197,8 +171,7 @@ void LocalFileSystem::ChooseEntry(
   }
 
   FileSystemDispatcher::From(resolver->GetExecutionContext())
-      .ChooseEntry(ConvertChooserType(options.type(), options.multiple()),
-                   std::make_unique<ChooseEntryCallbacks>(resolver, options));
+      .ChooseEntry(std::make_unique<ChooseEntryCallbacks>(resolver, false));
 }
 
 void LocalFileSystem::RequestFileSystemAccessInternal(
