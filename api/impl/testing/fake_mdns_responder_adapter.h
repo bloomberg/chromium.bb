@@ -67,7 +67,16 @@ class FakeMdnsResponderAdapter final : public mdns::MdnsResponderAdapter {
     std::vector<std::string> lines;
   };
 
+  class LifetimeObserver {
+  public:
+    virtual ~LifetimeObserver() = default;
+
+    virtual void OnDestroyed() = 0;
+  };
+
   virtual ~FakeMdnsResponderAdapter() override;
+
+  void SetLifetimeObserver(LifetimeObserver* observer) { observer_ = observer; }
 
   void AddPtrEvent(mdns::PtrEvent&& ptr_event);
   void AddSrvEvent(mdns::SrvEvent&& srv_event);
@@ -166,6 +175,7 @@ class FakeMdnsResponderAdapter final : public mdns::MdnsResponderAdapter {
 
  private:
   bool running_ = false;
+  LifetimeObserver* observer_ = nullptr;
 
   std::set<mdns::DomainName, mdns::DomainNameComparator> ptr_queries_;
   std::set<mdns::DomainName, mdns::DomainNameComparator> srv_queries_;

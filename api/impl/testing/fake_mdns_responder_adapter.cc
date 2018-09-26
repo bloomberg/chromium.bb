@@ -109,7 +109,11 @@ void AddEventsForNewService(FakeMdnsResponderAdapter* mdns_responder,
   mdns_responder->AddAEvent(MakeAEvent(hostname, address, socket));
 }
 
-FakeMdnsResponderAdapter::~FakeMdnsResponderAdapter() = default;
+FakeMdnsResponderAdapter::~FakeMdnsResponderAdapter() {
+  if (observer_) {
+    observer_->OnDestroyed();
+  }
+}
 
 void FakeMdnsResponderAdapter::AddPtrEvent(mdns::PtrEvent&& ptr_event) {
   if (running_)

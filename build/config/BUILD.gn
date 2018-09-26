@@ -5,6 +5,9 @@
 declare_args() {
   # Enable DCHECKs to be compiled in, even if it's not a debug build.
   dcheck_always_on = false
+
+  # Enable address sanitizer.
+  is_asan = false
 }
 
 config("openscreen_code") {
@@ -32,4 +35,13 @@ config("symbol_visibility_hidden") {
 
 config("symbol_visibility_default") {
   cflags = [ "-fvisibility=default" ]
+}
+
+config("default_sanitizers") {
+  cflags = []
+  ldflags = []
+  if (is_asan) {
+    cflags += [ "-fsanitize=address" ]
+    ldflags += [ "-fsanitize=address" ]
+  }
 }

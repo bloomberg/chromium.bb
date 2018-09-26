@@ -24,15 +24,24 @@ constexpr uint16_t kTestPort = 12345;
 constexpr char kTestFriendlyName[] = "towelie";
 
 class FakeMdnsResponderAdapterFactory final
-    : public MdnsResponderAdapterFactory {
+    : public MdnsResponderAdapterFactory,
+      public FakeMdnsResponderAdapter::LifetimeObserver {
  public:
   ~FakeMdnsResponderAdapterFactory() override = default;
 
   std::unique_ptr<mdns::MdnsResponderAdapter> Create() override {
     auto mdns = MakeUnique<FakeMdnsResponderAdapter>();
+    mdns->SetLifetimeObserver(this);
     last_mdns_responder_ = mdns.get();
     ++instances_;
     return mdns;
+  }
+
+  void OnDestroyed() override {
+    last_running_ = last_mdns_responder_->running();
+    last_registered_services_size_ =
+        last_mdns_responder_->registered_services().size();
+    last_mdns_responder_ = nullptr;
   }
 
   FakeMdnsResponderAdapter* last_mdns_responder() {
@@ -40,10 +49,16 @@ class FakeMdnsResponderAdapterFactory final
   }
 
   int32_t instances() const { return instances_; }
+  bool last_running() const { return last_running_; }
+  size_t last_registered_services_size() const {
+    return last_registered_services_size_;
+  }
 
  private:
   FakeMdnsResponderAdapter* last_mdns_responder_ = nullptr;
   int32_t instances_ = 0;
+  bool last_running_ = false;
+  size_t last_registered_services_size_ = 0;
 };
 
 class MockScreenListenerObserver final : public ScreenListener::Observer {
@@ -278,7 +293,7 @@ TEST_F(MdnsResponderServiceTest, ListenerStateTransitions) {
 
   EXPECT_CALL(observer_, OnStopped());
   screen_listener_->Stop();
-  ASSERT_EQ(mdns_responder, mdns_responder_factory_->last_mdns_responder());
+  ASSERT_FALSE(mdns_responder_factory_->last_mdns_responder());
 
   EXPECT_CALL(observer_, OnSuspended());
   auto instances = mdns_responder_factory_->instances();
@@ -289,7 +304,7 @@ TEST_F(MdnsResponderServiceTest, ListenerStateTransitions) {
 
   EXPECT_CALL(observer_, OnStopped());
   screen_listener_->Stop();
-  ASSERT_EQ(mdns_responder, mdns_responder_factory_->last_mdns_responder());
+  ASSERT_FALSE(mdns_responder_factory_->last_mdns_responder());
 }
 
 TEST_F(MdnsResponderServiceTest, BasicServicePublish) {
@@ -314,7 +329,8 @@ TEST_F(MdnsResponderServiceTest, BasicServicePublish) {
   EXPECT_CALL(publisher_observer_, OnStopped());
   screen_publisher_->Stop();
 
-  EXPECT_EQ(0u, mdns_responder->registered_services().size());
+  EXPECT_FALSE(mdns_responder_factory_->last_mdns_responder());
+  EXPECT_EQ(0u, mdns_responder_factory_->last_registered_services_size());
 }
 
 TEST_F(MdnsResponderServiceTest, PublisherStateTransitions) {
@@ -336,7 +352,7 @@ TEST_F(MdnsResponderServiceTest, PublisherStateTransitions) {
 
   EXPECT_CALL(publisher_observer_, OnStopped());
   screen_publisher_->Stop();
-  EXPECT_EQ(0u, mdns_responder->registered_services().size());
+  EXPECT_EQ(0u, mdns_responder_factory_->last_registered_services_size());
 
   EXPECT_CALL(publisher_observer_, OnStarted());
   screen_publisher_->Start();
@@ -349,7 +365,8 @@ TEST_F(MdnsResponderServiceTest, PublisherStateTransitions) {
   EXPECT_EQ(0u, mdns_responder->registered_services().size());
   EXPECT_CALL(publisher_observer_, OnStopped());
   screen_publisher_->Stop();
-  EXPECT_EQ(0u, mdns_responder->registered_services().size());
+  EXPECT_FALSE(mdns_responder_factory_->last_mdns_responder());
+  EXPECT_EQ(0u, mdns_responder_factory_->last_registered_services_size());
 }
 
 TEST_F(MdnsResponderServiceTest, PublisherObeysInterfaceWhitelist) {
@@ -449,12 +466,8 @@ TEST_F(MdnsResponderServiceTest, ListenAndPublish) {
 
   EXPECT_CALL(publisher_observer_, OnStopped());
   screen_publisher_->Stop();
-  // TODO(btolsch): This is a use-after-free (here and in other tests).  Maybe
-  // hook FakeMdnsResponderAdapter into the factory so it can report destruction
-  // instead?  This could also disambiguate between suspended and stopped
-  // transitions.
-  EXPECT_FALSE(mdns_responder->running());
-  EXPECT_EQ(0u, mdns_responder->registered_interfaces().size());
+  EXPECT_FALSE(mdns_responder_factory_->last_mdns_responder());
+  EXPECT_EQ(0u, mdns_responder_factory_->last_registered_services_size());
 }
 
 TEST_F(MdnsResponderServiceTest, PublishAndListen) {
@@ -493,8 +506,8 @@ TEST_F(MdnsResponderServiceTest, PublishAndListen) {
 
   EXPECT_CALL(observer_, OnStopped());
   screen_listener_->Stop();
-  EXPECT_FALSE(mdns_responder->running());
-  EXPECT_EQ(0u, mdns_responder->registered_interfaces().size());
+  EXPECT_FALSE(mdns_responder_factory_->last_mdns_responder());
+  EXPECT_EQ(0u, mdns_responder_factory_->last_registered_services_size());
 }
 
 TEST_F(MdnsResponderServiceTest, AddressQueryStopped) {

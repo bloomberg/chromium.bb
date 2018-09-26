@@ -25,6 +25,7 @@ declare_args() {
 _shared_binary_target_configs = [
   "//build/config:openscreen_code",
   "//build/config:symbol_visibility_hidden",
+  "//build/config:default_sanitizers",
   "//build:compiler_defaults",
   "//build:default_include_dirs",
 ]
