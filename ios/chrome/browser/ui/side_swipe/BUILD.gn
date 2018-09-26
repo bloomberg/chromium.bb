@@ -56,7 +56,6 @@ source_set("unit_tests") {
     ":side_swipe",
     "//base",
     "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/browser/ui/toolbar",
     "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",

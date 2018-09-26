@@ -35,7 +35,6 @@ source_set("adaptive") {
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/orchestrator",
     "//ios/chrome/browser/ui/popup_menu/public",
-    "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar",
     "//ios/chrome/browser/ui/toolbar/public",

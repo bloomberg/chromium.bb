@@ -141,7 +141,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/ntp:ntp_controller",
-    "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/test",
     "//ios/chrome/browser/web:web_internal",
@@ -398,13 +397,14 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/browser/ui/tabs:coordinator",
     "//ios/chrome/browser/ui/tabs/requirements",
-    "//ios/chrome/browser/ui/toolbar:toolbar_ui",
-    "//ios/chrome/browser/ui/toolbar:toolbar_ui_broadcasting_util",
+    "//ios/chrome/browser/ui/toolbar:toolbar_model_delegate",
     "//ios/chrome/browser/ui/toolbar/adaptive",
     "//ios/chrome/browser/ui/toolbar/adaptive:adaptive_ui",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_ui",
+    "//ios/chrome/browser/ui/toolbar/fullscreen",
+    "//ios/chrome/browser/ui/toolbar/fullscreen:fullscreen_broadcasting_util",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/browser/ui/toolbar_container:feature_flags",
@@ -439,14 +439,12 @@ source_set("ui_internal") {
   public_deps = [
     ":external_files",
     "//ios/chrome/browser/ui/side_swipe",
-    "//ios/chrome/browser/ui/toolbar",
   ]
   allow_circular_includes_from = [
     "//ios/chrome/browser/ui/ntp:ntp_internal",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/tabs:coordinator",
-    "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/web:web_internal",
   ]
   libs = [
@@ -535,7 +533,7 @@ source_set("perf_tests") {
     "//ios/chrome/browser/tabs:tabs_internal",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",
-    "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/toolbar:toolbar_model_delegate",
     "//ios/chrome/browser/ui/toolbar/adaptive",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar",
     "//ios/chrome/browser/ui/util",
