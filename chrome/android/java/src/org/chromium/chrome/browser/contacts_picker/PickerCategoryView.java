@@ -18,6 +18,9 @@ import android.widget.RelativeLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.BitmapCache;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
@@ -37,9 +40,10 @@ import java.util.Set;
  * A class for keeping track of common data associated with showing contact details in
  * the contacts picker, for example the RecyclerView.
  */
-public class PickerCategoryView extends RelativeLayout
-        implements View.OnClickListener, SelectionDelegate.SelectionObserver<ContactDetails>,
-                   SelectableListToolbar.SearchDelegate {
+public class PickerCategoryView
+        extends RelativeLayout implements View.OnClickListener, RecyclerView.RecyclerListener,
+                                          SelectionDelegate.SelectionObserver<ContactDetails>,
+                                          SelectableListToolbar.SearchDelegate {
     // Constants for the RoundedIconGenerator.
     private static final int ICON_SIZE_DP = 32;
     private static final int ICON_CORNER_RADIUS_DP = 20;
@@ -50,6 +54,9 @@ public class PickerCategoryView extends RelativeLayout
 
     // The view containing the RecyclerView and the toolbar, etc.
     private SelectableListLayout<ContactDetails> mSelectableListLayout;
+
+    // Our activity.
+    private ChromeActivity mActivity;
 
     // The callback to notify the listener of decisions reached in the picker.
     private ContactsPickerListener mListener;
@@ -71,6 +78,9 @@ public class PickerCategoryView extends RelativeLayout
 
     // The {@link SelectionDelegate} keeping track of which contacts are selected.
     private SelectionDelegate<ContactDetails> mSelectionDelegate;
+
+    // A cache for contact images, lazily created.
+    private BitmapCache mBitmapCache;
 
     // The search icon.
     private ImageView mSearchButton;
@@ -106,6 +116,7 @@ public class PickerCategoryView extends RelativeLayout
     public PickerCategoryView(Context context, boolean multiSelectionAllowed) {
         super(context);
 
+        mActivity = (ChromeActivity) context;
         mMultiSelectionAllowed = multiSelectionAllowed;
 
         mSelectionDelegate = new SelectionDelegate<ContactDetails>();
@@ -151,6 +162,13 @@ public class PickerCategoryView extends RelativeLayout
         mLayoutManager = new LinearLayoutManager(context);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        // Each image (on a Pixel 2 phone) is about 30-40K. Calculate a proportional amount of the
+        // available memory, but cap it at 5MB.
+        final long maxMemory = ConversionUtils.bytesToKilobytes(Runtime.getRuntime().maxMemory());
+        int iconCacheSizeKb = (int) (maxMemory / 8); // 1/8th of the available memory.
+        mBitmapCache = new BitmapCache(mActivity.getChromeApplication().getReferencePool(),
+                Math.min(iconCacheSizeKb, 5 * ConversionUtils.BYTES_PER_MEGABYTE));
     }
 
     /**
@@ -237,6 +255,14 @@ public class PickerCategoryView extends RelativeLayout
                         : GONE);
     }
 
+    // RecyclerView.RecyclerListener:
+
+    @Override
+    public void onViewRecycled(RecyclerView.ViewHolder holder) {
+        ContactViewHolder bitmapHolder = (ContactViewHolder) holder;
+        bitmapHolder.cancelIconRetrieval();
+    }
+
     // OnClickListener:
 
     @Override
@@ -273,6 +299,10 @@ public class PickerCategoryView extends RelativeLayout
 
     public RoundedIconGenerator getIconGenerator() {
         return mIconGenerator;
+    }
+
+    public BitmapCache getIconCache() {
+        return mBitmapCache;
     }
 
     /**
