@@ -90,7 +90,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   HeapHashMap<Member<Node>, HeapVector<Member<HTMLSlotElement>>>
       node_to_assigned_slot_candidate_in_tree_order_;
   unsigned needs_collect_slots_ : 1;
-  unsigned needs_assignment_recalc_ : 1;  // For Incremental Shadow DOM
+  unsigned needs_assignment_recalc_ : 1;
   unsigned slot_count_ : 30;
 };
 
