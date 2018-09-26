@@ -115,6 +115,7 @@ class CORE_EXPORT InspectorPageAgent final
       const String& identifier) override;
   protocol::Response addScriptToEvaluateOnNewDocument(
       const String& source,
+      Maybe<String> world_name,
       String* identifier) override;
   protocol::Response removeScriptToEvaluateOnNewDocument(
       const String& identifier) override;
