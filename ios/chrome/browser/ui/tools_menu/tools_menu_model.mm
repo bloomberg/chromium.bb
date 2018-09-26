@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/new_tab_menu_view_item.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/reading_list_menu_view_item.h"

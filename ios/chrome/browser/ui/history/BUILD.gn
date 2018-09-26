@@ -148,6 +148,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui:ui",
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
+    "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells",
