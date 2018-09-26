@@ -18,6 +18,8 @@ struct AutofillMetadata {
   AutofillMetadata(){};
   ~AutofillMetadata(){};
 
+  bool operator==(const AutofillMetadata&) const;
+
   // The ID for the model. This should be the guid for local data and server_id
   // for the server data.
   std::string id;
@@ -30,7 +32,7 @@ struct AutofillMetadata {
 
   // Only useful for SERVER_PROFILEs. Whether the server profile has been
   // converted to a local profile.
-  bool has_converted;
+  bool has_converted = false;
 
   // Only useful for SERVER_CARDs. The identifier of the billing address for the
   // card.

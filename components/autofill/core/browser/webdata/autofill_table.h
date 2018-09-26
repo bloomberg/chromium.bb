@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -29,13 +30,13 @@ namespace autofill {
 
 class AutofillChange;
 class AutofillEntry;
+struct AutofillMetadata;
 class AutofillProfile;
 class AutofillTableEncryptor;
 class AutofillTableTest;
 class CreditCard;
-struct PaymentsCustomerData;
-
 struct FormFieldData;
+struct PaymentsCustomerData;
 
 // This class manages the various Autofill tables within the SQLite database
 // passed to the constructor. It expects the following schemas:
@@ -401,8 +402,18 @@ class AutofillTable : public WebDatabaseTable,
                               const base::string16& full_number);
   bool MaskServerCreditCard(const std::string& id);
 
+  // Methods to add, update, remove and get the metadata for server cards and
+  // addresses.
+  bool AddServerCardMetadata(const AutofillMetadata& card_metadata);
   bool UpdateServerCardMetadata(const CreditCard& credit_card);
+  bool RemoveServerCardMetadata(const std::string& id);
+  bool GetServerCardsMetadata(
+      std::map<std::string, AutofillMetadata>* cards_metadata) const;
+  bool AddServerAddressMetadata(const AutofillMetadata& address_metadata);
   bool UpdateServerAddressMetadata(const AutofillProfile& profile);
+  bool RemoveServerAddressMetadata(const std::string& id);
+  bool GetServerAddressesMetadata(
+      std::map<std::string, AutofillMetadata>* addresses_metadata) const;
 
   // Setters and getters related to the Google Payments customer data.
   // Passing null to the setter will clear the data.

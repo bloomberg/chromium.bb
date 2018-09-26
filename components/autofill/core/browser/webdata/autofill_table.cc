@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -1295,6 +1296,21 @@ bool AutofillTable::MaskServerCreditCard(const std::string& id) {
   return DeleteFromUnmaskedCreditCards(id);
 }
 
+bool AutofillTable::AddServerCardMetadata(
+    const AutofillMetadata& card_metadata) {
+  sql::Statement s(
+      db_->GetUniqueStatement("INSERT INTO server_card_metadata(use_count, "
+                              "use_date, billing_address_id, id)"
+                              "VALUES (?,?,?,?)"));
+  s.BindInt64(0, card_metadata.use_count);
+  s.BindInt64(1, card_metadata.use_date.ToInternalValue());
+  s.BindString(2, card_metadata.billing_address_id);
+  s.BindString(3, card_metadata.id);
+  s.Run();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
 bool AutofillTable::UpdateServerCardMetadata(const CreditCard& credit_card) {
   DCHECK_NE(CreditCard::LOCAL_CARD, credit_card.record_type());
 
@@ -1311,6 +1327,52 @@ bool AutofillTable::UpdateServerCardMetadata(const CreditCard& credit_card) {
   s.BindInt64(1, credit_card.use_date().ToInternalValue());
   s.BindString(2, credit_card.billing_address_id());
   s.BindString(3, credit_card.server_id());
+  s.Run();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::RemoveServerCardMetadata(const std::string& id) {
+  sql::Statement remove(
+      db_->GetUniqueStatement("DELETE FROM server_card_metadata WHERE id = ?"));
+  remove.BindString(0, id);
+  remove.Run();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::GetServerCardsMetadata(
+    std::map<std::string, AutofillMetadata>* cards_metadata) const {
+  cards_metadata->clear();
+
+  sql::Statement s(
+      db_->GetUniqueStatement("SELECT id, use_count, use_date, "
+                              "billing_address_id FROM server_card_metadata"));
+
+  while (s.Step()) {
+    int index = 0;
+
+    AutofillMetadata card_metadata;
+    card_metadata.id = s.ColumnString(index++);
+    card_metadata.use_count = s.ColumnInt64(index++);
+    card_metadata.use_date =
+        base::Time::FromInternalValue(s.ColumnInt64(index++));
+    card_metadata.billing_address_id = s.ColumnString(index++);
+    (*cards_metadata)[card_metadata.id] = card_metadata;
+  }
+  return s.Succeeded();
+}
+
+bool AutofillTable::AddServerAddressMetadata(
+    const AutofillMetadata& address_metadata) {
+  sql::Statement s(
+      db_->GetUniqueStatement("INSERT INTO server_address_metadata(use_count, "
+                              "use_date, has_converted, id)"
+                              "VALUES (?,?,?,?)"));
+  s.BindInt64(0, address_metadata.use_count);
+  s.BindInt64(1, address_metadata.use_date.ToInternalValue());
+  s.BindBool(2, address_metadata.has_converted);
+  s.BindString(3, address_metadata.id);
   s.Run();
 
   return db_->GetLastChangeCount() > 0;
@@ -1344,6 +1406,36 @@ bool AutofillTable::UpdateServerAddressMetadata(
   transaction.Commit();
 
   return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::RemoveServerAddressMetadata(const std::string& id) {
+  sql::Statement remove(db_->GetUniqueStatement(
+      "DELETE FROM server_address_metadata WHERE id = ?"));
+  remove.BindString(0, id);
+  remove.Run();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::GetServerAddressesMetadata(
+    std::map<std::string, AutofillMetadata>* addresses_metadata) const {
+  addresses_metadata->clear();
+
+  sql::Statement s(
+      db_->GetUniqueStatement("SELECT id, use_count, use_date, has_converted "
+                              "FROM server_address_metadata"));
+  while (s.Step()) {
+    int index = 0;
+
+    AutofillMetadata address_metadata;
+    address_metadata.id = s.ColumnString(index++);
+    address_metadata.use_count = s.ColumnInt64(index++);
+    address_metadata.use_date =
+        base::Time::FromInternalValue(s.ColumnInt64(index++));
+    address_metadata.has_converted = s.ColumnBool(index++);
+    (*addresses_metadata)[address_metadata.id] = address_metadata;
+  }
+  return s.Succeeded();
 }
 
 void AutofillTable::SetPaymentsCustomerData(
