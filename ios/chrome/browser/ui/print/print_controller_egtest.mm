@@ -123,10 +123,7 @@ id<GREYMatcher> ShareMenuCollectionView() {
 - (void)printCurrentPage {
   // EarlGrey does not have the ability to interact with the share menu in
   // iOS11, so use the dispatcher to trigger the print view controller instead.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    DCHECK(!IsUIRefreshPhase1Enabled());
-    [chrome_test_util::DispatcherForActiveViewController() printTab];
-  } else {
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
     [ChromeEarlGreyUI openShareMenu];
     id<GREYMatcher> printButton =
         chrome_test_util::ButtonWithAccessibilityLabel(@"Print");
