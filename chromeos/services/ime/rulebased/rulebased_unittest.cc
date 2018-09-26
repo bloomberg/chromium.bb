@@ -12,6 +12,16 @@
 namespace chromeos {
 namespace ime {
 
+namespace {
+
+struct KeyVerifyEntry {
+  const char* key;
+  uint8_t modifiers;
+  const wchar_t* expected_str;
+};
+
+}  // namespace
+
 class RulebasedImeTest : public testing::Test {
  protected:
   RulebasedImeTest() = default;
@@ -19,6 +29,16 @@ class RulebasedImeTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override { controller_.reset(new rulebased::Controller); }
+
+  void VerifyKeys(std::vector<KeyVerifyEntry> entries) {
+    for (auto entry : entries) {
+      rulebased::ProcessKeyResult res =
+          controller_->ProcessKey(entry.key, entry.modifiers);
+      EXPECT_TRUE(res.key_handled);
+      std::string expected_str = base::WideToUTF8(entry.expected_str);
+      EXPECT_EQ(expected_str, res.commit_text);
+    }
+  }
 
   std::unique_ptr<rulebased::Controller> controller_;
 
@@ -28,21 +48,40 @@ class RulebasedImeTest : public testing::Test {
 
 TEST_F(RulebasedImeTest, Arabic) {
   controller_->Activate("ar");
+  std::vector<KeyVerifyEntry> entries;
+  entries.push_back({"KeyA", rulebased::MODIFIER_SHIFT, L"\u0650"});
+  entries.push_back({"KeyB", 0, L"\u0644\u0627"});
+  entries.push_back({"Space", 0, L" "});
+  VerifyKeys(entries);
+}
 
-  rulebased::ProcessKeyResult res =
-      controller_->ProcessKey("KeyA", rulebased::MODIFIER_SHIFT);
-  EXPECT_TRUE(res.key_handled);
-  std::string expected_str = base::WideToUTF8(L"\u0650");
-  EXPECT_EQ(expected_str, res.commit_text);
+TEST_F(RulebasedImeTest, Persian) {
+  controller_->Activate("fa");
+  std::vector<KeyVerifyEntry> entries;
+  entries.push_back({"KeyA", 0, L"\u0634"});
+  entries.push_back({"KeyV", rulebased::MODIFIER_SHIFT, L""});
+  entries.push_back({"Space", rulebased::MODIFIER_SHIFT, L"\u200c"});
+  VerifyKeys(entries);
+}
 
-  res = controller_->ProcessKey("KeyB", 0);
-  EXPECT_TRUE(res.key_handled);
-  expected_str = base::WideToUTF8(L"\u0644\u0627");
-  EXPECT_EQ(expected_str, res.commit_text);
+TEST_F(RulebasedImeTest, Thai) {
+  controller_->Activate("th");
+  std::vector<KeyVerifyEntry> entries;
+  entries.push_back({"KeyA", 0, L"\u0e1f"});
+  entries.push_back({"KeyA", rulebased::MODIFIER_ALTGR, L""});
+  VerifyKeys(entries);
 
-  res = controller_->ProcessKey("Space", 0);
-  EXPECT_TRUE(res.key_handled);
-  EXPECT_EQ(" ", res.commit_text);
+  controller_->Activate("th_pattajoti");
+  entries.clear();
+  entries.push_back({"KeyA", 0, L"\u0e49"});
+  entries.push_back({"KeyB", rulebased::MODIFIER_SHIFT, L"\u0e31\u0e49"});
+  VerifyKeys(entries);
+
+  controller_->Activate("th_tis");
+  entries.clear();
+  entries.push_back({"KeyA", 0, L"\u0e1f"});
+  entries.push_back({"KeyM", rulebased::MODIFIER_SHIFT, L"?"});
+  VerifyKeys(entries);
 }
 
 TEST_F(RulebasedImeTest, ParseKeyMap) {
