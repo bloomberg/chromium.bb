@@ -177,8 +177,12 @@ void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
 
     // The fetch should be thought of as one download. So the origin will be
     // used as the URL, and the |request_method| is set to GET.
-    limiter->CanDownload(wc_getter, origin.GetURL(), "GET",
-                         base::AdaptCallbackForRepeating(std::move(callback)));
+    limiter->CanDownload(
+        wc_getter, origin.GetURL(), "GET",
+        base::AdaptCallbackForRepeating(base::BindOnce(
+            &BackgroundFetchDelegateImpl::
+                DidGetPermissionFromDownloadRequestLimiter,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
     return;
   }
 
@@ -186,26 +190,39 @@ void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
       HostContentSettingsMapFactory::GetForProfile(profile_);
   DCHECK(host_content_settings_map);
 
-  // This is running from a worker context, use the Automatic Downloads
-  // permission.
+  // This is running from a non-top level frame, use the Automatic Downloads
+  // content setting.
   ContentSetting content_setting = host_content_settings_map->GetContentSetting(
       origin.GetURL(), origin.GetURL(),
       CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
       std::string() /* resource_identifier */);
 
-  if (content_setting != CONTENT_SETTING_ALLOW) {
-    std::move(callback).Run(/* has_permission= */ false);
-    return;
+  // The set of valid settings for automatic downloads is set to
+  // {CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK, CONTENT_SETTING_BLOCK}.
+  switch (content_setting) {
+    case CONTENT_SETTING_ALLOW:
+      std::move(callback).Run(content::BackgroundFetchPermission::ALLOWED);
+      return;
+    case CONTENT_SETTING_ASK:
+      std::move(callback).Run(content::BackgroundFetchPermission::ASK);
+      return;
+    case CONTENT_SETTING_BLOCK:
+      std::move(callback).Run(content::BackgroundFetchPermission::BLOCKED);
+      return;
+    case CONTENT_SETTING_DEFAULT:
+    case CONTENT_SETTING_SESSION_ONLY:
+    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
+    case CONTENT_SETTING_NUM_SETTINGS:
+      NOTREACHED();
   }
+}
 
-  // Also make sure that Background Sync has permission.
-  // TODO(crbug.com/616321): Remove this check after Automatic Downloads
-  // permissions can be modified from Android.
-  content_setting = host_content_settings_map->GetContentSetting(
-      origin.GetURL(), origin.GetURL(), CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
-      std::string() /* resource_identifier */);
-
-  std::move(callback).Run(content_setting == CONTENT_SETTING_ALLOW);
+void BackgroundFetchDelegateImpl::DidGetPermissionFromDownloadRequestLimiter(
+    GetPermissionForOriginCallback callback,
+    bool has_permission) {
+  std::move(callback).Run(has_permission
+                              ? content::BackgroundFetchPermission::ALLOWED
+                              : content::BackgroundFetchPermission::BLOCKED);
 }
 
 void BackgroundFetchDelegateImpl::CreateDownloadJob(

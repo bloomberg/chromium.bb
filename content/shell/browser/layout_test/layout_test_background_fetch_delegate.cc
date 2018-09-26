@@ -186,7 +186,7 @@ void LayoutTestBackgroundFetchDelegate::GetPermissionForOrigin(
     const ResourceRequestInfo::WebContentsGetter& wc_getter,
     GetPermissionForOriginCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::move(callback).Run(true /* has_permission */);
+  std::move(callback).Run(BackgroundFetchPermission::ALLOWED);
 }
 
 void LayoutTestBackgroundFetchDelegate::CreateDownloadJob(

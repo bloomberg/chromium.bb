@@ -45,11 +45,10 @@ class BackgroundFetchDelegateProxy::Core
 
   void ForwardGetPermissionForOriginCallbackToIO(
       BackgroundFetchDelegate::GetPermissionForOriginCallback callback,
-      bool has_permission) {
+      BackgroundFetchPermission permission) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback), has_permission));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::BindOnce(std::move(callback), permission));
   }
 
   void GetPermissionForOrigin(
@@ -62,7 +61,7 @@ class BackgroundFetchDelegateProxy::Core
           base::BindOnce(&Core::ForwardGetPermissionForOriginCallbackToIO,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     } else {
-      std::move(callback).Run(false /* has_permission */);
+      std::move(callback).Run(BackgroundFetchPermission::BLOCKED);
     }
   }
 
