@@ -17,6 +17,7 @@
 
 namespace base {
 class FilePath;
+class Clock;
 }  // namespace base
 
 namespace media {
@@ -28,6 +29,20 @@ class DecodeStatsProto;
 // construction. API callbacks will also occur on this sequence.
 class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
  public:
+  enum : int {
+    // Number chosen after manual review of metrics (accuracy, precision,
+    // recall).
+    // TODO(chcunningham): Run experiments with different values. Metrics
+    // suggest different platforms, even different stream properties (e.g.
+    // framerate) could benefit from customized thresholds. Machine learning
+    // would probably be best.
+    kMaxFramesPerBuffer = 2500,
+    // Number of days after which stats will be discarded if not updated. This
+    // avoids users getting stuck with a bad capability prediction that may have
+    // been due to one-off circumstances.
+    kMaxDaysToKeepStats = 30,
+  };
+
   // Create an instance! |db_dir| specifies where to store LevelDB files to
   // disk. LevelDB generates a handful of files, so its recommended to provide a
   // dedicated directory to keep them isolated.
@@ -53,6 +68,12 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
       std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db,
       const base::FilePath& dir);
 
+  // Default |last_write_time| for DB entries that lack a time stamp due to
+  // using an earlier version of DecodeStatsProto. Date chosen so old stats from
+  // previous version will expire (unless new stats arrive) roughly 2 months
+  // after the proto update hits the chrome Stable channel (M71).
+  static constexpr char kDefaultWriteTime[] = "01-FEB-2019 12:00pm";
+
   // Called when the database has been initialized. Will immediately call
   // |init_cb| to forward |success|.
   void OnInit(InitializeCB init_cb, bool success);
@@ -66,7 +87,7 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
                          const DecodeStatsEntry& entry,
                          AppendDecodeStatsCB append_done_cb,
                          bool read_success,
-                         std::unique_ptr<DecodeStatsProto> prev_stats_proto);
+                         std::unique_ptr<DecodeStatsProto> stats_proto);
 
   // Called when the database has been modified after a call to
   // |WriteUpdatedEntry|. Will run |append_done_cb| when done.
@@ -75,10 +96,9 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   // Called when GetDecodeStats() operation was performed. |get_stats_cb|
   // will be run with |success| and a |DecodeStatsEntry| created from
   // |stats_proto| or nullptr if no entry was found for the requested key.
-  void OnGotDecodeStats(
-      GetDecodeStatsCB get_stats_cb,
-      bool success,
-      std::unique_ptr<DecodeStatsProto> capabilities_info_proto);
+  void OnGotDecodeStats(GetDecodeStatsCB get_stats_cb,
+                        bool success,
+                        std::unique_ptr<DecodeStatsProto> stats_proto);
 
   // Internal callback for first step of ClearStats(). Will clear all stats If
   // |keys| fetched successfully.
@@ -89,6 +109,14 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   // Internal callback for OnLoadAllKeysForClearing(), initially triggered by
   // ClearStats(). Method simply logs |success| and runs |clear_done_cb|.
   void OnStatsCleared(base::OnceClosure clear_done_cb, bool success);
+
+  // Return true if:
+  //     "now" - stats_proto.last_write_date > kMaxDaysToKeepStats
+  bool AreStatsExpired(const DecodeStatsProto* const stats_proto);
+
+  void set_wall_clock_for_test(const base::Clock* tick_clock) {
+    wall_clock_ = tick_clock;
+  }
 
   // Indicates whether initialization is completed. Does not indicate whether it
   // was successful. Will be reset upon calling DestroyStats(). Failed
@@ -101,6 +129,12 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
 
   // Directory where levelDB should store database files.
   base::FilePath db_dir_;
+
+  // For getting wall-clock time. Tests may override via SetClockForTest().
+  const base::Clock* wall_clock_ = nullptr;
+
+  // Stores parsed value of |kDefaultWriteTime|.
+  base::Time default_write_time_;
 
   // Ensures all access to class members come on the same sequence. API calls
   // and callbacks should occur on the same sequence used during construction.

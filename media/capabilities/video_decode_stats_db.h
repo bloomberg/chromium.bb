@@ -51,7 +51,7 @@ class MEDIA_EXPORT VideoDecodeStatsDB {
   struct MEDIA_EXPORT DecodeStatsEntry {
     DecodeStatsEntry(uint64_t frames_decoded,
                      uint64_t frames_dropped,
-                     uint64_t frames_decoded_power_efficient);
+                     uint64_t frames_power_efficient);
     DecodeStatsEntry(const DecodeStatsEntry& entry);
 
     // Add stats from |right| to |this| entry.
@@ -63,7 +63,7 @@ class MEDIA_EXPORT VideoDecodeStatsDB {
     // Note: operator == and != are defined outside this class.
     uint64_t frames_decoded;
     uint64_t frames_dropped;
-    uint64_t frames_decoded_power_efficient;
+    uint64_t frames_power_efficient;
   };
 
   virtual ~VideoDecodeStatsDB();

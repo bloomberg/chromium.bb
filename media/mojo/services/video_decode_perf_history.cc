@@ -124,7 +124,7 @@ void VideoDecodePerfHistory::AssessStats(
   double percent_dropped =
       static_cast<double>(stats->frames_dropped) / stats->frames_decoded;
   double percent_power_efficient =
-      static_cast<double>(stats->frames_decoded_power_efficient) /
+      static_cast<double>(stats->frames_power_efficient) /
       stats->frames_decoded;
 
   *is_power_efficient =
@@ -153,7 +153,7 @@ void VideoDecodePerfHistory::OnGotStatsForRequest(
     percent_dropped =
         static_cast<double>(stats->frames_dropped) / stats->frames_decoded;
     percent_power_efficient =
-        static_cast<double>(stats->frames_decoded_power_efficient) /
+        static_cast<double>(stats->frames_power_efficient) /
         stats->frames_decoded;
   }
 
@@ -213,7 +213,7 @@ void VideoDecodePerfHistory::SavePerfRecord(ukm::SourceId source_id,
           features.profile, features.video_size, features.frames_per_sec);
   VideoDecodeStatsDB::DecodeStatsEntry new_stats(
       targets.frames_decoded, targets.frames_dropped,
-      targets.frames_decoded_power_efficient);
+      targets.frames_power_efficient);
 
   // Get past perf info and report UKM metrics before saving this record.
   db_->GetDecodeStats(
@@ -301,7 +301,7 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
     builder.SetPerf_PastVideoFramesDecoded(past_stats->frames_decoded);
     builder.SetPerf_PastVideoFramesDropped(past_stats->frames_dropped);
     builder.SetPerf_PastVideoFramesPowerEfficient(
-        past_stats->frames_decoded_power_efficient);
+        past_stats->frames_power_efficient);
   } else {
     builder.SetPerf_PastVideoFramesDecoded(0);
     builder.SetPerf_PastVideoFramesDropped(0);
@@ -315,8 +315,7 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
   builder.SetPerf_RecordIsPowerEfficient(new_is_efficient);
   builder.SetPerf_VideoFramesDecoded(new_stats.frames_decoded);
   builder.SetPerf_VideoFramesDropped(new_stats.frames_dropped);
-  builder.SetPerf_VideoFramesPowerEfficient(
-      new_stats.frames_decoded_power_efficient);
+  builder.SetPerf_VideoFramesPowerEfficient(new_stats.frames_power_efficient);
 
   builder.Record(ukm_recorder);
 }

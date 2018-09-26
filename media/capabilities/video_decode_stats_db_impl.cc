@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
+#include "base/time/default_clock.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "media/capabilities/video_decode_stats.pb.h"
 
@@ -43,10 +44,19 @@ std::unique_ptr<VideoDecodeStatsDBImpl> VideoDecodeStatsDBImpl::Create(
       new VideoDecodeStatsDBImpl(std::move(proto_db), db_dir));
 }
 
+constexpr char VideoDecodeStatsDBImpl::kDefaultWriteTime[];
+
 VideoDecodeStatsDBImpl::VideoDecodeStatsDBImpl(
     std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db,
     const base::FilePath& db_dir)
-    : db_(std::move(db)), db_dir_(db_dir), weak_ptr_factory_(this) {
+    : db_(std::move(db)),
+      db_dir_(db_dir),
+      wall_clock_(base::DefaultClock::GetInstance()),
+      weak_ptr_factory_(this) {
+  bool time_parsed =
+      base::Time::FromString(kDefaultWriteTime, &default_write_time_);
+  DCHECK(time_parsed);
+
   DCHECK(db_);
   DCHECK(!db_dir_.empty());
 }
@@ -118,12 +128,25 @@ void VideoDecodeStatsDBImpl::GetDecodeStats(const VideoDescKey& key,
                      weak_ptr_factory_.GetWeakPtr(), std::move(get_stats_cb)));
 }
 
+bool VideoDecodeStatsDBImpl::AreStatsExpired(
+    const DecodeStatsProto* const stats_proto) {
+  double last_write_date = stats_proto->last_write_date();
+  if (last_write_date == 0) {
+    // Set a default time if the write date is zero (no write since proto was
+    // updated to include the time stamp).
+    last_write_date = default_write_time_.ToJsTime();
+  }
+
+  return wall_clock_->Now() - base::Time::FromJsTime(last_write_date) >
+         base::TimeDelta::FromDays(VideoDecodeStatsDBImpl::kMaxDaysToKeepStats);
+}
+
 void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
     const VideoDescKey& key,
-    const DecodeStatsEntry& entry,
+    const DecodeStatsEntry& new_entry,
     AppendDecodeStatsCB append_done_cb,
     bool read_success,
-    std::unique_ptr<DecodeStatsProto> prev_stats_proto) {
+    std::unique_ptr<DecodeStatsProto> stats_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsInitialized());
 
@@ -138,37 +161,63 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
     return;
   }
 
-  if (!prev_stats_proto) {
-    prev_stats_proto.reset(new DecodeStatsProto());
-    prev_stats_proto->set_frames_decoded(0);
-    prev_stats_proto->set_frames_dropped(0);
-    prev_stats_proto->set_frames_decoded_power_efficient(0);
+  if (!stats_proto || AreStatsExpired(stats_proto.get())) {
+    // Default instance will have all zeros for numeric types.
+    stats_proto.reset(new DecodeStatsProto());
   }
 
-  uint64_t sum_frames_decoded =
-      prev_stats_proto->frames_decoded() + entry.frames_decoded;
-  uint64_t sum_frames_dropped =
-      prev_stats_proto->frames_dropped() + entry.frames_dropped;
-  uint64_t sum_frames_decoded_power_efficient =
-      prev_stats_proto->frames_decoded_power_efficient() +
-      entry.frames_decoded_power_efficient;
+  uint64_t old_frames_decoded = stats_proto->frames_decoded();
+  uint64_t old_frames_dropped = stats_proto->frames_dropped();
+  uint64_t old_frames_power_efficient = stats_proto->frames_power_efficient();
 
-  prev_stats_proto->set_frames_decoded(sum_frames_decoded);
-  prev_stats_proto->set_frames_dropped(sum_frames_dropped);
-  prev_stats_proto->set_frames_decoded_power_efficient(
-      sum_frames_decoded_power_efficient);
+  if (old_frames_decoded + new_entry.frames_decoded > kMaxFramesPerBuffer) {
+    // The |new_entry| is pushing out some or all of the old data. Achieve this
+    // by weighting the dropped and power efficiency stats by the ratio of the
+    // the buffer that new entry fills.
+    double fill_ratio = std::min(
+        static_cast<double>(new_entry.frames_decoded) / kMaxFramesPerBuffer,
+        1.0);
 
-  DVLOG(3) << __func__ << " Updating " << key.ToLogString() << " with "
-           << entry.ToLogString() << " aggregate:"
-           << DecodeStatsEntry(sum_frames_decoded, sum_frames_dropped,
-                               sum_frames_decoded_power_efficient)
-                  .ToLogString();
+    double old_dropped_ratio =
+        static_cast<double>(old_frames_dropped) / old_frames_decoded;
+    double old_efficient_ratio =
+        static_cast<double>(old_frames_power_efficient) / old_frames_decoded;
+    double new_entry_dropped_ratio =
+        static_cast<double>(new_entry.frames_dropped) /
+        new_entry.frames_decoded;
+    double new_entry_efficient_ratio =
+        static_cast<double>(new_entry.frames_power_efficient) /
+        new_entry.frames_decoded;
 
-  std::unique_ptr<ProtoDecodeStatsEntry::KeyEntryVector> entries =
-      std::make_unique<ProtoDecodeStatsEntry::KeyEntryVector>();
+    double agg_dropped_ratio = fill_ratio * new_entry_dropped_ratio +
+                               (1 - fill_ratio) * old_dropped_ratio;
+    double agg_efficient_ratio = fill_ratio * new_entry_efficient_ratio +
+                                 (1 - fill_ratio) * old_efficient_ratio;
 
-  entries->emplace_back(key.Serialize(), *prev_stats_proto);
+    stats_proto->set_frames_decoded(kMaxFramesPerBuffer);
+    stats_proto->set_frames_dropped(
+        std::round(agg_dropped_ratio * kMaxFramesPerBuffer));
+    stats_proto->set_frames_power_efficient(
+        std::round(agg_efficient_ratio * kMaxFramesPerBuffer));
+  } else {
+    // Adding |new_entry| does not exceed |kMaxFramesPerfBuffer|. Simply sum the
+    // stats.
+    stats_proto->set_frames_decoded(new_entry.frames_decoded +
+                                    old_frames_decoded);
+    stats_proto->set_frames_dropped(new_entry.frames_dropped +
+                                    old_frames_dropped);
+    stats_proto->set_frames_power_efficient(new_entry.frames_power_efficient +
+                                            old_frames_power_efficient);
+  }
 
+  // Update the time stamp for the current write.
+  stats_proto->set_last_write_date(wall_clock_->Now().ToJsTime());
+
+  // Push the update to the DB.
+  using DBType = leveldb_proto::ProtoDatabase<DecodeStatsProto>;
+  std::unique_ptr<DBType::KeyEntryVector> entries =
+      std::make_unique<DBType::KeyEntryVector>();
+  entries->emplace_back(key.Serialize(), *stats_proto);
   db_->UpdateEntries(std::move(entries),
                      std::make_unique<leveldb_proto::KeyVector>(),
                      base::BindOnce(&VideoDecodeStatsDBImpl::OnEntryUpdated,
@@ -192,11 +241,13 @@ void VideoDecodeStatsDBImpl::OnGotDecodeStats(
   UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.Read", success);
 
   std::unique_ptr<DecodeStatsEntry> entry;
-  if (stats_proto) {
+
+  if (stats_proto && !AreStatsExpired(stats_proto.get())) {
     DCHECK(success);
+
     entry = std::make_unique<DecodeStatsEntry>(
         stats_proto->frames_decoded(), stats_proto->frames_dropped(),
-        stats_proto->frames_decoded_power_efficient());
+        stats_proto->frames_power_efficient());
   }
 
   DVLOG(3) << __func__ << " read " << (success ? "succeeded" : "FAILED!")

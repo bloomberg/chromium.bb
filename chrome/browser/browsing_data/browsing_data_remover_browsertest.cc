@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VideoDecodePerfHistory) {
   media::mojom::PredictionTargets prediction_targets;
   prediction_targets.frames_decoded = kFramesDecoded;
   prediction_targets.frames_dropped = kFramesDropped;
-  prediction_targets.frames_decoded_power_efficient = kFramesPowerEfficient;
+  prediction_targets.frames_power_efficient = kFramesPowerEfficient;
 
   {
     base::RunLoop run_loop;

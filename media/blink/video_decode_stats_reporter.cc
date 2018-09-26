@@ -352,8 +352,8 @@ void VideoDecodeStatsReporter::UpdateStats() {
 
   DVLOG(2) << __func__ << " Recording -- dropped:" << targets->frames_dropped
            << "/" << targets->frames_decoded
-           << " power efficient:" << targets->frames_decoded_power_efficient
-           << "/" << targets->frames_decoded;
+           << " power efficient:" << targets->frames_power_efficient << "/"
+           << targets->frames_decoded;
   recorder_ptr_->UpdateRecord(std::move(targets));
 }
 
