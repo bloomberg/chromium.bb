@@ -80,10 +80,6 @@ const CGFloat kStrokeEndAtApogee = 1;
   return self;
 }
 
-- (void)setToolsMenuIsVisible:(BOOL)toolsMenuVisible {
-  NOTREACHED();
-}
-
 - (void)triggerAnimation {
   [self animateToColor:self.tintColor];
 }

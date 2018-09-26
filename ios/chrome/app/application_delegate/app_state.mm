@@ -200,20 +200,16 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         std::max(CGRectGetWidth(screenBounds), CGRectGetHeight(screenBounds));
     _incognitoBlocker = [[UIView alloc]
         initWithFrame:CGRectMake(0, 0, maxDimension, maxDimension)];
-    if (IsUIRefreshPhase1Enabled()) {
-      NSBundle* mainBundle = base::mac::FrameworkBundle();
-      NSArray* topObjects =
-          [mainBundle loadNibNamed:@"LaunchScreen" owner:self options:nil];
-      UIViewController* launchScreenController =
-          base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
-      [_incognitoBlocker addSubview:[launchScreenController view]];
-      [launchScreenController view].autoresizingMask =
-          UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-      _incognitoBlocker.autoresizingMask =
-          UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    } else {
-      InstallBackgroundInView(_incognitoBlocker);
-    }
+    NSBundle* mainBundle = base::mac::FrameworkBundle();
+    NSArray* topObjects =
+        [mainBundle loadNibNamed:@"LaunchScreen" owner:self options:nil];
+    UIViewController* launchScreenController =
+        base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
+    [_incognitoBlocker addSubview:[launchScreenController view]];
+    [launchScreenController view].autoresizingMask =
+        UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    _incognitoBlocker.autoresizingMask =
+        UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [_window addSubview:_incognitoBlocker];
   }
 

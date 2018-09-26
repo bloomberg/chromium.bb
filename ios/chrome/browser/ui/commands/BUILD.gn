@@ -26,7 +26,6 @@ source_set("commands") {
     "show_signin_command.mm",
     "snackbar_commands.h",
     "toolbar_commands.h",
-    "tools_menu_commands.h",
   ]
   deps = [
     "//base",

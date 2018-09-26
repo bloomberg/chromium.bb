@@ -34,8 +34,6 @@ const CGFloat kIncognitoToolbarButtonTintColorAlphaHighlighted = 0.21;
 const CGFloat kToolbarSpotlightAlpha = 0.07;
 const CGFloat kDimmedToolbarSpotlightAlpha = 0.14;
 
-const LayoutOffset kToolbarButtonAnimationOffset = -10.0;
-
 const CGFloat kExpandedLocationBarHorizontalMargin = 8;
 const CGFloat kContractedLocationBarHorizontalMargin = 19;
 
@@ -61,12 +59,7 @@ NSString* const kToolbarOmniboxButtonIdentifier =
 NSString* const kToolbarCancelOmniboxEditButtonIdentifier =
     @"kToolbarCancelOmniboxEditButtonIdentifier";
 
-const NSInteger kStackButtonMaxTabCount = 99;
-
 const NSInteger kTabGridButtonFontSize = 13;
-
-const NSInteger kFontSizeFewerThanTenTabs = 11;
-const NSInteger kFontSizeTenTabsOrMore = 9;
 
 const CGFloat kLocationBarTintBlue = 0x1A73E8;
 const CGFloat kLocationBarFontSize = 15.0f;

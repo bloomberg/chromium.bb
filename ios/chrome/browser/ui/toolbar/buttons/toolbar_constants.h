@@ -50,10 +50,6 @@ extern const CGFloat kIncognitoToolbarButtonTintColorAlphaHighlighted;
 extern const CGFloat kToolbarSpotlightAlpha;
 extern const CGFloat kDimmedToolbarSpotlightAlpha;
 
-// Animation constants.
-// TODO(crbug.com/800266): Remove this.
-extern const LayoutOffset kToolbarButtonAnimationOffset;
-
 // Adaptive toolbar position constants.
 extern const CGFloat kExpandedLocationBarHorizontalMargin;
 extern const CGFloat kContractedLocationBarHorizontalMargin;
@@ -85,26 +81,8 @@ extern NSString* const kToolbarOmniboxButtonIdentifier;
 // Accessibility identifier of the cancel omnibox edit button.
 extern NSString* const kToolbarCancelOmniboxEditButtonIdentifier;
 
-// The maximum number to display in the tab switcher button.
-// TODO(crbug.com/800266): Remove this.
-extern NSInteger const kStackButtonMaxTabCount;
-
 // Font size for the TabGrid button containing the tab count.
 extern const NSInteger kTabGridButtonFontSize;
-
-// TODO(crbug.com/800266): Remove those properties.
-// Font sizes for the button containing the tab count
-extern const NSInteger kFontSizeFewerThanTenTabs;
-extern const NSInteger kFontSizeTenTabsOrMore;
-
-// Toolbar style. Determines which button images are used.
-// TODO(crbug.com/800266): Remove those properties.
-enum ToolbarControllerStyle {
-  ToolbarControllerStyleLightMode = 0,
-  ToolbarControllerStyleDarkMode,
-  ToolbarControllerStyleIncognitoMode,
-  ToolbarControllerStyleMaxStyles
-};
 
 // Tint color for location bar and omnibox.
 extern const CGFloat kLocationBarTintBlue;
