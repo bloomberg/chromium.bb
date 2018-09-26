@@ -121,3 +121,7 @@
 
 # The test times out. https://crbug.com/884393
 -WebRtcCaptureFromElementBrowserTest.VerifyCanvasCaptureOffscreenCanvasFrames
+
+
+# https://crbug.com/888156
+-NavigationControllerBrowserTest.UtilizationOfSpareRenderProcessHost
