@@ -141,10 +141,6 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // Called with the result of the request started in |OnAuthSubmit|.
   void OnAuthComplete(base::Optional<bool> auth_success);
 
-  // Animates the display of ellipses after the |placeholder| text. |step| is
-  // the current index of the animation sequence.
-  void AnimateEllipses(const base::string16& placeholder, int step);
-
   // Called when the user view has been tapped. This will run |on_auth_| if tap
   // to unlock is enabled, or run |OnOnlineSignInMessageTap| if the online
   // sign-in message is shown, otherwise it will run |on_tap_|.

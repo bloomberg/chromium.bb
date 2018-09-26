@@ -9,12 +9,10 @@
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/login_user_view.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -108,7 +106,6 @@ TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
 
   LoginAuthUserView::TestApi test_auth_user_view(view_);
   LoginPasswordView* password_view(test_auth_user_view.password_view());
-  LoginPasswordView::TestApi test_password_view(password_view);
   LoginUserView* user_view(test_auth_user_view.user_view());
 
   SetUserCount(1);
@@ -122,13 +119,6 @@ TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
 
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
-
-  // Verify the "Signing in" placeholder text was set.
-  base::string16 placeholder =
-      test_password_view.textfield()->GetPlaceholderText();
-  base::string16 expected_placeholder = l10n_util::GetStringUTF16(
-      IDS_ASH_LOGIN_POD_PASSWORD_SIGNING_IN_PLACEHOLDER);
-  EXPECT_EQ(expected_placeholder, placeholder);
 }
 
 TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
