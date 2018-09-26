@@ -136,7 +136,13 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
   ExternalMemoryAllocator external_memory_allocator(info_, pixels_, row_bytes_);
   if (decode_to_external_memory)
     decoder->SetMemoryAllocator(&external_memory_allocator);
-  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(frame_index_);
+  ImageFrame* frame = nullptr;
+  {
+    // This trace event is important since it is used by telemetry scripts to
+    // measure the decode time.
+    TRACE_EVENT0("blink", "ImageFrameGenerator::decode");
+    frame = decoder->DecodeFrameBufferAtIndex(frame_index_);
+  }
   // SetMemoryAllocator() can try to access decoder's data, so we have to
   // clear it before clearing SegmentReader.
   if (decode_to_external_memory)
