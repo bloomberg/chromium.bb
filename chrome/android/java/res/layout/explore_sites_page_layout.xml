@@ -3,15 +3,11 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.explore_sites.ExploreSitesPageLayout
+<android.support.v7.widget.RecyclerView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/explore_sites_category_recycler"
+    android:scrollbars="vertical"
+    android:gravity="center_horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
-
-  <android.support.v7.widget.RecyclerView
-      android:id="@+id/explore_sites_category_recycler"
-      android:scrollbars="vertical"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent" />
-</org.chromium.chrome.browser.explore_sites.ExploreSitesPageLayout>
+    android:layout_height="match_parent" />

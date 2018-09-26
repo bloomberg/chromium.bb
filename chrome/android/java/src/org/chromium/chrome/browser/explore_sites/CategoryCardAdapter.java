@@ -10,11 +10,13 @@ import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.ListObservableImpl;
+import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 import java.lang.annotation.Retention;
@@ -23,10 +25,9 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Recycler view adapter delegate for a model containing a list of category cards and an error code.
  */
-public class ExploreSitesCategoryCardAdapter extends ListObservableImpl<ExploreSitesCategory>
-        implements RecyclerViewAdapter.Delegate<
-                           ExploreSitesCategoryCardViewHolderFactory.CategoryCardViewHolder,
-                           ExploreSitesCategory>,
+class CategoryCardAdapter extends ForwardingListObservable<Void>
+        implements RecyclerViewAdapter
+                           .Delegate<CategoryCardViewHolderFactory.CategoryCardViewHolder, Void>,
                    PropertyObservable.PropertyObserver<PropertyKey> {
     @IntDef({ViewType.HEADER, ViewType.CATEGORY, ViewType.LOADING, ViewType.ERROR})
     @Retention(RetentionPolicy.SOURCE)
@@ -37,15 +38,24 @@ public class ExploreSitesCategoryCardAdapter extends ListObservableImpl<ExploreS
         int ERROR = 3;
     }
 
+    private final RoundedIconGenerator mIconGenerator;
+    private final ContextMenuManager mContextMenuManager;
+    private final NativePageNavigationDelegate mNavDelegate;
+
     private RecyclerView.LayoutManager mLayoutManager;
     private PropertyModel mCategoryModel;
-    private RoundedIconGenerator mIconGenerator;
 
-    public ExploreSitesCategoryCardAdapter(PropertyModel model,
-            RecyclerView.LayoutManager layoutManager, RoundedIconGenerator iconGenerator) {
-        model.addObserver(this);
+    public CategoryCardAdapter(PropertyModel model, RecyclerView.LayoutManager layoutManager,
+            RoundedIconGenerator iconGenerator, ContextMenuManager contextMenuManager,
+            NativePageNavigationDelegate navDelegate) {
         mCategoryModel = model;
+        mCategoryModel.addObserver(this);
+        mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).addObserver(this);
+
+        mLayoutManager = layoutManager;
         mIconGenerator = iconGenerator;
+        mContextMenuManager = contextMenuManager;
+        mNavDelegate = navDelegate;
     }
 
     @Override
@@ -75,9 +85,8 @@ public class ExploreSitesCategoryCardAdapter extends ListObservableImpl<ExploreS
     }
 
     @Override
-    public void onBindViewHolder(
-            ExploreSitesCategoryCardViewHolderFactory.CategoryCardViewHolder holder, int position,
-            @Nullable ExploreSitesCategory payload) {
+    public void onBindViewHolder(CategoryCardViewHolderFactory.CategoryCardViewHolder holder,
+            int position, @Nullable Void payload) {
         if (holder.getItemViewType() == ViewType.HEADER) {
             TextView view = (TextView) holder.itemView;
             view.setText(R.string.explore_sites_title);
@@ -87,10 +96,10 @@ public class ExploreSitesCategoryCardAdapter extends ListObservableImpl<ExploreS
             // Populate loading view
         } else {
             ExploreSitesCategoryCardView view = (ExploreSitesCategoryCardView) holder.itemView;
-            view.setIconGenerator(mIconGenerator);
             // Position - 1 because there is always title.
-            view.initialize(
-                    mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).get(position - 1));
+            view.setCategory(
+                    mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).get(position - 1),
+                    mIconGenerator, mContextMenuManager, mNavDelegate);
         }
     }
 
@@ -106,7 +115,7 @@ public class ExploreSitesCategoryCardAdapter extends ListObservableImpl<ExploreS
         }
         if (key == ExploreSitesPage.SCROLL_TO_CATEGORY_KEY) {
             int pos = mCategoryModel.get(ExploreSitesPage.SCROLL_TO_CATEGORY_KEY);
-            mLayoutManager.scrollToPosition(pos + 1);
+            mLayoutManager.scrollToPosition(pos);
         }
     }
 }
