@@ -84,11 +84,18 @@ void VideoFrameCompositor::EnableSubmission(
     bool is_opaque,
     blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // If we're switching to |submitter_| from some other client, then tell it.
+  if (client_ && client_ != submitter_.get())
+    client_->StopUsingProvider();
+
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
   submitter_->SetIsOpaque(is_opaque);
   submitter_->EnableSubmission(id, std::move(frame_sink_destroyed_callback));
   client_ = submitter_.get();
+  if (rendering_)
+    client_->StartRendering();
 }
 
 bool VideoFrameCompositor::IsClientSinkAvailable() {
