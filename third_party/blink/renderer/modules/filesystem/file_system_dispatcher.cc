@@ -5,10 +5,9 @@
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 
 #include "build/build_config.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -69,25 +68,14 @@ class FileSystemDispatcher::ReadDirectoryListener
   std::unique_ptr<AsyncFileSystemCallbacks> callbacks_;
 };
 
-FileSystemDispatcher::FileSystemDispatcher(ExecutionContext& context)
-    : Supplement<ExecutionContext>(context), next_operation_id_(1) {}
+FileSystemDispatcher::FileSystemDispatcher() : next_operation_id_(1) {}
 
 // static
-const char FileSystemDispatcher::kSupplementName[] = "FileSystemDispatcher";
-
-// static
-FileSystemDispatcher& FileSystemDispatcher::From(ExecutionContext* context) {
-  DCHECK(context);
-  FileSystemDispatcher* dispatcher =
-      Supplement<ExecutionContext>::From<FileSystemDispatcher>(context);
-  if (!dispatcher) {
-    dispatcher = new FileSystemDispatcher(*context);
-    Supplement<ExecutionContext>::ProvideTo(*context, dispatcher);
-  }
-  return *dispatcher;
+FileSystemDispatcher& FileSystemDispatcher::GetThreadSpecificInstance() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<FileSystemDispatcher>,
+                                  file_system_dispatcher, ());
+  return *file_system_dispatcher;
 }
-
-FileSystemDispatcher::~FileSystemDispatcher() = default;
 
 void FileSystemDispatcher::OpenFileSystem(
     const KURL& origin_url,
@@ -95,8 +83,8 @@ void FileSystemDispatcher::OpenFileSystem(
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().Open(
       origin_url, type,
-      WTF::Bind(&FileSystemDispatcher::DidOpenFileSystem,
-                WrapWeakPersistent(this), std::move(callbacks)));
+      WTF::Bind(&FileSystemDispatcher::DidOpenFileSystem, WTF::Unretained(this),
+                std::move(callbacks)));
 }
 
 void FileSystemDispatcher::OpenFileSystemSync(
@@ -115,9 +103,8 @@ void FileSystemDispatcher::ResolveURL(
     const KURL& filesystem_url,
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().ResolveURL(
-      filesystem_url,
-      WTF::Bind(&FileSystemDispatcher::DidResolveURL, WrapWeakPersistent(this),
-                std::move(callbacks)));
+      filesystem_url, WTF::Bind(&FileSystemDispatcher::DidResolveURL,
+                                WTF::Unretained(this), std::move(callbacks)));
 }
 
 void FileSystemDispatcher::ResolveURLSync(
@@ -139,7 +126,7 @@ void FileSystemDispatcher::Move(
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().Move(
       src_path, dest_path,
-      WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
+      WTF::Bind(&FileSystemDispatcher::DidFinish, WTF::Unretained(this),
                 std::move(callbacks)));
 }
 
@@ -158,7 +145,7 @@ void FileSystemDispatcher::Copy(
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().Copy(
       src_path, dest_path,
-      WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
+      WTF::Bind(&FileSystemDispatcher::DidFinish, WTF::Unretained(this),
                 std::move(callbacks)));
 }
 
@@ -177,7 +164,7 @@ void FileSystemDispatcher::Remove(
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().Remove(
       path, recursive,
-      WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
+      WTF::Bind(&FileSystemDispatcher::DidFinish, WTF::Unretained(this),
                 std::move(callbacks)));
 }
 
@@ -195,7 +182,7 @@ void FileSystemDispatcher::ReadMetadata(
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().ReadMetadata(
       path, WTF::Bind(&FileSystemDispatcher::DidReadMetadata,
-                      WrapWeakPersistent(this), std::move(callbacks)));
+                      WTF::Unretained(this), std::move(callbacks)));
 }
 
 void FileSystemDispatcher::ReadMetadataSync(
@@ -213,7 +200,7 @@ void FileSystemDispatcher::CreateFile(
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().Create(
       path, exclusive, /*is_directory=*/false, /*is_recursive=*/false,
-      WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
+      WTF::Bind(&FileSystemDispatcher::DidFinish, WTF::Unretained(this),
                 std::move(callbacks)));
 }
 
@@ -234,7 +221,7 @@ void FileSystemDispatcher::CreateDirectory(
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().Create(
       path, exclusive, /*is_directory=*/true, recursive,
-      WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
+      WTF::Bind(&FileSystemDispatcher::DidFinish, WTF::Unretained(this),
                 std::move(callbacks)));
 }
 
@@ -255,7 +242,7 @@ void FileSystemDispatcher::Exists(
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().Exists(
       path, is_directory,
-      WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
+      WTF::Bind(&FileSystemDispatcher::DidFinish, WTF::Unretained(this),
                 std::move(callbacks)));
 }
 
@@ -297,7 +284,7 @@ void FileSystemDispatcher::InitializeFileWriter(
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().ReadMetadata(
       path, WTF::Bind(&FileSystemDispatcher::InitializeFileWriterCallback,
-                      WrapWeakPersistent(this), path, std::move(callbacks)));
+                      WTF::Unretained(this), path, std::move(callbacks)));
 }
 
 void FileSystemDispatcher::InitializeFileWriterSync(
@@ -320,11 +307,11 @@ void FileSystemDispatcher::Truncate(const KURL& path,
   int operation_id = next_operation_id_++;
   op_ptr.set_connection_error_handler(
       WTF::Bind(&FileSystemDispatcher::RemoveOperationPtr,
-                WrapWeakPersistent(this), operation_id));
+                WTF::Unretained(this), operation_id));
   cancellable_operations_.insert(operation_id, std::move(op_ptr));
   GetFileSystemManager().Truncate(
       path, offset, std::move(op_request),
-      WTF::Bind(&FileSystemDispatcher::DidTruncate, WrapWeakPersistent(this),
+      WTF::Bind(&FileSystemDispatcher::DidTruncate, WTF::Unretained(this),
                 operation_id, std::move(callback)));
 
   if (request_id_out)
@@ -351,7 +338,7 @@ void FileSystemDispatcher::Write(const KURL& path,
   int operation_id = next_operation_id_++;
   op_ptr.set_connection_error_handler(
       WTF::Bind(&FileSystemDispatcher::RemoveOperationPtr,
-                WrapWeakPersistent(this), operation_id));
+                WTF::Unretained(this), operation_id));
   cancellable_operations_.insert(operation_id, std::move(op_ptr));
 
   mojom::blink::FileSystemOperationListenerPtr listener_ptr;
@@ -392,7 +379,7 @@ void FileSystemDispatcher::Cancel(int request_id_to_cancel,
   }
   cancellable_operations_.find(request_id_to_cancel)
       ->value->Cancel(WTF::Bind(&FileSystemDispatcher::DidCancel,
-                                WrapWeakPersistent(this), std::move(callback),
+                                WTF::Unretained(this), std::move(callback),
                                 request_id_to_cancel));
 }
 
@@ -401,7 +388,7 @@ void FileSystemDispatcher::CreateSnapshotFile(
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().CreateSnapshotFile(
       file_path, WTF::Bind(&FileSystemDispatcher::DidCreateSnapshotFile,
-                           WrapWeakPersistent(this), std::move(callbacks)));
+                           WTF::Unretained(this), std::move(callbacks)));
 }
 
 void FileSystemDispatcher::CreateSnapshotFileSync(
@@ -435,24 +422,9 @@ void FileSystemDispatcher::CreateFileWriter(
           std::move(callbacks)));
 }
 
-void FileSystemDispatcher::ChooseEntry(
-    std::unique_ptr<ChooseEntryCallbacks> callbacks) {
-  GetFileSystemManager().ChooseEntry(WTF::Bind(
-      [](std::unique_ptr<ChooseEntryCallbacks> callbacks,
-         base::File::Error result,
-         Vector<mojom::blink::FileSystemEntryPtr> entries) {
-        if (result != base::File::FILE_OK) {
-          callbacks->OnError(result);
-        } else {
-          callbacks->OnSuccess(std::move(entries));
-        }
-      },
-      std::move(callbacks)));
-}
-
 mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
   if (!file_system_manager_ptr_) {
-    GetSupplementable()->GetInterfaceProvider()->GetInterface(
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&file_system_manager_ptr_));
   }
   return *file_system_manager_ptr_;

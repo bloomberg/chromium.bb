@@ -123,11 +123,9 @@ struct FileSystemManagerImpl::ReadDirectorySyncCallbackEntry {
 
 FileSystemManagerImpl::FileSystemManagerImpl(
     int process_id,
-    int frame_id,
     storage::FileSystemContext* file_system_context,
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context)
     : process_id_(process_id),
-      frame_id_(frame_id),
       context_(file_system_context),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
       blob_storage_context_(blob_storage_context),
@@ -592,7 +590,8 @@ void FileSystemManagerImpl::CreateWriter(const GURL& file_path,
   std::move(callback).Run(base::File::FILE_OK, std::move(writer));
 }
 
-void FileSystemManagerImpl::ChooseEntry(ChooseEntryCallback callback) {
+void FileSystemManagerImpl::ChooseEntry(int32_t render_frame_id,
+                                        ChooseEntryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
     bindings_.ReportBadMessage("FSMI_WRITABLE_FILES_DISABLED");
@@ -602,7 +601,7 @@ void FileSystemManagerImpl::ChooseEntry(ChooseEntryCallback callback) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
-          &FileSystemChooser::CreateAndShow, process_id_, frame_id_,
+          &FileSystemChooser::CreateAndShow, process_id_, render_frame_id,
           std::move(callback),
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
 }

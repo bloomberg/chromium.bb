@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_file_system.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
@@ -149,7 +150,7 @@ void DOMFileSystem::CreateWriter(
   std::unique_ptr<AsyncFileSystemCallbacks> callbacks =
       FileWriterCallbacks::Create(file_writer, success_callback, error_callback,
                                   context_);
-  FileSystemDispatcher::From(context_).InitializeFileWriter(
+  FileSystemDispatcher::GetThreadSpecificInstance().InitializeFileWriter(
       CreateFileSystemURL(file_entry), std::move(callbacks));
 }
 
@@ -159,7 +160,7 @@ void DOMFileSystem::CreateFile(
     ErrorCallbackBase* error_callback) {
   KURL file_system_url = CreateFileSystemURL(file_entry);
 
-  FileSystemDispatcher::From(context_).CreateSnapshotFile(
+  FileSystemDispatcher::GetThreadSpecificInstance().CreateSnapshotFile(
       file_system_url,
       SnapshotFileCallback::Create(this, file_entry->name(), file_system_url,
                                    success_callback, error_callback, context_));

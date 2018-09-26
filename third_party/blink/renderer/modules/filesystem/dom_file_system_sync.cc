@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/platform/web_file_system.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry_sync.h"
@@ -139,7 +140,7 @@ File* DOMFileSystemSync::CreateFile(const FileEntrySync* file_entry,
   KURL file_system_url = CreateFileSystemURL(file_entry);
   CreateFileHelper::CreateFileResult* result(
       CreateFileHelper::CreateFileResult::Create());
-  FileSystemDispatcher::From(context_).CreateSnapshotFileSync(
+  FileSystemDispatcher::GetThreadSpecificInstance().CreateSnapshotFileSync(
       file_system_url, CreateFileHelper::Create(result, file_entry->name(),
                                                 file_system_url, GetType()));
   if (result->failed_) {
@@ -156,7 +157,7 @@ FileWriterSync* DOMFileSystemSync::CreateWriter(
     ExceptionState& exception_state) {
   DCHECK(file_entry);
 
-  FileWriterSync* file_writer = FileWriterSync::Create(context_);
+  FileWriterSync* file_writer = FileWriterSync::Create();
 
   FileWriterCallbacksSyncHelper* sync_helper =
       FileWriterCallbacksSyncHelper::Create();
@@ -165,7 +166,7 @@ FileWriterSync* DOMFileSystemSync::CreateWriter(
                                   sync_helper->GetSuccessCallback(),
                                   sync_helper->GetErrorCallback(), context_);
 
-  FileSystemDispatcher::From(context_).InitializeFileWriterSync(
+  FileSystemDispatcher::GetThreadSpecificInstance().InitializeFileWriterSync(
       CreateFileSystemURL(file_entry), std::move(callbacks));
 
   FileWriterBase* success = sync_helper->GetResultOrThrow(exception_state);
