@@ -59,7 +59,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/network_change_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace {
 
@@ -146,13 +146,7 @@ void ApplicationContextImpl::StartTearDown() {
     sessions::SessionIdGenerator::GetInstance()->Shutdown();
   }
 
-  if (shared_url_loader_factory_)
-    shared_url_loader_factory_->Detach();
-
-  if (network_context_) {
-    web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
-                               network_context_owner_.release());
-  }
+  ios_chrome_io_thread_->NetworkTearDown();
 }
 
 void ApplicationContextImpl::PostDestroyThreads() {
@@ -241,28 +235,12 @@ ApplicationContextImpl::GetSystemURLRequestContext() {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ApplicationContextImpl::GetSharedURLLoaderFactory() {
-  if (!url_loader_factory_) {
-    auto url_loader_factory_params =
-        network::mojom::URLLoaderFactoryParams::New();
-    url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
-    url_loader_factory_params->is_corb_enabled = false;
-    GetSystemNetworkContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_),
-        std::move(url_loader_factory_params));
-    shared_url_loader_factory_ =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            url_loader_factory_.get());
-  }
-  return shared_url_loader_factory_;
+  return ios_chrome_io_thread_->GetSharedURLLoaderFactory();
 }
 
 network::mojom::NetworkContext*
 ApplicationContextImpl::GetSystemNetworkContext() {
-  if (!network_context_) {
-    network_context_owner_ = std::make_unique<web::NetworkContextOwner>(
-        GetSystemURLRequestContext(), &network_context_);
-  }
-  return network_context_.get();
+  return ios_chrome_io_thread_->GetSystemNetworkContext();
 }
 
 const std::string& ApplicationContextImpl::GetApplicationLocale() {
