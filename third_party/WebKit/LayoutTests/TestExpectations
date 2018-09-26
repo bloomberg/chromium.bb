@@ -5201,11 +5201,6 @@ crbug.com/883591 [ Android ] fullscreen/full-screen-inline-split-crash.html [ Pa
 crbug.com/883860 [ Mac ] external/wpt/service-workers/service-worker/interfaces-sw.https.html  [ Failure ]
 crbug.com/883837 [ Win7 ] http/tests/performance-timing/resource_timing_buffer_full_250.html [ Timeout Pass ]
 
-crbug.com/v8/8186 external/wpt/wasm/jsapi/module/customSections.any.html [ Skip ]
-crbug.com/v8/8186 external/wpt/wasm/jsapi/module/customSections.any.worker.html [ Skip ]
-crbug.com/v8/8186 virtual/enable_wasm/external/wpt/wasm/jsapi/module/customSections.any.html [ Skip ]
-crbug.com/v8/8186 virtual/enable_wasm/external/wpt/wasm/jsapi/module/customSections.any.worker.html [ Skip ]
-
 # Sheriff 2018-09-18
 crbug.com/884445 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
 crbug.com/884445 virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
