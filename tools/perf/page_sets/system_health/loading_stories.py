@@ -51,6 +51,13 @@ class LoadAmazonDesktopStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+class LoadAmazonDesktopStory2018(_LoadingStory):
+  NAME = 'load:search:amazon:2018'
+  URL = 'https://www.amazon.com/s/?field-keywords=pixel'
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class LoadTaobaoDesktopStory(_LoadingStory):
   NAME = 'load:search:taobao'
   URL = 'https://world.taobao.com/'
