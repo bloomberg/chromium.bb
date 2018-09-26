@@ -17,11 +17,13 @@
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/error_translation_util.h"
+#include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher_response_writer.h"
+#include "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -172,14 +174,13 @@ DownloadTaskImpl::DownloadTaskImpl(const WebState* web_state,
       content_disposition_(content_disposition),
       mime_type_(mime_type),
       page_transition_(page_transition),
+      identifier_([identifier copy]),
       web_state_(web_state),
       delegate_(delegate),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  session_ = CreateSession(identifier);
   DCHECK(web_state_);
   DCHECK(delegate_);
-  DCHECK(session_);
 
   observer_ = [NSNotificationCenter.defaultCenter
       addObserverForName:UIApplicationWillResignActiveNotification
@@ -224,8 +225,13 @@ void DownloadTaskImpl::Start(
   percent_complete_ = 0;
   received_bytes_ = 0;
   state_ = State::kInProgress;
-  GetCookies(base::Bind(&DownloadTaskImpl::StartWithCookies,
-                        weak_factory_.GetWeakPtr()));
+
+  if (original_url_.SchemeIs(url::kDataScheme)) {
+    StartDataUrlParsing();
+  } else {
+    GetCookies(base::Bind(&DownloadTaskImpl::StartWithCookies,
+                          weak_factory_.GetWeakPtr()));
+  }
 }
 
 void DownloadTaskImpl::Cancel() {
@@ -243,7 +249,7 @@ net::URLFetcherResponseWriter* DownloadTaskImpl::GetResponseWriter() const {
 
 NSString* DownloadTaskImpl::GetIndentifier() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return session_.configuration.identifier;
+  return identifier_;
 }
 
 const GURL& DownloadTaskImpl::GetOriginalUrl() const {
@@ -405,6 +411,11 @@ void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(writer_);
 
+  if (!session_) {
+    session_ = CreateSession(identifier_);
+    DCHECK(session_);
+  }
+
   has_performed_background_download_ =
       UIApplication.sharedApplication.applicationState !=
       UIApplicationStateActive;
@@ -417,15 +428,45 @@ void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {
   OnDownloadUpdated();
 }
 
+void DownloadTaskImpl::StartDataUrlParsing() {
+  mime_type_.clear();
+  std::string charset;
+  std::string data;
+  if (!net::DataURL::Parse(original_url_, &mime_type_, &charset, &data)) {
+    OnDownloadFinished(net::ERR_INVALID_URL);
+    return;
+  }
+  auto callback = base::BindOnce(&DownloadTaskImpl::OnDataUrlWritten,
+                                 weak_factory_.GetWeakPtr());
+  auto buffer = base::MakeRefCounted<net::IOBuffer>(data.size());
+  memcpy(buffer->data(), data.c_str(), data.size());
+  int written = writer_->Write(buffer.get(), data.size(), std::move(callback));
+  if (written != net::ERR_IO_PENDING) {
+    OnDataUrlWritten(written);
+  }
+}
+
 void DownloadTaskImpl::OnDownloadUpdated() {
   for (auto& observer : observers_)
     observer.OnDownloadUpdated(this);
 }
 
 void DownloadTaskImpl::OnDownloadFinished(int error_code) {
+  error_code_ = error_code;
   state_ = State::kComplete;
   session_task_ = nil;
   OnDownloadUpdated();
+}
+
+void DownloadTaskImpl::OnDataUrlWritten(int bytes_written) {
+  percent_complete_ = 100;
+  total_bytes_ = bytes_written;
+  received_bytes_ = total_bytes_;
+  auto callback = base::BindOnce(&DownloadTaskImpl::OnDownloadFinished,
+                                 weak_factory_.GetWeakPtr());
+  if (writer_->Finish(net::OK, std::move(callback)) != net::ERR_IO_PENDING) {
+    OnDownloadFinished(net::OK);
+  }
 }
 
 }  // namespace web

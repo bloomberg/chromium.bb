@@ -4483,7 +4483,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       [_pendingNavigationInfo setCancelled:YES];
     }
   } else {
-    if (responseURL.SchemeIsHTTPOrHTTPS()) {
+    if (web::UrlHasWebScheme(responseURL)) {
       std::string contentDisposition;
       if (HTTPHeaders) {
         HTTPHeaders->GetNormalizedHeader("content-disposition",
