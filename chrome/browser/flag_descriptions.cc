@@ -509,6 +509,11 @@ const char kEnableDesktopPWAsLinkCapturingDescription[] =
     "URLs that are in-scope of Desktop PWAs will open in a window. Requires "
     "#enable-desktop-pwas.";
 
+const char kEnableSystemWebAppsName[] = "System Web Apps";
+const char kEnableSystemWebAppsDescription[] =
+    "Experimental system for using the Desktop PWA framework for running System"
+    "Apps (e.g Settings, Discover).";
+
 const char kEnableDockedMagnifierName[] = "Docked Magnifier";
 const char kEnableDockedMagnifierDescription[] =
     "Enables the Docked Magnifier (a.k.a. picture-in-picture magnifier).";

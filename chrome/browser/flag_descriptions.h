@@ -339,6 +339,9 @@ extern const char kEnableDesktopPWAsDescription[];
 extern const char kEnableDesktopPWAsLinkCapturingName[];
 extern const char kEnableDesktopPWAsLinkCapturingDescription[];
 
+extern const char kEnableSystemWebAppsName[];
+extern const char kEnableSystemWebAppsDescription[];
+
 extern const char kEnableDockedMagnifierName[];
 extern const char kEnableDockedMagnifierDescription[];
 
