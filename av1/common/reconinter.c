@@ -708,10 +708,9 @@ void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
 
 // obmc_mask_N[overlap_position]
 static const uint8_t obmc_mask_1[1] = { 64 };
+DECLARE_ALIGNED(2, static const uint8_t, obmc_mask_2[2]) = { 45, 64 };
 
-static const uint8_t obmc_mask_2[2] = { 45, 64 };
-
-static const uint8_t obmc_mask_4[4] = { 39, 50, 59, 64 };
+DECLARE_ALIGNED(4, static const uint8_t, obmc_mask_4[4]) = { 39, 50, 59, 64 };
 
 static const uint8_t obmc_mask_8[8] = { 36, 42, 48, 53, 57, 61, 64, 64 };
 
