@@ -13,8 +13,8 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -68,14 +68,14 @@ class QuotaDatabaseTest : public testing::Test {
         QuotaTableEntry("c", kPersistent, 3),
     };
 
-    CreateV2Database(kDbFile, entries, arraysize(entries));
+    CreateV2Database(kDbFile, entries, base::size(entries));
 
     QuotaDatabase db(kDbFile);
     EXPECT_TRUE(db.LazyOpen(true));
     EXPECT_TRUE(db.db_.get());
 
     using Verifier = EntryVerifier<QuotaTableEntry>;
-    Verifier verifier(entries, entries + arraysize(entries));
+    Verifier verifier(entries, entries + base::size(entries));
     EXPECT_TRUE(db.DumpQuotaTable(
         base::BindRepeating(&Verifier::Run, base::Unretained(&verifier))));
     EXPECT_TRUE(verifier.table.empty());
@@ -354,7 +354,7 @@ class QuotaDatabaseTest : public testing::Test {
       GURL("http://a/"),
       GURL("http://b/"),
       GURL("http://c/") };
-    std::set<GURL> origins(kOrigins, kOrigins + arraysize(kOrigins));
+    std::set<GURL> origins(kOrigins, kOrigins + base::size(kOrigins));
 
     EXPECT_TRUE(db.RegisterInitialOriginInfo(origins, kTemporary));
 
@@ -396,7 +396,7 @@ class QuotaDatabaseTest : public testing::Test {
         QuotaTableEntry("http://oo/", kTemporary, 2),
         QuotaTableEntry("http://gle/", kPersistent, 3)};
     QuotaTableEntry* begin = kTableEntries;
-    QuotaTableEntry* end = kTableEntries + arraysize(kTableEntries);
+    QuotaTableEntry* end = kTableEntries + base::size(kTableEntries);
 
     QuotaDatabase db(kDbFile);
     EXPECT_TRUE(db.LazyOpen(true));
@@ -419,7 +419,7 @@ class QuotaDatabaseTest : public testing::Test {
         Entry(GURL("http://gle/"), kTemporary, 1, now, now),
     };
     Entry* begin = kTableEntries;
-    Entry* end = kTableEntries + arraysize(kTableEntries);
+    Entry* end = kTableEntries + base::size(kTableEntries);
 
     QuotaDatabase db(kDbFile);
     EXPECT_TRUE(db.LazyOpen(true));
@@ -439,7 +439,7 @@ class QuotaDatabaseTest : public testing::Test {
     Entry kTableEntries[] = {
         Entry(kOrigin, kTemporary, 100, base::Time(), base::Time())};
     Entry* begin = kTableEntries;
-    Entry* end = kTableEntries + arraysize(kTableEntries);
+    Entry* end = kTableEntries + base::size(kTableEntries);
 
     QuotaDatabase db(kDbFile);
     EXPECT_TRUE(db.LazyOpen(true));
@@ -555,10 +555,8 @@ class QuotaDatabaseTest : public testing::Test {
 
     ASSERT_TRUE(OpenDatabase(db.get(), kDbFile));
     EXPECT_TRUE(QuotaDatabase::CreateSchema(
-            db.get(), meta_table.get(),
-            kCurrentVersion, kCompatibleVersion,
-            kTables, arraysize(kTables),
-            kIndexes, arraysize(kIndexes)));
+        db.get(), meta_table.get(), kCurrentVersion, kCompatibleVersion,
+        kTables, base::size(kTables), kIndexes, base::size(kIndexes)));
 
     // V2 and V3 QuotaTable are compatible, so we can simply use
     // AssignQuotaTable to poplulate v2 database here.
