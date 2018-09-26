@@ -200,9 +200,11 @@ static int obudec_read_one_obu(FILE *f, uint8_t **obu_buffer,
   }
 
   if (bytes_read + obu_payload_length > available_buffer_capacity) {
-    // TODO(tomfinegan): Add overflow check.
-    const size_t new_capacity =
-        obu_bytes_buffered + bytes_read + 2 * obu_payload_length;
+    if (*obu_buffer_capacity >= (SIZE_MAX >> 1)) {
+      fprintf(stderr, "obudec: cannot realloc buffer; capacity rolled over.\n");
+      return -1;
+    }
+    const size_t new_capacity = 2 * *obu_buffer_capacity;
 
 #if defined AOM_MAX_ALLOCABLE_MEMORY
     if (new_capacity > AOM_MAX_ALLOCABLE_MEMORY) {
