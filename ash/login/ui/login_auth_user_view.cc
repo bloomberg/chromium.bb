@@ -96,8 +96,8 @@ constexpr int kDisabledAuthMessageRoundedCornerRadiusDp = 8;
 constexpr int kNonEmptyWidthDp = 1;
 
 // Returns an observer that will hide |view| when it fires. The observer will
-// delete itself after firing. Make sure to call |observer->SetReady()| after
-// attaching it.
+// delete itself after firing (by returning true). Make sure to call
+// |observer->SetActive()| after attaching it.
 ui::CallbackLayerAnimationObserver* BuildObserverToHideView(views::View* view) {
   return new ui::CallbackLayerAnimationObserver(base::Bind(
       [](views::View* view,
@@ -187,6 +187,7 @@ class LoginAuthUserView::FingerprintView : public views::View {
       case mojom::FingerprintUnlockState::UNAVAILABLE:
       case mojom::FingerprintUnlockState::AVAILABLE:
       case mojom::FingerprintUnlockState::AUTH_SUCCESS:
+      case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
         icon_->SetImage(gfx::CreateVectorIcon(
             kLockScreenFingerprintIcon, kFingerprintIconSizeDp, SK_ColorWHITE));
         return;
@@ -210,6 +211,7 @@ class LoginAuthUserView::FingerprintView : public views::View {
         case mojom::FingerprintUnlockState::UNAVAILABLE:
         case mojom::FingerprintUnlockState::AVAILABLE:
         case mojom::FingerprintUnlockState::AUTH_SUCCESS:
+        case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE;
         case mojom::FingerprintUnlockState::AUTH_FAILED:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_FAILED_MESSAGE;
@@ -226,7 +228,9 @@ class LoginAuthUserView::FingerprintView : public views::View {
       return;
 
     state_ = state;
-    SetVisible(state != mojom::FingerprintUnlockState::UNAVAILABLE);
+    SetVisible(state != mojom::FingerprintUnlockState::UNAVAILABLE &&
+               state !=
+                   mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT);
     SetIcon(state);
     SetText(state);
 
@@ -590,17 +594,23 @@ void LoginAuthUserView::SetEasyUnlockIcon(
 }
 
 void LoginAuthUserView::CaptureStateForAnimationPreLayout() {
+  auto stop_animation = [](views::View* view) {
+    if (view->layer()->GetAnimator()->is_animating())
+      view->layer()->GetAnimator()->StopAnimating();
+  };
+
+  // Stop any running animation scheduled in ApplyAnimationPostLayout.
+  stop_animation(this);
+  stop_animation(password_view_);
+  stop_animation(pin_view_);
+  stop_animation(fingerprint_view_);
+
   DCHECK(!cached_animation_state_);
   cached_animation_state_ = std::make_unique<AnimationState>(this);
 }
 
 void LoginAuthUserView::ApplyAnimationPostLayout() {
   DCHECK(cached_animation_state_);
-
-  // Cancel any running animations.
-  pin_view_->layer()->GetAnimator()->AbortAllAnimations();
-  password_view_->layer()->GetAnimator()->AbortAllAnimations();
-  layer()->GetAnimator()->AbortAllAnimations();
 
   bool has_password = (auth_methods() & AUTH_PASSWORD) != 0;
   bool has_pin = (auth_methods() & AUTH_PIN) != 0;
@@ -700,7 +710,7 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
 
     {
       ui::ScopedLayerAnimationSettings settings(
-          password_view_->layer()->GetAnimator());
+          fingerprint_view_->layer()->GetAnimator());
       settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
           login_constants::kChangeUserAnimationDurationMs));
       settings.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
