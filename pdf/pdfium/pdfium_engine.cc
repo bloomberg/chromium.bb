@@ -1151,8 +1151,9 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPdf(
   g_last_instance_id = client_->GetPluginInstance()->pp_instance();
 #endif
 
-  return print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
-                                pdf_print_settings, /*raster=*/true);
+  return ConvertPdfToBufferDev(
+      print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
+                             pdf_print_settings, /*raster=*/true));
 }
 
 pp::Buffer_Dev PDFiumEngine::PrintPagesAsPdf(
@@ -1174,8 +1175,20 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPdf(
       pages_[page_number]->Unload();
   }
 
-  return print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
-                                pdf_print_settings, /*raster=*/false);
+  return ConvertPdfToBufferDev(
+      print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
+                             pdf_print_settings, /*raster=*/false));
+}
+
+pp::Buffer_Dev PDFiumEngine::ConvertPdfToBufferDev(
+    const std::vector<uint8_t>& pdf_data) {
+  pp::Buffer_Dev buffer;
+  if (!pdf_data.empty()) {
+    buffer = pp::Buffer_Dev(GetPluginInstance(), pdf_data.size());
+    if (!buffer.is_null())
+      memcpy(buffer.data(), pdf_data.data(), pdf_data.size());
+  }
+  return buffer;
 }
 
 void PDFiumEngine::KillFormFocus() {

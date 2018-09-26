@@ -312,6 +312,8 @@ class PDFiumEngine : public PDFEngine,
       const PP_PrintSettings_Dev& print_settings,
       const PP_PdfPrintSettings_Dev& pdf_print_settings);
 
+  pp::Buffer_Dev ConvertPdfToBufferDev(const std::vector<uint8_t>& pdf_data);
+
   // Checks if |page| has selected text in a form element. If so, sets that as
   // the plugin's text selection.
   void SetFormSelectedText(FPDF_FORMHANDLE form_handle, FPDF_PAGE page);
