@@ -60,7 +60,14 @@ class ConvertableToTraceFormatWrapper final
 class EnabledStateObserverImpl final
     : public base::trace_event::TraceLog::EnabledStateObserver {
  public:
-  EnabledStateObserverImpl() = default;
+  EnabledStateObserverImpl() {
+    base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
+  }
+
+  ~EnabledStateObserverImpl() override {
+    base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(
+        this);
+  }
 
   void OnTraceLogEnabled() final {
     base::AutoLock lock(mutex_);
@@ -80,12 +87,9 @@ class EnabledStateObserverImpl final
     {
       base::AutoLock lock(mutex_);
       DCHECK(!observers_.count(observer));
-      if (observers_.empty()) {
-        base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(
-            this);
-      }
       observers_.insert(observer);
     }
+
     // Fire the observer if recording is already in progress.
     if (base::trace_event::TraceLog::GetInstance()->IsEnabled())
       observer->OnTraceEnabled();
@@ -95,10 +99,6 @@ class EnabledStateObserverImpl final
     base::AutoLock lock(mutex_);
     DCHECK(observers_.count(observer) == 1);
     observers_.erase(observer);
-    if (observers_.empty()) {
-      base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(
-          this);
-    }
   }
 
  private:
