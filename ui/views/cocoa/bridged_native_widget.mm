@@ -79,18 +79,6 @@ constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
 }
 @end
 
-// The NSView that hosts the composited CALayer drawing the UI. It fills the
-// window but is not hittable so that accessibility hit tests always go to the
-// BridgedContentView.
-@interface ViewsCompositorSuperview : NSView
-@end
-
-@implementation ViewsCompositorSuperview
-- (NSView*)hitTest:(NSPoint)aPoint {
-  return nil;
-}
-@end
-
 // This class overrides NSAnimation methods to invalidate the shadow for each
 // frame. It is required because the show animation uses CGSSetWindowWarp()
 // which is touchy about the consistency of the points it is given. The show
@@ -463,8 +451,6 @@ void BridgedNativeWidgetImpl::DestroyContentView() {
 
 void BridgedNativeWidgetImpl::CreateContentView(const gfx::Rect& bounds) {
   DCHECK(!bridged_view_);
-  // The compositor needs to point at the new content view created here.
-  DCHECK(!compositor_superview_);
 
   bridged_view_.reset(
       [[BridgedContentView alloc] initWithBridge:this bounds:bounds]);
@@ -473,8 +459,12 @@ void BridgedNativeWidgetImpl::CreateContentView(const gfx::Rect& bounds) {
   // this should be treated as an error and caught early.
   CHECK(bridged_view_);
 
-  // Layer backing the content view improves resize performance, reduces memory
-  // use (no backing store), and clips sublayers to rounded window corners.
+  // Set the layer first to create a layer-hosting view (not layer-backed), and
+  // set the compositor output to go to that layer.
+  base::scoped_nsobject<CALayer> background_layer([[CALayer alloc] init]);
+  display_ca_layer_tree_ =
+      std::make_unique<ui::DisplayCALayerTree>(background_layer.get());
+  [bridged_view_ setLayer:background_layer];
   [bridged_view_ setWantsLayer:YES];
 
   [window_ setContentView:bridged_view_];
@@ -886,8 +876,6 @@ void BridgedNativeWidgetImpl::OnShowAnimationComplete() {
 }
 
 void BridgedNativeWidgetImpl::InitCompositorView() {
-  AddCompositorSuperview();
-
   // Use the regular window background for window modal sheets. The layer will
   // still paint over most of it, but the native -[NSApp beginSheet:] animation
   // blocks the UI thread, so there's no way to invalidate the shadow to match
@@ -919,12 +907,6 @@ void BridgedNativeWidgetImpl::SortSubviews(RankMap rank) {
   // orderOut: in Close(), which notifies visibility changes to Views.
   if (!bridged_view_)
     return;
-
-  // Unassociated NSViews should be ordered above associated ones. The exception
-  // is the UI compositor's superview, which should always be on the very
-  // bottom, so give it an explicit negative rank.
-  if (compositor_superview_)
-    rank[compositor_superview_] = -1;
   [bridged_view_ sortSubviewsUsingFunction:&SubviewSorter context:&rank];
 }
 
@@ -1021,7 +1003,7 @@ bool BridgedNativeWidgetImpl::ShouldWaitInPreCommit() {
     return false;
   if (ca_transaction_sync_suppressed_)
     return false;
-  if (!compositor_superview_)
+  if (!bridged_view_)
     return false;
   return content_dip_size_ != compositor_frame_dip_size_;
 }
@@ -1225,35 +1207,6 @@ void BridgedNativeWidgetImpl::NotifyVisibilityChangeDown() {
   }
   DCHECK_EQ(visible_bridged_children,
             CountBridgedWindows([window_ childWindows]));
-}
-
-void BridgedNativeWidgetImpl::AddCompositorSuperview() {
-  DCHECK(!compositor_superview_);
-  compositor_superview_.reset(
-      [[ViewsCompositorSuperview alloc] initWithFrame:[bridged_view_ bounds]]);
-
-  // Size and resize automatically with |bridged_view_|.
-  [compositor_superview_
-      setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
-  // Enable HiDPI backing when supported (only on 10.7+).
-  if ([compositor_superview_ respondsToSelector:
-      @selector(setWantsBestResolutionOpenGLSurface:)]) {
-    [compositor_superview_ setWantsBestResolutionOpenGLSurface:YES];
-  }
-
-  // Set the layer first to create a layer-hosting view (not layer-backed), and
-  // set the compositor output to go to that layer.
-  base::scoped_nsobject<CALayer> background_layer([[CALayer alloc] init]);
-  display_ca_layer_tree_ =
-      std::make_unique<ui::DisplayCALayerTree>(background_layer.get());
-  [compositor_superview_ setLayer:background_layer];
-  [compositor_superview_ setWantsLayer:YES];
-
-  // The UI compositor should always be the first subview, to ensure webviews
-  // are drawn on top of it.
-  DCHECK_EQ(0u, [[bridged_view_ subviews] count]);
-  [bridged_view_ addSubview:compositor_superview_];
 }
 
 void BridgedNativeWidgetImpl::UpdateWindowGeometry() {
