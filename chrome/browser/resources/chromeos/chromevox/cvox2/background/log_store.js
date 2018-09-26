@@ -124,7 +124,7 @@ LogStore.LOG_LIMIT = 3000;
  * List of all LogTypes.
  * @return {!Array<!TextLog.LogType | !TreeLog.LogType>}
  */
-LogStore.logTypeStr = function() {
+LogStore.logTypes = function() {
   var types = [];
   for (var type in TextLog.LogType)
     types.push(TextLog.LogType[type]);

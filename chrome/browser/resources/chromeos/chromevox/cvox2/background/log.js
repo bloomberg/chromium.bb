@@ -49,8 +49,8 @@ LogPage.init = function() {
   };
 
   var params = new URLSearchParams(location.search);
-  for (var type in LogStore.LogType) {
-    var typeFilter = LogStore.LogType[type] + 'Filter';
+  for (var type of LogStore.logTypes()) {
+    var typeFilter = type + 'Filter';
     LogPage.setFilterTypeEnabled(typeFilter, params.get(typeFilter));
   }
   var saveLogButton = document.getElementById('saveLog');
@@ -101,9 +101,8 @@ LogPage.saveLogEvent = function(event) {
  * update logs.
  */
 LogPage.update = function() {
-  var logTypes = LogStore.logTypeStr();
-  for (var i = 0; i < logTypes.length; i++) {
-    var typeFilter = logTypes[i] + 'Filter';
+  for (var type of LogStore.logTypes()) {
+    var typeFilter = type + 'Filter';
     var element = document.getElementById(typeFilter);
     element.checked = LogPage.urlPrefs_[typeFilter];
   }
@@ -176,8 +175,8 @@ LogPage.setFilterTypeEnabled = function(typeFilter, checked) {
  */
 LogPage.createUrlParams = function() {
   var urlParams = [];
-  for (var type in LogStore.LogType) {
-    var typeFilter = LogStore.LogType[type] + 'Filter';
+  for (var type of LogStore.logTypes()) {
+    var typeFilter = type + 'Filter';
     urlParams.push(typeFilter + '=' + LogPage.urlPrefs_[typeFilter]);
   }
   return '?' + urlParams.join('&');
