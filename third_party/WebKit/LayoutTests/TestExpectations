@@ -1794,8 +1794,6 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 crbug.com/867834 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Crash ]
 
 # Timeout tests in dictionary order.
-crbug.com/867834 virtual/outofblink-cors/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Timeout ]
-crbug.com/867834 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Timeout ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/document-domain-canonicalizes.html [ Timeout ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/secureContexts/authenticated_worker.https.html [ Timeout ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/secureContexts/unauthenticated_worker.html [ Timeout ]
@@ -4509,6 +4507,7 @@ crbug.com/802915 css3/blending/isolation-should-include-non-local-background.htm
 
 crbug.com/807838 external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/807838 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
+crbug.com/807838 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/807838 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/862886 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
 
