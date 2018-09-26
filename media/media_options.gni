@@ -77,7 +77,8 @@ declare_args() {
   enable_hls_sample_aes = proprietary_codecs && is_chromecast
 
   # If true, use cast CMA backend instead of default chromium media pipeline.
-  is_cast_using_cma_backend = is_cast_audio_only || !is_android
+  # TODO(sanfin): Remove this flag when all builds enable CMA.
+  is_cast_using_cma_backend = true
 }
 
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
