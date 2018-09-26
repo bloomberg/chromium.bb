@@ -2866,6 +2866,17 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="User navigated away from page while bubble hidden"/>
 </enum>
 
+<enum name="AutofillLocalCardMigrationDialogOffer">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Not shown due to legal message being invalid"/>
+</enum>
+
+<enum name="AutofillLocalCardMigrationDialogUserInteraction">
+  <int value="0" label="User explicitly accepted dialog"/>
+  <int value="1" label="User explicitly denied dialog"/>
+  <int value="2" label="User clicked legal message link"/>
+</enum>
+
 <enum name="AutofillMacAddressBook">
   <int value="0" label="Showed popup entry"/>
   <int value="1" label="Selected popup entry"/>

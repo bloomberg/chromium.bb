@@ -43,7 +43,9 @@ void LocalCardMigrationDialogControllerImpl::ShowDialog(
 
   if (!LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
                                /*escape_apostrophes=*/true)) {
-    // TODO(crbug/867194): Add metric.
+    AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
+        AutofillMetrics::
+            LOCAL_CARD_MIGRATION_DIALOG_NOT_SHOWN_INVALID_LEGAL_MESSAGE);
     return;
   }
 
@@ -52,6 +54,10 @@ void LocalCardMigrationDialogControllerImpl::ShowDialog(
   migratable_credit_cards_ = migratable_credit_cards;
   view_state_ = LocalCardMigrationDialogState::kOffered;
   local_card_migration_dialog_->ShowDialog();
+  dialog_is_visible_duration_timer_ = base::ElapsedTimer();
+
+  AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
+      AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_SHOWN);
 }
 
 LocalCardMigrationDialogState
@@ -71,12 +77,21 @@ LocalCardMigrationDialogControllerImpl::GetLegalMessageLines() const {
 
 void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(
     const std::vector<std::string>& selected_cards_guids) {
-  // TODO(crbug.com/867194): Add metrics.
+  AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
+      dialog_is_visible_duration_timer_.Elapsed(), selected_cards_guids.size(),
+      migratable_credit_cards_.size(),
+      AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_CLOSED_SAVE_BUTTON_CLICKED);
+
   std::move(start_migrating_cards_callback_).Run(selected_cards_guids);
 }
 
 void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
-  // TODO(crbug.com/867194): Add metrics.
+  AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
+      dialog_is_visible_duration_timer_.Elapsed(), 0,
+      migratable_credit_cards_.size(),
+      AutofillMetrics::
+          LOCAL_CARD_MIGRATION_DIALOG_CLOSED_CANCEL_BUTTON_CLICKED);
+
   start_migrating_cards_callback_.Reset();
 }
 
@@ -87,6 +102,13 @@ void LocalCardMigrationDialogControllerImpl::OnViewCardsButtonClicked() {
       payments::GetManageInstrumentsUrl(kPaymentsProfileUserIndex),
       content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false));
+}
+
+void LocalCardMigrationDialogControllerImpl::OnLegalMessageLinkClicked() {
+  AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
+      dialog_is_visible_duration_timer_.Elapsed(), 0,
+      migratable_credit_cards_.size(),
+      AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_LEGAL_MESSAGE_CLICKED);
 }
 
 void LocalCardMigrationDialogControllerImpl::OnDialogClosed() {
