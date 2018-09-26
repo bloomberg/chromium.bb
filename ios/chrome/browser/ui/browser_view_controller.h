@@ -12,7 +12,7 @@
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 

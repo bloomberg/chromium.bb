@@ -34,7 +34,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller_impl.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
