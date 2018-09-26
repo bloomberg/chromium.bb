@@ -314,7 +314,8 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     // If out of flow element containment changed, then we need to force a
     // subtree paint property update, since the children elements may now be
     // referencing a different container.
-    SetSubtreeNeedsForcedPaintPropertyUpdate();
+    AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason::kContainerChainMayChange);
   } else if (had_layer == HasLayer() &&
              had_transform_related_property != HasTransformRelatedProperty()) {
     // This affects whether to create transform node. Note that if the

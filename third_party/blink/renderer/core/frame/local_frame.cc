@@ -644,7 +644,10 @@ void LocalFrame::SetPrinting(bool printing,
     }
   }
 
-  View()->SetSubtreeNeedsForcedPaintPropertyUpdate();
+  if (auto* layout_view = View()->GetLayoutView()) {
+    layout_view->AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason::kPrinting);
+  }
 
   if (!printing)
     GetDocument()->SetPrinting(Document::kNotPrinting);

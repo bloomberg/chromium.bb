@@ -2656,8 +2656,10 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
   }
 
   // Need to update subtree paint properties for the changed fragments.
-  if (fragments_changed)
-    object_.GetMutableForPainting().SetSubtreeNeedsForcedPaintPropertyUpdate();
+  if (fragments_changed) {
+    object_.GetMutableForPainting().AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason::kFragmentsChanged);
+  }
 }
 
 bool PaintPropertyTreeBuilder::ObjectIsRepeatingTableSectionInPagedMedia()
@@ -2883,12 +2885,19 @@ bool PaintPropertyTreeBuilder::UpdateForChildren() {
     builder.UpdateForChildren();
     property_changed |= builder.PropertyChanged();
     property_added_or_removed |= builder.PropertyAddedOrRemoved();
-    context_.force_subtree_update |=
-        object_.SubtreeNeedsForcedPaintPropertyUpdate();
     fragment_data = fragment_data->NextFragment();
   }
   DCHECK(!fragment_data);
-
+  // TODO(vmpstr): With isolation nodes, we can be selective with which reasons
+  // cause a forced subtree update. We'll likely need to propagate these reasons
+  // via |context_| so that children can also clear this flag. For example, with
+  // "container chain may change" reason, the child might fully contains all
+  // out of flow elements (before and after the property tree update), which
+  // means it can clear that reason and possibly skip the subtree update.
+  if (object_.SubtreePaintPropertyUpdateReasons() !=
+      static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)) {
+    context_.force_subtree_update = true;
+  }
   if (object_.CanContainAbsolutePositionObjects())
     context_.container_for_absolute_position = &object_;
   if (object_.CanContainFixedPositionObjects())

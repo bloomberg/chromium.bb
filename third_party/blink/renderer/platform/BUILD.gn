@@ -1098,6 +1098,8 @@ jumbo_component("platform") {
     "graphics/static_bitmap_image.h",
     "graphics/stroke_data.cc",
     "graphics/stroke_data.h",
+    "graphics/subtree_paint_property_update_reason.cc",
+    "graphics/subtree_paint_property_update_reason.h",
     "graphics/surface_layer_bridge.cc",
     "graphics/surface_layer_bridge.h",
     "graphics/texture_holder.h",
