@@ -49,14 +49,14 @@ class ProtocolUtils {
       const std::string& previous_server_payload,
       const std::vector<ProcessedActionProto>& processed_actions);
 
-  // Parse actions from the given |response|, which should not be an empty
-  // string.
+  // Parse actions from the given |response|, which can be an empty string.
+  //
   // Pass in nullptr for |return_server_payload| to indicate no need to return
   // server payload. Parsed actions are returned through |actions|, which should
   // not be nullptr. Return false if parse failed, otherwise return true.
   static bool ParseActions(const std::string& response,
                            std::string* return_server_payload,
-                           std::deque<std::unique_ptr<Action>>* actions);
+                           std::vector<std::unique_ptr<Action>>* actions);
 
  private:
   // To avoid instantiate this class by accident.

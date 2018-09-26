@@ -137,31 +137,35 @@ void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
     std::move(callback_).Run(true);
     return;
   }
+
   ProcessNextAction();
 }
 
 void ScriptExecutor::ProcessNextAction() {
-  if (actions_.empty()) {
+  // We could get into a strange situation if ProcessNextAction is called before
+  // the action was reported as processed, which should not happen. In that case
+  // we could have more |processed_actions| than |actions_|.
+  if (actions_.size() <= processed_actions_.size()) {
+    DCHECK_EQ(actions_.size(), processed_actions_.size());
     // Request more actions to execute.
     GetNextActions();
     return;
   }
 
-  std::unique_ptr<Action> action = std::move(actions_.front());
-  actions_.pop_front();
+  Action* action = actions_[processed_actions_.size()].get();
   int delay_ms = action->proto().action_delay_ms();
   if (delay_ms > 0) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ScriptExecutor::ProcessAction,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(action)),
+                       weak_ptr_factory_.GetWeakPtr(), action),
         base::TimeDelta::FromMilliseconds(delay_ms));
   } else {
-    ProcessAction(std::move(action));
+    ProcessAction(action);
   }
 }
 
-void ScriptExecutor::ProcessAction(std::unique_ptr<Action> action) {
+void ScriptExecutor::ProcessAction(Action* action) {
   action->ProcessAction(this, base::BindOnce(&ScriptExecutor::OnProcessedAction,
                                              weak_ptr_factory_.GetWeakPtr()));
 }
