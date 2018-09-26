@@ -490,8 +490,9 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
           surface_format);
       if (!surface_ || !surface_->Initialize(surface_format)) {
         DestroyOnGpuThread();
-        LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create surface.";
-        return gpu::ContextResult::kFatalFailure;
+        LOG(ERROR)
+            << "ContextResult::kSurfaceFailure: Failed to create surface.";
+        return gpu::ContextResult::kSurfaceFailure;
       }
       if (params.attribs.enable_swap_timestamps_if_supported &&
           surface_->SupportsSwapTimestamps())

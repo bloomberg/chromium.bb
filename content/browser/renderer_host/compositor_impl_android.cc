@@ -1134,6 +1134,11 @@ void CompositorImpl::OnGpuChannelEstablished(
   auto result = context_provider->BindToCurrentThread();
   LOG_IF(FATAL, result == gpu::ContextResult::kFatalFailure)
       << "Fatal error making Gpu context";
+  if (result == gpu::ContextResult::kSurfaceFailure) {
+    SetSurface(nullptr);
+    client_->RecreateSurface();
+  }
+
   if (result != gpu::ContextResult::kSuccess) {
     HandlePendingLayerTreeFrameSinkRequest();
     return;
