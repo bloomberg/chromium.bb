@@ -31,15 +31,14 @@ BrowsingDataQuotaHelper* BrowsingDataQuotaHelper::Create(Profile* profile) {
       BrowserContext::GetDefaultStoragePartition(profile)->GetQuotaManager());
 }
 
-void BrowsingDataQuotaHelperImpl::StartFetching(
-    const FetchResultCallback& callback) {
+void BrowsingDataQuotaHelperImpl::StartFetching(FetchResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread,
-                     this, callback));
+                     this, std::move(callback)));
 }
 
 void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
@@ -61,7 +60,7 @@ BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
 BrowsingDataQuotaHelperImpl::~BrowsingDataQuotaHelperImpl() {}
 
 void BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread(
-    const FetchResultCallback& callback) {
+    FetchResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const StorageType types[] = {StorageType::kTemporary,
@@ -71,22 +70,22 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread(
   // Query hosts for each storage types. When complete, process the collected
   // hosts.
   PendingHosts* pending_hosts = new PendingHosts();
-  base::Closure completion = base::BarrierClosure(
+  base::RepeatingClosure completion = base::BarrierClosure(
       arraysize(types),
       base::BindOnce(&BrowsingDataQuotaHelperImpl::OnGetOriginsComplete,
-                     weak_factory_.GetWeakPtr(), callback,
+                     weak_factory_.GetWeakPtr(), std::move(callback),
                      base::Owned(pending_hosts)));
 
   for (const StorageType& type : types) {
     quota_manager_->GetOriginsModifiedSince(
         type, base::Time(),
-        base::Bind(&BrowsingDataQuotaHelperImpl::GotOrigins,
-                   weak_factory_.GetWeakPtr(), pending_hosts, completion));
+        base::BindOnce(&BrowsingDataQuotaHelperImpl::GotOrigins,
+                       weak_factory_.GetWeakPtr(), pending_hosts, completion));
   }
 }
 
 void BrowsingDataQuotaHelperImpl::GotOrigins(PendingHosts* pending_hosts,
-                                             const base::Closure& completion,
+                                             base::OnceClosure completion,
                                              const std::set<GURL>& origins,
                                              StorageType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -95,34 +94,35 @@ void BrowsingDataQuotaHelperImpl::GotOrigins(PendingHosts* pending_hosts,
       continue;  // Non-websafe state is not considered browsing data.
     pending_hosts->insert(std::make_pair(url.host(), type));
   }
-  completion.Run();
+  std::move(completion).Run();
 }
 
 void BrowsingDataQuotaHelperImpl::OnGetOriginsComplete(
-    const FetchResultCallback& callback,
+    FetchResultCallback callback,
     PendingHosts* pending_hosts) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Query usage for each (host, type). When complete, process the results.
   QuotaInfoMap* quota_info = new QuotaInfoMap();
-  base::Closure completion = base::BarrierClosure(
+  base::RepeatingClosure completion = base::BarrierClosure(
       pending_hosts->size(),
       base::BindOnce(&BrowsingDataQuotaHelperImpl::OnGetHostsUsageComplete,
-                     weak_factory_.GetWeakPtr(), callback,
+                     weak_factory_.GetWeakPtr(), std::move(callback),
                      base::Owned(quota_info)));
 
   for (const auto& itr : *pending_hosts) {
     const std::string& host = itr.first;
     StorageType type = itr.second;
     quota_manager_->GetHostUsage(
-        host, type, base::Bind(&BrowsingDataQuotaHelperImpl::GotHostUsage,
-                               weak_factory_.GetWeakPtr(), quota_info,
-                               completion, host, type));
+        host, type,
+        base::BindOnce(&BrowsingDataQuotaHelperImpl::GotHostUsage,
+                       weak_factory_.GetWeakPtr(), quota_info, completion, host,
+                       type));
   }
 }
 
 void BrowsingDataQuotaHelperImpl::GotHostUsage(QuotaInfoMap* quota_info,
-                                               const base::Closure& completion,
+                                               base::OnceClosure completion,
                                                const std::string& host,
                                                StorageType type,
                                                int64_t usage) {
@@ -140,11 +140,11 @@ void BrowsingDataQuotaHelperImpl::GotHostUsage(QuotaInfoMap* quota_info,
     default:
       NOTREACHED();
   }
-  completion.Run();
+  std::move(completion).Run();
 }
 
 void BrowsingDataQuotaHelperImpl::OnGetHostsUsageComplete(
-    const FetchResultCallback& callback,
+    FetchResultCallback callback,
     QuotaInfoMap* quota_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -161,14 +161,15 @@ void BrowsingDataQuotaHelperImpl::OnGetHostsUsageComplete(
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, result));
+                           base::BindOnce(std::move(callback), result));
 }
 
 void BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread(
     const std::string& host) {
   quota_manager_->SetPersistentHostQuota(
-      host, 0, base::Bind(&BrowsingDataQuotaHelperImpl::DidRevokeHostQuota,
-                          weak_factory_.GetWeakPtr()));
+      host, 0,
+      base::BindOnce(&BrowsingDataQuotaHelperImpl::DidRevokeHostQuota,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void BrowsingDataQuotaHelperImpl::DidRevokeHostQuota(

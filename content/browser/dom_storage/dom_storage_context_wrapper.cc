@@ -47,7 +47,7 @@ const char kSessionStorageDirectory[] = "Session Storage";
 void GetLegacyLocalStorageUsage(
     const base::FilePath& directory,
     scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
-    const DOMStorageContext::GetLocalStorageUsageCallback& callback) {
+    DOMStorageContext::GetLocalStorageUsageCallback callback) {
   std::vector<LocalStorageUsageInfo> infos;
   base::FileEnumerator enumerator(directory, false,
                                   base::FileEnumerator::FILES);
@@ -62,14 +62,14 @@ void GetLegacyLocalStorageUsage(
       infos.push_back(info);
     }
   }
-  reply_task_runner->PostTask(FROM_HERE,
-                              base::BindOnce(callback, std::move(infos)));
+  reply_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(infos)));
 }
 
 void InvokeLocalStorageUsageCallbackHelper(
-    const DOMStorageContext::GetLocalStorageUsageCallback& callback,
+    DOMStorageContext::GetLocalStorageUsageCallback callback,
     std::unique_ptr<std::vector<LocalStorageUsageInfo>> infos) {
-  callback.Run(*infos);
+  std::move(callback).Run(*infos);
 }
 
 void GetSessionStorageUsageHelper(
@@ -84,7 +84,7 @@ void GetSessionStorageUsageHelper(
 
 void CollectLocalStorageUsage(
     std::vector<LocalStorageUsageInfo>* out_info,
-    base::Closure done_callback,
+    base::OnceClosure done_callback,
     const std::vector<LocalStorageUsageInfo>& in_info) {
   out_info->insert(out_info->end(), in_info.begin(), in_info.end());
   std::move(done_callback).Run();
@@ -98,10 +98,10 @@ void GotMojoDeletionCallback(
 
 void GotMojoLocalStorageUsage(
     scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
-    const DOMStorageContext::GetLocalStorageUsageCallback& callback,
+    DOMStorageContext::GetLocalStorageUsageCallback callback,
     std::vector<LocalStorageUsageInfo> usage) {
-  reply_task_runner->PostTask(FROM_HERE,
-                              base::BindOnce(callback, std::move(usage)));
+  reply_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(usage)));
 }
 
 void GotMojoSessionStorageUsage(
@@ -187,13 +187,13 @@ DOMStorageContextWrapper::~DOMStorageContextWrapper() {
 }
 
 void DOMStorageContextWrapper::GetLocalStorageUsage(
-    const GetLocalStorageUsageCallback& callback) {
+    GetLocalStorageUsageCallback callback) {
   DCHECK(context_.get());
   auto infos = std::make_unique<std::vector<LocalStorageUsageInfo>>();
   auto* infos_ptr = infos.get();
   base::RepeatingClosure got_local_storage_usage = base::BarrierClosure(
-      2, base::BindOnce(&InvokeLocalStorageUsageCallbackHelper, callback,
-                        std::move(infos)));
+      2, base::BindOnce(&InvokeLocalStorageUsageCallbackHelper,
+                        std::move(callback), std::move(infos)));
   auto collect_callback = base::BindRepeating(
       CollectLocalStorageUsage, infos_ptr, std::move(got_local_storage_usage));
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
