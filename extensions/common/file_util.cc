@@ -32,6 +32,7 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/image_util.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -54,6 +55,8 @@ enum SafeInstallationFlag {
   ENABLED,   // Safe installation is enabled.
 };
 SafeInstallationFlag g_use_safe_installation = DEFAULT;
+
+bool g_report_error_for_invisible_icon = false;
 
 // Returns true if the given file path exists and is not zero-length.
 bool ValidateFilePath(const base::FilePath& path) {
@@ -460,19 +463,35 @@ base::FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
   return path;
 }
 
+void SetReportErrorForInvisibleIconForTesting(bool value) {
+  g_report_error_for_invisible_icon = value;
+}
+
 bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
                               const Extension* extension,
                               int error_message_id,
                               std::string* error) {
-  for (ExtensionIconSet::IconMap::const_iterator iter = icon_set.map().begin();
-       iter != icon_set.map().end();
-       ++iter) {
+  for (const auto& entry : icon_set.map()) {
     const base::FilePath path =
-        extension->GetResource(iter->second).GetFilePath();
+        extension->GetResource(entry.second).GetFilePath();
     if (!ValidateFilePath(path)) {
       *error = l10n_util::GetStringFUTF8(error_message_id,
-                                         base::UTF8ToUTF16(iter->second));
+                                         base::UTF8ToUTF16(entry.second));
       return false;
+    }
+
+    if (extension->location() == Manifest::UNPACKED) {
+      const bool is_sufficiently_visible =
+          image_util::IsIconAtPathSufficientlyVisible(path);
+      UMA_HISTOGRAM_BOOLEAN(
+          "Extensions.ManifestIconSetIconWasVisibleForUnpacked",
+          is_sufficiently_visible);
+      if (!is_sufficiently_visible && g_report_error_for_invisible_icon) {
+        *error = l10n_util::GetStringFUTF8(
+            IDS_EXTENSION_LOAD_ICON_NOT_SUFFICIENTLY_VISIBLE,
+            base::UTF8ToUTF16(entry.second));
+        return false;
+      }
     }
   }
   return true;
