@@ -8,9 +8,8 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/login/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/user_manager.h"
 
 namespace chromeos {
 
@@ -34,10 +33,14 @@ SystemSettingsProvider::~SystemSettingsProvider() {
 
 void SystemSettingsProvider::DoSet(const std::string& path,
                                    const base::Value& in_value) {
-  // Only non-guest and non-child users can change the time zone.
-  if (LoginState::Get()->IsGuestSessionUser() ||
-      LoginState::Get()->IsPublicSessionUser() ||
-      ProfileManager::GetActiveUserProfile()->IsChild()) {
+  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
+  if (!user || !user->is_logged_in())
+    return;
+  user_manager::UserType userType = user->GetType();
+  // Guest, child, or public accounts cannot change the time zone.
+  if (userType == user_manager::USER_TYPE_GUEST ||
+      userType == user_manager::USER_TYPE_CHILD ||
+      userType == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     return;
   }
 
