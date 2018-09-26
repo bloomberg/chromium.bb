@@ -10,10 +10,6 @@ source_set("main") {
     "browser_view_wrangler.mm",
     "bvc_container_view_controller.h",
     "bvc_container_view_controller.mm",
-    "main_coordinator.h",
-    "main_coordinator.mm",
-    "main_presenting_view_controller.h",
-    "main_presenting_view_controller.mm",
     "view_controller_swapping.h",
   ]
   deps = [
@@ -29,7 +25,6 @@ source_set("main") {
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs:tabs_internal",
-    "//ios/chrome/browser/ui/main/transitions",
     "//ios/public/provider/chrome/browser",
   ]
   public_deps = [
@@ -57,13 +52,10 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "browser_view_wrangler_unittest.mm",
-    "main_coordinator_unittest.mm",
-    "main_presenting_view_controller_unittest.mm",
   ]
   deps = [
     ":main",
     ":tab_switcher",
-    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/test",
@@ -74,19 +66,5 @@ source_set("unit_tests") {
     "//ios/chrome/test:block_cleanup_test",
     "//ios/web/public/test",
     "//testing/gtest",
-  ]
-}
-
-source_set("test_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "main_view_controller_test.h",
-    "main_view_controller_test.mm",
-  ]
-  deps = [
-    ":tab_switcher",
-    "//base",
-    "//ios/chrome/test:test_support",
   ]
 }
