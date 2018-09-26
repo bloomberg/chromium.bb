@@ -221,12 +221,18 @@ public abstract class AwContentsClient {
 
         try {
             context.startActivity(intent);
+            return true;
         } catch (ActivityNotFoundException ex) {
             Log.w(TAG, "No application can handle %s", url);
-            return false;
+        } catch (SecurityException ex) {
+            // This can happen if the Activity is exported="true", guarded by a permission, and sets
+            // up an intent filter matching this intent. This is a valid configuration for an
+            // Activity, so instead of crashing, we catch the exception and do nothing. See
+            // https://crbug.com/808494 and https://crbug.com/889300.
+            Log.w(TAG, "SecurityException when starting intent for %s", url);
         }
 
-        return true;
+        return false;
     }
 
     public static Uri[] parseFileChooserResult(int resultCode, Intent intent) {
