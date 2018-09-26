@@ -69,8 +69,8 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
       entries_.at(key_str) = DecodeStatsEntry(
           known_entry.frames_decoded + new_entry.frames_decoded,
           known_entry.frames_dropped + new_entry.frames_dropped,
-          known_entry.frames_decoded_power_efficient +
-              new_entry.frames_decoded_power_efficient);
+          known_entry.frames_power_efficient +
+              new_entry.frames_power_efficient);
     }
 
     std::move(append_done_cb).Run(true);
@@ -154,14 +154,13 @@ class VideoDecodePerfHistoryTest : public testing::Test {
     return features;
   }
 
-  mojom::PredictionTargets MakeTargets(
-      uint32_t frames_decoded,
-      uint32_t frames_dropped,
-      uint32_t frames_decoded_power_efficient) {
+  mojom::PredictionTargets MakeTargets(uint32_t frames_decoded,
+                                       uint32_t frames_dropped,
+                                       uint32_t frames_power_efficient) {
     mojom::PredictionTargets targets;
     targets.frames_decoded = frames_decoded;
     targets.frames_dropped = frames_dropped;
-    targets.frames_decoded_power_efficient = frames_decoded_power_efficient;
+    targets.frames_power_efficient = frames_power_efficient;
     return targets;
   }
 

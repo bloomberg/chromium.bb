@@ -308,6 +308,6 @@ struct PredictionFeatures {
 struct PredictionTargets {
   uint32 frames_decoded = 0;
   uint32 frames_dropped = 0;
-  uint32 frames_decoded_power_efficient = 0;
+  uint32 frames_power_efficient = 0;
 };
 
