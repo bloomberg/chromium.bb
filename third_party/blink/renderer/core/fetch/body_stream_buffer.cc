@@ -441,7 +441,10 @@ void BodyStreamBuffer::Abort() {
 }
 
 void BodyStreamBuffer::Close() {
-  Controller()->Close();
+  // Close() can be called during construction, in which case Controller()
+  // will not be set yet.
+  if (Controller())
+    Controller()->Close();
   CancelConsumer();
 }
 
