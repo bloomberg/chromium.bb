@@ -10,7 +10,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView.Adapter;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -24,7 +23,7 @@ import java.util.Map;
 /**
  * A data adapter for the Contacts Picker.
  */
-public class PickerAdapter extends Adapter<ViewHolder> {
+public class PickerAdapter extends Adapter<ContactViewHolder> {
     // The category view to use to show the contacts.
     private PickerCategoryView mCategoryView;
 
@@ -36,19 +35,6 @@ public class PickerAdapter extends Adapter<ViewHolder> {
 
     // A list of search result indices into the larger data set.
     private ArrayList<Integer> mSearchResults;
-
-    /**
-     * Holds on to a {@link ContactView} that displays information about a contact.
-     */
-    public class ContactViewHolder extends ViewHolder {
-        /**
-         * The ContactViewHolder.
-         * @param itemView The {@link ContactView} view for showing the contact details.
-         */
-        public ContactViewHolder(ContactView itemView) {
-            super(itemView);
-        }
-    }
 
     private static final String[] PROJECTION = {
             ContactsContract.Contacts._ID, ContactsContract.Contacts.LOOKUP_KEY,
@@ -122,7 +108,7 @@ public class PickerAdapter extends Adapter<ViewHolder> {
             String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
             String name = cursor.getString(
                     cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-            contacts.add(new ContactDetails(id, name, emailMap.get(id), phoneMap.get(id), null));
+            contacts.add(new ContactDetails(id, name, emailMap.get(id), phoneMap.get(id)));
         } while (cursor.moveToNext());
 
         cursor.close();
@@ -132,15 +118,15 @@ public class PickerAdapter extends Adapter<ViewHolder> {
     // RecyclerView.Adapter:
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ContactViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         ContactView itemView = (ContactView) LayoutInflater.from(parent.getContext())
                                        .inflate(R.layout.contact_view, parent, false);
         itemView.setCategoryView(mCategoryView);
-        return new ContactViewHolder(itemView);
+        return new ContactViewHolder(itemView, mCategoryView, mContentResolver);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ContactViewHolder holder, int position) {
         ContactDetails contact;
         if (mSearchResults == null) {
             contact = mContactDetails.get(position);
@@ -148,7 +134,8 @@ public class PickerAdapter extends Adapter<ViewHolder> {
             Integer index = mSearchResults.get(position);
             contact = mContactDetails.get(index);
         }
-        ((ContactView) holder.itemView).initialize(contact);
+
+        holder.setContactDetails(contact);
     }
 
     /**

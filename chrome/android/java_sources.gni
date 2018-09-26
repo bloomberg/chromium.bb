@@ -271,6 +271,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contacts_picker/ContactsPickerDialog.java",
   "java/src/org/chromium/chrome/browser/contacts_picker/ContactsPickerToolbar.java",
   "java/src/org/chromium/chrome/browser/contacts_picker/ContactView.java",
+  "java/src/org/chromium/chrome/browser/contacts_picker/ContactViewHolder.java",
+  "java/src/org/chromium/chrome/browser/contacts_picker/FetchIconWorkerTask.java",
   "java/src/org/chromium/chrome/browser/contacts_picker/PickerAdapter.java",
   "java/src/org/chromium/chrome/browser/contacts_picker/PickerCategoryView.java",
   "java/src/org/chromium/chrome/browser/content/ContentUtils.java",
