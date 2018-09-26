@@ -8,6 +8,19 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/ime/rulebased/def/ar.h"
+#include "chromeos/services/ime/rulebased/def/ckb_ar.h"
+#include "chromeos/services/ime/rulebased/def/ckb_en.h"
+#include "chromeos/services/ime/rulebased/def/fa.h"
+#include "chromeos/services/ime/rulebased/def/km.h"
+#include "chromeos/services/ime/rulebased/def/lo.h"
+#include "chromeos/services/ime/rulebased/def/ne_inscript.h"
+#include "chromeos/services/ime/rulebased/def/ru_phone_aatseel.h"
+#include "chromeos/services/ime/rulebased/def/ru_phone_yazhert.h"
+#include "chromeos/services/ime/rulebased/def/ta_inscript.h"
+#include "chromeos/services/ime/rulebased/def/ta_typewriter.h"
+#include "chromeos/services/ime/rulebased/def/th.h"
+#include "chromeos/services/ime/rulebased/def/th_pattajoti.h"
+#include "chromeos/services/ime/rulebased/def/th_tis.h"
 
 namespace chromeos {
 namespace ime {
@@ -35,7 +48,59 @@ static const std::map<std::string, RawDataEntry> s_data = {
     {id_ar, RawDataEntry(key_map_ar,
                          base::size(key_map_ar),
                          key_map_index_ar,
-                         is_102_ar)}};
+                         is_102_ar)},
+    {id_ckb_ar, RawDataEntry(key_map_ckb_ar,
+                             base::size(key_map_ckb_ar),
+                             key_map_index_ckb_ar,
+                             is_102_ckb_ar)},
+    {id_ckb_en, RawDataEntry(key_map_ckb_en,
+                             base::size(key_map_ckb_en),
+                             key_map_index_ckb_en,
+                             is_102_ckb_en)},
+    {id_fa, RawDataEntry(key_map_fa,
+                         base::size(key_map_fa),
+                         key_map_index_fa,
+                         is_102_fa)},
+    {id_km, RawDataEntry(key_map_km,
+                         base::size(key_map_km),
+                         key_map_index_km,
+                         is_102_km)},
+    {id_lo, RawDataEntry(key_map_lo,
+                         base::size(key_map_lo),
+                         key_map_index_lo,
+                         is_102_lo)},
+    {id_ne_inscript, RawDataEntry(key_map_ne_inscript,
+                                  base::size(key_map_ne_inscript),
+                                  key_map_index_ne_inscript,
+                                  is_102_ne_inscript)},
+    {id_ru_phone_aatseel, RawDataEntry(key_map_ru_phone_aatseel,
+                                       base::size(key_map_ru_phone_aatseel),
+                                       key_map_index_ru_phone_aatseel,
+                                       is_102_ru_phone_aatseel)},
+    {id_ru_phone_yazhert, RawDataEntry(key_map_ru_phone_yazhert,
+                                       base::size(key_map_ru_phone_yazhert),
+                                       key_map_index_ru_phone_yazhert,
+                                       is_102_ru_phone_yazhert)},
+    {id_ta_inscript, RawDataEntry(key_map_ta_inscript,
+                                  base::size(key_map_ta_inscript),
+                                  key_map_index_ta_inscript,
+                                  is_102_ta_inscript)},
+    {id_ta_typewriter, RawDataEntry(key_map_ta_typewriter,
+                                    base::size(key_map_ta_typewriter),
+                                    key_map_index_ta_typewriter,
+                                    is_102_ta_typewriter)},
+    {id_th, RawDataEntry(key_map_th,
+                         base::size(key_map_th),
+                         key_map_index_th,
+                         is_102_th)},
+    {id_th_pattajoti, RawDataEntry(key_map_th_pattajoti,
+                                   base::size(key_map_th_pattajoti),
+                                   key_map_index_th_pattajoti,
+                                   is_102_th_pattajoti)},
+    {id_th_tis, RawDataEntry(key_map_th_tis,
+                             base::size(key_map_th_tis),
+                             key_map_index_th_tis,
+                             is_102_th_tis)}};
 
 static const char* s_101_keys[] = {
     // Row #1
