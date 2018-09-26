@@ -21,6 +21,8 @@ class OfflineItemUtils {
 
   static std::string GetDownloadNamespace(bool is_off_the_record);
 
+  static bool IsDownload(const offline_items_collection::ContentId& id);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(OfflineItemUtils);
 };

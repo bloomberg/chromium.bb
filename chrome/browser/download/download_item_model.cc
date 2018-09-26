@@ -114,6 +114,15 @@ DownloadItemModelData::DownloadItemModelData()
 // -----------------------------------------------------------------------------
 // DownloadItemModel
 
+// static
+DownloadUIModel::DownloadUIModelPtr DownloadItemModel::Wrap(
+    download::DownloadItem* download) {
+  DownloadUIModel::DownloadUIModelPtr model(
+      new DownloadItemModel(download),
+      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
+  return model;
+}
+
 DownloadItemModel::DownloadItemModel(DownloadItem* download)
     : download_(download) {
   download_->AddObserver(this);
