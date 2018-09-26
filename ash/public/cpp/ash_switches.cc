@@ -49,9 +49,12 @@ const char kAshEnableMagnifierKeyScroller[] =
 const char kAshEnablePaletteOnAllDisplays[] =
     "ash-enable-palette-on-all-displays";
 
-// Enables the observation of accelerometer events to enter tablet
-// mode.  The flag is "enable-touchview" not "enable-tabletmode" as this
-// is used to enable tablet mode on convertible devices.
+// If the flag is present, it indicates 1) the device has accelerometer and 2)
+// the device is a convertible device or a tablet device (thus is capable of
+// entering tablet mode). If this flag is not set, then the device is not
+// capable of entering tablet mode. For example, Samus has accelerometer, but
+// is not a covertible or tablet, thus doesn't have this flag set, thus can't
+// enter tablet mode.
 const char kAshEnableTabletMode[] = "enable-touchview";
 
 // Enable the wayland server.
