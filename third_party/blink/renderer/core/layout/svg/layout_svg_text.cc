@@ -391,7 +391,8 @@ FloatRect LayoutSVGText::StrokeBoundingBox() const {
 
 FloatRect LayoutSVGText::VisualRectInLocalSVGCoordinates() const {
   FloatRect visual_rect = StrokeBoundingBox();
-  SVGLayoutSupport::AdjustVisualRectWithResources(*this, visual_rect);
+  SVGLayoutSupport::AdjustVisualRectWithResources(*this, ObjectBoundingBox(),
+                                                  visual_rect);
 
   if (const ShadowList* text_shadow = StyleRef().TextShadow())
     text_shadow->AdjustRectForShadow(visual_rect);
