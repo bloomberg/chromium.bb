@@ -51,12 +51,6 @@ content::WebContents* GetTopLevelWebContents(
 // notify via WillClose() when it is being destroyed.
 void ShowModalDialog(gfx::NativeWindow dialog,
                      content::WebContents* web_contents);
-#if defined(OS_MACOSX)
-// Temporary shim for Polychrome. See bottom of first comment in
-// https://crbug.com/804950 for details.
-void ShowModalDialogCocoa(gfx::NativeWindow dialog,
-                          content::WebContents* web_contents);
-#endif
 
 // Calls CreateWebModalDialogViews, shows the dialog, and returns its widget.
 views::Widget* ShowWebModalDialogViews(
