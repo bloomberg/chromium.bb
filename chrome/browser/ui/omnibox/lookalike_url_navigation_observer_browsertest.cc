@@ -19,12 +19,17 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace {
+
+using UkmEntry = ukm::builders::LookalikeUrl_NavigationSuggestion;
 
 enum class FeatureTestState { kDisabled, kEnabledWithoutUI, kEnabledWithUI };
 
@@ -67,6 +72,7 @@ class LookalikeUrlNavigationObserverBrowserTest
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
   // Sets the absolute Site Engagement |score| for the testing origin.
@@ -84,6 +90,26 @@ class LookalikeUrlNavigationObserverBrowserTest
     params.disposition = WindowOpenDisposition::CURRENT_TAB;
     params.is_renderer_initiated = true;
     ui_test_utils::NavigateToURL(&params);
+  }
+
+  // Checks that UKM recorded a metric for each URL in |navigated_urls|.
+  void CheckUkm(const std::vector<GURL>& navigated_urls,
+                LookalikeUrlNavigationObserver::MatchType match_type) {
+    auto entries = test_ukm_recorder()->GetEntriesByName(UkmEntry::kEntryName);
+    ASSERT_EQ(navigated_urls.size(), entries.size());
+    int entry_count = 0;
+    for (const auto* const entry : entries) {
+      test_ukm_recorder()->ExpectEntrySourceHasUrl(entry,
+                                                   navigated_urls[entry_count]);
+      test_ukm_recorder()->ExpectEntryMetric(entry, "MatchType",
+                                             static_cast<int>(match_type));
+      entry_count++;
+    }
+  }
+
+  void CheckNoUkm() {
+    EXPECT_TRUE(
+        test_ukm_recorder()->GetEntriesByName(UkmEntry::kEntryName).empty());
   }
 
   void TestInfobarNotShown(const GURL& navigated_url) {
@@ -141,8 +167,11 @@ class LookalikeUrlNavigationObserverBrowserTest
     EXPECT_FALSE(base::ContainsValue(enumerator.urls(), navigated_url));
   }
 
+  ukm::TestUkmRecorder* test_ukm_recorder() { return test_ukm_recorder_.get(); }
+
  private:
   base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 };
 
 INSTANTIATE_TEST_CASE_P(,
@@ -156,6 +185,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
                        NonIdn_NoInfobar) {
   TestInfobarNotShown(
       embedded_test_server()->GetURL("google.com", "/title1.html"));
+  CheckNoUkm();
 }
 
 // Navigating to a domain whose visual representation does not look like a
@@ -164,6 +194,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
                        NonTopDomainIdn_NoInfobar) {
   TestInfobarNotShown(
       embedded_test_server()->GetURL("éxample.com", "/title1.html"));
+  CheckNoUkm();
 }
 
 // Navigating to a domain whose visual representation looks like a top domain
@@ -175,8 +206,10 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 
   base::HistogramTester histograms;
 
-  TestInfobarShown(embedded_test_server()->GetURL(
-                       "googlé.com", "/title1.html") /* navigated */,
+  const GURL kNavigatedUrl =
+      embedded_test_server()->GetURL("googlé.com", "/title1.html");
+
+  TestInfobarShown(kNavigatedUrl,
                    embedded_test_server()->GetURL(
                        "google.com", "/title1.html") /* suggested */);
 
@@ -194,6 +227,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
       LookalikeUrlNavigationObserver::kHistogramName,
       LookalikeUrlNavigationObserver::NavigationSuggestionEvent::kMatchTopSite,
       1);
+  CheckUkm({kNavigatedUrl},
+           LookalikeUrlNavigationObserver::MatchType::kTopSite);
 }
 
 // Same as TopDomainIdn_Infobar but the UI is disabled, so only checks for
@@ -204,9 +239,10 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
     return;
 
   base::HistogramTester histograms;
+  const GURL kNavigatedUrl =
+      embedded_test_server()->GetURL("googlé.com", "/title1.html");
 
-  TestInfobarNotShown(
-      embedded_test_server()->GetURL("googlé.com", "/title1.html"));
+  TestInfobarNotShown(kNavigatedUrl);
 
   histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
                               1);
@@ -214,6 +250,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
       LookalikeUrlNavigationObserver::kHistogramName,
       LookalikeUrlNavigationObserver::NavigationSuggestionEvent::kMatchTopSite,
       1);
+  CheckUkm({kNavigatedUrl},
+           LookalikeUrlNavigationObserver::MatchType::kTopSite);
 }
 
 // Same as TopDomainIdn_Infobar but the user has engaged with the domain before.
@@ -224,6 +262,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
   const GURL url = embedded_test_server()->GetURL("googlé.com", "/title1.html");
   SetSiteEngagementScore(url, 20);
   TestInfobarNotShown(url);
+  CheckNoUkm();
 }
 
 // Navigating to a domain whose visual representation looks like a domain with a
@@ -239,11 +278,15 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
   SetSiteEngagementScore(GURL("http://sité3.test"), 20);
   SetSiteEngagementScore(GURL("http://www.sité4.test"), 20);
 
+  std::vector<GURL> ukm_urls;
   for (const auto& test_case : kSiteEngagementTestCases) {
     base::HistogramTester histograms;
-    TestInfobarShown(
-        embedded_test_server()->GetURL(test_case.navigated, "/title1.html"),
-        embedded_test_server()->GetURL(test_case.suggested, "/title1.html"));
+    const GURL kNavigatedUrl =
+        embedded_test_server()->GetURL(test_case.navigated, "/title1.html");
+    TestInfobarShown(kNavigatedUrl, embedded_test_server()->GetURL(
+                                        test_case.suggested, "/title1.html"));
+    ukm_urls.push_back(kNavigatedUrl);
+
     histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
                                 3);
     histograms.ExpectBucketCount(LookalikeUrlNavigationObserver::kHistogramName,
@@ -260,6 +303,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
             kMatchSiteEngagement,
         1);
   }
+  CheckUkm(ukm_urls,
+           LookalikeUrlNavigationObserver::MatchType::kSiteEngagement);
 }
 
 // Same as SiteEngagement_Infobar but the UI is disabled, so only checks for
@@ -274,10 +319,14 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
   SetSiteEngagementScore(GURL("http://sité3.test"), 20);
   SetSiteEngagementScore(GURL("http://www.sité4.test"), 20);
 
+  std::vector<GURL> ukm_urls;
   for (const auto& test_case : kSiteEngagementTestCases) {
     base::HistogramTester histograms;
-    TestInfobarNotShown(
-        embedded_test_server()->GetURL(test_case.navigated, "/title1.html"));
+    const GURL kNavigatedUrl =
+        embedded_test_server()->GetURL(test_case.navigated, "/title1.html");
+    TestInfobarNotShown(kNavigatedUrl);
+    ukm_urls.push_back(kNavigatedUrl);
+
     histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
                                 1);
     histograms.ExpectBucketCount(
@@ -286,6 +335,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
             kMatchSiteEngagement,
         1);
   }
+  CheckUkm(ukm_urls,
+           LookalikeUrlNavigationObserver::MatchType::kSiteEngagement);
 }
 
 // The infobar shouldn't be shown when the feature is disabled.
@@ -296,4 +347,5 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 
   TestInfobarNotShown(
       embedded_test_server()->GetURL("googlé.com", "/title1.html"));
+  CheckNoUkm();
 }

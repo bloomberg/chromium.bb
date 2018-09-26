@@ -80,6 +80,7 @@ class UkmPageLoadMetricsObserver
   // Network quality estimates.
   net::EffectiveConnectionType effective_connection_type_ =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  base::Optional<int32_t> http_response_code_;
   base::Optional<base::TimeDelta> http_rtt_estimate_;
   base::Optional<base::TimeDelta> transport_rtt_estimate_;
   base::Optional<int32_t> downstream_kbps_estimate_;
