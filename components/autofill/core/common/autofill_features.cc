@@ -73,7 +73,7 @@ const base::Feature kAutofillEnableCompanyName{
 
 // Controls whether the iframe messaging is enabled for autofill on iOS.
 const base::Feature kAutofillEnableIFrameSupportOniOS{
-    "AutofillEnableIFrameSupportOniOS", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillEnableIFrameSupportOniOS", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the server credit cards are offered to be filled and
 // uploaded to Google Pay if the sync service is in auth error.
