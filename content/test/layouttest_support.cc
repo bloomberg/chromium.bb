@@ -390,8 +390,8 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
           ws::command_buffer_metrics::ContextType::FOR_TESTING);
       context_result = context_provider->BindToCurrentThread();
 
-      // Layout tests can't recover from a fatal failure.
-      CHECK_NE(context_result, gpu::ContextResult::kFatalFailure);
+      // Layout tests can't recover from a fatal or surface failure.
+      CHECK(!gpu::IsFatalOrSurfaceFailure(context_result));
     }
 
     bool flipped_output_surface = false;

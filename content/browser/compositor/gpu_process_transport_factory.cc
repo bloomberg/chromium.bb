@@ -404,7 +404,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       auto result = shared_worker_context_provider_->BindToCurrentThread();
       if (result != gpu::ContextResult::kSuccess) {
         shared_worker_context_provider_ = nullptr;
-        if (result == gpu::ContextResult::kFatalFailure)
+        if (gpu::IsFatalOrSurfaceFailure(result))
           use_gpu_compositing = false;
       }
     }
@@ -434,7 +434,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       auto result = context_provider->BindToCurrentThread();
       if (result != gpu::ContextResult::kSuccess) {
         context_provider = nullptr;
-        if (result == gpu::ContextResult::kFatalFailure)
+        if (gpu::IsFatalOrSurfaceFailure(result))
           use_gpu_compositing = false;
       }
     }
