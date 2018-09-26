@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import android.content.res.Resources;
 import android.support.customtabs.CustomTabsService;
 
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
@@ -22,6 +21,8 @@ import org.chromium.chrome.browser.tab.TabObserver;
  * Thread safety: All methods on this class should be called on the UI thread.
  */
 public class TrustedWebActivityUi {
+    // TODO(peconn): Convert this class to use dependency injection, when you do clean up
+    // CustomTabActivityComponent and TrustedWebActivityDisclosure.
     /** The Digital Asset Link relationship used for Trusted Web Activities. */
     private final static int RELATIONSHIP = CustomTabsService.RELATION_HANDLE_ALL_URLS;
 
@@ -94,9 +95,10 @@ public class TrustedWebActivityUi {
 
 
     /** Creates a TrustedWebActivityUi, providing a delegate from the embedder. */
-    public TrustedWebActivityUi(TrustedWebActivityUiDelegate delegate, Resources resources) {
+    public TrustedWebActivityUi(TrustedWebActivityUiDelegate delegate,
+            TrustedWebActivityDisclosure disclosure) {
         mDelegate = delegate;
-        mDisclosure = new TrustedWebActivityDisclosure(resources);
+        mDisclosure = disclosure;
     }
 
     /**

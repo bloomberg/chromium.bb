@@ -20,6 +20,9 @@ public interface ChromeAppComponent {
     ChromeActivityComponent createChromeActivityComponent(ChromeActivityCommonsModule module,
             ContextualSuggestionsModule contextualSuggestionsModule);
 
+    CustomTabActivityComponent createCustomTabActivityComponent(ChromeActivityCommonsModule module,
+            ContextualSuggestionsModule contextualSuggestionsModule);
+
     // Temporary getters for DI migration process. All of these getters
     // should eventually be replaced with constructor injection.
     EnabledStateMonitor getContextualSuggestionsEnabledStateMonitor();

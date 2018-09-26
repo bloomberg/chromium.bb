@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQuali
 
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitorImpl;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import javax.inject.Named;
@@ -34,5 +35,10 @@ public class ChromeAppModule {
     @Singleton
     public EnabledStateMonitor provideEnabledStateMonitor() {
         return new EnabledStateMonitorImpl();
+    }
+
+    @Provides
+    public ChromePreferenceManager providesChromePreferenceManager() {
+        return ChromePreferenceManager.getInstance();
     }
 }

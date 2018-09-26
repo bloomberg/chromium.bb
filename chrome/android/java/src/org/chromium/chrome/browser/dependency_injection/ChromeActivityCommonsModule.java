@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.dependency_injection;
 
+import android.content.res.Resources;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -56,5 +58,10 @@ public class ChromeActivityCommonsModule {
         // Ideally this should provide only the Context instead of specific activity, but currently
         // a lot of code is coupled specifically to ChromeActivity.
         return mActivity;
+    }
+
+    @Provides
+    public Resources provideResources() {
+        return mActivity.getResources();
     }
 }
