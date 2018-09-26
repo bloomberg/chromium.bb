@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_background_view.h"
 
 namespace {
 
@@ -220,7 +219,6 @@ class FrameAndStyleLock {
     isEnteringFullscreen_ = NO;
     initialFrame_ = [[primaryWindow_ screen] frame];
     finalFrame_ = [controller savedRegularWindowFrame];
-    tabStripBackgroundView_.reset([[controller tabStripBackgroundView] retain]);
 
     lock_.reset(new FrameAndStyleLock(framedBrowserWindow));
   }

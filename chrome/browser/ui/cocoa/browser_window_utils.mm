@@ -9,7 +9,6 @@
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -93,35 +92,14 @@ const CGFloat kPatternHorizontalOffset = -5;
 + (NSPoint)themeImagePositionFor:(NSView*)windowView
                     withTabStrip:(NSView*)tabStripView
                        alignment:(ThemeImageAlignment)alignment {
-  if (!tabStripView) {
-    return NSMakePoint(kPatternHorizontalOffset,
-                       NSHeight([windowView bounds]) +
-                           GetPatternVerticalOffsetWithTabStrip(false));
-  }
-
-  NSPoint position =
-      [BrowserWindowUtils themeImagePositionInTabStripCoords:tabStripView
-                                                   alignment:alignment];
-  return [tabStripView convertPoint:position toView:windowView];
+  return NSMakePoint(kPatternHorizontalOffset,
+                     NSHeight([windowView bounds]) +
+                         GetPatternVerticalOffsetWithTabStrip(false));
 }
 
 + (NSPoint)themeImagePositionInTabStripCoords:(NSView*)tabStripView
                                     alignment:(ThemeImageAlignment)alignment {
-  DCHECK(tabStripView);
-
-  if (alignment == THEME_IMAGE_ALIGN_WITH_TAB_STRIP) {
-    // The theme image is lined up with the top of the tab which is below the
-    // top of the tab strip.
-    return NSMakePoint(kPatternHorizontalOffset,
-                       [TabStripControllerCocoa defaultTabHeight] +
-                           GetPatternVerticalOffsetWithTabStrip(true));
-  }
-  // The theme image is lined up with the top of the tab strip (as opposed to
-  // the top of the tab above). This is the same as lining up with the top of
-  // the window's root view when not in presentation mode.
-  return NSMakePoint(kPatternHorizontalOffset,
-                     NSHeight([tabStripView bounds]) +
-                         GetPatternVerticalOffsetWithTabStrip(false));
+  return NSZeroPoint;
 }
 
 + (void)activateWindowForController:(NSWindowController*)controller {

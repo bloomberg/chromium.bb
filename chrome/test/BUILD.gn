@@ -1971,7 +1971,6 @@ test("browser_tests") {
         "../browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
         "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_browsertest.mm",
-        "../browser/ui/cocoa/view_id_util_browsertest.mm",
 
         ## TODO(crbug/845389): Re-Enable the following, which were temporarily
         ## omitted from the build, but still in use by the Cocoa browser.
@@ -4124,7 +4123,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller_unittest.mm",
         "../browser/ui/cocoa/browser_window_cocoa_unittest.mm",
         "../browser/ui/cocoa/browser_window_controller_unittest.mm",
-        "../browser/ui/cocoa/browser_window_layout_unittest.mm",
         "../browser/ui/cocoa/browser_window_utils_unittest.mm",
         "../browser/ui/cocoa/chrome_browser_window_unittest.mm",
         "../browser/ui/cocoa/color_panel_cocoa_unittest.mm",
@@ -4150,15 +4148,10 @@ test("unit_tests") {
         "../browser/ui/cocoa/page_info/page_info_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
         "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
-        "../browser/ui/cocoa/spinner_view_unittest.mm",
         "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
         "../browser/ui/cocoa/styled_text_field_cell_unittest.mm",
         "../browser/ui/cocoa/styled_text_field_unittest.mm",
         "../browser/ui/cocoa/tabbed_browser_window_unittest.mm",
-        "../browser/ui/cocoa/tabs/tab_controller_unittest.mm",
-        "../browser/ui/cocoa/tabs/tab_strip_controller_unittest.mm",
-        "../browser/ui/cocoa/tabs/tab_strip_view_unittest.mm",
-        "../browser/ui/cocoa/tabs/tab_view_unittest.mm",
         "../browser/ui/cocoa/test/cocoa_profile_test.h",
         "../browser/ui/cocoa/test/cocoa_profile_test.mm",
         "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",

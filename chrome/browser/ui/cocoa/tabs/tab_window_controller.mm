@@ -13,8 +13,6 @@
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/tabbed_browser_window.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_background_view.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #import "ui/base/cocoa/focus_tracker.h"
@@ -196,25 +194,7 @@
         setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     [chromeContentView_ addSubview:tabContentArea_];
 
-    // tabStripBackgroundView_ draws the theme image behind the tab strip area.
-    // When making a tab dragging window (setUseOverlay:), this view stays in
-    // the parent window so that it can be translucent, while the tab strip view
-    // moves to the child window and stays opaque.
-    NSView* windowView = [window contentView];
-    CGFloat paintHeight = [FramedBrowserWindow browserFrameViewPaintHeight];
-    tabStripBackgroundView_.reset([[TabStripBackgroundView alloc]
-        initWithFrame:NSMakeRect(0, NSMaxY([windowView bounds]) - paintHeight,
-                                 NSWidth([windowView bounds]), paintHeight)]);
-    [tabStripBackgroundView_
-        setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
     [self insertTabStripBackgroundViewIntoWindow:window titleBar:hasTitleBar];
-
-    tabStripView_.reset([[TabStripView alloc]
-        initWithFrame:NSMakeRect(0, 0, kDefaultWidth,
-                                 chrome::kTabStripHeight)]);
-    [tabStripView_ setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
-    if (hasTabStrip)
-      [windowView addSubview:tabStripView_];
 
     // |windowWillEnterFullScreen:| and |windowWillExitFullScreen:| are
     // already called because self is a delegate for the window. However this
@@ -247,7 +227,6 @@
   [nextResponderToCheck setNextResponder:[self nextResponder]];
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [overlayWindow_ setDelegate:nil];
   [[self window] setDelegate:nil];
   [nsWindowController_ setTabWindowController:nil];
   [nsWindowController_ setWindow:nil];
@@ -267,15 +246,7 @@
 }
 
 - (NSVisualEffectView*)visualEffectView {
-  return visualEffectView_;
-}
-
-- (NSView*)tabStripBackgroundView {
-  return tabStripBackgroundView_;
-}
-
-- (TabStripView*)tabStripView {
-  return tabStripView_;
+  return nil;
 }
 
 - (FastResizeView*)tabContentArea {
@@ -305,81 +276,16 @@
 // destroys the overlay window until it's needed again. The tab strip and window
 // contents are returned to the original window.
 - (void)setUseOverlay:(BOOL)useOverlay {
-  [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                           selector:@selector(removeOverlay)
-                                             object:nil];
-  NSWindow* window = [self window];
-  if (useOverlay && !overlayWindow_) {
-    DCHECK(!originalContentView_);
-
-    overlayWindow_ = [[TabWindowOverlayWindow alloc]
-                         initWithContentRect:[window frame]
-                                   styleMask:NSBorderlessWindowMask
-                                     backing:NSBackingStoreBuffered
-                                       defer:NO];
-    [overlayWindow_ setTitle:@"overlay"];
-    [overlayWindow_ setBackgroundColor:[NSColor clearColor]];
-    [overlayWindow_ setOpaque:NO];
-    [overlayWindow_ setDelegate:self];
-    [[overlayWindow_ contentView] setWantsLayer:YES];
-
-    originalContentView_ = self.chromeContentView;
-    [window addChildWindow:overlayWindow_ ordered:NSWindowAbove];
-
-    // Explicitly set the responder to be nil here (for restoring later).
-    // If the first responder were to be left non-nil here then
-    // [RenderWidgethostViewCocoa resignFirstResponder] would be called,
-    // followed by RenderWidgetHost::Blur(), which would result in an unexpected
-    // loss of focus.
-    focusBeforeOverlay_.reset([[FocusTracker alloc] initWithWindow:window]);
-    [window makeFirstResponder:nil];
-
-    // Move the original window's tab strip view and content view to the overlay
-    // window. The content view is added as a subview of the overlay window's
-    // content view (rather than using setContentView:) because the overlay
-    // window has a different content size (due to it being borderless).
-    [[overlayWindow_ contentView] addSubview:[self tabStripView]];
-    [[self tabStripView] setInATabDraggingOverlayWindow:YES];
-    [[overlayWindow_ contentView] addSubview:originalContentView_];
-
-    [overlayWindow_ orderFront:nil];
-  } else if (!useOverlay && overlayWindow_) {
-    DCHECK(originalContentView_);
-
-    // Return the original window's tab strip view and content view to their
-    // places. The TabStripView should be in front of the content view, and the
-    // avatar button, if present, should be in front of the TabStripView.
-    [[window contentView] addSubview:originalContentView_];
-    originalContentView_.frame = [[window contentView] bounds];
-    [[window contentView] addSubview:[self tabStripView]];
-    [[window contentView] addSubview:[self avatarView]];
-    [[self tabStripView] setInATabDraggingOverlayWindow:NO];
-    [[window contentView] updateTrackingAreas];
-
-    [focusBeforeOverlay_ restoreFocusInWindow:window];
-    focusBeforeOverlay_.reset();
-
-    [window display];
-    [window removeChildWindow:overlayWindow_];
-
-    [overlayWindow_ setDelegate:nil];
-    [overlayWindow_ orderOut:nil];
-    [overlayWindow_ release];
-    overlayWindow_ = nil;
-    originalContentView_ = nil;
-  } else {
-    NOTREACHED();
-  }
 }
 
 - (NSWindow*)overlayWindow {
-  return overlayWindow_;
+  return nil;
 }
 
 - (BOOL)shouldConstrainFrameRect {
   // If we currently have an overlay window, do not attempt to change the
   // window's size, as our overlay window doesn't know how to resize properly.
-  return overlayWindow_ == nil;
+  return NO;
 }
 
 - (BOOL)canReceiveFrom:(TabWindowController*)source {
@@ -522,59 +428,6 @@
 
 - (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window
                                       titleBar:(BOOL)hasTitleBar {
-  DCHECK(tabStripBackgroundView_);
-
-  // In Material Design on 10.10 and higher, the top portion of the window is
-  // blurred using an NSVisualEffectView.
-  if (@available(macOS 10.10, *)) {
-    [window setTitlebarAppearsTransparent:YES];
-
-    // If the window has a normal titlebar, then do not add NSVisualEffectView.
-    if (hasTitleBar)
-      return;
-
-    // NSVisualEffectView provides hints about text anti-aliasing that are wrong
-    // when anything is drawn over it (like a tint or theme image). Wrapping it
-    // stops it from being used for hints. See https://crbug.com/593835.
-    NSView* visualEffectWrapperView = [[[NSView alloc]
-        initWithFrame:[tabStripBackgroundView_ frame]] autorelease];
-
-    visualEffectView_.reset([[NSVisualEffectView alloc]
-        initWithFrame:visualEffectWrapperView.bounds]);
-    DCHECK(visualEffectView_);
-
-    [visualEffectWrapperView
-        setAutoresizingMask:[tabStripBackgroundView_ autoresizingMask]];
-    [visualEffectView_
-        setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-    [tabStripBackgroundView_
-        setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
-    // Set to a default appearance and material. If this is an Incognito window
-    // the material and vibrancy should be dark but this method gets called at
-    // the start of -[BrowserWindowController initWithBrowser:takeOwnership:],
-    // before the |browser_| ivar has been set. Without a browser object we
-    // can't check the window's theme. The final setup happens in
-    // -[TabStripView setController:], at which point we have access to the
-    // theme.
-    [visualEffectView_
-        setAppearance:[NSAppearance
-                          appearanceNamed:NSAppearanceNameVibrantLight]];
-    [visualEffectView_ setMaterial:NSVisualEffectMaterialLight];
-    [visualEffectView_ setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
-    [visualEffectView_ setState:NSVisualEffectStateFollowsWindowActiveState];
-
-    [visualEffectWrapperView addSubview:visualEffectView_];
-
-    [[window contentView] addSubview:visualEffectWrapperView];
-
-    // Make the |tabStripBackgroundView_| a child of the NSVisualEffectView.
-    [tabStripBackgroundView_ setFrame:[visualEffectView_ bounds]];
-    [visualEffectView_ addSubview:tabStripBackgroundView_];
-  } else {
-    DCHECK(!chrome::ShouldUseFullSizeContentView());
-    [[window contentView] addSubview:tabStripBackgroundView_];
-  }
 }
 
 // Called when the size of the window content area has changed. Override to
@@ -584,13 +437,9 @@
 }
 
 - (void)windowWillEnterFullScreenNotification:(NSNotification*)notification {
-  [(visualEffectView_ ? visualEffectView_.get()
-                      : tabStripBackgroundView_.get()) setHidden:YES];
 }
 
 - (void)windowWillExitFullScreenNotification:(NSNotification*)notification {
-  [(visualEffectView_ ? visualEffectView_.get()
-                      : tabStripBackgroundView_.get()) setHidden:NO];
 }
 
 @end

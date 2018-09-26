@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -79,17 +78,6 @@ enum WindowLocation {
 @end
 
 @implementation BrowserWindowController(Private)
-
-// Create the tab strip controller.
-- (void)createTabStripController {
-  DCHECK([overlayableContentsController_ activeContainer]);
-  DCHECK([[overlayableContentsController_ activeContainer] window]);
-  tabStripController_.reset([[TabStripControllerCocoa alloc]
-      initWithView:[self tabStripView]
-        switchView:[overlayableContentsController_ activeContainer]
-           browser:browser_.get()
-          delegate:self]);
-}
 
 - (void)updateFullscreenCollectionBehavior {
   // Set the window to participate in Lion Fullscreen mode.  Setting this flag
@@ -226,38 +214,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)applyTabStripLayout:(const chrome::TabStripLayout&)layout {
-  // Update the presence of the window controls.
-  if (layout.addCustomWindowControls)
-    [tabStripController_ addCustomWindowControls];
-  else
-    [tabStripController_ removeCustomWindowControls];
-
-  // Check if the tab strip's frame has changed.
-  BOOL requiresRelayout =
-      !NSEqualRects([[self tabStripView] frame], layout.frame);
-
-  // Check if the leading indent has changed.
-  if (layout.leadingIndent != [tabStripController_ leadingIndentForControls]) {
-    [tabStripController_ setLeadingIndentForControls:layout.leadingIndent];
-    requiresRelayout = YES;
-  }
-
-  // Check if the trailing indent has changed.
-  if (layout.trailingIndent !=
-      [tabStripController_ trailingIndentForControls]) {
-    [tabStripController_ setTrailingIndentForControls:layout.trailingIndent];
-    requiresRelayout = YES;
-  }
-
-  // It is undesirable to force tabs relayout when the tap strip's frame did
-  // not change, because it will interrupt tab animations in progress.
-  // In addition, there appears to be an AppKit bug on <10.9 where interrupting
-  // a tab animation resulted in the tab frame being the animator's target
-  // frame instead of the interrupting setFrame. (See http://crbug.com/415093)
-  if (requiresRelayout) {
-    [[self tabStripView] setFrame:layout.frame];
-    [tabStripController_ layoutTabsWithoutAnimation];
-  }
 }
 
 - (BOOL)placeBookmarkBarBelowInfoBar {
@@ -287,13 +243,6 @@ willPositionSheet:(NSWindow*)sheet
   base::scoped_nsobject<FocusTracker> focusTracker(
       [[FocusTracker alloc] initWithWindow:sourceWindow]);
 
-  // Retain the tab strip view while we remove it from its superview.
-  base::scoped_nsobject<NSView> tabStripView;
-  if ([self hasTabStrip]) {
-    tabStripView.reset([[self tabStripView] retain]);
-    [tabStripView removeFromSuperview];
-  }
-
   // Disable autoresizing of subviews while we move views around. This prevents
   // spurious renderer resizes.
   [self.chromeContentView setAutoresizesSubviews:NO];
@@ -314,11 +263,6 @@ willPositionSheet:(NSWindow*)sheet
                             positioned:NSWindowBelow
                             relativeTo:nil];
   [self.chromeContentView setFrame:[[destWindow contentView] bounds]];
-
-  // Add the tab strip after setting the content view and moving the incognito
-  // badge (if any), so that the tab strip will be on top (in the z-order).
-  if ([self hasTabStrip])
-    [[destWindow contentView] addSubview:tabStripView];
 
   [sourceWindow setWindowController:nil];
   [self setWindow:destWindow];
@@ -501,9 +445,6 @@ willPositionSheet:(NSWindow*)sheet
   if (notification)  // For System Fullscreen when non-nil.
     [self registerForContentViewResizeNotifications];
 
-  [[tabStripController_ activeTabContentsController]
-      setBlockFullscreenResize:YES];
-
   NSWindow* window = [self window];
   savedRegularWindowFrame_ = [window frame];
 
@@ -517,8 +458,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
-  [tabStripController_ setVisualEffectsDisabledForFullscreen:YES];
-
   // In Yosemite, some combination of the titlebar and toolbar always show in
   // full-screen mode. We do not want either to show. Search for the window
   // that contains the views, and hide it if the window contains our custom
@@ -551,8 +490,6 @@ willPositionSheet:(NSWindow*)sheet
   enteringImmersiveFullscreen_ = NO;
 
   [self resetCustomAppKitFullscreenVariables];
-  [[tabStripController_ activeTabContentsController]
-      updateFullscreenWidgetFrame];
 
   [self showFullscreenExitBubbleIfNecessary];
   browser_->WindowFullscreenStateChanged();
@@ -582,8 +519,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
-  [tabStripController_ setVisualEffectsDisabledForFullscreen:NO];
-
   // macOS 10.12 and earlier have issues with exiting fullscreen while a window
   // is on the detached/low power path (playing a video with no UI visible).
   // See crbug/644133 for some discussion. This workaround kicks the window off
@@ -811,9 +746,6 @@ willPositionSheet:(NSWindow*)sheet
 - (void)applyLayout:(BrowserWindowLayout*)layout {
   chrome::LayoutOutput output = [layout computeLayout];
 
-  if (!NSIsEmptyRect(output.tabStripLayout.frame))
-    [self applyTabStripLayout:output.tabStripLayout];
-
   [self layoutTabContentArea:output.contentAreaFrame];
 
   if (!NSIsEmptyRect(output.fullscreenBackingBarFrame)) {
@@ -908,8 +840,6 @@ willPositionSheet:(NSWindow*)sheet
   [self.chromeContentView setAutoresizesSubviews:YES];
 
   fullscreenTransition_.reset();
-  [[tabStripController_ activeTabContentsController]
-      setBlockFullscreenResize:NO];
   blockLayoutSubviews_ = NO;
 
   enteringAppKitFullscreen_ = NO;

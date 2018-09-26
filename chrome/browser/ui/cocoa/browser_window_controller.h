@@ -20,7 +20,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
@@ -45,8 +44,6 @@ class ExclusiveAccessContext;
 @class FullscreenWindow;
 class LocationBarViewMac;
 @class OverlayableContentsController;
-@class TabStripControllerCocoa;
-@class TabStripView;
 
 namespace content {
 class WebContents;
@@ -59,8 +56,7 @@ class Command;
 constexpr const gfx::Size kMinCocoaTabbedWindowSize(400, 272);
 constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
-@interface BrowserWindowController
-    : TabWindowController<ViewResizer, TabStripControllerDelegate> {
+@interface BrowserWindowController : TabWindowController<ViewResizer> {
  @private
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
@@ -70,7 +66,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   NSWindow* savedRegularWindow_;
   std::unique_ptr<BrowserWindowCocoa> windowShim_;
   std::unique_ptr<LocationBarViewMac> locationBar_;
-  base::scoped_nsobject<TabStripControllerCocoa> tabStripController_;
   base::scoped_nsobject<OverlayableContentsController>
       overlayableContentsController_;
   base::scoped_nsobject<FullscreenToolbarControllerCocoa>
@@ -186,9 +181,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 // Access the C++ bridge between the NSWindow and the rest of Chromium.
 - (BrowserWindow*)browserWindow;
-
-// Return a weak pointer to the tab strip controller.
-- (TabStripControllerCocoa*)tabStripController;
 
 // Access the C++ bridge object representing the location bar.
 - (LocationBarViewMac*)locationBarBridge;

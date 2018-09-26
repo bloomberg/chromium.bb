@@ -24,35 +24,18 @@
 @class FastResizeView;
 @class FocusTracker;
 @class NSVisualEffectView;
-@class TabStripView;
 @class TabViewCocoa;
 
 @interface TabWindowController : NSResponder<NSWindowDelegate> {
  @private
   // Wrapper view around web content, and the developer tools view.
   base::scoped_nsobject<FastResizeView> tabContentArea_;
-  base::scoped_nsobject<NSView> tabStripBackgroundView_;
-
-  // Used to blur the titlebar. nil if window does not have titlebar.
-  API_AVAILABLE(macos(10.10))
-  base::scoped_nsobject<NSVisualEffectView> visualEffectView_;
-
-  // The tab strip overlaps the titlebar of the window.
-  base::scoped_nsobject<TabStripView> tabStripView_;
-
   // No views should be added directly to the root view. Views that overlap
   // the title bar should be added to the window's contentView. All other views
   // should be added to chromeContentView_. This allows tab dragging and
   // fullscreen logic to easily move the views that don't need special
   // treatment.
   base::scoped_nsobject<NSView> chromeContentView_;
-
-  // The child window used during dragging to achieve the opacity tricks.
-  NSWindow* overlayWindow_;
-
-  // The contentView of the original window that is moved (for the duration
-  // of the drag) to the |overlayWindow_|.
-  NSView* originalContentView_;  // weak
 
   base::scoped_nsobject<FocusTracker> focusBeforeOverlay_;
   BOOL closeDeferred_;  // If YES, call performClose: in removeOverlay:.
@@ -68,8 +51,6 @@
 @property(retain, nonatomic) NSWindow* window;
 @property(readonly, nonatomic) API_AVAILABLE(macos(10.10))
     NSVisualEffectView* visualEffectView;
-@property(readonly, nonatomic) NSView* tabStripBackgroundView;
-@property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) FastResizeView* tabContentArea;
 @property(readonly, nonatomic) NSView* chromeContentView;
 
