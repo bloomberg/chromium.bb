@@ -14,9 +14,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 
 /** Factory to create CategoryCardViewHolder objects. */
-public class ExploreSitesCategoryCardViewHolderFactory
-        implements RecyclerViewAdapter.ViewHolderFactory<
-                ExploreSitesCategoryCardViewHolderFactory.CategoryCardViewHolder> {
+class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHolderFactory<
+        CategoryCardViewHolderFactory.CategoryCardViewHolder> {
     /** View holder for the recycler view. */
     public static class CategoryCardViewHolder extends RecyclerView.ViewHolder {
         public CategoryCardViewHolder(View view) {
@@ -26,19 +25,20 @@ public class ExploreSitesCategoryCardViewHolderFactory
 
     @Override
     public CategoryCardViewHolder createViewHolder(
-            ViewGroup parent, @ExploreSitesCategoryCardAdapter.ViewType int viewType) {
+            ViewGroup parent, @CategoryCardAdapter.ViewType int viewType) {
         View view;
         switch (viewType) {
-            case ExploreSitesCategoryCardAdapter.ViewType.HEADER:
+            case CategoryCardAdapter.ViewType.HEADER:
+                TextView titleView = new TextView(parent.getContext());
                 view = new TextView(parent.getContext());
                 break;
-            case ExploreSitesCategoryCardAdapter.ViewType.CATEGORY:
+            case CategoryCardAdapter.ViewType.CATEGORY:
                 view = (ExploreSitesCategoryCardView) LayoutInflater.from(parent.getContext())
-                               .inflate(R.layout.explore_sites_category_card_view, parent);
+                               .inflate(R.layout.explore_sites_category_card_view, null);
                 break;
-            case ExploreSitesCategoryCardAdapter.ViewType.LOADING: // inflate loading spinny
-            case ExploreSitesCategoryCardAdapter.ViewType.ERROR: // inflate error
-                view = null;
+            case CategoryCardAdapter.ViewType.LOADING: // inflate loading spinny
+            case CategoryCardAdapter.ViewType.ERROR: // inflate error
+                view = new TextView(parent.getContext()); // dummy view.
                 break;
             default:
                 assert false;

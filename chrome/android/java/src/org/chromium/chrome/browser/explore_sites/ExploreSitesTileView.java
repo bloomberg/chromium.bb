@@ -29,7 +29,8 @@ public class ExploreSitesTileView extends TileWithTextView {
         mIconSizePx = getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
     }
 
-    public void initialize(ExploreSitesSite site) {
+    public void initialize(ExploreSitesSite site, RoundedIconGenerator generator) {
+        mIconGenerator = generator;
         super.initialize(site.getTitle(), /* showOfflineBadge = */ false,
                 getDrawableForBitmap(site.getIcon(), site.getTitle()), TITLE_LINES);
     }
@@ -43,13 +44,5 @@ public class ExploreSitesTileView extends TileWithTextView {
             return new BitmapDrawable(getResources(), mIconGenerator.generateIconForText(text));
         }
         return ViewUtils.createRoundedBitmapDrawable(image, mIconSizePx / 2);
-    }
-
-    /**
-     * Sets icon generator. This is to help prevent an instance of icon generator
-     * being created for each tile.
-     */
-    void setIconGenerator(RoundedIconGenerator generator) {
-        mIconGenerator = generator;
     }
 }
