@@ -4069,6 +4069,9 @@
         }
       },
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -4840,6 +4843,7 @@
       },
       {
         "args": [
+          "--num-retries=3",
           "--debug",
           "--time-out-ms",
           "60000"

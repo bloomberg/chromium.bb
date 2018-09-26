@@ -1692,7 +1692,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "--additional-driver-flag=--enable-features=NetworkService"
+          "--additional-driver-flag=--enable-features=NetworkService",
+          "--num-retries=3"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -1823,7 +1824,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "--additional-driver-flag=--enable-features=NetworkService"
+          "--additional-driver-flag=--enable-features=NetworkService",
+          "--num-retries=3"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -1973,6 +1975,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--num-retries=3",
           "--additional-driver-flag=--enable-blink-features=LayoutNG",
           "--additional-driver-flag=--enable-slimming-paint-v175"
         ],
@@ -2002,6 +2005,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--num-retries=3",
           "--additional-driver-flag=--root-layer-scrolls"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
@@ -2030,6 +2034,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--num-retries=3",
           "--additional-driver-flag=--enable-slimming-paint-v2"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
@@ -3919,6 +3924,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--num-retries=3",
           "--debug"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
@@ -3941,6 +3947,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--num-retries=3",
           "--debug",
           "--additional-driver-flag=--enable-blink-gen-property-trees"
         ],
@@ -4216,6 +4223,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--num-retries=3",
           "--debug",
           "--additional-driver-flag=--enable-blink-features=HeapIncrementalMarkingStress"
         ],
@@ -4613,6 +4621,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--num-retries=3",
           "--debug",
           "--additional-driver-flag=--enable-blink-features=HeapUnifiedGarbageCollection"
         ],
@@ -4888,6 +4897,9 @@
     ],
     "isolated_scripts": [
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -4907,6 +4919,9 @@
   "linux-blink-rel-dummy": {
     "isolated_scripts": [
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -5578,7 +5593,8 @@
           "--additional-driver-flag",
           "--isolate-origins=http://www.web-platform.test:8001/,http://www1.web-platform.test:8001/,http://www2.web-platform.test:8001/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8001/,http://xn--lve-6lad.web-platform.test:8001/,http://www.web-platform.test:8081/,http://www1.web-platform.test:8081/,http://www2.web-platform.test:8081/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8081/,http://xn--lve-6lad.web-platform.test:8081/,https://www.web-platform.test:8444/,https://www1.web-platform.test:8444/,https://www2.web-platform.test:8444/,https://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8444/,https://xn--lve-6lad.web-platform.test:8444/",
           "--additional-expectations",
-          "src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process"
+          "src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process",
+          "--num-retries=3"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -5642,6 +5658,9 @@
         }
       },
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -6304,7 +6323,8 @@
           "--additional-driver-flag",
           "--isolate-origins=http://www.web-platform.test:8001/,http://www1.web-platform.test:8001/,http://www2.web-platform.test:8001/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8001/,http://xn--lve-6lad.web-platform.test:8001/,http://www.web-platform.test:8081/,http://www1.web-platform.test:8081/,http://www2.web-platform.test:8081/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8081/,http://xn--lve-6lad.web-platform.test:8081/,https://www.web-platform.test:8444/,https://www1.web-platform.test:8444/,https://www2.web-platform.test:8444/,https://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8444/,https://xn--lve-6lad.web-platform.test:8444/",
           "--additional-expectations",
-          "src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process"
+          "src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process",
+          "--num-retries=3"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -6364,6 +6384,9 @@
         }
       },
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -7118,6 +7141,9 @@
   "mac10.10-blink-rel-dummy": {
     "isolated_scripts": [
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -7143,6 +7169,9 @@
   "mac10.11-blink-rel-dummy": {
     "isolated_scripts": [
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -7168,6 +7197,9 @@
   "mac10.12-blink-rel-dummy": {
     "isolated_scripts": [
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -7194,6 +7226,9 @@
   "mac10.13-blink-rel-dummy": {
     "isolated_scripts": [
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -7221,6 +7256,9 @@
   "mac10.13_retina-blink-rel-dummy": {
     "isolated_scripts": [
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -7256,6 +7294,9 @@
   "win10-blink-rel-dummy": {
     "isolated_scripts": [
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -7281,6 +7322,9 @@
   "win7-blink-rel-dummy": {
     "isolated_scripts": [
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
