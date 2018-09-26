@@ -884,6 +884,8 @@ void BrowserCommandController::InitCommandState() {
   }
 #endif
 
+  UpdateShowSyncState(true);
+
   // Navigation commands
   command_updater_.UpdateCommandEnabled(
       IDC_HOME,
@@ -1161,6 +1163,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 #if defined(GOOGLE_CHROME_BUILD)
   command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
 #endif
+  UpdateShowSyncState(show_main_ui);
 
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
@@ -1272,6 +1275,13 @@ void BrowserCommandController::UpdateSaveAsState() {
     return;
 
   command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, CanSavePage(browser_));
+}
+
+void BrowserCommandController::UpdateShowSyncState(bool show_main_ui) {
+  if (is_locked_fullscreen_)
+    return;
+
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP, show_main_ui);
 }
 
 // static
