@@ -115,9 +115,6 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // Returns the connection to the identity service, connecting lazily.
-  identity::mojom::IdentityManager& GetIdentityManager();
-
   // The path to the user's profile.
   const base::FilePath profile_path_;
 
@@ -127,9 +124,6 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
 
   // State specific to the current mount, or null if not mounted.
   std::unique_ptr<MountState> mount_state_;
-
-  // The connection to the identity service. Access via |GetIdentityManager()|.
-  identity::mojom::IdentityManagerPtr identity_manager_;
 
   base::ObserverList<DriveFsHostObserver>::Unchecked observers_;
 

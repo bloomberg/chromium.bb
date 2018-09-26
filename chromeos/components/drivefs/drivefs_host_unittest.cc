@@ -174,6 +174,8 @@ class MockIdentityManager {
           const std::string& account_id,
           const ::identity::ScopeSet& scopes,
           const std::string& consumer_id));
+
+  mojo::BindingSet<identity::mojom::IdentityManager>* bindings_ = nullptr;
 };
 
 class FakeIdentityService
@@ -184,7 +186,10 @@ class FakeIdentityService
     binder_registry_.AddInterface(
         base::BindRepeating(&FakeIdentityService::BindIdentityManagerRequest,
                             base::Unretained(this)));
+    mock_->bindings_ = &bindings_;
   }
+
+  ~FakeIdentityService() override { mock_->bindings_ = nullptr; }
 
  private:
   void OnBindInterface(const service_manager::BindSourceInfo& source,
@@ -778,6 +783,30 @@ TEST_F(DriveFsHostTest, GetAccessToken_MintTokenFailure_Transient) {
             std::move(quit_closure).Run();
           }));
   run_loop.Run();
+}
+
+TEST_F(DriveFsHostTest, GetAccessToken_UnmountDuringMojoRequest) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  EXPECT_CALL(mock_identity_manager_,
+              GetAccessToken("test@example.com", _, "drivefs"))
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs([&]() { host_->Unmount(); }),
+          testing::Return(std::make_pair(
+              base::nullopt, GoogleServiceAuthError::ACCOUNT_DISABLED))));
+  host_delegate_->mock_flow().ExpectNoStartCalls();
+
+  base::RunLoop run_loop;
+  delegate_ptr_.set_connection_error_handler(run_loop.QuitClosure());
+  delegate_ptr_->GetAccessToken(
+      "client ID", "app ID", {"scope1", "scope2"},
+      base::BindLambdaForTesting([](mojom::AccessTokenStatus status,
+                                    const std::string& token) { FAIL(); }));
+  run_loop.Run();
+  EXPECT_FALSE(host_->IsMounted());
+
+  // Wait for the response to reach the InterfacePtr if it's still open.
+  mock_identity_manager_.bindings_->FlushForTesting();
 }
 
 ACTION_P(CloneStruct, output) {
