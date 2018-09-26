@@ -47,6 +47,24 @@ class NGFieldsetLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     return RunBlockLayoutAlgorithm(space, container);
   }
 
+  MinMaxSize RunComputeMinAndMax(NGBlockNode node) {
+    NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+        WritingMode::kHorizontalTb, TextDirection::kLtr,
+        NGLogicalSize(LayoutUnit(), LayoutUnit()));
+
+    NGFieldsetLayoutAlgorithm algorithm(node, space);
+    MinMaxSizeInput input;
+    auto min_max = algorithm.ComputeMinMaxSize(input);
+    EXPECT_TRUE(min_max.has_value());
+    return *min_max;
+  }
+
+  MinMaxSize RunComputeMinAndMax(const char* element_id) {
+    Element* element = GetDocument().getElementById(element_id);
+    NGBlockNode node(ToLayoutBox(element->GetLayoutObject()));
+    return RunComputeMinAndMax(node);
+  }
+
   String DumpFragmentTree(const NGPhysicalBoxFragment* fragment) {
     NGPhysicalFragment::DumpFlags flags =
         NGPhysicalFragment::DumpHeaderText | NGPhysicalFragment::DumpSubtree |
@@ -436,6 +454,72 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendPercentHeightQuirks) {
         offset:10,10 size:40x40
 )DUMP";
   EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGFieldsetLayoutAlgorithmTest, MinMax) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      fieldset { margin:123px; border:3px solid; padding:10px; width:100px; }
+      legend { margin:20px; border:11px solid; padding:7px; }
+      .float { float:left; width:50px; height:50px; }
+    </style>
+    <div id="container">
+      <fieldset id="fieldset1"></fieldset>
+      <fieldset id="fieldset2">
+        <legend></legend>
+      </fieldset>
+      <fieldset id="fieldset3">
+        <legend></legend>
+        <div class="float"></div>
+        <div class="float"></div>
+      </fieldset>
+      <fieldset id="fieldset4">
+        <legend>
+          <div class="float"></div>
+          <div class="float"></div>
+        </legend>
+        <div class="float"></div>
+      </fieldset>
+      <fieldset id="fieldset5">
+        <legend>
+          <div class="float"></div>
+        </legend>
+        <div class="float"></div>
+        <div class="float"></div>
+        <div class="float"></div>
+      </fieldset>
+      <fieldset id="fieldset6">
+        <div class="float"></div>
+        <div class="float"></div>
+      </fieldset>
+    </div>
+  )HTML");
+
+  MinMaxSize size;
+
+  size = RunComputeMinAndMax("fieldset1");
+  EXPECT_EQ(size.min_size, LayoutUnit(26));
+  EXPECT_EQ(size.max_size, LayoutUnit(26));
+
+  size = RunComputeMinAndMax("fieldset2");
+  EXPECT_EQ(size.min_size, LayoutUnit(102));
+  EXPECT_EQ(size.max_size, LayoutUnit(102));
+
+  size = RunComputeMinAndMax("fieldset3");
+  EXPECT_EQ(size.min_size, LayoutUnit(102));
+  EXPECT_EQ(size.max_size, LayoutUnit(126));
+
+  size = RunComputeMinAndMax("fieldset4");
+  EXPECT_EQ(size.min_size, LayoutUnit(152));
+  EXPECT_EQ(size.max_size, LayoutUnit(202));
+
+  size = RunComputeMinAndMax("fieldset5");
+  EXPECT_EQ(size.min_size, LayoutUnit(152));
+  EXPECT_EQ(size.max_size, LayoutUnit(176));
+
+  size = RunComputeMinAndMax("fieldset6");
+  EXPECT_EQ(size.min_size, LayoutUnit(76));
+  EXPECT_EQ(size.max_size, LayoutUnit(126));
 }
 
 }  // anonymous namespace
