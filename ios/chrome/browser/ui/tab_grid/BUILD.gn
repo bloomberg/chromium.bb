@@ -137,7 +137,6 @@ source_set("egtest_support") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/ntp/recent_tabs",
-    "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/third_party/earl_grey:earl_grey+link",

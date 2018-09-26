@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 #include "ios/web/public/features.h"
@@ -287,7 +286,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
     _lockIncrementNotifications = [[NSMutableSet alloc] init];
     _lockNotificationsCounterparts = @{
       UIKeyboardWillHideNotification : UIKeyboardWillShowNotification,
-      kToolsMenuWillHideNotification : kToolsMenuWillShowNotification,
       kVoiceSearchWillHideNotification : kVoiceSearchWillShowNotification,
       kPageInfoWillHideNotification : kPageInfoWillShowNotification,
       kLocationBarResignsFirstResponderNotification :

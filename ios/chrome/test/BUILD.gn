@@ -236,7 +236,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/toolbar:unit_tests",
     "//ios/chrome/browser/ui/toolbar/adaptive:unit_tests",
     "//ios/chrome/browser/ui/toolbar/clean:unit_tests",
-    "//ios/chrome/browser/ui/tools_menu:unit_tests",
     "//ios/chrome/browser/ui/util:unit_tests",
     "//ios/chrome/browser/ui/voice:unit_tests",
     "//ios/chrome/browser/update_client:unit_tests",

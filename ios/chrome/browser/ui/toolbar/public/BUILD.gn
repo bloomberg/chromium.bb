@@ -21,7 +21,6 @@ source_set("public") {
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/qr_scanner/requirements",
-    "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/public/provider/chrome/browser/voice",
   ]
 }

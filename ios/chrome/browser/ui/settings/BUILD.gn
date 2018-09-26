@@ -411,7 +411,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
     "//ios/chrome/browser/ui/settings:test_support",
-    "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/chrome/browser/ui/util:util",
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/app:test_support",
