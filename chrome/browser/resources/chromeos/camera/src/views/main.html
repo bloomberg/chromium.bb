@@ -42,7 +42,7 @@
       </div>
       <div class="centered-overlay" id="camera-mode"></div>
       <div class="centered-overlay">
-        <div id="timer-tick-msg"></div>
+        <div id="timer-tick-msg" role="timer" aria-live="polite"></div>
       </div>
       <div class="actions-group buttons circle">
         <button id="switch-takephoto" disabled tabindex="0"
@@ -81,7 +81,7 @@
       </div>
     </div>
     <div class="centered-overlay" id="spinner"></div>
-    <div id="browser" aria-role="listbox" i18n-aria-label="galleryImages">
+    <div id="browser" role="listbox" i18n-aria-label="galleryImages">
       <div class="padder">
         <div class="bounds-padder"></div>
         <div class="bounds-padder"></div>

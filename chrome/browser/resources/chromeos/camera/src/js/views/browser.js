@@ -399,7 +399,7 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   wrapper.className = 'media-wrapper';
   wrapper.id = 'browser-picture-' + (this.lastPictureIndex_++);
   wrapper.tabIndex = -1;
-  wrapper.setAttribute('aria-role', 'option');
+  wrapper.setAttribute('role', 'option');
   wrapper.setAttribute('aria-selected', 'false');
 
   // Display high-res picture if no cached thumbnail.
