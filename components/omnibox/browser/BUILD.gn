@@ -37,6 +37,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "http.icon",
     "keyword_search.icon",
     "md_page.icon",
+    "pedal.icon",
     "star.icon",
     "switch.icon",
     "tab.icon",
