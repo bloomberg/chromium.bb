@@ -111,6 +111,31 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateBookmarkNodeFromSpecifics) {
   EXPECT_THAT(value2, Eq(kValue2));
 }
 
+TEST(BookmarkSpecificsConversionsTest,
+     ShouldCreateBookmarkNodeFromSpecificsWithFaviconAndWithoutIconUrl) {
+  const GURL kUrl("http://www.url.com");
+  const std::string kTitle = "Title";
+  const GURL kIconUrl("http://www.icon-url.com");
+
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+  bm_specifics->set_url(kUrl.spec());
+  bm_specifics->set_favicon("PNG");
+  bm_specifics->set_title(kTitle);
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  // The favicon service should be called with page url since the icon url is
+  // missing.
+  EXPECT_CALL(favicon_service, MergeFavicon(kUrl, kUrl, _, _, _));
+  const bookmarks::BookmarkNode* node = CreateBookmarkNodeFromSpecifics(
+      *bm_specifics,
+      /*parent=*/model->bookmark_bar_node(), /*index=*/0,
+      /*is_folder=*/false, model.get(), &favicon_service);
+  EXPECT_THAT(node, NotNull());
+}
+
 TEST(BookmarkSpecificsConversionsTest, ShouldUpdateBookmarkNodeFromSpecifics) {
   const GURL kUrl("http://www.url.com");
   const std::string kTitle = "Title";
@@ -169,6 +194,35 @@ TEST(BookmarkSpecificsConversionsTest, ShouldUpdateBookmarkNodeFromSpecifics) {
   EXPECT_THAT(value2, Eq(kNewValue2));
 }
 
+TEST(BookmarkSpecificsConversionsTest,
+     ShouldUpdateBookmarkNodeFromSpecificsWithFaviconAndWithoutIconUrl) {
+  const GURL kUrl("http://www.url.com");
+  const std::string kTitle = "Title";
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node = model->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(kTitle),
+      GURL(kUrl));
+  ASSERT_THAT(node, NotNull());
+
+  const GURL kNewUrl("http://www.new-url.com");
+
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+  bm_specifics->set_url(kNewUrl.spec());
+  bm_specifics->set_favicon("PNG");
+
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  // The favicon service should be called with page url since the icon url is
+  // missing.
+  EXPECT_CALL(favicon_service, MergeFavicon(kNewUrl, kNewUrl, _, _, _));
+  UpdateBookmarkNodeFromSpecifics(*bm_specifics, node, model.get(),
+                                  &favicon_service);
+}
+
 TEST(BookmarkSpecificsConversionsTest, ShouldBeValidBookmarkSpecifics) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
@@ -179,6 +233,24 @@ TEST(BookmarkSpecificsConversionsTest, ShouldBeValidBookmarkSpecifics) {
 
   bm_specifics->set_url("http://www.valid-url.com");
   EXPECT_TRUE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/false));
+}
+
+TEST(BookmarkSpecificsConversionsTest,
+     ShouldBeValidBookmarkSpecificsWithFaviconAndWithoutIconUrl) {
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+  bm_specifics->set_url("http://www.valid-url.com");
+  bm_specifics->set_favicon("PNG");
+  EXPECT_TRUE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/false));
+}
+
+TEST(BookmarkSpecificsConversionsTest,
+     ShouldBeInvalidBookmarkSpecificsWithoutFaviconAndWithIconUrl) {
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+  bm_specifics->set_url("http://www.valid-url.com");
+  bm_specifics->set_icon_url("http://www.valid-icon-url.com");
+  EXPECT_FALSE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/false));
 }
 
 TEST(BookmarkSpecificsConversionsTest, ShouldBeInvalidBookmarkSpecifics) {
