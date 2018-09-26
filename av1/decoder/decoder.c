@@ -71,11 +71,10 @@ static void dec_free_mi(AV1_COMMON *cm) {
 
 AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   AV1Decoder *volatile const pbi = aom_memalign(32, sizeof(*pbi));
-  AV1_COMMON *volatile const cm = pbi ? &pbi->common : NULL;
-
-  if (!cm) return NULL;
-
+  if (!pbi) return NULL;
   av1_zero(*pbi);
+
+  AV1_COMMON *volatile const cm = &pbi->common;
 
   // The jmp_buf is valid only for the duration of the function that calls
   // setjmp(). Therefore, this function must reset the 'setjmp' field to 0
