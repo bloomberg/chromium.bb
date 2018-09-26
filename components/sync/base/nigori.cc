@@ -100,8 +100,12 @@ bool KeyDerivationParams::operator==(const KeyDerivationParams& other) const {
          scrypt_salt_ == other.scrypt_salt_;
 }
 
+bool KeyDerivationParams::operator!=(const KeyDerivationParams& other) const {
+  return !(*this == other);
+}
+
 const std::string& KeyDerivationParams::scrypt_salt() const {
-  DCHECK(method_ == KeyDerivationMethod::SCRYPT_8192_8_11);
+  DCHECK_EQ(method_, KeyDerivationMethod::SCRYPT_8192_8_11);
   return scrypt_salt_;
 }
 

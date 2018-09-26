@@ -224,7 +224,6 @@ KeyDerivationMethod GetKeyDerivationMethodFromNigori(
 std::string GetScryptSaltFromNigori(const sync_pb::NigoriSpecifics& nigori) {
   DCHECK_EQ(nigori.custom_passphrase_key_derivation_method(),
             sync_pb::NigoriSpecifics::SCRYPT_8192_8_11);
-  DCHECK(nigori.has_custom_passphrase_key_derivation_salt());
   std::string decoded_salt;
   bool result = base::Base64Decode(
       nigori.custom_passphrase_key_derivation_salt(), &decoded_salt);
@@ -239,7 +238,6 @@ KeyDerivationParams GetKeyDerivationParamsFromNigori(
     case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
       return KeyDerivationParams::CreateForPbkdf2();
     case KeyDerivationMethod::SCRYPT_8192_8_11:
-      DCHECK(nigori.has_custom_passphrase_key_derivation_salt());
       return KeyDerivationParams::CreateForScrypt(
           GetScryptSaltFromNigori(nigori));
     case KeyDerivationMethod::UNSUPPORTED:
