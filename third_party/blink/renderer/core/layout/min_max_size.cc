@@ -8,6 +8,11 @@
 
 namespace blink {
 
+void MinMaxSize::Encompass(const MinMaxSize& other) {
+  min_size = std::max(min_size, other.min_size);
+  max_size = std::max(max_size, other.max_size);
+}
+
 void MinMaxSize::Encompass(LayoutUnit value) {
   min_size = std::max(min_size, value);
   max_size = std::max(max_size, value);

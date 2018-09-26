@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 
 namespace blink {
 
@@ -137,8 +138,56 @@ scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
 
 base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
-  // TODO(mstensho): Implement min/max
-  return MinMaxSize();
+  MinMaxSize sizes;
+
+  // Size-contained elements don't consider their contents for intrinsic sizing.
+  if (node_.ShouldApplySizeContainment())
+    return sizes;
+
+  if (NGBlockNode legend = Node().GetRenderedLegend()) {
+    // We'll need extrinsic sizing data when computing min/max for orthogonal
+    // flow roots, because calculating min/max in that case will involve doing
+    // layout. Note that we only need to do this for the legend, and not for the
+    // fieldset contents. The contents child is just an anonymous one, which
+    // inherits writing-mode from the fieldset, so it can never be a writing
+    // mode root.
+    NGConstraintSpace extrinsic_constraint_space;
+    const NGConstraintSpace* optional_constraint_space = nullptr;
+    if (!IsParallelWritingMode(Style().GetWritingMode(),
+                               legend.Style().GetWritingMode())) {
+      NGBoxStrut border_padding = ComputeBorders(ConstraintSpace(), Node()) +
+                                  ComputePadding(ConstraintSpace(), Style());
+      // If there is a resolvable extrinsic block size, use that as input.
+      // Otherwise we'll fall back to the initial containing block size as a
+      // constraint.
+      LayoutUnit extrinsic_block_size = ComputeBlockSizeForFragment(
+          ConstraintSpace(), Style(), NGSizeIndefinite, border_padding);
+      if (extrinsic_block_size != NGSizeIndefinite) {
+        extrinsic_block_size -= border_padding.BlockSum();
+        extrinsic_block_size = extrinsic_block_size.ClampNegativeToZero();
+      }
+      extrinsic_constraint_space = CreateExtrinsicConstraintSpaceForChild(
+          ConstraintSpace(), extrinsic_block_size, legend);
+      optional_constraint_space = &extrinsic_constraint_space;
+    }
+    sizes = ComputeMinAndMaxContentContribution(
+        Style().GetWritingMode(), legend, input, optional_constraint_space);
+    sizes += ComputeMinMaxMargins(Style(), legend).InlineSum();
+  }
+  // The fieldset content includes the fieldset padding (and any scrollbars),
+  // while the legend is a regular child and doesn't. We may have a fieldset
+  // without any content or legend, so add the padding here, on the outside.
+  sizes += ComputePadding(ConstraintSpace(), node_.Style()).InlineSum();
+
+  if (NGBlockNode content = Node().GetFieldsetContent()) {
+    MinMaxSize content_minmax = ComputeMinAndMaxContentContribution(
+        Style().GetWritingMode(), content, input);
+    content_minmax += ComputeMinMaxMargins(Style(), content).InlineSum();
+    sizes.Encompass(content_minmax);
+  }
+
+  sizes += ComputeBorders(ConstraintSpace(), node_.Style()).InlineSum();
+  return sizes;
 }
 
 const NGConstraintSpace
