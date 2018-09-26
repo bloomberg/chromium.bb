@@ -254,6 +254,9 @@ void TabletModeController::OnShellInitialized() {
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
+    bluetooth_devices_observer_ = std::make_unique<BluetoothDevicesObserver>(
+        base::BindRepeating(&TabletModeController::UpdateBluetoothDevice,
+                            base::Unretained(this)));
 
     chromeos::PowerManagerClient* power_manager_client =
         chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
