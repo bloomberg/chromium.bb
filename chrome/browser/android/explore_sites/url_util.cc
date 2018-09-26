@@ -14,7 +14,7 @@ namespace explore_sites {
 
 GURL GetBaseURL() {
   const char kBaseURLOption[] = "base_url";
-  const char kDefaultBaseUrl[] = "https://exploresites-pa.googleapis.com/v1";
+  const char kDefaultBaseUrl[] = "https://exploresites-pa.googleapis.com";
   std::string field_trial_param = base::GetFieldTrialParamValueByFeature(
       chrome::android::kExploreSites, kBaseURLOption);
   if (field_trial_param.empty())
@@ -23,7 +23,7 @@ GURL GetBaseURL() {
 }
 
 GURL GetCatalogURL() {
-  const char kGetCatalogPath[] = "/getcatalog";
+  const char kGetCatalogPath[] = "/v1/getcatalog";
   std::string path(kGetCatalogPath);
 
   GURL base_url(GetBaseURL());
@@ -33,7 +33,7 @@ GURL GetCatalogURL() {
 }
 
 GURL GetCategoriesURL() {
-  const char kNtpJsonPath[] = "/getcategories";
+  const char kNtpJsonPath[] = "/v1/getcategories";
   std::string path(kNtpJsonPath);
 
   GURL base_url(GetBaseURL());
