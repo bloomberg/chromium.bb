@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
@@ -293,6 +294,12 @@ void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
     // TODO(wangxianzhu): Should this be a DCHECK?
     if (floating_layout_object->HasSelfPaintingLayer())
       continue;
+    // Do not paint floats that will be painted by NG.
+    LayoutBlock* containing_block = floating_layout_object->ContainingBlock();
+    if (containing_block->IsLayoutBlockFlow() &&
+        ToLayoutBlockFlow(containing_block)->PaintFragment()) {
+      continue;
+    }
     ObjectPainter(*floating_layout_object)
         .PaintAllPhasesAtomically(float_paint_info);
   }
