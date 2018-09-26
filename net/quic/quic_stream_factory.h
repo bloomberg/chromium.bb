@@ -250,6 +250,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool migrate_sessions_on_network_change_v2,
       bool migrate_sessions_early_v2,
       bool retry_on_alternate_network_before_handshake,
+      bool race_stale_dns_on_connection,
       bool go_away_on_path_degrading,
       base::TimeDelta max_time_on_non_default_network,
       int max_migrations_to_non_default_network_on_write_error,
@@ -547,6 +548,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if a new connection may be kicked off on an alternate network when a
   // connection fails on the default network before handshake is confirmed.
   const bool retry_on_alternate_network_before_handshake_;
+
+  // Set if stale DNS result may be speculatively used to connect and then
+  // compared with the original DNS result.
+  const bool race_stale_dns_on_connection_;
 
   // Set if client should mark the session as GOAWAY when the connection
   // experiences poor connectivity

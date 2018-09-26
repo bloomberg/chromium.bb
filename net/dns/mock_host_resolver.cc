@@ -284,7 +284,8 @@ int MockHostResolverBase::ResolveStaleFromCache(
   next_request_id_++;
   int rv = ResolveFromIPLiteralOrCache(
       info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
-      HostResolverSource::ANY, info.allow_cached_response(), addresses);
+      HostResolverSource::ANY, info.allow_cached_response(), addresses,
+      stale_info);
   return rv;
 }
 

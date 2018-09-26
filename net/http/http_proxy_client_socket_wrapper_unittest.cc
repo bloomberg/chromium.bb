@@ -137,6 +137,7 @@ class HttpProxyClientSocketWrapperTest
         /*migrate_sessions_on_network_change_v2=*/false,
         /*migrate_sessions_early_v2=*/false,
         /*retry_on_alternate_network_before_handshake=*/false,
+        /*race_stale_dns_on_connection=*/false,
         /*go_away_on_path_degrading=*/false,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnWriteError,
