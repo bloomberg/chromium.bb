@@ -429,6 +429,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->BeginMainFrame(args);
   }
 
+  void RecordEndOfFrameMetrics(base::TimeTicks) override {}
+
   void UpdateLayerTreeHost() override { test_hooks_->UpdateLayerTreeHost(); }
 
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,

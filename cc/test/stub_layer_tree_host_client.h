@@ -17,6 +17,7 @@ class StubLayerTreeHostClient : public LayerTreeHostClient {
   void WillBeginMainFrame() override {}
   void DidBeginMainFrame() override {}
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {}
+  void RecordEndOfFrameMetrics(base::TimeTicks) override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
   void UpdateLayerTreeHost() override {}
