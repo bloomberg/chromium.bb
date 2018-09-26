@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
@@ -108,6 +109,7 @@ void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
   }
 
   if (state_ == kWaitingForKey) {
+    CompleteWaitingForDecryptionKey();
     DCHECK(read_cb_);
     pending_buffer_to_decrypt_ = NULL;
     std::move(read_cb_).Run(kAborted, NULL);
@@ -153,6 +155,11 @@ DecryptingDemuxerStream::~DecryptingDemuxerStream() {
 
   if (state_ == kUninitialized)
     return;
+
+  if (state_ == kWaitingForKey)
+    CompleteWaitingForDecryptionKey();
+  if (state_ == kPendingDecrypt)
+    CompletePendingDecrypt(Decryptor::kError);
 
   if (decryptor_) {
     decryptor_->CancelDecrypt(GetDecryptorStreamType());
@@ -234,6 +241,11 @@ void DecryptingDemuxerStream::DecryptBuffer(
 void DecryptingDemuxerStream::DecryptPendingBuffer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDecrypt) << state_;
+  DCHECK(!pending_buffer_to_decrypt_->end_of_stream());
+  TRACE_EVENT_ASYNC_BEGIN2(
+      "media", "DecryptingDemuxerStream::DecryptPendingBuffer", this, "type",
+      DemuxerStream::GetTypeName(demuxer_stream_->type()), "timestamp_us",
+      pending_buffer_to_decrypt_->timestamp().InMicroseconds());
   decryptor_->Decrypt(
       GetDecryptorStreamType(), pending_buffer_to_decrypt_,
       BindToCurrentLoop(
@@ -249,6 +261,7 @@ void DecryptingDemuxerStream::DeliverBuffer(
   DCHECK_NE(status, Decryptor::kNeedMoreData);
   DCHECK(read_cb_);
   DCHECK(pending_buffer_to_decrypt_);
+  CompletePendingDecrypt(status);
 
   bool need_to_try_again_if_nokey = key_added_while_decrypt_pending_;
   key_added_while_decrypt_pending_ = false;
@@ -289,6 +302,9 @@ void DecryptingDemuxerStream::DeliverBuffer(
     }
 
     state_ = kWaitingForKey;
+
+    TRACE_EVENT_ASYNC_BEGIN0(
+        "media", "DecryptingDemuxerStream::WaitingForDecryptionKey", this);
     waiting_for_decryption_key_cb_.Run();
     return;
   }
@@ -314,6 +330,7 @@ void DecryptingDemuxerStream::OnKeyAdded() {
   }
 
   if (state_ == kWaitingForKey) {
+    CompleteWaitingForDecryptionKey();
     MEDIA_LOG(INFO, media_log_)
         << GetDisplayName() << ": key was added, resuming decrypt";
     state_ = kPendingDecrypt;
@@ -365,6 +382,19 @@ void DecryptingDemuxerStream::InitializeDecoderConfig() {
       NOTREACHED();
       return;
   }
+}
+
+void DecryptingDemuxerStream::CompletePendingDecrypt(Decryptor::Status status) {
+  DCHECK_EQ(state_, kPendingDecrypt);
+  TRACE_EVENT_ASYNC_END1("media",
+                         "DecryptingDemuxerStream::DecryptPendingBuffer", this,
+                         "status", Decryptor::GetStatusName(status));
+}
+
+void DecryptingDemuxerStream::CompleteWaitingForDecryptionKey() {
+  DCHECK_EQ(state_, kWaitingForKey);
+  TRACE_EVENT_ASYNC_END0(
+      "media", "DecryptingDemuxerStream::WaitingForDecryptionKey", this);
 }
 
 }  // namespace media

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder.h"
@@ -227,10 +228,12 @@ void DecoderSelector<StreamType>::OnDecryptingDemuxerStreamInitializeDone(
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::RunSelectDecoderCB() {
   DCHECK(select_decoder_cb_);
-  TRACE_EVENT_ASYNC_END2("media", "DecoderSelector::SelectDecoder", this,
-                         "type", DemuxerStream::GetTypeName(StreamType),
-                         "decoder_name",
-                         decoder_ ? decoder_->GetDisplayName() : "null");
+  TRACE_EVENT_ASYNC_END2(
+      "media", "DecoderSelector::SelectDecoder", this, "type",
+      DemuxerStream::GetTypeName(StreamType), "decoder",
+      base::StringPrintf(
+          "%s (%s)", decoder_ ? decoder_->GetDisplayName().c_str() : "null",
+          decrypting_demuxer_stream_ ? "encrypted" : "unencrypted"));
 
   task_runner_->PostTask(
       FROM_HERE,
