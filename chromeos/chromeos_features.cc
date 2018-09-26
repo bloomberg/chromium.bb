@@ -45,6 +45,13 @@ const base::Feature kInstantTethering{"InstantTethering",
 const base::Feature kMultiDeviceApi{"MultiDeviceApi",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables user activity prediction for power management on
+// Chrome OS.
+// Defined here rather than in //chrome alongside other related features so that
+// PowerPolicyController can check it.
+const base::Feature kUserActivityPrediction{"UserActivityPrediction",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace chromeos
