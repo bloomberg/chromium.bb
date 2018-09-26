@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action_rect.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -1902,7 +1903,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                 DocumentLifecycle::kInPrePaint);
       layout_object_.ClearPaintInvalidationFlags();
       layout_object_.bitfields_.SetNeedsPaintPropertyUpdate(false);
-      layout_object_.bitfields_.SetSubtreeNeedsForcedPaintPropertyUpdate(false);
+      layout_object_.bitfields_.ResetSubtreePaintPropertyUpdateReasons();
       layout_object_.bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
       layout_object_.bitfields_.SetEffectiveWhitelistedTouchActionChanged(
           false);
@@ -1954,8 +1955,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void SetNeedsPaintPropertyUpdate() {
       layout_object_.SetNeedsPaintPropertyUpdate();
     }
-    void SetSubtreeNeedsForcedPaintPropertyUpdate() {
-      layout_object_.SetSubtreeNeedsForcedPaintPropertyUpdate();
+    void AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason reason) {
+      layout_object_.AddSubtreePaintPropertyUpdateReason(reason);
     }
 
     void SetPartialInvalidationVisualRect(const LayoutRect& r) {
@@ -2021,12 +2023,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.NeedsPaintPropertyUpdate();
   }
 
-  void SetSubtreeNeedsForcedPaintPropertyUpdate() {
-    bitfields_.SetSubtreeNeedsForcedPaintPropertyUpdate(true);
+  void AddSubtreePaintPropertyUpdateReason(
+      SubtreePaintPropertyUpdateReason reason) {
+    bitfields_.AddSubtreePaintPropertyUpdateReason(reason);
     SetNeedsPaintPropertyUpdate();
   }
-  bool SubtreeNeedsForcedPaintPropertyUpdate() const {
-    return bitfields_.SubtreeNeedsForcedPaintPropertyUpdate();
+  unsigned SubtreePaintPropertyUpdateReasons() const {
+    return bitfields_.SubtreePaintPropertyUpdateReasons();
   }
   bool DescendantNeedsPaintPropertyUpdate() const {
     return bitfields_.DescendantNeedsPaintPropertyUpdate();
@@ -2444,7 +2447,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           descendant_needs_paint_offset_and_visual_rect_update_(true),
           needs_paint_property_update_(true),
           descendant_needs_paint_property_update_(true),
-          subtree_needs_forced_paint_property_update_(true),
           floating_(false),
           is_anonymous_(!node),
           is_text_(false),
@@ -2484,7 +2486,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_effective_root_scroller_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
-          background_obscuration_state_(kBackgroundObscurationStatusInvalid) {}
+          background_obscuration_state_(kBackgroundObscurationStatusInvalid),
+          subtree_paint_property_update_reasons_(
+              static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)) {}
 
     // Self needs layout means that this layout object is marked for a full
     // layout. This is the default layout but it is expensive as it recomputes
@@ -2577,10 +2581,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // details, see LayoutObject::DescendantNeedsPaintPropertyUpdate().
     ADD_BOOLEAN_BITFIELD(descendant_needs_paint_property_update_,
                          DescendantNeedsPaintPropertyUpdate);
-
-    // Whether paint properties of the whole subtree need to be updated.
-    ADD_BOOLEAN_BITFIELD(subtree_needs_forced_paint_property_update_,
-                         SubtreeNeedsForcedPaintPropertyUpdate)
     // End paint related dirty bits.
 
     // This boolean is the cached value of 'float'
@@ -2733,6 +2733,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     mutable unsigned
         background_obscuration_state_ : 2;  // BackgroundObscurationState
 
+    // Reasons for the full subtree invalidation.
+    unsigned subtree_paint_property_update_reasons_
+        : kSubtreePaintPropertyUpdateReasonsBitfieldWidth;
+
    public:
     bool IsOutOfFlowPositioned() const {
       return positioned_state_ == kIsOutOfFlowPositioned;
@@ -2782,6 +2786,20 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
     ALWAYS_INLINE void SetSelectionState(SelectionState selection_state) {
       selection_state_ = static_cast<unsigned>(selection_state);
+    }
+
+    ALWAYS_INLINE unsigned SubtreePaintPropertyUpdateReasons() const {
+      return subtree_paint_property_update_reasons_;
+    }
+    ALWAYS_INLINE void AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason reason) {
+      DCHECK_LE(static_cast<unsigned>(reason),
+                1u << (kSubtreePaintPropertyUpdateReasonsBitfieldWidth - 1));
+      subtree_paint_property_update_reasons_ |= static_cast<unsigned>(reason);
+    }
+    ALWAYS_INLINE void ResetSubtreePaintPropertyUpdateReasons() {
+      subtree_paint_property_update_reasons_ =
+          static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone);
     }
 
     ALWAYS_INLINE BackgroundObscurationState

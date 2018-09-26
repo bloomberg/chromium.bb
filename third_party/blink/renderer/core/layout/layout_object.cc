@@ -183,6 +183,7 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
 #endif
   unsigned bitfields_;
   unsigned bitfields2_;
+  unsigned bitfields3_;
   // The following fields are in FragmentData.
   LayoutRect visual_rect_;
   LayoutPoint paint_offset_;
@@ -2316,7 +2317,8 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
   if (old_style &&
       old_style->UsedTransformStyle3D() != StyleRef().UsedTransformStyle3D()) {
     // Change of transform-style may affect descendant transform property nodes.
-    SetSubtreeNeedsForcedPaintPropertyUpdate();
+    AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason::kTransformStyleChanged);
   }
 }
 

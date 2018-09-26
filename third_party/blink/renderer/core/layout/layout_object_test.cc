@@ -348,17 +348,18 @@ TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   EXPECT_FALSE(object->DescendantNeedsPaintPropertyUpdate());
 }
 
-TEST_F(LayoutObjectTest, SubtreeNeedsForcedPaintPropertyUpdate) {
+TEST_F(LayoutObjectTest, SubtreePaintPropertyUpdateReasons) {
   LayoutObject* object = GetDocument().body()->GetLayoutObject();
-  object->SetSubtreeNeedsForcedPaintPropertyUpdate();
-  EXPECT_TRUE(object->SubtreeNeedsForcedPaintPropertyUpdate());
+  object->AddSubtreePaintPropertyUpdateReason(
+      SubtreePaintPropertyUpdateReason::kFragmentsChanged);
+  EXPECT_TRUE(object->SubtreePaintPropertyUpdateReasons());
   EXPECT_TRUE(object->NeedsPaintPropertyUpdate());
   EXPECT_TRUE(object->Parent()->DescendantNeedsPaintPropertyUpdate());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInPrePaint);
   object->GetMutableForPainting().ClearPaintFlags();
 
-  EXPECT_FALSE(object->SubtreeNeedsForcedPaintPropertyUpdate());
+  EXPECT_FALSE(object->SubtreePaintPropertyUpdateReasons());
   EXPECT_FALSE(object->NeedsPaintPropertyUpdate());
 }
 

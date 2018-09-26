@@ -977,11 +977,6 @@ void LocalFrameView::SetNeedsPaintPropertyUpdate() {
     layout_view->SetNeedsPaintPropertyUpdate();
 }
 
-void LocalFrameView::SetSubtreeNeedsForcedPaintPropertyUpdate() {
-  if (auto* layout_view = GetLayoutView())
-    layout_view->SetSubtreeNeedsForcedPaintPropertyUpdate();
-}
-
 FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
   float zoom = 1;
   if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
@@ -3513,7 +3508,10 @@ void LocalFrameView::AttachToLayout() {
   // We may have updated paint properties in detached frame subtree for
   // printing (see UpdateLifecyclePhasesForPrinting()). The paint properties
   // may change after the frame is attached.
-  SetSubtreeNeedsForcedPaintPropertyUpdate();
+  if (auto* layout_view = GetLayoutView()) {
+    layout_view->AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason::kPrinting);
+  }
 }
 
 void LocalFrameView::DetachFromLayout() {
@@ -3532,7 +3530,10 @@ void LocalFrameView::DetachFromLayout() {
 
   // We may need update paint properties in detached frame subtree for printing.
   // See UpdateLifecyclePhasesForPrinting().
-  SetSubtreeNeedsForcedPaintPropertyUpdate();
+  if (auto* layout_view = GetLayoutView()) {
+    layout_view->AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason::kPrinting);
+  }
 }
 
 void LocalFrameView::AddPlugin(WebPluginContainerImpl* plugin) {
@@ -4043,11 +4044,13 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
     // partially painted version of this frame's contents if we skipped
     // painting them while the frame was throttled.
     auto* layout_view = GetLayoutView();
-    if (layout_view)
+    if (layout_view) {
       layout_view->InvalidatePaintForViewAndCompositedLayers();
-    // Also need to update all paint properties that might be skipped while
-    // the frame was throttled.
-    SetSubtreeNeedsForcedPaintPropertyUpdate();
+      // Also need to update all paint properties that might be skipped while
+      // the frame was throttled.
+      layout_view->AddSubtreePaintPropertyUpdateReason(
+          SubtreePaintPropertyUpdateReason::kPreviouslySkipped);
+    }
   }
 
   EventHandlerRegistry& registry = frame_->GetEventHandlerRegistry();
