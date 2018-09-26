@@ -10,8 +10,13 @@ namespace chromeos {
 namespace ime {
 namespace rulebased {
 
-Controller::Controller() {}
+Controller::Controller() : process_key_count_(0) {}
 Controller::~Controller() {}
+
+// static
+bool Controller::IsImeSupported(const std::string& id) {
+  return RulesData::IsIdSupported(id);
+}
 
 void Controller::Activate(const std::string& id) {
   if (current_id_ != id) {
@@ -21,16 +26,15 @@ void Controller::Activate(const std::string& id) {
   }
 }
 
-bool Controller::IsImeSupported(const std::string& id) {
-  return RulesData::IsIdSupported(id);
-}
-
 void Controller::Reset() {
   // TODO(shuchen): Implement this for the ones with transform rules.
+  process_key_count_ = 0;
 }
 
 ProcessKeyResult Controller::ProcessKey(const std::string& code,
                                         uint8_t modifier_state) {
+  process_key_count_++;
+
   ProcessKeyResult res;
   if (!current_data_)
     return res;

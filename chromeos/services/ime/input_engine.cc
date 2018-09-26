@@ -25,9 +25,18 @@ std::string GetIdFromImeSpec(const std::string& ime_spec) {
 
 }  // namespace
 
-InputEngine::InputEngine() {
-  rule_based_controller_ = std::make_unique<rulebased::Controller>();
+InputEngineContext::InputEngineContext(const std::string& ime) : ime_spec(ime) {
+  // The |ime_spec|'s format for rule based imes is: "m17n:<id>".
+  std::string id = GetIdFromImeSpec(ime_spec);
+  if (rulebased::Controller::IsImeSupported(id)) {
+    controller = std::make_unique<rulebased::Controller>();
+    controller->Activate(id);
+  }
 }
+
+InputEngineContext::~InputEngineContext() {}
+
+InputEngine::InputEngine() {}
 
 InputEngine::~InputEngine() {}
 
@@ -38,19 +47,21 @@ bool InputEngine::BindRequest(const std::string& ime_spec,
   if (!IsImeSupported(ime_spec))
     return false;
 
-  channel_bindings_.AddBinding(this, std::move(request), ime_spec);
+  channel_bindings_.AddBinding(this, std::move(request),
+                               std::make_unique<InputEngineContext>(ime_spec));
+
   return true;
   // TODO(https://crbug.com/837156): Registry connection error handler.
 }
 
 bool InputEngine::IsImeSupported(const std::string& ime_spec) {
-  return rule_based_controller_->IsImeSupported(GetIdFromImeSpec(ime_spec));
+  return rulebased::Controller::IsImeSupported(GetIdFromImeSpec(ime_spec));
 }
 
 void InputEngine::ProcessText(const std::string& message,
                               ProcessTextCallback callback) {
-  auto& ime_spec = channel_bindings_.dispatch_context();
-  std::string result = Process(message, ime_spec);
+  auto& context = channel_bindings_.dispatch_context();
+  std::string result = Process(message, context.get());
   std::move(callback).Run(result);
 }
 
@@ -60,13 +71,11 @@ void InputEngine::ProcessMessage(const std::vector<uint8_t>& message,
 }
 
 const std::string InputEngine::Process(const std::string& message,
-                                       const std::string& ime_spec) {
-  // The |ime_spec|'s format for rule based imes is: "m17n:<id>".
-  std::string id = GetIdFromImeSpec(ime_spec);
-  if (id.empty())
+                                       const InputEngineContext* context) {
+  std::string ime_spec = context->ime_spec;
+  auto& controller = context->controller;
+  if (!controller)
     return base::EmptyString();
-
-  rule_based_controller_->Activate(id);
 
   const char* false_response = "{\"result\":false}";
 
@@ -96,8 +105,12 @@ const std::string InputEngine::Process(const std::string& message,
     return false_response;
 
   const std::string& method_str = method->GetString();
+  if (method_str == "countKey") {
+    return std::to_string(controller->process_key_count());
+  }
+
   if (method_str == "reset") {
-    rule_based_controller_->Reset();
+    controller->Reset();
     return "{\"result\":true}";
   }
 
@@ -123,7 +136,7 @@ const std::string InputEngine::Process(const std::string& message,
     modifiers |= rulebased::MODIFIER_CAPSLOCK;
 
   rulebased::ProcessKeyResult res =
-      rule_based_controller_->ProcessKey(code->GetString(), modifiers);
+      controller->ProcessKey(code->GetString(), modifiers);
 
   // The response message is in JSON format as:
   // {

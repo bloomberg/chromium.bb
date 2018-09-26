@@ -150,6 +150,50 @@ TEST_F(ImeServiceTest, ConnectInvalidImeEngine) {
   EXPECT_FALSE(success);
 }
 
+TEST_F(ImeServiceTest, MultipleClients) {
+  bool success = false;
+  TestClientChannel test_channel;
+  mojom::InputChannelPtr to_engine_ptr1;
+  mojom::InputChannelPtr to_engine_ptr2;
+
+  ime_manager_->ConnectToImeEngine(
+      "m17n:ar", mojo::MakeRequest(&to_engine_ptr1),
+      test_channel.CreateInterfacePtrAndBind(), extra,
+      base::BindOnce(&ConnectCallback, &success));
+  ime_manager_.FlushForTesting();
+
+  ime_manager_->ConnectToImeEngine(
+      "m17n:ar", mojo::MakeRequest(&to_engine_ptr2),
+      test_channel.CreateInterfacePtrAndBind(), extra,
+      base::BindOnce(&ConnectCallback, &success));
+  ime_manager_.FlushForTesting();
+
+  std::string response;
+  std::string process_text_key =
+      "{\"method\":\"keyEvent\",\"type\":\"keydown\""
+      ",\"code\":\"KeyA\",\"shift\":true,\"altgr\":false,\"caps\":false}";
+  to_engine_ptr1->ProcessText(
+      process_text_key, base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr1.FlushForTesting();
+
+  to_engine_ptr2->ProcessText(
+      process_text_key, base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr2.FlushForTesting();
+
+  std::string process_text_key_count = "{\"method\":\"countKey\"}";
+  to_engine_ptr1->ProcessText(
+      process_text_key_count,
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr1.FlushForTesting();
+  EXPECT_EQ("1", response);
+
+  to_engine_ptr2->ProcessText(
+      process_text_key_count,
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr2.FlushForTesting();
+  EXPECT_EQ("1", response);
+}
+
 // Tests that the rule-based Arabic keyboard can work correctly.
 TEST_F(ImeServiceTest, RuleBasedArabic) {
   bool success = false;
