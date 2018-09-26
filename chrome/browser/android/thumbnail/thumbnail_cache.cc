@@ -435,8 +435,8 @@ void ThumbnailCache::MakeSpaceForNewItemIfNecessary(TabId tab_id) {
          riter++) {
       if (cache_.Get(*riter)) {
         key_to_remove = *riter;
-        break;
         found_key_to_remove = true;
+        break;
       }
     }
   }
