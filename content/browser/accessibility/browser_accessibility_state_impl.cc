@@ -68,6 +68,9 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // Hook ourselves up to observe ax mode changes.
   ui::AXPlatformNode::AddAXModeObserver(this);
 
+  // Let each platform do its own initialization.
+  PlatformInitialize();
+
 #if defined(OS_WIN)
   // The delay is necessary because assistive technology sometimes isn't
   // detected until after the user interacts in some way, so a reasonable delay
@@ -168,6 +171,8 @@ ui::AXMode BrowserAccessibilityStateImpl::GetAccessibilityMode() const {
 }
 
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
+void BrowserAccessibilityStateImpl::PlatformInitialize() {}
+
 void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
 }
 #endif
