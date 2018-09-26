@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 namespace {
 
@@ -59,22 +58,6 @@ void UnsetID(NSView* view) {
 NSView* GetView(NSWindow* window, ViewID viewID) {
   DCHECK(viewID != VIEW_ID_NONE);
   DCHECK(window);
-
-  // As tabs can be created, destroyed or rearranged dynamically, we handle them
-  // here specially.
-  if (viewID >= VIEW_ID_TAB_0 && viewID <= VIEW_ID_TAB_LAST) {
-    BrowserWindowController* windowController =
-        [BrowserWindowController browserWindowControllerForWindow:window];
-    DCHECK([windowController isKindOfClass:[BrowserWindowController class]]);
-    TabStripControllerCocoa* tabStripController =
-        [windowController tabStripController];
-    DCHECK(tabStripController);
-    NSUInteger count = [tabStripController viewsCount];
-    DCHECK(count);
-    NSUInteger index =
-        (viewID == VIEW_ID_TAB_LAST ? count - 1 : viewID - VIEW_ID_TAB_0);
-    return index < count ? [tabStripController viewAtIndex:index] : nil;
-  }
 
   return FindViewWithID([[window contentView] superview], viewID);
 }

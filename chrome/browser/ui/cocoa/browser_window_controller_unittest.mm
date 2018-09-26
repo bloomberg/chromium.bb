@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
-#include "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "chrome/common/pref_names.h"
@@ -92,116 +91,9 @@ TEST_F(BrowserWindowControllerTest, TestFullScreenWindow) {
   EXPECT_TRUE([controller_ createFullscreenWindow]);
 }
 
-TEST_F(BrowserWindowControllerTest, TestNormal) {
-  // Make sure a normal BrowserWindowController is, uh, normal.
-  EXPECT_TRUE([controller_ isTabbedWindow]);
-  EXPECT_TRUE([controller_ hasTabStrip]);
-  EXPECT_FALSE([controller_ hasTitleBar]);
-
-  // And make sure a controller for a pop-up window is not normal.
-  // popup_browser will be owned by its window.
-  Browser* popup_browser(
-      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile(), true)));
-  NSWindow* cocoaWindow = popup_browser->window()->GetNativeWindow();
-  BrowserWindowController* controller =
-      [BrowserWindowController browserWindowControllerForWindow:cocoaWindow];
-  ASSERT_TRUE([controller isKindOfClass:[BrowserWindowController class]]);
-  EXPECT_FALSE([controller isTabbedWindow]);
-  EXPECT_FALSE([controller hasTabStrip]);
-  EXPECT_TRUE([controller hasTitleBar]);
-  [[controller nsWindowController] close];
-}
-
-TEST_F(BrowserWindowControllerTest, TestSetBounds) {
-  // Create a normal browser with bounds smaller than the minimum.
-  Browser::CreateParams params(Browser::TYPE_TABBED, profile(), true);
-  params.initial_bounds = gfx::Rect(0, 0, 50, 50);
-  Browser* browser = new Browser(params);
-  NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
-  BrowserWindowController* controller =
-      [BrowserWindowController browserWindowControllerForWindow:cocoaWindow];
-
-  ASSERT_TRUE([controller isTabbedWindow]);
-  BrowserWindow* browser_window = [controller browserWindow];
-  EXPECT_EQ(browser_window, browser->window());
-  EXPECT_EQ(browser_window->GetBounds().size(), kMinCocoaTabbedWindowSize);
-
-  // Try to set the bounds smaller than the minimum.
-  browser_window->SetBounds(gfx::Rect(0, 0, 50, 50));
-  EXPECT_EQ(browser_window->GetBounds().size(), kMinCocoaTabbedWindowSize);
-
-  [[controller nsWindowController] close];
-}
-
-TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
-  // Create a popup with bounds smaller than the minimum.
-  Browser::CreateParams params(Browser::TYPE_POPUP, profile(), true);
-  params.initial_bounds = gfx::Rect(0, 0, 50, 50);
-  Browser* browser = new Browser(params);
-  NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
-  BrowserWindowController* controller =
-      [BrowserWindowController browserWindowControllerForWindow:cocoaWindow];
-
-  ASSERT_FALSE([controller isTabbedWindow]);
-  BrowserWindow* browser_window = [controller browserWindow];
-  EXPECT_EQ(browser_window, browser->window());
-  gfx::Rect bounds = browser_window->GetBounds();
-  EXPECT_EQ(100, bounds.width());
-  EXPECT_EQ(122, bounds.height());
-
-  // Try to set the bounds smaller than the minimum.
-  browser_window->SetBounds(gfx::Rect(0, 0, 50, 50));
-  bounds = browser_window->GetBounds();
-  EXPECT_EQ(100, bounds.width());
-  EXPECT_EQ(122, bounds.height());
-
-  [[controller nsWindowController] close];
-}
-
 TEST_F(BrowserWindowControllerTest, TestTheme) {
   [controller_ userChangedTheme];
 }
-
-namespace {
-
-// Whether the view's frame is within the bounds of the superview.
-BOOL ViewContainmentValid(NSView* view) {
-  if (NSIsEmptyRect([view frame]))
-    return YES;
-
-  return NSContainsRect([[view superview] bounds], [view frame]);
-}
-
-// Checks the view hierarchy rooted at |view| to ensure that each view is
-// properly contained.
-BOOL ViewHierarchyContainmentValid(NSView* view) {
-  // TODO(erikchen): Fix these views to have correct containment.
-  // http://crbug.com/397665.
-  if ([view isKindOfClass:NSClassFromString(@"BrowserActionsContainerView")])
-    return YES;
-
-  if (!ViewContainmentValid(view)) {
-    LOG(ERROR) << "View violates containment: " <<
-        [[view description] UTF8String];
-    return NO;
-  }
-
-  for (NSView* subview in [view subviews]) {
-    BOOL result = ViewHierarchyContainmentValid(subview);
-    if (!result)
-      return NO;
-  }
-
-  return YES;
-}
-
-// Verifies that the toolbar, infobar and tab content area
-// completely fill the area under the tabstrip.
-void CheckViewPositions(BrowserWindowController* controller) {
-  EXPECT_TRUE(ViewHierarchyContainmentValid([[controller window] contentView]));
-}
-
-}  // end namespace
 
 TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
   NSWindow* window = [controller_ window];
@@ -329,24 +221,6 @@ TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
   EXPECT_FLOAT_EQ(NSHeight(initialFrame), NSHeight(finalFrame));
 }
 
-// Test to make sure resizing and relaying-out subviews works correctly.
-TEST_F(BrowserWindowControllerTest, TestResizeViews) {
-  TabStripView* tabstrip = [controller_ tabStripView];
-  NSView* contentView = [[tabstrip window] contentView];
-
-  // We need to muck with the views a bit to put us in a consistent state before
-  // we start resizing.  In particular, we need to move the tab strip to be
-  // immediately above the content area, since we layout views to be directly
-  // under the tab strip.
-  NSRect tabstripFrame = [tabstrip frame];
-  tabstripFrame.origin.y = NSMaxY([contentView frame]);
-  [tabstrip setFrame:tabstripFrame];
-
-  // Force a layout and check each view's frame.
-  [controller_ layoutSubviews];
-  CheckViewPositions(controller_);
-}
-
 // By the "zoom frame", we mean what Apple calls the "standard frame".
 TEST_F(BrowserWindowControllerTest, TestZoomFrame) {
   NSWindow* window = [controller_ window];
@@ -429,25 +303,6 @@ TEST_F(BrowserWindowControllerTest, TestZoomFrame) {
   EXPECT_EQ(screenFrame.size.height, zoomFrame.size.height);
   EXPECT_EQ(testFrame.origin.x, zoomFrame.origin.x);
   EXPECT_EQ(screenFrame.origin.y, zoomFrame.origin.y);
-}
-
-// Check that when the window becomes/resigns main, the tab strip's background
-// view is redrawn.
-TEST_F(BrowserWindowControllerTest, TabStripBackgroundViewRedrawTest) {
-  NSView* view = controller_.tabStripBackgroundView;
-  id partial_mock = [OCMockObject partialMockForObject:view];
-
-  [[partial_mock expect] setNeedsDisplay:YES];
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowDidBecomeMainNotification
-                    object:controller_.window];
-  [partial_mock verify];
-
-  [[partial_mock expect] setNeedsDisplay:YES];
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowDidResignMainNotification
-                    object:controller_.window];
-  [partial_mock verify];
 }
 
 // Test that the window uses Auto Layout. Since frame-based layout and Auto

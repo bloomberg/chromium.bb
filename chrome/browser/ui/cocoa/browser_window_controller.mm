@@ -45,6 +45,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
+#import "chrome/browser/ui/cocoa/browser_window_fullscreen_transition.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
@@ -58,9 +59,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -190,13 +188,6 @@ void ClearCommandHandler(NSWindow* window) {
       setCommandHandler:nil];
 }
 
-// Returns true if the Tab Detaching in Fullscreen is enabled. It's enabled by
-// default.
-bool IsTabDetachingInFullscreenEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableFullscreenTabDetaching);
-}
-
 }  // namespace
 
 @implementation BrowserWindowController
@@ -289,12 +280,6 @@ bool IsTabDetachingInFullscreenEnabled() {
         [[OverlayableContentsController alloc] init]);
     [[self tabContentArea] addSubview:[overlayableContentsController_ view]];
 
-    // Create a controller for the tab strip, giving it the model object for
-    // this window's Browser and the tab strip view. The controller will handle
-    // registering for the appropriate tab notifications from the back-end and
-    // managing the creation of new tabs.
-    [self createTabStripController];
-
     locationBar_.reset(new LocationBarViewMac(
         browser_->command_controller(), browser_->profile(), browser_.get()));
 
@@ -361,15 +346,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
-  // Inform reference counted objects that the Browser will be destroyed. This
-  // ensures they invalidate their weak Browser* to prevent use-after-free.
-  // These may outlive the Browser if they are retained by something else. For
-  // example, since 10.10, the Nib loader internally creates an NSDictionary
-  // that retains NSViewControllers and is autoreleased, so there is no way to
-  // guarantee that the [super dealloc] call below will also call dealloc on the
-  // controllers.
-  [tabStripController_ browserWillBeDestroyed];
-
   [super dealloc];
 }
 
@@ -407,10 +383,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (BrowserWindow*)browserWindow {
   return windowShim_.get();
-}
-
-- (TabStripControllerCocoa*)tabStripController {
-  return tabStripController_.get();
 }
 
 - (LocationBarViewMac*)locationBarBridge {
@@ -882,88 +854,19 @@ bool IsTabDetachingInFullscreenEnabled() {
 // clients do not need to call it again.
 - (void)moveTabViews:(NSArray*)views
       fromController:(TabWindowController*)dragController {
-  if (dragController) {
-    // Moving between windows.
-    NSView* activeTabView = [dragController activeTabView];
-    BrowserWindowController* dragBWC =
-        base::mac::ObjCCastStrict<BrowserWindowController>(dragController);
-
-    // We will drop the tabs starting at indexOfPlaceholder, and increment from
-    // there. We remove the placehoder before dropping the tabs, so that the
-    // new tab animation's destination frame is correct.
-    int tabIndex = [tabStripController_ indexOfPlaceholder];
-    [self removePlaceholder];
-
-    for (NSView* view in views) {
-      // Figure out the WebContents to drop into our tab model from the source
-      // window's model.
-      int index = [dragBWC->tabStripController_ modelIndexForTabView:view];
-      WebContents* contents =
-          dragBWC->browser_->tab_strip_model()->GetWebContentsAt(index);
-      // The tab contents may have gone away if given a window.close() while it
-      // is being dragged. If so, bail, we've got nothing to drop.
-      if (!contents)
-        continue;
-
-      // Convert |view|'s frame (which starts in the source tab strip's
-      // coordinate system) to the coordinate system of the destination tab
-      // strip. This needs to be done before being detached so the window
-      // transforms can be performed.
-      NSRect destinationFrame = [view frame];
-      NSPoint tabOrigin = destinationFrame.origin;
-      tabOrigin = [[dragController tabStripView] convertPoint:tabOrigin
-                                                       toView:nil];
-      tabOrigin = ui::ConvertPointFromWindowToScreen([dragController window],
-                                                     tabOrigin);
-      tabOrigin = ui::ConvertPointFromScreenToWindow([self window], tabOrigin);
-      tabOrigin = [[self tabStripView] convertPoint:tabOrigin fromView:nil];
-      destinationFrame.origin = tabOrigin;
-
-      // Before the tab is detached from its originating tab strip, store the
-      // pinned state so that it can be maintained between the windows.
-      bool isPinned = dragBWC->browser_->tab_strip_model()->IsTabPinned(index);
-
-      // Now that we have enough information about the tab, we can remove it
-      // from the dragging window. We need to do this *before* we add it to the
-      // new window as this will remove the WebContents' delegate.
-      [dragController detachTabView:view];
-
-      // Deposit it into our model at the appropriate location (it already knows
-      // where it should go from tracking the drag). Doing this sets the tab's
-      // delegate to be the Browser.
-      [tabStripController_ dropWebContents:contents
-                                   atIndex:tabIndex++
-                                 withFrame:destinationFrame
-                               asPinnedTab:isPinned
-                                  activate:view == activeTabView];
-    }
-  } else {
-    // Moving within a window.
-    for (NSView* view in views) {
-      int index = [tabStripController_ modelIndexForTabView:view];
-      [tabStripController_ moveTabFromIndex:index];
-    }
-    [self removePlaceholder];
-  }
 }
 
 // Tells the tab strip to forget about this tab in preparation for it being
 // put into a different tab strip, such as during a drop on another window.
 - (void)detachTabView:(NSView*)view {
-  int index = [tabStripController_ modelIndexForTabView:view];
-
-  // TODO(erikchen): While it might be nice to fix ownership semantics here,
-  // realistically the code is going to be deleted in the not-too-distant
-  // future.
-  browser_->tab_strip_model()->DetachWebContentsAt(index).release();
 }
 
 - (NSArray*)tabViews {
-  return [tabStripController_ tabViews];
+  return @[];
 }
 
 - (NSView*)activeTabView {
-  return [tabStripController_ activeTabView];
+  return nil;
 }
 
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
@@ -1008,89 +911,11 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)layoutTabs {
-  [tabStripController_ layoutTabs];
 }
 
 - (TabWindowController*)detachTabsToNewWindow:(NSArray*)tabViews
                                    draggedTab:(NSView*)draggedTab {
-  DCHECK_GT([tabViews count], 0U);
-
-  // Disable screen updates so that this appears as a single visual change.
-  gfx::ScopedCocoaDisableScreenUpdates disabler;
-
-  // Set the window size. Need to do this before we detach the tab so it's
-  // still in the window. We have to flip the coordinates as that's what
-  // is expected by the Browser code.
-  NSWindow* sourceWindow = [draggedTab window];
-  NSRect windowRect = [sourceWindow frame];
-  NSScreen* screen = [sourceWindow screen];
-  windowRect.origin.y =
-      NSHeight([screen frame]) - NSMaxY(windowRect) + [self menubarOffset];
-  gfx::Rect browserRect(windowRect.origin.x, windowRect.origin.y,
-                        NSWidth(windowRect), NSHeight(windowRect));
-
-  std::vector<TabStripModelDelegate::NewStripContents> contentses;
-  TabStripModel* model = browser_->tab_strip_model();
-
-  for (TabViewCocoa* tabView in tabViews) {
-    // Fetch the tab contents for the tab being dragged.
-    int index = [tabStripController_ modelIndexForTabView:tabView];
-    bool isPinned = model->IsTabPinned(index);
-    bool isActive = (index == model->active_index());
-
-    TabStripModelDelegate::NewStripContents item;
-    item.web_contents = model->DetachWebContentsAt(index);
-    item.add_types =
-        (isActive ? TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE) |
-        (isPinned ? TabStripModel::ADD_PINNED : TabStripModel::ADD_NONE);
-    contentses.push_back(std::move(item));
-  }
-
-  // Create a new window with the dragged tabs in its model.
-  Browser* newBrowser =
-      browser_->tab_strip_model()->delegate()->CreateNewStripWithContents(
-          std::move(contentses), browserRect, false);
-
-  // Get the new controller by asking the new window for its delegate.
-  BrowserWindowController* controller = [BrowserWindowController
-      browserWindowControllerForWindow:newBrowser->window()->GetNativeWindow()];
-  DCHECK(controller && [controller isKindOfClass:[TabWindowController class]]);
-
-  // Ensure that the window will appear on top of the source window in
-  // fullscreen mode.
-  if ([self isInAppKitFullscreen]) {
-    NSWindow* window = [controller window];
-    NSUInteger collectionBehavior = [window collectionBehavior];
-    collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
-    collectionBehavior |= NSWindowCollectionBehaviorFullScreenAuxiliary;
-    [window setCollectionBehavior:collectionBehavior];
-    [window setLevel:NSFloatingWindowLevel];
-
-    controller->savedRegularWindowFrame_ = savedRegularWindowFrame_;
-  }
-
-  // And make sure we use the correct frame in the new view.
-  TabStripControllerCocoa* tabStripController = [controller tabStripController];
-  NSView* tabStrip = [self tabStripView];
-  NSEnumerator* tabEnumerator = [tabViews objectEnumerator];
-  for (NSView* newView in [tabStripController tabViews]) {
-    NSView* oldView = [tabEnumerator nextObject];
-    if (oldView) {
-      // Pushes tabView's frame back inside the tabstrip.
-      NSRect sourceTabRect = [oldView frame];
-      NSSize tabOverflow =
-          [self overflowFrom:[tabStrip convertRect:sourceTabRect toView:nil]
-                          to:[tabStrip frame]];
-      NSRect tabRect =
-          NSOffsetRect(sourceTabRect, -tabOverflow.width, -tabOverflow.height);
-      // Force the added tab to the right size (remove stretching.)
-      tabRect.size.height = [TabStripControllerCocoa defaultTabHeight];
-
-      [tabStripController setFrame:tabRect ofTabView:newView];
-    }
-  }
-
-  return controller;
+  return nil;
 }
 
 - (void)detachedWindowEnterFullscreenIfNeeded:(TabWindowController*)source {
@@ -1113,36 +938,25 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)insertPlaceholderForTab:(TabViewCocoa*)tab frame:(NSRect)frame {
-  [super insertPlaceholderForTab:tab frame:frame];
-  [tabStripController_ insertPlaceholderForTab:tab frame:frame];
 }
 
 - (void)removePlaceholder {
-  [super removePlaceholder];
-  [tabStripController_ insertPlaceholderForTab:nil frame:NSZeroRect];
 }
 
 - (BOOL)isDragSessionActive {
-  // The tab can be dragged within the existing tab strip or detached
-  // into its own window (then the overlay window will be present).
-  return [[self tabStripController] isDragSessionActive] ||
-         [self overlayWindow] != nil;
+  return NO;
 }
 
 - (BOOL)tabDraggingAllowed {
-  return [tabStripController_ tabDraggingAllowed];
+  return NO;
 }
 
 - (BOOL)tabTearingAllowed {
-  return ![self isInAnyFullscreenMode] || IsTabDetachingInFullscreenEnabled();
+  return NO;
 }
 
 - (BOOL)windowMovementAllowed {
   return ![self isInAnyFullscreenMode] || [self overlayWindow];
-}
-
-- (BOOL)isTabFullyVisible:(TabViewCocoa*)tab {
-  return [tabStripController_ isTabFullyVisible:tab];
 }
 
 - (void)showNewTabButton:(BOOL)show {
@@ -1188,17 +1002,7 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (BOOL)isTabDraggable:(NSView*)tabView {
-  // TODO(avi, thakis): ConstrainedWindowSheetController has no api to move
-  // tabsheets between windows. Until then, we have to prevent having to move a
-  // tabsheet between windows, e.g. no tearing off of tabs.
-  int index = [tabStripController_ modelIndexForTabView:tabView];
-  WebContents* contents = browser_->tab_strip_model()->GetWebContentsAt(index);
-  if (!contents)
-    return NO;
-
-  const web_modal::WebContentsModalDialogManager* manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(contents);
-  return !manager || !manager->IsDialogActive();
+  return NO;
 }
 
 - (CGFloat)menubarOffset {
@@ -1264,8 +1068,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (NSPoint)themeImagePositionForAlignment:(ThemeImageAlignment)alignment {
   NSView* windowChromeView = [[[self window] contentView] superview];
   NSView* tabStripView = nil;
-  if ([self hasTabStrip])
-    tabStripView = [self tabStripView];
   return [BrowserWindowUtils themeImagePositionFor:windowChromeView
                                       withTabStrip:tabStripView
                                          alignment:alignment];
@@ -1391,8 +1193,7 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (BOOL)isActiveTabContentsControllerResizeBlocked {
-  return
-      [[tabStripController_ activeTabContentsController] blockFullscreenResize];
+  return NO;
 }
 
 - (void)sheetDidEnd:(NSWindow*)sheet

@@ -42,10 +42,6 @@ enum class FullscreenSource {
 // "dependencies").
 @interface BrowserWindowController(Private)
 
-// Create the appropriate tab strip controller based on whether or not side
-// tabs are enabled. Replaces the current controller.
-- (void)createTabStripController;
-
 // Sets the window's collection behavior to the appropriate
 // fullscreen behavior.
 - (void)updateFullscreenCollectionBehavior;
