@@ -22,7 +22,9 @@ TEST(LanguageStateTest, IsPageTranslated) {
   EXPECT_FALSE(language_state.IsPageTranslated());
 
   // Navigate to a French page.
-  language_state.LanguageDetermined("fr", true);
+  LanguageDetectionDetails details_fr;
+  details_fr.adopted_language = "fr";
+  language_state.LanguageDetermined(details_fr, true);
   EXPECT_EQ("fr", language_state.original_language());
   EXPECT_EQ("fr", language_state.current_language());
   EXPECT_FALSE(language_state.IsPageTranslated());
@@ -34,7 +36,9 @@ TEST(LanguageStateTest, IsPageTranslated) {
   EXPECT_TRUE(language_state.IsPageTranslated());
 
   // Move on another page in Japanese.
-  language_state.LanguageDetermined("ja", true);
+  LanguageDetectionDetails details_ja;
+  details_ja.adopted_language = "ja";
+  language_state.LanguageDetermined(details_ja, true);
   EXPECT_EQ("ja", language_state.original_language());
   EXPECT_EQ("ja", language_state.current_language());
   EXPECT_FALSE(language_state.IsPageTranslated());
@@ -58,7 +62,9 @@ TEST(LanguageStateTest, Driver) {
 
   // Navigate to a French page.
   driver->Reset();
-  language_state.LanguageDetermined("fr", true);
+  LanguageDetectionDetails details;
+  details.adopted_language = "fr";
+  language_state.LanguageDetermined(details, true);
   EXPECT_FALSE(language_state.translate_enabled());
   EXPECT_FALSE(driver->on_is_page_translated_changed_called());
   EXPECT_FALSE(driver->on_translate_enabled_changed_called());

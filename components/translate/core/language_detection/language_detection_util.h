@@ -16,7 +16,9 @@ std::string DeterminePageLanguage(const std::string& code,
                                   const std::string& html_lang,
                                   const base::string16& contents,
                                   std::string* cld_language,
-                                  bool* is_cld_reliable);
+                                  bool* is_cld_reliable,
+                                  std::string* canonical_html_root_lang,
+                                  std::string* canonical_content_lang);
 
 // Corrects language code if it contains well-known mistakes.
 // Called only by tests.
