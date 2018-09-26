@@ -811,6 +811,10 @@ int OmniboxFieldTrial::GetSuggestionVerticalMargin() {
       omnibox::kUIExperimentVerticalMargin, kUIVerticalMarginParam, 10);
 }
 
+bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";

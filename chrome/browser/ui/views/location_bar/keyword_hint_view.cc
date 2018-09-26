@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/search_engines/template_url_service.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,6 +40,8 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
       chip_label_(
           new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION)),
       trailing_label_(nullptr) {
+  const bool experimental_keyword_mode =
+      OmniboxFieldTrial::IsExperimentalKeywordModeEnabled();
   const bool is_newer_material =
       ui::MaterialDesignController::IsNewerMaterialUi();
   SkColor text_color =
@@ -57,24 +60,30 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
                                      : kPaddingInsideBorder + 1;
   chip_label_->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(0, horizontal_padding)));
-  chip_label_->SetEnabledColor(text_color);
 
-  bool inverted = color_utils::IsDark(background_color);
-  SkColor tab_bg_color =
-      inverted ? SK_ColorWHITE : SkColorSetA(text_color, 0x13);
-  SkColor tab_border_color = inverted ? SK_ColorWHITE : text_color;
+  SkColor tab_bg_color = SkColorSetA(text_color, 0x13);
+  SkColor tab_border_color = text_color;
+  if (color_utils::IsDark(background_color)) {
+    tab_bg_color = SK_ColorWHITE;
+    tab_border_color = SK_ColorWHITE;
+  }
   if (is_newer_material) {
-    tab_bg_color = background_color;
     tab_border_color =
         GetOmniboxColor(OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE, tint);
+    if (!experimental_keyword_mode) {
+      tab_bg_color = GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
+    } else {
+      tab_bg_color = tab_border_color;
+      text_color = SK_ColorWHITE;
+    }
   }
+  chip_label_->SetEnabledColor(text_color);
   chip_label_->SetBackgroundColor(tab_bg_color);
 
-  chip_container_->SetBackground(views::CreateSolidBackground(tab_bg_color));
-  chip_container_->SetBorder(views::CreateRoundedRectBorder(
-      1, GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS),
-      tab_border_color));
-
+  chip_container_->SetBackground(CreateBackgroundFromPainter(
+      views::Painter::CreateRoundRectWith1PxBorderPainter(
+          tab_bg_color, tab_border_color,
+          GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS))));
   chip_container_->AddChildView(chip_label_);
   chip_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(chip_container_);
@@ -91,13 +100,7 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
 
 KeywordHintView::~KeywordHintView() {}
 
-void KeywordHintView::SetKeyword(const base::string16& keyword,
-                                 SkColor background_color) {
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    chip_label_->SetBackgroundColor(background_color);
-    chip_container_->background()->SetNativeControlColor(background_color);
-  }
-
+void KeywordHintView::SetKeyword(const base::string16& keyword) {
   // When the virtual keyboard is visible, we show a modified touch UI
   // containing only the chip and no surrounding labels.
   const bool was_touch_ui = leading_label_->text().empty();
