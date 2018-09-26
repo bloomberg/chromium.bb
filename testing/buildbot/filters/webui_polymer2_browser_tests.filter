@@ -31,10 +31,6 @@
 # Tests that fail only on official builds.
 -CrSettingsIncompatibleApplicationsPageTest.All
 
-# Most of the a11y tests are failing because they use /deep/. Should be
-# addressed as part of crbug.com/860069
--SettingsA11ySignOut.*
-
 # ChromeOS only test failures.
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_DistinguishedName
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_ErrorCard
@@ -300,6 +296,7 @@ PrintPreviewSystemDialogBrowserTest.*
 RestrictedFileSystemExtensionApiTest.*
 SandboxStatusUITest.*
 SettingsA11yManagePasswords.*
+SettingsA11ySignOut.*
 SettingsAccessibilityTest.*
 SettingsAdvancedPageBrowserTest.*
 SettingsAnimationBrowserTest.*
