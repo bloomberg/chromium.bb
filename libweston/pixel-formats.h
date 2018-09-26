@@ -112,7 +112,26 @@ struct pixel_format_info {
  * @returns A pixel format structure (must not be freed), or NULL if the
  *          format could not be found
  */
-const struct pixel_format_info *pixel_format_get_info(uint32_t format);
+const struct pixel_format_info *
+pixel_format_get_info(uint32_t format);
+
+/**
+ * Get pixel format information for a named DRM format
+ *
+ * Given a DRM format name, return a pixel format info structure describing
+ * the properties of that format.
+ *
+ * The DRM format name is the preprocessor token name from drm_fourcc.h
+ * without the DRM_FORMAT_ prefix. The search is also case-insensitive.
+ * Both "xrgb8888" and "XRGB8888" searches will find DRM_FORMAT_XRGB8888
+ * for example.
+ *
+ * @param drm_format_name DRM format name to get info for (not NULL)
+ * @returns A pixel format structure (must not be freed), or NULL if the
+ *          name could not be found
+ */
+const struct pixel_format_info *
+pixel_format_get_info_by_drm_name(const char *drm_format_name);
 
 /**
  * Get number of planes used by a pixel format
@@ -140,7 +159,8 @@ pixel_format_get_plane_count(const struct pixel_format_info *format);
  * @param format Pixel format info structure
  * @returns True if the format is opaque, or false if it has significant alpha
  */
-bool pixel_format_is_opaque(const struct pixel_format_info *format);
+bool
+pixel_format_is_opaque(const struct pixel_format_info *format);
 
 /**
  * Get compatible opaque equivalent for a format

@@ -30,6 +30,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <string.h>
 #include <drm_fourcc.h>
 
 #include "helpers.h"
@@ -382,6 +383,21 @@ pixel_format_get_info(uint32_t format)
 	for (i = 0; i < ARRAY_LENGTH(pixel_format_table); i++) {
 		if (pixel_format_table[i].format == format)
 			return &pixel_format_table[i];
+	}
+
+	return NULL;
+}
+
+WL_EXPORT const struct pixel_format_info *
+pixel_format_get_info_by_drm_name(const char *drm_format_name)
+{
+	const struct pixel_format_info *info;
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_LENGTH(pixel_format_table); i++) {
+		info = &pixel_format_table[i];
+		if (strcasecmp(info->drm_format_name, drm_format_name) == 0)
+			return info;
 	}
 
 	return NULL;
