@@ -87,11 +87,7 @@ UsbChooserContext::UsbChooserContext(Profile* profile)
                          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
       is_incognito_(profile->IsOffTheRecord()),
       client_binding_(this),
-      weak_factory_(this) {
-  // TODO(donna.wu@intel.com) set up connection with the device manager in
-  // AddObserver() after converting USB interfaces in UsbChooserController.
-  EnsureConnectionWithDeviceManager();
-}
+      weak_factory_(this) {}
 
 void UsbChooserContext::EnsureConnectionWithDeviceManager() {
   if (device_manager_)
@@ -271,6 +267,7 @@ void UsbChooserContext::GetDevice(
 }
 
 void UsbChooserContext::AddObserver(Observer* observer) {
+  EnsureConnectionWithDeviceManager();
   observer_list_.AddObserver(observer);
 }
 
