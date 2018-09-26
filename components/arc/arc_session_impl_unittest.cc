@@ -23,6 +23,7 @@
 #include "components/arc/test/fake_arc_bridge_host.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -40,7 +41,8 @@ ArcSession::UpgradeParams DefaultUpgradeParams() {
 
 class FakeDelegate : public ArcSessionImpl::Delegate {
  public:
-  FakeDelegate() = default;
+  explicit FakeDelegate(int32_t lcd_density = 160)
+      : lcd_density_(lcd_density) {}
 
   // Emulates to fail Mojo connection establishing. |callback| passed to
   // ConnectMojo will be called with nullptr.
@@ -73,6 +75,19 @@ class FakeDelegate : public ArcSessionImpl::Delegate {
     return base::ScopedFD(HANDLE_EINTR(open("/dev/null", O_RDONLY)));
   }
 
+  void GetLcdDensity(GetLcdDensityCallback callback) override {
+    if (lcd_density_ > 0)
+      std::move(callback).Run(lcd_density_);
+    else
+      lcd_density_callback_ = std::move(callback);
+  }
+
+  void SetLcdDensity(int32_t lcd_density) {
+    lcd_density_ = lcd_density;
+    ASSERT_TRUE(!lcd_density_callback_.is_null());
+    std::move(lcd_density_callback_).Run(lcd_density_);
+  }
+
  private:
   void PostCallback(ConnectMojoCallback callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -82,9 +97,11 @@ class FakeDelegate : public ArcSessionImpl::Delegate {
             success_ ? std::make_unique<FakeArcBridgeHost>() : nullptr));
   }
 
+  int32_t lcd_density_ = 0;
   bool success_ = true;
   bool suspend_ = false;
   ConnectMojoCallback pending_callback_;
+  GetLcdDensityCallback lcd_density_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDelegate);
 };
@@ -177,9 +194,10 @@ class ArcSessionImplTest : public testing::Test {
   }
 
   std::unique_ptr<ArcSessionImpl, ArcSessionDeleter> CreateArcSession(
-      std::unique_ptr<ArcSessionImpl::Delegate> delegate = nullptr) {
+      std::unique_ptr<ArcSessionImpl::Delegate> delegate = nullptr,
+      int32_t lcd_density = 160) {
     if (!delegate)
-      delegate = std::make_unique<FakeDelegate>();
+      delegate = std::make_unique<FakeDelegate>(lcd_density);
     return std::unique_ptr<ArcSessionImpl, ArcSessionDeleter>(
         new ArcSessionImpl(std::move(delegate)));
   }
@@ -676,6 +694,58 @@ TEST_F(ArcSessionImplTest, SupervisionTransitionShouldGraduate) {
       GetSessionManagerClient()
           ->last_upgrade_arc_request()
           .supervision_transition());
+  EXPECT_EQ(160, GetSessionManagerClient()
+                     ->last_start_arc_mini_container_request()
+                     .lcd_density());
+}
+
+TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensity) {
+  auto arc_session = CreateArcSession(nullptr, 240);
+  arc_session->StartMiniInstance();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(ArcSessionImpl::State::RUNNING_MINI_INSTANCE,
+            arc_session->GetStateForTesting());
+  EXPECT_EQ(240, GetSessionManagerClient()
+                     ->last_start_arc_mini_container_request()
+                     .lcd_density());
+}
+
+TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsync) {
+  auto delegate = std::make_unique<FakeDelegate>(0);
+  auto* delegate_ptr = delegate.get();
+  auto arc_session = CreateArcSession(std::move(delegate));
+  arc_session->StartMiniInstance();
+  EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_LCD_DENSITY,
+            arc_session->GetStateForTesting());
+  delegate_ptr->SetLcdDensity(240);
+  EXPECT_EQ(ArcSessionImpl::State::STARTING_MINI_INSTANCE,
+            arc_session->GetStateForTesting());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(240, GetSessionManagerClient()
+                     ->last_start_arc_mini_container_request()
+                     .lcd_density());
+}
+
+TEST_F(ArcSessionImplTest, StopWhileWaitingForLcdDensity) {
+  auto delegate = std::make_unique<FakeDelegate>(0);
+  auto arc_session = CreateArcSession(std::move(delegate));
+  arc_session->StartMiniInstance();
+  EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_LCD_DENSITY,
+            arc_session->GetStateForTesting());
+  arc_session->Stop();
+  EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
+}
+
+TEST_F(ArcSessionImplTest, ShutdownWhileWaitingForLcdDensity) {
+  auto delegate = std::make_unique<FakeDelegate>(0);
+  auto arc_session = CreateArcSession(std::move(delegate));
+  arc_session->StartMiniInstance();
+  EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_LCD_DENSITY,
+            arc_session->GetStateForTesting());
+  arc_session->OnShutdown();
+  EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
 }
 
 }  // namespace

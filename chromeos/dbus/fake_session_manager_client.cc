@@ -511,6 +511,8 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
 void FakeSessionManagerClient::StartArcMiniContainer(
     const login_manager::StartArcMiniContainerRequest& request,
     StartArcMiniContainerCallback callback) {
+  last_start_arc_mini_container_request_ = request;
+
   if (!arc_available_) {
     PostReply(FROM_HERE, std::move(callback), base::nullopt);
     return;

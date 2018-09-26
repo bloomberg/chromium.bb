@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/default_scale_factor_retriever.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
@@ -25,6 +26,7 @@
 #include "chromeos/dbus/login_manager/arc.pb.h"
 #include "components/arc/arc_bridge_host_impl.h"
 #include "components/arc/arc_features.h"
+#include "components/arc/arc_util.h"
 #include "components/user_manager/user_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -129,12 +131,14 @@ ToLoginManagerSupervisionTransition(ArcSupervisionTransition transition) {
 // Real Delegate implementation to connect Mojo.
 class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
  public:
-  explicit ArcSessionDelegateImpl(ArcBridgeService* arc_bridge_service);
+  ArcSessionDelegateImpl(ArcBridgeService* arc_bridge_service,
+                         ash::DefaultScaleFactorRetriever* retriever);
   ~ArcSessionDelegateImpl() override = default;
 
   // ArcSessionImpl::Delegate override.
   base::ScopedFD ConnectMojo(base::ScopedFD socket_fd,
                              ConnectMojoCallback callback) override;
+  void GetLcdDensity(GetLcdDensityCallback callback) override;
 
  private:
   // Synchronously accepts a connection on |server_endpoint| and then processes
@@ -152,6 +156,9 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
   // Owned by ArcServiceManager.
   ArcBridgeService* const arc_bridge_service_;
 
+  // Owned by ArcServiceLauncher.
+  ash::DefaultScaleFactorRetriever* const default_scale_factor_retriever_;
+
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionDelegateImpl> weak_factory_;
 
@@ -159,8 +166,11 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
 };
 
 ArcSessionDelegateImpl::ArcSessionDelegateImpl(
-    ArcBridgeService* arc_bridge_service)
-    : arc_bridge_service_(arc_bridge_service), weak_factory_(this) {}
+    ArcBridgeService* arc_bridge_service,
+    ash::DefaultScaleFactorRetriever* retriever)
+    : arc_bridge_service_(arc_bridge_service),
+      default_scale_factor_retriever_(retriever),
+      weak_factory_(this) {}
 
 base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
     base::ScopedFD socket_fd,
@@ -184,6 +194,15 @@ base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
       base::BindOnce(&ArcSessionDelegateImpl::OnMojoConnected,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
   return return_fd;
+}
+
+void ArcSessionDelegateImpl::GetLcdDensity(GetLcdDensityCallback callback) {
+  default_scale_factor_retriever_->GetDefaultScaleFactor(base::BindOnce(
+      [](GetLcdDensityCallback callback, float default_scale_factor) {
+        std::move(callback).Run(
+            GetLcdDensityForDeviceScaleFactor(default_scale_factor));
+      },
+      std::move(callback)));
 }
 
 // static
@@ -254,8 +273,10 @@ const char ArcSessionImpl::kPackagesCacheModeSkipCopy[] = "skip-copy";
 
 // static
 std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
-    ArcBridgeService* arc_bridge_service) {
-  return std::make_unique<ArcSessionDelegateImpl>(arc_bridge_service);
+    ArcBridgeService* arc_bridge_service,
+    ash::DefaultScaleFactorRetriever* retriever) {
+  return std::make_unique<ArcSessionDelegateImpl>(arc_bridge_service,
+                                                  retriever);
 }
 
 ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate)
@@ -279,12 +300,25 @@ void ArcSessionImpl::StartMiniInstance() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, State::NOT_STARTED);
 
-  state_ = State::STARTING_MINI_INSTANCE;
-  VLOG(2) << "Starting ARC mini instance";
+  state_ = State::WAITING_FOR_LCD_DENSITY;
 
+  VLOG(2) << "Querying the lcd density to start ARC mini instance";
+
+  delegate_->GetLcdDensity(base::BindOnce(&ArcSessionImpl::OnLcdDensity,
+                                          weak_factory_.GetWeakPtr()));
+}
+
+void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
+  DCHECK_GT(lcd_density, 0);
+  DCHECK_EQ(state_, State::WAITING_FOR_LCD_DENSITY);
+  state_ = State::STARTING_MINI_INSTANCE;
   login_manager::StartArcMiniContainerRequest request;
   request.set_native_bridge_experiment(
       base::FeatureList::IsEnabled(arc::kNativeBridgeExperimentFeature));
+  request.set_lcd_density(lcd_density);
+
+  VLOG(1) << "Starting ARC mini instance with lcd_density="
+          << request.lcd_density();
 
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   client->StartArcMiniContainer(
@@ -303,6 +337,7 @@ void ArcSessionImpl::RequestUpgrade(UpgradeParams params) {
     case State::NOT_STARTED:
       NOTREACHED();
       break;
+    case State::WAITING_FOR_LCD_DENSITY:
     case State::STARTING_MINI_INSTANCE:
       VLOG(2) << "Requested to upgrade a starting ARC mini instance";
       // OnMiniInstanceStarted() will restart a full instance.
@@ -472,6 +507,9 @@ void ArcSessionImpl::Stop() {
   arc_bridge_host_.reset();
   switch (state_) {
     case State::NOT_STARTED:
+    case State::WAITING_FOR_LCD_DENSITY:
+      // If |Stop()| is called while waiting for LCD density, it can directly
+      // move to stopped state.
       OnStopped(ArcStopReason::SHUTDOWN);
       return;
     case State::STARTING_MINI_INSTANCE:
@@ -507,7 +545,8 @@ void ArcSessionImpl::Stop() {
 
 void ArcSessionImpl::StopArcInstance() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(state_ == State::STARTING_MINI_INSTANCE ||
+  DCHECK(state_ == State::WAITING_FOR_LCD_DENSITY ||
+         state_ == State::STARTING_MINI_INSTANCE ||
          state_ == State::RUNNING_MINI_INSTANCE ||
          state_ == State::STARTING_FULL_INSTANCE ||
          state_ == State::CONNECTING_MOJO ||
@@ -618,6 +657,7 @@ std::ostream& operator<<(std::ostream& os, ArcSessionImpl::State state) {
 
   switch (state) {
     MAP_STATE(NOT_STARTED);
+    MAP_STATE(WAITING_FOR_LCD_DENSITY);
     MAP_STATE(STARTING_MINI_INSTANCE);
     MAP_STATE(RUNNING_MINI_INSTANCE);
     MAP_STATE(STARTING_FULL_INSTANCE);

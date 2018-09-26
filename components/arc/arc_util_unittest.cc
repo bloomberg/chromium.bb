@@ -251,5 +251,20 @@ TEST_F(ArcUtilTest, ArcStartModeWithoutPlayStore) {
   EXPECT_FALSE(IsPlayStoreAvailable());
 }
 
+TEST_F(ArcUtilTest, ScaleFactorToDensity) {
+  // Test all standard scale factors
+  EXPECT_EQ(160, GetLcdDensityForDeviceScaleFactor(1.0f));
+  EXPECT_EQ(160, GetLcdDensityForDeviceScaleFactor(1.25f));
+  EXPECT_EQ(213, GetLcdDensityForDeviceScaleFactor(1.6f));
+  EXPECT_EQ(240, GetLcdDensityForDeviceScaleFactor(2.0f));
+  EXPECT_EQ(280, GetLcdDensityForDeviceScaleFactor(2.25f));
+
+  // Bad scale factors shouldn't blow up.
+  EXPECT_EQ(160, GetLcdDensityForDeviceScaleFactor(0.5f));
+  EXPECT_EQ(160, GetLcdDensityForDeviceScaleFactor(-0.1f));
+  EXPECT_EQ(180, GetLcdDensityForDeviceScaleFactor(1.5f));
+  EXPECT_EQ(1200, GetLcdDensityForDeviceScaleFactor(10.f));
+}
+
 }  // namespace
 }  // namespace arc

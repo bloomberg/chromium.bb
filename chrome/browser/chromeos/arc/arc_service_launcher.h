@@ -7,9 +7,14 @@
 
 #include <memory>
 
+#include "ash/public/cpp/default_scale_factor_retriever.h"
 #include "base/macros.h"
 
 class Profile;
+
+namespace ash {
+class DefaultScaleFactorRetriever;
+}
 
 namespace arc {
 
@@ -45,6 +50,7 @@ class ArcServiceLauncher {
   void ResetForTesting();
 
  private:
+  ash::DefaultScaleFactorRetriever default_scale_factor_retriever_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
   std::unique_ptr<ArcPlayStoreEnabledPreferenceHandler>
