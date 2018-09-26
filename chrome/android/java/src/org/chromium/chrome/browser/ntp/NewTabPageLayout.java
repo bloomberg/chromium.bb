@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SiteSection;
 import org.chromium.chrome.browser.suggestions.SiteSectionViewHolder;
@@ -288,6 +289,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         SiteSuggestion data = getTileGroup().getHomepageTileData();
         if (data == null) return;
+
+        // Only show the IPH bubble for users with a customized homepage.
+        if (HomepageManager.getInstance().getPrefHomepageUseDefaultUri()) return;
 
         final Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.HOMEPAGE_TILE_FEATURE)) return;
