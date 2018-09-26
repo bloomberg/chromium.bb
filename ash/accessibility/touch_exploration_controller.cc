@@ -107,8 +107,8 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
   // is what the rest of this class expects.
   gfx::Point location = touch_event.location();
   gfx::Point root_location = touch_event.root_location();
-  root_window_->GetHost()->ConvertPixelsToDIP(&location);
-  root_window_->GetHost()->ConvertPixelsToDIP(&root_location);
+  root_window_->GetHost()->ConvertScreenInPixelsToDIP(&location);
+  root_window_->GetHost()->ConvertScreenInPixelsToDIP(&root_location);
 
   if (!exclude_bounds_.IsEmpty()) {
     bool in_exclude_area = exclude_bounds_.Contains(location);
