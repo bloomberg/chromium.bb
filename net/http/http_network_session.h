@@ -17,7 +17,6 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
-#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -80,7 +79,7 @@ const uint32_t kSpdyMaxHeaderTableSize = 64 * 1024;
 const uint32_t kSpdyMaxConcurrentPushedStreams = 1000;
 
 // This class holds session objects used by HttpNetworkTransaction objects.
-class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
+class NET_EXPORT HttpNetworkSession {
  public:
   // Self-contained structure with all the simple configuration options
   // supported by the HttpNetworkSession.
@@ -274,7 +273,7 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   };
 
   HttpNetworkSession(const Params& params, const Context& context);
-  ~HttpNetworkSession() override;
+  ~HttpNetworkSession();
 
   HttpAuthCache* http_auth_cache() { return &http_auth_cache_; }
   SSLClientAuthCache* ssl_client_auth_cache() {
@@ -371,9 +370,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   // Flush sockets on low memory notifications callback.
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-
-  // base::MemoryCoordinatorClient implementation:
-  void OnPurgeMemory() override;
 
   NetLog* const net_log_;
   HttpServerProperties* const http_server_properties_;
