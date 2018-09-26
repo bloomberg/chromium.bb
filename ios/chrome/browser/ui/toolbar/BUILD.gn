@@ -69,15 +69,6 @@ source_set("toolbar_ui_broadcasting_util") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("resource_macros") {
-  sources = [
-    "toolbar_resource_macros.h",
-  ]
-  deps = [
-    "//ios/chrome/app/theme",
-  ]
-}
-
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
