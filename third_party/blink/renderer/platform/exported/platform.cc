@@ -33,12 +33,14 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
+#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -51,6 +53,7 @@
 #include "third_party/blink/public/platform/web_storage_namespace.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
@@ -170,6 +173,8 @@ void Platform::Initialize(
   g_platform = platform;
   g_platform->owned_main_thread_ = main_thread_scheduler->CreateMainThread();
   g_platform->main_thread_ = g_platform->owned_main_thread_.get();
+  DCHECK(!g_platform->current_thread_slot_.Get());
+  g_platform->current_thread_slot_.Set(g_platform->main_thread_);
   InitializeCommon(platform);
 }
 
@@ -179,6 +184,8 @@ void Platform::CreateMainThreadAndInitialize(Platform* platform) {
   g_platform = platform;
   g_platform->owned_main_thread_ = std::make_unique<SimpleMainThread>();
   g_platform->main_thread_ = g_platform->owned_main_thread_.get();
+  DCHECK(!g_platform->current_thread_slot_.Get());
+  g_platform->current_thread_slot_.Set(g_platform->main_thread_);
   InitializeCommon(platform);
 }
 
@@ -240,6 +247,12 @@ void Platform::SetCurrentPlatformForTesting(Platform* platform) {
     platform->main_thread_ = platform->owned_main_thread_.get();
   }
 
+  // Set only the main thread to TLS for the new platform. This is OK for the
+  // testing purposes. The TLS slot may already be set when
+  // ScopedTestingPlatformSupport tries to revert to the old platform.
+  if (!platform->current_thread_slot_.Get())
+    platform->current_thread_slot_.Set(platform->main_thread_);
+
   g_platform = platform;
 }
 
@@ -266,9 +279,7 @@ WebThread* Platform::MainThread() const {
 }
 
 WebThread* Platform::CurrentThread() {
-  DCHECK(main_thread_);
-  DCHECK(WTF::IsMainThread());
-  return main_thread_;
+  return static_cast<WebThread*>(current_thread_slot_.Get());
 }
 
 service_manager::Connector* Platform::GetConnector() {
@@ -296,11 +307,43 @@ std::unique_ptr<WebStorageNamespace> Platform::CreateSessionStorageNamespace(
 
 std::unique_ptr<WebThread> Platform::CreateThread(
     const WebThreadCreationParams& params) {
-  return nullptr;
+  std::unique_ptr<scheduler::WebThreadBase> thread =
+      scheduler::WebThreadBase::CreateWorkerThread(params);
+  thread->Init();
+  WaitUntilWebThreadTLSUpdate(thread.get());
+  return std::move(thread);
 }
 
 std::unique_ptr<WebThread> Platform::CreateWebAudioThread() {
-  return nullptr;
+  WebThreadCreationParams params(WebThreadType::kWebAudioThread);
+  // WebAudio uses a thread with |DISPLAY| priority to avoid glitch when the
+  // system is under the high pressure. Note that the main browser thread also
+  // runs with same priority. (see: crbug.com/734539)
+  params.thread_options.priority = base::ThreadPriority::DISPLAY;
+  return CreateThread(params);
+}
+
+void Platform::WaitUntilWebThreadTLSUpdate(WebThread* thread) {
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  // This cross-thread posting is guaranteed to be safe.
+  PostCrossThreadTask(*thread->GetTaskRunner(), FROM_HERE,
+                      CrossThreadBind(&Platform::UpdateWebThreadTLS,
+                                      WTF::CrossThreadUnretained(this),
+                                      WTF::CrossThreadUnretained(thread),
+                                      WTF::CrossThreadUnretained(&event)));
+  event.Wait();
+}
+
+void Platform::UpdateWebThreadTLS(WebThread* thread,
+                                  base::WaitableEvent* event) {
+  DCHECK(!current_thread_slot_.Get());
+  current_thread_slot_.Set(thread);
+  event->Signal();
+}
+
+void Platform::RegisterExtraThreadToTLS(WebThread* thread) {
+  WaitUntilWebThreadTLSUpdate(thread);
 }
 
 std::unique_ptr<WebGraphicsContext3DProvider>

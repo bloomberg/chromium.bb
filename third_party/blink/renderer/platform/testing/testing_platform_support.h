@@ -48,7 +48,6 @@ class TestDiscardableMemoryAllocator;
 }
 
 namespace blink {
-class WebThread;
 
 // A base class to override Platform methods for testing.  You can override the
 // behavior by subclassing TestingPlatformSupport or using
@@ -61,7 +60,6 @@ class TestingPlatformSupport : public Platform {
 
   // Platform:
   WebString DefaultLocale() override;
-  WebThread* CurrentThread() override;
   WebBlobRegistry* GetBlobRegistry() override;
   std::unique_ptr<WebIDBFactory> CreateIdbFactory() override;
   WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;

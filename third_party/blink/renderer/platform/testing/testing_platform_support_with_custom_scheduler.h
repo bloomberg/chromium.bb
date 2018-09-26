@@ -26,8 +26,6 @@ class TestingPlatformSupportWithCustomScheduler
       ThreadScheduler* scheduler);
   ~TestingPlatformSupportWithCustomScheduler() override;
 
-  WebThread* CurrentThread() override;
-
  private:
   std::unique_ptr<WebThread> thread_;
 

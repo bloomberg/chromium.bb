@@ -29,8 +29,10 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
  public:
   ~WebThreadBase() override;
 
+  // CreateWorkerThread() may be called from a non-main thread.
   static std::unique_ptr<WebThreadBase> CreateWorkerThread(
       const WebThreadCreationParams& params);
+
   static std::unique_ptr<WebThreadBase> CreateCompositorThread(
       const WebThreadCreationParams& params);
 

@@ -29,16 +29,16 @@ class ThreadWithCustomScheduler : public WebThread {
 
 }  // namespace
 
-TestingPlatformSupportWithCustomScheduler ::
+TestingPlatformSupportWithCustomScheduler::
     TestingPlatformSupportWithCustomScheduler(ThreadScheduler* scheduler)
-    : thread_(std::make_unique<ThreadWithCustomScheduler>(scheduler)) {}
-
-TestingPlatformSupportWithCustomScheduler ::
-    ~TestingPlatformSupportWithCustomScheduler() {}
-
-WebThread* TestingPlatformSupportWithCustomScheduler::CurrentThread() {
-  DCHECK(WTF::IsMainThread());
-  return thread_.get();
+    : thread_(std::make_unique<ThreadWithCustomScheduler>(scheduler)) {
+  // If main_thread_ is set, Platform::SetCurrentPlatformForTesting() properly
+  // sets up the platform so Platform::CurrentThread() would return the
+  // thread specified here.
+  main_thread_ = thread_.get();
 }
+
+TestingPlatformSupportWithCustomScheduler::
+    ~TestingPlatformSupportWithCustomScheduler() {}
 
 }  // namespace blink

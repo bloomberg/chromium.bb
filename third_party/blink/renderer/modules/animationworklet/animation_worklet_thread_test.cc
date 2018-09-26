@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
@@ -36,17 +35,6 @@
 
 namespace blink {
 namespace {
-
-class AnimationWorkletTestPlatform : public TestingPlatformSupport {
- public:
-  // Need to override the thread creating support so we can actually run
-  // Animation Worklet code that would go on a backing thread in non-test
-  // code. i.e. most tests remove the extra threads, but we need this one.
-  std::unique_ptr<WebThread> CreateThread(
-      const blink::WebThreadCreationParams& params) override {
-    return old_platform_->CreateThread(params);
-  }
-};
 
 class TestAnimationWorkletProxyClient : public AnimationWorkletProxyClient {
  public:
@@ -127,7 +115,6 @@ class AnimationWorkletThreadTest : public PageTestBase {
   }
 
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
-  ScopedTestingPlatformSupport<AnimationWorkletTestPlatform> platform_;
 };
 
 TEST_F(AnimationWorkletThreadTest, Basic) {

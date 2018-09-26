@@ -424,20 +424,24 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Threads -------------------------------------------------------
 
-  // Creates an embedder-defined thread.
-  virtual std::unique_ptr<WebThread> CreateThread(
-      const WebThreadCreationParams&);
+  // Thread creation is no longer customizable in Platform. CreateThread()
+  // always creates a new physical thread for Blink. Platform maintains
+  // the thread-local storage containing each WebThread object, so that
+  // CurrentThread() could return the correct thread object.
+  //
+  // TODO(yutak): These non-virtual functions should be moved to somewhere
+  // else, because they no longer require embedder's implementation.
+
+  // Creates a new thread. This may be called from a non-main thread (e.g.
+  // nested Web workers).
+  std::unique_ptr<WebThread> CreateThread(const WebThreadCreationParams&);
 
   // Creates a WebAudio-specific thread with the elevated priority. Do NOT use
   // for any other purpose.
-  virtual std::unique_ptr<WebThread> CreateWebAudioThread();
+  std::unique_ptr<WebThread> CreateWebAudioThread();
 
   // Returns an interface to the current thread.
-  //
-  // The default implementation only works on the main thread. If your
-  // application supports multi-thread, you *must* override this function
-  // as well as CreateThread().
-  virtual WebThread* CurrentThread();
+  WebThread* CurrentThread();
 
   // Returns a blame context for attributing top-level work which does not
   // belong to a particular frame scope.
@@ -744,10 +748,15 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual bool IsTakingV8ContextSnapshot() { return false; }
 
  protected:
+  void RegisterExtraThreadToTLS(WebThread*);
+
   WebThread* main_thread_;
 
  private:
   static void InitializeCommon(Platform* platform);
+
+  void WaitUntilWebThreadTLSUpdate(WebThread*);
+  void UpdateWebThreadTLS(WebThread* thread, base::WaitableEvent* event);
 
   // Platform owns the main thread in most cases. The pointer value is the same
   // as main_thread_ if this variable is non-null.
@@ -756,6 +765,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // overrides the old Platform. In this case, main_thread_ points to the old
   // Platform's main thread. See testing_platform_support.h for this.
   std::unique_ptr<WebThread> owned_main_thread_;
+
+  // We can't use WTF stuff here. Ultimately these should go away (see comments
+  // near CreateThread()), though.
+  base::ThreadLocalStorage::Slot current_thread_slot_;
+  base::Lock create_thread_lock_;
 };
 
 }  // namespace blink

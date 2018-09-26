@@ -84,11 +84,6 @@ class AudioContextAutoplayTestPlatform : public TestingPlatformSupport {
         AudioHardwareSampleRate(), AudioHardwareBufferSize());
   }
 
-  std::unique_ptr<WebThread> CreateThread(
-      const WebThreadCreationParams& params) override {
-    return old_platform_->CreateThread(params);
-  }
-
   double AudioHardwareSampleRate() override { return 44100; }
   size_t AudioHardwareBufferSize() override { return 128; }
 };

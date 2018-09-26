@@ -197,7 +197,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebString ConvertIDNToUnicode(const blink::WebString& host) override;
   service_manager::Connector* GetConnector() override;
   blink::InterfaceProvider* GetInterfaceProvider() override;
-  blink::WebThread* CurrentThread() override;
   blink::BlameContext* GetTopLevelBlameContext() override;
   void RecordRappor(const char* metric,
                     const blink::WebString& sample) override;

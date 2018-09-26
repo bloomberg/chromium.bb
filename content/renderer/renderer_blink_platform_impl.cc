@@ -381,15 +381,12 @@ RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
 
 void RendererBlinkPlatformImpl::SetCompositorThread(
     blink::scheduler::WebThreadBase* compositor_thread) {
+  // TODO(yutak): Compositor thread is currently owned by RenderThreadImpl,
+  // but should probably be owned by Platform so this wouldn't depend on
+  // WebThread.
   compositor_thread_ = compositor_thread;
   if (compositor_thread_)
-    WaitUntilWebThreadTLSUpdate(compositor_thread_);
-}
-
-blink::WebThread* RendererBlinkPlatformImpl::CurrentThread() {
-  if (main_thread_->IsCurrentThread())
-    return main_thread_.get();
-  return BlinkPlatformImpl::CurrentThread();
+    RegisterExtraThreadToTLS(compositor_thread_);
 }
 
 blink::BlameContext* RendererBlinkPlatformImpl::GetTopLevelBlameContext() {
