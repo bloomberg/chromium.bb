@@ -324,6 +324,7 @@ if (is_android) {
       "$java_src_dir/org/chromium/chromecast/base/Scopes.java",
       "$java_src_dir/org/chromium/chromecast/base/Predicate.java",
       "$java_src_dir/org/chromium/chromecast/base/Subscription.java",
+      "$java_src_dir/org/chromium/chromecast/base/Sequencer.java",
       "$java_src_dir/org/chromium/chromecast/base/Supplier.java",
       "$java_src_dir/org/chromium/chromecast/base/Unit.java",
 
@@ -367,6 +368,7 @@ if (is_android) {
       "$java_test_dir/org/chromium/chromecast/base/ObservableNotTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ReactiveRecorderTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ObserversTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/SequencerTest.java",
       "$java_test_dir/org/chromium/chromecast/base/UnitTest.java",
     ]
     deps = [
