@@ -37,6 +37,11 @@ public class SigninManagerTest {
         long nativeInit() {
             return 0;
         }
+
+        @Override
+        boolean nativeIsSigninAllowedByPolicy(long nativeSigninManagerAndroid) {
+            return true;
+        }
     }
 
     @Spy

@@ -1119,7 +1119,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     return view;
   }
 
-  if (!dice_enabled_) {
+  if (!dice_enabled_ &&
+      SigninManagerFactory::GetForProfile(profile)->IsSigninAllowed()) {
     views::View* extra_links_view = new views::View();
     extra_links_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical,

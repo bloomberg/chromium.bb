@@ -108,7 +108,8 @@ public abstract class FirstRunFlowSequencer  {
     @VisibleForTesting
     protected boolean isSyncAllowed() {
         SigninManager signinManager = SigninManager.get();
-        return FeatureUtilities.canAllowSync(mActivity) && signinManager.isSigninSupported();
+        return FeatureUtilities.canAllowSync(mActivity) && !signinManager.isSigninDisabledByPolicy()
+                && signinManager.isSigninSupported();
     }
 
     @VisibleForTesting

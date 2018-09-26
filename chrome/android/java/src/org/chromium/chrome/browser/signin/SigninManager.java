@@ -72,6 +72,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     */
     private SignInState mSignInState;
 
+    private boolean mSigninAllowedByPolicy;
+
     /**
      * Set during sign-out process and nulled out once complete. Helps to atomically gather/clear
      * various sign-out state.
@@ -222,6 +224,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         ThreadUtils.assertOnUiThread();
         mContext = ContextUtils.getApplicationContext();
         mNativeSigninManagerAndroid = nativeInit();
+        mSigninAllowedByPolicy = nativeIsSigninAllowedByPolicy(mNativeSigninManagerAndroid);
 
         AccountTrackerService.get().addSystemAccountsSeededListener(this);
     }
@@ -259,8 +262,15 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * Returns true if signin can be started now.
      */
     public boolean isSignInAllowed() {
-        return !mFirstRunCheckIsPending && mSignInState == null
+        return !mFirstRunCheckIsPending && mSignInState == null && mSigninAllowedByPolicy
                 && ChromeSigninController.get().getSignedInUser() == null && isSigninSupported();
+    }
+
+    /**
+     * Returns true if signin is disabled by policy.
+     */
+    public boolean isSigninDisabledByPolicy() {
+        return !mSigninAllowedByPolicy;
     }
 
     /**
@@ -681,6 +691,12 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         return nativeIsSignedInOnNative(mNativeSigninManagerAndroid);
     }
 
+    @CalledByNative
+    private void onSigninAllowedByPolicyChanged(boolean newSigninAllowedByPolicy) {
+        mSigninAllowedByPolicy = newSigninAllowedByPolicy;
+        notifySignInAllowedChanged();
+    }
+
     /**
      * Performs an asynchronous check to see if the user is a managed user.
      * @param callback A callback to be called with true if the user is a managed user and false
@@ -709,6 +725,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private static native void nativeIsUserManaged(String username, Callback<Boolean> callback);
     @VisibleForTesting
     native long nativeInit();
+    @VisibleForTesting
+    native boolean nativeIsSigninAllowedByPolicy(long nativeSigninManagerAndroid);
     @VisibleForTesting
     native boolean nativeIsForceSigninEnabled(long nativeSigninManagerAndroid);
     @VisibleForTesting

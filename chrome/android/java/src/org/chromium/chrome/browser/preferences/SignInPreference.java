@@ -155,6 +155,11 @@ public class SignInPreference
 
     /** Updates the title, summary, and image based on the current sign-in state. */
     private void update() {
+        if (SigninManager.get().isSigninDisabledByPolicy()) {
+            setupSigninDisabled();
+            return;
+        }
+
         String accountName = ChromeSigninController.get().getSignedInAccountName();
         if (accountName != null) {
             setupSignedIn(accountName);

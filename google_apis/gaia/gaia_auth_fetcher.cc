@@ -460,9 +460,13 @@ void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
           cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made.",
-            policy_exception_justification:
-              "Essential for Google account management"
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   CreateAndStartGaiaFetcher(request_body_, std::string(), oauth2_revoke_gurl_,
                             kLoadFlagsIgnoreCookies, traffic_annotation);
@@ -500,9 +504,13 @@ void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchangeWithDeviceId(
           cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made.",
-            policy_exception_justification:
-              "Essential for Google account management"
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   CreateAndStartGaiaFetcher(request_body_, std::string(), oauth2_token_gurl_,
                             kLoadFlagsIgnoreCookies, traffic_annotation);
@@ -528,9 +536,13 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
           cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made.",
-            policy_exception_justification:
-              "Essential for Google account management"
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   CreateAndStartGaiaFetcher(request_body_, std::string(), get_user_info_gurl_,
                             kLoadFlagsIgnoreCookies, traffic_annotation);
@@ -573,9 +585,13 @@ void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token,
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made.",
-            policy_exception_justification:
-              "Essential for Google account management"
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   CreateAndStartGaiaFetcher(std::string(), std::string(),
                             merge_session_gurl_.Resolve(query),
@@ -612,9 +628,13 @@ void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made.",
-            policy_exception_justification:
-              "Essential for Google account management"
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   CreateAndStartGaiaFetcher(std::string(), authentication_header,
                             uberauth_token_gurl_, load_flags,
@@ -650,9 +670,13 @@ void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made.",
-            policy_exception_justification:
-              "Essential for Google account management"
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   CreateAndStartGaiaFetcher(request_body_, authentication_header,
                             oauth_login_gurl_, net::LOAD_NORMAL,
@@ -686,9 +710,13 @@ void GaiaAuthFetcher::StartListAccounts() {
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made.",
-            policy_exception_justification:
-              "Essential for Google account management"
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   CreateAndStartGaiaFetcher(" ",  // To force an HTTP POST.
                             "Origin: https://www.google.com",
@@ -734,9 +762,12 @@ void GaiaAuthFetcher::StartOAuthMultilogin(
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made.",
-          policy_exception_justification:
-            "Essential for Google account management"
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              SigninAllowed: false
+            }
+          }
         })");
   CreateAndStartGaiaFetcher(" ",  // Non-empty to force a POST
                             authorization_header,
@@ -766,9 +797,13 @@ void GaiaAuthFetcher::StartLogOut() {
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made.",
-            policy_exception_justification:
-              "Essential for Google account management"
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   CreateAndStartGaiaFetcher(std::string(), std::string(), logout_gurl_,
                             net::LOAD_NORMAL, traffic_annotation);
@@ -794,9 +829,13 @@ void GaiaAuthFetcher::StartGetCheckConnectionInfo() {
           cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made.",
-            policy_exception_justification:
-              "Essential for Google account management"
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
         })");
   CreateAndStartGaiaFetcher(std::string(), std::string(),
                             get_check_connection_info_url_,
