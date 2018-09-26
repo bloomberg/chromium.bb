@@ -401,6 +401,155 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   DestroySurface(std::move(surface));
 }
 
+// Ensure the swapchain size is set to the correct size if HW overlay scaling
+// is support - swapchain should be the minimum of the decoded
+// video buffer size and the onscreen video size
+TEST(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
+  if (!CheckIfDCSupported())
+    return;
+
+  TestImageTransportSurfaceDelegate delegate;
+  scoped_refptr<DirectCompositionSurfaceWin> surface(
+      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
+                                      ui::GetHiddenWindow()));
+  EXPECT_TRUE(surface->Initialize());
+
+  scoped_refptr<gl::GLContext> context =
+      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
+  EXPECT_TRUE(context->MakeCurrent(surface.get()));
+
+  surface->SetEnableDCLayers(true);
+
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+
+  gfx::Size texture_size(64, 64);
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
+      CreateNV12Texture(d3d11_device, texture_size, false);
+
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  image_dxgi->SetTexture(texture, 0);
+  image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
+
+  // HW supports scaled overlays
+  // The input texture size is maller than the window size.
+  surface->SetScaledOverlaysSupportedForTesting(true);
+  gfx::Size window_size(100, 100);
+  ui::DCRendererLayerParams params(
+      false, gfx::Rect(), 1, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
+      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
+      false);
+
+  surface->ScheduleDCLayer(params);
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
+      surface->GetLayerSwapChainForTesting(1);
+  ASSERT_TRUE(swap_chain);
+
+  DXGI_SWAP_CHAIN_DESC Desc;
+  EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc(&Desc)));
+  EXPECT_EQ((int)Desc.BufferDesc.Width, texture_size.width());
+  EXPECT_EQ((int)Desc.BufferDesc.Height, texture_size.height());
+
+  // The input texture size is bigger than the window size.
+  window_size = gfx::Size(32, 48);
+  ui::DCRendererLayerParams params2(
+      false, gfx::Rect(), 1, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
+      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
+      false);
+
+  surface->ScheduleDCLayer(params2);
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
+      surface->GetLayerSwapChainForTesting(1);
+  ASSERT_TRUE(swap_chain2);
+
+  EXPECT_TRUE(SUCCEEDED(swap_chain2->GetDesc(&Desc)));
+  EXPECT_EQ((int)Desc.BufferDesc.Width, window_size.width());
+  EXPECT_EQ((int)Desc.BufferDesc.Height, window_size.height());
+
+  context = nullptr;
+  DestroySurface(std::move(surface));
+}
+
+// Ensure the swapchain size is set to the correct size if HW overlay scaling
+// is not support - swapchain should be the onscreen video size
+TEST(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
+  if (!CheckIfDCSupported())
+    return;
+
+  TestImageTransportSurfaceDelegate delegate;
+  scoped_refptr<DirectCompositionSurfaceWin> surface(
+      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
+                                      ui::GetHiddenWindow()));
+  EXPECT_TRUE(surface->Initialize());
+
+  scoped_refptr<gl::GLContext> context =
+      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
+  EXPECT_TRUE(context->MakeCurrent(surface.get()));
+
+  surface->SetEnableDCLayers(true);
+
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+
+  gfx::Size texture_size(80, 80);
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
+      CreateNV12Texture(d3d11_device, texture_size, false);
+
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  image_dxgi->SetTexture(texture, 0);
+  image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
+
+  // HW doesn't support scaled overlays
+  // The input texture size is bigger than the window size.
+  surface->SetScaledOverlaysSupportedForTesting(false);
+  gfx::Size window_size(42, 42);
+  ui::DCRendererLayerParams params(
+      false, gfx::Rect(), 1, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
+      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
+      false);
+
+  surface->ScheduleDCLayer(params);
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
+      surface->GetLayerSwapChainForTesting(1);
+  ASSERT_TRUE(swap_chain);
+
+  DXGI_SWAP_CHAIN_DESC Desc;
+  EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc(&Desc)));
+  EXPECT_EQ((int)Desc.BufferDesc.Width, window_size.width());
+  EXPECT_EQ((int)Desc.BufferDesc.Height, window_size.height());
+
+  // The input texture size is smaller than the window size.
+  window_size = gfx::Size(124, 136);
+  ui::DCRendererLayerParams params2(
+      false, gfx::Rect(), 1, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
+      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
+      false);
+
+  surface->ScheduleDCLayer(params2);
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
+      surface->GetLayerSwapChainForTesting(1);
+  ASSERT_TRUE(swap_chain2);
+
+  EXPECT_TRUE(SUCCEEDED(swap_chain2->GetDesc(&Desc)));
+  EXPECT_EQ((int)Desc.BufferDesc.Width, window_size.width());
+  EXPECT_EQ((int)Desc.BufferDesc.Height, window_size.height());
+
+  context = nullptr;
+  DestroySurface(std::move(surface));
+}
+
 SkColor ReadBackWindowPixel(HWND window, const gfx::Point& point) {
   base::win::ScopedCreateDC mem_hdc(::CreateCompatibleDC(nullptr));
   void* bits = nullptr;
@@ -751,7 +900,7 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
   InitializeSurface();
   // Swap chain size is overridden to content rect size only if scaled overlays
   // are supported.
-  DirectCompositionSurfaceWin::EnableScaledOverlaysForTesting();
+  DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
   surface_->SetEnableDCLayers(true);
 
   gfx::Size window_size(100, 100);

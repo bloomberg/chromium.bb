@@ -23,6 +23,7 @@
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/color_space_win.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/transform.h"
@@ -319,12 +320,10 @@ class DCLayerTree {
     Microsoft::WRL::ComPtr<IDCompositionSurface> surface;
     uint64_t dcomp_surface_serial = 0;
 
-    gfx::Rect bounds;
-    float swap_chain_scale_x = 0.0f;
-    float swap_chain_scale_y = 0.0f;
     bool is_clipped = false;
     gfx::Rect clip_rect;
     gfx::Transform transform;
+    gfx::Point offset;
   };
 
   // These functions return true if the visual tree was changed.
@@ -336,12 +335,15 @@ class DCLayerTree {
                                  const ui::DCRendererLayerParams& params);
   bool UpdateVisualClip(VisualInfo* visual_info,
                         const ui::DCRendererLayerParams& params);
+  bool UpdateVisualTransform(VisualInfo* visual_info,
+                             const gfx::Transform& video_transform,
+                             const gfx::Point& offset);
 
   void CalculateVideoSwapChainParameters(
       const ui::DCRendererLayerParams& params,
-      gfx::Rect* video_visual_bounds_rect,
-      gfx::Size* video_input_size,
-      gfx::Size* video_swap_chain_size) const;
+      gfx::Size* video_swap_chain_size,
+      gfx::Transform* video_visual_transform,
+      gfx::Point* video_visual_offset) const;
 
   DirectCompositionSurfaceWin* surface_;
   std::vector<std::unique_ptr<ui::DCRendererLayerParams>> pending_overlays_;
@@ -1008,12 +1010,13 @@ bool DCLayerTree::UpdateVisualForVideo(VisualInfo* visual_info,
     visual_info->surface.Reset();
   }
 
-  gfx::Rect bounds_rect;
-  gfx::Size video_input_size;
+  gfx::Size video_input_size = gfx::ToCeiledSize(params.contents_rect.size());
   gfx::Size swap_chain_size;
+  gfx::Transform video_transform;
+  gfx::Point video_offset;
 
-  CalculateVideoSwapChainParameters(params, &bounds_rect, &video_input_size,
-                                    &swap_chain_size);
+  CalculateVideoSwapChainParameters(params, &swap_chain_size, &video_transform,
+                                    &video_offset);
 
   Microsoft::WRL::ComPtr<IDCompositionVisual2> dc_visual =
       visual_info->content_visual;
@@ -1049,58 +1052,28 @@ bool DCLayerTree::UpdateVisualForVideo(VisualInfo* visual_info,
     changed = true;
   }
 
-  // This is the scale from the swapchain size to the size of the contents
-  // onscreen.
-  float swap_chain_scale_x =
-      bounds_rect.width() * 1.0f / swap_chain_size.width();
-  float swap_chain_scale_y =
-      bounds_rect.height() * 1.0f / swap_chain_size.height();
-
-  // This visual's transform changed.
-  if (swap_chain_scale_x != visual_info->swap_chain_scale_x ||
-      swap_chain_scale_y != visual_info->swap_chain_scale_y ||
-      params.transform != visual_info->transform ||
-      bounds_rect != visual_info->bounds) {
-    visual_info->swap_chain_scale_x = swap_chain_scale_x;
-    visual_info->swap_chain_scale_y = swap_chain_scale_y;
-    visual_info->transform = params.transform;
-    visual_info->bounds = bounds_rect;
-
-    gfx::Transform final_transform = params.transform;
-    gfx::Transform scale_transform;
-    scale_transform.Scale(swap_chain_scale_x, swap_chain_scale_y);
-    final_transform.PreconcatTransform(scale_transform);
-    final_transform.Transpose();
-
-    dc_visual->SetOffsetX(bounds_rect.x());
-    dc_visual->SetOffsetY(bounds_rect.y());
-    Microsoft::WRL::ComPtr<IDCompositionMatrixTransform> dcomp_transform;
-    dcomp_device_->CreateMatrixTransform(dcomp_transform.GetAddressOf());
-    DCHECK(dcomp_transform);
-    D2D_MATRIX_3X2_F d2d_matrix = {{{final_transform.matrix().get(0, 0),
-                                     final_transform.matrix().get(0, 1),
-                                     final_transform.matrix().get(1, 0),
-                                     final_transform.matrix().get(1, 1),
-                                     final_transform.matrix().get(3, 0),
-                                     final_transform.matrix().get(3, 1)}}};
-    dcomp_transform->SetMatrix(d2d_matrix);
-    dc_visual->SetTransform(dcomp_transform.Get());
+  if (UpdateVisualTransform(visual_info, video_transform, video_offset)) {
     changed = true;
   }
+
   return changed;
 }
 
 void DCLayerTree::CalculateVideoSwapChainParameters(
     const ui::DCRendererLayerParams& params,
-    gfx::Rect* video_visual_bounds_rect,
-    gfx::Size* video_input_size,
-    gfx::Size* video_swap_chain_size) const {
+    gfx::Size* video_swap_chain_size,
+    gfx::Transform* video_visual_transform,
+    gfx::Point* video_visual_offset) const {
   // Swap chain size is the minimum of the on-screen size and the source
   // size so the video processor can do the minimal amount of work and
   // the overlay has to read the minimal amount of data.
   // DWM is also less likely to promote a surface to an overlay if it's
   // much larger than its area on-screen.
-  gfx::Rect bounds_rect = params.rect;
+
+  // display_rect is the rect on screen
+  gfx::RectF transformed_rect = gfx::RectF(params.rect);
+  params.transform.TransformRect(&transformed_rect);
+  gfx::Rect display_rect = gfx::ToEnclosingRect(transformed_rect);
 
   if (workarounds().disable_larger_than_screen_overlays &&
       !g_overlay_monitor_size.IsEmpty()) {
@@ -1115,34 +1088,86 @@ void DCLayerTree::CalculateVideoSwapChainParameters(
     // TODO(jbauman): Remove when http://crbug.com/668278 is fixed.
     const int kOversizeMargin = 3;
 
-    if ((bounds_rect.x() >= 0) &&
-        (bounds_rect.width() > g_overlay_monitor_size.width()) &&
-        (bounds_rect.width() <=
+    if ((display_rect.x() >= 0) &&
+        (display_rect.width() > g_overlay_monitor_size.width()) &&
+        (display_rect.width() <=
          g_overlay_monitor_size.width() + kOversizeMargin)) {
-      bounds_rect.set_width(g_overlay_monitor_size.width());
+      display_rect.set_width(g_overlay_monitor_size.width());
     }
 
-    if ((bounds_rect.y() >= 0) &&
-        (bounds_rect.height() > g_overlay_monitor_size.height()) &&
-        (bounds_rect.height() <=
+    if ((display_rect.y() >= 0) &&
+        (display_rect.height() > g_overlay_monitor_size.height()) &&
+        (display_rect.height() <=
          g_overlay_monitor_size.height() + kOversizeMargin)) {
-      bounds_rect.set_height(g_overlay_monitor_size.height());
+      display_rect.set_height(g_overlay_monitor_size.height());
     }
   }
 
-  gfx::Size ceiled_input_size = gfx::ToCeiledSize(params.contents_rect.size());
-  gfx::Size swap_chain_size = bounds_rect.size();
+  // Downscaling doesn't work on Intel display HW, and so DWM will perform
+  // an extra BLT to avoid HW downscaling. This prevents the use of hardware
+  // overlays especially for protected video.
+  gfx::Size swap_chain_size = display_rect.size();
 
-  if (g_supports_scaled_overlays)
+  if (g_supports_scaled_overlays) {
+    gfx::Size ceiled_input_size =
+        gfx::ToCeiledSize(params.contents_rect.size());
     swap_chain_size.SetToMin(ceiled_input_size);
+  }
 
   // YUV surfaces must have an even width.
   if (swap_chain_size.width() % 2 == 1)
     swap_chain_size.set_width(swap_chain_size.width() + 1);
 
-  *video_visual_bounds_rect = bounds_rect;
-  *video_input_size = ceiled_input_size;
+  // Update the transform matrix. It will be used in dc_visual->SetTransform()
+  // This is the scale from the swapchain size to the size of the contents
+  // onscreen.
+  float swap_chain_scale_x =
+      params.rect.width() * 1.0f / swap_chain_size.width();
+  float swap_chain_scale_y =
+      params.rect.height() * 1.0f / swap_chain_size.height();
+  gfx::Transform transform = params.transform;
+  gfx::Transform scale_transform;
+  scale_transform.Scale(swap_chain_scale_x, swap_chain_scale_y);
+  transform.PreconcatTransform(scale_transform);
+  transform.Transpose();
+
+  // Offset relative to its parent, used in dc_visual->SetOffsetX()
+  // TODO(magchen): We should consider recalculating offset when it's non-zero.
+  // Have not seen non-zero params.rect.x() and y() so far.
+  gfx::Point offset(params.rect.x(), params.rect.y());
+
   *video_swap_chain_size = swap_chain_size;
+  *video_visual_transform = transform;
+  *video_visual_offset = offset;
+}
+
+bool DCLayerTree::UpdateVisualTransform(VisualInfo* visual_info,
+                                        const gfx::Transform& transform,
+                                        const gfx::Point& offset) {
+  bool changed = false;
+
+  // This visual's transform changed.
+  if (transform != visual_info->transform || offset != visual_info->offset) {
+    visual_info->transform = transform;
+    visual_info->offset = offset;
+
+    Microsoft::WRL::ComPtr<IDCompositionVisual2> dc_visual =
+        visual_info->content_visual;
+    dc_visual->SetOffsetX(offset.x());
+    dc_visual->SetOffsetY(offset.y());
+    Microsoft::WRL::ComPtr<IDCompositionMatrixTransform> dcomp_transform;
+    dcomp_device_->CreateMatrixTransform(dcomp_transform.GetAddressOf());
+    DCHECK(dcomp_transform);
+    D2D_MATRIX_3X2_F d2d_matrix = {
+        {{transform.matrix().get(0, 0), transform.matrix().get(0, 1),
+          transform.matrix().get(1, 0), transform.matrix().get(1, 1),
+          transform.matrix().get(3, 0), transform.matrix().get(3, 1)}}};
+    dcomp_transform->SetMatrix(d2d_matrix);
+    dc_visual->SetTransform(dcomp_transform.Get());
+    changed = true;
+  }
+
+  return changed;
 }
 
 bool DCLayerTree::UpdateVisualForBackbuffer(
@@ -1167,12 +1192,11 @@ bool DCLayerTree::UpdateVisualForBackbuffer(
     changed = true;
   }
 
-  gfx::Rect bounds_rect = params.rect;
-  if (visual_info->bounds != bounds_rect ||
-      !visual_info->transform.IsIdentity()) {
-    dc_visual->SetOffsetX(bounds_rect.x());
-    dc_visual->SetOffsetY(bounds_rect.y());
-    visual_info->bounds = bounds_rect;
+  gfx::Point offset = params.rect.origin();
+  if (visual_info->offset != offset || !visual_info->transform.IsIdentity()) {
+    dc_visual->SetOffsetX(offset.x());
+    dc_visual->SetOffsetY(offset.y());
+    visual_info->offset = offset;
     dc_visual->SetTransform(nullptr);
     visual_info->transform = gfx::Transform();
     changed = true;
@@ -1327,8 +1351,9 @@ OverlayCapabilities DirectCompositionSurfaceWin::GetOverlayCapabilities() {
 }
 
 // static
-void DirectCompositionSurfaceWin::EnableScaledOverlaysForTesting() {
-  g_supports_scaled_overlays = true;
+void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
+    bool value) {
+  g_supports_scaled_overlays = value;
 }
 
 // static
