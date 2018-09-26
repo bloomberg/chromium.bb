@@ -9,13 +9,7 @@
 
 namespace vr {
 
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_InitializeAndCleanup DISABLED_InitializeAndCleanup
-#else
-#define MAYBE_InitializeAndCleanup InitializeAndCleanup
-#endif
-
-TEST(GlTestEnvironmentTest, MAYBE_InitializeAndCleanup) {
+TEST(GlTestEnvironmentTest, InitializeAndCleanup) {
   GlTestEnvironment gl_test_environment(gfx::Size(100, 100));
   EXPECT_NE(gl_test_environment.GetFrameBufferForTesting(), 0u);
   EXPECT_EQ(glGetError(), (GLenum)GL_NO_ERROR);

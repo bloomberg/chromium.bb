@@ -22,7 +22,7 @@ VrGlTestSuite::VrGlTestSuite(int argc, char** argv) : VrTestSuite(argc, argv) {}
 void VrGlTestSuite::Initialize() {
   VrTestSuite::Initialize();
 
-  gl::GLImageTestSupport::InitializeGL(gl::kGLImplementationEGLGLES2);
+  gl::GLImageTestSupport::InitializeGL(base::nullopt);
 
 #if defined(VR_USE_COMMAND_BUFFER)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
