@@ -47,10 +47,6 @@ bool IsRefreshInfobarEnabled();
 // TODO (crbug.com/884723): Remove all use of this flag.
 bool IsRefreshLocationBarEnabled();
 
-// Returns whether the UI Refresh Omnibox Popup presentation will be used.
-// TODO (crbug.com/884724): Remove all use of this flag.
-bool IsRefreshPopupPresentationEnabled();
-
 // Returns whether the first phase of the UI refresh will be displayed.
 // TODO (crbug.com/884725): Remove all use of this flag.
 bool IsUIRefreshPhase1Enabled();

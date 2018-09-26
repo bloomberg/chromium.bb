@@ -54,10 +54,6 @@ bool IsNewClearBrowsingDataUIEnabled();
 // Whether the 3rd party keyboard omnibox workaround is enabled.
 bool IsThirdPartyKeyboardWorkaroundEnabled();
 
-// Whether RecentTabs UI Reboot is enabled.
-// TODO (crbug.com/884718): Remove all use of this flag.
-bool IsRecentTabsUIRebootEnabled();
-
 // Whether the Bookmarks UI Reboot is enabled.
 // TODO (crbug.com/884719): Remove all use of this flag.
 bool IsBookmarksUIRebootEnabled();

@@ -66,10 +66,6 @@ bool IsRefreshLocationBarEnabled() {
   return true;
 }
 
-bool IsRefreshPopupPresentationEnabled() {
-  return true;
-}
-
 bool IsUIRefreshPhase1Enabled() {
   return true;
 }
