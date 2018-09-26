@@ -180,6 +180,26 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     std::move(done_callback).Run();
   }
 
+  bool SetFieldValue(const std::vector<std::string>& selectors,
+                     const std::string& value) {
+    base::RunLoop run_loop;
+    bool result;
+    web_controller_->SetFieldValue(
+        selectors, value,
+        base::BindOnce(&WebControllerBrowserTest::OnSetFieldValue,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       &result));
+    run_loop.Run();
+    return result;
+  }
+
+  void OnSetFieldValue(const base::Closure& done_callback,
+                       bool* result_output,
+                       bool result) {
+    *result_output = result;
+    std::move(done_callback).Run();
+  }
+
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   std::unique_ptr<WebController> web_controller_;
@@ -364,14 +384,18 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, BuildNodeTree) {
   EXPECT_EQ(node.value(), "BODY");
 }
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetFieldValue) {
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   std::vector<std::string> selectors;
   selectors.emplace_back("#input");
   EXPECT_EQ("helloworld", GetFieldValue(selectors));
 
+  EXPECT_TRUE(SetFieldValue(selectors, "foo'"));
+  EXPECT_EQ("foo'", GetFieldValue(selectors));
+
   selectors.clear();
   selectors.emplace_back("#invalid_selector");
   EXPECT_EQ("", GetFieldValue(selectors));
+  EXPECT_FALSE(SetFieldValue(selectors, "foobar"));
 }
 
 }  // namespace

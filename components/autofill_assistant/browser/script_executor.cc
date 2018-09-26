@@ -92,12 +92,11 @@ void ScriptExecutor::GetFieldValue(
   delegate_->GetWebController()->GetFieldValue(selectors, std::move(callback));
 }
 
-void ScriptExecutor::SetFieldsValue(
-    const std::vector<std::vector<std::string>>& selectors_list,
-    const std::vector<std::string>& values,
-    base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->SetFieldsValue(selectors_list, values,
-                                                std::move(callback));
+void ScriptExecutor::SetFieldValue(const std::vector<std::string>& selectors,
+                                   const std::string& value,
+                                   base::OnceCallback<void(bool)> callback) {
+  delegate_->GetWebController()->SetFieldValue(selectors, value,
+                                               std::move(callback));
 }
 
 const autofill::AutofillProfile* ScriptExecutor::GetAutofillProfile(
