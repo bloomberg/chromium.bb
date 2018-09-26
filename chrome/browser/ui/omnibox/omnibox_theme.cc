@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -279,6 +280,8 @@ SkColor GetOmniboxColor(OmniboxPart part,
       return dark ? gfx::kGoogleBlueDark600 : gfx::kGoogleBlue600;
 
     case OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE:
+      if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled())
+        return gfx::kGoogleBlue700;
       return dark ? gfx::kGoogleGrey100
                   : SkColorSetA(gfx::kGoogleGrey900, 0x24);
 

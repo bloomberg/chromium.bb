@@ -454,6 +454,9 @@ class OmniboxFieldTrial {
   // suggestion view.
   static int GetSuggestionVerticalMargin();
 
+  // Returns true if the experimental keyword mode is enabled.
+  static bool IsExperimentalKeywordModeEnabled();
+
   // ---------------------------------------------------------
   // Clipboard URL suggestions:
 
