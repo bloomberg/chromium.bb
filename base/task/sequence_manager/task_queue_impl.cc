@@ -55,6 +55,10 @@ TaskQueueImpl::TaskQueueImpl(SequenceManagerImpl* sequence_manager,
       should_monitor_quiescence_(spec.should_monitor_quiescence),
       should_notify_observers_(spec.should_notify_observers) {
   DCHECK(time_domain);
+  // SequenceManager can't be set later, so we need to prevent task runners
+  // from posting any tasks.
+  if (!sequence_manager)
+    proxy_->DetachFromTaskQueueImpl();
 }
 
 TaskQueueImpl::~TaskQueueImpl() {
@@ -67,27 +71,6 @@ TaskQueueImpl::~TaskQueueImpl() {
   DCHECK(!any_thread().sequence_manager)
       << "UnregisterTaskQueue must be called first!";
 #endif
-}
-
-TaskQueueImpl::PostTaskResult::PostTaskResult()
-    : success(false), task(OnceClosure(), Location()) {}
-
-TaskQueueImpl::PostTaskResult::PostTaskResult(bool success,
-                                              TaskQueue::PostedTask task)
-    : success(success), task(std::move(task)) {}
-
-TaskQueueImpl::PostTaskResult::PostTaskResult(PostTaskResult&& move_from)
-    : success(move_from.success), task(std::move(move_from.task)) {}
-
-TaskQueueImpl::PostTaskResult::~PostTaskResult() = default;
-
-TaskQueueImpl::PostTaskResult TaskQueueImpl::PostTaskResult::Success() {
-  return PostTaskResult(true, TaskQueue::PostedTask(OnceClosure(), Location()));
-}
-
-TaskQueueImpl::PostTaskResult TaskQueueImpl::PostTaskResult::Fail(
-    TaskQueue::PostedTask task) {
-  return PostTaskResult(false, std::move(task));
 }
 
 TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
@@ -197,22 +180,23 @@ bool TaskQueueImpl::RunsTasksInCurrentSequence() const {
   return PlatformThread::CurrentId() == associated_thread_->thread_id;
 }
 
-TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTask(
-    TaskQueue::PostedTask task) {
-  if (task.delay.is_zero())
-    return PostImmediateTaskImpl(std::move(task));
-
-  return PostDelayedTaskImpl(std::move(task));
+void TaskQueueImpl::PostTask(TaskQueue::PostedTask task) {
+  // This method can only be called if task queue is able to accept tasks,
+  // i.e. has a sequence manager and not being unregistered. This is enforced
+  // by |proxy_| which is detached if this condition not met.
+  if (task.delay.is_zero()) {
+    PostImmediateTaskImpl(std::move(task));
+  } else {
+    PostDelayedTaskImpl(std::move(task));
+  }
 }
 
-TaskQueueImpl::PostTaskResult TaskQueueImpl::PostImmediateTaskImpl(
-    TaskQueue::PostedTask task) {
+void TaskQueueImpl::PostImmediateTaskImpl(TaskQueue::PostedTask task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task.callback);
   AutoLock lock(any_thread_lock_);
-  if (!any_thread().sequence_manager)
-    return PostTaskResult::Fail(std::move(task));
+  DCHECK(any_thread().sequence_manager);
 
   EnqueueOrder sequence_number =
       any_thread().sequence_manager->GetNextSequenceNumber();
@@ -220,19 +204,16 @@ TaskQueueImpl::PostTaskResult TaskQueueImpl::PostImmediateTaskImpl(
   PushOntoImmediateIncomingQueueLocked(Task(std::move(task),
                                             any_thread().time_domain->Now(),
                                             sequence_number, sequence_number));
-  return PostTaskResult::Success();
 }
 
-TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTaskImpl(
-    TaskQueue::PostedTask task) {
+void TaskQueueImpl::PostDelayedTaskImpl(TaskQueue::PostedTask task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task.callback);
   DCHECK_GT(task.delay, TimeDelta());
   if (PlatformThread::CurrentId() == associated_thread_->thread_id) {
     // Lock-free fast path for delayed tasks posted from the main thread.
-    if (!main_thread_only().sequence_manager)
-      return PostTaskResult::Fail(std::move(task));
+    DCHECK(main_thread_only().sequence_manager);
 
     EnqueueOrder sequence_number =
         main_thread_only().sequence_manager->GetNextSequenceNumber();
@@ -248,8 +229,7 @@ TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTaskImpl(
     // because it causes two main thread tasks to be run.  Should this
     // assumption prove to be false in future, we may need to revisit this.
     AutoLock lock(any_thread_lock_);
-    if (!any_thread().sequence_manager)
-      return PostTaskResult::Fail(std::move(task));
+    DCHECK(any_thread().sequence_manager);
 
     EnqueueOrder sequence_number =
         any_thread().sequence_manager->GetNextSequenceNumber();
@@ -259,7 +239,6 @@ TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTaskImpl(
     PushOntoDelayedIncomingQueueLocked(
         Task(std::move(task), time_domain_delayed_run_time, sequence_number));
   }
-  return PostTaskResult::Success();
 }
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(

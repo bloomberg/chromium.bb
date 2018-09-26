@@ -3281,6 +3281,22 @@ TEST_P(SequenceManagerTest, TaskQueueUsedInTaskDestructorAfterShutdown) {
   test_executed.Wait();
 }
 
+TEST_P(SequenceManagerTest, TaskQueueTaskRunnerDetach) {
+  scoped_refptr<TestTaskQueue> queue1 = CreateTaskQueue();
+  EXPECT_TRUE(queue1->task_runner()->PostTask(FROM_HERE, BindOnce(&NopTask)));
+  queue1->ShutdownTaskQueue();
+  EXPECT_FALSE(queue1->task_runner()->PostTask(FROM_HERE, BindOnce(&NopTask)));
+
+  // Create without a sequence manager.
+  std::unique_ptr<TimeDomain> time_domain =
+      std::make_unique<internal::RealTimeDomain>();
+  std::unique_ptr<TaskQueueImpl> queue2 = std::make_unique<TaskQueueImpl>(
+      nullptr, time_domain.get(), TaskQueue::Spec("stub"));
+  scoped_refptr<SingleThreadTaskRunner> task_runner2 =
+      queue2->CreateTaskRunner(0);
+  EXPECT_FALSE(task_runner2->PostTask(FROM_HERE, BindOnce(&NopTask)));
+}
+
 TEST_P(SequenceManagerTest, DestructorPostChainDuringShutdown) {
   // Checks that a chain of closures which post other closures on destruction do
   // thing on shutdown.
