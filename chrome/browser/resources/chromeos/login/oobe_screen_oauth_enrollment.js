@@ -136,7 +136,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.offlineAdUi_.addEventListener('authCompleted', function(e) {
         this.offlineAdUi_.disabled = true;
         chrome.send('oauthEnrollAdCompleteLogin', [
-          e.detail.machinename, e.detail.distinguished_name,
+          e.detail.machine_name, e.detail.distinguished_name,
           e.detail.encryption_types, e.detail.username, e.detail.password
         ]);
       }.bind(this));
@@ -297,6 +297,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.isManualEnrollment_ = data.enrollment_mode === 'manual';
       this.navigation_.disabled = false;
 
+      this.offlineAdUi_.onBeforeShow();
       this.showStep(data.attestationBased ? STEP_WORKING : STEP_SIGNIN);
     },
 
@@ -450,8 +451,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     setAdJoinParams: function(
         machineName, userName, errorState, showUnlockConfig) {
       this.offlineAdUi_.disabled = false;
-      this.offlineAdUi_.setUser(userName, machineName);
-      this.offlineAdUi_.setInvalid(errorState);
+      this.offlineAdUi_.machineName = machineName;
+      this.offlineAdUi_.userName = userName;
+      this.offlineAdUi_.errorState = errorState;
       this.offlineAdUi_.unlockPasswordStep = showUnlockConfig;
     },
 
@@ -538,7 +540,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     onEnrollmentFinished_: function() {
       chrome.send('oauthEnrollClose', ['done']);
-    }
+    },
 
+    updateLocalizedContent: function() {
+      this.offlineAdUi_.i18nUpdateLocale();
+    },
   };
 });

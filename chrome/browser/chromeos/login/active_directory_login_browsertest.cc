@@ -47,24 +47,24 @@ constexpr char kAdOfflineAuthId[] = "offline-ad-auth";
 
 constexpr char kTestActiveDirectoryUser[] = "test-user";
 constexpr char kTestUserRealm[] = "user.realm";
-constexpr char kAdMachineInput[] = "machineNameInput";
-constexpr char kAdMoreOptionsButton[] = "moreOptionsBtn";
-constexpr char kAdUserInput[] = "userInput";
-constexpr char kAdPasswordInput[] = "passwordInput";
-constexpr char kAdCredsButton[] = "adCreds /deep/ #button";
-constexpr char kAdPasswordChangeButton[] = "button";
-constexpr char kAdWelcomMessage[] = "welcomeMsg";
-constexpr char kAdAutocompleteRealm[] = "userInput /deep/ #domainLabel";
+constexpr char kAdMachineInput[] = "$.machineNameInput";
+constexpr char kAdMoreOptionsButton[] = "$.moreOptionsBtn";
+constexpr char kAdUserInput[] = "$.userInput";
+constexpr char kAdPasswordInput[] = "$.passwordInput";
+constexpr char kAdCredsButton[] = "$$('#nextButton')";
+constexpr char kAdPasswordChangeButton[] = "$.inputForm.$.button";
+constexpr char kAdWelcomMessage[] = "$$('#welcomeMsg')";
+constexpr char kAdAutocompleteRealm[] = "$.userInput.querySelector('span')";
 
-constexpr char kAdPasswordChangeId[] = "ad-password-change";
-constexpr char kAdAnimatedPages[] = "animatedPages";
-constexpr char kAdOldPasswordInput[] = "oldPassword";
-constexpr char kAdNewPassword1Input[] = "newPassword1";
-constexpr char kAdNewPassword2Input[] = "newPassword2";
+constexpr char kAdPasswordChangeId[] = "active-directory-password-change";
+constexpr char kAdAnimatedPages[] = "$.animatedPages";
+constexpr char kAdOldPasswordInput[] = "$.oldPassword";
+constexpr char kAdNewPassword1Input[] = "$.newPassword1";
+constexpr char kAdNewPassword2Input[] = "$.newPassword2";
 constexpr char kNewPassword[] = "new_password";
 constexpr char kDifferentNewPassword[] = "different_new_password";
 
-constexpr char kCloseButtonId[] = "closeButton";
+constexpr char kCloseButtonId[] = "$.navigation.$.closeButton";
 
 class ActiveDirectoryLoginTest : public LoginManagerTest {
  public:
@@ -127,7 +127,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
 
   void ClosePasswordChangeScreen() {
     js_checker().Evaluate(JSElement(kAdPasswordChangeId, kCloseButtonId) +
-                          ".fire('tap')");
+                          ".click()");
   }
 
   // Checks if Active Directory login is visible.
@@ -151,11 +151,13 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
               js_checker().GetString(
                   JSElement(kAdOfflineAuthId, kAdWelcomMessage) + innerText));
 
-    // Checks if realm is set to autocomplete username.
-    EXPECT_EQ(
-        "@" + autocomplete_realm_,
+    std::string autocomplete_domain_ui;
+    base::TrimString(
         js_checker().GetString(
-            JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) + innerText));
+            JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) + innerText),
+        base::kWhitespaceASCII, &autocomplete_domain_ui);
+    // Checks if realm is set to autocomplete username.
+    EXPECT_EQ("@" + autocomplete_realm_, autocomplete_domain_ui);
 
     // Checks if bottom bar is visible.
     JSExpect("!Oobe.getInstance().headerHidden");
@@ -175,22 +177,21 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   // Checks if user input is marked as invalid.
   void TestUserError() {
     TestLoginVisible();
-    JSExpect(JSElement(kAdOfflineAuthId, kAdUserInput) + ".isInvalid");
+    JSExpect(JSElement(kAdOfflineAuthId, kAdUserInput) + ".invalid");
   }
 
   // Checks if password input is marked as invalid.
   void TestPasswordError() {
     TestLoginVisible();
-    JSExpect(JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".isInvalid");
+    JSExpect(JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".invalid");
   }
 
   // Checks that machine, password and user inputs are valid.
   void TestNoError() {
     TestLoginVisible();
-    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdMachineInput) + ".isInvalid");
-    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdUserInput) + ".isInvalid");
-    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) +
-             ".isInvalid");
+    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdMachineInput) + ".invalid");
+    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdUserInput) + ".invalid");
+    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".invalid");
   }
 
   // Checks if autocomplete domain is visible for the user input.
@@ -226,7 +227,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     js_checker().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdPasswordInput) +
                               ".value='" + password + "'");
     js_checker().Evaluate(JSElement(kAdOfflineAuthId, kAdCredsButton) +
-                          ".fire('tap')");
+                          ".click()");
   }
 
   // Sets username and password for the Active Directory login and submits it.
@@ -244,8 +245,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
         JSElement(kAdPasswordChangeId, kAdNewPassword2Input) + ".value='" +
         new_password2 + "'");
     js_checker().Evaluate(
-        JSElement(kAdPasswordChangeId, kAdPasswordChangeButton) +
-        ".fire('tap')");
+        JSElement(kAdPasswordChangeId, kAdPasswordChangeButton) + ".click()");
   }
 
   void SetupActiveDirectoryJSNotifications() {
@@ -269,9 +269,8 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   // Returns string representing element with id=|element_id| inside Active
   // Directory login element.
   std::string JSElement(const std::string& parent_id,
-                        const std::string& element_id) {
-    return "document.querySelector('#" + parent_id + " /deep/ #" + element_id +
-           "')";
+                        const std::string& selector) {
+    return "document.querySelector('#" + parent_id + "')." + selector;
   }
   FakeAuthPolicyClient* fake_auth_policy_client() {
     return fake_auth_policy_client_;
@@ -343,6 +342,7 @@ IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest, LoginErrors) {
 
   SubmitActiveDirectoryCredentials(std::string(kTestActiveDirectoryUser) + "@",
                                    kPassword);
+  WaitForMessage(&message_queue, "\"ShowAuthError\"");
   TestUserError();
   TestDomainHidden();
 
