@@ -21503,6 +21503,16 @@ Called by update_net_error_codes.py.-->
       label="Only permitted for framebusting, user gesture, not an ad frame"/>
   <int value="2" label="Allowed navigation, no user gesture, not an ad frame"/>
   <int value="3" label="Allowed navigation, user gesture, not an ad frame"/>
+</enum>
+
+<enum name="FramebustPermissionsPlusAds">
+  <int value="0"
+      label="Only permitted for framebusting, no user gesture, not an ad
+             frame"/>
+  <int value="1"
+      label="Only permitted for framebusting, user gesture, not an ad frame"/>
+  <int value="2" label="Allowed navigation, no user gesture, not an ad frame"/>
+  <int value="3" label="Allowed navigation, user gesture, not an ad frame"/>
   <int value="4"
       label="Only permitted for framebusting, no user gesture, ad frame"/>
   <int value="5"
