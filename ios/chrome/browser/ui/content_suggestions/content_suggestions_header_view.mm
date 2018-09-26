@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
@@ -38,7 +37,7 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
 
 }  // namespace
 
-@interface ContentSuggestionsHeaderView ()<ToolbarSnapshotProviding>
+@interface ContentSuggestionsHeaderView ()
 
 // Layout constraints for fake omnibox background image and blur.
 @property(nonatomic, strong) NSLayoutConstraint* backgroundHeightConstraint;
@@ -263,32 +262,6 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
   CGFloat scaleValue =
       1 + (content_suggestions::kHintTextScale * (1 - percent));
   hintLabel.transform = CGAffineTransformMakeScale(scaleValue, scaleValue);
-}
-
-#pragma mark - ToolbarOwner
-
-- (CGRect)toolbarFrame {
-  return CGRectZero;
-}
-
-- (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
-  return self;
-}
-
-#pragma mark - ToolbarSnapshotProviding
-
-- (UIView*)snapshotForTabSwitcher {
-  return nil;
-}
-
-- (UIView*)snapshotForStackViewWithWidth:(CGFloat)width
-                          safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  NOTREACHED();
-  return nil;
-}
-
-- (UIColor*)toolbarBackgroundColor {
-  return nil;
 }
 
 @end

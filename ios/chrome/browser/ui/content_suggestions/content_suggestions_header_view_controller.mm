@@ -480,16 +480,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   [self.collectionSynchronizer shiftTilesUpWithCompletionBlock:completionBlock];
 }
 
-#pragma mark - ToolbarOwner
-
-- (CGRect)toolbarFrame {
-  return [self.headerView toolbarFrame];
-}
-
-- (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
-  return self.headerView.toolbarSnapshotProvider;
-}
-
 #pragma mark - LogoAnimationControllerOwnerOwner
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {

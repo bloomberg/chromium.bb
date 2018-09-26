@@ -42,8 +42,6 @@ source_set("toolbar_ui") {
   sources = [
     "legacy_toolbar_ui_updater.h",
     "legacy_toolbar_ui_updater.mm",
-    "toolbar_owner.h",
-    "toolbar_snapshot_providing.h",
     "toolbar_ui.h",
     "toolbar_ui.mm",
   ]

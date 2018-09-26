@@ -10,7 +10,6 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/native_content_controller.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
 namespace ios {
@@ -41,7 +40,6 @@ class ChromeBrowserState;
 //
 @interface NewTabPageController
     : NativeContentController<LogoAnimationControllerOwnerOwner,
-                              ToolbarOwner,
                               UIGestureRecognizerDelegate,
                               UIScrollViewDelegate>
 

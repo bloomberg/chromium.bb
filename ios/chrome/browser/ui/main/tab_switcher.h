@@ -17,7 +17,6 @@
 @class TabSwitcherTransitionContext;
 @protocol TabSwitcher;
 @protocol ToolbarCommands;
-@protocol ToolbarOwner;
 
 // This delegate is used to drive the TabSwitcher dismissal and execute code
 // when the presentation and dismmiss animations finishes. The main controller
@@ -33,10 +32,6 @@
 // Informs the delegate that the stack controller is done and should be
 // dismissed.
 - (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher;
-
-// Returns a reference to the owner of the toolbar that should be used in the
-// transition animations.
-- (id<ToolbarOwner>)tabSwitcherTransitionToolbarOwner;
 
 @end
 
