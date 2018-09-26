@@ -250,6 +250,11 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
 
       for (const auto& page_hint : hint.page_hints()) {
         for (const auto& optimization : page_hint.whitelisted_optimizations()) {
+          if (IsDisabledExperimentalOptimization(optimization)) {
+            // This is an experimental optimization that is not enabled so
+            // continue in case there is a non-experimental one.
+            continue;
+          }
           base::Optional<PreviewsType> previews_type =
               ConvertProtoOptimizationTypeToPreviewsOptimizationType(
                   optimization.optimization_type());
@@ -442,6 +447,11 @@ bool PreviewsHints::IsWhitelisted(const GURL& url,
        matched_page_hint->whitelisted_optimizations()) {
     if (ConvertProtoOptimizationTypeToPreviewsOptimizationType(
             optimization.optimization_type()) == type) {
+      if (IsDisabledExperimentalOptimization(optimization)) {
+        // This is an experimental optimization that is not enabled so continue
+        // in case there is a non-experimental one.
+        continue;
+      }
       *out_inflation_percent = optimization.inflation_percent();
       return true;
     }

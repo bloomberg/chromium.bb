@@ -41,6 +41,7 @@ class PreviewsHintsTest : public testing::Test {
         base::Version("1.0"),
         temp_dir_.GetPath().Append(FILE_PATH_LITERAL("somefile.pb")));
     previews_hints_ = PreviewsHints::CreateFromConfig(config, info);
+    previews_hints_->Initialize();
   }
 
   PreviewsHints* previews_hints() { return previews_hints_.get(); }
@@ -215,6 +216,66 @@ TEST_F(PreviewsHintsTest, ParseConfigWithTooLargeBlacklist) {
 
   EXPECT_FALSE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+  optimization_guide::proto::Configuration config;
+
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+  // Page hint for "/experimental_preview/"
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("/experimental_preview/");
+  // First add experimental PageHint optimization.
+  optimization_guide::proto::Optimization* experimental_optimization =
+      page_hint1->add_whitelisted_optimizations();
+  experimental_optimization->set_experiment_name("foo_experiment");
+  experimental_optimization->set_inflation_percent(99);
+  experimental_optimization->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* experimental_resourcehint =
+      experimental_optimization->add_resource_loading_hints();
+  experimental_resourcehint->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  experimental_resourcehint->set_resource_pattern("experimental_resource.js");
+  // Add a non-experimental PageHint optimization with same resource pattern.
+  optimization_guide::proto::Optimization* default_pagehint_optimization =
+      page_hint1->add_whitelisted_optimizations();
+  default_pagehint_optimization->set_inflation_percent(33);
+  default_pagehint_optimization->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* default_resourcehint =
+      default_pagehint_optimization->add_resource_loading_hints();
+  default_resourcehint->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  default_resourcehint->set_resource_pattern("experimental_resource.js");
+  ParseConfig(config);
+
+  // Verify default resource hint whitelisted (via inflation_percent).
+  int inflation_percent;
+  EXPECT_TRUE(previews_hints()->IsWhitelisted(
+      GURL("https://www.somedomain.org/experimental_preview/"
+           "experimental_resource.js"),
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent));
+  EXPECT_EQ(33, inflation_percent);
+
+  // Now enable the experiment and verify experimental resource hint chosen.
+  {
+    base::test::ScopedFeatureList scoped_list2;
+    scoped_list2.InitAndEnableFeatureWithParameters(
+        features::kOptimizationHintsExperiments,
+        {{"experiment_name", "foo_experiment"}});
+    int inflation_percent;
+    EXPECT_TRUE(previews_hints()->IsWhitelisted(
+        GURL("https://www.somedomain.org/experimental_preview/"
+             "experimental_resource.js"),
+        PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent));
+    EXPECT_EQ(99, inflation_percent);
+  }
 }
 
 }  // namespace previews
