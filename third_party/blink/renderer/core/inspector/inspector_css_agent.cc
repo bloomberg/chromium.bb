@@ -1162,9 +1162,19 @@ Response InspectorCSSAgent::getComputedStyleForNode(
 
 void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
     LayoutObject* layout_object,
-    HashCountedSet<std::pair<int, String>>* font_stats) {
-  if (!layout_object->IsText())
+    HashCountedSet<std::pair<int, String>>* font_stats,
+    unsigned descendants_depth) {
+  if (!layout_object->IsText()) {
+    if (!descendants_depth)
+      return;
+    if (!layout_object->IsAnonymous())
+      --descendants_depth;
+    for (LayoutObject* child = layout_object->SlowFirstChild(); child;
+         child = child->NextSibling()) {
+      CollectPlatformFontsForLayoutObject(child, font_stats, descendants_depth);
+    }
     return;
+  }
 
   FontCachePurgePreventer preventer;
   LayoutText* layout_text = ToLayoutText(layout_object);
@@ -1214,15 +1224,9 @@ Response InspectorCSSAgent::getPlatformFontsForNode(
   HashCountedSet<std::pair<int, String>> font_stats;
   LayoutObject* root = node->GetLayoutObject();
   if (root) {
-    CollectPlatformFontsForLayoutObject(root, &font_stats);
     // Iterate upto two layers deep.
-    for (LayoutObject* child = root->SlowFirstChild(); child;
-         child = child->NextSibling()) {
-      CollectPlatformFontsForLayoutObject(child, &font_stats);
-      for (LayoutObject* child2 = child->SlowFirstChild(); child2;
-           child2 = child2->NextSibling())
-        CollectPlatformFontsForLayoutObject(child2, &font_stats);
-    }
+    const unsigned descendants_depth = 2;
+    CollectPlatformFontsForLayoutObject(root, &font_stats, descendants_depth);
   }
   *platform_fonts = protocol::Array<protocol::CSS::PlatformFontUsage>::create();
   for (auto& font : font_stats) {

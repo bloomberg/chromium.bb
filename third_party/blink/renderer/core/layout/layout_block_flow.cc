@@ -3140,7 +3140,8 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
         after_child->AddChild(new_child);
         return;
       }
-      LayoutInline* new_wrapper = LayoutInline::CreateAnonymous(&GetDocument());
+      LayoutInline* new_wrapper =
+          LayoutInline::CreateAnonymousForFirstLine(&GetDocument());
       new_wrapper->SetStyle(ComputedStyle::CreateAnonymousStyleWithDisplay(
           StyleRef(), EDisplay::kInline));
       LayoutBox::AddChild(new_wrapper, before_child);

@@ -91,9 +91,21 @@ LayoutInline* LayoutInline::CreateAnonymous(Document* document) {
 }
 
 bool LayoutInline::IsFirstLineAnonymous() const {
-  // TODO(kojii): We can add a flag, but this seems enough for now.
-  return IsAnonymous() && Parent() && Parent()->IsLayoutBlockFlow() &&
-         !PreviousSibling() && !NextSibling();
+  return false;
+}
+
+// A private class to distinguish anonymous inline box for ::first-line from
+// other inline boxes.
+class LayoutInlineForFirstLine : public LayoutInline {
+ public:
+  LayoutInlineForFirstLine(Element* element) : LayoutInline(element) {}
+  bool IsFirstLineAnonymous() const final { return true; }
+};
+
+LayoutInline* LayoutInline::CreateAnonymousForFirstLine(Document* document) {
+  LayoutInline* layout_inline = new LayoutInlineForFirstLine(nullptr);
+  layout_inline->SetDocumentForAnonymous(document);
+  return layout_inline;
 }
 
 void LayoutInline::WillBeDestroyed() {
