@@ -210,6 +210,9 @@
 -MediaEngagementBrowserTest.*
 -MediaEngagementAutoplayBrowserTest.*
 
+# Flaky https://crbug.com/887175
+-PrerenderBrowserTest.PrerenderHTML5VideoJs
+
 # Full screen button tests.
 -PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
 
