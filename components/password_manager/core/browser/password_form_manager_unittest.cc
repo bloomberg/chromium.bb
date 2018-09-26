@@ -482,6 +482,12 @@ class PasswordFormManagerTest : public testing::Test {
                   StartUploadRequest(_, _, _, _, _))
           .Times(0);
     }
+    if (times_used == 0) {
+      // First login vote.
+      EXPECT_CALL(
+          *client()->mock_driver()->mock_autofill_download_manager(),
+          StartUploadRequest(SignatureIsSameAs(form_to_save), _, _, _, _));
+    }
     form_manager.ProvisionallySave(form_to_save);
     form_manager.Save();
     Mock::VerifyAndClearExpectations(
@@ -2008,7 +2014,7 @@ TEST_F(PasswordFormManagerTest, UploadPasswordForm) {
   AccountCreationUploadTest(saved_match()->form_data, 2,
                             PasswordForm::POSITIVE_SIGNAL_SENT, &field_type);
 
-  // For any other GenerationUplaodStatus, no autofill upload should occur
+  // For any other GenerationUploadStatus, no autofill upload should occur
   // if the observed form data matches the saved form data.
   AccountCreationUploadTest(saved_match()->form_data, 3,
                             PasswordForm::NO_SIGNAL_SENT, nullptr);
@@ -3545,13 +3551,13 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
         EXPECT_CALL(*mock_autofill_manager,
                     MaybeStartVoteUploadProcessPtr(_, _, true))
             .WillOnce(WithArg<0>(SaveToUniquePtr(&signin_vote_form_structure)));
-      } else {
-        autofill::ServerFieldTypeSet field_types;
-        field_types.insert(autofill::PASSWORD);
-        EXPECT_CALL(
-            *client()->mock_driver()->mock_autofill_download_manager(),
-            StartUploadRequest(_, false, field_types, std::string(), true));
       }
+
+      autofill::ServerFieldTypeSet field_types;
+      field_types.insert(autofill::PASSWORD);
+      EXPECT_CALL(
+          *client()->mock_driver()->mock_autofill_download_manager(),
+          StartUploadRequest(_, false, field_types, std::string(), true));
 
       EXPECT_CALL(
           *client()->mock_driver()->mock_autofill_download_manager(),
