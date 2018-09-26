@@ -21,17 +21,13 @@ TaskQueueProxy::TaskQueueProxy(
 TaskQueueProxy::~TaskQueueProxy() = default;
 
 bool TaskQueueProxy::PostTask(TaskQueue::PostedTask task) const {
+  // NOTE: Task's destructor might attempt to post another task,
+  // so ensure it never happens inside this lock.
   Optional<MoveableAutoLock> lock(AcquireLockIfNeeded());
   if (!task_queue_impl_)
     return false;
-
-  TaskQueueImpl::PostTaskResult result(
-      task_queue_impl_->PostDelayedTask(std::move(task)));
-  // If posting task was unsuccessful then |result| will contain
-  // the original task which should be destructed outside of the lock
-  // because new tasks may be posted in the destrictor.
-  lock = nullopt;
-  return result.success;
+  task_queue_impl_->PostTask(std::move(task));
+  return true;
 }
 
 bool TaskQueueProxy::RunsTasksInCurrentSequence() const {
@@ -46,9 +42,9 @@ Optional<MoveableAutoLock> TaskQueueProxy::AcquireLockIfNeeded() const {
 
 void TaskQueueProxy::DetachFromTaskQueueImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  // |task_queue_impl_| can be read from the main thread without a lock,
+  // but a lock is needed when we write to it.
   AutoLock lock(lock_);
-  // Main thread is the only thread where |task_queue_impl_| is being read
-  // without a lock, which is fine because this function is main thread only.
   task_queue_impl_ = nullptr;
 }
 
