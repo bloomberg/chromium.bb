@@ -79,8 +79,9 @@ class HasBeforeUnloadHandlerTest : public InProcessBrowserTest {
 
 }  // namespace
 
+// TODO(https://crbug.com/889304): Re-enable this test.
 IN_PROC_BROWSER_TEST_F(HasBeforeUnloadHandlerTest,
-                       NonEmptyBeforeUnloadDetected) {
+                       DISABLED_NonEmptyBeforeUnloadDetected) {
   TestDiscardBeforeUnloadHelper("/beforeunload.html",
                                 true /* has_beforeunload_helper */);
 }
