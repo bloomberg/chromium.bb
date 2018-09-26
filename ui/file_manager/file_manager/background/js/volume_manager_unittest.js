@@ -297,6 +297,30 @@ function testGetLocationInfo(callback) {
         assertFalse(teamDriveLocationInfo.isReadOnly);
         assertTrue(teamDriveLocationInfo.isRootEntry);
 
+        var driveFilesByIdDirectoryEntry = new MockDirectoryEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/.files-by-id/123');
+        var driveFilesByIdDirectoryLocationInfo =
+            volumeManager.getLocationInfo(driveFilesByIdDirectoryEntry);
+        assertEquals(
+            VolumeManagerCommon.RootType.DRIVE_OTHER,
+            driveFilesByIdDirectoryLocationInfo.rootType);
+        assertFalse(driveFilesByIdDirectoryLocationInfo.hasFixedLabel);
+        assertTrue(driveFilesByIdDirectoryLocationInfo.isReadOnly);
+        assertFalse(driveFilesByIdDirectoryLocationInfo.isRootEntry);
+
+        var driveFilesByIdEntry = new MockFileEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/.files-by-id/123/foo.txt');
+        var driveFilesByIdLocationInfo =
+            volumeManager.getLocationInfo(driveFilesByIdEntry);
+        assertEquals(
+            VolumeManagerCommon.RootType.DRIVE_OTHER,
+            driveFilesByIdLocationInfo.rootType);
+        assertFalse(driveFilesByIdLocationInfo.hasFixedLabel);
+        assertFalse(driveFilesByIdLocationInfo.isReadOnly);
+        assertFalse(driveFilesByIdLocationInfo.isRootEntry);
+
         var androidRoot =
             new MockFileEntry(new MockFileSystem('android_files:0'), '/');
         var androidRootLocationInfo =
