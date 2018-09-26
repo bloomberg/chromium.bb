@@ -262,7 +262,8 @@ void SVGLayoutSupport::ComputeContainerBoundingBoxes(
   }
 
   local_visual_rect = stroke_bounding_box;
-  AdjustVisualRectWithResources(*container, local_visual_rect);
+  AdjustVisualRectWithResources(*container, object_bounding_box,
+                                local_visual_rect);
 }
 
 const LayoutSVGRoot* SVGLayoutSupport::FindTreeRootObject(
@@ -386,26 +387,21 @@ bool SVGLayoutSupport::IsOverflowHidden(const ComputedStyle& style) {
 
 void SVGLayoutSupport::AdjustVisualRectWithResources(
     const LayoutObject& layout_object,
+    const FloatRect& object_bounding_box,
     FloatRect& visual_rect) {
   SVGResources* resources =
       SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
   if (!resources)
     return;
 
-  if (LayoutSVGResourceFilter* filter = resources->Filter()) {
-    visual_rect =
-        filter->ResourceBoundingBox(layout_object.ObjectBoundingBox());
-  }
+  if (LayoutSVGResourceFilter* filter = resources->Filter())
+    visual_rect = filter->ResourceBoundingBox(object_bounding_box);
 
-  if (LayoutSVGResourceClipper* clipper = resources->Clipper()) {
-    visual_rect.Intersect(
-        clipper->ResourceBoundingBox(layout_object.ObjectBoundingBox()));
-  }
+  if (LayoutSVGResourceClipper* clipper = resources->Clipper())
+    visual_rect.Intersect(clipper->ResourceBoundingBox(object_bounding_box));
 
-  if (LayoutSVGResourceMasker* masker = resources->Masker()) {
-    visual_rect.Intersect(
-        masker->ResourceBoundingBox(layout_object.ObjectBoundingBox()));
-  }
+  if (LayoutSVGResourceMasker* masker = resources->Masker())
+    visual_rect.Intersect(masker->ResourceBoundingBox(object_bounding_box));
 }
 
 bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
