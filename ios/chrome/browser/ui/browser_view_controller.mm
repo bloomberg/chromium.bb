@@ -208,10 +208,6 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui_broadcasting_util.h"
-#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_configuration_provider.h"
-#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -431,7 +427,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     TabModelObserver,
                                     TabStripPresentation,
                                     ToolbarHeightProviderForFullscreen,
-                                    ToolsMenuConfigurationProvider,
                                     UIGestureRecognizerDelegate,
                                     UpgradeCenterClient,
                                     VoiceSearchBarDelegate,
@@ -542,9 +537,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Native controller vended to tab before Tab is added to the tab model.
   __weak id _temporaryNativeController;
 
-  // Notifies the toolbar menu of reading list changes.
-  ReadingListMenuNotifier* _readingListMenuNotifier;
-
   // Coordinator for the share menu (Activity Services).
   ActivityServiceLegacyCoordinator* _activityServiceCoordinator;
 
@@ -620,8 +612,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong, readonly) DialogPresenter* dialogPresenter;
 // The object that manages keyboard commands on behalf of the BVC.
 @property(nonatomic, strong, readonly) KeyCommandsProvider* keyCommandsProvider;
-// Whether the sharing menu should be enabled.
-@property(nonatomic, assign, readonly) BOOL canShowShareMenu;
 // Helper method to check web controller canShowFindBar method.
 @property(nonatomic, assign, readonly) BOOL canShowFindBar;
 // Whether the controller's view is currently available.
@@ -1143,12 +1133,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return _keyCommandsProvider;
 }
 
-// Whether the sharing menu should be shown.
-- (BOOL)canShowShareMenu {
-  const GURL& URL = [_model currentTab].webState->GetLastCommittedURL();
-  return URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
-}
-
 - (BOOL)canShowFindBar {
   // Make sure web controller can handle find in page.
   Tab* tab = [_model currentTab];
@@ -1599,7 +1583,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.toolbarInterface = nil;
   self.tabStripView = nil;
   _infoBarContainer = nil;
-  _readingListMenuNotifier = nil;
   [_model removeObserver:self];
   [[UpgradeCenter sharedInstance] unregisterClient:self];
   if (_voiceSearchController)
@@ -4484,75 +4467,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (BOOL)shouldDisplayHintText {
   return [[_model currentTab].webController wantsLocationBarHintText];
-}
-
-#pragma mark - ToolsMenuConfigurationProvider
-
-- (void)prepareForToolsMenuPresentationByCoordinator:
-    (ToolsMenuCoordinator*)coordinator {
-  [self.dispatcher
-      prepareForPopupMenuPresentation:PopupMenuCommandTypeToolsMenu];
-}
-
-- (ToolsMenuConfiguration*)menuConfigurationForToolsMenuCoordinator:
-    (ToolsMenuCoordinator*)coordinator {
-  ToolsMenuConfiguration* configuration =
-      [[ToolsMenuConfiguration alloc] initWithDisplayView:[self view]
-                                       baseViewController:self];
-  configuration.requestStartTime = [NSDate date].timeIntervalSinceReferenceDate;
-
-  if ([_model count] == 0)
-    [configuration setNoOpenedTabs:YES];
-
-  if (_isOffTheRecord)
-    [configuration setInIncognito:YES];
-
-  if (!_readingListMenuNotifier) {
-    _readingListMenuNotifier = [[ReadingListMenuNotifier alloc]
-        initWithReadingList:ReadingListModelFactory::GetForBrowserState(
-                                _browserState)];
-  }
-
-  feature_engagement::Tracker* engagementTracker =
-      feature_engagement::TrackerFactory::GetForBrowserState(_browserState);
-  if (engagementTracker->ShouldTriggerHelpUI(
-          feature_engagement::kIPHBadgedReadingListFeature)) {
-    [configuration setShowReadingListNewBadge:YES];
-    [configuration setEngagementTracker:engagementTracker];
-  }
-  [configuration setReadingListMenuNotifier:_readingListMenuNotifier];
-
-  [configuration setUserAgentType:self.userAgentType];
-
-  if (self.bubblePresenter.incognitoTabTipBubblePresenter
-          .triggerFollowUpAction) {
-    [configuration setHighlightNewIncognitoTabCell:YES];
-    self.bubblePresenter.incognitoTabTipBubblePresenter.triggerFollowUpAction =
-        NO;
-  }
-
-  return configuration;
-}
-
-- (BOOL)shouldHighlightBookmarkButtonForToolsMenuCoordinator:
-    (ToolsMenuCoordinator*)coordinator {
-  return [self.helper isWebStateBookmarked:self.currentWebState];
-}
-
-- (BOOL)shouldShowFindBarForToolsMenuCoordinator:
-    (ToolsMenuCoordinator*)coordinator {
-  return [_model currentTab] ? self.canShowFindBar : NO;
-}
-
-- (BOOL)shouldShowShareMenuForToolsMenuCoordinator:
-    (ToolsMenuCoordinator*)coordinator {
-  return [_model currentTab] ? self.canShowShareMenu : NO;
-}
-
-- (BOOL)isTabLoadingForToolsMenuCoordinator:(ToolsMenuCoordinator*)coordinator {
-  return ([_model currentTab] && !IsIPadIdiom())
-             ? [self.helper isToolbarLoading:self.currentWebState]
-             : NO;
 }
 
 #pragma mark - BrowserCommands
