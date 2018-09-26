@@ -1179,6 +1179,14 @@ bool ShelfLayoutManager::IsShelfAutoHideForFullscreenMaximized() const {
          active_window->autohide_shelf_when_maximized_or_fullscreen();
 }
 
+bool ShelfLayoutManager::ShouldBlurShelfBackground() {
+  if (!IsBackgroundBlurEnabled())
+    return false;
+  if (!chromeos::switches::ShouldUseShelfNewUi())
+    return false;
+  return state_.session_state == session_manager::SessionState::ACTIVE;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, Gesture functions:
 

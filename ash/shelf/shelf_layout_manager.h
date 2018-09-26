@@ -148,6 +148,11 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns whether background blur is enabled.
   bool IsBackgroundBlurEnabled() { return is_background_blur_enabled_; }
 
+  // Returns whether the shelf should show a blurred background. This may
+  // return false even if background blur is enabled depending on the session
+  // state.
+  bool ShouldBlurShelfBackground();
+
   // Overridden from wm::WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
   void SetChildBounds(aura::Window* child,
