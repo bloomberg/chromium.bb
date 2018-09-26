@@ -3184,6 +3184,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--num-retries=3",
           "--debug",
           "--android",
           "--additional-driver-flag=--use-gpu-in-tests"

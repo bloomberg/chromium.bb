@@ -1511,7 +1511,8 @@
           "--additional-driver-flag",
           "--isolate-origins=http://www.web-platform.test:8001/,http://www1.web-platform.test:8001/,http://www2.web-platform.test:8001/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8001/,http://xn--lve-6lad.web-platform.test:8001/,http://www.web-platform.test:8081/,http://www1.web-platform.test:8081/,http://www2.web-platform.test:8081/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8081/,http://xn--lve-6lad.web-platform.test:8081/,https://www.web-platform.test:8444/,https://www1.web-platform.test:8444/,https://www2.web-platform.test:8444/,https://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8444/,https://xn--lve-6lad.web-platform.test:8444/",
           "--additional-expectations",
-          "src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process"
+          "src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process",
+          "--num-retries=3"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -1575,6 +1576,9 @@
         }
       },
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -2277,6 +2281,7 @@
       },
       {
         "args": [
+          "--num-retries=3",
           "--debug"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
@@ -4097,7 +4102,8 @@
           "--additional-driver-flag",
           "--isolate-origins=http://www.web-platform.test:8001/,http://www1.web-platform.test:8001/,http://www2.web-platform.test:8001/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8001/,http://xn--lve-6lad.web-platform.test:8001/,http://www.web-platform.test:8081/,http://www1.web-platform.test:8081/,http://www2.web-platform.test:8081/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8081/,http://xn--lve-6lad.web-platform.test:8081/,https://www.web-platform.test:8444/,https://www1.web-platform.test:8444/,https://www2.web-platform.test:8444/,https://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8444/,https://xn--lve-6lad.web-platform.test:8444/",
           "--additional-expectations",
-          "src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process"
+          "src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process",
+          "--num-retries=3"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -4181,6 +4187,9 @@
         }
       },
       {
+        "args": [
+          "--num-retries=3"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
