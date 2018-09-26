@@ -114,7 +114,13 @@ scoped_refptr<sandbox::TargetPolicy> GetSandboxPolicy(
     LOG_IF(ERROR, sandbox_result != sandbox::SBOX_ALL_OK)
         << "Failed to give the target process access to the product directory";
   }
-#endif
+
+  // Also let it write to stdout and stderr. (If they point to the Windows
+  // console, these calls will silently fail. But this will let output from the
+  // child be captured on the bots or in the msys terminal.)
+  policy->SetStdoutHandle(::GetStdHandle(STD_OUTPUT_HANDLE));
+  policy->SetStderrHandle(::GetStdHandle(STD_ERROR_HANDLE));
+#endif  // CHROME_CLEANER_OFFICIAL_BUILD
 
   policy->SetLockdownDefaultDacl();
 
