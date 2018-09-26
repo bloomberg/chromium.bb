@@ -33,11 +33,10 @@
 
 namespace blink {
 
-using SelectorTextCache =
-    PersistentHeapHashMap<WeakMember<const CSSStyleRule>, String>;
+using SelectorTextCache = HeapHashMap<WeakMember<const CSSStyleRule>, String>;
 
 static SelectorTextCache& GetSelectorTextCache() {
-  DEFINE_STATIC_LOCAL(SelectorTextCache, cache, ());
+  DEFINE_STATIC_LOCAL(SelectorTextCache, cache, (new SelectorTextCache));
   return cache;
 }
 

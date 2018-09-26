@@ -178,7 +178,8 @@ bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
 }
 
 static ResourceFetcher::ResourceFetcherSet& MainThreadFetchersSet() {
-  DEFINE_STATIC_LOCAL(ResourceFetcher::ResourceFetcherSet, fetchers, ());
+  DEFINE_STATIC_LOCAL(ResourceFetcher::ResourceFetcherSet, fetchers,
+                      (new ResourceFetcher::ResourceFetcherSet));
   return fetchers;
 }
 

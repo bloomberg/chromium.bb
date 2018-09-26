@@ -532,11 +532,11 @@ void CSSVariableResolver::ComputeRegisteredVariables() {
   Options options;
 
   if (inherited_variables_) {
-    for (auto& variable : inherited_variables_->registered_data_)
+    for (auto& variable : *inherited_variables_->registered_data_)
       ValueForCustomProperty(variable.key, options);
   }
   if (non_inherited_variables_) {
-    for (auto& variable : non_inherited_variables_->registered_data_)
+    for (auto& variable : *non_inherited_variables_->registered_data_)
       ValueForCustomProperty(variable.key, options);
   }
 }

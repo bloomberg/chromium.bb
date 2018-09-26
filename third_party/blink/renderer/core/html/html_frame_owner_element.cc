@@ -52,9 +52,9 @@ namespace blink {
 
 namespace {
 
-using PluginSet = PersistentHeapHashSet<Member<WebPluginContainerImpl>>;
+using PluginSet = HeapHashSet<Member<WebPluginContainerImpl>>;
 PluginSet& PluginsPendingDispose() {
-  DEFINE_STATIC_LOCAL(PluginSet, set, ());
+  DEFINE_STATIC_LOCAL(PluginSet, set, (new PluginSet));
   return set;
 }
 

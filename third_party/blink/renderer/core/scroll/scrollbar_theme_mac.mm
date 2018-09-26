@@ -97,19 +97,18 @@
 
 namespace blink {
 
-typedef PersistentHeapHashSet<WeakMember<Scrollbar>> ScrollbarSet;
+typedef HeapHashSet<WeakMember<Scrollbar>> ScrollbarSet;
 
 static ScrollbarSet& GetScrollbarSet() {
-  DEFINE_STATIC_LOCAL(ScrollbarSet, set, ());
+  DEFINE_STATIC_LOCAL(ScrollbarSet, set, (new ScrollbarSet));
   return set;
 }
 
-typedef PersistentHeapHashMap<WeakMember<Scrollbar>,
-                              RetainPtr<BlinkScrollbarObserver>>
+typedef HeapHashMap<WeakMember<Scrollbar>, RetainPtr<BlinkScrollbarObserver>>
     ScrollbarPainterMap;
 
 static ScrollbarPainterMap& GetScrollbarPainterMap() {
-  DEFINE_STATIC_LOCAL(ScrollbarPainterMap, map, ());
+  DEFINE_STATIC_LOCAL(ScrollbarPainterMap, map, (new ScrollbarPainterMap));
   return map;
 }
 

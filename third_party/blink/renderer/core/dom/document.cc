@@ -292,8 +292,7 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 #ifndef NDEBUG
-using WeakDocumentSet =
-    blink::PersistentHeapHashSet<blink::WeakMember<blink::Document>>;
+using WeakDocumentSet = blink::HeapHashSet<blink::WeakMember<blink::Document>>;
 static WeakDocumentSet& liveDocumentSet();
 #endif
 
@@ -7636,7 +7635,7 @@ template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 
 #ifndef NDEBUG
 static WeakDocumentSet& liveDocumentSet() {
-  DEFINE_STATIC_LOCAL(WeakDocumentSet, set, ());
+  DEFINE_STATIC_LOCAL(WeakDocumentSet, set, (new WeakDocumentSet));
   return set;
 }
 

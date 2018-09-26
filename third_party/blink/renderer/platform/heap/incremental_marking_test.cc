@@ -1757,46 +1757,6 @@ TEST(IncrementalMarkingTest, HasInlineCapacityCollectionWithHeapCompaction) {
   driver.FinishGC();
 }
 
-TEST(IncrementalMarkingTest, SlotDestruction) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  HeapCompact::ScheduleCompactionGCForTesting(true);
-  Vector<MovableReference*> ref(6);
-
-  {
-    Object* obj = Object::Create();
-    PersistentHeapHashSet<Member<Object>> p_hashset;
-    PersistentHeapHashMap<Member<Object>, Member<Object>> p_hashmap;
-    PersistentHeapLinkedHashSet<Member<Object>> p_linkedhashset;
-    PersistentHeapListHashSet<Member<Object>> p_listhashset;
-    PersistentHeapHashCountedSet<Member<Object>> p_hashcountedset;
-    PersistentHeapDeque<Member<Object>> p_deque;
-
-    p_hashset.insert(obj);
-    p_hashmap.insert(obj, obj);
-    p_linkedhashset.insert(obj);
-    p_listhashset.insert(obj);
-    p_hashcountedset.insert(obj);
-    p_deque.push_back(obj);
-
-    ref[0] = reinterpret_cast<MovableReference*>(&p_hashset);
-    ref[1] = reinterpret_cast<MovableReference*>(&p_hashmap);
-    ref[2] = reinterpret_cast<MovableReference*>(&p_linkedhashset);
-    ref[3] = reinterpret_cast<MovableReference*>(&p_listhashset);
-    ref[4] = reinterpret_cast<MovableReference*>(&p_hashcountedset);
-    ref[5] = reinterpret_cast<MovableReference*>(&p_deque);
-
-    driver.Start();
-    driver.FinishSteps();
-
-    for (size_t i = 0; i < ref.size(); ++i) {
-      EXPECT_TRUE(driver.GetTracedSlot().Contains(ref[i]));
-    }
-  }
-  for (size_t i = 0; i < ref.size(); ++i) {
-    EXPECT_FALSE(driver.GetTracedSlot().Contains(ref[i]));
-  }
-}
-
 }  // namespace incremental_marking_test
 }  // namespace blink
 

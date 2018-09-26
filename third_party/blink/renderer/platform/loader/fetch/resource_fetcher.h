@@ -185,7 +185,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void SetStaleWhileRevalidateEnabled(bool enabled);
 
-  using ResourceFetcherSet = PersistentHeapHashSet<WeakMember<ResourceFetcher>>;
+  using ResourceFetcherSet = HeapHashSet<WeakMember<ResourceFetcher>>;
   static const ResourceFetcherSet& MainThreadFetchers();
 
  private:

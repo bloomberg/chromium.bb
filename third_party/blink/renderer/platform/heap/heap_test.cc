@@ -4092,79 +4092,6 @@ TEST(HeapTest, CheckAndMarkPointer) {
 #endif
 }
 
-TEST(HeapTest, PersistentHeapCollectionTypes) {
-  IntWrapper::destructor_calls_ = 0;
-
-  typedef PersistentHeapHashSet<Member<IntWrapper>> PSet;
-  typedef PersistentHeapListHashSet<Member<IntWrapper>> PListSet;
-  typedef PersistentHeapLinkedHashSet<Member<IntWrapper>> PLinkedSet;
-  typedef PersistentHeapHashMap<Member<IntWrapper>, Member<IntWrapper>> PMap;
-  typedef PersistentHeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper>>
-      WeakPMap;
-  typedef PersistentHeapDeque<Member<IntWrapper>> PDeque;
-
-  ClearOutOldGarbage();
-  {
-    PDeque p_deque;
-    PSet p_set;
-    PListSet p_list_set;
-    PLinkedSet p_linked_set;
-    PMap p_map;
-    WeakPMap wp_map;
-
-    IntWrapper* two(IntWrapper::Create(2));
-    IntWrapper* four(IntWrapper::Create(4));
-    IntWrapper* five(IntWrapper::Create(5));
-    IntWrapper* six(IntWrapper::Create(6));
-    IntWrapper* seven(IntWrapper::Create(7));
-    IntWrapper* eight(IntWrapper::Create(8));
-    IntWrapper* nine(IntWrapper::Create(9));
-    Persistent<IntWrapper> ten(IntWrapper::Create(10));
-    IntWrapper* eleven(IntWrapper::Create(11));
-
-    p_deque.push_back(seven);
-    p_deque.push_back(two);
-
-    p_set.insert(four);
-    p_list_set.insert(eight);
-    p_linked_set.insert(nine);
-    p_map.insert(five, six);
-    wp_map.insert(ten, eleven);
-
-    PreciselyCollectGarbage();
-    EXPECT_EQ(0, IntWrapper::destructor_calls_);
-
-    EXPECT_EQ(2u, p_deque.size());
-    EXPECT_EQ(seven, p_deque.front());
-    EXPECT_EQ(seven, p_deque.TakeFirst());
-    EXPECT_EQ(two, p_deque.front());
-
-    EXPECT_EQ(1u, p_deque.size());
-
-    EXPECT_EQ(1u, p_set.size());
-    EXPECT_TRUE(p_set.Contains(four));
-
-    EXPECT_EQ(1u, p_list_set.size());
-    EXPECT_TRUE(p_list_set.Contains(eight));
-
-    EXPECT_EQ(1u, p_linked_set.size());
-    EXPECT_TRUE(p_linked_set.Contains(nine));
-
-    EXPECT_EQ(1u, p_map.size());
-    EXPECT_EQ(six, p_map.at(five));
-
-    EXPECT_EQ(1u, wp_map.size());
-    EXPECT_EQ(eleven, wp_map.at(ten));
-    ten.Clear();
-    PreciselyCollectGarbage();
-    EXPECT_EQ(0u, wp_map.size());
-  }
-
-  // Collect previous roots.
-  PreciselyCollectGarbage();
-  EXPECT_EQ(9, IntWrapper::destructor_calls_);
-}
-
 TEST(HeapTest, CollectionNesting) {
   ClearOutOldGarbage();
   int* key = &IntWrapper::destructor_calls_;
@@ -4225,10 +4152,11 @@ TEST(HeapTest, GarbageCollectedMixin) {
   PreciselyCollectGarbage();
   EXPECT_EQ(2, UseMixin::trace_count_);
 
-  PersistentHeapHashSet<WeakMember<Mixin>> weak_map;
-  weak_map.insert(UseMixin::Create());
+  Persistent<HeapHashSet<WeakMember<Mixin>>> weak_map =
+      new HeapHashSet<WeakMember<Mixin>>;
+  weak_map->insert(UseMixin::Create());
   PreciselyCollectGarbage();
-  EXPECT_EQ(0u, weak_map.size());
+  EXPECT_EQ(0u, weak_map->size());
 }
 
 TEST(HeapTest, CollectionNesting2) {
@@ -4314,20 +4242,23 @@ TEST(HeapTest, EmbeddedInDeque) {
   ClearOutOldGarbage();
   SimpleFinalizedObject::destructor_calls_ = 0;
   {
-    PersistentHeapDeque<VectorObject, 2> inline_deque;
-    PersistentHeapDeque<VectorObject> outline_deque;
+    Persistent<HeapDeque<VectorObject, 2>> inline_deque =
+        new HeapDeque<VectorObject, 2>;
+    Persistent<HeapDeque<VectorObject>> outline_deque =
+        new HeapDeque<VectorObject>;
     VectorObject i1, i2;
-    inline_deque.push_back(i1);
-    inline_deque.push_back(i2);
+    inline_deque->push_back(i1);
+    inline_deque->push_back(i2);
 
     VectorObject o1, o2;
-    outline_deque.push_back(o1);
-    outline_deque.push_back(o2);
+    outline_deque->push_back(o1);
+    outline_deque->push_back(o2);
 
-    PersistentHeapDeque<VectorObjectInheritedTrace> deque_inherited_trace;
+    Persistent<HeapDeque<VectorObjectInheritedTrace>> deque_inherited_trace =
+        new HeapDeque<VectorObjectInheritedTrace>;
     VectorObjectInheritedTrace it1, it2;
-    deque_inherited_trace.push_back(it1);
-    deque_inherited_trace.push_back(it2);
+    deque_inherited_trace->push_back(it1);
+    deque_inherited_trace->push_back(it2);
 
     PreciselyCollectGarbage();
     EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);

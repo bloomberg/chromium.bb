@@ -94,11 +94,11 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
   FilterData* GetFilterDataForClient(const SVGResourceClient* client) {
-    return filter_.at(const_cast<SVGResourceClient*>(client));
+    return filter_->at(const_cast<SVGResourceClient*>(client));
   }
   void SetFilterDataForClient(const SVGResourceClient* client,
                               FilterData* filter_data) {
-    filter_.Set(const_cast<SVGResourceClient*>(client), filter_data);
+    filter_->Set(const_cast<SVGResourceClient*>(client), filter_data);
   }
 
  protected:
@@ -107,9 +107,8 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
  private:
   void DisposeFilterMap();
 
-  using FilterMap =
-      PersistentHeapHashMap<Member<SVGResourceClient>, Member<FilterData>>;
-  FilterMap filter_;
+  using FilterMap = HeapHashMap<Member<SVGResourceClient>, Member<FilterData>>;
+  Persistent<FilterMap> filter_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceFilter, IsSVGResourceFilter());
