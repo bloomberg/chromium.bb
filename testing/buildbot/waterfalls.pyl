@@ -2164,6 +2164,45 @@
           'gtest_tests': 'gpu_angle_deqp_linux_nvidia_gtests',
         },
       },
+      'Mac FYI 10.14 Release (AMD)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'swarming_mixins': [
+          'amd_8870m',
+          'gpu_pool',
+          'mac_10.14',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+        },
+      },
+      'Mac FYI 10.14 Release (Intel)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'swarming_mixins': [
+          'gpu_pool',
+          'intel_iris_5100',
+          'mac_10.14',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+        },
+      },
+      'Mac FYI 10.14 Release (NVIDIA)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'swarming_mixins': [
+          'gpu_pool',
+          'mac_10.14',
+          'nvidia_750m_mac_edition',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+        },
+      },
       'Mac FYI Debug (Intel)': {
         'os_type': 'mac',
         'browser_config': 'debug',
