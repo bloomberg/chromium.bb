@@ -659,7 +659,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   if (!cm->large_scale_tile) pbi->camera_frame_header_ready = 0;
 
   // decode frame as a series of OBUs
-  while (!frame_decoding_finished && !cm->error.error_code) {
+  while (!frame_decoding_finished && cm->error.error_code == AOM_CODEC_OK) {
     struct aom_read_bit_buffer rb;
     size_t payload_size = 0;
     size_t decoded_payload_size = 0;
@@ -769,6 +769,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         if (obu_header.type != OBU_FRAME) break;
         obu_payload_offset = frame_header_size;
         // Byte align the reader before reading the tile group.
+        // byte_alignment() has set cm->error.error_code if it returns -1.
         if (byte_alignment(cm, &rb)) return -1;
         AOM_FALLTHROUGH_INTENDED;  // fall through to read tile group.
       case OBU_TILE_GROUP:
@@ -835,5 +836,6 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     data += payload_size;
   }
 
+  if (cm->error.error_code != AOM_CODEC_OK) return -1;
   return frame_decoding_finished;
 }

@@ -499,7 +499,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   int frame_decoded =
       aom_decode_frame_from_obus(pbi, source, source + size, psource);
 
-  if (cm->error.error_code != AOM_CODEC_OK) {
+  if (frame_decoded < 0) {
+    assert(cm->error.error_code != AOM_CODEC_OK);
     lock_buffer_pool(pool);
     decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
     unlock_buffer_pool(pool);
