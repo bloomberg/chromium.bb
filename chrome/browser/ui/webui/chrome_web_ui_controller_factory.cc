@@ -179,13 +179,13 @@
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
-#include "chrome/browser/ui/webui/welcome_ui.h"
+#include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 #endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/webui/conflicts/conflicts_ui.h"
 #include "chrome/browser/ui/webui/set_as_default_browser_ui_win.h"
-#include "chrome/browser/ui/webui/welcome_win10_ui.h"
+#include "chrome/browser/ui/webui/welcome/welcome_win10_ui.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)

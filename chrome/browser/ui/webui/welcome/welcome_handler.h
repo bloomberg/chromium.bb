@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_WELCOME_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_WELCOME_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_WELCOME_WELCOME_HANDLER_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -57,4 +57,4 @@ class WelcomeHandler : public content::WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(WelcomeHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_WELCOME_HANDLER_H_
