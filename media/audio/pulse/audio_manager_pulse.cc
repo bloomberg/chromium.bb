@@ -169,12 +169,11 @@ std::string AudioManagerPulse::GetDefaultInputDeviceID() {
 }
 
 std::string AudioManagerPulse::GetDefaultOutputDeviceID() {
-#if defined(OS_CHROMEOS)
+  // Do not use the real default output device since it is a fallback
+  // device rather than a default device. Using the default output device
+  // reported by Pulse Audio prevents, for example, output redirection
+  // using the PULSE_SINK environment variable.
   return AudioManagerBase::GetDefaultOutputDeviceID();
-#else
-  return pulse::GetRealDefaultDeviceId(input_mainloop_, input_context_,
-                                       pulse::RequestType::OUTPUT);
-#endif
 }
 
 std::string AudioManagerPulse::GetAssociatedOutputDeviceID(
