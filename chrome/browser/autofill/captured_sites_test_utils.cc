@@ -546,6 +546,14 @@ bool TestRecipeReplayer::ReplayRecordedActions(
 // JSON object.
 bool TestRecipeReplayer::InitializeBrowserToExecuteRecipe(
     std::unique_ptr<base::DictionaryValue>& recipe) {
+  // Setup any saved address and credit card at the start of the test.
+  const base::Value* autofill_profile_container =
+      recipe->FindKey("autofillProfile");
+
+  if (autofill_profile_container &&
+      !SetupSavedAutofillProfile(*autofill_profile_container))
+    return false;
+
   // Setup any saved passwords at the start of the test.
   const base::Value* saved_password_container =
       recipe->FindKey("passwordManagerProfiles");
@@ -1412,6 +1420,45 @@ bool TestRecipeReplayer::HasChromeStoredCredential(
   return true;
 }
 
+bool TestRecipeReplayer::SetupSavedAutofillProfile(
+    const base::Value& saved_autofill_profile_container) {
+  if (base::Value::Type::LIST != saved_autofill_profile_container.type()) {
+    ADD_FAILURE() << "Save Autofill Profile is not a list!";
+    return false;
+  }
+
+  const base::Value::ListStorage& profile_entries_list =
+      saved_autofill_profile_container.GetList();
+  for (base::ListValue::const_iterator it_entry = profile_entries_list.begin();
+       it_entry != profile_entries_list.end(); ++it_entry) {
+    const base::DictionaryValue* entry;
+    if (!it_entry->GetAsDictionary(&entry)) {
+      ADD_FAILURE() << "Failed to extract an entry!";
+      return false;
+    }
+
+    const base::Value* type_container = entry->FindKey("type");
+    if (base::Value::Type::STRING != type_container->type()) {
+      ADD_FAILURE() << "Type is not a string!";
+      return false;
+    }
+    const std::string type = type_container->GetString();
+
+    const base::Value* value_container = entry->FindKey("value");
+    if (base::Value::Type::STRING != value_container->type()) {
+      ADD_FAILURE() << "Value is not a string!";
+      return false;
+    }
+    const std::string value = value_container->GetString();
+
+    if (!feature_action_executor()->AddAutofillProfileInfo(type, value)) {
+      return false;
+    }
+  }
+
+  return feature_action_executor()->SetupAutofillProfile();
+}
+
 bool TestRecipeReplayer::SetupSavedPasswords(
     const base::Value& saved_password_list_container) {
   if (base::Value::Type::LIST != saved_password_list_container.type()) {
@@ -1471,6 +1518,20 @@ bool TestRecipeReplayChromeFeatureActionExecutor::AutofillForm(
     const int attempts) {
   ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor::AutofillForm "
                    "is not implemented!";
+  return false;
+}
+
+bool TestRecipeReplayChromeFeatureActionExecutor::AddAutofillProfileInfo(
+    const std::string& field_type,
+    const std::string& field_value) {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor"
+                   "::AddAutofillProfileInfo is not implemented!";
+  return false;
+}
+
+bool TestRecipeReplayChromeFeatureActionExecutor::SetupAutofillProfile() {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor"
+                   "::SetupAutofillProfile is not implemented!";
   return false;
 }
 
