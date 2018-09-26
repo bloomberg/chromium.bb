@@ -592,9 +592,7 @@ void FileSystemManagerImpl::CreateWriter(const GURL& file_path,
   std::move(callback).Run(base::File::FILE_OK, std::move(writer));
 }
 
-void FileSystemManagerImpl::ChooseEntry(
-    blink::mojom::ChooseFileSystemEntryType type,
-    ChooseEntryCallback callback) {
+void FileSystemManagerImpl::ChooseEntry(ChooseEntryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
     bindings_.ReportBadMessage("FSMI_WRITABLE_FILES_DISABLED");
@@ -604,7 +602,7 @@ void FileSystemManagerImpl::ChooseEntry(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
-          &FileSystemChooser::CreateAndShow, process_id_, frame_id_, type,
+          &FileSystemChooser::CreateAndShow, process_id_, frame_id_,
           std::move(callback),
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
 }

@@ -135,8 +135,7 @@ static_assert(
 
 ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
     ScriptState* script_state,
-    LocalDOMWindow& window,
-    const ChooseFileSystemEntriesOptions& options) {
+    LocalDOMWindow& window) {
   if (!window.IsCurrentlyDisplayedInFrame()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kAbortError));
@@ -158,7 +157,7 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
 
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
-  LocalFileSystem::From(*document)->ChooseEntry(resolver, options);
+  LocalFileSystem::From(*document)->ChooseEntry(resolver);
   return result;
 }
 
