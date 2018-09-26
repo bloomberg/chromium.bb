@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.explore_sites;
 
 import android.content.Context;
-import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.browser.ntp.TitleUtil;
@@ -36,7 +35,7 @@ public class ExploreSitesCategoryTileView extends TileWithTextView {
      */
     public void initialize(ExploreSitesCategory category) {
         super.initialize(TitleUtil.getTitleForDisplay(category.getTitle(), category.getUrl()),
-                SUPPORTED_OFFLINE, new BitmapDrawable(category.getIcon()), TITLE_LINES);
+                SUPPORTED_OFFLINE, category.getDrawable(), TITLE_LINES);
         mCategory = category;
     }
 
@@ -48,6 +47,6 @@ public class ExploreSitesCategoryTileView extends TileWithTextView {
     /** Renders icon based on tile data.  */
     public void renderIcon(ExploreSitesCategory category) {
         mCategory = category;
-        setIconDrawable(new BitmapDrawable(getResources(), category.getIcon()));
+        setIconDrawable(category.getDrawable());
     }
 }
