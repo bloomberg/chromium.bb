@@ -13,10 +13,6 @@
 #include "webrunner/browser/context_impl.h"
 #include "webrunner/fidl/chromium/web/cpp/fidl.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace webrunner {
 
 // Base test class used for testing the WebRunner Context FIDL service in

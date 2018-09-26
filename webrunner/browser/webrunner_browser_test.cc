@@ -5,6 +5,7 @@
 #include "webrunner/browser/webrunner_browser_test.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "webrunner/browser/webrunner_browser_context.h"
 #include "webrunner/browser/webrunner_browser_main_parts.h"
 #include "webrunner/browser/webrunner_content_browser_client.h"
@@ -26,6 +27,7 @@ void WebRunnerBrowserTest::PreRunTestOnMainThread() {
   ZX_DCHECK(result == ZX_OK, result) << "Context::Bind";
   g_context_channel = ZX_HANDLE_INVALID;
 
+  net::test_server::RegisterDefaultHandlers(embedded_test_server());
   embedded_test_server()->ServeFilesFromSourceDirectory(
       "webrunner/browser/test/data");
 }

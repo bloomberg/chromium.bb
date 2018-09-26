@@ -68,8 +68,11 @@
 
 #if defined(OS_FUCHSIA)
 #include <lib/zx/job.h>
+#include "base/base_paths_fuchsia.h"
 #include "base/fuchsia/default_job.h"
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/path_service.h"
 #endif
 
 namespace base {
@@ -320,10 +323,47 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 #elif defined(OS_FUCHSIA)
   DCHECK(!new_options.job_handle);
 
+  // Set the clone policy, deliberately omitting FDIO_SPAWN_CLONE_NAMESPACE so
+  // that we can install a different /data.
+  new_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO | FDIO_SPAWN_CLONE_JOB;
+  new_options.paths_to_clone.push_back(base::FilePath("/config/ssl"));
+  new_options.paths_to_clone.push_back(base::FilePath("/dev/null"));
+  new_options.paths_to_clone.push_back(base::FilePath("/dev/zero"));
+  new_options.paths_to_clone.push_back(base::FilePath("/pkg"));
+  new_options.paths_to_clone.push_back(base::FilePath("/svc"));
+  new_options.paths_to_clone.push_back(base::FilePath("/tmp"));
+
   zx::job job_handle;
   zx_status_t result = zx::job::create(*GetDefaultJob(), 0, &job_handle);
   ZX_CHECK(ZX_OK == result, result) << "zx_job_create";
   new_options.job_handle = job_handle.get();
+
+  // Give this test its own isolated /data directory by creating a new temporary
+  // subdirectory under data (/data/test-$PID) and binding that to /data on the
+  // child process.
+  base::FilePath data_path("/data");
+  CHECK(base::PathExists(data_path));
+
+  // Create the test subdirectory with a name that is unique to the child test
+  // process (qualified by parent PID and an autoincrementing test process
+  // index).
+  static size_t child_launch_index = 0;
+  base::FilePath nested_data_path = data_path.AppendASCII(
+      base::StringPrintf("test-%" PRIuS "-%" PRIuS,
+                         base::Process::Current().Pid(), child_launch_index));
+  ++child_launch_index;
+  CHECK(!base::DirectoryExists(nested_data_path));
+  CHECK(base::CreateDirectory(nested_data_path));
+  DCHECK(base::DirectoryExists(nested_data_path));
+
+  // Bind the new test subdirectory to /data in the child process' namespace.
+  new_options.paths_to_transfer.push_back(
+      {data_path, base::fuchsia::GetHandleFromFile(
+                      base::File(nested_data_path,
+                                 base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                     base::File::FLAG_DELETE_ON_CLOSE))
+                      .release()});
+
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_LINUX)
@@ -402,6 +442,10 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 #if defined(OS_FUCHSIA)
     zx_status_t status = job_handle.kill();
     ZX_CHECK(status == ZX_OK, status);
+
+    // The child process' data dir should have been deleted automatically,
+    // thanks to the DELETE_ON_CLOSE flag.
+    DCHECK(!base::DirectoryExists(nested_data_path));
 #elif defined(OS_POSIX)
     if (exit_code != 0) {
       // On POSIX, in case the test does not exit cleanly, either due to a crash

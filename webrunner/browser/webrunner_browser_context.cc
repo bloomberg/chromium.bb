@@ -161,7 +161,7 @@ net::URLRequestContextGetter* WebRunnerBrowserContext::CreateRequestContext(
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO}),
       net_log_.get(), std::move(*protocol_handlers),
-      std::move(request_interceptors));
+      std::move(request_interceptors), data_dir_path_);
   resource_context_->set_url_request_context_getter(url_request_getter_);
   return url_request_getter_.get();
 }
