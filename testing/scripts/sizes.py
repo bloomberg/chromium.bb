@@ -50,12 +50,44 @@ def main_run(script_args):
       sizes_cmd.extend(['--platform', args.platform])
     rc = common.run_runtest(script_args, runtest_args + sizes_cmd)
     with open(tempfile_path) as f:
-      failures = json.load(f)
+      results = json.load(f)
+
+  with open(os.path.join(common.SRC_DIR, 'tools', 'perf_expectations',
+                         'perf_expectations.json')) as f:
+    perf_expectations = json.load(f)
+
+  valid = (rc == 0)
+  failures = []
+
+  for name, result in results.iteritems():
+    fqtn = '%s/%s/%s' % (args.prefix, name, result['identifier'])
+    if fqtn not in perf_expectations:
+      continue
+
+    if perf_expectations[fqtn]['type'] != 'absolute':
+      print 'ERROR: perf expectation %r is not yet supported' % fqtn
+      valid = False
+      continue
+
+    actual = result['value']
+    expected = perf_expectations[fqtn]['regress']
+    better = perf_expectations[fqtn]['better']
+    check_result = ((actual <= expected) if better == 'lower'
+                    else (actual >= expected))
+
+    if not check_result:
+      failures.append(fqtn)
+      print 'FAILED %s: actual %s, expected %s, better %s' % (
+          fqtn, actual, expected, better)
 
   json.dump({
-      'valid': rc == 0,
+      'valid': valid,
       'failures': failures,
   }, script_args.output)
+
+  # sizes.py itself doesn't fail on regressions.
+  if failures and rc == 0:
+    rc = 1
 
   return rc
 

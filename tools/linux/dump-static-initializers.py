@@ -38,10 +38,8 @@ NOTES = {
 IS_GIT_WORKSPACE = (subprocess.Popen(
     ['git', 'rev-parse'], stderr=subprocess.PIPE).wait() == 0)
 
-
 class Demangler(object):
   """A wrapper around c++filt to provide a function to demangle symbols."""
-
   def __init__(self, toolchain):
     self.cppfilt = subprocess.Popen([toolchain + 'c++filt'],
                                     stdin=subprocess.PIPE,
@@ -51,7 +49,6 @@ class Demangler(object):
     """Given mangled symbol |sym|, return its demangled form."""
     self.cppfilt.stdin.write(sym + '\n')
     return self.cppfilt.stdout.readline().strip()
-
 
 # Matches for example: "cert_logger.pb.cc", capturing "cert_logger".
 protobuf_filename_re = re.compile(r'(.*)\.pb\.cc$')
@@ -74,7 +71,6 @@ def QualifyFilenameAsProto(filename):
       return filename # Multiple hits, can't help.
     candidate = line.strip()
   return candidate
-
 
 # Regex matching the substring of a symbol's demangled text representation most
 # likely to appear in a source file.
@@ -103,7 +99,6 @@ def QualifyFilename(filename, symbol):
     candidate = line.strip()
   return candidate
 
-
 # Regex matching nm output for the symbols we're interested in.
 # See test_ParseNmLine for examples.
 nm_re = re.compile(r'(\S+) (\S+) t (?:_ZN12)?_GLOBAL__(?:sub_)?I_(.*)')
@@ -128,7 +123,6 @@ def test_ParseNmLine():
     '_GLOBAL__sub_I_extension_specifics.pb.cc')
   assert parse == ('extension_specifics.pb.cc', 40607408, 36), parse
 
-
 # Just always run the test; it is fast enough.
 test_ParseNmLine()
 
@@ -141,7 +135,6 @@ def ParseNm(toolchain, binary):
     parse = ParseNmLine(line)
     if parse:
       yield parse
-
 
 # Regex matching objdump output for the symbols we're interested in.
 # Example line:
@@ -165,13 +158,12 @@ def ExtractSymbolReferences(toolchain, binary, start, end):
       if ref.startswith('.LC') or ref.startswith('_DYNAMIC'):
         # Ignore these, they are uninformative.
         continue
-      if re.match('_GLOBAL__(?:sub_)?I_', ref):
+      if ref.startswith('_GLOBAL__I_'):
         # Probably a relative jump within this function.
         continue
       refs.add(ref)
 
   return sorted(refs)
-
 
 def main():
   parser = optparse.OptionParser(usage='%prog [option] filename')
@@ -243,7 +235,6 @@ def main():
                                                        file_count)
 
   return 0
-
 
 if '__main__' == __name__:
   sys.exit(main())
