@@ -32,6 +32,7 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
     // The hidden attribute is not in the element.attributes even if
     // element.hasAttribute('hidden') is true.
     hidden: !!element.hidden,
+    hasShadowRoot: !!element.shadowRoot
   };
 
   const styleNames = opt_styleNames || [];
