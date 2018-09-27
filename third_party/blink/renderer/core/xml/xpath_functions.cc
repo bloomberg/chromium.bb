@@ -41,7 +41,7 @@
 #include <limits>
 
 namespace blink {
-namespace XPath {
+namespace xpath {
 
 static inline bool IsWhitespace(UChar c) {
   return c == ' ' || c == '\n' || c == '\r' || c == '\t';
@@ -770,5 +770,5 @@ Function* CreateFunction(const String& name,
   return function;
 }
 
-}  // namespace XPath
+}  // namespace xpath
 }  // namespace blink

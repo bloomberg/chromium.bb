@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
-namespace XPath {
+namespace xpath {
 
 const Value::AdoptTag Value::kAdopt = {};
 
@@ -138,5 +138,5 @@ String Value::ToString() const {
   return String();
 }
 
-}  // namespace XPath
+}  // namespace xpath
 }  // namespace blink
