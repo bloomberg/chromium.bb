@@ -5,6 +5,8 @@
 #include "net/dns/dns_response.h"
 
 #include <limits>
+#include <numeric>
+#include <vector>
 
 #include "base/big_endian.h"
 #include "base/strings/string_util.h"
@@ -16,6 +18,7 @@
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/record_rdata.h"
 
 namespace net {
 
@@ -25,9 +28,15 @@ const size_t kHeaderSize = sizeof(dns_protocol::Header);
 
 const uint8_t kRcodeMask = 0xf;
 
+// RFC 1035, Section 4.1.3.
+// TYPE (2 bytes) + CLASS (2 bytes) + TTL (4 bytes) + RDLENGTH (2 bytes)
+const size_t kResourceRecordSizeInBytesWithoutNameAndRData = 10;
+
 }  // namespace
 
 DnsResourceRecord::DnsResourceRecord() = default;
+
+DnsResourceRecord::DnsResourceRecord(const DnsResourceRecord& other) = default;
 
 DnsResourceRecord::~DnsResourceRecord() = default;
 
@@ -150,12 +159,74 @@ bool DnsRecordParser::SkipQuestion() {
   return true;
 }
 
+DnsResponse::DnsResponse(uint16_t id,
+                         bool is_authoritative,
+                         const std::vector<DnsResourceRecord>& answers,
+                         const base::Optional<DnsQuery>& query) {
+  bool has_query = query.has_value();
+  dns_protocol::Header header;
+  header.id = id;
+  bool success = true;
+  if (has_query) {
+    success &= (id == query.value().id());
+    DCHECK(success);
+    // DnsQuery only supports a single question.
+    header.qdcount = 1;
+  }
+  header.flags |= dns_protocol::kFlagResponse;
+  if (is_authoritative) {
+    header.flags |= dns_protocol::kFlagAA;
+  }
+  header.ancount = answers.size();
+
+  // Response starts with the header and the question section (if any).
+  size_t response_size =
+      has_query ? query.value().io_buffer()->size() : sizeof(header);
+  // Add the size of all answers.
+  response_size = std::accumulate(
+      answers.begin(), answers.end(), response_size,
+      [](size_t cur_size, const DnsResourceRecord& answer) {
+        bool has_final_dot = answer.name.back() == '.';
+        // Depending on if answer.name in the dotted format has the final dot
+        // for the root domain or not, the corresponding DNS domain name format
+        // to be written to rdata is 1 byte (with dot) or 2 bytes larger in
+        // size. See RFC 1035, Section 3.1 and DNSDomainFromDot.
+        return cur_size + answer.name.size() + (has_final_dot ? 1 : 2) +
+               kResourceRecordSizeInBytesWithoutNameAndRData +
+               answer.rdata.size();
+      });
+
+  io_buffer_ = base::MakeRefCounted<IOBuffer>(response_size);
+  io_buffer_size_ = response_size;
+  base::BigEndianWriter writer(io_buffer_->data(), io_buffer_size_);
+  success &= WriteHeader(&writer, header);
+  DCHECK(success);
+  if (has_query) {
+    success &= WriteQuestion(&writer, query.value());
+    DCHECK(success);
+  }
+  for (const auto& answer : answers) {
+    success &= WriteAnswer(&writer, answer, query);
+    DCHECK(success);
+  }
+  if (!success) {
+    io_buffer_.reset();
+    io_buffer_size_ = 0;
+    return;
+  }
+  if (has_query) {
+    InitParse(io_buffer_size_, query.value());
+  } else {
+    InitParseWithoutQuery(io_buffer_size_);
+  }
+}
+
 DnsResponse::DnsResponse()
     : io_buffer_(base::MakeRefCounted<IOBuffer>(dns_protocol::kMaxUDPSize + 1)),
       io_buffer_size_(dns_protocol::kMaxUDPSize + 1) {}
 
-DnsResponse::DnsResponse(IOBuffer* buffer, size_t size)
-    : io_buffer_(buffer), io_buffer_size_(size) {}
+DnsResponse::DnsResponse(scoped_refptr<IOBuffer> buffer, size_t size)
+    : io_buffer_(std::move(buffer)), io_buffer_size_(size) {}
 
 DnsResponse::DnsResponse(size_t length)
     : io_buffer_(base::MakeRefCounted<IOBuffer>(length)),
@@ -174,7 +245,7 @@ DnsResponse::~DnsResponse() = default;
 bool DnsResponse::InitParse(size_t nbytes, const DnsQuery& query) {
   // Response includes query, it should be at least that size.
   if (nbytes < static_cast<size_t>(query.io_buffer()->size()) ||
-      nbytes >= io_buffer_size_) {
+      nbytes > io_buffer_size_) {
     return false;
   }
 
@@ -200,7 +271,7 @@ bool DnsResponse::InitParse(size_t nbytes, const DnsQuery& query) {
 }
 
 bool DnsResponse::InitParseWithoutQuery(size_t nbytes) {
-  if (nbytes < kHeaderSize || nbytes >= io_buffer_size_) {
+  if (nbytes < kHeaderSize || nbytes > io_buffer_size_) {
     return false;
   }
 
@@ -348,6 +419,42 @@ DnsResponse::Result DnsResponse::ParseToAddressList(
                                                     expected_name);
   *ttl = base::TimeDelta::FromSeconds(ttl_sec);
   return DNS_PARSE_OK;
+}
+
+bool DnsResponse::WriteHeader(base::BigEndianWriter* writer,
+                              const dns_protocol::Header& header) {
+  return writer->WriteU16(header.id) && writer->WriteU16(header.flags) &&
+         writer->WriteU16(header.qdcount) && writer->WriteU16(header.ancount) &&
+         writer->WriteU16(header.nscount) && writer->WriteU16(header.arcount);
+}
+
+bool DnsResponse::WriteQuestion(base::BigEndianWriter* writer,
+                                const DnsQuery& query) {
+  const base::StringPiece& question = query.question();
+  return writer->WriteBytes(question.data(), question.size());
+}
+
+bool DnsResponse::WriteAnswer(base::BigEndianWriter* writer,
+                              const DnsResourceRecord& answer,
+                              const base::Optional<DnsQuery>& query) {
+  if (query.has_value() && answer.type != query.value().qtype()) {
+    VLOG(1) << "Mismatched answer resource record type and qtype.";
+    return false;
+  }
+  if (!RecordRdata::HasValidSize(answer.rdata, answer.type)) {
+    VLOG(1) << "Invalid RDATA size for an answer.";
+    return false;
+  }
+  std::string domain_name;
+  if (!DNSDomainFromDot(answer.name, &domain_name)) {
+    VLOG(1) << "Invalid dotted name.";
+    return false;
+  }
+  return writer->WriteBytes(domain_name.data(), domain_name.size()) &&
+         writer->WriteU16(answer.type) && writer->WriteU16(answer.klass) &&
+         writer->WriteU32(answer.ttl) &&
+         writer->WriteU16(answer.rdata.size()) &&
+         writer->WriteBytes(answer.rdata.data(), answer.rdata.size());
 }
 
 }  // namespace net
