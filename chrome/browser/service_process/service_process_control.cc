@@ -206,6 +206,7 @@ void ServiceProcessControl::Disconnect() {
 void ServiceProcessControl::OnProcessLaunched() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (launcher_->launched()) {
+    saved_pid_ = launcher_->saved_pid();
     UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                               SERVICE_EVENT_LAUNCHED, SERVICE_EVENT_MAX);
     // After we have successfully created the service process we try to connect
@@ -382,6 +383,7 @@ void ServiceProcessControl::Launcher::DoRun() {
 #endif
   process_ = base::LaunchProcess(*cmd_line_, options);
   if (process_.IsValid()) {
+    saved_pid_ = process_.Pid();
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                              base::Bind(&Launcher::DoDetectLaunched, this));
   } else {
