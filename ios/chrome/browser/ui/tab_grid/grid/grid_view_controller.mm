@@ -425,6 +425,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)replaceItemID:(NSString*)itemID withItem:(GridItem*)item {
+  if ([self indexOfItemWithID:itemID] == NSNotFound)
+    return;
   // Consistency check: |item|'s ID is either |itemID| or not in |items|.
   DCHECK([item.identifier isEqualToString:itemID] ||
          [self indexOfItemWithID:item.identifier] == NSNotFound);
