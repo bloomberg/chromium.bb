@@ -45,6 +45,7 @@ WindowEventContext::WindowEventContext(
     return;
   window_ = ToDocument(top_node_event_context.GetNode())->domWindow();
   target_ = top_node_event_context.Target();
+  related_target_ = top_node_event_context.RelatedTarget();
 }
 
 bool WindowEventContext::HandleLocalEvents(Event& event) {
@@ -53,6 +54,8 @@ bool WindowEventContext::HandleLocalEvents(Event& event) {
 
   event.SetTarget(Target());
   event.SetCurrentTarget(Window());
+  if (RelatedTarget())
+    event.SetRelatedTargetIfExists(RelatedTarget());
   window_->FireEventListeners(event);
   return true;
 }
@@ -60,6 +63,7 @@ bool WindowEventContext::HandleLocalEvents(Event& event) {
 void WindowEventContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(window_);
   visitor->Trace(target_);
+  visitor->Trace(related_target_);
 }
 
 }  // namespace blink
