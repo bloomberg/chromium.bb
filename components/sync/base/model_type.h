@@ -35,8 +35,9 @@ namespace syncer {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.sync
 //
 // |kModelTypeInfoMap| struct entries are in the same order as their definition
-// in ModelType enum. Don't forget to update the |kModelTypeInfoMap| struct in
-// model_type.cc when you make changes in ModelType enum.
+// in ModelType enum. When you make changes in ModelType enum, don't forget to
+// update the |kModelTypeInfoMap| struct in model_type.cc and also the
+// SyncModelType and SyncModelTypeByMacro histogram suffixes in histograms.xml
 enum ModelType {
   // Object type unknown.  Objects may transition through
   // the unknown state during their initial creation, before
