@@ -136,6 +136,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void MaybeRedrawFrameButtons();
 
  private:
+  friend class HostedAppOpaqueBrowserFrameViewTest;
+
   // Creates, adds and returns a new image button with |this| as its listener.
   // Memory is owned by the caller.
   views::ImageButton* InitWindowCaptionButton(int normal_image_id,

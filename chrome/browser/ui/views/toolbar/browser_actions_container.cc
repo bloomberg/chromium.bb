@@ -423,6 +423,11 @@ void BrowserActionsContainer::Layout() {
       // separate resize area.
       // TODO(pbos): Remove this workaround when the files merge.
       bounds.set_x(bounds.x() + GetResizeAreaWidth());
+      // Vertically center the icons if the available height is not enough.
+      // TODO(https://889745): Remove the possibility of there not being enough
+      // available height.
+      if (bounds.height() > height())
+        bounds.set_y((height() - bounds.height()) / 2);
       view->SetBoundsRect(bounds);
       view->SetVisible(true);
       // TODO(corising): Move setting background to
