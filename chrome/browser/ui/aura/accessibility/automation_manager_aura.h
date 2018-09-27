@@ -29,16 +29,14 @@ class AXAuraObjWrapper;
 class View;
 }  // namespace views
 
-using AuraAXTreeSerializer =
-    ui::AXTreeSerializer<views::AXAuraObjWrapper*,
-                         ui::AXNodeData,
-                         ui::AXTreeData>;
+using AuraAXTreeSerializer = ui::
+    AXTreeSerializer<views::AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>;
 
 struct ExtensionMsg_AccessibilityEventBundleParams;
 
 // Manages a tree of automation nodes.
 class AutomationManagerAura : public ui::AXHostDelegate,
-                              views::AXAuraObjCache::Delegate {
+                              public views::AXAuraObjCache::Delegate {
  public:
   // Get the single instance of this class.
   static AutomationManagerAura* GetInstance();

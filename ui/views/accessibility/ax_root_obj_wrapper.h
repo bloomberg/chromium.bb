@@ -1,32 +1,28 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AURA_ACCESSIBILITY_AX_ROOT_OBJ_WRAPPER_H_
-#define CHROME_BROWSER_UI_AURA_ACCESSIBILITY_AX_ROOT_OBJ_WRAPPER_H_
+#ifndef UI_VIEWS_ACCESSIBILITY_AX_ROOT_OBJ_WRAPPER_H_
+#define UI_VIEWS_ACCESSIBILITY_AX_ROOT_OBJ_WRAPPER_H_
 
 #include <stdint.h>
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/aura/env_observer.h"
 #include "ui/display/display_observer.h"
+#include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 
-namespace aura {
-class Window;
-}  // namespace aura
-
-// Provides the root AX desktop node for the chrome.automation.getDesktop() API
-// call. Each top-level desktop window is a child.
-class AXRootObjWrapper : public views::AXAuraObjWrapper,
-                         display::DisplayObserver,
-                         aura::EnvObserver {
+class VIEWS_EXPORT AXRootObjWrapper : public views::AXAuraObjWrapper,
+                                      display::DisplayObserver,
+                                      aura::EnvObserver {
  public:
-  AXRootObjWrapper();
+  explicit AXRootObjWrapper(views::AXAuraObjCache::Delegate* delegate);
   ~AXRootObjWrapper() override;
 
   // Returns an AXAuraObjWrapper for an alert window with title set to |text|.
@@ -56,7 +52,9 @@ class AXRootObjWrapper : public views::AXAuraObjWrapper,
 
   std::unique_ptr<aura::Window> alert_window_;
 
+  views::AXAuraObjCache::Delegate* delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(AXRootObjWrapper);
 };
 
-#endif  // CHROME_BROWSER_UI_AURA_ACCESSIBILITY_AX_ROOT_OBJ_WRAPPER_H_
+#endif  // UI_VIEWS_ACCESSIBILITY_AX_ROOT_OBJ_WRAPPER_H_

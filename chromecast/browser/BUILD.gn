@@ -300,8 +300,6 @@ cast_source_set("browser") {
         "cast_web_view_extension.h",
         "ui/aura/accessibility/automation_manager_aura.cc",
         "ui/aura/accessibility/automation_manager_aura.h",
-        "ui/aura/accessibility/ax_root_obj_wrapper.cc",
-        "ui/aura/accessibility/ax_root_obj_wrapper.h",
         "ui/aura/accessibility/ax_tree_source_aura.cc",
         "ui/aura/accessibility/ax_tree_source_aura.h",
       ]

@@ -1,12 +1,13 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/aura/accessibility/ax_root_obj_wrapper.h"
+#include "ui/views/accessibility/ax_root_obj_wrapper.h"
+
+#include <utility>
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/env.h"
@@ -16,16 +17,20 @@
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
 
-AXRootObjWrapper::AXRootObjWrapper()
-    : alert_window_(std::make_unique<aura::Window>(nullptr)) {
+AXRootObjWrapper::AXRootObjWrapper(views::AXAuraObjCache::Delegate* delegate)
+    : alert_window_(std::make_unique<aura::Window>(nullptr)),
+      delegate_(delegate) {
   alert_window_->Init(ui::LAYER_NOT_DRAWN);
+#if !defined(IS_CHROMECAST)
   aura::Env::GetInstance()->AddObserver(this);
 
   if (display::Screen::GetScreen())
     display::Screen::GetScreen()->AddObserver(this);
+#endif
 }
 
 AXRootObjWrapper::~AXRootObjWrapper() {
+#if !defined(IS_CHROMECAST)
   if (display::Screen::GetScreen())
     display::Screen::GetScreen()->RemoveObserver(this);
 
@@ -35,6 +40,7 @@ AXRootObjWrapper::~AXRootObjWrapper() {
     return;
 
   aura::Env::GetInstance()->RemoveObserver(this);
+#endif
   alert_window_.reset();
 }
 
@@ -73,6 +79,8 @@ void AXRootObjWrapper::GetChildren(
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->id = unique_id_.Get();
   out_node_data->role = ax::mojom::Role::kDesktop;
+
+#if !defined(IS_CHROMECAST)
   display::Screen* screen = display::Screen::GetScreen();
   if (!screen)
     return;
@@ -87,6 +95,7 @@ void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
     out_node_data->AddState(ax::mojom::State::kHorizontal);
   else
     out_node_data->AddState(ax::mojom::State::kVertical);
+#endif
 }
 
 const ui::AXUniqueId& AXRootObjWrapper::GetUniqueId() const {
@@ -95,8 +104,7 @@ const ui::AXUniqueId& AXRootObjWrapper::GetUniqueId() const {
 
 void AXRootObjWrapper::OnDisplayMetricsChanged(const display::Display& display,
                                                uint32_t changed_metrics) {
-  AutomationManagerAura::GetInstance()->OnEvent(
-      this, ax::mojom::Event::kLocationChanged);
+  delegate_->OnEvent(this, ax::mojom::Event::kLocationChanged);
 }
 
 void AXRootObjWrapper::OnWindowInitialized(aura::Window* window) {}
