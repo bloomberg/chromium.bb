@@ -445,14 +445,6 @@ static base::Optional<unsigned> ComputeEndOffset(
   return ToText(node).length();
 }
 
-static void MarkSelected(HeapHashSet<Member<const Node>>* selected_objects,
-                         const Node& node,
-                         SelectionState state) {
-  DCHECK(node.GetLayoutObject()->CanBeSelectionLeaf());
-  SetSelectionStateIfNeeded(node, state);
-  selected_objects->insert(&node);
-}
-
 #if DCHECK_IS_ON()
 // Position should be offset on text or before/after a break element.
 static bool IsPositionValidText(const Position& position) {
@@ -515,10 +507,9 @@ static base::Optional<unsigned> GetTextContentOffsetEnd(
   return GetTextContentOffset(Position::AfterNode(node));
 }
 
-static NewPaintRangeAndSelectedNodes ComputeNewPaintRange(
-    NewPaintRangeAndSelectedNodes* new_range) {
-  const SelectionPaintRange& paint_range = *new_range->paint_range;
-  DCHECK(!paint_range.IsNull()) << new_range;
+static SelectionPaintRange* ComputeNewPaintRange(
+    const SelectionPaintRange& paint_range) {
+  DCHECK(!paint_range.IsNull());
 
   const Node& start_node = *paint_range.start_node;
   // If LayoutObject is not in NG, use legacy offset.
@@ -533,9 +524,8 @@ static NewPaintRangeAndSelectedNodes ComputeNewPaintRange(
           ? GetTextContentOffsetEnd(end_node, paint_range.end_offset)
           : paint_range.end_offset;
 
-  return {new SelectionPaintRange(*paint_range.start_node, start_offset,
-                                  *paint_range.end_node, end_offset),
-          std::move(new_range->selected_objects)};
+  return new SelectionPaintRange(*paint_range.start_node, start_offset,
+                                 *paint_range.end_node, end_offset);
 }
 
 // ClampOffset modifies |offset| fixed in a range of |text_fragment| start/end
@@ -755,8 +745,10 @@ static NewPaintRangeAndSelectedNodes CalcSelectionRangeAndSetSelectionState(
     // In this loop, |end_node| is pointing current last candidate
     // LayoutObject and if it is not start and we find next, we mark the
     // current one as kInside.
-    if (end_node != start_node)
-      MarkSelected(&selected_objects, *end_node, SelectionState::kInside);
+    if (end_node != start_node) {
+      SetSelectionStateIfNeeded(*end_node, SelectionState::kInside);
+      selected_objects.insert(end_node);
+    }
     end_node = &node;
   }
 
@@ -772,18 +764,20 @@ static NewPaintRangeAndSelectedNodes CalcSelectionRangeAndSetSelectionState(
   const base::Optional<unsigned> end_offset =
       ComputeEndOffset(*end_node, selection.EndPosition().ToOffsetInAnchor());
   if (start_node == end_node) {
-    MarkSelected(&selected_objects, *start_node, SelectionState::kStartAndEnd);
+    SetSelectionStateIfNeeded(*start_node, SelectionState::kStartAndEnd);
+    selected_objects.insert(start_node);
   } else {
-    MarkSelected(&selected_objects, *start_node, SelectionState::kStart);
-    MarkSelected(&selected_objects, *end_node, SelectionState::kEnd);
+    SetSelectionStateIfNeeded(*start_node, SelectionState::kStart);
+    selected_objects.insert(start_node);
+    SetSelectionStateIfNeeded(*end_node, SelectionState::kEnd);
+    selected_objects.insert(end_node);
   }
-  NewPaintRangeAndSelectedNodes new_range = {
-      new SelectionPaintRange(*start_node, start_offset, *end_node, end_offset),
-      std::move(selected_objects)};
 
+  SelectionPaintRange* new_range =
+      new SelectionPaintRange(*start_node, start_offset, *end_node, end_offset);
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return new_range;
-  return ComputeNewPaintRange(&new_range);
+    return {new_range, std::move(selected_objects)};
+  return {ComputeNewPaintRange(*new_range), std::move(selected_objects)};
 }
 
 void LayoutSelection::SetHasPendingSelection() {
