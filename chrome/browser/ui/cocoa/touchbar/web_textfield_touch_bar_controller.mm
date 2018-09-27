@@ -23,12 +23,6 @@
 @implementation WebTextfieldTouchBarController
 
 + (WebTextfieldTouchBarController*)controllerForWindow:(NSWindow*)window {
-  if (features::IsViewsBrowserCocoa()) {
-    BrowserWindowController* bwc =
-        [BrowserWindowController browserWindowControllerForWindow:window];
-    return [[bwc browserWindowTouchBarController] webTextfieldTouchBar];
-  }
-
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForNativeWindow(window);
   if (!browser_view)
