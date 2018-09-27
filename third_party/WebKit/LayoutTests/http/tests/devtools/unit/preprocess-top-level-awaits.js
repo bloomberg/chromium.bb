@@ -24,7 +24,8 @@
     'for await (const number of asyncRandomNumbers()) {}',
     '[...(await fetch(\'url\', { method: \'HEAD\' })).headers.entries()]',
     'await 1\n//hello',
-    'var {a = await new Promise(resolve => resolve({a:123}))} = {a : 3}'
+    'var {a = await new Promise(resolve => resolve({a:123}))} = {a : 3}',
+    'await 1; for (var a of [1,2,3]);'
   ];
 
   await TestRunner.loadModule("formatter");

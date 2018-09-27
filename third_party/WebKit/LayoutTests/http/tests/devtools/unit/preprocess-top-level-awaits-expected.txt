@@ -116,4 +116,9 @@ var {a = await new Promise(resolve => resolve({a:123}))} = {a : 3}
 was processed:
 (async () => {void ({a = await new Promise(resolve => resolve({a:123}))} = {a : 3})
 })()
+--------------
+await 1; for (var a of [1,2,3]);
+was processed:
+(async () => {await 1; for (var a of [1,2,3]);
+})()
 
