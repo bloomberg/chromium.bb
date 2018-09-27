@@ -215,4 +215,4 @@ void ScriptPrecondition::MaybeRunCheckPreconditionCallback() {
   }
 }
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

@@ -18,4 +18,4 @@ void Action::UpdateProcessedAction(bool status) {
              : ProcessedActionStatus::OTHER_ACTION_STATUS);
 }
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

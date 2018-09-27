@@ -30,5 +30,5 @@ class UploadDomAction : public Action {
   DISALLOW_COPY_AND_ASSIGN(UploadDomAction);
 };
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_UPLOAD_DOM_ACTION_H_

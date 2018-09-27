@@ -51,5 +51,5 @@ class UiController {
  protected:
   UiController() = default;
 };
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_

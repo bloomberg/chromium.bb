@@ -32,5 +32,5 @@ class SelectOptionAction : public Action {
   DISALLOW_COPY_AND_ASSIGN(SelectOptionAction);
 };
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_SELECT_OPTION_ACTION_H_

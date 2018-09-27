@@ -26,4 +26,4 @@ void TellAction::ProcessAction(ActionDelegate* delegate,
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

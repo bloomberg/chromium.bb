@@ -44,4 +44,4 @@ void SelectOptionAction::OnSelectOption(ProcessActionCallback callback,
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant
