@@ -250,6 +250,9 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   [self.appearanceCache removeObjectForKey:identifier];
   web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
   if (webState) {
+    // It is possible to observe an updated snapshot for a WebState before
+    // observing that the WebState has been added to the WebStateList. It is the
+    // consumer's responsibility to ignore any updates before inserts.
     [self.consumer replaceItemID:identifier withItem:CreateItem(webState)];
   }
 }
