@@ -189,10 +189,10 @@ void RecordNetworkQualityAtRequestStartForFailedRequest(
 }
 
 // Returns whether |result| is a successful result for a single request.
-bool IsSingleSuccessResult(const UpdateRequestsResult* result) {
-  return result->store_state == StoreState::LOADED &&
-         result->item_statuses.size() == 1 &&
-         result->item_statuses.at(0).second == ItemActionStatus::SUCCESS;
+bool IsSingleSuccessResult(const UpdateRequestsResult& result) {
+  return result.store_state == StoreState::LOADED &&
+         result.item_statuses.size() == 1 &&
+         result.item_statuses.at(0).second == ItemActionStatus::SUCCESS;
 }
 
 FailState RequestStatusToFailState(Offliner::RequestStatus request_status) {
@@ -431,18 +431,17 @@ void RequestCoordinator::MarkAttemptAborted(int64_t request_id,
                      weak_ptr_factory_.GetWeakPtr(), request_id, name_space));
 }
 
-void RequestCoordinator::MarkAttemptDone(
-    int64_t request_id,
-    const std::string& name_space,
-    std::unique_ptr<UpdateRequestsResult> result) {
+void RequestCoordinator::MarkAttemptDone(int64_t request_id,
+                                         const std::string& name_space,
+                                         UpdateRequestsResult result) {
   // If the request succeeded, notify observer. If it failed, we can't really
   // do much, so just log it.
-  if (IsSingleSuccessResult(result.get())) {
-    NotifyChanged(result->updated_items.at(0));
+  if (IsSingleSuccessResult(result)) {
+    NotifyChanged(result.updated_items.at(0));
   } else {
     DVLOG(1) << "Failed to mark attempt: " << request_id;
     UpdateRequestResult request_result =
-        result->store_state != StoreState::LOADED
+        result.store_state != StoreState::LOADED
             ? UpdateRequestResult::STORE_FAILURE
             : UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
     event_logger_.RecordUpdateRequestFailed(name_space, request_result);
@@ -539,14 +538,14 @@ void RequestCoordinator::AddRequestResultCallback(
 }
 
 void RequestCoordinator::UpdateMultipleRequestsCallback(
-    std::unique_ptr<UpdateRequestsResult> result) {
-  for (auto& request : result->updated_items) {
+    UpdateRequestsResult result) {
+  for (auto& request : result.updated_items) {
     pending_state_updater_.SetPendingState(request);
     NotifyChanged(request);
   }
 
   bool available_user_request = false;
-  for (const auto& request : result->updated_items) {
+  for (const auto& request : result.updated_items) {
     if (!available_user_request && request.user_requested() &&
         request.request_state() == SavePageRequest::RequestState::AVAILABLE) {
       available_user_request = true;
@@ -557,9 +556,8 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
     StartImmediatelyIfConnected();
 }
 
-void RequestCoordinator::ReconcileCallback(
-    std::unique_ptr<UpdateRequestsResult> result) {
-  for (auto& request : result->updated_items) {
+void RequestCoordinator::ReconcileCallback(UpdateRequestsResult result) {
+  for (auto& request : result.updated_items) {
     RecordOfflinerResult(request, Offliner::RequestStatus::BROWSER_KILLED);
     pending_state_updater_.SetPendingState(request);
     NotifyChanged(request);
@@ -569,19 +567,19 @@ void RequestCoordinator::ReconcileCallback(
 void RequestCoordinator::HandleRemovedRequestsAndCallback(
     RemoveRequestsCallback callback,
     RequestNotifier::BackgroundSavePageResult status,
-    std::unique_ptr<UpdateRequestsResult> result) {
+    UpdateRequestsResult result) {
   // TODO(dougarnett): Define status code for user/api cancel and use here
   // to determine whether to record cancel time UMA.
-  for (const auto& request : result->updated_items)
+  for (const auto& request : result.updated_items)
     RecordCancelTimeUMA(request);
-  std::move(callback).Run(result->item_statuses);
+  std::move(callback).Run(result.item_statuses);
   HandleRemovedRequests(status, std::move(result));
 }
 
 void RequestCoordinator::HandleRemovedRequests(
     RequestNotifier::BackgroundSavePageResult status,
-    std::unique_ptr<UpdateRequestsResult> result) {
-  for (const auto& request : result->updated_items)
+    UpdateRequestsResult result) {
+  for (const auto& request : result.updated_items)
     NotifyCompleted(request, status);
 }
 
@@ -821,7 +819,7 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&RequestCoordinator::RequestCounts,
                      weak_ptr_factory_.GetWeakPtr(), is_start_of_processing),
-      *current_conditions_, disabled_requests_, prioritized_requests_);
+      *current_conditions_, disabled_requests_, &prioritized_requests_);
 }
 
 // Called by the request picker when a request has been picked.
@@ -936,19 +934,18 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
                      request.client_id().name_space));
 }
 
-void RequestCoordinator::StartOffliner(
-    int64_t request_id,
-    const std::string& client_namespace,
-    std::unique_ptr<UpdateRequestsResult> update_result) {
-  if (update_result->store_state != StoreState::LOADED ||
-      update_result->item_statuses.size() != 1 ||
-      update_result->item_statuses.at(0).first != request_id ||
-      update_result->item_statuses.at(0).second != ItemActionStatus::SUCCESS) {
+void RequestCoordinator::StartOffliner(int64_t request_id,
+                                       const std::string& client_namespace,
+                                       UpdateRequestsResult update_result) {
+  if (update_result.store_state != StoreState::LOADED ||
+      update_result.item_statuses.size() != 1 ||
+      update_result.item_statuses.at(0).first != request_id ||
+      update_result.item_statuses.at(0).second != ItemActionStatus::SUCCESS) {
     state_ = RequestCoordinatorState::IDLE;
     StopProcessing(Offliner::QUEUE_UPDATE_FAILED);
     DVLOG(1) << "Failed to mark attempt started: " << request_id;
     UpdateRequestResult request_result =
-        update_result->store_state != StoreState::LOADED
+        update_result.store_state != StoreState::LOADED
             ? UpdateRequestResult::STORE_FAILURE
             : UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
     event_logger_.RecordUpdateRequestFailed(client_namespace, request_result);
@@ -961,7 +958,7 @@ void RequestCoordinator::StartOffliner(
 
   // Start the load and save process in the offliner (Async).
   if (offliner_->LoadAndSave(
-          update_result->updated_items.at(0),
+          update_result.updated_items.at(0),
           base::BindOnce(&RequestCoordinator::OfflinerDoneCallback,
                          weak_ptr_factory_.GetWeakPtr()),
           base::BindRepeating(&RequestCoordinator::OfflinerProgressCallback,
@@ -977,7 +974,7 @@ void RequestCoordinator::StartOffliner(
     }
 
     // Inform observer of active request.
-    NotifyChanged(update_result->updated_items.at(0));
+    NotifyChanged(update_result.updated_items.at(0));
 
     // Start a watchdog timer to catch offliners running too long
     watchdog_timer_.Start(FROM_HERE, timeout, this,

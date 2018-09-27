@@ -204,7 +204,7 @@ void PickRequestTaskTest::MakePickRequestTask() {
                      base::Unretained(this)),
       base::BindOnce(&PickRequestTaskTest::RequestCountCallback,
                      base::Unretained(this)),
-      conditions, disabled_requests_, prioritized_requests_));
+      conditions, disabled_requests_, &prioritized_requests_));
   task_->SetTaskCompletionCallbackForTesting(
       task_runner_.get(),
       base::BindRepeating(&PickRequestTaskTest::TaskCompletionCallback,
