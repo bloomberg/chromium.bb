@@ -437,7 +437,6 @@ source_set("blink_headers") {
     "web/web_external_popup_menu_client.h",
     "web/web_file_chooser_completion.h",
     "web/web_file_chooser_params.h",
-    "web/web_find_options.h",
     "web/web_form_control_element.h",
     "web/web_form_element.h",
     "web/web_frame.h",

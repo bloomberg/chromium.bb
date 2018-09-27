@@ -62,7 +62,6 @@
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
-#include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -4865,14 +4864,14 @@ TEST_F(WebFrameTest, FindInPage) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "find.html");
   ASSERT_TRUE(web_view_helper.LocalMainFrame());
-  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
+  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   const int kFindIdentifier = 12345;
-  WebFindOptions options;
+  auto options = mojom::blink::FindOptions::New();
 
   // Find in a <div> element.
-  EXPECT_TRUE(frame->Find(kFindIdentifier, WebString::FromUTF8("bar1"), options,
-                          false));
-  frame->StopFindingForTesting(
+  EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, WebString::FromUTF8("bar1"), *options, false));
+  frame->GetFindInPage()->StopFinding(
       blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   WebRange range = frame->SelectionRange();
   EXPECT_EQ(5, range.StartOffset());
@@ -4880,11 +4879,11 @@ TEST_F(WebFrameTest, FindInPage) {
   EXPECT_TRUE(frame->GetDocument().FocusedElement().IsNull());
 
   // Find in an <input> value.
-  EXPECT_TRUE(frame->Find(kFindIdentifier, WebString::FromUTF8("bar2"), options,
-                          false));
+  EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, WebString::FromUTF8("bar2"), *options, false));
   // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the
   // selection on the found text.
-  frame->StopFindingForTesting(
+  frame->GetFindInPage()->StopFinding(
       blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   range = frame->SelectionRange();
   ASSERT_FALSE(range.IsNull());
@@ -4893,11 +4892,11 @@ TEST_F(WebFrameTest, FindInPage) {
   EXPECT_TRUE(frame->GetDocument().FocusedElement().HasHTMLTagName("input"));
 
   // Find in a <textarea> content.
-  EXPECT_TRUE(frame->Find(kFindIdentifier, WebString::FromUTF8("bar3"), options,
-                          false));
+  EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, WebString::FromUTF8("bar3"), *options, false));
   // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the
   // selection on the found text.
-  frame->StopFindingForTesting(
+  frame->GetFindInPage()->StopFinding(
       blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   range = frame->SelectionRange();
   ASSERT_FALSE(range.IsNull());
@@ -4906,11 +4905,11 @@ TEST_F(WebFrameTest, FindInPage) {
   EXPECT_TRUE(frame->GetDocument().FocusedElement().HasHTMLTagName("textarea"));
 
   // Find in a contentEditable element.
-  EXPECT_TRUE(frame->Find(kFindIdentifier, WebString::FromUTF8("bar4"), options,
-                          false));
+  EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, WebString::FromUTF8("bar4"), *options, false));
   // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the
   // selection on the found text.
-  frame->StopFindingForTesting(
+  frame->GetFindInPage()->StopFinding(
       blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   range = frame->SelectionRange();
   ASSERT_FALSE(range.IsNull());
@@ -4921,12 +4920,12 @@ TEST_F(WebFrameTest, FindInPage) {
   EXPECT_TRUE(frame->GetDocument().FocusedElement().HasHTMLTagName("div"));
 
   // Find in <select> content.
-  EXPECT_FALSE(frame->Find(kFindIdentifier, WebString::FromUTF8("bar5"),
-                           options, false));
+  EXPECT_FALSE(frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, WebString::FromUTF8("bar5"), *options, false));
   // If there are any matches, stopFinding will set the selection on the found
   // text.  However, we do not expect any matches, so check that the selection
   // is null.
-  frame->StopFindingForTesting(
+  frame->GetFindInPage()->StopFinding(
       blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   range = frame->SelectionRange();
   ASSERT_TRUE(range.IsNull());
@@ -5100,20 +5099,21 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
   const int kFindIdentifier = 12345;
   const int kNumResults = 17;
 
-  WebFindOptions options;
-  options.run_synchronously_for_testing = true;
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
   TestFindInPageClient find_in_page_client;
   find_in_page_client.SetFrame(main_frame);
-  EXPECT_TRUE(main_frame->Find(kFindIdentifier, search_text, options, false));
+  EXPECT_TRUE(main_frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, search_text, *options, false));
 
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
-                                                        search_text, options);
+                                                        search_text, *options);
   }
   RunPendingTasks();
   EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
@@ -5171,31 +5171,33 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   const int kFindIdentifier = 7777;
   const int kActiveIndex = 1;
 
-  WebFindOptions options;
-  options.run_synchronously_for_testing = true;
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
   TestFindInPageClient find_in_page_client;
   find_in_page_client.SetFrame(main_frame);
 
-  EXPECT_TRUE(main_frame->Find(kFindIdentifier, search_text, options, false));
+  EXPECT_TRUE(main_frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, search_text, *options, false));
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
-                                                        search_text, options);
+                                                        search_text, *options);
   }
   RunPendingTasks();
 
-  EXPECT_TRUE(main_frame->Find(kFindIdentifier, search_text, options, false));
-  main_frame->StopFindingForTesting(
+  EXPECT_TRUE(main_frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, search_text, *options, false));
+  main_frame->GetFindInPage()->StopFinding(
       mojom::StopFindAction::kStopFindActionClearSelection);
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
-                                                        search_text, options);
+                                                        search_text, *options);
   }
 
   RunPendingTasks();
@@ -5205,14 +5207,14 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   const char* kFindStringNew = "e";
   WebString search_text_new = WebString::FromUTF8(kFindStringNew);
 
-  EXPECT_TRUE(
-      main_frame->Find(kFindIdentifier, search_text_new, options, false));
+  EXPECT_TRUE(main_frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, search_text_new, *options, false));
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(
-        kFindIdentifier, search_text_new, options);
+        kFindIdentifier, search_text_new, *options);
   }
 
   RunPendingTasks();
@@ -5234,8 +5236,8 @@ TEST_F(WebFrameTest, FindOnDetachedFrame) {
   const char kFindString[] = "result";
   const int kFindIdentifier = 12345;
 
-  WebFindOptions options;
-  options.run_synchronously_for_testing = true;
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
   TestFindInPageClient main_find_in_page_client;
@@ -5247,9 +5249,10 @@ TEST_F(WebFrameTest, FindOnDetachedFrame) {
   // Detach the frame before finding.
   RemoveElementById(main_frame, "frame");
 
-  EXPECT_TRUE(main_frame->Find(kFindIdentifier, search_text, options, false));
-  EXPECT_FALSE(
-      second_frame->Find(kFindIdentifier, search_text, options, false));
+  EXPECT_TRUE(main_frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, search_text, *options, false));
+  EXPECT_FALSE(second_frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, search_text, *options, false));
 
   RunPendingTasks();
   EXPECT_FALSE(main_find_in_page_client.FindResultsAreReady());
@@ -5259,7 +5262,7 @@ TEST_F(WebFrameTest, FindOnDetachedFrame) {
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
-                                                        search_text, options);
+                                                        search_text, *options);
   }
 
   RunPendingTasks();
@@ -5280,8 +5283,8 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
   const char kFindString[] = "result";
   const int kFindIdentifier = 12345;
 
-  WebFindOptions options;
-  options.run_synchronously_for_testing = true;
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
   TestFindInPageClient find_in_page_client;
@@ -5289,7 +5292,8 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
-    EXPECT_TRUE(frame->Find(kFindIdentifier, search_text, options, false));
+    EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
+        kFindIdentifier, search_text, *options, false));
   }
   RunPendingTasks();
   EXPECT_FALSE(find_in_page_client.FindResultsAreReady());
@@ -5302,7 +5306,7 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
-                                                        search_text, options);
+                                                        search_text, *options);
   }
 
   RunPendingTasks();
@@ -5323,8 +5327,8 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   const char kFindString[] = "result";
   const int kFindIdentifier = 12345;
 
-  WebFindOptions options;
-  options.run_synchronously_for_testing = true;
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
   TestFindInPageClient find_in_page_client;
@@ -5332,7 +5336,8 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
-    EXPECT_TRUE(frame->Find(kFindIdentifier, search_text, options, false));
+    EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
+        kFindIdentifier, search_text, *options, false));
   }
   RunPendingTasks();
   EXPECT_FALSE(find_in_page_client.FindResultsAreReady());
@@ -5342,7 +5347,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
-                                                        search_text, options);
+                                                        search_text, *options);
   }
 
   // The first startScopingStringMatches will have reset the state. Detach
@@ -5352,7 +5357,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
-                                                        search_text, options);
+                                                        search_text, *options);
   }
   RunPendingTasks();
   EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
@@ -5371,8 +5376,8 @@ TEST_F(WebFrameTest, ResetMatchCount) {
   const char kFindString[] = "result";
   const int kFindIdentifier = 12345;
 
-  WebFindOptions options;
-  options.run_synchronously_for_testing = true;
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
   TestFindInPageClient find_in_page_client;
@@ -5381,9 +5386,10 @@ TEST_F(WebFrameTest, ResetMatchCount) {
   // Check that child frame exists.
   EXPECT_TRUE(!!main_frame->TraverseNext());
 
-  for (WebFrame* frame = main_frame; frame; frame = frame->TraverseNext()) {
-    EXPECT_FALSE(frame->ToWebLocalFrame()->Find(kFindIdentifier, search_text,
-                                                options, false));
+  for (WebLocalFrameImpl* frame = main_frame; frame;
+       frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
+    EXPECT_FALSE(frame->GetFindInPage()->FindInternal(
+        kFindIdentifier, search_text, *options, false));
   }
 
   RunPendingTasks();
@@ -5404,17 +5410,18 @@ TEST_F(WebFrameTest, SetTickmarks) {
   const char kFindString[] = "foo";
   const int kFindIdentifier = 12345;
 
-  WebFindOptions options;
-  options.run_synchronously_for_testing = true;
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
   TestFindInPageClient find_in_page_client;
   find_in_page_client.SetFrame(main_frame);
-  EXPECT_TRUE(main_frame->Find(kFindIdentifier, search_text, options, false));
+  EXPECT_TRUE(main_frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, search_text, *options, false));
 
   main_frame->EnsureTextFinder().ResetMatchCount();
   main_frame->EnsureTextFinder().StartScopingStringMatches(
-      kFindIdentifier, search_text, options);
+      kFindIdentifier, search_text, *options);
 
   RunPendingTasks();
   EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
@@ -5464,20 +5471,20 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOM) {
   const int kFindIdentifier = 12345;
   static const char* kFindString = "foo";
   WebString search_text = WebString::FromUTF8(kFindString);
-  WebFindOptions options;
-  options.run_synchronously_for_testing = true;
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
   bool active_now;
 
   frame->EnsureTextFinder().ResetMatchCount();
   frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
-                                                      search_text, options);
+                                                      search_text, *options);
   RunPendingTasks();
   EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
 
   // Find in a <div> element.
-  options.find_next = true;
-  EXPECT_TRUE(
-      frame->Find(kFindIdentifier, search_text, options, false, &active_now));
+  options->find_next = true;
+  EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, search_text, *options, false, &active_now));
   EXPECT_TRUE(active_now);
 
   // Insert new text, which contains occurence of |searchText|.
@@ -5487,14 +5494,14 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOM) {
       "document.body.insertBefore(newTextNode, textArea);"));
 
   // Find in a <input> element.
-  EXPECT_TRUE(
-      frame->Find(kFindIdentifier, search_text, options, false, &active_now));
+  EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, search_text, *options, false, &active_now));
   EXPECT_TRUE(active_now);
 
   // Find in the inserted text node.
-  EXPECT_TRUE(
-      frame->Find(kFindIdentifier, search_text, options, false, &active_now));
-  frame->StopFindingForTesting(
+  EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, search_text, *options, false, &active_now));
+  frame->GetFindInPage()->StopFinding(
       blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   WebRange range = frame->SelectionRange();
   EXPECT_EQ(5, range.StartOffset());
@@ -5546,13 +5553,13 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
   find_in_page_client.SetFrame(frame);
   const int kFindIdentifier = 12345;
 
-  mojom::blink::FindOptionsPtr options(mojom::blink::FindOptions::New());
+  auto options = mojom::blink::FindOptions::New();
   options->run_synchronously_for_testing = true;
   options->find_next = false;
   options->forward = true;
   // The first search that will start the scoping process.
   frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
-                               options.Clone());
+                               options->Clone());
   EXPECT_FALSE(find_in_page_client.FindResultsAreReady());
   RunPendingTasks();
 
@@ -5562,7 +5569,7 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
   options->find_next = true;
   // The second search will jump to the next match without any scoping.
   frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
-                               options.Clone());
+                               options->Clone());
   // Run pending tasks to make sure IncreaseMatchCount calls passes.
   RunPendingTasks();
   EXPECT_EQ(2, find_in_page_client.Count());
@@ -5576,7 +5583,7 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
 
   // The third search will find a new match and initiate a new scoping.
   frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
-                               options.Clone());
+                               options->Clone());
   RunPendingTasks();
 
   EXPECT_EQ(3, find_in_page_client.Count());
@@ -5589,19 +5596,19 @@ TEST_F(WebFrameTest, FindInPageStopFindActionKeepSelectionInAnotherDocument) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "find.html");
   ASSERT_TRUE(web_view_helper.LocalMainFrame());
-  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
+  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   const int kFindIdentifier = 12345;
-  WebFindOptions options;
+  auto options = mojom::blink::FindOptions::New();
 
   // Set active match
-  ASSERT_TRUE(
-      frame->Find(kFindIdentifier, WebString::FromUTF8("foo"), options, false));
+  ASSERT_TRUE(frame->GetFindInPage()->FindInternal(
+      kFindIdentifier, WebString::FromUTF8("foo"), *options, false));
   // Move to another page.
   FrameTestHelpers::LoadFrame(frame, base_url_ + "hello_world.html");
 
   // Stop Find-In-Page. |TextFinder::active_match_| still hold a |Range| in
   // "find.html".
-  frame->StopFindingForTesting(
+  frame->GetFindInPage()->StopFinding(
       blink::mojom::StopFindAction::kStopFindActionKeepSelection);
 
   // Pass if not crash. See http://crbug.com/719880 for details.
@@ -11330,15 +11337,16 @@ TEST_F(WebFrameSimTest, TickmarksDocumentRelative) {
 
   frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(3000, 1000),
                                                    kProgrammaticScroll);
-  WebFindOptions options;
-  options.run_synchronously_for_testing = true;
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8("test");
   const int kFindIdentifier = 12345;
-  EXPECT_TRUE(frame->Find(kFindIdentifier, search_text, options, false));
+  EXPECT_TRUE(frame->GetFindInPage()->FindInternal(kFindIdentifier, search_text,
+                                                   *options, false));
 
   frame->EnsureTextFinder().ResetMatchCount();
   frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
-                                                      search_text, options);
+                                                      search_text, *options);
 
   // Get the tickmarks for the original find request.
   Vector<IntRect> original_tickmarks;
@@ -11392,15 +11400,16 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
 
   frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(3000, 1000),
                                                    kProgrammaticScroll);
-  WebFindOptions options;
-  options.run_synchronously_for_testing = true;
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8("test");
   const int kFindIdentifier = 12345;
-  EXPECT_TRUE(frame->Find(kFindIdentifier, search_text, options, false));
+  EXPECT_TRUE(frame->GetFindInPage()->FindInternal(kFindIdentifier, search_text,
+                                                   *options, false));
 
   frame->EnsureTextFinder().ResetMatchCount();
   frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
-                                                      search_text, options);
+                                                      search_text, *options);
 
   WebVector<WebFloatRect> web_match_rects =
       frame->EnsureTextFinder().FindMatchRects();

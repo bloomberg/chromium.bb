@@ -476,9 +476,9 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
 // text finding, and then delete the frame immediately before the text finding
 // returns any text match.
 TEST_F(RenderFrameImplTest, NoCrashWhenDeletingFrameDuringFind) {
-  blink::WebFindOptions options;
-  options.force = true;
-  frame()->GetWebFrame()->Find(1, "foo", options, false);
+  frame()->GetWebFrame()->FindForTesting(
+      1, "foo", true /* match_case */, true /* forward */,
+      false /* find_next */, true /* force */, false /* wrap_within_frame */);
 
   FrameMsg_Delete delete_message(0);
   frame()->OnMessageReceived(delete_message);
