@@ -23,6 +23,7 @@
 #include "content/common/content_export.h"
 #include "content/common/render_widget_host_ns_view.mojom.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
@@ -469,6 +470,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // invoke it from the message loop.
   void ShutdownHost();
 
+  // Update |ns_view_bridge_| so that the instance that it points at be hosted
+  // in the process indicated |host_id|.
+  void MigrateNSViewBridge(uint64_t host_id);
+
   // Send updated vsync parameters to the top level display.
   void UpdateDisplayVSyncParameters();
 
@@ -506,6 +511,16 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // used for |this|. Any functionality that uses |new_view_bridge_local_| will
   // not work when the RenderWidgetHostViewCocoa is hosted in an app process.
   std::unique_ptr<RenderWidgetHostNSViewBridgeLocal> ns_view_bridge_local_;
+
+  // If the NSView is hosted in a remote process and accessed via mojo then
+  // - |ns_view_bridge_factory_host_id_| can be used to look up the needed
+  //   NSViewBridgeFactoryHost.
+  // - |ns_view_bridge_| will point to |ns_view_bridge_remote_|
+  // - |ns_view_client_binding_| is the binding provided to the bridge.
+  uint64_t ns_view_bridge_factory_host_id_;
+  mojom::RenderWidgetHostNSViewBridgeAssociatedPtr ns_view_bridge_remote_;
+  mojo::AssociatedBinding<mojom::RenderWidgetHostNSViewClient>
+      ns_view_client_binding_;
 
   // State tracked by Show/Hide/IsShowing.
   bool is_visible_ = false;

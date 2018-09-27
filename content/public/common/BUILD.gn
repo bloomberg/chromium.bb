@@ -362,6 +362,10 @@ mojom("interfaces") {
     sources += [ "font_cache_win.mojom" ]
   }
 
+  if (is_mac) {
+    sources += [ "ns_view_bridge_factory.mojom" ]
+  }
+
   public_deps = [
     ":resource_type_bindings",
     "//services/network/public/mojom",

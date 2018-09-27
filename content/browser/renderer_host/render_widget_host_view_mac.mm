@@ -36,6 +36,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/ns_view_bridge_factory_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/platform_canvas.h"
@@ -151,6 +152,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
     : RenderWidgetHostViewBase(widget),
       page_at_minimum_scale_(true),
       mouse_wheel_phase_handler_(this),
+      ns_view_bridge_factory_host_id_(
+          NSViewBridgeFactoryHost::kLocalDirectHostId),
+      ns_view_client_binding_(this),
       is_loading_(false),
       is_guest_view_hack_(is_guest_view_hack),
       popup_parent_host_view_(nullptr),
@@ -229,6 +233,52 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
     DCHECK(!popup_child_host_view_->popup_parent_host_view_ ||
            popup_child_host_view_->popup_parent_host_view_ == this);
     popup_child_host_view_->popup_parent_host_view_ = nullptr;
+  }
+}
+
+void RenderWidgetHostViewMac::MigrateNSViewBridge(uint64_t factory_host_id) {
+  if (factory_host_id == ns_view_bridge_factory_host_id_)
+    return;
+
+  // Look up the NSViewBridgeFactoryHost, if any, for this id.
+  NSViewBridgeFactoryHost* factory_host = nullptr;
+  if (factory_host_id != NSViewBridgeFactoryHost::kLocalDirectHostId) {
+    factory_host = NSViewBridgeFactoryHost::GetFromHostId(factory_host_id);
+    if (!factory_host) {
+      DLOG(ERROR) << "Failed to look up NSViewBridgeFactoryHost!";
+      return;
+    }
+  }
+  ns_view_bridge_factory_host_id_ = factory_host_id;
+
+  // Disconnect from the previous bridge (this will have the effect of
+  // destroying the associated bridge), and close the binding (to allow it
+  // to be re-bound). Note that |ns_view_bridge_local_| remains valid.
+  ns_view_client_binding_.Close();
+  ns_view_bridge_remote_.reset();
+
+  if (factory_host) {
+    mojom::RenderWidgetHostNSViewClientAssociatedPtr client;
+    ns_view_client_binding_.Bind(mojo::MakeRequest(&client));
+    mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request =
+        mojo::MakeRequest(&ns_view_bridge_remote_);
+
+    // Cast from mojom::RenderWidgetHostNSViewClientPtr and
+    // mojom::RenderWidgetHostNSViewBridgeRequest to the public interfaces
+    // accepted by the factory.
+    // TODO(ccameron): Remove the need for this cast.
+    // https://crbug.com/888290
+    mojo::AssociatedInterfacePtrInfo<mojom::StubInterface> stub_client(
+        client.PassInterface().PassHandle(), 0);
+    mojom::StubInterfaceAssociatedRequest stub_bridge_request(
+        bridge_request.PassHandle());
+
+    factory_host->GetFactory()->CreateRenderWidgetHostNSViewBridge(
+        std::move(stub_client), std::move(stub_bridge_request));
+
+    ns_view_bridge_ = ns_view_bridge_remote_.get();
+  } else {
+    ns_view_bridge_ = ns_view_bridge_local_.get();
   }
 }
 
@@ -650,10 +700,12 @@ void RenderWidgetHostViewMac::Destroy() {
     ns_view_bridge_->SetCursorLocked(false);
   }
 
-  // Destroy the brige to the NSView. Note that the NSView on the other side
-  // of |ns_view_bridge_| may outlive us due to other retains.
+  // Destroy the local and remote briges to the NSView. Note that the NSView on
+  // the other side of |ns_view_bridge_| may outlive us due to other retains.
   ns_view_bridge_ = nullptr;
   ns_view_bridge_local_.reset();
+  ns_view_client_binding_.Close();
+  ns_view_bridge_remote_.reset();
 
   // Delete the delegated frame state, which will reach back into
   // host().

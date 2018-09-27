@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
+#include "content/browser/renderer_host/render_widget_host_ns_view_client_helper.h"
 #include "content/common/cursors/webcursor.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/animation_utils.h"
@@ -16,6 +17,28 @@
 namespace content {
 
 RenderWidgetHostNSViewBridgeLocal::RenderWidgetHostNSViewBridgeLocal(
+    mojom::RenderWidgetHostNSViewClient* client,
+    RenderWidgetHostNSViewClientHelper* client_helper)
+    : binding_(nullptr) {
+  Initialize(client, client_helper);
+}
+
+RenderWidgetHostNSViewBridgeLocal::RenderWidgetHostNSViewBridgeLocal(
+    mojom::RenderWidgetHostNSViewClientAssociatedPtr client,
+    mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request)
+    : remote_client_(std::move(client)), binding_(this) {
+  binding_.Bind(std::move(bridge_request));
+  // This object will be destroyed when its connection is closed.
+  binding_.set_connection_error_handler(
+      base::BindOnce(&RenderWidgetHostNSViewBridgeLocal::OnConnectionError,
+                     base::Unretained(this)));
+  remote_client_helper_ =
+      RenderWidgetHostNSViewClientHelper::CreateForMojoClient(
+          remote_client_.get());
+  Initialize(remote_client_.get(), remote_client_helper_.get());
+}
+
+void RenderWidgetHostNSViewBridgeLocal::Initialize(
     mojom::RenderWidgetHostNSViewClient* client,
     RenderWidgetHostNSViewClientHelper* client_helper) {
   display::Screen::GetScreen()->AddObserver(this);
@@ -43,6 +66,10 @@ RenderWidgetHostNSViewBridgeLocal::~RenderWidgetHostNSViewBridgeLocal() {
   cocoa_view_.autorelease();
   display::Screen::GetScreen()->RemoveObserver(this);
   popup_window_.reset();
+}
+
+void RenderWidgetHostNSViewBridgeLocal::OnConnectionError() {
+  delete this;
 }
 
 RenderWidgetHostViewCocoa*

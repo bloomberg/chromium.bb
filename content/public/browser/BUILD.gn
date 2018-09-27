@@ -406,6 +406,13 @@ jumbo_source_set("browser_sources") {
     ]
   }
 
+  if (is_mac) {
+    sources += [
+      "ns_view_bridge_factory_host.h",
+      "ns_view_bridge_factory_impl.h",
+    ]
+  }
+
   if (!is_android) {
     sources += [
       "host_zoom_map.h",

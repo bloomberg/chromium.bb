@@ -2344,6 +2344,8 @@ jumbo_source_set("browser") {
       "IOSurface.framework",
     ]
     sources += [
+      "ns_view_bridge_factory_host.mm",
+      "ns_view_bridge_factory_impl.mm",
       "renderer_host/popup_window_mac.h",
       "renderer_host/popup_window_mac.mm",
       "renderer_host/render_widget_host_ns_view_bridge_local.h",
