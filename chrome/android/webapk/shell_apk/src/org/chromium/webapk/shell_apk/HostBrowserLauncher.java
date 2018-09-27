@@ -43,6 +43,7 @@ public class HostBrowserLauncher {
         Intent intent = new Intent();
         intent.setAction(ACTION_START_WEBAPK);
         intent.setPackage(params.getHostBrowserPackageName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         Bundle copiedExtras = params.getOriginalIntent().getExtras();
         if (copiedExtras != null) {
             intent.putExtras(copiedExtras);
@@ -71,6 +72,7 @@ public class HostBrowserLauncher {
     private static void launchInTab(Context context, HostBrowserLauncherParams params) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(params.getStartUrl()));
         intent.setPackage(params.getHostBrowserPackageName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true)
                 .putExtra(WebApkConstants.EXTRA_SOURCE, params.getSource());
         try {
