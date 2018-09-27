@@ -776,22 +776,38 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
   return true;
 }
 
+const TileDrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
+    const RenderPass* pass) {
+  return DirectRenderer::CanPassBeDrawnDirectly(pass, IsUsingVulkan(),
+                                                resource_provider_);
+}
+
 void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
-  auto iter = render_pass_backings_.find(quad->render_pass_id);
-  DCHECK(render_pass_backings_.end() != iter);
-  // This function is called after AllocateRenderPassResourceIfNeeded, so there
-  // should be backing ready.
-  RenderPassBacking& backing = iter->second;
+  auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
+  // When Render Pass has a single quad inside we would draw that directly.
+  if (bypass != render_pass_bypass_quads_.end()) {
+    TileDrawQuad* tile_quad = &bypass->second;
+    ScopedSkImageBuilder builder(this, tile_quad->resource_id());
+    sk_sp<SkImage> content_image = sk_ref_sp(builder.sk_image());
+    DrawRenderPassQuadInternal(quad, content_image);
+  } else {
+    auto iter = render_pass_backings_.find(quad->render_pass_id);
+    DCHECK(render_pass_backings_.end() != iter);
+    // This function is called after AllocateRenderPassResourceIfNeeded, so
+    // there should be backing ready.
+    RenderPassBacking& backing = iter->second;
 
-  // TODO(weiliangc): GL Renderer has optimization that when Render Pass has a
-  // single quad inside we would draw that directly. We could add similar
-  // optimization here by using the quad's SkImage.
-  sk_sp<SkImage> content_image =
-      is_using_ddl() ? skia_output_surface_->MakePromiseSkImageFromRenderPass(
-                           quad->render_pass_id, backing.size, backing.format,
-                           backing.mipmap)
-                     : backing.render_pass_surface->makeImageSnapshot();
+    sk_sp<SkImage> content_image =
+        is_using_ddl() ? skia_output_surface_->MakePromiseSkImageFromRenderPass(
+                             quad->render_pass_id, backing.size, backing.format,
+                             backing.mipmap)
+                       : backing.render_pass_surface->makeImageSnapshot();
+    DrawRenderPassQuadInternal(quad, content_image);
+  }
+}
 
+void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
+                                              sk_sp<SkImage> content_image) {
   DrawRenderPassDrawQuadParams params;
   params.filters = FiltersForPass(quad->render_pass_id);
   bool can_draw = CalculateRPDQParams(content_image, quad, &params);
