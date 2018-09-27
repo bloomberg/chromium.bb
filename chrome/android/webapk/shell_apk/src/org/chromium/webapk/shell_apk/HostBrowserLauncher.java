@@ -33,30 +33,30 @@ public class HostBrowserLauncher {
      * Otherwise, launches the host browser in tabbed mode.
      */
     public static void launch(Context context, HostBrowserLauncherParams params) {
-        Log.v(TAG, "WebAPK Launch URL: " + params.startUrl());
+        Log.v(TAG, "WebAPK Launch URL: " + params.getStartUrl());
 
-        if (HostBrowserUtils.shouldLaunchInTab(params.hostBrowserMajorChromiumVersion())) {
+        if (HostBrowserUtils.shouldLaunchInTab(params.getHostBrowserMajorChromiumVersion())) {
             launchInTab(context, params);
             return;
         }
 
         Intent intent = new Intent();
         intent.setAction(ACTION_START_WEBAPK);
-        intent.setPackage(params.hostBrowserPackageName());
-        Bundle copiedExtras = params.originalIntent().getExtras();
+        intent.setPackage(params.getHostBrowserPackageName());
+        Bundle copiedExtras = params.getOriginalIntent().getExtras();
         if (copiedExtras != null) {
             intent.putExtras(copiedExtras);
         }
 
-        intent.putExtra(WebApkConstants.EXTRA_URL, params.startUrl())
-                .putExtra(WebApkConstants.EXTRA_SOURCE, params.source())
+        intent.putExtra(WebApkConstants.EXTRA_URL, params.getStartUrl())
+                .putExtra(WebApkConstants.EXTRA_SOURCE, params.getSource())
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, context.getPackageName())
-                .putExtra(WebApkConstants.EXTRA_FORCE_NAVIGATION, params.forceNavigation());
+                .putExtra(WebApkConstants.EXTRA_FORCE_NAVIGATION, params.getForceNavigation());
 
         // Only pass on the start time if no user action was required between launching the webapk
         // and chrome starting up. See https://crbug.com/842023
-        if (!params.dialogShown()) {
-            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, params.launchTimeMs());
+        if (!params.wasDialogShown()) {
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, params.getLaunchTimeMs());
         }
 
         try {
@@ -69,10 +69,10 @@ public class HostBrowserLauncher {
 
     /** Launches a WebAPK in its runtime host browser as a tab. */
     private static void launchInTab(Context context, HostBrowserLauncherParams params) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(params.startUrl()));
-        intent.setPackage(params.hostBrowserPackageName());
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(params.getStartUrl()));
+        intent.setPackage(params.getHostBrowserPackageName());
         intent.putExtra(REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true)
-                .putExtra(WebApkConstants.EXTRA_SOURCE, params.source());
+                .putExtra(WebApkConstants.EXTRA_SOURCE, params.getSource());
         try {
             context.startActivity(intent);
         } catch (ActivityNotFoundException e) {

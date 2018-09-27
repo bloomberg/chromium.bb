@@ -148,7 +148,7 @@ public class HostBrowserLauncherParams {
     }
 
     /** Returns the chosen host browser. */
-    public String hostBrowserPackageName() {
+    public String getHostBrowserPackageName() {
         return mHostBrowserPackageName;
     }
 
@@ -156,27 +156,27 @@ public class HostBrowserLauncherParams {
      * Returns the major version of the host browser. Currently, only Chromium host browsers
      * (Chrome Canary, Chrome Dev ...) are supported.
      */
-    public int hostBrowserMajorChromiumVersion() {
+    public int getHostBrowserMajorChromiumVersion() {
         return mHostBrowserMajorChromiumVersion;
     }
 
     /** Returns whether the choose-host-browser dialog was shown. */
-    public boolean dialogShown() {
+    public boolean wasDialogShown() {
         return mDialogShown;
     }
 
     /** Returns intent used to launch WebAPK. */
-    public Intent originalIntent() {
+    public Intent getOriginalIntent() {
         return mOriginalIntent;
     }
 
     /** Returns URL to launch WebAPK at. */
-    public String startUrl() {
+    public String getStartUrl() {
         return mStartUrl;
     }
 
     /** Returns the source which is launching/navigating the WebAPK. */
-    public int source() {
+    public int getSource() {
         return mSource;
     }
 
@@ -184,12 +184,12 @@ public class HostBrowserLauncherParams {
      * Returns whether the WebAPK should be navigated to {@link mStartUrl} if it is already
      * running.
      */
-    public boolean forceNavigation() {
+    public boolean getForceNavigation() {
         return mForceNavigation;
     }
 
     /** Returns time in milliseconds that the WebAPK was launched. */
-    public long launchTimeMs() {
+    public long getLaunchTimeMs() {
         return mLaunchTimeMs;
     }
 }
