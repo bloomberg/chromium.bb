@@ -2242,11 +2242,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-use-zoom-for-dsf", flag_descriptions::kEnableUseZoomForDsfName,
      flag_descriptions::kEnableUseZoomForDsfDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableUseZoomForDSFChoices)},
-#if defined(OS_MACOSX)
-    {"enable-harfbuzz-rendertext", flag_descriptions::kHarfbuzzRendertextName,
-     flag_descriptions::kHarfbuzzRendertextDescription, kOsMac,
-     SINGLE_VALUE_TYPE(switches::kEnableHarfBuzzRenderText)},
-#endif  // OS_MACOSX
     {"allow-previews", flag_descriptions::kPreviewsAllowedName,
      flag_descriptions::kPreviewsAllowedDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kPreviews)},

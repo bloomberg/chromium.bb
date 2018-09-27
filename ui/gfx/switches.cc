@@ -12,12 +12,6 @@ namespace switches {
 const char kDisableDirectWriteForUI[] = "disable-directwrite-for-ui";
 #endif
 
-#if defined(OS_MACOSX)
-// Enables the HarfBuzz port of RenderText on Mac (it's already used only for
-// text editing; this enables it for everything else).
-const char kEnableHarfBuzzRenderText[] = "enable-harfbuzz-rendertext";
-#endif
-
 // Force disables font subpixel positioning. This affects the character glyph
 // sharpness, kerning, hinting and layout.
 const char kDisableFontSubpixelPositioning[] =
