@@ -25,8 +25,8 @@ HitTestResult HitTestResultInFrame(
 
   if (!frame || !frame->ContentLayoutObject())
     return result;
-  if (frame->View()) {
-    FloatRect rect(FloatPoint(), FloatSize(frame->View()->Size()));
+  if (LocalFrameView* frame_view = frame->View()) {
+    LayoutRect rect(LayoutPoint(), LayoutSize(frame_view->Size()));
     if (!location.Intersects(rect))
       return result;
   }
