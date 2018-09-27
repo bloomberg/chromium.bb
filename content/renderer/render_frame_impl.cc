@@ -6972,14 +6972,8 @@ GURL RenderFrameImpl::GetLoadingUrl() const {
 }
 
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
-  if (!media_permission_dispatcher_) {
-    media_permission_dispatcher_.reset(new MediaPermissionDispatcher(
-        base::Bind(
-            &RenderFrameImpl::GetInterface<blink::mojom::PermissionService>,
-            base::Unretained(this)),
-        base::Bind(&RenderFrameImpl::IsEncryptedMediaEnabled,
-                   base::Unretained(this))));
-  }
+  if (!media_permission_dispatcher_)
+    media_permission_dispatcher_.reset(new MediaPermissionDispatcher(this));
   return media_permission_dispatcher_.get();
 }
 
@@ -7063,15 +7057,6 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
         base::Bind(&ManifestManager::BindToRequest,
                    base::Unretained(manifest_manager_.get())));
   }
-}
-
-template <typename Interface>
-void RenderFrameImpl::GetInterface(mojo::InterfaceRequest<Interface> request) {
-  GetRemoteInterfaces()->GetInterface(std::move(request));
-}
-
-bool RenderFrameImpl::IsEncryptedMediaEnabled() const {
-  return GetRendererPreferences().enable_encrypted_media;
 }
 
 void RenderFrameImpl::OnHostZoomClientRequest(
