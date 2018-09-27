@@ -24,11 +24,13 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/ssl_browsertest_util.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -59,6 +61,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -217,6 +220,26 @@ bool IsBrowserOpen(const Browser* test_browser) {
   return false;
 }
 
+enum AppMenuCommandState {
+  kEnabled,
+  kDisabled,
+  kNotPresent,
+};
+
+AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {
+  DCHECK(!browser->hosted_app_controller())
+      << "This check only applies to regular browser windows.";
+  auto app_menu_model = std::make_unique<AppMenuModel>(nullptr, browser);
+  app_menu_model->Init();
+  ui::MenuModel* model = app_menu_model.get();
+  int index = -1;
+  if (!app_menu_model->GetModelAndIndexForCommandId(command_id, &model,
+                                                    &index)) {
+    return kNotPresent;
+  }
+  return model->IsEnabledAt(index) ? kEnabled : kDisabled;
+}
+
 }  // namespace
 
 class TestAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
@@ -233,27 +256,43 @@ class TestAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
         web_contents->GetUserData(UserDataKey()));
   }
 
-  void WaitForInstallableCheck() {
+  // Returns whether the installable check passed.
+  bool WaitForInstallableCheck() {
     DCHECK(IsExperimentalAppBannersEnabled());
 
-    if (got_data_)
-      return;
-
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
+    if (!installable_.has_value()) {
+      base::RunLoop run_loop;
+      quit_closure_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+    DCHECK(installable_.has_value());
+    return *installable_;
   }
 
   // AppBannerManager:
+  void OnDidGetManifest(const InstallableData& result) override {
+    AppBannerManagerDesktop::OnDidGetManifest(result);
+
+    // AppBannerManagerDesktop does not call |OnDidPerformInstallableCheck| to
+    // complete the installability check in this case, instead it early exits
+    // with failure.
+    if (result.error_code != NO_ERROR_DETECTED)
+      SetInstallable(false);
+  }
   void OnDidPerformInstallableCheck(const InstallableData& result) override {
     AppBannerManagerDesktop::OnDidPerformInstallableCheck(result);
-    got_data_ = true;
+    SetInstallable(result.error_code == NO_ERROR_DETECTED);
+  }
+
+ private:
+  void SetInstallable(bool installable) {
+    DCHECK(!installable_.has_value());
+    installable_ = installable;
     if (quit_closure_)
       std::move(quit_closure_).Run();
   }
 
- private:
-  bool got_data_ = false;
+  base::Optional<bool> installable_;
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAppBannerManagerDesktop);
@@ -328,6 +367,12 @@ class HostedAppTest
   GURL GetSecureAppURL() {
     return https_server()->GetURL("app.com", "/ssl/google.html");
   }
+
+  GURL GetInstallableAppURL() {
+    return https_server()->GetURL("/banners/manifest_test_page.html");
+  }
+
+  static const char* GetInstallableAppName() { return "Manifest test app"; }
 
   GURL GetSecureIFrameAppURL() {
     net::HostPortPair host_port_pair = net::HostPortPair::FromURL(
@@ -415,19 +460,6 @@ class HostedAppTest
     EXPECT_EQ(target_url, new_tab->GetLastCommittedURL());
   }
 
-  bool IsOpenInAppWindowOptionPresent(Browser* browser) {
-    DCHECK(!browser->hosted_app_controller())
-        << "This only applies to regular browser windows.";
-    auto model =
-        std::make_unique<AppMenuModel>(&empty_accelerator_provider_, browser);
-    model->Init();
-    for (int i = 0; i < model->GetItemCount(); ++i) {
-      if (model->GetCommandIdAt(i) == IDC_OPEN_IN_PWA_WINDOW)
-        return true;
-    }
-    return false;
-  }
-
   Browser* app_browser_;
   const extensions::Extension* app_;
 
@@ -440,16 +472,6 @@ class HostedAppTest
   }
 
  private:
-  class EmptyAcceleratorProvider : public ui::AcceleratorProvider {
-   public:
-    // Don't handle accelerators.
-    bool GetAcceleratorForCommandId(
-        int command_id,
-        ui::Accelerator* accelerator) const override {
-      return false;
-    }
-  } empty_accelerator_provider_;
-
   base::test::ScopedFeatureList scoped_feature_list_;
   AppType app_type_;
 
@@ -563,23 +585,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsOpenInChrome) {
 
   CheckWebContentsDoesNotHaveAppPrefs(
       browser()->tab_strip_model()->GetActiveWebContents());
-}
-
-// Tests that creating bookmark apps is disabled in incognito.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, CreateShortcutDisabledInIncognito) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  Browser* incognito_browser =
-      OpenURLOffTheRecord(profile(), GetSecureAppURL());
-  auto app_menu_model =
-      std::make_unique<AppMenuModel>(nullptr, incognito_browser);
-  app_menu_model->Init();
-  ui::MenuModel* model = app_menu_model.get();
-  int index = -1;
-  ASSERT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
-      IDC_CREATE_HOSTED_APP, &model, &index));
-  EXPECT_FALSE(model->IsEnabledAt(index));
 }
 
 // Check that the location bar is shown correctly.
@@ -987,6 +992,91 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallMenuOption) {
 #endif  // defined(OS_CHROMEOS)
 }
 
+// Tests that both installing a PWA and creating a shortcut app are disabled for
+// incognito windows.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ShortcutMenuOptionsInIncognito) {
+  Browser* incognito_browser = CreateIncognitoBrowser(profile());
+  auto* manager = TestAppBannerManagerDesktop::CreateForWebContents(
+      incognito_browser->tab_strip_model()->GetActiveWebContents());
+
+  ASSERT_TRUE(https_server()->Start());
+  NavigateToURLAndWait(incognito_browser, GetSecureAppURL());
+  EXPECT_FALSE(manager->WaitForInstallableCheck());
+
+  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, incognito_browser),
+            kDisabled);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, incognito_browser),
+            kNotPresent);
+}
+
+// Tests that both installing a PWA and creating a shortcut app are available
+// for an installable PWA.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+                       ShortcutMenuOptionsForInstallablePWA) {
+  auto* manager = TestAppBannerManagerDesktop::CreateForWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+
+  ASSERT_TRUE(https_server()->Start());
+  NavigateToURLAndWait(browser(), GetInstallableAppURL());
+  EXPECT_TRUE(manager->WaitForInstallableCheck());
+
+  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kEnabled);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kEnabled);
+}
+
+// Tests that creating a shortcut app but not installing a PWA is available for
+// a non-installable site.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+                       ShortcutMenuOptionsForNonInstallableSite) {
+  auto* manager = TestAppBannerManagerDesktop::CreateForWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+
+  ASSERT_TRUE(https_server()->Start());
+  NavigateToURLAndWait(browser(), GetMixedContentAppURL());
+  EXPECT_FALSE(manager->WaitForInstallableCheck());
+
+  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kEnabled);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kNotPresent);
+}
+
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallInstallableSite) {
+  ASSERT_TRUE(https_server()->Start());
+  NavigateToURLAndWait(browser(), GetInstallableAppURL());
+
+  chrome::SetAutoAcceptPWAInstallDialogForTesting(true);
+  chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA);
+  const extensions::Extension* app =
+      extensions::TestExtensionRegistryObserver(
+          extensions::ExtensionRegistry::Get(browser()->profile()))
+          .WaitForExtensionInstalled();
+  EXPECT_EQ(app->name(), GetInstallableAppName());
+  chrome::SetAutoAcceptPWAInstallDialogForTesting(false);
+
+  // Installed PWAs should launch in their own window.
+  EXPECT_EQ(extensions::GetLaunchContainer(
+                extensions::ExtensionPrefs::Get(browser()->profile()), app),
+            extensions::LAUNCH_CONTAINER_WINDOW);
+}
+
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreateShortcutForInstallableSite) {
+  ASSERT_TRUE(https_server()->Start());
+  NavigateToURLAndWait(browser(), GetInstallableAppURL());
+
+  chrome::SetAutoAcceptBookmarkAppDialogForTesting(true);
+  chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT);
+  const extensions::Extension* app =
+      extensions::TestExtensionRegistryObserver(
+          extensions::ExtensionRegistry::Get(browser()->profile()))
+          .WaitForExtensionInstalled();
+  EXPECT_EQ(app->name(), GetInstallableAppName());
+  chrome::SetAutoAcceptBookmarkAppDialogForTesting(false);
+
+  // Bookmark apps to PWAs should launch in a tab.
+  EXPECT_EQ(extensions::GetLaunchContainer(
+                extensions::ExtensionPrefs::Get(browser()->profile()), app),
+            extensions::LAUNCH_CONTAINER_TAB);
+}
+
 // Tests that the command for OpenActiveTabInPwaWindow is available for secure
 // pages in an app's scope.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
@@ -1001,7 +1091,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(tab_contents->GetLastCommittedURL(), GetSecureAppURL());
 
-  EXPECT_TRUE(IsOpenInAppWindowOptionPresent(browser()));
+  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
+            kEnabled);
 
   Browser* app_browser = ReparentSecureActiveTabIntoPwaWindow(browser());
 
@@ -1014,19 +1105,17 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallToShelfContainsAppName) {
   auto* manager = TestAppBannerManagerDesktop::CreateForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
 
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL test_url =
-      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
-  NavigateToURLAndWait(browser(), test_url);
+  ASSERT_TRUE(https_server()->Start());
+  NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
-  manager->WaitForInstallableCheck();
+  EXPECT_TRUE(manager->WaitForInstallableCheck());
 
   auto app_menu_model = std::make_unique<AppMenuModel>(nullptr, browser());
   app_menu_model->Init();
   ui::MenuModel* model = app_menu_model.get();
   int index = -1;
-  EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
-      IDC_CREATE_HOSTED_APP, &model, &index));
+  EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(IDC_INSTALL_PWA,
+                                                           &model, &index));
   EXPECT_EQ(app_menu_model.get(), model);
   EXPECT_EQ(model->GetLabelAt(index),
             base::UTF8ToUTF16("Install Manifest test app\xE2\x80\xA6"));
@@ -1061,7 +1150,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, MixedContentOpenInChrome) {
 
   // The WebContents is just reparented, so mixed content is still not loaded.
   CheckMixedContentFailedToLoad(browser());
-  EXPECT_TRUE(IsOpenInAppWindowOptionPresent(browser()));
+  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
+            kEnabled);
 
   ui_test_utils::UrlLoadObserver url_observer(
       GetMixedContentAppURL(), content::NotificationService::AllSources());
@@ -1072,7 +1162,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, MixedContentOpenInChrome) {
   // WebContents is no longer in a PWA window.
 
   CheckMixedContentLoaded(browser());
-  EXPECT_FALSE(IsOpenInAppWindowOptionPresent(browser()));
+  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
+            kNotPresent);
   EXPECT_EQ(ReparentSecureActiveTabIntoPwaWindow(browser()), nullptr);
 }
 
@@ -1092,7 +1183,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 
   // A regular tab should be able to load mixed content.
   CheckMixedContentLoaded(browser());
-  EXPECT_FALSE(IsOpenInAppWindowOptionPresent(browser()));
+  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
+            kNotPresent);
 
   Browser* app_browser = ReparentWebContentsIntoAppBrowser(tab_contents, app_);
 

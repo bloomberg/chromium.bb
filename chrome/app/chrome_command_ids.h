@@ -123,7 +123,7 @@
 
 // Show various bits of UI
 #define IDC_OPEN_FILE                   40000
-#define IDC_CREATE_HOSTED_APP           40002
+#define IDC_CREATE_SHORTCUT             40002
 #define IDC_DEVELOPER_MENU              40003
 #define IDC_DEV_TOOLS                   40004
 #define IDC_DEV_TOOLS_CONSOLE           40005
@@ -179,6 +179,7 @@
 #define IDC_CUSTOMIZE_TOUCH_BAR         40251
 #define IDC_SHOW_BETA_FORUM             40252
 #define IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS 40253
+#define IDC_INSTALL_PWA                 40254
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

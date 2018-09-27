@@ -389,9 +389,10 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
   if (contents_->IsBeingDestroyed())
     return;
 
-  for_installable_site_ = data.error_code == NO_ERROR_DETECTED
-                              ? ForInstallableSite::kYes
-                              : ForInstallableSite::kNo;
+  for_installable_site_ =
+      data.error_code == NO_ERROR_DETECTED && !shortcut_app_requested_
+          ? ForInstallableSite::kYes
+          : ForInstallableSite::kNo;
 
   UpdateWebAppInfoFromManifest(*data.manifest, &web_app_info_,
                                for_installable_site_);

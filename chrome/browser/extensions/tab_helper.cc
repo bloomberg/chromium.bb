@@ -181,14 +181,14 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   BookmarkManagerPrivateDragEventRouter::CreateForWebContents(web_contents);
 }
 
-void TabHelper::CreateHostedAppFromWebContents() {
+void TabHelper::CreateHostedAppFromWebContents(bool shortcut_app_requested) {
   DCHECK(CanCreateBookmarkApp());
   if (pending_web_app_action_ != NONE)
     return;
 
   // Start fetching web app info for CreateApplicationShortcut dialog and show
   // the dialog when the data is available in OnDidGetWebApplicationInfo.
-  GetApplicationInfo(CREATE_HOSTED_APP);
+  GetApplicationInfo(CREATE_HOSTED_APP, shortcut_app_requested);
 }
 
 bool TabHelper::CanCreateBookmarkApp() const {
@@ -334,6 +334,7 @@ void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
 
 void TabHelper::OnDidGetWebApplicationInfo(
     chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+    bool shortcut_app_requested,
     const WebApplicationInfo& info) {
   web_app_info_ = info;
 
@@ -357,6 +358,8 @@ void TabHelper::OnDidGetWebApplicationInfo(
           new BookmarkAppHelper(profile_, web_app_info_, contents,
                                 InstallableMetrics::GetInstallSource(
                                     contents, InstallTrigger::MENU)));
+      if (shortcut_app_requested)
+        bookmark_app_helper_->set_shortcut_app_requested();
       bookmark_app_helper_->Create(base::Bind(
           &TabHelper::FinishCreateBookmarkApp, weak_ptr_factory_.GetWeakPtr()));
       break;
@@ -576,7 +579,8 @@ void TabHelper::OnExtensionUnloaded(content::BrowserContext* browser_context,
     SetExtensionApp(nullptr);
 }
 
-void TabHelper::GetApplicationInfo(WebAppAction action) {
+void TabHelper::GetApplicationInfo(WebAppAction action,
+                                   bool shortcut_app_requested) {
   NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   if (!entry)
@@ -596,7 +600,7 @@ void TabHelper::GetApplicationInfo(WebAppAction action) {
   auto* web_app_info_proxy = chrome_render_frame.get();
   web_app_info_proxy->GetWebApplicationInfo(
       base::Bind(&TabHelper::OnDidGetWebApplicationInfo, base::Unretained(this),
-                 base::Passed(&chrome_render_frame)));
+                 base::Passed(&chrome_render_frame), shortcut_app_requested));
 }
 
 void TabHelper::SetTabId(content::RenderFrameHost* render_frame_host) {

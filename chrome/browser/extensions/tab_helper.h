@@ -54,7 +54,7 @@ class TabHelper : public content::WebContentsObserver,
  public:
   ~TabHelper() override;
 
-  void CreateHostedAppFromWebContents();
+  void CreateHostedAppFromWebContents(bool shortcut_app_requested);
   bool CanCreateBookmarkApp() const;
 
   // ScriptExecutionObserver::Delegate
@@ -157,6 +157,7 @@ class TabHelper : public content::WebContentsObserver,
   // Message handlers.
   void OnDidGetWebApplicationInfo(
       chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+      bool shortcut_app_requested,
       const WebApplicationInfo& info);
   void OnGetAppInstallState(content::RenderFrameHost* host,
                             const GURL& requestor_url,
@@ -190,7 +191,7 @@ class TabHelper : public content::WebContentsObserver,
   // Requests application info for the specified page. This is an asynchronous
   // request. The delegate is notified by way of OnDidGetWebApplicationInfo when
   // the data is available.
-  void GetApplicationInfo(WebAppAction action);
+  void GetApplicationInfo(WebAppAction action, bool shortcut_app_requested);
 
   // Sends our tab ID to |render_frame_host|.
   void SetTabId(content::RenderFrameHost* render_frame_host);
