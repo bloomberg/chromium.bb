@@ -7,19 +7,20 @@
 
 #include <memory>
 
-#include "ash/frame/custom_frame_header.h"
+#include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/shell_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/command_observer.h"
-#include "chrome/browser/ui/ash/browser_image_registrar.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
+#include "chrome/browser/ui/views/frame/browser_frame_header_ash.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/ws/common/types.h"
 #include "ui/aura/window_observer.h"
 
 class Browser;
@@ -41,12 +42,13 @@ class FrameCaptionButtonContainerView;
 // Provides the BrowserNonClientFrameView for Chrome OS.
 class BrowserNonClientFrameViewAsh
     : public BrowserNonClientFrameView,
-      public ash::CustomFrameHeader::AppearanceProvider,
+      public BrowserFrameHeaderAsh::AppearanceProvider,
       public ash::ShellObserver,
       public TabletModeClientObserver,
       public TabIconViewModel,
       public CommandObserver,
       public ash::mojom::SplitViewObserver,
+      public ash::FrameCaptionDelegate,
       public aura::WindowObserver,
       public ImmersiveModeController::Observer {
  public:
@@ -58,12 +60,10 @@ class BrowserNonClientFrameViewAsh
   ash::mojom::SplitViewObserverPtr CreateInterfacePtrForTesting();
 
   // BrowserNonClientFrameView:
-  void OnSingleTabModeChanged() override;
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
-  void UpdateClientArea() override;
   void UpdateMinimumSize() override;
   int GetTabStripLeftInset() const override;
   void OnTabsMaxXChanged() override;
@@ -89,7 +89,7 @@ class BrowserNonClientFrameViewAsh
   void OnThemeChanged() override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
-  // ash::CustomFrameHeader::AppearanceProvider:
+  // BrowserFrameHeaderAsh::AppearanceProvider:
   SkColor GetTitleColor() override;
   SkColor GetFrameHeaderColor(bool active) override;
   gfx::ImageSkia GetFrameHeaderImage(bool active) override;
@@ -113,6 +113,13 @@ class BrowserNonClientFrameViewAsh
   // ash::mojom::SplitViewObserver:
   void OnSplitViewStateChanged(
       ash::mojom::SplitViewState current_state) override;
+
+  // ash::FrameCaptionDelegate:
+  bool CanSnap(aura::Window* window) override;
+  void ShowSnapPreview(aura::Window* window,
+                       ash::mojom::SnapDirection snap) override;
+  void CommitSnap(aura::Window* window,
+                  ash::mojom::SnapDirection snap) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -199,6 +206,8 @@ class BrowserNonClientFrameViewAsh
   // Updates the kTopViewInset window property after a layout.
   void UpdateTopViewInset();
 
+  ws::Id GetServerWindowId() const;
+
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_ = nullptr;
 
@@ -240,12 +249,8 @@ class BrowserNonClientFrameViewAsh
   ash::mojom::SplitViewState split_view_state_ =
       ash::mojom::SplitViewState::NO_SNAP;
 
-  // A reference to the entry in BrowserImageRegistrar for each frame
-  // image. Multiple windows that share a browser theme will hold onto each ref.
-  scoped_refptr<ImageRegistration> active_frame_image_registration_;
-  scoped_refptr<ImageRegistration> inactive_frame_image_registration_;
-  scoped_refptr<ImageRegistration> active_frame_overlay_image_registration_;
-  scoped_refptr<ImageRegistration> inactive_frame_overlay_image_registration_;
+  // Only used in mash.
+  ash::mojom::AshWindowManagerAssociatedPtr ash_window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAsh);
 };

@@ -123,12 +123,8 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
       case CAPTION_BUTTON_ICON_CLOSE:
         return true;
 
+      // No back or menu button by default.
       case CAPTION_BUTTON_ICON_BACK:
-        return frame_->GetNativeWindow()->GetProperty(
-                   ash::kFrameBackButtonStateKey) !=
-               ash::FrameBackButtonState::kNone;
-
-      // No menu button by default.
       case CAPTION_BUTTON_ICON_MENU:
       case CAPTION_BUTTON_ICON_ZOOM:
         return false;
@@ -141,12 +137,6 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
     return false;
   }
   bool IsEnabled(CaptionButtonIcon type) const override {
-    if (type == CAPTION_BUTTON_ICON_BACK) {
-      return frame_->GetNativeWindow()->GetProperty(
-                 ash::kFrameBackButtonStateKey) ==
-             ash::FrameBackButtonState::kEnabled;
-    }
-
     return true;
   }
   bool InZoomMode() const override { return false; }
@@ -517,12 +507,11 @@ bool FrameCaptionButtonContainerView::CanSnap() {
 }
 
 void FrameCaptionButtonContainerView::ShowSnapPreview(
-    FrameCaptionDelegate::SnapDirection snap) {
+    mojom::SnapDirection snap) {
   delegate_->ShowSnapPreview(frame_->GetNativeWindow(), snap);
 }
 
-void FrameCaptionButtonContainerView::CommitSnap(
-    FrameCaptionDelegate::SnapDirection snap) {
+void FrameCaptionButtonContainerView::CommitSnap(mojom::SnapDirection snap) {
   delegate_->CommitSnap(frame_->GetNativeWindow(), snap);
 }
 

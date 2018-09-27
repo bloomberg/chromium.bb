@@ -40,14 +40,13 @@ bool HitTestButton(const FrameCaptionButton* button,
   return expanded_bounds_in_screen.Contains(location_in_screen);
 }
 
-FrameCaptionDelegate::SnapDirection GetSnapDirection(
-    const FrameCaptionButton* to_hover) {
+mojom::SnapDirection GetSnapDirection(const FrameCaptionButton* to_hover) {
   if (to_hover) {
     switch (to_hover->icon()) {
       case CAPTION_BUTTON_ICON_LEFT_SNAPPED:
-        return FrameCaptionDelegate::SnapDirection::kLeft;
+        return mojom::SnapDirection::kLeft;
       case CAPTION_BUTTON_ICON_RIGHT_SNAPPED:
-        return FrameCaptionDelegate::SnapDirection::kRight;
+        return mojom::SnapDirection::kRight;
       case CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
       case CAPTION_BUTTON_ICON_MINIMIZE:
       case CAPTION_BUTTON_ICON_CLOSE:
@@ -61,7 +60,7 @@ FrameCaptionDelegate::SnapDirection GetSnapDirection(
     }
   }
 
-  return FrameCaptionDelegate::SnapDirection::kNone;
+  return mojom::SnapDirection::kNone;
 }
 
 }  // namespace
@@ -198,7 +197,7 @@ void FrameSizeButton::UpdateSnapPreview(const ui::LocatedEvent& event) {
   }
 
   const FrameCaptionButton* to_hover = GetButtonToHover(event);
-  FrameCaptionDelegate::SnapDirection snap = GetSnapDirection(to_hover);
+  mojom::SnapDirection snap = GetSnapDirection(to_hover);
 
   gfx::Point event_location_in_screen(event.location());
   views::View::ConvertPointToScreen(this, &event_location_in_screen);
@@ -231,14 +230,13 @@ const FrameCaptionButton* FrameSizeButton::GetButtonToHover(
 }
 
 bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
-  FrameCaptionDelegate::SnapDirection snap =
-      GetSnapDirection(GetButtonToHover(event));
+  mojom::SnapDirection snap = GetSnapDirection(GetButtonToHover(event));
   delegate_->CommitSnap(snap);
   delegate_->SetHoveredAndPressedButtons(nullptr, nullptr);
 
-  if (snap == FrameCaptionDelegate::SnapDirection::kLeft) {
+  if (snap == mojom::SnapDirection::kLeft) {
     base::RecordAction(base::UserMetricsAction("MaxButton_MaxLeft"));
-  } else if (snap == FrameCaptionDelegate::SnapDirection::kRight) {
+  } else if (snap == mojom::SnapDirection::kRight) {
     base::RecordAction(base::UserMetricsAction("MaxButton_MaxRight"));
   } else {
     SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_YES);

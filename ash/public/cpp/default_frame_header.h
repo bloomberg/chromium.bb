@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_DEFAULT_FRAME_HEADER_H_
-#define ASH_FRAME_DEFAULT_FRAME_HEADER_H_
+#ifndef ASH_PUBLIC_CPP_DEFAULT_FRAME_HEADER_H_
+#define ASH_PUBLIC_CPP_DEFAULT_FRAME_HEADER_H_
 
 #include <memory>
 
-#include "ash/ash_export.h"
-#include "ash/frame/frame_header.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/frame_header.h"
 #include "base/compiler_specific.h"  // override
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -18,7 +18,7 @@ namespace ash {
 
 // Helper class for managing the default window header, which is used for
 // Chrome apps (but not bookmark apps), for example.
-class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
+class ASH_PUBLIC_EXPORT DefaultFrameHeader : public FrameHeader {
  public:
   // DefaultFrameHeader does not take ownership of any of the parameters.
   DefaultFrameHeader(views::Widget* target_widget,
@@ -33,6 +33,8 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
     return inactive_frame_color_.target_color();
   }
 
+  void SetWidthInPixels(int width_in_pixels);
+
  protected:
   // FrameHeader:
   void DoPaintHeader(gfx::Canvas* canvas) override;
@@ -41,7 +43,6 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
   AshLayoutSize GetButtonLayoutSize() const override;
   SkColor GetTitleColor() const override;
   SkColor GetCurrentFrameColor() const override;
-  void SetWidthInPixels(int width_in_pixels) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DefaultFrameHeaderTest, FrameColors);
@@ -81,4 +82,4 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_DEFAULT_FRAME_HEADER_H_
+#endif  // ASH_PUBLIC_CPP_DEFAULT_FRAME_HEADER_H_

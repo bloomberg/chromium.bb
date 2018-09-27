@@ -28,8 +28,6 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::mojom::WindowStateType)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::BackdropWindowMode)
-DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
-                                       ash::FrameBackButtonState)
 
 namespace ash {
 namespace {
@@ -54,26 +52,9 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterPrimitiveProperty(
       kCanConsumeSystemKeysKey, mojom::kCanConsumeSystemKeys_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterRectProperty(
-      kCaptionButtonBoundsKey, mojom::kCaptionButtonBounds_Property);
-  property_converter->RegisterPrimitiveProperty(
-      kFrameBackButtonStateKey,
-      ws::mojom::WindowManager::kFrameBackButtonState_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kFrameActiveColorKey,
       ws::mojom::WindowManager::kFrameActiveColor_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterUnguessableTokenProperty(
-      kFrameImageActiveKey, mojom::kFrameImageActive_Property);
-  property_converter->RegisterUnguessableTokenProperty(
-      kFrameImageInactiveKey, mojom::kFrameImageInactive_Property);
-  property_converter->RegisterUnguessableTokenProperty(
-      kFrameImageActiveKey, mojom::kFrameImageOverlayActive_Property);
-  property_converter->RegisterUnguessableTokenProperty(
-      kFrameImageActiveKey, mojom::kFrameImageOverlayInactive_Property);
-  property_converter->RegisterPrimitiveProperty(
-      kFrameImageYInsetKey, mojom::kFrameImageYInset_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kHideCaptionButtonsInTabletModeKey,
@@ -85,9 +66,6 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kFrameIsThemedByHostedAppKey, mojom::kFrameIsThemedByHostedApp_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterPrimitiveProperty(
-      kFrameTextColorKey, mojom::kFrameTextColor_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kHideShelfWhenFullscreenKey, mojom::kHideShelfWhenFullscreen_Property,
@@ -176,23 +154,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kBlockedForAssistantSnapshotKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanAttachToAnotherWindowKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kCaptionButtonBoundsKey, nullptr);
-DEFINE_UI_CLASS_PROPERTY_KEY(FrameBackButtonState,
-                             kFrameBackButtonStateKey,
-                             FrameBackButtonState::kNone);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
-                                   kFrameImageActiveKey,
-                                   nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
-                                   kFrameImageInactiveKey,
-                                   nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
-                                   kFrameImageOverlayActiveKey,
-                                   nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
-                                   kFrameImageOverlayInactiveKey,
-                                   nullptr);
-DEFINE_UI_CLASS_PROPERTY_KEY(int, kFrameImageYInsetKey, 0);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideCaptionButtonsInTabletModeKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideInOverviewKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true);
@@ -233,9 +194,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
                              kFrameInactiveColorKey,
                              kDefaultFrameColor);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kFrameIsThemedByHostedAppKey, false);
-DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
-                             kFrameTextColorKey,
-                             gfx::kPlaceholderColor);
 DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowPinType,
                              kWindowPinTypeKey,
                              mojom::WindowPinType::NONE);

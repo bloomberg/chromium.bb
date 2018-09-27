@@ -4,9 +4,21 @@
 
 module ash.mojom;
 
+// The previewed snap state for a window, corresponding to the use of a
+// PhantomWindowController.
+enum SnapDirection {
+  kNone,   // No snap preview.
+  kLeft,   // The phantom window controller is previewing a snap to the left.
+  kRight,  // The phantom window controller is previewing a snap to the left.
+};
+
 // Interface exposed via WindowTree::BindWindowManagerInterface(). This
 // interface is used for functionality specific to Ash that is associated with
 // windows created by the window service.
 interface AshWindowManager {
   AddWindowToTabletMode(uint64 window_id);
+
+  ShowSnapPreview(uint64 window_id, SnapDirection snap);
+
+  CommitSnap(uint64 window_id, SnapDirection snap);
 };

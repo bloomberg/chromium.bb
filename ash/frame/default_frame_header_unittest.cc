@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/default_frame_header.h"
+#include "ash/public/cpp/default_frame_header.h"
 
 #include <memory>
 

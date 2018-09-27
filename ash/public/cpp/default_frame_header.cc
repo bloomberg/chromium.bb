@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/default_frame_header.h"
+#include "ash/public/cpp/default_frame_header.h"
 
-#include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"  // DCHECK
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -115,7 +112,7 @@ void DefaultFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
   int corner_radius =
       (target_widget()->IsMaximized() || target_widget()->IsFullscreen())
           ? 0
-          : FrameHeaderUtil::GetTopCornerRadiusWhenRestored();
+          : kTopCornerRadiusWhenRestored;
 
   cc::PaintFlags flags;
   int active_alpha = activation_animation().CurrentValueBetween(0, 255);

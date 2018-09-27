@@ -2,20 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_CUSTOM_FRAME_HEADER_H_
-#define ASH_FRAME_CUSTOM_FRAME_HEADER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_HEADER_ASH_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_HEADER_ASH_H_
 
-#include "ash/ash_export.h"
-#include "ash/frame/frame_header.h"
+#include "ash/public/cpp/frame_header.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace ash {
-
 // Helper class for drawing a custom frame (such as for a themed Chrome Browser
 // frame).
-class ASH_EXPORT CustomFrameHeader : public FrameHeader {
+class BrowserFrameHeaderAsh : public ash::FrameHeader {
  public:
   class AppearanceProvider {
    public:
@@ -29,20 +26,24 @@ class ASH_EXPORT CustomFrameHeader : public FrameHeader {
 
   // BrowserFrameHeaderAsh does not take ownership of any of the parameters.
   // |target_widget| is the widget that the caption buttons act on.
-  // |view| is the view into which |this| will paint. |back_button| can be
-  // nullptr, and the frame will not have a back button.
-  CustomFrameHeader(views::Widget* target_widget,
-                    views::View* view,
-                    AppearanceProvider* appearance_provider,
-                    FrameCaptionButtonContainerView* caption_button_container);
-  ~CustomFrameHeader() override;
+  // |view| is the view into which |this| will paint.
+  BrowserFrameHeaderAsh(
+      views::Widget* target_widget,
+      views::View* view,
+      AppearanceProvider* appearance_provider,
+      ash::FrameCaptionButtonContainerView* caption_button_container);
+  ~BrowserFrameHeaderAsh() override;
+
+  // Returns the amount that the frame background is inset from the left edge of
+  // the window.
+  static int GetThemeBackgroundXInset();
 
  protected:
   // FrameHeader:
   void DoPaintHeader(gfx::Canvas* canvas) override;
   void DoSetFrameColors(SkColor active_frame_color,
                         SkColor inactive_frame_color) override;
-  AshLayoutSize GetButtonLayoutSize() const override;
+  ash::AshLayoutSize GetButtonLayoutSize() const override;
   SkColor GetTitleColor() const override;
   SkColor GetCurrentFrameColor() const override;
 
@@ -53,9 +54,7 @@ class ASH_EXPORT CustomFrameHeader : public FrameHeader {
 
   AppearanceProvider* appearance_provider_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(CustomFrameHeader);
+  DISALLOW_COPY_AND_ASSIGN(BrowserFrameHeaderAsh);
 };
 
-}  // namespace ash
-
-#endif  // ASH_FRAME_CUSTOM_FRAME_HEADER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_HEADER_ASH_H_

@@ -139,8 +139,8 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
   void SetHoveredAndPressedButtons(const FrameCaptionButton* to_hover,
                                    const FrameCaptionButton* to_press) override;
   bool CanSnap() override;
-  void ShowSnapPreview(FrameCaptionDelegate::SnapDirection snap) override;
-  void CommitSnap(FrameCaptionDelegate::SnapDirection snap) override;
+  void ShowSnapPreview(mojom::SnapDirection snap) override;
+  void CommitSnap(mojom::SnapDirection snap) override;
 
   // The widget that the buttons act on.
   views::Widget* frame_;
