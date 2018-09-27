@@ -83,6 +83,7 @@ target("jumbo_" + modules_target_type, "modules") {
   deps = [
     ":make_modules_generated",
     ":module_names",
+    "//net:net",
     "//third_party/blink/renderer/bindings/modules:generated",
     "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_impl",
     "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_origin_trial_features",
@@ -164,6 +165,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/xr",
     "//third_party/icu",
     "//third_party/webrtc/pc:libjingle_peerconnection",
+    "//third_party/webrtc/rtc_base:rtc_base",
     "//third_party/webrtc_overrides:init_webrtc",
     "//third_party/zlib",
   ]
@@ -297,6 +299,7 @@ jumbo_source_set("unit_tests") {
     "payments/payment_test_helper.cc",
     "payments/payment_test_helper.h",
     "payments/payments_validators_test.cc",
+    "peerconnection/adapters/p2p_quic_transport_test.cc",
     "peerconnection/rtc_data_channel_test.cc",
     "peerconnection/rtc_ice_transport_test.cc",
     "peerconnection/rtc_peer_connection_test.cc",
@@ -339,6 +342,7 @@ jumbo_source_set("unit_tests") {
   deps = [
     ":modules",
     ":modules_testing",
+    "//net:quic_test_tools",
     "//services/device/public/cpp/test:test_support",
     "//services/viz/public/interfaces:interfaces_blink",
     "//skia",
@@ -349,6 +353,7 @@ jumbo_source_set("unit_tests") {
     "//third_party/blink/renderer/modules/storage:unit_tests",
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
+    "//third_party/webrtc/rtc_base:rtc_base",
     "//v8",
   ]
 }
