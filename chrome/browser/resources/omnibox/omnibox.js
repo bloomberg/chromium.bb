@@ -18,19 +18,11 @@
  */
 
 (function () {
-  /**
-   * Register our event handlers.
-   */
-  function initialize() {
-    $('input-text').addEventListener('input', startOmniboxQuery, false);
-    $('prevent-inline-autocomplete')
-        .addEventListener('change', startOmniboxQuery);
-    $('prefer-keyword').addEventListener('change', startOmniboxQuery);
-    $('page-classification').addEventListener('change', startOmniboxQuery);
-    $('show-details').addEventListener('change', refresh);
-    $('show-incomplete-results').addEventListener('change', refresh);
-    $('show-all-providers').addEventListener('change', refresh);
-  }
+  // Variables to DOM elements to avoid multiple document.getElement calls.
+  let omniboxDebugText;
+  let showIncompleteResults;
+  let showDetails;
+  let showAllProviders;
 
   /**
    * @type {!Array<mojom.OmniboxResult>} an array of all autocomplete results we've seen
@@ -48,12 +40,32 @@
   let cursorPositionUsed = -1;
 
   /**
+   * Register our event handlers.
+   */
+  function initialize() {
+    omniboxDebugText = $('omnibox-debug-text');
+    showIncompleteResults = $('show-incomplete-results');
+    showDetails = $('show-details');
+    showAllProviders = $('show-all-providers');
+
+    $('input-text').addEventListener('input', startOmniboxQuery);
+    $('prevent-inline-autocomplete')
+        .addEventListener('change', startOmniboxQuery);
+    $('prefer-keyword').addEventListener('change', startOmniboxQuery);
+    $('page-classification').addEventListener('change', startOmniboxQuery);
+    showIncompleteResults.addEventListener('change', refreshAllResults);
+    showDetails.addEventListener('change', refreshAllResults);
+    showAllProviders.addEventListener('change', refreshAllResults);
+  }
+
+  /**
    * Extracts the input text from the text field and sends it to the
    * C++ portion of chrome to handle.  The C++ code will iteratively
    * call handleNewAutocompleteResult as results come in.
    */
   function startOmniboxQuery(event) {
     // First, clear the results of past calls (if any).
+    clearOutput();
     progressiveAutocompleteResults = [];
     // Then, call chrome with a five-element list:
     // - first element: the value in the text box
@@ -61,14 +73,12 @@
     // - third element: the value of prevent-inline-autocomplete
     // - forth element: the value of prefer-keyword
     // - fifth element: the value of page-classification
-    cursorPositionUsed = $('input-text').selectionEnd;
+    let inputTextElement = $('input-text');
+    cursorPositionUsed = inputTextElement.selectionEnd;
     browserProxy.startOmniboxQuery(
-        $('input-text').value, cursorPositionUsed,
+        inputTextElement.value, cursorPositionUsed,
         $('prevent-inline-autocomplete').checked, $('prefer-keyword').checked,
         parseInt($('page-classification').value, 10));
-    // Cancel the submit action.  i.e., don't submit the form.  (We handle
-    // display the results solely with Javascript.)
-    event.preventDefault();
   }
 
   /**
@@ -272,21 +282,16 @@
    * for each autocomplete match.  The input parameter is an OmniboxResultMojo.
    */
   function addResultToOutput(result) {
-    let output = $('omnibox-debug-text');
-    let inDetailedMode = $('show-details').checked;
-    let showIncompleteResults = $('show-incomplete-results').checked;
-    let showPerProviderResults = $('show-all-providers').checked;
-
     // Output the result-level features in detailed mode and in
     // show incomplete results mode.  We do the latter because without
     // these result-level features, one can't make sense of each
     // batch of results.
-    if (inDetailedMode || showIncompleteResults) {
-      addParagraph(output, `cursor position = ${cursorPositionUsed}`);
-      addParagraph(output, `inferred input type = ${result.type}`);
+    if (showDetails.checked || showIncompleteResults.checked) {
+      addParagraph(omniboxDebugText, `cursor position = ${cursorPositionUsed}`);
+      addParagraph(omniboxDebugText, `inferred input type = ${result.type}`);
       addParagraph(
-          output, `elapsed time = ${result.timeSinceOmniboxStartedMs}ms`);
-      addParagraph(output, `all providers done = ${result.done}`);
+          omniboxDebugText, `elapsed time = ${result.timeSinceOmniboxStartedMs}ms`);
+      addParagraph(omniboxDebugText, `all providers done = ${result.done}`);
       let p = document.createElement('p');
       p.textContent = `host = ${result.host}`;
       // The field isn't actually optional in the mojo object; instead it assumes
@@ -298,22 +303,22 @@
         p.textContent =
             p.textContent + ` has isTypedHost = ${result.isTypedHost}`;
       }
-      output.appendChild(p);
+      omniboxDebugText.appendChild(p);
     }
 
     // Combined results go after the lines below.
     let group = document.createElement('a');
     group.className = 'group-separator';
     group.textContent = 'Combined results.';
-    output.appendChild(group);
+    omniboxDebugText.appendChild(group);
 
     // Add combined/merged result table.
     let p = document.createElement('p');
     p.appendChild(addResultTableToOutput(result.combinedResults));
-    output.appendChild(p);
+    omniboxDebugText.appendChild(p);
 
     // Move forward only if you want to display per provider results.
-    if (!showPerProviderResults) {
+    if (!showAllProviders.checked) {
       return;
     }
 
@@ -321,7 +326,7 @@
     group = document.createElement('a');
     group.className = 'group-separator';
     group.textContent = 'Results for individual providers.';
-    output.appendChild(group);
+    omniboxDebugText.appendChild(group);
 
     // Add the per-provider result tables with labels. We do not append the
     // combined/merged result table since we already have the per provider
@@ -332,7 +337,7 @@
         return;
       let p = document.createElement('p');
       p.appendChild(addResultTableToOutput(providerResults.results));
-      output.appendChild(p);
+      omniboxDebugText.appendChild(p);
     });
   }
 
@@ -392,20 +397,34 @@
    * entry unless we're asked to display incomplete results.  For an
    * example of the output, play with chrome://omnibox/
    */
-  function refresh() {
-    // Erase whatever is currently being displayed.
-    let output = $('omnibox-debug-text');
-    output.innerHTML = '';
+  function refreshAllResults() {
+    clearOutput();
+    if (showIncompleteResults.checked)
+      progressiveAutocompleteResults.forEach(addResultToOutput);
+    else if (progressiveAutocompleteResults.length)
+      addResultToOutput(progressiveAutocompleteResults[progressiveAutocompleteResults.length - 1]);
+  }
 
-    if (progressiveAutocompleteResults.length > 0) {  // if we have results
-      // Display the results.
-      let showIncompleteResults = $('show-incomplete-results').checked;
-      let startIndex =
-          showIncompleteResults ? 0 : progressiveAutocompleteResults.length - 1;
-      for (let i = startIndex; i < progressiveAutocompleteResults.length; i++) {
-        addResultToOutput(progressiveAutocompleteResults[i]);
-      }
-    }
+  /*
+   * Adds the last result, based on the contents of the array
+   * progressiveAutocompleteResults, to the page. If we're not displaying
+   * incomplete results, we clear the page and add the last result, similar to
+   * refreshAllResults. If we are displaying incomplete results, then this is
+   * more efficient than refreshAllResults, as there's no need to clear and
+   * re-add previous results.
+   */
+  function refreshNewResult() {
+    if (!showIncompleteResults.checked)
+      clearOutput();
+    addResultToOutput(progressiveAutocompleteResults[progressiveAutocompleteResults.length - 1]);
+  }
+
+  /*
+    Removes all results from the page.
+   */
+  function clearOutput() {
+    while (omniboxDebugText.firstChild)
+      omniboxDebugText.removeChild(omniboxDebugText.firstChild);
   }
 
 // NOTE: Need to keep a global reference to the |pageImpl| such that it is not
@@ -426,7 +445,7 @@
 
       handleNewAutocompleteResult(result) {
         progressiveAutocompleteResults.push(result);
-        refresh();
+        refreshNewResult();
       }
     }
 
