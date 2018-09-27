@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/webui/management_ui_handler.h"
 
+#include <algorithm>
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -13,8 +17,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -25,6 +31,16 @@
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
+#include "extensions/common/manifest.h"
+#include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/permissions_data.h"
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 const char kManagementLogUploadEnabled[] = "managementLogUploadEnabled";
 const char kManagementReportActivityTimes[] = "managementReportActivityTimes";
@@ -94,6 +110,53 @@ void AddChromeOSReportingInfo(base::Value* report_sources) {
 }
 #endif  // defined(OS_CHROMEOS)
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+
+std::vector<base::Value> GetPermissionsForExtension(
+    scoped_refptr<const extensions::Extension> extension) {
+  std::vector<base::Value> permission_messages;
+  // Only consider force installed extensions
+  if (!extensions::Manifest::IsPolicyLocation(extension->location()))
+    return permission_messages;
+
+  extensions::PermissionIDSet permissions =
+      extensions::PermissionMessageProvider::Get()->GetAllPermissionIDs(
+          extension->permissions_data()->active_permissions(),
+          extension->GetType());
+
+  const extensions::PermissionMessages messages =
+      extensions::PermissionMessageProvider::Get()
+          ->GetPowerfulPermissionMessages(permissions);
+
+  for (const auto& message : messages)
+    permission_messages.push_back(base::Value(message.message()));
+
+  return permission_messages;
+}
+
+base::Value GetPowerfulExtensions(const extensions::ExtensionSet& extensions) {
+  base::Value powerful_extensions(base::Value::Type::LIST);
+
+  for (const auto& extension : extensions) {
+    std::vector<base::Value> permission_messages =
+        GetPermissionsForExtension(extension);
+
+    // Only show extension on page if there is at least one permission
+    // message to show.
+    if (!permission_messages.empty()) {
+      base::Value extension_to_add(base::Value::Type::DICTIONARY);
+      extension_to_add.SetKey("name", base::Value(extension->name()));
+      extension_to_add.SetKey("permissions",
+                              base::Value(std::move(permission_messages)));
+      powerful_extensions.GetList().push_back(std::move(extension_to_add));
+    }
+  }
+
+  return powerful_extensions;
+}
+
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
 }  // namespace
 
 ManagementUIHandler::ManagementUIHandler() {}
@@ -108,6 +171,10 @@ void ManagementUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getReportingInfo",
       base::BindRepeating(&ManagementUIHandler::HandleGetReportingInfo,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getExtensions",
+      base::BindRepeating(&ManagementUIHandler::HandleGetExtensions,
                           base::Unretained(this)));
 }
 
@@ -140,4 +207,21 @@ void ManagementUIHandler::HandleGetReportingInfo(const base::ListValue* args) {
 
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             report_sources);
+}
+
+void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // List of all enabled extensions
+  const extensions::ExtensionSet& extensions =
+      extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
+          ->enabled_extensions();
+
+  base::Value powerful_extensions = GetPowerfulExtensions(extensions);
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            powerful_extensions);
+#else
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            base::Value(base::Value::Type::LIST));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
