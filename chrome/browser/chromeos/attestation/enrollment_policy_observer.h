@@ -73,6 +73,8 @@ class EnrollmentPolicyObserver : public DeviceSettingsService::Observer {
   int num_retries_;
   int retry_limit_;
   int retry_delay_;
+  // Whether we are requesting an EID right now.
+  bool request_in_flight_ = false;
   // Used to remember we uploaded an empty identifier this session for
   // devices that can't obtain the identifier until they are powerwashed or
   // updated and rebooted (see http://crbug.com/867724).

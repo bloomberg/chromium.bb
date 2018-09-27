@@ -4,7 +4,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <queue>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -37,6 +40,42 @@ void StatusCallbackSuccess(
                                                 base::BindOnce(callback, true));
 }
 
+// A FakeCryptohomeClient that can hold call until told to flush them all.
+class CallsHoldingFakeCryptohomeClient : public FakeCryptohomeClient {
+ public:
+  void set_hold_calls(bool hold_calls) { hold_calls_ = hold_calls; }
+
+  void TpmAttestationGetEnrollmentId(
+      bool ignore_cache,
+      DBusMethodCallback<TpmAttestationDataResult> callback) override {
+    if (hold_calls_) {
+      held_calls_.push(base::BindOnce(
+          &CallsHoldingFakeCryptohomeClient::DoTpmAttestationGetEnrollmentId,
+          base::Unretained(this), ignore_cache, std::move(callback)));
+    } else {
+      DoTpmAttestationGetEnrollmentId(ignore_cache, std::move(callback));
+    }
+  }
+
+  void FlushCalls() {
+    while (!held_calls_.empty()) {
+      std::move(held_calls_.front()).Run();
+      held_calls_.pop();
+    }
+  }
+
+ private:
+  void DoTpmAttestationGetEnrollmentId(
+      bool ignore_cache,
+      DBusMethodCallback<TpmAttestationDataResult> callback) {
+    FakeCryptohomeClient::TpmAttestationGetEnrollmentId(ignore_cache,
+                                                        std::move(callback));
+  }
+
+  bool hold_calls_ = false;
+  std::queue<base::OnceClosure> held_calls_;
+};
+
 }  // namespace
 
 class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
@@ -56,68 +95,110 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
   static constexpr char kEnrollmentId[] =
       "6fcc0ebddec3db9500cf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
 
-  void SetUpEnrollmentIdNeeded(bool enrollment_id_needed) {
-    if (enrollment_id_needed) {
-      EXPECT_CALL(policy_client_,
-                  UploadEnterpriseEnrollmentId(enrollment_id_, _))
-          .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
-    }
-    SetUpDevicePolicy(enrollment_id_needed);
+  void SetUpObserver() {
+    observer_ = std::make_unique<EnrollmentPolicyObserver>(
+        &policy_client_, &device_settings_service_, &cryptohome_client_);
+    observer_->set_retry_limit(3);
+    observer_->set_retry_delay(0);
+  }
+
+  void ExpectUploadEnterpriseEnrollmentId(int times) {
+    EXPECT_CALL(policy_client_, UploadEnterpriseEnrollmentId(enrollment_id_, _))
+        .Times(times)
+        .WillRepeatedly(WithArgs<1>(Invoke(StatusCallbackSuccess)));
   }
 
   void SetUpDevicePolicy(bool enrollment_id_needed) {
     device_policy_.policy_data().set_enrollment_id_needed(enrollment_id_needed);
+  }
+
+  void PropagateDevicePolicy() {
     ReloadDevicePolicy();
     ReloadDeviceSettings();
   }
 
   void Run() {
-    EnrollmentPolicyObserver observer(
-        &policy_client_, &device_settings_service_, &cryptohome_client_);
-    observer.set_retry_limit(3);
-    observer.set_retry_delay(0);
     base::RunLoop().RunUntilIdle();
   }
 
-  FakeCryptohomeClient cryptohome_client_;
+  CallsHoldingFakeCryptohomeClient cryptohome_client_;
   StrictMock<policy::MockCloudPolicyClient> policy_client_;
+  std::unique_ptr<EnrollmentPolicyObserver> observer_;
   std::string enrollment_id_;
 };
 
 constexpr char EnrollmentPolicyObserverTest::kEnrollmentId[];
 
 TEST_F(EnrollmentPolicyObserverTest, UploadEnterpriseEnrollmentId) {
-  SetUpEnrollmentIdNeeded(true);
+  SetUpDevicePolicy(true);
+  ExpectUploadEnterpriseEnrollmentId(1);
+  SetUpObserver();
+  PropagateDevicePolicy();
+  Run();
+}
+
+TEST_F(EnrollmentPolicyObserverTest,
+       UploadEnterpriseEnrollmentIdFromExistingPolicy) {
+  // This test will trigger the observer work twice in a row: when the
+  // observer is created, and when it gets notified later on.
+  SetUpDevicePolicy(true);
+  PropagateDevicePolicy();
+  ExpectUploadEnterpriseEnrollmentId(2);
+  SetUpObserver();
+  PropagateDevicePolicy();
+  Run();
+}
+
+TEST_F(EnrollmentPolicyObserverTest,
+       UploadEnterpriseEnrollmentIdWithDelayedCallbacks) {
+  // We hold calls to cryptohome so that one is still pending by the time the
+  // observer gets notified. We expect only one upload despite the concurrent
+  // calls.
+  cryptohome_client_.set_hold_calls(true);
+  SetUpDevicePolicy(true);
+  ExpectUploadEnterpriseEnrollmentId(1);
+  PropagateDevicePolicy();
+  SetUpObserver();
+  cryptohome_client_.FlushCalls();
   Run();
 }
 
 TEST_F(EnrollmentPolicyObserverTest, FeatureDisabled) {
-  SetUpEnrollmentIdNeeded(false);
+  SetUpDevicePolicy(false);
+  SetUpObserver();
+  PropagateDevicePolicy();
   Run();
 }
 
 TEST_F(EnrollmentPolicyObserverTest, UnregisteredPolicyClient) {
   policy_client_.SetDMToken("");
+  SetUpDevicePolicy(true);
+  SetUpObserver();
+  PropagateDevicePolicy();
   Run();
 }
 
 TEST_F(EnrollmentPolicyObserverTest, DBusFailureRetry) {
-  SetUpEnrollmentIdNeeded(true);
-
   // Simulate a DBus failure.
   cryptohome_client_.SetServiceIsAvailable(false);
 
+  ExpectUploadEnterpriseEnrollmentId(1);
+
+  SetUpDevicePolicy(true);
+  PropagateDevicePolicy();
+  SetUpObserver();
+
   // Emulate delayed service initialization.
-  // Run() instantiates an Observer, which synchronously calls
-  // TpmAttestationDoesKeyExist() and fails. During this call, we make the
-  // service available in the next run, so on retry, it will successfully
-  // return the result.
+  // The observer we create synchronously calls TpmAttestationGetEnrollmentId()
+  // and fails. During this call, we make the service available in the next
+  // run, so on retry, it will successfully return the result.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(
                      [](FakeCryptohomeClient* cryptohome_client) {
                        cryptohome_client->SetServiceIsAvailable(true);
                      },
                      base::Unretained(&cryptohome_client_)));
+
   Run();
 }
 
