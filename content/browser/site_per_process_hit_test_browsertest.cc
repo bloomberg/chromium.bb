@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -2811,12 +2812,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 class CursorMessageFilter : public content::BrowserMessageFilter {
  public:
   CursorMessageFilter()
-      : content::BrowserMessageFilter(ViewMsgStart),
+      : content::BrowserMessageFilter(WidgetMsgStart),
         message_loop_runner_(new content::MessageLoopRunner),
         last_set_cursor_routing_id_(MSG_ROUTING_NONE) {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
-    if (message.type() == ViewHostMsg_SetCursor::ID) {
+    if (message.type() == WidgetHostMsg_SetCursor::ID) {
       base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                                base::BindOnce(&CursorMessageFilter::OnSetCursor,
                                               this, message.routing_id()));
@@ -2911,7 +2912,7 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
   EXPECT_EQ(60, root_monitor.event().PositionInWidget().y);
 
   // CursorMessageFilter::Wait() implicitly tests whether we receive a
-  // ViewHostMsg_SetCursor message from the renderer process, because it does
+  // WidgetHostMsg_SetCursor message from the renderer process, because it does
   // does not return otherwise.
   filter->Wait();
   EXPECT_EQ(filter->last_set_cursor_routing_id(), rwh_child->GetRoutingID());

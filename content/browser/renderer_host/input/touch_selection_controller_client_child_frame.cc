@@ -7,7 +7,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
-#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/touch_selection_controller_client_manager.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -206,9 +206,9 @@ void TouchSelectionControllerClientChildFrame::RunContextMenu() {
   gfx::PointF origin = rwhv_->TransformPointToRootCoordSpaceF(gfx::PointF());
   anchor_point.Offset(-origin.x(), -origin.y());
   RenderWidgetHostImpl* host = rwhv_->host();
-  host->Send(new ViewMsg_ShowContextMenu(host->GetRoutingID(),
-                                         ui::MENU_SOURCE_TOUCH_EDIT_MENU,
-                                         gfx::ToRoundedPoint(anchor_point)));
+  host->Send(new WidgetMsg_ShowContextMenu(host->GetRoutingID(),
+                                           ui::MENU_SOURCE_TOUCH_EDIT_MENU,
+                                           gfx::ToRoundedPoint(anchor_point)));
 
   // Hide selection handles after getting rect-between-bounds from touch
   // selection controller; otherwise, rect would be empty and the above

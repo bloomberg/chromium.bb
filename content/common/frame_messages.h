@@ -781,7 +781,8 @@ IPC_STRUCT_TRAITS_END()
 // Messages sent from the browser to the renderer.
 
 // Notifies the embedding frame that the intrinsic sizing info parameters
-// of a child frame have changed.
+// of a child frame have changed. Generated when the browser receives a
+// WidgetHostMsg_IntrinsicSizingInfoChanged.
 IPC_MESSAGE_ROUTED1(FrameMsg_IntrinsicSizingInfoOfChildChanged,
                     blink::WebIntrinsicSizingInfo)
 
@@ -1461,7 +1462,11 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateViewportIntersection,
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
 
-// Sets or unsets the inert bit on a remote frame.
+// Sent by a RenderFrameProxy to the browser signaling that the renderer
+// has determined the DOM subtree it represents is inert and should no
+// longer process input events. Also see WidgetMsg_SetIsInert.
+//
+// https://html.spec.whatwg.org/multipage/interaction.html#inert
 IPC_MESSAGE_ROUTED1(FrameHostMsg_SetIsInert, bool /* inert */)
 
 // Sets the inherited effective touch action on a remote frame.

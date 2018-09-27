@@ -75,7 +75,7 @@
 
 class SkBitmap;
 struct FrameHostMsg_HittestData_Params;
-struct ViewHostMsg_SelectionBounds_Params;
+struct WidgetHostMsg_SelectionBounds_Params;
 
 namespace blink {
 class WebInputEvent;
@@ -814,7 +814,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                    bool privileged);
   void OnUnlockMouse();
   void OnSelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params);
+      const WidgetHostMsg_SelectionBounds_Params& params);
   void OnSetNeedsBeginFrames(bool needs_begin_frames);
   void OnHittestData(const FrameHostMsg_HittestData_Params& params);
   void OnFocusedNodeTouched(bool editable);

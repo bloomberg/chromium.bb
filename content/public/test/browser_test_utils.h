@@ -1439,7 +1439,7 @@ class PwnMessageHelper {
                               std::string blob_uuid,
                               int64_t position);
 
-  // Sends ViewHostMsg_LockMouse
+  // Sends WidgetHostMsg_LockMouse
   static void LockMouse(RenderProcessHost* process,
                         int routing_id,
                         bool user_gesture,

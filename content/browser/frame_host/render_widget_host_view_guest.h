@@ -118,7 +118,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
                         size_t offset,
                         const gfx::Range& range) override;
   void SelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params) override;
+      const WidgetHostMsg_SelectionBounds_Params& params) override;
   void PreProcessMouseEvent(const blink::WebMouseEvent& event) override;
   void PreProcessTouchEvent(const blink::WebTouchEvent& event) override;
 

@@ -40,6 +40,7 @@
 #include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
@@ -716,12 +717,12 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_LockMouse, OnLockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -945,7 +946,7 @@ void BrowserPluginGuest::OnLockMouse(bool user_gesture,
     RenderWidgetHost* widget_host =
         web_contents()->GetRenderViewHost()->GetWidget();
     widget_host->Send(
-        new ViewMsg_LockMouse_ACK(widget_host->GetRoutingID(), false));
+        new WidgetMsg_LockMouse_ACK(widget_host->GetRoutingID(), false));
     return;
   }
 
@@ -966,7 +967,7 @@ void BrowserPluginGuest::OnLockMouseAck(int browser_plugin_instance_id,
   RenderWidgetHost* widget_host =
       web_contents()->GetRenderViewHost()->GetWidget();
   widget_host->Send(
-      new ViewMsg_LockMouse_ACK(widget_host->GetRoutingID(), succeeded));
+      new WidgetMsg_LockMouse_ACK(widget_host->GetRoutingID(), succeeded));
   pending_lock_request_ = false;
   if (succeeded)
     mouse_locked_ = true;
@@ -1020,7 +1021,7 @@ void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
   if (mouse_locked_) {
     RenderWidgetHost* widget_host =
         web_contents()->GetRenderViewHost()->GetWidget();
-    widget_host->Send(new ViewMsg_MouseLockLost(widget_host->GetRoutingID()));
+    widget_host->Send(new WidgetMsg_MouseLockLost(widget_host->GetRoutingID()));
   }
   mouse_locked_ = false;
 }

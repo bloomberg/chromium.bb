@@ -31,7 +31,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
-#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
@@ -533,7 +533,7 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
 
   gfx::Rect caret_rect(10, 11, 0, 10);
   gfx::Range caret_range(0, 0);
-  ViewHostMsg_SelectionBounds_Params params;
+  WidgetHostMsg_SelectionBounds_Params params;
 
   gfx::Rect rect;
   gfx::Range actual_range;
@@ -1157,7 +1157,7 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   EXPECT_EQ(static_cast<unsigned>(SK_ColorRED),
             *rwhv_mac_->GetBackgroundColor());
   set_background = process_host_->sink().GetUniqueMessageMatching(
-      ViewMsg_SetBackgroundOpaque::ID);
+      WidgetMsg_SetBackgroundOpaque::ID);
   ASSERT_FALSE(set_background);
 
   // Set the color to blue. This should not send an opacity message.
@@ -1165,7 +1165,7 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE),
             *rwhv_mac_->GetBackgroundColor());
   set_background = process_host_->sink().GetUniqueMessageMatching(
-      ViewMsg_SetBackgroundOpaque::ID);
+      WidgetMsg_SetBackgroundOpaque::ID);
   ASSERT_FALSE(set_background);
 
   // Set the color back to transparent. The background color should now be
@@ -1176,9 +1176,9 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE),
             *rwhv_mac_->GetBackgroundColor());
   set_background = process_host_->sink().GetUniqueMessageMatching(
-      ViewMsg_SetBackgroundOpaque::ID);
+      WidgetMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
-  ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
+  WidgetMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
   EXPECT_FALSE(std::get<0>(sent_background));
 
   // Set the color to red. This should send an opacity message.
@@ -1187,9 +1187,9 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE),
             *rwhv_mac_->GetBackgroundColor());
   set_background = process_host_->sink().GetUniqueMessageMatching(
-      ViewMsg_SetBackgroundOpaque::ID);
+      WidgetMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
-  ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
+  WidgetMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
   EXPECT_TRUE(std::get<0>(sent_background));
 }
 

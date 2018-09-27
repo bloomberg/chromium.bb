@@ -53,6 +53,9 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+// TODO(ajwong): Remove widget_messages.h when WidgetHostMsg_Close is moved to
+// only RenderWidgetHostImpl.
+#include "content/common/widget_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -792,7 +795,9 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
+    // TODO:(ajwong): Move OnClose to RenderWidgetHostOwnerDelegate.
+    // https://crbug.com/545684
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
@@ -841,13 +846,13 @@ void RenderViewHostImpl::OnShowWidget(int widget_route_id,
                                       const gfx::Rect& initial_rect) {
   delegate_->ShowCreatedWidget(GetProcess()->GetID(), widget_route_id,
                                initial_rect);
-  Send(new ViewMsg_SetBounds_ACK(widget_route_id));
+  Send(new WidgetMsg_SetBounds_ACK(widget_route_id));
 }
 
 void RenderViewHostImpl::OnShowFullscreenWidget(int widget_route_id) {
   delegate_->ShowCreatedFullscreenWidget(GetProcess()->GetID(),
                                          widget_route_id);
-  Send(new ViewMsg_SetBounds_ACK(widget_route_id));
+  Send(new WidgetMsg_SetBounds_ACK(widget_route_id));
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {

@@ -154,6 +154,7 @@
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
@@ -3299,7 +3300,7 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_BEGIN_MESSAGE_MAP(RenderProcessHostImpl, msg)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_Close_ACK, OnCloseACK)
+      IPC_MESSAGE_HANDLER(WidgetHostMsg_Close_ACK, OnCloseACK)
       IPC_MESSAGE_HANDLER(AecDumpMsg_RegisterAecDumpConsumer,
                           OnRegisterAecDumpConsumer)
       IPC_MESSAGE_HANDLER(AecDumpMsg_UnregisterAecDumpConsumer,

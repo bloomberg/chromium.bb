@@ -270,6 +270,7 @@ source_set("common") {
     "view_messages.h",
     "visual_properties.cc",
     "visual_properties.h",
+    "widget_messages.h",
   ]
 
   configs += [

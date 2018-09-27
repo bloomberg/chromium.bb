@@ -303,7 +303,7 @@ class CONTENT_EXPORT RenderWidget
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
-  void SetScreenRects(const gfx::Rect& view_screen_rect,
+  void SetScreenRects(const gfx::Rect& widget_screen_rect,
                       const gfx::Rect& window_screen_rect) override;
 
   // blink::WebWidgetClient
@@ -611,7 +611,7 @@ class CONTENT_EXPORT RenderWidget
 
   void OnSetTextDirection(blink::WebTextDirection direction);
   void OnGetFPS();
-  void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
+  void OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
                            const gfx::Rect& window_screen_rect);
   void OnSetViewportIntersection(const gfx::Rect& viewport_intersection,
                                  const gfx::Rect& compositor_visible_rect,
@@ -875,7 +875,7 @@ class CONTENT_EXPORT RenderWidget
   gfx::Rect pending_window_rect_;
 
   // The screen rects of the view and the window that contains it.
-  gfx::Rect view_screen_rect_;
+  gfx::Rect widget_screen_rect_;
   gfx::Rect window_screen_rect_;
 
   scoped_refptr<WidgetInputHandlerManager> widget_input_handler_manager_;

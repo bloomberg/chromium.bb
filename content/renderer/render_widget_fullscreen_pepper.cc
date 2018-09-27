@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/renderer/gpu/layer_tree_view.h"
@@ -116,11 +117,12 @@ FullscreenMouseLockDispatcher::~FullscreenMouseLockDispatcher() {
 }
 
 void FullscreenMouseLockDispatcher::SendLockMouseRequest() {
-  widget_->Send(new ViewHostMsg_LockMouse(widget_->routing_id(), false, true));
+  widget_->Send(
+      new WidgetHostMsg_LockMouse(widget_->routing_id(), false, true));
 }
 
 void FullscreenMouseLockDispatcher::SendUnlockMouseRequest() {
-  widget_->Send(new ViewHostMsg_UnlockMouse(widget_->routing_id()));
+  widget_->Send(new WidgetHostMsg_UnlockMouse(widget_->routing_id()));
 }
 
 // WebWidget that simply wraps the pepper plugin.
@@ -321,7 +323,7 @@ void RenderWidgetFullscreenPepper::Destroy() {
   // away.
   SetLayer(nullptr);
 
-  Send(new ViewHostMsg_Close(routing_id()));
+  Send(new WidgetHostMsg_Close(routing_id()));
   Release();
 }
 
@@ -348,11 +350,9 @@ void RenderWidgetFullscreenPepper::SetLayer(cc::Layer* layer) {
 bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetFullscreenPepper, msg)
-    IPC_MESSAGE_FORWARD(ViewMsg_LockMouse_ACK,
-                        mouse_lock_dispatcher_.get(),
+    IPC_MESSAGE_FORWARD(WidgetMsg_LockMouse_ACK, mouse_lock_dispatcher_.get(),
                         MouseLockDispatcher::OnLockMouseACK)
-    IPC_MESSAGE_FORWARD(ViewMsg_MouseLockLost,
-                        mouse_lock_dispatcher_.get(),
+    IPC_MESSAGE_FORWARD(WidgetMsg_MouseLockLost, mouse_lock_dispatcher_.get(),
                         MouseLockDispatcher::OnMouseLockLost)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

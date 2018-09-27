@@ -7,6 +7,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/common/content_client.h"
 
 namespace content {
@@ -53,9 +54,9 @@ bool SwappedOutMessages::CanHandleWhileSwappedOut(
   // error reply instead, to avoid leaving the renderer in a stuck state.
   switch (msg.type()) {
     // We allow closing even if we are in the process of swapping out.
-    case ViewHostMsg_Close::ID:
+    case WidgetHostMsg_Close::ID:
     // Sends an ACK.
-    case ViewHostMsg_RequestSetBounds::ID:
+    case WidgetHostMsg_RequestSetBounds::ID:
     // Sends an ACK.
     case AccessibilityHostMsg_EventBundle::ID:
       return true;
