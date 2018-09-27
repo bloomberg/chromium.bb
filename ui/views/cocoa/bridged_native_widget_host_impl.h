@@ -281,7 +281,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void OnDidChangeFocus(View* focused_before, View* focused_now) override;
 
   // ui::internal::InputMethodDelegate:
-  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* key) override;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* key,
+      base::OnceCallback<void(bool)> ack_callback) override;
 
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;

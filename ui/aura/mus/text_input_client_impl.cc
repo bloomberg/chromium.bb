@@ -52,9 +52,8 @@ void TextInputClientImpl::DispatchKeyEventPostIME(
     std::unique_ptr<ui::Event> event,
     DispatchKeyEventPostIMECallback callback) {
   if (delegate_) {
-    delegate_->DispatchKeyEventPostIME(event->AsKeyEvent());
-    if (callback && !callback.is_null())
-      std::move(callback).Run(event->stopped_propagation());
+    delegate_->DispatchKeyEventPostIME(event->AsKeyEvent(),
+                                       std::move(callback));
   }
 }
 

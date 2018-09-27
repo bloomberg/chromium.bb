@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "ui/events/event_dispatcher.h"
+
 RemoteTextInputClient::RemoteTextInputClient(
     ws::mojom::TextInputClientPtr remote_client,
     ui::TextInputType text_input_type,
@@ -183,8 +187,10 @@ bool RemoteTextInputClient::ShouldDoLearning() {
 }
 
 ui::EventDispatchDetails RemoteTextInputClient::DispatchKeyEventPostIME(
-    ui::KeyEvent* event) {
-  remote_client_->DispatchKeyEventPostIME(ui::Event::Clone(*event),
-                                          base::OnceCallback<void(bool)>());
+    ui::KeyEvent* event,
+    base::OnceCallback<void(bool)> ack_callback) {
+  remote_client_->DispatchKeyEventPostIME(
+      ui::Event::Clone(*event),
+      ack_callback ? std::move(ack_callback) : base::DoNothing());
   return ui::EventDispatchDetails();
 }

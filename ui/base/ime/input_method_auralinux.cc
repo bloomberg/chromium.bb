@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/environment.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
@@ -52,11 +53,12 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
 
   // If no text input client, do nothing.
   if (!GetTextInputClient())
-    return DispatchKeyEventPostIME(event);
+    return DispatchKeyEventPostIME(event, base::NullCallback());
 
   if (!event->HasNativeEvent() && sending_key_event()) {
     // Faked key events that are sent from input.ime.sendKeyEvents.
-    ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
+    ui::EventDispatchDetails details =
+        DispatchKeyEventPostIME(event, base::NullCallback());
     if (details.dispatcher_destroyed || details.target_destroyed ||
         event->stopped_propagation()) {
       return details;
@@ -135,7 +137,7 @@ ui::EventDispatchDetails InputMethodAuraLinux::ProcessKeyEventDone(
   ui::EventDispatchDetails details;
   if (event->type() == ui::ET_KEY_PRESSED && filtered) {
     if (NeedInsertChar())
-      details = DispatchKeyEventPostIME(event);
+      details = DispatchKeyEventPostIME(event, base::NullCallback());
     else if (HasInputMethodResult())
       details = SendFakeProcessKeyEvent(event);
     if (details.dispatcher_destroyed)
@@ -194,7 +196,7 @@ ui::EventDispatchDetails InputMethodAuraLinux::ProcessKeyEventDone(
     composition_ = CompositionText();
 
   if (!filtered) {
-    details = DispatchKeyEventPostIME(event);
+    details = DispatchKeyEventPostIME(event, base::NullCallback());
     if (details.dispatcher_destroyed) {
       if (should_stop_propagation)
         event->StopPropagation();
@@ -441,7 +443,8 @@ bool InputMethodAuraLinux::NeedInsertChar() const {
 ui::EventDispatchDetails InputMethodAuraLinux::SendFakeProcessKeyEvent(
     ui::KeyEvent* event) const {
   KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, event->flags());
-  ui::EventDispatchDetails details = DispatchKeyEventPostIME(&key_event);
+  ui::EventDispatchDetails details =
+      DispatchKeyEventPostIME(&key_event, base::NullCallback());
   if (key_event.stopped_propagation())
     event->StopPropagation();
   return details;
