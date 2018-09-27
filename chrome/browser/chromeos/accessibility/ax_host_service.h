@@ -38,7 +38,8 @@ class AXHostService : public service_manager::Service,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // ax::mojom::AXHost:
-  void SetRemoteHost(ax::mojom::AXRemoteHostPtr remote) override;
+  void SetRemoteHost(ax::mojom::AXRemoteHostPtr remote,
+                     SetRemoteHostCallback cb) override;
   void HandleAccessibilityEvent(const std::string& tree_id,
                                 const std::vector<ui::AXTreeUpdate>& updates,
                                 const ui::AXEvent& event) override;
@@ -46,6 +47,7 @@ class AXHostService : public service_manager::Service,
   // ui::AXHostDelegate:
   void PerformAction(const ui::AXActionData& data) override;
 
+  ui::AXTreeID tree_id_for_testing() const { return tree_id(); }
   void FlushForTesting();
 
  private:

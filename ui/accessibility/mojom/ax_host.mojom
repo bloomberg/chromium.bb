@@ -18,9 +18,12 @@ const string kAXHostServiceName = "ax_host_service";
 //   browser.
 // * Sends requests for actions (e.g. click a button) to the remote process.
 interface AXHost {
-  // Registers a host in a remote process.
-  // TODO(jamescook): Support multiple remote processes.
-  SetRemoteHost(AXRemoteHost remote);
+  // Registers a host in a remote process. |tree_id| is the ID to use as the
+  // root of the AX node tree. If |automation_enabled| is true then the remote
+  // process must send its initial AX node tree immediately (because a feature
+  // like ChromeVox is enabled).
+  SetRemoteHost(AXRemoteHost remote) =>
+      (string tree_id, bool automation_enabled);
 
   // Handles an accessibility |event| (e.g. focus change) for |tree_id| in the
   // remote process. Includes |updates| to child nodes.

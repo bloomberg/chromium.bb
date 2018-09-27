@@ -35,10 +35,6 @@ class AXTreeSourceMus;
 class View;
 class Widget;
 
-// Well-known tree ID for the remote client.
-// TODO(jamescook): Support different IDs for different clients.
-VIEWS_MUS_EXPORT extern const ui::AXTreeID& RemoteAXTreeID();
-
 // Manages a tree of automation nodes for a mojo app outside the browser process
 // (e.g. the keyboard shortcut viewer app).
 class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
@@ -87,6 +83,9 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
   // Registers this object as a remote host for the parent AXHost.
   void BindAndSetRemote();
 
+  // Callback for initial state from AXHost.
+  void SetRemoteHostCallback(const ui::AXTreeID& tree_id, bool enabled);
+
   void Enable();
   void Disable();
 
@@ -102,6 +101,9 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
   ax::mojom::AXHostPtr ax_host_ptr_;
 
   mojo::Binding<ax::mojom::AXRemoteHost> binding_{this};
+
+  // ID to use for the AX tree.
+  ui::AXTreeID tree_id_;
 
   // Whether accessibility automation support is enabled.
   bool enabled_ = false;

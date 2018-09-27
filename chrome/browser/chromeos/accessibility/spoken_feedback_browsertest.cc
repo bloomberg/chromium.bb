@@ -276,8 +276,10 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, KeyboardShortcutViewer) {
   // Wait for the AX tree to be destroyed.
   run_loop.Run();
 
-  // Verify the correct AX tree was destroyed.
-  EXPECT_EQ(views::RemoteAXTreeID(), destroyed_tree_id);
+  // Verify an AX tree was destroyed. It's awkward to get the remote app's
+  // actual tree ID, so just ensure it's a valid ID and not the desktop.
+  EXPECT_NE(ui::AXTreeIDUnknown(), destroyed_tree_id);
+  EXPECT_NE(ui::DesktopAXTreeID(), destroyed_tree_id);
 
   extensions::AutomationEventRouter::GetInstance()
       ->SetTreeDestroyedCallbackForTest(base::DoNothing());
