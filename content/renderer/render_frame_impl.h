@@ -1214,10 +1214,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void RegisterMojoInterfaces();
 
-  // Connect to an interface provided by the service registry.
-  template <typename Interface>
-  void GetInterface(mojo::InterfaceRequest<Interface> request);
-
   void OnHostZoomClientRequest(mojom::HostZoomAssociatedRequest request);
 
   void InitializeBlameContext(RenderFrameImpl* parent_frame);
@@ -1225,11 +1221,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
-
-  // Whether to allow the use of Encrypted Media Extensions (EME), except for
-  // the use of Clear Key key systems, which is always allowed as required by
-  // the spec.
-  bool IsEncryptedMediaEnabled() const;
 
   // Send |callback| our AndroidOverlay routing token when it arrives.  We may
   // call |callback| before returning.
