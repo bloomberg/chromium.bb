@@ -265,17 +265,19 @@ void UpdateDxDiagNodeOnIO(const gpu::DxDiagNode& dx_diagnostics) {
           dx_diagnostics));
 }
 
-void UpdateDX12VulkanInfoOnIO(const gpu::GPUInfo& gpu_info) {
+void UpdateDx12VulkanInfoOnIO(
+    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
   // This function is called on the IO thread, but GPUInfo on GpuDataManagerImpl
   // should be updated on the UI thread since it can call into functions that
   // expect to run in the UI thread.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
-          [](const gpu::GPUInfo& gpu_info) {
-            GpuDataManagerImpl::GetInstance()->UpdateDX12VulkanInfo(gpu_info);
+          [](const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
+            GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanInfo(
+                dx12_vulkan_version_info);
           },
-          gpu_info));
+          dx12_vulkan_version_info));
 }
 #endif
 }  // anonymous namespace
@@ -417,7 +419,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
     if (!host)
       return;
     host->gpu_service()->GetGpuSupportedRuntimeVersion(
-        base::BindOnce(&UpdateDX12VulkanInfoOnIO));
+        base::BindOnce(&UpdateDx12VulkanInfoOnIO));
   });
 
   base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::IO},
@@ -494,22 +496,17 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(
   // If GPU process crashes and launches again, GPUInfo will be sent back from
   // the new GPU process again, and may overwrite the DX12, Vulkan, DxDiagNode
   // info we already collected. This is to make sure it doesn't happen.
-  uint32_t d3d12_feature_level = gpu_info_.d3d12_feature_level;
-  uint32_t vulkan_version = gpu_info_.vulkan_version;
   gpu::DxDiagNode dx_diagnostics = gpu_info_.dx_diagnostics;
+  gpu::Dx12VulkanVersionInfo dx12_vulkan_version_info =
+      gpu_info_.dx12_vulkan_version_info;
 #endif
   gpu_info_ = gpu_info;
 #if defined(OS_WIN)
-  if (d3d12_feature_level) {
-    gpu_info_.d3d12_feature_level = d3d12_feature_level;
-    gpu_info_.supports_dx12 = true;
-  }
-  if (vulkan_version) {
-    gpu_info_.vulkan_version = vulkan_version;
-    gpu_info_.supports_vulkan = true;
-  }
   if (!dx_diagnostics.IsEmpty()) {
     gpu_info_.dx_diagnostics = dx_diagnostics;
+  }
+  if (!dx12_vulkan_version_info.IsEmpty()) {
+    gpu_info_.dx12_vulkan_version_info = dx12_vulkan_version_info;
   }
 #endif  // OS_WIN
 
@@ -536,16 +533,9 @@ void GpuDataManagerImplPrivate::UpdateDxDiagNode(
   NotifyGpuInfoUpdate();
 }
 
-void GpuDataManagerImplPrivate::UpdateDX12VulkanInfo(
-    const gpu::GPUInfo& gpu_info) {
-  if (gpu_info.d3d12_feature_level) {
-    gpu_info_.d3d12_feature_level = gpu_info.d3d12_feature_level;
-    gpu_info_.supports_dx12 = true;
-  }
-  if (gpu_info.vulkan_version) {
-    gpu_info_.vulkan_version = gpu_info.vulkan_version;
-    gpu_info_.supports_vulkan = true;
-  }
+void GpuDataManagerImplPrivate::UpdateDx12VulkanInfo(
+    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
+  gpu_info_.dx12_vulkan_version_info = dx12_vulkan_version_info;
   // No need to call GetContentClient()->SetGpuInfo().
   NotifyGpuInfoUpdate();
 }
