@@ -2013,13 +2013,6 @@ void GLES2TraceImplementation::CopySubTextureCHROMIUM(
                               unpack_unmultiply_alpha);
 }
 
-void GLES2TraceImplementation::CompressedCopyTextureCHROMIUM(GLuint source_id,
-                                                             GLuint dest_id) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::CompressedCopyTextureCHROMIUM");
-  gl_->CompressedCopyTextureCHROMIUM(source_id, dest_id);
-}
-
 void GLES2TraceImplementation::DrawArraysInstancedANGLE(GLenum mode,
                                                         GLint first,
                                                         GLsizei count,

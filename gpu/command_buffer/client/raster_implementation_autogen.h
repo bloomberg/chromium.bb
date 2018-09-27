@@ -44,8 +44,6 @@ GLuint CreateImageCHROMIUM(ClientBuffer buffer,
 
 void DestroyImageCHROMIUM(GLuint image_id) override;
 
-void CompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) override;
-
 void LoseContextCHROMIUM(GLenum current, GLenum other) override;
 
 void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;

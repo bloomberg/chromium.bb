@@ -647,9 +647,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   bool DoBindOrCopyTexImageIfNeeded(gles2::Texture* texture,
                                     GLenum textarget,
                                     GLuint texture_unit);
-  void DoCompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) {
-    NOTIMPLEMENTED();
-  }
   void DoLoseContextCHROMIUM(GLenum current, GLenum other) { NOTIMPLEMENTED(); }
   void DoBeginRasterCHROMIUM(GLuint sk_color,
                              GLuint msaa_sample_count,

@@ -270,10 +270,6 @@ _FUNCTION_INFO = {
     'client_test': False,
     'trace_level': 1,
   },
-  'CompressedCopyTextureCHROMIUM': {
-    'decoder_func': 'DoCompressedCopyTextureCHROMIUM',
-    'unit_test': False,
-  },
   'GenQueriesEXT': {
     'type': 'GENn',
     'gl_test_func': 'glGenQueriesARB',

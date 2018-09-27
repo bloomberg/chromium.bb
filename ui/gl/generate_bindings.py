@@ -238,10 +238,6 @@ GL_FUNCTIONS = [
   'names': ['glCompileShader'],
   'arguments': 'GLuint shader', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glCompressedCopyTextureCHROMIUM',
-                 'extensions': ['GL_CHROMIUM_copy_compressed_texture'], }],
-  'arguments': 'GLuint sourceId, GLuint destId', },
-{ 'return_type': 'void',
   'names': ['glCompressedTexImage2D'],
   'arguments':
       'GLenum target, GLint level, GLenum internalformat, GLsizei width, '

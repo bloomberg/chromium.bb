@@ -3403,11 +3403,6 @@ _FUNCTION_INFO = {
     'extension': "CHROMIUM_copy_texture",
     'trace_level': 2,
   },
-  'CompressedCopyTextureCHROMIUM': {
-    'decoder_func': 'DoCompressedCopyTextureCHROMIUM',
-    'unit_test': False,
-    'extension': 'CHROMIUM_copy_compressed_texture',
-  },
   'TexStorage2DEXT': {
     'unit_test': False,
     'extension': 'EXT_texture_storage',

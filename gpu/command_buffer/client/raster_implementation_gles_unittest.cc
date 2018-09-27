@@ -122,8 +122,6 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
                     GLint border,
                     GLsizei imageSize,
                     const void* data));
-  MOCK_METHOD2(CompressedCopyTextureCHROMIUM,
-               void(GLuint source_id, GLuint dest_id));
   MOCK_METHOD5(TexStorage2DEXT,
                void(GLenum target,
                     GLsizei levels,
@@ -514,17 +512,6 @@ TEST_F(RasterImplementationGLESTest, DestroyImageCHROMIUM) {
 
   EXPECT_CALL(*gl_, DestroyImageCHROMIUM(kImageId)).Times(1);
   ri_->DestroyImageCHROMIUM(kImageId);
-}
-
-TEST_F(RasterImplementationGLESTest, CompressedCopyTextureCHROMIUM) {
-  const GLuint source_id = 23;
-  const GLuint dest_id = 24;
-
-  AllocTextureId(false, gfx::BufferUsage::GPU_READ, viz::RGBA_8888, source_id);
-  AllocTextureId(false, gfx::BufferUsage::GPU_READ, viz::RGBA_8888, dest_id);
-
-  EXPECT_CALL(*gl_, CompressedCopyTextureCHROMIUM(source_id, dest_id)).Times(1);
-  ri_->CompressedCopyTextureCHROMIUM(source_id, dest_id);
 }
 
 TEST_F(RasterImplementationGLESTest, TexStorage2D) {

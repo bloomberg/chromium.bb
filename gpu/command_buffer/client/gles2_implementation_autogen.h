@@ -983,8 +983,6 @@ void CopySubTextureCHROMIUM(GLuint source_id,
                             GLboolean unpack_premultiply_alpha,
                             GLboolean unpack_unmultiply_alpha) override;
 
-void CompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) override;
-
 void DrawArraysInstancedANGLE(GLenum mode,
                               GLint first,
                               GLsizei count,

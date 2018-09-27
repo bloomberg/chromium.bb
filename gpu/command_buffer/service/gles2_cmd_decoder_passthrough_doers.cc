@@ -3991,16 +3991,6 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoCompressedCopyTextureCHROMIUM(
-    GLuint source_id,
-    GLuint dest_id) {
-  BindPendingImageForClientIDIfNeeded(source_id);
-  api()->glCompressedCopyTextureCHROMIUMFn(
-      GetTextureServiceID(api(), source_id, resources_, false),
-      GetTextureServiceID(api(), dest_id, resources_, false));
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::DoDrawArraysInstancedANGLE(
     GLenum mode,
     GLint first,

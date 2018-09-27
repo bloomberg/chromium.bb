@@ -2599,14 +2599,6 @@ void CopySubTextureCHROMIUM(GLuint source_id,
   }
 }
 
-void CompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) {
-  gles2::cmds::CompressedCopyTextureCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::CompressedCopyTextureCHROMIUM>();
-  if (c) {
-    c->Init(source_id, dest_id);
-  }
-}
-
 void DrawArraysInstancedANGLE(GLenum mode,
                               GLint first,
                               GLsizei count,
