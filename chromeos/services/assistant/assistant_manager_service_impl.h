@@ -231,6 +231,7 @@ class AssistantManagerServiceImpl
   std::vector<uint8_t> assistant_screenshot_;
   std::string last_search_source_;
   base::Lock last_search_source_lock_;
+  base::TimeTicks started_time_;
 
   base::Thread background_thread_;
 
