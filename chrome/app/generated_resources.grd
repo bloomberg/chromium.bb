@@ -201,6 +201,11 @@ are declared in tools/grit/grit_rule.gni.
         <part file="md_extensions_strings.grdp" />
       </if>
 
+      <!-- NUX Welcome onboarding experience strings -->
+      <if expr="not chromeos and not is_android">
+        <part file="nux_strings.grdp" />
+      </if>
+
       <!-- Printing specific strings -->
       <if expr="enable_printing">
         <part file="printing_strings.grdp" />

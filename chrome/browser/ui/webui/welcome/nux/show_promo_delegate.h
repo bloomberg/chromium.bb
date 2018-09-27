@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NUX_SHOW_PROMO_DELEGATE_H_
-#define COMPONENTS_NUX_SHOW_PROMO_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_SHOW_PROMO_DELEGATE_H_
+#define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_SHOW_PROMO_DELEGATE_H_
 
 #include <memory>
 
@@ -23,4 +23,4 @@ class ShowPromoDelegate {
       int string_specifier);
 };
 
-#endif  //  COMPONENTS_NUX_SHOW_PROMO_DELEGATE_H_
+#endif  //  CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_SHOW_PROMO_DELEGATE_H_
