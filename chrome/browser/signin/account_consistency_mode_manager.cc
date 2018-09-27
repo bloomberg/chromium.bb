@@ -123,19 +123,15 @@ AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
   DCHECK(profile_);
   DCHECK(!profile_->IsOffTheRecord());
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   PrefService* prefs = profile->GetPrefs();
-  bool signin_allowed = prefs->GetBoolean(prefs::kSigninAllowed);
-  if (prefs->IsUserModifiablePreference(prefs::kSigninAllowed)) {
-    // Propagate settings changes from the previous launch to the signin-allowed
-    // pref.
-    signin_allowed = prefs->GetBoolean(prefs::kSigninAllowedOnNextStartup);
-    prefs->SetBoolean(prefs::kSigninAllowed, signin_allowed);
-  } else {
-    // When the signin-allowed pref is not user-modifiable(e.g. managed), reset
-    // signin-allowed-on-next-startup.
-    prefs->SetBoolean(prefs::kSigninAllowedOnNextStartup, signin_allowed);
-  }
+  // Propagate settings changes from the previous launch to the signin-allowed
+  // pref.
+  bool signin_allowed = prefs->GetBoolean(prefs::kSigninAllowedOnNextStartup);
+  prefs->SetBoolean(prefs::kSigninAllowed, signin_allowed);
+
   UMA_HISTOGRAM_BOOLEAN("Signin.SigninAllowed", signin_allowed);
+#endif
 
   account_consistency_ = ComputeAccountConsistencyMethod(profile_);
 

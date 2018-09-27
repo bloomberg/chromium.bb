@@ -640,7 +640,7 @@
     "os": ["win", "linux", "mac"],
     "test_policy": { "SigninAllowed": true },
     "pref_mappings": [
-      { "pref": "signin.allowed" }
+      { "pref": "signin.allowed_on_next_startup" }
     ]
   },
 
