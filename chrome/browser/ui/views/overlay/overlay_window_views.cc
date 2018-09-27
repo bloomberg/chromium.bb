@@ -572,40 +572,8 @@ ui::Layer* OverlayWindowViews::GetVideoLayer() {
   return video_view_->layer();
 }
 
-ui::Layer* OverlayWindowViews::GetControlsScrimLayer() {
-  return controls_scrim_view_->layer();
-}
-
-ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
-  return close_controls_view_->layer();
-}
-
-ui::Layer* OverlayWindowViews::GetControlsParentLayer() {
-  return controls_parent_view_->layer();
-}
-
 gfx::Rect OverlayWindowViews::GetVideoBounds() {
   return video_bounds_;
-}
-
-gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
-  return close_controls_view_->GetMirroredBounds();
-}
-
-gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
-  return play_pause_controls_view_->GetMirroredBounds();
-}
-
-gfx::Rect OverlayWindowViews::GetFirstCustomControlsBounds() {
-  if (!first_custom_controls_view_)
-    return gfx::Rect();
-  return first_custom_controls_view_->GetMirroredBounds();
-}
-
-gfx::Rect OverlayWindowViews::GetSecondCustomControlsBounds() {
-  if (!second_custom_controls_view_)
-    return gfx::Rect();
-  return second_custom_controls_view_->GetMirroredBounds();
 }
 
 void OverlayWindowViews::OnNativeBlur() {
@@ -769,6 +737,38 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
 
   if (sender == second_custom_controls_view_.get())
     controller_->ClickCustomControl(second_custom_controls_view_->id());
+}
+
+gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
+  return close_controls_view_->GetMirroredBounds();
+}
+
+gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
+  return play_pause_controls_view_->GetMirroredBounds();
+}
+
+gfx::Rect OverlayWindowViews::GetFirstCustomControlsBounds() {
+  if (!first_custom_controls_view_)
+    return gfx::Rect();
+  return first_custom_controls_view_->GetMirroredBounds();
+}
+
+gfx::Rect OverlayWindowViews::GetSecondCustomControlsBounds() {
+  if (!second_custom_controls_view_)
+    return gfx::Rect();
+  return second_custom_controls_view_->GetMirroredBounds();
+}
+
+ui::Layer* OverlayWindowViews::GetControlsScrimLayer() {
+  return controls_scrim_view_->layer();
+}
+
+ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
+  return close_controls_view_->layer();
+}
+
+ui::Layer* OverlayWindowViews::GetControlsParentLayer() {
+  return controls_parent_view_->layer();
 }
 
 void OverlayWindowViews::TogglePlayPause() {
