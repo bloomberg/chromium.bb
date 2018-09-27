@@ -5130,6 +5130,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ExploreSites.ContextMenu">
+  <owner>chili@chromium.org</owner>
+  <owner>dewittj@chromium.org</owner>
+  <description>
+    Android: user used the context menu on a suggested item in the explore sites
+    native page UI.
+  </description>
+</action>
+
 <action name="ExtensionNotFound_ED">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -20425,6 +20434,7 @@ should be able to be added at any place in this file.
   <suffix name="RemoveItem" label="Remove a suggested item."/>
   <suffix name="Shown" label="Context menu is opened."/>
   <affected-action name="ContextualSuggestions.ContextMenu"/>
+  <affected-action name="ExploreSites.ContextMenu"/>
   <affected-action name="Suggestions.ContextMenu"/>
 </action-suffix>
 
