@@ -210,8 +210,7 @@ def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress):
     compress = None
     if (uncompress and os.path.splitext(basename)[1] == '.so'
         and 'android_linker' not in basename
-        and 'clang_rt' not in basename
-        and 'crashpad_handler' not in basename):
+        and 'clang_rt' not in basename):
       compress = False
       # Add prefix to prevent android install from extracting upon install.
       if has_crazy_linker:

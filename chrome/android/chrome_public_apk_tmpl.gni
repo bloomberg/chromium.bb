@@ -87,8 +87,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
   _is_modern = defined(invoker.is_modern) && invoker.is_modern
   assert(_is_modern || !_is_modern)  # Mark as used.
 
-  _is_monochrome = defined(invoker.is_monochrome) && invoker.is_monochrome
-
   if (defined(invoker.enable_multidex)) {
     _enable_multidex = invoker.enable_multidex
   } else {
@@ -119,16 +117,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
     }
     if (!defined(aapt_locale_whitelist)) {
       aapt_locale_whitelist = locales - android_chrome_omitted_locales
-    }
-
-    if (!_is_monochrome) {
-      deps += [
-        "//third_party/crashpad/crashpad/handler:crashpad_handler_named_as_so",
-      ]
-      if (!defined(loadable_modules)) {
-        loadable_modules = []
-      }
-      loadable_modules += [ "$root_out_dir/libcrashpad_handler.so" ]
     }
 
     if (_enable_multidex) {
@@ -207,8 +195,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     _enable_multidex = is_java_debug || multidex_in_release
   }
   chrome_public_common_apk_or_module_tmpl(target_name) {
-    is_monochrome = true
-
     # Always build 64-bit //android_webview:monochrome because Chrome runs
     # in 32-bit mode.
     if (android_64bit_target_cpu) {
@@ -256,7 +242,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "//chrome/android:chrome_public_non_pak_assets",
       "//chrome/android:monochrome_pak_assets",
       "//chrome/android/monochrome:monochrome_license_provider_java",
-      "//components/crash/android:handler_java",
     ]
 
     if (_enable_multidex && invoker.target_type == "android_apk" &&
