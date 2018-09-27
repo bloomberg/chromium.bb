@@ -50,27 +50,20 @@ CocoaProfileTest::~CocoaProfileTest() {
   base::RunLoop().RunUntilIdle();
 }
 
-void CocoaProfileTest::AddTestingFactories(
-    TestingProfile::TestingFactories testing_factories) {
-  for (TestingProfile::TestingFactories::value_type& pair : testing_factories) {
-    testing_factories_.emplace_back(std::move(pair));
-  }
-}
-
 void CocoaProfileTest::SetUp() {
   CocoaTest::SetUp();
 
   ASSERT_TRUE(profile_manager_.SetUp());
 
   // Always fake out the Gaia service to avoid issuing network requests.
-  testing_factories_.emplace_back(
-      GaiaCookieManagerServiceFactory::GetInstance(),
-      base::BindRepeating(&BuildFakeGaiaCookieManagerService));
+  TestingProfile::TestingFactories testing_factories = {
+      {GaiaCookieManagerServiceFactory::GetInstance(),
+       base::BindRepeating(&BuildFakeGaiaCookieManagerService)}};
 
   profile_ = profile_manager_.CreateTestingProfile(
       "Person 1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
       base::UTF8ToUTF16("Person 1"), 0, std::string(),
-      std::move(testing_factories_));
+      std::move(testing_factories));
   ASSERT_TRUE(profile_);
 
   // TODO(shess): These are needed in case someone creates a browser
