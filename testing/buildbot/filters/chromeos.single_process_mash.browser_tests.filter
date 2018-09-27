@@ -162,6 +162,10 @@
 # Ash native views tests.
 -ChromeNativeAppWindowViewsAuraAshBrowserTest.*
 
+# Flaky.  crbug.com/888188.
+-ChromeSessionManagerTest.LoginExistingUsers
+-ChromeSessionManagerTest.PRE_LoginExistingUsers
+
 # Context menu tests.
 -ContextMenuBrowserTest.ContextMenuEntriesAreDisabledInLockedFullscreen
 
