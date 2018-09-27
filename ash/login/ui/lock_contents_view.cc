@@ -35,6 +35,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -210,6 +211,12 @@ keyboard::KeyboardController* GetKeyboardControllerForWidget(
 
 bool IsPublicAccountUser(const mojom::LoginUserInfoPtr& user) {
   return user->basic_user_info->type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
+}
+
+bool IsTabletMode() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
 }
 
 //
@@ -1483,8 +1490,8 @@ void LockContentsView::ShowAuthErrorMessage() {
   base::Optional<int> bold_start;
   int bold_length = 0;
   // Display a hint to switch keyboards if there are other active input
-  // methods.
-  if (ime_controller->available_imes().size() > 1) {
+  // methods in clamshell mode.
+  if (ime_controller->available_imes().size() > 1 && !IsTabletMode()) {
     error_text += base::ASCIIToUTF16(" ");
     bold_start = error_text.length();
     base::string16 shortcut =
