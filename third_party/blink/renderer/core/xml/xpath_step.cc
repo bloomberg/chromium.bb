@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/core/xmlns_names.h"
 
 namespace blink {
-namespace XPath {
+namespace xpath {
 
 Step::Step(Axis axis, const NodeTest& node_test)
     : axis_(axis), node_test_(new NodeTest(node_test)) {}
@@ -455,6 +455,6 @@ void Step::NodesInAxis(EvaluationContext& evaluation_context,
   NOTREACHED();
 }
 
-}  // namespace XPath
+}  // namespace xpath
 
 }  // namespace blink
