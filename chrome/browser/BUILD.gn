@@ -24,6 +24,7 @@ import("//printing/buildflags/buildflags.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//sandbox/features.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("//third_party/widevine/cdm/widevine.gni")
 import("//ui/base/ui_features.gni")
 
 # //build/config/android/rules.gni imports //tools/grit/grit_rule.gni, which
@@ -1937,7 +1938,7 @@ jumbo_split_static_library("browser") {
     "//third_party/smhasher:cityhash",
     "//third_party/webrtc_overrides",
     "//third_party/webrtc_overrides:init_webrtc",
-    "//third_party/widevine/cdm:headers",
+    "//third_party/widevine/cdm:buildflags",
     "//third_party/zlib",
     "//third_party/zlib:minizip",
     "//third_party/zlib/google:compression_utils",
@@ -3965,20 +3966,25 @@ jumbo_split_static_library("browser") {
 
   if (enable_library_cdms) {
     sources += [
-      "component_updater/widevine_cdm_component_installer.cc",
-      "component_updater/widevine_cdm_component_installer.h",
       "media/output_protection_impl.cc",
       "media/output_protection_impl.h",
     ]
     deps += [ "//media/mojo/interfaces" ]
 
-    if (is_win) {
+    if (enable_widevine) {
+      # TODO(crbug.com/349182): Also check WIDEVINE_CDM_IS_COMPONENT.
       sources += [
-        "media/widevine_hardware_caps_win.cc",
-        "media/widevine_hardware_caps_win.h",
+        "component_updater/widevine_cdm_component_installer.cc",
+        "component_updater/widevine_cdm_component_installer.h",
       ]
       deps += [ "//third_party/widevine/cdm:headers" ]
-      libs += [ "d3d11.lib" ]
+      if (is_win) {
+        sources += [
+          "media/widevine_hardware_caps_win.cc",
+          "media/widevine_hardware_caps_win.h",
+        ]
+        libs += [ "d3d11.lib" ]
+      }
     }
 
     if (enable_cdm_storage_id) {

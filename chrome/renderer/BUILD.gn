@@ -9,7 +9,9 @@ import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
+import("//third_party/widevine/cdm/widevine.gni")
 import("//tools/grit/grit_rule.gni")
 
 grit("resources") {
@@ -171,7 +173,7 @@ jumbo_static_library("renderer") {
     "//third_party/blink/public:scaled_resources",
     "//third_party/icu",
     "//third_party/re2",
-    "//third_party/widevine/cdm:headers",
+    "//third_party/widevine/cdm:buildflags",
     "//ui/surface",
     "//v8:v8",
   ]
@@ -229,6 +231,10 @@ jumbo_static_library("renderer") {
     if (is_linux) {
       deps += [ "//components/services/font/public/cpp" ]
     }
+  }
+
+  if (enable_library_cdms && enable_widevine) {
+    deps += [ "//third_party/widevine/cdm:headers" ]
   }
 
   if (safe_browsing_mode != 0) {

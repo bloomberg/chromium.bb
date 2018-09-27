@@ -60,6 +60,7 @@ include_rules = [
   "+storage/common",
   "+third_party/blink/public/mojom",
   "+third_party/metrics_proto",
+  "+third_party/widevine/cdm/buildflags.h",
   "+third_party/widevine/cdm/widevine_cdm_common.h",
 ]
 

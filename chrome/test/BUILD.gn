@@ -24,6 +24,7 @@ import("//rlz/buildflags/buildflags.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//testing/test.gni")
+import("//third_party/widevine/cdm/widevine.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/views/features.gni")
 import("//v8/gni/v8.gni")
@@ -1045,6 +1046,7 @@ test("browser_tests") {
       "//third_party/icu",
       "//third_party/leveldatabase",
       "//third_party/webrtc_overrides",
+      "//third_party/widevine/cdm:buildflags",
       "//third_party/widevine/cdm:headers",
       "//ui/accessibility:test_support",
       "//ui/base:test_support",
@@ -2790,11 +2792,13 @@ test("unit_tests") {
   if (is_win) {
     assert(toolkit_views)
     sources += [
-      "../browser/media/widevine_hardware_caps_win_unittest.cc",
       "../browser/notifications/win/mock_notification_image_retainer.cc",
       "../browser/notifications/win/mock_notification_image_retainer.h",
       "../browser/ui/views/try_chrome_dialog_win/button_layout_unittest.cc",
     ]
+    if (enable_widevine) {
+      sources += [ "../browser/media/widevine_hardware_caps_win_unittest.cc" ]
+    }
   }
 
   if (!is_android && !is_ios) {
@@ -4447,8 +4451,7 @@ test("unit_tests") {
     sources += [ "../browser/password_manager/password_store_signin_notifier_impl_unittest.cc" ]
   }
 
-  # TODO(crbug.com/349182): Replace "is_chrome_branded" with "enable_widevine".
-  if (is_chrome_branded && is_win) {
+  if (enable_widevine && is_win) {
     sources += [ "../gpu/widevine_cdm_proxy_factory_unittest.cc" ]
   }
 }
@@ -5561,7 +5564,7 @@ if (!is_android && !is_fuchsia) {
       "//media:media_buildflags",
       "//testing/gtest",
       "//testing/perf",
-      "//third_party/widevine/cdm:headers",
+      "//third_party/widevine/cdm:buildflags",
     ]
 
     data_deps = [
