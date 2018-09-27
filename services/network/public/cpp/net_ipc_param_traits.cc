@@ -485,36 +485,34 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
 }
 
 void ParamTraits<url::Origin>::Write(base::Pickle* m, const url::Origin& p) {
-  WriteParam(m, p.unique());
-  WriteParam(m, p.scheme());
-  WriteParam(m, p.host());
-  WriteParam(m, p.port());
+  WriteParam(m, p.GetTupleOrPrecursorTupleIfOpaque().scheme());
+  WriteParam(m, p.GetTupleOrPrecursorTupleIfOpaque().host());
+  WriteParam(m, p.GetTupleOrPrecursorTupleIfOpaque().port());
+  WriteParam(m, p.GetNonceForSerialization());
 }
 
 bool ParamTraits<url::Origin>::Read(const base::Pickle* m,
                                     base::PickleIterator* iter,
                                     url::Origin* p) {
-  bool unique;
   std::string scheme;
   std::string host;
   uint16_t port;
-  if (!ReadParam(m, iter, &unique) || !ReadParam(m, iter, &scheme) ||
-      !ReadParam(m, iter, &host) || !ReadParam(m, iter, &port)) {
+  base::Optional<base::UnguessableToken> nonce_if_opaque;
+  if (!ReadParam(m, iter, &scheme) || !ReadParam(m, iter, &host) ||
+      !ReadParam(m, iter, &port) || !ReadParam(m, iter, &nonce_if_opaque)) {
     return false;
   }
 
-  if (unique) {
-    *p = url::Origin();
-  } else {
-    base::Optional<url::Origin> origin =
-        url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(scheme, host,
-                                                                   port);
-    if (!origin.has_value())
-      return false;
+  base::Optional<url::Origin> creation_result =
+      nonce_if_opaque
+          ? url::Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
+                scheme, host, port, url::Origin::Nonce(*nonce_if_opaque))
+          : url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(
+                scheme, host, port);
+  if (!creation_result)
+    return false;
 
-    *p = origin.value();
-  }
-
+  *p = std::move(creation_result.value());
   return true;
 }
 

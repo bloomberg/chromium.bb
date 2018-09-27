@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/mojom/origin.mojom-blink.h"
+#include "url/mojom/origin_mojom_traits.h"
 
 namespace mojo {
 
@@ -26,31 +27,38 @@ struct StructTraits<url::mojom::blink::Origin::DataView,
       const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
     return origin->EffectivePort();
   }
-  static bool unique(
+  static base::Optional<base::UnguessableToken> nonce_if_opaque(
       const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
-    return origin->IsOpaque();
+    if (origin->IsOpaque())
+      return base::UnguessableToken::Create();
+
+    return base::nullopt;
   }
   static bool Read(url::mojom::blink::Origin::DataView data,
                    scoped_refptr<const ::blink::SecurityOrigin>* out) {
-    if (data.unique()) {
-      *out = ::blink::SecurityOrigin::CreateUniqueOpaque();
-    } else {
-      WTF::String scheme;
-      WTF::String host;
-      if (!data.ReadScheme(&scheme) || !data.ReadHost(&host))
-        return false;
+    WTF::String scheme;
+    WTF::String host;
+    base::Optional<base::UnguessableToken> nonce_if_opaque;
+    if (!data.ReadScheme(&scheme) || !data.ReadHost(&host) ||
+        !data.ReadNonceIfOpaque(&nonce_if_opaque))
+      return false;
 
-      *out = ::blink::SecurityOrigin::Create(scheme, host, data.port());
+    if (nonce_if_opaque) {
+      *out = blink::SecurityOrigin::CreateUniqueOpaque();
+      return true;
     }
 
-    // If a unique origin was created, but the unique flag wasn't set, then
-    // the values provided to 'create' were invalid.
-    if (!data.unique() && (*out)->IsOpaque())
+    *out = blink::SecurityOrigin::Create(scheme, host, data.port());
+
+    // If an opaque origin was created, but the opaque flag wasn't set, then
+    // the values provided to 'Create' were invalid.
+    if ((*out)->IsOpaque())
       return false;
 
     return true;
   }
 };
-}
+
+}  // namespace mojo
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_SECURITY_ORIGIN_STRUCT_TRAITS_H_

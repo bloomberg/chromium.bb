@@ -15,6 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/unguessable_token.h"
+#include "ipc/ipc_param_traits.h"
 #include "url/scheme_host_port.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -28,7 +29,16 @@ template <class T>
 struct FuzzTraits;
 }  // namespace ipc_fuzzer
 
+namespace mojo {
+template <typename DataViewType, typename T>
+struct StructTraits;
+}  // namespace mojo
+
 namespace url {
+
+namespace mojom {
+class OriginDataView;
+}  // namespace mojom
 
 // Per https://html.spec.whatwg.org/multipage/origin.html#origin, an origin is
 // either:
@@ -245,7 +255,9 @@ class URL_EXPORT Origin {
 
  private:
   friend class OriginTest;
+  friend IPC::ParamTraits<url::Origin>;
   friend struct ipc_fuzzer::FuzzTraits<Origin>;
+  friend struct mojo::StructTraits<url::mojom::OriginDataView, url::Origin>;
   friend URL_EXPORT std::ostream& operator<<(std::ostream& out,
                                              const Origin& origin);
 
