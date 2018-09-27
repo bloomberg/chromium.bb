@@ -259,6 +259,30 @@ test.util.sync.deepQuerySelectorAll_ = function(root, targetQuery) {
 };
 
 /**
+ * Executes a script in the context of the first <webview> element contained in
+ * the window, including shadow DOM subtrees if given, and returns the script
+ * result via the callback.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {!Array<string>} targetQuery Query for the <webview> element.
+ *   |targetQuery[0]| specifies the first element. |targetQuery[1]| specifies
+ *   an element inside the shadow DOM of the first element, etc. The last
+ *   targetQuery item must return the <webview> element.
+ * @param {string} script Javascript code to be executed within the <webview>.
+ * @param {function(*)} callback Callback function to be called with the
+ *   result of the |script|.
+ */
+test.util.async.deepExecuteScriptInWebView = function(
+    contentWindow, targetQuery, script, callback) {
+  const webviews =
+      test.util.sync.deepQuerySelectorAll_(contentWindow.document, targetQuery);
+  if (!webviews || webviews.length !== 1)
+    throw new Error('<webview> not found: [' + targetQuery.join(',') + ']');
+  const webview = /** @type {WebView} */ (webviews[0]);
+  webview.executeScript({code: script}, callback);
+};
+
+/**
  * Gets the information of the active element.
  *
  * @param {Window} contentWindow Window to be tested.
