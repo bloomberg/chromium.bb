@@ -15,7 +15,9 @@
 #include "ui/compositor/compositor_vsync_manager.h"
 
 namespace ash {
+class AccessibilityObserver;
 class TabletModeObserver;
+class VirtualKeyboardControllerObserver;
 }
 
 namespace aura {
@@ -38,7 +40,6 @@ class ManagedDisplayInfo;
 namespace ui {
 class EventHandler;
 class DropTargetEvent;
-class InputDeviceEventObserver;
 }  // namespace ui
 
 namespace wm {
@@ -70,14 +71,18 @@ class WMHelper : public aura::client::DragDropDelegate {
 
   aura::Env* env() { return env_; }
 
+  void AddAccessibilityObserver(ash::AccessibilityObserver* observer);
+  void RemoveAccessibilityObserver(ash::AccessibilityObserver* observer);
   void AddActivationObserver(wm::ActivationChangeObserver* observer);
   void RemoveActivationObserver(wm::ActivationChangeObserver* observer);
   void AddFocusObserver(aura::client::FocusChangeObserver* observer);
   void RemoveFocusObserver(aura::client::FocusChangeObserver* observer);
   void AddTabletModeObserver(ash::TabletModeObserver* observer);
   void RemoveTabletModeObserver(ash::TabletModeObserver* observer);
-  void AddInputDeviceEventObserver(ui::InputDeviceEventObserver* observer);
-  void RemoveInputDeviceEventObserver(ui::InputDeviceEventObserver* observer);
+  void AddVirtualKeyboardControllerObserver(
+      ash::VirtualKeyboardControllerObserver* observer);
+  void RemoveVirtualKeyboardControllerObserver(
+      ash::VirtualKeyboardControllerObserver* observer);
 
   void AddDisplayConfigurationObserver(
       ash::WindowTreeHostManager::Observer* observer);
@@ -105,6 +110,7 @@ class WMHelper : public aura::client::DragDropDelegate {
   void RemovePostTargetHandler(ui::EventHandler* handler);
   bool IsTabletModeWindowManagerEnabled() const;
   double GetDefaultDeviceScaleFactor() const;
+  bool IsAccessibilityKeyboardEnabled() const;
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;

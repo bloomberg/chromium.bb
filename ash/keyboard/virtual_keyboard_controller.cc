@@ -257,6 +257,8 @@ void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {
   } else {
     Shell::Get()->DisableKeyboard();
   }
+  for (VirtualKeyboardControllerObserver& observer : observers_)
+    observer.OnVirtualKeyboardStateChanged(is_enabled);
 }
 
 void VirtualKeyboardController::ForceShowKeyboard() {
@@ -298,6 +300,16 @@ void VirtualKeyboardController::OnActiveUserSessionChanged(
   // Force on-screen keyboard to reset.
   if (keyboard::IsKeyboardEnabled())
     Shell::Get()->EnableKeyboard();
+}
+
+void VirtualKeyboardController::AddObserver(
+    VirtualKeyboardControllerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void VirtualKeyboardController::RemoveObserver(
+    VirtualKeyboardControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void VirtualKeyboardController::UpdateBluetoothDevice(

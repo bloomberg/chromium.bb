@@ -7,7 +7,8 @@
 
 #include <vector>
 
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
+#include "ash/accessibility/accessibility_observer.h"
+#include "ash/keyboard/virtual_keyboard_controller_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -15,7 +16,6 @@
 #include "components/exo/keyboard_observer.h"
 #include "components/exo/seat_observer.h"
 #include "components/exo/surface_observer.h"
-#include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 
@@ -33,10 +33,10 @@ class Surface;
 // This class implements a client keyboard that represents one or more keyboard
 // devices.
 class Keyboard : public ui::EventHandler,
-                 public ui::InputDeviceEventObserver,
-                 public ash::TabletModeObserver,
                  public SurfaceObserver,
-                 public SeatObserver {
+                 public SeatObserver,
+                 public ash::AccessibilityObserver,
+                 public ash::VirtualKeyboardControllerObserver {
  public:
   Keyboard(KeyboardDelegate* delegate, Seat* seat);
   ~Keyboard() override;
@@ -63,17 +63,15 @@ class Keyboard : public ui::EventHandler,
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
 
-  // Overridden from ui::InputDeviceEventObserver:
-  void OnKeyboardDeviceConfigurationChanged() override;
-
-  // Overridden from ash::TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnding() override;
-  void OnTabletModeEnded() override;
-
   // Overridden from SeatObserver:
   void OnSurfaceFocusing(Surface* gaining_focus) override;
   void OnSurfaceFocused(Surface* gained_focus) override;
+
+  // Overridden from AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
+
+  // Overridden from VirtualKeyboardController::Observer
+  void OnVirtualKeyboardStateChanged(bool enabled) override;
 
  private:
   // Change keyboard focus to |surface|.

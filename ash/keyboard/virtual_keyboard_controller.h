@@ -9,9 +9,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
+#include "ash/keyboard/virtual_keyboard_controller_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -60,6 +62,10 @@ class ASH_EXPORT VirtualKeyboardController
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
 
+  // Management of the observer list.
+  void AddObserver(VirtualKeyboardControllerObserver* observer);
+  void RemoveObserver(VirtualKeyboardControllerObserver* observer);
+
  private:
   // Updates the list of active input devices.
   void UpdateDevices();
@@ -88,6 +94,8 @@ class ASH_EXPORT VirtualKeyboardController
 
   // Observer to observe the bluetooth devices.
   std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;
+
+  base::ObserverList<VirtualKeyboardControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardController);
 };

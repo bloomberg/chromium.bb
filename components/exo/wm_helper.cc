@@ -4,6 +4,8 @@
 
 #include "components/exo/wm_helper.h"
 
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/memory/singleton.h"
@@ -13,7 +15,6 @@
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/types/display_snapshot.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace exo {
@@ -53,6 +54,15 @@ bool WMHelper::HasInstance() {
   return !!g_instance;
 }
 
+void WMHelper::AddAccessibilityObserver(ash::AccessibilityObserver* observer) {
+  ash::Shell::Get()->accessibility_controller()->AddObserver(observer);
+}
+
+void WMHelper::RemoveAccessibilityObserver(
+    ash::AccessibilityObserver* observer) {
+  ash::Shell::Get()->accessibility_controller()->RemoveObserver(observer);
+}
+
 void WMHelper::AddActivationObserver(wm::ActivationChangeObserver* observer) {
   ash::Shell::Get()->activation_client()->AddObserver(observer);
 }
@@ -79,14 +89,14 @@ void WMHelper::RemoveTabletModeObserver(ash::TabletModeObserver* observer) {
   ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(observer);
 }
 
-void WMHelper::AddInputDeviceEventObserver(
-    ui::InputDeviceEventObserver* observer) {
-  ui::InputDeviceManager::GetInstance()->AddObserver(observer);
+void WMHelper::AddVirtualKeyboardControllerObserver(
+    ash::VirtualKeyboardControllerObserver* observer) {
+  ash::Shell::Get()->virtual_keyboard_controller()->AddObserver(observer);
 }
 
-void WMHelper::RemoveInputDeviceEventObserver(
-    ui::InputDeviceEventObserver* observer) {
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(observer);
+void WMHelper::RemoveVirtualKeyboardControllerObserver(
+    ash::VirtualKeyboardControllerObserver* observer) {
+  ash::Shell::Get()->virtual_keyboard_controller()->RemoveObserver(observer);
 }
 
 void WMHelper::AddDisplayConfigurationObserver(
@@ -229,6 +239,12 @@ double WMHelper::GetDefaultDeviceScaleFactor() const {
       display_manager->GetDisplayInfo(display::Display::InternalDisplayId());
   DCHECK(display_info.display_modes().size());
   return display_info.display_modes()[0].device_scale_factor();
+}
+
+bool WMHelper::IsAccessibilityKeyboardEnabled() const {
+  return ash::Shell::Get()
+      ->accessibility_controller()
+      ->IsVirtualKeyboardEnabled();
 }
 
 }  // namespace exo
