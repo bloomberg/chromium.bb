@@ -804,8 +804,8 @@ class DriveTestVolume : public TestVolume {
 
     EXPECT_FALSE(integration_service_);
     integration_service_ = new drive::DriveIntegrationService(
-        profile, nullptr, fake_drive_service_, std::string(), root_path(),
-        nullptr, CreateDriveFsConnectionDelegate());
+        profile, nullptr, fake_drive_service_, std::string(),
+        root_path().Append("v1"), nullptr, CreateDriveFsConnectionDelegate());
 
     return integration_service_;
   }
@@ -881,7 +881,7 @@ class DriveFsTestVolume : public DriveTestVolume {
   }
 
   void InitializeFakeDriveFs() {
-    fake_drivefs_ = std::make_unique<drivefs::FakeDriveFs>(root_path());
+    fake_drivefs_ = std::make_unique<drivefs::FakeDriveFs>(mount_path());
     fake_drivefs_->RegisterMountingForAccountId(base::BindRepeating(
         [](Profile* profile) {
           auto* user =
@@ -933,14 +933,16 @@ class DriveFsTestVolume : public DriveTestVolume {
       const AddEntriesMessage::TestEntryInfo& entry) {
     const base::FilePath target_path = GetTargetPathForTestEntry(entry);
     base::FilePath drive_path("/");
-    CHECK(root_path().AppendRelativePath(target_path, &drive_path));
+    CHECK(mount_path().AppendRelativePath(target_path, &drive_path));
     return drive_path;
   }
 
-  base::FilePath GetMyDrivePath() { return root_path().Append("root"); }
+  base::FilePath mount_path() { return root_path().Append("v2"); }
+
+  base::FilePath GetMyDrivePath() { return mount_path().Append("root"); }
 
   base::FilePath GetTeamDriveGrandRoot() {
-    return root_path().Append("team_drives");
+    return mount_path().Append("team_drives");
   }
 
   base::FilePath GetTeamDrivePath(const std::string& team_drive_name) {
@@ -1372,6 +1374,12 @@ FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
                                    kPredefinedProfileSalt);
     drive_volumes_[profile->GetOriginalProfile()] =
         std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
+    if (!IsIncognitoModeTest()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(base::IgnoreResult(&LocalTestVolume::Mount),
+                         base::Unretained(local_volume_.get()), profile));
+    }
   } else {
     drive_volumes_[profile->GetOriginalProfile()] =
         std::make_unique<DriveTestVolume>();

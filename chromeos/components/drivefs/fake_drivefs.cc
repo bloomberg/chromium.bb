@@ -125,13 +125,6 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
       auto item = drivefs::mojom::QueryItem::New();
       item->path = base::FilePath("/");
       CHECK(mount_path.AppendRelativePath(file, &item->path));
-      std::vector<std::string> components;
-      item->path.GetComponents(&components);
-      // During tests, metadata for the other drive sync implementation can
-      // end up in |mount_path| so filter it out.
-      if (components.size() < 2u || components[1] == "meta") {
-        continue;
-      }
       results.push_back(std::move(item));
     }
     return results;

@@ -129,6 +129,22 @@ void DeleteDirectoryContents(const base::FilePath& dir) {
   }
 }
 
+base::FilePath FindUniquePath(const base::FilePath& base_name) {
+  auto target = base_name;
+  for (int uniquifier = 1; base::PathExists(target); ++uniquifier) {
+    target = base_name.InsertBeforeExtensionASCII(
+        base::StringPrintf(" (%d)", uniquifier));
+  }
+  return target;
+}
+
+base::FilePath GetRecoveredFilesPath(
+    const base::FilePath& downloads_directory) {
+  const std::string& dest_directory_name = l10n_util::GetStringUTF8(
+      IDS_FILE_BROWSER_RECOVERED_FILES_FROM_GOOGLE_DRIVE_DIRECTORY_NAME);
+  return FindUniquePath(downloads_directory.Append(dest_directory_name));
+}
+
 // Initializes FileCache and ResourceMetadata.
 // Must be run on the same task runner used by |cache| and |resource_metadata|.
 FileError InitializeMetadata(
@@ -170,6 +186,13 @@ FileError InitializeMetadata(
       base::FILE_PERMISSION_EXECUTE_BY_GROUP |
       base::FILE_PERMISSION_EXECUTE_BY_OTHERS);
 
+  // If attempting to migrate to DriveFS without previous Drive sync data
+  // present, skip the migration.
+  if (base::IsDirectoryEmpty(cache_root_directory.Append(kMetadataDirectory)) &&
+      !cache) {
+    return FILE_ERROR_FAILED;
+  }
+
   internal::ResourceMetadataStorage::UpgradeOldDB(
       metadata_storage->directory_path());
 
@@ -190,15 +213,7 @@ FileError InitializeMetadata(
 
   if (metadata_storage->cache_file_scan_is_needed()) {
     // Generate unique directory name.
-    const std::string& dest_directory_name = l10n_util::GetStringUTF8(
-        IDS_FILE_BROWSER_RECOVERED_FILES_FROM_GOOGLE_DRIVE_DIRECTORY_NAME);
-    base::FilePath dest_directory = downloads_directory.Append(
-        base::FilePath::FromUTF8Unsafe(dest_directory_name));
-    for (int uniquifier = 1; base::PathExists(dest_directory); ++uniquifier) {
-      dest_directory = downloads_directory.Append(
-          base::FilePath::FromUTF8Unsafe(dest_directory_name))
-          .InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier));
-    }
+    auto dest_directory = GetRecoveredFilesPath(downloads_directory);
 
     internal::ResourceMetadataStorage::RecoveredCacheInfoMap
         recovered_cache_info;
@@ -257,21 +272,74 @@ base::FilePath GetFullPath(internal::ResourceMetadataStorage* metadata_storage,
   return path;
 }
 
+// Recover any dirty files in GCache/v1 to a recovered files directory in
+// Downloads. This imitates the behavior of recovering cache files when database
+// corruption occurs; however, in this case, we have an intact database so can
+// use the exact file names, potentially with uniquifiers added since the
+// directory structure is discarded.
+void RecoverDirtyFiles(
+    const base::FilePath& cache_directory,
+    const base::FilePath& downloads_directory,
+    const std::vector<std::pair<base::FilePath, std::string>>& dirty_files) {
+  if (dirty_files.empty()) {
+    return;
+  }
+  auto recovery_directory = GetRecoveredFilesPath(downloads_directory);
+  if (!base::CreateDirectory(recovery_directory)) {
+    return;
+  }
+  for (auto& dirty_file : dirty_files) {
+    auto target_path =
+        FindUniquePath(recovery_directory.Append(dirty_file.first.BaseName()));
+    base::Move(cache_directory.Append(dirty_file.second), target_path);
+  }
+}
+
+// Remove the data used by the old Drive client, first moving any dirty files
+// into the user's Downloads.
+void CleanupGCacheV1(
+    const base::FilePath& cache_directory,
+    const base::FilePath& downloads_directory,
+    std::vector<std::pair<base::FilePath, std::string>> dirty_files) {
+  RecoverDirtyFiles(cache_directory.Append(kCacheFileDirectory),
+                    downloads_directory, dirty_files);
+  DeleteDirectoryContents(cache_directory);
+}
+
 std::vector<base::FilePath> GetPinnedFiles(
-    internal::ResourceMetadataStorage* metadata_storage) {
+    std::unique_ptr<internal::ResourceMetadataStorage, util::DestroyHelper>
+        metadata_storage,
+    base::FilePath cache_directory,
+    base::FilePath downloads_directory) {
   std::vector<base::FilePath> pinned_files;
+  std::vector<std::pair<base::FilePath, std::string>> dirty_files;
   for (auto it = metadata_storage->GetIterator(); !it->IsAtEnd();
        it->Advance()) {
     const auto& value = it->GetValue();
-    if (!value.has_file_specific_info() ||
-        !value.file_specific_info().cache_state().is_pinned()) {
+    if (!value.has_file_specific_info()) {
       continue;
     }
-    auto path = GetFullPath(metadata_storage, value);
-    if (!path.empty()) {
-      pinned_files.push_back(std::move(path));
+    const auto& info = value.file_specific_info();
+    if (info.cache_state().is_pinned()) {
+      auto path = GetFullPath(metadata_storage.get(), value);
+      if (!path.empty()) {
+        pinned_files.push_back(std::move(path));
+      }
+    }
+    if (info.cache_state().is_dirty()) {
+      dirty_files.push_back(std::make_pair(
+          GetFullPath(metadata_storage.get(), value), value.local_id()));
     }
   }
+  // Destructing |metadata_storage| requires a posted task to run, so defer
+  // deleting its data until after it's been destructed. This also returns the
+  // list of files to pin to the UI thread without waiting for the remaining
+  // data to be cleared.
+  metadata_storage.reset();
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CleanupGCacheV1, std::move(cache_directory),
+                     std::move(downloads_directory), std::move(dirty_files)));
   return pinned_files;
 }
 
@@ -908,6 +976,12 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
     if (error != FILE_ERROR_OK) {
       profile_->GetPrefs()->SetBoolean(prefs::kDriveFsPinnedMigrated, true);
       metadata_storage_.reset();
+      blocking_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &CleanupGCacheV1, cache_root_directory_, base::FilePath(),
+              std::vector<std::pair<base::FilePath, std::string>>()));
+      metadata_storage_.reset();
     }
     state_ = INITIALIZED;
     if (enabled_)
@@ -930,6 +1004,11 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
     state_ = NOT_INITIALIZED;
     return;
   }
+
+  // Reset the pref so any migration to DriveFS is performed again the next time
+  // DriveFS is enabled. This is necessary to ensure any newly-pinned files are
+  // migrated and any dirty files are recovered whenever switching to DriveFS.
+  profile_->GetPrefs()->ClearPref(prefs::kDriveFsPinnedMigrated);
 
   // Initialize Download Handler for hooking downloads to the Drive folder.
   content::DownloadManager* download_manager =
@@ -1004,7 +1083,9 @@ void DriveIntegrationService::MigratePinnedFiles() {
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&GetPinnedFiles, metadata_storage_.get()),
+      base::BindOnce(
+          &GetPinnedFiles, std::move(metadata_storage_), cache_root_directory_,
+          file_manager::util::GetDownloadsFolderForProfile(profile_)),
       base::BindOnce(&DriveIntegrationService::PinFiles,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -1018,7 +1099,6 @@ void DriveIntegrationService::PinFiles(
     GetDriveFsInterface()->SetPinned(path, true, base::DoNothing());
   }
   profile_->GetPrefs()->SetBoolean(prefs::kDriveFsPinnedMigrated, true);
-  metadata_storage_.reset();
 }
 
 //===================== DriveIntegrationServiceFactory =======================
