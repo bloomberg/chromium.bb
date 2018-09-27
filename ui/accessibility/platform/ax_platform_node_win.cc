@@ -1367,16 +1367,15 @@ IFACEMETHODIMP AXPlatformNodeWin::scrollToPoint(
   COM_OBJECT_VALIDATE();
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_TO_POINT);
 
+  // Convert to screen-relative coordinates if necessary.
   gfx::Point scroll_to(x, y);
-  if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
-    scroll_to -= delegate_->GetUnclippedScreenBoundsRect().OffsetFromOrigin();
-  } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
+  if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
     if (GetParent()) {
       AXPlatformNodeBase* base = FromNativeViewAccessible(GetParent());
       scroll_to +=
           base->delegate_->GetUnclippedScreenBoundsRect().OffsetFromOrigin();
     }
-  } else {
+  } else if (coordinate_type != IA2_COORDTYPE_SCREEN_RELATIVE) {
     return E_INVALIDARG;
   }
 

@@ -330,8 +330,9 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraphInScrollableDocument(
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>
       <html>
-      <body style="overflow: scroll; margin-top: 100vh">
-        <p><b>Game theory</b> is "the study of
+      <body>
+        <p style="margin-top:50vh; margin-bottom:200vh">
+            <b>Game theory</b> is "the study of
             <a href="" title="Mathematical model">mathematical models</a>
             of conflict and<br>cooperation between intelligent rational
             decision-makers."
@@ -1433,15 +1434,55 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollToPoint) {
   EXPECT_EQ(prev_x, x);
   EXPECT_GT(prev_y, y);
 
-  prev_x = x;
-  prev_y = y;
+  constexpr int kScrollToY = 0;
   EXPECT_HRESULT_SUCCEEDED(
-      paragraph->scrollToPoint(IA2_COORDTYPE_SCREEN_RELATIVE, 0, 0));
+      paragraph->scrollToPoint(IA2_COORDTYPE_SCREEN_RELATIVE, 0, kScrollToY));
   location_changed_waiter.WaitForNotification();
   ASSERT_HRESULT_SUCCEEDED(
       paragraph->accLocation(&x, &y, &width, &height, childid_self));
-  EXPECT_EQ(prev_x, x);
-  EXPECT_EQ(prev_y, y);
+  EXPECT_EQ(kScrollToY, y);
+
+  constexpr int kScrollToY_2 = 243;
+  EXPECT_HRESULT_SUCCEEDED(
+      paragraph->scrollToPoint(IA2_COORDTYPE_SCREEN_RELATIVE, 0, kScrollToY_2));
+  location_changed_waiter.WaitForNotification();
+  ASSERT_HRESULT_SUCCEEDED(
+      paragraph->accLocation(&x, &y, &width, &height, childid_self));
+  EXPECT_EQ(kScrollToY_2, y);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestScrollSubstringToPoint) {
+  Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
+  SetUpSampleParagraphInScrollableDocument(&paragraph_text);
+  Microsoft::WRL::ComPtr<IAccessible2> paragraph;
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text.CopyTo(IID_PPV_ARGS(&paragraph)));
+
+  LONG x, y, width, height;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  AccessibilityNotificationWaiter location_changed_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kLocationChanged);
+
+  constexpr int kScrollToY = 187;
+  constexpr int kCharOffset = 10;
+  EXPECT_HRESULT_SUCCEEDED(paragraph_text->scrollSubstringToPoint(
+      kCharOffset, kCharOffset + 1, IA2_COORDTYPE_SCREEN_RELATIVE, 0,
+      kScrollToY));
+  location_changed_waiter.WaitForNotification();
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text->get_characterExtents(
+      kCharOffset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
+  EXPECT_EQ(kScrollToY, y);
+
+  constexpr int kScrollToY_2 = -133;
+  constexpr int kCharOffset_2 = 30;
+  EXPECT_HRESULT_SUCCEEDED(paragraph_text->scrollSubstringToPoint(
+      kCharOffset_2, kCharOffset_2 + 1, IA2_COORDTYPE_SCREEN_RELATIVE, 0,
+      kScrollToY_2));
+  location_changed_waiter.WaitForNotification();
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text->get_characterExtents(
+      kCharOffset_2, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
+  EXPECT_EQ(kScrollToY_2, y);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetCaretOffset) {
