@@ -184,7 +184,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
         base::BindOnce(&BackgroundFetchServiceTest::DidGetRegistration,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_error, out_registration));
-    UnregisterServiceWorker();
+    UnregisterServiceWorker(service_worker_registration_id);
     run_loop.Run();
   }
 

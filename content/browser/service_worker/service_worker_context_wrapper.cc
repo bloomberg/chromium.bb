@@ -745,6 +745,22 @@ void ServiceWorkerContextWrapper::GetAllRegistrations(
   context_core_->storage()->GetAllRegistrationsInfos(std::move(callback));
 }
 
+void ServiceWorkerContextWrapper::GetRegistrationsForOrigin(
+    const url::Origin& origin,
+    GetRegistrationsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            std::move(callback), blink::ServiceWorkerStatusCode::kErrorAbort,
+            std::vector<scoped_refptr<ServiceWorkerRegistration>>()));
+    return;
+  }
+  context_core_->storage()->GetRegistrationsForOrigin(origin.GetURL(),
+                                                      std::move(callback));
+}
+
 void ServiceWorkerContextWrapper::GetRegistrationUserData(
     int64_t registration_id,
     const std::vector<std::string>& keys,

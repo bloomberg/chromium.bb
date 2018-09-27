@@ -31,6 +31,10 @@ class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 class BrowserContext;
@@ -54,6 +58,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   using BoolCallback = base::OnceCallback<void(bool)>;
   using FindRegistrationCallback =
       ServiceWorkerStorage::FindRegistrationCallback;
+  using GetRegistrationsCallback =
+      ServiceWorkerStorage::GetRegistrationsCallback;
   using GetRegistrationsInfosCallback =
       ServiceWorkerStorage::GetRegistrationsInfosCallback;
   using GetUserDataCallback = ServiceWorkerStorage::GetUserDataCallback;
@@ -225,6 +231,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // All these methods must be called from the IO thread.
   void GetAllRegistrations(GetRegistrationsInfosCallback callback);
+  void GetRegistrationsForOrigin(const url::Origin& origin,
+                                 GetRegistrationsCallback callback);
   void GetRegistrationUserData(int64_t registration_id,
                                const std::vector<std::string>& keys,
                                GetUserDataCallback callback);

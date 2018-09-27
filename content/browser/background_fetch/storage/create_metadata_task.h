@@ -40,6 +40,8 @@ class CreateMetadataTask : public DatabaseTask {
   void Start() override;
 
  private:
+  void DidGetCanCreateRegistration(blink::mojom::BackgroundFetchError error,
+                                   bool can_create);
   void DidGetIsQuotaAvailable(bool is_available);
 
   void GetRegistrationUniqueId();
