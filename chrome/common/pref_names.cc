@@ -1185,10 +1185,6 @@ const char kPrintingSizeDefault[] = "printing.size_default";
 const char kDefaultSupervisedUserFilteringBehavior[] =
     "profile.managed.default_filtering_behavior";
 
-// Whether this user is permitted to create supervised users.
-const char kSupervisedUserCreationAllowed[] =
-    "profile.managed_user_creation_allowed";
-
 // List pref containing the users supervised by this user.
 const char kSupervisedUsers[] = "profile.managed_users";
 

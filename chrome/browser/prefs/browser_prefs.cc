@@ -369,6 +369,8 @@ const char kTrustedDownloadSources[] = "trusted_download_sources";
 #if defined(OS_WIN)
 const char kLastWelcomedOSVersion[] = "browser.last_welcomed_os_version";
 #endif
+const char kSupervisedUserCreationAllowed[] =
+    "profile.managed_user_creation_allowed";
 
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
@@ -392,6 +394,7 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kModuleConflictBubbleShown, 0);
   registry->RegisterIntegerPref(kOptionsWindowLastTabIndex, 0);
   registry->RegisterStringPref(kTrustedDownloadSources, std::string());
+  registry->RegisterBooleanPref(kSupervisedUserCreationAllowed, true);
 }
 
 }  // namespace
@@ -846,4 +849,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kModuleConflictBubbleShown);
   profile_prefs->ClearPref(kOptionsWindowLastTabIndex);
   profile_prefs->ClearPref(kTrustedDownloadSources);
+  profile_prefs->ClearPref(kSupervisedUserCreationAllowed);
 }
