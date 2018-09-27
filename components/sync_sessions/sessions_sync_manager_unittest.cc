@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
 #include "components/sync_sessions/session_sync_prefs.h"

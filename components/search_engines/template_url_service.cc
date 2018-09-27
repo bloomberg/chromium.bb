@@ -4,6 +4,8 @@
 
 #include "components/search_engines/template_url_service.h"
 
+#include <algorithm>
+
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/debug/crash_logging.h"
@@ -22,6 +24,7 @@
 #include "components/search_engines/template_url_service_client.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/search_engines/util.h"
+#include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -2146,7 +2149,6 @@ void TemplateURLService::ResolveSyncKeywordConflict(
   change_list->push_back(syncer::SyncChange(FROM_HERE,
       syncer::SyncChange::ACTION_UPDATE,
       sync_data));
-
 }
 
 void TemplateURLService::MergeInSyncTemplateURL(
