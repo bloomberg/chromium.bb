@@ -1707,9 +1707,7 @@ static void get_cx_data(struct stream_state *stream,
 
     switch (pkt->kind) {
       case AOM_CODEC_CX_FRAME_PKT:
-        if (!(pkt->data.frame.flags & AOM_FRAME_IS_FRAGMENT)) {
-          stream->frames_out++;
-        }
+        ++stream->frames_out;
         if (!global->quiet)
           fprintf(stderr, " %6luF", (unsigned long)pkt->data.frame.sz);
 
@@ -1729,12 +1727,10 @@ static void get_cx_data(struct stream_state *stream,
             } else {
               fsize += pkt->data.frame.sz;
 
-              if (!(pkt->data.frame.flags & AOM_FRAME_IS_FRAGMENT)) {
-                const FileOffset currpos = ftello(stream->file);
-                fseeko(stream->file, ivf_header_pos, SEEK_SET);
-                ivf_write_frame_size(stream->file, fsize);
-                fseeko(stream->file, currpos, SEEK_SET);
-              }
+              const FileOffset currpos = ftello(stream->file);
+              fseeko(stream->file, ivf_header_pos, SEEK_SET);
+              ivf_write_frame_size(stream->file, fsize);
+              fseeko(stream->file, currpos, SEEK_SET);
             }
           }
 
