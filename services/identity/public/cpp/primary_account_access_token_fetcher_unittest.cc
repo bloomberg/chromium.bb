@@ -48,8 +48,12 @@ class PrimaryAccountAccessTokenFetcherTest : public testing::Test,
       StrictMock<MockCallback<AccessTokenFetcher::TokenCallback>>;
 
   PrimaryAccountAccessTokenFetcherTest()
-      : access_token_info_("access token",
-                           base::Time::Now() + base::TimeDelta::FromHours(1)) {}
+      : access_token_info_(
+            "access token",
+            base::Time::Now() + base::TimeDelta::FromHours(1),
+            std::
+                string() /* TODO(https://crbug.com/889764): Check id_token is passed along */) {
+  }
 
   ~PrimaryAccountAccessTokenFetcherTest() override {
   }
