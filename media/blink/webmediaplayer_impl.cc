@@ -1152,7 +1152,8 @@ void WebMediaPlayerImpl::Paint(cc::PaintCanvas* canvas,
   }
   video_renderer_.Paint(
       video_frame, canvas, gfx::RectF(gfx_rect), flags,
-      pipeline_metadata_.video_decoder_config.video_rotation(), context_3d);
+      pipeline_metadata_.video_decoder_config.video_rotation(), context_3d,
+      context_provider_->ContextSupport());
 }
 
 bool WebMediaPlayerImpl::DidGetOpaqueResponseFromServiceWorker() const {
@@ -1243,8 +1244,9 @@ bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
                            context_provider_->GrContext());
   }
   return video_renderer_.CopyVideoFrameTexturesToGLTexture(
-      context_3d, gl, video_frame.get(), target, texture, internal_format,
-      format, type, level, premultiply_alpha, flip_y);
+      context_3d, context_provider_->ContextSupport(), gl, video_frame.get(),
+      target, texture, internal_format, format, type, level, premultiply_alpha,
+      flip_y);
 }
 
 // static
