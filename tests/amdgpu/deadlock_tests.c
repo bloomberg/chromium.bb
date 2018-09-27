@@ -80,6 +80,8 @@ static  uint32_t  minor_version;
 static pthread_t stress_thread;
 static uint32_t *ptr;
 
+int use_uc_mtype = 0;
+
 static void amdgpu_deadlock_helper(unsigned ip_type);
 static void amdgpu_deadlock_gfx(void);
 static void amdgpu_deadlock_compute(void);
@@ -92,12 +94,13 @@ CU_BOOL suite_deadlock_tests_enable(void)
 					     &minor_version, &device_handle))
 		return CU_FALSE;
 
-	if (device_handle->info.family_id == AMDGPU_FAMILY_AI ||
-	    device_handle->info.family_id == AMDGPU_FAMILY_SI ||
-	    device_handle->info.family_id == AMDGPU_FAMILY_RV) {
+	if (device_handle->info.family_id == AMDGPU_FAMILY_SI) {
 		printf("\n\nCurrently hangs the CP on this ASIC, deadlock suite disabled\n");
 		enable = CU_FALSE;
 	}
+
+	if (device_handle->info.family_id >= AMDGPU_FAMILY_AI)
+		use_uc_mtype = 1;
 
 	if (amdgpu_device_deinitialize(device_handle))
 		return CU_FALSE;
@@ -183,8 +186,8 @@ static void amdgpu_deadlock_helper(unsigned ip_type)
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_bo_alloc_and_map(device_handle, 4096, 4096,
-			AMDGPU_GEM_DOMAIN_GTT, 0,
+	r = amdgpu_bo_alloc_and_map_raw(device_handle, 4096, 4096,
+			AMDGPU_GEM_DOMAIN_GTT, 0, use_uc_mtype ? AMDGPU_VM_MTYPE_UC : 0,
 						    &ib_result_handle, &ib_result_cpu,
 						    &ib_result_mc_address, &va_handle);
 	CU_ASSERT_EQUAL(r, 0);
