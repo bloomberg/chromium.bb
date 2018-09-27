@@ -29,11 +29,27 @@ public final class PreviewsAndroidBridge {
         return nativeShouldShowPreviewUI(mNativePreviewsAndroidBridge, webContents);
     }
 
+    /**
+     * Returns the origin host name of the preview being shown.
+     */
     public String getOriginalHost(WebContents webContents) {
         assert shouldShowPreviewUI(webContents) : "getOriginalHost called on a non-preview page";
         return nativeGetOriginalHost(mNativePreviewsAndroidBridge, webContents);
     }
 
+    /**
+     * If the current preview is a stale preview, this returns the timestamp text to display to the
+     * user. An empty string is returned if the current preview is not a stale preview.
+     */
+    public String getStalePreviewTimestamp(WebContents webContents) {
+        assert shouldShowPreviewUI(webContents)
+            : "getStalePreviewTimestamp called on a non-preview page";
+        return nativeGetStalePreviewTimestamp(mNativePreviewsAndroidBridge, webContents);
+    }
+
+    /**
+     * Requests that the original page be loaded.
+     */
     public void loadOriginal(WebContents webContents) {
         assert shouldShowPreviewUI(webContents) : "loadOriginal called on a non-preview page";
         nativeLoadOriginal(mNativePreviewsAndroidBridge, webContents);
@@ -43,6 +59,8 @@ public final class PreviewsAndroidBridge {
     private native boolean nativeShouldShowPreviewUI(
             long nativePreviewsAndroidBridge, WebContents webContents);
     private native String nativeGetOriginalHost(
+            long nativePreviewsAndroidBridge, WebContents webContents);
+    private native String nativeGetStalePreviewTimestamp(
             long nativePreviewsAndroidBridge, WebContents webContents);
     private native void nativeLoadOriginal(
             long nativePreviewsAndroidBridge, WebContents webContents);

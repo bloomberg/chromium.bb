@@ -55,6 +55,26 @@ PreviewsAndroidBridge::GetOriginalHost(
           env, web_contents->GetVisibleURL().host()));
 }
 
+base::android::ScopedJavaLocalRef<jstring>
+PreviewsAndroidBridge::GetStalePreviewTimestamp(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents)
+    return base::android::ScopedJavaLocalRef<jstring>();
+
+  PreviewsUITabHelper* tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents);
+  if (!tab_helper)
+    return base::android::ScopedJavaLocalRef<jstring>();
+
+  return base::android::ScopedJavaLocalRef<jstring>(
+      base::android::ConvertUTF16ToJavaString(
+          env, tab_helper->GetStalePreviewTimestampText()));
+}
+
 void PreviewsAndroidBridge::LoadOriginal(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
