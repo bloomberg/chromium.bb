@@ -1326,6 +1326,14 @@ public class ContextualSearchManager
             if (didSelect) {
                 assert mContext != null;
                 mContext.onSelectionAdjusted(startAdjust, endAdjust);
+                // There's a race condition when we select the word between this Ack response and
+                // the onSelectionChanged call.  Update the selection in case this method won the
+                // race so we ensure that there's a valid selected word.
+                // See https://crbug.com/889657 for details.
+                String adjustedSelection = mContext.getSelection();
+                if (!TextUtils.isEmpty(adjustedSelection)) {
+                    mSelectionController.setSelectedText(adjustedSelection);
+                }
                 showSelectionAsSearchInBar(mSelectionController.getSelectedText());
                 mInternalStateController.notifyFinishedWorkOn(InternalState.START_SHOWING_TAP_UI);
             } else {
