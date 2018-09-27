@@ -18,12 +18,6 @@
 
 class JavaScriptCompressorRequestorInterface;
 
-// A namespace with constants used by CompressorArchiveMinizip.
-namespace compressor_stream_constants {
-// We need at least 256KB for MiniZip.
-const int64_t kMaximumDataChunkSize = 512 * 1024;
-}  // namespace compressor_stream_constants
-
 class CompressorIOJavaScriptStream : public CompressorStream {
  public:
   CompressorIOJavaScriptStream(

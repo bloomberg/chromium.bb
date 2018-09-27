@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_COMPRESSOR_ARCHIVE_MINIZIP_H_
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_COMPRESSOR_ARCHIVE_MINIZIP_H_
 
+#include <memory>
 #include <string>
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive.h"
@@ -12,15 +13,6 @@
 #include "third_party/minizip/src/zip.h"
 
 class CompressorStream;
-
-// A namespace with constants used by CompressorArchiveMinizip.
-namespace compressor_archive_constants {
-
-const char kCreateArchiveError[] = "Failed to create archive.";
-const char kAddToArchiveError[] = "Failed to add entry to archive.";
-const char kCloseArchiveError[] = "Failed to close archive.";
-
-}  // namespace compressor_archive_constants
 
 // A name space with custom functions passed to minizip.
 namespace compressor_archive_functions {
@@ -98,7 +90,7 @@ class CompressorArchiveMinizip : public CompressorArchive {
   zipFile zip_file_;
 
   // The buffer used to store the data read from JavaScript.
-  char* destination_buffer_;
+  std::unique_ptr<char[]> destination_buffer_;
 
   // The current offset of the zip archive file.
   int64_t offset_;
