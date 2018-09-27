@@ -36,6 +36,8 @@ import os
 import re
 import subprocess
 
+import archive
+import diff
 import html_report
 
 
@@ -109,10 +111,12 @@ def _FetchExistingMilestoneReports():
       yield report
 
 
-def _FetchSizeFile(path):
-  if path is None:
-    return None
-  return cStringIO.StringIO(subprocess.check_output(['gsutil.py', 'cat', path]))
+def _SizeInfoFromGsPath(path):
+  size_contents = subprocess.check_output(['gsutil.py', 'cat', path])
+  file_obj = cStringIO.StringIO(size_contents)
+  ret = archive.LoadAndPostProcessSizeInfo(path, file_obj=file_obj)
+  file_obj.close()
+  return ret
 
 
 def _PossibleReportFiles():
@@ -163,18 +167,11 @@ def _BuildReport(paths):
     if e.errno != errno.EEXIST:
       raise
 
-  before_file = _FetchSizeFile(before_size_path)  # May be None.
-  after_file = _FetchSizeFile(after_size_path)
-  with codecs.open(outpath, 'w', encoding='ascii') as out_file:
-    html_report.BuildReport(
-      out_file,
-      size_file=(after_size_path, after_file),
-      before_size_file=(before_size_path, before_file),
-      all_symbols=True,
-    )
-  if before_file is not None:
-    before_file.close()
-  after_file.close()
+  size_info = _SizeInfoFromGsPath(after_size_path)
+  if before_size_path:
+    size_info = diff.Diff(_SizeInfoFromGsPath(before_size_path), size_info)
+
+  html_report.BuildReportFromSizeInfo(outpath, size_info, all_symbols=True)
   return outpath
 
 
