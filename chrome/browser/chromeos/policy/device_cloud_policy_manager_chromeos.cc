@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
 #include "chrome/browser/chromeos/attestation/enrollment_policy_observer.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
@@ -332,6 +333,9 @@ void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
   if (chromeos::StartupUtils::IsOobeCompleted())
     return;
 
+  // Demo requisition may have been set in a prior enrollment attempt that was
+  // interrupted.
+  chromeos::DemoSetupController::ClearDemoRequisition(this);
   const PrefService::Preference* pref = local_state_->FindPreference(
       prefs::kDeviceEnrollmentRequisition);
   if (pref->IsDefaultValue()) {

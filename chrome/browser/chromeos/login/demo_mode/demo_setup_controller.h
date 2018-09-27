@@ -18,6 +18,10 @@
 
 class PrefRegistrySimple;
 
+namespace policy {
+class DeviceCloudPolicyManagerChromeOS;
+}
+
 namespace chromeos {
 
 // Controlls enrollment flow for setting up Demo Mode.
@@ -43,6 +47,11 @@ class DemoSetupController
   static constexpr char kDemoModeDomain[] = "cros-demo-mode.com";
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+  // Clears demo device enrollment requisition on the given |policy_manager| if
+  // it is set.
+  static void ClearDemoRequisition(
+      policy::DeviceCloudPolicyManagerChromeOS* policy_manager);
 
   // Utility method that returns whether demo mode is allowed on the device.
   static bool IsDemoModeAllowed();
