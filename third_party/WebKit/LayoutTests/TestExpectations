@@ -4155,7 +4155,6 @@ crbug.com/718155 payments/payment-request-in-iframe.html [ Failure ]
 crbug.com/718155 payments/payment-request-in-iframe-nested-not-allowed.html [ Failure ]
 
 # Layout Tests on Swarming (Windows) - https://crbug.com/717347
-crbug.com/724392 [ Win ] fast/css/font-family-case-insensitive.html [ Failure Pass Timeout ]
 crbug.com/713094 [ Win ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
 # Image decode failures due to document destruction.
