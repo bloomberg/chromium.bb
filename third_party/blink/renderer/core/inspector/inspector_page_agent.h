@@ -115,6 +115,7 @@ class CORE_EXPORT InspectorPageAgent final
       const String& identifier) override;
   protocol::Response addScriptToEvaluateOnNewDocument(
       const String& source,
+      Maybe<String> world_name,
       String* identifier) override;
   protocol::Response removeScriptToEvaluateOnNewDocument(
       const String& identifier) override;
@@ -249,6 +250,7 @@ class CORE_EXPORT InspectorPageAgent final
   InspectorAgentState::Boolean lifecycle_events_enabled_;
   InspectorAgentState::Boolean bypass_csp_enabled_;
   InspectorAgentState::StringMap scripts_to_evaluate_on_load_;
+  InspectorAgentState::StringMap worlds_to_evaluate_on_load_;
   InspectorAgentState::String standard_font_family_;
   InspectorAgentState::String fixed_font_family_;
   InspectorAgentState::String serif_font_family_;

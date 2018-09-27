@@ -463,6 +463,8 @@ InspectorPageAgent::InspectorPageAgent(
       bypass_csp_enabled_(&agent_state_, /*default_value=*/false),
       scripts_to_evaluate_on_load_(&agent_state_,
                                    /*default_value=*/WTF::String()),
+      worlds_to_evaluate_on_load_(&agent_state_,
+                                  /*default_value=*/WTF::String()),
       standard_font_family_(&agent_state_, /*default_value=*/WTF::String()),
       fixed_font_family_(&agent_state_, /*default_value=*/WTF::String()),
       serif_font_family_(&agent_state_, /*default_value=*/WTF::String()),
@@ -548,39 +550,44 @@ Response InspectorPageAgent::disable() {
   return Response::OK();
 }
 
-Response InspectorPageAgent::addScriptToEvaluateOnLoad(const String& source,
-                                                       String* identifier) {
+Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
+    const String& source,
+    Maybe<String> world_name,
+    String* identifier) {
   std::vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
   auto result = std::max_element(
       keys.begin(), keys.end(), [](const WTF::String& a, const WTF::String& b) {
         return Decimal::FromString(a) < Decimal::FromString(b);
       });
   if (result == keys.end()) {
-    scripts_to_evaluate_on_load_.Set(String::Number(1), source);
+    *identifier = String::Number(1);
   } else {
-    scripts_to_evaluate_on_load_.Set(
-        String::Number(Decimal::FromString(*result).ToDouble() + 1), source);
+    *identifier = String::Number(Decimal::FromString(*result).ToDouble() + 1);
   }
-  return Response::OK();
-}
 
-Response InspectorPageAgent::removeScriptToEvaluateOnLoad(
-    const String& identifier) {
-  if (scripts_to_evaluate_on_load_.Get(identifier).IsNull())
-    return Response::Error("Script not found");
-  scripts_to_evaluate_on_load_.Clear(identifier);
+  scripts_to_evaluate_on_load_.Set(*identifier, source);
+  worlds_to_evaluate_on_load_.Set(*identifier, world_name.fromMaybe(""));
   return Response::OK();
-}
-
-Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
-    const String& source,
-    String* identifier) {
-  return addScriptToEvaluateOnLoad(source, identifier);
 }
 
 Response InspectorPageAgent::removeScriptToEvaluateOnNewDocument(
     const String& identifier) {
-  return removeScriptToEvaluateOnLoad(identifier);
+  if (scripts_to_evaluate_on_load_.Get(identifier).IsNull())
+    return Response::Error("Script not found");
+  scripts_to_evaluate_on_load_.Clear(identifier);
+  worlds_to_evaluate_on_load_.Clear(identifier);
+  return Response::OK();
+}
+
+Response InspectorPageAgent::addScriptToEvaluateOnLoad(const String& source,
+                                                       String* identifier) {
+  return addScriptToEvaluateOnNewDocument(source, Maybe<String>(""),
+                                          identifier);
+}
+
+Response InspectorPageAgent::removeScriptToEvaluateOnLoad(
+    const String& identifier) {
+  return removeScriptToEvaluateOnNewDocument(identifier);
 }
 
 Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
@@ -843,10 +850,40 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
               return Decimal::FromString(a) < Decimal::FromString(b);
             });
 
+  HashMap<String, int> world_id_by_name;
   for (const WTF::String& key : keys) {
-    const WTF::String& script = scripts_to_evaluate_on_load_.Get(key);
-    frame->GetScriptController().ExecuteScriptInMainWorld(script);
+    const String source = scripts_to_evaluate_on_load_.Get(key);
+    const String world_name = worlds_to_evaluate_on_load_.Get(key);
+    if (world_name.IsEmpty()) {
+      frame->GetScriptController().ExecuteScriptInMainWorld(source);
+      continue;
+    }
+
+    auto it = world_id_by_name.find(world_name);
+    int world_id = 0;
+    if (it != world_id_by_name.end()) {
+      world_id = it->value;
+    } else {
+      scoped_refptr<DOMWrapperWorld> world =
+          frame->GetScriptController().CreateNewInspectorIsolatedWorld(
+              world_name);
+      if (!world)
+        continue;
+      world_id = world->GetWorldId();
+      world_id_by_name.Set(world_name, world_id);
+
+      scoped_refptr<SecurityOrigin> security_origin =
+          frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
+      security_origin->GrantUniversalAccess();
+      DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world_id,
+                                                      security_origin);
+    }
+
+    v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
+    frame->GetScriptController().ExecuteScriptInIsolatedWorld(
+        world_id, source, KURL(), kNotSharableCrossOrigin);
   }
+
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
     frame->GetScriptController().ExecuteScriptInMainWorld(
         script_to_evaluate_on_load_once_);
