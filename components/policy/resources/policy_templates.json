@@ -9478,9 +9478,9 @@
         },
       ],
       'supported_on': [
-        'chrome.*:58-',
-        'chrome_os:58-',
-        'android:58-',
+        'chrome.*:58-74',
+        'chrome_os:58-74',
+        'android:58-74',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -9490,7 +9490,7 @@
       'id': 361,
       'caption': '''Maximum SSL version enabled''',
       'tags': ['system-security'],
-      'desc': '''Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> around version 72 (around January 2019).
+      'desc': '''Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> around version 75 (around June 2019).
 
       If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the default maximum version.
 
