@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -71,7 +72,9 @@ class PermissionsInfo {
   void RegisterPermission(std::unique_ptr<APIPermissionInfo> permission);
 
   // Maps permission ids to permissions. Owns the permissions.
-  typedef std::map<APIPermission::ID, std::unique_ptr<APIPermissionInfo>> IDMap;
+  typedef std::unordered_map<APIPermission::ID,
+                             std::unique_ptr<APIPermissionInfo>>
+      IDMap;
 
   // Maps names and aliases to permissions. Doesn't own the permissions.
   typedef std::map<std::string, APIPermissionInfo*> NameMap;
