@@ -1944,17 +1944,6 @@ jumbo_split_static_library("ui") {
       "webui/welcome/welcome_ui.h",
     ]
 
-    # TODO(scottchen): Remove if-check once nux files are non-exclusive
-    #     to windows.
-    if (is_win && is_chrome_branded) {
-      deps += [
-        "//chrome/browser/ui/webui/welcome/nux:constants",
-        "//chrome/browser/ui/webui/welcome/nux:email_feature",
-        "//chrome/browser/ui/webui/welcome/nux:google_apps_feature",
-        "//chrome/browser/ui/webui/welcome/nux:set_as_default_feature",
-      ]
-    }
-
     if (enable_dice_support) {
       sources += [
         "webui/signin/dice_turn_sync_on_helper.cc",
@@ -3487,6 +3476,15 @@ jumbo_split_static_library("ui") {
       "webui/nacl_ui.h",
     ]
     deps += [ "//components/nacl/browser" ]
+  }
+
+  if (is_win && is_chrome_branded) {
+    deps += [
+      "//components/nux:constants",
+      "//components/nux:email_feature",
+      "//components/nux:google_apps_feature",
+      "//components/nux:set_as_default_feature",
+    ]
   }
 
   if (enable_plugins) {

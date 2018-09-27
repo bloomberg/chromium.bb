@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <!-- NUX email provider selection module -->
   <message name="IDS_NUX_EMAIL_GET_STARTED" desc="Label for a confirmation button to finish adding a bookmark and get the user started with using the browser.">
     Get started
   </message>
@@ -18,16 +17,5 @@
   </message>
   <message name="IDS_NUX_EMAIL_BOOKMARK_REPLACED" desc="String read for accessibility to inform the user a bookmark was replaced.">
     Bookmark replaced
-  </message>
-
-  <!-- NUX Google apps selection module -->
-  <message name="IDS_NUX_GOOGLE_APPS_GET_STARTED" desc="Message for a confirmation button that will add the selected apps from a list.">
-    Get started
-  </message>
-  <message name="IDS_NUX_GOOGLE_APPS_DESCRIPTION" desc="Description of what selecting apps and pressing 'Get started' will do.">
-    Get quick access to your favorite Google Apps
-  </message>
-  <message name="IDS_NUX_GOOGLE_APPS_DESCRIPTION_PROMO_BUBBLE" desc="Text shown when Google Apps have been added to highlight where bookmarks have been placed.">
-    Open apps easily with bookmarks
   </message>
 </grit-part>

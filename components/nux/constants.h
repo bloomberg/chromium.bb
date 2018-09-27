@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_CONSTANTS_H_
-#define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_CONSTANTS_H_
+#ifndef COMPONENTS_NUX_CONSTANTS_H_
+#define COMPONENTS_NUX_CONSTANTS_H_
 
 namespace base {
 struct Feature;
@@ -19,4 +19,4 @@ extern const char kNuxGoogleAppsUrl[];
 
 }  // namespace nux
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_CONSTANTS_H_
+#endif  // COMPONENTS_NUX_CONSTANTS_H_
