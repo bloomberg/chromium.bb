@@ -294,6 +294,36 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
 };
 
 /**
+ * @param {VolumeManagerCommon.VolumeType} volumeType .
+ * @return {VolumeManagerCommon.RootType}
+ */
+VolumeManagerCommon.getRootTypeFromVolumeType = function(volumeType) {
+  switch (volumeType) {
+    case VolumeManagerCommon.VolumeType.ANDROID_FILES:
+      return VolumeManagerCommon.RootType.ANDROID_FILES;
+    case VolumeManagerCommon.VolumeType.ARCHIVE:
+      return VolumeManagerCommon.RootType.ARCHIVE;
+    case VolumeManagerCommon.VolumeType.CROSTINI:
+      return VolumeManagerCommon.RootType.CROSTINI;
+    case VolumeManagerCommon.VolumeType.DOWNLOADS:
+      return VolumeManagerCommon.RootType.DOWNLOADS;
+    case VolumeManagerCommon.VolumeType.DRIVE:
+      return VolumeManagerCommon.RootType.DRIVE;
+    case VolumeManagerCommon.VolumeType.MEDIA_VIEW:
+      return VolumeManagerCommon.RootType.MEDIA_VIEW;
+    case VolumeManagerCommon.VolumeType.MTP:
+      return VolumeManagerCommon.RootType.MTP;
+    case VolumeManagerCommon.VolumeType.MY_FILES:
+      return VolumeManagerCommon.RootType.MY_FILES;
+    case VolumeManagerCommon.VolumeType.PROVIDED:
+      return VolumeManagerCommon.RootType.PROVIDED;
+    case VolumeManagerCommon.VolumeType.REMOVABLE:
+      return VolumeManagerCommon.RootType.REMOVABLE;
+  }
+  assertNotReached('Unknown volume type: ' + volumeType);
+};
+
+/**
  * @typedef {{
  *   type: VolumeManagerCommon.DriveConnectionType,
  *   reason: (VolumeManagerCommon.DriveConnectionReason|undefined)

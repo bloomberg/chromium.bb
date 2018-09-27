@@ -172,6 +172,13 @@ function DirectoryItem(label, tree) {
 
   item.label = label;
 
+  // @type {!Array<Entry>} Filled after updateSubDirectories read entries.
+  item.entries_ = [];
+
+  // @type {function()=} onMetadataUpdated_ bound to |this| used to listen
+  // metadata update events.
+  item.onMetadataUpdateBound_ = undefined;
+
   return item;
 }
 
@@ -194,6 +201,74 @@ DirectoryItem.prototype = {
    */
   get labelElement() {
     return this.firstElementChild.querySelector('.label');
+  },
+
+  /**
+   * Returns true if this item is inside any part of My Drive.
+   * @type {!boolean}
+   */
+  get insideMyDrive() {
+    if (!this.entry)
+      return false;
+
+    const locationInfo =
+        this.parentTree_.volumeManager.getLocationInfo(this.entry);
+    return locationInfo &&
+        locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE;
+  },
+
+  /**
+   * Returns true if this item is inside any part of Drive, including Team
+   * Drive.
+   * @type {!boolean}
+   */
+  get insideDrive() {
+    if (!this.entry)
+      return false;
+
+    const locationInfo =
+        this.parentTree_.volumeManager.getLocationInfo(this.entry);
+    return locationInfo &&
+        (locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE ||
+         locationInfo.rootType ===
+             VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT ||
+         locationInfo.rootType === VolumeManagerCommon.RootType.TEAM_DRIVE ||
+         locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE ||
+         locationInfo.rootType ===
+             VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
+         locationInfo.rootType ===
+             VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
+  },
+
+  /**
+   * If the this directory supports 'shared' feature, as in displays shared
+   * icon. It's only supported inside 'My Drive', even Team Drive doesn't
+   * support it.
+   * @type {!boolean}
+   */
+  get supportsSharedFeature() {
+    return this.insideMyDrive;
+  },
+};
+
+/**
+ * Handles the Metadata update event. It updates the shared icon of this item
+ * sub-folders.
+ * @param {Event} event Metadata update event.
+ */
+DirectoryItem.prototype.onMetadataUpdated_ = function(event) {
+  if (!(event.names.has('shared') && this.supportsSharedFeature))
+    return;
+
+  let index = 0;
+  while (this.entries_[index]) {
+    const childEntry = this.entries_[index];
+    const childElement = this.items[index];
+
+    if (event.entriesMap.has(childEntry.toURL()))
+      childElement.updateSharedStatusIcon();
+
+    index++;
   }
 };
 
@@ -316,7 +391,6 @@ DirectoryItem.prototype.remove = function(child) {
     this.hasChildren = false;
 };
 
-
 /**
  * Removes the has-children attribute which allows returning
  * to the ambiguous may-have-children state.
@@ -327,20 +401,25 @@ DirectoryItem.prototype.clearHasChildren = function() {
   rowItem.removeAttribute('has-children');
 };
 
-
 /**
  * Invoked when the item is being expanded.
  * @param {!Event} e Event.
  * @private
  */
 DirectoryItem.prototype.onExpand_ = function(e) {
+  if (this.supportsSharedFeature && !this.onMetadataUpdateBound_) {
+    this.onMetadataUpdateBound_ = this.onMetadataUpdated_.bind(this);
+    this.parentTree_.metadataModel_.addEventListener(
+        'update', this.onMetadataUpdateBound_);
+  }
   this.updateSubDirectories(
       true /* recursive */,
       function() {
-        // Retrieve metadata information for the child (expanded) items.
+        if (!this.insideDrive)
+          return;
         this.parentTree_.metadataModel_.get(
             this.entries_,
-            constants.DIRECTORY_TREE_METADATA_PREFETCH_PROPERTY_NAMES);
+            constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES);
       }.bind(this),
       function() {
         this.expanded = false;
@@ -372,14 +451,11 @@ let getVisibleChildEntries = function(parentItem) {
  * @private
  */
 DirectoryItem.prototype.onCollapse_ = function(e) {
-  // Remove metadata information for the child (now hidden) items by recursively
-  // searching for all visible items under this item.
-  // TODO(sashab): Add a method to the cache to clear all children of a given
-  // parent instead.
-  const visibleEntries = getVisibleChildEntries(this);
-  this.parentTree_.metadataModel_.notifyEntriesRemoved(
-      visibleEntries,
-      constants.DIRECTORY_TREE_METADATA_PREFETCH_PROPERTY_NAMES);
+  if (this.onMetadataUpdateBound_) {
+    this.parentTree_.metadataModel_.removeEventListener(
+        'update', this.onMetadataUpdateBound_);
+    this.onMetadataUpdateBound_ = undefined;
+  }
 
   if (this.delayExpansion) {
     // For file systems where it is performance intensive
@@ -612,14 +688,9 @@ SubDirectoryItem.prototype = {
  */
 SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
   var icon = this.querySelector('.icon');
-  this.parentTree_.metadataModel.notifyEntriesChanged([this.dirEntry_]);
-  this.parentTree_.metadataModel
-      .get(
-          [this.dirEntry_],
-          constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES)
-      .then(function(metadata) {
-        icon.classList.toggle('shared', !!(metadata[0] && metadata[0].shared));
-      });
+  const metadata =
+      this.parentTree_.metadataModel.getCache([this.dirEntry_], ['shared']);
+  icon.classList.toggle('shared', !!(metadata[0] && metadata[0].shared));
 };
 
 /**

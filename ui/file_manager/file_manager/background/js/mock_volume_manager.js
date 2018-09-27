@@ -246,14 +246,19 @@ MockVolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
  * @return {EntryLocation} Location information.
  */
 MockVolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
-  var volumeInfo = /** @type {!VolumeInfo} */ (this.volumeInfoList.item(0));
+  var volumeInfo = /** @type {!VolumeInfo} */ (this.volumeInfoList.array_.find(
+      volumeList => volumeList.fileSystem == entry.filesystem));
+
   if (util.isFakeEntry(entry)) {
     var fakeEntry = /** @type {!FakeEntry} */ (entry);
     return new EntryLocationImpl(volumeInfo, fakeEntry.rootType, true, true);
   }
+  let rootType;
+  let isReadOnly = false;
+  let isRootEntry;
   if (entry.filesystem.name === VolumeManagerCommon.VolumeType.DRIVE) {
-    var rootType = VolumeManagerCommon.RootType.DRIVE;
-    var isRootEntry = entry.fullPath === '/root';
+    rootType = VolumeManagerCommon.RootType.DRIVE;
+    isRootEntry = entry.fullPath === '/root';
     if (entry.fullPath.startsWith('/team_drives')) {
       if (entry.fullPath === '/team_drives') {
         rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
@@ -265,7 +270,11 @@ MockVolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
     }
     return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, true);
   }
-  throw new Error('Not implemented exception.');
+
+  rootType =
+      VolumeManagerCommon.getRootTypeFromVolumeType(volumeInfo.volumeType);
+  isRootEntry = util.isSameEntry(entry, volumeInfo.fileSystem.root);
+  return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, isReadOnly);
 };
 /**
  * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
