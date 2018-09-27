@@ -98,6 +98,9 @@ CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerScriptFullCodeCache;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
+CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangeAcceptHeader;
+CONTENT_EXPORT extern const char
+    kSignedHTTPExchangeAcceptHeaderFieldTrialParamName[];
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangeOriginTrial;
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;

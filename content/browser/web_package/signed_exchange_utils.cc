@@ -5,9 +5,13 @@
 #include "content/browser/web_package/signed_exchange_utils.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/no_destructor.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/web_package/origins_list.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/browser/web_package/signed_exchange_request_handler.h"
@@ -28,6 +32,31 @@ void ReportErrorAndTraceEvent(
                        error_message);
   if (devtools_proxy)
     devtools_proxy->ReportError(error_message, std::move(error_field));
+}
+
+namespace {
+
+OriginsList CreateAdvertiseAcceptHeaderOriginsList() {
+  std::string param = base::GetFieldTrialParamValueByFeature(
+      features::kSignedHTTPExchangeAcceptHeader,
+      features::kSignedHTTPExchangeAcceptHeaderFieldTrialParamName);
+  if (param.empty())
+    DLOG(ERROR) << "The Accept-SXG origins list param is empty.";
+
+  return OriginsList(param);
+}
+
+}  //  namespace
+
+bool ShouldAdvertiseAcceptHeader(const url::Origin& origin) {
+  if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchangeAcceptHeader))
+    return false;
+
+  // |origins_list| is initialized in a thread-safe manner.
+  // Querying OriginsList::Match() should be safe since it's read-only access.
+  static base::NoDestructor<OriginsList> origins_list(
+      CreateAdvertiseAcceptHeaderOriginsList());
+  return origins_list->Match(origin);
 }
 
 bool IsSignedExchangeHandlingEnabled() {

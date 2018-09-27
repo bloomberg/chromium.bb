@@ -413,6 +413,13 @@ const base::Feature kSharedArrayBuffer {
 const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Send "Accept: application/signed-exchange" header to origins who opt-in.
+const base::Feature kSignedHTTPExchangeAcceptHeader{
+    "SignedHTTPExchangeAcceptHeader", base::FEATURE_DISABLED_BY_DEFAULT};
+// Field trial parameter containing the list of origins that opted-in to receive
+// "Accept: application/signed-exchange" header.
+const char kSignedHTTPExchangeAcceptHeaderFieldTrialParamName[] = "OriginsList";
+
 // Origin Trial of Origin-Signed HTTP Exchanges (for WebPackage Loading)
 const base::Feature kSignedHTTPExchangeOriginTrial{
     "SignedHTTPExchangeOriginTrial", base::FEATURE_DISABLED_BY_DEFAULT};
