@@ -727,11 +727,13 @@ void WebStateImpl::SetHasOpener(bool has_opener) {
   created_with_opener_ = has_opener;
 }
 
-void WebStateImpl::TakeSnapshot(SnapshotCallback callback) {
+void WebStateImpl::TakeSnapshot(CGRect rect, SnapshotCallback callback) {
   __block SnapshotCallback shared_callback = std::move(callback);
-  [web_controller_ takeSnapshotWithCompletion:^(UIImage* snapshot) {
-    std::move(shared_callback).Run(gfx::Image(snapshot));
-  }];
+  [web_controller_
+      takeSnapshotWithRect:rect
+                completion:^(UIImage* snapshot) {
+                  std::move(shared_callback).Run(gfx::Image(snapshot));
+                }];
 }
 
 void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {

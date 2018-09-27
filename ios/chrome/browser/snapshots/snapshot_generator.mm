@@ -11,7 +11,9 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
@@ -22,6 +24,8 @@
 #import "ios/web/public/features.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#include "ios/web/public/web_task_traits.h"
+#include "ios/web/public/web_thread.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -216,40 +220,57 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 - (void)updateWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
   DCHECK(_webState);
   CGRect frame = [self snapshotFrameVisibleFrameOnly:YES];
-  if (CGRectIsEmpty(frame))
+  if (CGRectIsEmpty(frame)) {
+    if (completion) {
+      base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
+                               base::BindOnce(^{
+                                 completion(nil);
+                               }));
+    }
     return;
+  }
+  DCHECK(std::isnormal(frame.size.width) && (frame.size.width > 0))
+      << ": frame.size.width=" << frame.size.width;
+  DCHECK(std::isnormal(frame.size.height) && (frame.size.height > 0))
+      << ": frame.size.height=" << frame.size.height;
+
   NSArray<SnapshotOverlay*>* overlays =
       [_delegate snapshotOverlaysForWebState:_webState];
   UIImage* snapshot =
       [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays
                                             visibleFrameOnly:YES];
   if (snapshot) {
-    if (completion)
-      completion(snapshot);
+    if (completion) {
+      base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
+                               base::BindOnce(^{
+                                 completion(nil);
+                               }));
+    }
     return;
   }
 
   [_delegate willUpdateSnapshotForWebState:_webState];
   __weak SnapshotGenerator* weakSelf = self;
-  _webState->TakeSnapshot(base::BindOnce(^(gfx::Image image) {
-    SnapshotGenerator* strongSelf = weakSelf;
-    if (!strongSelf)
-      return;
-    UIImage* snapshot = image.ToUIImage();
-    if (overlays.count > 0) {
-      snapshot = [strongSelf snapshotWithOverlays:overlays
-                                         snapshot:snapshot
-                                            frame:frame];
-    }
-    [strongSelf.snapshotCache setImage:snapshot
-                         withSessionID:_snapshotSessionId];
-    [_coalescingSnapshotContext setCachedSnapshot:snapshot
-                                     withOverlays:overlays
-                                 visibleFrameOnly:YES];
-    [_delegate didUpdateSnapshotForWebState:_webState withImage:snapshot];
-    if (completion)
-      completion(snapshot);
-  }));
+  _webState->TakeSnapshot(
+      frame, base::BindOnce(^(gfx::Image image) {
+        SnapshotGenerator* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+        UIImage* snapshot = image.ToUIImage();
+        if (overlays.count > 0) {
+          snapshot = [strongSelf snapshotWithOverlays:overlays
+                                             snapshot:snapshot
+                                                frame:frame];
+        }
+        [strongSelf.snapshotCache setImage:snapshot
+                             withSessionID:_snapshotSessionId];
+        [_coalescingSnapshotContext setCachedSnapshot:snapshot
+                                         withOverlays:overlays
+                                     visibleFrameOnly:YES];
+        [_delegate didUpdateSnapshotForWebState:_webState withImage:snapshot];
+        if (completion)
+          completion(snapshot);
+      }));
 }
 
 - (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay

@@ -2282,11 +2282,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
     self.navigationManagerImpl->DiscardNonCommittedItems();
 }
 
-- (void)takeSnapshotWithCompletion:(void (^)(UIImage*))completion {
+- (void)takeSnapshotWithRect:(CGRect)rect
+                  completion:(void (^)(UIImage*))completion {
   if (@available(iOS 11, *)) {
     if (_webView) {
+      WKSnapshotConfiguration* configuration =
+          [[WKSnapshotConfiguration alloc] init];
+      configuration.rect = rect;
       [_webView
-          takeSnapshotWithConfiguration:nil
+          takeSnapshotWithConfiguration:configuration
                       completionHandler:^(UIImage* snapshot, NSError* error) {
                         if (error)
                           DLOG(ERROR) << "WKWebView snapshot error: "
