@@ -9199,7 +9199,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Searching...
       </message>
       <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_REMINDER_LABEL" desc="Label text. Reminds the user that their Bluetooth security key (an external physical device for user authentication) will only show up in the list of nearby Bluetooth devices if they put it into pairing mode. This is achieved by holding down the button on the device for 5 seconds, or longer." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        To see your security key, it needs to be in pairing mode. Press the button on your key for at least 5 seconds.
+        If your security key isn't listed, press the key's button for at least 5 seconds.
       </message>
       <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE" desc="Title of the dialog shown when instructing the user to enter the PIN code (a 6-digit number) to pair a Bluetooth security key (an external physical device for user authentication) with their computer.">
         Pair with <ph name="DEVICE_NAME">$1<ex>VHGSHSSN</ex></ph>
