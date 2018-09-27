@@ -220,9 +220,6 @@ class MODULES_EXPORT BaseAudioContext
                                    const PeriodicWaveConstraints&,
                                    ExceptionState&);
 
-  // Suspend
-  virtual ScriptPromise suspendContext(ScriptState*) = 0;
-
   // Resume
   virtual ScriptPromise resumeContext(ScriptState*) = 0;
 
