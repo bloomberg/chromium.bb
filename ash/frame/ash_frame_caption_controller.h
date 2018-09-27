@@ -23,9 +23,8 @@ class ASH_EXPORT AshFrameCaptionController : public FrameCaptionDelegate {
 
   bool CanSnap(aura::Window* window) override;
   void ShowSnapPreview(aura::Window* window,
-                       FrameCaptionDelegate::SnapDirection snap) override;
-  void CommitSnap(aura::Window* window,
-                  FrameCaptionDelegate::SnapDirection snap) override;
+                       mojom::SnapDirection snap) override;
+  void CommitSnap(aura::Window* window, mojom::SnapDirection snap) override;
 
  private:
   std::unique_ptr<PhantomWindowController> phantom_window_controller_;

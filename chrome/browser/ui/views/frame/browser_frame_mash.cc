@@ -12,7 +12,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
-#include "ash/public/interfaces/window_style.mojom.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
@@ -63,18 +62,13 @@ views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   properties[ws::mojom::WindowManager::kDisableImmersive_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(true);
 
-  Browser* browser = browser_view_->browser();
-  properties[ash::mojom::kAshWindowStyle_InitProperty] =
-      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(
-          BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle(browser)
-              ? ash::mojom::WindowStyle::DEFAULT
-              : ash::mojom::WindowStyle::BROWSER));
   // ChromeLauncherController manages the browser shortcut shelf item; set the
   // window's shelf item type property to be ignored by ash::ShelfWindowWatcher.
   properties[ws::mojom::WindowManager::kShelfItemType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int64_t>(ash::TYPE_BROWSER_SHORTCUT));
 
+  Browser* browser = browser_view_->browser();
   properties[ash::mojom::kWindowPositionManaged_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int64_t>(
           !browser->bounds_overridden() && !browser->is_session_restore() &&

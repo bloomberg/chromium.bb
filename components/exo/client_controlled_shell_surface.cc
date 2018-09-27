@@ -11,6 +11,7 @@
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
+#include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"

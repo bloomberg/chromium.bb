@@ -78,32 +78,15 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
 
   } else if (key == aura::client::kWindowIconKey) {
     MirrorOwnedProperty(window, root_window, aura::client::kWindowIconKey);
-  } else if (key == kFrameBackButtonStateKey) {
-    root_window->SetProperty(kFrameBackButtonStateKey,
-                             window->GetProperty(kFrameBackButtonStateKey));
   } else if (key == kFrameActiveColorKey) {
     root_window->SetProperty(kFrameActiveColorKey,
                              window->GetProperty(kFrameActiveColorKey));
   } else if (key == kFrameInactiveColorKey) {
     root_window->SetProperty(kFrameInactiveColorKey,
                              window->GetProperty(kFrameInactiveColorKey));
-  } else if (key == kFrameImageActiveKey) {
-    MirrorOwnedProperty(window, root_window, kFrameImageActiveKey);
-  } else if (key == kFrameImageInactiveKey) {
-    MirrorOwnedProperty(window, root_window, kFrameImageInactiveKey);
-  } else if (key == kFrameImageOverlayActiveKey) {
-    MirrorOwnedProperty(window, root_window, kFrameImageOverlayActiveKey);
-  } else if (key == kFrameImageOverlayInactiveKey) {
-    MirrorOwnedProperty(window, root_window, kFrameImageOverlayInactiveKey);
-  } else if (key == kFrameImageYInsetKey) {
-    root_window->SetProperty(kFrameImageYInsetKey,
-                             window->GetProperty(kFrameImageYInsetKey));
   } else if (key == kFrameIsThemedByHostedAppKey) {
     root_window->SetProperty(kFrameIsThemedByHostedAppKey,
                              window->GetProperty(kFrameIsThemedByHostedAppKey));
-  } else if (key == kFrameTextColorKey) {
-    root_window->SetProperty(kFrameTextColorKey,
-                             window->GetProperty(kFrameTextColorKey));
   } else if (key == kHideCaptionButtonsInTabletModeKey) {
     root_window->SetProperty(
         kHideCaptionButtonsInTabletModeKey,

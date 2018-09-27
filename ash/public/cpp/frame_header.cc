@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/frame_header.h"
+#include "ash/public/cpp/frame_header.h"
 
-#include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"  // DCHECK
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -27,6 +25,62 @@ namespace ash {
 namespace {
 // Duration of crossfade animation for activating and deactivating frame.
 const int kActivationCrossfadeDurationMs = 200;
+
+// Returns the available bounds for the header's title given the views to the
+// left and right of the title, and the font used. |left_view| should be null
+// if there is no view to the left of the title.
+gfx::Rect GetAvailableTitleBounds(const views::View* left_view,
+                                  const views::View* right_view,
+                                  int header_height) {
+  // Space between the title text and the caption buttons.
+  constexpr int kTitleCaptionButtonSpacing = 5;
+  // Space between window icon and title text.
+  constexpr int kTitleIconOffsetX = 5;
+  // Space between window edge and title text, when there is no icon.
+  constexpr int kTitleNoIconOffsetX = 8;
+
+  const int x = left_view ? left_view->bounds().right() + kTitleIconOffsetX
+                          : kTitleNoIconOffsetX;
+  const int title_height =
+      views::NativeWidgetAura::GetWindowTitleFontList().GetHeight();
+  DCHECK_LE(right_view->height(), header_height);
+  // We want to align the center points of the header and title vertically.
+  // Note that we can't just do (header_height - title_height) / 2, since this
+  // won't make the center points align perfectly vertically due to rounding.
+  // Floor when computing the center of |header_height| and when computing the
+  // center of the text.
+  const int header_center_y = header_height / 2;
+  const int title_center_y = title_height / 2;
+  const int y = std::max(0, header_center_y - title_center_y);
+  const int width =
+      std::max(0, right_view->x() - kTitleCaptionButtonSpacing - x);
+  return gfx::Rect(x, y, width, title_height);
+}
+
+// Returns true if the header for |widget| can animate to new visuals when the
+// widget's activation changes. Returns false if the header should switch to
+// new visuals instantaneously.
+bool CanAnimateActivation(views::Widget* widget) {
+  // Do not animate the header if the parent (e.g.
+  // kShellWindowId_DefaultContainer) is already animating. All of the
+  // implementers of FrameHeader animate activation by continuously painting
+  // during the animation. This gives the parent's animation a slower frame
+  // rate.
+  // TODO(sky): Expose a better way to determine this rather than assuming the
+  // parent is a toplevel container.
+  aura::Window* window = widget->GetNativeWindow();
+  // TODO(sky): parent()->layer() is for mash until animations ported.
+  if (!window || !window->parent() || !window->parent()->layer())
+    return true;
+
+  ui::LayerAnimator* parent_layer_animator =
+      window->parent()->layer()->GetAnimator();
+  return !parent_layer_animator->IsAnimatingProperty(
+             ui::LayerAnimationElement::OPACITY) &&
+         !parent_layer_animator->IsAnimatingProperty(
+             ui::LayerAnimationElement::VISIBILITY);
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,8 +102,7 @@ void FrameHeader::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   if (mode_ != old_mode) {
     UpdateCaptionButtonColors();
 
-    if (!initial_paint_ &&
-        FrameHeaderUtil::CanAnimateActivation(target_widget_)) {
+    if (!initial_paint_ && CanAnimateActivation(target_widget_)) {
       activation_animation_.SetSlideDuration(kActivationCrossfadeDurationMs);
       if (mode_ == MODE_ACTIVE)
         activation_animation_.Show();
@@ -95,10 +148,6 @@ void FrameHeader::SetPaintAsActive(bool paint_as_active) {
   if (back_button_)
     back_button_->set_paint_as_active(paint_as_active);
   UpdateCaptionButtonColors();
-}
-
-void FrameHeader::SetWidthInPixels(int width_in_pixels) {
-  NOTREACHED() << "Frame does not support drawing width in pixels";
 }
 
 void FrameHeader::OnShowStateChanged(ui::WindowShowState show_state) {
@@ -229,19 +278,6 @@ void FrameHeader::LayoutHeaderInternal() {
 
   caption_button_container()->Layout();
 
-  // Update clients on the bounds of the caption button only if the bounds have
-  // changed.
-  const gfx::Rect* old_bounds_value =
-      target_widget()->GetNativeWindow()->GetProperty(
-          ash::kCaptionButtonBoundsKey);
-  // The bounds are relative to the top right, rather than the normal top left.
-  gfx::Rect new_bounds_value =
-      caption_button_container()->bounds() - gfx::Vector2d(view_->width(), 0);
-  if (!old_bounds_value || new_bounds_value != *old_bounds_value) {
-    target_widget()->GetNativeWindow()->SetProperty(
-        ash::kCaptionButtonBoundsKey, new gfx::Rect(new_bounds_value));
-  }
-
   int origin = 0;
   if (back_button_) {
     gfx::Size size = back_button_->GetPreferredSize();
@@ -255,16 +291,16 @@ void FrameHeader::LayoutHeaderInternal() {
     // respect to the caption button container.
     const gfx::Size icon_size(left_header_view_->GetPreferredSize());
     const int icon_offset_y = (GetHeaderHeight() - icon_size.height()) / 2;
-    left_header_view_->SetBounds(FrameHeaderUtil::GetLeftViewXInset() + origin,
-                                 icon_offset_y, icon_size.width(),
-                                 icon_size.height());
+    constexpr int kLeftViewXInset = 9;
+    left_header_view_->SetBounds(kLeftViewXInset + origin, icon_offset_y,
+                                 icon_size.width(), icon_size.height());
   }
 }
 
 gfx::Rect FrameHeader::GetTitleBounds() const {
   views::View* left_view = left_header_view_ ? left_header_view_ : back_button_;
-  return FrameHeaderUtil::GetAvailableTitleBounds(
-      left_view, caption_button_container_, GetHeaderHeight());
+  return GetAvailableTitleBounds(left_view, caption_button_container_,
+                                 GetHeaderHeight());
 }
 
 FrameCaptionButton::ColorMode FrameHeader::GetButtonColorMode() {

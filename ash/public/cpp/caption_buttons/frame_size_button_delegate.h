@@ -47,8 +47,8 @@ class ASH_PUBLIC_EXPORT FrameSizeButtonDelegate {
 
   // Thunks to methods of the same name in FrameCaptionDelegate.
   virtual bool CanSnap() = 0;
-  virtual void ShowSnapPreview(FrameCaptionDelegate::SnapDirection snap) = 0;
-  virtual void CommitSnap(FrameCaptionDelegate::SnapDirection snap) = 0;
+  virtual void ShowSnapPreview(mojom::SnapDirection snap) = 0;
+  virtual void CommitSnap(mojom::SnapDirection snap) = 0;
 
  protected:
   virtual ~FrameSizeButtonDelegate() {}

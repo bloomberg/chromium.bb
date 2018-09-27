@@ -5,6 +5,8 @@
 #ifndef ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_DELEGATE_H_
 #define ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_DELEGATE_H_
 
+#include "ash/public/interfaces/ash_window_manager.mojom.h"
+
 namespace aura {
 class Window;
 }
@@ -16,23 +18,16 @@ namespace ash {
 // client.
 class FrameCaptionDelegate {
  public:
-  // The previewed snap state for a window, corresponding to the use of a
-  // PhantomWindowController.
-  enum class SnapDirection {
-    kNone,   // No snap preview.
-    kLeft,   // The phantom window controller is previewing a snap to the left.
-    kRight,  // The phantom window controller is previewing a snap to the left.
-  };
-
   // Returns whether the snapping action on the size button should be enabled.
   virtual bool CanSnap(aura::Window* window) = 0;
 
   // Shows a preview (phantom window) for the given snap direction.
-  virtual void ShowSnapPreview(aura::Window* window, SnapDirection snap) = 0;
+  virtual void ShowSnapPreview(aura::Window* window,
+                               mojom::SnapDirection snap) = 0;
 
   // Snaps the window in the given direction, if not kNone. Destroys the preview
   // window, if any.
-  virtual void CommitSnap(aura::Window* window, SnapDirection snap) = 0;
+  virtual void CommitSnap(aura::Window* window, mojom::SnapDirection snap) = 0;
 
  protected:
   virtual ~FrameCaptionDelegate() {}

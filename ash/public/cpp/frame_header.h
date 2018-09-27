@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_FRAME_HEADER_H_
-#define ASH_FRAME_FRAME_HEADER_H_
+#ifndef ASH_PUBLIC_CPP_FRAME_HEADER_H_
+#define ASH_PUBLIC_CPP_FRAME_HEADER_H_
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "base/strings/string16.h"
@@ -17,19 +17,19 @@
 namespace gfx {
 class Canvas;
 class Rect;
-}
+}  // namespace gfx
 
 namespace views {
 class View;
 class Widget;
-}
+}  // namespace views
 
 namespace ash {
 
 enum class AshLayoutSize;
 
 // Helper class for managing the window header.
-class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
+class ASH_PUBLIC_EXPORT FrameHeader : public gfx::AnimationDelegate {
  public:
   enum Mode { MODE_ACTIVE, MODE_INACTIVE };
 
@@ -77,9 +77,6 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
-
-  // Set the frame's width in pixels.
-  virtual void SetWidthInPixels(int width_in_pixels);
 
  protected:
   FrameHeader(views::Widget* target_widget, views::View* view);
@@ -160,4 +157,4 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_FRAME_HEADER_H_
+#endif  // ASH_PUBLIC_CPP_FRAME_HEADER_H_

@@ -234,10 +234,6 @@ aggregate_vector_icons("ash_vector_icons") {
     "unified_network_badge_secure.icon",
     "unified_network_badge_vpn.icon",
     "wallpaper.icon",
-    "window_control_back.icon",
-    "window_control_dezoom.icon",
-    "window_control_menu.icon",
-    "window_control_zoom.icon",
   ]
 
   if (is_chrome_branded) {

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/frame/default_frame_header.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -15,6 +14,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
@@ -53,15 +53,12 @@ namespace ash {
 class NonClientFrameViewAshTestWidgetDelegate
     : public views::WidgetDelegateView {
  public:
-  NonClientFrameViewAshTestWidgetDelegate(
-      mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT)
-      : window_style_(window_style) {}
+  NonClientFrameViewAshTestWidgetDelegate() = default;
   ~NonClientFrameViewAshTestWidgetDelegate() override = default;
 
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
-    non_client_frame_view_ =
-        new NonClientFrameViewAsh(widget, nullptr, window_style_);
+    non_client_frame_view_ = new NonClientFrameViewAsh(widget);
     return non_client_frame_view_;
   }
 
@@ -80,8 +77,6 @@ class NonClientFrameViewAshTestWidgetDelegate
  private:
   // Not owned.
   NonClientFrameViewAsh* non_client_frame_view_ = nullptr;
-
-  mojom::WindowStyle window_style_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAshTestWidgetDelegate);
 };
@@ -318,37 +313,6 @@ TEST_F(NonClientFrameViewAshTest, ToggleTabletModeOnMinimizedWindow) {
   EXPECT_TRUE(widget->IsMaximized());
   EXPECT_STREQ(kWindowControlRestoreIcon.name,
                test.size_button()->icon_definition_for_test()->name);
-}
-
-// Tests that FrameCaptionButtonContainer has been relaid out in response to
-// tablet mode being toggled.
-TEST_F(NonClientFrameViewAshTest, ToggleTabletModeRelayout) {
-  // In classic Ash, this is covered by
-  // BrowserNonClientFrameViewAshTest.ToggleTabletModeRelayout.
-  if (!::features::IsMultiProcessMash())
-    return;
-
-  NonClientFrameViewAshTestWidgetDelegate* delegate =
-      new NonClientFrameViewAshTestWidgetDelegate(mojom::WindowStyle::BROWSER);
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
-  FrameCaptionButtonContainerView* caption_buttons =
-      delegate->non_client_frame_view()
-          ->GetHeaderView()
-          ->caption_button_container();
-  FrameCaptionButtonContainerView::TestApi test(caption_buttons);
-
-  EXPECT_FALSE(widget->IsMaximized());
-  const gfx::Rect initial = caption_buttons->bounds();
-  ash::TabletModeController* tablet_mode_controller =
-      Shell::Get()->tablet_mode_controller();
-  tablet_mode_controller->EnableTabletModeWindowManager(true);
-  test.EndAnimations();
-  const gfx::Rect during_maximize = caption_buttons->bounds();
-  EXPECT_GT(initial.height(), during_maximize.height());
-  tablet_mode_controller->EnableTabletModeWindowManager(false);
-  test.EndAnimations();
-  const gfx::Rect after_restore = caption_buttons->bounds();
-  EXPECT_EQ(initial, after_restore);
 }
 
 // Verify that when in tablet mode with a maximized window, the height of the
@@ -955,8 +919,7 @@ TEST_P(NonClientFrameViewAshFrameColorTest, WideFrameInitialColor) {
   std::unique_ptr<WideFrameView> wide_frame_view =
       std::make_unique<WideFrameView>(widget.get());
   HeaderView* wide_header_view = wide_frame_view->header_view();
-  DefaultFrameHeader* header =
-      static_cast<DefaultFrameHeader*>(wide_header_view->GetFrameHeader());
+  DefaultFrameHeader* header = wide_header_view->GetFrameHeader();
   EXPECT_EQ(new_active_color, header->active_frame_color_for_testing());
   EXPECT_EQ(new_inactive_color, header->inactive_frame_color_for_testing());
 }
