@@ -150,7 +150,7 @@ class CrostiniSharePathTest : public testing::Test {
 
 TEST_F(CrostiniSharePathTest, Success) {
   vm_tools::concierge::StartVmResponse start_vm_response;
-  start_vm_response.set_success(true);
+  start_vm_response.set_status(vm_tools::concierge::VM_STATUS_RUNNING);
   start_vm_response.mutable_vm_info()->set_seneschal_server_handle(123);
   fake_concierge_client_->set_start_vm_response(start_vm_response);
 
@@ -164,7 +164,7 @@ TEST_F(CrostiniSharePathTest, Success) {
 
 TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
   vm_tools::concierge::StartVmResponse start_vm_response;
-  start_vm_response.set_success(true);
+  start_vm_response.set_status(vm_tools::concierge::VM_STATUS_RUNNING);
   start_vm_response.mutable_vm_info()->set_seneschal_server_handle(123);
   fake_concierge_client_->set_start_vm_response(start_vm_response);
 
