@@ -44,6 +44,22 @@
 
 namespace blink {
 
+namespace {
+
+bool AreSubtreeUpdateReasonsIsolationPiercing(unsigned reasons) {
+  // This is written to mean that if we have any reason other than the specified
+  // ones then the reasons are isolation piercing. This means that if new
+  // reasons are added, they will be isolation piercing by default.
+  //  - Isolation establishes a containing block for all descendants, so it is
+  //    not piercing.
+  // TODO(vmpstr): Investigate if transform style is also isolated.
+  return reasons &
+         ~(static_cast<unsigned>(
+             SubtreePaintPropertyUpdateReason::kContainerChainMayChange));
+}
+
+}  // namespace
+
 PaintPropertyTreeBuilderFragmentContext::
     PaintPropertyTreeBuilderFragmentContext()
     : current_effect(&EffectPaintPropertyNode::Root()) {
@@ -54,6 +70,13 @@ PaintPropertyTreeBuilderFragmentContext::
   current.scroll = absolute_position.scroll = fixed_position.scroll =
       &ScrollPaintPropertyNode::Root();
 }
+
+PaintPropertyTreeBuilderContext::PaintPropertyTreeBuilderContext()
+    : force_subtree_update_reasons(0u),
+      clip_changed(false),
+      is_repeating_fixed_position(false),
+      has_svg_hidden_container_ancestor(false),
+      supports_composited_raster_invalidation(true) {}
 
 void VisualViewportPaintPropertyTreeBuilder::Update(
     VisualViewport& visual_viewport,
@@ -112,7 +135,11 @@ class FragmentPaintPropertyTreeBuilder {
         properties_(fragment_data.PaintProperties()) {}
 
   ~FragmentPaintPropertyTreeBuilder() {
-    full_context_.force_subtree_update |= property_added_or_removed_;
+    if (property_added_or_removed_) {
+      // Tree topology changes are blocked by isolation.
+      full_context_.force_subtree_update_reasons |=
+          PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
+    }
 #if DCHECK_IS_ON()
     if (properties_)
       PaintPropertyTreePrinter::UpdateDebugNames(object_, *properties_);
@@ -159,7 +186,7 @@ class FragmentPaintPropertyTreeBuilder {
 
   bool NeedsPaintPropertyUpdate() const {
     return object_.NeedsPaintPropertyUpdate() ||
-           full_context_.force_subtree_update;
+           full_context_.force_subtree_update_reasons;
   }
 
   void OnUpdate(const ObjectPaintProperties::UpdateResult& result) {
@@ -1263,7 +1290,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowControlsClip() {
     properties_->ClearOverflowControlsClip();
   }
 
-  // No need to set force_subtree_update and clip_changed because
+  // No need to set force_subtree_update_reasons and clip_changed because
   // OverflowControlsClip applies to overflow controls only, not descendants.
   // We also don't walk into custom scrollbars in PrePaintTreeWalk and
   // LayoutObjects under custom scrollbars don't support paint properties.
@@ -1550,8 +1577,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       // so ensure the entire subtree is updated when reasons change.
       if (auto* existing_scroll = properties_->Scroll()) {
         if (existing_scroll->GetMainThreadScrollingReasons() !=
-            state.main_thread_scrolling_reasons)
-          full_context_.force_subtree_update = true;
+            state.main_thread_scrolling_reasons) {
+          // Main thread scrolling reasons cross into isolation.
+          full_context_.force_subtree_update_reasons |=
+              PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationPiercing;
+        }
       }
 
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
@@ -2042,7 +2072,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
   if (fragment_data_.PaintOffset() != context_.current.paint_offset) {
     // Many paint properties depend on paint offset so we force an update of
     // the entire subtree on paint offset changes.
-    full_context_.force_subtree_update = true;
+    // However, they are blocked by isolation.
+    full_context_.force_subtree_update_reasons |=
+        PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
 
     object_.GetMutableForPainting().SetShouldCheckForPaintInvalidation();
     fragment_data_.SetPaintOffset(context_.current.paint_offset);
@@ -2100,7 +2132,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
 
 #if DCHECK_IS_ON()
   FindObjectPropertiesNeedingUpdateScope check_needs_update_scope(
-      object_, fragment_data_, full_context_.force_subtree_update);
+      object_, fragment_data_, full_context_.force_subtree_update_reasons);
 #endif
 
   if (properties_) {
@@ -2120,7 +2152,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
 void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
 #if DCHECK_IS_ON()
   FindObjectPropertiesNeedingUpdateScope check_needs_update_scope(
-      object_, fragment_data_, full_context_.force_subtree_update);
+      object_, fragment_data_, full_context_.force_subtree_update_reasons);
 #endif
 
   if (properties_) {
@@ -2151,7 +2183,9 @@ void PaintPropertyTreeBuilder::InitFragmentPaintProperties(
   if (needs_paint_properties) {
     fragment.EnsurePaintProperties();
   } else if (fragment.PaintProperties()) {
-    context_.force_subtree_update = true;
+    // Tree topology changes are blocked by isolation.
+    context_.force_subtree_update_reasons |=
+        PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
     fragment.ClearPaintProperties();
   }
   fragment.SetPaginationOffset(pagination_offset);
@@ -2906,7 +2940,14 @@ bool PaintPropertyTreeBuilder::UpdateForChildren() {
   // means it can clear that reason and possibly skip the subtree update.
   if (object_.SubtreePaintPropertyUpdateReasons() !=
       static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)) {
-    context_.force_subtree_update = true;
+    if (AreSubtreeUpdateReasonsIsolationPiercing(
+            object_.SubtreePaintPropertyUpdateReasons())) {
+      context_.force_subtree_update_reasons |=
+          PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationPiercing;
+    } else {
+      context_.force_subtree_update_reasons |=
+          PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
+    }
   }
   if (object_.CanContainAbsolutePositionObjects())
     context_.container_for_absolute_position = &object_;
