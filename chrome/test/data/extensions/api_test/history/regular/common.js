@@ -105,7 +105,7 @@ function populateHistory(urls, callback) {
 
 /**
  * Tests call this function to invoke specific tests.
- * @param {Array<funcion>} testFns The tests to run.
+ * @param {Array<function>} testFns The tests to run.
  */
 function runHistoryTestFns(testFns) {
   chrome.test.getConfig(function(config) {
@@ -122,7 +122,7 @@ function runHistoryTestFns(testFns) {
 /**
  * Add two URLs to the history.  Compute three times, in ms since the epoch:
  *    'before': A time before both URLs were added.
- *    'between': A time between the times teh URLs were added.
+ *    'between': A time between the times the URLs were added.
  *    'after': A time after both were added.
  * All times are passed to |callback| as properties of its object parameter.
  * @param {Array<string>} urls An array of two URLs to add to the history.
