@@ -222,6 +222,9 @@
         "load_accessibility:shopping:amazon": {
             "DEFAULT": "system_health_desktop_059.wprgo"
         },
+        "load_accessibility:shopping:amazon:2018": {
+            "DEFAULT": "system_health_desktop_c69a8c0e2f.wprgo"
+        },
         "long_running:tools:gmail-background": {
             "DEFAULT": "system_health_desktop_028.wprgo"
         },
