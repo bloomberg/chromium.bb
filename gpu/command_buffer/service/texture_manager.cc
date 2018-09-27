@@ -3550,7 +3550,8 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
   int importance = 0;  // Default importance.
   // The link to the memory tracking |client_id| is given a higher importance
   // than other refs.
-  if (ref == ref->texture()->memory_tracking_ref_)
+  if (!ref->texture()->lightweight_ref_ &&
+      (ref == ref->texture()->memory_tracking_ref_))
     importance = 2;
 
   pmd->AddOwnershipEdge(client_guid, service_guid, importance);

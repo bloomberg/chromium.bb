@@ -62,6 +62,7 @@ class TestContextProvider
   gpu::raster::RasterInterface* RasterInterface() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  gpu::SharedImageInterface* SharedImageInterface() override;
   ContextCacheController* CacheController() override;
   base::Lock* GetLock() override;
   void AddObserver(ContextLostObserver* obs) override;
@@ -96,6 +97,7 @@ class TestContextProvider
   std::unique_ptr<gpu::raster::RasterInterface> raster_context_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<ContextCacheController> cache_controller_;
+  std::unique_ptr<gpu::SharedImageInterface> shared_image_interface_;
   const bool support_locking_ ALLOW_UNUSED_TYPE;
   bool bound_ = false;
 

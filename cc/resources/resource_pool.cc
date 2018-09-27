@@ -23,6 +23,7 @@
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 using base::trace_event::MemoryAllocatorDump;
@@ -488,8 +489,11 @@ void ResourcePool::EvictExpiredResources() {
     // If nothing is evictable, we have deleted one (and possibly more)
     // resources without any new activity. Flush to ensure these deletions are
     // processed.
-    if (context_provider_)
-      context_provider_->ContextGL()->ShallowFlushCHROMIUM();
+    if (context_provider_) {
+      // Flush any ContextGL work as well as any SharedImageInterface work.
+      context_provider_->ContextGL()->OrderingBarrierCHROMIUM();
+      context_provider_->ContextSupport()->FlushPendingWork();
+    }
     return;
   }
 
