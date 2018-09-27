@@ -11,14 +11,17 @@
 
 namespace views {
 
-AXTreeSourceMus::AXTreeSourceMus(AXAuraObjWrapper* root) : root_(root) {
+AXTreeSourceMus::AXTreeSourceMus(AXAuraObjWrapper* root,
+                                 const ui::AXTreeID& tree_id)
+    : root_(root), tree_id_(tree_id) {
   DCHECK(root_);
+  DCHECK(!tree_id_.empty());
 }
 
 AXTreeSourceMus::~AXTreeSourceMus() = default;
 
 bool AXTreeSourceMus::GetTreeData(ui::AXTreeData* tree_data) const {
-  tree_data->tree_id = RemoteAXTreeID();
+  tree_data->tree_id = tree_id_;
   return AXTreeSourceViews::GetTreeData(tree_data);
 }
 

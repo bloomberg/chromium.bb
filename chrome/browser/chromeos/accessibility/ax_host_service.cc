@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
@@ -17,7 +19,17 @@ AXHostService* AXHostService::instance_ = nullptr;
 
 bool AXHostService::automation_enabled_ = false;
 
-AXHostService::AXHostService() : ui::AXHostDelegate(views::RemoteAXTreeID()) {
+AXHostService::AXHostService() {
+  // AX tree ID is automatically assigned.
+  DCHECK(!tree_id().empty());
+
+  // ash::Shell may not exist in tests.
+  if (ash::Shell::HasInstance()) {
+    // TODO(jamescook): Eliminate this when tree ID assignment is handed in ash.
+    ash::Shell::Get()->accessibility_controller()->set_remote_ax_tree_id(
+        tree_id());
+  }
+
   DCHECK(!instance_);
   instance_ = this;
   registry_.AddInterface<ax::mojom::AXHost>(
@@ -43,22 +55,22 @@ void AXHostService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void AXHostService::SetRemoteHost(ax::mojom::AXRemoteHostPtr remote) {
+void AXHostService::SetRemoteHost(ax::mojom::AXRemoteHostPtr remote,
+                                  SetRemoteHostCallback cb) {
   remote_host_ = std::move(remote);
 
   // Handle both clean and unclean shutdown.
   remote_host_.set_connection_error_handler(base::BindOnce(
       &AXHostService::OnRemoteHostDisconnected, base::Unretained(this)));
 
-  // Ensure remote host knows the initial state.
-  remote_host_->OnAutomationEnabled(automation_enabled_);
+  std::move(cb).Run(tree_id(), automation_enabled_);
 }
 
 void AXHostService::HandleAccessibilityEvent(
     const std::string& tree_id,
     const std::vector<ui::AXTreeUpdate>& updates,
     const ui::AXEvent& event) {
-  DCHECK_EQ(tree_id, views::RemoteAXTreeID());
+  CHECK_EQ(tree_id, this->tree_id());
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
   event_bundle.tree_id = tree_id;
   for (const ui::AXTreeUpdate& update : updates)
@@ -93,5 +105,5 @@ void AXHostService::NotifyAutomationEnabled() {
 
 void AXHostService::OnRemoteHostDisconnected() {
   extensions::AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
-      views::RemoteAXTreeID(), nullptr /* browser_context */);
+      tree_id(), nullptr /* browser_context */);
 }

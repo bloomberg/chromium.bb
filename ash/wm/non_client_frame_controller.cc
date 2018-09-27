@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
@@ -27,6 +28,7 @@
 #include "services/ws/window_properties.h"
 #include "services/ws/window_service.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
@@ -36,7 +38,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -149,8 +150,9 @@ class ContentsViewMus : public views::View {
   // views::View:
   const char* GetClassName() const override { return "ContentsViewMus"; }
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                  views::RemoteAXTreeID());
+    node_data->AddStringAttribute(
+        ax::mojom::StringAttribute::kChildTreeId,
+        Shell::Get()->accessibility_controller()->remote_ax_tree_id());
     node_data->role = ax::mojom::Role::kClient;
   }
 
