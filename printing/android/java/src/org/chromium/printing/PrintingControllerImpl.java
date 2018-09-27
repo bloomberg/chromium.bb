@@ -49,7 +49,7 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
 
     private final String mErrorMessage;
 
-    private PrintingContextInterface mPrintingContext;
+    private PrintingContext mPrintingContext;
 
     private int mRenderProcessId;
     private int mRenderFrameId;
@@ -167,7 +167,7 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     }
 
     @Override
-    public void setPrintingContext(final PrintingContextInterface printingContext) {
+    public void setPrintingContext(final PrintingContext printingContext) {
         mPrintingContext = printingContext;
     }
 
@@ -299,10 +299,7 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     @Override
     public void onFinish() {
         mPages = null;
-        if (mPrintingContext != null) {
-            mPrintingContext.updatePrintingContextMap(mFileDescriptor, true);
-            mPrintingContext = null;
-        }
+        mPrintingContext = null;
 
         mRenderProcessId = -1;
         mRenderFrameId = -1;
