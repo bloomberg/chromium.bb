@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenCancel) {
   ShowUi("default");
   EXPECT_NE(nullptr, ActiveView());
   vm_tools::concierge::StartVmResponse response;
-  response.set_success(false);
+  response.set_status(vm_tools::concierge::VM_STATUS_FAILURE);
   waiting_fake_concierge_client_->set_start_vm_response(std::move(response));
 
   ActiveView()->GetDialogClientView()->AcceptWindow();

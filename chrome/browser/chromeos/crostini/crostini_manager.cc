@@ -1199,20 +1199,24 @@ void CrostiniManager::OnStartTerminaVm(
   }
   vm_tools::concierge::StartVmResponse response = reply.value();
 
-  if (!response.success()) {
+  if (response.status() == vm_tools::concierge::VM_STATUS_FAILURE ||
+      response.status() == vm_tools::concierge::VM_STATUS_UNKNOWN) {
     LOG(ERROR) << "Failed to start VM: " << response.failure_reason();
     std::move(callback).Run(ConciergeClientResult::VM_START_FAILED);
     return;
   }
 
   // If the vm is already marked "running" run the callback.
-  if (IsVmRunning(vm_name)) {
+  if (response.status() == vm_tools::concierge::VM_STATUS_RUNNING) {
+    running_vms_[vm_name] =
+        std::make_pair(VmState::STARTED, std::move(response.vm_info()));
     std::move(callback).Run(ConciergeClientResult::SUCCESS);
     return;
   }
 
   // Otherwise, record the container start and run the callback after the VM
   // starts.
+  DCHECK_EQ(response.status(), vm_tools::concierge::VM_STATUS_STARTING);
   VLOG(1) << "Awaiting TremplinStartedSignal for " << owner_id_ << ", "
           << vm_name;
   running_vms_[vm_name] =
