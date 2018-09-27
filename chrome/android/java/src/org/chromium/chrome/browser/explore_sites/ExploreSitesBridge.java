@@ -38,9 +38,9 @@ public class ExploreSitesBridge {
     /**
      * Causes a network request for updating the catalog.
      */
-    public static void updateCatalogFromNetwork(Profile profile, Callback<Void> finishedCallback) {
-        // TODO(dewittj): Connect to the ExploreSitesService on the native side.
-        finishedCallback.onResult(null);
+    public static void updateCatalogFromNetwork(
+            Profile profile, Callback<Boolean> finishedCallback) {
+        nativeUpdateCatalogFromNetwork(profile, finishedCallback);
     }
 
     /**
@@ -57,4 +57,7 @@ public class ExploreSitesBridge {
 
     private static native void nativeGetIcon(
             Profile profile, int siteID, Callback<Bitmap> callback);
+
+    private static native void nativeUpdateCatalogFromNetwork(
+            Profile profile, Callback<Boolean> callback);
 }

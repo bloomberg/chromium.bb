@@ -40,6 +40,8 @@ class ExploreSitesImportCatalogTaskTest : public TaskTestBase {
 
   void SetUp() override {
     store_ = std::make_unique<ExploreSitesStore>(task_runner());
+    success_ = false;
+    callback_called_ = false;
   }
 
   ExploreSitesStore* store() { return store_.get(); }
@@ -51,15 +53,29 @@ class ExploreSitesImportCatalogTaskTest : public TaskTestBase {
     RunUntilIdle();
   }
 
+  void OnImportTaskDone(bool success) {
+    success_ = success;
+    callback_called_ = true;
+  }
+
+  bool success() { return success_; }
+
+  bool callback_called() { return callback_called_; }
+
  private:
   std::unique_ptr<ExploreSitesStore> store_;
+  bool success_;
+  bool callback_called_;
 
   DISALLOW_COPY_AND_ASSIGN(ExploreSitesImportCatalogTaskTest);
 };
 
 TEST_F(ExploreSitesImportCatalogTaskTest, StoreFailure) {
   store()->SetInitializationStatusForTest(InitializationStatus::FAILURE);
-  ImportCatalogTask task(store(), kVersionToken, std::make_unique<Catalog>());
+  ImportCatalogTask task(
+      store(), kVersionToken, std::make_unique<Catalog>(),
+      base::BindOnce(&ExploreSitesImportCatalogTaskTest::OnImportTaskDone,
+                     base::Unretained(this)));
   RunTask(&task);
 
   // A null catalog should be completed but return with an error.
@@ -68,7 +84,10 @@ TEST_F(ExploreSitesImportCatalogTaskTest, StoreFailure) {
 }
 
 TEST_F(ExploreSitesImportCatalogTaskTest, EmptyTask) {
-  ImportCatalogTask task(store(), kVersionToken, std::unique_ptr<Catalog>());
+  ImportCatalogTask task(
+      store(), kVersionToken, std::unique_ptr<Catalog>(),
+      base::BindOnce(&ExploreSitesImportCatalogTaskTest::OnImportTaskDone,
+                     base::Unretained(this)));
   RunTask(&task);
 
   // A null catalog should be completed but return with an error.
@@ -81,13 +100,19 @@ TEST_F(ExploreSitesImportCatalogTaskTest, EmptyTask) {
 // where it is the "current" catalog, and where it is the "downloading" catalog.
 TEST_F(ExploreSitesImportCatalogTaskTest, CatalogAlreadyInUse) {
   // Successfully import a catalog with "version_token".
-  ImportCatalogTask task(store(), kVersionToken, std::make_unique<Catalog>());
+  ImportCatalogTask task(
+      store(), kVersionToken, std::make_unique<Catalog>(),
+      base::BindOnce(&ExploreSitesImportCatalogTaskTest::OnImportTaskDone,
+                     base::Unretained(this)));
   RunTask(&task);
   ASSERT_TRUE(task.result());
 
   // Importing the same catalog again should cause a successful import,
   // since the catalog was not "current".
-  ImportCatalogTask task2(store(), kVersionToken, std::make_unique<Catalog>());
+  ImportCatalogTask task2(
+      store(), kVersionToken, std::make_unique<Catalog>(),
+      base::BindOnce(&ExploreSitesImportCatalogTaskTest::OnImportTaskDone,
+                     base::Unretained(this)));
   RunTask(&task2);
   EXPECT_TRUE(task2.result());
 
@@ -101,7 +126,10 @@ TEST_F(ExploreSitesImportCatalogTaskTest, CatalogAlreadyInUse) {
   }));
 
   // Now it should fail to import another copy of the same catalog.
-  ImportCatalogTask task3(store(), kVersionToken, std::make_unique<Catalog>());
+  ImportCatalogTask task3(
+      store(), kVersionToken, std::make_unique<Catalog>(),
+      base::BindOnce(&ExploreSitesImportCatalogTaskTest::OnImportTaskDone,
+                     base::Unretained(this)));
   RunTask(&task3);
   EXPECT_TRUE(task3.complete());
   EXPECT_FALSE(task3.result());
@@ -125,11 +153,16 @@ TEST_F(ExploreSitesImportCatalogTaskTest, BasicCatalog) {
   gmail->set_site_url(kGmailUrl);
   gmail->set_icon(kIcon);
 
-  ImportCatalogTask task(store(), kVersionToken, std::move(catalog));
+  ImportCatalogTask task(
+      store(), kVersionToken, std::move(catalog),
+      base::BindOnce(&ExploreSitesImportCatalogTaskTest::OnImportTaskDone,
+                     base::Unretained(this)));
   RunTask(&task);
 
   EXPECT_TRUE(task.complete());
   EXPECT_TRUE(task.result());
+  EXPECT_TRUE(success());
+  EXPECT_TRUE(callback_called());
 
   ExecuteSync(base::BindLambdaForTesting([&](sql::Database* db) {
     sql::Statement cat_count_s(

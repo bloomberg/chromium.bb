@@ -28,6 +28,10 @@ class ExploreSitesService : public KeyedService {
   // Returns via callback the image for a site. This is typically the site
   // favicon. Returns |nullptr| if there was an error or no match for |site_id|.
   virtual void GetSiteImage(int site_id, BitmapCallback callback) = 0;
+
+  // Fetch the latest catalog from the network and stores it locally. Returns
+  // true in the callback for success.
+  virtual void UpdateCatalogFromNetwork(BooleanCallback callback) = 0;
 };
 
 }  // namespace explore_sites
