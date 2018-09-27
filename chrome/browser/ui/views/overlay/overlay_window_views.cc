@@ -360,20 +360,20 @@ void OverlayWindowViews::UpdateButtonSize() {
 }
 
 void OverlayWindowViews::UpdateCustomControlsSize(
-    views::ControlImageButton* control) {
-  if (!control)
+    views::ControlImageButton* control_button) {
+  if (!control_button)
     return;
   UpdateButtonSize();
-  control->SetSize(button_size_);
+  control_button->SetSize(button_size_);
   // TODO(sawtelle): Download the images and add them to the controls.
   // https://crbug.com/864271.
-  if (control == first_custom_controls_view_.get()) {
+  if (control_button == first_custom_controls_view_.get()) {
     first_custom_controls_view_->SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kPlayArrowIcon, button_size_.width() / 2,
                               kControlIconColor));
   }
-  if (control == second_custom_controls_view_.get()) {
+  if (control_button == second_custom_controls_view_.get()) {
     second_custom_controls_view_->SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kPauseIcon, button_size_.width() / 2,
@@ -381,8 +381,8 @@ void OverlayWindowViews::UpdateCustomControlsSize(
   }
   const gfx::ImageSkia control_background = gfx::CreateVectorIcon(
       kPictureInPictureControlBackgroundIcon, button_size_.width(), kBgColor);
-  control->SetBackgroundImage(kBgColor, &control_background,
-                              &control_background);
+  control_button->SetBackgroundImage(kBgColor, &control_background,
+                                     &control_background);
 }
 
 void OverlayWindowViews::UpdatePlayPauseControlsSize() {
@@ -402,32 +402,30 @@ void OverlayWindowViews::UpdatePlayPauseControlsSize() {
       kBgColor, &play_pause_background, &play_pause_background);
 }
 
-void OverlayWindowViews::SetUpCustomControl(
-    std::unique_ptr<views::ControlImageButton>& control,
-    const blink::PictureInPictureControlInfo& web_control,
+void OverlayWindowViews::CreateCustomControl(
+    std::unique_ptr<views::ControlImageButton>& control_button,
+    const blink::PictureInPictureControlInfo& info,
     ControlPosition position) {
-  if (!control) {
-    control = std::make_unique<views::ControlImageButton>(this);
-    controls_parent_view_->AddChildView(control.get());
-    control->set_owned_by_client();
-    control->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                               views::ImageButton::ALIGN_MIDDLE);
-  }
+  control_button = std::make_unique<views::ControlImageButton>(this);
+  controls_parent_view_->AddChildView(control_button.get());
+  control_button->set_id(info.id);
+  control_button->set_owned_by_client();
 
-  // Sizing/positioning.
-  UpdateCustomControlsSize(control.get());
-  control->set_id(web_control.id);
+  // Sizing / positioning.
+  control_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                    views::ImageButton::ALIGN_MIDDLE);
+  UpdateCustomControlsSize(control_button.get());
   UpdateControlsBounds();
 
   // Accessibility.
-  base::string16 custom_button_label = base::UTF8ToUTF16(web_control.label);
-  control->SetAccessibleName(custom_button_label);
-  control->SetTooltipText(custom_button_label);
-  control->SetInstallFocusRingOnFocus(true);
-  control->SetFocusForPlatform();
+  base::string16 custom_button_label = base::UTF8ToUTF16(info.label);
+  control_button->SetAccessibleName(custom_button_label);
+  control_button->SetTooltipText(custom_button_label);
+  control_button->SetInstallFocusRingOnFocus(true);
+  control_button->SetFocusForPlatform();
 }
 
-bool OverlayWindowViews::OnlyOneCustomControlAdded() {
+bool OverlayWindowViews::HasOnlyOneCustomControl() {
   return first_custom_controls_view_ && !second_custom_controls_view_;
 }
 
@@ -448,7 +446,7 @@ void OverlayWindowViews::UpdateControlsPositions() {
   // |        [1]   [P]         |
   // |                          |
   // |__________________________|
-  if (OnlyOneCustomControlAdded()) {
+  if (HasOnlyOneCustomControl()) {
     play_pause_controls_view_->SetBoundsRect(
         CalculateControlsBounds(mid_window_x, button_size_));
     first_custom_controls_view_->SetBoundsRect(CalculateControlsBounds(
@@ -556,12 +554,16 @@ void OverlayWindowViews::SetAlwaysHidePlayPauseButton(bool is_visible) {
 
 void OverlayWindowViews::SetPictureInPictureCustomControls(
     const std::vector<blink::PictureInPictureControlInfo>& controls) {
+  // Clear any existing controls.
+  first_custom_controls_view_.reset();
+  second_custom_controls_view_.reset();
+
   if (controls.size() > 0)
-    SetUpCustomControl(first_custom_controls_view_, controls[0],
-                       ControlPosition::kLeft);
+    CreateCustomControl(first_custom_controls_view_, controls[0],
+                        ControlPosition::kLeft);
   if (controls.size() > 1)
-    SetUpCustomControl(second_custom_controls_view_, controls[1],
-                       ControlPosition::kRight);
+    CreateCustomControl(second_custom_controls_view_, controls[1],
+                        ControlPosition::kRight);
 }
 
 ui::Layer* OverlayWindowViews::GetWindowBackgroundLayer() {

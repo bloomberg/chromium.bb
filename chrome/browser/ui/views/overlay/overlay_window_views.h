@@ -99,15 +99,16 @@ class OverlayWindowViews : public content::OverlayWindow,
   void UpdateButtonSize();
 
   // Update the size of each controls view as the size of the window changes.
-  void UpdateCustomControlsSize(views::ControlImageButton*);
+  void UpdateCustomControlsSize(views::ControlImageButton* control_button);
   void UpdatePlayPauseControlsSize();
 
-  void SetUpCustomControl(std::unique_ptr<views::ControlImageButton>&,
-                          const blink::PictureInPictureControlInfo&,
-                          ControlPosition);
+  void CreateCustomControl(
+      std::unique_ptr<views::ControlImageButton>& control_button,
+      const blink::PictureInPictureControlInfo& info,
+      ControlPosition position);
 
   // Returns whether there is exactly one custom control on the window.
-  bool OnlyOneCustomControlAdded();
+  bool HasOnlyOneCustomControl();
 
   // Calculate and set the bounds of the controls.
   gfx::Rect CalculateControlsBounds(int x, const gfx::Size& size);
