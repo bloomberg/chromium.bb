@@ -235,6 +235,30 @@ cr.define('settings_people_page_sync_page', function() {
       assertFalse(ironCollapse.hidden);
     });
 
+    test(
+        'UnifiedConsentToggleNotifiesHandler_UnifiedConsentEnabled',
+        function() {
+          const unifiedConsentToggle = syncPage.$$('#unifiedConsentToggle');
+          syncPage.syncStatus = {
+            signedIn: true,
+            disabled: false,
+            hasError: false,
+            statusAction: settings.StatusAction.NO_ACTION,
+          };
+          syncPage.unifiedConsentEnabled = true;
+          Polymer.dom.flush();
+
+          assertFalse(unifiedConsentToggle.hidden);
+          assertFalse(unifiedConsentToggle.checked);
+
+          unifiedConsentToggle.click();
+
+          return browserProxy.whenCalled('unifiedConsentToggleChanged')
+              .then(toggleChecked => {
+                assertTrue(toggleChecked);
+              });
+        });
+
     test('SyncSectionLayout_UnifiedConsentEnabled_SignoutCollapse', function() {
       const ironCollapse = syncPage.$$('#sync-section');
       const syncSectionToggle = syncPage.$$('#sync-section-toggle');

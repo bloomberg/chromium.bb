@@ -51,6 +51,7 @@
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/unified_consent/feature.h"
+#include "components/unified_consent/unified_consent_metrics.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -242,6 +243,10 @@ void PeopleHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SyncSetupManageOtherPeople",
       base::BindRepeating(&PeopleHandler::HandleManageOtherPeople,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "UnifiedConsentToggleChanged",
+      base::BindRepeating(&PeopleHandler::OnUnifiedConsentToggleChanged,
                           base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
@@ -791,6 +796,15 @@ void PeopleHandler::HandleManageOtherPeople(const base::ListValue* /* args */) {
   UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 #endif  // !defined(OS_CHROMEOS)
+}
+
+void PeopleHandler::OnUnifiedConsentToggleChanged(const base::ListValue* args) {
+  bool is_toggle_checked = args->GetList()[0].GetBool();
+  if (!is_toggle_checked) {
+    unified_consent::metrics::RecordUnifiedConsentRevoked(
+        unified_consent::metrics::UnifiedConsentRevokeReason::
+            kUserDisabledSettingsToggle);
+  }
 }
 
 void PeopleHandler::CloseSyncSetup() {
