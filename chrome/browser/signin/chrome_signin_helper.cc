@@ -306,6 +306,9 @@ void ProcessDiceHeaderUIThread(
   signin_metrics::PromoAction promo_action =
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
   signin_metrics::Reason reason = signin_metrics::Reason::REASON_UNKNOWN_REASON;
+  // This is the URL that the browser specified to redirect to after the user
+  // signs in. Not to be confused with the redirect header from GAIA response.
+  GURL redirect_after_signin_url = GURL::EmptyGURL();
 
   bool is_sync_signin_tab = false;
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
@@ -314,6 +317,7 @@ void ProcessDiceHeaderUIThread(
     access_point = tab_helper->signin_access_point();
     promo_action = tab_helper->signin_promo_action();
     reason = tab_helper->signin_reason();
+    redirect_after_signin_url = tab_helper->redirect_url();
   }
 
   DiceResponseHandler* dice_response_handler =
@@ -325,7 +329,8 @@ void ProcessDiceHeaderUIThread(
           SigninManagerFactory::GetForProfile(profile), is_sync_signin_tab,
           base::BindOnce(&CreateDiceTurnOnSyncHelper, base::Unretained(profile),
                          access_point, promo_action, reason),
-          base::BindOnce(&ShowDiceSigninError, base::Unretained(profile))));
+          base::BindOnce(&ShowDiceSigninError, base::Unretained(profile)),
+          redirect_after_signin_url));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

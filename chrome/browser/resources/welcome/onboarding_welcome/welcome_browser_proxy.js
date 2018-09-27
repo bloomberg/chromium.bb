@@ -11,17 +11,16 @@ cr.define('welcome', function() {
 
   /** @interface */
   class WelcomeBrowserProxy {
-    handleActivateSignIn() {}
+    /** @param {string} redirectUrl the URL to redirect to, after signing in. */
+    handleActivateSignIn(redirectUrl) {}
     goToNewTabPage() {}
   }
 
   /** @implements {welcome.WelcomeBrowserProxy} */
   class WelcomeBrowserProxyImpl {
     /** @override */
-    handleActivateSignIn() {
-      // TODO(scottchen): add code to direct back to /welcome/returning-user
-      //     after user finishes signing in.
-      chrome.send('handleActivateSignIn');
+    handleActivateSignIn(redirectUrl) {
+      chrome.send('handleActivateSignIn', redirectUrl ? [redirectUrl] : []);
     }
 
     /** @override */
