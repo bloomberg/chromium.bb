@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -89,12 +90,13 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
 
   Profile* CreateProfile(const std::string& name) {
     TestingProfile::TestingFactories testing_factories;
-    testing_factories.push_back(
-        std::make_pair(ChromeSigninClientFactory::GetInstance(),
-                       signin::BuildTestSigninClient));
+    testing_factories.emplace_back(
+        ChromeSigninClientFactory::GetInstance(),
+        base::BindRepeating(&signin::BuildTestSigninClient));
     Profile* profile = testing_profile_manager_.CreateTestingProfile(
         name, std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
-        base::UTF8ToUTF16(name), 0, std::string(), testing_factories);
+        base::UTF8ToUTF16(name), 0, std::string(),
+        std::move(testing_factories));
     // The testing manager sets the profile name manually, which counts as
     // a user-customized profile name. Reset this to match the default name
     // we are actually using.

@@ -172,13 +172,11 @@ class LastDownloadFinderTest : public testing::Test {
     // Set up keyed service factories.
     TestingProfile::TestingFactories factories;
     // Build up a custom history service.
-    factories.push_back(std::make_pair(HistoryServiceFactory::GetInstance(),
-                                       &BuildHistoryService));
+    factories.emplace_back(HistoryServiceFactory::GetInstance(),
+                           base::BindRepeating(&BuildHistoryService));
     // Suppress WebHistoryService since it makes network requests.
-    factories.push_back(std::make_pair(
-        WebHistoryServiceFactory::GetInstance(),
-        static_cast<BrowserContextKeyedServiceFactory::TestingFactoryFunction>(
-            NULL)));
+    factories.emplace_back(WebHistoryServiceFactory::GetInstance(),
+                           BrowserContextKeyedServiceFactory::TestingFactory());
 
     // Create prefs for the profile with safe browsing enabled or not.
     std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs(
@@ -198,7 +196,7 @@ class LastDownloadFinderTest : public testing::Test {
         base::UTF8ToUTF16(profile_name),  // user_name
         0,                                // avatar_id
         std::string(),                    // supervised_user_id
-        factories);
+        std::move(factories));
 
     return profile;
   }

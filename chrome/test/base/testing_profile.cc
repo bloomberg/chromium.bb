@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -329,7 +330,7 @@ TestingProfile::TestingProfile(
     base::Optional<bool> is_new_profile,
     const std::string& supervised_user_id,
     std::unique_ptr<policy::PolicyService> policy_service,
-    const TestingFactories& factories,
+    TestingFactories testing_factories,
     const std::string& profile_name)
     : start_time_(Time::Now()),
       prefs_(std::move(prefs)),
@@ -360,10 +361,9 @@ TestingProfile::TestingProfile(
   }
 
   // Set any testing factories prior to initializing the services.
-  for (TestingFactories::const_iterator it = factories.begin();
-       it != factories.end(); ++it) {
-    it->first->SetTestingFactory(this, it->second);
-  }
+  for (TestingFactories::value_type& pair : testing_factories)
+    pair.first->SetTestingFactory(this, std::move(pair.second));
+  testing_factories.clear();
 
   Init();
   // If caller supplied a delegate, delay the FinishInit invocation until other
@@ -1073,22 +1073,32 @@ void TestingProfile::Builder::SetProfileName(const std::string& profile_name) {
 
 void TestingProfile::Builder::AddTestingFactory(
     BrowserContextKeyedServiceFactory* service_factory,
-    BrowserContextKeyedServiceFactory::TestingFactoryFunction callback) {
-  testing_factories_.push_back(std::make_pair(service_factory, callback));
+    BrowserContextKeyedServiceFactory::TestingFactoryFunction function) {
+  BrowserContextKeyedServiceFactory::TestingFactory testing_factory;
+  if (function)
+    testing_factory = base::BindRepeating(function);
+  AddTestingFactory(service_factory, std::move(testing_factory));
+}
+
+void TestingProfile::Builder::AddTestingFactory(
+    BrowserContextKeyedServiceFactory* service_factory,
+    BrowserContextKeyedServiceFactory::TestingFactory testing_factory) {
+  testing_factories_.emplace_back(service_factory, std::move(testing_factory));
 }
 
 std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
   DCHECK(!build_called_);
   build_called_ = true;
 
-  return std::unique_ptr<TestingProfile>(new TestingProfile(
-      path_, delegate_,
+  return std::unique_ptr<TestingProfile>(
+      new TestingProfile(path_, delegate_,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-      extension_policy_,
+                         extension_policy_,
 #endif
-      std::move(pref_service_), NULL, guest_session_,
-      std::move(is_new_profile_), supervised_user_id_,
-      std::move(policy_service_), testing_factories_, profile_name_));
+                         std::move(pref_service_), NULL, guest_session_,
+                         std::move(is_new_profile_), supervised_user_id_,
+                         std::move(policy_service_),
+                         std::move(testing_factories_), profile_name_));
 }
 
 TestingProfile* TestingProfile::Builder::BuildIncognito(
@@ -1105,5 +1115,5 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
                             std::move(pref_service_), original_profile,
                             guest_session_, std::move(is_new_profile_),
                             supervised_user_id_, std::move(policy_service_),
-                            testing_factories_, profile_name_);
+                            std::move(testing_factories_), profile_name_);
 }

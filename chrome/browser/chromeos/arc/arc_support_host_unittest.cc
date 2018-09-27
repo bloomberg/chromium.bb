@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/sha1.h"
 #include "chrome/browser/chromeos/arc/extensions/fake_arc_support.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -130,7 +131,8 @@ class ArcSupportHostTest : public BrowserWithTestWindowTest {
 
   // BrowserWithTestWindowTest:
   TestingProfile::TestingFactories GetTestingFactories() override {
-    return {{ConsentAuditorFactory::GetInstance(), BuildFakeConsentAuditor}};
+    return {{ConsentAuditorFactory::GetInstance(),
+             base::BindRepeating(&BuildFakeConsentAuditor)}};
   }
 
  private:

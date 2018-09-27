@@ -151,13 +151,13 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
     TestingProfile::TestingFactories factories;
-    factories.push_back(
-        std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                       BuildFakeProfileOAuth2TokenService));
+    factories.emplace_back(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile,
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
-        base::UTF8ToUTF16(""), 0, std::string(), factories);
+        base::UTF8ToUTF16(""), 0, std::string(), std::move(factories));
     // Usually the signin Profile and the main Profile are separate, but since
     // the signin Profile is an OTR Profile then for this test it suffices to
     // attach it to the main Profile.

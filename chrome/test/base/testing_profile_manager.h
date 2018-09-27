@@ -64,7 +64,7 @@ class TestingProfileManager {
       const base::string16& user_name,
       int avatar_id,
       const std::string& supervised_user_id,
-      const TestingProfile::TestingFactories& factories);
+      TestingProfile::TestingFactories testing_factories);
 
   // Small helper for creating testing profiles. Just forwards to above.
   TestingProfile* CreateTestingProfile(const std::string& name);

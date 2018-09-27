@@ -59,12 +59,7 @@ class CocoaProfileTest : public CocoaTest {
 
   // Define the TestingFactories to be used when SetUp() builds a Profile. To be
   // called in the subclass' constructor.
-  void AddTestingFactories(
-      const TestingProfile::TestingFactories& testing_factories);
-
-  const TestingProfile::TestingFactories& testing_factories() {
-    return testing_factories_;
-  }
+  void AddTestingFactories(TestingProfile::TestingFactories testing_factories);
 
  private:
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;

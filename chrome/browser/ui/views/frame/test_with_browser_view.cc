@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -124,5 +125,5 @@ BrowserWindow* TestWithBrowserView::CreateBrowserWindow() {
 
 TestingProfile::TestingFactories TestWithBrowserView::GetTestingFactories() {
   return {{GaiaCookieManagerServiceFactory::GetInstance(),
-           &BuildFakeGaiaCookieManagerService}};
+           base::BindRepeating(&BuildFakeGaiaCookieManagerService)}};
 }

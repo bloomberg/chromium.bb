@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
@@ -96,10 +97,11 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
 
   TestingProfile::TestingFactories GetTestingFactories() override {
     return {{media_router::MediaRouterFactory::GetInstance(),
-             &media_router::MockMediaRouter::Create},
+             base::BindRepeating(&media_router::MockMediaRouter::Create)},
             {media_router::MediaRouterUIServiceFactory::GetInstance(),
-             &BuildUIService},
-            {SigninManagerFactory::GetInstance(), &BuildFakeSigninManagerBase}};
+             base::BindRepeating(&BuildUIService)},
+            {SigninManagerFactory::GetInstance(),
+             base::BindRepeating(&BuildFakeSigninManagerBase)}};
   }
 
  protected:

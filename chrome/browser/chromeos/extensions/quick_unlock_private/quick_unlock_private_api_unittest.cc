@@ -187,7 +187,7 @@ class QuickUnlockPrivateUnitTest
 
   TestingProfile::TestingFactories GetTestingFactories() override {
     return {{EasyUnlockServiceFactory::GetInstance(),
-             &CreateEasyUnlockServiceForTest}};
+             base::BindRepeating(&CreateEasyUnlockServiceForTest)}};
   }
 
   // If a mode change event is raised, fail the test.
