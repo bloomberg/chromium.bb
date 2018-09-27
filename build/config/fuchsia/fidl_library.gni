@@ -12,6 +12,13 @@ assert(is_fuchsia)
 #   library_name   - (optional) Name of the library. target_name is used if name
 #                    is not specified explicitly.
 #   namespace      - (optional) Namespace for the library.
+#   namespace_path - (optional) namespace with '.' are replaced with '/', e.g.
+#                    if namespace is "fuchsia.foo", then namespace_path must be
+#                    set to "fuchsia/foo". This parameter must be specified when
+#                    namespace is specified.
+#                    TODO(sergeyu): In theory namespace_path can be generated
+#                    from name, but GN doesn't provide any tools to perform this
+#                    conversion without invoking a python script.
 #   deps           - (optional) List of other fidl_library() targets that this
 #                    FIDL library depends on.
 #
@@ -19,7 +26,11 @@ assert(is_fuchsia)
 # files.
 
 template("fidl_library") {
-  forward_variables_from(invoker, [ "namespace" ])
+  forward_variables_from(invoker,
+                         [
+                           "namespace",
+                           "namespace_path",
+                         ])
 
   _library_basename = target_name
   if (defined(invoker.library_name)) {
@@ -27,9 +38,10 @@ template("fidl_library") {
   }
 
   if (defined(namespace)) {
+    assert(defined(namespace_path),
+           "FIDL libraries with namespace must specify namespace_path")
     _library_name = "${namespace}.${_library_basename}"
-    _namespace_path = string_replace(namespace, ".", "/")
-    _library_path = "${_namespace_path}/${_library_basename}"
+    _library_path = "${namespace_path}/${_library_basename}"
   } else {
     _library_name = _library_basename
     _library_path = _library_basename
