@@ -9,7 +9,9 @@
 #include "third_party/webrtc/rtc_base/rtccertificate.h"
 
 namespace blink {
+
 namespace {
+
 // The P2PQuicPacketWriter is a private helper class that implements the
 // QuicPacketWriter using a P2PQuicPacketTransport. This allows us to
 // connect our own packet transport for writing into the QuicConnection.

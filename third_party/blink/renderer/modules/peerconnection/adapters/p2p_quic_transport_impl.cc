@@ -1,7 +1,6 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_impl.h"
 
 #include "net/quic/quic_chromium_connection_helper.h"
@@ -221,15 +220,34 @@ const quic::QuicCryptoStream* P2PQuicTransportImpl::GetCryptoStream() const {
   return crypto_stream_.get();
 }
 
-quic::QuicStream* P2PQuicTransportImpl::CreateOutgoingDynamicStream() {
-  NOTIMPLEMENTED();
-  return nullptr;
+P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStream() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return CreateOutgoingDynamicStream();
 }
 
-quic::QuicStream* P2PQuicTransportImpl::CreateIncomingDynamicStream(
+P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingDynamicStream() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  P2PQuicStreamImpl* stream = CreateStreamInternal(GetNextOutgoingStreamId());
+  ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream));
+  return stream;
+}
+
+P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingDynamicStream(
     quic::QuicStreamId id) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  P2PQuicStreamImpl* stream = CreateStreamInternal(id);
+  ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream));
+  delegate_->OnStream(stream);
+  return stream;
+}
+
+P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
+    quic::QuicStreamId id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(crypto_stream_);
+  DCHECK(IsEncryptionEstablished());
+  DCHECK(!IsClosed());
+  return new P2PQuicStreamImpl(id, this);
 }
 
 void P2PQuicTransportImpl::InitializeCryptoStream() {
