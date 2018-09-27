@@ -64,6 +64,7 @@
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/platform/dedicated_worker_factory.mojom.h"
@@ -230,7 +231,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsCurrent() override;
   int GetProxyCount() override;
   void FilesSelectedInChooser(
-      const std::vector<FileChooserFileInfo>& files,
+      const std::vector<blink::mojom::FileChooserFileInfoPtr>& files,
       blink::mojom::FileChooserParams::Mode permissions) override;
   bool HasSelection() override;
   void RequestTextSurroundingSelection(

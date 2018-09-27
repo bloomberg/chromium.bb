@@ -24,7 +24,6 @@
 class Profile;
 
 namespace content {
-struct FileChooserFileInfo;
 class RenderViewHost;
 class WebContents;
 }
@@ -161,7 +160,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
 
   // Sends the result to the render process, and call |RunFileChooserEnd|.
   void NotifyRenderFrameHostAndEndAfterConversion(
-      const std::vector<content::FileChooserFileInfo>& list);
+      std::vector<blink::mojom::FileChooserFileInfoPtr> list);
 
   // Schedules the deletion of the files in |temporary_files_| and clears the
   // vector.

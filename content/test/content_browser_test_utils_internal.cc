@@ -30,7 +30,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -293,10 +292,10 @@ void FileChooserDelegate::RunFileChooser(
     RenderFrameHost* render_frame_host,
     const blink::mojom::FileChooserParams& params) {
   // Send the selected file to the renderer process.
-  FileChooserFileInfo file_info;
-  file_info.file_path = file_;
-  std::vector<FileChooserFileInfo> files;
-  files.push_back(file_info);
+  auto file_info = blink::mojom::FileChooserFileInfo::NewNativeFile(
+      blink::mojom::NativeFileInfo::New(file_, base::string16()));
+  std::vector<blink::mojom::FileChooserFileInfoPtr> files;
+  files.push_back(std::move(file_info));
   render_frame_host->FilesSelectedInChooser(
       files, blink::mojom::FileChooserParams::Mode::kOpen);
 

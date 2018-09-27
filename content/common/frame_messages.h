@@ -40,7 +40,6 @@
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/favicon_url.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/page_importance_signals.h"
@@ -707,15 +706,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CSPViolationParams)
   IPC_STRUCT_TRAITS_MEMBER(source_location)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::FileChooserFileInfo)
-  IPC_STRUCT_TRAITS_MEMBER(file_path)
-  IPC_STRUCT_TRAITS_MEMBER(display_name)
-  IPC_STRUCT_TRAITS_MEMBER(file_system_url)
-  IPC_STRUCT_TRAITS_MEMBER(modification_time)
-  IPC_STRUCT_TRAITS_MEMBER(length)
-  IPC_STRUCT_TRAITS_MEMBER(is_directory)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(blink::mojom::FileChooserParams)
   IPC_STRUCT_TRAITS_MEMBER(mode)
   IPC_STRUCT_TRAITS_MEMBER(title)
@@ -1118,7 +1108,7 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
                     bool /* value */)
 
 IPC_MESSAGE_ROUTED1(FrameMsg_RunFileChooserResponse,
-                    std::vector<content::FileChooserFileInfo>)
+                    std::vector<blink::mojom::FileChooserFileInfoPtr>)
 
 // Updates the renderer with a list of unique blink::UseCounter::Feature values
 // representing Blink features used, performed or encountered by the browser

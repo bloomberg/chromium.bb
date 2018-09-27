@@ -34,7 +34,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,6 +50,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
+using blink::mojom::FileChooserFileInfo;
+using blink::mojom::FileChooserFileInfoPtr;
 using blink::mojom::FileChooserParams;
 using blink::mojom::FileChooserParamsPtr;
 using content::BrowserThread;
@@ -303,19 +304,19 @@ void FileSelectHelper::NotifyRenderFrameHostAndEnd(
   }
 #endif  // defined(OS_CHROMEOS)
 
-  std::vector<content::FileChooserFileInfo> chooser_files;
+  std::vector<FileChooserFileInfoPtr> chooser_files;
   for (const auto& file : files) {
-    content::FileChooserFileInfo chooser_file;
-    chooser_file.file_path = file.local_path;
-    chooser_file.display_name = file.display_name;
-    chooser_files.push_back(chooser_file);
+    chooser_files.push_back(
+        FileChooserFileInfo::NewNativeFile(blink::mojom::NativeFileInfo::New(
+            file.local_path,
+            base::FilePath(file.display_name).AsUTF16Unsafe())));
   }
 
-  NotifyRenderFrameHostAndEndAfterConversion(chooser_files);
+  NotifyRenderFrameHostAndEndAfterConversion(std::move(chooser_files));
 }
 
 void FileSelectHelper::NotifyRenderFrameHostAndEndAfterConversion(
-    const std::vector<content::FileChooserFileInfo>& list) {
+    std::vector<FileChooserFileInfoPtr> list) {
   if (render_frame_host_)
     render_frame_host_->FilesSelectedInChooser(list, dialog_mode_);
 

@@ -72,7 +72,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"

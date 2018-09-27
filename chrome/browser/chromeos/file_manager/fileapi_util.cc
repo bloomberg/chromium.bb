@@ -10,6 +10,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -21,7 +22,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/task_util.h"
@@ -37,6 +37,10 @@ using content::BrowserThread;
 
 namespace file_manager {
 namespace util {
+
+using blink::mojom::FileChooserFileInfo;
+using blink::mojom::FileSystemFileInfo;
+using blink::mojom::NativeFileInfo;
 
 namespace {
 
@@ -253,7 +257,6 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
       const SelectedFileInfoList& selected_info_list,
       FileChooserFileInfoListCallback callback)
       : context_(context),
-        chooser_info_list_(new FileChooserFileInfoList),
         callback_(std::move(callback)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -261,22 +264,22 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     bool need_fill_metadata = false;
 
     for (size_t i = 0; i < selected_info_list.size(); ++i) {
-      content::FileChooserFileInfo chooser_info;
-
       // Native file.
       if (!IsUnderNonNativeLocalPath(*context,
                                      selected_info_list[i].file_path)) {
-        chooser_info.file_path = selected_info_list[i].file_path;
-        chooser_info.display_name = selected_info_list[i].display_name;
-        chooser_info_list_->push_back(chooser_info);
+        chooser_info_list_.push_back(
+            FileChooserFileInfo::NewNativeFile(NativeFileInfo::New(
+                selected_info_list[i].file_path,
+                base::UTF8ToUTF16(selected_info_list[i].display_name))));
         continue;
       }
 
       // Non-native file, but it has a native snapshot file.
       if (!selected_info_list[i].local_path.empty()) {
-        chooser_info.file_path = selected_info_list[i].local_path;
-        chooser_info.display_name = selected_info_list[i].display_name;
-        chooser_info_list_->push_back(chooser_info);
+        chooser_info_list_.push_back(
+            FileChooserFileInfo::NewNativeFile(NativeFileInfo::New(
+                selected_info_list[i].local_path,
+                base::UTF8ToUTF16(selected_info_list[i].display_name))));
         continue;
       }
 
@@ -295,8 +298,10 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
         return;
       }
 
-      chooser_info.file_system_url = url;
-      chooser_info_list_->push_back(chooser_info);
+      auto fs_info = FileSystemFileInfo::New();
+      fs_info->url = url;
+      chooser_info_list_.push_back(
+          FileChooserFileInfo::NewFileSystem(std::move(fs_info)));
       need_fill_metadata = true;
     }
 
@@ -309,7 +314,7 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   FillMetadataOnIOThread,
               base::Unretained(this), std::move(lifetime),
-              chooser_info_list_->begin()));
+              chooser_info_list_.begin()));
       return;
     }
 
@@ -317,13 +322,11 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
   }
 
   ~ConvertSelectedFileInfoListToFileChooserFileInfoListImpl() {
-    if (chooser_info_list_) {
-      for (size_t i = 0; i < chooser_info_list_->size(); ++i) {
-        if (chooser_info_list_->at(i).file_system_url.is_valid()) {
-          storage::IsolatedContext::GetInstance()->RevokeFileSystem(
-              context_->CrackURL(chooser_info_list_->at(i).file_system_url)
-                  .mount_filesystem_id());
-        }
+    for (const auto& info : chooser_info_list_) {
+      if (info && info->is_file_system()) {
+        storage::IsolatedContext::GetInstance()->RevokeFileSystem(
+            context_->CrackURL(info->get_file_system()->url)
+                .mount_filesystem_id());
       }
     }
   }
@@ -334,7 +337,7 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
                               const FileChooserFileInfoList::iterator& it) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-    if (it == chooser_info_list_->end()) {
+    if (it == chooser_info_list_.end()) {
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
@@ -344,13 +347,13 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
       return;
     }
 
-    if (!it->file_system_url.is_valid()) {
+    if ((*it)->is_native_file()) {
       FillMetadataOnIOThread(std::move(lifetime), it + 1);
       return;
     }
 
     context_->operation_runner()->GetMetadata(
-        context_->CrackURL(it->file_system_url),
+        context_->CrackURL((*it)->get_file_system()->url),
         storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
             storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
             storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
@@ -376,19 +379,18 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
       return;
     }
 
-    it->length = file_info.size;
-    it->modification_time = file_info.last_modified;
-    it->is_directory = file_info.is_directory;
+    (*it)->get_file_system()->length = file_info.size;
+    (*it)->get_file_system()->modification_time = file_info.last_modified;
+    DCHECK(!file_info.is_directory);
     FillMetadataOnIOThread(std::move(lifetime), it + 1);
   }
 
   // Returns a result to the |callback_|.
   void NotifyComplete(Lifetime /* lifetime */) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    std::move(callback_).Run(*chooser_info_list_);
-    // Reset the list so that the file systems are not revoked at the
+    // Move the list content so that the file systems are not revoked at the
     // destructor.
-    chooser_info_list_.reset();
+    std::move(callback_).Run(std::move(chooser_info_list_));
   }
 
   // Returns an empty list to the |callback_|.
@@ -398,7 +400,7 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
   }
 
   scoped_refptr<storage::FileSystemContext> context_;
-  std::unique_ptr<FileChooserFileInfoList> chooser_info_list_;
+  FileChooserFileInfoList chooser_info_list_;
   FileChooserFileInfoListCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(

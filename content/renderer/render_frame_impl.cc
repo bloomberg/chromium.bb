@@ -74,7 +74,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/favicon_url.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/service_manager_connection.h"
@@ -6362,7 +6361,7 @@ void RenderFrameImpl::OnSuppressFurtherDialogs() {
 }
 
 void RenderFrameImpl::OnFileChooserResponse(
-    const std::vector<content::FileChooserFileInfo>& files) {
+    const std::vector<blink::mojom::FileChooserFileInfoPtr>& files) {
   // This could happen if we navigated to a different page before the user
   // closed the chooser.
   if (!file_chooser_completion_)
@@ -6374,13 +6373,13 @@ void RenderFrameImpl::OnFileChooserResponse(
   size_t current_size = 0;
   for (size_t i = 0; i < files.size(); ++i) {
     blink::WebFileChooserCompletion::SelectedFileInfo selected_file;
-    if (files[i].file_system_url.is_valid()) {
-      selected_file.file_system_url = files[i].file_system_url;
-      selected_file.length = files[i].length;
-      selected_file.modification_time = files[i].modification_time;
-      selected_file.is_directory = files[i].is_directory;
+    if (files[i]->is_file_system()) {
+      auto& fs_info = *files[i]->get_file_system();
+      selected_file.file_system_url = fs_info.url;
+      selected_file.length = fs_info.length;
+      selected_file.modification_time = fs_info.modification_time;
     } else {
-      selected_file.file_path = files[i].file_path;
+      selected_file.file_path = files[i]->get_native_file()->file_path;
 
       // Exclude files whose paths can't be converted into WebStrings. Blink
       // won't be able to handle these, and the browser process would kill the
@@ -6389,7 +6388,7 @@ void RenderFrameImpl::OnFileChooserResponse(
         continue;
 
       selected_file.display_name =
-          blink::FilePathToWebString(base::FilePath(files[i].display_name));
+          WebString::FromUTF16(files[i]->get_native_file()->display_name);
     }
     selected_files[current_size] = selected_file;
     current_size++;

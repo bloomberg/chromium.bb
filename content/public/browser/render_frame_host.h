@@ -56,7 +56,6 @@ class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHostView;
 class SiteInstance;
-struct FileChooserFileInfo;
 
 // The interface provides a communication conduit with a frame in the renderer.
 class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
@@ -254,7 +253,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // from a file chooser dialog for the form. |permissions| is the file
   // selection mode in which the chooser dialog was created.
   virtual void FilesSelectedInChooser(
-      const std::vector<content::FileChooserFileInfo>& files,
+      const std::vector<blink::mojom::FileChooserFileInfoPtr>& files,
       blink::mojom::FileChooserParams::Mode permissions) = 0;
 
   // Returns true if the frame has a selection.

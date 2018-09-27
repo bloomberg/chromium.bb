@@ -132,7 +132,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -4636,7 +4635,7 @@ int RenderFrameHostImpl::GetProxyCount() {
 }
 
 void RenderFrameHostImpl::FilesSelectedInChooser(
-    const std::vector<content::FileChooserFileInfo>& files,
+    const std::vector<blink::mojom::FileChooserFileInfoPtr>& files,
     blink::mojom::FileChooserParams::Mode permissions) {
   storage::FileSystemContext* const file_system_context =
       BrowserContext::GetStoragePartition(GetProcess()->GetBrowserContext(),
@@ -4646,16 +4645,16 @@ void RenderFrameHostImpl::FilesSelectedInChooser(
   for (const auto& file : files) {
     if (permissions == blink::mojom::FileChooserParams::Mode::kSave) {
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantCreateReadWriteFile(
-          GetProcess()->GetID(), file.file_path);
+          GetProcess()->GetID(), file->get_native_file()->file_path);
     } else {
-      if (file.file_system_url.is_valid()) {
+      if (file->is_file_system()) {
         ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFileSystem(
             GetProcess()->GetID(),
-            file_system_context->CrackURL(file.file_system_url)
+            file_system_context->CrackURL(file->get_file_system()->url)
                 .mount_filesystem_id());
       } else {
         ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-            GetProcess()->GetID(), file.file_path);
+            GetProcess()->GetID(), file->get_native_file()->file_path);
       }
     }
   }
