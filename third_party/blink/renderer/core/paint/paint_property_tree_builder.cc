@@ -775,15 +775,14 @@ bool FragmentPaintPropertyTreeBuilder::EffectCanUseCurrentClipAsOutputClip()
   const auto* layer = ToLayoutBoxModelObject(object_).Layer();
   // Out-of-flow descendants not contained by this object may escape clips.
   if (layer->HasNonContainedAbsolutePositionDescendant() &&
-      object_.ContainingBlockForAbsolutePosition()
+      object_.ContainerForAbsolutePosition()
               ->FirstFragment()
               .PostOverflowClip() != context_.current.clip)
     return false;
   if (layer->HasFixedPositionDescendant() &&
       !object_.CanContainFixedPositionObjects() &&
-      object_.ContainingBlockForFixedPosition()
-              ->FirstFragment()
-              .PostOverflowClip() != context_.current.clip)
+      object_.ContainerForFixedPosition()->FirstFragment().PostOverflowClip() !=
+          context_.current.clip)
     return false;
 
   // Some descendants under a pagination container (e.g. composited objects
