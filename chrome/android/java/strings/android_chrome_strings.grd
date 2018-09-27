@@ -1319,7 +1319,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Save up to 60% of your data
       </message>
       <message name="IDS_DATA_REDUCTION_PROMO_INFOBAR_TEXT" desc="Text to be displayed in the data reduction promo infobar">
-        Google servers will optimize the pages you visit, except for HTTPS and Incognito.
+        Google servers will optimize the pages you visit.
       </message>
       <message name="IDS_DATA_REDUCTION_PROMO_INFOBAR_BUTTON" desc="Text to be displayed in the data reduction promo infobar confirm button">
         Turn on Data Saver
