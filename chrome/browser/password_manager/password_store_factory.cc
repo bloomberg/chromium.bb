@@ -37,6 +37,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -117,7 +118,7 @@ void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
       password_store.get(), sync_service,
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
-      profile->GetPath());
+      content::GetNetworkConnectionTracker(), profile->GetPath());
 }
 
 PasswordStoreFactory::PasswordStoreFactory()
