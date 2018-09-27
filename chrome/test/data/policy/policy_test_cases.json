@@ -3192,6 +3192,15 @@
     ]
   },
 
+  "ReportCrostiniUsageEnabled": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "ReportCrostiniUsageEnabled": false },
+    "pref_mappings": [
+      { "pref": "crostini.usage_reporting_enabled" }
+    ]
+  },
+
   "SmsMessagesAllowed": {
     "os": ["chromeos"],
     "test_policy": { "SmsMessagesAllowed": false },

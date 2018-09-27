@@ -34,6 +34,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -1484,11 +1485,17 @@ bool DeviceStatusCollector::GetSessionStatusForUser(
     return false;
 
   bool anything_reported_user = false;
-  bool report_android_status =
-      profile->GetPrefs()->GetBoolean(prefs::kReportArcStatusEnabled);
 
+  const bool report_android_status =
+      profile->GetPrefs()->GetBoolean(prefs::kReportArcStatusEnabled);
   if (report_android_status)
     anything_reported_user |= GetAndroidStatus(status, state);
+
+  const bool report_crostini_usage = profile->GetPrefs()->GetBoolean(
+      crostini::prefs::kReportCrostiniUsageEnabled);
+  if (report_crostini_usage)
+    anything_reported_user |= GetCrostiniUsage(status, profile);
+
   if (anything_reported_user && !user->IsDeviceLocalAccount())
     status->set_user_dm_token(GetDMTokenForProfile(profile));
 
@@ -1563,6 +1570,26 @@ bool DeviceStatusCollector::GetAndroidStatus(
     em::SessionStatusReportRequest* status,
     const scoped_refptr<GetStatusState>& state) {
   return state->FetchAndroidStatus(android_status_fetcher_);
+}
+
+bool DeviceStatusCollector::GetCrostiniUsage(
+    em::SessionStatusReportRequest* status,
+    Profile* profile) {
+  if (!profile->GetPrefs()->HasPrefPath(
+          crostini::prefs::kCrostiniLastLaunchTimeWindowStart)) {
+    return false;
+  }
+
+  em::CrostiniStatus* const crostini_status = status->mutable_crostini_status();
+  const int64_t last_launch_time_window_start = profile->GetPrefs()->GetInt64(
+      crostini::prefs::kCrostiniLastLaunchTimeWindowStart);
+  const std::string& termina_version = profile->GetPrefs()->GetString(
+      crostini::prefs::kCrostiniLastLaunchVersion);
+  crostini_status->set_last_launch_time_window_start_timestamp(
+      last_launch_time_window_start);
+  crostini_status->set_last_launch_vm_image_version(termina_version);
+
+  return true;
 }
 
 std::string DeviceStatusCollector::GetAppVersion(

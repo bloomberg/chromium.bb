@@ -370,6 +370,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
     component_manager_load_error_for_testing_ = error;
   }
 
+  // If the Crostini reporting policy is set, save the last app launch
+  // time window and the Termina version in prefs for asynchronous reporting.
+  void UpdateLaunchMetricsForEnterpriseReporting(Profile* profile);
+
  private:
   friend struct base::DefaultSingletonTraits<CrostiniManager>;
 

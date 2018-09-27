@@ -14,6 +14,10 @@ extern const char kCrostiniEnabled[];
 extern const char kCrostiniRegistry[];
 extern const char kUserCrostiniAllowedByPolicy[];
 
+extern const char kReportCrostiniUsageEnabled[];
+extern const char kCrostiniLastLaunchVersion[];
+extern const char kCrostiniLastLaunchTimeWindowStart[];
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 }  // namespace prefs

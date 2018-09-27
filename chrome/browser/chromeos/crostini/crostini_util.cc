@@ -329,8 +329,9 @@ void LaunchCrostiniApp(Profile* profile,
                        std::move(*registration), display_id, std::move(files));
   }
 
-  // Update the last launched time.
+  // Update the last launched time and Termina version.
   registry_service->AppLaunched(app_id);
+  crostini_manager->UpdateLaunchMetricsForEnterpriseReporting(profile);
 
   auto restart_id = crostini_manager->RestartCrostini(
       profile, vm_name, container_name,
