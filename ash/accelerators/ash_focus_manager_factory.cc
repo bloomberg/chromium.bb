@@ -9,6 +9,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/views/focus/focus_manager.h"
@@ -53,6 +54,8 @@ void AshFocusManagerFactory::Delegate::OnDidChangeFocus(
 
   gfx::Point point_of_interest = bounds_in_screen.CenterPoint();
   const ui::InputMethod* input_method = focused_now->GetInputMethod();
+  const bool docked_magnifier_enabled =
+      features::IsDockedMagnifierEnabled() && docked_magnifier->GetEnabled();
   if (input_method && input_method->GetTextInputClient() &&
       input_method->GetTextInputClient()->GetTextInputType() !=
           ui::TEXT_INPUT_TYPE_NONE) {
@@ -64,7 +67,7 @@ void AshFocusManagerFactory::Delegate::OnDidChangeFocus(
     // Note: Don't use Rect::IsEmpty() for the below check as in many cases the
     // caret can have a zero width or height, but still be valid.
     if (caret_bounds.width() || caret_bounds.height()) {
-      if (docked_magnifier->GetEnabled()) {
+      if (docked_magnifier_enabled) {
         docked_magnifier->OnCaretBoundsChanged(
             input_method->GetTextInputClient());
       } else if (fullscreen_magnifier->IsEnabled()) {
@@ -80,7 +83,7 @@ void AshFocusManagerFactory::Delegate::OnDidChangeFocus(
     point_of_interest = bounds_in_screen.origin();
   }
 
-  if (docked_magnifier->GetEnabled())
+  if (docked_magnifier_enabled)
     docked_magnifier->CenterOnPoint(point_of_interest);
   else if (fullscreen_magnifier->IsEnabled())
     fullscreen_magnifier->CenterOnPoint(point_of_interest);
