@@ -587,6 +587,7 @@ void D3D11VideoDecoder::NotifyError(const char* reason) {
 
   for (auto& queue_pair : input_buffer_queue_)
     queue_pair.second.Run(DecodeStatus::DECODE_ERROR);
+  input_buffer_queue_.clear();
 }
 
 void D3D11VideoDecoder::SetCreateDeviceCallbackForTesting(
