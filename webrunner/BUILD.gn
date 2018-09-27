@@ -211,6 +211,7 @@ test("webrunner_unittests") {
 fidl_library("fidl") {
   library_name = "web"
   namespace = "chromium"
+  namespace_path = "chromium"
 
   sources = [
     "fidl/context.fidl",

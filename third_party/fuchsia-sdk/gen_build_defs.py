@@ -44,9 +44,11 @@ def ConvertFidlLibrary(json):
   name_tokenized = json['name'].split('.')
   json['shortname'] = name_tokenized[-1]
   json['namespace'] = '.'.join(name_tokenized[:-1])
+  json['namespace_path'] = json['namespace'].replace('.', '/')
 
   return """fuchsia_sdk_fidl_pkg("{shortname}") {{
     namespace = "{namespace}"
+    namespace_path = "{namespace_path}"
     public_deps = {deps}
     sources = {sources}
   }}""".format(**json)
