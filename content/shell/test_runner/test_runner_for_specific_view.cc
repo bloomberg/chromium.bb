@@ -42,7 +42,6 @@
 #include "third_party/blink/public/web/web_array_buffer.h"
 #include "third_party/blink/public/web/web_array_buffer_converter.h"
 #include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_element.h"
@@ -613,28 +612,25 @@ void TestRunner::InsertStyleSheet(const std::string& source_code) {
 bool TestRunnerForSpecificView::FindString(
     const std::string& search_text,
     const std::vector<std::string>& options_array) {
-  blink::WebFindOptions find_options;
+  bool match_case = true;
+  bool forward = true;
+  bool find_next = true;
   bool wrap_around = false;
-  find_options.match_case = true;
-  find_options.find_next = true;
-
   for (const std::string& option : options_array) {
     if (option == "CaseInsensitive")
-      find_options.match_case = false;
+      match_case = false;
     else if (option == "Backwards")
-      find_options.forward = false;
+      forward = false;
     else if (option == "StartInSelection")
-      find_options.find_next = false;
+      find_next = false;
     else if (option == "WrapAround")
       wrap_around = true;
   }
 
   blink::WebLocalFrame* frame = GetLocalMainFrame();
-  const bool find_result =
-      frame->Find(0, blink::WebString::FromUTF8(search_text), find_options,
-                  wrap_around, nullptr);
-  frame->StopFindingForTesting(
-      blink::mojom::StopFindAction::kStopFindActionKeepSelection);
+  const bool find_result = frame->FindForTesting(
+      0, blink::WebString::FromUTF8(search_text), match_case, forward,
+      find_next, false /* force */, wrap_around);
   return find_result;
 }
 

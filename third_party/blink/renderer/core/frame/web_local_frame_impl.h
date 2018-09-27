@@ -35,6 +35,8 @@
 #include <set>
 
 #include "base/single_thread_task_runner.h"
+
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
@@ -320,12 +322,13 @@ class CORE_EXPORT WebLocalFrameImpl final
   void DidCallAddSearchProvider() override;
   void DidCallIsSearchProviderInstalled() override;
   void ReplaceSelection(const WebString&) override;
-  bool Find(int identifier,
-            const WebString& search_text,
-            const WebFindOptions&,
-            bool wrap_within_frame,
-            bool* active_now = nullptr) override;
-  void StopFindingForTesting(mojom::StopFindAction) override;
+  bool FindForTesting(int identifier,
+                      const WebString& search_text,
+                      bool match_case,
+                      bool forward,
+                      bool force,
+                      bool find_next,
+                      bool wrap_within_frame) override;
   void SetTickmarks(const WebVector<WebRect>&) override;
   WebNode ContextMenuNode() const override;
   WebFrameWidget* FrameWidget() const override;
