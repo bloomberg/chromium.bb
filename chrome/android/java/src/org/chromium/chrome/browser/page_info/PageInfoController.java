@@ -159,14 +159,13 @@ public class PageInfoController
      * @param offlinePageUrl           URL that the offline page claims to be generated from.
      * @param offlinePageCreationDate  Date when the offline page was created.
      * @param offlinePageState         State of the tab showing offline page.
-     * @param previewOriginalHost      The domain of the original page of the displayed preview.
      * @param previewPageState         State of the tab showing the preview.
      * @param publisher                The name of the content publisher, if any.
      */
     protected PageInfoController(Activity activity, Tab tab, int securityLevel,
             String offlinePageUrl, String offlinePageCreationDate,
-            @OfflinePageState int offlinePageState, String previewOriginalHost,
-            @PreviewPageState int previewPageState, String publisher) {
+            @OfflinePageState int offlinePageState, @PreviewPageState int previewPageState,
+            String publisher) {
         mContext = activity;
         mTab = tab;
         mSecurityLevel = securityLevel;
@@ -249,7 +248,7 @@ public class PageInfoController
             viewParams.siteSettingsButtonShown = false;
         }
 
-        initPreviewUiParams(viewParams, previewOriginalHost);
+        initPreviewUiParams(viewParams);
 
         if (isShowingOfflinePage()) {
             boolean isConnected = OfflinePageUtils.isConnected();
@@ -332,9 +331,9 @@ public class PageInfoController
      * Initializes the state in viewParams with respect to showing the previews UI.
      *
      * @param viewParams The PageInfoViewParams to set state on.
-     * @param previewOriginalHost The hostname of the displayed preview page.
      */
-    private void initPreviewUiParams(PageInfoViewParams viewParams, String previewOriginalHost) {
+    private void initPreviewUiParams(PageInfoViewParams viewParams) {
+        final PreviewsAndroidBridge bridge = PreviewsAndroidBridge.getInstance();
         viewParams.separatorShown = mPreviewPageState == PreviewPageState.INSECURE_PAGE_PREVIEW;
         viewParams.previewUIShown = isShowingPreview();
         if (isShowingPreview()) {
@@ -342,10 +341,9 @@ public class PageInfoController
             viewParams.connectionMessageShown = false;
 
             viewParams.previewShowOriginalClickCallback = () -> {
-                runAfterDismiss(() -> {
-                    PreviewsAndroidBridge.getInstance().loadOriginal(mTab.getWebContents());
-                });
+                runAfterDismiss(() -> { bridge.loadOriginal(mTab.getWebContents()); });
             };
+            final String previewOriginalHost = bridge.getOriginalHost(mTab.getWebContents());
             final String loadOriginalText = mContext.getString(
                     R.string.page_info_preview_load_original, previewOriginalHost);
             final SpannableString loadOriginalSpan = SpanApplier.applySpans(loadOriginalText,
@@ -355,6 +353,9 @@ public class PageInfoController
                             // because the entire TextView will be clickable.
                             new NoUnderlineClickableSpan((view) -> {})));
             viewParams.previewLoadOriginalMessage = loadOriginalSpan;
+
+            viewParams.previewStaleTimestamp =
+                    bridge.getStalePreviewTimestamp(mTab.getWebContents());
         }
     }
 
@@ -568,15 +569,12 @@ public class PageInfoController
         final int securityLevel =
                 SecurityStateModel.getSecurityLevelForWebContents(tab.getWebContents());
 
-        final PreviewsAndroidBridge previewsBridge = PreviewsAndroidBridge.getInstance();
         @PreviewPageState
         int previewPageState = PreviewPageState.NOT_PREVIEW;
-        String previewOriginalHost = null;
-        if (previewsBridge.shouldShowPreviewUI(tab.getWebContents())) {
+        if (PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(tab.getWebContents())) {
             previewPageState = securityLevel == ConnectionSecurityLevel.SECURE
                     ? PreviewPageState.SECURE_PAGE_PREVIEW
                     : PreviewPageState.INSECURE_PAGE_PREVIEW;
-            previewOriginalHost = previewsBridge.getOriginalHost(tab.getWebContents());
 
             Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
             tracker.notifyEvent(EventConstants.PREVIEWS_VERBOSE_STATUS_OPENED);
@@ -607,8 +605,7 @@ public class PageInfoController
         }
 
         new PageInfoController(activity, tab, securityLevel, offlinePageUrl,
-                offlinePageCreationDate, offlinePageState, previewOriginalHost, previewPageState,
-                contentPublisher);
+                offlinePageCreationDate, offlinePageState, previewPageState, contentPublisher);
     }
 
     private static native long nativeInit(PageInfoController controller, WebContents webContents);
