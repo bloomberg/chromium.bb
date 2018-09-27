@@ -56,8 +56,7 @@ base::Optional<CORSErrorStatus> CheckAccess(
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::FetchCredentialsMode credentials_mode,
-    const url::Origin& origin,
-    bool allow_file_origin = false);
+    const url::Origin& origin);
 
 // Performs a CORS access check on the CORS-preflight response parameters.
 // According to the note at https://fetch.spec.whatwg.org/#cors-preflight-fetch
@@ -70,8 +69,7 @@ base::Optional<CORSErrorStatus> CheckPreflightAccess(
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::FetchCredentialsMode actual_credentials_mode,
-    const url::Origin& origin,
-    bool allow_file_origin = false);
+    const url::Origin& origin);
 
 // Given a redirected-to URL, checks if the location is allowed
 // according to CORS. That is:

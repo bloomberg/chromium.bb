@@ -120,15 +120,13 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
     base::Optional<CORSErrorStatus>* detected_error_status) {
   DCHECK(detected_error_status);
 
-  // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
   *detected_error_status = CheckPreflightAccess(
       final_url, head.headers->response_code(),
       GetHeaderString(head.headers, header_names::kAccessControlAllowOrigin),
       GetHeaderString(head.headers,
                       header_names::kAccessControlAllowCredentials),
       original_request.fetch_credentials_mode,
-      tainted ? url::Origin() : *original_request.request_initiator,
-      false /* allow_file_origin */);
+      tainted ? url::Origin() : *original_request.request_initiator);
   if (*detected_error_status)
     return nullptr;
 

@@ -43,18 +43,6 @@ std::string ExtractMIMETypeFromMediaType(const std::string& media_type) {
   return std::string();
 }
 
-// url::Origin::Serialize() serializes all Origins with a 'file' scheme to
-// 'file://', but it isn't desirable for CORS check. Returns 'null' instead to
-// be aligned with HTTP Origin header calculation in Blink SecurityOrigin.
-// |allow_file_origin| is used to realize a behavior change that
-// the --allow-file-access-from-files command-line flag needs.
-// TODO(mkwst): Generalize and move to url/Origin.
-std::string Serialize(const url::Origin& origin, bool allow_file_origin) {
-  if (!allow_file_origin && origin.scheme() == url::kFileScheme)
-    return "null";
-  return origin.Serialize();
-}
-
 // Returns true only if |header_value| satisfies ABNF: 1*DIGIT [ "." 1*DIGIT ]
 bool IsSimilarToDoubleABNF(const std::string& header_value) {
   if (header_value.empty())
@@ -135,8 +123,7 @@ base::Optional<CORSErrorStatus> CheckAccess(
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::FetchCredentialsMode credentials_mode,
-    const url::Origin& origin,
-    bool allow_file_origin) {
+    const url::Origin& origin) {
   // TODO(toyoshim): This response status code check should not be needed. We
   // have another status code check after a CheckAccess() call if it is needed.
   if (!response_status_code)
@@ -159,7 +146,7 @@ base::Optional<CORSErrorStatus> CheckAccess(
       return CORSErrorStatus(mojom::CORSError::kWildcardOriginNotAllowed);
   } else if (!allow_origin_header) {
     return CORSErrorStatus(mojom::CORSError::kMissingAllowOriginHeader);
-  } else if (*allow_origin_header != Serialize(origin, allow_file_origin)) {
+  } else if (*allow_origin_header != origin.Serialize()) {
     // We do not use url::Origin::IsSameOriginWith() here for two reasons below.
     //  1. Allow "null" to match here. The latest spec does not have a clear
     //     information about this (https://fetch.spec.whatwg.org/#cors-check),
@@ -217,12 +204,10 @@ base::Optional<CORSErrorStatus> CheckPreflightAccess(
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::FetchCredentialsMode actual_credentials_mode,
-    const url::Origin& origin,
-    bool allow_file_origin) {
+    const url::Origin& origin) {
   const auto error_status =
       CheckAccess(response_url, response_status_code, allow_origin_header,
-                  allow_credentials_header, actual_credentials_mode, origin,
-                  allow_file_origin);
+                  allow_credentials_header, actual_credentials_mode, origin);
   if (!error_status)
     return base::nullopt;
 

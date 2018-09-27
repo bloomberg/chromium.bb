@@ -644,10 +644,17 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->url = url_;
   resource_request->site_for_cookies = request.SiteForCookies();
   resource_request->upgrade_if_insecure = request.UpgradeIfInsecure();
-  resource_request->request_initiator =
-      request.RequestorOrigin().IsNull()
-          ? base::Optional<url::Origin>()
-          : base::Optional<url::Origin>(request.RequestorOrigin());
+  if (!request.RequestorOrigin().IsNull()) {
+    if (request.RequestorOrigin().ToString() == "null") {
+      // "file:" origin is treated like an opaque unique origin when
+      // allow-file-access-from-files is not specified. Such origin is not
+      // opaque (i.e., IsOpaque() returns false) but still serializes to
+      // "null".
+      resource_request->request_initiator = url::Origin();
+    } else {
+      resource_request->request_initiator = request.RequestorOrigin();
+    }
+  }
   resource_request->referrer = referrer_url;
 
   resource_request->referrer_policy =

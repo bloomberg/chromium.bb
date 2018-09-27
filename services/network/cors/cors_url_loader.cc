@@ -190,7 +190,6 @@ void CORSURLLoader::OnReceiveResponse(
   DCHECK(!is_waiting_follow_redirect_call_);
 
   if (fetch_cors_flag_) {
-    // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
     const auto error_status = CheckAccess(
         request_.url, response_head.headers->response_code(),
         GetHeaderString(response_head, header_names::kAccessControlAllowOrigin),
@@ -226,7 +225,6 @@ void CORSURLLoader::OnReceiveRedirect(
   // failure, then return a network error.
   if (fetch_cors_flag_ &&
       IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
-    // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
     const auto error_status = CheckAccess(
         request_.url, response_head.headers->response_code(),
         GetHeaderString(response_head, header_names::kAccessControlAllowOrigin),

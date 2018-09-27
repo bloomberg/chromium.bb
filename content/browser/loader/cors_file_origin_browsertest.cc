@@ -263,17 +263,15 @@ IN_PROC_BROWSER_TEST_P(CORSFileOriginBrowserTestWithDisableWebSecurity,
   EXPECT_FALSE(is_preflight_requested());
 }
 
-// --allow-file-access-from-files is currently not supported by OOR-CORS.
-// We may remove the feature.
 INSTANTIATE_TEST_CASE_P(
     /* No test prefix */,
     CORSFileOriginBrowserTest,
-    ::testing::Values(false));
+    ::testing::Values(false, true));
 
 INSTANTIATE_TEST_CASE_P(
     /* No test prefix */,
     CORSFileOriginBrowserTestWithAllowFileAccessFromFiles,
-    ::testing::Values(false));
+    ::testing::Values(false, true));
 
 INSTANTIATE_TEST_CASE_P(
     /* No test prefix */,
