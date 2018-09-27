@@ -24,6 +24,40 @@
 
 namespace media {
 
+// Helper class for ensuring that Decode() traces are properly unique and closed
+// if the Decode is aborted via a WeakPtr invalidation. We use the |this|
+// pointer of the ScopedDecodeTrace object itself as the id. Since the callback
+// owns the class it's guaranteed to be unique.
+class ScopedDecodeTrace {
+ public:
+  ScopedDecodeTrace(const char* trace_name, const DecoderBuffer& buffer)
+      : trace_name_(trace_name) {
+    DCHECK(trace_name_);
+    TRACE_EVENT_ASYNC_BEGIN2(
+        "media", trace_name_, this, "is_key_frame",
+        !buffer.end_of_stream() && buffer.is_key_frame(), "timestamp_us",
+        !buffer.end_of_stream() ? buffer.timestamp().InMicroseconds() : 0);
+  }
+
+  void EndTrace(DecodeStatus status) {
+    DCHECK(!closed_);
+    closed_ = true;
+    TRACE_EVENT_ASYNC_END1("media", trace_name_, this, "status",
+                           GetDecodeStatusString(status));
+  }
+
+  ~ScopedDecodeTrace() {
+    if (!closed_)
+      EndTrace(DecodeStatus::ABORTED);
+  }
+
+ private:
+  const char* trace_name_;
+  bool closed_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDecodeTrace);
+};
+
 #define FUNCTION_DVLOG(level) \
   DVLOG(level) << __func__ << "<" << GetStreamTypeString() << ">"
 
@@ -446,25 +480,34 @@ void DecoderStream<StreamType>::DecodeInternal(
   DCHECK(!reset_cb_);
   DCHECK(buffer);
 
+  std::unique_ptr<ScopedDecodeTrace> trace_event;
+
+  bool enable_decode_traces = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("media", &enable_decode_traces);
+  if (enable_decode_traces) {
+    // Because multiple Decode() calls may be in flight, each call needs a
+    // unique trace event class to identify it. This scoped event is bound
+    // into the OnDecodeDone callback to ensure the trace is always closed.
+    trace_event = std::make_unique<ScopedDecodeTrace>(
+        GetDecodeTraceString<StreamType>(), *buffer);
+  }
+
   traits_->OnDecode(*buffer);
 
-  int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
-
-  TRACE_EVENT_ASYNC_BEGIN2(
-      "media", GetDecodeTraceString<StreamType>(), this, "is_key_frame",
-      !buffer->end_of_stream() && buffer->is_key_frame(), "timestamp_us",
-      !buffer->end_of_stream() ? buffer->timestamp().InMicroseconds() : 0);
-
-  if (buffer->end_of_stream())
+  const bool is_eos = buffer->end_of_stream();
+  if (is_eos)
     decoding_eos_ = true;
   else if (buffer->duration() != kNoTimestamp)
     duration_tracker_.AddSample(buffer->duration());
 
   ++pending_decode_requests_;
-  decoder_->Decode(std::move(buffer),
-                   base::BindRepeating(&DecoderStream<StreamType>::OnDecodeDone,
-                                       fallback_weak_factory_.GetWeakPtr(),
-                                       buffer_size, decoding_eos_));
+
+  const int buffer_size = is_eos ? 0 : buffer->data_size();
+  decoder_->Decode(
+      std::move(buffer),
+      base::BindRepeating(&DecoderStream<StreamType>::OnDecodeDone,
+                          fallback_weak_factory_.GetWeakPtr(), buffer_size,
+                          decoding_eos_, base::Passed(&trace_event)));
 }
 
 template <DemuxerStream::Type StreamType>
@@ -475,9 +518,11 @@ void DecoderStream<StreamType>::FlushDecoder() {
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
-                                             bool end_of_stream,
-                                             DecodeStatus status) {
+void DecoderStream<StreamType>::OnDecodeDone(
+    int buffer_size,
+    bool end_of_stream,
+    std::unique_ptr<ScopedDecodeTrace> trace_event,
+    DecodeStatus status) {
   FUNCTION_DVLOG(3) << ": " << status;
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR)
@@ -485,8 +530,8 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
   DCHECK_GT(pending_decode_requests_, 0);
 
   --pending_decode_requests_;
-
-  TRACE_EVENT_ASYNC_END0("media", GetDecodeTraceString<StreamType>(), this);
+  if (trace_event)
+    trace_event->EndTrace(status);
 
   if (end_of_stream) {
     DCHECK(!pending_decode_requests_);

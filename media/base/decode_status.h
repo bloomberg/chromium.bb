@@ -19,6 +19,8 @@ enum class DecodeStatus {
   DECODE_STATUS_MAX = DECODE_ERROR
 };
 
+const char* GetDecodeStatusString(DecodeStatus status);
+
 // Helper function so that DecodeStatus can be printed easily.
 MEDIA_EXPORT std::ostream& operator<<(std::ostream& os,
                                       const DecodeStatus& status);
