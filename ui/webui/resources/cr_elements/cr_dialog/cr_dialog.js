@@ -69,7 +69,6 @@ Polymer({
 
   listeners: {
     'pointerdown': 'onPointerdown_',
-    'keydown': 'onKeydown_',
   },
 
   /** @private {?IntersectionObserver} */
@@ -109,11 +108,6 @@ Polymer({
 
     // In some cases dialog already has the 'open' attribute by this point.
     mutationObserverCallback();
-
-    // Sometimes <body> is key event's target and in that case the event
-    // will bypass cr-dialog. We should consume those events too in order to
-    // behave modally. This prevents accidentally triggering command manager.
-    document.body.addEventListener('keydown', this.onKeydown_.bind(this));
   },
 
   /** @override */
@@ -269,21 +263,6 @@ Polymer({
       actionButton.click();
       e.preventDefault();
     }
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onKeydown_: function(e) {
-    if (!this.getNative().open)
-      return;
-
-    if (this.ignoreEnterKey && e.key == 'Enter')
-      return;
-
-    // Stop propagation to behave modally.
-    e.stopPropagation();
   },
 
   /** @param {!PointerEvent} e */
