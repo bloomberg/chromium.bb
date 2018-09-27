@@ -84,6 +84,7 @@ source_set("chromeos") {
     "//chromeos:cryptohome_signkey_proto",
     "//chromeos:login_manager_proto",
     "//chromeos:metrics_event_proto",
+    "//chromeos:oobe_config_proto",
     "//chromeos/assistant:buildflags",
     "//chromeos/components/drivefs",
     "//chromeos/components/drivefs/mojom",
