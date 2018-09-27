@@ -38,6 +38,8 @@ KEY_IDLE_POWER = Tag(
     'key_idle_power', 'Key idle power stories')
 MAPS = Tag(
     'maps', 'Maps stories')
+MOTIONMARK = Tag(
+    'motionmark', 'Motionmark benchmark stories')
 PATHOLOGICAL_MOBILE_SITES = Tag(
     'pathological_mobile_sites', 'Pathological mobile sites')
 POLYMER = Tag(
