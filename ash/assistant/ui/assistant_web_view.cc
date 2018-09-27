@@ -5,8 +5,6 @@
 #include "ash/assistant/ui/assistant_web_view.h"
 
 #include <algorithm>
-#include <map>
-#include <string>
 #include <utility>
 
 #include "ash/assistant/assistant_controller.h"
@@ -21,11 +19,47 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+namespace {
+
+// ContentViewMaskPainter -------------------------------------------------
+
+class ContentViewMaskPainter : public views::Painter {
+ public:
+  ContentViewMaskPainter() = default;
+  ~ContentViewMaskPainter() override = default;
+
+  // views::Painter:
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+
+  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(SK_ColorBLACK);
+
+    SkRRect rect;
+    rect.setRectRadii(
+        SkRect::MakeWH(size.width(), size.height()),
+        (const SkVector[]){
+            /*upper_left=*/SkVector::Make(0, 0),
+            /*upper_right=*/SkVector::Make(0, 0),
+            /*lower_right=*/SkVector::Make(kCornerRadiusDip, kCornerRadiusDip),
+            /*lower_left=*/SkVector::Make(kCornerRadiusDip, kCornerRadiusDip)});
+
+    canvas->sk_canvas()->drawRRect(rect, flags);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentViewMaskPainter);
+};
+
+}  // namespace
 
 // AssistantWebView ------------------------------------------------------------
 
@@ -93,8 +127,7 @@ void AssistantWebView::InitLayout() {
   // Content mask.
   // This is used to enforce corner radius on the contents' layer.
   content_view_mask_ = views::Painter::CreatePaintedLayer(
-      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                  kCornerRadiusDip));
+      std::make_unique<ContentViewMaskPainter>());
   content_view_mask_->layer()->SetFillsBoundsOpaquely(false);
 }
 
