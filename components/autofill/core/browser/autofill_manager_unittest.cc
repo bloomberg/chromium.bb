@@ -4472,7 +4472,6 @@ class ProfileMatchingTypesTest
       public ::testing::WithParamInterface<
           std::tuple<ProfileMatchingTypesTestCase,
                      int,        // AutofillProfile::ValidityState
-                     bool,       // Enable AutofillVoteUsingInvalidProfileValues
                      bool>> {};  // AutofillProfile::ValidationSource
 
 const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
@@ -4568,27 +4567,18 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
   const auto& test_case = std::get<0>(GetParam());
   auto validity_state =
       static_cast<AutofillProfile::ValidityState>(std::get<1>(GetParam()));
-  const auto& vote_using_invalid_profile_data = std::get<2>(GetParam());
   const auto& validation_source =
-      static_cast<AutofillProfile::ValidationSource>(std::get<3>(GetParam()));
+      static_cast<AutofillProfile::ValidationSource>(std::get<2>(GetParam()));
 
   SCOPED_TRACE(base::StringPrintf(
       "Test: input_value='%s', field_type=%s, validity_state=%d, "
-      "validation_source=%d, vote_using_invalid_profile_data=%d",
+      "validation_source=%d ",
       test_case.input_value,
       AutofillType(test_case.field_type).ToString().c_str(), validity_state,
-      validation_source, vote_using_invalid_profile_data));
+      validation_source));
 
   ASSERT_LE(AutofillProfile::UNVALIDATED, validity_state);
   ASSERT_LE(validity_state, AutofillProfile::UNSUPPORTED);
-
-  // Enable/Disable ignoring invalid profile data for the scope of this test.
-  base::test::ScopedFeatureList sfl;
-  if (vote_using_invalid_profile_data) {
-    sfl.InitAndEnableFeature(features::kAutofillVoteUsingInvalidProfileData);
-  } else {
-    sfl.InitAndDisableFeature(features::kAutofillVoteUsingInvalidProfileData);
-  }
 
   // Set up the test profiles.
   std::vector<AutofillProfile> profiles;
@@ -4611,10 +4601,14 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
   profiles[2].set_guid("00000000-0000-0000-0000-000000000001");
 
   // Set the validity state for the matching field type.
-  auto field_type_group = AutofillType(test_case.field_type).group();
-  if (field_type_group != CREDIT_CARD) {
+  if (GroupTypeOfServerFieldType(test_case.field_type) != CREDIT_CARD) {
     for (auto& profile : profiles) {
-      if (profile.IsAnInvalidPhoneNumber(test_case.field_type)) {
+      if (test_case.field_type == UNKNOWN_TYPE) {
+        // An UNKNOWN type is always UNVALIDATED
+        validity_state = AutofillProfile::UNVALIDATED;
+      } else if (profile.IsAnInvalidPhoneNumber(test_case.field_type)) {
+        // a phone field is a compound field, an invalid part would make it
+        // invalid.
         validity_state = AutofillProfile::INVALID;
       }
       profile.SetValidityState(test_case.field_type, validity_state,
@@ -4647,54 +4641,22 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
       profiles, credit_cards, "en-us", &form_structure);
 
   ASSERT_EQ(1U, form_structure.field_count());
+
   ServerFieldTypeSet possible_types = form_structure.field(0)->possible_types();
-  EXPECT_EQ(1U, possible_types.size());
+  ASSERT_EQ(1U, possible_types.size());
+  EXPECT_EQ(*possible_types.begin(), test_case.field_type);
 
-  if (test_case.field_type != EMPTY_TYPE &&
-      test_case.field_type != UNKNOWN_TYPE &&
-      ((validation_source == AutofillProfile::SERVER &&
-        GroupTypeOfServerFieldType(test_case.field_type) != CREDIT_CARD) ||
-       (validation_source == AutofillProfile::CLIENT &&
-        AutofillProfile::IsClientValidationSupportedForType(
-            test_case.field_type))) &&
-      validity_state == AutofillProfile::INVALID) {
-    // For the phone types we get more than one possible type match for one
-    // piece of data, therefore the count is not clear.
-    if (AutofillType(test_case.field_type).group() != PHONE_HOME) {
-      // There are two addresses in the US, every other type/value pair is
-      // unique.
-      int expected_count =
-          (test_case.field_type == ADDRESS_HOME_COUNTRY &&
-           base::StartsWith(test_case.input_value, "U",
-                            base::CompareCase::INSENSITIVE_ASCII))
-              ? 2
-              : 1;
-      histogram_tester.ExpectBucketCount(
-          "Autofill.InvalidProfileData.UsedForMetrics",
-          vote_using_invalid_profile_data, expected_count);
-    }
-    EXPECT_EQ(*possible_types.begin(), vote_using_invalid_profile_data
-                                           ? test_case.field_type
-                                           : UNKNOWN_TYPE);
-
+  // We don't add validity states for credit card fields.
+  if (GroupTypeOfServerFieldType(test_case.field_type) != CREDIT_CARD) {
     ServerFieldTypeValidityStatesMap possible_types_validities =
         form_structure.field(0)->possible_types_validities();
-    bool has_possible_types_validities =
-        field_type_group != CREDIT_CARD &&
-        (vote_using_invalid_profile_data ||
-         validity_state != AutofillProfile::INVALID);
-    EXPECT_EQ(has_possible_types_validities ? 1U : 0U,
-              possible_types_validities.size());
-    if (has_possible_types_validities) {
-      EXPECT_NE(possible_types_validities.end(),
-                possible_types_validities.find(test_case.field_type));
-      EXPECT_EQ(possible_types_validities[test_case.field_type][0],
-                (validation_source == AutofillProfile::SERVER)
-                    ? validity_state
-                    : AutofillProfile::UNVALIDATED);
-    }
-  } else {
-    EXPECT_EQ(*possible_types.begin(), test_case.field_type);
+    ASSERT_EQ(1U, possible_types_validities.size());
+    EXPECT_NE(possible_types_validities.end(),
+              possible_types_validities.find(test_case.field_type));
+    EXPECT_EQ(possible_types_validities[test_case.field_type][0],
+              (validation_source == AutofillProfile::SERVER)
+                  ? validity_state
+                  : AutofillProfile::UNVALIDATED);
   }
 }
 
@@ -4705,7 +4667,6 @@ INSTANTIATE_TEST_CASE_P(
         testing::ValuesIn(kProfileMatchingTypesTestCases),
         testing::Range(static_cast<int>(AutofillProfile::UNVALIDATED),
                        static_cast<int>(AutofillProfile::UNSUPPORTED) + 1),
-        testing::Bool(),
         testing::Bool()));
 
 // Tests that DeterminePossibleFieldTypesForUpload is called when a form is
@@ -4793,7 +4754,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesWithMultipleValidities) {
     std::vector<AutofillProfile::ValidityState> expected_validity_states;
   } TestFieldData;
 
-  std::vector<TestFieldData> test_cases[2];
+  std::vector<TestFieldData> test_cases[3];
   // Tennessee appears in both of the user's profile as ADDRESS_HOME_STATE. In
   // the first one, it's VALID, and for the other, it's INVALID. Therefore, the
   // possible_field_types would only include the type ADDRESS_HOME_STATE, and
@@ -4806,6 +4767,9 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesWithMultipleValidities) {
   // UNVALIDATED.
   test_cases[1].push_back(
       {"Alice", NAME_FIRST, {AutofillProfile::UNVALIDATED}});
+  // An UNKNOWN type is always UNVALIDATED.
+  test_cases[2].push_back(
+      {"What a beautiful day!", UNKNOWN_TYPE, {AutofillProfile::UNVALIDATED}});
 
   for (const std::vector<TestFieldData>& test_fields : test_cases) {
     FormData form;

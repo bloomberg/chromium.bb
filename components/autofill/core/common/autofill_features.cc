@@ -264,9 +264,6 @@ const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile{
 const base::Feature kAutofillUsePaymentsCustomerData{
     "AutofillUsePaymentsCustomerData", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillVoteUsingInvalidProfileData{
-    "AutofillVoteUsingInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether password generation is offered automatically on fields
 // perceived as eligible for generation.
 #if defined(OS_ANDROID)

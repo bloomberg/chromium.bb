@@ -1680,8 +1680,13 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
       card.GetMatchingTypes(value, app_locale, &matching_types);
     }
 
-    if (matching_types.empty())
+    if (matching_types.empty()) {
       matching_types.insert(UNKNOWN_TYPE);
+      std::map<ServerFieldType, AutofillProfile::ValidityState>
+          matching_types_validities;
+      matching_types_validities[UNKNOWN_TYPE] = AutofillProfile::UNVALIDATED;
+      field->add_possible_types_validities(matching_types_validities);
+    }
 
     field->set_possible_types(matching_types);
   }

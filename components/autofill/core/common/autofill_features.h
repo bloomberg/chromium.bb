@@ -74,7 +74,6 @@ extern const base::Feature kAutofillUpstreamEditableCardholderName;
 extern const base::Feature kAutofillUpstreamUpdatePromptExplanation;
 extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
 extern const base::Feature kAutofillUsePaymentsCustomerData;
-extern const base::Feature kAutofillVoteUsingInvalidProfileData;
 extern const base::Feature kAutomaticPasswordGeneration;
 extern const base::Feature kSingleClickAutofill;
 extern const base::Feature kAutofillCreditCardLocalCardMigration;

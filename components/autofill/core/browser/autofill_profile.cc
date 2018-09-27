@@ -318,16 +318,6 @@ void AutofillProfile::GetMatchingTypes(
   }
 
   for (auto type : matching_types_in_this_profile) {
-    if (GetValidityState(type, CLIENT) == INVALID ||
-        GetValidityState(type, SERVER) == INVALID ||
-        IsAnInvalidPhoneNumber(type)) {
-      bool vote_using_invalid_data = base::FeatureList::IsEnabled(
-          features::kAutofillVoteUsingInvalidProfileData);
-      UMA_HISTOGRAM_BOOLEAN("Autofill.InvalidProfileData.UsedForMetrics",
-                            vote_using_invalid_data);
-      if (!vote_using_invalid_data)
-        continue;
-    }
     matching_types->insert(type);
   }
 }
@@ -349,16 +339,6 @@ void AutofillProfile::GetMatchingTypesAndValidities(
   }
 
   for (auto type : matching_types_in_this_profile) {
-    if (GetValidityState(type, CLIENT) == INVALID ||
-        GetValidityState(type, SERVER) == INVALID ||
-        IsAnInvalidPhoneNumber(type)) {
-      bool vote_using_invalid_data = base::FeatureList::IsEnabled(
-          features::kAutofillVoteUsingInvalidProfileData);
-      UMA_HISTOGRAM_BOOLEAN("Autofill.InvalidProfileData.UsedForMetrics",
-                            vote_using_invalid_data);
-      if (!vote_using_invalid_data)
-        continue;
-    }
     if (matching_types_validities) {
       // TODO(crbug.com/879655): Set the client validities and look them up when
       // the server validities are not available.
