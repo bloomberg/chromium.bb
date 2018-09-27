@@ -953,11 +953,13 @@ class _Command(object):
 
     self.devices = []
     if self.need_device_args:
+      # See https://crbug.com/887964 regarding bundle support in apk_helper.
+      abis = self.apk_helper.GetAbis() if not self.is_bundle else None
       self.devices = device_utils.DeviceUtils.HealthyDevices(
           device_arg=args.devices,
           enable_device_files_cache=bool(args.output_directory),
           default_retries=0,
-          abis=self.apk_helper.GetAbis())
+          abis=abis)
       # TODO(agrieve): Device cache should not depend on output directory.
       #     Maybe put int /tmp?
       _LoadDeviceCaches(self.devices, args.output_directory)
