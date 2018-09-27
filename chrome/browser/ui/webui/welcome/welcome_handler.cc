@@ -18,6 +18,8 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/page_transition_types.h"
 
+const char kWelcomeReturningUserUrl[] = "chrome://welcome/returning-user";
+
 WelcomeHandler::WelcomeHandler(content::WebUI* web_ui)
     : profile_(Profile::FromWebUI(web_ui)),
       login_ui_service_(LoginUIServiceFactory::GetForProfile(profile_)),
@@ -44,7 +46,13 @@ void WelcomeHandler::OnSyncConfirmationUIClosed(
     LoginUIService::SyncConfirmationUIClosedResult result) {
   if (result != LoginUIService::ABORT_SIGNIN) {
     result_ = WelcomeResult::SIGNED_IN;
-    GoToNewTabPage();
+
+    // When signed in from NUX onboarding flow, it's possible to come back to
+    // chrome://welcome/... after closing sync-confirmation UI. If current URL
+    // matches such a case, do not navigate away.
+    GURL current_url = web_ui()->GetWebContents()->GetVisibleURL();
+    if (current_url != kWelcomeReturningUserUrl)
+      GoToNewTabPage();
   }
 }
 
@@ -60,10 +68,18 @@ void WelcomeHandler::HandleActivateSignIn(const base::ListValue* args) {
     // them away to the NTP instead.
     GoToNewTabPage();
   } else {
+    GURL redirect_url = GURL::EmptyGURL();
+    if (args->GetSize() == 1U) {
+      std::string url_string;
+      CHECK(args->GetString(0, &url_string));
+      redirect_url = GURL(url_string);
+      DCHECK(redirect_url.is_valid());
+    }
+
     Browser* browser = GetBrowser();
     browser->signin_view_controller()->ShowSignin(
         profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser,
-        signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE);
+        signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE, redirect_url);
   }
 }
 

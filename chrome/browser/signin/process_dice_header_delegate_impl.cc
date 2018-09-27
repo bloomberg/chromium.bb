@@ -31,13 +31,15 @@ ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
     SigninManager* signin_manager,
     bool is_sync_signin_tab,
     EnableSyncCallback enable_sync_callback,
-    ShowSigninErrorCallback show_signin_error_callback)
+    ShowSigninErrorCallback show_signin_error_callback,
+    const GURL& redirect_url)
     : content::WebContentsObserver(web_contents),
       account_consistency_(account_consistency),
       signin_manager_(signin_manager),
       enable_sync_callback_(std::move(enable_sync_callback)),
       show_signin_error_callback_(std::move(show_signin_error_callback)),
-      is_sync_signin_tab_(is_sync_signin_tab) {
+      is_sync_signin_tab_(is_sync_signin_tab),
+      redirect_url_(redirect_url) {
   DCHECK(web_contents);
   DCHECK(signin_manager_);
 }
@@ -81,8 +83,17 @@ void ProcessDiceHeaderDelegateImpl::EnableSync(const std::string& account_id) {
   if (!web_contents)
     return;
 
-  // After signing in to Chrome, the user should be redirected to the NTP.
-  RedirectToNtp(web_contents);
+  // After signing in to Chrome, the user should be redirected to the NTP,
+  // unless specified otherwise.
+  if (redirect_url_.is_empty()) {
+    RedirectToNtp(web_contents);
+    return;
+  }
+
+  DCHECK(redirect_url_.is_valid());
+  web_contents->GetController().LoadURL(redirect_url_, content::Referrer(),
+                                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                        std::string());
 }
 
 void ProcessDiceHeaderDelegateImpl::HandleTokenExchangeFailure(

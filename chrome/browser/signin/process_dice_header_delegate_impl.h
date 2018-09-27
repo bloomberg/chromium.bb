@@ -43,7 +43,8 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
       SigninManager* signin_manager,
       bool is_sync_signin_tab,
       EnableSyncCallback enable_sync_callback,
-      ShowSigninErrorCallback show_signin_error_callback);
+      ShowSigninErrorCallback show_signin_error_callback,
+      const GURL& redirect_url = GURL::EmptyGURL());
   ~ProcessDiceHeaderDelegateImpl() override;
 
   // ProcessDiceHeaderDelegate:
@@ -60,6 +61,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   EnableSyncCallback enable_sync_callback_;
   ShowSigninErrorCallback show_signin_error_callback_;
   bool is_sync_signin_tab_;
+  GURL redirect_url_;
   DISALLOW_COPY_AND_ASSIGN(ProcessDiceHeaderDelegateImpl);
 };
 

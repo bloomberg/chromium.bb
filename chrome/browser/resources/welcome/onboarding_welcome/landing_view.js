@@ -9,7 +9,8 @@ Polymer({
 
   /** @private */
   onExistingUserClick_: function() {
-    welcome.WelcomeBrowserProxyImpl.getInstance().handleActivateSignIn();
+    welcome.WelcomeBrowserProxyImpl.getInstance().handleActivateSignIn(
+        'chrome://welcome/returning-user');
   },
 
   /** @private */
