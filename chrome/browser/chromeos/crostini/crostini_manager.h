@@ -45,8 +45,6 @@ enum class ConciergeClientResult {
   INSTALL_LINUX_PACKAGE_FAILED,
   INSTALL_LINUX_PACKAGE_ALREADY_ACTIVE,
   SSHFS_MOUNT_ERROR,
-  OFFLINE_WHEN_UPGRADE_REQUIRED,
-  LOAD_COMPONENT_FAILED,
   UNKNOWN_ERROR,
 };
 
@@ -168,7 +166,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
 
   // Installs the current version of cros-termina component. Attempts to apply
   // pending upgrades if a MaybeUpgradeCrostini failed.
-  void InstallTerminaComponent(CrostiniResultCallback callback);
+  void InstallTerminaComponent(BoolCallback callback);
 
   // Starts the Concierge service. |callback| is called after the method call
   // finishes.
@@ -301,13 +299,11 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
                             RestartCrostiniCallback callback,
                             RestartObserver* observer = nullptr);
 
-  // Aborts a restart. A "next" restarter with the same <vm_name,
-  // container_name> will run, if there is one.
-  void AbortRestartCrostini(RestartId restart_id);
+  void AbortRestartCrostini(Profile* profile, RestartId id);
 
-  // Returns true if the Restart corresponding to |restart_id| is not yet
-  // complete.
-  bool IsRestartPending(RestartId restart_id);
+  // Can be called for testing to skip restart.
+  void set_skip_restart_for_testing() { skip_restart_for_testing_ = true; }
+  bool skip_restart_for_testing() { return skip_restart_for_testing_; }
 
   // Adds a callback to receive notification of container shutdown.
   void AddShutdownContainerCallback(
@@ -352,20 +348,9 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   static CrostiniManager* GetInstance();
 
   bool IsVmRunning(Profile* profile, std::string vm_name);
-  // Returns null if VM is not running.
-  base::Optional<vm_tools::concierge::VmInfo> GetVmInfo(std::string vm_name);
-  void AddRunningVmForTesting(std::string vm_name,
-                              vm_tools::concierge::VmInfo vm_info);
-  bool IsContainerRunning(std::string vm_name, std::string container_name);
-
-  // Clear the lists of running VMs and containers.
-  // Can be called for testing to skip restart.
-  void set_skip_restart_for_testing() { skip_restart_for_testing_ = true; }
-  bool skip_restart_for_testing() { return skip_restart_for_testing_; }
-  void set_component_manager_load_error_for_testing(
-      component_updater::CrOSComponentManager::Error error) {
-    component_manager_load_error_for_testing_ = error;
-  }
+  bool IsContainerRunning(Profile* profile,
+                          std::string vm_name,
+                          std::string container_name);
 
  private:
   friend struct base::DefaultSingletonTraits<CrostiniManager>;
@@ -409,7 +394,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // Callback for CrostiniManager::InstallCrostiniComponent. Must be called on
   // the UI thread.
   void OnInstallTerminaComponent(
-      CrostiniResultCallback callback,
+      BoolCallback callback,
       bool is_update_checked,
       component_updater::CrOSComponentManager::Error error,
       const base::FilePath& result);
@@ -466,10 +451,6 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       int64_t free_disk_size);
 
   bool skip_restart_for_testing_ = false;
-  component_updater::CrOSComponentManager::Error
-      component_manager_load_error_for_testing_ =
-          component_updater::CrOSComponentManager::Error::NONE;
-
   bool is_cros_termina_registered_ = false;
   bool termina_update_check_needed_ = false;
 

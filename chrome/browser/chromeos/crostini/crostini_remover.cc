@@ -37,9 +37,9 @@ void CrostiniRemover::RemoveCrostini() {
       base::BindOnce(&CrostiniRemover::OnComponentLoaded, this));
 }
 
-void CrostiniRemover::OnComponentLoaded(ConciergeClientResult result) {
-  if (result != ConciergeClientResult::SUCCESS) {
-    std::move(callback_).Run(result);
+void CrostiniRemover::OnComponentLoaded(bool is_successful) {
+  if (!is_successful) {
+    std::move(callback_).Run(ConciergeClientResult::UNKNOWN_ERROR);
     return;
   }
   CrostiniManager::GetInstance()->StartConcierge(
