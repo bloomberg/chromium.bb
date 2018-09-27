@@ -226,7 +226,7 @@ message ElementReferenceProto {
 
 // Contain all arguments to perform a click.
 message ClickProto {
-  required ElementReferenceProto element_to_click = 1;
+  optional ElementReferenceProto element_to_click = 1;
 }
 
 // Contain all arguments to perform a select option action.
@@ -286,7 +286,7 @@ message UseAddressProto {
   optional string prompt = 2;
 
   // Reference to an element in the form that should be filled.
-  required ElementReferenceProto form_field_element = 4;
+  optional ElementReferenceProto form_field_element = 4;
 
   // An optional list of fields that should be filled by this action.
   repeated RequiredField required_fields = 6;
@@ -299,14 +299,14 @@ message UseCreditCardProto {
   optional string prompt = 1;
 
   // A reference to the card number field in the form that should be filled.
-  required ElementReferenceProto form_field_element = 3;
+  optional ElementReferenceProto form_field_element = 3;
 }
 
 // Ask Chrome to wait for an element in the DOM. This can be used to only
 // proceed to the next action once the page is ready.
 message WaitForDomProto {
   // The element to wait.
-  required ElementReferenceProto element = 1;
+  optional ElementReferenceProto element = 1;
 
   // Fail after waiting this amount of time.
   optional int32 timeout_ms = 2;
