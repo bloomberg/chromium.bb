@@ -482,6 +482,17 @@ var ENTRIES = {
     typeText: 'OGG audio'
   }),
 
+  tallText: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'tall.txt',
+    targetPath: 'tall.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'tall.txt',
+    sizeText: '546 bytes',
+    typeText: 'Plain text',
+  }),
+
   pinned: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',
