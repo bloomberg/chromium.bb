@@ -5,6 +5,9 @@
 package org.chromium.chrome.browser.download.home.list.view;
 
 import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Matrix.ScaleToFit;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
@@ -13,6 +16,7 @@ import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.ImageView;
 
 /**
  * A helper class to simulate {@link View#getForeground()} on older versions of Android.  This class
@@ -67,10 +71,18 @@ import android.view.ViewParent;
  */
 public class ForegroundDrawableCompat
         implements OnAttachStateChangeListener, OnLayoutChangeListener {
+    private final RectF mTempSrc = new RectF();
+    private final RectF mTempDst = new RectF();
+    private final Matrix mDrawMatrix = new Matrix();
+
     private final View mView;
 
     private boolean mOnBoundsChanged;
     private Drawable mDrawable;
+
+    // TODO(dtrainor): Add support for more scale types.
+    // Right now the only two supported types are FIT_* tyes.
+    private ImageView.ScaleType mScaleType = ImageView.ScaleType.FIT_CENTER;
 
     /**
      * Builds a {@link ForegroundDrawableCompat} around {@code View}.  This will enable setting a
@@ -123,16 +135,33 @@ public class ForegroundDrawableCompat
         return mDrawable;
     }
 
+    /**
+     * Determines how the foreground {@code Drawable} will be drawn in front of the {@link View}.
+     * @param type The type of scale to apply to the {@Drawable} (see {@link ImageView.ScaleType}).
+     */
+    public void setScaleType(ImageView.ScaleType type) {
+        if (mScaleType == type) return;
+        mScaleType = type;
+        mOnBoundsChanged = true;
+
+        if (mDrawable != null) mView.invalidate();
+    }
+
     /** Meant to be called from {@link View#onDraw(Canvas)}. */
     public void draw(Canvas canvas) {
         if (mDrawable == null) return;
 
-        if (mOnBoundsChanged) {
-            mOnBoundsChanged = false;
-            mDrawable.setBounds(0, 0, mView.getWidth(), mView.getHeight());
-        }
+        computeBounds();
 
-        mDrawable.draw(canvas);
+        if (mDrawMatrix.isIdentity()) {
+            mDrawable.draw(canvas);
+        } else {
+            final int saveCount = canvas.getSaveCount();
+            canvas.save();
+            canvas.concat(mDrawMatrix);
+            mDrawable.draw(canvas);
+            canvas.restoreToCount(saveCount);
+        }
     }
 
     /** Meant to be called from {@link View#onVisibilityChanged(View,visibility)}. */
@@ -162,6 +191,7 @@ public class ForegroundDrawableCompat
     // OnAttachStateChangeListener implementation.
     @Override
     public void onViewAttachedToWindow(View v) {
+        if (mDrawable == null) return;
         if (mView.isShown() && mView.getWindowVisibility() != View.GONE) {
             mDrawable.setVisible(mView.getVisibility() == View.VISIBLE, false);
         }
@@ -169,6 +199,7 @@ public class ForegroundDrawableCompat
 
     @Override
     public void onViewDetachedFromWindow(View v) {
+        if (mDrawable == null) return;
         if (mView.isShown() && mView.getWindowVisibility() != View.GONE) {
             mDrawable.setVisible(false, false);
         }
@@ -186,5 +217,35 @@ public class ForegroundDrawableCompat
         if (width != mDrawable.getBounds().width() || height != mDrawable.getBounds().height()) {
             mOnBoundsChanged = true;
         }
+    }
+
+    private void computeBounds() {
+        if (mDrawable == null || !mOnBoundsChanged) return;
+
+        mDrawMatrix.reset();
+
+        int drawableWidth = mDrawable.getIntrinsicWidth();
+        int drawableHeight = mDrawable.getIntrinsicHeight();
+
+        int viewWidth = mView.getWidth();
+        int viewHeight = mView.getHeight();
+
+        mTempSrc.set(0, 0, drawableWidth, drawableHeight);
+        mTempDst.set(0, 0, viewWidth, viewHeight);
+
+        if (mScaleType == ImageView.ScaleType.FIT_START) {
+            mDrawMatrix.setRectToRect(mTempSrc, mTempDst, ScaleToFit.START);
+            mDrawable.setBounds(0, 0, drawableWidth, drawableHeight);
+        } else if (mScaleType == ImageView.ScaleType.FIT_CENTER) {
+            mDrawMatrix.setRectToRect(mTempSrc, mTempDst, ScaleToFit.CENTER);
+            mDrawable.setBounds(0, 0, drawableWidth, drawableHeight);
+        } else if (mScaleType == ImageView.ScaleType.FIT_END) {
+            mDrawMatrix.setRectToRect(mTempSrc, mTempDst, ScaleToFit.END);
+            mDrawable.setBounds(0, 0, drawableWidth, drawableHeight);
+        } else {
+            mDrawable.setBounds(0, 0, viewWidth, viewHeight);
+        }
+
+        mOnBoundsChanged = false;
     }
 }

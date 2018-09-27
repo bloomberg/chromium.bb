@@ -13,6 +13,7 @@ import android.support.annotation.StringRes;
 import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.download.R;
@@ -70,14 +71,15 @@ public class CircularProgressView extends AppCompatImageButton {
         super(context, attrs);
 
         mForegroundHelper = new ForegroundDrawableCompat(this);
+        mForegroundHelper.setScaleType(ImageView.ScaleType.FIT_XY);
 
         TypedArray types = attrs == null
                 ? null
                 : context.obtainStyledAttributes(attrs, R.styleable.CircularProgressView, 0, 0);
 
-        mIndeterminateProgress = UiUtils.autoAnimateDrawable(UiUtils.getDrawable(
+        mIndeterminateProgress = AutoAnimatorDrawable.wrap(UiUtils.getDrawable(
                 context, types, R.styleable.CircularProgressView_indeterminateProgress));
-        mDeterminateProgress = UiUtils.autoAnimateDrawable(UiUtils.getDrawable(
+        mDeterminateProgress = AutoAnimatorDrawable.wrap(UiUtils.getDrawable(
                 context, types, R.styleable.CircularProgressView_determinateProgress));
         mResumeButtonSrc =
                 UiUtils.getDrawable(context, types, R.styleable.CircularProgressView_resumeSrc);
@@ -86,7 +88,7 @@ public class CircularProgressView extends AppCompatImageButton {
         mRetryButtonSrc =
                 UiUtils.getDrawable(context, types, R.styleable.CircularProgressView_retrySrc);
 
-        types.recycle();
+        if (types != null) types.recycle();
     }
 
     /**
@@ -99,9 +101,7 @@ public class CircularProgressView extends AppCompatImageButton {
      */
     public void setProgress(int progress) {
         if (progress == INDETERMINATE) {
-            if (mForegroundHelper.getDrawable() != mIndeterminateProgress) {
-                mForegroundHelper.setDrawable(mIndeterminateProgress);
-            }
+            mForegroundHelper.setDrawable(mIndeterminateProgress);
         } else {
             progress = MathUtils.clamp(progress, 0, 100);
             mDeterminateProgress.setLevel(progress * MAX_LEVEL / 100);
@@ -138,7 +138,7 @@ public class CircularProgressView extends AppCompatImageButton {
         setContentDescription(getContext().getText(contentDescription));
     }
 
-    // View implementation.
+    // AppCompatImageButton implementation.
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);

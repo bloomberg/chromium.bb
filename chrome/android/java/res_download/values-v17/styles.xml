@@ -72,6 +72,8 @@
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:layout_marginTop">8dp</item>
     </style>
+
+    <!-- Download Home V2 Snowflake Contender Styles -->
     <style name="SmallCircularProgress">
         <item name="android:layout_width">36dp</item>
         <item name="android:layout_height">36dp</item>
@@ -95,5 +97,9 @@
         <!-- TODO(883387): Support retrying failed downloads. -->
         <item name="retrySrc">@drawable/ic_play_arrow_white_36dp</item>
         <item name="pauseSrc">@drawable/ic_pause_white_36dp</item>
+    </style>
+    <style name="AsyncImageView">
+        <item name="unavailableSrc">@drawable/async_image_view_unavailable</item>
+        <item name="waitingSrc">@drawable/async_image_view_waiting</item>
     </style>
 </resources>

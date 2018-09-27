@@ -4,60 +4,58 @@
 
 package org.chromium.chrome.browser.download.home.list.holder;
 
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.download.home.view.LoadingBackground;
+import org.chromium.chrome.browser.download.home.list.ListProperties;
+import org.chromium.chrome.browser.download.home.list.view.AsyncImageView;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.download.R;
-import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.OfflineItem;
 
 /** A {@link RecyclerView.ViewHolder} specifically meant to display an image {@code OfflineItem}. */
-public class ImageViewHolder extends ThumbnailAwareViewHolder {
-    private final int mImageHeightPx;
-    private LoadingBackground mLoadingBackground;
+public class ImageViewHolder extends ListItemViewHolder {
+    private final AsyncImageView mThumbnail;
+
+    private ContentId mBoundItemId;
 
     public static ImageViewHolder create(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext())
                             .inflate(R.layout.download_manager_image_item, null);
-        int imageSize = parent.getContext().getResources().getDimensionPixelSize(
-                R.dimen.download_manager_image_width);
-        return new ImageViewHolder(view, imageSize);
+        return new ImageViewHolder(view);
     }
 
-    public ImageViewHolder(View view, int thumbnailSizePx) {
-        super(view, thumbnailSizePx, thumbnailSizePx);
-        mImageHeightPx = thumbnailSizePx;
-        mLoadingBackground = new LoadingBackground(view.getContext());
+    public ImageViewHolder(View view) {
+        super(view);
+        mThumbnail = itemView.findViewById(R.id.thumbnail);
     }
 
     // ThumbnailAwareViewHolder implementation.
     @Override
     public void bind(PropertyModel properties, ListItem item) {
-        super.bind(properties, item);
-        ListItem.OfflineItemListItem offlineItem = (ListItem.OfflineItemListItem) item;
-        View imageView = itemView.findViewById(R.id.thumbnail);
-        imageView.setContentDescription(offlineItem.item.title);
-        ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
-        layoutParams.height =
-                offlineItem.spanFullWidth ? ViewGroup.LayoutParams.WRAP_CONTENT : mImageHeightPx;
-    }
+        OfflineItem offlineItem = ((ListItem.OfflineItemListItem) item).item;
 
-    @Override
-    void onVisualsChanged(ImageView view, OfflineItemVisuals visuals) {
-        view.setImageBitmap(visuals == null ? null : visuals.icon);
-    }
+        mThumbnail.setContentDescription(offlineItem.title);
 
-    @Override
-    protected void showLoadingView(ImageView view) {
-        mLoadingBackground.show(view);
-    }
+        if (offlineItem.id.equals(mBoundItemId)) return;
+        mBoundItemId = offlineItem.id;
 
-    @Override
-    protected void hideLoadingView() {
-        mLoadingBackground.hide();
+        mThumbnail.setAsyncImageDrawable((consumer, width, height) -> {
+            return properties.get(ListProperties.PROVIDER_VISUALS)
+                    .getVisuals(offlineItem, width, height, (id, visuals) -> {
+                        if (!id.equals(mBoundItemId)) return;
+
+                        Drawable drawable = null;
+                        if (visuals != null && visuals.icon != null) {
+                            drawable = new BitmapDrawable(itemView.getResources(), visuals.icon);
+                        }
+                        consumer.onResult(drawable);
+                    });
+        });
     }
 }

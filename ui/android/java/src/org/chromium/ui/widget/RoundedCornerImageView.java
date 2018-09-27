@@ -9,6 +9,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
@@ -41,6 +42,8 @@ public class RoundedCornerImageView extends ImageView {
     private BitmapShader mShader;
     private Paint mPaint;
 
+    private Paint mFillPaint;
+
     // Whether or not to apply the shader, if we have one. This might be set to false if the image
     // is smaller than the view and does not need to have the corners rounded.
     private boolean mApplyShader;
@@ -66,6 +69,11 @@ public class RoundedCornerImageView extends ImageView {
                     R.styleable.RoundedCornerImageView_cornerRadiusBottomStart, 0);
             int cornerRadiusBottomEnd = a.getDimensionPixelSize(
                     R.styleable.RoundedCornerImageView_cornerRadiusBottomEnd, 0);
+            if (a.hasValue(R.styleable.RoundedCornerImageView_roundedfillColor)) {
+                mFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                mFillPaint.setColor(a.getColor(
+                        R.styleable.RoundedCornerImageView_roundedfillColor, Color.WHITE));
+            }
             a.recycle();
 
             setRoundedCorners(cornerRadiusTopStart, cornerRadiusTopEnd, cornerRadiusBottomStart,
@@ -179,12 +187,17 @@ public class RoundedCornerImageView extends ImageView {
         Drawable drawable = getDrawable();
         Shape localRoundedRect = mRoundedRectangle;
         Paint localPaint = mPaint;
-        if (drawable == null || localPaint == null || localRoundedRect == null) {
-            super.onDraw(canvas);
-            return;
-        }
 
-        if (!isSupportedDrawable(drawable)) {
+        boolean drawFill = mFillPaint != null && localRoundedRect != null
+                && !(drawable instanceof ColorDrawable);
+        boolean drawContent = drawable != null && localPaint != null && localRoundedRect != null
+                && isSupportedDrawable(drawable);
+
+        if (drawFill || drawContent) localRoundedRect.resize(getWidth(), getHeight());
+
+        if (drawFill) localRoundedRect.draw(canvas, mFillPaint);
+
+        if (!drawContent) {
             super.onDraw(canvas);
             return;
         }
@@ -199,7 +212,6 @@ public class RoundedCornerImageView extends ImageView {
             localPaint.setShader(mShader);
         }
 
-        localRoundedRect.resize(getWidth(), getHeight());
         localRoundedRect.draw(canvas, localPaint);
     }
 
