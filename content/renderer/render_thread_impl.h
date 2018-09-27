@@ -71,9 +71,6 @@
 class SkBitmap;
 
 namespace blink {
-namespace scheduler {
-class WebThreadBase;
-}
 class WebMediaStreamCenter;
 }
 
@@ -316,6 +313,8 @@ class CONTENT_EXPORT RenderThreadImpl
     return blink_platform_impl_.get();
   }
 
+  // Returns the task runner on the compositor thread.
+  //
   // Will be null if threaded compositing has not been enabled.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner() const {
     return compositor_task_runner_;
@@ -650,9 +649,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // resources given to the compositor or to the viz service should be
   // software-based.
   bool is_gpu_compositing_disabled_ = false;
-
-  // May be null if overridden by ContentRendererClient.
-  std::unique_ptr<blink::scheduler::WebThreadBase> compositor_thread_;
 
   // Utility class to provide GPU functionalities to media.
   // TODO(dcastagna): This should be just one scoped_ptr once

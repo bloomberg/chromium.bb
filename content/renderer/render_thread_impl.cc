@@ -149,7 +149,6 @@
 #include "services/ws/public/cpp/gpu/gpu.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "skia/ext/skia_memory_dump_provider.h"
-#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_image_generator.h"
@@ -1172,10 +1171,10 @@ void RenderThreadImpl::InitializeCompositorThread() {
 #if defined(OS_ANDROID)
   params.thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
-  compositor_thread_ =
-      blink::scheduler::WebThreadBase::CreateCompositorThread(params);
-  blink_platform_impl_->SetCompositorThread(compositor_thread_.get());
-  compositor_task_runner_ = compositor_thread_->GetTaskRunner();
+  blink_platform_impl_->InitializeCompositorThread(params);
+  blink::WebThread* compositor_thread =
+      blink_platform_impl_->CompositorThread();
+  compositor_task_runner_ = compositor_thread->GetTaskRunner();
   compositor_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),
@@ -1183,7 +1182,7 @@ void RenderThreadImpl::InitializeCompositorThread() {
   GetContentClient()->renderer()->PostCompositorThreadCreated(
       compositor_task_runner_.get());
 #if defined(OS_LINUX)
-  render_message_filter()->SetThreadPriority(compositor_thread_->ThreadId(),
+  render_message_filter()->SetThreadPriority(compositor_thread->ThreadId(),
                                              base::ThreadPriority::DISPLAY);
 #endif
 }

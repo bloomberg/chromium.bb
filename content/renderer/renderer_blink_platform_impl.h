@@ -38,7 +38,6 @@
 namespace blink {
 namespace scheduler {
 class WebThreadScheduler;
-class WebThreadBase;
 }
 class WebCanvasCaptureHandler;
 class WebGraphicsContext3DProvider;
@@ -102,7 +101,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& cacheStorageCacheName) override;
   blink::WebString DefaultLocale() override;
   void SuddenTerminationChanged(bool enabled) override;
-  blink::WebThread* CompositorThread() const override;
   std::unique_ptr<blink::WebStorageNamespace> CreateLocalStorageNamespace()
       override;
   std::unique_ptr<blink::WebStorageNamespace> CreateSessionStorageNamespace(
@@ -239,11 +237,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<ChildURLLoaderFactoryBundle>
   CreateDefaultURLLoaderFactoryBundle();
 
-  // This class does *not* own the compositor thread. It is the responsibility
-  // of the caller to ensure that the compositor thread is cleared before it is
-  // destructed.
-  void SetCompositorThread(blink::scheduler::WebThreadBase* compositor_thread);
-
   PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
   CreateNetworkURLLoaderFactory();
 
@@ -267,9 +260,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Return the mojo interface for making CodeCache calls.
   blink::mojom::CodeCacheHost& GetCodeCacheHost();
 
-  blink::scheduler::WebThreadBase* compositor_thread_;
-
-  std::unique_ptr<blink::WebThread> main_thread_;
   std::unique_ptr<service_manager::Connector> connector_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 

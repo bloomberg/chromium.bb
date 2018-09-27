@@ -274,7 +274,7 @@ Platform* Platform::Current() {
   return g_platform;
 }
 
-WebThread* Platform::MainThread() const {
+WebThread* Platform::MainThread() {
   return main_thread_;
 }
 
@@ -342,8 +342,18 @@ void Platform::UpdateWebThreadTLS(WebThread* thread,
   event->Signal();
 }
 
-void Platform::RegisterExtraThreadToTLS(WebThread* thread) {
-  WaitUntilWebThreadTLSUpdate(thread);
+void Platform::InitializeCompositorThread(
+    const WebThreadCreationParams& params) {
+  DCHECK(!compositor_thread_);
+  std::unique_ptr<scheduler::WebThreadBase> compositor_thread =
+      scheduler::WebThreadBase::CreateCompositorThread(params);
+  compositor_thread->Init();
+  WaitUntilWebThreadTLSUpdate(compositor_thread.get());
+  compositor_thread_ = std::move(compositor_thread);
+}
+
+WebThread* Platform::CompositorThread() {
+  return compositor_thread_.get();
 }
 
 std::unique_ptr<WebGraphicsContext3DProvider>
