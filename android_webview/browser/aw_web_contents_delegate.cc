@@ -26,7 +26,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/media_stream_request.h"
 #include "jni/AwWebContentsDelegate_jni.h"
 #include "net/base/escape.h"
@@ -36,6 +35,8 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using blink::mojom::FileChooserFileInfo;
+using blink::mojom::FileChooserFileInfoPtr;
 using blink::mojom::FileChooserParams;
 using content::WebContents;
 
@@ -103,7 +104,7 @@ void AwWebContentsDelegate::RunFileChooser(
   } else if (params.mode == FileChooserParams::Mode::kSave) {
     // Save not supported, so cancel it.
     render_frame_host->FilesSelectedInChooser(
-        std::vector<content::FileChooserFileInfo>(), params.mode);
+        std::vector<FileChooserFileInfoPtr>(), params.mode);
     return;
   } else {
     DCHECK_EQ(FileChooserParams::Mode::kOpen, params.mode);
@@ -289,13 +290,13 @@ static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
     return;
 
   std::vector<std::string> file_path_str;
-  std::vector<std::string> display_name_str;
+  std::vector<base::string16> display_name_str;
   // Note file_paths maybe NULL, but this will just yield a zero-length vector.
   base::android::AppendJavaStringArrayToStringVector(env, file_paths,
                                                      &file_path_str);
   base::android::AppendJavaStringArrayToStringVector(env, display_names,
                                                      &display_name_str);
-  std::vector<content::FileChooserFileInfo> files;
+  std::vector<FileChooserFileInfoPtr> files;
   files.reserve(file_path_str.size());
   for (size_t i = 0; i < file_path_str.size(); ++i) {
     GURL url(file_path_str[i]);
@@ -308,11 +309,11 @@ static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
                                   net::UnescapeRule::
                                       URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS)
             : file_path_str[i]);
-    content::FileChooserFileInfo file_info;
-    file_info.file_path = path;
+    auto file_info = blink::mojom::NativeFileInfo::New();
+    file_info->file_path = path;
     if (!display_name_str[i].empty())
-      file_info.display_name = display_name_str[i];
-    files.push_back(file_info);
+      file_info->display_name = display_name_str[i];
+    files.push_back(FileChooserFileInfo::NewNativeFile(std::move(file_info)));
   }
   FileChooserParams::Mode mode;
   if (mode_flags & kFileChooserModeOpenFolder) {

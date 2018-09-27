@@ -56,7 +56,6 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -80,6 +79,7 @@
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -219,10 +219,9 @@ class FileChooserDelegate : public content::WebContentsDelegate {
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       const blink::mojom::FileChooserParams& params) override {
     // Send the selected file to the renderer process.
-    content::FileChooserFileInfo file_info;
-    file_info.file_path = file_;
-    std::vector<content::FileChooserFileInfo> files;
-    files.push_back(file_info);
+    std::vector<blink::mojom::FileChooserFileInfoPtr> files;
+    files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
+        blink::mojom::NativeFileInfo::New(file_, base::string16())));
     render_frame_host->FilesSelectedInChooser(
         files, blink::mojom::FileChooserParams::Mode::kOpen);
 

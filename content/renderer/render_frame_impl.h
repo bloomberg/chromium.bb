@@ -73,6 +73,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -182,7 +183,6 @@ class UserMediaClientImpl;
 struct CSPViolationParams;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
-struct FileChooserFileInfo;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
 struct RequestNavigationParams;
@@ -1065,7 +1065,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnEnableViewSourceMode();
   void OnSuppressFurtherDialogs();
   void OnFileChooserResponse(
-      const std::vector<content::FileChooserFileInfo>& files);
+      const std::vector<blink::mojom::FileChooserFileInfoPtr>& files);
   void OnClearFocusedElement();
   void OnBlinkFeatureUsageReport(const std::set<int>& features);
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
