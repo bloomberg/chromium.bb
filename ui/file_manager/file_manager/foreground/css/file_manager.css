@@ -2251,8 +2251,13 @@ files-toggle-ripple {
   z-index: 505; /* Must be above the scroll bar (500). */
 }
 
-/* Preventing FOUC */
-cr-input:unresolved {
+/*
+ * Preventing FOUC
+ * TODO(dpapad): Remove :unresolved when Polymer 2 migration is complete,
+ * (crbug.com/738611).
+ */
+cr-input:unresolved,
+cr-input:not(:defined) {
   display: none;
 }
 
