@@ -25,7 +25,8 @@ bool DesktopFocusRules::CanActivateWindow(aura::Window* window) const {
 bool DesktopFocusRules::SupportsChildActivation(aura::Window* window) const {
   // In Desktop-Aura, only the content_window or children of the RootWindow are
   // activatable.
-  return window->IsRootWindow();
+  return window == content_window_->parent() ||
+    window->GetRootWindow() == window;
 }
 
 bool DesktopFocusRules::IsWindowConsideredVisibleForActivation(
