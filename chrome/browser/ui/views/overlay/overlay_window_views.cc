@@ -439,10 +439,16 @@ gfx::Rect OverlayWindowViews::CalculateControlsBounds(int x,
 
 void OverlayWindowViews::UpdateControlsPositions() {
   int mid_window_x = GetBounds().size().width() / 2;
+
+  // The controls should always be centered, regardless of how many there are.
+  // When there are only two controls, make them symmetric from the center.
+  //  __________________________
+  // |                          |
+  // |                          |
+  // |        [1]   [P]         |
+  // |                          |
+  // |__________________________|
   if (OnlyOneCustomControlAdded()) {
-    // Draw |first_custom_controls_view_| to the left of
-    // |play_pause_controls_view_| and offset both so they are centered on the
-    // screen.
     play_pause_controls_view_->SetBoundsRect(
         CalculateControlsBounds(mid_window_x, button_size_));
     first_custom_controls_view_->SetBoundsRect(CalculateControlsBounds(
@@ -450,13 +456,19 @@ void OverlayWindowViews::UpdateControlsPositions() {
     return;
   }
 
+  // Place the play / pause control in the center of the window. If both custom
+  // controls are specified, place them on either side to maintain the balance,
+  // from left to right.
+  //  __________________________
+  // |                          |
+  // |                          |
+  // |     [1]   [P]   [2]      |
+  // |                          |
+  // |__________________________|
   play_pause_controls_view_->SetBoundsRect(CalculateControlsBounds(
       mid_window_x - button_size_.width() / 2, button_size_));
 
   if (first_custom_controls_view_ && second_custom_controls_view_) {
-    // Draw |first_custom_controls_view_| to the left and
-    // |second_custom_controls_view_| to the right of
-    // |play_pause_controls_view_|.
     first_custom_controls_view_->SetBoundsRect(CalculateControlsBounds(
         mid_window_x - button_size_.width() / 2 - button_size_.width(),
         button_size_));
