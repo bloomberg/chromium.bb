@@ -45,13 +45,15 @@ enable_unix_sockets = is_posix && !is_ios && !is_nacl
 is_arm_cast_shell_build =
     is_chromecast && (current_cpu == "arm" || current_cpu == "arm64")
 
-# Python works only on Linux, MacOS and Windows.
+# Python works only on Linux, MacOS and Windows so exclude the others,
+# chromecast, android, fuchsia, ios.
 enable_python_utils =
     !is_arm_cast_shell_build && !is_android && !is_fuchsia && !is_ios
 
-# Android, Chromecast and Fuchsia can't run testserver.py directly, so they
-# use remote test server.
-use_remote_test_server = !enable_python_utils
+# Platforms that cannot use python_utils (like Android but see full
+# list above) will instead use a remote server, except for iOS which
+# won't get either.
+use_remote_test_server = !enable_python_utils && !is_ios
 
 config("net_test_config") {
   if (use_remote_test_server) {
