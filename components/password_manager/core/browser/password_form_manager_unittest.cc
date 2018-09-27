@@ -3465,31 +3465,21 @@ TEST_F(PasswordFormManagerTest, DoesManageDifferentSignonRealmSameDrivers) {
 }
 
 TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
-  // TODO(rogerm,kolos): Fix this test so that it works correctly when the
-  // enforcement of the minimum number of required for fields is upload is
-  // relaxed.
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(kAutofillEnforceMinRequiredFieldsForUpload);
   for (bool is_pending_credential_psl_match : {false, true}) {
-    for (bool is_form_with_2_fields : {false, true}) {
-      SCOPED_TRACE(testing::Message()
-                   << "is_form_with_2_fields=" << is_form_with_2_fields);
       // Observed and saved forms have the same password, but different
       // usernames.
       PasswordForm new_login(*observed_form());
       autofill::FormFieldData field;
-      if (!is_form_with_2_fields) {
-        field.label = ASCIIToUTF16("Full name");
-        field.name = ASCIIToUTF16("full_name");
-        field.form_control_type = "text";
-        new_login.form_data.fields.push_back(field);
-      }
-      field.label = ASCIIToUTF16("Email");
+      field.name = ASCIIToUTF16("full_name");
+      field.form_control_type = "text";
+      new_login.form_data.fields.push_back(field);
+
       field.name = ASCIIToUTF16("observed-username-field");
       field.form_control_type = "text";
       new_login.form_data.fields.push_back(field);
 
-      field.label = ASCIIToUTF16("Password");
       field.name = ASCIIToUTF16("Passwd");
       field.form_control_type = "password";
       new_login.form_data.fields.push_back(field);
@@ -3542,17 +3532,6 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
            autofill::AutofillUploadContents::Field::USERNAME_OVERWRITTEN}};
 
       InSequence s;
-      std::unique_ptr<FormStructure> signin_vote_form_structure;
-      if (is_form_with_2_fields) {
-        // Make signin vote upload synchronous and free |FormStructure| passed
-        // for upload.
-        auto* mock_autofill_manager =
-            client()->mock_driver()->mock_autofill_manager();
-        EXPECT_CALL(*mock_autofill_manager,
-                    MaybeStartVoteUploadProcessPtr(_, _, true))
-            .WillOnce(WithArg<0>(SaveToUniquePtr(&signin_vote_form_structure)));
-      }
-
       autofill::ServerFieldTypeSet field_types;
       field_types.insert(autofill::PASSWORD);
       EXPECT_CALL(
@@ -3568,7 +3547,6 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
                              false, expected_available_field_types,
                              expected_login_signature, true));
       form_manager.Save();
-    }
   }
 }
 
@@ -3774,76 +3752,6 @@ TEST_F(PasswordFormManagerTest, GrabFetcher_Remove) {
   EXPECT_CALL(*new_fetcher, AddConsumer(&form_manager));
   EXPECT_CALL(old_fetcher, RemoveConsumer(&form_manager));
   form_manager.GrabFetcher(std::move(new_fetcher));
-}
-
-TEST_F(PasswordFormManagerTest, UploadSignInForm_WithAutofillTypes) {
-  // For newly saved passwords on a sign-in form, upload an autofill vote for a
-  // username field and a autofill::PASSWORD vote for a password field.
-  autofill::FormFieldData field;
-  field.name = ASCIIToUTF16("Email");
-  field.form_control_type = "text";
-  observed_form()->form_data.fields.push_back(field);
-
-  field.name = ASCIIToUTF16("Passwd");
-  field.form_control_type = "password";
-  observed_form()->form_data.fields.push_back(field);
-
-  FakeFormFetcher fetcher;
-  fetcher.Fetch();
-  PasswordFormManager form_manager(
-      password_manager(), client(), client()->driver(), *observed_form(),
-      std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
-  form_manager.Init(nullptr);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
-
-  PasswordForm form_to_save(*observed_form());
-  form_to_save.preferred = true;
-  form_to_save.username_value = ASCIIToUTF16("test@gmail.com");
-  form_to_save.password_value = ASCIIToUTF16("password");
-
-  std::unique_ptr<FormStructure> uploaded_form_structure;
-  auto* mock_autofill_manager =
-      client()->mock_driver()->mock_autofill_manager();
-  EXPECT_CALL(*mock_autofill_manager,
-              MaybeStartVoteUploadProcessPtr(_, _, true))
-      .WillOnce(WithArg<0>(SaveToUniquePtr(&uploaded_form_structure)));
-  form_manager.ProvisionallySave(form_to_save);
-  form_manager.Save();
-
-  ASSERT_EQ(2u, uploaded_form_structure->field_count());
-  autofill::ServerFieldTypeSet expected_types = {autofill::PASSWORD};
-  EXPECT_EQ(form_to_save.username_value,
-            uploaded_form_structure->field(0)->value);
-  EXPECT_EQ(expected_types,
-            uploaded_form_structure->field(1)->possible_types());
-}
-
-// Checks that there is no upload on saving a password on a password form only
-// with 1 field.
-TEST_F(PasswordFormManagerTest, NoUploadsForSubmittedFormWithOnlyOneField) {
-  autofill::FormFieldData field;
-  field.name = ASCIIToUTF16("Passwd");
-  field.form_control_type = "password";
-  observed_form()->form_data.fields.push_back(field);
-
-  FakeFormFetcher fetcher;
-  fetcher.Fetch();
-  PasswordFormManager form_manager(
-      password_manager(), client(), client()->driver(), *observed_form(),
-      std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
-  form_manager.Init(nullptr);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
-
-  PasswordForm form_to_save(*observed_form());
-  form_to_save.preferred = true;
-  form_to_save.password_value = ASCIIToUTF16("password");
-
-  auto* mock_autofill_manager =
-      client()->mock_driver()->mock_autofill_manager();
-  EXPECT_CALL(*mock_autofill_manager, MaybeStartVoteUploadProcessPtr(_, _, _))
-      .Times(0);
-  form_manager.ProvisionallySave(form_to_save);
-  form_manager.Save();
 }
 
 TEST_F(PasswordFormManagerTest,

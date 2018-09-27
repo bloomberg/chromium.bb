@@ -344,7 +344,6 @@ FormStructure::FormStructure(const FormData& form)
       is_form_tag_(form.is_form_tag),
       is_formless_checkout_(form.is_formless_checkout),
       all_fields_are_passwords_(!form.fields.empty()),
-      is_signin_upload_(false),
       form_parsed_timestamp_(base::TimeTicks::Now()),
       passwords_were_revealed_(false),
       developer_engagement_metrics_(0) {
@@ -691,7 +690,7 @@ bool FormStructure::ShouldBeParsed() const {
   if (active_field_count() < min_required_fields &&
       (!all_fields_are_passwords() ||
        active_field_count() < kRequiredFieldsForFormsWithOnlyPasswordFields) &&
-      !is_signin_upload_ && !has_author_specified_types_) {
+      !has_author_specified_types_) {
     return false;
   }
 

@@ -394,28 +394,6 @@ TEST_F(FormStructureTest, ShouldBeParsed) {
   field.form_control_type = "password";
   form.fields.push_back(field);
   CheckFormShouldBeParsed("new password", form, true, true);
-
-  // There are 2 fields, one of which is password, and this is an upload of
-  // a sign-in form submission, should be parsed. even if all minimums are
-  // enforced.
-  form.fields.clear();
-  field.name = ASCIIToUTF16("username");
-  field.form_control_type = "text";
-  form.fields.push_back(field);
-  field.name = ASCIIToUTF16("pw");
-  field.form_control_type = "password";
-  form.fields.push_back(field);
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      // Enabled.
-      {kAutofillEnforceMinRequiredFieldsForHeuristics,
-       kAutofillEnforceMinRequiredFieldsForQuery,
-       kAutofillEnforceMinRequiredFieldsForUpload},
-      // Disabled.
-      {});
-  FormStructure form_structure(form);
-  form_structure.set_is_signin_upload(true);
-  EXPECT_TRUE(form_structure.ShouldBeParsed());
 }
 
 // Tests that ShouldBeParsed returns true for a form containing less than three
