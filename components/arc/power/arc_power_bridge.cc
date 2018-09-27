@@ -262,9 +262,15 @@ void ArcPowerBridge::IsDisplayOn(IsDisplayOnCallback callback) {
 }
 
 void ArcPowerBridge::OnScreenBrightnessUpdateRequest(double percent) {
+  power_manager::SetBacklightBrightnessRequest request;
+  request.set_percent(percent);
+  request.set_transition(
+      power_manager::SetBacklightBrightnessRequest_Transition_GRADUAL);
+  request.set_cause(
+      power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST);
   chromeos::DBusThreadManager::Get()
       ->GetPowerManagerClient()
-      ->SetScreenBrightnessPercent(percent, true);
+      ->SetScreenBrightness(request);
 }
 
 ArcPowerBridge::WakeLockRequestor* ArcPowerBridge::GetWakeLockRequestor(
