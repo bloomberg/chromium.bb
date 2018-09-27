@@ -1,3 +1,13 @@
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer) && !defined(OPENSSL_NO_ASM)
+#define OPENSSL_NO_ASM
+#endif
+#endif
+
+#if !defined(OPENSSL_NO_ASM)
+#if defined(BORINGSSL_PREFIX)
+#include <boringssl_prefix_symbols_asm.h>
+#endif
 // Copyright 2014-2016 The OpenSSL Project Authors. All Rights Reserved.
 //
 // Licensed under the OpenSSL license (the "License").  You may not use
@@ -1071,3 +1081,4 @@ LOPENSSL_armcap_P:
 #ifndef	__KERNEL__
 .comm	_OPENSSL_armcap_P,4,4
 #endif
+#endif  // !OPENSSL_NO_ASM
