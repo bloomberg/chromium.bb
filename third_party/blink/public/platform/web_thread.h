@@ -114,7 +114,7 @@ class BLINK_PLATFORM_EXPORT WebThread {
       base::sequence_manager::TaskTimeObserver*) {}
 
   // Returns the scheduler associated with the thread.
-  virtual ThreadScheduler* Scheduler() const = 0;
+  virtual ThreadScheduler* Scheduler() = 0;
 
   virtual ~WebThread() = default;
 

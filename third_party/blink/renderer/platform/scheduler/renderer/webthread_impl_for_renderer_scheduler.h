@@ -26,7 +26,7 @@ class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
   ~WebThreadImplForRendererScheduler() override;
 
   // WebThread implementation.
-  ThreadScheduler* Scheduler() const override;
+  ThreadScheduler* Scheduler() override;
   PlatformThreadId ThreadId() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
 
