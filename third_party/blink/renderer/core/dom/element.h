@@ -322,12 +322,10 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual void scrollTo(const ScrollToOptions&);
 
   IntRect BoundsInViewport() const;
-  // For elements that are not contained in any OOPIFs, this returns an
-  // intersection rectangle of the bounds rectangle and the viewport
-  // rectangle, in the visual viewport coordinate. For elements within OOPIFs,
-  // the returned rect is the intersection with the viewport but in the
-  // coordinate space of the local frame root.
-  // This function is used to show popups beside this element.
+  // Returns an intersection rectangle of the bounds rectangle and the visual
+  // viewport's rectangle in the visual viewport's coordinate space.
+  // Applies ancestors' frames' clipping, but does not (yet) apply (overflow)
+  // element clipping (crbug.com/889840).
   IntRect VisibleBoundsInVisualViewport() const;
 
   DOMRectList* getClientRects();

@@ -77,8 +77,9 @@ FocusCandidate::FocusCandidate(Node* node, WebFocusType direction)
   }
 
   focusable_node = node;
-  is_offscreen = IsRectOffscreen(visible_node);
-  is_offscreen_after_scrolling = IsRectOffscreen(visible_node, direction);
+  is_offscreen = IsOffscreen(visible_node);
+  is_offscreen_after_scrolling =
+      IsOffscreenAfterFrameScroll(visible_node, direction);
 }
 
 bool IsSpatialNavigationEnabled(const LocalFrame* frame) {
@@ -141,47 +142,81 @@ static bool IsRectInDirection(WebFocusType direction,
   }
 }
 
-// Answers true if |node| is completely outside its frames's (visual) viewport.
-// A visible node is a node that intersects the visual viewport.
-// TODO(crbug.com/881721): Intersect the user's visual viewport, not the node's
-// frame's viewport.
-
-// |direction|, if given, extends the visual viewport's rect (before doing the
-// intersection-check) to also include content revealed by one scroll step in
-// that |direction|.
-
+// Answers true if |node| is completely outside the user's (visual) viewport.
 // This logic is used by spatnav to rule out offscreen focus candidates and an
 // offscreen activeElement. When activeElement is offscreen, spatnav doesn't use
 // it as the search origin; the search will start at an edge of the visual
 // viewport instead.
-bool IsRectOffscreen(const Node* node, WebFocusType direction) {
+// TODO(crbug.com/889840): Fix VisibleBoundsInVisualViewport().
+// If VisibleBoundsInVisualViewport() would have taken "element-clips" into
+// account, spatnav could have called it directly; no need to check the
+// LayoutObject's VisibleContentRect.
+bool IsOffscreen(const Node* node) {
   LocalFrameView* frame_view = node->GetDocument().View();
   if (!frame_view)
     return true;
 
   DCHECK(!frame_view->NeedsLayout());
 
-  LayoutRect visual_viewport(
+  LayoutRect frame_viewport(
       frame_view->GetScrollableArea()->VisibleContentRect());
 
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return true;
+
+  LayoutRect rect(layout_object->VisualRectInDocument());
+  if (rect.IsEmpty())
+    return true;
+
+  if (!frame_viewport.Intersects(rect))
+    return true;
+
+  // Now we know that the node is visible in the its own frame's viewport (it is
+  // not clipped by a scrollable div). That is, we've taken "element-clipping"
+  // into account - now we only need to ensure that this node isn't clipped by
+  // a frame.
+  IntRect rect_in_root_frame;
+  if (node->IsDocumentNode() && ToDocument(*node).body())
+    node = ToDocument(*node).body();
+  if (node->IsElementNode())
+    rect_in_root_frame = ToElement(*node).VisibleBoundsInVisualViewport();
+  return rect_in_root_frame.IsEmpty();
+}
+
+// As IsOffscreen() but returns visibility through the |node|'s frame's viewport
+// after scrolling the frame in |direction|.
+bool IsOffscreenAfterFrameScroll(const Node* node, WebFocusType direction) {
+  LocalFrameView* frame_view = node->GetDocument().View();
+  if (!frame_view)
+    return true;
+
+  DCHECK(!frame_view->NeedsLayout());
+
+  // If |node| is in the root frame, VisibleContentRect() will include
+  // visual viewport transformation (pinch-zoom) if one exists.
+  LayoutRect frame_viewport(
+      frame_view->GetScrollableArea()->VisibleContentRect());
+
+  // |direction| extends the node's frame's viewport's rect (before doing the
+  // intersection-check) to also include content revealed by one scroll step in
+  // that |direction|.
   int pixels_per_line_step =
       ScrollableArea::PixelsPerLineStep(frame_view->GetChromeClient());
   switch (direction) {
     case kWebFocusTypeLeft:
-      visual_viewport.SetX(visual_viewport.X() - pixels_per_line_step);
-      visual_viewport.SetWidth(visual_viewport.Width() + pixels_per_line_step);
+      frame_viewport.SetX(frame_viewport.X() - pixels_per_line_step);
+      frame_viewport.SetWidth(frame_viewport.Width() + pixels_per_line_step);
       break;
     case kWebFocusTypeRight:
-      visual_viewport.SetWidth(visual_viewport.Width() + pixels_per_line_step);
+      frame_viewport.SetWidth(frame_viewport.Width() + pixels_per_line_step);
       break;
     case kWebFocusTypeUp:
-      visual_viewport.SetY(visual_viewport.Y() - pixels_per_line_step);
-      visual_viewport.SetHeight(visual_viewport.Height() +
-                                pixels_per_line_step);
+      frame_viewport.SetY(frame_viewport.Y() - pixels_per_line_step);
+      frame_viewport.SetHeight(frame_viewport.Height() + pixels_per_line_step);
       break;
     case kWebFocusTypeDown:
-      visual_viewport.SetHeight(visual_viewport.Height() +
-                                pixels_per_line_step);
+      frame_viewport.SetHeight(frame_viewport.Height() + pixels_per_line_step);
       break;
     default:
       break;
@@ -195,8 +230,7 @@ bool IsRectOffscreen(const Node* node, WebFocusType direction) {
   if (rect.IsEmpty())
     return true;
 
-  // A visible node is a node that intersects the visual viewport.
-  return !visual_viewport.Intersects(rect);
+  return !frame_viewport.Intersects(rect);
 }
 
 bool HasRemoteFrame(const Node* node) {
@@ -751,7 +785,7 @@ LayoutRect SearchOrigin(const LayoutRect viewport_rect_of_root_frame,
     box_in_root_frame = NodeRectInRootFrame(focus_node, true);
   }
 
-  if (!IsRectOffscreen(focus_node)) {
+  if (!IsOffscreen(focus_node)) {
     // We found the first box that encloses focus and is [partially] visible.
     if (area_element || IsScrollableAreaOrDocument(focus_node)) {
       // When searching a container, we start from one of its sides.
