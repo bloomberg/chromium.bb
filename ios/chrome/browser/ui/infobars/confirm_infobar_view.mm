@@ -59,33 +59,7 @@ struct LayoutMetrics {
   CGFloat horizontal_space_between_icon_and_text;
 };
 
-// This defines the layout metrics for Chrome iOS legacy UI.
-// Some layout metrics defined as constants are inter-related.
-const CGFloat kCloseButtonInnerPadding = 16.0;
-const CGFloat kButtonsMarginTop = kCloseButtonInnerPadding;
-const CGFloat kLabelMarginTop = kButtonsMarginTop + 5.0;  // Baseline lowered.
-const LayoutMetrics kLayoutMetricsLegacy = {
-    20.0,  // left_margin_on_first_line_when_icon_absent
-    30.0,  // minimum_space_between_right_and_left_aligned_widgets
-    10.0,  // right_margin
-    10.0,  // space_between_widgets
-    kCloseButtonInnerPadding,
-    36.0,  // button_height
-    16.0,  // button_margin
-    8.0,   // extra_button_margin_on_single_line
-    8.0,   // button_spacing
-    8.0,   // button_width_units
-    kButtonsMarginTop,
-    16.0,  // close_button_margin_left
-    5.0,   // label_line_spacing
-    22.0,  // label_margin_bottom
-    8.0,   // extra_margin_between_label_and_button
-    kLabelMarginTop,
-    68.0,  // minimum_infobar_height
-    16.0   // horizontal_space_between_icon_and_text
-};
-
-const LayoutMetrics kLayoutMetricsPhase1 = {
+const LayoutMetrics kLayoutMetrics = {
     20.0,  // left_margin_on_first_line_when_icon_absent
     30.0,  // minimum_space_between_right_and_left_aligned_widgets
     10.0,  // right_margin
@@ -106,12 +80,6 @@ const LayoutMetrics kLayoutMetricsPhase1 = {
     16.0   // horizontal_space_between_icon_and_text
 };
 
-// Returns the layout metrics data structure. Returned value is never nil.
-const LayoutMetrics* InfoBarLayoutMetrics() {
-  return IsRefreshInfobarEnabled() ? &kLayoutMetricsPhase1
-                                   : &kLayoutMetricsLegacy;
-}
-
 // Color in RGB to be used as background of secondary actions button.
 const int kButton2TitleColor = 0x4285f4;
 // Corner radius for action buttons.
@@ -123,30 +91,22 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
 
 // Returns the font for the Infobar's main body text.
 UIFont* InfoBarLabelFont() {
-  return IsRefreshInfobarEnabled()
-             ? [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-             : [MDCTypography subheadFont];
+  return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
 }
 
 // Returns the font for the Infobar's toggle switch's (if one exists) body text.
 // This text label is usually of a slightly smaller font size relative to
 // InfoBarLabelFont().
 UIFont* InfoBarSwitchLabelFont() {
-  return IsRefreshInfobarEnabled()
-             ? [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-             : [MDCTypography body1Font];
+  return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
 }
 
 // Returns the font for the label on Infobar's action buttons.
 UIFont* InfoBarButtonLabelFont() {
-  DCHECK(IsRefreshInfobarEnabled());
   return [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
 }
 
 UIImage* InfoBarCloseImage() {
-  if (!IsRefreshInfobarEnabled()) {
-    return [UIImage imageNamed:@"infobar_close"];
-  }
   ui::ResourceBundle& resourceBundle = ui::ResourceBundle::GetSharedInstance();
   return resourceBundle.GetNativeImageNamed(IDR_IOS_INFOBAR_CLOSE).ToUIImage();
 }
@@ -182,7 +142,7 @@ UIImage* InfoBarCloseImage() {
 }
 
 - (id)initWithLabel:(NSString*)labelText isOn:(BOOL)isOn {
-  metrics_ = InfoBarLayoutMetrics();
+  metrics_ = &kLayoutMetrics;
 
   // Creates switch and label.
   UILabel* tempLabel = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -351,13 +311,7 @@ UIImage* InfoBarCloseImage() {
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    metrics_ = InfoBarLayoutMetrics();
-    if (!IsRefreshInfobarEnabled()) {
-      // Make the drop shadow.
-      UIImage* shadowImage = [UIImage imageNamed:@"infobar_shadow"];
-      shadow_ = [[UIImageView alloc] initWithImage:shadowImage];
-      [self addSubview:shadow_];
-    }
+    metrics_ = &kLayoutMetrics;
     [self setAccessibilityViewIsModal:YES];
   }
   return self;
@@ -777,9 +731,7 @@ UIImage* InfoBarCloseImage() {
                        action:(SEL)action {
   DCHECK(!closeButton_);
   UIImage* image = InfoBarCloseImage();
-  closeButton_ =
-      [UIButton buttonWithType:IsRefreshInfobarEnabled() ? UIButtonTypeSystem
-                                                         : UIButtonTypeCustom];
+  closeButton_ = [UIButton buttonWithType:UIButtonTypeSystem];
   [closeButton_ setExclusiveTouch:YES];
   [closeButton_ setImage:image forState:UIControlStateNormal];
   [closeButton_ addTarget:target
@@ -787,10 +739,8 @@ UIImage* InfoBarCloseImage() {
          forControlEvents:UIControlEventTouchUpInside];
   [closeButton_ setTag:tag];
   [closeButton_ setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
-  if (IsRefreshInfobarEnabled()) {
-    closeButton_.tintColor = [UIColor blackColor];
-    closeButton_.alpha = 0.20;
-  }
+  closeButton_.tintColor = [UIColor blackColor];
+  closeButton_.alpha = 0.20;
   [self addSubview:closeButton_];
 }
 
@@ -809,9 +759,7 @@ UIImage* InfoBarCloseImage() {
     [imageView_ removeFromSuperview];
   }
   imageView_ = [[UIImageView alloc] initWithImage:image];
-  if (IsRefreshInfobarEnabled()) {
-    imageView_.tintColor = UIColorFromRGB(kLeftIconTintColor);
-  }
+  imageView_.tintColor = UIColorFromRGB(kLeftIconTintColor);
   [self addSubview:imageView_];
 }
 
@@ -964,12 +912,9 @@ UIImage* InfoBarCloseImage() {
                     target:(id)target
                     action:(SEL)action {
   MDCFlatButton* button = [[MDCFlatButton alloc] init];
-  if (IsRefreshInfobarEnabled()) {
-    button.uppercaseTitle = NO;
-    button.layer.cornerRadius = kButtonCornerRadius;
-    [button setTitleFont:InfoBarButtonLabelFont()
-                forState:UIControlStateNormal];
-  }
+  button.uppercaseTitle = NO;
+  button.layer.cornerRadius = kButtonCornerRadius;
+  [button setTitleFont:InfoBarButtonLabelFont() forState:UIControlStateNormal];
   button.inkColor = [[palette tint300] colorWithAlphaComponent:0.5f];
   [button setBackgroundColor:[palette tint500] forState:UIControlStateNormal];
   [button setBackgroundColor:[UIColor colorWithWhite:0.8f alpha:1.0f]

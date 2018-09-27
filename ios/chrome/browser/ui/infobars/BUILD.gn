@@ -16,7 +16,6 @@ source_set("infobars") {
     "resources:infobar_close",
     "resources:infobar_downloading",
     "resources:infobar_popup_blocker",
-    "resources:infobar_shadow",
     "resources:infobar_warning",
     "//base",
     "//base:i18n",
