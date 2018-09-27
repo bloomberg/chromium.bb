@@ -377,19 +377,20 @@ bool BodyStreamBuffer::IsStreamDisturbedForDCheck() {
 }
 
 void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
+  CHECK(!ExecutionContext::From(script_state_)->IsContextDestroyed());
+  if (stream_broken_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Body stream has suffered a fatal error and cannot be disturbed");
+    return;
+  }
   // Speculative fix for https://crbug.com/882599. Stop the stream from being
   // garbage collected while this function is executing.
   // TODO(ricea): Remove this when a better solution is found or if it doesn't
   // work.
   v8::Local<v8::Value> stream_handle =
       stream_.NewLocal(script_state_->GetIsolate());
-  if (stream_handle.IsEmpty()) {
-    stream_broken_ = true;
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Body stream has suffered a fatal error and cannot be disturbed");
-    return;
-  }
+  CHECK(!stream_handle.IsEmpty());
 
   base::Optional<bool> is_readable = IsStreamReadable(exception_state);
   if (exception_state.HadException())
