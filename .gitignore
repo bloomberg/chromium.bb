@@ -21,6 +21,8 @@
 .deps
 .libs
 .tmp_versions
+/_build*
+/build*
 Makefile
 Makefile.in
 TAGS
