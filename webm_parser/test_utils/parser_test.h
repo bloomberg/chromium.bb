@@ -12,6 +12,7 @@
 #include <new>
 #include <vector>
 
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 #include "test_utils/limited_reader.h"
@@ -96,7 +97,7 @@ class ParserTest : public testing::Test {
   T parser_;
 
   // The callback that is used during parsing.
-  MockCallback callback_;
+  testing::NiceMock<MockCallback> callback_;
 
   // The reader used for feeding data into the parser.
   BufferReader reader_;

@@ -47,6 +47,20 @@ TEST_F(SegmentParserTest, EmptyParse) {
   ParseAndVerify();
 }
 
+TEST_F(SegmentParserTest, DefaultActionIsRead) {
+  {
+    InSequence dummy;
+
+    // This intentionally does not set the action and relies on the parser using
+    // a default action value of kRead.
+    EXPECT_CALL(callback_, OnSegmentBegin(metadata_, NotNull()))
+        .WillOnce(Return(Status(Status::kOkCompleted)));
+    EXPECT_CALL(callback_, OnSegmentEnd(metadata_)).Times(1);
+  }
+
+  ParseAndVerify();
+}
+
 TEST_F(SegmentParserTest, EmptyParseWithDelayedStart) {
   {
     InSequence dummy;

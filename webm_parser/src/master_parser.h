@@ -184,7 +184,7 @@ class MasterParser : public ElementParser {
   ElementParser* child_parser_;
 
   // The current parsing action for the child that is currently being parsed.
-  Action action_;
+  Action action_ = Action::kRead;
 
   // The current state of the parser.
   State state_;

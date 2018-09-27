@@ -44,7 +44,7 @@ class BlockGroupParser : public MasterValueParser<BlockGroup> {
     *num_bytes_read = 0;
 
     if (!parse_started_event_completed()) {
-      Action action;
+      Action action = Action::kRead;
       Status status = OnParseStarted(callback, &action);
       if (!status.completed_ok()) {
         return status;

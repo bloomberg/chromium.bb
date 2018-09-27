@@ -17,6 +17,7 @@
 using testing::_;
 using testing::InSequence;
 using testing::NotNull;
+using testing::Return;
 
 using webm::Block;
 using webm::BlockAdditions;
@@ -64,6 +65,20 @@ TEST_F(BlockGroupParserTest, DefaultParse) {
     InSequence dummy;
 
     EXPECT_CALL(callback_, OnBlockGroupBegin(metadata_, NotNull())).Times(1);
+    EXPECT_CALL(callback_, OnBlockGroupEnd(metadata_, BlockGroup{})).Times(1);
+  }
+
+  ParseAndVerify();
+}
+
+TEST_F(BlockGroupParserTest, DefaultActionIsRead) {
+  {
+    InSequence dummy;
+
+    // This intentionally does not set the action and relies on the parser using
+    // a default action value of kRead.
+    EXPECT_CALL(callback_, OnBlockGroupBegin(metadata_, NotNull()))
+        .WillOnce(Return(Status(Status::kOkCompleted)));
     EXPECT_CALL(callback_, OnBlockGroupEnd(metadata_, BlockGroup{})).Times(1);
   }
 

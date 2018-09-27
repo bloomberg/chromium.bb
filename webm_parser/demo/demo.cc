@@ -1005,9 +1005,10 @@ class DemoCallback : public Callback {
   }
 
   Status OnBlockGroupBegin(const ElementMetadata& metadata,
-                           Action* /* action */) override {
+                           Action* action) override {
     indent = 2;
     PrintElementMetadata("BlockGroup", metadata);
+    *action = Action::kRead;
     return Status(Status::kOkCompleted);
   }
 

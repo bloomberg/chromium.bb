@@ -45,7 +45,7 @@ class SegmentParser : public MasterParser {
   bool parse_completed_;
 
   // The action requested by Callback::OnSegmentBegin.
-  Action action_;
+  Action action_ = Action::kRead;
 };
 
 }  // namespace webm
