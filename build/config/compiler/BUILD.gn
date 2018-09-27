@@ -2230,7 +2230,7 @@ config("symbols") {
       }
     } else {
       cflags = []
-      if (!use_debug_fission && target_cpu == "arm") {
+      if (!use_debug_fission && current_cpu == "arm") {
         # dump_syms has issues with dwarf4 on arm, https://crbug.com/744956
         # TODO(thakis): Remove this again once dump_syms is fixed.
         #
@@ -2260,7 +2260,7 @@ config("symbols") {
     # obj/native_client/src/trusted/service_runtime/sel_asm/nacl_switch_32.o:
     # DWARF info may be corrupt; offsets in a range list entry are in different
     # sections" there.  Maybe just a bug in nacl_switch_32.S.
-    if (!is_mac && !is_ios && !is_nacl && target_cpu != "x86" &&
+    if (!is_mac && !is_ios && !is_nacl && current_cpu != "x86" &&
         (use_gold || use_lld)) {
       if (is_clang) {
         # This flag enables the GNU-format pubnames and pubtypes sections,
@@ -2293,7 +2293,7 @@ config("minimal_symbols") {
     }
   } else {
     cflags = []
-    if (target_cpu == "arm") {
+    if (current_cpu == "arm") {
       # dump_syms has issues with dwarf4 on arm, https://crbug.com/744956
       # TODO(thakis): Remove this again once dump_syms is fixed.
       cflags += [ "-gdwarf-3" ]
