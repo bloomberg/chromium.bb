@@ -1167,6 +1167,35 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       "BlinkGC.TimeForGlobalWeakProcessing",
       event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
 
+  constexpr base::TimeDelta kSlowIncrementalMarkingFinalizeTheshold =
+      base::TimeDelta::FromMilliseconds(40);
+  if (event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingFinalize] >
+      kSlowIncrementalMarkingFinalizeTheshold) {
+    UMA_HISTOGRAM_TIMES(
+        "BlinkGC.SlowIncrementalMarkingFinalize.IncrementalMarkingFinalize",
+        event
+            .scope_data[ThreadHeapStatsCollector::kIncrementalMarkingFinalize]);
+    UMA_HISTOGRAM_TIMES(
+        "BlinkGC.SlowIncrementalMarkingFinalize.AtomicPhaseMarking",
+        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);
+    UMA_HISTOGRAM_TIMES(
+        "BlinkGC.SlowIncrementalMarkingFinalize.VisitCrossThreadPersistents",
+        event.scope_data
+            [ThreadHeapStatsCollector::kVisitCrossThreadPersistents]);
+    UMA_HISTOGRAM_TIMES(
+        "BlinkGC.SlowIncrementalMarkingFinalize.VisitDOMWrappers",
+        event.scope_data[ThreadHeapStatsCollector::kVisitDOMWrappers]);
+    UMA_HISTOGRAM_TIMES(
+        "BlinkGC.SlowIncrementalMarkingFinalize.MarkWeakProcessing",
+        event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
+    UMA_HISTOGRAM_TIMES(
+        "BlinkGC.SlowIncrementalMarkingFinalize.InvokePreFinalizers",
+        event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]);
+    UMA_HISTOGRAM_TIMES(
+        "BlinkGC.SlowIncrementalMarkingFinalize.EagerSweep",
+        event.scope_data[ThreadHeapStatsCollector::kEagerSweep]);
+  }
+
   DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_before_gc_histogram,
                       ("BlinkGC.ObjectSizeBeforeGC", 1, 4 * 1024 * 1024, 50));
   object_size_before_gc_histogram.Count(
