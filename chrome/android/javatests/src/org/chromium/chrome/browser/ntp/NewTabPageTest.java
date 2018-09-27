@@ -61,6 +61,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -207,8 +208,12 @@ public class NewTabPageTest {
     @EnableFeatures({ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testRender_FocusFakeBox(boolean interestFeedEnabled) throws Exception {
+        ScrimView scrimView = mActivityTestRule.getActivity().getScrim();
+        scrimView.disableAnimationForTesting(true);
         onView(withId(R.id.search_box)).perform(click());
+        RenderTestRule.sanitize(mNtp.getView().getRootView());
         mRenderTestRule.render(mNtp.getView().getRootView(), "focus_fake_box");
+        scrimView.disableAnimationForTesting(false);
     }
 
     @Test
@@ -225,10 +230,15 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
+    @EnableFeatures({ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testRender_ArticleSectionHeader(boolean interestFeedEnabled) throws Exception {
         // Scroll to the article section header in case it is not visible.
         onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(2));
+        if (!interestFeedEnabled) {
+            RecyclerViewTestUtils.waitForStableRecyclerView(
+                    mNtp.getNewTabPageView().getRecyclerView());
+        }
         View view = mNtp.getSectionHeaderViewForTesting();
 
         // Check header is expanded.
@@ -285,7 +295,6 @@ public class NewTabPageTest {
      */
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/888129")
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testFocusFakebox(boolean interestFeedEnabled) {
