@@ -1529,7 +1529,7 @@ void MenuController::UpdateInitialLocation(const gfx::Rect& bounds,
 void MenuController::Accept(MenuItemView* item, int event_flags) {
 #if defined(OS_MACOSX)
   menu_closure_animation_ = std::make_unique<MenuClosureAnimationMac>(
-      item,
+      item, item->GetParentMenuItem()->GetSubmenu(),
       base::BindOnce(&MenuController::ReallyAccept, base::Unretained(this),
                      base::Unretained(item), event_flags));
   menu_closure_animation_->Start();
@@ -2600,7 +2600,15 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
     if (last_part.type != MenuPart::NONE)
       exit_type = EXIT_OUTERMOST;
   }
+#if defined(OS_MACOSX)
+  menu_closure_animation_ = std::make_unique<MenuClosureAnimationMac>(
+      nullptr, source,
+      base::BindOnce(&MenuController::Cancel, base::Unretained(this),
+                     exit_type));
+  menu_closure_animation_->Start();
+#else
   Cancel(exit_type);
+#endif
 }
 
 void MenuController::SetDropMenuItem(MenuItemView* new_target,
