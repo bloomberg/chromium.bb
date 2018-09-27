@@ -128,8 +128,7 @@ void ReportBlockedEvent(ExecutionContext* context,
                         const Event& event,
                         RegisteredEventListener* registered_listener,
                         base::TimeDelta delayed) {
-  if (registered_listener->Callback()->GetType() !=
-      EventListener::kJSEventListenerType)
+  if (registered_listener->Callback()->IsNativeBased())
     return;
 
   String message_text = String::Format(
