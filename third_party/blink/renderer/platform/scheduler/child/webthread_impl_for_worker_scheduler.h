@@ -37,7 +37,7 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   ~WebThreadImplForWorkerScheduler() override;
 
   // WebThread implementation.
-  ThreadScheduler* Scheduler() const override;
+  ThreadScheduler* Scheduler() override;
   PlatformThreadId ThreadId() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
 

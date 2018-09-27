@@ -141,8 +141,7 @@ class SimpleMainThread : public WebThread {
   // and Platform::UnsetMainThreadTaskRunnerForTesting().
 
   bool IsCurrentThread() const override { return WTF::IsMainThread(); }
-  // TODO(yutak): Remove the const qualifier so we don't have to use mutable.
-  ThreadScheduler* Scheduler() const override { return &scheduler_; }
+  ThreadScheduler* Scheduler() override { return &scheduler_; }
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {
     if (main_thread_task_runner_for_testing_)
       return main_thread_task_runner_for_testing_;
@@ -158,7 +157,7 @@ class SimpleMainThread : public WebThread {
  private:
   bool IsSimpleMainThread() const override { return true; }
 
-  mutable scheduler::SimpleThreadScheduler scheduler_;
+  scheduler::SimpleThreadScheduler scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_task_runner_for_testing_;
 };

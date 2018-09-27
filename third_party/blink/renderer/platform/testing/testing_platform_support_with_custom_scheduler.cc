@@ -21,7 +21,7 @@ class ThreadWithCustomScheduler : public WebThread {
     DCHECK(WTF::IsMainThread());
     return true;
   }
-  ThreadScheduler* Scheduler() const override { return scheduler_; }
+  ThreadScheduler* Scheduler() override { return scheduler_; }
 
  private:
   ThreadScheduler* scheduler_;

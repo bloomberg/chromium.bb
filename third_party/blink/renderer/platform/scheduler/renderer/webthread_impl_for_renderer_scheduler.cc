@@ -24,7 +24,7 @@ blink::PlatformThreadId WebThreadImplForRendererScheduler::ThreadId() const {
   return thread_id_;
 }
 
-blink::ThreadScheduler* WebThreadImplForRendererScheduler::Scheduler() const {
+blink::ThreadScheduler* WebThreadImplForRendererScheduler::Scheduler() {
   return scheduler_;
 }
 
