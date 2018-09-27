@@ -1947,6 +1947,8 @@ crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/time
 
 crbug.com/498539 crbug.com/794869 crbug.com/798548 [ Win7 Mac Linux ] http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure ]
 
+crbug.com/889952 fast/selectors/selection-window-inactive.html [ Pass Failure ]
+
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
