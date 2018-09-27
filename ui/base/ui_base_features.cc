@@ -155,16 +155,10 @@ bool HostWindowsInAppShimProcess() {
 }
 
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
-// Causes Views browser builds to use Views browser windows by default rather
-// than Cocoa browser windows.
-const base::Feature kViewsBrowserWindows{"ViewsBrowserWindows",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Returns whether a Views-capable browser build should use the Cocoa browser
-// UI.
 bool IsViewsBrowserCocoa() {
-  return !base::FeatureList::IsEnabled(kViewsBrowserWindows) &&
-      !base::FeatureList::IsEnabled(kExperimentalUi);
+  // TODO(https://crbug.com/832676): Delete all code guarded on this function
+  // returning true and then remove this function.
+  return false;
 }
 #endif  //  BUILDFLAG(MAC_VIEWS_BROWSER)
 #endif  //  defined(OS_MACOSX)

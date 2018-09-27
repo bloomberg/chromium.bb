@@ -136,11 +136,6 @@ void ToolbarActionsBar::RegisterProfilePrefs(
 
 // static
 gfx::Size ToolbarActionsBar::GetIconAreaSize() {
-#if defined(OS_MACOSX)
-  // On Cocoa, the spec is a 24x24 button in a 28x28 space.
-  if (!base::FeatureList::IsEnabled(features::kViewsBrowserWindows))
-    return gfx::Size(24, 24);
-#endif
   return gfx::Size(28, 28);
 }
 
