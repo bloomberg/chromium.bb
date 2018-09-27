@@ -145,7 +145,7 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
       pending_callbacks_ = results_.size() + 1;
       for (size_t i = 0; i < results_.size(); ++i) {
         drive_fs_->GetMetadata(
-            results_[i]->path, false,
+            results_[i]->path,
             base::BindOnce(&SearchQuery::OnMetadata,
                            weak_ptr_factory_.GetWeakPtr(), i));
       }
@@ -265,7 +265,6 @@ void FakeDriveFs::Init(drivefs::mojom::DriveFsConfigurationPtr config,
 }
 
 void FakeDriveFs::GetMetadata(const base::FilePath& path,
-                              bool want_thumbnail,
                               GetMetadataCallback callback) {
   base::FilePath absolute_path = mount_path_;
   CHECK(base::FilePath("/").AppendRelativePath(path, &absolute_path));
