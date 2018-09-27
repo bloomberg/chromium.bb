@@ -90,11 +90,11 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
                                  int image_inset_y,
                                  int alpha,
                                  int corner_radius) {
-  const SkScalar corner_radius = SkIntToScalar(corner_radius);
-  const SkScalar radii[8] = {corner_radius,
-                             corner_radius,  // top-left
-                             corner_radius,
-                             corner_radius,  // top-right
+  const SkScalar sk_corner_radius = SkIntToScalar(corner_radius);
+  const SkScalar radii[8] = {sk_corner_radius,
+                             sk_corner_radius,  // top-left
+                             sk_corner_radius,
+                             sk_corner_radius,  // top-right
                              0,
                              0,  // bottom-right
                              0,
