@@ -12,12 +12,14 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "components/cdm/renderer/android_key_systems.h"
-#include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "media/base/eme_constants.h"
 #include "media/base/key_system_properties.h"
 #include "media/media_buildflags.h"
+#include "third_party/widevine/cdm/buildflags.h"
 
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+#if BUILDFLAG(ENABLE_WIDEVINE)
+#include "components/cdm/renderer/widevine_key_system_properties.h"
+#endif
 
 using ::media::EmeConfigRule;
 using ::media::EmeFeatureSupport;
@@ -154,7 +156,7 @@ void AddCmaKeySystems(
       codecs, codecs, enable_persistent_license_support));
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
   base::flat_set<::media::EncryptionMode> encryption_schemes = {
@@ -172,7 +174,7 @@ void AddCmaKeySystems(
       // Note: On Chromecast, all CDMs may have persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED,    // Persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED));  // Distinctive identifier.
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif                                      // BUILDFLAG(ENABLE_WIDEVINE)
 }
 #elif defined(OS_ANDROID)
 #if defined(PLAYREADY_CDM_AVAILABLE)
@@ -199,9 +201,9 @@ void AddCastAndroidKeySystems(
   AddCastPlayreadyKeySystemAndroid(key_systems_properties);
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
   cdm::AddAndroidWidevine(key_systems_properties);
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 }
 #endif  // defined(OS_ANDROID)
 

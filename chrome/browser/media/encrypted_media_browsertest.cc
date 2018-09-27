@@ -31,6 +31,7 @@
 #include "media/cdm/supported_cdm_versions.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
+#include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 #if defined(OS_WIN)
@@ -41,8 +42,6 @@
 #include "chrome/browser/media/library_cdm_test_helper.h"
 #include "media/cdm/cdm_paths.h"
 #endif
-
-#include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
 
 // Available key systems.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
@@ -142,11 +141,11 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     return key_system.substr(0, prefix.size()) == prefix;
   }
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
   bool IsWidevine(const std::string& key_system) {
     return key_system == kWidevineKeySystem;
   }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
   void RunEncryptedMediaTestPage(const std::string& html_page,
                                  const std::string& key_system,
@@ -259,23 +258,23 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   }
 
   bool IsPlayBackPossible(const std::string& key_system) {
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
     if (IsWidevine(key_system) && !GetServerConfig(key_system))
       return false;
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
     return true;
   }
 
   std::unique_ptr<TestLicenseServerConfig> GetServerConfig(
       const std::string& key_system) {
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
     if (IsWidevine(key_system)) {
       std::unique_ptr<TestLicenseServerConfig> config(
           new WVTestLicenseServerConfig);
       if (config->IsPlatformSupported())
         return config;
     }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
     return nullptr;
   }
 
@@ -519,12 +518,12 @@ INSTANTIATE_TEST_CASE_P(SRC_ClearKey,
                                 Values(SrcType::SRC)));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(SHOULD_BUNDLE_WIDEVINE_CDM)
 INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                         EncryptedMediaTest,
                         Combine(Values(kWidevineKeySystem),
                                 Values(SrcType::MSE)));
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // #if BUILDFLAG(SHOULD_BUNDLE_WIDEVINE_CDM)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-a.webm", kWebMVorbisAudioVp8Video);

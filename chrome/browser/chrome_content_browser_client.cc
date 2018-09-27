@@ -289,6 +289,7 @@
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/platform/modules/webshare/webshare.mojom.h"
+#include "third_party/widevine/cdm/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
@@ -296,8 +297,6 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_WIN)
 #include "base/strings/string_tokenizer.h"
@@ -498,7 +497,7 @@
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "chrome/browser/media/output_protection_impl.h"
 #include "chrome/browser/media/platform_verification_impl.h"
-#if defined(OS_WIN) && defined(WIDEVINE_CDM_AVAILABLE)
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_WIDEVINE)
 #include "chrome/browser/media/widevine_hardware_caps_win.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #endif
@@ -4147,7 +4146,7 @@ void ChromeContentBrowserClient::GetHardwareSecureDecryptionCaps(
     base::flat_set<media::VideoCodec>* video_codecs,
     base::flat_set<media::EncryptionMode>* encryption_schemes) {
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_LIBRARY_CDMS) && \
-    defined(WIDEVINE_CDM_AVAILABLE)
+    BUILDFLAG(ENABLE_WIDEVINE)
   if (key_system == kWidevineKeySystem) {
     GetWidevineHardwareCaps(cdm_proxy_protocols, video_codecs,
                             encryption_schemes);
