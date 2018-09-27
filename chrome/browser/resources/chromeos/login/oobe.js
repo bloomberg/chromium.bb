@@ -256,10 +256,8 @@ cr.define('cr.ui.Oobe', function() {
       $('virtual-keyboard').checked = data.virtualKeyboardEnabled;
 
       // TODO(katie): Remove this when launching features in OOBE screen.
-      if (!data.enableExperimentalA11yFeatures) {
-        $('select-to-speak-row').setAttribute('hidden', true);
+      if (!data.enableExperimentalA11yFeatures)
         $('docked-magnifier-row').setAttribute('hidden', true);
-      }
 
       $('oobe-welcome-md').a11yStatus = data;
     },
