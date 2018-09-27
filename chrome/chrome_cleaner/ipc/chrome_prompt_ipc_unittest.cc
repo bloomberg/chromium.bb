@@ -110,6 +110,10 @@ class MockChromePrompt : public mojom::ChromePrompt {
     CloseConnectionIf(ParentDisconnected::kOnDone);
   }
 
+  void DisableExtensions(
+      const std::vector<base::string16>& extension_ids,
+      ChromePrompt::DisableExtensionsCallback callback) override {}
+
   // Close the IPC connection on the parent process depending on the value of
   // |parent_disconnected|.
   void CloseConnectionIf(ParentDisconnected parent_disconnected) {
