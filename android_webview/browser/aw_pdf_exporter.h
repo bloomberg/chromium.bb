@@ -40,7 +40,7 @@ class AwPdfExporter {
                        const base::android::JavaRef<jobject>& obj,
                        const printing::PageRanges& page_ranges,
                        printing::PrintSettings& settings);
-  void DidExportPdf(int fd, int page_count);
+  void DidExportPdf(int page_count);
 
   JavaObjectWeakGlobalRef java_ref_;
   content::WebContents* web_contents_;
