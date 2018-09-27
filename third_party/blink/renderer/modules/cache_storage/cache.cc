@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/request_init.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_error.h"
@@ -224,7 +224,7 @@ class Cache::BarrierCallbackForPut final
                   if (error->message.Contains(
                           blink::cache_storage::
                               kDuplicateOperationBaseMessage)) {
-                    UseCounter::Count(
+                    Deprecation::CountDeprecation(
                         context,
                         WebFeature::kCacheStorageAddAllSuccessWithDuplicate);
                   }
