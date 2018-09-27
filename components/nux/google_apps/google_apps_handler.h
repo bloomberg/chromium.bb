@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_GOOGLE_APPS_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_GOOGLE_APPS_HANDLER_H_
+#ifndef COMPONENTS_NUX_GOOGLE_APPS_GOOGLE_APPS_HANDLER_H_
+#define COMPONENTS_NUX_GOOGLE_APPS_GOOGLE_APPS_HANDLER_H_
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -68,4 +68,4 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
 
 }  // namespace nux
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_GOOGLE_APPS_HANDLER_H_
+#endif  // COMPONENTS_NUX_GOOGLE_APPS_GOOGLE_APPS_HANDLER_H_

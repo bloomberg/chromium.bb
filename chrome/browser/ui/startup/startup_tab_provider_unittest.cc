@@ -15,7 +15,7 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/ui/webui/welcome/nux/constants.h"
+#include "components/nux/constants.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 
