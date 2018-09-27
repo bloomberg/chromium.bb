@@ -2121,6 +2121,9 @@ extern const char kUnfilteredBluetoothDevicesDescription[];
 extern const char kUsbguardName[];
 extern const char kUsbguardDescription[];
 
+extern const char kShillSandboxingName[];
+extern const char kShillSandboxingDescription[];
+
 extern const char kUseMashName[];
 extern const char kUseMashDescription[];
 

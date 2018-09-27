@@ -4418,6 +4418,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-usbguard", flag_descriptions::kUsbguardName,
      flag_descriptions::kUsbguardDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kUsbguard)},
+    {"enable-shill-sandboxing", flag_descriptions::kShillSandboxingName,
+     flag_descriptions::kShillSandboxingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kShillSandboxing)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
