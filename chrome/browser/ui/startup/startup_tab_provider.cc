@@ -28,7 +28,7 @@
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-#include "components/nux/constants.h"
+#include "chrome/browser/ui/webui/welcome/nux/constants.h"
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 namespace {

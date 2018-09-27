@@ -7,8 +7,8 @@ import("//build/config/chrome_build.gni")
 if (is_win && is_chrome_branded) {
   static_library("set_as_default_feature") {
     sources = [
-      "set_as_default/set_as_default_handler.cc",
-      "set_as_default/set_as_default_handler.h",
+      "set_as_default_handler.cc",
+      "set_as_default_handler.h",
     ]
 
     public_deps = [
@@ -19,7 +19,6 @@ if (is_win && is_chrome_branded) {
 
     deps = [
       "//components/resources",
-      "//components/strings",
       "//components/variations",
       "//content/public/browser",
       "//ui/base",
@@ -39,8 +38,8 @@ if (is_win && is_chrome_branded) {
 
   static_library("email_feature") {
     sources = [
-      "email/email_handler.cc",
-      "email/email_handler.h",
+      "email_handler.cc",
+      "email_handler.h",
     ]
 
     public_deps = [
@@ -56,7 +55,6 @@ if (is_win && is_chrome_branded) {
       "//components/pref_registry",
       "//components/prefs",
       "//components/resources",
-      "//components/strings",
       "//components/variations",
       "//content/public/browser",
       "//ui/base",
@@ -65,8 +63,8 @@ if (is_win && is_chrome_branded) {
 
   static_library("google_apps_feature") {
     sources = [
-      "google_apps/google_apps_handler.cc",
-      "google_apps/google_apps_handler.h",
+      "google_apps_handler.cc",
+      "google_apps_handler.h",
     ]
 
     public_deps = [
@@ -82,7 +80,6 @@ if (is_win && is_chrome_branded) {
       "//components/pref_registry",
       "//components/prefs",
       "//components/resources",
-      "//components/strings",
       "//components/variations",
       "//content/public/browser",
       "//ui/base",
