@@ -24,6 +24,10 @@ ModelTypeSyncBridge::~ModelTypeSyncBridge() {}
 void ModelTypeSyncBridge::OnSyncStarting(
     const DataTypeActivationRequest& request) {}
 
+bool ModelTypeSyncBridge::SupportsGetClientTag() const {
+  return true;
+}
+
 bool ModelTypeSyncBridge::SupportsGetStorageKey() const {
   return true;
 }

@@ -30,7 +30,8 @@ class ModelTypeChangeProcessor {
   // Inform the processor of a new or updated entity. The |entity_data| param
   // does not need to be fully set, but it should at least have specifics and
   // non-unique name. The processor will fill in the rest if the bridge does
-  // not have a reason to care.
+  // not have a reason to care. For example, if |client_tag_hash| is not set,
+  // the bridge's GetClientTag() will be exercised (and must be supported).
   virtual void Put(const std::string& storage_key,
                    std::unique_ptr<EntityData> entity_data,
                    MetadataChangeList* metadata_change_list) = 0;

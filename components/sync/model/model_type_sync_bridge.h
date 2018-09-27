@@ -103,6 +103,8 @@ class ModelTypeSyncBridge {
   // Used for getting all data in Sync Node Browser of chrome://sync-internals.
   virtual void GetAllDataForDebugging(DataCallback callback) = 0;
 
+  // Must not be called unless SupportsGetClientTag() returns true.
+  //
   // Get or generate a client tag for |entity_data|. This must be the same tag
   // that was/would have been generated in the SyncableService/Directory world
   // for backward compatibility with pre-USS clients. The only time this
@@ -112,6 +114,8 @@ class ModelTypeSyncBridge {
   // GetStorageKey(). Only the hash of this value is kept.
   virtual std::string GetClientTag(const EntityData& entity_data) = 0;
 
+  // Must not be called unless SupportsGetStorageKey() returns true.
+  //
   // Get or generate a storage key for |entity_data|. This will only ever be
   // called once when first encountering a remote entity. Local changes will
   // provide their storage keys directly to Put instead of using this method.
@@ -120,6 +124,12 @@ class ModelTypeSyncBridge {
   // should be. Storage keys are kept in memory at steady state, so each model
   // type should strive to keep these keys as small as possible.
   virtual std::string GetStorageKey(const EntityData& entity_data) = 0;
+
+  // Whether or not the bridge is capable of producing a client tag from
+  // |EntityData| (usually remote changes), via GetClientTag(). Most bridges do,
+  // but in rare cases including commit-only types and read-only types, it may
+  // not.
+  virtual bool SupportsGetClientTag() const;
 
   // By returning true in this function datatype indicates that it can generate
   // storage key from EntityData. In this case for all new entities received
