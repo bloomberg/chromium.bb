@@ -213,10 +213,8 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
   return MATERIAL_REFRESH;
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   return MATERIAL_REFRESH;
-#elif defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
-  return features::IsViewsBrowserCocoa() ? MATERIAL_NORMAL : MATERIAL_REFRESH;
 #else
   return MATERIAL_NORMAL;
 #endif

@@ -41,24 +41,6 @@
 
 namespace media_router {
 
-namespace {
-
-// Returns true if the browser uses Cocoa UI. The Views dialog tests should not
-// be run if this is true.
-bool IsCocoaBrowser() {
-#if defined(OS_MACOSX)
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  return features::IsViewsBrowserCocoa();
-#else  // !BUILDFLAG(MAC_VIEWS_BROWSER)
-  return true;
-#endif
-#else  // !defined(OS_MACOSX)
-  return false;
-#endif
-}
-
-}  // namespace
-
 // Uses the WebUI Cast dialog. The Views Cast dialog is used in
 // MediaRouterViewsUIBrowserTest below.
 class MediaRouterUIBrowserTest : public InProcessBrowserTest {
@@ -416,14 +398,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, PinAndUnpinToolbarIcon) {
   ui::SimpleMenuModel* context_menu = GetIconContextMenu();
   const int command_index = context_menu->GetIndexOfCommandId(
       IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
-  if (IsCocoaBrowser()) {
-    // With Cocoa, OnContextMenuClosed() gets called before command execution.
-    GetMediaRouterAction()->OnContextMenuClosed();
-    context_menu->ActivatedAt(command_index);
-  } else {
-    context_menu->ActivatedAt(command_index);
-    GetMediaRouterAction()->OnContextMenuClosed();
-  }
+  context_menu->ActivatedAt(command_index);
+  GetMediaRouterAction()->OnContextMenuClosed();
   GetDialogController()->HideMediaRouterDialog();
   EXPECT_TRUE(ToolbarIconExists());
 
@@ -446,27 +422,19 @@ class MediaRouterViewsUIBrowserTest : public MediaRouterUIBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(MediaRouterViewsUIBrowserTest,
                        OpenDialogFromContextMenu) {
-  if (IsCocoaBrowser())
-    return;
   TestOpenDialogFromContextMenu();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterViewsUIBrowserTest, OpenDialogFromAppMenu) {
-  if (IsCocoaBrowser())
-    return;
   TestOpenDialogFromAppMenu();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterViewsUIBrowserTest,
                        EphemeralToolbarIconForDialog) {
-  if (IsCocoaBrowser())
-    return;
   TestEphemeralToolbarIconForDialog();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterViewsUIBrowserTest, PinAndUnpinToolbarIcon) {
-  if (IsCocoaBrowser())
-    return;
   GetDialogController()->ShowMediaRouterDialog();
   EXPECT_TRUE(ToolbarIconExists());
   // Pin the icon via its context menu.
