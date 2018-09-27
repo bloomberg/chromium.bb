@@ -767,7 +767,7 @@ static int linsolve_wiener(int n, int64_t *A, int stride, int64_t *b,
     // Partial pivoting: bring the row with the largest pivot to the top
     for (int i = n - 1; i > k; i--) {
       // If row i has a better (bigger) pivot than row (i-1), swap them
-      if (labs(A[(i - 1) * stride + k]) < labs(A[i * stride + k])) {
+      if (llabs(A[(i - 1) * stride + k]) < llabs(A[i * stride + k])) {
         for (int j = 0; j < n; j++) {
           const int64_t c = A[i * stride + j];
           A[i * stride + j] = A[(i - 1) * stride + j];
@@ -780,7 +780,7 @@ static int linsolve_wiener(int n, int64_t *A, int stride, int64_t *b,
     }
     // Forward elimination (convert A to row-echelon form)
     for (int i = k; i < n - 1; i++) {
-      if (labs(A[k * stride + k]) == 0) return 0;
+      if (A[k * stride + k] == 0) return 0;
       const int64_t c = A[(i + 1) * stride + k];
       const int64_t cd = A[k * stride + k];
       for (int j = 0; j < n; j++) {
@@ -791,7 +791,7 @@ static int linsolve_wiener(int n, int64_t *A, int stride, int64_t *b,
   }
   // Back-substitution
   for (int i = n - 1; i >= 0; i--) {
-    if (labs(A[i * stride + i]) == 0) return 0;
+    if (A[i * stride + i] == 0) return 0;
     int64_t c = 0;
     for (int j = i + 1; j <= n - 1; j++) {
       c += A[i * stride + j] * x[j] / WIENER_TAP_SCALE_FACTOR;
