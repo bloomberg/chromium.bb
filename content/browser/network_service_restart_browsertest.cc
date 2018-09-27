@@ -624,10 +624,19 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MultipleWorkerFetch) {
   EXPECT_EQ(last_request_relative_url(), "/title2.html");
 }
 
+// Flaky on Linux TSan (https://crbug.com/889855)
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_FetchFromServiceWorkerControlledPage_NoFetchHandler \
+  DISABLED_FetchFromServiceWorkerControlledPage_NoFetchHandler
+#else
+#define MAYBE_FetchFromServiceWorkerControlledPage_NoFetchHandler \
+  FetchFromServiceWorkerControlledPage_NoFetchHandler
+#endif
 // Make sure fetch from a page controlled by a service worker which doesn't have
 // a fetch handler works after crash.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
-                       FetchFromServiceWorkerControlledPage_NoFetchHandler) {
+IN_PROC_BROWSER_TEST_F(
+    NetworkServiceRestartBrowserTest,
+    MAYBE_FetchFromServiceWorkerControlledPage_NoFetchHandler) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   ServiceWorkerStatusObserver observer;
@@ -665,10 +674,18 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   service_worker_context->RemoveObserver(&observer);
 }
 
+// Flaky on Linux TSan (https://crbug.com/889855)
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_FetchFromServiceWorkerControlledPage_PassThrough \
+  DISABLED_FetchFromServiceWorkerControlledPage_PassThrough
+#else
+#define MAYBE_FetchFromServiceWorkerControlledPage_PassThrough \
+  FetchFromServiceWorkerControlledPage_PassThrough
+#endif
 // Make sure fetch from a page controlled by a service worker which has a fetch
 // handler but falls back to the network works after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
-                       FetchFromServiceWorkerControlledPage_PassThrough) {
+                       MAYBE_FetchFromServiceWorkerControlledPage_PassThrough) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   ServiceWorkerStatusObserver observer;
@@ -706,10 +723,19 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   service_worker_context->RemoveObserver(&observer);
 }
 
+// Flaky on Linux TSan (https://crbug.com/889855)
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_FetchFromServiceWorkerControlledPage_RespondWithFetch \
+  DISABLED_FetchFromServiceWorkerControlledPage_RespondWithFetch
+#else
+#define MAYBE_FetchFromServiceWorkerControlledPage_RespondWithFetch \
+  FetchFromServiceWorkerControlledPage_RespondWithFetch
+#endif
 // Make sure fetch from a page controlled by a service worker which has a fetch
 // handler and responds with fetch() works after crash.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
-                       FetchFromServiceWorkerControlledPage_RespondWithFetch) {
+IN_PROC_BROWSER_TEST_F(
+    NetworkServiceRestartBrowserTest,
+    MAYBE_FetchFromServiceWorkerControlledPage_RespondWithFetch) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   ServiceWorkerStatusObserver observer;
