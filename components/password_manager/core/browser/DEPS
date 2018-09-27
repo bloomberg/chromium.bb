@@ -41,7 +41,7 @@ specific_include_rules = {
   "password_manager_unittest\.cc": [
     "+components/ukm",
   ],
-  "password_manager_util_unittest\.cc": [
+  "http_credentials_cleaner_unittest\.cc": [
     "+services/network",
   ],
 }

@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -19,7 +18,7 @@
 #include "components/password_manager/core/browser/blacklisted_duplicates_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
-#include "components/password_manager/core/browser/hsts_query.h"
+#include "components/password_manager/core/browser/http_credentials_cleaner.h"
 #include "components/password_manager/core/browser/invalid_realm_credential_cleaner.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
@@ -32,7 +31,6 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
-#include "url/gurl.h"
 
 using autofill::PasswordForm;
 
@@ -48,146 +46,6 @@ bool IsBetterMatch(const PasswordForm* lhs, const PasswordForm* rhs) {
          std::make_pair(!rhs->is_public_suffix_match, rhs->preferred);
 }
 
-// This class is responsible for reporting metrics about HTTP to HTTPS
-// migration.
-class HttpMetricsMigrationReporter
-    : public password_manager::PasswordStoreConsumer {
- public:
-  HttpMetricsMigrationReporter(
-      password_manager::PasswordStore* store,
-      base::RepeatingCallback<network::mojom::NetworkContext*()>
-          network_context_getter)
-      : network_context_getter_(network_context_getter) {
-    store->GetAutofillableLogins(this);
-  }
-
- private:
-  // This type define a subset of PasswordForm where first argument is the
-  // signon-realm excluding the protocol, the second argument is
-  // PasswordForm::scheme (i.e. HTML, BASIC, etc.) and the third argument is the
-  // username of the form.
-  using FormKey = std::tuple<std::string, PasswordForm::Scheme, base::string16>;
-
-  // This overrides the PasswordStoreConsumer method.
-  void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
-
-  void OnHSTSQueryResult(FormKey key,
-                         base::string16 password_value,
-                         password_manager::HSTSResult is_hsts);
-
-  void ReportMetrics();
-
-  base::RepeatingCallback<network::mojom::NetworkContext*()>
-      network_context_getter_;
-
-  std::map<FormKey, base::flat_set<base::string16>> https_credentials_map_;
-  size_t processed_results_ = 0;
-
-  // The next three counters are in pairs where [0] component means that HSTS is
-  // not enabled and [1] component means that HSTS is enabled for that HTTP type
-  // of credentials.
-
-  // Number of HTTP credentials for which no HTTPS credential for the same
-  // username exists.
-  size_t https_credential_not_found_[2] = {0, 0};
-
-  // Number of HTTP credentials for which an equivalent (i.e. same host,
-  // username and password) HTTPS credential exists.
-  size_t same_password_[2] = {0, 0};
-
-  // Number of HTTP credentials for which a conflicting (i.e. same host and
-  // username, but different password) HTTPS credential exists.
-  size_t different_password_[2] = {0, 0};
-
-  // Number of HTTP credentials from the Password Store.
-  size_t total_http_credentials_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(HttpMetricsMigrationReporter);
-};
-
-void HttpMetricsMigrationReporter::OnGetPasswordStoreResults(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  // Non HTTP or HTTPS credentials are ignored.
-  base::EraseIf(results, [](const std::unique_ptr<PasswordForm>& form) {
-    return !form->origin.SchemeIsHTTPOrHTTPS();
-  });
-
-  for (auto& form : results) {
-    // The next signon-realm has the protocol excluded. For example if original
-    // signon_realm is "https://google.com/". After excluding protocol it
-    // becomes "google.com/".
-    FormKey form_key({GURL(form->signon_realm).GetContent(), form->scheme,
-                      form->username_value});
-    if (form->origin.SchemeIs(url::kHttpScheme)) {
-      password_manager::PostHSTSQueryForHostAndNetworkContext(
-          form->origin, network_context_getter_.Run(),
-          base::Bind(&HttpMetricsMigrationReporter::OnHSTSQueryResult,
-                     base::Unretained(this), form_key, form->password_value));
-      ++total_http_credentials_;
-    } else {  // Https
-      https_credentials_map_[form_key].insert(form->password_value);
-    }
-  }
-  ReportMetrics();
-}
-
-// |key| and |password_value| was created from the same form.
-void HttpMetricsMigrationReporter::OnHSTSQueryResult(
-    FormKey key,
-    base::string16 password_value,
-    password_manager::HSTSResult hsts_result) {
-  ++processed_results_;
-  base::ScopedClosureRunner report(base::BindOnce(
-      &HttpMetricsMigrationReporter::ReportMetrics, base::Unretained(this)));
-
-  if (hsts_result == password_manager::HSTSResult::kError)
-    return;
-
-  bool is_hsts = (hsts_result == password_manager::HSTSResult::kYes);
-
-  auto user_it = https_credentials_map_.find(key);
-  if (user_it == https_credentials_map_.end()) {
-    // Credentials are not migrated yet.
-    ++https_credential_not_found_[is_hsts];
-    return;
-  }
-  if (base::ContainsKey(user_it->second, password_value)) {
-    // The password store contains the same credentials (username and
-    // password) on HTTP version of the form.
-    ++same_password_[is_hsts];
-  } else {
-    ++different_password_[is_hsts];
-  }
-}
-
-void HttpMetricsMigrationReporter::ReportMetrics() {
-  // The metrics have to be recorded after all requests are done.
-  if (processed_results_ != total_http_credentials_)
-    return;
-
-  for (bool is_hsts_enabled : {false, true}) {
-    std::string suffix = (is_hsts_enabled ? std::string("WithHSTSEnabled")
-                                          : std::string("HSTSNotEnabled"));
-
-    base::UmaHistogramCounts1000(
-        "PasswordManager.HttpCredentialsWithEquivalentHttpsCredential." +
-            suffix,
-        same_password_[is_hsts_enabled]);
-
-    base::UmaHistogramCounts1000(
-        "PasswordManager.HttpCredentialsWithConflictingHttpsCredential." +
-            suffix,
-        different_password_[is_hsts_enabled]);
-
-    base::UmaHistogramCounts1000(
-        "PasswordManager.HttpCredentialsWithoutMatchingHttpsCredential." +
-            suffix,
-        https_credential_not_found_[is_hsts_enabled]);
-  }
-  delete this;
-}
-
 }  // namespace
 
 #if !defined(OS_IOS)
@@ -196,7 +54,8 @@ void ReportHttpMigrationMetrics(
     base::RepeatingCallback<network::mojom::NetworkContext*()>
         network_context_getter) {
   // The object will delete itself once the metrics are recorded.
-  new HttpMetricsMigrationReporter(store.get(), network_context_getter);
+  new password_manager::HttpCredentialCleaner(std::move(store),
+                                              network_context_getter);
 }
 #endif  // !defined(OS_IOS)
 

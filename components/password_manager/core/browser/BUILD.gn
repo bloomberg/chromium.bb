@@ -223,6 +223,8 @@ jumbo_static_library("browser") {
     sources += [
       "hsts_query.cc",
       "hsts_query.h",
+      "http_credentials_cleaner.cc",
+      "http_credentials_cleaner.h",
     ]
     deps += [ "//components/safe_browsing/common:safe_browsing_prefs" ]
   }
@@ -420,7 +422,10 @@ source_set("unit_tests") {
   if (is_ios) {
     sources += [ "login_database_ios_unittest.cc" ]
   } else {
-    sources += [ "hsts_query_unittest.cc" ]
+    sources += [
+      "hsts_query_unittest.cc",
+      "http_credentials_cleaner_unittest.cc",
+    ]
   }
   if (password_reuse_detection_support) {
     sources += [
