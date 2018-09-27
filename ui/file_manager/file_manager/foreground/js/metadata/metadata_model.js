@@ -90,7 +90,7 @@ MetadataModel.prototype.get = function(entries, names) {
       }
 
       // Store cache.
-      this.cache_.storeProperties(requestId, requestedEntries, list);
+      this.cache_.storeProperties(requestId, requestedEntries, list, names);
 
       // Invoke callbacks.
       var i = 0;
@@ -206,7 +206,7 @@ function MetadataProviderCallbackRequest(entries, names, cache, fulfill) {
  */
 MetadataProviderCallbackRequest.prototype.storeProperties = function(
     requestId, entries, objects) {
-  this.cache_.storeProperties(requestId, entries, objects);
+  this.cache_.storeProperties(requestId, entries, objects, this.names_);
   if (this.cache_.hasFreshCache(this.entries_, this.names_)) {
     this.fulfill_(this.cache_.get(this.entries_, this.names_));
     return true;

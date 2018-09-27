@@ -61,29 +61,37 @@ MetadataCacheSet.prototype.startRequests = function(requestId, requests) {
 /**
  * Stores results from MetadataProvider with the request Id.
  * @param {number} requestId Request ID. If a newer operation has already been
- *     done, the results must be ingored.
+ *     done, the results must be ignored.
  * @param {!Array<!Entry>} entries
  * @param {!Array<!MetadataItem>} results
+ * @param {!Array<string>} names Property names that have been requested and
+ *     updated.
  * @return {boolean} Whether at least one result is stored or not.
  */
 MetadataCacheSet.prototype.storeProperties = function(
-    requestId, entries, results) {
+    requestId, entries, results, names) {
   var changedEntries = [];
   var urls = util.entriesToURLs(entries);
+  const entriesMap = new Map();
+
   for (var i = 0; i < entries.length; i++) {
     var url = urls[i];
     var item = this.items_.peek(url);
-    if (item && item.storeProperties(requestId, results[i]))
+    if (item && item.storeProperties(requestId, results[i])) {
       changedEntries.push(entries[i]);
+      entriesMap.set(url, entries[i]);
+    }
   }
-  if (changedEntries.length) {
-    var event = new Event('update');
-    event.entries = changedEntries;
-    this.dispatchEvent(event);
-    return true;
-  } else {
+
+  if (!changedEntries.length)
     return false;
-  }
+
+  var event = new Event('update');
+  event.entries = changedEntries;
+  event.entriesMap = entriesMap;
+  event.names = new Set(names);
+  this.dispatchEvent(event);
+  return true;
 };
 
 /**

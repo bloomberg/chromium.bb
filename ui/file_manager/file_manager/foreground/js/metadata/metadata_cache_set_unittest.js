@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var entryA = {
-  toURL: function() { return "filesystem://A"; }
+const entryA = {
+  toURL: function() {
+    return 'filesystem://A';
+  }
 };
 
-var entryB = {
-  toURL: function() { return "filesystem://B"; }
+const entryB = {
+  toURL: function() {
+    return 'filesystem://B';
+  }
 };
 
 function testMetadataCacheSetBasic() {
@@ -144,8 +148,8 @@ function testMetadataCacheSetClear() {
 }
 
 function testMetadataCacheSetUpdateEvent() {
-  var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
-  var event = null;
+  const set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
+  let event = null;
   set.addEventListener('update', function(inEvent) {
     event = inEvent;
   });
@@ -153,6 +157,9 @@ function testMetadataCacheSetUpdateEvent() {
   set.storeProperties(1, [entryA], [{propertyA: 'value'}]);
   assertEquals(1, event.entries.length);
   assertEquals(entryA, event.entries[0]);
+  assertTrue(event.entriesMap.has(entryA.toURL()));
+  assertFalse(event.entriesMap.has(entryB.toURL()));
+  assertFalse(event.names.has('propertyA'));
 }
 
 function testMetadataCacheSetClearAll() {
