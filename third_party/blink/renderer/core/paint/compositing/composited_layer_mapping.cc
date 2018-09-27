@@ -2762,7 +2762,7 @@ Color CompositedLayerMapping::LayoutObjectBackgroundColor() const {
 }
 
 void CompositedLayerMapping::UpdateBackgroundColor() {
-  auto color = LayoutObjectBackgroundColor();
+  auto color = LayoutObjectBackgroundColor().Rgb();
   graphics_layer_->SetBackgroundColor(color);
   if (scrolling_contents_layer_)
     scrolling_contents_layer_->SetBackgroundColor(color);
