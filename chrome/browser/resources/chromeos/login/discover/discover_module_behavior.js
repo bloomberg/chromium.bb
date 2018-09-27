@@ -31,6 +31,11 @@ var DiscoverModuleBehaviorImpl = {
   },
 
   show: function() {},
+
+  updateLocalizedContent: function() {
+    // Pass to I18nBehavior.
+    this.i18nUpdateLocale();
+  },
 };
 
 var DiscoverModuleBehavior =
