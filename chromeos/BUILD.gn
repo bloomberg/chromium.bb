@@ -26,6 +26,7 @@ component("chromeos") {
     ":login_manager_proto",
     ":media_perception_proto",
     ":metrics_event_proto",
+    ":oobe_config_proto",
     ":power_manager_proto",
     ":seneschal_proto",
     ":smbprovider_proto",
@@ -633,6 +634,7 @@ test("chromeos_unittests") {
     ":authpolicy_proto",
     ":biod_proto",
     ":cryptohome_proto",
+    ":oobe_config_proto",
     ":power_manager_proto",
     ":test_support",
     ":test_support_without_gmock",
@@ -679,6 +681,7 @@ test("chromeos_unittests") {
     "dbus/fake_power_manager_client_unittest.cc",
     "dbus/gsm_sms_client_unittest.cc",
     "dbus/modem_messaging_client_unittest.cc",
+    "dbus/oobe_configuration_client_unittest.cc",
     "dbus/pipe_reader_unittest.cc",
     "dbus/power_manager_client_unittest.cc",
     "dbus/power_policy_controller_unittest.cc",
@@ -908,6 +911,14 @@ proto_library("media_perception_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/media_perception"
+}
+
+proto_library("oobe_config_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/oobe_config/oobe_config.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/oobe_config"
 }
 
 proto_library("seneschal_proto") {
