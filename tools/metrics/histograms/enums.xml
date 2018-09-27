@@ -40470,6 +40470,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PreviewsInfoBarTimestamp">
+  <obsolete>
+    Replaced by PreviewsStalePreviewTimestamp.
+  </obsolete>
   <int value="0" label="Timestamp shown"/>
   <int value="1" label="Timestamp not shown because the preview was not stale"/>
   <int value="2"
@@ -40533,6 +40536,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Service Unavailable"/>
   <int value="4" label="Other"/>
   <int value="5" label="Failed"/>
+</enum>
+
+<enum name="PreviewsStalePreviewTimestamp">
+  <int value="0" label="Timestamp shown"/>
+  <int value="1" label="Timestamp not shown because the preview was not stale"/>
+  <int value="2"
+      label="Timestamp not shown because the staleness was negative"/>
+  <int value="3"
+      label="Timestamp not shown because the staleness was greater than the
+             max"/>
+  <int value="4"
+      label="Timestamp shown indicating the page was just updated on reload"/>
 </enum>
 
 <enum name="PreviewsType">

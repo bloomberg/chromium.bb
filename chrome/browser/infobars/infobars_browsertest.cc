@@ -404,9 +404,8 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
     }
 
     case IBD::DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE:
-      PreviewsInfoBarDelegate::Create(GetWebContents(),
-                                      previews::PreviewsType::LOFI,
-                                      base::Time::Now(), true, true, nullptr);
+      PreviewsInfoBarDelegate::Create(
+          GetWebContents(), previews::PreviewsType::LOFI, true, nullptr);
       break;
 
     case IBD::AUTOMATION_INFOBAR_DELEGATE:
