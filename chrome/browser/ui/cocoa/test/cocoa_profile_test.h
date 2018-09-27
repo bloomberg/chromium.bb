@@ -57,10 +57,6 @@ class CocoaProfileTest : public CocoaTest {
   // test window.
   virtual Browser* CreateBrowser();
 
-  // Define the TestingFactories to be used when SetUp() builds a Profile. To be
-  // called in the subclass' constructor.
-  void AddTestingFactories(TestingProfile::TestingFactories testing_factories);
-
  private:
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 
@@ -68,7 +64,6 @@ class CocoaProfileTest : public CocoaTest {
 
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;  // Weak; owned by profile_manager_.
-  TestingProfile::TestingFactories testing_factories_;
   std::unique_ptr<Browser> browser_;
 };
 
