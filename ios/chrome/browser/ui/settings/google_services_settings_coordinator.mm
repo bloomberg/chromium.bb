@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_local_commands.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
@@ -95,6 +96,25 @@
 }
 
 #pragma mark - GoogleServicesSettingsLocalCommands
+
+- (void)restartAuthenticationFlow {
+  // TODO(crbug.com/849754): Restart the authentication flow.
+}
+
+- (void)openReauthDialogAsSyncIsInAuthError {
+  // Sync enters in a permanent auth error state when fetching an access token
+  // fails with invalid credentials. This corresponds to Gaia responding with an
+  // "invalid grant" error. The current implementation of the iOS SSOAuth
+  // library user by Chrome removes the identity from the device when receiving
+  // an "invalid grant" response, which leads to the account being also signed
+  // out of Chrome. So the sync permanent auth error is a transient state on
+  // iOS. The decision was to avoid handling this error in the UI, which means
+  // that the reauth dialog is not actually presented on iOS.
+}
+
+- (void)openPassphraseDialog {
+  // TODO(crbug.com/849754): open the passphrase dialog.
+}
 
 - (void)openGoogleActivityControlsDialog {
   base::RecordAction(base::UserMetricsAction(

@@ -25,6 +25,9 @@
 // The detail text to display.
 @property(nonatomic, copy) NSString* detailText;
 
+// Command to trigger when the switch is toggled. The default value is 0.
+@property(nonatomic, assign) NSInteger commandID;
+
 @end
 
 // Cell representation for SettingsImageDetailTextItem.
