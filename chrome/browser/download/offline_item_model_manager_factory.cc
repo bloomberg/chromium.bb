@@ -6,7 +6,6 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/download/offline_item_model_manager.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 
@@ -32,9 +31,4 @@ OfflineItemModelManagerFactory::~OfflineItemModelManagerFactory() = default;
 KeyedService* OfflineItemModelManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new OfflineItemModelManager(context);
-}
-
-content::BrowserContext* OfflineItemModelManagerFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

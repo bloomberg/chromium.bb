@@ -17,19 +17,12 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_started_animation.h"
-#include "chrome/browser/download/offline_item_model.h"
-#include "chrome/browser/download/offline_item_model_manager.h"
-#include "chrome/browser/download/offline_item_model_manager_factory.h"
-#include "chrome/browser/download/offline_item_utils.h"
-#include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/download/public/common/download_item.h"
-#include "components/offline_items_collection/core/offline_content_aggregator.h"
-#include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
@@ -59,47 +52,6 @@ int GetOpacity(double animation_progress) {
       ((animation_progress * kCompleteAnimationCycles) + 0.5) * base::kPiDouble;
   temp = sin(temp) / 2 + 0.5;
   return static_cast<int>(255.0 * temp);
-}
-
-void OnGetDownloadDoneForOfflineItem(
-    Profile* profile,
-    base::OnceCallback<void(DownloadUIModelPtr)> callback,
-    const base::Optional<OfflineItem>& offline_item) {
-  if (!offline_item.has_value())
-    return;
-
-  OfflineItemModelManager* manager =
-      OfflineItemModelManagerFactory::GetForBrowserContext(profile);
-  DownloadUIModelPtr model =
-      OfflineItemModel::Wrap(manager, offline_item.value());
-
-  std::move(callback).Run(std::move(model));
-}
-
-void GetDownload(Profile* profile,
-                 ContentId id,
-                 base::OnceCallback<void(DownloadUIModelPtr)> callback) {
-  if (!OfflineItemUtils::IsDownload(id)) {
-    content::DownloadManager* download_manager =
-        content::BrowserContext::GetDownloadManager(profile);
-    if (!download_manager)
-      return;
-
-    DownloadItem* download = download_manager->GetDownloadByGuid(id.id);
-    if (!download)
-      return;
-
-    DownloadUIModelPtr model = DownloadItemModel::Wrap(download);
-    std::move(callback).Run(std::move(model));
-  } else {
-    offline_items_collection::OfflineContentAggregator* aggregator =
-        OfflineContentAggregatorFactory::GetForBrowserContext(profile);
-    if (!aggregator)
-      return;
-
-    aggregator->GetItemById(id, base::BindOnce(&OnGetDownloadDoneForOfflineItem,
-                                               profile, std::move(callback)));
-  }
 }
 
 } // namespace
@@ -180,19 +132,19 @@ void DownloadShelf::PaintDownloadInterrupted(
   PaintDownloadComplete(canvas, theme_provider, 1.0 - animation_progress);
 }
 
-void DownloadShelf::AddDownload(DownloadUIModelPtr model) {
-  DCHECK(model);
-  if (model->ShouldRemoveFromShelfWhenComplete()) {
+void DownloadShelf::AddDownload(DownloadItem* download) {
+  DCHECK(download);
+  if (DownloadItemModel(download).ShouldRemoveFromShelfWhenComplete()) {
     // If we are going to remove the download from the shelf upon completion,
     // wait a few seconds to see if it completes quickly. If it's a small
     // download, then the user won't have time to interact with it.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&DownloadShelf::ShowDownloadById,
-                       weak_ptr_factory_.GetWeakPtr(), model->GetContentId()),
+                       weak_ptr_factory_.GetWeakPtr(), download->GetId()),
         GetTransientDownloadShowDelay());
   } else {
-    ShowDownload(std::move(model));
+    ShowDownload(download);
   }
 }
 
@@ -236,26 +188,23 @@ base::TimeDelta DownloadShelf::GetTransientDownloadShowDelay() {
   return base::TimeDelta::FromSeconds(kDownloadShowDelayInSeconds);
 }
 
-Profile* DownloadShelf::profile() const {
-  return browser() ? browser()->profile() : nullptr;
+content::DownloadManager* DownloadShelf::GetDownloadManager() {
+  return content::BrowserContext::GetDownloadManager(browser()->profile());
 }
 
-void DownloadShelf::ShowDownload(DownloadUIModelPtr download) {
+void DownloadShelf::ShowDownload(DownloadItem* download) {
   if (download->GetState() == DownloadItem::COMPLETE &&
-      download->ShouldRemoveFromShelfWhenComplete())
+      DownloadItemModel(download).ShouldRemoveFromShelfWhenComplete())
     return;
-
-  if (!DownloadCoreServiceFactory::GetForBrowserContext(download->profile())
+  if (!DownloadCoreServiceFactory::GetForBrowserContext(
+           content::DownloadItemUtils::GetBrowserContext(download))
            ->IsShelfEnabled())
     return;
-
-  bool should_show_download_started_animation =
-      download->ShouldShowDownloadStartedAnimation();
 
   if (is_hidden_)
     Unhide();
   Open();
-  DoAddDownload(std::move(download));
+  DoAddDownload(download);
 
   // browser() can be NULL for tests.
   if (!browser())
@@ -269,15 +218,22 @@ void DownloadShelf::ShowDownload(DownloadUIModelPtr download) {
   // - Rich animations are enabled.
   content::WebContents* shelf_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  if (should_show_download_started_animation && shelf_tab &&
+  if (DownloadItemModel(download).ShouldShowDownloadStartedAnimation() &&
+      shelf_tab &&
       platform_util::IsVisible(shelf_tab->GetNativeView()) &&
       gfx::Animation::ShouldRenderRichAnimation()) {
     DownloadStartedAnimation::Show(shelf_tab);
   }
 }
 
-void DownloadShelf::ShowDownloadById(ContentId id) {
-  GetDownload(profile(), id,
-              base::BindOnce(&DownloadShelf::ShowDownload,
-                             weak_ptr_factory_.GetWeakPtr()));
+void DownloadShelf::ShowDownloadById(int32_t download_id) {
+  content::DownloadManager* download_manager = GetDownloadManager();
+  if (!download_manager)
+    return;
+
+  DownloadItem* download = download_manager->GetDownload(download_id);
+  if (!download)
+    return;
+
+  ShowDownload(download);
 }
