@@ -16,6 +16,7 @@ class AutofillProfile;
 
 namespace autofill_assistant {
 class ClientMemory;
+class NodeProto;
 
 // Action delegate called when processing actions.
 class ActionDelegate {

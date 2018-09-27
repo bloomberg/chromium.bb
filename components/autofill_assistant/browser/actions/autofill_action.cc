@@ -20,6 +20,7 @@ namespace autofill_assistant {
 AutofillAction::AutofillAction(const ActionProto& proto)
     : Action(proto), pending_set_field_value_(0), weak_ptr_factory_(this) {
   if (proto.has_use_address()) {
+    is_autofill_card_ = false;
     prompt_ = proto.use_address().prompt();
     name_ = proto.use_address().name();
     for (const auto& selector :
@@ -30,6 +31,7 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     DCHECK(proto.has_use_card());
     is_autofill_card_ = true;
     prompt_ = proto.use_card().prompt();
+    name_ = "";
     for (const auto& selector :
          proto.use_card().form_field_element().selectors()) {
       selectors_.emplace_back(selector);
@@ -101,20 +103,20 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
     delegate->GetClientMemory()->set_selected_address(name_, guid);
   }
 
-  if (guid.empty()) {
-    // User selected 'Fill manually'.
-    // TODO(crbug.com/806868): We need to differentiate between action failure
-    // and stopping an action to let the user fill a form (expected stop).
-    UpdateProcessedAction(false);
-    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
-    return;
-  }
-
   if (selectors_.empty()) {
     // If there is no selector, finish the action directly. This can be the case
     // when we want to trigger the selection of address or card at the beginning
     // of the script and use it later.
     UpdateProcessedAction(true);
+    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
+    return;
+  }
+
+  if (guid.empty()) {
+    // User selected 'Fill manually'.
+    // TODO(crbug.com/806868): We need to differentiate between action failure
+    // and stopping an action to let the user fill a form (expected stop).
+    UpdateProcessedAction(false);
     std::move(process_action_callback_).Run(std::move(processed_action_proto_));
     return;
   }
@@ -127,14 +129,14 @@ void AutofillAction::FillFormWithData(const std::string& guid,
                                       ActionDelegate* delegate) {
   DCHECK(!selectors_.empty());
   if (is_autofill_card_) {
-    delegate->FillAddressForm(
+    delegate->FillCardForm(
         guid, selectors_,
         base::BindOnce(&AutofillAction::OnFormFilled,
                        weak_ptr_factory_.GetWeakPtr(), guid, delegate));
     return;
   }
 
-  delegate->FillCardForm(
+  delegate->FillAddressForm(
       guid, selectors_,
       base::BindOnce(&AutofillAction::OnFormFilled,
                      weak_ptr_factory_.GetWeakPtr(), guid, delegate));
