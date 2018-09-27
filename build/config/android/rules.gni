@@ -2400,13 +2400,6 @@ if (enable_java_templates) {
         if (_enable_multidex) {
           proguard_configs += [ "//build/android/multidex.flags" ]
         }
-        if (_use_chromium_linker) {
-          proguard_configs +=
-              [ "//base/android/proguard/explicit_jni_registration.flags" ]
-        } else {
-          proguard_configs +=
-              [ "//base/android/proguard/implicit_jni_registration.flags" ]
-        }
         proguard_output_jar_path = _proguard_output_jar_path
       }
 
