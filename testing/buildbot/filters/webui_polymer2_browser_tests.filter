@@ -57,10 +57,6 @@
 -DemoSetupTest.OnlineSetupFlowSuccess
 -DemoSetupTest.ShowOfflineSetupOptionOnNetworkList
 -EulaTest.LoadOffline
--TabIndex/FilesAppBrowserTest.Test/tabindexSaveFileDialogDownloads
--TabIndex/FilesAppBrowserTest.Test/tabindexSaveFileDialogDownloads_GuestMode
--TabIndex/FilesAppBrowserTest.Test/tabindexSaveFileDialogDrive
--TabIndex/FilesAppBrowserTest.Test/tabindexSaveFileDialogDrive_DriveFs
 
 # Passing tests
 #
@@ -310,6 +306,7 @@ SettingsUIBrowserTest.*
 SigninSyncConfirmationTest.*
 SiteEngagementBrowserTest.*
 SysInternalsBrowserTest.*
+TabIndex/FilesAppBrowserTest.*
 TextDefaultsTest.*
 TtsAccessibilityTest.*
 UserManagerBrowserTest.*
