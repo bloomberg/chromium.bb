@@ -107,12 +107,6 @@ void SharedChangeProcessor::StartAssociation(
       return;
     }
 
-    std::string datatype_context;
-    if (GetDataTypeContext(&datatype_context)) {
-      local_service_->UpdateDataTypeContext(
-          type_, SyncChangeProcessor::NO_REFRESH, datatype_context);
-    }
-
     syncer_merge_result.set_num_items_before_association(
         initial_sync_data.size());
     // Passes a reference to |shared_change_processor|.

@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/model/sync_change_processor.h"
+#include "components/sync/model/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -190,11 +191,6 @@ class PasswordSyncableServiceWrapper {
   MockPasswordStore* password_store() { return password_store_.get(); }
 
   PasswordSyncableService* service() { return service_.get(); }
-
-  // Returnes the scoped_ptr to |service_| thus NULLing out it.
-  std::unique_ptr<syncer::SyncChangeProcessor> ReleaseSyncableService() {
-    return std::move(service_);
-  }
 
  private:
   scoped_refptr<MockPasswordStore> password_store_;
@@ -466,7 +462,8 @@ TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
       other_service_wrapper.service()->GetAllSyncData(syncer::PASSWORDS);
   service()->MergeDataAndStartSyncing(
       syncer::PASSWORDS, other_service_data,
-      other_service_wrapper.ReleaseSyncableService(),
+      std::make_unique<syncer::SyncChangeProcessorWrapperForTest>(
+          other_service_wrapper.service()),
       std::unique_ptr<syncer::SyncErrorFactory>());
 }
 
