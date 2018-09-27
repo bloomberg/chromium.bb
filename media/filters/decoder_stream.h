@@ -33,6 +33,7 @@ namespace media {
 
 class CdmContext;
 class DecryptingDemuxerStream;
+class ScopedDecodeTrace;
 
 // Wraps a DemuxerStream and a list of Decoders and provides decoded
 // output to its client (e.g. Audio/VideoRendererImpl).
@@ -188,7 +189,10 @@ class MEDIA_EXPORT DecoderStream {
   void FlushDecoder();
 
   // Callback for Decoder::Decode().
-  void OnDecodeDone(int buffer_size, bool end_of_stream, DecodeStatus status);
+  void OnDecodeDone(int buffer_size,
+                    bool end_of_stream,
+                    std::unique_ptr<ScopedDecodeTrace> trace_event,
+                    DecodeStatus status);
 
   // Output callback passed to Decoder::Initialize().
   void OnDecodeOutputReady(const scoped_refptr<Output>& output);

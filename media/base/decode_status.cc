@@ -8,18 +8,19 @@
 
 namespace media {
 
-std::ostream& operator<<(std::ostream& os, const DecodeStatus& status) {
+const char* GetDecodeStatusString(DecodeStatus status) {
   switch (status) {
     case DecodeStatus::OK:
-      os << "DecodeStatus::OK";
-      break;
+      return "DecodeStatus::OK";
     case DecodeStatus::ABORTED:
-      os << "DecodeStatus::ABORTED";
-      break;
+      return "DecodeStatus::ABORTED";
     case DecodeStatus::DECODE_ERROR:
-      os << "DecodeStatus::DECODE_ERROR";
-      break;
+      return "DecodeStatus::DECODE_ERROR";
   }
+}
+
+std::ostream& operator<<(std::ostream& os, const DecodeStatus& status) {
+  os << GetDecodeStatusString(status);
   return os;
 }
 
