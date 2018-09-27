@@ -62,7 +62,8 @@ class RemoteTextInputClient : public ui::TextInputClient,
 
   // ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* event) override;
+      ui::KeyEvent* event,
+      base::OnceCallback<void(bool)> ack_callback) override;
 
   ws::mojom::TextInputClientPtr remote_client_;
   ui::TextInputType text_input_type_;

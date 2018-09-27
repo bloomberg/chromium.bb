@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/i18n/rtl.h"
@@ -157,7 +158,7 @@ ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
 // which trigger the appropriate NSResponder action messages for composition.
 #if defined(OS_MACOSX)
   if (key->is_char())
-    return DispatchKeyEventPostIME(key);
+    return DispatchKeyEventPostIME(key, base::NullCallback());
 #endif
 
   // Checks whether the key event is from EventGenerator on Windows which will
@@ -177,9 +178,9 @@ ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
     ui::KeyEvent mock_key(ui::ET_KEY_PRESSED,
                           ui::VKEY_PROCESSKEY,
                           key->flags());
-    dispatch_details = DispatchKeyEventPostIME(&mock_key);
+    dispatch_details = DispatchKeyEventPostIME(&mock_key, base::NullCallback());
   } else {
-    dispatch_details = DispatchKeyEventPostIME(key);
+    dispatch_details = DispatchKeyEventPostIME(key, base::NullCallback());
   }
 
   if (key->handled() || dispatch_details.dispatcher_destroyed)

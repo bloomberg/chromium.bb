@@ -171,7 +171,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void SetSharedInputMethod(ui::InputMethod* input_method);
 
   // Overridden from ui::internal::InputMethodDelegate:
-  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* event) final;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event,
+      base::OnceCallback<void(bool)> ack_callback) final;
 
   // Returns the id of the display. Default implementation queries Screen.
   virtual int64_t GetDisplayId();

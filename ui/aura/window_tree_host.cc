@@ -243,7 +243,8 @@ void WindowTreeHost::SetSharedInputMethod(ui::InputMethod* input_method) {
 }
 
 ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
-    ui::KeyEvent* event) {
+    ui::KeyEvent* event,
+    base::OnceCallback<void(bool)> ack_callback) {
   // If dispatch to IME is already disabled we shouldn't reach here.
   DCHECK(!dispatcher_->should_skip_ime());
   dispatcher_->set_skip_ime(true);
@@ -252,6 +253,7 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
       event_sink()->OnEventFromSource(event);
   if (!dispatch_details.dispatcher_destroyed)
     dispatcher_->set_skip_ime(false);
+  CallDispatchKeyEventPostIMEAck(event, std::move(ack_callback));
   return dispatch_details;
 }
 

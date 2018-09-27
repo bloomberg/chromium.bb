@@ -55,6 +55,7 @@ jumbo_component("ime") {
     "input_method_base.h",
     "input_method_chromeos.cc",
     "input_method_chromeos.h",
+    "input_method_delegate.cc",
     "input_method_delegate.h",
     "input_method_factory.cc",
     "input_method_factory.h",
