@@ -61,10 +61,6 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   ScriptPromise suspendContext(ScriptState*, double);
   ScriptPromise resumeContext(ScriptState*) final;
 
-  // This is to implement the pure virtual method from BaseAudioContext.
-  // CANNOT be called from an OfflineAudioContext.
-  ScriptPromise suspendContext(ScriptState*) final;
-
   void RejectPendingResolvers() override;
 
   bool HasRealtimeConstraint() final { return false; }
