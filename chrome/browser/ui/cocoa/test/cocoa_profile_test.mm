@@ -10,20 +10,27 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/views/chrome_test_views_delegate.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "ui/views/test/widget_test.h"
 
 CocoaProfileTest::CocoaProfileTest()
-    : profile_manager_(TestingBrowserProcess::GetGlobal()),
-      profile_(NULL),
-      thread_bundle_(new content::TestBrowserThreadBundle) {}
+    : thread_bundle_(new content::TestBrowserThreadBundle),
+      views_helper_(std::make_unique<ChromeTestViewsDelegate>()),
+      profile_manager_(TestingBrowserProcess::GetGlobal()),
+      profile_(nullptr) {}
 
 CocoaProfileTest::~CocoaProfileTest() {
   // Delete the testing profile on the UI thread. But first release the
@@ -36,7 +43,7 @@ CocoaProfileTest::~CocoaProfileTest() {
   // thread. If the scoper in TestingBrowserProcess, owned by ChromeTestSuite,
   // were to delete the ProfileManager, the UI thread would at that point no
   // longer exist.
-  TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
 
   // Make sure any pending tasks run before we destroy other threads.
   base::RunLoop().RunUntilIdle();
@@ -54,6 +61,10 @@ void CocoaProfileTest::SetUp() {
 
   ASSERT_TRUE(profile_manager_.SetUp());
 
+  // Always fake out the Gaia service to avoid issuing network requests.
+  testing_factories_.push_back({GaiaCookieManagerServiceFactory::GetInstance(),
+                                &BuildFakeGaiaCookieManagerService});
+
   profile_ = profile_manager_.CreateTestingProfile(
       "Person 1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
       base::UTF8ToUTF16("Person 1"), 0, std::string(), testing_factories_);
@@ -68,6 +79,14 @@ void CocoaProfileTest::SetUp() {
       profile_, &TemplateURLServiceFactory::BuildInstanceFor);
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
+
+  // Configure the GaiaCookieManagerService to return no accounts.
+  // This is copied from
+  // chrome/browser/ui/views/frame/test_with_browser_view.cc.
+  FakeGaiaCookieManagerService* gcms =
+      static_cast<FakeGaiaCookieManagerService*>(
+          GaiaCookieManagerServiceFactory::GetForProfile(profile_));
+  gcms->SetListAccountsResponseHttpNotFound();
 
   profile_->CreateBookmarkModel(true);
   bookmarks::test::WaitForBookmarkModelToLoad(
@@ -89,8 +108,14 @@ void CocoaProfileTest::CloseBrowserWindow() {
   DCHECK(browser_->window());
   browser_->tab_strip_model()->CloseAllTabs();
   chrome::CloseWindow(browser_.get());
-  // |browser_| will be deleted by its BrowserWindowController.
-  ignore_result(browser_.release());
+
+  // |browser_| will be deleted by its frame.
+  Browser* browser = browser_.release();
+  auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+
+  // Wait for the close to happen so that this method is synchronous.
+  views::test::WidgetDestroyedWaiter waiter(browser_view->frame());
+  waiter.Wait();
 }
 
 Browser* CocoaProfileTest::CreateBrowser() {

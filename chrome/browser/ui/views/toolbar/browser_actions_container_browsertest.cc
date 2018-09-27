@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -266,8 +265,6 @@ class BrowserActionsContainerOverflowTest
  private:
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
-
-  test::ScopedMacViewsBrowserMode views_mode_{true};
 
   // The main BrowserActionsContainer (owned by the browser view).
   BrowserActionsContainer* main_bar_;
