@@ -78,17 +78,9 @@ std::unique_ptr<GraphicsLayer> GraphicsLayer::Create(
 
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
     : client_(client),
-      background_color_(Color::kTransparent),
-      opacity_(1),
-      blend_mode_(BlendMode::kNormal),
-      has_transform_origin_(false),
-      contents_opaque_(false),
       prevent_contents_opaque_changes_(false),
-      should_flatten_transform_(true),
-      backface_visibility_(true),
       draws_content_(false),
       contents_visible_(true),
-      is_root_for_isolated_group_(false),
       hit_testable_without_draws_content_(false),
       needs_check_raster_invalidation_(false),
       has_scroll_parent_(false),
@@ -107,14 +99,14 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
   client.VerifyNotPainting();
 #endif
   layer_ = cc::PictureLayer::Create(this);
-  layer_->SetIsDrawable(draws_content_ && contents_visible_);
-  layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
+  CcLayer()->SetIsDrawable(draws_content_ && contents_visible_);
+  CcLayer()->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 
   UpdateTrackingRasterInvalidations();
 }
 
 GraphicsLayer::~GraphicsLayer() {
-  layer_->SetLayerClient(nullptr);
+  CcLayer()->SetLayerClient(nullptr);
   SetContentsLayer(nullptr);
   for (size_t i = 0; i < link_highlights_.size(); ++i)
     link_highlights_[i]->ClearCurrentGraphicsLayer();
@@ -136,17 +128,17 @@ LayoutRect GraphicsLayer::VisualRect() const {
 
 void GraphicsLayer::SetHasWillChangeTransformHint(
     bool has_will_change_transform) {
-  layer_->SetHasWillChangeTransformHint(has_will_change_transform);
+  CcLayer()->SetHasWillChangeTransformHint(has_will_change_transform);
 }
 
 void GraphicsLayer::SetOverscrollBehavior(
     const cc::OverscrollBehavior& behavior) {
-  layer_->SetOverscrollBehavior(behavior);
+  CcLayer()->SetOverscrollBehavior(behavior);
 }
 
 void GraphicsLayer::SetSnapContainerData(
     base::Optional<SnapContainerData> data) {
-  layer_->SetSnapContainerData(std::move(data));
+  CcLayer()->SetSnapContainerData(std::move(data));
 }
 
 void GraphicsLayer::SetIsResizedByBrowserControls(
@@ -342,7 +334,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
       GetPaintController().AppendDebugDrawingAfterCommit(std::move(record),
                                                          layer_state_->state);
       // Ensure the compositor will raster the under-invalidation overlay.
-      layer_->SetNeedsDisplay();
+      CcLayer()->SetNeedsDisplay();
     }
   }
 
@@ -414,12 +406,12 @@ void GraphicsLayer::UpdateLayerIsDrawable() {
   // shouldn't receive the drawsContent flag, so it is only given
   // contentsVisible.
 
-  layer_->SetIsDrawable(draws_content_ && contents_visible_);
+  CcLayer()->SetIsDrawable(draws_content_ && contents_visible_);
   if (cc::Layer* contents_layer = ContentsLayerIfRegistered())
     contents_layer->SetIsDrawable(contents_visible_);
 
   if (draws_content_) {
-    layer_->SetNeedsDisplay();
+    CcLayer()->SetNeedsDisplay();
     for (size_t i = 0; i < link_highlights_.size(); ++i)
       link_highlights_[i]->Invalidate();
   }
@@ -523,7 +515,7 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
 
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
-  layer_->InsertChild(contents_layer_, 0);
+  CcLayer()->InsertChild(contents_layer_, 0);
   cc::PictureLayer* border_cc_layer =
       contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
                                     : nullptr;
@@ -636,18 +628,18 @@ const gfx::PointF& GraphicsLayer::GetPosition() const {
 }
 
 const gfx::Size& GraphicsLayer::Size() const {
-  return layer_->bounds();
+  return CcLayer()->bounds();
 }
 
 void GraphicsLayer::SetSize(const gfx::Size& size) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
-  if (size == layer_->bounds())
+  if (size == CcLayer()->bounds())
     return;
 
   Invalidate(PaintInvalidationReason::kIncremental);  // as DisplayItemClient.
 
-  layer_->SetBounds(size);
+  CcLayer()->SetBounds(size);
   // Note that we don't resize m_contentsLayer. It's up the caller to do that.
 }
 
@@ -656,19 +648,20 @@ void GraphicsLayer::SetTransform(const TransformationMatrix& transform) {
   CcLayer()->SetTransform(TransformationMatrix::ToTransform(transform));
 }
 
-void GraphicsLayer::SetTransformOrigin(const FloatPoint3D& transform_origin) {
-  has_transform_origin_ = true;
-  transform_origin_ = transform_origin;
+void GraphicsLayer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   CcLayer()->SetTransformOrigin(transform_origin);
 }
 
+const gfx::Point3F& GraphicsLayer::TransformOrigin() const {
+  return CcLayer()->transform_origin();
+}
+
+bool GraphicsLayer::ShouldFlattenTransform() const {
+  return CcLayer()->should_flatten_transform();
+}
+
 void GraphicsLayer::SetShouldFlattenTransform(bool should_flatten) {
-  if (should_flatten == should_flatten_transform_)
-    return;
-
-  should_flatten_transform_ = should_flatten;
-
-  layer_->SetShouldFlattenTransform(should_flatten);
+  CcLayer()->SetShouldFlattenTransform(should_flatten);
 }
 
 void GraphicsLayer::SetRenderingContext(int context) {
@@ -676,18 +669,18 @@ void GraphicsLayer::SetRenderingContext(int context) {
     return;
 
   rendering_context3d_ = context;
-  layer_->Set3dSortingContextId(context);
+  CcLayer()->Set3dSortingContextId(context);
 
   if (contents_layer_)
-    contents_layer_->Set3dSortingContextId(rendering_context3d_);
+    CcLayer()->Set3dSortingContextId(rendering_context3d_);
 }
 
 bool GraphicsLayer::MasksToBounds() const {
-  return layer_->masks_to_bounds();
+  return CcLayer()->masks_to_bounds();
 }
 
 void GraphicsLayer::SetMasksToBounds(bool masks_to_bounds) {
-  layer_->SetMasksToBounds(masks_to_bounds);
+  CcLayer()->SetMasksToBounds(masks_to_bounds);
 }
 
 void GraphicsLayer::SetDrawsContent(bool draws_content) {
@@ -719,25 +712,28 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
 
 void GraphicsLayer::SetClipParent(cc::Layer* parent) {
   has_clip_parent_ = !!parent;
-  layer_->SetClipParent(parent);
+  CcLayer()->SetClipParent(parent);
 }
 
 void GraphicsLayer::SetScrollParent(cc::Layer* parent) {
   has_scroll_parent_ = !!parent;
-  layer_->SetScrollParent(parent);
+  CcLayer()->SetScrollParent(parent);
 }
 
-void GraphicsLayer::SetBackgroundColor(const Color& color) {
-  if (color == background_color_)
-    return;
+RGBA32 GraphicsLayer::BackgroundColor() const {
+  return CcLayer()->background_color();
+}
 
-  background_color_ = color;
-  layer_->SetBackgroundColor(background_color_.Rgb());
+void GraphicsLayer::SetBackgroundColor(RGBA32 color) {
+  CcLayer()->SetBackgroundColor(color);
+}
+
+bool GraphicsLayer::ContentsOpaque() const {
+  return CcLayer()->contents_opaque();
 }
 
 void GraphicsLayer::SetContentsOpaque(bool opaque) {
-  contents_opaque_ = opaque;
-  layer_->SetContentsOpaque(contents_opaque_);
+  CcLayer()->SetContentsOpaque(opaque);
   ClearContentsLayerIfUnregistered();
   if (contents_layer_ && !prevent_contents_opaque_changes_)
     contents_layer_->SetContentsOpaque(opaque);
@@ -749,7 +745,7 @@ void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer,
     return;
 
   mask_layer_ = mask_layer;
-  layer_->SetMaskLayer(mask_layer_ ? mask_layer_->CcLayer() : nullptr);
+  CcLayer()->SetMaskLayer(mask_layer_ ? mask_layer_->CcLayer() : nullptr);
   if (mask_layer_)
     mask_layer_->CcLayer()->set_is_rounded_corner_mask(is_rounded_corner_mask);
 }
@@ -773,28 +769,35 @@ void GraphicsLayer::SetContentsClippingMaskLayer(
   UpdateContentsRect();
 }
 
+bool GraphicsLayer::BackfaceVisibility() const {
+  return CcLayer()->double_sided();
+}
+
 void GraphicsLayer::SetBackfaceVisibility(bool visible) {
-  backface_visibility_ = visible;
-  CcLayer()->SetDoubleSided(backface_visibility_);
+  CcLayer()->SetDoubleSided(visible);
 }
 
 void GraphicsLayer::SetOpacity(float opacity) {
-  float clamped_opacity = clampTo(opacity, 0.0f, 1.0f);
-  opacity_ = clamped_opacity;
   CcLayer()->SetOpacity(opacity);
 }
 
+float GraphicsLayer::Opacity() const {
+  return CcLayer()->opacity();
+}
+
 void GraphicsLayer::SetBlendMode(BlendMode blend_mode) {
-  if (blend_mode_ == blend_mode)
-    return;
-  blend_mode_ = blend_mode;
   CcLayer()->SetBlendMode(WebCoreBlendModeToSkBlendMode(blend_mode));
 }
 
+BlendMode GraphicsLayer::GetBlendMode() const {
+  return BlendModeFromSkBlendMode(CcLayer()->blend_mode());
+}
+
+bool GraphicsLayer::IsRootForIsolatedGroup() const {
+  return CcLayer()->is_root_for_isolated_group();
+}
+
 void GraphicsLayer::SetIsRootForIsolatedGroup(bool isolated) {
-  if (is_root_for_isolated_group_ == isolated)
-    return;
-  is_root_for_isolated_group_ = isolated;
   CcLayer()->SetIsRootForIsolatedGroup(isolated);
 }
 
@@ -817,7 +820,7 @@ void GraphicsLayer::SetNeedsDisplay() {
   if (!DrawsContent())
     return;
 
-  layer_->SetNeedsDisplay();
+  CcLayer()->SetNeedsDisplay();
   for (size_t i = 0; i < link_highlights_.size(); ++i)
     link_highlights_[i]->Invalidate();
 
@@ -833,7 +836,7 @@ void GraphicsLayer::SetNeedsDisplay() {
 void GraphicsLayer::SetNeedsDisplayInRect(const IntRect& rect) {
   DCHECK(DrawsContent());
 
-  layer_->SetNeedsDisplayRect(rect);
+  CcLayer()->SetNeedsDisplayRect(rect);
   for (auto* link_highlight : link_highlights_)
     link_highlight->Invalidate();
 }
@@ -911,7 +914,7 @@ void GraphicsLayer::SetBackdropFilters(CompositorFilterOperations filters) {
 
 void GraphicsLayer::SetStickyPositionConstraint(
     const cc::LayerStickyPositionConstraint& sticky_constraint) {
-  layer_->SetStickyPositionConstraint(sticky_constraint);
+  CcLayer()->SetStickyPositionConstraint(sticky_constraint);
 }
 
 void GraphicsLayer::SetFilterQuality(SkFilterQuality filter_quality) {
