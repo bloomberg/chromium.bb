@@ -500,8 +500,7 @@ class CORE_EXPORT Node : public EventTarget {
   void SetNeedsStyleInvalidation();
 
   // This needs to be called before using FlatTreeTraversal.
-  // Once 1) IncrementalShadowDOM is launched, and 2) Shadow DOM v0 is removed,
-  // this function can be removed.
+  // Once Shadow DOM v0 is removed, this function can be removed.
   void UpdateDistributionForFlatTreeTraversal() {
     UpdateDistributionInternal();
   }
