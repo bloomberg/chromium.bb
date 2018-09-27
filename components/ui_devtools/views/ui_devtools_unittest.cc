@@ -17,6 +17,7 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/background.h"
@@ -254,6 +255,14 @@ class UIDevToolsTest : public views::ViewsTestBase {
     return dom_agent()->root_windows()[0];
   }
 
+  std::unique_ptr<ui::MouseEvent> MouseEventAtRootLocation(gfx::Point p) {
+    auto event = std::make_unique<ui::MouseEvent>(ui::ET_MOUSE_MOVED, p, p,
+                                                  ui::EventTimeForNow(),
+                                                  ui::EF_NONE, ui::EF_NONE);
+    ui::Event::DispatcherApi(event.get()).set_target(GetPrimaryRootWindow());
+    return event;
+  }
+
   CSSAgent* css_agent() { return css_agent_.get(); }
   DOMAgentAura* dom_agent() { return dom_agent_.get(); }
   OverlayAgentAura* overlay_agent() { return overlay_agent_.get(); }
@@ -280,7 +289,7 @@ TEST_F(UIDevToolsTest, FindElementIdTargetedByPoint) {
   std::unique_ptr<DOM::Node> root;
   dom_agent()->getDocument(&root);
   EXPECT_NE(0, overlay_agent()->FindElementIdTargetedByPoint(
-                   gfx::Point(1, 1), GetPrimaryRootWindow()));
+                   MouseEventAtRootLocation(gfx::Point(1, 1)).get()));
 }
 
 // Test case R1_CONTAINS_R2.
@@ -295,9 +304,9 @@ TEST_F(UIDevToolsTest, OneUIElementContainsAnother) {
   dom_agent()->getDocument(&root);
 
   int outside_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      outside_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(outside_rect.origin()).get());
   int inside_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      inside_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(inside_rect.origin()).get());
   overlay_agent()->ShowDistancesInHighlightOverlay(outside_rect_id,
                                                    inside_rect_id);
 
@@ -337,9 +346,9 @@ TEST_F(UIDevToolsTest, OneUIElementStaysHorizontalAndLeftOfAnother) {
   dom_agent()->getDocument(&root);
 
   int outside_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      outside_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(outside_rect.origin()).get());
   int inside_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      inside_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(inside_rect.origin()).get());
   overlay_agent()->ShowDistancesInHighlightOverlay(outside_rect_id,
                                                    inside_rect_id);
 
@@ -381,9 +390,9 @@ TEST_F(UIDevToolsTest, OneUIElementStaysFullyTopLeftOfAnother) {
   dom_agent()->getDocument(&root);
 
   int top_left_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      top_left_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(top_left_rect.origin()).get());
   int bottom_right_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      bottom_right_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(bottom_right_rect.origin()).get());
   overlay_agent()->ShowDistancesInHighlightOverlay(top_left_rect_id,
                                                    bottom_right_rect_id);
 
@@ -425,9 +434,9 @@ TEST_F(UIDevToolsTest, OneUIElementStaysFullyBottomLeftOfAnother) {
   dom_agent()->getDocument(&root);
 
   int bottom_left_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      bottom_left_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(bottom_left_rect.origin()).get());
   int top_right_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      top_right_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(top_right_rect.origin()).get());
   overlay_agent()->ShowDistancesInHighlightOverlay(bottom_left_rect_id,
                                                    top_right_rect_id);
 
@@ -470,9 +479,9 @@ TEST_F(UIDevToolsTest, OneUIElementStaysPartiallyTopLeftOfAnother) {
   dom_agent()->getDocument(&root);
 
   int top_left_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      top_left_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(top_left_rect.origin()).get());
   int bottom_right_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      bottom_right_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(bottom_right_rect.origin()).get());
   overlay_agent()->ShowDistancesInHighlightOverlay(top_left_rect_id,
                                                    bottom_right_rect_id);
 
@@ -514,9 +523,9 @@ TEST_F(UIDevToolsTest, OneUIElementStaysPartiallyBottomLeftOfAnother) {
   dom_agent()->getDocument(&root);
 
   int bottom_left_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      bottom_left_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(bottom_left_rect.origin()).get());
   int top_right_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      top_right_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(top_right_rect.origin()).get());
   overlay_agent()->ShowDistancesInHighlightOverlay(bottom_left_rect_id,
                                                    top_right_rect_id);
 
@@ -556,9 +565,9 @@ TEST_F(UIDevToolsTest, OneUIElementIntersectsAnother) {
   dom_agent()->getDocument(&root);
 
   int left_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      left_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(left_rect.origin()).get());
   int right_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
-      right_rect.origin(), GetPrimaryRootWindow());
+      MouseEventAtRootLocation(right_rect.origin()).get());
   overlay_agent()->ShowDistancesInHighlightOverlay(left_rect_id, right_rect_id);
 
   HighlightRectsConfiguration highlight_rect_config =
@@ -594,8 +603,8 @@ TEST_F(UIDevToolsTest, MouseEventsGenerateFEEventsInInspectMode) {
   dom_agent()->getDocument(&root);
 
   gfx::Point p(1, 1);
-  int node_id =
-      overlay_agent()->FindElementIdTargetedByPoint(p, GetPrimaryRootWindow());
+  int node_id = overlay_agent()->FindElementIdTargetedByPoint(
+      MouseEventAtRootLocation(p).get());
 
   EXPECT_EQ(0, GetOverlayInspectNodeRequestedCount(node_id));
   EXPECT_EQ(0, GetOverlayNodeHighlightRequestedCount(node_id));
