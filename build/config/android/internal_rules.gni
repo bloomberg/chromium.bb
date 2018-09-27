@@ -45,6 +45,64 @@ _java_target_blacklist = [
 
 _default_proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
 
+_dexlayout_path = "//third_party/android_build_tools/art/dexlayout"
+_profman_path = "//third_party/android_build_tools/art/profman"
+_art_lib_file_names = [
+  "libartbased.so",
+  "libartbase.so",
+  "libart-compiler.so",
+  "libartd-compiler.so",
+  "libartd-dexlayout.so",
+  "libartd-disassembler.so",
+  "libart-dexlayout.so",
+  "libart-disassembler.so",
+  "libartd-simulator-container.so",
+  "libartd-simulator.so",
+  "libartd.so",
+  "libart-gtest.so",
+  "libart.so",
+  "libbacktrace.so",
+  "libbase.so",
+  "libcrypto-host.so",
+  "libc++.so",
+  "libcutils.so",
+  "libdexfiled.so",
+  "libdexfile.so",
+  "libexpat-host.so",
+  "libicui18n-host.so",
+  "libicuuc-host.so",
+  "libjavacore.so",
+  "libjavacrypto.so",
+  "liblog.so",
+  "liblz4.so",
+  "liblzma.so",
+  "libnativebridge.so",
+  "libnativehelper.so",
+  "libnativeloader.so",
+  "libopenjdkd.so",
+  "libopenjdkjvmd.so",
+  "libopenjdkjvm.so",
+  "libopenjdkjvmtid.so",
+  "libopenjdkjvmti.so",
+  "libopenjdk.so",
+  "libprofiled.so",
+  "libprofile.so",
+  "libsigchain.so",
+  "libssl-host.so",
+  "libunwindstack.so",
+  "libvixl-arm64.so",
+  "libvixl-arm.so",
+  "libvixld-arm64.so",
+  "libvixld-arm.so",
+  "libz-host.so",
+  "libziparchive.so",
+  "slicer.so",
+]
+_default_art_libs = []
+foreach(lib, _art_lib_file_names) {
+  _default_art_libs += [ "//third_party/android_build_tools/art/lib/$lib" ]
+}
+
 # Write the target's .build_config file. This is a json file that contains a
 # dictionary of information about how to build this target (things that
 # require knowledge about this target's dependencies and cannot be calculated
@@ -1118,6 +1176,23 @@ if (enable_java_templates) {
         "--dex-path",
         _rebased_output,
       ]
+
+      if (defined(invoker.dexlayout_profile)) {
+        args += [
+          "--dexlayout_profile",
+          rebase_path(invoker.dexlayout_profile, root_build_dir),
+          "--dexlayout_path",
+          rebase_path(_dexlayout_path, root_build_dir),
+          "--profman_path",
+          rebase_path(_profman_path, root_build_dir),
+        ]
+        inputs += [
+          _dexlayout_path,
+          _profman_path,
+          invoker.dexlayout_profile,
+        ]
+        inputs += _default_art_libs
+      }
 
       if (_enable_multidex) {
         args += [
