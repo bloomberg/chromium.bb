@@ -13,7 +13,6 @@ source_set("infobars") {
     "infobar_view_sizing_delegate.h",
   ]
   deps = [
-    "resources:infobar_close",
     "resources:infobar_downloading",
     "resources:infobar_popup_blocker",
     "resources:infobar_warning",
