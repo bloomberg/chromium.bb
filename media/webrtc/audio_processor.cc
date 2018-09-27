@@ -106,7 +106,7 @@ void AudioProcessor::AnalyzePlayout(const AudioBus& audio,
   if (!audio_processing_)
     return;
 
-  render_delay_ = base::TimeTicks::Now() - playout_time;
+  render_delay_ = playout_time - base::TimeTicks::Now();
 
   constexpr int kMaxChannels = 2;
   DCHECK_GE(parameters.channels(), 1);
