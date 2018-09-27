@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/sequence_token.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
@@ -595,16 +596,15 @@ void TaskTracker::RunOrSkipTask(Task task,
             sequence->sequence_local_storage());
 
     // Set up TaskRunnerHandle as expected for the scope of the task.
-    std::unique_ptr<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
-    std::unique_ptr<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
+    Optional<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
+    Optional<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
     DCHECK(!task.sequenced_task_runner_ref ||
            !task.single_thread_task_runner_ref);
     if (task.sequenced_task_runner_ref) {
-      sequenced_task_runner_handle.reset(
-          new SequencedTaskRunnerHandle(task.sequenced_task_runner_ref));
+      sequenced_task_runner_handle.emplace(task.sequenced_task_runner_ref);
     } else if (task.single_thread_task_runner_ref) {
-      single_thread_task_runner_handle.reset(
-          new ThreadTaskRunnerHandle(task.single_thread_task_runner_ref));
+      single_thread_task_runner_handle.emplace(
+          task.single_thread_task_runner_ref);
     }
 
     if (can_run_task) {
