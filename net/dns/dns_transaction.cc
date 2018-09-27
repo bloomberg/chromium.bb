@@ -524,7 +524,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     buffer_->set_offset(0);
     if (size == 0u)
       return ERR_DNS_MALFORMED_RESPONSE;
-    response_ = std::make_unique<DnsResponse>(buffer_.get(), size + 1);
+    response_ = std::make_unique<DnsResponse>(buffer_, size + 1);
     if (!response_->InitParse(size, *query_))
       return ERR_DNS_MALFORMED_RESPONSE;
     if (response_->rcode() == dns_protocol::kRcodeNXDOMAIN)
