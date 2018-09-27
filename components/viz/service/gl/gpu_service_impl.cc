@@ -537,8 +537,9 @@ void GpuServiceImpl::GetGpuSupportedRuntimeVersion(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process());
 
-  gpu::RecordGpuSupportedRuntimeVersionHistograms(&gpu_info_);
-  std::move(callback).Run(gpu_info_);
+  gpu::RecordGpuSupportedRuntimeVersionHistograms(
+      &gpu_info_.dx12_vulkan_version_info);
+  std::move(callback).Run(gpu_info_.dx12_vulkan_version_info);
   if (!in_host_process()) {
     // The unsandboxed GPU process fulfilled its duty. Bye bye.
     ExitProcess();

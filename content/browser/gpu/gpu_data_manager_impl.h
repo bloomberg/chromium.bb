@@ -78,7 +78,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
       const gpu::GPUInfo& gpu_info,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu);
 #if defined(OS_WIN)
-  void UpdateDX12VulkanInfo(const gpu::GPUInfo& gpu_info);
+  void UpdateDx12VulkanInfo(
+      const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
 #endif
   // Update the GPU feature info. This updates the blacklist and enabled status

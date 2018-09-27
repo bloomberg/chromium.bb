@@ -65,7 +65,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
       const base::Optional<gpu::GPUInfo>& optional_gpu_info_for_hardware_gpu);
 #if defined(OS_WIN)
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
-  void UpdateDX12VulkanInfo(const gpu::GPUInfo& gpu_info);
+  void UpdateDx12VulkanInfo(
+      const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
 #endif
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
                             const base::Optional<gpu::GpuFeatureInfo>&

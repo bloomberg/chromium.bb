@@ -80,7 +80,8 @@ interface GpuService {
   [EnableIf=is_win]
   RequestCompleteGpuInfo() => (gpu.mojom.DxDiagNode dx_diagnostics);
   [EnableIf=is_win]
-  GetGpuSupportedRuntimeVersion() => (gpu.mojom.GpuInfo gpu_info);
+  GetGpuSupportedRuntimeVersion()
+      => (gpu.mojom.Dx12VulkanVersionInfo dx12_vulkan_version_info);
 
   // Requests that the GPU process query system availability of HDR output and
   // return it.

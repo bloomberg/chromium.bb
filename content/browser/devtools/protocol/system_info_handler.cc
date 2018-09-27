@@ -90,6 +90,10 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
 
   void EndOverlayCapability() override {}
 
+  void BeginDx12VulkanVersionInfo() override {}
+
+  void EndDx12VulkanVersionInfo() override {}
+
   void BeginAuxAttributes() override {
     in_aux_attributes_ = true;
   }

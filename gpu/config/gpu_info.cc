@@ -58,6 +58,17 @@ void EnumerateOverlayCapability(const gpu::OverlayCapability& cap,
   enumerator->AddInt("isScalingSupported", cap.is_scaling_supported);
   enumerator->EndOverlayCapability();
 }
+
+void EnumerateDx12VulkanVersionInfo(const gpu::Dx12VulkanVersionInfo& info,
+                                    gpu::GPUInfo::Enumerator* enumerator) {
+  enumerator->BeginDx12VulkanVersionInfo();
+  enumerator->AddBool("supportsDx12", info.supports_dx12);
+  enumerator->AddBool("supportsVulkan", info.supports_vulkan);
+  enumerator->AddInt("dx12FeatureLevel",
+                     static_cast<int>(info.d3d12_feature_level));
+  enumerator->AddInt("vulkanVersion", static_cast<int>(info.vulkan_version));
+  enumerator->EndDx12VulkanVersionInfo();
+}
 #endif
 
 }  // namespace
@@ -179,10 +190,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool supports_overlays;
     OverlayCapabilities overlay_capabilities;
     DxDiagNode dx_diagnostics;
-    bool supports_dx12;
-    bool supports_vulkan;
-    uint32_t d3d12_feature_level;
-    uint32_t vulkan_version;
+    Dx12VulkanVersionInfo dx12_vulkan_version_info;
 #endif
 
     VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
@@ -242,10 +250,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddBool("supportsOverlays", supports_overlays);
   for (const auto& cap : overlay_capabilities)
     EnumerateOverlayCapability(cap, enumerator);
-  enumerator->AddBool("supportsDX12", supports_dx12);
-  enumerator->AddBool("supportsVulkan", supports_vulkan);
-  enumerator->AddInt("d3dFeatureLevel", d3d12_feature_level);
-  enumerator->AddInt("vulkanVersion", vulkan_version);
+  EnumerateDx12VulkanVersionInfo(dx12_vulkan_version_info, enumerator);
 #endif
   enumerator->AddInt("videoDecodeAcceleratorFlags",
                      video_decode_accelerator_capabilities.flags);

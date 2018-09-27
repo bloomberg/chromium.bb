@@ -109,9 +109,10 @@ void GpuDataManagerImpl::UpdateDxDiagNode(
   private_->UpdateDxDiagNode(dx_diagnostics);
 }
 
-void GpuDataManagerImpl::UpdateDX12VulkanInfo(const gpu::GPUInfo& gpu_info) {
+void GpuDataManagerImpl::UpdateDx12VulkanInfo(
+    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
   base::AutoLock auto_lock(lock_);
-  private_->UpdateDX12VulkanInfo(gpu_info);
+  private_->UpdateDx12VulkanInfo(dx12_vulkan_version_info);
 }
 #endif
 
