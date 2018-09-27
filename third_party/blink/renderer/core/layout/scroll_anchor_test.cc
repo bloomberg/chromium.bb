@@ -854,10 +854,6 @@ TEST_P(ScrollAnchorTest, RestoreAnchorFailsForInvalidSelectors) {
 // element(meaning its corresponding LayoutObject can't be the anchor object)
 // that restoration will still succeed.
 TEST_P(ScrollAnchorTest, RestoreAnchorSucceedsForNonBoxNonTextElement) {
-  // TODO(crbug.com/889449): The test fails in LayoutNG mode.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
   SetBodyInnerHTML(
       "<style> body { height: 1000px; margin: 0; } div { height: 100px } "
       "</style>"
@@ -918,5 +914,22 @@ TEST_P(ScrollAnchorTest, RestoreAnchorSucceedsWithExistingAnchorObject) {
       GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor));
   EXPECT_TRUE(GetScrollAnchor(LayoutViewport()).AnchorObject());
   EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 0);
+}
+
+TEST_P(ScrollAnchorTest, DeleteAnonymousBlockCrash) {
+  SetBodyInnerHTML(R"HTML(
+    <div>
+      <div id="deleteMe" style="height:20000px;"></div>
+      torsk
+    </div>
+  )HTML");
+
+  // Removing #deleteMe will also remove the anonymous block around the text
+  // node. This would cause NG to point to dead layout objects, prior to
+  // https://chromium-review.googlesource.com/1193868 and therefore crash.
+
+  ScrollLayoutViewport(ScrollOffset(0, 20000));
+  GetDocument().getElementById("deleteMe")->remove();
+  Update();
 }
 }
