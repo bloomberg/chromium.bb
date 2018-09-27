@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_BOOKMARK_BAR_PROMO_BUBBLE_VIEW_H_
 
 #include "base/macros.h"
-#include "components/nux/show_promo_delegate.h"
+#include "chrome/browser/ui/webui/welcome/nux/show_promo_delegate.h"
 
 namespace bookmarks {
 class BookmarkNode;

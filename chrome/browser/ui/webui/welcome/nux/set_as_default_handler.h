@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NUX_SET_AS_DEFAULT_SET_AS_DEFAULT_HANDLER_H_
-#define COMPONENTS_NUX_SET_AS_DEFAULT_SET_AS_DEFAULT_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_SET_AS_DEFAULT_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_SET_AS_DEFAULT_HANDLER_H_
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -31,4 +31,4 @@ class SetAsDefaultHandler : public content::WebUIMessageHandler {
 
 }  // namespace nux
 
-#endif  // COMPONENTS_NUX_SET_AS_DEFAULT_SET_AS_DEFAULT_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_SET_AS_DEFAULT_HANDLER_H_
