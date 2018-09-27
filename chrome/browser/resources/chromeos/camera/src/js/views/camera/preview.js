@@ -78,34 +78,30 @@ camera.views.camera.Preview.prototype.setSource = function(
     video.setAttribute('aria-hidden', 'true');
 
     var onLoadedMetadata = () => {
+      var onResize = () => {
+        this.cancelFocus_();
+        onIntrinsicSize();
+      };
+      var onClick = (event) => {
+        this.applyFocus_(event.offsetX, event.offsetY);
+      };
       video.removeEventListener('loadedmetadata', onLoadedMetadata);
+      video.addEventListener('resize', onResize);
+      video.addEventListener('click', onClick);
+      video.cleanup = () => {
+        video.removeEventListener('resize', onResize);
+        video.removeEventListener('click', onClick);
+        video.removeAttribute('srcObject');
+        video.load();
+      };
       video.play();
-      this.cancelFocus_();
       this.video_.parentElement.replaceChild(video, this.video_);
       this.video_.cleanup();
       this.video_ = video;
+      onResize();
       resolve(stream);
     };
-    var onResize = () => {
-      if (video.videoWidth && video.videoHeight) {
-        this.cancelFocus_();
-        onIntrinsicSize();
-      }
-    };
-    var onClick = (event) => {
-      if (video.videoWidth && video.videoHeight) {
-        this.applyFocus_(event.offsetX, event.offsetY);
-      }
-    };
     video.addEventListener('loadedmetadata', onLoadedMetadata);
-    video.addEventListener('resize', onResize);
-    video.addEventListener('click', onClick);
-    video.cleanup = () => {
-      video.removeEventListener('resize', onResize);
-      video.removeEventListener('click', onClick);
-      video.removeAttribute('srcObject');
-      video.load();
-    };
     video.muted = true;  // Mute to avoid echo from the captured audio.
     video.srcObject = stream;
   });
