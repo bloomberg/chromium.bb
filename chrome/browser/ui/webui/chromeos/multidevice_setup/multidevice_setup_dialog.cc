@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_handler.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
@@ -44,7 +47,15 @@ void MultiDeviceSetupDialog::Show() {
     return;
 
   current_instance_ = new MultiDeviceSetupDialog();
-  current_instance_->ShowSystemDialog();
+
+  // TODO(crbug.com/888629): In order to remove the X button on the top right of
+  // of the dialog, passing |is_minimal_style| == true is required, but as of
+  // now, that will prevent the dialog from presenting in full screen if tablet
+  // mode is on. See bug for more details.
+  chrome::ShowWebDialogInContainer(
+      ash::kShellWindowId_DefaultContainer /* container_id */,
+      ProfileManager::GetActiveUserProfile(), current_instance_,
+      false /* is_minimal_style */);
 }
 
 MultiDeviceSetupDialog::MultiDeviceSetupDialog()
