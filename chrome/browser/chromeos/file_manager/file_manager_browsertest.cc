@@ -803,6 +803,10 @@ class DriveFsFilesAppBrowserTest : public FileManagerBrowserTestBase {
                 .starts_with("PRE");
   }
 
+  base::FilePath GetDriveDataDirectory() {
+    return profile()->GetPath().Append("drive/v1");
+  }
+
  private:
   std::string test_case_name_;
 
@@ -817,6 +821,28 @@ IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, PRE_MigratePinnedFiles) {
 IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, MigratePinnedFiles) {
   set_test_case_name("driveMigratePinnedFile");
   StartTest();
+
+  EXPECT_TRUE(base::IsDirectoryEmpty(GetDriveDataDirectory()));
+}
+
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, PRE_RecoverDirtyFiles) {
+  set_test_case_name("PRE_driveRecoverDirtyFiles");
+  StartTest();
+
+  // Create a non-dirty file in the cache.
+  base::WriteFile(GetDriveDataDirectory().Append("files/foo"), "data", 4);
+}
+
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, RecoverDirtyFiles) {
+  set_test_case_name("driveRecoverDirtyFiles");
+  StartTest();
+
+  EXPECT_TRUE(base::IsDirectoryEmpty(GetDriveDataDirectory()));
+}
+
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, LaunchWithoutOldDriveData) {
+  // After starting up, GCache/v1 should still be empty.
+  EXPECT_TRUE(base::IsDirectoryEmpty(GetDriveDataDirectory()));
 }
 
 }  // namespace file_manager

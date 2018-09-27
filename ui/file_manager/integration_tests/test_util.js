@@ -796,4 +796,15 @@ var ENTRIES = {
       canShare: true
     },
   }),
+
+  neverSync: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'never-sync.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'never-sync.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text'
+  }),
 };

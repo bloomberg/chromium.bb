@@ -344,8 +344,10 @@ testcase.drivePressCtrlAFromSearch = function() {
   StepsRunner.run(steps);
 };
 
+/**
+ * Pin hello.txt in the old Drive client.
+ */
 testcase.PRE_driveMigratePinnedFile = function() {
-  // Pin a file.
   testPromise(
       setupAndWaitUntilReady(null, RootPath.DRIVE).then(function(results) {
         var windowId = results.windowId;
@@ -388,6 +390,9 @@ testcase.PRE_driveMigratePinnedFile = function() {
       }));
 };
 
+/**
+ * Verify hello.txt is still pinned after migrating to DriveFS.
+ */
 testcase.driveMigratePinnedFile = function() {
   // After enabling DriveFS, ensure the file is still pinned.
   testPromise(
@@ -430,6 +435,10 @@ function formatDate(date) {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * Test that a images within a DCIM directory on removable media is backed up to
+ * Drive, in the Chrome OS Cloud backup/<current date> directory.
+ */
 testcase.driveBackupPhotos = function() {
   let appId;
 
@@ -497,5 +506,145 @@ testcase.driveBackupPhotos = function() {
     function() {
       checkIfNoErrorsOccured(this.next);
     }
+  ]);
+};
+
+/**
+ * Create some dirty files in Drive.
+ *
+ * Create /root/never-sync.txt and /root/A/never-sync.txt. These files will
+ * never complete syncing to the fake drive service so will remain dirty
+ * forever.
+ */
+testcase.PRE_driveRecoverDirtyFiles = function() {
+  let appId;
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.neverSync],
+          [ENTRIES.directoryA]);
+    },
+    // Select never-sync.txt.
+    function(results) {
+      appId = results.windowId;
+
+      remoteCall.callRemoteTestUtil('selectFile', appId, ['never-sync.txt'])
+          .then(this.next);
+    },
+    // Copy it.
+    function(result) {
+      chrome.test.assertTrue(result, 'selectFile failed');
+
+      return remoteCall
+          .callRemoteTestUtil(
+              'fakeKeyDown', appId, ['#file-list', 'c', true, false, false])
+          .then(this.next);
+    },
+    // Navigate to My Drive.
+    function(result) {
+      chrome.test.assertTrue(result, 'copy failed');
+
+      return remoteCall
+          .navigateWithDirectoryTree(appId, '/root', 'My Drive', 'drive')
+          .then(this.next);
+    },
+    // Paste.
+    function() {
+      return remoteCall
+          .callRemoteTestUtil(
+              'fakeKeyDown', appId, ['#file-list', 'v', true, false, false])
+          .then(this.next);
+    },
+    // Wait for the paste to complete.
+    function(result) {
+      chrome.test.assertTrue(result, 'paste failed');
+      const expectedEntryRows = [
+        ENTRIES.neverSync.getExpectedRow(),
+        ENTRIES.directoryA.getExpectedRow(),
+      ];
+      remoteCall
+          .waitForFiles(
+              appId, expectedEntryRows, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Navigate to My Drive/A.
+    function() {
+      return remoteCall
+          .navigateWithDirectoryTree(appId, '/root/A', 'My Drive', 'drive')
+          .then(this.next);
+    },
+    // Paste.
+    function() {
+      return remoteCall
+          .callRemoteTestUtil(
+              'fakeKeyDown', appId, ['#file-list', 'v', true, false, false])
+          .then(this.next);
+    },
+    // Wait for the paste to complete.
+    function(result) {
+      chrome.test.assertTrue(result, 'paste failed');
+      const expectedEntryRows = [ENTRIES.neverSync.getExpectedRow()];
+      remoteCall
+          .waitForFiles(
+              appId, expectedEntryRows, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
+ * Verify that when enabling DriveFS, the dirty files are recovered to
+ * Downloads/Recovered files from Google Drive. The directory structure should
+ * be flattened with uniquified names:
+ * - never-sync.txt
+ * - never-sync (1).txt
+ */
+testcase.driveRecoverDirtyFiles = function() {
+  let appId;
+  // After enabling DriveFS, ensure the dirty files have been recovered into
+  // Downloads.
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next, [], []);
+    },
+    // Wait for the Recovered files directory to be in Downloads.
+    function(results) {
+      appId = results.windowId;
+
+      const expectedEntryRows = [
+        ENTRIES.neverSync.getExpectedRow(),
+        ['Recovered files from Google Drive', '--', 'Folder'],
+      ];
+      remoteCall
+          .waitForFiles(
+              appId, expectedEntryRows, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Navigate to the recovered files directory.
+    function() {
+      return remoteCall
+          .navigateWithDirectoryTree(
+              appId, '/Recovered files from Google Drive', 'Downloads')
+          .then(this.next);
+    },
+    // Ensure it contains never-sync.txt and never-sync (1).txt.
+    function() {
+      var uniquifiedNeverSync = ENTRIES.neverSync.getExpectedRow();
+      uniquifiedNeverSync[0] = 'never-sync (1).txt';
+      const expectedEntryRows = [
+        ENTRIES.neverSync.getExpectedRow(),
+        uniquifiedNeverSync,
+      ];
+      remoteCall
+          .waitForFiles(
+              appId, expectedEntryRows, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
   ]);
 };

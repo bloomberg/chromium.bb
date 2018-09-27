@@ -1099,6 +1099,10 @@ CancelCallback FakeDriveService::InitiateUploadNewFile(
                     "",  // etag
                     title);
 
+  if (title == "never-sync.txt") {
+    return CancelCallback();
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, session_url));
   return CancelCallback();
