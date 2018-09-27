@@ -384,7 +384,7 @@ body.capturing #camera-mode {
 
 #toggle-device.animate {
   -webkit-transform: rotate(-180deg);
-  transition: transform 1s ease-out;
+  transition: transform 350ms ease-out;
 }
 
 #gallery-enter {
