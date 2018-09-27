@@ -370,9 +370,10 @@ void ClientTagBasedModelTypeProcessor::Put(
     // |data->client_tag_hash|, so let's ask for the client tag if needed.
     if (data->client_tag_hash.empty()) {
       data->client_tag_hash = GetClientTagHash(storage_key, *data);
-    } else {
+    } else if (bridge_->SupportsGetClientTag()) {
       // If the Put() call already included the client tag, let's verify that
-      // it's consistent with the bridge's regular GetClientTag() function.
+      // it's consistent with the bridge's regular GetClientTag() function (if
+      // supported by the bridge).
       DCHECK_EQ(data->client_tag_hash,
                 GenerateSyncableHash(type_, bridge_->GetClientTag(*data)));
     }
@@ -427,6 +428,9 @@ void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
     MetadataChangeList* metadata_change_list) {
   const std::string& client_tag_hash = entity_data.client_tag_hash;
   DCHECK(!client_tag_hash.empty());
+  DCHECK(!storage_key.empty());
+  DCHECK(!bridge_->SupportsGetStorageKey());
+
   ProcessorEntityTracker* entity = GetEntityForTagHash(client_tag_hash);
   DCHECK(entity);
 
@@ -585,6 +589,7 @@ UpdateResponseDataList PopulateClientTagsForWalletData(
     const ModelType& type,
     ModelTypeSyncBridge* bridge,
     const UpdateResponseDataList& updates) {
+  DCHECK(bridge->SupportsGetClientTag());
   UpdateResponseDataList updates_with_client_tags;
   for (const UpdateResponseData& update : updates) {
     if (update.entity->parent_id == "0") {
@@ -677,7 +682,7 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
   }
 
   // Filter out unexpected client tag hashes.
-  if (!data.is_deleted() &&
+  if (!data.is_deleted() && bridge_->SupportsGetClientTag() &&
       client_tag_hash !=
           GenerateSyncableHash(type_, bridge_->GetClientTag(data))) {
     DLOG(WARNING) << "Received unexpected client tag hash: " << client_tag_hash;
@@ -1096,8 +1101,9 @@ void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
 
 std::string ClientTagBasedModelTypeProcessor::GetClientTagHash(
     const std::string& storage_key,
-    const EntityData& data) {
+    const EntityData& data) const {
   auto iter = storage_key_to_tag_hash_.find(storage_key);
+  DCHECK(bridge_->SupportsGetClientTag());
   return iter == storage_key_to_tag_hash_.end()
              ? GenerateSyncableHash(type_, bridge_->GetClientTag(data))
              : iter->second;
@@ -1138,8 +1144,10 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
 
 ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
     const EntityData& data) {
-  DCHECK_EQ(data.client_tag_hash,
-            GenerateSyncableHash(type_, bridge_->GetClientTag(data)));
+  if (bridge_->SupportsGetClientTag()) {
+    DCHECK_EQ(data.client_tag_hash,
+              GenerateSyncableHash(type_, bridge_->GetClientTag(data)));
+  }
   std::string storage_key;
   if (bridge_->SupportsGetStorageKey())
     storage_key = bridge_->GetStorageKey(data);
