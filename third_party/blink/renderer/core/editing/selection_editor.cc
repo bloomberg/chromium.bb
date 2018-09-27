@@ -163,6 +163,14 @@ void SelectionEditor::ContextDestroyed(Document*) {
 static Position ComputePositionForChildrenRemoval(const Position& position,
                                                   ContainerNode& container) {
   Node* node = position.ComputeContainerNode();
+#if DCHECK_IS_ON()
+  DCHECK(node) << position;
+#else
+  // TODO(https://crbug.com/882592): Once we know the root cause, we should
+  // get rid of following if-statement.
+  if (!node)
+    return position;
+#endif
   if (container.ContainsIncludingHostElements(*node))
     return Position::FirstPositionInNode(container);
   return position;
