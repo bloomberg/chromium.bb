@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
@@ -59,16 +60,27 @@ class AssistantUiModel {
 
   AssistantVisibility visibility() const { return visibility_; }
 
+  // Sets the current usable work area.
+  void SetUsableWorkArea(const gfx::Rect& usable_work_area);
+
+  // Returns the current usable work area.
+  const gfx::Rect& usable_work_area() const { return usable_work_area_; }
+
  private:
   void NotifyUiModeChanged();
   void NotifyUiVisibilityChanged(AssistantVisibility old_visibility,
                                  AssistantSource source);
+  void NotifyUsableWorkAreaChanged();
 
   AssistantUiMode ui_mode_ = AssistantUiMode::kMainUi;
 
   AssistantVisibility visibility_ = AssistantVisibility::kClosed;
 
   base::ObserverList<AssistantUiModelObserver>::Unchecked observers_;
+
+  // Usable work area for Assistant. Value is only meaningful when Assistant
+  // UI exists.
+  gfx::Rect usable_work_area_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantUiModel);
 };

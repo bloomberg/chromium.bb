@@ -20,7 +20,7 @@ constexpr int kMaxHeightDip = 640;
 constexpr int kPaddingDip = 14;
 constexpr int kPreferredWidthDip = 640;
 constexpr int kSpacingDip = 8;
-constexpr int kVerticalMarginDip = 8;
+constexpr int kMarginDip = 8;
 
 // Typography.
 constexpr SkColor kTextColorHint = gfx::kGoogleGrey500;

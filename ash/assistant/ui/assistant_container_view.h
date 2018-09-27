@@ -10,9 +10,7 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
 #include "ui/compositor/layer.h"
-#include "ui/display/display_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
@@ -33,9 +31,7 @@ class AssistantWebView;
 
 class AssistantContainerView : public views::BubbleDialogDelegateView,
                                public AssistantUiModelObserver,
-                               public display::DisplayObserver,
-                               public gfx::AnimationDelegate,
-                               public keyboard::KeyboardControllerObserver {
+                               public gfx::AnimationDelegate {
  public:
   explicit AssistantContainerView(AssistantController* assistant_controller);
   ~AssistantContainerView() override;
@@ -59,23 +55,15 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
 
   // AssistantUiModelObserver:
   void OnUiModeChanged(AssistantUiMode ui_mode) override;
+  void OnUsableWorkAreaChanged(const gfx::Rect& usable_work_area) override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
-  // display::DisplayObserver:
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override;
-
-  // keyboard::KeyboardControllerObserver:
-  void OnKeyboardWorkspaceDisplacingBoundsChanged(
-      const gfx::Rect& new_bounds) override;
-
  private:
-  // Sets anchor rect to |root_window|. If it's null,
-  // result of GetRootWindowForNewWindows() will be used.
-  void SetAnchor(aura::Window* root_window);
+  // Update anchor rect with respect to the current usable work area.
+  void UpdateAnchor();
 
   // Update the shadow layer.
   void UpdateShadow();

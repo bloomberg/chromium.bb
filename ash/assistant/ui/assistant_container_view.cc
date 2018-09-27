@@ -164,7 +164,7 @@ AssistantContainerView::AssistantContainerView(
     : assistant_controller_(assistant_controller),
       animation_start_frame_number_(0) {
   set_accept_events(true);
-  SetAnchor(nullptr);
+  UpdateAnchor();
   set_close_on_deactivate(false);
   set_color(kBackgroundColor);
   set_margins(gfx::Insets());
@@ -192,13 +192,9 @@ AssistantContainerView::AssistantContainerView(
   // The AssistantController owns the view hierarchy to which
   // AssistantContainerView belongs so is guaranteed to outlive it.
   assistant_controller_->ui_controller()->AddModelObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
-  keyboard::KeyboardController::Get()->AddObserver(this);
 }
 
 AssistantContainerView::~AssistantContainerView() {
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
@@ -326,22 +322,13 @@ void AssistantContainerView::RequestFocus() {
   }
 }
 
-void AssistantContainerView::SetAnchor(aura::Window* root_window) {
-  // If |root_window| is not specified, we'll use the root window corresponding
-  // to where new windows will be opened.
-  if (!root_window)
-    root_window = Shell::Get()->GetRootWindowForNewWindows();
-
-  // Anchor to the display matching |root_window|.
-  display::Display display = display::Screen::GetScreen()->GetDisplayMatching(
-      root_window->GetBoundsInScreen());
-
-  // Align to the bottom, horizontal center of the work area.
-  gfx::Rect work_area = display.work_area();
-  gfx::Rect anchor =
-      gfx::Rect(work_area.x(), work_area.bottom() - kVerticalMarginDip,
-                work_area.width(), 0);
-
+void AssistantContainerView::UpdateAnchor() {
+  // Align to the bottom, horizontal center of the current usable work area.
+  const gfx::Rect& usable_work_area =
+      assistant_controller_->ui_controller()->model()->usable_work_area();
+  const gfx::Rect anchor =
+      gfx::Rect(usable_work_area.x(), usable_work_area.bottom(),
+                usable_work_area.width(), 0);
   SetAnchorRect(anchor);
   SetArrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
 }
@@ -365,6 +352,16 @@ void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
 
   PreferredSizeChanged();
   RequestFocus();
+}
+
+void AssistantContainerView::OnUsableWorkAreaChanged(
+    const gfx::Rect& usable_work_area) {
+  UpdateAnchor();
+
+  // Call PreferredSizeChanged() to update animation params to avoid
+  // undesired effects (e.g., resize animation of Assistant UI when
+  // zooming in/out the screen).
+  PreferredSizeChanged();
 }
 
 // TODO(dmblack): Improve performance of this animation using transformations
@@ -425,19 +422,6 @@ void AssistantContainerView::AnimationEnded(const gfx::Animation* animation) {
 
   UMA_HISTOGRAM_PERCENTAGE("Assistant.ContainerView.Resize.AnimationSmoothness",
                            smoothness);
-}
-
-void AssistantContainerView::OnDisplayMetricsChanged(
-    const display::Display& display,
-    uint32_t changed_metrics) {
-  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
-  if (root_window == Shell::Get()->GetRootWindowForDisplayId(display.id()))
-    SetAnchor(root_window);
-}
-
-void AssistantContainerView::OnKeyboardWorkspaceDisplacingBoundsChanged(
-    const gfx::Rect& new_bounds) {
-  SetAnchor(GetWidget()->GetNativeWindow()->GetRootWindow());
 }
 
 void AssistantContainerView::UpdateShadow() {
