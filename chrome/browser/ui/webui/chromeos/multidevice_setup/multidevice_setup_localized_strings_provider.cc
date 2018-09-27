@@ -59,7 +59,6 @@ constexpr struct {
     {"setupSucceededPageMessage",
      IDS_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_MESSAGE},
     {"startSetupPageHeader", IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER},
-    {"title", IDS_MULTIDEVICE_SETUP_DIALOG_TITLE},
     {"tryAgain", IDS_MULTIDEVICE_SETUP_TRY_AGAIN_LABEL},
 };
 
