@@ -54,7 +54,8 @@ base::StringPiece ChromeAppsAPIProvider::GetAPISchema(const std::string& name) {
 void ChromeAppsAPIProvider::RegisterPermissions(
     extensions::PermissionsInfo* permissions_info) {
   permissions_info->RegisterPermissions(
-      chrome_apps_api_permissions::GetPermissionInfos(), {});
+      chrome_apps_api_permissions::GetPermissionInfos(),
+      base::span<const extensions::Alias>());
 }
 
 void ChromeAppsAPIProvider::RegisterManifestHandlers() {

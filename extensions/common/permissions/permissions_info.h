@@ -23,7 +23,7 @@
 
 namespace extensions {
 
-class Alias;
+struct Alias;
 
 // A global object that holds the extension permission instances and provides
 // methods for accessing them.
@@ -33,9 +33,8 @@ class PermissionsInfo {
 
   // Registers the permissions specified by |infos| along with the
   // |aliases|.
-  // TODO(devlin): Convert |aliases| to be a base::span.
   void RegisterPermissions(base::span<const APIPermissionInfo::InitInfo> infos,
-                           const std::vector<Alias>& aliases);
+                           base::span<const Alias> aliases);
 
   // Returns the permission with the given |id|, and NULL if it doesn't exist.
   const APIPermissionInfo* GetByID(APIPermission::ID id) const;
