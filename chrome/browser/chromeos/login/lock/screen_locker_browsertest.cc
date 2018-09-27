@@ -203,8 +203,14 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, LockScreenWhileAddingUser) {
   ScreenLocker::HandleShowLockScreenRequest();
 }
 
+// Flaky on Linux Chromium OS ASan LSan (https://crbug.com/889782)
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_TestFullscreenExit DISABLED_TestFullscreenExit
+#else
+#define MAYBE_TestFullscreenExit TestFullscreenExit
+#endif
 // Test how locking the screen affects an active fullscreen window.
-IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestFullscreenExit) {
+IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, MAYBE_TestFullscreenExit) {
   // WebUiScreenLockerTest fails with Mash because of unexpected window
   // structure. Fortunately we will deprecate the WebUI-based screen locker
   // soon, so it is okay to skip it.  See https://crbug.com/888779
