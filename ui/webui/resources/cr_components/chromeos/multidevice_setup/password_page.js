@@ -99,8 +99,6 @@ Polymer({
       this.profilePhotoUrl_ = profileInfo.profilePhotoUrl;
       this.email_ = profileInfo.email;
     });
-
-    this.$.passwordInput.focus();
   },
 
   /** Overridden from UiPageContainerBehavior. */
