@@ -57,7 +57,7 @@ SkBitmap DevToolsVideoConsumer::GetSkBitmapFromFrame(
   skbitmap.allocN32Pixels(frame->visible_rect().width(),
                           frame->visible_rect().height());
   cc::SkiaPaintCanvas canvas(skbitmap);
-  renderer.Copy(frame, &canvas, media::Context3D());
+  renderer.Copy(frame, &canvas, media::Context3D(), nullptr);
   return skbitmap;
 }
 

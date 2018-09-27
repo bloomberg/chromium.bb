@@ -829,6 +829,7 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
       compositor_->GetCurrentFrameWithoutUpdatingStatistics();
 
   media::Context3D context_3d;
+  gpu::ContextSupport* context_support = nullptr;
   if (frame && frame->HasTextures()) {
     auto* provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
@@ -836,11 +837,11 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
     if (!provider)
       return;
     context_3d = media::Context3D(provider->ContextGL(), provider->GrContext());
-    DCHECK(context_3d.gl);
+    context_support = provider->ContextSupport();
   }
   const gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
   video_renderer_.Paint(frame, canvas, dest_rect, flags, video_rotation_,
-                        context_3d);
+                        context_3d, context_support);
 }
 
 bool WebMediaPlayerMS::DidGetOpaqueResponseFromServiceWorker() const {
@@ -1016,8 +1017,8 @@ bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
   DCHECK(context_3d.gl);
 
   return video_renderer_.CopyVideoFrameTexturesToGLTexture(
-      context_3d, gl, video_frame.get(), target, texture, internal_format,
-      format, type, level, premultiply_alpha, flip_y);
+      context_3d, provider->ContextSupport(), gl, video_frame.get(), target,
+      texture, internal_format, format, type, level, premultiply_alpha, flip_y);
 }
 
 bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(

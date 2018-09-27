@@ -38,7 +38,8 @@ class TextureFrameThumbnailConverter : public VideoFrameThumbnailConverter {
     cc::SkiaPaintCanvas canvas(skbitmap);
     renderer.Copy(frame, &canvas,
                   media::Context3D(context_provider_->ContextGL(),
-                                   context_provider_->GrContext()));
+                                   context_provider_->GrContext()),
+                  context_provider_->ContextSupport());
 
     std::move(pixel_callback).Run(true, std::move(skbitmap));
   }
