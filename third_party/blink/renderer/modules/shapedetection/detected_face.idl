@@ -11,4 +11,6 @@
     // TODO(xianglu): Implement any other fields. https://crbug.com/646083
     [SameObject] readonly attribute DOMRectReadOnly boundingBox;
     [SameObject, SaveSameObject] readonly attribute FrozenArray<Landmark> landmarks;
+
+    serializer = { attribute };
 };

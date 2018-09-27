@@ -1433,6 +1433,7 @@ interface DetectedFace
     getter boundingBox
     getter landmarks
     method constructor
+    method toJSON
 interface DetectedText
     attribute @@toStringTag
     getter boundingBox
