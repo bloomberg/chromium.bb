@@ -17,9 +17,9 @@ namespace blink {
 namespace {
 using ActiveScrollTimelineSet = HeapHashCountedSet<WeakMember<Node>>;
 ActiveScrollTimelineSet& GetActiveScrollTimelineSet() {
-  DEFINE_STATIC_LOCAL(ActiveScrollTimelineSet, set,
+  DEFINE_STATIC_LOCAL(Persistent<ActiveScrollTimelineSet>, set,
                       (new ActiveScrollTimelineSet));
-  return set;
+  return *set;
 }
 
 bool StringToScrollDirection(String scroll_direction,

@@ -219,9 +219,9 @@ void MutationObserver::ObservationEnded(
 }
 
 static MutationObserverSet& ActiveMutationObservers() {
-  DEFINE_STATIC_LOCAL(MutationObserverSet, active_observers,
+  DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, active_observers,
                       (new MutationObserverSet));
-  return active_observers;
+  return *active_observers;
 }
 
 using SlotChangeList = HeapVector<Member<HTMLSlotElement>>;
@@ -230,14 +230,15 @@ using SlotChangeList = HeapVector<Member<HTMLSlotElement>>;
 // similar-origin browsing context.
 // https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-similar-origin-browsing-contexts
 static SlotChangeList& ActiveSlotChangeList() {
-  DEFINE_STATIC_LOCAL(SlotChangeList, slot_change_list, (new SlotChangeList));
-  return slot_change_list;
+  DEFINE_STATIC_LOCAL(Persistent<SlotChangeList>, slot_change_list,
+                      (new SlotChangeList));
+  return *slot_change_list;
 }
 
 static MutationObserverSet& SuspendedMutationObservers() {
-  DEFINE_STATIC_LOCAL(MutationObserverSet, suspended_observers,
+  DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, suspended_observers,
                       (new MutationObserverSet));
-  return suspended_observers;
+  return *suspended_observers;
 }
 
 static void EnsureEnqueueMicrotask() {

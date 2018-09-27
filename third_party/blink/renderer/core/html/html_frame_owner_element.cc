@@ -54,8 +54,8 @@ namespace {
 
 using PluginSet = HeapHashSet<Member<WebPluginContainerImpl>>;
 PluginSet& PluginsPendingDispose() {
-  DEFINE_STATIC_LOCAL(PluginSet, set, (new PluginSet));
-  return set;
+  DEFINE_STATIC_LOCAL(Persistent<PluginSet>, set, (new PluginSet));
+  return *set;
 }
 
 bool DoesParentAllowLazyLoadingChildren(Document& document) {

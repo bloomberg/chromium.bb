@@ -125,15 +125,15 @@ inline void DistributionPool::DetachNonDistributedNodes() {
 
 const HeapVector<Member<V0InsertionPoint>>&
 ShadowRootV0::DescendantInsertionPoints() {
-  DEFINE_STATIC_LOCAL(HeapVector<Member<V0InsertionPoint>>, empty_list,
-                      (new HeapVector<Member<V0InsertionPoint>>));
+  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<V0InsertionPoint>>>,
+                      empty_list, (new HeapVector<Member<V0InsertionPoint>>));
   if (descendant_insertion_points_is_valid_)
     return descendant_insertion_points_;
 
   descendant_insertion_points_is_valid_ = true;
 
   if (!ContainsInsertionPoints())
-    return empty_list;
+    return *empty_list;
 
   HeapVector<Member<V0InsertionPoint>> insertion_points;
   for (V0InsertionPoint& insertion_point :

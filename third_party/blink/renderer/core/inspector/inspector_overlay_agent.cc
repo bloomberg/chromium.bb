@@ -759,7 +759,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
 
-  DEFINE_STATIC_LOCAL(LocalFrameClient, dummy_local_frame_client,
+  DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (EmptyLocalFrameClient::Create()));
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
@@ -797,7 +797,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
   overlay_settings.SetAcceleratedCompositingEnabled(false);
 
   LocalFrame* frame =
-      LocalFrame::Create(&dummy_local_frame_client, *overlay_page_, nullptr);
+      LocalFrame::Create(dummy_local_frame_client, *overlay_page_, nullptr);
   frame->SetView(LocalFrameView::Create(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);

@@ -42,9 +42,9 @@ const CSSValue* AnimationFillMode::CSSValueFromComputedStyleInternal(
 }
 
 const CSSValue* AnimationFillMode::InitialValue() const {
-  DEFINE_STATIC_LOCAL(CSSValue, value,
+  DEFINE_STATIC_LOCAL(Persistent<CSSValue>, value,
                       (CSSIdentifierValue::Create(CSSValueNone)));
-  return &value;
+  return value;
 }
 
 }  // namespace CSSLonghand

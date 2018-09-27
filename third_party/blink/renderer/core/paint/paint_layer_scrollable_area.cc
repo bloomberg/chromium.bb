@@ -2542,10 +2542,10 @@ void PaintLayerScrollableArea::PreventRelayoutScope::ResetRelayoutNeeded() {
 
 HeapVector<Member<PaintLayerScrollableArea>>&
 PaintLayerScrollableArea::PreventRelayoutScope::NeedsRelayoutList() {
-  DEFINE_STATIC_LOCAL(HeapVector<Member<PaintLayerScrollableArea>>,
+  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<PaintLayerScrollableArea>>>,
                       needs_relayout_list,
                       (new HeapVector<Member<PaintLayerScrollableArea>>));
-  return needs_relayout_list;
+  return *needs_relayout_list;
 }
 
 int PaintLayerScrollableArea::FreezeScrollbarsScope::count_ = 0;
@@ -2581,10 +2581,10 @@ void PaintLayerScrollableArea::DelayScrollOffsetClampScope::
 
 HeapVector<Member<PaintLayerScrollableArea>>&
 PaintLayerScrollableArea::DelayScrollOffsetClampScope::NeedsClampList() {
-  DEFINE_STATIC_LOCAL(HeapVector<Member<PaintLayerScrollableArea>>,
+  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<PaintLayerScrollableArea>>>,
                       needs_clamp_list,
                       (new HeapVector<Member<PaintLayerScrollableArea>>));
-  return needs_clamp_list;
+  return *needs_clamp_list;
 }
 
 ScrollbarTheme& PaintLayerScrollableArea::GetPageScrollbarTheme() const {

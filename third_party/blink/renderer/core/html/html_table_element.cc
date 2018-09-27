@@ -466,21 +466,21 @@ HTMLTableElement::AdditionalPresentationAttributeStyle() {
     // Setting the border to 'hidden' allows it to win over any border
     // set on the table's cells during border-conflict resolution.
     if (rules_attr_ != kUnsetRules) {
-      DEFINE_STATIC_LOCAL(CSSPropertyValueSet, solid_border_style,
+      DEFINE_STATIC_LOCAL(Persistent<CSSPropertyValueSet>, solid_border_style,
                           (CreateBorderStyle(CSSValueHidden)));
-      return &solid_border_style;
+      return solid_border_style;
     }
     return nullptr;
   }
 
   if (border_color_attr_) {
-    DEFINE_STATIC_LOCAL(CSSPropertyValueSet, solid_border_style,
+    DEFINE_STATIC_LOCAL(Persistent<CSSPropertyValueSet>, solid_border_style,
                         (CreateBorderStyle(CSSValueSolid)));
-    return &solid_border_style;
+    return solid_border_style;
   }
-  DEFINE_STATIC_LOCAL(CSSPropertyValueSet, outset_border_style,
+  DEFINE_STATIC_LOCAL(Persistent<CSSPropertyValueSet>, outset_border_style,
                       (CreateBorderStyle(CSSValueOutset)));
-  return &outset_border_style;
+  return outset_border_style;
 }
 
 HTMLTableElement::CellBorders HTMLTableElement::GetCellBorders() const {
@@ -582,13 +582,13 @@ const CSSPropertyValueSet* HTMLTableElement::AdditionalGroupStyle(bool rows) {
     return nullptr;
 
   if (rows) {
-    DEFINE_STATIC_LOCAL(CSSPropertyValueSet, row_border_style,
+    DEFINE_STATIC_LOCAL(Persistent<CSSPropertyValueSet>, row_border_style,
                         (CreateGroupBorderStyle(true)));
-    return &row_border_style;
+    return row_border_style;
   }
-  DEFINE_STATIC_LOCAL(CSSPropertyValueSet, column_border_style,
+  DEFINE_STATIC_LOCAL(Persistent<CSSPropertyValueSet>, column_border_style,
                       (CreateGroupBorderStyle(false)));
-  return &column_border_style;
+  return column_border_style;
 }
 
 bool HTMLTableElement::IsURLAttribute(const Attribute& attribute) const {

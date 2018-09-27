@@ -127,12 +127,12 @@ Element* TreeScope::getElementById(const AtomicString& element_id) const {
 
 const HeapVector<Member<Element>>& TreeScope::GetAllElementsById(
     const AtomicString& element_id) const {
-  DEFINE_STATIC_LOCAL(HeapVector<Member<Element>>, empty_vector,
+  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<Element>>>, empty_vector,
                       (new HeapVector<Member<Element>>));
   if (element_id.IsEmpty())
-    return empty_vector;
+    return *empty_vector;
   if (!elements_by_id_)
-    return empty_vector;
+    return *empty_vector;
   return elements_by_id_->GetAllElementsById(element_id, *this);
 }
 
