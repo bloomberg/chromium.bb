@@ -13,14 +13,15 @@
     android:clickable="true"
     android:background="@color/modern_grey_100" >
 
-    <ImageView
+    <org.chromium.chrome.browser.download.home.list.view.SquareAsyncImageView
         android:id="@+id/thumbnail"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/placeholder_thumbnail_bg_color"
+        android:layout_height="match_parent"
+        android:background="@color/modern_grey_300"
         android:scaleType="centerCrop"
         android:layout_gravity="center"
         android:adjustViewBounds="true"
+        style="@style/AsyncImageView"
         tools:ignore="ContentDescription" />
 
     <org.chromium.chrome.browser.download.home.view.SelectionView
