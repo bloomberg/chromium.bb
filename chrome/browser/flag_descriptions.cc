@@ -979,11 +979,6 @@ const char kGoogleProfileInfoDescription[] =
     "Enables using Google information to populate the profile name and icon in "
     "the avatar menu.";
 
-const char kHarfbuzzRendertextName[] = "HarfBuzz for UI text";
-const char kHarfbuzzRendertextDescription[] =
-    "Enable cross-platform HarfBuzz layout engine for UI text. Doesn't affect "
-    "web content.";
-
 const char kViewsCastDialogName[] = "Views Cast dialog";
 const char kViewsCastDialogDescription[] =
     "Replace the WebUI Cast dialog with a Views toolkit dialog. This requires "
