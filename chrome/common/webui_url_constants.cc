@@ -298,7 +298,7 @@ const char kInternetSubPage[] = "internet";
 const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kNetworkDetailSubPage[] = "networkDetail";
 const char kPowerSubPage[] = "power";
-const char kSmbSharesPage[] = "smbShares";
+const char kSmbSharesPageAddDialog[] = "smbShares?showAddShare=true";
 const char kStylusSubPage[] = "stylus";
 #else
 const char kCreateProfileSubPage[] = "createProfile";

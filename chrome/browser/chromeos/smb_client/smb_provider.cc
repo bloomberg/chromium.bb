@@ -62,7 +62,7 @@ const IconSet& SmbProvider::GetIconSet() const {
 bool SmbProvider::RequestMount(Profile* profile) {
   auto* settings_manager = chrome::SettingsWindowManager::GetInstance();
   settings_manager->ShowChromePageForProfile(
-      profile, chrome::GetSettingsUrl(chrome::kSmbSharesPage));
+      profile, chrome::GetSettingsUrl(chrome::kSmbSharesPageAddDialog));
 
   return true;
 }
