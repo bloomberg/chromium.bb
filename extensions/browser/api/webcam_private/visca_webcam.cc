@@ -76,6 +76,24 @@ const char kGetZoomCommand[] = {0x81, 0x09, 0x04, 0x47, 0xFF};
 const char kSetZoomCommand[] = {0x81, 0x01, 0x04, 0x47, 0x00,
                                 0x00, 0x00, 0x00, 0xFF};
 
+// Command: {0x8X, 0x01, 0x04, 0x38, 0x02, 0xFF}, X = 1 to 7: target device
+// address.
+const char kSetAutoFocusCommand[] = {0x81, 0x01, 0x04, 0x38, 0x02, 0xFF};
+
+// Command: {0x8X, 0x01, 0x04, 0x38, 0x03, 0xFF}, X = 1 to 7: target device
+// address.
+const char kSetManualFocusCommand[] = {0x81, 0x01, 0x04, 0x38, 0x03, 0xFF};
+
+// Command: {0x8X, 0x09, 0x04, 0x48, 0xFF}, X = 1 to 7: target device address.
+// Response: {0xY0, 0x50, 0x0p, 0x0q, 0x0r, 0x0s, 0xFF}, Y = socket number;
+// pqrs: focus position.
+const char kGetFocusCommand[] = {0x81, 0x09, 0x04, 0x48, 0xFF};
+
+// Command: {0x8X, 0x01, 0x04, 0x48, 0x0p, 0x0q, 0x0r, 0x0s, 0xFF}, X = 1 to 7:
+// target device address; pqrs: focus position;
+const char kSetFocusCommand[] = {0x81, 0x01, 0x04, 0x48, 0x00,
+                                 0x00, 0x00, 0x00, 0xFF};
+
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x0p, 0x0t, 0x03, 0x01, 0xFF}, X = 1 to 7:
 // target device address; p: pan speed; t: tilt speed.
 const char kPTUpCommand[] = {0x81, 0x01, 0x06, 0x01, 0x00,
@@ -350,6 +368,9 @@ void ViscaWebcam::OnInquiryCompleted(InquiryType type,
     case INQUIRY_ZOOM:
       is_valid_response = CanBuildResponseInt(response, 2);
       break;
+    case INQUIRY_FOCUS:
+      is_valid_response = CanBuildResponseInt(response, 2);
+      break;
   }
   if (!is_valid_response) {
     callback.Run(false, 0 /* value */, 0 /* min_value */, 0 /* max_value */);
@@ -371,6 +392,10 @@ void ViscaWebcam::OnInquiryCompleted(InquiryType type,
       break;
     case INQUIRY_ZOOM:
       // See kGetZoomCommand for the format of response.
+      value = BuildResponseInt(response, 2);
+      break;
+    case INQUIRY_FOCUS:
+      // See kGetFocusCommand for the format of response.
       value = BuildResponseInt(response, 2);
       break;
   }
@@ -418,6 +443,12 @@ void ViscaWebcam::GetZoom(const GetPTZCompleteCallback& callback) {
                   weak_ptr_factory_.GetWeakPtr(), INQUIRY_ZOOM, callback));
 }
 
+void ViscaWebcam::GetFocus(const GetPTZCompleteCallback& callback) {
+  Send(CHAR_VECTOR_FROM_ARRAY(kGetFocusCommand),
+       base::Bind(&ViscaWebcam::OnInquiryCompleted,
+                  weak_ptr_factory_.GetWeakPtr(), INQUIRY_FOCUS, callback));
+}
+
 void ViscaWebcam::SetPan(int value,
                          int pan_speed,
                          const SetPTZCompleteCallback& callback) {
@@ -454,6 +485,26 @@ void ViscaWebcam::SetZoom(int value, const SetPTZCompleteCallback& callback) {
   int actual_value = std::max(value, 0);
   std::vector<char> command = CHAR_VECTOR_FROM_ARRAY(kSetZoomCommand);
   ResponseToCommand(&command, 4, actual_value);
+  Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
+                           weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void ViscaWebcam::SetFocus(int value, const SetPTZCompleteCallback& callback) {
+  int actual_value = std::max(value, 0);
+  std::vector<char> command = CHAR_VECTOR_FROM_ARRAY(kSetFocusCommand);
+  ResponseToCommand(&command, 4, actual_value);
+  Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
+                           weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void ViscaWebcam::SetAutofocusState(AutofocusState state,
+                                    const SetPTZCompleteCallback& callback) {
+  std::vector<char> command;
+  if (state == AUTOFOCUS_ON) {
+    command = CHAR_VECTOR_FROM_ARRAY(kSetAutoFocusCommand);
+  } else {
+    command = CHAR_VECTOR_FROM_ARRAY(kSetManualFocusCommand);
+  }
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
                            weak_ptr_factory_.GetWeakPtr(), callback));
 }
