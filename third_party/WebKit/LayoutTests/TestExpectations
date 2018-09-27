@@ -5208,6 +5208,10 @@ crbug.com/886566 [ Linux Win10 Mac Android ] http/tests/csspaint/invalidation-ba
 crbug.com/886566 http/tests/csspaint/invalidation-border-image.html [ Pass Timeout ]
 crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Timeout ]
 
+# Skia roll
+crbug.com/884166 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ Failure ]
+crbug.com/884166 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ Failure ]
+
 # Enable AnimationWorklet tests for mainthread
 crbug.com/887659 animations/animationworklet/animation-worklet-inside-iframe.html [ Failure ]
 crbug.com/887659 animations/animationworklet/animator-animate.html [ Failure ]
