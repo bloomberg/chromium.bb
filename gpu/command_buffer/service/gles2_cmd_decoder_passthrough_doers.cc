@@ -3203,10 +3203,19 @@ error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
   pending_query.shm = std::move(active_query.shm);
   pending_query.sync = active_query.sync;
   pending_query.submit_count = submit_count;
-  if (target == GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM) {
-    pending_query.buffer_shadow_update_fence = gl::GLFence::Create();
-    pending_query.buffer_shadow_updates = std::move(buffer_shadow_updates_);
-    buffer_shadow_updates_.clear();
+  switch (target) {
+    case GL_COMMANDS_COMPLETED_CHROMIUM:
+      pending_query.commands_completed_fence = gl::GLFence::Create();
+      break;
+
+    case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
+      pending_query.buffer_shadow_update_fence = gl::GLFence::Create();
+      pending_query.buffer_shadow_updates = std::move(buffer_shadow_updates_);
+      buffer_shadow_updates_.clear();
+      break;
+
+    default:
+      break;
   }
   pending_queries_.push_back(std::move(pending_query));
   return ProcessQueries(false);

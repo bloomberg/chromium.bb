@@ -618,6 +618,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     QuerySync* sync = nullptr;
     base::subtle::Atomic32 submit_count = 0;
 
+    std::unique_ptr<gl::GLFence> commands_completed_fence;
+
     std::vector<base::OnceClosure> callbacks;
     std::unique_ptr<gl::GLFence> buffer_shadow_update_fence = nullptr;
     BufferShadowUpdateMap buffer_shadow_updates;
