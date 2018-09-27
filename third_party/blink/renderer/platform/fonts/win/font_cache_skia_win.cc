@@ -47,7 +47,8 @@
 
 namespace blink {
 
-HashMap<String, sk_sp<SkTypeface>>* FontCache::sideloaded_fonts_ = nullptr;
+HashMap<String, sk_sp<SkTypeface>, CaseFoldingHash>*
+    FontCache::sideloaded_fonts_ = nullptr;
 
 // Cached system font metrics.
 AtomicString* FontCache::menu_font_family_name_ = nullptr;
@@ -71,10 +72,11 @@ int32_t EnsureMinimumFontHeightIfNeeded(int32_t font_height) {
 // static
 void FontCache::AddSideloadedFontForTesting(sk_sp<SkTypeface> typeface) {
   if (!sideloaded_fonts_)
-    sideloaded_fonts_ = new HashMap<String, sk_sp<SkTypeface>>;
+    sideloaded_fonts_ = new HashMap<String, sk_sp<SkTypeface>, CaseFoldingHash>;
   SkString name;
   typeface->getFamilyName(&name);
-  sideloaded_fonts_->Set(name.c_str(), std::move(typeface));
+  String name_wtf(name.c_str());
+  sideloaded_fonts_->Set(name_wtf, std::move(typeface));
 }
 
 // static
