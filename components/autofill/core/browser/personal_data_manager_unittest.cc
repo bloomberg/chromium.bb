@@ -4714,32 +4714,6 @@ TEST_F(PersonalDataManagerTest, DeleteDisusedAddresses_DoNothingWhenDisabled) {
   EXPECT_EQ(1U, personal_data_->GetProfiles().size());
 }
 
-// Tests that DeleteDisusedAddresses is not run a second time on the same
-// major version.
-TEST_F(PersonalDataManagerTest, DeleteDisusedAddresses_OncePerVersion) {
-  // Enable the feature.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillDeleteDisusedAddresses);
-
-  CreateDeletableDisusedProfile();
-
-  EXPECT_TRUE(personal_data_->DeleteDisusedAddresses());
-  WaitForOnPersonalDataChanged();
-
-  EXPECT_EQ(0U, personal_data_->GetProfiles().size());
-
-  // Add the profile back.
-  CreateDeletableDisusedProfile();
-
-  // DeleteDisusedAddresses should return false to indicate it was not run.
-  EXPECT_FALSE(personal_data_->DeleteDisusedAddresses());
-
-  personal_data_->Refresh();
-
-  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
-}
-
 // Tests that DeleteDisusedAddresses only deletes the addresses that are
 // supposed to be deleted.
 TEST_F(PersonalDataManagerTest,
@@ -4841,33 +4815,6 @@ TEST_F(PersonalDataManagerTest,
 
   personal_data_->Refresh();
 
-  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
-}
-
-// Tests that DeleteDisusedCreditCards is not run a second time on the same
-// major version.
-TEST_F(PersonalDataManagerTest, DeleteDisusedCreditCards_OncePerVersion) {
-  // Enable the feature.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillDeleteDisusedCreditCards);
-
-  CreateDeletableExpiredAndDisusedCreditCard();
-
-  // The deletion should be run a first time.
-  EXPECT_TRUE(personal_data_->DeleteDisusedCreditCards());
-  WaitForOnPersonalDataChanged();
-
-  // The profiles should have been deleted.
-  EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
-
-  // Add the card back.
-  CreateDeletableExpiredAndDisusedCreditCard();
-
-  // The cleanup should not be run.
-  EXPECT_FALSE(personal_data_->DeleteDisusedCreditCards());
-
-  // The card should still be present.
   EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
 }
 
