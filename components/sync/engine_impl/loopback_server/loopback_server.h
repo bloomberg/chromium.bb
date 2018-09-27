@@ -53,6 +53,9 @@ class LoopbackServer {
                      int64_t* response_code,
                      std::string* response);
 
+  // Enables strong consistency model (i.e. server detects conflicts).
+  void EnableStrongConsistencyWithConflictDetectionModel();
+
  private:
   // Allow the FakeServer decorator to inspect the internals of this class.
   friend class fake_server::FakeServer;
@@ -176,6 +179,8 @@ class LoopbackServer {
   void set_observer_for_tests(ObserverForTests* observer) {
     observer_for_tests_ = observer;
   }
+
+  bool strong_consistency_model_enabled_;
 
   // This is the last version number assigned to an entity. The next entity will
   // have a version number of version_ + 1.

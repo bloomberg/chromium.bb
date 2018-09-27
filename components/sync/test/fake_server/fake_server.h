@@ -164,6 +164,9 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // This can be used to trigger exponential backoff in the client.
   void DisableNetwork();
 
+  // Enables strong consistency model (i.e. server detects conflicts).
+  void EnableStrongConsistencyWithConflictDetectionModel();
+
   // Implement LoopbackServer::ObserverForTests:
   void OnCommit(const std::string& committer_id,
                 syncer::ModelTypeSet committed_model_types) override;
