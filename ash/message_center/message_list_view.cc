@@ -6,6 +6,7 @@
 
 #include "ash/message_center/message_center_style.h"
 #include "ash/message_center/message_center_view.h"
+#include "ash/message_center/slidable_message_view.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -16,7 +17,6 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/views/message_view.h"
-#include "ui/message_center/views/slidable_message_view.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"

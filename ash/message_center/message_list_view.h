@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/message_center/slidable_message_view.h"
 #include "base/macros.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/message_center/views/slidable_message_view.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/controls/scroll_view.h"

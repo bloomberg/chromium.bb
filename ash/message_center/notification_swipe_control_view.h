@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
-#define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
+#ifndef ASH_MESSAGE_CENTER_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
+#define ASH_MESSAGE_CENTER_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/message_center/message_center_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
 
-namespace message_center {
+namespace ash {
 
 // View containing 2 buttons that appears behind notification by swiping.
-class MESSAGE_CENTER_EXPORT NotificationSwipeControlView
-    : public views::View,
-      public views::ButtonListener {
+class ASH_EXPORT NotificationSwipeControlView : public views::View,
+                                                public views::ButtonListener {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -59,8 +58,10 @@ class MESSAGE_CENTER_EXPORT NotificationSwipeControlView
   // Change the visibility of the snooze button. True to show, false to hide.
   void ShowSnoozeButton(bool show);
 
-  std::unique_ptr<views::ImageButton> settings_button_;
-  std::unique_ptr<views::ImageButton> snooze_button_;
+  // Owned by views hierarchy.
+  views::ImageButton* settings_button_ = nullptr;
+  views::ImageButton* snooze_button_ = nullptr;
+
   base::ObserverList<Observer,
                      false /* check_empty */,
                      false /* allow_reentrancy */>
@@ -69,6 +70,6 @@ class MESSAGE_CENTER_EXPORT NotificationSwipeControlView
   DISALLOW_COPY_AND_ASSIGN(NotificationSwipeControlView);
 };
 
-}  // namespace message_center
+}  // namespace ash
 
-#endif  // UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
+#endif  // ASH_MESSAGE_CENTER_NOTIFICATION_SWIPE_CONTROL_VIEW_H_

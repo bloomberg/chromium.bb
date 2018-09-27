@@ -2,33 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/views/slidable_message_view.h"
+#include "ash/message_center/slidable_message_view.h"
 
+#include "ash/message_center/notification_swipe_control_view.h"
 #include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_background_painter.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
-#include "ui/message_center/views/notification_swipe_control_view.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
-namespace message_center {
+namespace ash {
 
-SlidableMessageView::SlidableMessageView(MessageView* message_view)
-    : message_view_(message_view) {
+SlidableMessageView::SlidableMessageView(
+    message_center::MessageView* message_view)
+    : message_view_(message_view),
+      control_view_(new NotificationSwipeControlView()) {
   SetFocusBehavior(views::View::FocusBehavior::NEVER);
 
   // Draw on its own layer to allow bound animation.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  SetBackground(views::CreateSolidBackground(kSwipeControlBackgroundColor));
+  SetBackground(views::CreateSolidBackground(
+      message_center::kSwipeControlBackgroundColor));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  control_view_ = std::make_unique<NotificationSwipeControlView>();
-  AddChildView(control_view_.get());
+  AddChildView(control_view_);
   control_view_->AddObserver(this);
 
   message_view_->AddSlideObserver(this);
@@ -45,7 +47,7 @@ void SlidableMessageView::OnSlideChanged(const std::string& notification_id) {
     NotificationSwipeControlView::ButtonPosition button_position =
         gesture_amount < 0 ? NotificationSwipeControlView::ButtonPosition::RIGHT
                            : NotificationSwipeControlView::ButtonPosition::LEFT;
-    NotificationControlButtonsView* buttons =
+    message_center::NotificationControlButtonsView* buttons =
         message_view_->GetControlButtonsView();
     bool has_settings_button = buttons->settings_button();
     bool has_snooze_button = buttons->snooze_button();
@@ -80,7 +82,7 @@ void SlidableMessageView::ChildVisibilityChanged(views::View* child) {
 }
 
 void SlidableMessageView::UpdateWithNotification(
-    const Notification& notification) {
+    const message_center::Notification& notification) {
   message_view_->UpdateWithNotification(notification);
 }
 
@@ -95,14 +97,15 @@ int SlidableMessageView::GetHeightForWidth(int width) const {
 void SlidableMessageView::UpdateCornerRadius(int top_radius,
                                              int bottom_radius) {
   SetBackground(views::CreateBackgroundFromPainter(
-      std::make_unique<NotificationBackgroundPainter>(
-          top_radius, bottom_radius, kSwipeControlBackgroundColor)));
+      std::make_unique<message_center::NotificationBackgroundPainter>(
+          top_radius, bottom_radius,
+          message_center::kSwipeControlBackgroundColor)));
   SchedulePaint();
 }
 
 // static
 SlidableMessageView* SlidableMessageView::GetFromMessageView(
-    MessageView* message_view) {
+    message_center::MessageView* message_view) {
   DCHECK(message_view);
   DCHECK(message_view->parent());
   DCHECK_EQ(std::string(SlidableMessageView::kViewClassName),
@@ -110,4 +113,4 @@ SlidableMessageView* SlidableMessageView::GetFromMessageView(
   return static_cast<SlidableMessageView*>(message_view->parent());
 }
 
-}  // namespace message_center
+}  // namespace ash
