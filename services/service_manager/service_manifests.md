@@ -152,7 +152,11 @@ different from the service name when connecting.
 at the same level as the browser process itself.
 
 Example:
-[content_browser](https://cs.chromium.org/chromium/src/content/public/app/mojo/content_browser_manifest.json)
+[chrome_browser](https://cs.chromium.org/chromium/src/chrome/app/chrome_manifest.json)
+
+Code in chrome_browser calls an XML parsing library function, which generates a
+random instance name to
+[isolate unrelated decode operations](https://cs.chromium.org/chromium/src/services/data_decoder/public/cpp/safe_xml_parser.cc?l=50).
 
 #### can\_create\_other\_service\_instances (bool)
 
@@ -164,6 +168,9 @@ at least at the same level as the Service Manager itself.
 
 Example:
 [content_browser](https://cs.chromium.org/chromium/src/content/public/app/mojo/content_browser_manifest.json)
+
+The browser manages render processes, and thus needs this privilege to manage
+the content_renderer instances on behalf of the service manager.
 
 ### interface\_provider\_specs (dictionary)
 
@@ -177,6 +184,10 @@ Every interface provider spec (often exclusively) contains one standard
 capability spec named “service_manager:connector”. This is the
 capability spec enforced when inter-service connections are made from a
 service's `Connector` interface.
+
+Some other examples of capability specs are things like "navigation:frame",
+which enforces capability specs for interfaces retrieved through a
+frame's `InterfaceProvider`.
 
 See [README.md](README.md#service-manifests) for some examples.
 
