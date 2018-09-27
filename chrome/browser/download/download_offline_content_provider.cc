@@ -94,7 +94,7 @@ void DownloadOfflineContentProvider::GetItemById(
     OfflineContentProvider::SingleItemCallback callback) {
   DownloadItem* item = manager_->GetDownloadByGuid(id.id);
   auto offline_item =
-      ShouldShowDownloadItem(item)
+      item && ShouldShowDownloadItem(item)
           ? base::make_optional(OfflineItemUtils::CreateOfflineItem(item))
           : base::nullopt;
 

@@ -21,6 +21,8 @@
 class DownloadItemModel : public DownloadUIModel,
                           public download::DownloadItem::Observer {
  public:
+  static DownloadUIModelPtr Wrap(download::DownloadItem* download);
+
   // Constructs a DownloadItemModel. The caller must ensure that |download|
   // outlives this object.
   explicit DownloadItemModel(download::DownloadItem* download);

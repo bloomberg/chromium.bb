@@ -15,6 +15,16 @@ using offline_items_collection::FailState;
 using offline_items_collection::OfflineItem;
 using offline_items_collection::OfflineItemState;
 
+// static
+DownloadUIModel::DownloadUIModelPtr OfflineItemModel::Wrap(
+    OfflineItemModelManager* manager,
+    const OfflineItem& offline_item) {
+  DownloadUIModel::DownloadUIModelPtr model(
+      new OfflineItemModel(manager, offline_item),
+      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
+  return model;
+}
+
 OfflineItemModel::OfflineItemModel(OfflineItemModelManager* manager,
                                    const OfflineItem& offline_item)
     : manager_(manager),
@@ -30,6 +40,14 @@ OfflineItemModel::OfflineItemModel(OfflineItemModelManager* manager,
 OfflineItemModel::~OfflineItemModel() {
   if (offline_item_)
     offline_item_observer_->RemoveObserver(offline_item_->id, this);
+}
+
+Profile* OfflineItemModel::profile() const {
+  return Profile::FromBrowserContext(manager_->browser_context());
+}
+
+ContentId OfflineItemModel::GetContentId() const {
+  return offline_item_ ? offline_item_->id : ContentId();
 }
 
 int64_t OfflineItemModel::GetCompletedBytes() const {
@@ -66,6 +84,43 @@ base::FilePath OfflineItemModel::GetTargetFilePath() const {
   return offline_item_ ? offline_item_->file_path : base::FilePath();
 }
 
+void OfflineItemModel::OpenDownload() {
+  if (!offline_item_)
+    return;
+
+  GetProvider()->OpenItem(
+      offline_items_collection::LaunchLocation::DOWNLOAD_SHELF,
+      offline_item_->id);
+}
+
+void OfflineItemModel::Pause() {
+  if (!offline_item_)
+    return;
+
+  GetProvider()->PauseDownload(offline_item_->id);
+}
+
+void OfflineItemModel::Resume() {
+  if (!offline_item_)
+    return;
+
+  GetProvider()->ResumeDownload(offline_item_->id, true /* has_user_gesture */);
+}
+
+void OfflineItemModel::Cancel(bool user_cancel) {
+  if (!offline_item_)
+    return;
+
+  GetProvider()->CancelDownload(offline_item_->id);
+}
+
+void OfflineItemModel::Remove() {
+  if (!offline_item_)
+    return;
+
+  GetProvider()->RemoveItem(offline_item_->id);
+}
+
 download::DownloadItem::DownloadState OfflineItemModel::GetState() const {
   if (!offline_item_)
     return download::DownloadItem::CANCELLED;
@@ -91,9 +146,8 @@ download::DownloadItem::DownloadState OfflineItemModel::GetState() const {
 }
 
 bool OfflineItemModel::IsPaused() const {
-  return offline_item_
-             ? offline_item_->state == offline_items_collection::PAUSED
-             : true;
+  return offline_item_ ? offline_item_->state == OfflineItemState::PAUSED
+                       : true;
 }
 
 bool OfflineItemModel::TimeRemaining(base::TimeDelta* remaining) const {
@@ -160,6 +214,18 @@ bool OfflineItemModel::GetFileExternallyRemoved() const {
 
 GURL OfflineItemModel::GetURL() const {
   return offline_item_ ? offline_item_->page_url : GURL();
+}
+
+bool OfflineItemModel::ShouldRemoveFromShelfWhenComplete() const {
+  // TODO(shaktisahu): Add more appropriate logic.
+  return false;
+}
+
+OfflineContentProvider* OfflineItemModel::GetProvider() const {
+  offline_items_collection::OfflineContentAggregator* aggregator =
+      OfflineContentAggregatorFactory::GetForBrowserContext(
+          manager_->browser_context());
+  return aggregator;
 }
 
 void OfflineItemModel::OnItemRemoved(const ContentId& id) {
