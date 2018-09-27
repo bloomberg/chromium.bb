@@ -247,6 +247,8 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
                                ? new Vector<ObjectPaintInvalidation>
                                : nullptr)),
       main_thread_scrolling_reasons_(0),
+      forced_layout_stack_depth_(0),
+      forced_layout_start_time_(TimeTicks()),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()),
       jank_tracker_(std::make_unique<JankTracker>(this)),
@@ -970,6 +972,26 @@ void LocalFrameView::UpdateLayout() {
 
   GetFrame().GetDocument()->LayoutUpdated();
   CheckDoesNotNeedLayout();
+}
+
+void LocalFrameView::WillStartForcedLayout() {
+  // UpdateLayoutIgnoringPendingStyleSheets is re-entrant for auto-sizing
+  // and plugins. So keep track of stack depth.
+  forced_layout_stack_depth_++;
+  if (forced_layout_stack_depth_ > 1)
+    return;
+  forced_layout_start_time_ = CurrentTimeTicks();
+}
+
+void LocalFrameView::DidFinishForcedLayout() {
+  CHECK_GT(forced_layout_stack_depth_, (unsigned)0);
+  forced_layout_stack_depth_--;
+  if (!forced_layout_stack_depth_ && base::TimeTicks::IsHighResolution()) {
+    LocalFrameUkmAggregator& aggregator = EnsureUkmAggregator();
+    aggregator.RecordSample(
+        (size_t)LocalFrameUkmAggregator::kForcedStyleAndLayout,
+        forced_layout_start_time_, CurrentTimeTicks());
+  }
 }
 
 void LocalFrameView::SetNeedsPaintPropertyUpdate() {

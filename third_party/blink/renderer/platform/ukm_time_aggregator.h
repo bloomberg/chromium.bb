@@ -128,6 +128,11 @@ class PLATFORM_EXPORT UkmTimeAggregator {
       size_t metric_index,
       CustomCountHistogram* histogram_counter = nullptr);
 
+  void RecordSample(size_t metric_index,
+                    TimeTicks start,
+                    TimeTicks end,
+                    CustomCountHistogram* histogram_counter);
+
  private:
   struct MetricRecord {
     String worst_case_metric_name;
@@ -143,10 +148,6 @@ class PLATFORM_EXPORT UkmTimeAggregator {
     }
   };
 
-  void RecordSample(size_t metric_index,
-                    TimeTicks start,
-                    TimeTicks end,
-                    CustomCountHistogram* histogram_counter);
   void FlushIfNeeded(TimeTicks current_time);
   void Flush(TimeTicks current_time);
 
