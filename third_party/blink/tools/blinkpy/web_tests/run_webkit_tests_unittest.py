@@ -620,9 +620,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         _, err, __ = logging_run(['--smoke'], host=host, tests_included=True)
         self.assertIn('Retrying', err.getvalue())
 
-        # Do not retry if additional tests are given.
+        # Retry if additional tests are given.
         _, err, __ = logging_run(['--smoke', 'passes/image.html'], host=host, tests_included=True)
-        self.assertNotIn('Retrying', err.getvalue())
+        self.assertIn('Retrying', err.getvalue())
 
     def test_missing_and_unexpected_results(self):
         # Test that we update expectations in place. If the expectation
@@ -802,7 +802,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         details, err, _ = logging_run(['--test-list=%s' % filename, '--order', 'natural'],
                                       tests_included=True, host=host)
         self.assertEqual(details.exit_code, 2)
-        self.assertNotIn('Retrying', err.getvalue())
+        self.assertIn('Retrying', err.getvalue())
 
         host = MockHost()
         filename = '/tmp/foo.txt'
