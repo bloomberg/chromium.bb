@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -99,6 +100,8 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token,
                                         base::OnceClosure post_init_callback) {
   // Set the flag to avoid starting the service multiple times.
   state_ = State::STARTED;
+
+  started_time_ = base::TimeTicks::Now();
 
   // LibAssistant creation will make file IO and sync wait. Post the creation to
   // background thread to avoid DCHECK.
@@ -703,6 +706,10 @@ void AssistantManagerServiceImpl::PostInitAssistant(
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   state_ = State::RUNNING;
+
+  const base::TimeDelta time_since_started =
+      base::TimeTicks::Now() - started_time_;
+  UMA_HISTOGRAM_TIMES("Assistant.ServiceStartTime", time_since_started);
 
   std::move(post_init_callback).Run();
   UpdateDeviceSettings();
