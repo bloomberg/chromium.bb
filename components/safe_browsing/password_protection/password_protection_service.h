@@ -367,6 +367,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       RequestOutcome reason,
       ReusedPasswordType password_type);
 
+  // Get the content area size of current browsing window.
+  virtual gfx::Size GetCurrentContentAreaSize() const = 0;
+
   // Number of verdict stored for this profile for password on focus pings.
   int stored_verdict_count_password_on_focus_;
 
