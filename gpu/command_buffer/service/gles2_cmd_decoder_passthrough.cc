@@ -1910,8 +1910,8 @@ bool GLES2DecoderPassthroughImpl::IsRobustnessSupported() {
 }
 
 bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
-  // GL_COMMANDS_COMPLETED_CHROMIUM is implemented in ANGLE
   switch (target) {
+    case GL_COMMANDS_COMPLETED_CHROMIUM:
     case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
     case GL_COMMANDS_ISSUED_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
@@ -1930,6 +1930,12 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
     GLuint result_available = GL_FALSE;
     GLuint64 result = 0;
     switch (query.target) {
+      case GL_COMMANDS_COMPLETED_CHROMIUM:
+        DCHECK(query.commands_completed_fence != nullptr);
+        result_available = query.commands_completed_fence->HasCompleted();
+        result = result_available;
+        break;
+
       case GL_COMMANDS_ISSUED_CHROMIUM:
         result_available = GL_TRUE;
         result = GL_TRUE;
