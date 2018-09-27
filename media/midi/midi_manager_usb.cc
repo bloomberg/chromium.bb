@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "media/midi/midi_service.h"
@@ -26,7 +27,6 @@ MidiManagerUsb::~MidiManagerUsb() {
   // TODO(toyoshim): Remove following DCHECKs once the dynamic instantiation
   // mode is enabled by default.
   base::AutoLock lock(lock_);
-  DCHECK(initialize_callback_.is_null());
   DCHECK(device_factory_);
   DCHECK(devices_.empty());
   DCHECK(output_streams_.empty());
@@ -38,8 +38,7 @@ void MidiManagerUsb::StartInitialization() {
   bool result = service()->task_service()->BindInstance();
   DCHECK(result);
 
-  Initialize(base::BindOnce(&MidiManager::CompleteInitialization,
-                            base::Unretained(this)));
+  Initialize();
 }
 
 void MidiManagerUsb::Finalize() {
@@ -49,7 +48,6 @@ void MidiManagerUsb::Finalize() {
   // TODO(toyoshim): Remove following code once the dynamic instantiation mode
   // is enabled by default.
   base::AutoLock lock(lock_);
-  initialize_callback_ = Callback();
   devices_.clear();
   output_streams_.clear();
   input_stream_.reset();
@@ -59,9 +57,7 @@ void MidiManagerUsb::Finalize() {
   // which the constructor runs.
 }
 
-void MidiManagerUsb::Initialize(Callback callback) {
-  initialize_callback_ = std::move(callback);
-
+void MidiManagerUsb::Initialize() {
   // This is safe because EnumerateDevices cancels the operation on destruction.
   device_factory_->EnumerateDevices(
       this, base::BindOnce(&MidiManagerUsb::OnEnumerateDevicesDone,
@@ -140,19 +136,21 @@ void MidiManagerUsb::OnReceivedData(size_t jack_index,
 
 void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
                                             UsbMidiDevice::Devices* devices) {
-  if (!result) {
-    std::move(initialize_callback_).Run(Result::INITIALIZATION_ERROR);
-    return;
-  }
-  input_stream_.reset(new UsbMidiInputStream(this));
-  devices->swap(devices_);
-  for (size_t i = 0; i < devices_.size(); ++i) {
-    if (!AddPorts(devices_[i].get(), static_cast<int>(i))) {
-      std::move(initialize_callback_).Run(Result::INITIALIZATION_ERROR);
-      return;
+  if (result) {
+    input_stream_.reset(new UsbMidiInputStream(this));
+    devices->swap(devices_);
+    for (size_t i = 0; i < devices_.size(); ++i) {
+      if (!AddPorts(devices_[i].get(), static_cast<int>(i))) {
+        result = false;
+        break;
+      }
     }
   }
-  std::move(initialize_callback_).Run(Result::OK);
+  service()->task_service()->PostBoundTask(
+      TaskService::kDefaultRunnerId,
+      base::BindOnce(&MidiManager::CompleteInitialization,
+                     base::Unretained(this),
+                     result ? Result::OK : Result::INITIALIZATION_ERROR));
 }
 
 bool MidiManagerUsb::AddPorts(UsbMidiDevice* device, int device_id) {

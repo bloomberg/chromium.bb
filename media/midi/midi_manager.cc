@@ -104,8 +104,12 @@ void MidiManager::Shutdown() {
       static_cast<Sample>(SendReceiveUsage::MAX) + 1);
 
   // Detach all clients so that they do not call MidiManager methods any more.
+  for (auto* client : pending_clients_)
+    client->Detach();
+  pending_clients_.clear();
   for (auto* client : clients_)
     client->Detach();
+  clients_.clear();
 
   session_thread_runner_ = nullptr;
 }
@@ -129,8 +133,12 @@ void MidiManager::StartSession(MidiManagerClient* client) {
     if (initialization_state_ == InitializationState::COMPLETED) {
       // Platform dependent initialization was already finished for previously
       // initialized clients.
-      if (result_ == Result::OK)
-        AddInitialPorts(client);
+      if (result_ == Result::OK) {
+        for (const auto& info : input_ports_)
+          client->AddInputPort(info);
+        for (const auto& info : output_ports_)
+          client->AddOutputPort(info);
+      }
 
       // Complete synchronously with |result_|;
       clients_.insert(client);
@@ -187,17 +195,6 @@ bool MidiManager::HasOpenSession() {
   return clients_.size() != 0u;
 }
 
-void MidiManager::AccumulateMidiBytesSent(MidiManagerClient* client, size_t n) {
-  base::AutoLock auto_lock(lock_);
-  data_sent_ = true;
-  if (clients_.find(client) == clients_.end())
-    return;
-
-  // Continue to hold lock_ here in case another thread is currently doing
-  // EndSession.
-  client->AccumulateMidiBytesSent(n);
-}
-
 void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
                                        uint32_t port_index,
                                        const std::vector<uint8_t>& data,
@@ -210,22 +207,37 @@ void MidiManager::StartInitialization() {
 }
 
 void MidiManager::CompleteInitialization(Result result) {
-  bool complete_asynchronously = false;
-  {
-    base::AutoLock auto_lock(lock_);
-    if (session_thread_runner_) {
-      if (session_thread_runner_->BelongsToCurrentThread()) {
-        complete_asynchronously = true;
-      } else {
-        session_thread_runner_->PostTask(
-            FROM_HERE,
-            base::BindOnce(&MidiManager::CompleteInitializationOnSessionThread,
-                           base::Unretained(this), result));
-      }
+  TRACE_EVENT0("midi", "MidiManager::CompleteInitialization");
+  ReportUsage(Usage::INITIALIZED);
+
+  base::AutoLock auto_lock(lock_);
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.InputPorts", input_ports_.size(),
+                            kMaxUmaDevices + 1);
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.OutputPorts", output_ports_.size(),
+                            kMaxUmaDevices + 1);
+
+  if (!session_thread_runner_)
+    return;
+  DCHECK(session_thread_runner_->BelongsToCurrentThread());
+
+  DCHECK(!finalized_);
+  DCHECK(clients_.empty());
+  DCHECK_EQ(initialization_state_, InitializationState::STARTED);
+  initialization_state_ = InitializationState::COMPLETED;
+  result_ = result;
+
+  for (auto* client : pending_clients_) {
+    if (result_ == Result::OK) {
+      for (const auto& info : input_ports_)
+        client->AddInputPort(info);
+      for (const auto& info : output_ports_)
+        client->AddOutputPort(info);
     }
+
+    clients_.insert(client);
+    client->CompleteStartSession(result_);
   }
-  if (complete_asynchronously)
-    CompleteInitializationOnSessionThread(result);
+  pending_clients_.clear();
 }
 
 void MidiManager::AddInputPort(const MidiPortInfo& info) {
@@ -260,6 +272,23 @@ void MidiManager::SetOutputPortState(uint32_t port_index, PortState state) {
     client->SetOutputPortState(port_index, state);
 }
 
+mojom::PortState MidiManager::GetOutputPortState(uint32_t port_index) {
+  base::AutoLock auto_lock(lock_);
+  DCHECK_LT(port_index, output_ports_.size());
+  return output_ports_[port_index].state;
+}
+
+void MidiManager::AccumulateMidiBytesSent(MidiManagerClient* client, size_t n) {
+  base::AutoLock auto_lock(lock_);
+  data_sent_ = true;
+  if (clients_.find(client) == clients_.end())
+    return;
+
+  // Continue to hold lock_ here in case another thread is currently doing
+  // EndSession.
+  client->AccumulateMidiBytesSent(n);
+}
+
 void MidiManager::ReceiveMidiData(uint32_t port_index,
                                   const uint8_t* data,
                                   size_t length,
@@ -269,40 +298,6 @@ void MidiManager::ReceiveMidiData(uint32_t port_index,
 
   for (auto* client : clients_)
     client->ReceiveMidiData(port_index, data, length, timestamp);
-}
-
-void MidiManager::CompleteInitializationOnSessionThread(Result result) {
-  TRACE_EVENT0("midi", "MidiManager::CompleteInitialization");
-  ReportUsage(Usage::INITIALIZED);
-
-  base::AutoLock auto_lock(lock_);
-  UMA_HISTOGRAM_ENUMERATION("Media.Midi.InputPorts", input_ports_.size(),
-                            kMaxUmaDevices + 1);
-  UMA_HISTOGRAM_ENUMERATION("Media.Midi.OutputPorts", output_ports_.size(),
-                            kMaxUmaDevices + 1);
-
-  DCHECK(clients_.empty());
-  DCHECK_EQ(initialization_state_, InitializationState::STARTED);
-  initialization_state_ = InitializationState::COMPLETED;
-  result_ = result;
-
-  for (auto* client : pending_clients_) {
-    if (result_ == Result::OK)
-      AddInitialPorts(client);
-
-    clients_.insert(client);
-    client->CompleteStartSession(result_);
-  }
-  pending_clients_.clear();
-}
-
-void MidiManager::AddInitialPorts(MidiManagerClient* client) {
-  lock_.AssertAcquired();
-
-  for (const auto& info : input_ports_)
-    client->AddInputPort(info);
-  for (const auto& info : output_ports_)
-    client->AddOutputPort(info);
 }
 
 }  // namespace midi

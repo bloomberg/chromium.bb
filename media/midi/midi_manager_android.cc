@@ -97,8 +97,7 @@ void MidiManagerAndroid::DispatchSendMidiData(MidiManagerClient* client,
     // in the valid range.
     return;
   }
-  DCHECK_EQ(output_ports().size(), all_output_ports_.size());
-  if (output_ports()[port_index].state == PortState::CONNECTED) {
+  if (GetOutputPortState(port_index) == PortState::CONNECTED) {
     // We treat send call as implicit open.
     // TODO(yhirano): Implement explicit open operation from the renderer.
     if (all_output_ports_[port_index]->Open()) {
@@ -120,7 +119,7 @@ void MidiManagerAndroid::DispatchSendMidiData(MidiManagerClient* client,
       delay);
   service()->task_service()->PostBoundDelayedTask(
       TaskService::kDefaultRunnerId,
-      base::BindOnce(&MidiManager::AccumulateMidiBytesSent,
+      base::BindOnce(&MidiManagerAndroid::AccumulateMidiBytesSent,
                      base::Unretained(this), client, data.size()),
       delay);
 }
@@ -145,13 +144,19 @@ void MidiManagerAndroid::OnInitialized(
         env, env->GetObjectArrayElement(devices, i));
     AddDevice(std::make_unique<MidiDeviceAndroid>(env, raw_device, this));
   }
-  CompleteInitialization(Result::OK);
+  service()->task_service()->PostBoundTask(
+      TaskService::kDefaultRunnerId,
+      base::BindOnce(&MidiManagerAndroid::CompleteInitialization,
+                     base::Unretained(this), Result::OK));
 }
 
 void MidiManagerAndroid::OnInitializationFailed(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller) {
-  CompleteInitialization(Result::INITIALIZATION_ERROR);
+  service()->task_service()->PostBoundTask(
+      TaskService::kDefaultRunnerId,
+      base::BindOnce(&MidiManagerAndroid::CompleteInitialization,
+                     base::Unretained(this), Result::INITIALIZATION_ERROR));
 }
 
 void MidiManagerAndroid::OnAttached(JNIEnv* env,

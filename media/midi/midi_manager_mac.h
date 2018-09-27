@@ -40,6 +40,10 @@ class MIDI_EXPORT MidiManagerMac final : public MidiManager {
   // StartInitialization().
   void InitializeCoreMIDI();
 
+  // Completes CoreMIDI initialization and asks the thread that ran
+  // StartInitialization() to call CompleteStartSession() safely.
+  void CompleteCoreMIDIInitialization(mojom::Result result);
+
   // CoreMIDI callback for MIDI notification.
   // Receives MIDI related event notifications from CoreMIDI.
   static void ReceiveMidiNotifyDispatch(const MIDINotification* message,
