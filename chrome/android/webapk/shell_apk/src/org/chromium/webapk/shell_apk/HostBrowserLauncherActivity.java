@@ -38,6 +38,6 @@ public class HostBrowserLauncherActivity extends Activity {
                         hostBrowserPackageName, dialogShown, mActivityStartTimeMs);
         if (params == null) return;
 
-        HostBrowserLauncher.launch(this, params);
+        HostBrowserLauncher.launch(getApplicationContext(), params);
     }
 }
