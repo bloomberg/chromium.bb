@@ -315,24 +315,8 @@ UserFlow* FakeChromeUserManager::GetDefaultUserFlow() const {
   return default_flow_.get();
 }
 
-void FakeChromeUserManager::UpdateLoginState(
-    const user_manager::User* active_user,
-    const user_manager::User* primary_user,
-    bool is_current_user_owner) const {
-  chrome_user_manager_util::UpdateLoginState(active_user, primary_user,
-                                             is_current_user_owner);
-}
-
 void FakeChromeUserManager::SetOwnerId(const AccountId& account_id) {
   UserManagerBase::SetOwnerId(account_id);
-}
-
-bool FakeChromeUserManager::GetPlatformKnownUserId(
-    const std::string& user_email,
-    const std::string& gaia_id,
-    AccountId* out_account_id) const {
-  return chrome_user_manager_util::GetPlatformKnownUserId(user_email, gaia_id,
-                                                          out_account_id);
 }
 
 const AccountId& FakeChromeUserManager::GetGuestAccountId() const {
