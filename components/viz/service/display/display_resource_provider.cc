@@ -555,14 +555,8 @@ void DisplayResourceProvider::TryReleaseResource(ResourceMap::iterator it) {
   ChildResource* resource = &it->second;
   if (resource->marked_for_deletion && !resource->lock_for_read_count &&
       !resource->locked_for_external_use) {
-    if (batch_return_resources_) {
-      batched_returning_resources_[resource->child_id].push_back(id);
-    } else {
-      auto child_it = children_.find(resource->child_id);
-      std::vector<ResourceId> unused;
-      unused.push_back(id);
-      DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, unused);
-    }
+    auto child_it = children_.find(resource->child_id);
+    DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, {id});
   }
 }
 
@@ -617,8 +611,22 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   DCHECK(child_it != children_.end());
   Child* child_info = &child_it->second;
 
+  // No work is done in this case.
   if (unused.empty() && !child_info->marked_for_deletion)
     return;
+
+  // Store unused resources while batching is enabled.
+  if (batch_return_resources_lock_count_ > 0) {
+    int child_id = child_it->first;
+    // Ensure that we have an entry in |batched_returning_resources_| for child
+    // even if |unused| is empty, in case child is marked for deletion.
+    // Note: emplace() does not overwrite an entry if already present.
+    batched_returning_resources_.emplace(child_id, std::vector<ResourceId>());
+    auto& child_resources = batched_returning_resources_[child_id];
+    child_resources.reserve(child_resources.size() + unused.size());
+    child_resources.insert(child_resources.end(), unused.begin(), unused.end());
+    return;
+  }
 
   std::vector<ReturnedResource> to_return;
   to_return.reserve(unused.size());
@@ -750,15 +758,32 @@ void DisplayResourceProvider::DestroyChildInternal(ChildMap::iterator it,
 }
 
 void DisplayResourceProvider::SetBatchReturnResources(bool batch) {
-  DCHECK_NE(batch_return_resources_, batch);
-  batch_return_resources_ = batch;
-  if (!batch) {
-    for (const auto& resources : batched_returning_resources_) {
-      auto child_it = children_.find(resources.first);
-      DCHECK(child_it != children_.end());
-      DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, resources.second);
+  if (batch) {
+    DCHECK_GE(batch_return_resources_lock_count_, 0);
+    batch_return_resources_lock_count_++;
+  } else {
+    DCHECK_GT(batch_return_resources_lock_count_, 0);
+    batch_return_resources_lock_count_--;
+    if (batch_return_resources_lock_count_ == 0) {
+      for (auto& child_resources_kv : batched_returning_resources_) {
+        auto child_it = children_.find(child_resources_kv.first);
+
+        // Remove duplicates from child's unused resources.  Duplicates are
+        // possible when batching is enabled because resources are saved in
+        // |batched_returning_resources_| for removal, and not removed from the
+        // child's |child_to_parent_map|, so the same set of resources can be
+        // saved again using DeclareUsedResourcesForChild() or DestroyChild().
+        auto& unused_resources = child_resources_kv.second;
+        std::sort(unused_resources.begin(), unused_resources.end());
+        auto last =
+            std::unique(unused_resources.begin(), unused_resources.end());
+        unused_resources.erase(last, unused_resources.end());
+
+        DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL,
+                                              unused_resources);
+      }
+      batched_returning_resources_.clear();
     }
-    batched_returning_resources_.clear();
   }
 }
 

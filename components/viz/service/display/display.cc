@@ -294,6 +294,18 @@ bool Display::DrawAndSwap() {
     return false;
   }
 
+  // During aggregation, SurfaceAggregator marks all resources used for a draw
+  // in the resource provider.  This has the side effect of deleting unused
+  // resources and their textures, generating sync tokens, and returning the
+  // resources to the client.  This involves GL work which is issued before
+  // drawing commands, and gets prioritized by GPU scheduler because sync token
+  // dependencies aren't issued until the draw.
+  //
+  // Batch and defer returning resources in resource provider.  This defers the
+  // GL commands for deleting resources to after the draw, and prevents context
+  // switching because the scheduler knows sync token dependencies at that time.
+  DisplayResourceProvider::ScopedBatchReturnResources returner(
+      resource_provider_.get());
   base::ElapsedTimer aggregate_timer;
   CompositorFrame frame = aggregator_->Aggregate(
       current_surface_id_,
