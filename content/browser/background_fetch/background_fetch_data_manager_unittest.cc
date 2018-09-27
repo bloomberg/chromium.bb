@@ -778,6 +778,71 @@ TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaFailsCreation) {
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
 }
 
+TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
+  // Tests that the BackgroundFetchDataManager correctly rejects creating a
+  // registration when an origin exceeds the allowed number of registrations.
+  int64_t swid1 = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, swid1);
+  int64_t swid2 = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, swid2);
+
+  ASSERT_NE(swid1, swid2);
+
+  blink::mojom::BackgroundFetchError error;
+
+  // Create two registrations for every Service Worker.
+  for (int i = 0; i < 2; i++) {
+    // First Service Worker.
+    BackgroundFetchRegistrationId registration_id1(
+        swid1, origin(), kExampleDeveloperId + base::IntToString(i),
+        base::GenerateGUID());
+    CreateRegistration(registration_id1,
+                       std::vector<ServiceWorkerFetchRequest>(),
+                       BackgroundFetchOptions(), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+    // Second service Worker.
+    BackgroundFetchRegistrationId registration_id2(
+        swid2, origin(), kExampleDeveloperId + base::IntToString(i),
+        base::GenerateGUID());
+    CreateRegistration(registration_id2,
+                       std::vector<ServiceWorkerFetchRequest>(),
+                       BackgroundFetchOptions(), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  // Create another registration in the first Service Worker,
+  // bringing us to the limit.
+  {
+    BackgroundFetchRegistrationId registration_id(
+        swid1, origin(), "developer_id1", base::GenerateGUID());
+    CreateRegistration(registration_id,
+                       std::vector<ServiceWorkerFetchRequest>(),
+                       BackgroundFetchOptions(), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  // A registration this time should fail.
+  {
+    BackgroundFetchRegistrationId registration_id(
+        swid1, origin(), "developer_id2", base::GenerateGUID());
+    CreateRegistration(registration_id,
+                       std::vector<ServiceWorkerFetchRequest>(),
+                       BackgroundFetchOptions(), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
+  }
+
+  // The registration should also fail for the other Service Worker.
+  {
+    BackgroundFetchRegistrationId registration_id(
+        swid2, origin(), "developer_id3", base::GenerateGUID());
+    CreateRegistration(registration_id,
+                       std::vector<ServiceWorkerFetchRequest>(),
+                       BackgroundFetchOptions(), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
+  }
+}
+
 TEST_F(BackgroundFetchDataManagerTest, GetDeveloperIds) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
