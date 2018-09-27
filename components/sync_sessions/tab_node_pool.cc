@@ -5,6 +5,7 @@
 #include "components/sync_sessions/tab_node_pool.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/logging.h"
 #include "components/sync/base/model_type.h"
@@ -27,10 +28,11 @@ TabNodePool::~TabNodePool() {}
 
 void TabNodePool::AddTabNode(int tab_node_id) {
   DCHECK_GT(tab_node_id, kInvalidTabNodeID);
+  DCHECK_LE(tab_node_id, max_used_tab_node_id_);
   DCHECK(nodeid_tabid_map_.find(tab_node_id) == nodeid_tabid_map_.end());
   DVLOG(1) << "Adding tab node " << tab_node_id << " to pool.";
-  max_used_tab_node_id_ = std::max(max_used_tab_node_id_, tab_node_id);
   free_nodes_pool_.insert(tab_node_id);
+  missing_nodes_pool_.erase(tab_node_id);
 }
 
 void TabNodePool::AssociateTabNode(int tab_node_id, SessionID tab_id) {
@@ -76,13 +78,23 @@ int TabNodePool::AssociateWithFreeTabNode(SessionID tab_id) {
   DCHECK_EQ(0U, tabid_nodeid_map_.count(tab_id));
 
   int tab_node_id;
-  if (free_nodes_pool_.empty()) {
-    // Tab pool has no free nodes, allocate new one.
+  if (free_nodes_pool_.empty() && missing_nodes_pool_.empty()) {
+    // Tab pool has neither free nodes nor "holes" within the ID range, so
+    // allocate a new one by extending the range.
     tab_node_id = ++max_used_tab_node_id_;
     AddTabNode(tab_node_id);
   } else {
-    // Return the next free node.
-    tab_node_id = *free_nodes_pool_.begin();
+    tab_node_id = std::numeric_limits<int>::max();
+    // Take the smallest available, either from the freed pool or from IDs that
+    // were never associated before (but are within 0..max_used_tab_node_id_).
+    if (!free_nodes_pool_.empty()) {
+      tab_node_id = *free_nodes_pool_.begin();
+    }
+    if (!missing_nodes_pool_.empty() &&
+        *missing_nodes_pool_.begin() < tab_node_id) {
+      tab_node_id = *missing_nodes_pool_.begin();
+      AddTabNode(tab_node_id);
+    }
   }
 
   AssociateTabNode(tab_node_id, tab_id);
@@ -108,7 +120,13 @@ void TabNodePool::ReassociateTabNode(int tab_node_id, SessionID tab_id) {
     // This node was already associated with another tab. Free it.
     FreeTab(nodeid_it->second);
   } else {
-    // This is a new tab node. Add it before association.
+    // This is a new tab node. Add it before association. We also need to
+    // remember the "holes".
+    for (int missing_tab_node_id = max_used_tab_node_id_ + 1;
+         missing_tab_node_id < tab_node_id; ++missing_tab_node_id) {
+      missing_nodes_pool_.insert(missing_tab_node_id);
+    }
+    max_used_tab_node_id_ = std::max(max_used_tab_node_id_, tab_node_id);
     AddTabNode(tab_node_id);
   }
 
@@ -128,15 +146,16 @@ void TabNodePool::CleanupTabNodes(std::set<int>* deleted_node_ids) {
   // delete sync nodes till number reaches kFreeNodesLowWatermark.
   // Note: This logic is to mitigate temporary disassociation issues with old
   // clients: https://crbug.com/259918. Newer versions do not need this.
-  if (free_nodes_pool_.size() > kFreeNodesHighWatermark) {
-    for (std::set<int>::iterator free_it = free_nodes_pool_.begin();
-         free_it != free_nodes_pool_.end();) {
-      deleted_node_ids->insert(*free_it);
-      free_nodes_pool_.erase(free_it++);
-      if (free_nodes_pool_.size() <= kFreeNodesLowWatermark) {
-        return;
-      }
-    }
+  if (free_nodes_pool_.size() <= kFreeNodesHighWatermark) {
+    return;
+  }
+
+  while (free_nodes_pool_.size() > kFreeNodesLowWatermark) {
+    // We delete the largest IDs first, to achieve more compaction.
+    const int tab_node_id = *free_nodes_pool_.rbegin();
+    deleted_node_ids->insert(tab_node_id);
+    missing_nodes_pool_.insert(tab_node_id);
+    free_nodes_pool_.erase(tab_node_id);
   }
 }
 
@@ -153,26 +172,6 @@ void TabNodePool::DeleteTabNode(int tab_node_id) {
   DVLOG(1) << "Deleting node " << tab_node_id << " with tab ID " << tab_id;
   tabid_nodeid_map_.erase(tab_id);
   nodeid_tabid_map_.erase(it);
-}
-
-// Clear tab pool.
-void TabNodePool::Clear() {
-  free_nodes_pool_.clear();
-  nodeid_tabid_map_.clear();
-  tabid_nodeid_map_.clear();
-  max_used_tab_node_id_ = kInvalidTabNodeID;
-}
-
-size_t TabNodePool::Capacity() const {
-  return nodeid_tabid_map_.size() + free_nodes_pool_.size();
-}
-
-bool TabNodePool::Empty() const {
-  return free_nodes_pool_.empty();
-}
-
-bool TabNodePool::Full() {
-  return nodeid_tabid_map_.empty();
 }
 
 std::set<int> TabNodePool::GetAllTabNodeIds() const {
