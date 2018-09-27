@@ -89,6 +89,7 @@
 
 using content::WebContents;
 using display::Display;
+using ui_test_utils::GetDisplays;
 
 namespace test {
 
@@ -1909,24 +1910,6 @@ void DragSingleTabToSeparateWindowInSecondDisplayStep2(
       base::Bind(&DragSingleTabToSeparateWindowInSecondDisplayStep3, test)));
 }
 
-// Returns the secondary display from the screen. It should fail and crash
-// if there is no such display.
-Display GetSecondaryDisplay(display::Screen* screen) {
-  for (const auto& iter : screen->GetAllDisplays()) {
-    if (iter.id() != screen->GetPrimaryDisplay().id())
-      return iter;
-  }
-  NOTREACHED();
-  return Display();
-}
-
-// Returns the pair of displays -- the first one is the primary display and the
-// second one is the other display.
-std::pair<Display, Display> GetDisplays(display::Screen* screen) {
-  return std::make_pair(screen->GetPrimaryDisplay(),
-                        GetSecondaryDisplay(screen));
-}
-
 }  // namespace
 
 // Drags from browser to a second display and releases input.
@@ -1965,7 +1948,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   if (input_source() == INPUT_SOURCE_MOUSE) {
     display::Screen* screen = display::Screen::GetScreen();
     EXPECT_EQ(
-        GetSecondaryDisplay(screen).id(),
+        ui_test_utils::GetSecondaryDisplay(screen).id(),
         screen
             ->GetDisplayNearestWindow(new_browser->window()->GetNativeWindow())
             .id());
@@ -2016,7 +1999,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 
   // Move the second browser to the second display.
   display::Screen* screen = display::Screen::GetScreen();
-  Display second_display = GetSecondaryDisplay(screen);
+  Display second_display = ui_test_utils::GetSecondaryDisplay(screen);
   browser2->window()->SetBounds(second_display.work_area());
   EXPECT_EQ(
       second_display.id(),
@@ -2118,7 +2101,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 
   // Move both browsers to be side by side on the second display.
   display::Screen* screen = display::Screen::GetScreen();
-  Display second_display = GetSecondaryDisplay(screen);
+  Display second_display = ui_test_utils::GetSecondaryDisplay(screen);
   gfx::Rect work_area = second_display.work_area();
   work_area.set_width(work_area.width() / 2);
   browser()->window()->SetBounds(work_area);
