@@ -1738,3 +1738,26 @@ TEST_F('BackgroundTest', 'LinesFilterWhitespace', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'TabSwitchAndRefreshRecovery', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*
+    <p>tab1</p>
+  */}, function(root1) {
+    this.runWithLoadedTree(function() {/*
+      <p>tab2</p>
+    */}, function(root2) {
+      mockFeedback.expectSpeech('tab2')
+          .clearPendingOutput()
+          .call(press(9  /* tab */, {shift: true, ctrl: true}))
+          .expectSpeech('tab1')
+          .clearPendingOutput()
+          .call(press(9  /* tab */, {ctrl: true}))
+          .expectSpeech('tab2')
+          .clearPendingOutput()
+          .call(press(82  /* R */, {ctrl: true}))
+          .expectSpeech('tab2')
+          .replay();
+    });
+  });
+});

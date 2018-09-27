@@ -213,20 +213,19 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationNode} node The hit result.
    */
   onHitTestResult: function(node) {
-    // It is possible that the user moved since we requested a hit test.
-    // The following events occur:
-    // load complete
-    // a hit test with reply is requested
-    // user moves
-    // we end up here
-    // As a result, check to ensure we're still on a root web area, before
-    // continuing.
+    // It is possible that the user moved since we requested a hit test.  Bail
+    // if the current range is valid and on the same page as the hit result (but
+    // not the root).
     if (ChromeVoxState.instance.currentRange &&
         ChromeVoxState.instance.currentRange.start &&
         ChromeVoxState.instance.currentRange.start.node &&
-        ChromeVoxState.instance.currentRange.start.node.role !=
-            RoleType.ROOT_WEB_AREA)
-      return;
+        ChromeVoxState.instance.currentRange.start.node.root) {
+      var cur = ChromeVoxState.instance.currentRange.start.node;
+      if (cur.role != RoleType.ROOT_WEB_AREA &&
+          AutomationUtil.getTopLevelRoot(node) ==
+              AutomationUtil.getTopLevelRoot(cur))
+        return;
+    }
 
     chrome.automation.getFocus(function(focus) {
       if (!focus && !node)
@@ -398,6 +397,9 @@ DesktopAutomationHandler.prototype = {
 
     // Discard focus events on embeddedObject and webView.
     if (node.role == RoleType.EMBEDDED_OBJECT || node.role == RoleType.WEB_VIEW)
+      return;
+
+    if (node.role == RoleType.UNKNOWN)
       return;
 
     if (!node.root)
@@ -600,12 +602,10 @@ DesktopAutomationHandler.prototype = {
 
     chrome.automation.getFocus(function(focus) {
       // Desktop tabs get "selection" when there's a focused webview during tab
-      // switching.
-      if (focus.role == RoleType.WEB_VIEW && evt.target.role == RoleType.TAB) {
-        ChromeVoxState.instance.setCurrentRange(
-            cursors.Range.fromNode(focus.firstChild));
+      // switching. Ignore it.
+      if (evt.target.role == RoleType.TAB &&
+          evt.target.root.role == RoleType.DESKTOP)
         return;
-      }
 
       // Some cases (e.g. in overview mode), require overriding the assumption
       // that focus is an ancestor of a selection target.
