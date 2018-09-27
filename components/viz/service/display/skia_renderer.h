@@ -86,6 +86,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
   void DrawPictureQuad(const PictureDrawQuad* quad);
   void DrawRenderPassQuad(const RenderPassDrawQuad* quad);
+  void DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
+                                  sk_sp<SkImage> content_image);
+
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad);
   void DrawTextureQuad(const TextureDrawQuad* quad);
   void DrawTileQuad(const TileDrawQuad* quad);
@@ -100,6 +103,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool IsUsingVulkan() const;
   GrContext* GetGrContext();
   bool is_using_ddl() const { return !!skia_output_surface_; }
+  const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
