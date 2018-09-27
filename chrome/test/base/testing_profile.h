@@ -69,10 +69,9 @@ class TestingProfile : public Profile {
   // Default constructor that cannot be used with multi-profiles.
   TestingProfile();
 
-  typedef std::vector<std::pair<
-              BrowserContextKeyedServiceFactory*,
-              BrowserContextKeyedServiceFactory::TestingFactoryFunction> >
-      TestingFactories;
+  using TestingFactories =
+      std::vector<std::pair<BrowserContextKeyedServiceFactory*,
+                            BrowserContextKeyedServiceFactory::TestingFactory>>;
 
   // Helper class for building an instance of TestingProfile (allows injecting
   // mocks for various services prior to profile initialization).
@@ -92,9 +91,17 @@ class TestingProfile : public Profile {
 
     // Adds a testing factory to the TestingProfile. These testing factories
     // are applied before the ProfileKeyedServices are created.
+    // DEPRECATED: use TestingFactory version instead, see
+    // http://crbug.com/809610
     void AddTestingFactory(
         BrowserContextKeyedServiceFactory* service_factory,
-        BrowserContextKeyedServiceFactory::TestingFactoryFunction callback);
+        BrowserContextKeyedServiceFactory::TestingFactoryFunction function);
+
+    // Adds a testing factory to the TestingProfile. These testing factories
+    // are applied before the ProfileKeyedServices are created.
+    void AddTestingFactory(
+        BrowserContextKeyedServiceFactory* service_factory,
+        BrowserContextKeyedServiceFactory::TestingFactory testing_factory);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // Sets the ExtensionSpecialStoragePolicy to be returned by
@@ -183,7 +190,7 @@ class TestingProfile : public Profile {
                  base::Optional<bool> is_new_profile,
                  const std::string& supervised_user_id,
                  std::unique_ptr<policy::PolicyService> policy_service,
-                 const TestingFactories& factories,
+                 TestingFactories testing_factories,
                  const std::string& profile_name);
 
   ~TestingProfile() override;

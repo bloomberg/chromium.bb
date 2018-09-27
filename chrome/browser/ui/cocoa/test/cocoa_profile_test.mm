@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -50,9 +51,9 @@ CocoaProfileTest::~CocoaProfileTest() {
 }
 
 void CocoaProfileTest::AddTestingFactories(
-    const TestingProfile::TestingFactories& testing_factories) {
-  for (auto testing_factory : testing_factories) {
-    testing_factories_.push_back(testing_factory);
+    TestingProfile::TestingFactories testing_factories) {
+  for (TestingProfile::TestingFactories::value_type& pair : testing_factories) {
+    testing_factories_.emplace_back(std::move(pair));
   }
 }
 
@@ -62,12 +63,14 @@ void CocoaProfileTest::SetUp() {
   ASSERT_TRUE(profile_manager_.SetUp());
 
   // Always fake out the Gaia service to avoid issuing network requests.
-  testing_factories_.push_back({GaiaCookieManagerServiceFactory::GetInstance(),
-                                &BuildFakeGaiaCookieManagerService});
+  testing_factories_.emplace_back(
+      GaiaCookieManagerServiceFactory::GetInstance(),
+      base::BindRepeating(&BuildFakeGaiaCookieManagerService));
 
   profile_ = profile_manager_.CreateTestingProfile(
       "Person 1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
-      base::UTF8ToUTF16("Person 1"), 0, std::string(), testing_factories_);
+      base::UTF8ToUTF16("Person 1"), 0, std::string(),
+      std::move(testing_factories_));
   ASSERT_TRUE(profile_);
 
   // TODO(shess): These are needed in case someone creates a browser

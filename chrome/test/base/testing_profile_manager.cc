@@ -65,7 +65,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
     const base::string16& user_name,
     int avatar_id,
     const std::string& supervised_user_id,
-    const TestingProfile::TestingFactories& factories) {
+    TestingProfile::TestingFactories testing_factories) {
   DCHECK(called_set_up_);
 
   // Create a path for the profile based on the name.
@@ -91,10 +91,9 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   builder.SetSupervisedUserId(supervised_user_id);
   builder.SetProfileName(profile_name);
 
-  for (TestingProfile::TestingFactories::const_iterator it = factories.begin();
-       it != factories.end(); ++it) {
-    builder.AddTestingFactory(it->first, it->second);
-  }
+  for (TestingProfile::TestingFactories::value_type& pair : testing_factories)
+    builder.AddTestingFactory(pair.first, std::move(pair.second));
+  testing_factories.clear();
 
   TestingProfile* profile = builder.Build().release();
   profile_manager_->AddProfile(profile);  // Takes ownership.
