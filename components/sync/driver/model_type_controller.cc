@@ -291,6 +291,17 @@ void ModelTypeController::RecordMemoryUsageAndCountsHistograms() {
 void ModelTypeController::ReportModelError(SyncError::ErrorType error_type,
                                            const ModelError& error) {
   DCHECK(CalledOnValidThread());
+
+  // Error could arrive too late, e.g. after the datatype has been stopped.
+  // This is allowed for the delegate's convenience, so there's no constraints
+  // around when exactly DataTypeActivationRequest::error_handler is supposed to
+  // be used (it can be used at any time). This also simplifies the
+  // implementation of task-posting delegates.
+  if (state_ == NOT_RUNNING) {
+    state_ = FAILED;
+    return;
+  }
+
   LoadModelsDone(UNRECOVERABLE_ERROR, SyncError(error.location(), error_type,
                                                 error.message(), type()));
 }

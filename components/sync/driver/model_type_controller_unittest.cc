@@ -37,6 +37,10 @@ const ModelType kTestModelType = AUTOFILL;
 const char kCacheGuid[] = "SomeCacheGuid";
 const char kAccountId[] = "SomeAccountId";
 
+MATCHER(ErrorIsSet, "") {
+  return arg.IsSet();
+}
+
 class MockDelegate : public ModelTypeControllerDelegate {
  public:
   MOCK_METHOD2(OnSyncStarting,
@@ -248,6 +252,29 @@ TEST_F(ModelTypeControllerTest, ActivateWithInitialSyncDone) {
   EXPECT_TRUE(processor()->is_connected());
 }
 
+TEST_F(ModelTypeControllerTest, ActivateWithError) {
+  ModelErrorHandler error_handler;
+  EXPECT_CALL(*delegate(), OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        error_handler = request.error_handler;
+      });
+
+  base::MockCallback<DataTypeController::ModelLoadCallback> load_models_done;
+  controller()->LoadModels(MakeConfigureContext(), load_models_done.Get());
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
+  ASSERT_TRUE(error_handler);
+
+  // Mimic completion for OnSyncStarting(), with an error.
+  EXPECT_CALL(*delegate(), OnSyncStopping(_)).Times(0);
+  EXPECT_CALL(load_models_done, Run(_, ErrorIsSet()));
+  error_handler.Run(ModelError(FROM_HERE, "Test error"));
+  // TODO(mastiz): We shouldn't need RunUntilIdle() here, but
+  // ModelTypeController currently uses task-posting for errors.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DataTypeController::FAILED, controller()->state());
+}
+
 TEST_F(ModelTypeControllerTest, Stop) {
   ASSERT_TRUE(LoadModels());
   RegisterWithBackend(/*expect_downloaded=*/false);
@@ -293,6 +320,103 @@ TEST_F(ModelTypeControllerTest, StopBeforeLoadModels) {
   controller()->Stop(CLEAR_METADATA, base::DoNothing());
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
+}
+
+// Test emulates disabling sync when datatype is loading. The controller should
+// wait for completion of the delegate, before stopping it.
+TEST_F(ModelTypeControllerTest, StopWhileStarting) {
+  ModelTypeControllerDelegate::StartCallback start_callback;
+  EXPECT_CALL(*delegate(), OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        start_callback = std::move(callback);
+      });
+
+  controller()->LoadModels(MakeConfigureContext(), base::DoNothing());
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
+  ASSERT_TRUE(start_callback);
+
+  // Stop() should be deferred until OnSyncStarting() finishes.
+  base::MockCallback<base::OnceClosure> stop_completion;
+  EXPECT_CALL(stop_completion, Run()).Times(0);
+  EXPECT_CALL(*delegate(), OnSyncStopping(_)).Times(0);
+  controller()->Stop(CLEAR_METADATA, stop_completion.Get());
+  EXPECT_EQ(DataTypeController::STOPPING, controller()->state());
+
+  // Mimic completion for OnSyncStarting().
+  EXPECT_CALL(*delegate(), OnSyncStopping(_));
+  EXPECT_CALL(stop_completion, Run());
+  std::move(start_callback).Run(std::make_unique<DataTypeActivationResponse>());
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
+}
+
+// Test emulates disabling sync when datatype is loading. The controller should
+// wait for completion of the delegate, before stopping it. In this test,
+// loading produces an error, so the resulting state should be FAILED.
+TEST_F(ModelTypeControllerTest, StopWhileStartingWithError) {
+  ModelErrorHandler error_handler;
+  EXPECT_CALL(*delegate(), OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        error_handler = request.error_handler;
+      });
+
+  controller()->LoadModels(MakeConfigureContext(), base::DoNothing());
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
+  ASSERT_TRUE(error_handler);
+
+  // Stop() should be deferred until OnSyncStarting() finishes.
+  base::MockCallback<base::OnceClosure> stop_completion;
+  EXPECT_CALL(stop_completion, Run()).Times(0);
+  EXPECT_CALL(*delegate(), OnSyncStopping(_)).Times(0);
+  controller()->Stop(CLEAR_METADATA, stop_completion.Get());
+  EXPECT_EQ(DataTypeController::STOPPING, controller()->state());
+
+  // Mimic completion for OnSyncStarting(), with an error.
+  EXPECT_CALL(*delegate(), OnSyncStopping(_)).Times(0);
+  EXPECT_CALL(stop_completion, Run());
+  error_handler.Run(ModelError(FROM_HERE, "Test error"));
+  // TODO(mastiz): We shouldn't need RunUntilIdle() here, but
+  // ModelTypeController currently uses task-posting for errors.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DataTypeController::FAILED, controller()->state());
+}
+
+// Test emulates a controller talking to a delegate (processor) in a backend
+// thread, which necessarily involves task posting (usually via
+// ProxyModelTypeControllerDelegate), where the backend posts an error
+// simultaneously to the UI stopping the datatype.
+TEST_F(ModelTypeControllerTest, StopWhileErrorInFlight) {
+  ModelTypeControllerDelegate::StartCallback start_callback;
+  ModelErrorHandler error_handler;
+  EXPECT_CALL(*delegate(), OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        start_callback = std::move(callback);
+        error_handler = request.error_handler;
+      });
+
+  controller()->LoadModels(MakeConfigureContext(), base::DoNothing());
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
+  ASSERT_TRUE(start_callback);
+  ASSERT_TRUE(error_handler);
+
+  // Mimic completion for OnSyncStarting().
+  std::move(start_callback).Run(std::make_unique<DataTypeActivationResponse>());
+  ASSERT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
+
+  // At this point, the UI stops the datatype, but it's possible that the
+  // backend has already posted a task to the UI thread, which we'll process
+  // later below.
+  controller()->Stop(CLEAR_METADATA, base::DoNothing());
+  ASSERT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
+
+  // In the next loop iteration, the UI thread receives the error.
+  error_handler.Run(ModelError(FROM_HERE, "Test error"));
+  // TODO(mastiz): We shouldn't need RunUntilIdle() here, but
+  // ModelTypeController currently uses task-posting for errors.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DataTypeController::FAILED, controller()->state());
 }
 
 // Tests that StorageOption is honored when the controller has been constructed
