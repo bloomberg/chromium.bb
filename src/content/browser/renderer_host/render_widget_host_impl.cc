@@ -2632,6 +2632,14 @@ bool RenderWidgetHostImpl::IsIgnoringInputEvents() const {
          delegate_->ShouldIgnoreInputEvents();
 }
 
+bool RenderWidgetHostImpl::ShouldSetKeyboardFocusOnMouseDown() const {
+  return !delegate_ || delegate_->ShouldSetKeyboardFocusOnMouseDown();
+}
+
+bool RenderWidgetHostImpl::ShouldSetLogicalFocusOnMouseDown() const {
+  return !delegate_ || delegate_->ShouldSetLogicalFocusOnMouseDown();
+}
+
 void RenderWidgetHostImpl::SetBackgroundOpaque(bool opaque) {
   Send(new ViewMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
 }
