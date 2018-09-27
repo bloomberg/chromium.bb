@@ -45,14 +45,18 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // a struct with default values is used to represent the state.
   struct State {
     TransformationMatrix matrix;
+    scoped_refptr<const ScrollPaintPropertyNode> scroll;
     FloatPoint3D origin;
     bool flattens_inherited_transform = false;
+    // Caches value of matrix_.IsIdentityOr2DTranslation(). The caller can set
+    // this field to true if the matrix is known to be identity or 2d
+    // translation, or the field will be updated automatically.
+    bool is_identity_or_2d_translation = false;
+    bool affected_by_outer_viewport_bounds_delta = false;
     BackfaceVisibility backface_visibility = BackfaceVisibility::kInherited;
     unsigned rendering_context_id = 0;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
-    scoped_refptr<const ScrollPaintPropertyNode> scroll;
-    bool affected_by_outer_viewport_bounds_delta = false;
     CompositorStickyConstraint sticky_constraint;
 
     bool operator==(const State& o) const {
@@ -93,6 +97,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
     SetChanged();
     state_ = std::move(state);
+    CheckAndUpdateIsIdentityOr2DTranslation();
     Validate();
     return true;
   }
@@ -132,6 +137,12 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // accumulated transform from its ancestors.
   bool FlattensInheritedTransform() const {
     return state_.flattens_inherited_transform;
+  }
+
+  bool IsIdentityOr2DTranslation() const {
+    DCHECK_EQ(state_.is_identity_or_2d_translation,
+              state_.matrix.IsIdentityOr2DTranslation());
+    return state_.is_identity_or_2d_translation;
   }
 
   // Returns the local BackfaceVisibility value set on this node.
@@ -201,7 +212,20 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
                              State&& state,
                              bool is_parent_alias)
       : PaintPropertyNode(parent, is_parent_alias), state_(std::move(state)) {
+    CheckAndUpdateIsIdentityOr2DTranslation();
     Validate();
+  }
+
+  void CheckAndUpdateIsIdentityOr2DTranslation() {
+    if (IsParentAlias()) {
+      DCHECK(state_.matrix.IsIdentity());
+      state_.is_identity_or_2d_translation = true;
+    } else if (state_.is_identity_or_2d_translation) {
+      DCHECK(state_.matrix.IsIdentityOr2DTranslation());
+    } else {
+      state_.is_identity_or_2d_translation =
+          state_.matrix.IsIdentityOr2DTranslation();
+    }
   }
 
   void Validate() const {
@@ -209,7 +233,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     if (state_.scroll) {
       // If there is an associated scroll node, this can only be a 2d
       // translation for scroll offset.
-      DCHECK(state_.matrix.IsIdentityOr2DTranslation());
+      DCHECK(state_.is_identity_or_2d_translation);
       // The scroll compositor element id should be stored on the scroll node.
       DCHECK(!state_.compositor_element_id);
     }

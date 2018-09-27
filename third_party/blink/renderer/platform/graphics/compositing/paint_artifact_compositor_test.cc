@@ -3209,7 +3209,7 @@ TEST_P(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
 TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
   TransformationMatrix matrix;
   matrix.Scale(2);
-  TransformPaintPropertyNode::State transform_state{matrix, FloatPoint3D()};
+  TransformPaintPropertyNode::State transform_state{matrix};
   transform_state.compositor_element_id =
       CompositorElementIdFromUniqueObjectId(1);
 

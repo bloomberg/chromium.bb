@@ -401,6 +401,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
                            paint_offset_translation->Y());
     state.flattens_inherited_transform =
         context_.current.should_flatten_inherited_transform;
+    state.is_identity_or_2d_translation = true;
 
     state.affected_by_outer_viewport_bounds_delta =
         object_.StyleRef().GetPosition() == EPosition::kFixed &&
@@ -438,7 +439,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
       FloatSize sticky_offset(box_model.StickyPositionOffset());
       TransformPaintPropertyNode::State state{AffineTransform::Translation(
           sticky_offset.Width(), sticky_offset.Height())};
-
+      state.is_identity_or_2d_translation = true;
       state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
           box_model.UniqueId(),
           CompositorElementIdNamespace::kStickyTranslation);
@@ -1645,6 +1646,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       state.matrix.Translate(-scroll_position.X(), -scroll_position.Y());
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
+      state.is_identity_or_2d_translation = true;
       state.direct_compositing_reasons = CompositingReasonsForScroll(box);
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {

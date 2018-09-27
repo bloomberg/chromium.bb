@@ -69,8 +69,8 @@ GeometryMapper::SourceToDestinationProjectionInternal(
     const TransformPaintPropertyNode* destination,
     bool& success) {
   DCHECK(source && destination);
-  DEFINE_STATIC_LOCAL(TransformationMatrix, identity, (TransformationMatrix()));
-  DEFINE_STATIC_LOCAL(TransformationMatrix, temp, (TransformationMatrix()));
+  DEFINE_STATIC_LOCAL(TransformationMatrix, identity, ());
+  DEFINE_STATIC_LOCAL(TransformationMatrix, temp, ());
 
   source = source->Unalias();
   destination = destination->Unalias();
@@ -78,6 +78,15 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   if (source == destination) {
     success = true;
     return identity;
+  }
+
+  if (source->Parent() && destination == source->Parent()->Unalias() &&
+      // The result will be translate(origin)*matrix*translate(-origin) which
+      // equals to matrix if the origin is zero or if the matrix is just
+      // identity or 2d translation.
+      (source->Origin().IsZero() || source->IsIdentityOr2DTranslation())) {
+    success = true;
+    return source->Matrix();
   }
 
   const GeometryMapperTransformCache& source_cache =
