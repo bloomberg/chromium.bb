@@ -114,6 +114,9 @@ const char kCannotDetermineLanguageOfUnloadedTab[] =
 const char kMissingLockWindowFullscreenPrivatePermission[] =
     "Cannot lock window to fullscreen or close a locked fullscreen window "
     "without lockWindowFullscreenPrivate manifest permission";
+const char kJavaScriptUrlsNotAllowedInTabsUpdate[] =
+    "JavaScript URLs are not allowed in chrome.tabs.update. Use "
+    "chrome.tabs.executeScript instead.";
 
 }  // namespace tabs_constants
 }  // namespace extensions
