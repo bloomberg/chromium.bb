@@ -113,14 +113,15 @@ class LocalFrameUkmAggregator {
     kPaint,
     kPrePaint,
     kStyleAndLayout,
+    kForcedStyleAndLayout,
     kCount
   };
 
  private:
   // Add an entry in this arrray every time a new metric is added.
   const String metric_strings_[kCount] = {
-      "Compositing", "CompositingCommit", "IntersectionObservation",
-      "Paint",       "PrePaint",          "StyleAndLayout"};
+      "Compositing", "CompositingCommit", "IntersectionObservation", "Paint",
+      "PrePaint",    "StyleAndLayout",    "ForcedStyleAndLayout"};
 
   // Modify this array if the UMA ratio metrics should be bucketed in a
   // different way.
@@ -160,6 +161,11 @@ class LocalFrameUkmAggregator {
   // sub-metrics and may generate an event.
   void RecordPrimarySample(TimeTicks start, TimeTicks end);
 
+  // Record a sample for a sub-metric. This should only be used when
+  // a ScopedUkmHierarchicalTimer cannot be used (such as when the timed
+  // interval does not fall inside a single calling function).
+  void RecordSample(size_t metric_index, TimeTicks start, TimeTicks end);
+
  private:
   struct AbsoluteMetricRecord {
     String worst_case_metric_name;
@@ -193,7 +199,6 @@ class LocalFrameUkmAggregator {
     }
   };
 
-  void RecordSample(size_t metric_index, TimeTicks start, TimeTicks end);
   void FlushIfNeeded(TimeTicks current_time);
   void Flush(TimeTicks current_time);
 

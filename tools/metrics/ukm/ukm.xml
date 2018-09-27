@@ -604,6 +604,32 @@ be describing additional metrics about the same event.
       int in the range [0,100].
     </summary>
   </metric>
+  <metric name="ForcedStyleAndLayout.Average">
+    <summary>
+      The average time taken by all forced style recalcs and layouts in
+      microseconds in the event period.
+    </summary>
+  </metric>
+  <metric name="ForcedStyleAndLayout.AverageRatio">
+    <summary>
+      The average over frames within the sample window of the ratio of time
+      taken by forced style recalc and layouts at the end of the blink lifecycle
+      to the total time for the main frame. An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="ForcedStyleAndLayout.WorstCase">
+    <summary>
+      The longest single time taken by a forced style recalc and layout in
+      microseconds in the event period.
+    </summary>
+  </metric>
+  <metric name="ForcedStyleAndLayout.WorstCaseRatio">
+    <summary>
+      The highest proportion of a frame ever taken by forced style recalc and
+      layouts at the end of the blink lifecycle to the total time for the main
+      frame. An int in the range [0,100].
+    </summary>
+  </metric>
   <metric name="IntersectionObservation.Average">
     <summary>
       The average time taken to compute IntersectionObserver observations in

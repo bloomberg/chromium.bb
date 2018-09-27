@@ -157,6 +157,10 @@ class CORE_EXPORT LocalFrameView final
   bool LayoutPending() const;
   bool IsInPerformLayout() const;
 
+  // Methods to capture forced layout metrics.
+  void WillStartForcedLayout();
+  void DidFinishForcedLayout();
+
   void ClearLayoutSubtreeRoot(const LayoutObject&);
   void AddOrthogonalWritingModeRoot(LayoutBox&);
   void RemoveOrthogonalWritingModeRoot(LayoutBox&);
@@ -963,6 +967,8 @@ class CORE_EXPORT LocalFrameView final
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
 
   std::unique_ptr<LocalFrameUkmAggregator> ukm_aggregator_;
+  unsigned forced_layout_stack_depth_;
+  TimeTicks forced_layout_start_time_;
 
   Member<PrintContext> print_context_;
 

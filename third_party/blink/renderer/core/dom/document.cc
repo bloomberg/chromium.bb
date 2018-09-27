@@ -2556,11 +2556,18 @@ void Document::UpdateStyleAndLayoutTreeIgnorePendingStylesheets() {
 
 void Document::UpdateStyleAndLayoutIgnorePendingStylesheets(
     Document::RunPostLayoutTasks run_post_layout_tasks) {
+  LocalFrameView* local_view = View();
+  if (local_view)
+    local_view->WillStartForcedLayout();
   UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
   UpdateStyleAndLayout();
 
-  if (run_post_layout_tasks == kRunPostLayoutTasksSynchronously && View())
-    View()->FlushAnyPendingPostLayoutTasks();
+  if (local_view) {
+    if (run_post_layout_tasks == kRunPostLayoutTasksSynchronously)
+      local_view->FlushAnyPendingPostLayoutTasks();
+
+    local_view->DidFinishForcedLayout();
+  }
 }
 
 scoped_refptr<ComputedStyle>
