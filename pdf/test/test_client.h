@@ -6,6 +6,7 @@
 #define PDF_TEST_TEST_CLIENT_H_
 
 #include <string>
+#include <vector>
 
 #include "pdf/pdf_engine.h"
 
@@ -22,6 +23,9 @@ class TestClient : public PDFEngine::Client {
                      const std::string& default_answer) override;
   std::string GetURL() override;
   pp::URLLoader CreateURLLoader() override;
+  std::vector<SearchStringResult> SearchString(const base::char16* string,
+                                               const base::char16* term,
+                                               bool case_sensitive) override;
   pp::Instance* GetPluginInstance() override;
   bool IsPrintPreview() override;
   uint32_t GetBackgroundColor() override;

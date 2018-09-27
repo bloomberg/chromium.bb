@@ -27,6 +27,13 @@ pp::URLLoader TestClient::CreateURLLoader() {
   return pp::URLLoader();
 }
 
+std::vector<PDFEngine::Client::SearchStringResult> TestClient::SearchString(
+    const base::char16* string,
+    const base::char16* term,
+    bool case_sensitive) {
+  return std::vector<SearchStringResult>();
+}
+
 pp::Instance* TestClient::GetPluginInstance() {
   return nullptr;
 }
