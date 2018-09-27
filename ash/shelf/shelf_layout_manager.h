@@ -80,7 +80,7 @@ class ASH_EXPORT ShelfLayoutManager
   bool IsVisible() const;
 
   // Returns the ideal bounds of the shelf assuming it is visible.
-  gfx::Rect GetIdealBounds();
+  gfx::Rect GetIdealBounds() const;
 
   // Returns the preferred size of the shelf for the target visibility state.
   gfx::Size GetPreferredSize();
