@@ -25,24 +25,18 @@ class TrayEventFilterTest : public AshTestBase {
   TrayEventFilterTest() = default;
   ~TrayEventFilterTest() override = default;
 
-  gfx::Point outside_point() {
-    gfx::Rect tray_bounds = GetSystemTrayBoundsInScreen();
-    return tray_bounds.bottom_right() + gfx::Vector2d(1, 1);
-  }
-  ui::PointerEvent outside_event() {
+  ui::MouseEvent outside_event() {
+    const gfx::Rect tray_bounds = GetSystemTrayBoundsInScreen();
+    const gfx::Point point = tray_bounds.bottom_right() + gfx::Vector2d(1, 1);
     const base::TimeTicks time = base::TimeTicks::Now();
-    return ui::PointerEvent(ui::MouseEvent(
-        ui::ET_MOUSE_PRESSED, outside_point(), outside_point(), time, 0, 0));
+    return ui::MouseEvent(ui::ET_MOUSE_PRESSED, point, point, time, 0, 0);
   }
 
-  gfx::Point inside_point() {
-    gfx::Rect tray_bounds = GetSystemTrayBoundsInScreen();
-    return tray_bounds.origin();
-  }
-  ui::PointerEvent inside_event() {
+  ui::MouseEvent inside_event() {
+    const gfx::Rect tray_bounds = GetSystemTrayBoundsInScreen();
+    const gfx::Point point = tray_bounds.origin();
     const base::TimeTicks time = base::TimeTicks::Now();
-    return ui::PointerEvent(ui::MouseEvent(ui::ET_MOUSE_PRESSED, inside_point(),
-                                           inside_point(), time, 0, 0));
+    return ui::MouseEvent(ui::ET_MOUSE_PRESSED, point, point, time, 0, 0);
   }
 
  protected:
@@ -93,8 +87,8 @@ TEST_F(TrayEventFilterTest, ClickingOutsideCloseBubble) {
   EXPECT_TRUE(IsBubbleShown());
 
   // Clicking outside should close the bubble.
-  TrayEventFilter* filter = GetTrayEventFilter();
-  filter->OnPointerEventObserved(outside_event(), outside_point(), nullptr);
+  ui::MouseEvent event = outside_event();
+  GetTrayEventFilter()->OnMouseEvent(&event);
   EXPECT_FALSE(IsBubbleShown());
 }
 
@@ -103,8 +97,8 @@ TEST_F(TrayEventFilterTest, ClickingInsideDoesNotCloseBubble) {
   EXPECT_TRUE(IsBubbleShown());
 
   // Clicking inside should not close the bubble
-  TrayEventFilter* filter = GetTrayEventFilter();
-  filter->OnPointerEventObserved(inside_event(), inside_point(), nullptr);
+  ui::MouseEvent event = inside_event();
+  GetTrayEventFilter()->OnMouseEvent(&event);
   EXPECT_TRUE(IsBubbleShown());
 }
 
@@ -120,9 +114,9 @@ TEST_F(TrayEventFilterTest, ClickingOnMenuContainerDoesNotCloseBubble) {
   EXPECT_TRUE(IsBubbleShown());
 
   // Clicking on MenuContainer should not close the bubble.
-  TrayEventFilter* filter = GetTrayEventFilter();
-  filter->OnPointerEventObserved(outside_event(), outside_point(),
-                                 menu_window.get());
+  ui::MouseEvent event = outside_event();
+  ui::Event::DispatcherApi(&event).set_target(menu_window.get());
+  GetTrayEventFilter()->OnMouseEvent(&event);
   EXPECT_TRUE(IsBubbleShown());
 }
 
@@ -141,9 +135,9 @@ TEST_F(TrayEventFilterTest, ClickingOnPopupDoesNotCloseBubble) {
   EXPECT_TRUE(IsBubbleShown());
 
   // Clicking on StatusContainer should not close the bubble.
-  TrayEventFilter* filter = GetTrayEventFilter();
-  filter->OnPointerEventObserved(outside_event(), outside_point(),
-                                 popup_window.get());
+  ui::MouseEvent event = outside_event();
+  ui::Event::DispatcherApi(&event).set_target(popup_window.get());
+  GetTrayEventFilter()->OnMouseEvent(&event);
   EXPECT_TRUE(IsBubbleShown());
 }
 
@@ -161,9 +155,9 @@ TEST_F(TrayEventFilterTest, ClickingOnKeyboardContainerDoesNotCloseBubble) {
   EXPECT_TRUE(IsBubbleShown());
 
   // Clicking on KeyboardContainer should not close the bubble.
-  TrayEventFilter* filter = GetTrayEventFilter();
-  filter->OnPointerEventObserved(outside_event(), outside_point(),
-                                 keyboard_window.get());
+  ui::MouseEvent event = outside_event();
+  ui::Event::DispatcherApi(&event).set_target(keyboard_window.get());
+  GetTrayEventFilter()->OnMouseEvent(&event);
   EXPECT_TRUE(IsBubbleShown());
 }
 
