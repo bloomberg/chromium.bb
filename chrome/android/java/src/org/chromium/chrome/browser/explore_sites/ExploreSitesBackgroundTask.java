@@ -59,6 +59,11 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
     protected void onStartTaskWithNative(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
         assert taskParameters.getTaskId() == TaskIds.EXPLORE_SITES_REFRESH_JOB_ID;
+        if (ExploreSitesBridge.getVariation() != ExploreSitesVariation.ENABLED) {
+            cancelTask();
+            return;
+        }
+
         mTaskFinishedCallback = callback;
         ExploreSitesBridge.updateCatalogFromNetwork(
                 getProfile(), (ignored) -> mTaskFinishedCallback.taskFinished(false));
@@ -78,7 +83,7 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
 
     @Override
     public void reschedule(Context context) {
-        schedule();
+        schedule(true /* updateCurrent */);
     }
 
     // Removes the task from the JobScheduler queue.  Should be called when the feature is disabled.
@@ -88,7 +93,7 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
     }
 
     // Begins the periodic update task.
-    public static void schedule() {
+    public static void schedule(boolean updateCurrent) {
         TaskInfo.Builder taskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID,
                                 ExploreSitesBackgroundTask.class,
@@ -96,7 +101,7 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
                                 TimeUnit.HOURS.toMillis(DEFAULT_FLEX_HOURS))
                         .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_ANY)
                         .setIsPersisted(true)
-                        .setUpdateCurrent(true);
+                        .setUpdateCurrent(updateCurrent);
         BackgroundTaskSchedulerFactory.getScheduler().schedule(
                 ContextUtils.getApplicationContext(), taskInfoBuilder.build());
     }

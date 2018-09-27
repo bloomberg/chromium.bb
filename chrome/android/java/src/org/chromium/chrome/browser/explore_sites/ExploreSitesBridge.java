@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.explore_sites;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -49,6 +50,11 @@ public class ExploreSitesBridge {
     @ExploreSitesVariation
     public static int getVariation() {
         return nativeGetVariation();
+    }
+
+    @CalledByNative
+    static void scheduleDailyTask() {
+        ExploreSitesBackgroundTask.schedule(false /* updateCurrent */);
     }
 
     static native int nativeGetVariation();

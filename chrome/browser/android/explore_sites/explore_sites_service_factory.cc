@@ -12,6 +12,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 
+#include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
+#include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service_impl.h"
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
@@ -29,6 +31,7 @@ ExploreSitesServiceFactory::ExploreSitesServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "ExploreSitesService",
           BrowserContextDependencyManager::GetInstance()) {}
+ExploreSitesServiceFactory::~ExploreSitesServiceFactory() = default;
 
 // static
 ExploreSitesServiceFactory* ExploreSitesServiceFactory::GetInstance() {
@@ -42,6 +45,11 @@ ExploreSitesService* ExploreSitesServiceFactory::GetForBrowserContext(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
+bool ExploreSitesServiceFactory::ServiceIsCreatedWithBrowserContext() const {
+  return chrome::android::explore_sites::GetExploreSitesVariation() ==
+         chrome::android::explore_sites::ExploreSitesVariation::ENABLED;
+}
+
 KeyedService* ExploreSitesServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
@@ -53,6 +61,8 @@ KeyedService* ExploreSitesServiceFactory::BuildServiceInstanceFor(
       std::make_unique<ExploreSitesStore>(background_task_runner, store_path);
   scoped_refptr<network::SharedURLLoaderFactory> url_fetcher =
       profile->GetURLLoaderFactory();
+
+  ExploreSitesBridge::ScheduleDailyTask();
 
   return new ExploreSitesServiceImpl(std::move(explore_sites_store),
                                      url_fetcher);
