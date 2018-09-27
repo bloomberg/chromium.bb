@@ -117,6 +117,12 @@ class PerfContextProvider
     }
     return test_context_provider_->GrContext();
   }
+  gpu::SharedImageInterface* SharedImageInterface() override {
+    if (!test_context_provider_) {
+      test_context_provider_ = viz::TestContextProvider::Create();
+    }
+    return test_context_provider_->SharedImageInterface();
+  }
   viz::ContextCacheController* CacheController() override {
     return &cache_controller_;
   }

@@ -69,6 +69,10 @@ class MockContextProvider : public ContextProvider {
     NOTREACHED();
     return nullptr;
   }
+  gpu::SharedImageInterface* SharedImageInterface() final {
+    NOTREACHED();
+    return nullptr;
+  }
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const final {
     NOTREACHED();
     return *reinterpret_cast<gpu::GpuFeatureInfo*>(0xdeadbeef);

@@ -168,6 +168,10 @@ class GrContext* InProcessContextProvider::GrContext() {
   return gr_context_->get();
 }
 
+gpu::SharedImageInterface* InProcessContextProvider::SharedImageInterface() {
+  return context_->GetSharedImageInterface();
+}
+
 viz::ContextCacheController* InProcessContextProvider::CacheController() {
   CheckValidThreadOrLockAcquired();
   return cache_controller_.get();

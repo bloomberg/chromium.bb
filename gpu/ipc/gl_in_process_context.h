@@ -16,6 +16,7 @@
 #include "ui/gl/gl_surface.h"
 
 namespace gpu {
+class SharedImageInterface;
 class TransferBuffer;
 struct GpuFeatureInfo;
 struct SharedMemoryLimits;
@@ -57,6 +58,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // Allows direct access to the GLES2 implementation so a GLInProcessContext
   // can be used without making it current.
   gles2::GLES2Implementation* GetImplementation();
+
+  SharedImageInterface* GetSharedImageInterface();
 
  private:
   // The destruction order is important, don't reorder these member variables.
