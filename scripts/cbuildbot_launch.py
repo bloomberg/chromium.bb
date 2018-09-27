@@ -107,6 +107,7 @@ def PrependPath(prepend):
   """
   return os.pathsep.join([prepend, os.environ.get('PATH', os.defpath)])
 
+
 def PreParseArguments(argv):
   """Extract the branch name from cbuildbot command line arguments.
 
@@ -125,6 +126,7 @@ def PreParseArguments(argv):
     cros_build_lib.Die('--buildroot is a required option.')
 
   return options
+
 
 def GetCurrentBuildState(options, branch):
   """Extract information about the current build state from command-line args.
@@ -408,6 +410,7 @@ def ConfigureGlobalEnvironment():
   # This variable is required for repo sync's to work in all cases.
   os.environ['LANG'] = 'en_US.UTF-8'
 
+
 def _main(argv):
   """main method of script.
 
@@ -418,6 +421,7 @@ def _main(argv):
     Return code of cbuildbot as an integer.
   """
   options = PreParseArguments(argv)
+
   branchname = options.branch or 'master'
   root = options.buildroot
   buildroot = os.path.join(root, 'repository')
@@ -437,17 +441,17 @@ def _main(argv):
     logging.error('SetupMetricFields Exception:', exc_info=True)
 
   # Does the entire build pass or fail.
-  with metrics.Presence(METRIC_ACTIVE), \
-       metrics.SuccessCounter(METRIC_COMPLETED) as s_fields:
+  with metrics.Presence(METRIC_ACTIVE, metrics_fields), \
+       metrics.SuccessCounter(METRIC_COMPLETED, metrics_fields) as s_fields:
 
     # Preliminary set, mostly command line parsing.
-    with metrics.SuccessCounter(METRIC_INVOKED):
+    with metrics.SuccessCounter(METRIC_INVOKED, metrics_fields):
       if options.enable_buildbot_tags:
         logging.EnableBuildbotMarkers()
       ConfigureGlobalEnvironment()
 
     # Prepare the buildroot with source for the build.
-    with metrics.SuccessCounter(METRIC_PREP):
+    with metrics.SuccessCounter(METRIC_PREP, metrics_fields):
       manifest_url = config_lib.GetSiteParams().MANIFEST_INT_URL
       repo = repository.RepoRepository(manifest_url, buildroot,
                                        branch=branchname,
@@ -455,18 +459,19 @@ def _main(argv):
       previous_build_state = GetLastBuildState(root)
 
       # Clean up the buildroot to a safe state.
-      with metrics.SecondsTimer(METRIC_CLEAN):
+      with metrics.SecondsTimer(METRIC_CLEAN, fields=metrics_fields):
         build_state = GetCurrentBuildState(options, branchname)
         CleanBuildRoot(root, repo, metrics_fields, build_state)
 
       # Get a checkout close enough to the branch that cbuildbot can handle it.
       if options.sync:
-        with metrics.SecondsTimer(METRIC_INITIAL):
+        with metrics.SecondsTimer(METRIC_INITIAL, fields=metrics_fields):
           InitialCheckout(repo)
 
     # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
-    with metrics.SecondsTimer(METRIC_CBUILDBOT), \
-         metrics.SecondsInstanceTimer(METRIC_CBUILDBOT_INSTANCE):
+    with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields), \
+         metrics.SecondsInstanceTimer(METRIC_CBUILDBOT_INSTANCE,
+                                      fields=metrics_fields):
       if previous_build_state.is_valid():
         argv.append('--previous-build-state')
         argv.append(base64.b64encode(previous_build_state.to_json()))
@@ -480,7 +485,7 @@ def _main(argv):
           if result == 0 else constants.BUILDER_STATUS_FAILED)
       SetLastBuildState(root, build_state)
 
-      with metrics.SecondsTimer(METRIC_CHROOT_CLEANUP):
+      with metrics.SecondsTimer(METRIC_CHROOT_CLEANUP, fields=metrics_fields):
         CleanupChroot(buildroot)
 
       return result
@@ -488,6 +493,5 @@ def _main(argv):
 
 def main(argv):
   # Enable Monarch metrics gathering.
-  with ts_mon_config.SetupTsMonGlobalState('cbuildbot_launch',
-                                           indirect=True):
+  with ts_mon_config.SetupTsMonGlobalState('cbuildbot_launch', indirect=True):
     return _main(argv)
