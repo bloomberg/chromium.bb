@@ -573,12 +573,9 @@ void MediaControlsImpl::InitializeControls() {
   timeline_ = new MediaControlTimelineElement(*this);
   mute_button_ = new MediaControlMuteButtonElement(*this);
 
-  // The volume slider should be shown if we are using the legacy controls.
-  if (!IsModern()) {
-    volume_slider_ = new MediaControlVolumeSliderElement(*this);
-    if (PreferHiddenVolumeControls(GetDocument()))
-      volume_slider_->SetIsWanted(false);
-  }
+  volume_slider_ = new MediaControlVolumeSliderElement(*this);
+  if (PreferHiddenVolumeControls(GetDocument()))
+    volume_slider_->SetIsWanted(false);
 
   if (RuntimeEnabledFeatures::PictureInPictureEnabled() &&
       GetDocument().GetSettings() &&
@@ -669,9 +666,15 @@ void MediaControlsImpl::PopulatePanel() {
 
   panel_->ParserAppendChild(timeline_);
 
-  button_panel->ParserAppendChild(mute_button_);
+  // On modern controls, the volume slider is to the left of the mute button.
+  if (IsModern()) {
+    MaybeParserAppendChild(button_panel, volume_slider_);
+    button_panel->ParserAppendChild(mute_button_);
+  } else {
+    button_panel->ParserAppendChild(mute_button_);
+    MaybeParserAppendChild(button_panel, volume_slider_);
+  }
 
-  MaybeParserAppendChild(button_panel, volume_slider_);
   MaybeParserAppendChild(button_panel, picture_in_picture_button_);
 
   button_panel->ParserAppendChild(fullscreen_button_);
@@ -1440,6 +1443,8 @@ void MediaControlsImpl::OnAccessibleFocus() {
   if (!MediaElement().ShouldShowControls())
     return;
 
+  OpenVolumeSliderIfNecessary();
+
   keep_showing_until_timer_fires_ = true;
   StartHideMediaControlsTimer();
   MaybeShow();
@@ -1450,6 +1455,8 @@ void MediaControlsImpl::OnAccessibleBlur() {
 
   if (MediaElement().ShouldShowControls())
     return;
+
+  CloseVolumeSliderIfNecessary();
 
   keep_showing_until_timer_fires_ = false;
   ResetHideMediaControlsTimer();
@@ -1514,8 +1521,7 @@ void MediaControlsImpl::DefaultEventHandler(Event& event) {
       timeline_->OnMediaKeyboardEvent(&event);
       return;
     }
-    // We don't allow the user to change the volume on modern media controls.
-    if (!IsModern() && (key == "ArrowDown" || key == "ArrowUp")) {
+    if (volume_slider_ && (key == "ArrowDown" || key == "ArrowUp")) {
       for (int i = 0; i < 5; i++)
         volume_slider_->OnMediaKeyboardEvent(&event);
       return;
@@ -2128,6 +2134,30 @@ void MediaControlsImpl::ToggleOverflowMenu() {
 void MediaControlsImpl::StartHideMediaControlsIfNecessary() {
   if (ShouldHideMediaControls())
     StartHideMediaControlsTimer();
+}
+
+void MediaControlsImpl::OpenVolumeSliderIfNecessary() {
+  if (ShouldOpenVolumeSlider())
+    volume_slider_->OpenSlider();
+}
+
+void MediaControlsImpl::CloseVolumeSliderIfNecessary() {
+  if (ShouldCloseVolumeSlider())
+    volume_slider_->CloseSlider();
+}
+
+bool MediaControlsImpl::ShouldOpenVolumeSlider() const {
+  if (!volume_slider_ || !IsModern())
+    return false;
+
+  return !PreferHiddenVolumeControls(GetDocument());
+}
+
+bool MediaControlsImpl::ShouldCloseVolumeSlider() const {
+  if (!volume_slider_ || !IsModern())
+    return false;
+
+  return !(volume_slider_->IsHovered() || mute_button_->IsHovered());
 }
 
 const MediaControlDownloadButtonElement& MediaControlsImpl::DownloadButton()

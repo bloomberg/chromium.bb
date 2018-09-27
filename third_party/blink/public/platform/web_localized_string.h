@@ -79,6 +79,7 @@ struct WebLocalizedString {
     kAXMediaVideoElement,
     kAXMediaVideoElementHelp,
     kAXMediaVideoSliderHelp,
+    kAXMediaVolumeSliderHelp,
     kAXMediaEnterPictureInPictureButton,
     kAXMediaEnterPictureInPictureButtonHelp,
     kAXMediaExitPictureInPictureButton,

@@ -138,6 +138,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_AUDIO_SLIDER_HELP;
     case WebLocalizedString::kAXMediaVideoSliderHelp:
       return IDS_AX_MEDIA_VIDEO_SLIDER_HELP;
+    case WebLocalizedString::kAXMediaVolumeSliderHelp:
+      return IDS_AX_MEDIA_VOLUME_SLIDER_HELP;
     case WebLocalizedString::kAXMediaCurrentTimeDisplayHelp:
       return IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP;
     case WebLocalizedString::kAXMediaTimeRemainingDisplayHelp:

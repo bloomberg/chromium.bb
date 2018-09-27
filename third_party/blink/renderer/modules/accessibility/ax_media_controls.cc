@@ -59,6 +59,10 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaSlider:
       return AccessibilityMediaTimeline::Create(layout_object, ax_object_cache);
 
+    case kMediaVolumeSlider:
+      return AccessibilityMediaVolumeSlider::Create(layout_object,
+                                                    ax_object_cache);
+
     case kMediaCurrentTimeDisplay:
     case kMediaTimeRemainingDisplay:
       return AccessibilityMediaTimeDisplay::Create(layout_object,
@@ -79,7 +83,6 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaTimelineContainer:
     case kMediaTrackSelectionCheckmark:
     case kMediaVolumeSliderContainer:
-    case kMediaVolumeSlider:
     case kMediaVolumeSliderThumb:
     case kMediaExitFullscreenButton:
     case kMediaCastOffButton:
@@ -163,7 +166,6 @@ String AccessibilityMediaControl::TextAlternative(
     case kMediaTrackSelectionCheckmark:
     case kMediaControlsPanel:
     case kMediaVolumeSliderContainer:
-    case kMediaVolumeSlider:
     case kMediaVolumeSliderThumb:
     case kMediaOverflowList:
     case kMediaScrubbingMessage:
@@ -179,6 +181,7 @@ String AccessibilityMediaControl::TextAlternative(
       return QueryString(
           WebLocalizedString::kAXMediaDisplayCutoutFullscreenButton);
     case kMediaSlider:
+    case kMediaVolumeSlider:
       NOTREACHED();
       return QueryString(WebLocalizedString::kAXMediaDefault);
   }
@@ -237,7 +240,6 @@ String AccessibilityMediaControl::Description(
     case kMediaTrackSelectionCheckmark:
     case kMediaControlsPanel:
     case kMediaVolumeSliderContainer:
-    case kMediaVolumeSlider:
     case kMediaVolumeSliderThumb:
     case kMediaOverflowList:
     case kMediaDownloadButton:
@@ -245,6 +247,7 @@ String AccessibilityMediaControl::Description(
     case kMediaAnimatedArrowContainer:
       return QueryString(WebLocalizedString::kAXMediaDefault);
     case kMediaSlider:
+    case kMediaVolumeSlider:
       NOTREACHED();
       return QueryString(WebLocalizedString::kAXMediaDefault);
   }
@@ -295,13 +298,13 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
     case kMediaTimeRemainingDisplay:
     case kMediaSliderThumb:
     case kMediaTrackSelectionCheckmark:
-    case kMediaVolumeSlider:
     case kMediaVolumeSliderThumb:
     case kMediaScrubbingMessage:
     case kMediaAnimatedArrowContainer:
       return ax::mojom::Role::kUnknown;
 
     case kMediaSlider:
+    case kMediaVolumeSlider:
       // Not using AccessibilityMediaControl.
       NOTREACHED();
       return ax::mojom::Role::kUnknown;
@@ -377,6 +380,37 @@ String AccessibilityMediaTimeline::Description(
   return QueryString(IsControllingVideoElement()
                          ? WebLocalizedString::kAXMediaVideoSliderHelp
                          : WebLocalizedString::kAXMediaAudioSliderHelp);
+}
+
+//
+// AccessibilityMediaVolumeSlider
+
+AccessibilityMediaVolumeSlider::AccessibilityMediaVolumeSlider(
+    LayoutObject* layout_object,
+    AXObjectCacheImpl& ax_object_cache)
+    : AXSlider(layout_object, ax_object_cache) {}
+
+AXObject* AccessibilityMediaVolumeSlider::Create(
+    LayoutObject* layout_object,
+    AXObjectCacheImpl& ax_object_cache) {
+  return new AccessibilityMediaVolumeSlider(layout_object, ax_object_cache);
+}
+
+String AccessibilityMediaVolumeSlider::Description(
+    ax::mojom::NameFrom name_from,
+    ax::mojom::DescriptionFrom& description_from,
+    AXObjectVector* description_objects) const {
+  return QueryString(WebLocalizedString::kAXMediaVolumeSliderHelp);
+}
+
+bool AccessibilityMediaVolumeSlider::InternalSetAccessibilityFocusAction() {
+  MediaControlElementsHelper::NotifyMediaControlAccessibleFocus(GetElement());
+  return AXSlider::InternalSetAccessibilityFocusAction();
+}
+
+bool AccessibilityMediaVolumeSlider::InternalClearAccessibilityFocusAction() {
+  MediaControlElementsHelper::NotifyMediaControlAccessibleBlur(GetElement());
+  return AXSlider::InternalClearAccessibilityFocusAction();
 }
 
 //

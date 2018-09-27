@@ -291,6 +291,20 @@ function muteButton(videoElement) {
     return mediaControlsButton(videoElement, 'mute-button');
 }
 
+function volumeSliderElement(videoElement) {
+  return mediaControlsButton(videoElement, 'volume-slider');
+}
+
+function isVolumeSliderOpen(videoElement) {
+  return !volumeSliderElement(videoElement).classList.contains('closed');
+}
+
+function runAfterVolumeSliderAnimationEnds(func) {
+  // 300ms timer plus 200ms slack.
+  const volumeSliderTimeoutMs = 300 + 200;
+  setTimeout(func, volumeSliderTimeoutMs);
+}
+
 function timelineElement(videoElement) {
     return mediaControlsButton(videoElement, 'timeline');
 }
@@ -511,6 +525,18 @@ function singleTapAtCoordinates(xPos, yPos, callback) {
 function singleTapOnControl(control, callback) {
   const coordinates = elementCoordinates(control);
   singleTapAtCoordinates(coordinates[0], coordinates[1], callback);
+}
+
+function hoverOverControl(control, callback) {
+  const coordinates = elementCoordinates(control);
+  chrome.gpuBenchmarking.pointerActionSequence([
+    {
+      source: 'mouse',
+      actions: [
+        { name: 'pointerMove', x: coordinates[0], y: coordinates[1] }
+      ]
+    }
+  ], callback);
 }
 
 // This function does not work on Mac due to crbug.com/613672. When using this

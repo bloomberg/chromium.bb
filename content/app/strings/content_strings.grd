@@ -728,6 +728,10 @@ below:
         movie time scrubber
       </message>
 
+      <message name="IDS_AX_MEDIA_VOLUME_SLIDER_HELP" desc="Accessibility help description for volume slider">
+        volume slider
+      </message>
+
       <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP" desc="Accessibility help description for elapsed time display">
         current time in seconds
       </message>

@@ -137,6 +137,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void ToggleOverflowMenu();
   bool OverflowMenuVisible();
 
+  void OpenVolumeSliderIfNecessary();
+  void CloseVolumeSliderIfNecessary();
+
   void ShowOverlayCastButtonIfNeeded();
 
   // Methods call by the scrubber.
@@ -266,6 +269,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void ResetHideMediaControlsTimer();
   void HideCursor();
   void ShowCursor();
+
+  bool ShouldOpenVolumeSlider() const;
+  bool ShouldCloseVolumeSlider() const;
 
   void ElementSizeChangedTimerFired(TimerBase*);
 
