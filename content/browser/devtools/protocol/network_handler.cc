@@ -102,7 +102,7 @@ Network::CertificateTransparencyCompliance SerializeCTPolicyCompliance(
     case net::ct::CTPolicyCompliance::
         CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE:
       return Network::CertificateTransparencyComplianceEnum::Unknown;
-    case net::ct::CTPolicyCompliance::CT_POLICY_MAX:
+    case net::ct::CTPolicyCompliance::CT_POLICY_COUNT:
       NOTREACHED();
       return Network::CertificateTransparencyComplianceEnum::Unknown;
   }

@@ -131,7 +131,7 @@ void RecordCTHistograms(const net::SSLInfo& ssl_info) {
   UMA_HISTOGRAM_ENUMERATION(
       "Net.CertificateTransparency.RequestComplianceStatus",
       ssl_info.ct_policy_compliance,
-      net::ct::CTPolicyCompliance::CT_POLICY_MAX);
+      net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
   // Record the CT compliance of each request which was required to be CT
   // compliant. This gives a picture of the sites that are supposed to be
   // compliant and how well they do at actually being compliant.
@@ -139,7 +139,7 @@ void RecordCTHistograms(const net::SSLInfo& ssl_info) {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.CertificateTransparency.CTRequiredRequestComplianceStatus",
         ssl_info.ct_policy_compliance,
-        net::ct::CTPolicyCompliance::CT_POLICY_MAX);
+        net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
   }
 }
 

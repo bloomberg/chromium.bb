@@ -501,7 +501,7 @@ TransportSecurityState::CheckCTRequirements(
   if (IsDynamicExpectCTEnabled() && GetDynamicExpectCTState(hostname, &state)) {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.ExpectCTHeader.PolicyComplianceOnConnectionSetup",
-        policy_compliance, ct::CTPolicyCompliance::CT_POLICY_MAX);
+        policy_compliance, ct::CTPolicyCompliance::CT_POLICY_COUNT);
     if (!complies && expect_ct_reporter_ && !state.report_uri.is_empty() &&
         report_status == ENABLE_EXPECT_CT_REPORTS) {
       MaybeNotifyExpectCTFailed(host_port_pair, state.report_uri, state.expiry,
@@ -1106,7 +1106,7 @@ void TransportSecurityState::ProcessExpectCTHeader(
     return;
   UMA_HISTOGRAM_ENUMERATION(
       "Net.ExpectCTHeader.PolicyComplianceOnHeaderProcessing",
-      ssl_info.ct_policy_compliance, ct::CTPolicyCompliance::CT_POLICY_MAX);
+      ssl_info.ct_policy_compliance, ct::CTPolicyCompliance::CT_POLICY_COUNT);
   if (ssl_info.ct_policy_compliance !=
       ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {
     // If an Expect-CT header is observed over a non-compliant connection, the

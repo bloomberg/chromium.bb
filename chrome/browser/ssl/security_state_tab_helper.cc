@@ -148,7 +148,7 @@ void SecurityStateTabHelper::DidFinishNavigation(
     UMA_HISTOGRAM_ENUMERATION(
         "Security.CertificateTransparency.MainFrameNavigationCompliance",
         entry->GetSSL().ct_policy_compliance,
-        net::ct::CTPolicyCompliance::CT_POLICY_MAX);
+        net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
   }
 
   logged_http_warning_on_current_navigation_ = false;
