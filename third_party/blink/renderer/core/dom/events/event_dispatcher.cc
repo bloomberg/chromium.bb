@@ -82,17 +82,17 @@ void EventDispatcher::DispatchSimulatedClick(
   // before dispatchSimulatedClick() returns. This vector is here just to
   // prevent the code from running into an infinite recursion of
   // dispatchSimulatedClick().
-  DEFINE_STATIC_LOCAL(HeapHashSet<Member<Node>>,
+  DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<Member<Node>>>,
                       nodes_dispatching_simulated_clicks,
                       (new HeapHashSet<Member<Node>>));
 
   if (IsDisabledFormControl(&node))
     return;
 
-  if (nodes_dispatching_simulated_clicks.Contains(&node))
+  if (nodes_dispatching_simulated_clicks->Contains(&node))
     return;
 
-  nodes_dispatching_simulated_clicks.insert(&node);
+  nodes_dispatching_simulated_clicks->insert(&node);
 
   if (mouse_event_options == kSendMouseOverUpDownEvents)
     EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mouseover,
@@ -121,7 +121,7 @@ void EventDispatcher::DispatchSimulatedClick(
                                             underlying_event, creation_scope))
       .Dispatch();
 
-  nodes_dispatching_simulated_clicks.erase(&node);
+  nodes_dispatching_simulated_clicks->erase(&node);
 }
 
 // https://dom.spec.whatwg.org/#dispatching-events

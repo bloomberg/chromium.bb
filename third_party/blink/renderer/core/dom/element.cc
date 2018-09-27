@@ -174,10 +174,10 @@ namespace {
 // bunch more logic for transferring the callbacks between Pages when elements
 // are moved around.
 ScrollCustomizationCallbacks& GetScrollCustomizationCallbacks() {
-  DEFINE_STATIC_LOCAL(ScrollCustomizationCallbacks,
+  DEFINE_STATIC_LOCAL(Persistent<ScrollCustomizationCallbacks>,
                       scroll_customization_callbacks,
                       (new ScrollCustomizationCallbacks));
-  return scroll_customization_callbacks;
+  return *scroll_customization_callbacks;
 }
 
 }  // namespace

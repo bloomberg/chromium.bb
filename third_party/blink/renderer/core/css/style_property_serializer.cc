@@ -1072,15 +1072,15 @@ static void AppendBackgroundRepeatValue(StringBuilder& builder,
                                         const CSSValue& repeat_xcss_value,
                                         const CSSValue& repeat_ycss_value) {
   // FIXME: Ensure initial values do not appear in CSS_VALUE_LISTS.
-  DEFINE_STATIC_LOCAL(CSSIdentifierValue, initial_repeat_value,
+  DEFINE_STATIC_LOCAL(Persistent<CSSIdentifierValue>, initial_repeat_value,
                       (CSSIdentifierValue::Create(CSSValueRepeat)));
   const CSSIdentifierValue& repeat_x =
       repeat_xcss_value.IsInitialValue()
-          ? initial_repeat_value
+          ? *initial_repeat_value
           : ToCSSIdentifierValue(repeat_xcss_value);
   const CSSIdentifierValue& repeat_y =
       repeat_ycss_value.IsInitialValue()
-          ? initial_repeat_value
+          ? *initial_repeat_value
           : ToCSSIdentifierValue(repeat_ycss_value);
   CSSValueID repeat_x_value_id = repeat_x.GetValueID();
   CSSValueID repeat_y_value_id = repeat_y.GetValueID();

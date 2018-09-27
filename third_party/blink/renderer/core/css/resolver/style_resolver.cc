@@ -118,19 +118,21 @@ using namespace HTMLNames;
 ComputedStyle* StyleResolver::style_not_yet_available_;
 
 static CSSPropertyValueSet* LeftToRightDeclaration() {
-  DEFINE_STATIC_LOCAL(MutableCSSPropertyValueSet, left_to_right_decl,
+  DEFINE_STATIC_LOCAL(Persistent<MutableCSSPropertyValueSet>,
+                      left_to_right_decl,
                       (MutableCSSPropertyValueSet::Create(kHTMLQuirksMode)));
-  if (left_to_right_decl.IsEmpty())
-    left_to_right_decl.SetProperty(CSSPropertyDirection, CSSValueLtr);
-  return &left_to_right_decl;
+  if (left_to_right_decl->IsEmpty())
+    left_to_right_decl->SetProperty(CSSPropertyDirection, CSSValueLtr);
+  return left_to_right_decl;
 }
 
 static CSSPropertyValueSet* RightToLeftDeclaration() {
-  DEFINE_STATIC_LOCAL(MutableCSSPropertyValueSet, right_to_left_decl,
+  DEFINE_STATIC_LOCAL(Persistent<MutableCSSPropertyValueSet>,
+                      right_to_left_decl,
                       (MutableCSSPropertyValueSet::Create(kHTMLQuirksMode)));
-  if (right_to_left_decl.IsEmpty())
-    right_to_left_decl.SetProperty(CSSPropertyDirection, CSSValueRtl);
-  return &right_to_left_decl;
+  if (right_to_left_decl->IsEmpty())
+    right_to_left_decl->SetProperty(CSSPropertyDirection, CSSValueRtl);
+  return right_to_left_decl;
 }
 
 static void CollectScopedResolversForHostedShadowTrees(

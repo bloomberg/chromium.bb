@@ -124,8 +124,9 @@ using ElementRequestTypeMap =
     HeapHashMap<WeakMember<Element>, Fullscreen::RequestType>;
 
 ElementRequestTypeMap& FullscreenFlagMap() {
-  DEFINE_STATIC_LOCAL(ElementRequestTypeMap, map, (new ElementRequestTypeMap));
-  return map;
+  DEFINE_STATIC_LOCAL(Persistent<ElementRequestTypeMap>, map,
+                      (new ElementRequestTypeMap));
+  return *map;
 }
 
 bool HasFullscreenFlag(Element& element) {

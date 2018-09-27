@@ -100,16 +100,17 @@ namespace blink {
 typedef HeapHashSet<WeakMember<Scrollbar>> ScrollbarSet;
 
 static ScrollbarSet& GetScrollbarSet() {
-  DEFINE_STATIC_LOCAL(ScrollbarSet, set, (new ScrollbarSet));
-  return set;
+  DEFINE_STATIC_LOCAL(Persistent<ScrollbarSet>, set, (new ScrollbarSet));
+  return *set;
 }
 
 typedef HeapHashMap<WeakMember<Scrollbar>, RetainPtr<BlinkScrollbarObserver>>
     ScrollbarPainterMap;
 
 static ScrollbarPainterMap& GetScrollbarPainterMap() {
-  DEFINE_STATIC_LOCAL(ScrollbarPainterMap, map, (new ScrollbarPainterMap));
-  return map;
+  DEFINE_STATIC_LOCAL(Persistent<ScrollbarPainterMap>, map,
+                      (new ScrollbarPainterMap));
+  return *map;
 }
 
 static bool SupportsExpandedScrollbars() {

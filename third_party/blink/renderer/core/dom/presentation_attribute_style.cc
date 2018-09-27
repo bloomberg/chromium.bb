@@ -75,9 +75,9 @@ using PresentationAttributeCache =
                 Member<PresentationAttributeCacheEntry>,
                 AlreadyHashed>;
 static PresentationAttributeCache& GetPresentationAttributeCache() {
-  DEFINE_STATIC_LOCAL(PresentationAttributeCache, cache,
+  DEFINE_STATIC_LOCAL(Persistent<PresentationAttributeCache>, cache,
                       (new PresentationAttributeCache));
-  return cache;
+  return *cache;
 }
 
 static bool AttributeNameSort(const std::pair<StringImpl*, AtomicString>& p1,

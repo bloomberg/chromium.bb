@@ -31,10 +31,10 @@ const CSSValue* TransitionDelay::CSSValueFromComputedStyleInternal(
 
 const CSSValue* TransitionDelay::InitialValue() const {
   DEFINE_STATIC_LOCAL(
-      CSSValue, value,
+      Persistent<CSSValue>, value,
       (CSSPrimitiveValue::Create(CSSTimingData::InitialDelay(),
                                  CSSPrimitiveValue::UnitType::kSeconds)));
-  return &value;
+  return value;
 }
 
 }  // namespace CSSLonghand

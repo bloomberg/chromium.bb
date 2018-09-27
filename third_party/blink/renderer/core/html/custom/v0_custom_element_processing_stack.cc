@@ -42,9 +42,9 @@ wtf_size_t V0CustomElementProcessingStack::element_queue_start_ = 0;
 wtf_size_t V0CustomElementProcessingStack::element_queue_end_ = kNumSentinels;
 
 V0CustomElementProcessingStack& V0CustomElementProcessingStack::Instance() {
-  DEFINE_STATIC_LOCAL(V0CustomElementProcessingStack, instance,
+  DEFINE_STATIC_LOCAL(Persistent<V0CustomElementProcessingStack>, instance,
                       (new V0CustomElementProcessingStack));
-  return instance;
+  return *instance;
 }
 
 // Dispatches callbacks when popping the processing stack.
