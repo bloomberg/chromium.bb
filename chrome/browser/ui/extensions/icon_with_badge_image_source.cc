@@ -40,12 +40,6 @@ gfx::ImageSkiaRep ScaleImageSkiaRep(const gfx::ImageSkiaRep& rep,
 }
 
 float GetBlockedActionBadgeRadius() {
-#if defined(OS_MACOSX)
-  // Cocoa. Note: this doesn't look great on Cocoa. But runtime host
-  // permissions are expected to be launched after MacViews for top-chrome.
-  if (!base::FeatureList::IsEnabled(features::kViewsBrowserWindows))
-    return 11.4f;
-#endif
   return 12.0f;
 }
 
