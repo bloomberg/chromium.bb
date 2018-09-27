@@ -1533,6 +1533,12 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
   return true;
 }
 
+size_t ExtensionWebRequestEventRouter::GetListenerCountForTesting(
+    void* browser_context,
+    const std::string& event_name) {
+  return listeners_[browser_context][event_name].size();
+}
+
 ExtensionWebRequestEventRouter::EventListener*
 ExtensionWebRequestEventRouter::FindEventListener(const EventListener::ID& id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1627,21 +1633,6 @@ void ExtensionWebRequestEventRouter::OnOTRBrowserContextDestroyed(
 void ExtensionWebRequestEventRouter::AddCallbackForPageLoad(
     const base::Closure& callback) {
   callbacks_for_page_load_.push_back(callback);
-}
-
-bool ExtensionWebRequestEventRouter::IsBlockingRequestForTesting(
-    const GURL& url) {
-  for (const auto& iter : blocked_requests_) {
-    if (iter.second.request->url == url)
-      return true;
-  }
-  return false;
-}
-
-size_t ExtensionWebRequestEventRouter::GetListenerCountForTesting(
-    void* browser_context,
-    const std::string& event_name) {
-  return listeners_[browser_context][event_name].size();
 }
 
 bool ExtensionWebRequestEventRouter::IsPageLoad(
