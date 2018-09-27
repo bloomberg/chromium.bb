@@ -269,7 +269,7 @@ testcase.toogleGoogleDocsDrive = function() {
     },
     // Open the gear meny by a shortcut (Alt-E).
     function() {
-      remoteCall.fakeKeyDown(appId, 'body', 'e', 'U+0045', false, false, true)
+      remoteCall.fakeKeyDown(appId, 'body', 'e', false, false, true)
           .then(this.next);
     },
     // Wait for menu to appear.
@@ -548,7 +548,7 @@ testcase.showPasteIntoCurrentFolder = function() {
     function(result) {
       chrome.test.assertTrue(result);
       remoteCall
-          .fakeKeyDown(appId, '#file-list', 'c', 'U+0043', true, false, false)
+          .fakeKeyDown(appId, '#file-list', 'c', true, false, false)
           .then(this.next);
     },
     function() {

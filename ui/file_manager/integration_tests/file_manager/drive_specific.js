@@ -167,7 +167,7 @@ testcase.driveClickFirstSearchResult = function() {
       appId = id;
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', appId,
-          ['#autocomplete-list', 'ArrowDown', 'Down', false, false, false],
+          ['#autocomplete-list', 'ArrowDown', false, false, false],
           this.next);
     },
     function(result) {
@@ -216,8 +216,7 @@ testcase.drivePressEnterToSearch = function() {
       function(result) {
         remoteCall.callRemoteTestUtil(
             'fakeKeyDown', appId,
-            ['#search-box cr-input', 'Enter', 'Enter', false, false, false],
-            this.next);
+            ['#search-box cr-input', 'Enter', false, false, false], this.next);
       },
       function(result) {
         remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length)
@@ -330,7 +329,7 @@ testcase.drivePressCtrlAFromSearch = function() {
     function(result) {
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', appId,
-          ['#search-box cr-input', 'A', 'A', true, false, false], this.next);
+          ['#search-box cr-input', 'A', true, false, false], this.next);
     },
     // Check we didn't enter check-select mode.
     function(result) {
