@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 class ScriptExecutorDelegate;
@@ -65,7 +66,8 @@ class ScriptTracker {
   bool running() const { return executor_ != nullptr; }
 
  private:
-  void OnScriptRun(base::OnceCallback<void(bool)> original_callback,
+  void OnScriptRun(const std::string& script_path,
+                   base::OnceCallback<void(bool)> original_callback,
                    bool success);
   void UpdateRunnableScriptsIfNecessary();
 
@@ -89,10 +91,8 @@ class ScriptTracker {
   // any pending check.
   std::map<Script*, std::unique_ptr<Script>> available_scripts_;
 
-  // Set of scripts that have been executed. They'll be excluded from runnable.
-  // TODO(crbug.com/806868): Track script execution status and forward
-  // that information to the script precondition.
-  std::set<std::string> executed_scripts_;
+  // List of scripts that have been executed and their corresponding statuses.
+  std::map<std::string, ScriptStatusProto> executed_scripts_;
 
   // Number of precondition checks run for CheckScripts that are still
   // pending.

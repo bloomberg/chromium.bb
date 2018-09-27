@@ -86,6 +86,13 @@ class ScriptTrackerTest : public testing::Test,
         ->mutable_precondition()
         ->add_elements_exist()
         ->add_selectors(selector);
+    ScriptStatusMatchProto dont_run_twice_precondition;
+    dont_run_twice_precondition.set_script(path);
+    dont_run_twice_precondition.set_comparator(ScriptStatusMatchProto::EQUAL);
+    dont_run_twice_precondition.set_status(SCRIPT_STATUS_NOT_RUN);
+    *script->mutable_presentation()
+         ->mutable_precondition()
+         ->add_script_status_match() = dont_run_twice_precondition;
     return script;
   }
 

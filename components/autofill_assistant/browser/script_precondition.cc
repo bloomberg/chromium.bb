@@ -13,12 +13,11 @@
 #include "url/gurl.h"
 
 namespace autofill_assistant {
-
 // Static
 std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
-    const ScriptPreconditionProto& proto) {
+    const ScriptPreconditionProto& script_precondition_proto) {
   std::vector<std::vector<std::string>> elements_exist;
-  for (const auto& element : proto.elements_exist()) {
+  for (const auto& element : script_precondition_proto.elements_exist()) {
     std::vector<std::string> selectors;
     for (const auto& selector : element.selectors()) {
       selectors.emplace_back(selector);
@@ -27,12 +26,12 @@ std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
   }
 
   std::set<std::string> domain_match;
-  for (const auto& domain : proto.domain()) {
+  for (const auto& domain : script_precondition_proto.domain()) {
     domain_match.emplace(domain);
   }
 
   std::vector<std::unique_ptr<re2::RE2>> path_pattern;
-  for (const auto& pattern : proto.path_pattern()) {
+  for (const auto& pattern : script_precondition_proto.path_pattern()) {
     auto re = std::make_unique<re2::RE2>(pattern);
     if (re->error_code() != re2::RE2::NoError) {
       LOG(ERROR) << "Invalid regexp in script precondition '" << pattern;
@@ -42,20 +41,26 @@ std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
   }
 
   std::vector<ScriptParameterMatchProto> parameter_match;
-  for (const auto& match : proto.script_parameter_match()) {
+  for (const auto& match : script_precondition_proto.script_parameter_match()) {
     parameter_match.emplace_back(match);
   }
 
   std::vector<FormValueMatchProto> form_value_match;
-  for (const auto& match : proto.form_value_match()) {
+  for (const auto& match : script_precondition_proto.form_value_match()) {
     form_value_match.emplace_back(match);
   }
 
-  // TODO(crbug.com/806868): Detect unknown or unsupported conditions and reject
-  // them.
+  std::vector<ScriptStatusMatchProto> status_matches;
+  for (const auto& status_match :
+       script_precondition_proto.script_status_match()) {
+    status_matches.push_back(status_match);
+  }
+
+  // TODO(crbug.com/806868): Detect unknown or unsupported conditions and
+  // reject them.
   return std::make_unique<ScriptPrecondition>(
       elements_exist, domain_match, std::move(path_pattern), parameter_match,
-      form_value_match);
+      form_value_match, status_matches);
 }
 
 ScriptPrecondition::~ScriptPrecondition() {}
@@ -63,9 +68,12 @@ ScriptPrecondition::~ScriptPrecondition() {}
 void ScriptPrecondition::Check(
     WebController* web_controller,
     const std::map<std::string, std::string>& parameters,
+    const std::map<std::string, ScriptStatusProto>& executed_scripts,
     base::OnceCallback<void(bool)> callback) {
   const GURL& url = web_controller->GetUrl();
-  if (!MatchDomain(url) || !MatchPath(url) || !MatchParameters(parameters)) {
+
+  if (!MatchDomain(url) || !MatchPath(url) || !MatchParameters(parameters) ||
+      !MatchScriptStatus(executed_scripts)) {
     std::move(callback).Run(false);
     return;
   }
@@ -106,7 +114,8 @@ ScriptPrecondition::ScriptPrecondition(
     const std::set<std::string>& domain_match,
     std::vector<std::unique_ptr<re2::RE2>> path_pattern,
     const std::vector<ScriptParameterMatchProto>& parameter_match,
-    const std::vector<FormValueMatchProto>& form_value_match)
+    const std::vector<FormValueMatchProto>& form_value_match,
+    const std::vector<ScriptStatusMatchProto>& status_match)
     : elements_exist_(elements_exist),
       pending_preconditions_check_count_(0),
       all_preconditions_check_satisfied_(false),
@@ -114,6 +123,7 @@ ScriptPrecondition::ScriptPrecondition(
       path_pattern_(std::move(path_pattern)),
       parameter_match_(parameter_match),
       form_value_match_(form_value_match),
+      status_match_(status_match),
       weak_ptr_factory_(this) {}
 
 void ScriptPrecondition::OnCheckElementExists(bool result) {
@@ -163,6 +173,26 @@ bool ScriptPrecondition::MatchParameters(
       // parameter must not exist
       if (iter != parameters.end())
         return false;
+    }
+  }
+  return true;
+}
+
+bool ScriptPrecondition::MatchScriptStatus(
+    const std::map<std::string, ScriptStatusProto>& executed_scripts) const {
+  for (const auto status_match : status_match_) {
+    auto status = SCRIPT_STATUS_NOT_RUN;
+    auto iter = executed_scripts.find(status_match.script());
+    if (iter != executed_scripts.end()) {
+      status = iter->second;
+    }
+    bool has_same_status = status_match.status() == status;
+    switch (status_match.comparator()) {
+      case ScriptStatusMatchProto::DIFFERENT:
+        return !has_same_status;
+      case ScriptStatusMatchProto::EQUAL:
+      default:
+        return has_same_status;
     }
   }
   return true;
