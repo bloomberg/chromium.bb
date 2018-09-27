@@ -85,6 +85,7 @@ class SystemCookieStore {
   // TODO(crbug.com/825227): Move this to be private.
   std::unique_ptr<CookieCreationTimeManager> creation_time_manager_;
 
+ private:
   // Weak Ptr factory.
   base::WeakPtrFactory<SystemCookieStore> weak_factory_;
 };
