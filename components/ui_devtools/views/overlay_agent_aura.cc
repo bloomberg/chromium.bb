@@ -407,8 +407,10 @@ protocol::Response OverlayAgentAura::hideHighlight() {
 }
 
 int OverlayAgentAura::FindElementIdTargetedByPoint(
-    const gfx::Point& p,
-    gfx::NativeWindow root_window) const {
+    ui::LocatedEvent* event) const {
+  gfx::Point p = event->root_location();
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  gfx::NativeWindow root_window = target->GetRootWindow();
   gfx::NativeWindow targeted_window = root_window->GetEventHandlerForPoint(p);
   if (!targeted_window)
     return 0;
@@ -560,9 +562,7 @@ void OverlayAgentAura::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   // Find node id of element whose bounds contain the mouse pointer location.
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  int element_id = FindElementIdTargetedByPoint(event->root_location(),
-                                                target->GetRootWindow());
+  int element_id = FindElementIdTargetedByPoint(event);
 
   if (pinned_id_ == element_id) {
     event->SetHandled();
