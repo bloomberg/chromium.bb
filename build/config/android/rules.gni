@@ -2511,6 +2511,8 @@ if (enable_java_templates) {
           deps += [ ":$_compile_resources_target" ]
         }
 
+        forward_variables_from(invoker, [ "dexlayout_profile" ])
+
         # All deps are already included in _dex_sources when proguard is used.
         if (!_proguard_enabled) {
           if (_enable_multidex) {
@@ -2871,6 +2873,7 @@ if (enable_java_templates) {
                                "data",
                                "data_deps",
                                "deps",
+                               "dexlayout_profile",
                                "dist_ijar_path",
                                "dont_load_shared_libraries",
                                "emma_never_instrument",
