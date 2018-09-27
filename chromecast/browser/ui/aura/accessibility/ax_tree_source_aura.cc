@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include <vector>
-
 #include "chromecast/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -25,7 +23,7 @@ using views::AXAuraObjCache;
 using views::AXAuraObjWrapper;
 
 AXTreeSourceAura::AXTreeSourceAura() {
-  root_.reset(new AXRootObjWrapper());
+  root_.reset(new AXRootObjWrapper(AutomationManagerAura::GetInstance()));
 }
 
 AXTreeSourceAura::~AXTreeSourceAura() {
@@ -73,7 +71,7 @@ bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
   if (focus)
     tree_data->focus_id = focus->GetUniqueId().Get();
   else
-    tree_data->focus_id = 1; // root node
+    tree_data->focus_id = 1;  // root node
 
   return true;
 }

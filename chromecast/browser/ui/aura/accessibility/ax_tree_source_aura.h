@@ -9,11 +9,13 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "chromecast/browser/ui/aura/accessibility/ax_root_obj_wrapper.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_source.h"
+#include "ui/views/accessibility/ax_root_obj_wrapper.h"
 
 namespace ui {
 struct AXActionData;
@@ -25,10 +27,9 @@ class AXAuraObjWrapper;
 
 // This class exposes the views hierarchy as an accessibility tree permitting
 // use with other accessibility classes.
-class AXTreeSourceAura
-    : public ui::AXTreeSource<views::AXAuraObjWrapper*,
-                              ui::AXNodeData,
-                              ui::AXTreeData> {
+class AXTreeSourceAura : public ui::AXTreeSource<views::AXAuraObjWrapper*,
+                                                 ui::AXNodeData,
+                                                 ui::AXTreeData> {
  public:
   AXTreeSourceAura();
   ~AXTreeSourceAura() override;

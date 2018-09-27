@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 
+#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -12,7 +13,8 @@
 #include "ui/views/controls/webview/webview.h"
 
 AXTreeSourceAura::AXTreeSourceAura()
-    : desktop_root_(std::make_unique<AXRootObjWrapper>()) {}
+    : desktop_root_(std::make_unique<AXRootObjWrapper>(
+          AutomationManagerAura::GetInstance())) {}
 
 AXTreeSourceAura::~AXTreeSourceAura() = default;
 

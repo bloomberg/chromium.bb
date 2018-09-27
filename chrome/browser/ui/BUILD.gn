@@ -3056,8 +3056,6 @@ jumbo_split_static_library("ui") {
     sources += [
       "aura/accessibility/automation_manager_aura.cc",
       "aura/accessibility/automation_manager_aura.h",
-      "aura/accessibility/ax_root_obj_wrapper.cc",
-      "aura/accessibility/ax_root_obj_wrapper.h",
       "aura/accessibility/ax_tree_source_aura.cc",
       "aura/accessibility/ax_tree_source_aura.h",
       "aura/native_window_tracker_aura.cc",

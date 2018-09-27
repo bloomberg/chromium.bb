@@ -592,6 +592,7 @@ jumbo_component("views") {
     public += [
       "accessibility/ax_aura_obj_cache.h",
       "accessibility/ax_aura_obj_wrapper.h",
+      "accessibility/ax_root_obj_wrapper.h",
       "accessibility/ax_tree_source_views.h",
       "accessibility/ax_view_obj_wrapper.h",
       "accessibility/ax_widget_obj_wrapper.h",
@@ -623,6 +624,7 @@ jumbo_component("views") {
     sources += [
       "accessibility/ax_aura_obj_cache.cc",
       "accessibility/ax_aura_obj_wrapper.cc",
+      "accessibility/ax_root_obj_wrapper.cc",
       "accessibility/ax_tree_source_views.cc",
       "accessibility/ax_view_obj_wrapper.cc",
       "accessibility/ax_widget_obj_wrapper.cc",
