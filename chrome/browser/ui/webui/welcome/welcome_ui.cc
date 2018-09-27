@@ -25,11 +25,11 @@
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "components/nux/constants.h"
-#include "components/nux/email/email_handler.h"
-#include "components/nux/google_apps/google_apps_handler.h"
-#include "components/nux/set_as_default/set_as_default_handler.h"
-#include "components/nux/show_promo_delegate.h"
+#include "chrome/browser/ui/webui/welcome/nux/constants.h"
+#include "chrome/browser/ui/webui/welcome/nux/email_handler.h"
+#include "chrome/browser/ui/webui/welcome/nux/google_apps_handler.h"
+#include "chrome/browser/ui/webui/welcome/nux/set_as_default_handler.h"
+#include "chrome/browser/ui/webui/welcome/nux/show_promo_delegate.h"
 #include "content/public/browser/web_contents.h"
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
@@ -100,7 +100,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
         IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_JS);
   } else if (kIsBranded && is_dice) {
     // Use special layout if the application is branded and DICE is enabled.
-    // Otherwise use the default layout.
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
     html_source->AddLocalizedString("acceptText",
                                     IDS_PROFILES_DICE_SIGNIN_BUTTON);

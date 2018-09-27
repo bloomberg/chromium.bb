@@ -10,7 +10,7 @@
 // chrome/browser/ui/webui/welcome/ and included by non-win platforms.
 // Also check if it makes sense to merge nux_helper.* with nux/constants.*.
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-#include "components/nux/constants.h"
+#include "chrome/browser/ui/webui/welcome/nux/constants.h"
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 namespace nux {

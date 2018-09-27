@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/feature_promos/bookmark_bar_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
