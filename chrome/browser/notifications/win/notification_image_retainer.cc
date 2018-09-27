@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/hash.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -67,8 +68,11 @@ NotificationImageRetainer::NotificationImageRetainer(
     : task_runner_(task_runner) {}
 
 NotificationImageRetainer::~NotificationImageRetainer() {
-  if (!image_directory_.empty())
+  if (!image_directory_.empty()) {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Notifications.Windows.ImageRetainerDestructionTime");
     base::DeleteFile(image_directory_, true);
+  }
 }
 
 base::FilePath NotificationImageRetainer::RegisterTemporaryImage(
@@ -82,6 +86,8 @@ base::FilePath NotificationImageRetainer::RegisterTemporaryImage(
     return base::FilePath();
 
   if (!initialized_) {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Notifications.Windows.ImageRetainerInitializationTime");
     image_directory_ = DetermineImageDirectory();
     // Delete the old image directory.
     DeleteFile(image_directory_, /*recursive=*/true);
