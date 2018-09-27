@@ -33,5 +33,5 @@ class ClickAction : public Action {
   DISALLOW_COPY_AND_ASSIGN(ClickAction);
 };
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_CLICK_ACTION_H_

@@ -79,4 +79,4 @@ void WaitForDomAction::OnCheckElementExists(ActionDelegate* delegate,
       base::TimeDelta::FromMilliseconds(kCheckPeriodInMilliseconds));
 }
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

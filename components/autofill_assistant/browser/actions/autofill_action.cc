@@ -334,4 +334,4 @@ void AutofillAction::OnSetFieldValue(const std::string& guid,
   }
 }
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

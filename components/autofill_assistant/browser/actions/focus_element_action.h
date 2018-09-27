@@ -29,5 +29,5 @@ class FocusElementAction : public Action {
   DISALLOW_COPY_AND_ASSIGN(FocusElementAction);
 };
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_FOCUS_ELEMENT_ACTION_H_

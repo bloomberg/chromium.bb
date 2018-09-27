@@ -680,4 +680,4 @@ void WebController::BuildNodeTree(const std::vector<std::string>& selectors,
   std::move(callback).Run(true);
 }
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

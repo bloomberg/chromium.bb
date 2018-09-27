@@ -87,6 +87,6 @@ class ScriptPrecondition {
   DISALLOW_COPY_AND_ASSIGN(ScriptPrecondition);
 };
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant
 
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SCRIPT_PRECONDITION_H_

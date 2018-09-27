@@ -14,4 +14,4 @@ Script::Script() : priority(0) {}
 
 Script::~Script() = default;
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

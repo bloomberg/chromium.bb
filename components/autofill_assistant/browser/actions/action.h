@@ -40,5 +40,5 @@ class Action {
   std::unique_ptr<ProcessedActionProto> processed_action_proto_;
 };
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_H_
