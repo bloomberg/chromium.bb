@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/message_center/message_list_view.h"
+#include "ash/message_center/slidable_message_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -17,7 +18,6 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/views/notification_view_md.h"
-#include "ui/message_center/views/slidable_message_view.h"
 #include "ui/views/test/views_test_base.h"
 
 using ::testing::ElementsAre;

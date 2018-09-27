@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/views/notification_swipe_control_view.h"
+#include "ash/message_center/notification_swipe_control_view.h"
 
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
@@ -14,21 +14,20 @@
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 
-namespace message_center {
+namespace ash {
 
 const char NotificationSwipeControlView::kViewClassName[] =
     "NotificationSwipeControlView";
 
 NotificationSwipeControlView::NotificationSwipeControlView() {
-  auto layout = std::make_unique<views::BoxLayout>(
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
-      gfx::Insets(kSwipeControlButtonVerticalMargin,
-                  kSwipeControlButtonHorizontalMargin),
-      kSwipeControlButtonHorizontalMargin);
+      gfx::Insets(message_center::kSwipeControlButtonVerticalMargin,
+                  message_center::kSwipeControlButtonHorizontalMargin),
+      message_center::kSwipeControlButtonHorizontalMargin));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
-  SetLayoutManager(std::move(layout));
 
   // Draw on its own layer to round corners
   SetPaintToLayer();
@@ -60,17 +59,17 @@ void NotificationSwipeControlView::HideButtons() {
 
 void NotificationSwipeControlView::ShowSettingsButton(bool show) {
   if (show && !settings_button_) {
-    settings_button_ = std::make_unique<views::ImageButton>(this);
-    settings_button_->set_owned_by_client();
+    settings_button_ = new views::ImageButton(this);
     settings_button_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kNotificationSettingsButtonIcon,
-                              kSwipeControlButtonImageSize,
+        gfx::CreateVectorIcon(message_center::kNotificationSettingsButtonIcon,
+                              message_center::kSwipeControlButtonImageSize,
                               gfx::kChromeIconGrey));
     settings_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                         views::ImageButton::ALIGN_MIDDLE);
     settings_button_->SetPreferredSize(
-        gfx::Size(kSwipeControlButtonSize, kSwipeControlButtonSize));
+        gfx::Size(message_center::kSwipeControlButtonSize,
+                  message_center::kSwipeControlButtonSize));
 
     settings_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
@@ -79,28 +78,28 @@ void NotificationSwipeControlView::ShowSettingsButton(bool show) {
     settings_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
 
-    int position = snooze_button_ ? 1 : 0;
-    AddChildViewAt(settings_button_.get(), position);
+    AddChildViewAt(settings_button_, child_count());
     Layout();
   } else if (!show && settings_button_) {
-    DCHECK(Contains(settings_button_.get()));
-    settings_button_.reset();
+    DCHECK(Contains(settings_button_));
+    delete settings_button_;
+    settings_button_ = nullptr;
   }
 }
 
 void NotificationSwipeControlView::ShowSnoozeButton(bool show) {
   if (show && !snooze_button_) {
-    snooze_button_ = std::make_unique<views::ImageButton>(this);
-    snooze_button_->set_owned_by_client();
+    snooze_button_ = new views::ImageButton(this);
     snooze_button_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kNotificationSnoozeButtonIcon,
-                              kSwipeControlButtonImageSize,
+        gfx::CreateVectorIcon(message_center::kNotificationSnoozeButtonIcon,
+                              message_center::kSwipeControlButtonImageSize,
                               gfx::kChromeIconGrey));
     snooze_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                       views::ImageButton::ALIGN_MIDDLE);
     snooze_button_->SetPreferredSize(
-        gfx::Size(kSwipeControlButtonSize, kSwipeControlButtonSize));
+        gfx::Size(message_center::kSwipeControlButtonSize,
+                  message_center::kSwipeControlButtonSize));
 
     snooze_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
@@ -109,11 +108,12 @@ void NotificationSwipeControlView::ShowSnoozeButton(bool show) {
     snooze_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
 
-    AddChildViewAt(snooze_button_.get(), 0);
+    AddChildViewAt(snooze_button_, 0);
     Layout();
   } else if (!show && snooze_button_) {
-    DCHECK(Contains(snooze_button_.get()));
-    snooze_button_.reset();
+    DCHECK(Contains(snooze_button_));
+    delete snooze_button_;
+    snooze_button_ = nullptr;
   }
 }
 
@@ -123,14 +123,13 @@ const char* NotificationSwipeControlView::GetClassName() const {
 
 void NotificationSwipeControlView::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
-  if (settings_button_ && sender == settings_button_.get()) {
-    for (Observer& observer : button_observers_) {
+  DCHECK(sender);
+  if (sender == settings_button_) {
+    for (Observer& observer : button_observers_)
       observer.OnSettingsButtonPressed(event);
-    }
-  } else if (snooze_button_ && sender == snooze_button_.get()) {
-    for (Observer& observer : button_observers_) {
+  } else if (sender == snooze_button_) {
+    for (Observer& observer : button_observers_)
       observer.OnSnoozeButtonPressed(event);
-    }
   }
 }
 
@@ -140,4 +139,4 @@ void NotificationSwipeControlView::AddObserver(
   button_observers_.AddObserver(observer);
 }
 
-}  // namespace message_center
+}  // namespace ash
