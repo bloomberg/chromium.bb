@@ -19,7 +19,8 @@ loadTimeData.data = {
   DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
   DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
   REMOVABLE_DIRECTORY_LABEL: 'External Storage',
-  ARCHIVE_DIRECTORY_LABEL: 'Archives'
+  ARCHIVE_DIRECTORY_LABEL: 'Archives',
+  MY_FILES_ROOT_LABEL: 'My files',
 };
 
 function setUp() {
@@ -259,6 +260,64 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
         assertFalse(teamDrivesItemFound, 'Team Drives should NOT be generated');
       }),
       callback);
+}
+
+/**
+ * Test case for updateSubElementsFromList setting section-start attribute.
+ *
+ * 'section-start' attribute is used to display a line divider between
+ * "sections" in the directory tree. This is calculated in NavigationListModel.
+ */
+function testUpdateSubElementsFromListSections() {
+  // Creates elements.
+  const parentElement = document.createElement('div');
+  const directoryTree = document.createElement('div');
+  parentElement.appendChild(directoryTree);
+
+  // Creates mocks.
+  const directoryModel = new MockDirectoryModel();
+  const volumeManager = new MockVolumeManager();
+  const fileOperationManager = {
+    addEventListener: function(name, callback) {}
+  };
+
+  const treeModel = new NavigationListModel(
+      volumeManager,
+      new MockFolderShortcutDataModel([]),
+      null, /* recentItem */
+      null, /* addNewServicesItem */
+      false /* opt_disableMyFilesNavigation */
+  );
+
+  const myFilesItem = treeModel.item(0);
+  const driveItem = treeModel.item(1);
+
+  assertEquals(NavigationSection.MY_FILES, myFilesItem.section);
+  assertEquals(NavigationSection.CLOUD, driveItem.section);
+
+  DirectoryTree.decorate(directoryTree, directoryModel, volumeManager,
+      null, fileOperationManager, true);
+  directoryTree.dataModel = treeModel;
+  directoryTree.updateSubElementsFromList(false);
+
+  // First element should not have section-start attribute, to not display a
+  // division line in the first section.
+  // My files:
+  assertEquals(null, directoryTree.items[0].getAttribute('section-start'));
+
+  // Drive should have section-start, because it's a new section but not the
+  // first section.
+  assertEquals(
+      NavigationSection.CLOUD,
+      directoryTree.items[1].getAttribute('section-start'));
+
+  // Regenerate so it re-calculates the 'section-start' without creating the
+  // DirectoryItem.
+  directoryTree.updateSubElementsFromList(false);
+  assertEquals(
+      NavigationSection.CLOUD,
+      directoryTree.items[1].getAttribute('section-start'));
+
 }
 
 /**

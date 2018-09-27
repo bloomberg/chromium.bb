@@ -1713,9 +1713,9 @@ DirectoryTree.prototype.updateAndSelectNewDirectory = function(
 DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
   // First, current items which is not included in the dataModel should be
   // removed.
-  for (var i = 0; i < this.items.length;) {
-    var found = false;
-    for (var j = 0; j < this.dataModel.length; j++) {
+  for (let i = 0; i < this.items.length;) {
+    let found = false;
+    for (let j = 0; j < this.dataModel.length; j++) {
       // Comparison by references, which is safe here, as model items are long
       // living.
       if (this.items[i].modelItem === this.dataModel.item(j)) {
@@ -1733,18 +1733,20 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
   }
 
   // Next, insert items which is in dataModel but not in current items.
-  var modelIndex = 0;
-  var itemIndex = 0;
-  // Starts with TOP_SECTION so first section doesn't get the separator line.
-  var previousSection = NavigationSection.TOP;
+  let modelIndex = 0;
+  let itemIndex = 0;
+  // Initialize with first item's section so the first root doesn't get a
+  // divider line at the top.
+  let previousSection = this.dataModel.item(modelIndex).section;
   while (modelIndex < this.dataModel.length) {
     const currentItem = this.items[itemIndex];
     if (itemIndex < this.items.length &&
         currentItem.modelItem === this.dataModel.item(modelIndex)) {
-      var modelItem = currentItem.modelItem;
-      if (previousSection !== modelItem.section)
-        currentItem.setAttribute('section-start', previousSection);
-      previousSection = modelItem.section;
+      const modelItem = currentItem.modelItem;
+      if (previousSection !== modelItem.section) {
+        currentItem.setAttribute('section-start', modelItem.section);
+        previousSection = modelItem.section;
+      }
       if (recursive && currentItem instanceof VolumeItem)
         currentItem.updateSubDirectories(true);
       // EntryListItem can contain volumes that might have been updated: ask
@@ -1753,13 +1755,13 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
       if (currentItem instanceof EntryListItem)
         currentItem.updateSubDirectories(true);
     } else {
-      var modelItem = this.dataModel.item(modelIndex);
+      const modelItem = this.dataModel.item(modelIndex);
       if (modelItem) {
-        var item = DirectoryTree.createDirectoryItem(modelItem, this);
+        const item = DirectoryTree.createDirectoryItem(modelItem, this);
         if (item) {
           this.addAt(item, itemIndex);
           if (previousSection !== modelItem.section)
-            item.setAttribute('section-start', previousSection);
+            item.setAttribute('section-start', modelItem.section);
         }
         previousSection = modelItem.section;
       }
