@@ -422,6 +422,7 @@ _CONFIG = [
             'cricket::.*',
             'rtc::.+',
             'webrtc::.+',
+            'quic::.+',
         ]
     },
     {
