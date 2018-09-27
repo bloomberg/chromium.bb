@@ -312,7 +312,7 @@ class PLATFORM_EXPORT FontCache {
 #if defined(OS_WIN)
   static bool antialiased_text_enabled_;
   static bool lcd_text_enabled_;
-  static HashMap<String, sk_sp<SkTypeface>>* sideloaded_fonts_;
+  static HashMap<String, sk_sp<SkTypeface>, CaseFoldingHash>* sideloaded_fonts_;
   // The system font metrics cache.
   static AtomicString* menu_font_family_name_;
   static int32_t menu_font_height_;
