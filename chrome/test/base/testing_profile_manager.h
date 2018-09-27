@@ -37,6 +37,8 @@ class PrefServiceSyncable;
 class TestingProfileManager {
  public:
   explicit TestingProfileManager(TestingBrowserProcess* browser_process);
+  TestingProfileManager(TestingBrowserProcess* browser_process,
+                        ScopedTestingLocalState* local_state);
   ~TestingProfileManager();
 
   // This needs to be called in testing::Test::SetUp() to put the object in a
@@ -110,7 +112,7 @@ class TestingProfileManager {
   const base::FilePath& profiles_dir();
   ProfileManager* profile_manager();
   ProfileAttributesStorage* profile_attributes_storage();
-  ScopedTestingLocalState* local_state() { return &local_state_; }
+  ScopedTestingLocalState* local_state() { return local_state_; }
 
  private:
   friend class ProfileAttributesStorageTest;
@@ -149,7 +151,10 @@ class TestingProfileManager {
   TestingBrowserProcess* browser_process_;
 
   // Local state in which all the profiles are registered.
-  ScopedTestingLocalState local_state_;
+  ScopedTestingLocalState* local_state_;
+
+  // Owned local state for when it's not provided in the constructor.
+  std::unique_ptr<ScopedTestingLocalState> owned_local_state_;
 
   // Weak reference to the profile manager.
   ProfileManager* profile_manager_;

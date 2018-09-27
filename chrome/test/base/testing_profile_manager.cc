@@ -45,7 +45,17 @@ class ProfileManager : public ::ProfileManagerWithoutInit {
 TestingProfileManager::TestingProfileManager(TestingBrowserProcess* process)
     : called_set_up_(false),
       browser_process_(process),
-      local_state_(process),
+      owned_local_state_(std::make_unique<ScopedTestingLocalState>(process)),
+      profile_manager_(nullptr) {
+  local_state_ = owned_local_state_.get();
+}
+
+TestingProfileManager::TestingProfileManager(
+    TestingBrowserProcess* process,
+    ScopedTestingLocalState* local_state)
+    : called_set_up_(false),
+      browser_process_(process),
+      local_state_(local_state),
       profile_manager_(nullptr) {}
 
 TestingProfileManager::~TestingProfileManager() {
