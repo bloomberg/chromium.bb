@@ -601,6 +601,11 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                             "worker installation",
                             kM71, "5748516353736704")};
 
+    case WebFeature::kCacheStorageAddAllSuccessWithDuplicate:
+      return {"CacheStorageAddAllSuccessWithDuplicate", kM72,
+              WillBeRemoved("Cache.addAll() with duplicate requests", kM72,
+                            "5622587912617984")};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};
