@@ -248,8 +248,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
                         RenderThreadImpl::current()
                             ? RenderThreadImpl::current()->GetIOTaskRunner()
                             : nullptr),
-      compositor_thread_(nullptr),
-      main_thread_(main_thread_scheduler->CreateMainThread()),
       sudden_termination_disables_(0),
       is_locked_to_site_(false),
       default_task_runner_(main_thread_scheduler->DefaultTaskRunner()),
@@ -382,16 +380,6 @@ RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
   return url_loader_factory;
 }
 
-void RendererBlinkPlatformImpl::SetCompositorThread(
-    blink::scheduler::WebThreadBase* compositor_thread) {
-  // TODO(yutak): Compositor thread is currently owned by RenderThreadImpl,
-  // but should probably be owned by Platform so this wouldn't depend on
-  // WebThread.
-  compositor_thread_ = compositor_thread;
-  if (compositor_thread_)
-    RegisterExtraThreadToTLS(compositor_thread_);
-}
-
 blink::BlameContext* RendererBlinkPlatformImpl::GetTopLevelBlameContext() {
   return &top_level_blame_context_;
 }
@@ -513,10 +501,6 @@ void RendererBlinkPlatformImpl::SuddenTerminationChanged(bool enabled) {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   if (thread)  // NULL in unittests.
     thread->GetRendererHost()->SuddenTerminationChanged(enabled);
-}
-
-blink::WebThread* RendererBlinkPlatformImpl::CompositorThread() const {
-  return compositor_thread_;
 }
 
 std::unique_ptr<WebStorageNamespace>

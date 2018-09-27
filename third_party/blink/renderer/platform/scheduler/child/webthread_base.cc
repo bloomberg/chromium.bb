@@ -96,7 +96,6 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
  public:
   explicit WebThreadForCompositor(const WebThreadCreationParams& params)
       : WebThreadImplForWorkerScheduler(params) {
-    Init();
   }
   ~WebThreadForCompositor() override = default;
 

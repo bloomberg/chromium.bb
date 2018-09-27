@@ -40,6 +40,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -444,8 +445,19 @@ class BLINK_PLATFORM_EXPORT Platform {
   // for any other purpose.
   std::unique_ptr<WebThread> CreateWebAudioThread();
 
+  // Create and initialize the compositor thread. The thread is saved in
+  // Platform, and will be accessible through CompositorThread().
+  void InitializeCompositorThread(const WebThreadCreationParams&);
+
   // Returns an interface to the current thread.
   WebThread* CurrentThread();
+
+  // Returns an interface to the main thread.
+  WebThread* MainThread();
+
+  // Returns an interface to the compositor thread. This can be null if the
+  // renderer was created with threaded rendering disabled.
+  WebThread* CompositorThread();
 
   // Returns a blame context for attributing top-level work which does not
   // belong to a particular frame scope.
@@ -477,15 +489,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Returns a value such as "en-US".
   virtual WebString DefaultLocale() { return WebString(); }
-
-  // Returns an interface to the main thread. Can be null if blink was
-  // initialized on a thread without a message loop.
-  WebThread* MainThread() const;
-
-  // Returns an interface to the compositor thread. This can be null if the
-  // renderer was created with threaded rendering desabled.
-  virtual WebThread* CompositorThread() const { return 0; }
-
 
   // Returns an interface to the IO task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const {
@@ -754,8 +757,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual bool IsTakingV8ContextSnapshot() { return false; }
 
  protected:
-  void RegisterExtraThreadToTLS(WebThread*);
-
   WebThread* main_thread_;
 
  private:
@@ -772,10 +773,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Platform's main thread. See testing_platform_support.h for this.
   std::unique_ptr<WebThread> owned_main_thread_;
 
+  std::unique_ptr<WebThread> compositor_thread_;
+
   // We can't use WTF stuff here. Ultimately these should go away (see comments
   // near CreateThread()), though.
   base::ThreadLocalStorage::Slot current_thread_slot_;
-  base::Lock create_thread_lock_;
 };
 
 }  // namespace blink
