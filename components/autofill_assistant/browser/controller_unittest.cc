@@ -157,13 +157,7 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script1"), _, _))
       .WillOnce(RunOnceCallback<2>(true, ""));
 
-  // 6. offering the choice: script2
-  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(1)))
-      .WillOnce([](const std::vector<ScriptHandle>& scripts) {
-        EXPECT_EQ("script2", scripts[0].path);
-      });
-  // 7. As nothing is selected from the 2nd UpdateScripts call, the flow
-  // terminates.
+  // 6. As nothing is selected the flow terminates.
 
   // Start the flow.
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
@@ -201,7 +195,6 @@ TEST_F(ControllerTest, Autostart) {
 
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _, _))
       .WillOnce(RunOnceCallback<2>(true, ""));
-  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(0)));
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }

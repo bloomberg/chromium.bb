@@ -29,20 +29,22 @@ class ScriptPrecondition {
   // Builds a precondition from its proto representation. Returns nullptr if the
   // preconditions are invalid.
   static std::unique_ptr<ScriptPrecondition> FromProto(
-      const ScriptPreconditionProto& proto);
+      const ScriptPreconditionProto& script_precondition_proto);
 
   ScriptPrecondition(
       const std::vector<std::vector<std::string>>& elements_exist,
       const std::set<std::string>& domain_match,
       std::vector<std::unique_ptr<re2::RE2>> path_pattern,
       const std::vector<ScriptParameterMatchProto>& parameter_match,
-      const std::vector<FormValueMatchProto>& form_value_match);
+      const std::vector<FormValueMatchProto>& form_value_match,
+      const std::vector<ScriptStatusMatchProto>& status_match);
   ~ScriptPrecondition();
 
   // Check whether the conditions satisfied and return the result through
   // |callback|.
   void Check(WebController* web_controller,
              const std::map<std::string, std::string>& parameters,
+             const std::map<std::string, ScriptStatusProto>& executed_scripts,
              base::OnceCallback<void(bool)> callback);
 
  private:
@@ -51,6 +53,9 @@ class ScriptPrecondition {
   bool MatchPath(const GURL& url) const;
   bool MatchParameters(
       const std::map<std::string, std::string>& parameters) const;
+  bool MatchScriptStatus(
+      const std::map<std::string, ScriptStatusProto>& executed_scripts) const;
+
   void OnGetFieldValue(const std::string& value);
 
   // Return if all checks have been completed and we have not returned anything
@@ -73,6 +78,9 @@ class ScriptPrecondition {
 
   // Conditions on form fields value.
   std::vector<FormValueMatchProto> form_value_match_;
+
+  // Conditions regarding the execution status of passed scripts.
+  std::vector<ScriptStatusMatchProto> status_match_;
 
   base::WeakPtrFactory<ScriptPrecondition> weak_ptr_factory_;
 
