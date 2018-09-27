@@ -282,7 +282,7 @@ bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     const LayoutObject& object,
     const PrePaintTreeWalkContext& parent_context) {
   if (parent_context.tree_builder_context &&
-      parent_context.tree_builder_context->force_subtree_update) {
+      parent_context.tree_builder_context->force_subtree_update_reasons) {
     return true;
   }
   // The following CHECKs are for debugging crbug.com/816810.
