@@ -96,9 +96,7 @@ rietveld_instances = [
 
 gerrit_instances = [
   {
-    'url': 'chromium-review.googlesource.com',
-    'shorturl': 'crrev.com/c',
-    'short_url_protocol': 'https',
+    'url': 'android-review.googlesource.com',
   },
   {
     'url': 'chrome-internal-review.googlesource.com',
@@ -106,10 +104,15 @@ gerrit_instances = [
     'short_url_protocol': 'https',
   },
   {
-    'url': 'android-review.googlesource.com',
+    'url': 'chromium-review.googlesource.com',
+    'shorturl': 'crrev.com/c',
+    'short_url_protocol': 'https',
   },
   {
     'url': 'pdfium-review.googlesource.com',
+  },
+  {
+    'url': 'skia-review.googlesource.com',
   },
 ]
 
