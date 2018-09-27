@@ -118,19 +118,13 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
   }
 
   void TearDown() override {
+    // For VP8, make MCVD skip the drain by resetting it.  Otherwise, it's hard
+    // to finish the drain.
+    if (mcvd_ && codec_ == kCodecVP8 && codec_allocator_->most_recent_codec)
+      DoReset();
+
     // MCVD calls DeleteSoon() on itself, so we have to run a RunLoop.
     mcvd_.reset();
-    // For Vp8, MCVD might try to drain before destroying itself.  If needed,
-    // complete the drain.  Note that not every Vp8 codec will need this; it
-    // might already be drained, in which case the drain will be elided.
-    if (codec_ == kCodecVP8 && codec_allocator_->most_recent_codec &&
-        !codec_allocator_->most_recent_codec->IsDrained()) {
-      // MCVD should have queued an EOS.  Just provide one, and hope that MCVD
-      // won't notice if there should have been other outputs before it.
-      codec_allocator_->most_recent_codec->ProduceOneOutput(
-          MockMediaCodecBridge::kEos);
-      PumpCodec();
-    }
     base::RunLoop().RunUntilIdle();
   }
 
@@ -240,6 +234,22 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
   // that depend on queueing and dequeueing buffers. It uses |mcvd_raw_| so that
   // it can be called after |mcvd_| is reset.
   void PumpCodec() { mcvd_raw_->PumpCodec(false); }
+
+  // Start and finish a reset.
+  void DoReset() {
+    bool reset_complete = false;
+    mcvd_->Reset(base::BindRepeating(
+        [](bool* reset_complete) { *reset_complete = true; }, &reset_complete));
+    base::RunLoop().RunUntilIdle();
+    if (!reset_complete) {
+      // Note that there might be more pending decodes, and this will arrive
+      // out of order.  We assume that MCVD doesn't care.
+      codec_allocator_->most_recent_codec->ProduceOneOutput(
+          MockMediaCodecBridge::kEos);
+      PumpCodec();
+      EXPECT_TRUE(reset_complete);
+    }
+  }
 
   void RequestOverlayInfoCb(
       bool restart_for_transitions,
@@ -558,12 +568,14 @@ TEST_P(MediaCodecVideoDecoderTest,
   base::MockCallback<base::Closure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
+  testing::Mock::VerifyAndClearExpectations(&reset_cb);
 }
 
 TEST_P(MediaCodecVideoDecoderTest, ResetAbortsPendingDecodes) {
   InitializeWithTextureOwner_OneDecodePending(TestVideoConfig::Large(codec_));
   EXPECT_CALL(decode_cb_, Run(DecodeStatus::ABORTED));
-  mcvd_->Reset(base::DoNothing());
+  DoReset();
+  testing::Mock::VerifyAndClearExpectations(&decode_cb_);
 }
 
 TEST_P(MediaCodecVideoDecoderTest, ResetAbortsPendingEosDecode) {
@@ -580,7 +592,7 @@ TEST_P(MediaCodecVideoDecoderTest, ResetAbortsPendingEosDecode) {
   PumpCodec();
 
   EXPECT_CALL(eos_decode_cb, Run(DecodeStatus::ABORTED));
-  mcvd_->Reset(base::DoNothing());
+  DoReset();
   // Should be run before |mcvd_| is destroyed.
   testing::Mock::VerifyAndClearExpectations(&eos_decode_cb);
 }
@@ -594,6 +606,7 @@ TEST_P(MediaCodecVideoDecoderTest, ResetDoesNotFlushAnAlreadyFlushedCodec) {
   base::MockCallback<base::Closure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
+  testing::Mock::VerifyAndClearExpectations(&decode_cb_);
 }
 
 TEST_P(MediaCodecVideoDecoderVp8Test, ResetDrainsVP8CodecsBeforeFlushing) {
