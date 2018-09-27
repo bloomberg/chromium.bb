@@ -29,6 +29,15 @@ class MergeSessionNavigationThrottleTest
  public:
   MergeSessionNavigationThrottleTest() = default;
 
+  bool ManagerHasObservers() {
+    OAuth2LoginManager* manager = GetOAuth2LoginManager();
+    if (!manager) {
+      ADD_FAILURE();
+      return false;
+    }
+    return manager->observer_list_.might_have_observers();
+  }
+
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -89,6 +98,7 @@ TEST_F(MergeSessionNavigationThrottleTest, NotThrottled) {
       GURL(kURL), web_contents());
   navigation->Start();
   EXPECT_FALSE(navigation->IsDeferred());
+  EXPECT_FALSE(ManagerHasObservers());
 }
 
 // Tests navigations are deferred when merge session is in progress, and
@@ -104,6 +114,7 @@ TEST_F(MergeSessionNavigationThrottleTest, Throttled) {
   SetMergeSessionState(OAuth2LoginManager::SESSION_RESTORE_DONE);
   navigation->Wait();
   EXPECT_FALSE(navigation->IsDeferred());
+  EXPECT_FALSE(ManagerHasObservers());
 }
 
 // Tests navigations are not deferred if merge session started over 60
@@ -116,6 +127,7 @@ TEST_F(MergeSessionNavigationThrottleTest, Timeout) {
       GURL(kURL), web_contents());
   navigation->Start();
   EXPECT_FALSE(navigation->IsDeferred());
+  EXPECT_FALSE(ManagerHasObservers());
 }
 
 }  // namespace chromeos
