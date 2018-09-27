@@ -623,12 +623,11 @@ class SingleEntryPropertiesGetterForDriveFs {
     }
 
     drivefs_interface->GetMetadata(
-        path, /* want_thumbnail = */ false,
-        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-            base::BindOnce(
-                &SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo,
-                weak_ptr_factory_.GetWeakPtr()),
-            drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
+        path, mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+                  base::BindOnce(
+                      &SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo,
+                      weak_ptr_factory_.GetWeakPtr()),
+                  drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
   }
 
   void OnGetFileInfo(drive::FileError error,
@@ -1621,7 +1620,7 @@ bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsyncForDriveFs(
     return false;
 
   drivefs_interface->GetMetadata(
-      path, false,
+      path,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(
               &FileManagerPrivateInternalGetDownloadUrlFunction::OnGotMetadata,

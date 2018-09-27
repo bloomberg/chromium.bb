@@ -49,7 +49,6 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
 
   // drivefs::mojom::DriveFs:
   void GetMetadata(const base::FilePath& path,
-                   bool want_thumbnail,
                    GetMetadataCallback callback) override;
 
   void SetPinned(const base::FilePath& path,
