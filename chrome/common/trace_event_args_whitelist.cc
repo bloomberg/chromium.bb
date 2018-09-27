@@ -18,6 +18,7 @@ struct WhitelistEntry {
   const char* const* arg_name_filter;
 };
 
+const char* const kGPUAllowedArgs[] = {nullptr};
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
 const char* const kMemoryDumpAllowedArgs[] = {"dumps", nullptr};
 
@@ -29,6 +30,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "chrome_library_module", nullptr},
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
+    {"GPU", "*", kGPUAllowedArgs},
     {"ipc", "GpuChannelHost::Send", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
     {"latencyInfo", "*", kInputLatencyAllowedArgs},
