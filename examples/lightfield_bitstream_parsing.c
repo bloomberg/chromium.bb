@@ -386,7 +386,7 @@ int main(int argc, char **argv) {
     ++tl_pts;
   }
 
-  int num_tile_lists = tl_pts - pts;
+  const int num_tile_lists = (int)(tl_pts - pts);
   printf("Finished processing tile lists.  Num tile lists: %d.\n",
          num_tile_lists);
   free(tl_buf);
