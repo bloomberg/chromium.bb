@@ -441,6 +441,11 @@ void FakeServer::DisableNetwork() {
   network_enabled_ = false;
 }
 
+void FakeServer::EnableStrongConsistencyWithConflictDetectionModel() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  loopback_server_->EnableStrongConsistencyWithConflictDetectionModel();
+}
+
 base::WeakPtr<FakeServer> FakeServer::AsWeakPtr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return weak_ptr_factory_.GetWeakPtr();
