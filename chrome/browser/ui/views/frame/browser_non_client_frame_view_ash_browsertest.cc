@@ -343,18 +343,14 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
 
   const gfx::Rect initial = frame_view->caption_button_container_->bounds();
-  ash::TabletModeController* tablet_mode_controller =
-      ash::Shell::Get()->tablet_mode_controller();
-  tablet_mode_controller->EnableTabletModeWindowManager(true);
-  tablet_mode_controller->FlushForTesting();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   ash::FrameCaptionButtonContainerView::TestApi test(
       frame_view->caption_button_container_);
   test.EndAnimations();
   const gfx::Rect during_maximize =
       frame_view->caption_button_container_->bounds();
   EXPECT_GT(initial.width(), during_maximize.width());
-  tablet_mode_controller->EnableTabletModeWindowManager(false);
-  tablet_mode_controller->FlushForTesting();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   test.EndAnimations();
   const gfx::Rect after_restore =
       frame_view->caption_button_container_->bounds();
@@ -1078,10 +1074,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
   // Test that the header is invisible for the browser window in overview mode
   // and visible when not in overview mode.
-  ash::Shell* shell = ash::Shell::Get();
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                            false);
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 
   // Create another browser window.
@@ -1105,6 +1101,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // snapped browser window, but invisible for the browser window still in
   // overview mode.
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
+  ash::Shell* shell = ash::Shell::Get();
   ash::SplitViewController* split_view_controller =
       shell->split_view_controller();
   split_view_controller->BindRequest(
@@ -1118,7 +1115,9 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   frame_view->split_view_controller_.FlushForTesting();
   frame_view2->split_view_controller_.FlushForTesting();
 
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
+  frame_view2->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                             true);
   split_view_controller->SnapWindow(widget->GetNativeWindow(),
                                     ash::SplitViewController::LEFT);
   frame_view->split_view_controller_.FlushForTesting();
@@ -1137,7 +1136,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // Toggle overview mode while splitview mode is active. Test that the header
   // is visible for the snapped browser window but not for the other browser
   // window in overview mode.
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                            false);
+  frame_view2->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                             true);
   frame_view->split_view_controller_.FlushForTesting();
   frame_view2->split_view_controller_.FlushForTesting();
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
@@ -1175,6 +1177,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
   Browser* browser = new Browser(params);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
   ImmersiveModeController* immersive_mode_controller =
       browser_view->immersive_mode_controller();
   aura::Window* window = browser->window()->GetNativeWindow();
@@ -1202,16 +1205,12 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_LT(0, window->GetProperty(aura::client::kTopViewInset));
 
-  // TODO(estade): deal with overview mode in Mash.
-  if (!features::IsUsingWindowService()) {
-    // The kTopViewInset is the same as in overview mode.
-    const int inset_normal = window->GetProperty(aura::client::kTopViewInset);
-    EXPECT_TRUE(
-        ash::Shell::Get()->window_selector_controller()->ToggleOverview());
-    const int inset_in_overview_mode =
-        window->GetProperty(aura::client::kTopViewInset);
-    EXPECT_EQ(inset_normal, inset_in_overview_mode);
-  }
+  // The kTopViewInset is the same as in overview mode.
+  const int inset_normal = window->GetProperty(aura::client::kTopViewInset);
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
+  const int inset_in_overview_mode =
+      window->GetProperty(aura::client::kTopViewInset);
+  EXPECT_EQ(inset_normal, inset_in_overview_mode);
 }
 
 namespace {
@@ -1274,20 +1273,16 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
 
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  ash::Shell* shell = ash::Shell::Get();
-  ash::TabletModeController* tablet_mode_controller =
-      shell->tablet_mode_controller();
-  tablet_mode_controller->EnableTabletModeWindowManager(true);
-  tablet_mode_controller->FlushForTesting();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
 
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                            false);
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
 
-  tablet_mode_controller->EnableTabletModeWindowManager(false);
-  tablet_mode_controller->FlushForTesting();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
 
@@ -1311,15 +1306,11 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 
-  // TODO(estade): deal with overview mode in Mash.
-  if (features::IsUsingWindowService())
-    return;
-
   // However, overview mode does.
-  ash::Shell* shell = ash::Shell::Get();
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                            false);
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
@@ -1356,7 +1347,7 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
   frame_view->split_view_controller_.FlushForTesting();
 
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
   split_view_controller->SnapWindow(widget->GetNativeWindow(),
                                     ash::SplitViewController::LEFT);
   frame_view->split_view_controller_.FlushForTesting();
