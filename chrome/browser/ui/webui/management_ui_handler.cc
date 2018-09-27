@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -113,6 +114,7 @@ void ManagementUIHandler::RegisterMessages() {
 void ManagementUIHandler::HandleGetDeviceManagementStatus(
     const base::ListValue* args) {
   AllowJavascript();
+  base::RecordAction(base::UserMetricsAction("ManagementPageViewed"));
 
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
