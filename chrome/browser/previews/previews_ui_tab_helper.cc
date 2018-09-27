@@ -7,6 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -14,9 +17,11 @@
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/network_time/network_time_tracker.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/previews/content/previews_content_util.h"
@@ -29,6 +34,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_response_headers.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -36,6 +42,11 @@
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 namespace {
+
+const char kMinStalenessParamName[] = "min_staleness_in_minutes";
+const char kMaxStalenessParamName[] = "max_staleness_in_minutes";
+const int kMinStalenessParamDefaultValue = 5;
+const int kMaxStalenessParamDefaultValue = 1440;
 
 // Adds the preview navigation to the black list.
 void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
@@ -51,6 +62,10 @@ void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
   }
 }
 
+void RecordStaleness(PreviewsUITabHelper::PreviewsStalePreviewTimestamp value) {
+  UMA_HISTOGRAM_ENUMERATION("Previews.StalePreviewTimestampShown", value);
+}
+
 }  // namespace
 
 PreviewsUITabHelper::~PreviewsUITabHelper() {}
@@ -62,9 +77,7 @@ PreviewsUITabHelper::PreviewsUITabHelper(content::WebContents* web_contents)
 
 void PreviewsUITabHelper::ShowUIElement(
     previews::PreviewsType previews_type,
-    base::Time previews_freshness,
     bool is_data_saver_user,
-    bool is_reload,
     OnDismissPreviewsUICallback on_dismiss_callback) {
   // Retrieve PreviewsUIService* from |web_contents| if available.
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
@@ -83,8 +96,74 @@ void PreviewsUITabHelper::ShowUIElement(
 #endif
 
   PreviewsInfoBarDelegate::Create(web_contents(), previews_type,
-                                  previews_freshness, is_data_saver_user,
-                                  is_reload, previews_ui_service);
+                                  is_data_saver_user, previews_ui_service);
+}
+
+base::string16 PreviewsUITabHelper::GetStalePreviewTimestampText() {
+  if (previews_freshness_.is_null())
+    return base::string16();
+  if (!base::FeatureList::IsEnabled(
+          previews::features::kStalePreviewsTimestamp)) {
+    return base::string16();
+  }
+
+  int min_staleness_in_minutes = base::GetFieldTrialParamByFeatureAsInt(
+      previews::features::kStalePreviewsTimestamp, kMinStalenessParamName,
+      kMinStalenessParamDefaultValue);
+  int max_staleness_in_minutes = base::GetFieldTrialParamByFeatureAsInt(
+      previews::features::kStalePreviewsTimestamp, kMaxStalenessParamName,
+      kMaxStalenessParamDefaultValue);
+
+  if (min_staleness_in_minutes <= 0 || max_staleness_in_minutes <= 0) {
+    NOTREACHED();
+    return base::string16();
+  }
+
+  base::Time network_time;
+  if (g_browser_process->network_time_tracker()->GetNetworkTime(&network_time,
+                                                                nullptr) !=
+      network_time::NetworkTimeTracker::NETWORK_TIME_AVAILABLE) {
+    // When network time has not been initialized yet, simply rely on the
+    // machine's current time.
+    network_time = base::Time::Now();
+  }
+
+  if (network_time < previews_freshness_) {
+    RecordStaleness(
+        PreviewsStalePreviewTimestamp::kTimestampNotShownStalenessNegative);
+    return base::string16();
+  }
+
+  int staleness_in_minutes = (network_time - previews_freshness_).InMinutes();
+  if (staleness_in_minutes < min_staleness_in_minutes) {
+    if (is_stale_reload_) {
+      RecordStaleness(PreviewsStalePreviewTimestamp::kTimestampUpdatedNowShown);
+      return l10n_util::GetStringUTF16(
+          IDS_PREVIEWS_INFOBAR_TIMESTAMP_UPDATED_NOW);
+    }
+    RecordStaleness(
+        PreviewsStalePreviewTimestamp::kTimestampNotShownPreviewNotStale);
+    return base::string16();
+  }
+  if (staleness_in_minutes > max_staleness_in_minutes) {
+    RecordStaleness(PreviewsStalePreviewTimestamp::
+                        kTimestampNotShownStalenessGreaterThanMax);
+    return base::string16();
+  }
+
+  RecordStaleness(PreviewsStalePreviewTimestamp::kTimestampShown);
+
+  if (staleness_in_minutes < 60) {
+    return l10n_util::GetStringFUTF16(
+        IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES,
+        base::IntToString16(staleness_in_minutes));
+  } else if (staleness_in_minutes < 120) {
+    return l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_ONE_HOUR);
+  } else {
+    return l10n_util::GetStringFUTF16(
+        IDS_PREVIEWS_INFOBAR_TIMESTAMP_HOURS,
+        base::IntToString16(staleness_in_minutes / 60));
+  }
 }
 
 void PreviewsUITabHelper::ReloadWithoutPreviews() {
@@ -122,6 +201,13 @@ void PreviewsUITabHelper::ReloadWithoutPreviews(
   }
 }
 
+void PreviewsUITabHelper::SetStalePreviewsStateForTesting(
+    base::Time previews_freshness,
+    bool is_reload) {
+  previews_freshness_ = previews_freshness;
+  is_stale_reload_ = is_reload;
+}
+
 void PreviewsUITabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // Only show the ui if this is a full main frame navigation.
@@ -144,7 +230,7 @@ void PreviewsUITabHelper::DidFinishNavigation(
 
   // The ui should only be told if the page was a reload if the previous
   // page displayed a timestamp.
-  bool is_reload =
+  is_stale_reload_ =
       displayed_preview_timestamp_
           ? navigation_handle->GetReloadType() != content::ReloadType::NONE
           : false;
@@ -188,9 +274,7 @@ void PreviewsUITabHelper::DidFinishNavigation(
                                data_use_measurement::DataUseUserData::OTHER, 0);
 
     ShowUIElement(previews::PreviewsType::OFFLINE,
-                  base::Time() /* previews_freshness */,
                   data_reduction_proxy_settings && data_saver_enabled,
-                  false /* is_reload */,
                   base::BindOnce(&AddPreviewNavigationCallback,
                                  web_contents()->GetBrowserContext(),
                                  navigation_handle->GetRedirectChain()[0],
@@ -207,16 +291,14 @@ void PreviewsUITabHelper::DidFinishNavigation(
         previews_user_data_->committed_previews_type();
     if (main_frame_preview != previews::PreviewsType::NONE &&
         main_frame_preview != previews::PreviewsType::LOFI) {
-      base::Time previews_freshness;
       if (main_frame_preview == previews::PreviewsType::LITE_PAGE) {
         const net::HttpResponseHeaders* headers =
             navigation_handle->GetResponseHeaders();
         if (headers)
-          headers->GetDateValue(&previews_freshness);
+          headers->GetDateValue(&previews_freshness_);
       }
 
-      ShowUIElement(main_frame_preview, previews_freshness,
-                    true /* is_data_saver_user */, is_reload,
+      ShowUIElement(main_frame_preview, true /* is_data_saver_user */,
                     base::BindOnce(&AddPreviewNavigationCallback,
                                    web_contents()->GetBrowserContext(),
                                    navigation_handle->GetRedirectChain()[0],

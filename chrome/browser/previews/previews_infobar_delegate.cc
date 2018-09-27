@@ -5,14 +5,11 @@
 #include "chrome/browser/previews/previews_infobar_delegate.h"
 
 #include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/android_theme_resources.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -21,7 +18,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/infobars/core/infobar.h"
-#include "components/network_time/network_time_tracker.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
@@ -38,10 +34,6 @@ namespace {
 
 const void* const kOptOutEventKey = 0;
 
-const char kMinStalenessParamName[] = "min_staleness_in_minutes";
-const char kMaxStalenessParamName[] = "max_staleness_in_minutes";
-const int kMinStalenessParamDefaultValue = 5;
-const int kMaxStalenessParamDefaultValue = 1440;
 static const char kPreviewInfobarEventType[] = "InfoBar";
 
 void RecordPreviewsInfoBarAction(
@@ -55,11 +47,6 @@ void RecordPreviewsInfoBarAction(
       1, max_limit, max_limit + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(static_cast<int32_t>(action));
-}
-
-void RecordStaleness(PreviewsInfoBarDelegate::PreviewsInfoBarTimestamp value) {
-  UMA_HISTOGRAM_ENUMERATION("Previews.InfoBarTimestamp", value,
-                            PreviewsInfoBarDelegate::TIMESTAMP_INDEX_BOUNDARY);
 }
 
 void InformPLMOfOptOut(content::WebContents* web_contents) {
@@ -83,9 +70,7 @@ PreviewsInfoBarDelegate::~PreviewsInfoBarDelegate() {
 void PreviewsInfoBarDelegate::Create(
     content::WebContents* web_contents,
     previews::PreviewsType previews_type,
-    base::Time previews_freshness,
     bool is_data_saver_user,
-    bool is_reload,
     previews::PreviewsUIService* previews_ui_service) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents);
@@ -100,8 +85,7 @@ void PreviewsInfoBarDelegate::Create(
     return;
 
   std::unique_ptr<PreviewsInfoBarDelegate> delegate(new PreviewsInfoBarDelegate(
-      ui_tab_helper, previews_type, previews_freshness, is_data_saver_user,
-      is_reload));
+      ui_tab_helper, previews_type, is_data_saver_user));
 
 #if defined(OS_ANDROID)
   std::unique_ptr<infobars::InfoBar> infobar_ptr(
@@ -134,14 +118,10 @@ void PreviewsInfoBarDelegate::Create(
 PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
     PreviewsUITabHelper* ui_tab_helper,
     previews::PreviewsType previews_type,
-    base::Time previews_freshness,
-    bool is_data_saver_user,
-    bool is_reload)
+    bool is_data_saver_user)
     : ConfirmInfoBarDelegate(),
       ui_tab_helper_(ui_tab_helper),
       previews_type_(previews_type),
-      previews_freshness_(previews_freshness),
-      is_reload_(is_reload),
       infobar_dismissed_action_(INFOBAR_DISMISSED_BY_TAB_CLOSURE),
       message_text_(l10n_util::GetStringUTF16(
           is_data_saver_user ? IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE
@@ -176,14 +156,14 @@ void PreviewsInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 PreviewsInfoBarDelegate::GetMessageText() const {
-// Android has a custom infobar that calls GetTimestampText() and adds the
-// timestamp in a separate description view. Other OS's can enable previews
-// for debugging purposes and don't have a custom infobar with a description
-// view, so the timestamp should be appended to the message.
+// Android has a custom infobar that calls GetStalePreviewTimestampText() and
+// adds the timestamp in a separate description view. Other OS's can enable
+// previews for debugging purposes and don't have a custom infobar with a
+// description view, so the timestamp should be appended to the message.
 #if defined(OS_ANDROID)
   return message_text_;
 #else
-  base::string16 timestamp = GetTimestampText();
+  base::string16 timestamp = GetStalePreviewTimestampText();
   if (timestamp.empty())
     return message_text_;
   // This string concatenation wouldn't fly for l10n, but this is only a hack
@@ -213,72 +193,14 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return true;
 }
 
-base::string16 PreviewsInfoBarDelegate::GetTimestampText() const {
-  if (previews_freshness_.is_null())
+base::string16 PreviewsInfoBarDelegate::GetStalePreviewTimestampText() const {
+  if (!ui_tab_helper_)
     return base::string16();
-  if (!base::FeatureList::IsEnabled(
-          previews::features::kStalePreviewsTimestamp)) {
-    return base::string16();
-  }
 
-  int min_staleness_in_minutes = base::GetFieldTrialParamByFeatureAsInt(
-      previews::features::kStalePreviewsTimestamp, kMinStalenessParamName,
-      kMinStalenessParamDefaultValue);
-  int max_staleness_in_minutes = base::GetFieldTrialParamByFeatureAsInt(
-      previews::features::kStalePreviewsTimestamp, kMaxStalenessParamName,
-      kMaxStalenessParamDefaultValue);
-
-  if (min_staleness_in_minutes <= 0 || max_staleness_in_minutes <= 0) {
-    NOTREACHED();
-    return base::string16();
-  }
-
-  base::Time network_time;
-  if (g_browser_process->network_time_tracker()->GetNetworkTime(&network_time,
-                                                                nullptr) !=
-      network_time::NetworkTimeTracker::NETWORK_TIME_AVAILABLE) {
-    // When network time has not been initialized yet, simply rely on the
-    // machine's current time.
-    network_time = base::Time::Now();
-  }
-
-  if (network_time < previews_freshness_) {
-    RecordStaleness(TIMESTAMP_NOT_SHOWN_STALENESS_NEGATIVE);
-    return base::string16();
-  }
-
-  int staleness_in_minutes = (network_time - previews_freshness_).InMinutes();
-  if (staleness_in_minutes < min_staleness_in_minutes) {
-    if (is_reload_) {
-      RecordStaleness(TIMESTAMP_UPDATED_NOW_SHOWN);
-      if (ui_tab_helper_)
-        ui_tab_helper_->set_displayed_preview_timestamp(true);
-      return l10n_util::GetStringUTF16(
-          IDS_PREVIEWS_INFOBAR_TIMESTAMP_UPDATED_NOW);
-    }
-    RecordStaleness(TIMESTAMP_NOT_SHOWN_PREVIEW_NOT_STALE);
-    return base::string16();
-  }
-  if (staleness_in_minutes > max_staleness_in_minutes) {
-    RecordStaleness(TIMESTAMP_NOT_SHOWN_STALENESS_GREATER_THAN_MAX);
-    return base::string16();
-  }
-
-  RecordStaleness(TIMESTAMP_SHOWN);
-  if (ui_tab_helper_)
+  const base::string16 text = ui_tab_helper_->GetStalePreviewTimestampText();
+  if (text.length() > 0)
     ui_tab_helper_->set_displayed_preview_timestamp(true);
-
-  if (staleness_in_minutes < 60) {
-    return l10n_util::GetStringFUTF16(
-        IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES,
-        base::IntToString16(staleness_in_minutes));
-  } else if (staleness_in_minutes < 120) {
-    return l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_ONE_HOUR);
-  } else {
-    return l10n_util::GetStringFUTF16(
-        IDS_PREVIEWS_INFOBAR_TIMESTAMP_HOURS,
-        base::IntToString16(staleness_in_minutes / 60));
-  }
+  return text;
 }
 
 // static
