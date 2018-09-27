@@ -208,6 +208,18 @@ TEST(PasswordManagerUtil,
   }
 }
 
+TEST(PasswordManagerUtil, GetSignonRealmWithProtocolExcluded) {
+  autofill::PasswordForm http_form;
+  http_form.origin = GURL("http://www.google.com/page-1/");
+  http_form.signon_realm = "http://www.google.com/";
+  EXPECT_EQ(GetSignonRealmWithProtocolExcluded(http_form), "www.google.com/");
+
+  autofill::PasswordForm https_form;
+  https_form.origin = GURL("https://www.google.com/page-1/");
+  https_form.signon_realm = "https://www.google.com/";
+  EXPECT_EQ(GetSignonRealmWithProtocolExcluded(https_form), "www.google.com/");
+}
+
 TEST(PasswordManagerUtil, FindBestMatches) {
   const int kNotFound = -1;
   struct TestMatch {
