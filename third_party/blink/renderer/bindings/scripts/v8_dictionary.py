@@ -137,14 +137,16 @@ def member_context(dictionary, member):
         return cpp_default_value, v8_default_value
 
     cpp_default_value, v8_default_value = default_values()
-    cpp_name = to_snake_case(v8_utilities.cpp_name(member))
+    cpp_value = member.name + 'CppValue'
+    v8_value = member.name + 'Value'
+    has_value_or_default = member.name + 'HasValueOrDefault'
     getter_name = getter_name_for_dictionary_member(member)
     is_deprecated_dictionary = unwrapped_idl_type.name == 'Dictionary'
 
     return {
         'cpp_default_value': cpp_default_value,
-        'cpp_name': cpp_name,
         'cpp_type': unwrapped_idl_type.cpp_type,
+        'cpp_value': cpp_value,
         'cpp_value_to_v8_value': unwrapped_idl_type.cpp_value_to_v8_value(
             cpp_value='impl.%s()' % getter_name, isolate='isolate',
             creation_context='creationContext',
@@ -165,11 +167,13 @@ def member_context(dictionary, member):
         'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(member),  # [OriginTrialEnabled]
         'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(member),  # [RuntimeEnabled]
         'setter_name': setter_name_for_dictionary_member(member),
+        'has_value_or_default': has_value_or_default,
         'null_setter_name': null_setter_name_for_dictionary_member(member),
         'v8_default_value': v8_default_value,
+        'v8_value': v8_value,
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, member.name + 'Value',
-            member.name + 'CppValue', isolate='isolate', use_exception_state=True),
+            extended_attributes, v8_value, cpp_value, isolate='isolate',
+            use_exception_state=True),
     }
 
 
