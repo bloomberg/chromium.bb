@@ -55,3 +55,7 @@
 
 # https://crbug.com/889301
 -SitePerProcessBrowserTest.ScrollBubblingFromOOPIFTest
+
+
+# Flaky. https://crbug.com/889878
+-SyntheticKeyEventTest.KeyboardEventAck
