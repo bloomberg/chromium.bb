@@ -230,8 +230,7 @@ void DetectFaultTolerantHeap() {
 // load event to the ModuleDatabase.
 void HandleModuleLoadEventWithoutTimeDateStamp(
     const base::FilePath& module_path,
-    size_t module_size,
-    uintptr_t load_address) {
+    size_t module_size) {
   uint32_t size_of_image = 0;
   uint32_t time_date_stamp = 0;
   bool got_time_date_stamp = GetModuleImageSizeAndTimeDateStamp(
@@ -246,9 +245,8 @@ void HandleModuleLoadEventWithoutTimeDateStamp(
   if (!got_time_date_stamp)
     return;
 
-  ModuleDatabase::GetInstance()->OnModuleLoad(content::PROCESS_TYPE_BROWSER,
-                                              module_path, module_size,
-                                              time_date_stamp, load_address);
+  ModuleDatabase::GetInstance()->OnModuleLoad(
+      content::PROCESS_TYPE_BROWSER, module_path, module_size, time_date_stamp);
 }
 
 // Helper function for getting the module size associated with a module in this
@@ -329,8 +327,6 @@ bool TryGetModuleTimeDateStamp(void* module_load_address,
 // them to the ModuleDatabase.
 void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
   auto* module_database = ModuleDatabase::GetInstance();
-  uintptr_t load_address =
-      reinterpret_cast<uintptr_t>(event.module_load_address);
 
   switch (event.event_type) {
     case mojom::ModuleEventType::MODULE_ALREADY_LOADED: {
@@ -342,7 +338,7 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
                                     &time_date_stamp)) {
         module_database->OnModuleLoad(content::PROCESS_TYPE_BROWSER,
                                       event.module_path, event.module_size,
-                                      time_date_stamp, load_address);
+                                      time_date_stamp);
       } else {
         // Failed to get the TimeDateStamp directly from memory. The next step
         // to try is to read the file on disk. This must be done in a blocking
@@ -352,14 +348,14 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::Bind(&HandleModuleLoadEventWithoutTimeDateStamp,
-                       event.module_path, event.module_size, load_address));
+                       event.module_path, event.module_size));
       }
       return;
     }
     case mojom::ModuleEventType::MODULE_LOADED: {
       module_database->OnModuleLoad(
           content::PROCESS_TYPE_BROWSER, event.module_path, event.module_size,
-          GetModuleTimeDateStamp(event.module_load_address), load_address);
+          GetModuleTimeDateStamp(event.module_load_address));
       return;
     }
   }
