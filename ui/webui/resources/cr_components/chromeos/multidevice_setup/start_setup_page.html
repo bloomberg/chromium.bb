@@ -15,6 +15,11 @@
         margin-top: 48px;
       }
 
+      #singleDeviceName {
+        color: var(--google-grey-900);
+        margin-top: 16px;
+      }
+
       #deviceDropdown {
         margin-top: 16px;
       }
@@ -74,7 +79,8 @@
           <div id="deviceSelectionContainer" class="flex">
             [[getDeviceSelectionHeader_(devices)]]
             <div class="flex"></div>
-            <div hidden$="[[!doesDeviceListHaveOneElement_(devices)]]">
+            <div id="singleDeviceName"
+                hidden$="[[!doesDeviceListHaveOneElement_(devices)]]">
               [[getFirstDeviceNameInList_(devices)]]
             </div>
             <div hidden$="[[!doesDeviceListHaveMultipleElements_(devices)]]">
