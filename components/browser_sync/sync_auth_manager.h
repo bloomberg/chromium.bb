@@ -120,8 +120,17 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // account to another is exposed to observers as a sign-out + sign-in.
   bool UpdateSyncAccountIfNecessary();
 
+  // Clears any access token we have, and cancels any pending or scheduled
+  // request for one.
   void ClearAccessTokenAndRequest();
 
+  // Schedules a request for an access token according to the current
+  // |request_access_token_backoff_|. Usually called after some transient error.
+  void ScheduleAccessTokenRequest();
+
+  // Immediately starts an access token request, unless one is already ongoing.
+  // If another request is scheduled for later, it is canceled. Any access token
+  // we currently have is dropped and removed from IdentityManager's cache.
   void RequestAccessToken();
 
   void AccessTokenFetched(GoogleServiceAuthError error,
