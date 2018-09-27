@@ -6168,54 +6168,6 @@ TEST_F(AutofillManagerTest, FormWithLongOptionValuesIsAcceptable) {
   }
 }
 
-// Test that a sign-in form submission sends an upload with types matching the
-// fields.
-// TODO(https://crbug.com/889472): Remove this test together with sending
-// sign-in vote.
-TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
-  // Set up our form data (it's already filled out with user data).
-  FormData form;
-  form.origin = GURL("http://myform.com/form.html");
-  form.action = GURL("http://myform.com/submit.html");
-
-  std::vector<ServerFieldTypeSet> expected_types;
-  ServerFieldTypeSet types;
-
-  FormFieldData field;
-  test::CreateTestFormField("Email", "email", "theking@gmail.com", "text",
-                            &field);
-  form.fields.push_back(field);
-  types.insert(EMAIL_ADDRESS);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("Password", "pw", "", "password", &field);
-  form.fields.push_back(field);
-  FormsSeen(std::vector<FormData>(1, form));
-  types.clear();
-  types.insert(PASSWORD);
-  expected_types.push_back(types);
-
-  FormsSeen({form});
-
-  // We will expect these types in the upload and no observed submission. (the
-  // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
-  autofill_manager_->SetExpectedSubmittedFieldTypes(expected_types);
-  autofill_manager_->SetExpectedObservedSubmission(true);
-  autofill_manager_->SetCallParentUploadFormData(true);
-
-  std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
-  form_structure->set_is_signin_upload(true);
-  form_structure->field(1)->set_possible_types({autofill::PASSWORD});
-
-  std::string signature = form_structure->FormSignatureAsStr();
-
-  EXPECT_CALL(*download_manager_,
-              StartUploadRequest(_, false, _, std::string(), true))
-      .Times(0);
-  autofill_manager_->MaybeStartVoteUploadProcess(std::move(form_structure),
-                                                 base::TimeTicks::Now(), true);
-}
-
 // Test that with small form upload enabled but heuristics and query disabled
 // we get uploads but not quality metrics.
 TEST_F(AutofillManagerTest, SmallForm_Upload_NoHeuristicsOrQuery) {
