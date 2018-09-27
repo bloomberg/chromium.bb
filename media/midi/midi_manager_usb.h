@@ -76,8 +76,6 @@ class USB_MIDI_EXPORT MidiManagerUsb : public MidiManager,
   // result.
   // When this factory is destroyed during the operation, the operation
   // will be canceled silently (i.e. |callback| will not be called).
-  // The function is public just for unit tests. Do not call this function
-  // outside code for testing.
   void Initialize(Callback callback);
 
   void OnEnumerateDevicesDone(bool result, UsbMidiDevice::Devices* devices);
