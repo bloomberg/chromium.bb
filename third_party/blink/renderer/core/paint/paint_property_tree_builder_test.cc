@@ -6323,4 +6323,54 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeOpacityInducesAnEffectNode) {
   EXPECT_FLOAT_EQ(properties->Effect()->Opacity(), 0.5f);
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, EffectOutputClipWithFixedDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <!-- Case 1: No clip. -->
+    <div id="target1" style="opacity: 0.1">
+      <div style="position: fixed"></div>
+    </div>
+    <!-- Case 2: Clip under the container of fixed-position (the LayoutView) -->
+    <div style="overflow: hidden">
+      <div id="target2" style="opacity: 0.1">
+        <div style="position: fixed"></div>
+      </div>
+    </div>
+    <!-- Case 3: Clip above the container of fixed-position. -->
+    <div id="clip3" style="overflow: hidden">
+      <div style="transform: translateY(0)">
+        <div id="target3" style="opacity: 0.1">
+          <div style="position: fixed"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Case 4: Clip on the container of fixed-position. -->
+    <div id="clip4" style="overflow: hidden; transform: translateY(0)">
+      <div id="target4" style="opacity: 0.1">
+        <div style="position: fixed"></div>
+      </div>
+    </div>
+    <!-- Case 5: The container of fixed-position is not a LayoutBlock. -->
+    <table>
+      <tr style="transform: translateY(0)">
+        <td id="target5" style="opacity: 0.1">
+          <div style="position: fixed"></div>
+        </td>
+      </tr>
+    </table>
+  )HTML");
+
+  EXPECT_EQ(DocContentClip(),
+            PaintPropertiesForElement("target1")->Effect()->OutputClip());
+  // OutputClip is null because the fixed descendant escapes the effect's
+  // current clip.
+  EXPECT_EQ(nullptr,
+            PaintPropertiesForElement("target2")->Effect()->OutputClip());
+  EXPECT_EQ(PaintPropertiesForElement("clip3")->OverflowClip(),
+            PaintPropertiesForElement("target3")->Effect()->OutputClip());
+  EXPECT_EQ(PaintPropertiesForElement("clip4")->OverflowClip(),
+            PaintPropertiesForElement("target4")->Effect()->OutputClip());
+  EXPECT_EQ(DocContentClip(),
+            PaintPropertiesForElement("target5")->Effect()->OutputClip());
+}
+
 }  // namespace blink
