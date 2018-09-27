@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/download/quarantine/common_linux.h"
 #include "url/gurl.h"
 
@@ -23,7 +23,7 @@ bool SetExtendedFileAttribute(const char* path,
                               const char* value,
                               size_t value_size,
                               int flags) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   int result = setxattr(path, name, value, value_size, flags);
   if (result) {
     DPLOG(ERROR) << "Could not set extended attribute " << name << " on file "
