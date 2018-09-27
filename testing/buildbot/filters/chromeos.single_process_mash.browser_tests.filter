@@ -29,9 +29,6 @@
 
 # The browser frame is a work in progress.
 -BrowserNonClientFrameViewAshTest.AvatarDisplayOnTeleportedWindow/*
--BrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
--BrowserNonClientFrameViewAshTest.ImmersiveModeTopViewInset/*
--BrowserNonClientFrameViewAshTest.TopViewInset/*
 
 # Touch gestures don't work in webcontents. https://crbug.com/866991.
 -TopControlsSlideControllerTest.DisplayRotation
@@ -41,8 +38,8 @@
 -TopControlsSlideControllerTest.TestScrollingPage
 -TopControlsSlideControllerTest.TestScrollingPageAndSwitchingToNTP
 
-# Direct access to ash window frames, tablet mode, overview mode, etc.
--NonHomeLauncherBrowserNonClientFrameViewAshTest.*
+# Crash in ash::SplitViewController
+-NonHomeLauncherBrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
 
 # Fix immersive fullscreen mode in mash. https://crbug.com/844748.
 # Needs EventGenerator to work across window tree hosts. crbug.com/814675

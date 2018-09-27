@@ -20,9 +20,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
-#include "ash/shell.h"
-#include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm/window_util.h"
+#include "ash/wm/window_util.h"  // mash-ok
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -125,7 +123,6 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
   } else {
     ash::wm::InstallResizeHandleWindowTargeterForWindow(
         frame->GetNativeWindow());
-    ash::Shell::Get()->AddShellObserver(this);
   }
 
   // The ServiceManagerConnection may be nullptr in tests.
@@ -150,9 +147,6 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
       browser_view()->immersive_mode_controller();
   if (immersive_controller)
     immersive_controller->RemoveObserver(this);
-
-  if (!features::IsUsingWindowService())
-    ash::Shell::Get()->RemoveShellObserver(this);
 }
 
 void BrowserNonClientFrameViewAsh::Init() {
@@ -197,8 +191,7 @@ void BrowserNonClientFrameViewAsh::Init() {
           ? false
           : true);
 
-  window_observer_.Add(
-      features::IsUsingWindowService() ? window->GetRootWindow() : window);
+  window_observer_.Add(GetFrameWindow());
 
   // To preserve privacy, tag incognito windows so that they won't be included
   // in screenshot sent to assistant server.
@@ -262,7 +255,7 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
     // The header isn't painted for restored popup/app windows in overview mode,
     // but the inset is still calculated below, so the overview code can align
     // the window content with a fake header.
-    if (!in_overview_mode_ || frame()->IsFullscreen() ||
+    if (!IsInOverviewMode() || frame()->IsFullscreen() ||
         browser_view()->IsTabStripVisible()) {
       return 0;
     }
@@ -490,19 +483,6 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ash::ShellObserver:
-
-void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
-  in_overview_mode_ = true;
-  OnOverviewOrSplitviewModeChanged();
-}
-
-void BrowserNonClientFrameViewAsh::OnOverviewModeEnded() {
-  in_overview_mode_ = false;
-  OnOverviewOrSplitviewModeChanged();
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // ash::mojom::TabletModeClient:
 
 void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
@@ -612,11 +592,12 @@ void BrowserNonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
 void BrowserNonClientFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
                                                            const void* key,
                                                            intptr_t old) {
-  if (key != aura::client::kShowStateKey)
-    return;
-
-  frame_header_->OnShowStateChanged(
-      window->GetProperty(aura::client::kShowStateKey));
+  if (key == aura::client::kShowStateKey) {
+    frame_header_->OnShowStateChanged(
+        window->GetProperty(aura::client::kShowStateKey));
+  } else if (key == ash::kIsShowingInOverviewKey) {
+    OnOverviewOrSplitviewModeChanged();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -692,7 +673,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
     return false;
   }
 
-  return !in_overview_mode_ ||
+  return !IsInOverviewMode() ||
          IsSnappedInSplitView(frame()->GetNativeWindow(), split_view_state_);
 }
 
@@ -721,7 +702,7 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
     return false;
 
   // Do not paint for V1 apps in overview mode.
-  return browser_view()->IsBrowserTypeNormal() || !in_overview_mode_;
+  return browser_view()->IsBrowserTypeNormal() || !IsInOverviewMode();
 }
 
 void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
@@ -825,6 +806,18 @@ void BrowserNonClientFrameViewAsh::UpdateTopViewInset() {
 
 ws::Id BrowserNonClientFrameViewAsh::GetServerWindowId() const {
   DCHECK(features::IsUsingWindowService());
-  return aura::WindowMus::Get(GetWidget()->GetNativeWindow()->GetRootWindow())
-      ->server_id();
+  return aura::WindowMus::Get(GetFrameWindow())->server_id();
+}
+
+bool BrowserNonClientFrameViewAsh::IsInOverviewMode() const {
+  return GetFrameWindow()->GetProperty(ash::kIsShowingInOverviewKey);
+}
+
+const aura::Window* BrowserNonClientFrameViewAsh::GetFrameWindow() const {
+  return const_cast<BrowserNonClientFrameViewAsh*>(this)->GetFrameWindow();
+}
+
+aura::Window* BrowserNonClientFrameViewAsh::GetFrameWindow() {
+  aura::Window* window = frame()->GetNativeWindow();
+  return features::IsUsingWindowService() ? window->GetRootWindow() : window;
 }
