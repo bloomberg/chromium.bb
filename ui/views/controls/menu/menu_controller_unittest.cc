@@ -1229,6 +1229,7 @@ TEST_F(MenuControllerTest, PreserveGestureForOwner) {
 // Tests that touch outside menu does not closes the menu when forwarding
 // gesture events to owner.
 TEST_F(MenuControllerTest, NoTouchCloseWhenSendingGesturesToOwner) {
+  views::test::DisableMenuClosureAnimations();
   MenuController* controller = menu_controller();
 
   // Owner wants the gesture events.
@@ -1256,6 +1257,7 @@ TEST_F(MenuControllerTest, NoTouchCloseWhenSendingGesturesToOwner) {
 
   // Touch outside again and menu should be closed.
   controller->OnTouchEvent(sub_menu, &touch_event);
+  views::test::WaitForMenuClosureAnimation();
   EXPECT_FALSE(IsShowing());
   EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
 }
@@ -1264,6 +1266,7 @@ TEST_F(MenuControllerTest, NoTouchCloseWhenSendingGesturesToOwner) {
 // occur outside of the bounds of the menu. Instead a proper shutdown should
 // occur.
 TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
+  views::test::DisableMenuClosureAnimations();
   MenuController* controller = menu_controller();
   TestMenuControllerDelegate* delegate = menu_controller_delegate();
   std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
@@ -1288,6 +1291,7 @@ TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
   // When attempting to select outside of all menus this should lead to a
   // shutdown. This should not crash while attempting to repost the event.
   SetSelectionOnPointerDown(sub_menu, &event);
+  views::test::WaitForMenuClosureAnimation();
 
   EXPECT_EQ(delegate, GetCurrentDelegate());
   EXPECT_EQ(1, delegate->on_menu_closed_called());
@@ -1302,6 +1306,7 @@ TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
 // Tests that an asynchronous menu reposts touch events that occur outside of
 // the bounds of the menu, and that the menu closes.
 TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
+  views::test::DisableMenuClosureAnimations();
   MenuController* controller = menu_controller();
   TestMenuControllerDelegate* delegate = menu_controller_delegate();
 
@@ -1316,6 +1321,7 @@ TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
       ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
   controller->OnTouchEvent(sub_menu, &event);
+  views::test::WaitForMenuClosureAnimation();
 
   EXPECT_FALSE(IsShowing());
   EXPECT_EQ(1, delegate->on_menu_closed_called());
@@ -1329,6 +1335,7 @@ TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
 // Tests that having the MenuController deleted during RepostEvent does not
 // cause a crash. ASAN bots should not detect use-after-free in MenuController.
 TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
+  views::test::DisableMenuClosureAnimations();
   MenuController* controller = menu_controller();
   std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
       new TestMenuControllerDelegate());
@@ -1355,6 +1362,7 @@ TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
   // When attempting to select outside of all menus this should lead to a
   // shutdown. This should not crash while attempting to repost the event.
   SetSelectionOnPointerDown(sub_menu, &event);
+  views::test::WaitForMenuClosureAnimation();
 
   // Close to remove observers before test TearDown
   sub_menu->Close();
