@@ -12,8 +12,8 @@ namespace init {
 namespace {
 
 template <typename R, typename... Args>
-GrGLFunction<R (*)(Args...)> bind(R (gl::GLApi::*func)(Args...),
-                                  gl::GLApi* api) {
+GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind(R (gl::GLApi::*func)(Args...),
+                                                  gl::GLApi* api) {
   return [func, api](Args... args) { return (api->*func)(args...); };
 }
 
@@ -63,7 +63,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   // by the bindings (GL 4.1 or ES 3.0), and blacklist extensions that skia
   // handles but bindings don't.
   // TODO(piman): add bindings for missing entrypoints.
-  GrGLFunction<GrGLGetStringProc> get_string;
+  GrGLFunction<GrGLGetStringFn> get_string;
   const bool apply_version_override = use_version_es2 ||
                                       version_info.IsAtLeastGL(4, 2) ||
                                       version_info.IsAtLeastGLES(3, 1);
