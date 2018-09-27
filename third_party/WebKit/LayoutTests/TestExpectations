@@ -4599,6 +4599,10 @@ crbug.com/802896 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html 
 crbug.com/888675 virtual/gpu/fast/canvas/fillrect_gradient.html [ Failure Pass ]
 crbug.com/888675 virtual/gpu/fast/canvas/gradient-add-second-start-end-stop.html [ Failure Pass ]
 
+# TODO(bsalomon): Small changes in antialiasing of textured quads in Skia roll
+crbug.com/889940 virtual/gpu/fast/canvas/canvas-drawImage-antiAlias.html [ Failure Pass ]
+crbug.com/889940 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Failure Pass Timeout ]
+
 crbug.com/813704 http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
 
 crbug.com/806645 [ Win7 Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
@@ -4722,7 +4726,8 @@ crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canva
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 # TODO(michaelludwig) - Restore after Skia suppression is removed for crbug.com/888675
 # crbug.com/831496 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Timeout ]
-crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
+# TODO(bsalomon) - Restore after more general suppression removed for crbug.com/889940
+# crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
 crbug.com/831249 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-svg-inline.html [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 crbug.com/829938 [ Linux ] css3/filters/blur-filter-page-scroll.html [ Pass Timeout ]
