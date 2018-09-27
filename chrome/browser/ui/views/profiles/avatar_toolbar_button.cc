@@ -294,9 +294,13 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
   }
 
 #if !defined(OS_CHROMEOS)
-  // If the user isn't signed in and the profile icon wasn't changed explicitly,
-  // try to use the first account icon of the sync promo.
-  if (!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() &&
+  // Try to show the first account icon of the sync promo when the following
+  // conditions are satisfied:
+  //  - the user is migrated to Dice
+  //  - the user isn't signed in
+  //  - the profile icon wasn't explicitly changed
+  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
+      !SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() &&
       entry->IsUsingDefaultAvatar()) {
     std::vector<AccountInfo> promo_accounts =
         signin_ui_util::GetAccountsForDicePromos(profile_);
