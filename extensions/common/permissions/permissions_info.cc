@@ -23,7 +23,7 @@ PermissionsInfo* PermissionsInfo::GetInstance() {
 
 void PermissionsInfo::RegisterPermissions(
     base::span<const APIPermissionInfo::InitInfo> infos,
-    const std::vector<Alias>& aliases) {
+    base::span<const Alias> aliases) {
   for (const auto& info : infos)
     RegisterPermission(base::WrapUnique(new APIPermissionInfo((info))));
 
@@ -75,9 +75,9 @@ PermissionsInfo::~PermissionsInfo() {
 }
 
 void PermissionsInfo::RegisterAlias(const Alias& alias) {
-  DCHECK(base::ContainsKey(name_map_, alias.real_name()));
-  DCHECK(!base::ContainsKey(name_map_, alias.name()));
-  name_map_[alias.name()] = name_map_[alias.real_name()];
+  DCHECK(base::ContainsKey(name_map_, alias.real_name));
+  DCHECK(!base::ContainsKey(name_map_, alias.name));
+  name_map_[alias.name] = name_map_[alias.real_name];
 }
 
 void PermissionsInfo::RegisterPermission(
