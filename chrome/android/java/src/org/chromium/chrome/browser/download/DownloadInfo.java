@@ -248,6 +248,7 @@ public final class DownloadInfo {
 
         return new DownloadInfo.Builder()
                 .setContentId(item.id)
+                .setDownloadGuid(item.id.id)
                 .setFileName(item.title)
                 .setFilePath(item.filePath)
                 .setDescription(item.description)
