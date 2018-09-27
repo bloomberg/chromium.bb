@@ -248,6 +248,8 @@ class PasswordPopupSuggestionView : public AutofillPopupSuggestionView {
  private:
   PasswordPopupSuggestionView(AutofillPopupViewNativeViews* popup_view,
                               int line_number);
+  base::string16 origin_;
+  base::string16 masked_password_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordPopupSuggestionView);
 };
@@ -616,22 +618,33 @@ views::View* PasswordPopupSuggestionView::CreateValueLabel() {
 }
 
 views::View* PasswordPopupSuggestionView::CreateSubtextLabel() {
-  base::string16 label_text =
-      popup_view_->controller()->GetElidedLabelAt(line_number_);
-  if (label_text.empty())
+  base::string16 text_to_use;
+  if (!origin_.empty()) {
+    // Always use the origin if it's available.
+    text_to_use = origin_;
+  } else if (layout_type() == PopupItemLayoutType::kTwoLinesLeadingIcon) {
+    // In the two-line layout only, the masked password can be used.
+    text_to_use = masked_password_;
+  }
+
+  if (text_to_use.empty())
     return nullptr;
-  views::Label* label = CreateSecondaryLabel(label_text);
+
+  views::Label* label = CreateSecondaryLabel(text_to_use);
   label->SetElideBehavior(gfx::ELIDE_HEAD);
   return new ConstrainedWidthView(label, kAutofillPopupUsernameMaxWidth);
 }
 
 views::View* PasswordPopupSuggestionView::CreateDescriptionLabel() {
-  base::string16 text =
-      popup_view_->controller()->GetSuggestionAt(line_number_).additional_label;
-  if (text.empty())
+  // When no origin text is available, the two-line layout will use the masked
+  // password in the subtext label, so it should not be reused here.
+  if ((origin_.empty() &&
+       layout_type() == PopupItemLayoutType::kTwoLinesLeadingIcon) ||
+      masked_password_.empty()) {
     return nullptr;
+  }
 
-  views::Label* label = CreateSecondaryLabel(text);
+  views::Label* label = CreateSecondaryLabel(masked_password_);
   label->SetElideBehavior(gfx::TRUNCATE);
   return new ConstrainedWidthView(label, kAutofillPopupPasswordMaxWidth);
 }
@@ -644,7 +657,11 @@ bool PasswordPopupSuggestionView::ShouldUseCustomFontWeightForPrimaryInfo(
 PasswordPopupSuggestionView::PasswordPopupSuggestionView(
     AutofillPopupViewNativeViews* popup_view,
     int line_number)
-    : AutofillPopupSuggestionView(popup_view, line_number) {}
+    : AutofillPopupSuggestionView(popup_view, line_number) {
+  origin_ = popup_view_->controller()->GetElidedLabelAt(line_number_);
+  masked_password_ =
+      popup_view_->controller()->GetSuggestionAt(line_number_).additional_label;
+}
 
 /************** AutofillPopupFooterView **************/
 
