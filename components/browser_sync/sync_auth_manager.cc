@@ -160,11 +160,14 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
         // this point.
         DCHECK(access_token_.empty());
         DCHECK(!request_access_token_retry_timer_.IsRunning());
+        DCHECK(token_status_.next_token_request_time.is_null());
       } else if (request_access_token_retry_timer_.IsRunning()) {
         // The timer to perform a request later is already running; nothing
         // further needs to be done at this point.
         DCHECK(access_token_.empty());
+        DCHECK(!token_status_.next_token_request_time.is_null());
       } else if (request_access_token_backoff_.failure_count() == 0) {
+        DCHECK(token_status_.next_token_request_time.is_null());
         // First time request without delay. Currently invalid token is used
         // to initialize sync engine and we'll always end up here. We don't
         // want to delay initialization.
@@ -179,13 +182,7 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
           credentials_changed_callback_.Run();
         }
         request_access_token_backoff_.InformOfRequest(false);
-        base::TimeDelta delay =
-            request_access_token_backoff_.GetTimeUntilRelease();
-        token_status_.next_token_request_time = base::Time::Now() + delay;
-        request_access_token_retry_timer_.Start(
-            FROM_HERE, delay,
-            base::BindRepeating(&SyncAuthManager::RequestAccessToken,
-                                weak_ptr_factory_.GetWeakPtr()));
+        ScheduleAccessTokenRequest();
       }
       break;
     case syncer::CONNECTION_OK:
@@ -195,6 +192,7 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
       // thus hammers token server. To be safe, only reset backoff delay when
       // no scheduled request.
       if (!request_access_token_retry_timer_.IsRunning()) {
+        DCHECK(token_status_.next_token_request_time.is_null());
         request_access_token_backoff_.Reset();
       }
       last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
@@ -218,6 +216,20 @@ void SyncAuthManager::ClearAccessTokenAndRequest() {
   token_status_.next_token_request_time = base::Time();
   ongoing_access_token_fetch_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void SyncAuthManager::ScheduleAccessTokenRequest() {
+  DCHECK(access_token_.empty());
+  DCHECK(!ongoing_access_token_fetch_);
+  DCHECK(!request_access_token_retry_timer_.IsRunning());
+  DCHECK(token_status_.next_token_request_time.is_null());
+
+  base::TimeDelta delay = request_access_token_backoff_.GetTimeUntilRelease();
+  token_status_.next_token_request_time = base::Time::Now() + delay;
+  request_access_token_retry_timer_.Start(
+      FROM_HERE, delay,
+      base::BindRepeating(&SyncAuthManager::RequestAccessToken,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SyncAuthManager::Clear() {
@@ -389,6 +401,12 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
 }
 
 void SyncAuthManager::RequestAccessToken() {
+  // First reset the next request time: Either we were called back by the retry
+  // timer, in which case this is now obsolete, or we'll cancel the timer below.
+  // Note that if we were called back by the retry timer, then it's already
+  // considered not running, so we reset this time unconditionally.
+  token_status_.next_token_request_time = base::Time();
+
   // Only one active request at a time.
   if (ongoing_access_token_fetch_) {
     DCHECK(access_token_.empty());
@@ -401,10 +419,6 @@ void SyncAuthManager::RequestAccessToken() {
   if (request_access_token_retry_timer_.IsRunning()) {
     request_access_token_retry_timer_.Stop();
   }
-  // Also reset the next request time. Note that if we were called back by the
-  // timer, then it's already considered not running, so we reset this time
-  // unconditionally.
-  token_status_.next_token_request_time = base::Time();
 
   const OAuth2TokenService::ScopeSet kOAuth2ScopeSet{
       GaiaConstants::kChromeSyncOAuth2Scope};
@@ -436,6 +450,7 @@ void SyncAuthManager::AccessTokenFetched(
     identity::AccessTokenInfo access_token_info) {
   DCHECK(ongoing_access_token_fetch_);
   ongoing_access_token_fetch_.reset();
+  DCHECK(!request_access_token_retry_timer_.IsRunning());
 
   access_token_ = access_token_info.token;
   token_status_.last_get_token_error = error;
@@ -458,13 +473,7 @@ void SyncAuthManager::AccessTokenFetched(
       // persistent error. Should we use .IsTransientError() instead of manually
       // listing cases here?
       request_access_token_backoff_.InformOfRequest(false);
-      token_status_.next_token_request_time =
-          base::Time::Now() +
-          request_access_token_backoff_.GetTimeUntilRelease();
-      request_access_token_retry_timer_.Start(
-          FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
-          base::BindRepeating(&SyncAuthManager::RequestAccessToken,
-                              weak_ptr_factory_.GetWeakPtr()));
+      ScheduleAccessTokenRequest();
       break;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
       sync_prefs_->SetSyncAuthError(true);
