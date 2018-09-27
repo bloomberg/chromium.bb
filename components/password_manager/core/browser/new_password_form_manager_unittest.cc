@@ -828,4 +828,20 @@ TEST_F(NewPasswordFormManagerTest, PermanentlyBlacklist) {
             new_blacklisted_form->signon_realm);
 }
 
+TEST_F(NewPasswordFormManagerTest, Clone) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({}, 0u);
+
+  std::unique_ptr<NewPasswordFormManager> cloned_manager =
+      form_manager_->Clone();
+
+  EXPECT_TRUE(cloned_manager->DoesManage(observed_form_, nullptr));
+  EXPECT_TRUE(cloned_manager->GetFormFetcher());
+  // Check that |form_fetcher| was cloned.
+  EXPECT_NE(form_manager_->GetFormFetcher(), cloned_manager->GetFormFetcher());
+
+  EXPECT_EQ(form_manager_->metrics_recorder(),
+            cloned_manager->metrics_recorder());
+}
+
 }  // namespace  password_manager

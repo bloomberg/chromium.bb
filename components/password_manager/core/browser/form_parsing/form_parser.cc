@@ -665,7 +665,7 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   // Create the PasswordForm and set data not related to specific fields.
   auto result = std::make_unique<PasswordForm>();
   result->origin = form_data.origin;
-  result->signon_realm = form_data.origin.GetOrigin().spec();
+  result->signon_realm = GetSignonRealm(form_data.origin);
   result->action = form_data.action;
   result->form_data = form_data;
   result->all_possible_passwords = std::move(all_possible_passwords);
@@ -767,6 +767,16 @@ std::unique_ptr<PasswordForm> ParseFormData(
   return AssemblePasswordForm(
       form_data, *significant_fields, std::move(all_possible_passwords),
       std::move(all_possible_usernames), form_predictions);
+}
+
+std::string GetSignonRealm(const GURL& url) {
+  GURL::Replacements rep;
+  rep.ClearUsername();
+  rep.ClearPassword();
+  rep.ClearQuery();
+  rep.ClearRef();
+  rep.SetPathStr(std::string());
+  return url.ReplaceComponents(rep).spec();
 }
 
 }  // namespace password_manager

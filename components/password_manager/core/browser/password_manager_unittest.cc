@@ -198,7 +198,7 @@ class PasswordManagerTest : public testing::Test {
     form.username_value = ASCIIToUTF16("googleuser");
     form.password_value = ASCIIToUTF16("p4ssword");
     form.submit_element = ASCIIToUTF16("signIn");
-    form.signon_realm = "http://www.google.com";
+    form.signon_realm = "http://www.google.com/";
 
     // Fill |form.form_data|.
     form.form_data.origin = form.origin;
@@ -209,12 +209,14 @@ class PasswordManagerTest : public testing::Test {
     autofill::FormFieldData field;
     field.name = ASCIIToUTF16("Email");
     field.id = field.name;
+    field.value = ASCIIToUTF16("googleuser");
     field.form_control_type = "text";
     field.unique_renderer_id = 2;
     form.form_data.fields.push_back(field);
 
     field.name = ASCIIToUTF16("Passwd");
     field.id = field.name;
+    field.value = ASCIIToUTF16("p4ssword");
     field.form_control_type = "password";
     field.unique_renderer_id = 3;
     form.form_data.fields.push_back(field);
@@ -271,7 +273,7 @@ class PasswordManagerTest : public testing::Test {
     form.username_value = ASCIIToUTF16("twitter");
     form.password_value = ASCIIToUTF16("password");
     form.submit_element = ASCIIToUTF16("signIn");
-    form.signon_realm = "https://twitter.com";
+    form.signon_realm = "https://twitter.com/";
     return form;
   }
 
@@ -285,7 +287,7 @@ class PasswordManagerTest : public testing::Test {
     form.username_value = ASCIIToUTF16("twitter");
     form.password_value = ASCIIToUTF16("password");
     form.submit_element = ASCIIToUTF16("signIn");
-    form.signon_realm = "https://twitter.com";
+    form.signon_realm = "https://twitter.com/";
     return form;
   }
 
@@ -328,8 +330,7 @@ MATCHER_P(FormMatches, form, "") {
          form.username_value == arg.username_value &&
          form.password_element == arg.password_element &&
          form.password_value == arg.password_value &&
-         form.new_password_element == arg.new_password_element &&
-         form.submit_element == arg.submit_element;
+         form.new_password_element == arg.new_password_element;
 }
 
 TEST_F(PasswordManagerTest, FormSubmitWithOnlyNewPasswordField) {
@@ -2711,6 +2712,49 @@ TEST_F(PasswordManagerTest, MetricForSchemeOfSuccessfulLogins) {
     histogram_tester.ExpectUniqueSample(
         "PasswordManager.SuccessfulLoginHappened", origin_is_secure, 1);
   }
+}
+
+TEST_F(PasswordManagerTest, ManualFallbackForSavingNewParser) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list);
+  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  PasswordForm stored_form = form;
+  stored_form.password_value = ASCIIToUTF16("old_password");
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(stored_form)));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // The username of the stored form is the same, there should be update bubble.
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, true))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->ShowManualFallbackForSaving(&driver_, form);
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(), FormMatches(form));
+
+  // The username of the stored form is different, there should be save bubble.
+  PasswordForm new_form = form;
+  new_form.username_value = ASCIIToUTF16("another_username");
+  new_form.form_data.fields[0].value = new_form.username_value;
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->ShowManualFallbackForSaving(&driver_, new_form);
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
+              FormMatches(new_form));
+
+  // Hide the manual fallback.
+  EXPECT_CALL(client_, HideManualFallbackForSaving());
+  manager()->HideManualFallbackForSaving();
 }
 
 }  // namespace password_manager
