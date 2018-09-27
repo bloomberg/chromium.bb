@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
+#include "url/gurl.h"
 
 namespace autofill {
 struct FormData;
@@ -39,6 +40,10 @@ std::unique_ptr<autofill::PasswordForm> ParseFormData(
     const autofill::FormData& form_data,
     const FormPredictions* form_predictions,
     FormParsingMode mode);
+
+// Returns the value of PasswordForm::signon_realm for an HTML form with the
+// origin |url|.
+std::string GetSignonRealm(const GURL& url);
 
 }  // namespace password_manager
 

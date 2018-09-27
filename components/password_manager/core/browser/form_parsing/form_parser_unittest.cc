@@ -1439,6 +1439,25 @@ TEST(FormParserTest, HistogramsForUsernameDetectionMethod) {
   }
 }
 
+TEST(FormParserTest, GetSignonRealm) {
+  struct TestCase {
+    const char* input;
+    const char* expected_output;
+  } test_cases[]{
+      {"http://example.com/", "http://example.com/"},
+      {"http://example.com/signup", "http://example.com/"},
+      {"https://google.com/auth?a=1#b", "https://google.com/"},
+  };
+
+  for (const TestCase& test_case : test_cases) {
+    SCOPED_TRACE(testing::Message("Input: ")
+                 << test_case.input << " "
+                 << "Expected output: " << test_case.expected_output);
+    GURL input(test_case.input);
+    EXPECT_EQ(test_case.expected_output, GetSignonRealm(input));
+  }
+}
+
 }  // namespace
 
 }  // namespace password_manager

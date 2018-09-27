@@ -122,13 +122,19 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   bool RetryPasswordFormPasswordUpdate() const override;
   std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const override;
 
+  // Create a copy of |*this| which can be passed to the code handling
+  // save-password related UI. This omits some parts of the internal data, so
+  // the result is not identical to the original.
+  // TODO(crbug.com/739366): Replace with translating one appropriate class into
+  // another one.
+  std::unique_ptr<NewPasswordFormManager> Clone();
+
 #if defined(UNIT_TEST)
   static void set_wait_for_server_predictions_for_filling(bool value) {
     wait_for_server_predictions_for_filling_ = value;
   }
 
   FormSaver* form_saver() { return form_saver_.get(); }
-
 #endif
 
   // TODO(https://crbug.com/831123): Remove it when the old form parsing is
