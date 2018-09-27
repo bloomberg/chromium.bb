@@ -41,6 +41,7 @@ const CGFloat kHorizontalImagePadding = 10;
 @synthesize image = _image;
 @synthesize text = _text;
 @synthesize detailText = _detailText;
+@synthesize commandID = _commandID;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
