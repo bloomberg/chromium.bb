@@ -172,6 +172,18 @@
 # Default extension tests.
 -DefaultProfileExtensionBrowserTest.NoExtensionHosts
 
+# Encrypted media tests are flaky due to race condition. crbug.com/880584
+-ECKEncryptedMediaTest.*
+-EncryptedMediaTest.*
+-CDM_9/ECKEncryptedMediaTest.*
+-CDM_10/ECKEncryptedMediaTest.*
+-CDM_11/ECKEncryptedMediaTest.*
+-MSE_ClearKey/EncryptedMediaTest.*
+-MSE_ExternalClearKey/EncryptedMediaTest.*
+-MSE_Widevine/EncryptedMediaTest.*
+-SRC_ClearKey/EncryptedMediaTest.*
+-SRC_ExternalClearKey/EncryptedMediaTest.*
+
 # Failing on ASAN bot. crbug.com/882631
 -ExtensionWebRequestApiTest.WebRequestTypes
 
@@ -191,6 +203,12 @@
 # FATAL:ref_counted.h(85)] Check failed: CalledOnValidSequence()
 -ManagedWithoutPermission/ManagedWithoutPermissionPlatformKeysTest.*
 -ManagedWithPermission/ManagedWithPermissionPlatformKeysTest.*
+
+# Needs video surface layer support. Should be fixed when renderers don't use
+# the window service for embedding.
+# https://crbug.com/884589 https://crbug.com/881574
+-MediaEngagementBrowserTest.*
+-MediaEngagementAutoplayBrowserTest.*
 
 # Flaky https://crbug.com/887175
 -PrerenderBrowserTest.PrerenderHTML5VideoJs
