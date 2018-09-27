@@ -240,6 +240,9 @@
         "play:media:soundcloud": {
             "DEFAULT": "system_health_desktop_030.wprgo"
         },
+        "play:media:soundcloud:2018": {
+            "DEFAULT": "system_health_desktop_57d9c71c88.wprgo"
+        },
         "search:portal:google": {
             "DEFAULT": "system_health_desktop_022.wprgo"
         }
