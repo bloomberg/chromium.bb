@@ -999,11 +999,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     command_line->AppendSwitch(switches::kIncognito);
   }
 
-  if (!IsZipTest()) {  // Block NaCl use unless needed crbug.com/788671
-    command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverUnpacker);
-    command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverPacker);
-  }
-
   std::vector<base::Feature> enabled_features;
   if (!IsGuestModeTest()) {
     enabled_features.emplace_back(features::kCrostini);
