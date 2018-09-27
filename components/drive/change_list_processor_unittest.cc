@@ -570,6 +570,7 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory) {
             ChangeListProcessor::RefreshDirectory(
                 metadata_.get(),
                 DirectoryFetchInfo(root.local_id(), kRootId, kNewStartpageToken,
+                                   util::GetDriveMyDriveRootPath(),
                                    util::GetDriveMyDriveRootPath()),
                 std::move(change_list), &refreshed_entries));
 
@@ -608,6 +609,7 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory_WrongParentId) {
             ChangeListProcessor::RefreshDirectory(
                 metadata_.get(),
                 DirectoryFetchInfo(root.local_id(), kRootId, kNewStartpageToken,
+                                   util::GetDriveMyDriveRootPath(),
                                    util::GetDriveMyDriveRootPath()),
                 std::move(change_list), &refreshed_entries));
 
