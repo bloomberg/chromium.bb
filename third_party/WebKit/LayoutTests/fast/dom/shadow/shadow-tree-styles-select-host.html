@@ -116,7 +116,7 @@ debug('Test that rules which has higher specificity win.');
 
 sandbox.appendChild(
     createDOM('style', {},
-        document.createTextNode('div { border: 1px solid red; }')));
+        document.createTextNode('#host { border: 1px solid red; }')));
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
