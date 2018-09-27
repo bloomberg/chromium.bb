@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
@@ -145,6 +146,12 @@ void JNI_ExploreSitesBridge_UpdateCatalogFromNetwork(
 
   service->UpdateCatalogFromNetwork(base::BindOnce(
       &UpdateCatalogDone, ScopedJavaGlobalRef<jobject>(j_callback_obj)));
+}
+
+// static
+void ExploreSitesBridge::ScheduleDailyTask() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ExploreSitesBridge_scheduleDailyTask(env);
 }
 
 }  // namespace explore_sites

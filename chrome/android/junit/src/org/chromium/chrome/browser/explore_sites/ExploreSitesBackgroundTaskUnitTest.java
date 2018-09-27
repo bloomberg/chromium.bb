@@ -145,7 +145,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
 
     @Test
     public void scheduleTask() {
-        ExploreSitesBackgroundTask.schedule();
+        ExploreSitesBackgroundTask.schedule(false /* updateCurrent */);
         TaskInfo scheduledTask =
                 mFakeTaskScheduler.getTaskInfo(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID);
         assertNotNull(scheduledTask);
@@ -161,7 +161,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
                 mFakeTaskScheduler.getTaskInfo(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID);
         assertNull(scheduledTask);
 
-        ExploreSitesBackgroundTask.schedule();
+        ExploreSitesBackgroundTask.schedule(false /* updateCurrent */);
         scheduledTask = mFakeTaskScheduler.getTaskInfo(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID);
         assertNotNull(scheduledTask);
         assertEquals(TimeUnit.HOURS.toMillis(ExploreSitesBackgroundTask.DEFAULT_DELAY_HOURS),
