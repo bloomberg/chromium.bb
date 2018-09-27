@@ -795,7 +795,8 @@ bool ChildProcessSecurityPolicyImpl::CanRedirectToURL(const GURL& url) {
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
-                                                  const GURL& url) {
+                                                  const GURL& url,
+                                                  bool check_origin_locks) {
   if (!url.is_valid())
     return false;  // Can't commit invalid URLs.
 
@@ -813,8 +814,18 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
       return false;
 
     url::Origin origin = url::Origin::Create(url);
-    return origin.unique() || CanCommitURL(child_id, GURL(origin.Serialize()));
+    return origin.unique() ||
+           CanCommitURL(child_id, GURL(origin.Serialize()), check_origin_locks);
   }
+
+  // With site isolation, a URL from a site may only be committed in a process
+  // dedicated to that site.  This check will ensure that |url| can't commit if
+  // the process is locked to a different site.  Note that this check is only
+  // effective for processes that are locked to a site, but even with strict
+  // site isolation, currently not all processes are locked (e.g., extensions
+  // or <webview> tags - see ShouldLockToOrigin()).
+  if (check_origin_locks && !CanAccessDataForOrigin(child_id, url))
+    return false;
 
   {
     base::AutoLock lock(lock_);
@@ -823,12 +834,7 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
     // schemes_okay_to_commit_in_any_process_ here, which is stricter than
     // IsWebSafeScheme().
     //
-    // TODO(creis, nick): https://crbug.com/515309: in generalized Site
-    // Isolation and/or --site-per-process, there will be no such thing as a
-    // scheme that is okay to commit in any process. Instead, an URL from a site
-    // that is isolated may only be committed in a process dedicated to that
-    // site, so CanCommitURL will need to rely on explicit, per-process grants.
-    // Note how today, even with extension isolation, the line below does not
+    // TODO(creis, nick): https://crbug.com/515309: The line below does not
     // enforce that http pages cannot commit in an extension process.
     if (base::ContainsKey(schemes_okay_to_commit_in_any_process_, scheme))
       return true;
@@ -843,6 +849,11 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
   }
 }
 
+bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
+                                                  const GURL& url) {
+  return CanCommitURL(child_id, url, true /* check_origin_lock */);
+}
+
 bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
                                                           const GURL& url) {
   if (!url.is_valid())
@@ -854,7 +865,12 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
 
   // If this process can commit |url|, it can use |url| as an origin for
   // outbound requests.
-  if (CanCommitURL(child_id, url))
+  //
+  // TODO(alexmos): This should eventually also check the origin lock, but
+  // currently this is not done due to certain corner cases involving HTML
+  // imports and layout tests that simulate requests from isolated worlds.  See
+  // https://crbug.com/515309.
+  if (CanCommitURL(child_id, url, false /* check_origin_lock */))
     return true;
 
   // Allow schemes which may come from scripts executing in isolated worlds;
