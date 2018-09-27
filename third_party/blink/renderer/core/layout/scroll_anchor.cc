@@ -99,9 +99,7 @@ static LayoutRect RelativeBounds(const LayoutObject* layout_object,
       local_bounds.ShiftMaxYEdgeTo(max_y);
     }
   } else if (layout_object->IsText()) {
-    // TODO(skobes): Use first and last InlineTextBox only?
-    for (InlineTextBox* box : ToLayoutText(layout_object)->TextBoxes())
-      local_bounds.Unite(box->FrameRect());
+    local_bounds.Unite(ToLayoutText(layout_object)->LinesBoundingBox());
   } else {
     // Only LayoutBox and LayoutText are supported.
     NOTREACHED();
