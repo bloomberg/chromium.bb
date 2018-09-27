@@ -147,18 +147,16 @@ void ModuleDatabase::OnImeEnumerationFinished() {
 void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
                                   const base::FilePath& module_path,
                                   uint32_t module_size,
-                                  uint32_t module_time_date_stamp,
-                                  uintptr_t module_load_address) {
+                                  uint32_t module_time_date_stamp) {
   // Messages can arrive from any thread (UI thread for calls over IPC, and
   // anywhere at all for calls from ModuleWatcher), so bounce if necessary.
   // It is safe to use base::Unretained() because this class is a singleton that
   // is never freed.
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ModuleDatabase::OnModuleLoad, base::Unretained(this),
-                   process_type, module_path, module_size,
-                   module_time_date_stamp, module_load_address));
+        FROM_HERE, base::Bind(&ModuleDatabase::OnModuleLoad,
+                              base::Unretained(this), process_type, module_path,
+                              module_size, module_time_date_stamp));
     return;
   }
 
