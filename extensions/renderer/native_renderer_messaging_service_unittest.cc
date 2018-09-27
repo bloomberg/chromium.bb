@@ -34,15 +34,13 @@ class NativeRendererMessagingServiceTest
     messaging_service_ =
         std::make_unique<NativeRendererMessagingService>(bindings_system());
 
-    scoped_refptr<Extension> mutable_extension =
-        ExtensionBuilder("foo").Build();
-    RegisterExtension(mutable_extension);
-    extension_ = mutable_extension;
+    extension_ = ExtensionBuilder("foo").Build();
+    RegisterExtension(extension_);
 
     v8::HandleScope handle_scope(isolate());
     v8::Local<v8::Context> context = MainContext();
 
-    script_context_ = CreateScriptContext(context, mutable_extension.get(),
+    script_context_ = CreateScriptContext(context, extension_.get(),
                                           Feature::BLESSED_EXTENSION_CONTEXT);
     script_context_->set_url(extension_->url());
     bindings_system()->UpdateBindingsForContext(script_context_);
