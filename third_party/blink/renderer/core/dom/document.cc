@@ -2213,7 +2213,6 @@ void Document::UpdateStyleAndLayoutTree() {
   EvaluateMediaQueryListIfNeeded();
   UpdateUseShadowTreesIfNeeded();
 
-  // For V0 Shadow DOM or V1 Shadow DOM without IncrementalShadowDOM
   UpdateDistributionForLegacyDistributedNodes();
 
   UpdateActiveStyle();
