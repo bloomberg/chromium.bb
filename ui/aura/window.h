@@ -559,6 +559,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   ui::EventTargeter* GetEventTargeter() override;
   void ConvertEventToTarget(ui::EventTarget* target,
                             ui::LocatedEvent* event) override;
+  gfx::PointF GetScreenLocationF(const ui::LocatedEvent& event) const override;
 
   // Updates the layer name based on the window's name and id.
   void UpdateLayerName();

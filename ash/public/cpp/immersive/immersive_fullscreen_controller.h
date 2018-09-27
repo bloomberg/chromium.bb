@@ -115,8 +115,7 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   void OnTouchEvent(const ui::TouchEvent& event,
                     const gfx::Point& location_in_screen);
   // Processes a GestureEvent. This may call SetHandled() on the supplied event.
-  void OnGestureEvent(ui::GestureEvent* event,
-                      const gfx::Point& location_in_screen);
+  void OnGestureEvent(ui::GestureEvent* event);
 
   // views::PointerWatcher:
   void OnPointerEventObserved(const ui::PointerEvent& event,

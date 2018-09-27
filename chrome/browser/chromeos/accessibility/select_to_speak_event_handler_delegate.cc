@@ -19,34 +19,11 @@
 #include "extensions/browser/extension_host.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
-#include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/content_accelerators/accelerator_util.h"
-#include "ui/display/display.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/event.h"
-#include "ui/events/event_sink.h"
 
 namespace chromeos {
-
-namespace {
-
-gfx::PointF GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
-  aura::Window* root =
-      static_cast<aura::Window*>(event.target())->GetRootWindow();
-  aura::client::ScreenPositionClient* spc =
-      aura::client::GetScreenPositionClient(root);
-  if (!spc)
-    return event.root_location_f();
-
-  gfx::PointF screen_location(event.root_location_f());
-  spc->ConvertPointToScreen(root, &screen_location);
-  return screen_location;
-}
-
-}  // namespace
 
 SelectToSpeakEventHandlerDelegate::SelectToSpeakEventHandlerDelegate()
     : binding_(this) {
@@ -96,9 +73,7 @@ void SelectToSpeakEventHandlerDelegate::DispatchMouseEvent(
     return;
 
   const ui::MouseEvent* mouse_event = event->AsMouseEvent();
-  const blink::WebMouseEvent web_event = ui::MakeWebMouseEvent(
-      *mouse_event, base::BindRepeating(&GetScreenLocationFromEvent));
-  rvh->GetWidget()->ForwardMouseEvent(web_event);
+  rvh->GetWidget()->ForwardMouseEvent(ui::MakeWebMouseEvent(*mouse_event));
 }
 
 }  // namespace chromeos

@@ -178,9 +178,7 @@ void ImmersiveFullscreenController::OnTouchEvent(
   UpdateLocatedEventRevealedLock(&event, location_in_screen);
 }
 
-void ImmersiveFullscreenController::OnGestureEvent(
-    ui::GestureEvent* event,
-    const gfx::Point& location_in_screen) {
+void ImmersiveFullscreenController::OnGestureEvent(ui::GestureEvent* event) {
   if (!enabled_)
     return;
 
@@ -191,7 +189,8 @@ void ImmersiveFullscreenController::OnGestureEvent(
 
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      if (ShouldHandleGestureEvent(location_in_screen)) {
+      if (ShouldHandleGestureEvent(
+              event->target()->GetScreenLocation(*event))) {
         gesture_begun_ = true;
         // Do not consume the event. Otherwise, we end up consuming all
         // ui::ET_GESTURE_SCROLL_BEGIN events in the top-of-window views

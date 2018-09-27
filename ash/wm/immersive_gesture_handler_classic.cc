@@ -25,23 +25,14 @@ namespace {
 // window from the top of the screen in tablet mode.
 constexpr int kDragStartTopEdgeInset = 8;
 
-// Returns the location of |event| in screen coordinates.
-gfx::Point GetEventLocationInScreen(const ui::LocatedEvent& event) {
-  gfx::Point location_in_screen = event.location();
-  aura::Window* target = static_cast<aura::Window*>(event.target());
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(target->GetRootWindow());
-  screen_position_client->ConvertPointToScreen(target, &location_in_screen);
-  return location_in_screen;
-}
-
 // Check whether we should start gesture dragging app window according to the
 // given ET_GETURE_SCROLL_BEGIN type |event|.
 bool CanBeginGestureDrag(ui::GestureEvent* event) {
   if (event->details().scroll_y_hint() < 0)
     return false;
 
-  const gfx::Point location_in_screen(GetEventLocationInScreen(*event));
+  const gfx::Point location_in_screen =
+      event->target()->GetScreenLocation(*event);
   const gfx::Rect display_bounds =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(static_cast<aura::Window*>(event->target()))
@@ -129,8 +120,7 @@ void ImmersiveGestureHandlerClassic::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
     return;
   }
-  immersive_fullscreen_controller_->OnGestureEvent(
-      event, GetEventLocationInScreen(*event));
+  immersive_fullscreen_controller_->OnGestureEvent(event);
 }
 
 }  // namespace ash
