@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/common/form_data.h"
@@ -30,16 +29,15 @@ const char* const kScrollIntoViewScript =
     node.scrollIntoViewIfNeeded();\
   }";
 
-// Javascript where $1 will be replaced with the option value. Also fires a
-// "change" event to trigger any listeners. Changing the index directly does not
-// trigger this.
+// Javascript to select a value from a select box. Also fires a "change" event
+// to trigger any listeners. Changing the index directly does not trigger this.
 const char* const kSelectOptionScript =
-    R"(function() {
-    const value = '$1'.toUpperCase();
+    R"(function(value) {
+      const uppercaseValue = value.toUpperCase();
       var found = false;
       for (var i = 0; i < this.options.length; ++i) {
         const label = this.options[i].label.toUpperCase();
-        if (label.length > 0 && label.startsWith(value)) {
+        if (label.length > 0 && label.startsWith(uppercaseValue)) {
           this.options.selectedIndex = i;
           found = true;
           break;
@@ -58,8 +56,7 @@ const char* const kSelectOptionScript =
 const char* const kGetValueAttributeScript =
     "function () { return this.value; }";
 
-// Javascript code to set the 'value' attribute of a node, where $1 will be
-// replaced with the value.
+// Javascript code to set the 'value' attribute of a node.
 const char* const kSetValueAttributeScript =
     "function (value) { this.value = value; }";
 
@@ -548,18 +545,17 @@ void WebController::OnFindElementForSelectOption(
     return;
   }
 
-  std::string select_option_script = base::ReplaceStringPlaceholders(
-      kSelectOptionScript, {selected_option}, nullptr);
-
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
   argument.emplace_back(
-      runtime::CallArgument::Builder().SetObjectId(object_id).Build());
+      runtime::CallArgument::Builder()
+          .SetValue(base::Value::ToUniquePtrValue(base::Value(selected_option)))
+          .Build());
   devtools_client_->GetRuntime()->Enable();
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
           .SetArguments(std::move(argument))
-          .SetFunctionDeclaration(std::string(select_option_script))
+          .SetFunctionDeclaration(std::string(kSelectOptionScript))
           .SetReturnByValue(true)
           .Build(),
       base::BindOnce(&WebController::OnSelectOption,
