@@ -17,14 +17,9 @@
 
 #include "ui/events/platform/platform_event_source.h"
 
-#if defined(USE_X11)
-#include "ui/events/platform/x11/x11_event_source.h"  // nogncheck
-#elif defined(USE_OZONE)
-#include "ui/events/event.h"
-#endif
-
 #if defined(OS_LINUX)
-#include "ui/events/platform_event.h"
+#include "ui/aura/env.h"
+#include "ui/events/event.h"
 #endif
 
 #if defined(OS_WIN)
@@ -71,41 +66,25 @@ NativeEventObserver::~NativeEventObserver() {
 
 #if defined(OS_LINUX)
 void NativeEventObserver::RegisterObserver() {
-  ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
+  aura::Env::GetInstance()->AddWindowEventDispatcherObserver(this);
 }
 void NativeEventObserver::DeregisterObserver() {
-  ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
+  aura::Env::GetInstance()->RemoveWindowEventDispatcherObserver(this);
 }
 
-void NativeEventObserver::WillProcessEvent(const ui::PlatformEvent& event) {
+void NativeEventObserver::OnWindowEventDispatcherStartedProcessing(
+    aura::WindowEventDispatcher* dispatcher,
+    const ui::Event& event) {
+  EventInfo info{&event, event.time_stamp()};
+  events_being_processed_.push_back(info);
   will_run_event_callback_.Run(&event);
 }
 
-void NativeEventObserver::DidProcessEvent(const ui::PlatformEvent& event) {
-#if defined(USE_OZONE)
-  did_run_event_callback_.Run(&event, event->time_stamp());
-#elif defined(USE_X11)
-  // X11 uses a uint32_t on the wire protocol. Xlib casts this to an unsigned
-  // long by prepending with 0s. We cast back to a uint32_t so that subtraction
-  // works properly when the timestamp overflows back to 0.
-  uint32_t event_server_time_ms =
-      static_cast<uint32_t>(ui::X11EventSource::GetInstance()->GetTimestamp());
-  uint32_t current_server_time_ms = static_cast<uint32_t>(
-      ui::X11EventSource::GetInstance()->GetCurrentServerTime());
-
-  // On X11, event times are in X11 Server time. To convert to base::TimeTicks,
-  // we perform a round-trip to the X11 Server, subtract the two times to get a
-  // TimeDelta, and then subtract that from base::TimeTicks::Now(). Since we're
-  // working with units of time from an external source, we clamp the TimeDelta
-  // to reasonable values.
-  uint32_t delta_ms = current_server_time_ms - event_server_time_ms;
-  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(delta_ms);
-  base::TimeDelta sanitized = ClampDeltaFromExternalSource(delta);
-
-  did_run_event_callback_.Run(&event, base::TimeTicks::Now() - sanitized);
-#else
-#error
-#endif
+void NativeEventObserver::OnWindowEventDispatcherFinishedProcessingEvent(
+    aura::WindowEventDispatcher* dispatcher) {
+  EventInfo& info = events_being_processed_.back();
+  did_run_event_callback_.Run(info.unique_id, info.creation_time);
+  events_being_processed_.pop_back();
 }
 #endif  // defined(OS_LINUX)
 
