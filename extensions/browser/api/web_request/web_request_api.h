@@ -468,13 +468,6 @@ class ExtensionWebRequestEventRouter {
   // The callback is then deleted.
   void AddCallbackForPageLoad(const base::Closure& callback);
 
-  // Returns true if a request with the given |url| is being blocked by an
-  // extension with the webRequest API.
-  bool IsBlockingRequestForTesting(const GURL& url);
-  // Get the number of listeners - for testing only.
-  size_t GetListenerCountForTesting(void* browser_context,
-                                    const std::string& event_name);
-
  private:
   friend class WebRequestAPI;
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,
@@ -679,6 +672,10 @@ class ExtensionWebRequestEventRouter {
 
   // Returns true if |request| was already signaled to some event handlers.
   bool WasSignaled(const WebRequestInfo& request) const;
+
+  // Get the number of listeners - for testing only.
+  size_t GetListenerCountForTesting(void* browser_context,
+                                    const std::string& event_name);
 
   // A map for each browser_context that maps an event name to a set of
   // extensions that are listening to that event.
