@@ -107,8 +107,7 @@ def DieWithError(message, change_desc=None):
 
 def SaveDescriptionBackup(change_desc):
   backup_path = os.path.expanduser(DESCRIPTION_BACKUP_FILE)
-  print('\nError after CL description prompt -- saving description to %s\n' %
-        backup_path)
+  print('\nsaving CL description to %s\n' % backup_path)
   backup_file = open(backup_path, 'w')
   backup_file.write(change_desc.description)
   backup_file.close()
@@ -3014,6 +3013,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       change_id = git_footers.get_footer_change_id(change_desc.description)[0]
 
     assert change_desc
+    SaveDescriptionBackup(change_desc)
     commits = RunGitSilent(['rev-list', '%s..%s' % (parent,
                                                     ref_to_push)]).splitlines()
     if len(commits) > 1:

@@ -661,10 +661,12 @@ class TestGitCl(TestCase):
                   self._mocked_call(['get_or_create_merge_base']+list(a))))
     self.mock(git_cl, 'BranchExists', lambda _: True)
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: '')
+    self.mock(git_cl, 'SaveDescriptionBackup', lambda _:
+              self._mocked_call('SaveDescriptionBackup'))
     self.mock(git_cl, 'ask_for_data', lambda *a, **k: self._mocked_call(
-        *(['ask_for_data'] + list(a)), **k))
+              *(['ask_for_data'] + list(a)), **k))
     self.mock(git_cl, 'write_json', lambda path, contents:
-        self._mocked_call('write_json', path, contents))
+              self._mocked_call('write_json', path, contents))
     self.mock(git_cl.presubmit_support, 'DoPresubmitChecks', PresubmitMock)
     self.mock(git_cl.rietveld, 'Rietveld', RietveldMock)
     self.mock(git_cl.rietveld, 'CachingRietveld', RietveldMock)
@@ -1240,6 +1242,7 @@ class TestGitCl(TestCase):
       ref_to_push = 'HEAD'
 
     calls += [
+      (('SaveDescriptionBackup',), None),
       ((['git', 'rev-list',
          (custom_cl_base if custom_cl_base else expected_upstream_ref) + '..' +
          ref_to_push],),
