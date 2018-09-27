@@ -17,7 +17,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/download/quarantine/common_mac.h"
 #include "url/gurl.h"
 
@@ -99,7 +99,7 @@ namespace {
 bool AddOriginMetadataToFile(const base::FilePath& file,
                              const GURL& source,
                              const GURL& referrer) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   // There's no declaration for MDItemSetAttribute in any known public SDK.
   // It exists in the 10.4 and 10.5 runtimes.  To play it safe, do the lookup
   // at runtime instead of declaring it ourselves and linking against what's
@@ -169,7 +169,7 @@ bool AddOriginMetadataToFile(const base::FilePath& file,
 bool AddQuarantineMetadataToFile(const base::FilePath& file,
                                  const GURL& source,
                                  const GURL& referrer) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::scoped_nsobject<NSMutableDictionary> properties;
   bool success = false;
   if (@available(macos 10.10, *)) {

@@ -25,7 +25,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "components/download/quarantine/common_win.h"
@@ -215,7 +215,7 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
                                     const GURL& source_url,
                                     const GURL& referrer_url,
                                     const std::string& client_guid) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   int64_t file_size = 0;
   if (!base::PathExists(file) || !base::GetFileSize(file, &file_size))
