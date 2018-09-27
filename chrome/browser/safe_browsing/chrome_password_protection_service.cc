@@ -27,6 +27,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -61,6 +63,7 @@
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -1309,6 +1312,12 @@ bool ChromePasswordProtectionService::CanShowInterstitial(
 
 bool ChromePasswordProtectionService::IsUnderAdvancedProtection() {
   return AdvancedProtectionStatusManager::IsUnderAdvancedProtection(profile_);
+}
+
+gfx::Size ChromePasswordProtectionService::GetCurrentContentAreaSize() const {
+  return BrowserView::GetBrowserViewForBrowser(
+             BrowserList::GetInstance()->GetLastActive())
+      ->GetContentsSize();
 }
 
 }  // namespace safe_browsing

@@ -159,6 +159,13 @@ void PasswordProtectionRequest::FillRequestProto() {
   request_proto_->set_clicked_through_interstitial(
       clicked_through_interstitial);
   request_proto_->set_content_type(web_contents_->GetContentsMimeType());
+  if (password_protection_service_->IsExtendedReporting() &&
+      !password_protection_service_->IsIncognito()) {
+    gfx::Size content_area_size =
+        password_protection_service_->GetCurrentContentAreaSize();
+    request_proto_->set_content_area_height(content_area_size.height());
+    request_proto_->set_content_area_width(content_area_size.width());
+  }
 
   switch (trigger_type_) {
     case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE: {

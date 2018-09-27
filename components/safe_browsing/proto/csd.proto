@@ -298,6 +298,14 @@ message LoginReputationClientRequest {
 
   // The MIME type of the page, e.g. "application/pdf".
   optional string content_type = 8;
+
+  // Content area height in DIPs. This field should only be filled for extended
+  // reporting users.
+  optional int32 content_area_height = 9;
+
+  // Content area width in DIPs. This field should only be filled for extended
+  // reporting users.
+  optional int32 content_area_width = 10;
 }
 
 // The message is used for client response for login reputation requests.

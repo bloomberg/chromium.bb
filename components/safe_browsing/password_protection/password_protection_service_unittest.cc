@@ -244,6 +244,15 @@ class PasswordProtectionServiceTest
         content::WebContents::CreateParams(&browser_context_));
   }
 
+  void VerifyContentAreaSizeCollection(
+      const LoginReputationClientRequest& request) {
+    bool should_report_content_size =
+        password_protection_service_->IsExtendedReporting() &&
+        !password_protection_service_->IsIncognito();
+    EXPECT_EQ(should_report_content_size, request.has_content_area_height());
+    EXPECT_EQ(should_report_content_size, request.has_content_area_width());
+  }
+
  protected:
   // |thread_bundle_| is needed here because this test involves both UI and IO
   // threads.
@@ -996,6 +1005,7 @@ TEST_P(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
   EXPECT_EQ(true, actual_request->frames(1).has_password_field());
   ASSERT_EQ(1, actual_request->frames(1).forms_size());
   EXPECT_EQ(kFormActionUrl, actual_request->frames(1).forms(0).action_url());
+  VerifyContentAreaSizeCollection(*actual_request);
 }
 
 TEST_P(PasswordProtectionServiceTest,
@@ -1025,6 +1035,7 @@ TEST_P(PasswordProtectionServiceTest,
   const auto& reuse_event = actual_request->password_reuse_event();
   EXPECT_TRUE(reuse_event.is_chrome_signin_password());
   EXPECT_EQ(0, reuse_event.domains_matching_password_size());
+  VerifyContentAreaSizeCollection(*actual_request);
 }
 
 TEST_P(PasswordProtectionServiceTest,
@@ -1056,6 +1067,7 @@ TEST_P(PasswordProtectionServiceTest,
   } else {
     EXPECT_EQ(0, reuse_event.domains_matching_password_size());
   }
+  VerifyContentAreaSizeCollection(*actual_request);
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
