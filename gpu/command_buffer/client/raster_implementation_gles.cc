@@ -280,14 +280,6 @@ void RasterImplementationGLES::CopySubTexture(GLuint source_id,
                               false);
 }
 
-void RasterImplementationGLES::CompressedCopyTextureCHROMIUM(GLuint source_id,
-                                                             GLuint dest_id) {
-  Texture* source = GetTexture(source_id);
-  Texture* dest = GetTexture(dest_id);
-
-  gl_->CompressedCopyTextureCHROMIUM(source->id, dest->id);
-}
-
 void RasterImplementationGLES::UnpremultiplyAndDitherCopyCHROMIUM(
     GLuint source_id,
     GLuint dest_id,

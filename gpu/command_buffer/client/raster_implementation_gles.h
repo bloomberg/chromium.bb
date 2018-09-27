@@ -96,7 +96,6 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                       GLint y,
                       GLsizei width,
                       GLsizei height) override;
-  void CompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) override;
   void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                           GLuint dest_id,
                                           GLint x,

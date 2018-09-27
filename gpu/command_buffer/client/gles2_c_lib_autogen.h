@@ -1396,10 +1396,6 @@ GLES2CopySubTextureCHROMIUM(GLuint source_id,
       yoffset, x, y, width, height, unpack_flip_y, unpack_premultiply_alpha,
       unpack_unmultiply_alpha);
 }
-void GL_APIENTRY GLES2CompressedCopyTextureCHROMIUM(GLuint source_id,
-                                                    GLuint dest_id) {
-  gles2::GetGLContext()->CompressedCopyTextureCHROMIUM(source_id, dest_id);
-}
 void GL_APIENTRY GLES2DrawArraysInstancedANGLE(GLenum mode,
                                                GLint first,
                                                GLsizei count,
@@ -2880,10 +2876,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glCopySubTextureCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glCopySubTextureCHROMIUM),
-    },
-    {
-        "glCompressedCopyTextureCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glCompressedCopyTextureCHROMIUM),
     },
     {
         "glDrawArraysInstancedANGLE",
