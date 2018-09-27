@@ -93,7 +93,6 @@ class CORE_EXPORT DocumentMarkerController final
                                  unsigned start_offset,
                                  unsigned end_offset,
                                  bool);
-  bool HasMarkers(const Node* node) const { return markers_.Contains(node); }
 
   // TODO(rlanday): can these methods for retrieving markers be consolidated
   // without hurting efficiency?
