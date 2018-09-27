@@ -756,7 +756,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   entity_data->specifics.mutable_preference()->set_value(kValue1);
 
   entity_data->non_unique_name = kKey1;
-  entity_data->client_tag_hash = kHash3;
+  entity_data->client_tag_hash = kHash1;
   entity_data->id = kId1;
   bridge()->WriteItem(kKey1, std::move(entity_data));
 
@@ -906,6 +906,15 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 
   worker()->UpdateFromServer(update);
   // Root node update should be filtered out.
+  EXPECT_EQ(0U, ProcessorEntityCount());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldIgnoreRemoteUpdatesWithUnexpectedClientTagHash) {
+  InitializeToReadyState();
+  worker()->UpdateFromServer(kHash2, GenerateSpecifics(kKey1, kValue1));
+  EXPECT_EQ(0U, db().data_count());
+  EXPECT_EQ(0U, db().metadata_count());
   EXPECT_EQ(0U, ProcessorEntityCount());
 }
 

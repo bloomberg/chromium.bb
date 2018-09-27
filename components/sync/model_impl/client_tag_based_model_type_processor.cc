@@ -366,8 +366,17 @@ void ClientTagBasedModelTypeProcessor::Put(
 
   ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
-    // The bridge is creating a new entity.
-    data->client_tag_hash = GetClientTagHash(storage_key, *data);
+    // The bridge is creating a new entity. The bridge may or may not populate
+    // |data->client_tag_hash|, so let's ask for the client tag if needed.
+    if (data->client_tag_hash.empty()) {
+      data->client_tag_hash = GetClientTagHash(storage_key, *data);
+    } else {
+      // If the Put() call already included the client tag, let's verify that
+      // it's consistent with the bridge's regular GetClientTag() function.
+      DCHECK_EQ(data->client_tag_hash,
+                GenerateSyncableHash(type_, bridge_->GetClientTag(*data)));
+    }
+
     if (data->creation_time.is_null())
       data->creation_time = base::Time::Now();
     if (data->modification_time.is_null())
@@ -664,6 +673,14 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
   // Filter out updates without a client tag hash (including permanent nodes,
   // which have server tags instead).
   if (client_tag_hash.empty()) {
+    return nullptr;
+  }
+
+  // Filter out unexpected client tag hashes.
+  if (!data.is_deleted() &&
+      client_tag_hash !=
+          GenerateSyncableHash(type_, bridge_->GetClientTag(data))) {
+    DLOG(WARNING) << "Received unexpected client tag hash: " << client_tag_hash;
     return nullptr;
   }
 
@@ -1104,6 +1121,7 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
 ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
     const std::string& storage_key,
     const EntityData& data) {
+  DCHECK(!data.client_tag_hash.empty());
   DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
   DCHECK(!bridge_->SupportsGetStorageKey() || !storage_key.empty());
   DCHECK(storage_key.empty() || storage_key_to_tag_hash_.find(storage_key) ==
@@ -1120,7 +1138,6 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
 
 ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
     const EntityData& data) {
-  // Verify the tag hash matches, may be relaxed in the future.
   DCHECK_EQ(data.client_tag_hash,
             GenerateSyncableHash(type_, bridge_->GetClientTag(data)));
   std::string storage_key;
