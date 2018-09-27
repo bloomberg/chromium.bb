@@ -72,7 +72,7 @@ void LogoView::SetState(BaseLogoView::State state, bool animate) {
 }
 
 void LogoView::SetSpeechLevel(float speech_level) {
-  sound_level_input_value_provider_.set_speech_level(speech_level);
+  sound_level_input_value_provider_.SetSpeechLevel(speech_level);
 }
 
 int64_t LogoView::StartTimer() {
