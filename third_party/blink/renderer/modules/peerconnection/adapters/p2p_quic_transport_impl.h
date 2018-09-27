@@ -16,11 +16,13 @@
 #include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_packet_transport.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_stream_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 #include "third_party/webrtc/rtc_base/rtccertificate.h"
 
 namespace blink {
+
 // The P2PQuicTransportImpl subclasses the quic::QuicSession in order to expose
 // QUIC as a P2P transport. This specific subclass implements the crypto
 // handshake for a peer to peer connection, which requires verifying the remote
@@ -71,6 +73,9 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   void Start(std::vector<std::unique_ptr<rtc::SSLFingerprint>>
                  remote_fingerprints) override;
 
+  // Creates an outgoing stream that is owned by the quic::QuicSession.
+  P2PQuicStreamImpl* CreateStream() override;
+
   // P2PQuicPacketTransport::Delegate override.
   void OnPacketDataReceived(const char* data, size_t data_len) override;
 
@@ -81,6 +86,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // for 0 RTT handshakes, which isn't relevant for our P2P handshake.
   void OnProofValid(
       const quic::QuicCryptoClientConfig::CachedState& cached) override{};
+
   // Called when proof verification become available.
   void OnProofVerifyDetailsAvailable(
       const quic::ProofVerifyDetails& verify_details) override{};
@@ -98,12 +104,13 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Creates a new stream initiated from the remote side. The caller does not
   // own the stream, so the stream is activated and ownership is moved to the
   // quic::QuicSession.
-  quic::QuicStream* CreateIncomingDynamicStream(quic::QuicStreamId id) override;
+  P2PQuicStreamImpl* CreateIncomingDynamicStream(
+      quic::QuicStreamId id) override;
 
   // Creates a new outgoing stream. The caller does not own the
   // stream, so the stream is activated and ownership is moved to the
   // quic::QuicSession.
-  quic::QuicStream* CreateOutgoingDynamicStream() override;
+  P2PQuicStreamImpl* CreateOutgoingDynamicStream() override;
 
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
 
@@ -129,6 +136,10 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // initializes the parent class (quic::QuicSession). This must be called on
   // both sides before communicating between endpoints (Start, Close, etc.).
   void InitializeCryptoStream();
+
+  // Creates a new stream. This helper function is used when we need to create
+  // a new incoming stream or outgoing stream.
+  P2PQuicStreamImpl* CreateStreamInternal(quic::QuicStreamId id);
 
   // The server_config and client_config are used for setting up the crypto
   // connection. The ownership of these objects or the objects they own

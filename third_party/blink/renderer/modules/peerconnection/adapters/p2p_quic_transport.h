@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class P2PQuicStream;
+
 // Used by the RTCQuicTransport Web API. This transport creates and manages
 // streams, handles negotiation, state changes and errors. Every
 // P2PQuicTransport function maps directly to a method in the RTCQuicTransport
@@ -35,8 +37,14 @@ class P2PQuicTransport {
     // Called when the crypto handshake has completed and fingerprints have been
     // verified.
     virtual void OnConnected() {}
-    // TODO(https://crbug.com/874296): Add OnStream once streams are
-    // implemented.
+
+    // Called when an incoming stream is received from the remote side. This
+    // stream is owned by the P2PQuicTransport. Its lifetime is managed by the
+    // P2PQuicTransport, and can be deleted when:
+    // - The P2PQuicStream becomes closed for reading and writing.
+    // - Stop() is called.
+    // - The P2PQuicTransport is deleted.
+    virtual void OnStream(P2PQuicStream* stream) {}
   };
 
   virtual ~P2PQuicTransport() = default;
@@ -53,10 +61,16 @@ class P2PQuicTransport {
   virtual void Start(std::vector<std::unique_ptr<rtc::SSLFingerprint>>
                          remote_fingerprints) = 0;
 
+  // Creates a new outgoing stream. This stream is owned by the
+  // P2PQuicTransport. Its lifetime is managed by the P2PQuicTransport,
+  // and can be deleted when:
+  // - The P2PQuicStream becomes closed for reading and writing.
+  // - Stop() is called.
+  // - The P2PQuicTransport is deleted.
+  virtual P2PQuicStream* CreateStream() = 0;
+
   // TODO(https://crbug.com/874296): Consider adding a getter for the
   // local fingerprints of the certificate(s) set in the constructor.
-  // TODO(https://crbug.com/874296): Add CreateStream once streams are
-  // implemented.
 };
 }  // namespace blink
 
