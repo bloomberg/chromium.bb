@@ -27,6 +27,10 @@ namespace content {
 class PageNavigator;
 }
 
+namespace download {
+class DownloadItem;
+}
+
 namespace views {
 class ImageButton;
 class MdTextButton;
@@ -92,7 +96,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
 
  protected:
   // DownloadShelf:
-  void DoAddDownload(DownloadUIModel::DownloadUIModelPtr download) override;
+  void DoAddDownload(download::DownloadItem* download) override;
   void DoOpen() override;
   void DoClose(CloseReason reason) override;
   void DoHide() override;
