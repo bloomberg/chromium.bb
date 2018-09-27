@@ -65,6 +65,11 @@ void ImageReady(ScopedJavaGlobalRef<jobject>(j_callback_obj),
   base::android::RunObjectCallbackAndroid(j_callback_obj, j_bitmap);
 }
 
+void UpdateCatalogDone(ScopedJavaGlobalRef<jobject>(j_callback_obj),
+                       bool result) {
+  base::android::RunBooleanCallbackAndroid(j_callback_obj, result);
+}
+
 }  // namespace
 
 // static
@@ -111,6 +116,7 @@ void JNI_ExploreSitesBridge_GetIcon(
       ExploreSitesServiceFactory::GetForBrowserContext(profile);
   if (!service) {
     DLOG(ERROR) << "Unable to create the ExploreSitesService!";
+
     base::android::RunObjectCallbackAndroid(j_callback_obj, nullptr);
     return;
   }
@@ -120,4 +126,25 @@ void JNI_ExploreSitesBridge_GetIcon(
       site_id, base::BindOnce(&ImageReady,
                               ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
+
+void JNI_ExploreSitesBridge_UpdateCatalogFromNetwork(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& j_caller,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  DCHECK(profile);
+
+  ExploreSitesService* service =
+      ExploreSitesServiceFactory::GetForBrowserContext(profile);
+  if (!service) {
+    DLOG(ERROR) << "Unable to create the ExploreSitesService!";
+    base::android::RunBooleanCallbackAndroid(j_callback_obj, false);
+    return;
+  }
+
+  service->UpdateCatalogFromNetwork(base::BindOnce(
+      &UpdateCatalogDone, ScopedJavaGlobalRef<jobject>(j_callback_obj)));
+}
+
 }  // namespace explore_sites

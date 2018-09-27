@@ -107,10 +107,12 @@ bool ImportCatalogSync(std::string version_token,
 
 ImportCatalogTask::ImportCatalogTask(ExploreSitesStore* store,
                                      std::string version_token,
-                                     std::unique_ptr<Catalog> catalog_proto)
+                                     std::unique_ptr<Catalog> catalog_proto,
+                                     BooleanCallback callback)
     : store_(store),
       version_token_(version_token),
       catalog_proto_(std::move(catalog_proto)),
+      callback_(std::move(callback)),
       weak_ptr_factory_(this) {}
 
 ImportCatalogTask::~ImportCatalogTask() = default;
@@ -128,6 +130,7 @@ void ImportCatalogTask::FinishedExecuting(bool result) {
   result_ = result;
   TaskComplete();
   DVLOG(1) << "Finished importing the catalog, result: " << result;
+  std::move(callback_).Run(result);
 }
 
 }  // namespace explore_sites

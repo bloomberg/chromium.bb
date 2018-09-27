@@ -8,10 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/android/explore_sites/explore_sites_fetcher.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service.h"
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "components/offline_pages/task/task_queue.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using offline_pages::TaskQueue;
 
@@ -21,7 +23,9 @@ class Catalog;
 class ExploreSitesServiceImpl : public ExploreSitesService,
                                 public TaskQueue::Delegate {
  public:
-  explicit ExploreSitesServiceImpl(std::unique_ptr<ExploreSitesStore> store);
+  ExploreSitesServiceImpl(
+      std::unique_ptr<ExploreSitesStore> store,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~ExploreSitesServiceImpl() override;
 
   bool IsExploreSitesEnabled();
@@ -30,6 +34,7 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   void GetCatalog(CatalogCallback callback) override;
   void GetCategoryImage(int category_id, BitmapCallback callback) override;
   void GetSiteImage(int site_id, BitmapCallback callback) override;
+  void UpdateCatalogFromNetwork(BooleanCallback callback) override;
 
  private:
   // KeyedService implementation:
@@ -39,12 +44,19 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   void OnTaskQueueIsIdle() override;
 
   void AddUpdatedCatalog(std::string version_token,
-                         std::unique_ptr<Catalog> catalog_proto);
+                         std::unique_ptr<Catalog> catalog_proto,
+                         BooleanCallback callback);
 
   static void OnDecodeDone(BitmapCallback callback,
                            const SkBitmap& decoded_image);
   static void DecodeImageBytes(BitmapCallback callback,
                                EncodedImageList images);
+
+  // Callback returning from the UpdateCatalogFromNetwork operation.  It
+  // passes along the call back to the bridge and eventually back to Java land.
+  void OnCatalogFetched(BooleanCallback callback,
+                        ExploreSitesRequestStatus status,
+                        std::unique_ptr<std::string> serialized_protobuf);
 
   // True when Chrome starts up, this is reset after the catalog is requested
   // the first time in Chrome. This prevents the ESP from changing out from
@@ -54,6 +66,9 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   // Used to control access to the ExploreSitesStore.
   TaskQueue task_queue_;
   std::unique_ptr<ExploreSitesStore> explore_sites_store_;
+  scoped_refptr<network ::SharedURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<ExploreSitesFetcher> explore_sites_fetcher_;
+  base::WeakPtrFactory<ExploreSitesServiceImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExploreSitesServiceImpl);
 };

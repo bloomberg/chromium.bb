@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace explore_sites {
 const base::FilePath::CharType kExploreSitesStoreDirname[] =
@@ -50,8 +51,11 @@ KeyedService* ExploreSitesServiceFactory::BuildServiceInstanceFor(
       profile->GetPath().Append(kExploreSitesStoreDirname);
   auto explore_sites_store =
       std::make_unique<ExploreSitesStore>(background_task_runner, store_path);
+  scoped_refptr<network::SharedURLLoaderFactory> url_fetcher =
+      profile->GetURLLoaderFactory();
 
-  return new ExploreSitesServiceImpl(std::move(explore_sites_store));
+  return new ExploreSitesServiceImpl(std::move(explore_sites_store),
+                                     url_fetcher);
 }
 
 }  // namespace explore_sites
