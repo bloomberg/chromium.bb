@@ -119,6 +119,17 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
                    uint32_t storage_id_size) override;
 
  private:
+  struct UpdateParams {
+    UpdateParams(uint32_t promise_id,
+                 std::string session_id,
+                 std::vector<uint8_t> response);
+    ~UpdateParams();
+
+    const uint32_t promise_id;
+    const std::string session_id;
+    const std::vector<uint8_t> response;
+  };
+
   // ContentDecryptionModule callbacks.
   void OnSessionMessage(const std::string& session_id,
                         CdmMessageType message_type,
@@ -169,6 +180,9 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
 
   void InitializeCdmProxyHandler();
   void OnCdmProxyHandlerInitialized(bool success);
+  void OnCdmProxyKeySet(bool success);
+
+  void UpdateSessionInternal(std::unique_ptr<UpdateParams> params);
 
   int host_interface_version_ = 0;
 
@@ -193,6 +207,8 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   std::unique_ptr<FFmpegCdmAudioDecoder> audio_decoder_;
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
+
+  std::unique_ptr<UpdateParams> pending_update_params_;
 
   std::unique_ptr<CdmVideoDecoder> video_decoder_;
   std::unique_ptr<FileIOTestRunner> file_io_test_runner_;

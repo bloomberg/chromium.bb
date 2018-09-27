@@ -558,8 +558,8 @@ void ClearKeyCdm::LoadSession(uint32_t promise_id,
                      promise_id),
           base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                      promise_id)));
-  cdm_->LoadSession(ConvertSessionType(session_type), web_session_str,
-                    std::move(promise));
+  cdm_->LoadSession(ConvertSessionType(session_type),
+                    std::move(web_session_str), std::move(promise));
 }
 
 void ClearKeyCdm::UpdateSession(uint32_t promise_id,
@@ -570,23 +570,54 @@ void ClearKeyCdm::UpdateSession(uint32_t promise_id,
   DVLOG(1) << __func__;
   std::string web_session_str(session_id, session_id_length);
   std::vector<uint8_t> response_vector(response, response + response_size);
+  auto pending_update_params = std::make_unique<UpdateParams>(
+      promise_id, std::move(web_session_str), response_vector);
 
-  // Push the license to CdmProxy.
-  // TODO(xhwang): There's a potential race condition here where key status
-  // update is dispatched in the render process first, which triggers the
-  // resume-decryption-after-no-key logic, and by the time we try to decrypt
-  // again in the ClearKeyCdmProxy (GPU process), SetKey() hasn't been
-  // dispatched yet. To solve this, handle no-key in ClearKeyCdmProxy.
-  if (cdm_proxy_handler_)
-    cdm_proxy_handler_->SetKey(response_vector);
+  // Push the license to the CdmProxy. The license will still be pushed to the
+  // |cdm_| after OnKeySet() is called, which then triggers
+  // OnSessionKeysChange(). This order is critical to avoid race conditions like
+  // OnSessionKeysChange() being called before the keys are actually available
+  // in the CdmProxy.
+  if (cdm_proxy_handler_) {
+    if (pending_update_params_) {
+      OnPromiseFailed(promise_id, CdmPromise::Exception::INVALID_STATE_ERROR, 0,
+                      "Parallel updates not supported.");
+      return;
+    }
 
+    pending_update_params_ = std::move(pending_update_params);
+    cdm_proxy_handler_->SetKey(
+        response_vector,
+        base::BindOnce(&ClearKeyCdm::OnCdmProxyKeySet, base::Unretained(this)));
+    return;
+  }
+
+  UpdateSessionInternal(std::move(pending_update_params));
+}
+
+void ClearKeyCdm::OnCdmProxyKeySet(bool success) {
+  DCHECK(pending_update_params_);
+
+  if (!success) {
+    auto promise_id = pending_update_params_->promise_id;
+    pending_update_params_.reset();
+    OnPromiseFailed(promise_id, CdmPromise::Exception::INVALID_STATE_ERROR, 0,
+                    "Parallel updates not supported.");
+    return;
+  }
+
+  UpdateSessionInternal(std::move(pending_update_params_));
+}
+
+void ClearKeyCdm::UpdateSessionInternal(std::unique_ptr<UpdateParams> params) {
   std::unique_ptr<media::SimpleCdmPromise> promise(
       new media::CdmCallbackPromise<>(
           base::Bind(&ClearKeyCdm::OnUpdateSuccess, base::Unretained(this),
-                     promise_id, web_session_str),
+                     params->promise_id, params->session_id),
           base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
-                     promise_id)));
-  cdm_->UpdateSession(web_session_str, response_vector, std::move(promise));
+                     params->promise_id)));
+
+  cdm_->UpdateSession(params->session_id, params->response, std::move(promise));
 }
 
 void ClearKeyCdm::OnUpdateSuccess(uint32_t promise_id,
@@ -642,7 +673,7 @@ void ClearKeyCdm::CloseSession(uint32_t promise_id,
                      promise_id),
           base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                      promise_id)));
-  cdm_->CloseSession(web_session_str, std::move(promise));
+  cdm_->CloseSession(std::move(web_session_str), std::move(promise));
 }
 
 void ClearKeyCdm::RemoveSession(uint32_t promise_id,
@@ -657,7 +688,7 @@ void ClearKeyCdm::RemoveSession(uint32_t promise_id,
                      promise_id),
           base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                      promise_id)));
-  cdm_->RemoveSession(web_session_str, std::move(promise));
+  cdm_->RemoveSession(std::move(web_session_str), std::move(promise));
 }
 
 void ClearKeyCdm::SetServerCertificate(uint32_t promise_id,
@@ -1161,5 +1192,14 @@ void ClearKeyCdm::OnCdmProxyHandlerInitialized(bool success) {
 
   cdm_host_proxy_->OnInitialized(success);
 }
+
+ClearKeyCdm::UpdateParams::UpdateParams(uint32_t promise_id,
+                                        std::string session_id,
+                                        std::vector<uint8_t> response)
+    : promise_id(promise_id),
+      session_id(std::move(session_id)),
+      response(std::move(response)) {}
+
+ClearKeyCdm::UpdateParams::~UpdateParams() {}
 
 }  // namespace media

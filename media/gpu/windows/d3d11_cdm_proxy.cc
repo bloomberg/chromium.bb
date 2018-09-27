@@ -498,26 +498,34 @@ void D3D11CdmProxy::CreateMediaCryptoSession(
 void D3D11CdmProxy::SetKey(uint32_t crypto_session_id,
                            const std::vector<uint8_t>& key_id,
                            KeyType key_type,
-                           const std::vector<uint8_t>& key_blob) {
+                           const std::vector<uint8_t>& key_blob,
+                           SetKeyCB set_key_cb) {
   auto crypto_session_it = crypto_session_map_.find(crypto_session_id);
   if (crypto_session_it == crypto_session_map_.end()) {
     DLOG(WARNING) << crypto_session_id
                   << " did not map to a crypto session instance.";
+    std::move(set_key_cb).Run(Status::kFail);
     return;
   }
+
   cdm_context_->SetKey(crypto_session_it->second.Get(), key_id, key_type,
                        key_blob);
+  std::move(set_key_cb).Run(Status::kOk);
 }
 
 void D3D11CdmProxy::RemoveKey(uint32_t crypto_session_id,
-                              const std::vector<uint8_t>& key_id) {
+                              const std::vector<uint8_t>& key_id,
+                              RemoveKeyCB remove_key_cb) {
   auto crypto_session_it = crypto_session_map_.find(crypto_session_id);
   if (crypto_session_it == crypto_session_map_.end()) {
     DLOG(WARNING) << crypto_session_id
                   << " did not map to a crypto session instance.";
+    std::move(remove_key_cb).Run(Status::kFail);
     return;
   }
+
   cdm_context_->RemoveKey(crypto_session_it->second.Get(), key_id);
+  std::move(remove_key_cb).Run(Status::kOk);
 }
 
 void D3D11CdmProxy::SetCreateDeviceCallbackForTesting(
