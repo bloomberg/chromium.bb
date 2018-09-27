@@ -615,6 +615,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
+    public View getSecurityIconView() {
+        return mSecurityButton;
+    }
+
+    @Override
     public void setDefaultTextEditActionModeCallback(ToolbarActionModeCallback callback) {
         mUrlCoordinator.setActionModeCallback(callback);
     }

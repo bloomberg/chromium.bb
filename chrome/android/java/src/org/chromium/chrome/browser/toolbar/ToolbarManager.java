@@ -1065,6 +1065,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @return The view containing the security icon.
+     */
+    public View getSecurityIconView() {
+        if (mToolbar == null || mToolbar.getLocationBar() == null) return null;
+        return mToolbar.getLocationBar().getSecurityIconView();
+    }
+
+    /**
      * Adds a custom action button to the {@link Toolbar}, if it is supported.
      * @param drawable The {@link Drawable} to use as the background for the button.
      * @param description The content description for the custom action button.

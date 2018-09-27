@@ -55,6 +55,8 @@ const base::Feature kIPHHomepageTileFeature{"IPH_HomepageTile",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHNewTabPageButtonFeature{
     "IPH_NewTabPageButton", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHPreviewsOmniboxUIFeature{
+    "IPH_PreviewsOmniboxUI", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)

@@ -150,6 +150,11 @@ public interface LocationBar extends UrlBarDelegate {
     View getContainerView();
 
     /**
+     * @return The view containing the security icon.
+     */
+    View getSecurityIconView();
+
+    /**
      * Updates the state of the mic button if there is one.
      */
     void updateMicButtonState();

@@ -1640,6 +1640,7 @@ public class Tab
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
         mIsBeingRestored = false;
 
+        // TODO(crbug.com/889682): Consider moving the rest of this function to a Tab User data.
         long dataSaved =
                 DataReductionProxySettings.getInstance().getContentLengthSavedInHistorySummary()
                 - mDataSavedOnStartPageLoad;
@@ -1649,7 +1650,12 @@ public class Tab
             tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
         }
 
+        if (isPreview()) {
+            tracker.notifyEvent(EventConstants.PREVIEWS_PAGE_LOADED);
+        }
+
         maybeShowDataSaverInProductHelp(tracker);
+        maybeShowPreviewVerboseStatusInProductHelp(tracker);
     }
 
     private void maybeShowDataSaverInProductHelp(final Tracker tracker) {
@@ -1679,6 +1685,35 @@ public class Tab
             }
         });
         int yInsetPx = mThemedApplicationContext.getResources().getDimensionPixelOffset(
+                R.dimen.text_bubble_menu_anchor_y_inset);
+        rectProvider.setInsetPx(0, 0, 0, yInsetPx);
+        textBubble.show();
+    }
+
+    private void maybeShowPreviewVerboseStatusInProductHelp(final Tracker tracker) {
+        if (!(getActivity() instanceof ChromeTabbedActivity)) return;
+        final View anchorView = getActivity().getToolbarManager().getSecurityIconView();
+        if (anchorView == null) return;
+
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE)) return;
+
+        final ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
+        final TextBubble textBubble =
+                new TextBubble(getActivity(), anchorView, R.string.iph_previews_omnibox_ui_text,
+                        R.string.iph_previews_omnibox_ui_accessibility_text, rectProvider);
+        textBubble.setDismissOnTouchInteraction(true);
+        textBubble.addOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tracker.dismissed(FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE);
+                    }
+                });
+            }
+        });
+        final int yInsetPx = mThemedApplicationContext.getResources().getDimensionPixelOffset(
                 R.dimen.text_bubble_menu_anchor_y_inset);
         rectProvider.setInsetPx(0, 0, 0, yInsetPx);
         textBubble.show();
