@@ -278,15 +278,8 @@ public class AwContentsClientBridge {
             String[] requestHeaderNames, String[] requestHeaderValues,
             // WebResourceError
             int errorCode, String description, boolean safebrowsingHit) {
-        AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest();
-        request.url = url;
-        request.isMainFrame = isMainFrame;
-        request.hasUserGesture = hasUserGesture;
-        request.method = method;
-        request.requestHeaders = new HashMap<String, String>(requestHeaderNames.length);
-        for (int i = 0; i < requestHeaderNames.length; ++i) {
-            request.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
-        }
+        AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest(
+                url, isMainFrame, hasUserGesture, method, requestHeaderNames, requestHeaderValues);
         AwContentsClient.AwWebResourceError error = new AwContentsClient.AwWebResourceError();
         error.errorCode = errorCode;
         error.description = description;
@@ -324,15 +317,8 @@ public class AwContentsClientBridge {
             String url, boolean isMainFrame, boolean hasUserGesture, String method,
             String[] requestHeaderNames, String[] requestHeaderValues, int threatType,
             final int requestId) {
-        AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest();
-        request.url = url;
-        request.isMainFrame = isMainFrame;
-        request.hasUserGesture = hasUserGesture;
-        request.method = method;
-        request.requestHeaders = new HashMap<String, String>(requestHeaderNames.length);
-        for (int i = 0; i < requestHeaderNames.length; ++i) {
-            request.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
-        }
+        AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest(
+                url, isMainFrame, hasUserGesture, method, requestHeaderNames, requestHeaderValues);
 
         // TODO(ntfschr): remove clang-format directives once crbug/764582 is resolved
         // clang-format off
@@ -354,15 +340,8 @@ public class AwContentsClientBridge {
             // WebResourceResponse
             String mimeType, String encoding, int statusCode, String reasonPhrase,
             String[] responseHeaderNames, String[] responseHeaderValues) {
-        AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest();
-        request.url = url;
-        request.isMainFrame = isMainFrame;
-        request.hasUserGesture = hasUserGesture;
-        request.method = method;
-        request.requestHeaders = new HashMap<String, String>(requestHeaderNames.length);
-        for (int i = 0; i < requestHeaderNames.length; ++i) {
-            request.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
-        }
+        AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest(
+                url, isMainFrame, hasUserGesture, method, requestHeaderNames, requestHeaderValues);
         Map<String, String> responseHeaders =
                 new HashMap<String, String>(responseHeaderNames.length);
         // Note that we receive un-coalesced response header lines, thus we need to combine
