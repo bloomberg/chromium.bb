@@ -334,12 +334,7 @@ bool Nigori::Decrypt(const std::string& encrypted, std::string* value) const {
   if (!hmac.Init(keys_.mac_key->key()))
     return false;
 
-  std::vector<unsigned char> expected(kHashSize);
-  if (!hmac.Sign(ciphertext, &expected[0], expected.size()))
-    return false;
-
-  if (hash.compare(0, hash.size(), reinterpret_cast<char*>(&expected[0]),
-                   expected.size()))
+  if (!hmac.Verify(ciphertext, hash))
     return false;
 
   crypto::Encryptor encryptor;
