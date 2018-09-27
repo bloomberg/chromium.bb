@@ -1071,9 +1071,9 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         return element == ToShadowRoot(context.scope)->host();
       return context.scope == &element;
     case CSSSelector::kPseudoUnresolved:
-      return element.IsUnresolvedV0CustomElement();
+      return !element.IsDefined() && element.IsUnresolvedV0CustomElement();
     case CSSSelector::kPseudoDefined:
-      return element.IsDefined();
+      return element.IsDefined() || element.IsUpgradedV0CustomElement();
     case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:
       return CheckPseudoHost(context, result);
