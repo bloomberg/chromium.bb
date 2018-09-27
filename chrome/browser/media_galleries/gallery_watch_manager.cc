@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager_observer.h"
@@ -118,7 +117,6 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
     const base::FilePath& path,
     const base::Callback<void(bool)>& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // This can occur if the GalleryWatchManager attempts to watch the same path
   // again before recieving the callback. It's benign.

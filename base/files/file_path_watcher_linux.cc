@@ -35,6 +35,7 @@
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 
@@ -227,6 +228,8 @@ void InotifyReaderThreadDelegate::ThreadMain() {
     FD_ZERO(&rfds);
     FD_SET(inotify_fd_, &rfds);
 
+    ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+
     // Wait until some inotify events are available.
     int select_result =
         HANDLE_EINTR(select(inotify_fd_ + 1, &rfds, nullptr, nullptr, nullptr));
@@ -291,6 +294,7 @@ InotifyReader::Watch InotifyReader::AddWatch(
 
   AutoLock auto_lock(lock_);
 
+  ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
   Watch watch = inotify_add_watch(inotify_fd_, path.value().c_str(),
                                   IN_ATTRIB | IN_CREATE | IN_DELETE |
                                   IN_CLOSE_WRITE | IN_MOVE |
@@ -314,6 +318,8 @@ void InotifyReader::RemoveWatch(Watch watch, FilePathWatcherImpl* watcher) {
 
   if (watchers_[watch].empty()) {
     watchers_.erase(watch);
+
+    ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
     inotify_rm_watch(inotify_fd_, watch);
   }
 }
