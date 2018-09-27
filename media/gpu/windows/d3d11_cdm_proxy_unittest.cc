@@ -74,6 +74,8 @@ class CallbackMock {
   MOCK_METHOD2(ProcessCallback, CdmProxy::ProcessCB::RunType);
   MOCK_METHOD3(CreateMediaCryptoSessionCallback,
                CdmProxy::CreateMediaCryptoSessionCB::RunType);
+  MOCK_METHOD1(SetKeyCallback, CdmProxy::SetKeyCB::RunType);
+  MOCK_METHOD1(RemoveKeyCallback, CdmProxy::RemoveKeyCB::RunType);
 };
 
 class D3D11CdmProxyTest : public ::testing::Test {
@@ -703,8 +705,11 @@ TEST_F(D3D11CdmProxyTest, GetD3D11DecryptContextNoKeyForKeyType) {
       0x01, 0x4f, 0x83,
   };
 
+  EXPECT_CALL(callback_mock_, SetKeyCallback(CdmProxy::Status::kOk));
   proxy_->SetKey(crypto_session_id_from_initialize, kAnyBlob,
-                 CdmProxy::KeyType::kDecryptAndDecode, kAnyBlob);
+                 CdmProxy::KeyType::kDecryptAndDecode, kAnyBlob,
+                 base::BindOnce(&CallbackMock::SetKeyCallback,
+                                base::Unretained(&callback_mock_)));
 
   base::WeakPtr<CdmContext> context = proxy_->GetCdmContext();
   CdmProxyContext* proxy_context = context->GetCdmProxyContext();
@@ -737,8 +742,11 @@ TEST_F(D3D11CdmProxyTest, SetKeyAndGetDecryptContext) {
       0xab, 0x01, 0x20, 0xd3, 0xee, 0x05, 0x99, 0x87,
       0xff, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x7F,
   };
+  EXPECT_CALL(callback_mock_, SetKeyCallback(CdmProxy::Status::kOk));
   proxy_->SetKey(crypto_session_id_from_initialize, kKeyId, kTestKeyType,
-                 kKeyBlob);
+                 kKeyBlob,
+                 base::BindOnce(&CallbackMock::SetKeyCallback,
+                                base::Unretained(&callback_mock_)));
 
   std::string key_id_str(kKeyId.begin(), kKeyId.end());
   auto decrypt_context =
@@ -784,8 +792,11 @@ TEST_F(D3D11CdmProxyTest, ClearKeysAfterHardwareContentProtectionTeardown) {
       0xab, 0x01, 0x20, 0xd3, 0xee, 0x05, 0x99, 0x87,
       0xff, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x7F,
   };
+  EXPECT_CALL(callback_mock_, SetKeyCallback(CdmProxy::Status::kOk));
   proxy_->SetKey(crypto_session_id_from_initialize, kKeyId, kTestKeyType,
-                 kKeyBlob);
+                 kKeyBlob,
+                 base::BindOnce(&CallbackMock::SetKeyCallback,
+                                base::Unretained(&callback_mock_)));
 
   SetEvent(teardown_event_);
   run_loop.Run();
@@ -819,9 +830,15 @@ TEST_F(D3D11CdmProxyTest, RemoveKey) {
       0xab, 0x01, 0x20, 0xd3, 0xee, 0x05, 0x99, 0x87,
       0xff, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x7F,
   };
+  EXPECT_CALL(callback_mock_, SetKeyCallback(CdmProxy::Status::kOk));
+  EXPECT_CALL(callback_mock_, RemoveKeyCallback(CdmProxy::Status::kOk));
   proxy_->SetKey(crypto_session_id_from_initialize, kKeyId, kTestKeyType,
-                 kKeyBlob);
-  proxy_->RemoveKey(crypto_session_id_from_initialize, kKeyId);
+                 kKeyBlob,
+                 base::BindOnce(&CallbackMock::SetKeyCallback,
+                                base::Unretained(&callback_mock_)));
+  proxy_->RemoveKey(crypto_session_id_from_initialize, kKeyId,
+                    base::BindOnce(&CallbackMock::RemoveKeyCallback,
+                                   base::Unretained(&callback_mock_)));
 
   std::string keyblob_str(kKeyId.begin(), kKeyId.end());
   auto decrypt_context =
@@ -830,12 +847,18 @@ TEST_F(D3D11CdmProxyTest, RemoveKey) {
 }
 
 // Calling SetKey() and RemoveKey() for non-existent crypto session should
-// not crash.
+// fail but not crash.
 TEST_F(D3D11CdmProxyTest, SetRemoveKeyWrongCryptoSessionId) {
   const uint32_t kAnyCryptoSessionId = 0x9238;
   const std::vector<uint8_t> kEmpty;
-  proxy_->RemoveKey(kAnyCryptoSessionId, kEmpty);
-  proxy_->SetKey(kAnyCryptoSessionId, kEmpty, kTestKeyType, kEmpty);
+  EXPECT_CALL(callback_mock_, RemoveKeyCallback(CdmProxy::Status::kFail));
+  EXPECT_CALL(callback_mock_, SetKeyCallback(CdmProxy::Status::kFail));
+  proxy_->RemoveKey(kAnyCryptoSessionId, kEmpty,
+                    base::BindOnce(&CallbackMock::RemoveKeyCallback,
+                                   base::Unretained(&callback_mock_)));
+  proxy_->SetKey(kAnyCryptoSessionId, kEmpty, kTestKeyType, kEmpty,
+                 base::BindOnce(&CallbackMock::SetKeyCallback,
+                                base::Unretained(&callback_mock_)));
 }
 
 TEST_F(D3D11CdmProxyTest, ProxyInvalidationInvalidatesCdmContext) {
