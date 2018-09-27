@@ -25,6 +25,7 @@
 
 #if defined(USE_X11)
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/events/x/events_x_utils.h"  // nogncheck
 #include "ui/gfx/x/x11.h"        // nogncheck
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
@@ -430,6 +431,15 @@ TEST(EventTest, KeyEventCode) {
 #if defined(USE_X11)
 namespace {
 
+class MockTimestampServer : public ui::TimestampServer {
+ public:
+  Time GetCurrentServerTime() override { return base_time_; }
+  void SetBaseTime(Time time) { base_time_ = time; }
+
+ private:
+  Time base_time_ = 0;
+};
+
 void SetKeyEventTimestamp(XEvent* event, int64_t time) {
   event->xkey.time = time & UINT32_MAX;
 }
@@ -440,7 +450,23 @@ void AdvanceKeyEventTimestamp(XEvent* event) {
 
 }  // namespace
 
-TEST(EventTest, AutoRepeat) {
+class X11EventTest : public testing::Test {
+ public:
+  X11EventTest() {}
+  ~X11EventTest() override {}
+
+  void SetUp() override { SetTimestampServer(&server_); }
+
+  void TearDown() override { SetTimestampServer(nullptr); }
+
+ protected:
+  MockTimestampServer server_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(X11EventTest);
+};
+
+TEST_F(X11EventTest, AutoRepeat) {
   const uint16_t kNativeCodeA =
       ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::US_A);
   const uint16_t kNativeCodeB =
@@ -468,6 +494,7 @@ TEST(EventTest, AutoRepeat) {
 
   int64_t ticks_base =
       (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds() - 5000;
+  server_.SetBaseTime(static_cast<Time>(ticks_base));
   SetKeyEventTimestamp(native_event_a_pressed, ticks_base);
   SetKeyEventTimestamp(native_event_a_pressed_1500, ticks_base + 1500);
   SetKeyEventTimestamp(native_event_a_pressed_3000, ticks_base + 3000);
@@ -538,12 +565,14 @@ TEST(EventTest, AutoRepeat) {
     EXPECT_FALSE(key_a4_pressed_nonstandard_state.is_repeat());
   }
 
+  // The nonstandard event from above was ignored, so the last event pressed was
+  // |native_event_a_pressed|. These are both repeats.
   {
     KeyEvent key_a1(native_event_a_pressed);
-    EXPECT_FALSE(key_a1.is_repeat());
+    EXPECT_TRUE(key_a1.is_repeat());
 
     KeyEvent key_a1_with_same_event(native_event_a_pressed);
-    EXPECT_FALSE(key_a1_with_same_event.is_repeat());
+    EXPECT_TRUE(key_a1_with_same_event.is_repeat());
   }
 }
 #endif  // USE_X11
