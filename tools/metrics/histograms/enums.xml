@@ -24191,6 +24191,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Resumed">
     The user clicked the InfoBar again resuming subresource loading.
   </int>
+  <int value="3" label="Network Usage Stopped">
+    The InfoBar was dismissed because the network usage on the page stopped.
+  </int>
 </enum>
 
 <enum name="HIDContinueScenarioType">
