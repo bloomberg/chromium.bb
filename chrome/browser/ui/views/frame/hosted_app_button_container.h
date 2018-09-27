@@ -106,6 +106,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   void UpdateChildrenColor();
 
   // views::View:
+  gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
   const char* GetClassName() const override;

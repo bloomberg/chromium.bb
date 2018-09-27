@@ -322,6 +322,16 @@ void HostedAppButtonContainer::UpdateChildrenColor() {
   app_menu_button_->SetIconColor(color);
 }
 
+gfx::Size HostedAppButtonContainer::CalculatePreferredSize() const {
+  // Prefer height consistency over accommodating edge case icons that may bump
+  // up the container height (e.g. extension action icons with badges).
+  // TODO(https://crbug.com/889745): Fix the inconsistent icon sizes found in
+  // this container and turn this into a DCHECK that the conatiner height is the
+  // same as the app menu button height.
+  return gfx::Size(views::View::CalculatePreferredSize().width(),
+                   app_menu_button_->GetPreferredSize().height());
+}
+
 void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
