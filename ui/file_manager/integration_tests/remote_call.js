@@ -259,7 +259,6 @@ RemoteCall.prototype.waitForElementLost = function(windowId, query) {
  * @param {string} windowId Window ID.
  * @param {string} query Query for the target element.
  * @param {string} key DOM UI Events Key value.
- * @param {string} keyIdentifer Key identifier.
  * @param {boolean} ctrlKey Control key flag.
  * @param {boolean} shiftKey Shift key flag.
  * @param {boolean} altKey Alt key flag.
@@ -267,10 +266,9 @@ RemoteCall.prototype.waitForElementLost = function(windowId, query) {
  *     result.
  */
 RemoteCall.prototype.fakeKeyDown =
-    function(windowId, query, key, keyIdentifer, ctrlKey, shiftKey, altKey) {
+    function(windowId, query, key, ctrlKey, shiftKey, altKey) {
   var resultPromise = this.callRemoteTestUtil(
-      'fakeKeyDown', windowId,
-      [query, key, keyIdentifer, ctrlKey, shiftKey, altKey]);
+      'fakeKeyDown', windowId, [query, key, ctrlKey, shiftKey, altKey]);
   return resultPromise.then(function(result) {
     if (result)
       return true;
@@ -422,9 +420,8 @@ RemoteCallFilesApp.prototype.waitUntilTaskExecutes = function(
  */
 RemoteCallFilesApp.prototype.checkNextTabFocus =
     function(windowId, elementId) {
-  return remoteCall.callRemoteTestUtil('fakeKeyDown',
-                                       windowId,
-                                       ['body', 'Tab', 'U+0009', false]).then(
+  return remoteCall.callRemoteTestUtil(
+      'fakeKeyDown', windowId, ['body', 'Tab', false, false, false]).then(
   function(result) {
     chrome.test.assertTrue(result);
     return remoteCall.callRemoteTestUtil('getActiveElement',

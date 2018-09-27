@@ -350,25 +350,23 @@ test.util.sync.fakeEvent = function(contentWindow,
 
 /**
  * Sends a fake key event to the element specified by |targetQuery| or active
- * element with the given |keyIdentifier| and optional |ctrl| modifier.
+ * element with the given |key| and optional |ctrl,shift,alt| modifier.
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {?string} targetQuery Query to specify the element. If this value is
  *     null, key event is dispatched to active element of the document.
  * @param {string} key DOM UI Events key value.
- * @param {string} keyIdentifier Identifier of the emulated key.
  * @param {boolean} ctrl Whether CTRL should be pressed, or not.
  * @param {boolean} shift whether SHIFT should be pressed, or not.
  * @param {boolean} alt whether ALT should be pressed, or not.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.sync.fakeKeyDown = function(
-    contentWindow, targetQuery, key, keyIdentifier, ctrl, shift, alt) {
+    contentWindow, targetQuery, key, ctrl, shift, alt) {
   const event = new KeyboardEvent('keydown', {
     bubbles: true,
     composed: true,  // Allow the event to bubble past shadow DOM root.
     key: key,
-    keyIdentifier: keyIdentifier,
     ctrlKey: ctrl,
     shiftKey: shift,
     altKey: alt

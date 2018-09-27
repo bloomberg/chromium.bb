@@ -36,7 +36,7 @@ testcase.zipFileOpenDownloads = function() {
     // Press the Enter key.
     function(result) {
       chrome.test.assertTrue(!!result, 'selectFile failed');
-      const key = ['#file-list', 'Enter', 'Enter', false, false, false];
+      const key = ['#file-list', 'Enter', false, false, false];
       remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
     },
     // Check: the zip file content should be shown (unzip).
@@ -69,7 +69,7 @@ testcase.zipFileOpenDrive = function() {
     // Press the Enter key.
     function(result) {
       chrome.test.assertTrue(!!result, 'selectFile failed');
-      const key = ['#file-list', 'Enter', 'Enter', false, false, false];
+      const key = ['#file-list', 'Enter', false, false, false];
       remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
     },
     // Check: the zip file content should be shown (unzip).
@@ -127,7 +127,7 @@ testcase.zipFileOpenUsb = function() {
     // Press the Enter key.
     function(result) {
       chrome.test.assertTrue(!!result, 'selectFile failed');
-      const key = ['#file-list', 'Enter', 'Enter', false, false, false];
+      const key = ['#file-list', 'Enter', false, false, false];
       remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
     },
     // Check: the zip file content should be shown (unzip).

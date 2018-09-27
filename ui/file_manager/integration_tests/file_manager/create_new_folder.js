@@ -24,7 +24,7 @@ function selectFirstFileListItem(appId) {
     return remoteCall.waitForElementLost(appId, '#file-list [selected]');
   }).then(function() {
     // Press DownArrow key to select an item.
-    const key = ['#file-list', 'ArrowDown', 'Down', false, false, false];
+    const key = ['#file-list', 'ArrowDown', false, false, false];
     return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
   }).then(function(result) {
     chrome.test.assertTrue(result);
@@ -58,7 +58,7 @@ function createNewFolder(appId, initialEntrySet, selector) {
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Press Ctrl+E to create a new folder.
-    const key = ['#file-list', 'e', 'U+0045', true, false, false];
+    const key = ['#file-list', 'e', true, false, false];
     return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
   }).then(function(result) {
     chrome.test.assertTrue(result);
@@ -101,7 +101,7 @@ function createNewFolder(appId, initialEntrySet, selector) {
         'inputText', appId, [textInput, 'Test Folder Name']);
   }).then(function() {
     // Press the Enter key.
-    const key = [textInput, 'Enter', 'Enter', false, false, false];
+    const key = [textInput, 'Enter', false, false, false];
     return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
   }).then(function(result) {
     chrome.test.assertTrue(result);

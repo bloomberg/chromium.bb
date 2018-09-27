@@ -30,7 +30,7 @@ function openQuickViewSteps(appId, name) {
     // Press the space key.
     function(result) {
       chrome.test.assertTrue(!!result, 'selectFile failed');
-      const space = ['#file-list', ' ', ' ', false, false, false];
+      const space = ['#file-list', ' ', false, false, false];
       remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space, this.next);
     },
     // Check: the Quick View element should be shown.

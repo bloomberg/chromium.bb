@@ -265,7 +265,7 @@ testcase.traverseFolderShortcuts = function() {
     },
     // Send Ctrl+3 key to file-list to select 3rd shortcut.
     function() {
-      const key = ['#file-list', '3', '3', true, false, false];
+      const key = ['#file-list', '3', true, false, false];
       remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
     },
     // Check: current directory and selection should be D.
@@ -275,7 +275,7 @@ testcase.traverseFolderShortcuts = function() {
     },
     // Send UpArrow key to directory tree to select the shortcut above D.
     function() {
-      const key = ['#directory-tree', 'ArrowUp', 'Up', false, false, false];
+      const key = ['#directory-tree', 'ArrowUp', false, false, false];
       remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
     },
     // Check: current directory should be D, with shortcut C selected.
@@ -285,7 +285,7 @@ testcase.traverseFolderShortcuts = function() {
     },
     // Send Enter key to the directory tree to change to directory C.
     function() {
-      const key = ['#directory-tree', 'Enter', 'Enter', false, false, false];
+      const key = ['#directory-tree', 'Enter', false, false, false];
       remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
     },
     // Check: current directory and selection should be C.
