@@ -292,6 +292,8 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
     }
   }
 
+  if (!renderer_pause_enabled && !navigate_ads_enabled)
+    return;
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
   DCHECK(main_frame);
   content::RenderProcessHost* render_process_host = main_frame->GetProcess();
