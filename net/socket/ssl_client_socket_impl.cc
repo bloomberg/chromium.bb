@@ -1547,7 +1547,7 @@ int SSLClientSocketImpl::VerifyCT() {
     if (server_cert_verify_result_.is_issued_by_known_root) {
       UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.EVCompliance2.SSL",
                                 ct_verify_result_.policy_compliance,
-                                ct::CTPolicyCompliance::CT_POLICY_MAX);
+                                ct::CTPolicyCompliance::CT_POLICY_COUNT);
     }
   }
 
@@ -1557,7 +1557,7 @@ int SSLClientSocketImpl::VerifyCT() {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.CertificateTransparency.ConnectionComplianceStatus2.SSL",
         ct_verify_result_.policy_compliance,
-        ct::CTPolicyCompliance::CT_POLICY_MAX);
+        ct::CTPolicyCompliance::CT_POLICY_COUNT);
   }
 
   TransportSecurityState::CTRequirementsStatus ct_requirement_status =
@@ -1578,7 +1578,7 @@ int SSLClientSocketImpl::VerifyCT() {
           "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2."
           "SSL",
           ct_verify_result_.policy_compliance,
-          ct::CTPolicyCompliance::CT_POLICY_MAX);
+          ct::CTPolicyCompliance::CT_POLICY_COUNT);
     }
   } else {
     ct_verify_result_.policy_compliance_required = false;

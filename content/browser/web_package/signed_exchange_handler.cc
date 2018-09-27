@@ -524,7 +524,7 @@ void SignedExchangeHandler::OnVerifyCert(
   base::UmaHistogramSparse(kHistogramCertVerificationResult, -error_code);
   UMA_HISTOGRAM_ENUMERATION(kHistogramCTVerificationResult,
                             ct_result.policy_compliance,
-                            net::ct::CTPolicyCompliance::CT_POLICY_MAX);
+                            net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
 
   if (error_code != net::OK) {
     SignedExchangeLoadResult result;
