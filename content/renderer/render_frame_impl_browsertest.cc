@@ -18,7 +18,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -200,7 +200,7 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = false;
 
-  ViewMsg_SynchronizeVisualProperties resize_message(0, visual_properties);
+  WidgetMsg_SynchronizeVisualProperties resize_message(0, visual_properties);
   frame_widget()->OnMessageReceived(resize_message);
 
   EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
@@ -211,7 +211,7 @@ TEST_F(RenderFrameImplTest, FrameResize) {
 TEST_F(RenderFrameImplTest, FrameWasShown) {
   RenderFrameTestObserver observer(frame());
 
-  ViewMsg_WasShown was_shown_message(0, base::TimeTicks());
+  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks());
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());
@@ -241,7 +241,7 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
   RenderFrameTestObserver observer(grandchild);
 
-  ViewMsg_WasShown was_shown_message(0, base::TimeTicks());
+  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks());
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());
@@ -251,10 +251,10 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 // Ensure that a RenderFrameImpl does not crash if the RenderView receives
 // a WasShown message after the frame's widget has been closed.
 TEST_F(RenderFrameImplTest, FrameWasShownAfterWidgetClose) {
-  ViewMsg_Close close_message(0);
+  WidgetMsg_Close close_message(0);
   frame_widget()->OnMessageReceived(close_message);
 
-  ViewMsg_WasShown was_shown_message(0, base::TimeTicks());
+  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks());
   // Test passes if this does not crash.
   RenderWidget* render_widget =
       static_cast<RenderViewImpl*>(view_)->GetWidget();

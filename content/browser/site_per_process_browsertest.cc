@@ -7181,7 +7181,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Test for https://crbug.com/568836.  From an A-embed-B page, navigate the
 // subframe from B to A.  This cleans up the process for B, but the test delays
 // the browser side from killing the B process right away.  This allows the
-// B process to process two ViewMsg_Close messages sent to the subframe's
+// B process to process two WidgetMsg_Close messages sent to the subframe's
 // RenderWidget and to the RenderView, in that order.  In the bug, the latter
 // crashed while detaching the subframe's LocalFrame (triggered as part of
 // closing the RenderView), because this tried to access the subframe's

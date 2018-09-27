@@ -443,14 +443,14 @@ Response InspectorEmulationAgent::setDeviceMetricsOverride(
     Maybe<protocol::Page::Viewport>) {
   // We don't have to do anything other than reply to the client, as the
   // emulation parameters should have already been updated by the handling of
-  // ViewMsg_EnableDeviceEmulation.
+  // WidgetMsg_EnableDeviceEmulation.
   return AssertPage();
 }
 
 Response InspectorEmulationAgent::clearDeviceMetricsOverride() {
   // We don't have to do anything other than reply to the client, as the
   // emulation parameters should have already been cleared by the handling of
-  // ViewMsg_DisableDeviceEmulation.
+  // WidgetMsg_DisableDeviceEmulation.
   return AssertPage();
 }
 

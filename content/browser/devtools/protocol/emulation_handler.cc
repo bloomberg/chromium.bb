@@ -13,7 +13,7 @@
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/common/url_constants.h"
 #include "net/http/http_util.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
@@ -391,14 +391,14 @@ void EmulationHandler::UpdateDeviceEmulationState() {
   // emulation params were applied. That way, we can avoid having to handle
   // Set/ClearDeviceMetricsOverride in the renderer. With the old IPC system,
   // this is tricky since we'd have to track the DevTools message id with the
-  // ViewMsg and acknowledgment, as well as plump the acknowledgment back to the
-  // EmulationHandler somehow. Mojo callbacks should make this much simpler.
+  // WidgetMsg and acknowledgment, as well as plump the acknowledgment back to
+  // the EmulationHandler somehow. Mojo callbacks should make this much simpler.
   if (device_emulation_enabled_) {
-    host_->GetRenderWidgetHost()->Send(new ViewMsg_EnableDeviceEmulation(
+    host_->GetRenderWidgetHost()->Send(new WidgetMsg_EnableDeviceEmulation(
         host_->GetRenderWidgetHost()->GetRoutingID(),
         device_emulation_params_));
   } else {
-    host_->GetRenderWidgetHost()->Send(new ViewMsg_DisableDeviceEmulation(
+    host_->GetRenderWidgetHost()->Send(new WidgetMsg_DisableDeviceEmulation(
         host_->GetRenderWidgetHost()->GetRoutingID()));
   }
 }

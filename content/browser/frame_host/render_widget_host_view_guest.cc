@@ -26,7 +26,8 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/web_touch_event_traits.h"
-#include "content/common/view_messages.h"
+#include "content/common/text_input_state.h"
+#include "content/common/widget_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -445,7 +446,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
 
 void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {
   // InterstitialPages are not WebContents so we cannot intercept
-  // ViewHostMsg_SetCursor for interstitial pages in BrowserPluginGuest.
+  // WidgetHostMsg_SetCursor for interstitial pages in BrowserPluginGuest.
   // All guest RenderViewHosts have RenderWidgetHostViewGuests however,
   // and so we will always hit this code path.
   if (!guest_)
@@ -523,14 +524,14 @@ void RenderWidgetHostViewGuest::SelectionChanged(const base::string16& text,
 }
 
 void RenderWidgetHostViewGuest::SelectionBoundsChanged(
-    const ViewHostMsg_SelectionBounds_Params& params) {
+    const WidgetHostMsg_SelectionBounds_Params& params) {
   if (!guest_)
     return;
 
   RenderWidgetHostViewBase* rwhv = GetOwnerRenderWidgetHostView();
   if (!rwhv)
     return;
-  ViewHostMsg_SelectionBounds_Params guest_params(params);
+  WidgetHostMsg_SelectionBounds_Params guest_params(params);
   guest_params.anchor_rect.set_origin(
       guest_->GetScreenCoordinates(params.anchor_rect.origin()));
   guest_params.focus_rect.set_origin(

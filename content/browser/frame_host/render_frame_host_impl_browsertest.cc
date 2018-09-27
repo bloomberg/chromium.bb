@@ -980,7 +980,7 @@ class ExecuteScriptBeforeRenderFrameDeletedHelper
 //
 // Note that if the second WebContents scheduled a call to window.close() to
 // close itself after it calls window.open(), the CreateNewWindow sync IPC could
-// be dispatched *before* ViewHostMsg_Close in the browser process, provided
+// be dispatched *before* WidgetHostMsg_Close in the browser process, provided
 // that the browser happened to be in IPC::SyncChannel::WaitForReply on the UI
 // thread (most likely after sending GpuCommandBufferMsg_* messages), in which
 // case incoming sync IPCs to this thread are dispatched, but the message loop

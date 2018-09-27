@@ -26,7 +26,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -1162,10 +1162,10 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     view()->UpdateTextInputState();
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != nullptr);
-    EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_TextInputStateChanged::ID),
+    EXPECT_EQ(static_cast<uint32_t>(WidgetHostMsg_TextInputStateChanged::ID),
               msg->type());
-    ViewHostMsg_TextInputStateChanged::Param params;
-    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+    WidgetHostMsg_TextInputStateChanged::Param params;
+    WidgetHostMsg_TextInputStateChanged::Read(msg, &params);
     TextInputState p = std::get<0>(params);
     ui::TextInputType type = p.type;
     ui::TextInputMode input_mode = p.mode;
@@ -1184,9 +1184,9 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     view()->UpdateTextInputState();
     msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != nullptr);
-    EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_TextInputStateChanged::ID),
+    EXPECT_EQ(static_cast<uint32_t>(WidgetHostMsg_TextInputStateChanged::ID),
               msg->type());
-    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+    WidgetHostMsg_TextInputStateChanged::Read(msg, &params);
     p = std::get<0>(params);
     type = p.type;
     input_mode = p.mode;
@@ -1210,9 +1210,9 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       base::RunLoop().RunUntilIdle();
       const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
       EXPECT_TRUE(msg != nullptr);
-      EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_TextInputStateChanged::ID),
+      EXPECT_EQ(static_cast<uint32_t>(WidgetHostMsg_TextInputStateChanged::ID),
                 msg->type());
-      ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+      WidgetHostMsg_TextInputStateChanged::Read(msg, &params);
       p = std::get<0>(params);
       type = p.type;
       input_mode = p.mode;
@@ -1857,7 +1857,7 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
 
   for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
     const uint32_t type = render_thread_->sink().GetMessageAt(i)->type();
-    if (type == ViewHostMsg_TextInputStateChanged::ID) {
+    if (type == WidgetHostMsg_TextInputStateChanged::ID) {
       is_input_type_called = true;
       last_input_type = i;
     } else if (type == FrameHostMsg_SelectionChanged::ID) {

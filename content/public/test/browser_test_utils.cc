@@ -57,7 +57,7 @@
 #include "content/common/frame_visual_properties.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
-#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -2329,7 +2329,7 @@ MainThreadFrameObserver::~MainThreadFrameObserver() {
 
 void MainThreadFrameObserver::Wait() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  render_widget_host_->Send(new ViewMsg_WaitForNextFrameForTests(
+  render_widget_host_->Send(new WidgetMsg_WaitForNextFrameForTests(
       render_widget_host_->GetRoutingID(), routing_id_));
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
@@ -2342,7 +2342,7 @@ void MainThreadFrameObserver::Quit() {
 }
 
 bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
-  if (msg.type() == ViewHostMsg_WaitForNextFrameForTests_ACK::ID &&
+  if (msg.type() == WidgetHostMsg_WaitForNextFrameForTests_ACK::ID &&
       msg.routing_id() == routing_id_) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
@@ -2771,7 +2771,7 @@ void PwnMessageHelper::LockMouse(RenderProcessHost* process,
                                  bool privileged) {
   IPC::IpcSecurityTestUtil::PwnMessageReceived(
       process->GetChannel(),
-      ViewHostMsg_LockMouse(routing_id, user_gesture, privileged));
+      WidgetHostMsg_LockMouse(routing_id, user_gesture, privileged));
 }
 
 #if defined(USE_AURA)

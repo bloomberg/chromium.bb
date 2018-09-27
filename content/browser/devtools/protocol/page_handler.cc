@@ -34,7 +34,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
-#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -789,7 +789,8 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
   if (has_compositor_frame_metadata_) {
     InnerSwapCompositorFrame();
   } else {
-    widget_host->Send(new ViewMsg_ForceRedraw(widget_host->GetRoutingID(), 0));
+    widget_host->Send(
+        new WidgetMsg_ForceRedraw(widget_host->GetRoutingID(), 0));
   }
   return Response::FallThrough();
 }

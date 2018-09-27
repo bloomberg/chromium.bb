@@ -18,8 +18,8 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/view_messages.h"
 #include "content/common/visual_properties.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/bind_interface_helpers.h"
@@ -91,7 +91,7 @@ class CloseMessageSendingRenderViewVisitor : public RenderViewVisitor {
     // Simulate the Widget receiving a close message. This should result on
     // releasing the internal reference counts and destroying the internal
     // state.
-    ViewMsg_Close msg(render_view->GetRoutingID());
+    WidgetMsg_Close msg(render_view->GetRoutingID());
     RenderWidget* render_widget =
         static_cast<RenderViewImpl*>(render_view)->GetWidget();
     render_widget->OnMessageReceived(msg);
@@ -588,7 +588,7 @@ void RenderViewTest::Resize(gfx::Size new_size,
   visual_properties.is_fullscreen_granted = is_fullscreen_granted;
   visual_properties.display_mode = blink::kWebDisplayModeBrowser;
   std::unique_ptr<IPC::Message> resize_message(
-      new ViewMsg_SynchronizeVisualProperties(0, visual_properties));
+      new WidgetMsg_SynchronizeVisualProperties(0, visual_properties));
   OnMessageReceived(*resize_message);
 }
 

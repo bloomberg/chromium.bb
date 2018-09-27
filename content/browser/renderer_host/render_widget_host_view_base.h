@@ -49,7 +49,7 @@
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #endif
 
-struct ViewHostMsg_SelectionBounds_Params;
+struct WidgetHostMsg_SelectionBounds_Params;
 
 namespace base {
 class UnguessableToken;
@@ -461,7 +461,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // RenderWidget's window's origin. Focus and anchor bound are represented as
   // gfx::Rect.
   virtual void SelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params);
+      const WidgetHostMsg_SelectionBounds_Params& params);
 
   // Updates the range of the marked text in an IME composition.
   virtual void ImeCompositionRangeChanged(

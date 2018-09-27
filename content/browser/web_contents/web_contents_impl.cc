@@ -98,6 +98,7 @@
 #include "content/common/page_state_serialization.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -2834,7 +2835,7 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
     RenderWidgetHostImpl* rwh =
         weak_popup->GetMainFrame()->GetRenderWidgetHost();
     DCHECK_EQ(main_frame_widget_route_id, rwh->GetRoutingID());
-    rwh->Send(new ViewMsg_SetBounds_ACK(rwh->GetRoutingID()));
+    rwh->Send(new WidgetMsg_SetBounds_ACK(rwh->GetRoutingID()));
   }
 }
 

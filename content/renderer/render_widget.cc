@@ -45,6 +45,7 @@
 #include "content/common/tab_switching_time_callback.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -543,7 +544,7 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
 
   RenderThread::Get()->AddRoute(routing_id_, this);
   // Take a reference on behalf of the RenderThread.  This will be balanced
-  // when we receive ViewMsg_Close.
+  // when we receive WidgetMsg_Close.
   AddRef();
   if (RenderThreadImpl::current()) {
     RenderThreadImpl::current()->WidgetCreated();
@@ -597,30 +598,30 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
-    IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(ViewMsg_SynchronizeVisualProperties,
+    IPC_MESSAGE_HANDLER(WidgetMsg_ShowContextMenu, OnShowContextMenu)
+    IPC_MESSAGE_HANDLER(WidgetMsg_Close, OnClose)
+    IPC_MESSAGE_HANDLER(WidgetMsg_SynchronizeVisualProperties,
                         OnSynchronizeVisualProperties)
-    IPC_MESSAGE_HANDLER(ViewMsg_EnableDeviceEmulation,
+    IPC_MESSAGE_HANDLER(WidgetMsg_EnableDeviceEmulation,
                         OnEnableDeviceEmulation)
-    IPC_MESSAGE_HANDLER(ViewMsg_DisableDeviceEmulation,
+    IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
                         OnDisableDeviceEmulation)
-    IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
-    IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetBounds_ACK, OnRequestSetBoundsAck)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
-    IPC_MESSAGE_HANDLER(ViewMsg_ForceRedraw, OnForceRedraw)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetViewportIntersection,
+    IPC_MESSAGE_HANDLER(WidgetMsg_WasHidden, OnWasHidden)
+    IPC_MESSAGE_HANDLER(WidgetMsg_WasShown, OnWasShown)
+    IPC_MESSAGE_HANDLER(WidgetMsg_SetActive, OnSetActive)
+    IPC_MESSAGE_HANDLER(WidgetMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
+    IPC_MESSAGE_HANDLER(WidgetMsg_SetTextDirection, OnSetTextDirection)
+    IPC_MESSAGE_HANDLER(WidgetMsg_SetBounds_ACK, OnRequestSetBoundsAck)
+    IPC_MESSAGE_HANDLER(WidgetMsg_UpdateScreenRects, OnUpdateScreenRects)
+    IPC_MESSAGE_HANDLER(WidgetMsg_ForceRedraw, OnForceRedraw)
+    IPC_MESSAGE_HANDLER(WidgetMsg_SetViewportIntersection,
                         OnSetViewportIntersection)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetIsInert, OnSetIsInert)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetInheritedEffectiveTouchAction,
+    IPC_MESSAGE_HANDLER(WidgetMsg_SetIsInert, OnSetIsInert)
+    IPC_MESSAGE_HANDLER(WidgetMsg_SetInheritedEffectiveTouchAction,
                         OnSetInheritedEffectiveTouchAction)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateRenderThrottlingStatus,
+    IPC_MESSAGE_HANDLER(WidgetMsg_UpdateRenderThrottlingStatus,
                         OnUpdateRenderThrottlingStatus)
-    IPC_MESSAGE_HANDLER(ViewMsg_WaitForNextFrameForTests,
+    IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
@@ -783,7 +784,7 @@ void RenderWidget::OnEnableDeviceEmulation(
     visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
     visual_properties.display_mode = display_mode_;
     screen_metrics_emulator_.reset(new RenderWidgetScreenMetricsEmulator(
-        this, params, visual_properties, view_screen_rect_,
+        this, params, visual_properties, widget_screen_rect_,
         window_screen_rect_));
     screen_metrics_emulator_->Apply();
   } else {
@@ -838,7 +839,7 @@ void RenderWidget::OnForceRedraw(int snapshot_id) {
 void RenderWidget::DidPresentForceDrawFrame(
     int snapshot_id,
     const gfx::PresentationFeedback& feedback) {
-  Send(new ViewHostMsg_ForceRedrawComplete(routing_id(), snapshot_id));
+  Send(new WidgetHostMsg_ForceRedrawComplete(routing_id(), snapshot_id));
 }
 
 viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::Point& point,
@@ -1220,7 +1221,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     if (next_previous_flags_ == kInvalidNextPreviousFlagsValue) {
       // Due to a focus change, values will be reset by the frame.
       // That case we only need fresh NEXT/PREVIOUS information.
-      // Also we won't send ViewHostMsg_TextInputStateChanged if next/previous
+      // Also we won't send WidgetHostMsg_TextInputStateChanged if next/previous
       // focusable status is changed.
       if (auto* controller = GetInputMethodController()) {
         next_previous_flags_ =
@@ -1245,7 +1246,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     // show_virtual_keyboard.
     params.show_ime_if_needed = show_virtual_keyboard;
     params.reply_to_request = reply_to_request;
-    Send(new ViewHostMsg_TextInputStateChanged(routing_id(), params));
+    Send(new WidgetHostMsg_TextInputStateChanged(routing_id(), params));
 
     text_input_info_ = new_info;
     text_input_type_ = new_type;
@@ -1396,9 +1397,9 @@ void RenderWidget::SetScreenMetricsEmulationParameters(
                                                                 params);
 }
 
-void RenderWidget::SetScreenRects(const gfx::Rect& view_screen_rect,
+void RenderWidget::SetScreenRects(const gfx::Rect& widget_screen_rect,
                                   const gfx::Rect& window_screen_rect) {
-  view_screen_rect_ = view_screen_rect;
+  widget_screen_rect_ = widget_screen_rect;
   window_screen_rect_ = window_screen_rect;
 }
 
@@ -1450,7 +1451,7 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
 
 void RenderWidget::IntrinsicSizingInfoChanged(
     const blink::WebIntrinsicSizingInfo& sizing_info) {
-  Send(new ViewHostMsg_IntrinsicSizingInfoChanged(routing_id_, sizing_info));
+  Send(new WidgetHostMsg_IntrinsicSizingInfoChanged(routing_id_, sizing_info));
 }
 
 void RenderWidget::WillCloseLayerTreeView() {
@@ -1519,20 +1520,20 @@ void RenderWidget::DidChangeCursor(const WebCursorInfo& cursor_info) {
   // Only send a SetCursor message if we need to make a change.
   if (!current_cursor_.IsEqual(cursor)) {
     current_cursor_ = cursor;
-    Send(new ViewHostMsg_SetCursor(routing_id_, cursor));
+    Send(new WidgetHostMsg_SetCursor(routing_id_, cursor));
   }
 }
 
 void RenderWidget::AutoscrollStart(const blink::WebFloatPoint& point) {
-  Send(new ViewHostMsg_AutoscrollStart(routing_id_, point));
+  Send(new WidgetHostMsg_AutoscrollStart(routing_id_, point));
 }
 
 void RenderWidget::AutoscrollFling(const blink::WebFloatSize& velocity) {
-  Send(new ViewHostMsg_AutoscrollFling(routing_id_, velocity));
+  Send(new WidgetHostMsg_AutoscrollFling(routing_id_, velocity));
 }
 
 void RenderWidget::AutoscrollEnd() {
-  Send(new ViewHostMsg_AutoscrollEnd(routing_id_));
+  Send(new WidgetHostMsg_AutoscrollEnd(routing_id_));
 }
 
 // We are supposed to get a single call to Show for a newly created RenderWidget
@@ -1572,7 +1573,7 @@ void RenderWidget::Show(WebNavigationPolicy policy) {
 
 void RenderWidget::DoDeferredClose() {
   WillCloseLayerTreeView();
-  Send(new ViewHostMsg_Close(routing_id_));
+  Send(new WidgetHostMsg_Close(routing_id_));
 }
 
 void RenderWidget::NotifyOnClose() {
@@ -1609,7 +1610,7 @@ void RenderWidget::Close() {
   if (owner_delegate_)
     owner_delegate_->DidCloseWidget();
   // Note the ACK is a control message going to the RenderProcessHost.
-  RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(routing_id()));
+  RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
 }
 
 void RenderWidget::CloseWebWidget() {
@@ -1700,14 +1701,14 @@ WebRect RenderWidget::WindowRect() {
 }
 
 WebRect RenderWidget::ViewRect() {
-  WebRect rect = view_screen_rect_;
+  WebRect rect = widget_screen_rect_;
   ScreenRectToEmulatedIfNeeded(&rect);
   return rect;
 }
 
 void RenderWidget::SetToolTipText(const blink::WebString& text,
                                   WebTextDirection hint) {
-  Send(new ViewHostMsg_SetTooltipText(routing_id_, text.Utf16(), hint));
+  Send(new WidgetHostMsg_SetTooltipText(routing_id_, text.Utf16(), hint));
 }
 
 void RenderWidget::SetWindowRect(const WebRect& rect_in_screen) {
@@ -1716,7 +1717,7 @@ void RenderWidget::SetWindowRect(const WebRect& rect_in_screen) {
 
   if (!resizing_mode_selector_->is_synchronous_mode()) {
     if (did_show_) {
-      Send(new ViewHostMsg_RequestSetBounds(routing_id_, window_rect));
+      Send(new WidgetHostMsg_RequestSetBounds(routing_id_, window_rect));
       SetPendingWindowRect(window_rect);
     } else {
       initial_rect_ = window_rect;
@@ -1734,7 +1735,7 @@ void RenderWidget::SetPendingWindowRect(const WebRect& rect) {
   // values.
   if (widget_type_ != WidgetType::kFrame) {
     window_screen_rect_ = rect;
-    view_screen_rect_ = rect;
+    widget_screen_rect_ = rect;
   }
 }
 
@@ -1896,7 +1897,7 @@ void RenderWidget::SetWindowRectSynchronously(
     layer_tree_view_->RequestNewLocalSurfaceId();
   SynchronizeVisualProperties(visual_properties);
 
-  view_screen_rect_ = new_window_rect;
+  widget_screen_rect_ = new_window_rect;
   window_screen_rect_ = new_window_rect;
   if (!did_show_)
     initial_rect_ = new_window_rect;
@@ -1920,15 +1921,15 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
     frame->SetTextDirection(direction);
 }
 
-void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
+void RenderWidget::OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
                                        const gfx::Rect& window_screen_rect) {
   if (screen_metrics_emulator_) {
-    screen_metrics_emulator_->OnUpdateScreenRects(view_screen_rect,
+    screen_metrics_emulator_->OnUpdateScreenRects(widget_screen_rect,
                                                   window_screen_rect);
   } else {
-    SetScreenRects(view_screen_rect, window_screen_rect);
+    SetScreenRects(widget_screen_rect, window_screen_rect);
   }
-  Send(new ViewHostMsg_UpdateScreenRects_ACK(routing_id()));
+  Send(new WidgetHostMsg_UpdateScreenRects_ACK(routing_id()));
 }
 
 void RenderWidget::OnSetViewportIntersection(
@@ -2259,7 +2260,7 @@ void RenderWidget::UpdateSelectionBounds() {
       !blink::WebRuntimeFeatures::IsCompositedSelectionUpdateEnabled();
 #endif
   if (send_ipc) {
-    ViewHostMsg_SelectionBounds_Params params;
+    WidgetHostMsg_SelectionBounds_Params params;
     params.is_anchor_first = false;
     GetSelectionBounds(&params.anchor_rect, &params.focus_rect);
     if (selection_anchor_rect_ != params.anchor_rect ||
@@ -2271,7 +2272,7 @@ void RenderWidget::UpdateSelectionBounds() {
                                               params.anchor_dir);
         params.is_anchor_first = focused_frame->IsSelectionAnchorFirst();
       }
-      Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_, params));
+      Send(new WidgetHostMsg_SelectionBoundsChanged(routing_id_, params));
     }
   }
 
@@ -2288,7 +2289,7 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     if (resizing_mode_selector_->is_synchronous_mode()) {
       gfx::Rect new_pos(WindowRect().x, WindowRect().y, size_.width(),
                         size_.height());
-      view_screen_rect_ = new_pos;
+      widget_screen_rect_ = new_pos;
       window_screen_rect_ = new_pos;
     }
 
@@ -2431,7 +2432,7 @@ void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
     blink::WebTextInputType text_input_type =
         controller ? controller->TextInputType() : blink::kWebTextInputTypeNone;
 
-    Send(new ViewHostMsg_FocusedNodeTouched(
+    Send(new WidgetHostMsg_FocusedNodeTouched(
         routing_id_, text_input_type != blink::kWebTextInputTypeNone));
   }
 #endif
@@ -2946,9 +2947,11 @@ void RenderWidget::UnregisterBrowserPlugin(BrowserPlugin* browser_plugin) {
   browser_plugins_.RemoveObserver(browser_plugin);
 }
 
-void RenderWidget::OnWaitNextFrameForTests(int routing_id) {
+void RenderWidget::OnWaitNextFrameForTests(
+    int main_frame_thread_observer_routing_id) {
   // Sends an ACK to the browser process during the next compositor frame.
-  QueueMessage(new ViewHostMsg_WaitForNextFrameForTests_ACK(routing_id));
+  QueueMessage(new WidgetHostMsg_WaitForNextFrameForTests_ACK(
+      main_frame_thread_observer_routing_id));
 }
 
 const ScreenInfo& RenderWidget::GetWebScreenInfo() const {

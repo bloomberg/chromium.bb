@@ -72,6 +72,7 @@
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/common/visual_properties.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -555,8 +556,8 @@ void RenderWidgetHostImpl::SendScreenRects() {
   last_view_screen_rect_ = view_->GetViewBounds();
   last_window_screen_rect_ = view_->GetBoundsInRootWindow();
   view_->WillSendScreenRects();
-  Send(new ViewMsg_UpdateScreenRects(
-      GetRoutingID(), last_view_screen_rect_, last_window_screen_rect_));
+  Send(new WidgetMsg_UpdateScreenRects(GetRoutingID(), last_view_screen_rect_,
+                                       last_window_screen_rect_));
   waiting_for_screen_rects_ack_ = true;
 }
 
@@ -610,7 +611,7 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
 
   if (process_->IsInitializedAndNotDead()) {
     // Tell the RendererWidget to close.
-    bool rv = Send(new ViewMsg_Close(routing_id_));
+    bool rv = Send(new WidgetMsg_Close(routing_id_));
     DCHECK(rv);
   }
 
@@ -633,26 +634,27 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HittestData, OnHittestData)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateScreenRects_ACK,
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_Close, OnClose)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestSetBounds, OnRequestSetBounds)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AutoscrollStart, OnAutoscrollStart)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AutoscrollFling, OnAutoscrollFling)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AutoscrollEnd, OnAutoscrollEnd)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_RequestSetBounds, OnRequestSetBounds)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_SetTooltipText, OnSetTooltipText)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_SetCursor, OnSetCursor)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_AutoscrollStart, OnAutoscrollStart)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_AutoscrollFling, OnAutoscrollFling)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_AutoscrollEnd, OnAutoscrollEnd)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_LockMouse, OnLockMouse)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_UnlockMouse, OnUnlockMouse)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ForceRedrawComplete, OnForceRedrawComplete)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FrameSwapMessages,
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_ForceRedrawComplete,
+                        OnForceRedrawComplete)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_FrameSwapMessages,
                         OnFrameSwapMessagesReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -698,7 +700,7 @@ void RenderWidgetHostImpl::WasHidden() {
 
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
-  Send(new ViewMsg_WasHidden(routing_id_));
+  Send(new WidgetMsg_WasHidden(routing_id_));
 
   // Tell the RenderProcessHost we were hidden.
   process_->UpdateClientPriority(this);
@@ -726,9 +728,9 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   SendScreenRects();
   RestartInputEventAckTimeoutIfNecessary();
 
-  Send(new ViewMsg_WasShown(routing_id_, record_presentation_time
-                                             ? base::TimeTicks::Now()
-                                             : base::TimeTicks()));
+  Send(new WidgetMsg_WasShown(routing_id_, record_presentation_time
+                                               ? base::TimeTicks::Now()
+                                               : base::TimeTicks()));
 
   process_->UpdateClientPriority(this);
 
@@ -742,7 +744,8 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
 
   // It's possible for our size to be out of sync with the renderer. The
   // following is one case that leads to this:
-  // 1. SynchronizeVisualProperties -> Send ViewMsg_SynchronizeVisualProperties
+  // 1. SynchronizeVisualProperties -> Send
+  // WidgetMsg_SynchronizeVisualProperties
   //    to render.
   // 2. SynchronizeVisualProperties -> do nothing as
   //    sync_visual_props_ack_pending_ is true
@@ -754,7 +757,7 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   // necessary. SynchronizeVisualProperties does nothing if the sizes are
   // already in sync.
   //
-  // TODO: ideally ViewMsg_WasShown would take a size. This way, the renderer
+  // TODO: ideally WidgetMsg_WasShown would take a size. This way, the renderer
   // could handle both the restore and resize at once. This isn't that big a
   // deal as RenderWidget::WasShown delays updating, so that the resize from
   // SynchronizeVisualProperties is usually processed before the renderer is
@@ -931,8 +934,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
       !old_visual_properties_ || old_visual_properties_->new_size.width() !=
                                      visual_properties->new_size.width();
   bool sent_visual_properties = false;
-  if (Send(new ViewMsg_SynchronizeVisualProperties(routing_id_,
-                                                   *visual_properties))) {
+  if (Send(new WidgetMsg_SynchronizeVisualProperties(routing_id_,
+                                                     *visual_properties))) {
     visual_properties_ack_pending_ = needs_ack;
     old_visual_properties_.swap(visual_properties);
     sent_visual_properties = true;
@@ -1016,7 +1019,7 @@ void RenderWidgetHostImpl::LostCapture() {
 }
 
 void RenderWidgetHostImpl::SetActive(bool active) {
-  Send(new ViewMsg_SetActive(routing_id_, active));
+  Send(new WidgetMsg_SetActive(routing_id_, active));
 }
 
 void RenderWidgetHostImpl::LostMouseLock() {
@@ -1025,7 +1028,7 @@ void RenderWidgetHostImpl::LostMouseLock() {
 }
 
 void RenderWidgetHostImpl::SendMouseLockLost() {
-  Send(new ViewMsg_MouseLockLost(routing_id_));
+  Send(new WidgetMsg_MouseLockLost(routing_id_));
 }
 
 void RenderWidgetHostImpl::ViewDestroyed() {
@@ -1528,7 +1531,7 @@ void RenderWidgetHostImpl::SetCursor(const WebCursor& cursor) {
 void RenderWidgetHostImpl::ShowContextMenuAtPoint(
     const gfx::Point& point,
     const ui::MenuSourceType source_type) {
-  Send(new ViewMsg_ShowContextMenu(GetRoutingID(), source_type, point));
+  Send(new WidgetMsg_ShowContextMenu(GetRoutingID(), source_type, point));
 }
 
 void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
@@ -1739,7 +1742,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   if (from_surface) {
     pending_surface_browser_snapshots_.insert(
         std::make_pair(snapshot_id, callback));
-    Send(new ViewMsg_ForceRedraw(GetRoutingID(), snapshot_id));
+    Send(new WidgetMsg_ForceRedraw(GetRoutingID(), snapshot_id));
     return;
   }
 
@@ -1752,7 +1755,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
 #endif
   // TODO(nzolghadr): Remove the duplication here and the if block just above.
   pending_browser_snapshots_.insert(std::make_pair(snapshot_id, callback));
-  Send(new ViewMsg_ForceRedraw(GetRoutingID(), snapshot_id));
+  Send(new WidgetMsg_ForceRedraw(GetRoutingID(), snapshot_id));
 }
 
 void RenderWidgetHostImpl::SelectionChanged(const base::string16& text,
@@ -1763,7 +1766,7 @@ void RenderWidgetHostImpl::SelectionChanged(const base::string16& text,
 }
 
 void RenderWidgetHostImpl::OnSelectionBoundsChanged(
-    const ViewHostMsg_SelectionBounds_Params& params) {
+    const WidgetHostMsg_SelectionBounds_Params& params) {
   if (view_)
     view_->SelectionBoundsChanged(params);
 }
@@ -1927,7 +1930,7 @@ void RenderWidgetHostImpl::CancelUpdateTextDirection() {
 void RenderWidgetHostImpl::NotifyTextDirection() {
   if (text_direction_updated_) {
     if (!text_direction_canceled_)
-      Send(new ViewMsg_SetTextDirection(GetRoutingID(), text_direction_));
+      Send(new WidgetMsg_SetTextDirection(GetRoutingID(), text_direction_));
     text_direction_updated_ = false;
     text_direction_canceled_ = false;
   }
@@ -1967,7 +1970,7 @@ void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {
   DCHECK(!pending_mouse_lock_request_ || !IsMouseLocked());
   if (pending_mouse_lock_request_) {
     pending_mouse_lock_request_ = false;
-    Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
+    Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
   } else if (IsMouseLocked()) {
     view_->UnlockMouse();
   }
@@ -2161,7 +2164,7 @@ void RenderWidgetHostImpl::OnRequestSetBounds(const gfx::Rect& bounds) {
   } else if (view_) {
     view_->SetBounds(bounds);
   }
-  Send(new ViewMsg_SetBounds_ACK(routing_id_));
+  Send(new WidgetMsg_SetBounds_ACK(routing_id_));
 }
 
 void RenderWidgetHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
@@ -2332,7 +2335,7 @@ void RenderWidgetHostImpl::OnProcessSwapMessage(const IPC::Message& message) {
 void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
                                        bool privileged) {
   if (pending_mouse_lock_request_) {
-    Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
+    Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
     return;
   }
 
@@ -2609,7 +2612,7 @@ bool RenderWidgetHostImpl::IsIgnoringInputEvents() const {
 }
 
 void RenderWidgetHostImpl::SetBackgroundOpaque(bool opaque) {
-  Send(new ViewMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
+  Send(new WidgetMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
 }
 
 bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
@@ -2626,11 +2629,11 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
 
   pending_mouse_lock_request_ = false;
   if (!view_ || !view_->HasFocus()|| !view_->LockMouse()) {
-    Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
+    Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
     return false;
   }
 
-  Send(new ViewMsg_LockMouse_ACK(routing_id_, true));
+  Send(new WidgetMsg_LockMouse_ACK(routing_id_, true));
   return true;
 }
 

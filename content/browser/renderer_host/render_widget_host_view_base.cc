@@ -134,7 +134,7 @@ float RenderWidgetHostViewBase::GetTopControlsHeight() const {
 }
 
 void RenderWidgetHostViewBase::SelectionBoundsChanged(
-    const ViewHostMsg_SelectionBounds_Params& params) {
+    const WidgetHostMsg_SelectionBounds_Params& params) {
 #if !defined(OS_ANDROID)
   if (GetTextInputManager())
     GetTextInputManager()->SelectionBoundsChanged(this, params);
