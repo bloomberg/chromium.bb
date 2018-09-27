@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -333,9 +334,15 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
       registry->GenerateInstalledExtensionsSet()->Contains(kTestExtensionId));
 }
 
+// Flaky on Linux ASan LSan (https://crbug.com/889804)
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_ReinstallDisabledExtension DISABLED_ReinstallDisabledExtension
+#else
+#define MAYBE_ReinstallDisabledExtension ReinstallDisabledExtension
+#endif
 // Ensure that inline-installing a disabled extension simply re-enables it.
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
-                       ReinstallDisabledExtension) {
+                       MAYBE_ReinstallDisabledExtension) {
   // Install an extension via inline install, and confirm it is successful.
   AutoAcceptInstall();
   ui_test_utils::NavigateToURL(
@@ -543,7 +550,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerListenerTest,
   RunTest("download_progress_listener.html");
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerListenerTest, BothListenersTest) {
+// Flaky on Linux ASan LSan (https://crbug.com/889804)
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_BothListenersTest DISABLED_BothListenersTest
+#else
+#define MAYBE_BothListenersTest BothListenersTest
+#endif
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerListenerTest,
+                       MAYBE_BothListenersTest) {
   RunTest("both_listeners.html");
   // The extension should be installed.
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
