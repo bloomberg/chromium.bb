@@ -23,6 +23,7 @@
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/sync/driver/sync_service.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
@@ -60,6 +61,7 @@ void IOSChromePasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
   password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
       password_store.get(), sync_service,
       browser_state->GetSharedURLLoaderFactory(),
+      GetApplicationContext()->GetNetworkConnectionTracker(),
       browser_state->GetStatePath());
 }
 
