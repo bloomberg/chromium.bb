@@ -71,6 +71,7 @@ customBackgrounds.KEYCODES = {
 customBackgrounds.IDS = {
   ATTRIBUTIONS: 'custom-bg-attr',
   BACK: 'bg-sel-back',
+  BACK_CIRCLE: 'bg-sel-back-circle',
   CANCEL: 'bg-sel-footer-cancel',
   CUSTOM_LINKS_RESTORE_DEFAULT: 'custom-links-restore-default',
   CUSTOM_LINKS_RESTORE_DEFAULT_TEXT: 'custom-links-restore-default-text',
@@ -1070,7 +1071,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
     customBackgrounds.networkStateChanged(false);
   }
 
-  $(customBackgrounds.IDS.BACK)
+  $(customBackgrounds.IDS.BACK_CIRCLE)
       .setAttribute('aria-label', configData.translatedStrings.backLabel);
   $(customBackgrounds.IDS.CANCEL)
       .setAttribute('aria-label', configData.translatedStrings.selectionCancel);
@@ -1222,7 +1223,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
         customBackgrounds.dialogCollectionsSource);
   };
   $(customBackgrounds.IDS.BACK).onclick = backInteraction;
-  $(customBackgrounds.IDS.BACK).onkeyup = function(event) {
+  $(customBackgrounds.IDS.BACK_CIRCLE).onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       backInteraction(event);
     }
