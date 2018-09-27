@@ -12093,6 +12093,7 @@ Called by update_net_error_codes.py.-->
     application/vnd.android.package-archive MIME type.
   </int>
   <int value="6" label="Virtual Contact File">text/vcard MIME type.</int>
+  <int value="7" label="iCalendar">text/calendar MIME type.</int>
 </enum>
 
 <enum name="DownloadNotificationForegroundLifecycle">

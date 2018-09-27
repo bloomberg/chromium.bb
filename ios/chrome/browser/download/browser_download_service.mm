@@ -36,6 +36,9 @@ DownloadMimeTypeResult GetUmaResult(const std::string& mime_type) {
   if (mime_type == "text/vcard")
     return DownloadMimeTypeResult::VirtualContactFile;
 
+  if (mime_type == "text/calendar")
+    return DownloadMimeTypeResult::iCalendar;
+
   return DownloadMimeTypeResult::Other;
 }
 }  // namespace

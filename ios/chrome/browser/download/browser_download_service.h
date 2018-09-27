@@ -36,7 +36,9 @@ enum class DownloadMimeTypeResult {
   AndroidPackageArchive = 5,
   // text/vcard MIME type.
   VirtualContactFile = 6,
-  kMaxValue = VirtualContactFile,
+  // text/calendar MIME type.
+  iCalendar = 7,
+  kMaxValue = iCalendar,
 };
 
 // Keyed Service which acts as web::DownloadController delegate and routes
