@@ -105,6 +105,14 @@ void RemoveUselessCredentials(
     PrefService* prefs,
     int delay_in_seconds);
 
+// Excluding protocol from a signon_realm means to remove from the signon_realm
+// what is before the web origin (with the protocol excluded as well). For
+// example if the signon_realm is "https://www.google.com/", after
+// excluding protocol it becomes "www.google.com/".
+// This assumes that the |form|'s origin is a substring of the signon_realm.
+base::StringPiece GetSignonRealmWithProtocolExcluded(
+    const autofill::PasswordForm& form);
+
 // Report metrics about HTTP to HTTPS migration process. This function cannot be
 // used on iOS platform because the HSTS query is not supported.
 // |network_context_getter| should return nullptr if it can't get the network

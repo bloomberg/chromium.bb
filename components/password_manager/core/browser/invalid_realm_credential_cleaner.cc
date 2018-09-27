@@ -13,6 +13,7 @@
 
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -198,12 +199,9 @@ void InvalidRealmCredentialCleaner::OnGetPasswordStoreResults(
   // HTTP forms to the expected signon_realm (excluding the protocol).
   std::map<FormKeyForHttpMatch, std::string> http_credentials_map;
   for (const auto& form : http_forms) {
-    base::StringPiece signon_realm = form->signon_realm;
-    // Find the web origin in the signon_realm and remove what is before it.
-    // This will result in removing the protocol ("http://").
-    signon_realm = signon_realm.substr(
-        signon_realm.find(form->origin.GetOrigin().GetContent()));
-    http_credentials_map.emplace(GetFormKeyForHttpMatch(*form), signon_realm);
+    http_credentials_map.emplace(
+        GetFormKeyForHttpMatch(*form),
+        password_manager_util::GetSignonRealmWithProtocolExcluded(*form));
   }
 
   // Separate HTML and non-HTML HTTPS credentials.

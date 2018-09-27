@@ -243,6 +243,20 @@ void RemoveUselessCredentials(
       base::TimeDelta::FromSeconds(delay_in_seconds));
 }
 
+base::StringPiece GetSignonRealmWithProtocolExcluded(const PasswordForm& form) {
+  base::StringPiece signon_realm_protocol_excluded = form.signon_realm;
+
+  // Find the web origin (with protocol excluded) in the signon_realm.
+  const size_t after_protocol =
+      signon_realm_protocol_excluded.find(form.origin.GetOrigin().GetContent());
+  DCHECK_NE(after_protocol, base::StringPiece::npos);
+
+  // Keep the string starting with position |after_protocol|.
+  signon_realm_protocol_excluded =
+      signon_realm_protocol_excluded.substr(after_protocol);
+  return signon_realm_protocol_excluded;
+}
+
 void FindBestMatches(
     std::vector<const PasswordForm*> matches,
     std::map<base::string16, const PasswordForm*>* best_matches,

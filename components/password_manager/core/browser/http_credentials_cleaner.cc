@@ -5,7 +5,6 @@
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/string_piece.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "url/gurl.h"
 
@@ -30,11 +29,10 @@ void HttpCredentialCleaner::OnGetPasswordStoreResults(
   });
 
   for (auto& form : results) {
-    // The next signon-realm has the protocol excluded. For example if original
-    // signon_realm is "https://google.com/". After excluding protocol it
-    // becomes "google.com/".
-    FormKey form_key({GURL(form->signon_realm).GetContent(), form->scheme,
-                      form->username_value});
+    FormKey form_key(
+        {std::string(
+             password_manager_util::GetSignonRealmWithProtocolExcluded(*form)),
+         form->scheme, form->username_value});
     if (form->origin.SchemeIs(url::kHttpScheme)) {
       PostHSTSQueryForHostAndNetworkContext(
           form->origin, network_context_getter_.Run(),
