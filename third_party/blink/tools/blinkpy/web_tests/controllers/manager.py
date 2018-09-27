@@ -146,13 +146,15 @@ class Manager(object):
             return test_run_results.RunDetails(exit_code=exit_code)
 
         if self._options.num_retries is None:
-            # Don't retry failures if an explicit list of tests was passed in.
-            should_retry_failures = len(paths) < len(test_names)
-            # Retry failures 3 times by default.
-            if should_retry_failures:
+            # If --test-list is passed, or if no test narrowing is specified,
+            # default to 3 retries. Otherwise [e.g. if tests are being passed by
+            # name], default to 0 retries.
+            if self._options.test_list or len(paths) < len(test_names):
                 self._options.num_retries = 3
-        else:
-            should_retry_failures = self._options.num_retries > 0
+            else:
+                self._options.num_retries = 0
+
+        should_retry_failures = self._options.num_retries > 0
 
         try:
             self._start_servers(tests_to_run)
