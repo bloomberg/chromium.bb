@@ -39,10 +39,6 @@ CGFloat CurrentScreenWidth();
 // Returns true if the device is an iPhone X.
 bool IsIPhoneX();
 
-// Returns whether the UI Refresh Infobar will be used.
-// TODO (crbug.com/884722): Remove all use of this flag.
-bool IsRefreshInfobarEnabled();
-
 // Returns whether the UI Refresh Location Bar will be used.
 // TODO (crbug.com/884723): Remove all use of this flag.
 bool IsRefreshLocationBarEnabled();

@@ -32,14 +32,8 @@ NSString* const kSaveCardInfobarViewUploadAccessibilityID =
 
 namespace {
 
-// Returns whether the UI Refresh Infobar will be used.
-using ::IsRefreshInfobarEnabled;
-
 // Returns the image for the infobar close button.
 UIImage* InfoBarCloseImage() {
-  if (!IsRefreshInfobarEnabled()) {
-    return [UIImage imageNamed:@"infobar_close"];
-  }
   ui::ResourceBundle& resourceBundle = ui::ResourceBundle::GetSharedInstance();
   return resourceBundle.GetNativeImageNamed(IDR_IOS_INFOBAR_CLOSE).ToUIImage();
 }

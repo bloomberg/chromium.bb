@@ -63,9 +63,7 @@ const CGFloat kButtonCornerRadius = 8.0;
 
 // Returns the font for the infobar message.
 UIFont* InfoBarMessageFont() {
-  return IsRefreshInfobarEnabled()
-             ? [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-             : [MDCTypography subheadFont];
+  return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
 }
 
 }  // namespace
@@ -200,20 +198,6 @@ UIFont* InfoBarMessageFont() {
   id<LayoutGuideProvider> safeAreaLayoutGuide =
       SafeAreaLayoutGuideForView(self);
 
-  // The drop shadow is at the top of the view, placed outside of its bounds.
-  if (!IsRefreshInfobarEnabled()) {
-    UIImage* shadowImage = [UIImage imageNamed:@"infobar_shadow"];
-    UIImageView* shadowView = [[UIImageView alloc] initWithImage:shadowImage];
-    shadowView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:shadowView];
-    [NSLayoutConstraint activateConstraints:@[
-      [self.leadingAnchor constraintEqualToAnchor:shadowView.leadingAnchor],
-      [self.trailingAnchor constraintEqualToAnchor:shadowView.trailingAnchor],
-      [self.topAnchor constraintEqualToAnchor:shadowView.topAnchor
-                                     constant:shadowView.image.size.height],
-    ]];
-  }
-
   // Add the icon. The icon is fixed to the top leading corner of the infobar.
   // |iconContainerView| is used here because the AutoLayout constraints for
   // UIImageView would get ignored otherwise.
@@ -224,9 +208,7 @@ UIFont* InfoBarMessageFont() {
     iconContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     iconContainerView.clipsToBounds = YES;
     UIImageView* iconImageView = [[UIImageView alloc] initWithImage:self.icon];
-    if (IsRefreshInfobarEnabled()) {
-      iconImageView.tintColor = UIColorFromRGB(kIconTintColor);
-    }
+    iconImageView.tintColor = UIColorFromRGB(kIconTintColor);
     [iconContainerView addSubview:iconImageView];
     AddSameConstraints(iconContainerView, iconImageView);
     [self addSubview:iconContainerView];
@@ -284,9 +266,7 @@ UIFont* InfoBarMessageFont() {
   // Add the close button. The close button is fixed to the trailing edge of the
   // infobar since it cannot expand.
   DCHECK(self.closeButtonImage);
-  UIButton* closeButton =
-      [UIButton buttonWithType:IsRefreshInfobarEnabled() ? UIButtonTypeSystem
-                                                         : UIButtonTypeCustom];
+  UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeSystem];
   closeButton.translatesAutoresizingMaskIntoConstraints = NO;
   [closeButton setImage:self.closeButtonImage forState:UIControlStateNormal];
   closeButton.contentEdgeInsets =
@@ -296,10 +276,8 @@ UIFont* InfoBarMessageFont() {
                   action:@selector(didTapClose)
         forControlEvents:UIControlEventTouchUpInside];
   [closeButton setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
-  if (IsRefreshInfobarEnabled()) {
-    closeButton.tintColor = [UIColor blackColor];
-    closeButton.alpha = 0.20;
-  }
+  closeButton.tintColor = [UIColor blackColor];
+  closeButton.alpha = 0.20;
   // Prevent the button from shrinking or expanding horizontally.
   [closeButton
       setContentCompressionResistancePriority:UILayoutPriorityRequired
@@ -628,14 +606,11 @@ UIFont* InfoBarMessageFont() {
                 action:action
       forControlEvents:UIControlEventTouchUpInside];
   [button setUnderlyingColorHint:[UIColor blackColor]];
-
-  if (IsRefreshInfobarEnabled()) {
-    button.uppercaseTitle = NO;
-    button.layer.cornerRadius = kButtonCornerRadius;
-    [button
-        setTitleFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-            forState:UIControlStateNormal];
-  }
+  button.uppercaseTitle = NO;
+  button.layer.cornerRadius = kButtonCornerRadius;
+  [button
+      setTitleFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+          forState:UIControlStateNormal];
 
   if (palette) {
     button.hasOpaqueBackground = YES;
