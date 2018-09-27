@@ -5,6 +5,8 @@
 #ifndef UI_GFX_PLATFORM_FONT_WIN_H_
 #define UI_GFX_PLATFORM_FONT_WIN_H_
 
+#include <windows.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -14,8 +16,6 @@
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/platform_font.h"
 
-#include <windows.h>
-
 struct IDWriteFactory;
 struct IDWriteFont;
 
@@ -23,6 +23,14 @@ namespace gfx {
 
 class GFX_EXPORT PlatformFontWin : public PlatformFont {
  public:
+  enum class SystemFont : int {
+    kCaption = 0,
+    kSmallCaption,
+    kMenu,
+    kStatus,
+    kMessage
+  };
+
   PlatformFontWin();
   explicit PlatformFontWin(NativeFont native_font);
   PlatformFontWin(const std::string& font_name, int font_size);
@@ -39,14 +47,15 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // Callback that returns the minimum height that should be used for
   // gfx::Fonts. Optional. If not specified, the minimum font size is 0.
   typedef int (*GetMinimumFontSizeCallback)();
-  static GetMinimumFontSizeCallback get_minimum_font_size_callback;
+  static void SetGetMinimumFontSizeCallback(
+      GetMinimumFontSizeCallback callback);
 
   // Callback that adjusts a LOGFONT to meet suitability requirements of the
   // embedding application. Optional. If not specified, no adjustments are
   // performed other than clamping to a minimum font height if
   // |get_minimum_font_size_callback| is specified.
   typedef void (*AdjustFontCallback)(LOGFONT* lf);
-  static AdjustFontCallback adjust_font_callback;
+  static void SetAdjustFontCallback(AdjustFontCallback callback);
 
   // Returns the font name for the system locale. Some fonts, particularly
   // East Asian fonts, have different names per locale. If the localized font
@@ -75,13 +84,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
 
   static bool IsDirectWriteEnabled();
 
-  // Returns the GDI metrics for the font passed in.
-  static void GetTextMetricsForFont(HDC hdc,
-                                    HFONT font,
-                                    TEXTMETRIC* text_metrics);
-
-  // Returns the size of the font based on the font information passed in.
-  static int GetFontSize(const LOGFONT& font_info);
+  static const Font& GetSystemFont(SystemFont system_font);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_UniscribeFallback);
@@ -167,6 +170,11 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // Initializes this object with the specified font name and size.
   void InitWithFontNameAndSize(const std::string& font_name,
                                int font_size);
+
+  // Returns the GDI metrics for the font passed in.
+  static void GetTextMetricsForFont(HDC hdc,
+                                    HFONT font,
+                                    TEXTMETRIC* text_metrics);
 
   // Returns the base font ref. This should ONLY be invoked on the
   // UI thread.

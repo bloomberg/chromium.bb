@@ -96,8 +96,6 @@
 #include "url/url_constants.h"
 
 #if defined(OS_WIN)
-#include "base/win/win_client_metrics.h"
-#include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/platform_font_win.h"
@@ -122,42 +120,33 @@ using RoutingIDViewMap = base::hash_map<RenderViewHostID, RenderViewHostImpl*>;
 base::LazyInstance<RoutingIDViewMap>::Leaky g_routing_id_view_map =
     LAZY_INSTANCE_INITIALIZER;
 
+#if defined(OS_WIN)
+// Fetches the name and font size of a particular Windows system font.
+void GetFontInfo(gfx::PlatformFontWin::SystemFont system_font,
+                 base::string16* name,
+                 int32_t* size) {
+  const gfx::Font& font = gfx::PlatformFontWin::GetSystemFont(system_font);
+  *name = base::UTF8ToUTF16(font.GetFontName());
+  *size = font.GetFontSize();
+}
+#endif  // OS_WIN
+
 void GetPlatformSpecificPrefs(RendererPreferences* prefs) {
 #if defined(OS_WIN)
-  NONCLIENTMETRICS_XP metrics = {0};
-  base::win::GetNonClientMetrics(&metrics);
-
-  // Render process has the same problem with Windows applying text scaling
-  // before Chrome DPI + accessibility scaling is applied, resulting in double
-  // scaling. These fonts are only used for very specific CSS styles, but to
-  // remain consistent with the rest of chrome we will make sure they aren't
-  // incorrectly scaled:
-  display::win::AdjustFontForAccessibility(&metrics.lfCaptionFont);
-  display::win::AdjustFontForAccessibility(&metrics.lfSmCaptionFont);
-  display::win::AdjustFontForAccessibility(&metrics.lfMenuFont);
-  display::win::AdjustFontForAccessibility(&metrics.lfStatusFont);
-  display::win::AdjustFontForAccessibility(&metrics.lfMessageFont);
-
-  // Store the preferred font faces and sizes:
-  prefs->caption_font_family_name = metrics.lfCaptionFont.lfFaceName;
-  prefs->caption_font_height = gfx::PlatformFontWin::GetFontSize(
-      metrics.lfCaptionFont);
-
-  prefs->small_caption_font_family_name = metrics.lfSmCaptionFont.lfFaceName;
-  prefs->small_caption_font_height = gfx::PlatformFontWin::GetFontSize(
-      metrics.lfSmCaptionFont);
-
-  prefs->menu_font_family_name = metrics.lfMenuFont.lfFaceName;
-  prefs->menu_font_height = gfx::PlatformFontWin::GetFontSize(
-      metrics.lfMenuFont);
-
-  prefs->status_font_family_name = metrics.lfStatusFont.lfFaceName;
-  prefs->status_font_height = gfx::PlatformFontWin::GetFontSize(
-      metrics.lfStatusFont);
-
-  prefs->message_font_family_name = metrics.lfMessageFont.lfFaceName;
-  prefs->message_font_height = gfx::PlatformFontWin::GetFontSize(
-      metrics.lfMessageFont);
+  // Note that what is called "height" in this struct is actually the font size;
+  // font "height" typically includes ascender, descender, and padding and is
+  // often a third or so larger than the given font size.
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kCaption,
+              &prefs->caption_font_family_name, &prefs->caption_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kSmallCaption,
+              &prefs->small_caption_font_family_name,
+              &prefs->small_caption_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kMenu,
+              &prefs->menu_font_family_name, &prefs->menu_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kMessage,
+              &prefs->message_font_family_name, &prefs->message_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kStatus,
+              &prefs->status_font_family_name, &prefs->status_font_height);
 
   prefs->vertical_scroll_bar_width_in_dips =
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXVSCROLL);

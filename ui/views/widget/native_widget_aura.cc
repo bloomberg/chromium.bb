@@ -4,6 +4,9 @@
 
 #include "ui/views/widget/native_widget_aura.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -57,9 +60,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#include "base/win/win_client_metrics.h"
-#include "ui/base/l10n/l10n_util_win.h"
-#include "ui/display/win/dpi.h"
+#include "ui/gfx/platform_font_win.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
@@ -1227,12 +1228,8 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 // static
 gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
 #if defined(OS_WIN)
-  NONCLIENTMETRICS_XP ncm;
-  base::win::GetNonClientMetrics(&ncm);
-  display::win::AdjustFontForAccessibility(&(ncm.lfCaptionFont));
-  l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
-  base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
-  return gfx::FontList(gfx::Font(caption_font.get()));
+  return gfx::FontList(gfx::PlatformFontWin::GetSystemFont(
+      gfx::PlatformFontWin::SystemFont::kCaption));
 #else
   return gfx::FontList();
 #endif

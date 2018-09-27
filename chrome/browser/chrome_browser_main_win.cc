@@ -464,8 +464,8 @@ ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() {
 
 void ChromeBrowserMainPartsWin::ToolkitInitialized() {
   ChromeBrowserMainParts::ToolkitInitialized();
-  gfx::PlatformFontWin::adjust_font_callback = &AdjustUIFont;
-  gfx::PlatformFontWin::get_minimum_font_size_callback = &GetMinimumFontSize;
+  gfx::PlatformFontWin::SetAdjustFontCallback(&AdjustUIFont);
+  gfx::PlatformFontWin::SetGetMinimumFontSizeCallback(&GetMinimumFontSize);
   ui::CursorLoaderWin::SetCursorResourceModule(chrome::kBrowserResourcesDll);
 }
 
