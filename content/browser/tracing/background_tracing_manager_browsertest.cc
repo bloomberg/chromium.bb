@@ -586,6 +586,18 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        MAYBE_ToggleBlinkScenarios) {
   {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    ASSERT_TRUE(command_line);
+
+    // Early bailout in the case command line arguments have been explicitly set
+    // for the runner.
+    if (!command_line->GetSwitchValueASCII(switches::kEnableBlinkFeatures)
+             .empty() ||
+        !command_line->GetSwitchValueASCII(switches::kDisableBlinkFeatures)
+             .empty()) {
+      return;
+    }
+
     SetupBackgroundTracingManager();
 
     base::RunLoop run_loop;
@@ -619,10 +631,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
             BackgroundTracingManager::NO_DATA_FILTERING);
 
     EXPECT_TRUE(scenario_activated);
-
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    EXPECT_TRUE(command_line);
-
     EXPECT_EQ(command_line->GetSwitchValueASCII(switches::kEnableBlinkFeatures),
               "FasterWeb1,FasterWeb2");
     EXPECT_EQ(
