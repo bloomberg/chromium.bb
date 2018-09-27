@@ -51,7 +51,8 @@ v8::Local<v8::Object> ObjectBackedNativeHandler::NewInstance() {
   DCHECK_EQ(kInitialized, init_state_)
       << "Initialize() must be called before a new instance is created!";
   return v8::Local<v8::ObjectTemplate>::New(GetIsolate(), object_template_)
-      ->NewInstance();
+      ->NewInstance(GetIsolate()->GetCurrentContext())
+      .ToLocalChecked();
 }
 
 // static
