@@ -955,12 +955,6 @@ class HitTestCulledInlinesGeneratorContext {
   HitTestCulledInlinesGeneratorContext(Region& region,
                                        const HitTestLocation& location)
       : intersected_(false), region_(region), location_(location) {}
-  void operator()(const FloatRect& rect) {
-    if (location_.Intersects(rect)) {
-      intersected_ = true;
-      region_.Unite(EnclosingIntRect(rect));
-    }
-  }
   void operator()(const LayoutRect& rect) {
     if (location_.Intersects(rect)) {
       intersected_ = true;
