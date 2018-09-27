@@ -104,7 +104,7 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
     return 0;
   switch (match_) {
     case kId:
-      return kIdSpecificity;
+      return 0x010000;
     case kPseudoClass:
       switch (GetPseudoType()) {
         case kPseudoHost:
@@ -122,7 +122,7 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
         default:
           break;
       }
-      return kClassLikeSpecificity;
+      return 0x000100;
     case kClass:
     case kPseudoElement:
     case kAttributeExact:
@@ -132,11 +132,11 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
     case kAttributeContain:
     case kAttributeBegin:
     case kAttributeEnd:
-      return kClassLikeSpecificity;
+      return 0x000100;
     case kTag:
       if (TagQName().LocalName() == UniversalSelectorAtom())
         return 0;
-      return kTagSpecificity;
+      return 0x000001;
     case kUnknown:
       return 0;
   }
