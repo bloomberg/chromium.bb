@@ -31,6 +31,15 @@ WaitForDomAction::~WaitForDomAction() {}
 void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
                                      ProcessActionCallback callback) {
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+
+  // Fail the action if the selector is empty.
+  if (proto_.wait_for_dom().element().selectors().empty()) {
+    UpdateProcessedAction(false);
+    DLOG(ERROR) << "Empty selector, failing action.";
+    std::move(callback).Run(std::move(processed_action_proto_));
+    return;
+  }
+
   int check_rounds = kDefaultCheckRounds;
 
   int timeout_ms = proto_.wait_for_dom().timeout_ms();
