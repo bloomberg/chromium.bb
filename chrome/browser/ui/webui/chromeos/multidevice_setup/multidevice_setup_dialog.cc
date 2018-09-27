@@ -48,9 +48,8 @@ void MultiDeviceSetupDialog::Show() {
 }
 
 MultiDeviceSetupDialog::MultiDeviceSetupDialog()
-    : SystemWebDialogDelegate(
-          GURL(chrome::kChromeUIMultiDeviceSetupUrl),
-          l10n_util::GetStringUTF16(IDS_MULTIDEVICE_SETUP_DIALOG_TITLE)) {}
+    : SystemWebDialogDelegate(GURL(chrome::kChromeUIMultiDeviceSetupUrl),
+                              base::string16()) {}
 
 MultiDeviceSetupDialog::~MultiDeviceSetupDialog() = default;
 
