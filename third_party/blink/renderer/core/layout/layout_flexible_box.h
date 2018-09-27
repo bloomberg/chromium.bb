@@ -111,6 +111,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   bool IsColumnFlow() const;
   bool IsLeftToRightFlow() const;
   bool IsMultiline() const;
+  bool ShouldApplyMinSizeAutoForChild(const LayoutBox& child) const;
   Length FlexBasisForChild(const LayoutBox& child) const;
   LayoutUnit CrossAxisExtentForChild(const LayoutBox& child) const;
   LayoutUnit CrossAxisIntrinsicExtentForChild(const LayoutBox& child) const;
