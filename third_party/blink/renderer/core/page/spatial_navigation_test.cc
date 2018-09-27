@@ -44,6 +44,21 @@ class SpatialNavigationTest : public RenderingTest {
     visual_viewport.SetWidth(LayoutUnit(0));
     return visual_viewport;
   }
+
+  void AssertUseSidesOfVisualViewport(Node* focus_node) {
+    EXPECT_EQ(
+        SearchOrigin(RootViewport(&GetFrame()), focus_node, kWebFocusTypeUp),
+        BottomOfVisualViewport());
+    EXPECT_EQ(
+        SearchOrigin(RootViewport(&GetFrame()), focus_node, kWebFocusTypeDown),
+        TopOfVisualViewport());
+    EXPECT_EQ(
+        SearchOrigin(RootViewport(&GetFrame()), focus_node, kWebFocusTypeLeft),
+        RightSideOfVisualViewport());
+    EXPECT_EQ(
+        SearchOrigin(RootViewport(&GetFrame()), focus_node, kWebFocusTypeRight),
+        LeftSideOfVisualViewport());
+  }
 };
 
 TEST_F(SpatialNavigationTest, RootFramesVisualViewport) {
@@ -88,14 +103,16 @@ TEST_F(SpatialNavigationTest, FindContainerWhenEnclosingContainerIsIframe) {
 
   SetChildFrameHTML(
       "<!DOCTYPE html>"
-      "<a id='child'>link</a>");
+      "<a>link</a>");
 
   ChildDocument().View()->UpdateAllLifecyclePhases();
-  Element* child_element = ChildDocument().getElementById("child");
-  Node* enclosing_container = ScrollableAreaOrDocumentOf(child_element);
+  Element* iframe = GetDocument().QuerySelector("iframe");
+  Element* link = ChildDocument().QuerySelector("a");
+  Node* enclosing_container = ScrollableAreaOrDocumentOf(link);
 
-  EXPECT_FALSE(IsRectOffscreen(enclosing_container));
-  EXPECT_FALSE(IsRectOffscreen(child_element));
+  EXPECT_FALSE(IsOffscreen(iframe));
+  EXPECT_FALSE(IsOffscreen(&ChildDocument()));
+  EXPECT_FALSE(IsOffscreen(link));
 
   EXPECT_EQ(enclosing_container, ChildDocument());
   EXPECT_TRUE(IsScrollableAreaOrDocument(enclosing_container));
@@ -108,25 +125,33 @@ TEST_F(SpatialNavigationTest,
       "<!DOCTYPE html>"
       "<style>"
       "  #content {"
-      "    margin-top: 600px;"
+      "    margin-top: 200px;"  // Outside the div's viewport.
       "  }"
       "  #container {"
       "    height: 100px;"
-      "    overflow-y: scroll;"
+      "    overflow: scroll;"
       "  }"
       "</style>"
       "<div id='container'>"
       "  <div id='content'>some text here</div>"
       "</div>");
 
-  Element* content_element = GetDocument().getElementById("content");
-  Element* container_element = GetDocument().getElementById("container");
-  Node* enclosing_container = ScrollableAreaOrDocumentOf(content_element);
+  Element* content = GetDocument().getElementById("content");
+  Element* container = GetDocument().getElementById("container");
+  Node* enclosing_container = ScrollableAreaOrDocumentOf(content);
 
-  EXPECT_TRUE(IsRectOffscreen(content_element));
-  EXPECT_FALSE(IsRectOffscreen(container_element));
+  // TODO(crbug.com/889840):
+  // VisibleBoundsInVisualViewport does not (yet) take div-clipping into
+  // account. The node is off screen, but nevertheless VBIVV returns a non-
+  // empty rect. If you fix VisibleBoundsInVisualViewport, change to
+  // EXPECT_TRUE here and stop using LayoutObject in IsOffscreen().
+  EXPECT_FALSE(
+      content->VisibleBoundsInVisualViewport().IsEmpty());  // EXPECT_TRUE.
 
-  EXPECT_EQ(enclosing_container, container_element);
+  EXPECT_TRUE(IsOffscreen(content));
+  EXPECT_FALSE(IsOffscreen(container));
+
+  EXPECT_EQ(enclosing_container, container);
   EXPECT_TRUE(IsScrollableAreaOrDocument(enclosing_container));
 }
 
@@ -138,15 +163,15 @@ TEST_F(SpatialNavigationTest, ZooomPutsElementOffScreen) {
 
   Element* a = GetDocument().getElementById("a");
   Element* b = GetDocument().getElementById("b");
-  EXPECT_FALSE(IsRectOffscreen(a));
-  EXPECT_FALSE(IsRectOffscreen(b));
+  EXPECT_FALSE(IsOffscreen(a));
+  EXPECT_FALSE(IsOffscreen(b));
 
-  // Now, test IsRectOffscreen with a pinched viewport.
+  // Now, test IsOffscreen with a pinched viewport.
   VisualViewport& visual_viewport = GetFrame().GetPage()->GetVisualViewport();
   visual_viewport.SetScale(2);
   // #b is no longer visible.
-  EXPECT_FALSE(IsRectOffscreen(a));
-  EXPECT_TRUE(IsRectOffscreen(b));
+  EXPECT_FALSE(IsOffscreen(a));
+  EXPECT_TRUE(IsOffscreen(b));
 }
 
 TEST_F(SpatialNavigationTest, RootViewportRespectsVisibleSize) {
@@ -201,10 +226,11 @@ TEST_F(SpatialNavigationTest, StartAtRightSideWhenGoingWestWithoutFocus) {
 TEST_F(SpatialNavigationTest,
        StartAtBottomWhenGoingUpwardsAndFocusIsOffscreen) {
   SetBodyInnerHTML(
-      "<button id='b' style='margin-top: 120%;'>B</button>");  // Outside visual
+      "<button id='b' style='margin-top: 120%;'>B</button>");  // Outside the
+                                                               // visual
                                                                // viewport.
   Element* b = GetDocument().getElementById("b");
-  EXPECT_TRUE(IsRectOffscreen(b));
+  EXPECT_TRUE(IsOffscreen(b));
 
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeUp),
             BottomOfVisualViewport());
@@ -220,7 +246,7 @@ TEST_F(SpatialNavigationTest, StartAtContainersEdge) {
       "    overflow: scroll;"
       "  }"
       "  button {"
-      "    margin-top: 300px;"  // Outside div's scrollport.
+      "    margin-top: 200px;"  // Outside the div's viewport.
       "  }"
       "</style>"
       "<div id='container'>"
@@ -231,7 +257,13 @@ TEST_F(SpatialNavigationTest, StartAtContainersEdge) {
   const Element* container = GetDocument().getElementById("container");
   const LayoutRect container_box = NodeRectInRootFrame(container, true);
 
-  EXPECT_TRUE(IsRectOffscreen(b));
+  // TODO(crbug.com/889840):
+  // VisibleBoundsInVisualViewport does not (yet) take div-clipping into
+  // account. The node is off screen, but nevertheless VBIVV returns a non-
+  // empty rect. If you fix VisibleBoundsInVisualViewport, change to
+  // EXPECT_TRUE here and stop using LayoutObject in IsOffscreen().
+  EXPECT_FALSE(b->VisibleBoundsInVisualViewport().IsEmpty());  // EXPECT_TRUE.
+  EXPECT_TRUE(IsOffscreen(b));
 
   // Go down.
   LayoutRect container_top_edge = container_box;
@@ -266,13 +298,13 @@ TEST_F(SpatialNavigationTest,
       "<!DOCTYPE html>"
       "<style>"
       "  div {"
-      "    margin-top: 120%;"  // Outside visual viewport.
+      "    margin-top: 120%;"  // Outside the visual viewport.
       "    height: 100px;"
       "    width: 100px;"
       "    overflow: scroll;"
       "  }"
       "  button {"
-      "    margin-top: 300px;"  // Outside div's scrollport.
+      "    margin-top: 300px;"  // Outside the div's scrollport.
       "  }"
       "</style>"
       "<div id='scroller'>"
@@ -282,8 +314,8 @@ TEST_F(SpatialNavigationTest,
   Element* scroller = GetDocument().getElementById("scroller");
   Element* b = GetDocument().getElementById("b");
 
-  EXPECT_TRUE(IsRectOffscreen(scroller));
-  EXPECT_TRUE(IsRectOffscreen(b));
+  EXPECT_TRUE(IsOffscreen(scroller));
+  EXPECT_TRUE(IsOffscreen(b));
 
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeUp),
             BottomOfVisualViewport());
@@ -297,7 +329,7 @@ TEST_F(SpatialNavigationTest,
       "<!DOCTYPE html>"
       "<style>"
       "  div {"
-      "   margin-top: 1200px;"
+      "   margin-top: 120%;"  // Outside the visual viewport.
       "   height: 100px;"
       "   width: 100px;"
       "   overflow: scroll;"
@@ -319,14 +351,11 @@ TEST_F(SpatialNavigationTest,
 
   EXPECT_TRUE(IsScrollableAreaOrDocument(scroller1));
   EXPECT_TRUE(IsScrollableAreaOrDocument(scroller2));
-  EXPECT_TRUE(IsRectOffscreen(scroller1));
-  EXPECT_TRUE(IsRectOffscreen(scroller1));
-  EXPECT_TRUE(IsRectOffscreen(link));
+  EXPECT_TRUE(IsOffscreen(scroller1));
+  EXPECT_TRUE(IsOffscreen(scroller1));
+  EXPECT_TRUE(IsOffscreen(link));
 
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), link, kWebFocusTypeUp),
-            BottomOfVisualViewport());
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), link, kWebFocusTypeDown),
-            TopOfVisualViewport());
+  AssertUseSidesOfVisualViewport(link);
 }
 
 TEST_F(SpatialNavigationTest, PartiallyVisible) {
@@ -334,7 +363,7 @@ TEST_F(SpatialNavigationTest, PartiallyVisible) {
   SetBodyInnerHTML("<button id='b' style='height: 900px;'>B</button>");
   Element* b = GetDocument().getElementById("b");
 
-  EXPECT_FALSE(IsRectOffscreen(b));  // <button> is not completely offscreen.
+  EXPECT_FALSE(IsOffscreen(b));  // <button> is not completely offscreen.
 
   LayoutRect button_in_root_frame = NodeRectInRootFrame(b, true);
 
@@ -351,9 +380,84 @@ TEST_F(SpatialNavigationTest, PartiallyVisible) {
                                    // the root frame changed.
 
   // <button>'s top is clipped.
-  EXPECT_FALSE(IsRectOffscreen(b));  // <button> is not completely offscreen.
+  EXPECT_FALSE(IsOffscreen(b));  // <button> is not completely offscreen.
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeUp),
             Intersection(button_after_scroll, RootViewport(&GetFrame())));
+}
+
+TEST_F(SpatialNavigationTest,
+       StartFromDocEdgeWhenOffscreenIframeDisplaysFocus) {
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  iframe {"
+      "    margin-top: 120%;"  // Outside the visual viewport.
+      "    height: 100px;"
+      "    width: 100px;"
+      "  }"
+      "</style>"
+      "<iframe id='iframe'></iframe>");
+
+  SetChildFrameHTML(
+      "<!DOCTYPE html>"
+      "<a id='link'>link</a>");
+
+  ChildDocument().View()->UpdateAllLifecyclePhases();
+  Element* link = ChildDocument().QuerySelector("a");
+  Element* iframe = GetDocument().QuerySelector("iframe");
+
+  // The <iframe> is not displayed in the visual viewport. In other words, it is
+  // being offscreen. And so is also its content, the <a>.
+  EXPECT_TRUE(IsOffscreen(iframe));
+  EXPECT_TRUE(IsOffscreen(&ChildDocument()));
+  EXPECT_TRUE(IsOffscreen(link));
+
+  AssertUseSidesOfVisualViewport(link);
+}
+
+TEST_F(SpatialNavigationTest, DivsCanClipIframes) {
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  div {"
+      "    height: 100px;"
+      "    width: 100px;"
+      "    overflow: scroll;"
+      "  }"
+      "  iframe {"
+      "    margin-top: 200px;"  // Outside the div's viewport.
+      "    height: 50px;"
+      "    width: 50px;"
+      "  }"
+      "</style>"
+      "<div>"
+      "  <iframe id='iframe'></iframe>"
+      "</div>");
+
+  SetChildFrameHTML(
+      "<!DOCTYPE html>"
+      "<a>link</a>");
+
+  ChildDocument().View()->UpdateAllLifecyclePhases();
+  Element* div = GetDocument().QuerySelector("div");
+  Element* iframe = GetDocument().QuerySelector("iframe");
+  Element* link = ChildDocument().QuerySelector("a");
+  EXPECT_FALSE(IsOffscreen(div));
+
+  // TODO(crbug.com/889840):
+  // VisibleBoundsInVisualViewport does not (yet) take div-clipping into
+  // account. The node is off screen, but nevertheless VBIVV returns a non-
+  // empty rect. If you fix VisibleBoundsInVisualViewport, change to
+  // EXPECT_TRUE here and stop using LayoutObject in IsOffscreen().
+  EXPECT_FALSE(
+      iframe->VisibleBoundsInVisualViewport().IsEmpty());  // EXPECT_TRUE.
+
+  // The <iframe> is not displayed in the visual viewport because it is clipped
+  // by the div. In other words, it is being offscreen. And so is also its
+  // content, the <a>.
+  EXPECT_TRUE(IsOffscreen(iframe));
+  EXPECT_TRUE(IsOffscreen(&ChildDocument()));
+  EXPECT_TRUE(IsOffscreen(link));
 }
 
 TEST_F(SpatialNavigationTest, PartiallyVisibleIFrame) {
@@ -382,8 +486,8 @@ TEST_F(SpatialNavigationTest, PartiallyVisibleIFrame) {
   Node* enclosing_container = ScrollableAreaOrDocumentOf(child_element);
   EXPECT_EQ(enclosing_container, ChildDocument());
 
-  EXPECT_TRUE(IsRectOffscreen(child_element));         // Completely offscreen.
-  EXPECT_FALSE(IsRectOffscreen(enclosing_container));  // Partially visible.
+  EXPECT_TRUE(IsOffscreen(child_element));         // Completely offscreen.
+  EXPECT_FALSE(IsOffscreen(enclosing_container));  // Partially visible.
 
   LayoutRect iframe = NodeRectInRootFrame(enclosing_container, true);
 
