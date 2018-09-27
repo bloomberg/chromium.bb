@@ -38,7 +38,7 @@ const size_t kCoreMIDIMaxPacketListSize = 65536;
 const size_t kEstimatedMaxPacketDataSize = kCoreMIDIMaxPacketListSize / 2;
 
 enum {
-  kDefaultRunnerNotUsedOnMac = TaskService::kDefaultRunnerId,
+  kSessionTaskRunner = TaskService::kDefaultRunnerId,
   kClientTaskRunner,
 };
 
@@ -160,7 +160,7 @@ void MidiManagerMac::InitializeCoreMIDI() {
   OSStatus result = MIDIClientCreate(CFSTR("Chrome"), ReceiveMidiNotifyDispatch,
                                      this, &client);
   if (result != noErr || client == 0u)
-    return CompleteInitialization(Result::INITIALIZATION_ERROR);
+    return CompleteCoreMIDIInitialization(Result::INITIALIZATION_ERROR);
 
   {
     base::AutoLock lock(midi_client_lock_);
@@ -173,11 +173,11 @@ void MidiManagerMac::InitializeCoreMIDI() {
   result = MIDIInputPortCreate(client, CFSTR("MIDI Input"), ReadMidiDispatch,
                                this, &midi_input_);
   if (result != noErr || midi_input_ == 0u)
-    return CompleteInitialization(Result::INITIALIZATION_ERROR);
+    return CompleteCoreMIDIInitialization(Result::INITIALIZATION_ERROR);
 
   result = MIDIOutputPortCreate(client, CFSTR("MIDI Output"), &midi_output_);
   if (result != noErr || midi_output_ == 0u)
-    return CompleteInitialization(Result::INITIALIZATION_ERROR);
+    return CompleteCoreMIDIInitialization(Result::INITIALIZATION_ERROR);
 
   // Following loop may miss some newly attached devices, but such device will
   // be captured by ReceiveMidiNotifyDispatch callback.
@@ -207,7 +207,14 @@ void MidiManagerMac::InitializeCoreMIDI() {
   for (size_t i = 0u; i < sources_.size(); ++i)
     MIDIPortConnectSource(midi_input_, sources_[i], reinterpret_cast<void*>(i));
 
-  CompleteInitialization(Result::OK);
+  CompleteCoreMIDIInitialization(Result::OK);
+}
+
+void MidiManagerMac::CompleteCoreMIDIInitialization(mojom::Result result) {
+  service()->task_service()->PostBoundTask(
+      kSessionTaskRunner,
+      base::BindOnce(&MidiManagerMac::CompleteInitialization,
+                     base::Unretained(this), result));
 }
 
 // static

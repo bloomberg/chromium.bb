@@ -50,7 +50,7 @@ using mojom::PortState;
 using mojom::Result;
 
 enum {
-  kDefaultRunnerNotUsedOnWinrt = TaskService::kDefaultRunnerId,
+  kDefaultTaskRunner = TaskService::kDefaultRunnerId,
   kComTaskRunner
 };
 
@@ -825,7 +825,10 @@ void MidiManagerWinrt::InitializeOnComRunner() {
   bool preload_success = base::win::ResolveCoreWinRTDelayload() &&
                          ScopedHString::ResolveCoreWinRTStringDelayload();
   if (!preload_success) {
-    CompleteInitialization(Result::INITIALIZATION_ERROR);
+    service()->task_service()->PostBoundTask(
+        kDefaultTaskRunner,
+        base::BindOnce(&MidiManagerWinrt::CompleteInitialization,
+                       base::Unretained(this), Result::INITIALIZATION_ERROR));
     return;
   }
 
@@ -836,7 +839,10 @@ void MidiManagerWinrt::InitializeOnComRunner() {
         port_manager_out_->StartWatcher())) {
     port_manager_in_->StopWatcher();
     port_manager_out_->StopWatcher();
-    CompleteInitialization(Result::INITIALIZATION_ERROR);
+    service()->task_service()->PostBoundTask(
+        kDefaultTaskRunner,
+        base::BindOnce(&MidiManagerWinrt::CompleteInitialization,
+                       base::Unretained(this), Result::INITIALIZATION_ERROR));
   }
 }
 
@@ -869,8 +875,12 @@ void MidiManagerWinrt::OnPortManagerReady() {
   DCHECK(service()->task_service()->IsOnTaskRunner(kComTaskRunner));
   DCHECK(port_manager_ready_count_ < 2);
 
-  if (++port_manager_ready_count_ == 2)
-    CompleteInitialization(Result::OK);
+  if (++port_manager_ready_count_ == 2) {
+    service()->task_service()->PostBoundTask(
+        kDefaultTaskRunner,
+        base::BindOnce(&MidiManagerWinrt::CompleteInitialization,
+                       base::Unretained(this), Result::OK));
+  }
 }
 
 }  // namespace midi

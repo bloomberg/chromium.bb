@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "media/midi/midi_export.h"
 #include "media/midi/midi_port_info.h"
@@ -108,10 +109,6 @@ class MIDI_EXPORT MidiManager {
   // Returns true if there is at least one client that keep a session open.
   bool HasOpenSession();
 
-  // Invoke AccumulateMidiBytesSent() for |client| safely. If the session was
-  // already closed, do nothing.
-  void AccumulateMidiBytesSent(MidiManagerClient* client, size_t n);
-
   // DispatchSendMidiData() is called when MIDI data should be sent to the MIDI
   // system.
   // This method is supposed to return immediately and should not block.
@@ -145,31 +142,34 @@ class MIDI_EXPORT MidiManager {
   virtual void Finalize() {}
 
   // Called from a platform dependent implementation of StartInitialization().
-  // The method can be called on any thread, and it invokes
-  // CompleteInitializationOnSessionThread() on the thread that ran
-  // StartSession() and distributes |result| to MIDIManagerClient objects in
+  // The method distributes |result| to MIDIManagerClient objects in
   // |pending_clients_|.
   void CompleteInitialization(mojom::Result result);
 
-  // The following methods can be called on any thread.
+  // The following five methods can be called on any thread to notify clients of
+  // status changes on ports, or to obtain port status.
   void AddInputPort(const MidiPortInfo& info);
   void AddOutputPort(const MidiPortInfo& info);
   void SetInputPortState(uint32_t port_index, mojom::PortState state);
   void SetOutputPortState(uint32_t port_index, mojom::PortState state);
+  mojom::PortState GetOutputPortState(uint32_t port_index);
 
-  // Dispatches to all clients.
+  // Invoke AccumulateMidiBytesSent() for |client| safely. If the session was
+  // already closed, do nothing. Can be called on any thread.
+  void AccumulateMidiBytesSent(MidiManagerClient* client, size_t n);
+
+  // Dispatches to all clients. Can be called on any thread.
   void ReceiveMidiData(uint32_t port_index,
                        const uint8_t* data,
                        size_t length,
                        base::TimeTicks time);
 
+  // Only for testing.
   size_t clients_size_for_testing() const { return clients_.size(); }
   size_t pending_clients_size_for_testing() const {
     return pending_clients_.size();
   }
 
-  const MidiPortInfoList& input_ports() const { return input_ports_; }
-  const MidiPortInfoList& output_ports() const { return output_ports_; }
   MidiService* service() { return service_; }
 
  private:
@@ -179,11 +179,9 @@ class MIDI_EXPORT MidiManager {
     COMPLETED,
   };
 
-  void CompleteInitializationOnSessionThread(mojom::Result result);
-  void AddInitialPorts(MidiManagerClient* client);
-
   // Keeps track of all clients who wish to receive MIDI data.
-  std::set<MidiManagerClient*> clients_;
+  // TODO(toyoshim): Enable GUARDED_BY once a testing function is fixed.
+  std::set<MidiManagerClient*> clients_;  // GUARDED_BY(lock_);
 
   // Keeps track of all clients who are waiting for CompleteStartSession().
   std::set<MidiManagerClient*> pending_clients_;
@@ -203,12 +201,12 @@ class MIDI_EXPORT MidiManager {
   mojom::Result result_;
 
   // Keeps all MidiPortInfo.
-  MidiPortInfoList input_ports_;
-  MidiPortInfoList output_ports_;
+  MidiPortInfoList input_ports_ GUARDED_BY(lock_);
+  MidiPortInfoList output_ports_ GUARDED_BY(lock_);
 
   // Tracks if actual data transmission happens.
-  bool data_sent_;
-  bool data_received_;
+  bool data_sent_ GUARDED_BY(lock_);
+  bool data_received_ GUARDED_BY(lock_);
 
   // Protects members above.
   base::Lock lock_;

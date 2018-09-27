@@ -34,9 +34,7 @@ MidiService::MidiService(std::unique_ptr<ManagerFactory> factory)
 
 MidiService::~MidiService() {
   base::AutoLock lock(lock_);
-
-  manager_.reset();
-
+  DCHECK(!manager_);
   base::AutoLock threads_lock(threads_lock_);
   threads_.clear();
 }
