@@ -86,17 +86,11 @@ gfx::Size AssistantWebView::CalculatePreferredSize() const {
 
 int AssistantWebView::GetHeightForWidth(int width) const {
   // |height| <= |kMaxHeightDip|.
-  int height = kMaxHeightDip;
+  // |height| should not exceed the height of the usable work area.
+  gfx::Rect usable_work_area =
+      assistant_controller_->ui_controller()->model()->usable_work_area();
 
-  // |height| should not exceed workspace height.
-  aura::Window* root_window =
-      parent()->GetWidget()->GetNativeWindow()->GetRootWindow();
-  display::Display display = display::Screen::GetScreen()->GetDisplayMatching(
-      root_window->GetBoundsInScreen());
-  gfx::Rect work_area = display.work_area();
-  height = std::min(height, work_area.height() - 2 * kVerticalMarginDip);
-
-  return height;
+  return std::min(kMaxHeightDip, usable_work_area.height());
 }
 
 void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {

@@ -20,6 +20,9 @@
 #include "ash/highlighter/highlighter_controller.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "ui/display/display_observer.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace chromeos {
@@ -48,7 +51,9 @@ class ASH_EXPORT AssistantUiController
       public AssistantMiniViewDelegate,
       public CaptionBarDelegate,
       public DialogPlateObserver,
-      public HighlighterController::Observer {
+      public HighlighterController::Observer,
+      public keyboard::KeyboardControllerObserver,
+      public display::DisplayObserver {
  public:
   explicit AssistantUiController(AssistantController* assistant_controller);
   ~AssistantUiController() override;
@@ -102,6 +107,14 @@ class ASH_EXPORT AssistantUiController
                              AssistantVisibility old_visibility,
                              AssistantSource source) override;
 
+  // keyboard::KeyboardControllerObserver:
+  void OnKeyboardWorkspaceOccludedBoundsChanged(
+      const gfx::Rect& new_bounds) override;
+
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
   void ShowUi(AssistantSource source);
   void HideUi(AssistantSource source);
   void CloseUi(AssistantSource source);
@@ -114,6 +127,15 @@ class ASH_EXPORT AssistantUiController
   // the basis of interaction/widget visibility state.
   void UpdateUiMode(base::Optional<AssistantUiMode> ui_mode = base::nullopt);
 
+  // Calculate and update the usable work area.
+  void UpdateUsableWorkArea(aura::Window* root_window);
+
+  // Construct |container_view_| and add keyboard/display observers.
+  void CreateContainerView();
+
+  // Reset |container_view_| and remove keyboard/display observers.
+  void ResetContainerView();
+
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   // Owned by AssistantController.
@@ -123,6 +145,8 @@ class ASH_EXPORT AssistantUiController
 
   AssistantContainerView* container_view_ =
       nullptr;  // Owned by view hierarchy.
+
+  gfx::Rect keyboard_workspace_occluded_bounds_;
 
   // When hidden, Assistant automatically closes itself to finish the previous
   // session. We delay this behavior to allow the user an opportunity to resume.

@@ -39,6 +39,14 @@ void AssistantUiModel::SetVisibility(AssistantVisibility visibility,
   NotifyUiVisibilityChanged(old_visibility, source);
 }
 
+void AssistantUiModel::SetUsableWorkArea(const gfx::Rect& usable_work_area) {
+  if (usable_work_area == usable_work_area_)
+    return;
+
+  usable_work_area_ = usable_work_area;
+  NotifyUsableWorkAreaChanged();
+}
+
 void AssistantUiModel::NotifyUiModeChanged() {
   for (AssistantUiModelObserver& observer : observers_)
     observer.OnUiModeChanged(ui_mode_);
@@ -49,6 +57,11 @@ void AssistantUiModel::NotifyUiVisibilityChanged(
     AssistantSource source) {
   for (AssistantUiModelObserver& observer : observers_)
     observer.OnUiVisibilityChanged(visibility_, old_visibility, source);
+}
+
+void AssistantUiModel::NotifyUsableWorkAreaChanged() {
+  for (AssistantUiModelObserver& observer : observers_)
+    observer.OnUsableWorkAreaChanged(usable_work_area_);
 }
 
 }  // namespace ash
