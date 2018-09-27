@@ -399,7 +399,6 @@ extern const char kPrintingSizeDefault[];
 
 extern const char kDefaultSupervisedUserFilteringBehavior[];
 
-extern const char kSupervisedUserCreationAllowed[];
 extern const char kSupervisedUsers[];
 
 extern const char kMessageCenterDisabledExtensionIds[];
