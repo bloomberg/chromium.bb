@@ -39,7 +39,7 @@ void ChildFrameCompositingHelper::ChildFrameGone(
   scoped_refptr<cc::SolidColorLayer> crashed_layer =
       cc::SolidColorLayer::Create();
   crashed_layer->SetMasksToBounds(true);
-  crashed_layer->SetBackgroundColor(SK_ColorBLACK);
+  crashed_layer->SetBackgroundColor(SK_ColorGRAY);
 
   if (child_frame_compositor_->GetLayer()) {
     SkBitmap* sad_bitmap = child_frame_compositor_->GetSadPageBitmap();
