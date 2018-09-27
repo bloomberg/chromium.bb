@@ -378,5 +378,28 @@
         '<(SHARED_INTERMEDIATE_DIR)/include/oobe_config/proto_bindings/oobe_config.pb.cc',
       ],
     },
+    {
+      'target_name': 'system_api-update_engine-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/update_engine',
+        'proto_out_dir': 'include/update_engine/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/update_engine.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-update_engine-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-update_engine-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/update_engine/proto_bindings/update_engine.pb.cc',
+      ],
+    },
   ],
 }
