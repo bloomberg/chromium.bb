@@ -20401,6 +20401,8 @@ should be able to be added at any place in this file.
   <suffix name="NewTab" label="For NewTab feature."/>
   <suffix name="NewTabPageButton" label="For NewTabPageButton feature."/>
   <suffix name="NewTabTip" label="For NewTabTip feature."/>
+  <suffix name="PreviewsOmniboxUI"
+      label="For the Previews UI in the Android Omnibox feature."/>
   <affected-action name="InProductHelp.NotifyEvent.IPH"/>
   <affected-action name="InProductHelp.NotifyUsedEvent.IPH"/>
   <affected-action name="InProductHelp.ShouldTriggerHelpUI.IPH"/>

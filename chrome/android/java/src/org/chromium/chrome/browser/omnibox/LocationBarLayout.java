@@ -2172,6 +2172,11 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
+    public View getSecurityIconView() {
+        return mSecurityButton;
+    }
+
+    @Override
     public void setTitleToPageTitle() { }
 
     @Override

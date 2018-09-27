@@ -41,6 +41,7 @@ extern const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
 extern const base::Feature kIPHNewTabPageButtonFeature;
+extern const base::Feature kIPHPreviewsOmniboxUIFeature;
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
