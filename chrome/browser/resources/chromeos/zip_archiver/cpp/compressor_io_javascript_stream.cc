@@ -11,6 +11,13 @@
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_compressor_requestor_interface.h"
 #include "ppapi/cpp/logging.h"
 
+namespace {
+
+// We need at least 256KB for MiniZip.
+const int64_t kMaximumDataChunkSize = 512 * 1024;
+
+}  // namespace
+
 CompressorIOJavaScriptStream::CompressorIOJavaScriptStream(
     JavaScriptCompressorRequestorInterface* requestor)
     : requestor_(requestor), buffer_offset_(-1), buffer_data_length_(0) {
@@ -20,7 +27,7 @@ CompressorIOJavaScriptStream::CompressorIOJavaScriptStream(
 
   pthread_mutex_lock(&shared_state_lock_);
   available_data_ = false;
-  buffer_ = new char[compressor_stream_constants::kMaximumDataChunkSize];
+  buffer_ = new char[kMaximumDataChunkSize];
   pthread_mutex_unlock(&shared_state_lock_);
 }
 
@@ -89,10 +96,9 @@ int64_t CompressorIOJavaScriptStream::Write(int64_t zip_offset,
     // 4: The index to write is outside the buffer.
     //    If we want to write data outside the range, we first need to flush
     //    the buffer, and then cache the data in the buffer.
-    if (buffer_offset_ >= 0 &&                                     /* 1 */
-        (current_offset != buffer_offset_ + buffer_data_length_ || /* 2 */
-         buffer_data_length_ + left_length >
-             compressor_stream_constants::kMaximumDataChunkSize) && /* 3 */
+    if (buffer_offset_ >= 0 &&                                         /* 1 */
+        (current_offset != buffer_offset_ + buffer_data_length_ ||     /* 2 */
+         buffer_data_length_ + left_length > kMaximumDataChunkSize) && /* 3 */
         (current_offset < buffer_offset_ ||
          buffer_offset_ + buffer_data_length_ <
              current_offset + left_length) /* 4 */) {
@@ -104,8 +110,7 @@ int64_t CompressorIOJavaScriptStream::Write(int64_t zip_offset,
     }
 
     // How many bytes we should copy to buffer_ in this iteration.
-    int64_t copy_length = std::min(
-        left_length, compressor_stream_constants::kMaximumDataChunkSize);
+    int64_t copy_length = std::min(left_length, kMaximumDataChunkSize);
     // Set up the buffer_offset_ if the buffer_ has no data.
     if (buffer_offset_ == -1 /* initial state */)
       buffer_offset_ = current_offset;
