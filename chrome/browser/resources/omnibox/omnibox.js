@@ -178,103 +178,6 @@
   ];
 
   /**
-   * Returns an HTML Element of type table row that contains the
-   * headers we'll use for labeling the columns.  If we're in
-   * detailedMode, we use all the headers.  If not, we only use ones
-   * marked displayAlways.
-   */
-  function createAutocompleteResultTableHeader() {
-    let row = document.createElement('tr');
-    let inDetailedMode = $('show-details').checked;
-    PROPERTY_OUTPUT_ORDER.forEach(property => {
-      if (inDetailedMode || property.displayAlways) {
-        let headerCell = document.createElement('th');
-        if (property.urlLabelForHeader !== '') {
-          // Wrap header text in URL.
-          let linkNode = document.createElement('a');
-          linkNode.href = property.urlLabelForHeader;
-          linkNode.textContent = property.header;
-          headerCell.appendChild(linkNode);
-        } else {
-          // Output header text without a URL.
-          headerCell.textContent = property.header;
-          headerCell.className = 'table-header';
-          headerCell.title = property.tooltip;
-        }
-        row.appendChild(headerCell);
-      }
-    });
-    return row;
-  }
-
-  /**
-   * @param {!Object} autocompleteSuggestion the particular
-   *     autocomplete suggestion we're in the process of displaying.
-   * @param {string} propertyName the particular property of the autocomplete
-   *     suggestion that should go in this cell.
-   * @return {Element} that contains the value within this
-   *     autocompleteSuggestion associated with propertyName.
-   */
-  function createCellForPropertyAndRemoveProperty(autocompleteSuggestion, propertyName) {
-    let cell = document.createElement('td');
-    if (propertyName in autocompleteSuggestion) {
-      if (propertyName === 'additionalInfo') {
-        // |additionalInfo| embeds a two-column table of provider-specific data
-        // within this cell. |additionalInfo| is an array of
-        // AutocompleteAdditionalInfo.
-        let additionalInfoTable = document.createElement('table');
-        autocompleteSuggestion[propertyName].forEach(additionalInfo => {
-          let additionalInfoRow = document.createElement('tr');
-
-          // Set the title (name of property) cell text.
-          let propertyCell = document.createElement('td');
-          propertyCell.textContent = additionalInfo.key + ':';
-          propertyCell.className = 'additional-info-property';
-          additionalInfoRow.appendChild(propertyCell);
-
-          // Set the value of the property cell text.
-          let valueCell = document.createElement('td');
-          valueCell.textContent = additionalInfo.value;
-          valueCell.className = 'additional-info-value';
-          additionalInfoRow.appendChild(valueCell);
-
-          additionalInfoTable.appendChild(additionalInfoRow);
-        });
-        cell.appendChild(additionalInfoTable);
-      } else if (typeof autocompleteSuggestion[propertyName] === 'boolean') {
-        // If this is a boolean, display a checkmark or an X instead of
-        // the strings true or false.
-        cell.className =
-            autocompleteSuggestion[propertyName] ? 'check-mark' : 'x-mark';
-      } else {
-        let text = String(autocompleteSuggestion[propertyName]);
-        // If it's a URL wrap it in an href.
-        let re = /^(http|https|ftp|chrome|file):\/\//;
-        if (re.test(text)) {
-          let aCell = document.createElement('a');
-          aCell.textContent = text;
-          aCell.href = text;
-          cell.appendChild(aCell);
-        } else {
-          // All other data types (integer, strings, etc.) display their
-          // normal toString() output.
-          cell.textContent = autocompleteSuggestion[propertyName];
-        }
-      }
-    }  // else: if propertyName is undefined, we leave the cell blank
-    return cell;
-  }
-
-  /**
-   * Appends a paragraph node containing text to the parent node.
-   */
-  function addParagraph(parent, text) {
-    let p = document.createElement('p');
-    p.textContent = text;
-    parent.appendChild(p);
-  }
-
-  /**
    * Appends some human-readable information about the provided
    * autocomplete result to the HTML node with id omnibox-debug-text.
    * The current human-readable form is a few lines about general
@@ -391,7 +294,104 @@
     return table;
   }
 
-  /** Repaints the page based on the contents of the array
+  /**
+   * Returns an HTML Element of type table row that contains the
+   * headers we'll use for labeling the columns.  If we're in
+   * detailedMode, we use all the headers.  If not, we only use ones
+   * marked displayAlways.
+   */
+  function createAutocompleteResultTableHeader() {
+    let row = document.createElement('tr');
+    let inDetailedMode = $('show-details').checked;
+    PROPERTY_OUTPUT_ORDER.forEach(property => {
+      if (inDetailedMode || property.displayAlways) {
+        let headerCell = document.createElement('th');
+        if (property.urlLabelForHeader !== '') {
+          // Wrap header text in URL.
+          let linkNode = document.createElement('a');
+          linkNode.href = property.urlLabelForHeader;
+          linkNode.textContent = property.header;
+          headerCell.appendChild(linkNode);
+        } else {
+          // Output header text without a URL.
+          headerCell.textContent = property.header;
+          headerCell.className = 'table-header';
+          headerCell.title = property.tooltip;
+        }
+        row.appendChild(headerCell);
+      }
+    });
+    return row;
+  }
+
+  /**
+   * @param {!Object} autocompleteSuggestion the particular
+   *     autocomplete suggestion we're in the process of displaying.
+   * @param {string} propertyName the particular property of the autocomplete
+   *     suggestion that should go in this cell.
+   * @return {Element} that contains the value within this
+   *     autocompleteSuggestion associated with propertyName.
+   */
+  function createCellForPropertyAndRemoveProperty(autocompleteSuggestion, propertyName) {
+    let cell = document.createElement('td');
+    if (propertyName in autocompleteSuggestion) {
+      if (propertyName === 'additionalInfo') {
+        // |additionalInfo| embeds a two-column table of provider-specific data
+        // within this cell. |additionalInfo| is an array of
+        // AutocompleteAdditionalInfo.
+        let additionalInfoTable = document.createElement('table');
+        autocompleteSuggestion[propertyName].forEach(additionalInfo => {
+          let additionalInfoRow = document.createElement('tr');
+
+          // Set the title (name of property) cell text.
+          let propertyCell = document.createElement('td');
+          propertyCell.textContent = additionalInfo.key + ':';
+          propertyCell.className = 'additional-info-property';
+          additionalInfoRow.appendChild(propertyCell);
+
+          // Set the value of the property cell text.
+          let valueCell = document.createElement('td');
+          valueCell.textContent = additionalInfo.value;
+          valueCell.className = 'additional-info-value';
+          additionalInfoRow.appendChild(valueCell);
+
+          additionalInfoTable.appendChild(additionalInfoRow);
+        });
+        cell.appendChild(additionalInfoTable);
+      } else if (typeof autocompleteSuggestion[propertyName] === 'boolean') {
+        // If this is a boolean, display a checkmark or an X instead of
+        // the strings true or false.
+        cell.className =
+            autocompleteSuggestion[propertyName] ? 'check-mark' : 'x-mark';
+      } else {
+        let text = String(autocompleteSuggestion[propertyName]);
+        // If it's a URL wrap it in an href.
+        let re = /^(http|https|ftp|chrome|file):\/\//;
+        if (re.test(text)) {
+          let aCell = document.createElement('a');
+          aCell.textContent = text;
+          aCell.href = text;
+          cell.appendChild(aCell);
+        } else {
+          // All other data types (integer, strings, etc.) display their
+          // normal toString() output.
+          cell.textContent = autocompleteSuggestion[propertyName];
+        }
+      }
+    }  // else: if propertyName is undefined, we leave the cell blank
+    return cell;
+  }
+
+  /**
+   * Appends a paragraph node containing text to the parent node.
+   */
+  function addParagraph(parent, text) {
+    let p = document.createElement('p');
+    p.textContent = text;
+    parent.appendChild(p);
+  }
+
+  /* Repaints the page based on the contents of the array
    * progressiveAutocompleteResults, which represents consecutive
    * autocomplete results.  We only display the last (most recent)
    * entry unless we're asked to display incomplete results.  For an
