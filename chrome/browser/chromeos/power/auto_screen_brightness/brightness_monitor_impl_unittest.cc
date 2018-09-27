@@ -10,6 +10,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -81,9 +82,11 @@ class BrightnessMonitorImplTest : public testing::Test {
   // on fake power manager client.
   void SetUpBrightnessMonitor(double init_brightness) {
     if (init_brightness >= 0) {
+      power_manager::SetBacklightBrightnessRequest request;
+      request.set_percent(init_brightness);
       chromeos::DBusThreadManager::Get()
           ->GetPowerManagerClient()
-          ->SetScreenBrightnessPercent(init_brightness, true);
+          ->SetScreenBrightness(request);
     }
 
     monitor_ = BrightnessMonitorImpl::CreateForTesting(

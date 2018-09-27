@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_service.h"
@@ -57,7 +58,15 @@ void DeviceActions::GetScreenBrightnessLevel(
 }
 
 void DeviceActions::SetScreenBrightnessLevel(double level, bool gradual) {
+  power_manager::SetBacklightBrightnessRequest request;
+  request.set_percent(level * 100);
+  request.set_transition(
+      gradual
+          ? power_manager::SetBacklightBrightnessRequest_Transition_GRADUAL
+          : power_manager::SetBacklightBrightnessRequest_Transition_INSTANT);
+  request.set_cause(
+      power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST);
   chromeos::DBusThreadManager::Get()
       ->GetPowerManagerClient()
-      ->SetScreenBrightnessPercent(level * 100.0f, gradual);
+      ->SetScreenBrightness(request);
 }
