@@ -107,7 +107,6 @@ using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLRequest;
 using blink::WebTestingSupport;
-using blink::WebThread;
 using blink::WebVector;
 using blink::WebView;
 
