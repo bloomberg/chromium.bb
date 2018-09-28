@@ -128,8 +128,8 @@ class BackgroundFetchDelegateImpl
 
     void UpdateOfflineItem();
 
-    bool cancelled;
-    bool failed;
+    bool cancelled = false;
+    bool paused = false;
 
     // Set of DownloadService GUIDs that are currently downloading. They are
     // added by DownloadUrl and are removed when the download completes, fails
@@ -139,6 +139,8 @@ class BackgroundFetchDelegateImpl
     offline_items_collection::OfflineItem offline_item;
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description;
 
+    base::OnceClosure on_resume;
+
    private:
     // Whether we should report progress of the job in terms of size of
     // downloads or in terms of the number of files being downloaded.
@@ -146,6 +148,10 @@ class BackgroundFetchDelegateImpl
 
     DISALLOW_COPY_AND_ASSIGN(JobDetails);
   };
+
+  // Starts a download according to |params| belonging to |job_unique_id|.
+  void StartDownload(const std::string& job_unique_id,
+                     const download::DownloadParams& params);
 
   // Updates the OfflineItem that controls the contents of download
   // notifications and notifies any OfflineContentProvider::Observer that was

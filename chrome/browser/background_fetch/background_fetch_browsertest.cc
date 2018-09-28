@@ -144,6 +144,12 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
     finished_processing_item_callback_ = std::move(callback);
   }
 
+  void set_delegate(BackgroundFetchDelegateImpl* delegate) {
+    delegate_ = delegate;
+  }
+
+  void PauseOnNextUpdate() { pause_ = true; }
+
   // OfflineContentProvider::Observer implementation:
   void OnItemsAdded(
       const OfflineContentProvider::OfflineItemList& items) override {
@@ -155,16 +161,34 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
   void OnItemUpdated(const OfflineItem& item) override {
     if (item.state != offline_items_collection::OfflineItemState::IN_PROGRESS &&
         item.state != offline_items_collection::OfflineItemState::PENDING &&
-        finished_processing_item_callback_)
+        item.state != offline_items_collection::OfflineItemState::PAUSED &&
+        finished_processing_item_callback_) {
       std::move(finished_processing_item_callback_).Run(item);
+    }
+
+    if (pause_) {
+      if (item.state == offline_items_collection::OfflineItemState::PAUSED) {
+        Resume(item.id);
+        pause_ = false;
+      } else {
+        delegate_->PauseDownload(item.id);
+      }
+    }
+
     latest_item_ = item;
   }
 
   const OfflineItem& latest_item() const { return latest_item_; }
 
  private:
+  void Resume(const ContentId& id) {
+    delegate_->ResumeDownload(id, false /* has_user_gesture */);
+  }
+
   ItemsAddedCallback items_added_callback_;
   FinishedProcessingItemCallback finished_processing_item_callback_;
+  BackgroundFetchDelegateImpl* delegate_ = nullptr;
+  bool pause_ = false;
 
   OfflineItem latest_item_;
 
@@ -206,6 +230,13 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
         ->AddObserver(offline_content_provider_observer_.get());
 
     SetUpBrowser(browser());
+
+    BackgroundFetchDelegateImpl* delegate =
+        static_cast<BackgroundFetchDelegateImpl*>(
+            active_browser_->profile()->GetBackgroundFetchDelegate());
+    DCHECK(delegate);
+
+    offline_content_provider_observer_->set_delegate(delegate);
   }
 
   void SetUpBrowser(Browser* browser) {
@@ -640,6 +671,12 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   EXPECT_TRUE(
       base::StartsWith(offline_content_provider_observer_->latest_item().title,
                        "New Failed Title!", base::CompareCase::SENSITIVE));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchCanBePausedAndResumed) {
+  offline_content_provider_observer_->PauseOnNextUpdate();
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
+      "RunFetchTillCompletion()", "backgroundfetchsuccess"));
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
