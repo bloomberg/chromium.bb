@@ -277,6 +277,9 @@ TEST_F(AppLauncherTabHelperTest, ShouldAllowRequestWithNonAppUrl) {
   EXPECT_TRUE(TestShouldAllowRequest(@"data://test",
                                      /*target_frame_is_main=*/false,
                                      /*has_user_gesture=*/true));
+  EXPECT_TRUE(TestShouldAllowRequest(@"blob://test",
+                                     /*target_frame_is_main=*/false,
+                                     /*has_user_gesture=*/true));
   EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
 }
 
