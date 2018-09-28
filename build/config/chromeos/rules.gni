@@ -19,6 +19,10 @@ is_chromeos_chrome = cros_board != ""
 # Args:
 #   test_exe: Name of test binary located in the out dir. This will get copied
 #       to the VM and executed there.
+#   tast_tests: List of Tast tests to run on the VM. Note that when this is
+#       specified, the target name used to invoke this template will be
+#       designated as the "name" of this test and will primarly used for test
+#       results tracking and displaying (eg: flakiness dashboard).
 #   generated_script: Path to place the generated script.
 #   deploy_chrome: If true, deploys a locally built chrome located in the root
 #       build dir to the VM after launching it.
@@ -35,6 +39,7 @@ template("generate_vm_runner_script") {
                            "deploy_chrome",
                            "generated_script",
                            "runtime_deps_file",
+                           "tast_tests",
                            "testonly",
                            "test_exe",
                          ])
@@ -45,6 +50,9 @@ template("generate_vm_runner_script") {
   assert(defined(generated_script),
          "Must specify where to place generated test launcher script via " +
              "'generated_script'")
+  assert(!(defined(tast_tests) && defined(test_exe)),
+         "Tast tests are invoked from binaries shipped with the VM image. " +
+             "There should be no locally built binary needed.")
 
   action(target_name) {
     if (defined(runtime_deps_file)) {
@@ -126,6 +134,36 @@ template("generate_vm_runner_script") {
           rebase_path(runtime_deps_file, root_build_dir),
         ]
       }
+    } else if (defined(tast_tests)) {
+      # When --tast-tests is specified, run_vm_test will call local_test_runner
+      # on the VM to run the set of tests.
+      args += [
+        "--suite-name",
+        target_name,
+      ]
+      foreach(test, tast_tests) {
+        args += [
+          "--tast-tests",
+          test,
+        ]
+      }
     }
+  }
+}
+
+# TODO(crbug.com/876587): Support Tast conditionals as well.
+template("tast_test") {
+  assert(defined(invoker.tast_tests), "A list of tast_tests must be specified.")
+
+  generate_vm_runner_script(target_name) {
+    testonly = true
+    tast_tests = invoker.tast_tests
+    generated_script = "$root_build_dir/bin/run_${target_name}"
+    runtime_deps_file = "$root_out_dir/${target_name}/.runtime_deps"
+    deploy_chrome = true
+    data_deps = [
+      "//:chromiumos_preflight",  # Builds the browser.
+      "//chromeos:cros_chrome_deploy",  # Adds additional browser run-time deps.
+    ]
   }
 }
