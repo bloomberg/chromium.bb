@@ -59,10 +59,11 @@ def GetOwnersForFuzzer(sources):
     return
 
   for source in sources:
-    if not os.path.exists(source):
+    full_source_path = os.path.join(CHROMIUM_SRC_DIR, source)
+    if not os.path.exists(full_source_path):
       continue
 
-    with open(source, 'r') as source_file_handle:
+    with open(full_source_path, 'r') as source_file_handle:
       source_content = source_file_handle.read()
 
     if SubStringExistsIn(
@@ -72,10 +73,11 @@ def GetOwnersForFuzzer(sources):
 
       git_dir = os.path.join(CHROMIUM_SRC_DIR, '.git')
       is_git_file = bool(subprocess.check_output(
-          ['git', '--git-dir', git_dir, 'ls-files', source]))
+          ['git', '--git-dir', git_dir, 'ls-files', source],
+          cwd=CHROMIUM_SRC_DIR))
       if not is_git_file:
         # File is not in working tree. Return owners for third_party.
-        return GetOwnersIfThirdParty(source)
+        return GetOwnersIfThirdParty(full_source_path)
 
       # git log --follow and --reverse don't work together and using just
       # --follow is too slow. Make a best estimate with an assumption that
@@ -83,7 +85,8 @@ def GetOwnersForFuzzer(sources):
       # copyright line and does not change even with file rename / move.
       blame_output = subprocess.check_output(
           ['git', '--git-dir', git_dir,
-           'blame', '--porcelain', '-L1,1', source])
+           'blame', '--porcelain', '-L1,1', source],
+          cwd=CHROMIUM_SRC_DIR)
       return GetAuthorFromGitBlame(blame_output)
 
   return None
