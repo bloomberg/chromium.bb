@@ -332,6 +332,7 @@ crbug.com/882388 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/863454 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Failure ]
 crbug.com/863454 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
 crbug.com/882333 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-inline-block-001.html [ Failure ]
+crbug.com/882333 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-inline-flex-001.html [ Failure ]
 
 # [css-align]
 

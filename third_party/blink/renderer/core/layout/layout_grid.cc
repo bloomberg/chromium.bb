@@ -1633,7 +1633,7 @@ LayoutUnit LayoutGrid::BaselinePosition(FontBaseline,
 
 LayoutUnit LayoutGrid::FirstLineBoxBaseline() const {
   if (IsWritingModeRoot() || !grid_->HasGridItems() ||
-      ShouldApplySizeContainment())
+      ShouldApplyLayoutContainment())
     return LayoutUnit(-1);
   const LayoutBox* baseline_child = nullptr;
   const LayoutBox* first_child = nullptr;
