@@ -4756,6 +4756,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Connection's visitor is a nullptr"/>
 </enum>
 
+<enum name="BooleanOffered">
+  <int value="0" label="Not offered"/>
+  <int value="1" label="Offered"/>
+</enum>
+
 <enum name="BooleanOnBattery">
   <int value="0" label="Not on battery"/>
   <int value="1" label="On Battery"/>
@@ -4935,7 +4940,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="BooleanSelected">
-  <int value="0" label="No selection"/>
+  <int value="0" label="Not selected"/>
   <int value="1" label="Selected"/>
 </enum>
 
