@@ -151,6 +151,14 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
   std::unique_ptr<cryptotoken_private::CanAppIdGetAttestation::Params> params =
       cryptotoken_private::CanAppIdGetAttestation::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
+
+  const GURL origin_url(params->options.origin);
+  if (!origin_url.is_valid()) {
+    return RespondNow(Error(extensions::ErrorUtils::FormatErrorMessage(
+        "Security origin * is not a valid URL", params->options.origin)));
+  }
+  const url::Origin origin(url::Origin::Create(origin_url));
+
   const std::string& app_id = params->options.app_id;
 
   // If the appId is permitted by the enterprise policy then no permission
@@ -194,7 +202,6 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
   }
 
   // The created AttestationPermissionRequest deletes itself once complete.
-  const url::Origin origin(url::Origin::Create(app_id_url));
   permission_request_manager->AddRequest(NewAttestationPermissionRequest(
       origin,
       base::BindOnce(
