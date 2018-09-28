@@ -392,6 +392,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // text, depending on the platform.
   base::string16 GetInnerText() const;
 
+  gfx::Rect GetPageBoundsPastEndOfText() const;
+
   // A unique ID, since node IDs are frame-local.
   ui::AXUniqueId unique_id_;
 
