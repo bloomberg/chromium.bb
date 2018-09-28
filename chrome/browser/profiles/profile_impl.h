@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/reporting_permissions_checker.h"
 #include "chrome/browser/profiles/profile.h"
@@ -191,9 +190,6 @@ class ProfileImpl : public Profile {
   void UpdateNameInStorage();
   void UpdateAvatarInStorage();
   void UpdateIsEphemeralInStorage();
-  void UpdateCTPolicy();
-
-  void ScheduleUpdateCTPolicy();
 
   void GetMediaCacheParameters(base::FilePath* cache_path, int* max_size);
 
@@ -289,9 +285,6 @@ class ProfileImpl : public Profile {
   Profile::Delegate* delegate_;
 
   ReportingPermissionsCheckerFactory reporting_permissions_checker_factory_;
-
-  // Used to post schedule CT policy updates
-  base::OneShotTimer ct_policy_update_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

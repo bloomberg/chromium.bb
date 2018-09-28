@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
+#include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -37,6 +38,19 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #endif
+
+namespace {
+
+std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
+  std::vector<std::string> strings;
+  for (const base::Value& value : *list) {
+    DCHECK(value.is_string());
+    strings.push_back(value.GetString());
+  }
+  return strings;
+}
+
+}  // namespace
 
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
     : profile_(profile), proxy_config_monitor_(profile) {
@@ -62,6 +76,27 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
 
   // Observe content settings so they can be synced to the network service.
   HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
+
+  pref_change_registrar_.Init(profile_prefs);
+
+  // When any of the following CT preferences change, we schedule an update
+  // to aggregate the actual update using a |ct_policy_update_timer_|.
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTRequiredHosts,
+      base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTExcludedHosts,
+      base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTExcludedSPKIs,
+      base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTExcludedLegacySPKIs,
+      base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
+                          base::Unretained(this)));
 }
 
 ProfileNetworkContextService::~ProfileNetworkContextService() {}
@@ -73,7 +108,11 @@ ProfileNetworkContextService::CreateNetworkContext(
   network::mojom::NetworkContextPtr network_context;
   PartitionInfo partition_info(in_memory, relative_partition_path);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    content::GetNetworkService()->CreateNetworkContext(
+        MakeRequest(&network_context),
+        CreateNetworkContextParams(in_memory, relative_partition_path));
+  } else {
     // The corresponding |profile_io_data_network_contexts_| may already be
     // initialized if SetUpProfileIODataNetworkContext was called first.
     auto iter = profile_io_data_network_contexts_.find(partition_info);
@@ -91,12 +130,11 @@ ProfileNetworkContextService::CreateNetworkContext(
       // and NetworkContexts can't be destroyed without destroying the profile.
       profile_io_data_network_contexts_.erase(iter);
     }
-    return network_context;
   }
 
-  content::GetNetworkService()->CreateNetworkContext(
-      MakeRequest(&network_context),
-      CreateNetworkContextParams(in_memory, relative_partition_path));
+  std::vector<network::mojom::NetworkContext*> contexts{network_context.get()};
+  UpdateCTPolicyForContexts(contexts);
+
   return network_context;
 }
 
@@ -191,6 +229,51 @@ void ProfileNetworkContextService::UpdateReferrersEnabled() {
                 enable_referrers);
           },
           enable_referrers_.GetValue()));
+}
+
+void ProfileNetworkContextService::UpdateCTPolicyForContexts(
+    const std::vector<network::mojom::NetworkContext*>& contexts) {
+  auto* prefs = profile_->GetPrefs();
+  const base::ListValue* ct_required =
+      prefs->GetList(certificate_transparency::prefs::kCTRequiredHosts);
+  const base::ListValue* ct_excluded =
+      prefs->GetList(certificate_transparency::prefs::kCTExcludedHosts);
+  const base::ListValue* ct_excluded_spkis =
+      prefs->GetList(certificate_transparency::prefs::kCTExcludedSPKIs);
+  const base::ListValue* ct_excluded_legacy_spkis =
+      prefs->GetList(certificate_transparency::prefs::kCTExcludedLegacySPKIs);
+
+  std::vector<std::string> required(TranslateStringArray(ct_required));
+  std::vector<std::string> excluded(TranslateStringArray(ct_excluded));
+  std::vector<std::string> excluded_spkis(
+      TranslateStringArray(ct_excluded_spkis));
+  std::vector<std::string> excluded_legacy_spkis(
+      TranslateStringArray(ct_excluded_legacy_spkis));
+
+  for (auto* context : contexts) {
+    context->SetCTPolicy(required, excluded, excluded_spkis,
+                         excluded_legacy_spkis);
+  }
+}
+
+void ProfileNetworkContextService::UpdateCTPolicy() {
+  std::vector<network::mojom::NetworkContext*> contexts;
+  content::BrowserContext::ForEachStoragePartition(
+      profile_,
+      base::BindRepeating(
+          [](std::vector<network::mojom::NetworkContext*>* contexts_ptr,
+             content::StoragePartition* storage_partition) {
+            contexts_ptr->push_back(storage_partition->GetNetworkContext());
+          },
+          &contexts));
+
+  UpdateCTPolicyForContexts(contexts);
+}
+
+void ProfileNetworkContextService::ScheduleUpdateCTPolicy() {
+  ct_policy_update_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0),
+                                this,
+                                &ProfileNetworkContextService::UpdateCTPolicy);
 }
 
 void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
