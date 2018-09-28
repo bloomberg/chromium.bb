@@ -642,7 +642,7 @@ TEST_F(ExtensionAlarmsSchedulingTest, DifferentMinimumGranularities) {
   // Create a new extension, which is packed, and has a granularity of 1 minute.
   // CreateAlarm() uses extension_, so keep a ref of the old one around, and
   // repopulate extension_.
-  scoped_refptr<Extension> extension2(extension_ref());
+  scoped_refptr<const Extension> extension2(extension_ref());
   set_extension(
       utils::CreateEmptyExtensionWithLocation(extensions::Manifest::INTERNAL));
 
