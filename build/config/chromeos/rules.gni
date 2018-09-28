@@ -159,7 +159,7 @@ template("tast_test") {
     testonly = true
     tast_tests = invoker.tast_tests
     generated_script = "$root_build_dir/bin/run_${target_name}"
-    runtime_deps_file = "$root_out_dir/${target_name}/.runtime_deps"
+    runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
     deploy_chrome = true
     data_deps = [
       "//:chromiumos_preflight",  # Builds the browser.
