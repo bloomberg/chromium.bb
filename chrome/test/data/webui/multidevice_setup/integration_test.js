@@ -4,6 +4,47 @@
 
 /** @fileoverview Suite of integration tests for MultiDevice setup WebUI. */
 cr.define('multidevice_setup', () => {
+  /** @implements {multidevice_setup.MultiDeviceSetupDelegate} */
+  class FakeDelegate {
+    constructor() {
+      /** @private {boolean} */
+      this.isPasswordRequiredToSetHost_ = true;
+
+      /** @private {boolean} */
+      this.shouldSetHostSucceed_ = true;
+    }
+
+    set isPasswordRequired(isPasswordRequired) {
+      this.isPasswordRequiredToSetHost_ = isPasswordRequired;
+    }
+
+    /** @override */
+    isPasswordRequiredToSetHost() {
+      return this.isPasswordRequiredToSetHost_;
+    }
+
+    set shouldSetHostSucceed(shouldSetHostSucceed) {
+      this.shouldSetHostSucceed_ = shouldSetHostSucceed;
+    }
+
+    /** @override */
+    setHostDevice(hostDeviceId, opt_authToken) {
+      return new Promise((resolve) => {
+        resolve({success: this.shouldSetHostSucceed_});
+      });
+    }
+
+    set shouldExitSetupFlowAfterHostSet(shouldExitSetupFlowAfterHostSet) {
+      this.shouldExitSetupFlowAfterSettingHost_ =
+          shouldExitSetupFlowAfterHostSet;
+    }
+
+    /** @override */
+    shouldExitSetupFlowAfterSettingHost() {
+      return this.shouldExitSetupFlowAfterSettingHost_;
+    }
+  }
+
   function registerIntegrationTests() {
     suite('MultiDeviceSetup', () => {
       /**
@@ -30,14 +71,21 @@ cr.define('multidevice_setup', () => {
 
       setup(() => {
         multiDeviceSetupElement = document.createElement('multidevice-setup');
+        multiDeviceSetupElement.delegate = new FakeDelegate();
         multiDeviceSetupElement.multideviceSetup_ = new FakeMojoService();
-        multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
 
         document.body.appendChild(multiDeviceSetupElement);
         forwardButton = multiDeviceSetupElement.$$('button-bar').$$('#forward');
         backwardButton =
             multiDeviceSetupElement.$$('button-bar').$$('#backward');
       });
+
+      /** @param {boolean} isOobeMode */
+      function setMode(isOobeMode) {
+        multiDeviceSetupElement.delegate.isPasswordRequired = !isOobeMode;
+        multiDeviceSetupElement.delegate.shouldExitSetupFlowAfterHostSet =
+            isOobeMode;
+      }
 
       /** @param {string} visiblePageName */
       function setVisiblePage(visiblePageName) {
@@ -65,9 +113,9 @@ cr.define('multidevice_setup', () => {
           done();
         });
 
+        setMode(true /* isOobeMode */);
         setVisiblePage(START);
-        multiDeviceSetupElement.multideviceSetup_.shouldSetHostSucceed = true;
-        multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.OOBE;
+        multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
 
         backwardButton.click();
       });
@@ -76,16 +124,13 @@ cr.define('multidevice_setup', () => {
           'StartSetupPage forward button sets host in background and ' +
               'goes to PasswordPage (OOBE).',
           done => {
-            multiDeviceSetupElement.addEventListener(
-                'visible-page-name_-changed', () => {
-                  if (multiDeviceSetupElement.visiblePageName_ == PASSWORD)
-                    done();
-                });
+            multiDeviceSetupElement.addEventListener('setup-exited', () => {
+              done();
+            });
 
+            setMode(true /* isOobeMode */);
             setVisiblePage(START);
-            multiDeviceSetupElement.multideviceSetup_.shouldSetHostSucceed =
-                true;
-            multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.OOBE;
+            multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
 
             multiDeviceSetupElement.async(() => {
               forwardButton.click();
@@ -97,9 +142,9 @@ cr.define('multidevice_setup', () => {
       test('StartSetupPage backward button closes UI (post-OOBE)', done => {
         multiDeviceSetupElement.addEventListener('setup-exited', () => done());
 
+        setMode(false /* isOobeMode */);
         setVisiblePage(START);
-        multiDeviceSetupElement.multideviceSetup_.shouldSetHostSucceed = true;
-        multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
+        multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
 
         backwardButton.click();
       });
@@ -107,9 +152,9 @@ cr.define('multidevice_setup', () => {
       test('PasswordPage backward button closes UI (post-OOBE)', done => {
         multiDeviceSetupElement.addEventListener('setup-exited', () => done());
 
+        setMode(false /* isOobeMode */);
         setVisiblePage(PASSWORD);
-        multiDeviceSetupElement.multideviceSetup_.shouldSetHostSucceed = true;
-        multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
+        multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
 
         backwardButton.click();
       });
@@ -124,10 +169,9 @@ cr.define('multidevice_setup', () => {
                     done();
                 });
 
+            setMode(false /* isOobeMode */);
             setVisiblePage(PASSWORD);
-            multiDeviceSetupElement.multideviceSetup_.shouldSetHostSucceed =
-                true;
-            multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
+            multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
 
             multiDeviceSetupElement.async(() => {
               forwardButton.click();
