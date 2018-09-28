@@ -201,7 +201,8 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     else
       EXPECT_EQ(tab2->GetMainFrame()->GetProcess(), rph2);
 
-    // Create another WebUI tab.  It should share the process with omnibox.
+    // Create another WebUI tab.  Each WebUI tab should get a separate process
+    // because of origin locking.
     // Note: intentionally create this tab after the normal tabs to exercise bug
     // 43448 where extension and WebUI tabs could get combined into normal
     // renderers.
@@ -211,11 +212,12 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     ::ShowSingletonTab(browser(), history);
     observer3.Wait();
     tab_count++;
+    host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab2 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
     EXPECT_EQ(tab2->GetURL(), GURL(history));
     EXPECT_EQ(host_count, RenderProcessHostCount());
-    EXPECT_EQ(tab2->GetMainFrame()->GetProcess(), rph1);
+    EXPECT_NE(tab2->GetMainFrame()->GetProcess(), rph1);
 
     // Create an extension tab.  It should be in its own process.
     GURL extension_url("chrome-extension://" + extension->id());
