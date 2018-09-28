@@ -317,19 +317,17 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsPDF(
     return pp::Buffer_Dev();
   }
 
-  // Now flatten all the output pages.
-  if (!FlattenPrintData(output_doc.get()))
-    return pp::Buffer_Dev();
-
   pp::Buffer_Dev buffer;
   uint32_t pages_per_sheet = pdf_print_settings.pages_per_sheet;
   uint32_t scale_factor = pdf_print_settings.scale_factor;
   if (ShouldDoNup(pages_per_sheet)) {
-    buffer = NupPdfToPdf(output_doc.get(), pages_per_sheet, print_settings);
+    if (FlattenPrintData(output_doc.get()))
+      buffer = NupPdfToPdf(output_doc.get(), pages_per_sheet, print_settings);
   } else {
     FitContentsToPrintableAreaIfRequired(output_doc.get(),
                                          scale_factor / 100.0f, print_settings);
-    buffer = GetPrintData(output_doc.get());
+    if (FlattenPrintData(output_doc.get()))
+      buffer = GetPrintData(output_doc.get());
   }
 
   return buffer;
