@@ -90,7 +90,8 @@ class BASE_EXPORT SequenceManagerImpl
   // MessageLoop. The SequenceManager can be initialized on the current thread
   // and then needs to be bound and initialized on the target thread by calling
   // BindToCurrentThread() and CompleteInitializationOnBoundThread() during the
-  // thread's startup.
+  // thread's startup. If |message_loop| is null then BindToMessageLoop() must
+  // be called instead of CompleteInitializationOnBoundThread.
   //
   // This function should be called only once per MessageLoop.
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
@@ -251,6 +252,7 @@ class BASE_EXPORT SequenceManagerImpl
     std::vector<internal::TaskQueueImpl*> queues_to_reload;
 
     bool task_was_run_on_quiescence_monitored_queue = false;
+    bool nesting_observer_registered_ = false;
 
     // Due to nested runloops more than one task can be executing concurrently.
     std::list<ExecutingTask> task_execution_stack;

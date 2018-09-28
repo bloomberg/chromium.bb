@@ -3381,6 +3381,7 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
        SequenceManagerCreatedBeforeMessageLoop) {
   std::unique_ptr<SequenceManager> manager =
       CreateUnboundSequenceManager(nullptr);
+  manager->BindToCurrentThread();
   scoped_refptr<TaskQueue> default_task_queue =
       manager->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("default"));
   EXPECT_THAT(default_task_queue.get(), testing::NotNull());
@@ -3403,6 +3404,12 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
   // We must release the SequenceManager before the MessageLoop because
   // SequenceManager assumes the MessageLoop outlives it.
   manager.reset();
+}
+
+TEST_P(SequenceManagerTestWithCustomInitialization,
+       CreateUnboundSequenceManagerWhichIsNeverBound) {
+  // This should not crash.
+  CreateUnboundSequenceManager(nullptr);
 }
 
 }  // namespace sequence_manager_impl_unittest

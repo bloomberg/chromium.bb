@@ -115,7 +115,10 @@ SequenceManagerImpl::~SequenceManagerImpl() {
   graceful_shutdown_helper_->OnSequenceManagerDeleted();
 
   main_thread_only().selector.SetTaskQueueSelectorObserver(nullptr);
-  controller_->RemoveNestingObserver(this);
+
+  // In some tests a NestingObserver may not have been registered.
+  if (main_thread_only().nesting_observer_registered_)
+    controller_->RemoveNestingObserver(this);
 }
 
 SequenceManagerImpl::AnyThread::AnyThread() = default;
@@ -150,7 +153,6 @@ std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
 
 void SequenceManagerImpl::BindToMessageLoop(MessageLoop* message_loop) {
   controller_->SetMessageLoop(message_loop);
-  BindToCurrentThread();
   CompleteInitializationOnBoundThread();
 }
 
@@ -160,6 +162,7 @@ void SequenceManagerImpl::BindToCurrentThread() {
 
 void SequenceManagerImpl::CompleteInitializationOnBoundThread() {
   controller_->AddNestingObserver(this);
+  main_thread_only().nesting_observer_registered_ = true;
 }
 
 void SequenceManagerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
