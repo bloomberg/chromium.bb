@@ -148,7 +148,7 @@ class CORE_EXPORT VTTScanner {
   UChar CurrentChar() const;
   void Advance(unsigned amount = 1);
   // Adapt a UChar-predicate to an LChar-predicate.
-  // (For use with skipWhile/Until from ParsingUtilities.h).
+  // (For use with SkipWhile/Until from parsing_utilities.h).
   template <bool characterPredicate(UChar)>
   static inline bool LCharPredicateAdapter(LChar c) {
     return characterPredicate(c);

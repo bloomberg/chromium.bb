@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
-// This needs to be here because Element.cpp also depends on it.
+// This needs to be here because element.cc also depends on it.
 #define DUMP_NODE_STATISTICS 0
 
 namespace blink {
@@ -680,7 +680,7 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   // -----------------------------------------------------------------------------
-  // Notification of document structure changes (see ContainerNode.h for more
+  // Notification of document structure changes (see container_node.h for more
   // notification methods)
   //
   // At first, Blinkt notifies the node that it has been inserted into the

@@ -985,7 +985,7 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentMarkerController& Markers() const { return *markers_; }
 
   // Support for Javascript execCommand, and related methods
-  // See "core/editing/commands/DocumentExecCommand.cpp" for implementations.
+  // See "core/editing/commands/document_exec_command.cc" for implementations.
   bool execCommand(const String& command,
                    bool show_ui,
                    const String& value,

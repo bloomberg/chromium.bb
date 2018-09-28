@@ -45,7 +45,7 @@ class Blob;
 class HTMLFormElement;
 class ScriptState;
 
-// Typedef from FormData.idl:
+// Typedef from form_data.idl:
 typedef FileOrUSVString FormDataEntryValue;
 
 class CORE_EXPORT FormData final

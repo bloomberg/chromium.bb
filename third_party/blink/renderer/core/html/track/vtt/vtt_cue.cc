@@ -535,7 +535,7 @@ class VTTTextRunIterator : public TextRunIterator {
   }
 };
 
-// Almost the same as determineDirectionality in core/html/HTMLElement.cpp, but
+// Almost the same as determineDirectionality in core/html/html_element.cc, but
 // that one uses a "plain" TextRunIterator (which only checks for '\n').
 static TextDirection DetermineDirectionality(const String& value,
                                              bool& has_strong_directionality) {

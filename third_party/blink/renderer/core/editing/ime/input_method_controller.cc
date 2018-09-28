@@ -181,7 +181,7 @@ void InsertTextDuringCompositionWithEvents(
     case TypingCommand::TextCompositionType::kTextCompositionCancel:
       // TODO(chongz): Use TypingCommand::insertText after TextEvent was
       // removed. (Removed from spec since 2012)
-      // See TextEvent.idl.
+      // See text_event.idl.
       frame.GetEventHandler().HandleTextInputEvent(text, nullptr,
                                                    kTextEventInputComposition);
       break;

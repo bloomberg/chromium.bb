@@ -1281,7 +1281,7 @@ static const EditorInternalCommand* InternalCommand(
   static const EditorInternalCommand kEditorCommands[] = {
       // Lists all commands in blink::WebEditingCommandType.
       // Must be ordered by |commandType| for index lookup.
-      // Covered by unit tests in EditingCommandTest.cpp
+      // Covered by unit tests in editing_command_test.cc
       {WebEditingCommandType::kAlignJustified, ExecuteJustifyFull,
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},

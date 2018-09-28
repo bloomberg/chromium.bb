@@ -581,7 +581,7 @@ VisiblePosition VisiblePositionForContentsPoint(const IntPoint& contents_point,
   return VisiblePosition();
 }
 
-// TODO(yosin): We should use |associatedLayoutObjectOf()| in "VisibleUnits.cpp"
+// TODO(yosin): We should use |AssociatedLayoutObjectOf()| in "visible_units.cc"
 // where it takes |LayoutObject| from |Position|.
 
 int CaretMinOffset(const Node* node) {

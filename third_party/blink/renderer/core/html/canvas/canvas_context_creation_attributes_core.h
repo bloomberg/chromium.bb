@@ -32,7 +32,7 @@ class CORE_EXPORT CanvasContextCreationAttributesCore {
   bool preserve_drawing_buffer = false;
   bool stencil = false;
 
-  // This attribute is of type XRDevice, defined in modules/xr/XRDevice.h
+  // This attribute is of type XRDevice, defined in modules/xr/xr_device.h
   Member<ScriptWrappable> compatible_xr_device;
 
   void Trace(blink::Visitor*);
