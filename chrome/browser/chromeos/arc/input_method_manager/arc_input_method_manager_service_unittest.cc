@@ -107,9 +107,7 @@ class TestInputMethodManager : public im::MockInputMethodManager {
 
     bool IsInputMethodAllowed(const std::string& ime_id) {
       return allowed_input_methods_.empty() ||
-             (std::find(allowed_input_methods_.begin(),
-                        allowed_input_methods_.end(),
-                        ime_id) != allowed_input_methods_.end());
+             base::ContainsValue(allowed_input_methods_, ime_id);
     }
 
     std::vector<std::tuple<std::string, im::InputMethodDescriptors>>

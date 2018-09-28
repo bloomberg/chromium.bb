@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
@@ -337,9 +338,8 @@ bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {
   if (!net::NetworkChangeNotifier::IsOffline())
     return false;
 
-  return std::find(ignore_pin_policy_offline_apps_.begin(),
-                   ignore_pin_policy_offline_apps_.end(),
-                   app_id_or_package) != ignore_pin_policy_offline_apps_.end();
+  return base::ContainsValue(ignore_pin_policy_offline_apps_,
+                             app_id_or_package);
 }
 
 void DemoSession::SetExtensionsExternalLoader(
