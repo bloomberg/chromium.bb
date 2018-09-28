@@ -3954,9 +3954,10 @@ TEST_F(LayerTreeHostImplTestMultiScrollable,
   EXPECT_EQ(scrollbar_2_->Opacity(), 0.f);
 
   // Scroll on root should flash all scrollbars.
-  host_impl_->RootScrollBegin(BeginState(gfx::Point(10, 10)).get(),
+  host_impl_->RootScrollBegin(BeginState(gfx::Point(20, 20)).get(),
                               InputHandler::WHEEL);
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
+  host_impl_->ScrollBy(
+      UpdateState(gfx::Point(20, 20), gfx::Vector2d(0, 10)).get());
   host_impl_->ScrollEnd(EndState().get());
 
   EXPECT_TRUE(scrollbar_1_->Opacity());
@@ -3966,8 +3967,8 @@ TEST_F(LayerTreeHostImplTestMultiScrollable,
   ResetScrollbars();
 
   // Scroll on child should flash all scrollbars.
-  host_impl_->ScrollAnimatedBegin(BeginState(gfx::Point(51, 51)).get());
-  host_impl_->ScrollAnimated(gfx::Point(51, 51), gfx::Vector2d(0, 100));
+  host_impl_->ScrollAnimatedBegin(BeginState(gfx::Point(70, 70)).get());
+  host_impl_->ScrollAnimated(gfx::Point(70, 70), gfx::Vector2d(0, 100));
   host_impl_->ScrollEnd(EndState().get());
 
   EXPECT_TRUE(scrollbar_1_->Opacity());
@@ -4000,6 +4001,49 @@ TEST_F(LayerTreeHostImplTestMultiScrollable, ScrollbarFlashWhenMouseEnter) {
   EXPECT_TRUE(scrollbar_1_->Opacity());
   EXPECT_TRUE(scrollbar_2_->Opacity());
   EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+}
+
+TEST_F(LayerTreeHostImplTestMultiScrollable, ScrollHitTestOnScrollbar) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
+  settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
+  settings.scrollbar_animator = LayerTreeSettings::NO_ANIMATOR;
+
+  SetUpLayers(settings);
+
+  // Wheel scroll on root scrollbar should process on impl thread.
+  {
+    InputHandler::ScrollStatus status = host_impl_->RootScrollBegin(
+        BeginState(gfx::Point(1, 1)).get(), InputHandler::WHEEL);
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+  }
+
+  // Touch scroll on root scrollbar should process on main thread.
+  {
+    InputHandler::ScrollStatus status = host_impl_->RootScrollBegin(
+        BeginState(gfx::Point(1, 1)).get(), InputHandler::TOUCHSCREEN);
+    EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kScrollbarScrolling,
+              status.main_thread_scrolling_reasons);
+  }
+
+  // Wheel scroll on scrollbar should fallback to main thread.
+  {
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(51, 51)).get(), InputHandler::WHEEL);
+    EXPECT_EQ(InputHandler::SCROLL_UNKNOWN, status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kFailedHitTest,
+              status.main_thread_scrolling_reasons);
+  }
+
+  // Touch scroll on scrollbar should process on main thread.
+  {
+    InputHandler::ScrollStatus status = host_impl_->RootScrollBegin(
+        BeginState(gfx::Point(51, 51)).get(), InputHandler::TOUCHSCREEN);
+    EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kScrollbarScrolling,
+              status.main_thread_scrolling_reasons);
+  }
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollbarVisibilityChangeCausesRedrawAndCommit) {

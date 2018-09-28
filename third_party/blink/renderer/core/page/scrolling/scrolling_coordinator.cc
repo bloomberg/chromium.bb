@@ -429,6 +429,7 @@ static void SetupScrollbarLayer(
     DetachScrollbarLayer(scrollbar_graphics_layer);
     return;
   }
+
   scrollbar_layer_group->scrollbar_layer->SetScrollElementId(
       scrolling_layer->element_id());
   scrollbar_graphics_layer->SetContentsToCcLayer(
@@ -475,6 +476,7 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
       DetachScrollbarLayer(scrollbar_graphics_layer);
       scrollbar_graphics_layer->CcLayer()->AddMainThreadScrollingReasons(
           MainThreadScrollingReason::kCustomScrollbarScrolling);
+      scrollbar_graphics_layer->CcLayer()->SetIsScrollbar(true);
       return;
     }
 

@@ -395,6 +395,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.scroll_container_bounds;
   }
 
+  void SetIsScrollbar(bool is_scrollbar);
+  bool is_scrollbar() const { return inputs_.is_scrollbar; }
+
   // Set or get if this layer is able to be scrolled along each axis. These are
   // independant of the scrollable state, or size of the scrollable area
   // specified in SetScrollable(), as these may be enabled or disabled
@@ -904,6 +907,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     // layer's bounds correspond to the scroll node's bounds (both |bounds| and
     // |scroll_container_bounds|).
     bool scrollable : 1;
+
+    // Indicates that this layer is a scrollbar.
+    bool is_scrollbar : 1;
 
     bool user_scrollable_horizontal : 1;
     bool user_scrollable_vertical : 1;

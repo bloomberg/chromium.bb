@@ -78,6 +78,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       debug_info_(nullptr),
       has_will_change_transform_hint_(false),
       needs_push_properties_(false),
+      is_scrollbar_(false),
       scrollbars_hidden_(false),
       needs_show_scrollbars_(false),
       raster_even_if_not_drawn_(false),
@@ -346,6 +347,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBounds(bounds_);
   if (scrollable_)
     layer->SetScrollable(scroll_container_bounds_);
+
+  layer->set_is_scrollbar(is_scrollbar_);
 
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the
