@@ -137,23 +137,12 @@ MATCHER(NonEmptyImage, "") {
   return !arg.IsEmpty();
 }
 
-// TODO(wylieb): Rename these tests CachedImageFetcherTest* when ntp_snippets/-
-//               remote/cached_image_fetcher has been migrated.
-TEST_F(ComponentizedCachedImageFetcherTest, FetchEmptyUrl) {
-  base::MockCallback<ImageDataFetcherCallback> data_callback;
-  base::MockCallback<ImageFetcherCallback> image_callback;
-  GURL empty_url = GURL(std::string());
-
-  // Make sure an empty image passed to callback.
-  EXPECT_CALL(data_callback, Run(std::string(), _));
-  EXPECT_CALL(image_callback, Run(std::string(), EmptyImage(), _));
-  cached_image_fetcher()->FetchImageAndData(
-      empty_url.spec(), empty_url, data_callback.Get(), image_callback.Get(),
-      TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  RunUntilIdle();
+MATCHER(NonEmptyString, "") {
+  return !arg.empty();
 }
 
+// TODO(wylieb): Rename these tests CachedImageFetcherTest* when ntp_snippets/-
+//               remote/cached_image_fetcher has been migrated.
 TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCache) {
   // Save the image in the database.
   image_cache()->SaveImage(kImageUrl.spec(), kImageData);
@@ -179,7 +168,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
     base::MockCallback<ImageDataFetcherCallback> data_callback;
     base::MockCallback<ImageFetcherCallback> image_callback;
 
-    EXPECT_CALL(data_callback, Run(kImageData, _));
+    EXPECT_CALL(data_callback, Run(NonEmptyString(), _));
     EXPECT_CALL(image_callback, Run(kImageUrl.spec(), NonEmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
         kImageUrl.spec(), kImageUrl, data_callback.Get(), image_callback.Get(),
@@ -189,7 +178,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
   }
   // Make sure the image data is in the database.
   {
-    EXPECT_CALL(*this, OnImageLoaded(kImageData));
+    EXPECT_CALL(*this, OnImageLoaded(NonEmptyString()));
     image_cache()->LoadImage(
         kImageUrl.spec(),
         base::BindOnce(&ComponentizedCachedImageFetcherTest::OnImageLoaded,
@@ -203,7 +192,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
     base::MockCallback<ImageDataFetcherCallback> data_callback;
     base::MockCallback<ImageFetcherCallback> image_callback;
 
-    EXPECT_CALL(data_callback, Run(kImageData, _));
+    EXPECT_CALL(data_callback, Run(NonEmptyString(), _));
     EXPECT_CALL(image_callback, Run(kImageUrl.spec(), NonEmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
         kImageUrl.spec(), kImageUrl, data_callback.Get(), image_callback.Get(),

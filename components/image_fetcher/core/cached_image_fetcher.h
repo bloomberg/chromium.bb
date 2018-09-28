@@ -20,6 +20,7 @@
 
 namespace gfx {
 class Image;
+class Size;
 }  // namespace gfx
 
 namespace image_fetcher {
@@ -76,22 +77,22 @@ class CachedImageFetcher : public ImageFetcher {
       ImageDataFetcherCallback image_data_callback,
       ImageFetcherCallback image_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
-  void OnImageFetchedFromNetwork(const std::string& id,
-                                 const GURL& image_url,
-                                 ImageDataFetcherCallback image_data_callback,
-                                 ImageFetcherCallback image_callback,
-                                 const std::string& image_data,
+  void OnImageFetchedFromNetwork(ImageFetcherCallback image_callback,
+                                 const std::string& id,
+                                 const gfx::Image& image,
                                  const RequestMetadata& request_metadata);
-  void OnImageDecodedFromNetwork(const std::string& id,
-                                 const GURL& image_url,
-                                 ImageDataFetcherCallback image_data_callback,
-                                 ImageFetcherCallback image_callback,
-                                 const std::string& image_data,
-                                 const RequestMetadata& request_metadata,
+  void OnImageDataFetchedFromNetwork(
+      ImageDataFetcherCallback image_data_callback,
+      const GURL& image_url,
+      const std::string& image_data,
+      const RequestMetadata& request_metadata);
+  void OnImageDecodedFromNetwork(const GURL& image_url,
                                  const gfx::Image& image);
 
   std::unique_ptr<ImageFetcher> image_fetcher_;
   std::unique_ptr<ImageCache> image_cache_;
+
+  gfx::Size desired_image_frame_size_;
 
   base::WeakPtrFactory<CachedImageFetcher> weak_ptr_factory_;
 
