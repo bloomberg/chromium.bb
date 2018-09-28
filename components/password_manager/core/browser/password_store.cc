@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
@@ -122,7 +123,8 @@ bool PasswordStore::FormDigest::operator==(const FormDigest& other) const {
 PasswordStore::PasswordStore()
     : observers_(new base::ObserverListThreadSafe<Observer>()),
       is_propagating_password_changes_to_web_credentials_enabled_(false),
-      shutdown_called_(false) {}
+      shutdown_called_(false),
+      init_status_(InitStatus::kUnknown) {}
 
 bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
                          PrefService* prefs) {
@@ -134,8 +136,12 @@ bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
   prefs_ = prefs;
   hash_password_manager_.set_prefs(prefs);
 #endif
-  ScheduleTask(base::BindRepeating(&PasswordStore::InitOnBackgroundSequence,
-                                   this, flare));
+  if (background_task_runner_) {
+    base::PostTaskAndReplyWithResult(
+        background_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&PasswordStore::InitOnBackgroundSequence, this, flare),
+        base::BindOnce(&PasswordStore::OnInitCompleted, this));
+  }
   return true;
 }
 
@@ -331,6 +337,10 @@ bool PasswordStore::ScheduleTask(const base::Closure& task) {
   return false;
 }
 
+bool PasswordStore::IsAbleToSavePasswords() const {
+  return init_status_ == InitStatus::kSuccess;
+}
+
 void PasswordStore::ShutdownOnUIThread() {
   ScheduleTask(base::Bind(&PasswordStore::DestroyOnBackgroundSequence, this));
   // The AffiliationService must be destroyed from the main sequence.
@@ -468,7 +478,7 @@ PasswordStore::CreateBackgroundTaskRunner() const {
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 
-void PasswordStore::InitOnBackgroundSequence(
+bool PasswordStore::InitOnBackgroundSequence(
     const syncer::SyncableService::StartSyncFlare& flare) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!syncable_service_);
@@ -480,6 +490,7 @@ void PasswordStore::InitOnBackgroundSequence(
   GetAutofillableLoginsImpl(
       std::make_unique<GetLoginsRequest>(reuse_detector_));
 #endif
+  return true;
 }
 
 void PasswordStore::GetLoginsImpl(const FormDigest& form,
@@ -603,6 +614,12 @@ void PasswordStore::ClearAllEnterprisePasswordHashImpl() {
     reuse_detector_->ClearAllEnterprisePasswordHash();
 }
 #endif
+
+void PasswordStore::OnInitCompleted(bool success) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  init_status_ = success ? InitStatus::kSuccess : InitStatus::kFailure;
+  // TODO(tsabolcec): Add UMA histogram to record the success rate.
+}
 
 void PasswordStore::Schedule(
     void (PasswordStore::*func)(std::unique_ptr<GetLoginsRequest>),

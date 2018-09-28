@@ -252,6 +252,9 @@ class PasswordStore : protected PasswordStoreSync,
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   bool ScheduleTask(const base::Closure& task);
 
+  // Returns true iff initialization was successful.
+  bool IsAbleToSavePasswords() const;
+
   base::WeakPtr<syncer::SyncableService> GetPasswordSyncableService();
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
@@ -369,6 +372,19 @@ class PasswordStore : protected PasswordStoreSync,
   };
 #endif
 
+  // Status of PasswordStore::Init().
+  enum class InitStatus {
+    // Initialization status is still not determined (init hasn't started or
+    // finished yet).
+    kUnknown,
+    // Initialization is successfully finished.
+    kSuccess,
+    // There was an error during initialization and PasswordStore is not ready
+    // to save or get passwords.
+    // Removing passwords may still work.
+    kFailure,
+  };
+
   ~PasswordStore() override;
 
   // Create a TaskRunner to be saved in |background_task_runner_|.
@@ -376,8 +392,9 @@ class PasswordStore : protected PasswordStoreSync,
       const;
 
   // Creates PasswordSyncableService and PasswordReuseDetector instances on the
-  // background sequence. Subclasses can add more logic.
-  virtual void InitOnBackgroundSequence(
+  // background sequence. Subclasses can add more logic. Returns true on
+  // success.
+  virtual bool InitOnBackgroundSequence(
       const syncer::SyncableService::StartSyncFlare& flare);
 
   // Methods below will be run in PasswordStore's own sequence.
@@ -520,6 +537,11 @@ class PasswordStore : protected PasswordStoreSync,
  private:
   FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest,
                            UpdatePasswordsStoredForAffiliatedWebsites);
+
+  // Called on the main thread after initialization is completed.
+  // |success| is true if initialization was successful. Sets the
+  // |init_status_|.
+  void OnInitCompleted(bool success);
 
   // Schedule the given |func| to be run in the PasswordStore's own sequence
   // with responses delivered to |consumer| on the current sequence.
@@ -675,6 +697,8 @@ class PasswordStore : protected PasswordStoreSync,
   bool is_propagating_password_changes_to_web_credentials_enabled_;
 
   bool shutdown_called_;
+
+  InitStatus init_status_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };

@@ -97,7 +97,7 @@ class MockPasswordStore : public PasswordStore {
   // PasswordStore:
   scoped_refptr<base::SequencedTaskRunner> CreateBackgroundTaskRunner()
       const override;
-  void InitOnBackgroundSequence(
+  bool InitOnBackgroundSequence(
       const syncer::SyncableService::StartSyncFlare& flare) override;
 };
 
