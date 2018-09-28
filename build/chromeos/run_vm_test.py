@@ -60,6 +60,8 @@ class RemoteTest(object):
         '--start',
         '--board', args.board,
         '--cache-dir', args.cros_cache,
+        # Don't persist any filesystem changes after the VM shutsdown.
+        '--copy-on-write',
     ]
     if args.vm_logs_dir:
       self._vm_test_cmd += [
@@ -80,6 +82,7 @@ class RemoteTest(object):
       self._test_env['USE'] = 'highdpi'
     self._test_env['PATH'] = (
         self._test_env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin'))
+
   @property
   def suite_name(self):
     raise NotImplementedError('Child classes need to define suite name.')
@@ -407,6 +410,8 @@ def host_cmd(args, unknown_args):
       '--start',
       '--board', args.board,
       '--cache-dir', args.cros_cache,
+      # Don't persist any filesystem changes after the VM shutsdown.
+      '--copy-on-write',
   ]
   if args.verbose:
     cros_run_vm_test_cmd.append('--debug')
