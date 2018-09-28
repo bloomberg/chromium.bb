@@ -5,17 +5,16 @@
 #ifndef CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_COMPRESSOR_IO_JAVASCRIPT_STREAM_H_
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_COMPRESSOR_IO_JAVASCRIPT_STREAM_H_
 
-#include <pthread.h>
 #include <cstdint>
 #include <memory>
 #include <string>
 
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_stream.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/utility/completion_callback_factory.h"
-#include "ppapi/utility/threading/lock.h"
-#include "ppapi/utility/threading/simple_thread.h"
 
 class JavaScriptCompressorRequestorInterface;
 
@@ -46,9 +45,9 @@ class CompressorIOJavaScriptStream : public CompressorStream {
   // A requestor that makes calls to JavaScript to read and write chunks.
   JavaScriptCompressorRequestorInterface* requestor_;
 
-  pthread_mutex_t shared_state_lock_;
-  pthread_cond_t available_data_cond_;
-  pthread_cond_t data_written_cond_;
+  base::Lock shared_state_lock_;
+  base::ConditionVariable available_data_cond_;
+  base::ConditionVariable data_written_cond_;
 
   // The bytelength of the data written onto the archive for the last write
   // chunk request. If this value is negative, some error occurred when writing
