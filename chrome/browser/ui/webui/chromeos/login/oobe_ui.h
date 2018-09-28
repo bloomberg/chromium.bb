@@ -52,6 +52,7 @@ class KioskAutolaunchScreenView;
 class KioskEnableScreenView;
 class LoginScreenContext;
 class MarketingOptInScreenView;
+class MultiDeviceSetupScreenView;
 class NativeWindowDelegate;
 class NetworkScreenView;
 class NetworkStateInformer;
@@ -137,6 +138,7 @@ class OobeUI : public content::WebUIController,
   WaitForContainerReadyScreenView* GetWaitForContainerReadyScreenView();
   UpdateRequiredView* GetUpdateRequiredScreenView();
   AssistantOptInFlowScreenView* GetAssistantOptInFlowScreenView();
+  MultiDeviceSetupScreenView* GetMultiDeviceSetupScreenView();
   GaiaView* GetGaiaScreenView();
   UserBoardView* GetUserBoardView();
   DiscoverScreenView* GetDiscoverScreenView();

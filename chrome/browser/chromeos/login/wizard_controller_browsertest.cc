@@ -2642,7 +2642,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 // TODO(xiaoyinh): Add tests for Fingerprint Setup UI.
 
 // TODO(alemate): Add tests for Marketing Opt-In.
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 48,
+
+// TODO(khorimoto): Add tests for MultiDevice Setup UI.
+
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 49,
               "tests for new control flow are missing");
 
 }  // namespace chromeos
