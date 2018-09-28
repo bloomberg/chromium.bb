@@ -213,7 +213,11 @@ ios_web_view_sources = [
 ]
 ios_web_view_sources += ios_web_view_public_headers
 if (ios_web_view_enable_sync) {
-  ios_web_view_sources += [ "internal/signin/cwv_identity.mm" ]
+  ios_web_view_sources += [
+    "internal/signin/cwv_identity.mm",
+    "internal/sync/cwv_sync_controller.mm",
+    "internal/sync/cwv_sync_controller_internal.h",
+  ]
 }
 if (ios_web_view_enable_autofill) {
   ios_web_view_sources += [

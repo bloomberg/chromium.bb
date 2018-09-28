@@ -29,6 +29,13 @@ void InitializeGlobalState() {
     web_main_delegate =
         std::make_unique<ios_web_view::WebViewWebMainDelegate>();
     web::WebMainParams params(web_main_delegate.get());
+    params.argc = 2;
+    const char* executable = "ios-web-view";
+    // This is used in SigninManagerBase to clear the tokens on startup. This
+    // greatly simplifies the management of ChromeWebView's signin state.
+    const char* clear_token = "--clear-token-service";
+    const char* argv[] = {executable, clear_token};
+    params.argv = argv;
     web_main = std::make_unique<web::WebMain>(std::move(params));
   });
 }
