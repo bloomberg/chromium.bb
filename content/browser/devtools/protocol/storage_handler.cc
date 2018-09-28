@@ -86,11 +86,11 @@ void GotUsageAndQuotaDataCallback(
 
 void GetUsageAndQuotaOnIOThread(
     storage::QuotaManager* manager,
-    const GURL& url,
+    const url::Origin& origin,
     std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   manager->GetUsageAndQuotaWithBreakdown(
-      url, blink::mojom::StorageType::kTemporary,
+      origin, blink::mojom::StorageType::kTemporary,
       base::BindOnce(&GotUsageAndQuotaDataCallback, std::move(callback)));
 }
 }  // namespace
@@ -335,7 +335,7 @@ void StorageHandler::GetUsageAndQuota(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&GetUsageAndQuotaOnIOThread, base::RetainedRef(manager),
-                     origin_url, std::move(callback)));
+                     url::Origin::Create(origin_url), std::move(callback)));
 }
 
 Response StorageHandler::TrackCacheStorageForOrigin(const std::string& origin) {

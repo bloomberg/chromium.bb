@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "storage/browser/quota/storage_observer.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 class StorageMonitorTestBase;
@@ -53,7 +54,7 @@ class STORAGE_EXPORT StorageObserverList {
 
  private:
   struct STORAGE_EXPORT ObserverState {
-    GURL origin;
+    url::Origin origin;
     base::TimeTicks last_notification_time;
     base::TimeDelta rate;
     bool requires_update;

@@ -21,7 +21,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -48,19 +48,20 @@ class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   void GetHostUsageWithBreakdown(const std::string& host,
                                  UsageWithBreakdownCallback callback);
   void UpdateUsageCache(QuotaClient::ID client_id,
-                        const GURL& origin,
+                        const url::Origin& origin,
                         int64_t delta);
   int64_t GetCachedUsage() const;
   void GetCachedHostsUsage(std::map<std::string, int64_t>* host_usage) const;
-  void GetCachedOriginsUsage(std::map<GURL, int64_t>* origin_usage) const;
-  void GetCachedOrigins(std::set<GURL>* origins) const;
+  void GetCachedOriginsUsage(
+      std::map<url::Origin, int64_t>* origin_usage) const;
+  void GetCachedOrigins(std::set<url::Origin>* origins) const;
   bool IsWorking() const {
     return global_usage_callbacks_.HasCallbacks() ||
            host_usage_callbacks_.HasAnyCallbacks();
   }
 
   void SetUsageCacheEnabled(QuotaClient::ID client_id,
-                            const GURL& origin,
+                            const url::Origin& origin,
                             bool enabled);
 
  private:

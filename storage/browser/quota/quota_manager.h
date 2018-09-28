@@ -79,15 +79,15 @@ class STORAGE_EXPORT QuotaEvictionHandler {
   // the current settings, capacity, and usage.
   virtual void GetEvictionRoundInfo(EvictionRoundInfoCallback callback) = 0;
 
-  // Returns next origin to evict.  It might return an empty GURL when there are
-  // no evictable origins.
+  // Returns next origin to evict, or nullopt if there are no evictable
+  // origins.
   virtual void GetEvictionOrigin(blink::mojom::StorageType type,
-                                 const std::set<GURL>& extra_exceptions,
+                                 const std::set<url::Origin>& extra_exceptions,
                                  int64_t global_quota,
                                  GetOriginCallback callback) = 0;
 
   // Called to evict an origin.
-  virtual void EvictOriginData(const GURL& origin,
+  virtual void EvictOriginData(const url::Origin& origin,
                                blink::mojom::StorageType type,
                                StatusCallback callback) = 0;
 
@@ -144,14 +144,14 @@ class STORAGE_EXPORT QuotaManager
 
   // Called by Web Apps.
   // This method is declared as virtual to allow test code to override it.
-  virtual void GetUsageAndQuotaForWebApps(const GURL& origin,
+  virtual void GetUsageAndQuotaForWebApps(const url::Origin& origin,
                                           blink::mojom::StorageType type,
                                           UsageAndQuotaCallback callback);
 
   // Called by DevTools.
   // This method is declared as virtual to allow test code to override it.
   virtual void GetUsageAndQuotaWithBreakdown(
-      const GURL& origin,
+      const url::Origin& origin,
       blink::mojom::StorageType type,
       UsageAndQuotaWithBreakdownCallback callback);
 
@@ -161,7 +161,7 @@ class STORAGE_EXPORT QuotaManager
   // For UnlimitedStorage origins, this version skips usage and quota handling
   // to avoid extra query cost.
   // Do not call this method for apps/user-facing code.
-  virtual void GetUsageAndQuota(const GURL& origin,
+  virtual void GetUsageAndQuota(const url::Origin& origin,
                                 blink::mojom::StorageType type,
                                 UsageAndQuotaCallback callback);
 
@@ -169,28 +169,28 @@ class STORAGE_EXPORT QuotaManager
   // Client storage should call this method when storage is accessed.
   // Used to maintain LRU ordering.
   void NotifyStorageAccessed(QuotaClient::ID client_id,
-                             const GURL& origin,
+                             const url::Origin& origin,
                              blink::mojom::StorageType type);
 
   // Called by clients via proxy.
   // Client storage must call this method whenever they have made any
   // modifications that change the amount of data stored in their storage.
   void NotifyStorageModified(QuotaClient::ID client_id,
-                             const GURL& origin,
+                             const url::Origin& origin,
                              blink::mojom::StorageType type,
                              int64_t delta);
 
   // Used to avoid evicting origins with open pages.
   // A call to NotifyOriginInUse must be balanced by a later call
   // to NotifyOriginNoLongerInUse.
-  void NotifyOriginInUse(const GURL& origin);
-  void NotifyOriginNoLongerInUse(const GURL& origin);
-  bool IsOriginInUse(const GURL& origin) const {
+  void NotifyOriginInUse(const url::Origin& origin);
+  void NotifyOriginNoLongerInUse(const url::Origin& origin);
+  bool IsOriginInUse(const url::Origin& origin) const {
     return base::ContainsKey(origins_in_use_, origin);
   }
 
   void SetUsageCacheEnabled(QuotaClient::ID client_id,
-                            const GURL& origin,
+                            const url::Origin& origin,
                             blink::mojom::StorageType type,
                             bool enabled);
 
@@ -201,7 +201,7 @@ class STORAGE_EXPORT QuotaManager
   // from the origin. This is specified by the caller as a bitmask built from
   // QuotaClient::IDs. Setting the mask to QuotaClient::kAllClientsMask will
   // remove all clients from the origin, regardless of type.
-  virtual void DeleteOriginData(const GURL& origin,
+  virtual void DeleteOriginData(const url::Origin& origin,
                                 blink::mojom::StorageType type,
                                 int quota_client_mask,
                                 StatusCallback callback);
@@ -233,7 +233,7 @@ class STORAGE_EXPORT QuotaManager
 
   void GetStatistics(std::map<std::string, std::string>* statistics);
 
-  bool IsStorageUnlimited(const GURL& origin,
+  bool IsStorageUnlimited(const url::Origin& origin,
                           blink::mojom::StorageType type) const;
 
   virtual void GetOriginsModifiedSince(blink::mojom::StorageType type,
@@ -318,7 +318,7 @@ class STORAGE_EXPORT QuotaManager
   struct EvictionContext {
     EvictionContext();
     ~EvictionContext();
-    GURL evicted_origin;
+    url::Origin evicted_origin;
     blink::mojom::StorageType evicted_type;
     StatusCallback evict_origin_data_callback;
   };
@@ -345,15 +345,15 @@ class STORAGE_EXPORT QuotaManager
   // Extract cached origins list from the usage tracker.
   // (Might return empty list if no origin is tracked by the tracker.)
   void GetCachedOrigins(blink::mojom::StorageType type,
-                        std::set<GURL>* origins);
+                        std::set<url::Origin>* origins);
 
   // These internal methods are separately defined mainly for testing.
   void NotifyStorageAccessedInternal(QuotaClient::ID client_id,
-                                     const GURL& origin,
+                                     const url::Origin& origin,
                                      blink::mojom::StorageType type,
                                      base::Time accessed_time);
   void NotifyStorageModifiedInternal(QuotaClient::ID client_id,
-                                     const GURL& origin,
+                                     const url::Origin& origin,
                                      blink::mojom::StorageType type,
                                      int64_t delta,
                                      base::Time modified_time);
@@ -361,7 +361,7 @@ class STORAGE_EXPORT QuotaManager
   void DumpQuotaTable(DumpQuotaTableCallback callback);
   void DumpOriginInfoTable(DumpOriginInfoTableCallback callback);
 
-  void DeleteOriginDataInternal(const GURL& origin,
+  void DeleteOriginDataInternal(const url::Origin& origin,
                                 blink::mojom::StorageType type,
                                 int quota_client_mask,
                                 bool is_eviction,
@@ -369,7 +369,7 @@ class STORAGE_EXPORT QuotaManager
 
   // Methods for eviction logic.
   void StartEviction();
-  void DeleteOriginFromDatabase(const GURL& origin,
+  void DeleteOriginFromDatabase(const url::Origin& origin,
                                 blink::mojom::StorageType type,
                                 bool is_eviction);
 
@@ -383,16 +383,17 @@ class STORAGE_EXPORT QuotaManager
   void DidDumpOriginInfoTableForHistogram(
       const OriginInfoTableEntries& entries);
 
-  std::set<GURL> GetEvictionOriginExceptions(
-      const std::set<GURL>& extra_exceptions);
-  void DidGetEvictionOrigin(GetOriginCallback callback, const GURL& origin);
+  std::set<url::Origin> GetEvictionOriginExceptions(
+      const std::set<url::Origin>& extra_exceptions);
+  void DidGetEvictionOrigin(GetOriginCallback callback,
+                            const base::Optional<url::Origin>& origin);
 
   // QuotaEvictionHandler.
   void GetEvictionOrigin(blink::mojom::StorageType type,
-                         const std::set<GURL>& extra_exceptions,
+                         const std::set<url::Origin>& extra_exceptions,
                          int64_t global_quota,
                          GetOriginCallback callback) override;
-  void EvictOriginData(const GURL& origin,
+  void EvictOriginData(const url::Origin& origin,
                        blink::mojom::StorageType type,
                        StatusCallback callback) override;
   void GetEvictionRoundInfo(EvictionRoundInfoCallback callback) override;
@@ -406,7 +407,7 @@ class STORAGE_EXPORT QuotaManager
                                  QuotaCallback callback,
                                  const int64_t* new_quota,
                                  bool success);
-  void DidGetLRUOrigin(const GURL* origin,
+  void DidGetLRUOrigin(std::unique_ptr<base::Optional<url::Origin>> origin,
                        bool success);
   void GetQuotaSettings(QuotaSettingsCallback callback);
   void DidGetSettings(base::TimeTicks start_ticks,
@@ -449,7 +450,7 @@ class STORAGE_EXPORT QuotaManager
   StorageCapacityCallbackQueue storage_capacity_callbacks_;
 
   GetOriginCallback lru_origin_callback_;
-  std::set<GURL> access_notified_origins_;
+  std::set<url::Origin> access_notified_origins_;
 
   QuotaClientList clients_;
 
@@ -466,9 +467,9 @@ class STORAGE_EXPORT QuotaManager
   HostQuotaCallbackMap persistent_host_quota_callbacks_;
 
   // Map from origin to count.
-  std::map<GURL, int> origins_in_use_;
+  std::map<url::Origin, int> origins_in_use_;
   // Map from origin to error count.
-  std::map<GURL, int> origins_in_error_;
+  std::map<url::Origin, int> origins_in_error_;
 
   scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "net/base/url_util.h"
+#include "url/origin.h"
 
 using blink::mojom::StorageType;
 using content::BrowserThread;
@@ -138,12 +139,11 @@ void QuotaInternalsProxy::DidDumpOriginInfoTable(
   std::vector<PerOriginStorageInfo> origin_info;
   origin_info.reserve(entries.size());
 
-  typedef OriginInfoTableEntries::const_iterator iterator;
-  for (iterator itr(entries.begin()); itr != entries.end(); ++itr) {
-    PerOriginStorageInfo info(itr->origin, itr->type);
-    info.set_used_count(itr->used_count);
-    info.set_last_access_time(itr->last_access_time);
-    info.set_last_modified_time(itr->last_modified_time);
+  for (const auto& entry : entries) {
+    PerOriginStorageInfo info(entry.origin.GetURL(), entry.type);
+    info.set_used_count(entry.used_count);
+    info.set_last_access_time(entry.last_access_time);
+    info.set_last_modified_time(entry.last_modified_time);
 
     origin_info.push_back(info);
   }
@@ -175,7 +175,7 @@ void QuotaInternalsProxy::DidGetHostUsage(const std::string& host,
 void QuotaInternalsProxy::RequestPerOriginInfo(StorageType type) {
   DCHECK(quota_manager_.get());
 
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   quota_manager_->GetCachedOrigins(type, &origins);
 
   std::vector<PerOriginStorageInfo> origin_info;
@@ -184,13 +184,12 @@ void QuotaInternalsProxy::RequestPerOriginInfo(StorageType type) {
   std::set<std::string> hosts;
   std::vector<PerHostStorageInfo> host_info;
 
-  for (std::set<GURL>::iterator itr(origins.begin());
-       itr != origins.end(); ++itr) {
-    PerOriginStorageInfo info(*itr, type);
-    info.set_in_use(quota_manager_->IsOriginInUse(*itr));
+  for (const url::Origin& origin : origins) {
+    PerOriginStorageInfo info(origin.GetURL(), type);
+    info.set_in_use(quota_manager_->IsOriginInUse(origin));
     origin_info.push_back(info);
 
-    std::string host(net::GetHostOrSpecFromURL(*itr));
+    std::string host(net::GetHostOrSpecFromURL(origin.GetURL()));
     if (hosts.insert(host).second) {
       PerHostStorageInfo info(host, type);
       host_info.push_back(info);

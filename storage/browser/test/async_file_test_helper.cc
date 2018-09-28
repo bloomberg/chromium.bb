@@ -258,7 +258,7 @@ bool AsyncFileTestHelper::DirectoryExists(storage::FileSystemContext* context,
 
 blink::mojom::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
     storage::QuotaManager* quota_manager,
-    const GURL& origin,
+    const url::Origin& origin,
     storage::FileSystemType type,
     int64_t* usage,
     int64_t* quota) {

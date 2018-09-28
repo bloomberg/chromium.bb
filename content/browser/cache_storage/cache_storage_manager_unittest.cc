@@ -259,9 +259,9 @@ class CacheStorageManagerTest : public testing::Test {
     mock_quota_manager_ = new MockQuotaManager(
         MemoryOnly(), temp_dir_path, base::ThreadTaskRunnerHandle::Get().get(),
         quota_policy_.get());
-    mock_quota_manager_->SetQuota(origin1_.GetURL(), StorageType::kTemporary,
+    mock_quota_manager_->SetQuota(origin1_, StorageType::kTemporary,
                                   1024 * 1024 * 100);
-    mock_quota_manager_->SetQuota(origin2_.GetURL(), StorageType::kTemporary,
+    mock_quota_manager_->SetQuota(origin2_, StorageType::kTemporary,
                                   1024 * 1024 * 100);
 
     quota_manager_proxy_ = new MockCacheStorageQuotaManagerProxy(

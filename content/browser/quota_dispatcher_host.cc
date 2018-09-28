@@ -95,7 +95,7 @@ void QuotaDispatcherHost::QueryStorageUsageAndQuota(
     StorageType storage_type,
     QueryStorageUsageAndQuotaCallback callback) {
   quota_manager_->GetUsageAndQuotaForWebApps(
-      origin.GetURL(), storage_type,
+      origin, storage_type,
       base::BindOnce(&QuotaDispatcherHost::DidQueryStorageUsageAndQuota,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -126,13 +126,13 @@ void QuotaDispatcherHost::RequestStorageQuota(
          storage_type == StorageType::kPersistent);
   if (storage_type == StorageType::kPersistent) {
     quota_manager_->GetUsageAndQuotaForWebApps(
-        origin.GetURL(), storage_type,
+        origin, storage_type,
         base::BindOnce(&QuotaDispatcherHost::DidGetPersistentUsageAndQuota,
                        weak_factory_.GetWeakPtr(), origin, storage_type,
                        requested_size, std::move(callback)));
   } else {
     quota_manager_->GetUsageAndQuotaForWebApps(
-        origin.GetURL(), storage_type,
+        origin, storage_type,
         base::BindOnce(&QuotaDispatcherHost::DidGetTemporaryUsageAndQuota,
                        weak_factory_.GetWeakPtr(), requested_size,
                        std::move(callback)));
@@ -166,7 +166,7 @@ void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
   // TODO(nhiroki): The backend should accept uint64_t values.
   int64_t requested_quota_signed =
       base::saturated_cast<int64_t>(requested_quota);
-  if (quota_manager_->IsStorageUnlimited(origin.GetURL(), storage_type) ||
+  if (quota_manager_->IsStorageUnlimited(origin, storage_type) ||
       requested_quota_signed <= current_quota) {
     std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, current_usage,
                             requested_quota);

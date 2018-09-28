@@ -41,6 +41,8 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -113,7 +115,7 @@ class SingleExtensionStorageObserver : public storage::StorageObserver {
       ExtensionStorageMonitorIOHelper* io_helper,
       const std::string& extension_id,
       scoped_refptr<storage::QuotaManager> quota_manager,
-      const GURL& origin,
+      const url::Origin& origin,
       int64_t next_threshold,
       base::TimeDelta rate,
       bool should_uma)
@@ -181,7 +183,7 @@ class ExtensionStorageMonitorIOHelper
   void StartObservingForExtension(
       scoped_refptr<storage::QuotaManager> quota_manager,
       const std::string& extension_id,
-      const GURL& site_url,
+      const url::Origin& site_origin,
       int64_t next_threshold,
       const base::TimeDelta& rate,
       bool should_uma) {
@@ -192,7 +194,7 @@ class ExtensionStorageMonitorIOHelper
 
     storage_observers_[extension_id] =
         std::make_unique<SingleExtensionStorageObserver>(
-            this, extension_id, std::move(quota_manager), site_url.GetOrigin(),
+            this, extension_id, std::move(quota_manager), site_origin,
             next_threshold, rate, should_uma);
   }
 
@@ -498,9 +500,11 @@ void ExtensionStorageMonitor::StartMonitoringStorage(
   scoped_refptr<storage::QuotaManager> quota_manager(
       storage_partition->GetQuotaManager());
 
-  GURL storage_origin(site_url.GetOrigin());
-  if (extension->is_hosted_app())
-    storage_origin = AppLaunchInfo::GetLaunchWebURL(extension).GetOrigin();
+  url::Origin storage_origin = url::Origin::Create(site_url);
+  if (extension->is_hosted_app()) {
+    storage_origin =
+        url::Origin::Create(AppLaunchInfo::GetLaunchWebURL(extension));
+  }
 
   // Don't give a threshold if we're not enforcing.
   int next_threshold =

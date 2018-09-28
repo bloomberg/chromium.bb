@@ -412,7 +412,7 @@ bool PepperFileSystemBrowserHost::ShouldCreateQuotaReservation() const {
   storage::FileSystemType file_system_type =
       PepperFileSystemTypeToFileSystemType(type_);
   return !quota_manager_proxy->quota_manager()->IsStorageUnlimited(
-      root_url_.GetOrigin(),
+      url::Origin::Create(root_url_),
       storage::FileSystemTypeToQuotaStorageType(file_system_type));
 }
 

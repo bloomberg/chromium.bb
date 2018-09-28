@@ -407,7 +407,8 @@ void FileSystemOperationImpl::GetUsageAndQuotaThenRunTask(
   DCHECK(quota_manager_proxy);
   DCHECK(quota_manager_proxy->quota_manager());
   quota_manager_proxy->quota_manager()->GetUsageAndQuota(
-      url.origin(), FileSystemTypeToQuotaStorageType(url.type()),
+      url::Origin::Create(url.origin()),
+      FileSystemTypeToQuotaStorageType(url.type()),
       base::BindOnce(&FileSystemOperationImpl::DidGetUsageAndQuotaAndRunTask,
                      weak_ptr_, task, error_callback));
 }
