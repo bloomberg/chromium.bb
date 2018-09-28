@@ -174,31 +174,27 @@ void FitContentsToPrintableAreaIfRequired(
 // Performs N-up PDF generation for |doc| based on |pages_per_sheet| and
 // the parameters in |print_settings|.
 // On success, returns the N-up version of |doc|. On failure, returns nullptr.
-ScopedFPDFDocument NupPdfToPdf(FPDF_DOCUMENT doc,
+ScopedFPDFDocument NupPdfToPdf(ScopedFPDFDocument doc,
                                uint32_t pages_per_sheet,
                                const PP_PrintSettings_Dev& print_settings) {
   DCHECK(doc);
   DCHECK(ShouldDoNup(pages_per_sheet));
 
-  PP_Size page_size = print_settings.paper_size;
-
   printing::NupParameters nup_params;
-  bool is_landscape = PDFiumPrint::IsSourcePdfLandscape(doc);
+  bool is_landscape = PDFiumPrint::IsSourcePdfLandscape(doc.get());
   nup_params.SetParameters(pages_per_sheet, is_landscape);
 
-  // Import n pages to one.
+  PP_Size page_size = print_settings.paper_size;
   bool paper_is_landscape = page_size.width > page_size.height;
   if (nup_params.landscape() != paper_is_landscape)
     std::swap(page_size.width, page_size.height);
 
-  ScopedFPDFDocument output_doc_nup(FPDF_ImportNPagesToOne(
-      doc, page_size.width, page_size.height, nup_params.num_pages_on_x_axis(),
-      nup_params.num_pages_on_y_axis()));
-  if (output_doc_nup) {
-    FitContentsToPrintableAreaIfRequired(output_doc_nup.get(), 1.0f,
-                                         print_settings);
-  }
-  return output_doc_nup;
+  ScopedFPDFDocument nup_doc(FPDF_ImportNPagesToOne(
+      doc.get(), page_size.width, page_size.height,
+      nup_params.num_pages_on_x_axis(), nup_params.num_pages_on_y_axis()));
+  if (nup_doc)
+    FitContentsToPrintableAreaIfRequired(nup_doc.get(), 1.0f, print_settings);
+  return nup_doc;
 }
 
 int GetBlockForJpeg(void* param,
@@ -311,19 +307,17 @@ ScopedFPDFDocument PDFiumPrint::CreatePrintPdf(
     return nullptr;
   }
 
-  uint32_t pages_per_sheet = pdf_print_settings.pages_per_sheet;
-  if (ShouldDoNup(pages_per_sheet)) {
-    if (!FlattenPrintData(output_doc.get()))
-      return nullptr;
-    return NupPdfToPdf(output_doc.get(), pages_per_sheet, print_settings);
-  }
-
   double scale_factor = pdf_print_settings.scale_factor / 100.0;
   FitContentsToPrintableAreaIfRequired(output_doc.get(), scale_factor,
                                        print_settings);
   if (!FlattenPrintData(output_doc.get()))
     return nullptr;
-  return output_doc;
+
+  uint32_t pages_per_sheet = pdf_print_settings.pages_per_sheet;
+  if (!ShouldDoNup(pages_per_sheet))
+    return output_doc;
+
+  return NupPdfToPdf(std::move(output_doc), pages_per_sheet, print_settings);
 }
 
 ScopedFPDFDocument PDFiumPrint::CreateRasterPdf(
