@@ -48,29 +48,9 @@ OriginsList CreateAdvertiseAcceptHeaderOriginsList() {
 
 }  //  namespace
 
-bool NeedToCheckRedirectedURLForAcceptHeader() {
-  // When SignedHTTPExchange is enabled, the SignedExchange accept header must
-  // be sent to all origins. So we don't need to check the redirected URL.
-  return !base::FeatureList::IsEnabled(features::kSignedHTTPExchange) &&
-         base::FeatureList::IsEnabled(
-             features::kSignedHTTPExchangeOriginTrial) &&
-         base::FeatureList::IsEnabled(
-             features::kSignedHTTPExchangeAcceptHeader);
-}
-
 bool ShouldAdvertiseAcceptHeader(const url::Origin& origin) {
-  // When SignedHTTPExchange is enabled, we must send the SignedExchange accept
-  // header to all origins.
-  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
-    return true;
-  // When SignedHTTPExchangeOriginTrial is not enabled or
-  // SignedHTTPExchangeAcceptHeader is not enabled, we must not send the
-  // SignedExchange accept header.
-  if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchangeOriginTrial) ||
-      !base::FeatureList::IsEnabled(
-          features::kSignedHTTPExchangeAcceptHeader)) {
+  if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchangeAcceptHeader))
     return false;
-  }
 
   // |origins_list| is initialized in a thread-safe manner.
   // Querying OriginsList::Match() should be safe since it's read-only access.
