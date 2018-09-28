@@ -22,31 +22,19 @@ const int64_t kMaximumDataChunkSize = 512 * 1024;
 CompressorIOJavaScriptStream::CompressorIOJavaScriptStream(
     JavaScriptCompressorRequestorInterface* requestor)
     : requestor_(requestor),
+      available_data_cond_(&shared_state_lock_),
+      data_written_cond_(&shared_state_lock_),
+      available_data_(false),
       buffer_offset_(-1),
       buffer_data_length_(0),
-      buffer_(std::make_unique<char[]>(kMaximumDataChunkSize)) {
-  pthread_mutex_init(&shared_state_lock_, nullptr);
-  pthread_cond_init(&available_data_cond_, nullptr);
-  pthread_cond_init(&data_written_cond_, nullptr);
+      buffer_(std::make_unique<char[]>(kMaximumDataChunkSize)) {}
 
-  pthread_mutex_lock(&shared_state_lock_);
-  available_data_ = false;
-  pthread_mutex_unlock(&shared_state_lock_);
-}
-
-CompressorIOJavaScriptStream::~CompressorIOJavaScriptStream() {
-  pthread_mutex_lock(&shared_state_lock_);
-  pthread_mutex_unlock(&shared_state_lock_);
-  pthread_cond_destroy(&data_written_cond_);
-  pthread_cond_destroy(&available_data_cond_);
-  pthread_mutex_destroy(&shared_state_lock_);
-}
+CompressorIOJavaScriptStream::~CompressorIOJavaScriptStream() = default;
 
 int64_t CompressorIOJavaScriptStream::Flush() {
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
 
   if (buffer_data_length_ == 0) {
-    pthread_mutex_unlock(&shared_state_lock_);
     return 0;
   }
 
@@ -59,11 +47,11 @@ int64_t CompressorIOJavaScriptStream::Flush() {
   requestor_->WriteChunkRequest(buffer_offset_, buffer_data_length_,
                                 array_buffer);
 
-  pthread_cond_wait(&data_written_cond_, &shared_state_lock_);
+  // TODO(amistry): Handle spurious wakeups.
+  data_written_cond_.Wait();
 
   int64_t written_bytes = written_bytes_;
   if (written_bytes < buffer_data_length_) {
-    pthread_mutex_unlock(&shared_state_lock_);
     return -1 /* Error */;
   }
 
@@ -71,14 +59,13 @@ int64_t CompressorIOJavaScriptStream::Flush() {
   buffer_offset_ = -1;
   buffer_data_length_ = 0;
 
-  pthread_mutex_unlock(&shared_state_lock_);
   return written_bytes;
 }
 
 int64_t CompressorIOJavaScriptStream::Write(int64_t zip_offset,
                                             int64_t zip_length,
                                             const char* zip_buffer) {
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
 
   // The offset from which the data should be written onto the archive.
   int64_t current_offset = zip_offset;
@@ -104,11 +91,11 @@ int64_t CompressorIOJavaScriptStream::Write(int64_t zip_offset,
         (current_offset < buffer_offset_ ||
          buffer_offset_ + buffer_data_length_ <
              current_offset + left_length) /* 4 */) {
-      pthread_mutex_unlock(&shared_state_lock_);
       int64_t bytes_to_write = buffer_data_length_;
+
+      base::AutoUnlock aul(shared_state_lock_);
       if (Flush() != bytes_to_write)
         return -1;
-      pthread_mutex_lock(&shared_state_lock_);
     }
 
     // How many bytes we should copy to buffer_ in this iteration.
@@ -129,39 +116,36 @@ int64_t CompressorIOJavaScriptStream::Write(int64_t zip_offset,
     left_length -= copy_length;
   } while (left_length > 0);
 
-  pthread_mutex_unlock(&shared_state_lock_);
   return zip_length;
 }
 
 int64_t CompressorIOJavaScriptStream::WriteChunkDone(int64_t written_bytes) {
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
   written_bytes_ = written_bytes;
-  pthread_cond_signal(&data_written_cond_);
-  pthread_mutex_unlock(&shared_state_lock_);
+  data_written_cond_.Signal();
   return written_bytes;
 }
 
 int64_t CompressorIOJavaScriptStream::Read(int64_t bytes_to_read,
                                            char* destination_buffer) {
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
 
   destination_buffer_ = destination_buffer;
   requestor_->ReadFileChunkRequest(bytes_to_read);
 
   while (!available_data_) {
-    pthread_cond_wait(&available_data_cond_, &shared_state_lock_);
+    available_data_cond_.Wait();
   }
 
   int64_t read_bytes = read_bytes_;
   available_data_ = false;
-  pthread_mutex_unlock(&shared_state_lock_);
   return read_bytes;
 }
 
 int64_t CompressorIOJavaScriptStream::ReadFileChunkDone(
     int64_t read_bytes,
     pp::VarArrayBuffer* array_buffer) {
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
 
   // JavaScript sets a negative value in read_bytes if an error occurred while
   // reading a chunk.
@@ -173,7 +157,6 @@ int64_t CompressorIOJavaScriptStream::ReadFileChunkDone(
 
   read_bytes_ = read_bytes;
   available_data_ = true;
-  pthread_cond_signal(&available_data_cond_);
-  pthread_mutex_unlock(&shared_state_lock_);
+  available_data_cond_.Signal();
   return read_bytes;
 }

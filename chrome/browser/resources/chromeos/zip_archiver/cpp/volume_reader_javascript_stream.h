@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_READER_JAVASCRIPT_STREAM_H_
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_READER_JAVASCRIPT_STREAM_H_
 
-#include <pthread.h>
 #include <cstdint>
 #include <memory>
 #include <string>
 
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_reader.h"
 #include "ppapi/cpp/var_array_buffer.h"
 
@@ -94,14 +95,11 @@ class VolumeReaderJavaScriptStream : public VolumeReader {
   std::string available_passphrase_;  // Stores a passphrase from JavaScript.
   bool passphrase_error_;  // Marks an error in getting the passphrase.
 
-  // Must use POSIX mutexes instead of pp::Lock because there is no pp::Cond.
-  // pp::Lock uses POSIX mutexes anyway on Linux, but pp::Lock can also pe used
-  // on other operating systems as Windows. For now this is not an issue as this
-  // extension is used only on Chromebooks. The shared_state_lock_ is used to
-  // protect members which are accessed by more than one thread.
-  pthread_mutex_t shared_state_lock_;
-  pthread_cond_t available_data_cond_;
-  pthread_cond_t available_passphrase_cond_;
+  // The shared_state_lock_ is used to protect members which are accessed by
+  // more than one thread.
+  base::Lock shared_state_lock_;
+  base::ConditionVariable available_data_cond_;
+  base::ConditionVariable available_passphrase_cond_;
 
   int64_t offset_;  // The offset from where read should be done.
   int64_t last_read_chunk_offset_;  // The offset reached after last call to

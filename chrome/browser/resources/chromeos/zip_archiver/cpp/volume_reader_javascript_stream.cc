@@ -19,15 +19,13 @@ VolumeReaderJavaScriptStream::VolumeReaderJavaScriptStream(
       available_data_(false),
       read_error_(false),
       passphrase_error_(false),
+      available_data_cond_(&shared_state_lock_),
+      available_passphrase_cond_(&shared_state_lock_),
       offset_(0),
       // For first call -1 will force a chunk request from JavaScript as offset
       // parameter is 0.
       last_read_chunk_offset_(-1),
       read_ahead_array_buffer_ptr_(&first_array_buffer_) {
-  pthread_mutex_init(&shared_state_lock_, nullptr);
-  pthread_cond_init(&available_data_cond_, nullptr);
-  pthread_cond_init(&available_passphrase_cond_, nullptr);
-
   // Dummy Map the second buffer as first buffer is used for read ahead by
   // read_ahead_array_buffer_ptr_. This operation is required in order for Unmap
   // to correctly work in the destructor and VolumeReaderJavaScriptStream::Read.
@@ -35,10 +33,6 @@ VolumeReaderJavaScriptStream::VolumeReaderJavaScriptStream(
 }
 
 VolumeReaderJavaScriptStream::~VolumeReaderJavaScriptStream() {
-  pthread_mutex_destroy(&shared_state_lock_);
-  pthread_cond_destroy(&available_data_cond_);
-  pthread_cond_destroy(&available_passphrase_cond_);
-
   // Unmap last mapped buffer. This is the other buffer to
   // read_ahead_array_buffer_ptr_ as read_ahead_array_buffer_ptr_ must be
   // available for SetBufferAndSignal to overwrite.
@@ -68,7 +62,7 @@ void VolumeReaderJavaScriptStream::SetBufferAndSignal(
   // buffer can still be used. In such case we should use it. That can greatly
   // improve traversing headers for archives with small files!
 
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
   if (read_offset == offset_ && !available_data_ && !read_error_) {
     // Signal VolumeReaderJavaScriptStream::Read to continue execution. Copies
     // buffer locally so minizip has the buffer in memory when working with
@@ -80,43 +74,38 @@ void VolumeReaderJavaScriptStream::SetBufferAndSignal(
     *read_ahead_array_buffer_ptr_ = array_buffer;  // Copy operation.
     available_data_ = true;
 
-    pthread_cond_signal(&available_data_cond_);
+    available_data_cond_.Signal();
   }
-  pthread_mutex_unlock(&shared_state_lock_);
 }
 
 void VolumeReaderJavaScriptStream::ReadErrorSignal() {
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
   read_error_ = true;  // Read error from JavaScript.
-  pthread_cond_signal(&available_data_cond_);
-  pthread_mutex_unlock(&shared_state_lock_);
+  available_data_cond_.Signal();
 }
 
 void VolumeReaderJavaScriptStream::SetPassphraseAndSignal(
     const std::string& passphrase) {
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
   // Signal VolumeReaderJavaScriptStream::Passphrase to continue execution.
   available_passphrase_ = passphrase;
-  pthread_cond_signal(&available_passphrase_cond_);
-  pthread_mutex_unlock(&shared_state_lock_);
+  available_passphrase_cond_.Signal();
 }
 
 void VolumeReaderJavaScriptStream::PassphraseErrorSignal() {
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
   passphrase_error_ = true;  // Passphrase error from JavaScript.
-  pthread_cond_signal(&available_passphrase_cond_);
-  pthread_mutex_unlock(&shared_state_lock_);
+  available_passphrase_cond_.Signal();
 }
 
 int64_t VolumeReaderJavaScriptStream::Read(int64_t bytes_to_read,
                                            const void** destination_buffer) {
   PP_DCHECK(bytes_to_read > 0);
 
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
 
   // No more data, so signal end of reading.
   if (offset_ >= archive_size_) {
-    pthread_mutex_unlock(&shared_state_lock_);
     return 0;
   }
 
@@ -129,15 +118,13 @@ int64_t VolumeReaderJavaScriptStream::Read(int64_t bytes_to_read,
     while (!available_data_) {  // Check again available data as first call
                                 // was done outside guarded zone.
       if (read_error_) {
-        pthread_mutex_unlock(&shared_state_lock_);
         return -1;
       }
-      pthread_cond_wait(&available_data_cond_, &shared_state_lock_);
+      available_data_cond_.Wait();
     }
   }
 
   if (read_error_) {  // Read ahead failed.
-    pthread_mutex_unlock(&shared_state_lock_);
     return -1;
   }
 
@@ -178,13 +165,12 @@ int64_t VolumeReaderJavaScriptStream::Read(int64_t bytes_to_read,
 
   // Read ahead next chunk with a length similar to current read.
   RequestChunk(bytes_to_read);
-  pthread_mutex_unlock(&shared_state_lock_);
 
   return bytes_read;
 }
 
 int64_t VolumeReaderJavaScriptStream::Seek(int64_t offset, int whence) {
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
 
   int64_t new_offset = offset_;
   switch (whence) {
@@ -199,17 +185,14 @@ int64_t VolumeReaderJavaScriptStream::Seek(int64_t offset, int whence) {
       break;
     default:
       PP_NOTREACHED();
-      pthread_mutex_unlock(&shared_state_lock_);
       return -1;
   }
 
   if (new_offset < 0) {
-    pthread_mutex_unlock(&shared_state_lock_);
     return -1;
   }
 
   offset_ = new_offset;
-  pthread_mutex_unlock(&shared_state_lock_);
 
   return new_offset;
 }
@@ -224,24 +207,23 @@ std::unique_ptr<std::string> VolumeReaderJavaScriptStream::Passphrase() {
   // The error is not recoverable. Once passphrase fails to be provided, it is
   // never asked again. Note, that still users are able to retry entering the
   // password, unless they click Cancel.
-  pthread_mutex_lock(&shared_state_lock_);
-  if (passphrase_error_) {
-    pthread_mutex_unlock(&shared_state_lock_);
-    return result;
+  {
+    base::AutoLock al(shared_state_lock_);
+    if (passphrase_error_) {
+      return result;
+    }
   }
-  pthread_mutex_unlock(&shared_state_lock_);
 
   // Request the passphrase outside of the lock.
   requestor_->RequestPassphrase(request_id_);
 
-  pthread_mutex_lock(&shared_state_lock_);
+  base::AutoLock al(shared_state_lock_);
   // Wait for the passphrase from JavaScript.
-  pthread_cond_wait(&available_passphrase_cond_, &shared_state_lock_);
+  // TODO(amistry): Handle spurious wakeups.
+  available_passphrase_cond_.Wait();
 
   if (!passphrase_error_)
     result.reset(new std::string(available_passphrase_));
-
-  pthread_mutex_unlock(&shared_state_lock_);
 
   return result;
 }
