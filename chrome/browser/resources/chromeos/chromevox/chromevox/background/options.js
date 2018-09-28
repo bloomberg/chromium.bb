@@ -9,6 +9,7 @@
 
 goog.provide('cvox.OptionsPage');
 
+goog.require('ConsoleTts');
 goog.require('EventStreamLogger');
 goog.require('Msgs');
 goog.require('PanelCommand');
@@ -19,7 +20,6 @@ goog.require('cvox.ChromeTts');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.CommandStore');
-goog.require('cvox.ConsoleTts');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.PlatformFilter');
 goog.require('cvox.PlatformUtil');
@@ -38,7 +38,7 @@ cvox.OptionsPage.prefs;
 
 /**
  * The ChromeVoxConsoleTts object.
- * @type {cvox.ConsoleTts}
+ * @type {ConsoleTts}
  */
 cvox.OptionsPage.consoleTts;
 
@@ -50,7 +50,7 @@ cvox.OptionsPage.consoleTts;
 cvox.OptionsPage.init = function() {
   cvox.OptionsPage.prefs = chrome.extension.getBackgroundPage().prefs;
   cvox.OptionsPage.consoleTts =
-      chrome.extension.getBackgroundPage().cvox.ConsoleTts.getInstance();
+      chrome.extension.getBackgroundPage().ConsoleTts.getInstance();
   cvox.OptionsPage.populateVoicesSelect();
   cvox.BrailleTable.getAll(function(tables) {
     /** @type {!Array<cvox.BrailleTable.Table>} */
