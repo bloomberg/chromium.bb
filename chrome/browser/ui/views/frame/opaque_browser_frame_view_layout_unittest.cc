@@ -8,11 +8,9 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -65,9 +63,6 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return show_caption_buttons_;
   }
   bool IsRegularOrGuestSession() const override { return true; }
-  gfx::ImageSkia GetIncognitoAvatarIcon() const override {
-    return gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(40, 29), 1.0f));
-  }
   bool IsMaximized() const override { return maximized_; }
   bool IsMinimized() const override { return false; }
   bool IsTabStripVisible() const override { return window_title_.empty(); }
@@ -77,9 +72,6 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsToolbarVisible() const override { return true; }
   gfx::Size GetTabstripPreferredSize() const override {
     return IsTabStripVisible() ? gfx::Size(78, 29) : gfx::Size();
-  }
-  gfx::Size GetNewTabButtonPreferredSize() const override {
-    return gfx::Size(28, 28);
   }
   int GetTopAreaHeight() const override { return 0; }
   bool UseCustomFrame() const override { return true; }
@@ -171,12 +163,6 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
     root_view_->AddChildView(window_title_);
   }
 
-  void AddNewAvatarButton() {
-    avatar_button_ = new views::MenuButton(base::string16(), nullptr, false);
-    avatar_button_->set_id(VIEW_ID_AVATAR_BUTTON);
-    root_view_->AddChildView(avatar_button_);
-  }
-
   int CaptionY() const {
     return delegate_->IsMaximized() ?
         0 : views::NonClientFrameView::kFrameShadowThickness;
@@ -247,21 +233,14 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
   }
 
   void ExpectTabStripAndMinimumSize(bool caption_buttons_on_left) {
-    int caption_buttons_width = kCaptionButtonsWidth;
     bool show_caption_buttons = delegate_->ShouldShowCaptionButtons();
     bool maximized = delegate_->IsMaximized() || !show_caption_buttons;
-    if (avatar_button_) {
-      caption_buttons_width +=
-          avatar_button_->GetPreferredSize().width() +
-          (maximized ? OpaqueBrowserFrameViewLayout::kCaptionSpacing
-                     : -delegate_->GetNewTabButtonPreferredSize().width());
-    }
     int tabstrip_x = OpaqueBrowserFrameView::GetTabstripPadding();
     if (show_caption_buttons && caption_buttons_on_left) {
       int right_of_close =
           maximized ? kMaximizedExtraCloseWidth
                     : OpaqueBrowserFrameViewLayout::kFrameBorderThickness;
-      tabstrip_x += caption_buttons_width + right_of_close;
+      tabstrip_x += kCaptionButtonsWidth + right_of_close;
     } else if (!maximized) {
       tabstrip_x += NonClientBorderThickness();
     }
@@ -284,7 +263,7 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
     const bool showing_caption_buttons_on_right =
         show_caption_buttons && !caption_buttons_on_left;
     const int caption_width =
-        showing_caption_buttons_on_right ? caption_buttons_width : 0;
+        showing_caption_buttons_on_right ? kCaptionButtonsWidth : 0;
     int maximized_spacing =
         showing_caption_buttons_on_right ? kMaximizedExtraCloseWidth : 0;
     int restored_spacing =
@@ -365,14 +344,6 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
     EXPECT_EQ(icon_size, title_bounds.height());
   }
 
-  void ExpectAvatar() {
-    int avatar_width = avatar_button_->GetPreferredSize().width();
-    gfx::Rect avatar_bounds(avatar_button_->bounds());
-    EXPECT_EQ(CaptionLeft() - avatar_width, avatar_bounds.x());
-    EXPECT_EQ(CaptionY(), avatar_bounds.y());
-    EXPECT_EQ(avatar_width, avatar_bounds.width());
-    EXPECT_EQ(kCaptionButtonHeight, avatar_bounds.height());
-  }
 
   views::Widget* widget_ = nullptr;
   views::View* root_view_ = nullptr;
@@ -388,14 +359,12 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
   TabIconView* tab_icon_view_ = nullptr;
   views::Label* window_title_ = nullptr;
 
-  views::MenuButton* avatar_button_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLayoutTest);
 };
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, BasicWindow) {
-  // Tests the layout of a default chrome window with no avatars, no window
-  // titles, and a tabstrip.
+  // Tests the layout of a default chrome window with a tabstrip and no window
+  // title.
 
   for (int i = 0; i < 2; ++i) {
     root_view_->Layout();
@@ -464,20 +433,6 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithTitleAndIcon) {
     ExpectCaptionButtons(false, 0);
     ExpectWindowIcon(false);
     ExpectWindowTitle();
-    delegate_->set_maximized(true);
-  }
-}
-
-TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {
-  // Tests a normal tabstrip window with the new style avatar icon.
-  AddNewAvatarButton();
-
-  for (int i = 0; i < 2; ++i) {
-    root_view_->Layout();
-    SCOPED_TRACE(i == 0 ? "Window is restored" : "Window is maximized");
-    ExpectCaptionButtons(false, 0);
-    ExpectTabStripAndMinimumSize(false);
-    ExpectAvatar();
     delegate_->set_maximized(true);
   }
 }

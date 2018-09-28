@@ -355,11 +355,6 @@ bool ProfileChooserView::IsShowing() {
 }
 
 // static
-views::Widget* ProfileChooserView::GetCurrentBubbleWidget() {
-  return profile_bubble_ ? profile_bubble_->GetWidget() : nullptr;
-}
-
-// static
 void ProfileChooserView::Hide() {
   if (IsShowing())
     profile_bubble_->GetWidget()->Close();

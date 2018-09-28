@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/user_manager.h"
-#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_paths.h"
@@ -181,13 +180,8 @@ class ProfileChooserViewExtensionsTest
 
   void OpenProfileChooserViews(Browser* browser) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-    views::View* button;
-    if (ui::MaterialDesignController::IsRefreshUi())
-      button = browser_view->toolbar()->avatar_button();
-    else
-      button = browser_view->frame()->GetNewAvatarMenuButton();
-    if (!button)
-      NOTREACHED() << "Avatar button not found.";
+    views::View* button = browser_view->toolbar()->avatar_button();
+    DCHECK(button);
 
     ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);

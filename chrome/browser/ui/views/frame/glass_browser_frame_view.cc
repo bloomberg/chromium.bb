@@ -11,13 +11,11 @@
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
-#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -48,12 +46,7 @@ using MD = ui::MaterialDesignController;
 HICON GlassBrowserFrameView::throbber_icons_[
     GlassBrowserFrameView::kThrobberIconCount];
 
-using MD = ui::MaterialDesignController;
-
 namespace {
-
-// How far the profile switcher button is from the left of the minimize button.
-constexpr int kProfileSwitcherButtonOffset = 1;
 
 // Converts the |image| to a Windows icon and returns the corresponding HICON
 // handle. |image| is resized to desired |width| and |height| if needed.
@@ -245,7 +238,9 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
 }
 
 int GlassBrowserFrameView::GetTabStripLeftInset() const {
-  return incognito_bounds_.right() + GetTabstripPadding();
+  if (CaptionButtonsOnLeadingEdge())
+    return width() - frame()->GetMinimizeButtonOffset() + GetTabstripPadding();
+  return BrowserNonClientFrameView::GetTabStripLeftInset();
 }
 
 bool GlassBrowserFrameView::IsSingleTabModeAvailable() const {
@@ -313,15 +308,6 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // the frame so again Windows can figure it out.
   if (!bounds().Contains(point))
     return HTNOWHERE;
-
-  // See if the point is within the incognito icon or the profile switcher menu.
-  views::View* profile_switcher_view = GetProfileSwitcherButton();
-  if ((profile_indicator_icon() &&
-       profile_indicator_icon()->GetMirroredBounds().Contains(point)) ||
-      (profile_switcher_view &&
-       profile_switcher_view->GetMirroredBounds().Contains(point))) {
-    return HTCLIENT;
-  }
 
   if (hosted_app_button_container_) {
     // TODO(alancutter): Assign hit test components to all children and refactor
@@ -454,21 +440,6 @@ gfx::ImageSkia GlassBrowserFrameView::GetFaviconForTabIconView() {
   return frame()->widget_delegate()->GetWindowIcon();
 }
 
-void GlassBrowserFrameView::OnTabRemoved(int index) {
-  BrowserNonClientFrameView::OnTabRemoved(index);
-  // The profile switcher button may need to change height here, too.
-  // TabStripMaxXChanged is not enough when a tab other than the last tab is
-  // closed.
-  LayoutProfileSwitcher();
-}
-
-void GlassBrowserFrameView::OnTabsMaxXChanged() {
-  BrowserNonClientFrameView::OnTabsMaxXChanged();
-  // The profile switcher button's height depends on the position of the new
-  // tab button, which may have changed if the tabs max X changed.
-  LayoutProfileSwitcher();
-}
-
 bool GlassBrowserFrameView::IsMaximized() const {
   return frame()->IsMaximized();
 }
@@ -489,38 +460,19 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   TRACE_EVENT0("views.frame", "GlassBrowserFrameView::OnPaint");
   if (ShouldCustomDrawSystemTitlebar())
     PaintTitlebar(canvas);
-  if (!browser_view()->IsTabStripVisible())
-    return;
-  if (ClientBorderThickness(false) > 0)
+  if (browser_view()->IsTabStripVisible() && (ClientBorderThickness(false) > 0))
     PaintClientEdge(canvas);
 }
 
 void GlassBrowserFrameView::Layout() {
   TRACE_EVENT0("views.frame", "GlassBrowserFrameView::Layout");
-  // The profile switcher and incognito icon depends on the caption button
-  // layout, so always call it first.
   if (ShouldCustomDrawSystemTitlebar())
     LayoutCaptionButtons();
-
-  LayoutProfileSwitcher();
-
-  // The incognito area must be laid out even if we're not in incognito as
-  // tab-strip insets depend on it. When not in incognito the bounds will be
-  // zero-width but positioned correctly for the titlebar to start after it.
-  LayoutIncognitoIcon();
 
   if (ShouldCustomDrawSystemTitlebar())
     LayoutTitleBar();
 
   LayoutClientView();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// GlassBrowserFrameView, protected:
-
-// BrowserNonClientFrameView:
-AvatarButtonStyle GlassBrowserFrameView::GetAvatarButtonStyle() const {
-  return AvatarButtonStyle::NATIVE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -682,29 +634,8 @@ int GlassBrowserFrameView::TabStripCaptionSpacing() const {
   // similar vertical coordinates, we need to reserve a larger, 16 px gap to
   // avoid looking too cluttered.
   constexpr int kNewTabCaptionMaximizedSpacing = 16;
-  const int caption_spacing = IsMaximized() ? kNewTabCaptionMaximizedSpacing
-                                            : kNewTabCaptionRestoredSpacing;
-
-  // The profile switcher button is optionally displayed to the left of the
-  // minimize button.
-  views::View* profile_switcher = GetProfileSwitcherButton();
-  if (!profile_switcher)
-    return caption_spacing;
-
-  int profile_spacing =
-      profile_switcher->width() + kProfileSwitcherButtonOffset;
-
-  // In maximized mode, simply treat the profile switcher button as another
-  // caption button.
-  if (IsMaximized())
-    return caption_spacing + profile_spacing;
-
-  // When not maximized, allow the new tab button to slide completely under the
-  // the profile switcher button.
-  const auto* new_tab_button = browser_view()->tabstrip()->new_tab_button();
-  profile_spacing -= new_tab_button->GetPreferredSize().width();
-
-  return std::max(caption_spacing, profile_spacing);
+  return IsMaximized() ? kNewTabCaptionMaximizedSpacing
+                       : kNewTabCaptionRestoredSpacing;
 }
 
 bool GlassBrowserFrameView::IsToolbarVisible() const {
@@ -713,11 +644,8 @@ bool GlassBrowserFrameView::IsToolbarVisible() const {
 }
 
 bool GlassBrowserFrameView::ShowCustomIcon() const {
-  // Don't show the window icon when the incognito badge is visible, since
-  // they're competing for the same space.
   // Hosted app windows don't include the window icon as per UI mocks.
-  return !profile_indicator_icon() && !hosted_app_button_container_ &&
-         ShouldCustomDrawSystemTitlebar() &&
+  return !hosted_app_button_container_ && ShouldCustomDrawSystemTitlebar() &&
          browser_view()->ShouldShowWindowIcon();
 }
 
@@ -868,66 +796,6 @@ void GlassBrowserFrameView::FillClientEdgeRects(int x,
   canvas->FillRect(side, color);
 }
 
-void GlassBrowserFrameView::LayoutProfileSwitcher() {
-  if (!browser_view()->IsRegularOrGuestSession())
-    return;
-
-  View* profile_switcher = GetProfileSwitcherButton();
-  if (!profile_switcher)
-    return;
-
-  gfx::Size button_size = profile_switcher->GetPreferredSize();
-  int button_width = button_size.width();
-  int button_height = button_size.height();
-
-  int button_x;
-  if (CaptionButtonsOnLeadingEdge()) {
-    button_x = width() - frame()->GetMinimizeButtonOffset() +
-               kProfileSwitcherButtonOffset;
-  } else {
-    button_x = MinimizeButtonX() - kProfileSwitcherButtonOffset - button_width;
-  }
-
-  int button_y = WindowTopY();
-  if (IsMaximized()) {
-    // In maximized mode the caption buttons appear only 19 pixels high, but
-    // their contents are aligned as if they were 20 pixels high and extended
-    // 1 pixel off the top of the screen. We position the profile switcher
-    // button the same way to match.
-    button_y -= 1;
-  }
-
-  // Shrink the button height when it's atop part of the tabstrip. In RTL the
-  // new tab button is on the left, so it can never slide under the avatar
-  // button, which is still on the right [http://crbug.com/560619].
-  TabStrip* tabstrip = browser_view()->tabstrip();
-  if (tabstrip && !CaptionButtonsOnLeadingEdge() &&
-      (tabstrip->new_tab_button_bounds().right() > button_x))
-    button_height = profile_switcher->GetMinimumSize().height();
-
-  profile_switcher->SetBounds(button_x, button_y, button_width, button_height);
-}
-
-void GlassBrowserFrameView::LayoutIncognitoIcon() {
-  const gfx::Size size(GetIncognitoAvatarIcon().size());
-  int x = ClientBorderThickness(false);
-  // In RTL, the icon needs to start after the caption buttons.
-  if (CaptionButtonsOnLeadingEdge()) {
-    x = width() - frame()->GetMinimizeButtonOffset() +
-        (GetProfileSwitcherButton() ? (GetProfileSwitcherButton()->width() +
-                                       kProfileSwitcherButtonOffset)
-                                    : 0);
-  }
-  const int bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
-                     GetAvatarIconPadding();
-  incognito_bounds_.SetRect(
-      x + (profile_indicator_icon() ? GetAvatarIconPadding() : 0),
-      bottom - size.height(), profile_indicator_icon() ? size.width() : 0,
-      size.height());
-  if (profile_indicator_icon())
-    profile_indicator_icon()->SetBoundsRect(incognito_bounds_);
-}
-
 void GlassBrowserFrameView::LayoutTitleBar() {
   TRACE_EVENT0("views.frame", "GlassBrowserFrameView::LayoutTitleBar");
   if (!ShowCustomIcon() && !ShowCustomTitle())
@@ -955,13 +823,9 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   if (ShowCustomIcon()) {
     window_icon_->SetBoundsRect(window_icon_bounds);
     next_leading_x = window_icon_bounds.right() + kIconTitleSpacing;
-  } else if (profile_indicator_icon()) {
-    next_leading_x =
-        profile_indicator_icon()->bounds().right() + kIconTitleSpacing;
   }
 
   if (hosted_app_button_container_) {
-    DCHECK(!GetProfileSwitcherButton());
     next_trailing_x = hosted_app_button_container_->LayoutInContainer(
         next_leading_x, next_trailing_x, window_top, titlebar_visual_height);
   }

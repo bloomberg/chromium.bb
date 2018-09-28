@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/win/scoped_gdi_object.h"
-#include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/windows_10_caption_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
@@ -47,8 +46,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   int GetTabStripLeftInset() const override;
   bool IsSingleTabModeAvailable() const override;
   bool ShouldDrawStrokes() const override;
-  void OnTabRemoved(int index) override;
-  void OnTabsMaxXChanged() override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -88,9 +85,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   void Layout() override;
-
-  // BrowserNonClientFrameView:
-  AvatarButtonStyle GetAvatarButtonStyle() const override;
 
  private:
   // views::NonClientFrameView:
@@ -161,9 +155,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
                            gfx::Canvas* canvas) const;
 
   // Layout various sub-components of this view.
-  void LayoutIncognitoIcon();
   void LayoutTitleBar();
-  void LayoutProfileSwitcher();
   void LayoutCaptionButtons();
   void LayoutCaptionButton(Windows10CaptionButton* button,
                            int previous_button_x);
@@ -182,9 +174,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // Displays the next throbber frame.
   void DisplayNextThrobberFrame();
-
-  // The layout rect of the incognito icon, if visible.
-  gfx::Rect incognito_bounds_;
 
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;

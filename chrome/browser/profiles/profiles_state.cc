@@ -36,7 +36,6 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "ui/gfx/text_elider.h"
 #endif
 
 namespace profiles {
@@ -113,19 +112,6 @@ base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {
 }
 
 #if !defined(OS_CHROMEOS)
-base::string16 GetAvatarButtonTextForProfile(Profile* profile) {
-  const int kMaxCharactersToDisplay = 15;
-  base::string16 name = GetAvatarNameForProfile(profile->GetPath());
-  name = gfx::TruncateString(name,
-                             kMaxCharactersToDisplay,
-                             gfx::CHARACTER_BREAK);
-  if (profile->IsLegacySupervised()) {
-    name = l10n_util::GetStringFUTF16(
-        IDS_LEGACY_SUPERVISED_USER_NEW_AVATAR_LABEL, name);
-  }
-  return name;
-}
-
 base::string16 GetProfileSwitcherTextForItem(const AvatarMenu::Item& item) {
   if (item.legacy_supervised) {
     return l10n_util::GetStringFUTF16(

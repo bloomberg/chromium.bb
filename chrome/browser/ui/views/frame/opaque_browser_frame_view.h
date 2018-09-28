@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout_delegate.h"
@@ -99,14 +98,12 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Size GetBrowserViewMinimumSize() const override;
   bool ShouldShowCaptionButtons() const override;
   bool IsRegularOrGuestSession() const override;
-  gfx::ImageSkia GetIncognitoAvatarIcon() const override;
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   bool IsTabStripVisible() const override;
   int GetTabStripHeight() const override;
   bool IsToolbarVisible() const override;
   gfx::Size GetTabstripPreferredSize() const override;
-  gfx::Size GetNewTabButtonPreferredSize() const override;
   int GetTopAreaHeight() const override;
   bool UseCustomFrame() const override;
   bool IsFrameCondensed() const override;
@@ -127,7 +124,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // BrowserNonClientFrameView:
   bool ShouldPaintAsThemed() const override;
-  AvatarButtonStyle GetAvatarButtonStyle() const override;
 
   OpaqueBrowserFrameViewLayout* layout() { return layout_; }
 
@@ -175,9 +171,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // along the top of the frame. If |restored| is true, this acts as if the
   // window is restored regardless of the actual mode.
   int FrameTopBorderThickness(bool restored) const;
-
-  // Returns true if the specified point is within the avatar menu buttons.
-  bool IsWithinAvatarMenuButtons(const gfx::Point& point) const;
 
   // Returns the thickness of the entire nonclient left, right, and bottom
   // borders, including both the window frame and any client edge.
