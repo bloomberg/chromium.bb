@@ -18669,12 +18669,57 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_NightLight_Disabled">
+  <owner>tetsui@chromium.org</owner>
+  <description>
+    User disabled NightLight from the feature button in the system menu.
+  </description>
+</action>
+
+<action name="StatusArea_NightLight_Enabled">
+  <owner>tetsui@chromium.org</owner>
+  <description>
+    User enabled NightLight from the feature button in the system menu.
+  </description>
+</action>
+
+<action name="StatusArea_NightLight_Settings">
+  <owner>tetsui@chromium.org</owner>
+  <description>
+    User opened NightLight WebUI settings from the feature button in the system
+    menu.
+  </description>
+</action>
+
+<action name="StatusArea_Notifications_ClearAll">
+  <owner>tetsui@chromium.org</owner>
+  <description>
+    User removed all notifications from the Clear All button in the system menu.
+  </description>
+</action>
+
 <action name="StatusArea_OS_Update_Default_Selected">
   <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the update row in the system
     menu.
+  </description>
+</action>
+
+<action name="StatusArea_QuietMode_Disabled">
+  <owner>tetsui@chromium.org</owner>
+  <description>
+    User disabled Quiet Mode (Do not disturb) from the feature button in the
+    system menu.
+  </description>
+</action>
+
+<action name="StatusArea_QuietMode_Enabled">
+  <owner>tetsui@chromium.org</owner>
+  <description>
+    User enabled Quiet Mode (Do not disturb) from the feature button in the
+    system menu.
   </description>
 </action>
 

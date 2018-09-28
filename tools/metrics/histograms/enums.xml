@@ -47926,6 +47926,8 @@ would be helpful to identify which type is being sent.
   <int value="23" label="Tracing"/>
   <int value="24" label="User"/>
   <int value="25" label="VPN"/>
+  <int value="26" label="Night light"/>
+  <int value="27" label="Do not disturb"/>
 </enum>
 
 <enum name="SystemNotificationType">
