@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/autotest_private/autotest_private_api.h"
+#include "chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"
 
 #include <memory>
 #include <sstream>
@@ -75,8 +75,7 @@ std::unique_ptr<base::ListValue> GetHostPermissions(const Extension* ext,
 
   auto permissions = std::make_unique<base::ListValue>();
   for (URLPatternSet::const_iterator perm = pattern_set.begin();
-       perm != pattern_set.end();
-       ++perm) {
+       perm != pattern_set.end(); ++perm) {
     permissions->AppendString(perm->GetAsString());
   }
 
@@ -241,8 +240,9 @@ AutotestPrivateLockScreenFunction::~AutotestPrivateLockScreenFunction() =
 ExtensionFunction::ResponseAction AutotestPrivateLockScreenFunction::Run() {
   DVLOG(1) << "AutotestPrivateLockScreenFunction";
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-      RequestLockScreen();
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->RequestLockScreen();
 #endif
   return RespondNow(NoArguments());
 }
@@ -266,8 +266,7 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
   ExtensionList all;
   all.insert(all.end(), extensions.begin(), extensions.end());
   all.insert(all.end(), disabled_extensions.begin(), disabled_extensions.end());
-  for (ExtensionList::const_iterator it = all.begin();
-       it != all.end(); ++it) {
+  for (ExtensionList::const_iterator it = all.begin(); it != all.end(); ++it) {
     const Extension* extension = it->get();
     std::string id = extension->id();
     std::unique_ptr<base::DictionaryValue> extension_value(
@@ -289,13 +288,11 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
     extension_value->Set("apiPermissions", GetAPIPermissions(extension));
 
     Manifest::Location location = extension->location();
-    extension_value->SetBoolean("isComponent",
-                                location == Manifest::COMPONENT);
-    extension_value->SetBoolean("isInternal",
-                                location == Manifest::INTERNAL);
+    extension_value->SetBoolean("isComponent", location == Manifest::COMPONENT);
+    extension_value->SetBoolean("isInternal", location == Manifest::INTERNAL);
     extension_value->SetBoolean("isUserInstalled",
-        location == Manifest::INTERNAL ||
-        Manifest::IsUnpackedLocation(location));
+                                location == Manifest::INTERNAL ||
+                                    Manifest::IsUnpackedLocation(location));
     extension_value->SetBoolean("isEnabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean(
         "allowedInIncognito", util::IsIncognitoEnabled(id, browser_context()));
@@ -312,7 +309,7 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
   return RespondNow(OneArgument(std::move(return_value)));
 }
 
-static int AccessArray(const volatile int arr[], const volatile int *index) {
+static int AccessArray(const volatile int arr[], const volatile int* index) {
   return arr[*index];
 }
 
@@ -904,10 +901,8 @@ BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
   return new AutotestPrivateAPI();
 }
 
-AutotestPrivateAPI::AutotestPrivateAPI() : test_mode_(false) {
-}
+AutotestPrivateAPI::AutotestPrivateAPI() : test_mode_(false) {}
 
-AutotestPrivateAPI::~AutotestPrivateAPI() {
-}
+AutotestPrivateAPI::~AutotestPrivateAPI() {}
 
 }  // namespace extensions

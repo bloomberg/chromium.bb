@@ -4,6 +4,8 @@
 
 // API for integration testing. To be used on test images with a test component
 // extension.
+[platforms=("chromeos"),
+ implemented_in="chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"]
 namespace autotestPrivate {
 
   dictionary LoginStatusDict {

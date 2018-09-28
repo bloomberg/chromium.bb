@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_AUTOTEST_PRIVATE_AUTOTEST_PRIVATE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_AUTOTEST_PRIVATE_AUTOTEST_PRIVATE_API_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_AUTOTEST_PRIVATE_AUTOTEST_PRIVATE_API_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_AUTOTEST_PRIVATE_AUTOTEST_PRIVATE_API_H_
 
 #include <string>
 
@@ -382,7 +382,7 @@ void SetAutotestPrivateTest();
 class AutotestPrivateAPI : public BrowserContextKeyedAPI {
  public:
   static BrowserContextKeyedAPIFactory<AutotestPrivateAPI>*
-      GetFactoryInstance();
+  GetFactoryInstance();
 
   // TODO(achuith): Replace these with a mock object for system calls.
   bool test_mode() const { return test_mode_; }
@@ -404,9 +404,9 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI {
 
 template <>
 KeyedService*
-    BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
-        content::BrowserContext* context) const;
+BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
+    content::BrowserContext* context) const;
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_AUTOTEST_PRIVATE_AUTOTEST_PRIVATE_API_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_AUTOTEST_PRIVATE_AUTOTEST_PRIVATE_API_H_
