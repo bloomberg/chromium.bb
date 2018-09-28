@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -17,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/content_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -548,11 +546,6 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
 }
 
 TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
-  // TODO(https://crbug.com/618076): Remove the following command line switch
-  // when update_via_cache is shipped to stable.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   std::vector<RegistrationData> registrations;
@@ -768,11 +761,6 @@ TEST(ServiceWorkerDatabaseTest, DeleteNonExistentRegistration) {
 }
 
 TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
-  // TODO(https://crbug.com/618076): Remove the following command line switch
-  // when update_via_cache is shipped to stable.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   GURL origin("http://example.com");
