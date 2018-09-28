@@ -15,14 +15,18 @@ namespace content {
 void AudioContextManagerImpl::Create(
     RenderFrameHost* render_frame_host,
     blink::mojom::AudioContextManagerRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<AudioContextManagerImpl>(render_frame_host),
-      std::move(request));
+  DCHECK(render_frame_host);
+
+  // The object is bound to the lifetime of |render_frame_host| and the mojo
+  // connection. See FrameServiceBase for details.
+  new AudioContextManagerImpl(render_frame_host, std::move(request));
 }
 
 AudioContextManagerImpl::AudioContextManagerImpl(
-    RenderFrameHost* render_frame_host)
-    : render_frame_host_impl_(
+    RenderFrameHost* render_frame_host,
+    blink::mojom::AudioContextManagerRequest request)
+    : FrameServiceBase(render_frame_host, std::move(request)),
+      render_frame_host_impl_(
           static_cast<RenderFrameHostImpl*>(render_frame_host)) {
   DCHECK(render_frame_host);
 }
