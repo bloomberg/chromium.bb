@@ -73,6 +73,10 @@ class VIEWS_EXPORT ImageView : public View {
   void SetTooltipText(const base::string16& tooltip);
   base::string16 GetTooltipText() const;
 
+  // Set / Get the accessible name text.
+  void SetAccessibleName(const base::string16& name);
+  base::string16 GetAccessibleName() const;
+
   // Overriden from View:
   void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -119,6 +123,9 @@ class VIEWS_EXPORT ImageView : public View {
 
   // The current tooltip text.
   base::string16 tooltip_text_;
+
+  // The current accessible name text.
+  base::string16 accessible_name_;
 
   // Scale last painted at.
   float last_paint_scale_;
