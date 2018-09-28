@@ -34,6 +34,7 @@ void MockStorageClient::Populate(
     const MockOriginData* mock_data,
     size_t mock_data_size) {
   for (size_t i = 0; i < mock_data_size; ++i) {
+    // TODO(crbug.com/889590): Use helper for url::Origin creation from string.
     origin_data_[make_pair(url::Origin::Create(GURL(mock_data[i].origin)),
                            mock_data[i].type)] = mock_data[i].usage;
   }
@@ -48,7 +49,7 @@ void MockStorageClient::AddOriginAndNotify(const url::Origin& origin,
   DCHECK_GE(size, 0);
   origin_data_[make_pair(origin, type)] = size;
   quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-      id(), origin.GetURL(), type, size, IncrementMockTime());
+      id(), origin, type, size, IncrementMockTime());
 }
 
 void MockStorageClient::ModifyOriginAndNotify(const url::Origin& origin,
@@ -61,7 +62,7 @@ void MockStorageClient::ModifyOriginAndNotify(const url::Origin& origin,
 
   // TODO(tzik): Check quota to prevent usage exceed
   quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-      id(), origin.GetURL(), type, delta, IncrementMockTime());
+      id(), origin, type, delta, IncrementMockTime());
 }
 
 void MockStorageClient::TouchAllOriginsAndNotify() {
@@ -69,8 +70,7 @@ void MockStorageClient::TouchAllOriginsAndNotify() {
        itr != origin_data_.end();
        ++itr) {
     quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-        id(), itr->first.first.GetURL(), itr->first.second, 0,
-        IncrementMockTime());
+        id(), itr->first.first, itr->first.second, 0, IncrementMockTime());
   }
 }
 

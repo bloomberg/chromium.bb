@@ -19,10 +19,12 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
-class GURL;
-
 namespace storage {
 class QuotaManager;
+}
+
+namespace url {
+class Origin;
 }
 
 // Implementation of BrowsingDataQuotaHelper.  Since a client of
@@ -47,7 +49,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
   // Callback function for QuotaManager::GetOriginModifiedSince.
   void GotOrigins(PendingHosts* pending_hosts,
                   base::OnceClosure completion,
-                  const std::set<GURL>& origins,
+                  const std::set<url::Origin>& origins,
                   blink::mojom::StorageType type);
 
   // Calls QuotaManager::GetHostUsage for each (origin, type) pair.

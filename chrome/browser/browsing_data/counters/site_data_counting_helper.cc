@@ -24,6 +24,8 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -143,13 +145,17 @@ void SiteDataCountingHelper::GetCookiesCallback(
 }
 
 void SiteDataCountingHelper::GetQuotaOriginsCallback(
-    const std::set<GURL>& origin_set,
+    const std::set<url::Origin>& origins,
     blink::mojom::StorageType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::vector<GURL> origins(origin_set.begin(), origin_set.end());
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&SiteDataCountingHelper::Done,
-                                          base::Unretained(this), origins));
+  std::vector<GURL> urls;
+  urls.resize(origins.size());
+  for (const url::Origin& origin : origins)
+    urls.push_back(origin.GetURL());
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&SiteDataCountingHelper::Done, base::Unretained(this),
+                     std::move(urls)));
 }
 
 void SiteDataCountingHelper::GetLocalStorageUsageInfoCallback(

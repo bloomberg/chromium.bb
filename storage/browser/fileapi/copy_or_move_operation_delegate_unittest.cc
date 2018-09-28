@@ -241,13 +241,11 @@ class CopyOrMoveOperationTestHelper {
 
     // Grant relatively big quota initially.
     quota_manager_->SetQuota(
-        origin_,
-        storage::FileSystemTypeToQuotaStorageType(src_type_),
-        1024 * 1024);
+        url::Origin::Create(origin_),
+        storage::FileSystemTypeToQuotaStorageType(src_type_), 1024 * 1024);
     quota_manager_->SetQuota(
-        origin_,
-        storage::FileSystemTypeToQuotaStorageType(dest_type_),
-        1024 * 1024);
+        url::Origin::Create(origin_),
+        storage::FileSystemTypeToQuotaStorageType(dest_type_), 1024 * 1024);
   }
 
   int64_t GetSourceUsage() {
@@ -391,7 +389,8 @@ class CopyOrMoveOperationTestHelper {
                         int64_t* usage,
                         int64_t* quota) {
     blink::mojom::QuotaStatusCode status =
-        AsyncFileTestHelper::GetUsageAndQuota(quota_manager_.get(), origin_,
+        AsyncFileTestHelper::GetUsageAndQuota(quota_manager_.get(),
+                                              url::Origin::Create(origin_),
                                               type, usage, quota);
     ASSERT_EQ(blink::mojom::QuotaStatusCode::kOk, status);
   }

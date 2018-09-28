@@ -35,6 +35,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 using extensions::APIPermission;
@@ -73,7 +74,8 @@ void LogHostedAppUnlimitedStorageUsage(
         FROM_HERE,
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
         base::BindOnce(&storage::QuotaManager::GetUsageAndQuotaForWebApps,
-                       partition->GetQuotaManager(), launch_url,
+                       partition->GetQuotaManager(),
+                       url::Origin::Create(launch_url),
                        blink::mojom::StorageType::kPersistent,
                        base::Bind(&ReportQuotaUsage)));
   }

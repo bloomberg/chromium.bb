@@ -30,6 +30,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "url/origin.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -335,7 +336,7 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunAsync() {
       FROM_HERE, {BrowserThread::IO},
       BindOnce(
           &storage::QuotaManager::GetUsageAndQuotaForWebApps, quota_manager,
-          source_url().GetOrigin(),
+          url::Origin::Create(source_url()),
           storage::FileSystemTypeToQuotaStorageType(file_system_url.type()),
           Bind(&SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota,
                this)));

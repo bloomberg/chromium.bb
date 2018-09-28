@@ -684,7 +684,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
   // We have to ask the quota manager for the value.
   storage_->pending_quota_queries_.insert(this);
   quota_manager->GetUsageAndQuota(
-      group_record_.origin.GetURL(), blink::mojom::StorageType::kTemporary,
+      group_record_.origin, blink::mojom::StorageType::kTemporary,
       base::BindOnce(&StoreGroupAndCacheTask::OnQuotaCallback, this));
 }
 

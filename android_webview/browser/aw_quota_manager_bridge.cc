@@ -21,6 +21,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -49,10 +50,10 @@ class GetOriginsTask : public base::RefCountedThreadSafe<GetOriginsTask> {
   friend class base::RefCountedThreadSafe<GetOriginsTask>;
   ~GetOriginsTask();
 
-  void OnOriginsObtained(const std::set<GURL>& origins,
+  void OnOriginsObtained(const std::set<url::Origin>& origins,
                          blink::mojom::StorageType type);
 
-  void OnUsageAndQuotaObtained(const GURL& origin,
+  void OnUsageAndQuotaObtained(const url::Origin& origin,
                                blink::mojom::QuotaStatusCode status_code,
                                int64_t usage,
                                int64_t quota);
@@ -92,31 +93,29 @@ void GetOriginsTask::Run() {
                      base::BindOnce(&GetOriginsTask::OnOriginsObtained, this)));
 }
 
-void GetOriginsTask::OnOriginsObtained(const std::set<GURL>& origins,
+void GetOriginsTask::OnOriginsObtained(const std::set<url::Origin>& origins,
                                        blink::mojom::StorageType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   num_callbacks_to_wait_ = origins.size();
   num_callbacks_received_ = 0u;
 
-  for (std::set<GURL>::const_iterator origin = origins.begin();
-       origin != origins.end(); ++origin) {
+  for (const url::Origin& origin : origins) {
     quota_manager_->GetUsageAndQuota(
-        *origin, type,
-        base::BindOnce(&GetOriginsTask::OnUsageAndQuotaObtained, this,
-                       *origin));
+        origin, type,
+        base::BindOnce(&GetOriginsTask::OnUsageAndQuotaObtained, this, origin));
   }
 
   CheckDone();
 }
 
 void GetOriginsTask::OnUsageAndQuotaObtained(
-    const GURL& origin,
+    const url::Origin& origin,
     blink::mojom::QuotaStatusCode status_code,
     int64_t usage,
     int64_t quota) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status_code == blink::mojom::QuotaStatusCode::kOk) {
-    origin_.push_back(origin.spec());
+    origin_.push_back(origin.GetURL().spec());
     usage_.push_back(usage);
     quota_.push_back(quota);
   }
@@ -317,10 +316,12 @@ void AwQuotaManagerBridge::GetUsageAndQuotaForOriginOnUiThread(
       base::BindOnce(&AwQuotaManagerBridge::QuotaUsageCallbackImpl,
                      weak_factory_.GetWeakPtr(), callback_id, is_quota);
 
+  // TODO(crbug.com/889590): Use helper for url::Origin creation from string.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
-          &QuotaManager::GetUsageAndQuota, GetQuotaManager(), GURL(origin),
+          &QuotaManager::GetUsageAndQuota, GetQuotaManager(),
+          url::Origin::Create(GURL(origin)),
           blink::mojom::StorageType::kTemporary,
           base::BindOnce(&OnUsageAndQuotaObtained, std::move(ui_callback))));
 }

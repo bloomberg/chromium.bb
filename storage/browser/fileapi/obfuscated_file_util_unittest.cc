@@ -274,12 +274,9 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   void GetUsageFromQuotaManager() {
     int64_t quota = -1;
-    quota_status_ =
-        AsyncFileTestHelper::GetUsageAndQuota(quota_manager_.get(),
-                                              origin(),
-                                              sandbox_file_system_.type(),
-                                              &usage_,
-                                              &quota);
+    quota_status_ = AsyncFileTestHelper::GetUsageAndQuota(
+        quota_manager_.get(), url::Origin::Create(origin()),
+        sandbox_file_system_.type(), &usage_, &quota);
     EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, quota_status_);
   }
 

@@ -16,6 +16,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -106,7 +107,7 @@ void CheckQuotaManagedDataDeletionStatus(size_t* deletion_task_count,
   }
 }
 
-void OnQuotaManagedOriginDeleted(const GURL& origin,
+void OnQuotaManagedOriginDeleted(const url::Origin& origin,
                                  blink::mojom::StorageType type,
                                  size_t* deletion_task_count,
                                  base::OnceClosure callback,
@@ -353,15 +354,19 @@ void StoragePartitionImpl::
 // Most of the operations in this class are done on IO thread.
 class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
  public:
-  QuotaManagedDataDeletionHelper(uint32_t remove_mask,
-                                 uint32_t quota_storage_remove_mask,
-                                 const GURL& storage_origin,
-                                 base::OnceClosure callback)
+  QuotaManagedDataDeletionHelper(
+      uint32_t remove_mask,
+      uint32_t quota_storage_remove_mask,
+      const base::Optional<url::Origin>& storage_origin,
+      base::OnceClosure callback)
       : remove_mask_(remove_mask),
         quota_storage_remove_mask_(quota_storage_remove_mask),
         storage_origin_(storage_origin),
         callback_(std::move(callback)),
-        task_count_(0) {}
+        task_count_(0) {
+    DCHECK(!storage_origin_.has_value() ||
+           !storage_origin_->GetURL().is_empty());
+  }
 
   void IncrementTaskCountOnIO();
   void DecrementTaskCountOnIO();
@@ -379,14 +384,14 @@ class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
           special_storage_policy,
       const StoragePartition::OriginMatcherFunction& origin_matcher,
       base::OnceClosure callback,
-      const std::set<GURL>& origins,
+      const std::set<url::Origin>& origins,
       blink::mojom::StorageType quota_storage_type);
 
  private:
   // All of these data are accessed on IO thread.
   uint32_t remove_mask_;
   uint32_t quota_storage_remove_mask_;
-  GURL storage_origin_;
+  base::Optional<url::Origin> storage_origin_;
   base::OnceClosure callback_;
   int task_count_;
 
@@ -488,7 +493,10 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
 
   StoragePartitionImpl::QuotaManagedDataDeletionHelper* helper =
       new StoragePartitionImpl::QuotaManagedDataDeletionHelper(
-          remove_mask_, quota_storage_remove_mask_, storage_origin,
+          remove_mask_, quota_storage_remove_mask_,
+          storage_origin.is_empty()
+              ? base::nullopt
+              : base::make_optional(url::Origin::Create(storage_origin)),
           std::move(callback));
   helper->ClearDataOnIOThread(quota_manager, begin, special_storage_policy,
                               origin_matcher);
@@ -1009,7 +1017,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
             special_storage_policy,
         const StoragePartition::OriginMatcherFunction& origin_matcher,
         base::OnceClosure callback,
-        const std::set<GURL>& origins,
+        const std::set<url::Origin>& origins,
         blink::mojom::StorageType quota_storage_type) {
   // The QuotaManager manages all storage other than cookies, LocalStorage,
   // and SessionStorage. This loop wipes out most HTML5 storage for the given
@@ -1027,23 +1035,22 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
 
   size_t* deletion_task_count = new size_t(0u);
   (*deletion_task_count)++;
-  for (std::set<GURL>::const_iterator origin = origins.begin();
-       origin != origins.end(); ++origin) {
+  for (const auto& origin : origins) {
     // TODO(mkwst): Clean this up, it's slow. http://crbug.com/130746
-    if (!storage_origin_.is_empty() && origin->GetOrigin() != storage_origin_)
+    if (storage_origin_.has_value() && origin != *storage_origin_)
       continue;
 
     if (!origin_matcher.is_null() &&
-        !origin_matcher.Run(*origin, special_storage_policy.get())) {
+        !origin_matcher.Run(origin.GetURL(), special_storage_policy.get())) {
       continue;
     }
 
     (*deletion_task_count)++;
     quota_manager->DeleteOriginData(
-        *origin, quota_storage_type,
+        origin, quota_storage_type,
         StoragePartitionImpl::GenerateQuotaClientMask(remove_mask_),
-        base::BindOnce(&OnQuotaManagedOriginDeleted, origin->GetOrigin(),
-                       quota_storage_type, deletion_task_count, completion));
+        base::BindOnce(&OnQuotaManagedOriginDeleted, origin, quota_storage_type,
+                       deletion_task_count, completion));
   }
   (*deletion_task_count)--;
 

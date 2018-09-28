@@ -152,15 +152,16 @@ class QuotaDatabaseTest : public testing::Test {
     QuotaDatabase db(kDbFile);
     ASSERT_TRUE(db.LazyOpen(true));
 
-    std::set<GURL> exceptions;
-    GURL origin;
+    std::set<url::Origin> exceptions;
+    base::Optional<url::Origin> origin;
     EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
-    EXPECT_TRUE(origin.is_empty());
+    EXPECT_FALSE(origin.has_value());
 
-    const GURL kOrigin1("http://a/");
-    const GURL kOrigin2("http://b/");
-    const GURL kOrigin3("http://c/");
-    const GURL kOrigin4("http://p/");
+    // TODO(crbug.com/889590): Use helper for url::Origin creation from string.
+    const url::Origin kOrigin1 = url::Origin::Create(GURL("http://a/"));
+    const url::Origin kOrigin2 = url::Origin::Create(GURL("http://b/"));
+    const url::Origin kOrigin3 = url::Origin::Create(GURL("http://c/"));
+    const url::Origin kOrigin4 = url::Origin::Create(GURL("http://p/"));
 
     // Adding three temporary storages, and
     EXPECT_TRUE(db.SetOriginLastAccessTime(kOrigin1, kTemporary,
@@ -175,33 +176,33 @@ class QuotaDatabaseTest : public testing::Test {
                                            base::Time::FromInternalValue(40)));
 
     EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
-    EXPECT_EQ(kOrigin1.spec(), origin.spec());
+    EXPECT_EQ(kOrigin1, origin);
 
     // Test that unlimited origins are exluded from eviction, but
     // protected origins are not excluded.
     scoped_refptr<MockSpecialStoragePolicy> policy(
         new MockSpecialStoragePolicy);
-    policy->AddUnlimited(kOrigin1);
-    policy->AddProtected(kOrigin2);
+    policy->AddUnlimited(kOrigin1.GetURL());
+    policy->AddProtected(kOrigin2.GetURL());
     EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, policy.get(), &origin));
-    EXPECT_EQ(kOrigin2.spec(), origin.spec());
+    EXPECT_EQ(kOrigin2, origin);
 
     // Test that durable origins are excluded from eviction.
-    policy->AddDurable(kOrigin2);
+    policy->AddDurable(kOrigin2.GetURL());
     EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, policy.get(), &origin));
-    EXPECT_EQ(kOrigin3.spec(), origin.spec());
+    EXPECT_EQ(kOrigin3, origin);
 
     exceptions.insert(kOrigin1);
     EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
-    EXPECT_EQ(kOrigin2.spec(), origin.spec());
+    EXPECT_EQ(kOrigin2, origin);
 
     exceptions.insert(kOrigin2);
     EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
-    EXPECT_EQ(kOrigin3.spec(), origin.spec());
+    EXPECT_EQ(kOrigin3, origin);
 
     exceptions.insert(kOrigin3);
     EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
-    EXPECT_TRUE(origin.is_empty());
+    EXPECT_FALSE(origin.has_value());
 
     EXPECT_TRUE(
         db.SetOriginLastAccessTime(kOrigin1, kTemporary, base::Time::Now()));
@@ -212,25 +213,25 @@ class QuotaDatabaseTest : public testing::Test {
     // Querying again to see if the deletion has worked.
     exceptions.clear();
     EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
-    EXPECT_EQ(kOrigin2.spec(), origin.spec());
+    EXPECT_EQ(kOrigin2, origin);
 
     exceptions.insert(kOrigin1);
     exceptions.insert(kOrigin2);
     EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
-    EXPECT_TRUE(origin.is_empty());
+    EXPECT_FALSE(origin.has_value());
   }
 
   void OriginLastModifiedSince(const base::FilePath& kDbFile) {
     QuotaDatabase db(kDbFile);
     ASSERT_TRUE(db.LazyOpen(true));
 
-    std::set<GURL> origins;
+    std::set<url::Origin> origins;
     EXPECT_TRUE(db.GetOriginsModifiedSince(kTemporary, &origins, base::Time()));
     EXPECT_TRUE(origins.empty());
 
-    const GURL kOrigin1("http://a/");
-    const GURL kOrigin2("http://b/");
-    const GURL kOrigin3("http://c/");
+    const url::Origin kOrigin1 = url::Origin::Create(GURL("http://a/"));
+    const url::Origin kOrigin2 = url::Origin::Create(GURL("http://b/"));
+    const url::Origin kOrigin3 = url::Origin::Create(GURL("http://c/"));
 
     // Report last mod time for the test origins.
     EXPECT_TRUE(db.SetOriginLastModifiedTime(kOrigin1, kTemporary,
@@ -299,9 +300,9 @@ class QuotaDatabaseTest : public testing::Test {
     QuotaDatabase db(kDbFile);
     ASSERT_TRUE(db.LazyOpen(true));
 
-    const GURL kOrigin1("http://a/");
-    const GURL kOrigin2("http://b/");
-    const GURL kOrigin3("http://c/");
+    const url::Origin kOrigin1 = url::Origin::Create(GURL("http://a/"));
+    const url::Origin kOrigin2 = url::Origin::Create(GURL("http://b/"));
+    const url::Origin kOrigin3 = url::Origin::Create(GURL("http://c/"));
 
     base::Time last_eviction_time;
     EXPECT_FALSE(db.GetOriginLastEvictionTime(kOrigin1, kTemporary,
@@ -343,36 +344,39 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_EQ(base::Time(), last_eviction_time);
 
     // Deleting an origin that is not present should not fail.
-    EXPECT_TRUE(db.DeleteOriginLastEvictionTime(GURL("http://notpresent.com"),
-                                                kTemporary));
+    EXPECT_TRUE(db.DeleteOriginLastEvictionTime(
+        url::Origin::Create(GURL("http://notpresent.com")), kTemporary));
   }
 
   void RegisterInitialOriginInfo(const base::FilePath& kDbFile) {
     QuotaDatabase db(kDbFile);
 
-    const GURL kOrigins[] = {
-      GURL("http://a/"),
-      GURL("http://b/"),
-      GURL("http://c/") };
-    std::set<GURL> origins(kOrigins, kOrigins + base::size(kOrigins));
+    const url::Origin kOrigins[] = {url::Origin::Create(GURL("http://a/")),
+                                    url::Origin::Create(GURL("http://b/")),
+                                    url::Origin::Create(GURL("http://c/"))};
+    std::set<url::Origin> origins(kOrigins, kOrigins + base::size(kOrigins));
 
     EXPECT_TRUE(db.RegisterInitialOriginInfo(origins, kTemporary));
 
     QuotaDatabase::OriginInfoTableEntry info;
     info.used_count = -1;
-    EXPECT_TRUE(db.GetOriginInfo(GURL("http://a/"), kTemporary, &info));
+    EXPECT_TRUE(db.GetOriginInfo(url::Origin::Create(GURL("http://a/")),
+                                 kTemporary, &info));
     EXPECT_EQ(0, info.used_count);
 
-    EXPECT_TRUE(db.SetOriginLastAccessTime(GURL("http://a/"), kTemporary,
-                                           base::Time::FromDoubleT(1.0)));
+    EXPECT_TRUE(
+        db.SetOriginLastAccessTime(url::Origin::Create(GURL("http://a/")),
+                                   kTemporary, base::Time::FromDoubleT(1.0)));
     info.used_count = -1;
-    EXPECT_TRUE(db.GetOriginInfo(GURL("http://a/"), kTemporary, &info));
+    EXPECT_TRUE(db.GetOriginInfo(url::Origin::Create(GURL("http://a/")),
+                                 kTemporary, &info));
     EXPECT_EQ(1, info.used_count);
 
     EXPECT_TRUE(db.RegisterInitialOriginInfo(origins, kTemporary));
 
     info.used_count = -1;
-    EXPECT_TRUE(db.GetOriginInfo(GURL("http://a/"), kTemporary, &info));
+    EXPECT_TRUE(db.GetOriginInfo(url::Origin::Create(GURL("http://a/")),
+                                 kTemporary, &info));
     EXPECT_EQ(1, info.used_count);
   }
 
@@ -414,9 +418,11 @@ class QuotaDatabaseTest : public testing::Test {
     base::Time now(base::Time::Now());
     using Entry = QuotaDatabase::OriginInfoTableEntry;
     Entry kTableEntries[] = {
-        Entry(GURL("http://go/"), kTemporary, 2147483647, now, now),
-        Entry(GURL("http://oo/"), kTemporary, 0, now, now),
-        Entry(GURL("http://gle/"), kTemporary, 1, now, now),
+        Entry(url::Origin::Create(GURL("http://go/")), kTemporary, 2147483647,
+              now, now),
+        Entry(url::Origin::Create(GURL("http://oo/")), kTemporary, 0, now, now),
+        Entry(url::Origin::Create(GURL("http://gle/")), kTemporary, 1, now,
+              now),
     };
     Entry* begin = kTableEntries;
     Entry* end = kTableEntries + base::size(kTableEntries);
@@ -434,7 +440,7 @@ class QuotaDatabaseTest : public testing::Test {
   }
 
   void GetOriginInfo(const base::FilePath& kDbFile) {
-    const GURL kOrigin = GURL("http://go/");
+    const url::Origin kOrigin = url::Origin::Create(GURL("http://go/"));
     using Entry = QuotaDatabase::OriginInfoTableEntry;
     Entry kTableEntries[] = {
         Entry(kOrigin, kTemporary, 100, base::Time(), base::Time())};
@@ -459,7 +465,8 @@ class QuotaDatabaseTest : public testing::Test {
     {
       Entry entry;
       EXPECT_FALSE(
-          db.GetOriginInfo(GURL("http://notpresent.org/"), kTemporary, &entry));
+          db.GetOriginInfo(url::Origin::Create(GURL("http://notpresent.org/")),
+                           kTemporary, &entry));
     }
   }
 
@@ -495,7 +502,7 @@ class QuotaDatabaseTest : public testing::Test {
       statement.Assign(db->GetCachedStatement(SQL_FROM_HERE, kSql));
       ASSERT_TRUE(statement.is_valid());
 
-      statement.BindString(0, itr->origin.spec());
+      statement.BindString(0, itr->origin.GetURL().spec());
       statement.BindInt(1, static_cast<int>(itr->type));
       statement.BindInt(2, itr->used_count);
       statement.BindInt64(3, itr->last_access_time.ToInternalValue());

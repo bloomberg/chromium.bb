@@ -142,7 +142,7 @@ void UsageTracker::GetHostUsageWithBreakdown(
 }
 
 void UsageTracker::UpdateUsageCache(QuotaClient::ID client_id,
-                                    const GURL& origin,
+                                    const url::Origin& origin,
                                     int64_t delta) {
   ClientUsageTracker* client_tracker = GetClientTracker(client_id);
   DCHECK(client_tracker);
@@ -165,14 +165,14 @@ void UsageTracker::GetCachedHostsUsage(
 }
 
 void UsageTracker::GetCachedOriginsUsage(
-    std::map<GURL, int64_t>* origin_usage) const {
+    std::map<url::Origin, int64_t>* origin_usage) const {
   DCHECK(origin_usage);
   origin_usage->clear();
   for (const auto& client_id_and_tracker : client_tracker_map_)
     client_id_and_tracker.second->GetCachedOriginsUsage(origin_usage);
 }
 
-void UsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
+void UsageTracker::GetCachedOrigins(std::set<url::Origin>* origins) const {
   DCHECK(origins);
   origins->clear();
   for (const auto& client_id_and_tracker : client_tracker_map_)
@@ -180,7 +180,7 @@ void UsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
 }
 
 void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
-                                        const GURL& origin,
+                                        const url::Origin& origin,
                                         bool enabled) {
   ClientUsageTracker* client_tracker = GetClientTracker(client_id);
   DCHECK(client_tracker);

@@ -17,9 +17,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "url/origin.h"
 
 using blink::mojom::StorageType;
 using content::BrowserThread;
@@ -84,15 +84,16 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread(
   }
 }
 
-void BrowsingDataQuotaHelperImpl::GotOrigins(PendingHosts* pending_hosts,
-                                             base::OnceClosure completion,
-                                             const std::set<GURL>& origins,
-                                             StorageType type) {
+void BrowsingDataQuotaHelperImpl::GotOrigins(
+    PendingHosts* pending_hosts,
+    base::OnceClosure completion,
+    const std::set<url::Origin>& origins,
+    StorageType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (const GURL& url : origins) {
-    if (!BrowsingDataHelper::HasWebScheme(url))
+  for (const url::Origin& origin : origins) {
+    if (!BrowsingDataHelper::IsWebScheme(origin.scheme()))
       continue;  // Non-websafe state is not considered browsing data.
-    pending_hosts->insert(std::make_pair(url.host(), type));
+    pending_hosts->insert(std::make_pair(origin.host(), type));
   }
   std::move(completion).Run();
 }
