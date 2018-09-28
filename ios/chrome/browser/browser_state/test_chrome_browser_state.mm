@@ -377,25 +377,6 @@ void TestChromeBrowserState::Builder::AddTestingFactory(
                                              std::move(testing_factory));
 }
 
-void TestChromeBrowserState::Builder::AddTestingFactory(
-    BrowserStateKeyedServiceFactory* service_factory,
-    std::unique_ptr<KeyedService> (*testing_factory)(web::BrowserState*)) {
-  BrowserStateKeyedServiceFactory::TestingFactory wrapped_factory;
-  if (testing_factory)
-    wrapped_factory = base::BindRepeating(testing_factory);
-  AddTestingFactory(service_factory, std::move(wrapped_factory));
-}
-
-void TestChromeBrowserState::Builder::AddTestingFactory(
-    RefcountedBrowserStateKeyedServiceFactory* service_factory,
-    scoped_refptr<RefcountedKeyedService> (*testing_factory)(
-        web::BrowserState*)) {
-  RefcountedBrowserStateKeyedServiceFactory::TestingFactory wrapped_factory;
-  if (testing_factory)
-    wrapped_factory = base::BindRepeating(testing_factory);
-  AddTestingFactory(service_factory, std::move(wrapped_factory));
-}
-
 void TestChromeBrowserState::Builder::SetPath(const base::FilePath& path) {
   DCHECK(!build_called_);
   state_path_ = path;
