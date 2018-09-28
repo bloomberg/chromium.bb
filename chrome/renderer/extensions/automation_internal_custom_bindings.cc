@@ -591,28 +591,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
   RouteNodeIDFunction(
       "GetRole", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
                     AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        auto role = node->data().role;
-        auto mapped_role = role;
-
-        // These roles are remapped for simplicity in handling them in AT.
-        switch (role) {
-          case ax::mojom::Role::kLayoutTable:
-            mapped_role = ax::mojom::Role::kTable;
-            break;
-          case ax::mojom::Role::kLayoutTableCell:
-            mapped_role = ax::mojom::Role::kCell;
-            break;
-          case ax::mojom::Role::kLayoutTableColumn:
-            mapped_role = ax::mojom::Role::kColumn;
-            break;
-          case ax::mojom::Role::kLayoutTableRow:
-            mapped_role = ax::mojom::Role::kRow;
-            break;
-          default:
-            break;
-        }
-
-        std::string role_name = ui::ToString(mapped_role);
+        std::string role_name = ui::ToString(node->data().role);
         result.Set(v8::String::NewFromUtf8(isolate, role_name.c_str(),
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
