@@ -6335,6 +6335,10 @@ interface SourceBufferList : EventTarget
     method constructor
     setter onaddsourcebuffer
     setter onremovesourcebuffer
+interface SpeechSynthesisErrorEvent : SpeechSynthesisEvent
+    attribute @@toStringTag
+    getter error
+    method constructor
 interface SpeechSynthesisEvent : Event
     attribute @@toStringTag
     getter charIndex

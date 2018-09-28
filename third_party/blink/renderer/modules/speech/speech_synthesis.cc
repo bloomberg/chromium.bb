@@ -32,7 +32,10 @@
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis_error_event.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis_error_event_init.h"
 #include "third_party/blink/renderer/modules/speech/speech_synthesis_event.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis_event_init.h"
 #include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_voice.h"
 
 namespace blink {
@@ -158,9 +161,28 @@ void SpeechSynthesis::FireEvent(const AtomicString& type,
   if (!GetElapsedTimeMillis(&millis))
     return;
 
-  double elapsed_time_millis = millis - utterance->StartTime() * 1000.0;
-  utterance->DispatchEvent(*SpeechSynthesisEvent::Create(
-      type, utterance, char_index, elapsed_time_millis, name));
+  SpeechSynthesisEventInit init;
+  init.setUtterance(utterance);
+  init.setCharIndex(char_index);
+  init.setElapsedTime(millis - (utterance->StartTime() * 1000.0));
+  init.setName(name);
+  utterance->DispatchEvent(*SpeechSynthesisEvent::Create(type, init));
+}
+
+void SpeechSynthesis::FireErrorEvent(SpeechSynthesisUtterance* utterance,
+                                     unsigned long char_index,
+                                     const String& error) {
+  double millis;
+  if (!GetElapsedTimeMillis(&millis))
+    return;
+
+  SpeechSynthesisErrorEventInit init;
+  init.setUtterance(utterance);
+  init.setCharIndex(char_index);
+  init.setElapsedTime(millis - (utterance->StartTime() * 1000.0));
+  init.setError(error);
+  utterance->DispatchEvent(
+      *SpeechSynthesisErrorEvent::Create(EventTypeNames::error, init));
 }
 
 void SpeechSynthesis::HandleSpeakingCompleted(
@@ -180,8 +202,13 @@ void SpeechSynthesis::HandleSpeakingCompleted(
   // sent an event on an utterance before it got the message that we
   // canceled it, and we should always report to the user what actually
   // happened.
-  FireEvent(error_occurred ? EventTypeNames::error : EventTypeNames::end,
-            utterance, 0, String());
+  if (error_occurred) {
+    // TODO(csharrison): Actually pass the correct message. For now just use a
+    // generic error.
+    FireErrorEvent(utterance, 0, "synthesis-failed");
+  } else {
+    FireEvent(EventTypeNames::end, utterance, 0, String());
+  }
 
   // Start the next utterance if we just finished one and one was pending.
   if (should_start_speaking && !utterance_queue_.IsEmpty())
