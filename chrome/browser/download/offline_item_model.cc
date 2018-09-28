@@ -80,6 +80,11 @@ void OfflineItemModel::SetWasUINotified(bool was_ui_notified) {
   data->was_ui_notified_ = was_ui_notified;
 }
 
+base::FilePath OfflineItemModel::GetFileNameToReportUser() const {
+  return offline_item_ ? base::FilePath::FromUTF8Unsafe(offline_item_->title)
+                       : base::FilePath();
+}
+
 base::FilePath OfflineItemModel::GetTargetFilePath() const {
   return offline_item_ ? offline_item_->file_path : base::FilePath();
 }

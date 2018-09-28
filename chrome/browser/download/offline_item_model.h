@@ -39,6 +39,7 @@ class OfflineItemModel : public DownloadUIModel,
   int PercentComplete() const override;
   bool WasUINotified() const override;
   void SetWasUINotified(bool should_notify) override;
+  base::FilePath GetFileNameToReportUser() const override;
   base::FilePath GetTargetFilePath() const override;
   void OpenDownload() override;
   void Pause() override;
