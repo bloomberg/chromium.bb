@@ -179,7 +179,7 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
     v8::Local<v8::Value> chrome(global->Get(chrome_string));
     if (chrome->IsUndefined()) {
       chrome = v8::Object::New(context()->isolate());
-      global->Set(chrome_string, chrome);
+      global->Set(context()->v8_context(), chrome_string, chrome).ToChecked();
     }
     args.GetReturnValue().Set(chrome);
   }
