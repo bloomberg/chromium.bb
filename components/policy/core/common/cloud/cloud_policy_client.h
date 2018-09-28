@@ -71,6 +71,11 @@ class POLICY_EXPORT CloudPolicyClient {
       DeviceManagementStatus,
       const std::vector<enterprise_management::RemoteCommand>&)>;
 
+  // A callback for fetching device robot OAuth2 authorization tokens.
+  // Only occurs during enrollment, after the device is registered.
+  using RobotAuthCodeCallback =
+      base::OnceCallback<void(DeviceManagementStatus, const std::string&)>;
+
   // A callback which fetches device dm_token based on user affiliation.
   // Should be called once per registration.
   using DeviceDMTokenCallback = base::RepeatingCallback<std::string(
@@ -88,11 +93,6 @@ class POLICY_EXPORT CloudPolicyClient {
     // Called upon registration state changes. This callback is invoked for
     // successful completion of registration and unregistration requests.
     virtual void OnRegistrationStateChanged(CloudPolicyClient* client) = 0;
-
-    // Called when a request for device robot OAuth2 authorization tokens
-    // returns successfully. Only occurs during enrollment. Optional
-    // (default implementation is a noop).
-    virtual void OnRobotAuthCodesFetched(CloudPolicyClient* client);
 
     // Indicates there's been an error in a previously-issued request.
     virtual void OnClientError(CloudPolicyClient* client) = 0;
@@ -183,7 +183,9 @@ class POLICY_EXPORT CloudPolicyClient {
   // Requests OAuth2 auth codes for the device robot account. The client being
   // registered is a prerequisite to this operation and this call will CHECK if
   // the client is not in registered state.
-  virtual void FetchRobotAuthCodes(std::unique_ptr<DMAuth> auth);
+  // The |callback| will be called when the operation completes.
+  virtual void FetchRobotAuthCodes(std::unique_ptr<DMAuth> auth,
+                                   RobotAuthCodeCallback callback);
 
   // Sends an unregistration request to the server.
   virtual void Unregister();
@@ -349,10 +351,6 @@ class POLICY_EXPORT CloudPolicyClient {
     return status_;
   }
 
-  const std::string& robot_api_auth_code() const {
-    return robot_api_auth_code_;
-  }
-
   // Returns the invalidation version that was used for the last FetchPolicy.
   // Observers can call this method from their OnPolicyFetched method to
   // determine which at which invalidation version the policy was fetched.
@@ -403,6 +401,7 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Callback for robot account api authorization requests.
   void OnFetchRobotAuthCodesCompleted(
+      RobotAuthCodeCallback callback,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
@@ -475,7 +474,6 @@ class POLICY_EXPORT CloudPolicyClient {
   // Observer notification helpers.
   void NotifyPolicyFetched();
   void NotifyRegistrationStateChanged();
-  void NotifyRobotAuthCodesFetched();
   void NotifyClientError();
 
   // Data necessary for constructing policy requests.
@@ -492,7 +490,6 @@ class POLICY_EXPORT CloudPolicyClient {
   base::Time last_policy_timestamp_;
   int public_key_version_ = -1;
   bool public_key_version_valid_ = false;
-  std::string robot_api_auth_code_;
   // Device DMToken for affiliated user policy requests.
   // Retrieved from |device_dm_token_callback_| on registration.
   std::string device_dm_token_;
