@@ -2927,6 +2927,8 @@ jumbo_split_static_library("browser") {
       "status_icons/desktop_notification_balloon.h",
       "sync/glue/extension_data_type_controller.cc",
       "sync/glue/extension_data_type_controller.h",
+      "sync/glue/extension_model_type_controller.cc",
+      "sync/glue/extension_model_type_controller.h",
       "sync/glue/extension_setting_data_type_controller.cc",
       "sync/glue/extension_setting_data_type_controller.h",
       "sync/glue/theme_data_type_controller.cc",

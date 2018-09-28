@@ -157,6 +157,8 @@ jumbo_static_library("sync") {
     "driver/sync_type_preference_provider.h",
     "driver/sync_util.cc",
     "driver/sync_util.h",
+    "driver/syncable_service_based_model_type_controller.cc",
+    "driver/syncable_service_based_model_type_controller.h",
     "driver/user_selectable_sync_type.h",
     "engine/commit_queue.cc",
     "engine/commit_queue.h",

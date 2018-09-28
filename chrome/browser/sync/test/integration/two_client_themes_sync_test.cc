@@ -3,10 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/themes_helper.h"
+#include "components/sync/driver/sync_driver_switches.h"
+
+namespace {
 
 using themes_helper::GetCustomTheme;
 using themes_helper::GetThemeID;
@@ -17,7 +21,23 @@ using themes_helper::UsingCustomTheme;
 using themes_helper::UsingDefaultTheme;
 using themes_helper::UsingSystemTheme;
 
-class TwoClientThemesSyncTest : public SyncTest {
+// Class that enables or disables USS based on test parameter. Must be the first
+// base class of the test fixture.
+class UssSwitchToggler : public testing::WithParamInterface<bool> {
+ public:
+  UssSwitchToggler() {
+    if (GetParam()) {
+      override_features_.InitAndEnableFeature(switches::kSyncPseudoUSSThemes);
+    } else {
+      override_features_.InitAndDisableFeature(switches::kSyncPseudoUSSThemes);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
+
+class TwoClientThemesSyncTest : public UssSwitchToggler, public SyncTest {
  public:
   TwoClientThemesSyncTest() : SyncTest(TWO_CLIENT) {}
   ~TwoClientThemesSyncTest() override {}
@@ -31,7 +51,7 @@ class TwoClientThemesSyncTest : public SyncTest {
 // Starts with default themes, then sets up sync and uses it to set all
 // profiles to use a custom theme.  Does not actually install any themes, but
 // instead verifies the custom theme is pending for install.
-IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientThemesSyncTest,
                        E2E_ENABLED(DefaultThenSyncCustom)) {
   ASSERT_TRUE(SetupSync());
 
@@ -53,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
 
 // Starts with custom themes, then sets up sync and uses it to set all profiles
 // to the system theme.
-IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientThemesSyncTest,
                        E2E_ENABLED(CustomThenSyncNative)) {
   ASSERT_TRUE(SetupClients());
 
@@ -73,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
 
 // Starts with custom themes, then sets up sync and uses it to set all profiles
 // to the default theme.
-IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientThemesSyncTest,
                        E2E_ENABLED(CustomThenSyncDefault)) {
   ASSERT_TRUE(SetupClients());
 
@@ -94,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
 //
 // Most other tests have significant coverage of model association.  This test
 // is intended to test steady-state scenarios.
-IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, E2E_ENABLED(CycleOptions)) {
+IN_PROC_BROWSER_TEST_P(TwoClientThemesSyncTest, E2E_ENABLED(CycleOptions)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetCustomTheme(GetProfile(0));
@@ -120,3 +140,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, E2E_ENABLED(CycleOptions)) {
       ThemePendingInstallChecker(GetProfile(1), GetCustomTheme(1)).Wait());
   EXPECT_EQ(GetCustomTheme(1), GetThemeID(GetProfile(0)));
 }
+
+INSTANTIATE_TEST_CASE_P(USS,
+                        TwoClientThemesSyncTest,
+                        ::testing::Values(false, true));
+
+}  // namespace

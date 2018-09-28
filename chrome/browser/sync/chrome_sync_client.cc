@@ -68,10 +68,13 @@
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_util.h"
+#include "components/sync/driver/syncable_service_based_model_type_controller.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
+#include "components/sync/model/model_type_store_service.h"
 #include "components/sync/user_events/user_event_service.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -93,6 +96,7 @@
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
+#include "chrome/browser/sync/glue/extension_model_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -124,6 +128,7 @@
 using content::BrowserThread;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 using browser_sync::ExtensionDataTypeController;
+using browser_sync::ExtensionModelTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 using browser_sync::SearchEngineDataTypeController;
@@ -295,15 +300,31 @@ ChromeSyncClient::CreateDataTypeControllers(
   // App sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::APPS)) {
-    controllers.push_back(std::make_unique<ExtensionDataTypeController>(
-        syncer::APPS, error_callback, this, profile_));
+    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSApps)) {
+      controllers.push_back(std::make_unique<ExtensionModelTypeController>(
+          syncer::APPS, GetModelTypeStoreService()->GetStoreFactory(),
+          base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
+                         base::Unretained(this), syncer::APPS),
+          profile_));
+    } else {
+      controllers.push_back(std::make_unique<ExtensionDataTypeController>(
+          syncer::APPS, error_callback, this, profile_));
+    }
   }
 
   // Extension sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::EXTENSIONS)) {
-    controllers.push_back(std::make_unique<ExtensionDataTypeController>(
-        syncer::EXTENSIONS, error_callback, this, profile_));
+    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSExtensions)) {
+      controllers.push_back(std::make_unique<ExtensionModelTypeController>(
+          syncer::EXTENSIONS, GetModelTypeStoreService()->GetStoreFactory(),
+          base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
+                         base::Unretained(this), syncer::EXTENSIONS),
+          profile_));
+    } else {
+      controllers.push_back(std::make_unique<ExtensionDataTypeController>(
+          syncer::EXTENSIONS, error_callback, this, profile_));
+    }
   }
 
   // Extension setting sync is enabled by default.  Register unless explicitly
@@ -324,8 +345,16 @@ ChromeSyncClient::CreateDataTypeControllers(
 #if !defined(OS_ANDROID)
   // Theme sync is enabled by default.  Register unless explicitly disabled.
   if (!disabled_types.Has(syncer::THEMES)) {
-    controllers.push_back(std::make_unique<ThemeDataTypeController>(
-        error_callback, this, profile_));
+    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSThemes)) {
+      controllers.push_back(std::make_unique<ExtensionModelTypeController>(
+          syncer::THEMES, GetModelTypeStoreService()->GetStoreFactory(),
+          base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
+                         base::Unretained(this), syncer::THEMES),
+          profile_));
+    } else {
+      controllers.push_back(std::make_unique<ThemeDataTypeController>(
+          error_callback, this, profile_));
+    }
   }
 
   // Search Engine sync is enabled by default.  Register unless explicitly
@@ -338,17 +367,33 @@ ChromeSyncClient::CreateDataTypeControllers(
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-  controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-      syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
+  if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSAppList)) {
+    controllers.push_back(
+        std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
+            syncer::APP_LIST, GetModelTypeStoreService()->GetStoreFactory(),
+            base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
+                           base::Unretained(this), syncer::APP_LIST)));
+  } else {
+    controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
+        syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
+  }
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if defined(OS_LINUX) || defined(OS_WIN)
   // Dictionary sync is enabled by default.
   if (!disabled_types.Has(syncer::DICTIONARY)) {
-    controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-        syncer::DICTIONARY, error_callback, this, syncer::GROUP_UI,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
+    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSDictionary)) {
+      controllers.push_back(
+          std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
+              syncer::DICTIONARY, GetModelTypeStoreService()->GetStoreFactory(),
+              base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
+                             base::Unretained(this), syncer::DICTIONARY)));
+    } else {
+      controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
+          syncer::DICTIONARY, error_callback, this, syncer::GROUP_UI,
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
+    }
   }
 #endif  // defined(OS_LINUX) || defined(OS_WIN)
 
