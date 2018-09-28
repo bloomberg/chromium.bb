@@ -535,9 +535,8 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
           : (pending_password_.federation_origin.opaque()
                  ? PasswordTitleType::SAVE_PASSWORD
                  : PasswordTitleType::SAVE_ACCOUNT);
-  GetSavePasswordDialogTitleTextAndLinkRange(
-      GetWebContents()->GetVisibleURL(), origin_, IsSyncUser(GetProfile()),
-      type, &title_, &title_brand_link_range_);
+  GetSavePasswordDialogTitleTextAndLinkRange(GetWebContents()->GetVisibleURL(),
+                                             origin_, type, &title_);
 }
 
 void ManagePasswordsBubbleModel::UpdateManageStateTitle() {

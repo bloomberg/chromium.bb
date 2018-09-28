@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -17,16 +18,6 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-bool IsSmartLockBrandingEnabled(Profile* profile) {
-  const browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  return password_bubble_experiment::IsSmartLockUser(sync_service);
-}
-
-}  // namespace
 
 PasswordDialogControllerImpl::PasswordDialogControllerImpl(
     Profile* profle,
@@ -69,11 +60,8 @@ PasswordDialogControllerImpl::GetLocalForms() const {
 std::pair<base::string16, gfx::Range>
 PasswordDialogControllerImpl::GetAccoutChooserTitle() const {
   std::pair<base::string16, gfx::Range> result;
-  GetAccountChooserDialogTitleTextAndLinkRange(
-      IsSmartLockBrandingEnabled(profile_),
-      local_credentials_.size() > 1,
-      &result.first,
-      &result.second);
+  result.first =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE);
   return result;
 }
 
@@ -91,10 +79,9 @@ base::string16 PasswordDialogControllerImpl::GetAutoSigninPromoTitle() const {
 std::pair<base::string16, gfx::Range>
 PasswordDialogControllerImpl::GetAutoSigninText() const {
   std::pair<base::string16, gfx::Range> result;
-  GetBrandedTextAndLinkRange(IsSmartLockBrandingEnabled(profile_),
-                             IDS_AUTO_SIGNIN_FIRST_RUN_SMART_LOCK_TEXT,
-                             IDS_AUTO_SIGNIN_FIRST_RUN_TEXT, &result.first,
-                             &result.second);
+  result.first = l10n_util::GetStringFUTF16(
+      IDS_AUTO_SIGNIN_FIRST_RUN_TEXT,
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TITLE_BRAND));
   return result;
 }
 
