@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -420,6 +421,8 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<AssistantOptInFlowScreenHandler>());
 
+  AddScreenHandler(std::make_unique<MultiDeviceSetupScreenHandler>());
+
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
   auto kiosk_app_menu_handler =
       std::make_unique<KioskAppMenuHandler>(network_state_informer_);
@@ -596,6 +599,10 @@ UpdateRequiredView* OobeUI::GetUpdateRequiredScreenView() {
 
 AssistantOptInFlowScreenView* OobeUI::GetAssistantOptInFlowScreenView() {
   return GetView<AssistantOptInFlowScreenHandler>();
+}
+
+MultiDeviceSetupScreenView* OobeUI::GetMultiDeviceSetupScreenView() {
+  return GetView<MultiDeviceSetupScreenHandler>();
 }
 
 UserImageView* OobeUI::GetUserImageView() {

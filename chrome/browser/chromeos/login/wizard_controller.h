@@ -197,6 +197,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowWaitForContainerReadyScreen();
   void ShowUpdateRequiredScreen();
   void ShowAssistantOptInFlowScreen();
+  void ShowMultiDeviceSetupScreen();
   void ShowDiscoverScreen();
   void ShowMarketingOptInScreen();
 
@@ -246,6 +247,7 @@ class WizardController : public BaseScreenDelegate,
   void OnDemoPreferencesCanceled();
   void OnWaitForContainerReadyFinished();
   void OnAssistantOptInFlowFinished();
+  void OnMultiDeviceSetupFinished();
   void OnOobeFlowFinished();
   void OnMarketingOptInFinished();
 

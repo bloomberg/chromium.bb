@@ -58,6 +58,7 @@
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen.h"
+#include "chrome/browser/chromeos/login/screens/multidevice_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
@@ -94,6 +95,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_constants.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -152,6 +154,7 @@ const chromeos::OobeScreen kResumableScreens[] = {
     chromeos::OobeScreen::SCREEN_APP_DOWNLOADING,
     chromeos::OobeScreen::SCREEN_DISCOVER,
     chromeos::OobeScreen::SCREEN_MARKETING_OPT_IN,
+    chromeos::OobeScreen::SCREEN_MULTIDEVICE_SETUP,
 };
 
 // Checks if device is in tablet mode, and that HID-detection screen is not
@@ -524,6 +527,9 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW) {
     return std::make_unique<AssistantOptInFlowScreen>(
         this, oobe_ui->GetAssistantOptInFlowScreenView());
+  } else if (screen == OobeScreen::SCREEN_MULTIDEVICE_SETUP) {
+    return std::make_unique<MultiDeviceSetupScreen>(
+        this, oobe_ui->GetMultiDeviceSetupScreenView());
   } else if (screen == OobeScreen::SCREEN_DISCOVER) {
     return std::make_unique<DiscoverScreen>(this,
                                             oobe_ui->GetDiscoverScreenView());
@@ -831,6 +837,20 @@ void WizardController::ShowUpdateRequiredScreen() {
 void WizardController::ShowAssistantOptInFlowScreen() {
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW));
+}
+
+void WizardController::ShowMultiDeviceSetupScreen() {
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+      base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
+    // TODO(khorimoto): Use MultiDeviceSetupClient to determine if any potential
+    // phone(s) on the same GAIA account can be used for multi-device features.
+    // Only show the setup screen if it is possible to use these features.
+    UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP);
+    SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP));
+  } else {
+    OnMultiDeviceSetupFinished();
+  }
 }
 
 void WizardController::ShowDiscoverScreen() {
@@ -1164,6 +1184,10 @@ void WizardController::OnWaitForContainerReadyFinished() {
 }
 
 void WizardController::OnAssistantOptInFlowFinished() {
+  ShowMultiDeviceSetupScreen();
+}
+
+void WizardController::OnMultiDeviceSetupFinished() {
   ShowUserImageScreen();
 }
 
@@ -1509,6 +1533,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowUpdateRequiredScreen();
   } else if (screen == OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW) {
     ShowAssistantOptInFlowScreen();
+  } else if (screen == OobeScreen::SCREEN_MULTIDEVICE_SETUP) {
+    ShowMultiDeviceSetupScreen();
   } else if (screen == OobeScreen::SCREEN_DISCOVER) {
     ShowDiscoverScreen();
   } else if (screen == OobeScreen::SCREEN_FINGERPRINT_SETUP) {
@@ -1696,6 +1722,9 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
       break;
     case ScreenExitCode::ASSISTANT_OPTIN_FLOW_FINISHED:
       OnAssistantOptInFlowFinished();
+      break;
+    case ScreenExitCode::MULTIDEVICE_SETUP_FINISHED:
+      OnMultiDeviceSetupFinished();
       break;
     default:
       NOTREACHED();
