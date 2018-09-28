@@ -1764,6 +1764,24 @@
           'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
         },
       },
+      'Android FYI 32 Vk Release (Pixel XL)': {
+        'os_type': 'android',
+        'skip_merge_script': True,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_type': 'marlin',
+              'device_os': 'P',
+              'os': 'Android',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'gpu_angle_gtests',
+          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+        },
+      },
       'Android FYI 32 dEQP Vk Release (Nexus 5X)': {
         'os_type': 'android',
         'skip_merge_script': True,
@@ -1788,6 +1806,23 @@
           'dimension_sets': [
             {
               'device_type': 'walleye',
+              'device_os': 'P',
+              'os': 'Android',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'gpu_angle_deqp_gles2_vulkan_tests',
+        },
+      },
+      'Android FYI 32 dEQP Vk Release (Pixel XL)': {
+        'os_type': 'android',
+        'skip_merge_script': True,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_type': 'marlin',
               'device_os': 'P',
               'os': 'Android',
               'pool': 'Chrome-GPU',
@@ -1834,6 +1869,24 @@
           'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
         },
       },
+      'Android FYI 64 Vk Release (Pixel XL)': {
+        'os_type': 'android',
+        'skip_merge_script': True,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_type': 'marlin',
+              'device_os': 'P',
+              'os': 'Android',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'gpu_angle_gtests',
+          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+        },
+      },
       'Android FYI 64 dEQP Vk Release (Nexus 5X)': {
         'os_type': 'android',
         'skip_merge_script': True,
@@ -1858,6 +1911,23 @@
           'dimension_sets': [
             {
               'device_type': 'walleye',
+              'device_os': 'P',
+              'os': 'Android',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'gpu_angle_deqp_gles2_vulkan_tests',
+        },
+      },
+      'Android FYI 64 dEQP Vk Release (Pixel XL)': {
+        'os_type': 'android',
+        'skip_merge_script': True,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_type': 'marlin',
               'device_os': 'P',
               'os': 'Android',
               'pool': 'Chrome-GPU',
