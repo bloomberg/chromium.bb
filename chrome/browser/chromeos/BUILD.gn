@@ -92,6 +92,8 @@ source_set("chromeos") {
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/components/tether",
     "//chromeos/services/device_sync/public/cpp",
+    "//chromeos/services/machine_learning/public/cpp",
+    "//chromeos/services/machine_learning/public/mojom",
     "//chromeos/services/multidevice_setup/public/cpp",
     "//chromeos/services/multidevice_setup/public/cpp:android_sms_app_helper_delegate",
     "//chromeos/services/multidevice_setup/public/cpp:android_sms_pairing_state_tracker",
@@ -1839,6 +1841,8 @@ source_set("chromeos") {
     # Extension API implementations.
     "extensions/arc_apps_private_api.cc",
     "extensions/arc_apps_private_api.h",
+    "extensions/autotest_private/autotest_private_api.cc",
+    "extensions/autotest_private/autotest_private_api.h",
     "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.cc",
     "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h",
     "extensions/echo_private_api.cc",
