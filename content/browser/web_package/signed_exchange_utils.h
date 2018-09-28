@@ -38,9 +38,14 @@ void ReportErrorAndTraceEvent(
     base::Optional<SignedExchangeError::FieldIndexPair> error_field =
         base::nullopt);
 
+// Returns true when SignedHTTPExchange feature is NOT enabled and
+// SignedHTTPExchangeOriginTrial and SignedHTTPExchangeAcceptHeader features are
+// enabled.
+bool NeedToCheckRedirectedURLForAcceptHeader();
+
 // Returns true if Accept headers should be sent with
 // "application/signed-exchange".
-bool ShouldAdvertiseAcceptHeader(const url::Origin& origin);
+CONTENT_EXPORT bool ShouldAdvertiseAcceptHeader(const url::Origin& origin);
 
 // Returns true when SignedHTTPExchange feature or SignedHTTPExchangeOriginTrial
 // feature is enabled.
