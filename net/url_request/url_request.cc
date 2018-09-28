@@ -479,7 +479,7 @@ void URLRequest::set_first_party_url_policy(
 
 void URLRequest::set_initiator(const base::Optional<url::Origin>& initiator) {
   DCHECK(!is_pending_);
-  DCHECK(!initiator.has_value() || initiator.value().unique() ||
+  DCHECK(!initiator.has_value() || initiator.value().opaque() ||
          initiator.value().GetURL().is_valid());
   initiator_ = initiator;
 }

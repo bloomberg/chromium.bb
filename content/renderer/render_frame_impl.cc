@@ -5661,7 +5661,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   // Standard URLs must match the reported origin, when it is not unique.
   // This check is very similar to RenderFrameHostImpl::CanCommitOrigin, but
   // adapted to the renderer process side.
-  if (!params->origin.unique() && params->url.IsStandard() &&
+  if (!params->origin.opaque() && params->url.IsStandard() &&
       render_view_->GetWebkitPreferences().web_security_enabled) {
     // Exclude file: URLs when settings allow them access any origin.
     if (params->origin.scheme() != url::kFileScheme ||

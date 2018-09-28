@@ -123,7 +123,7 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
 bool PatternAppliesToSingleOrigin(const ContentSettingPatternSource& pattern) {
   const GURL url(pattern.primary_pattern.ToString());
   // Default settings and other patterns apply to multiple origins.
-  if (url::Origin::Create(url).unique())
+  if (url::Origin::Create(url).opaque())
     return false;
   // Embedded content settings only when |url| is embedded in another origin, so
   // ignore non-wildcard secondary patterns that are different to the primary.

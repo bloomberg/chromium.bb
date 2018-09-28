@@ -31,7 +31,7 @@ namespace {
 const char kInvalidOrigin[] = "Origin is invalid";
 
 bool IsValidOrigin(const url::Origin& origin) {
-  return !origin.unique();
+  return !origin.opaque();
 }
 
 blink::mojom::IDBStatus GetIndexedDBStatus(leveldb::Status status) {

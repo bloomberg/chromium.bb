@@ -201,7 +201,7 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateUniqueOpaque() {
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
     const url::Origin& origin) {
-  if (origin.unique())
+  if (origin.opaque())
     return CreateUniqueOpaque();
 
   DCHECK(String::FromUTF8(origin.scheme().c_str()).ContainsOnlyASCII());

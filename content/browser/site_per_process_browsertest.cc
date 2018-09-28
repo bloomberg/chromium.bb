@@ -8694,9 +8694,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_TRUE(root->child_at(0)
                   ->current_frame_host()
                   ->GetLastCommittedOrigin()
-                  .unique());
+                  .opaque());
   // And verify that the origin in the replication state is also opaque.
-  EXPECT_TRUE(root->child_at(0)->current_origin().unique());
+  EXPECT_TRUE(root->child_at(0)->current_origin().opaque());
 
   // Ask the sandboxed iframe to report the enabled state of the geolocation
   // feature. If the declared policy was correctly flagged as referring to the
@@ -8721,9 +8721,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_TRUE(root->child_at(0)
                   ->current_frame_host()
                   ->GetLastCommittedOrigin()
-                  .unique());
+                  .opaque());
   // And verify that the origin in the replication state is also opaque.
-  EXPECT_TRUE(root->child_at(0)->current_origin().unique());
+  EXPECT_TRUE(root->child_at(0)->current_origin().opaque());
 
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       root->child_at(0),
@@ -8755,9 +8755,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_TRUE(root->child_at(0)
                   ->current_frame_host()
                   ->GetLastCommittedOrigin()
-                  .unique());
+                  .opaque());
   // And verify that the origin in the replication state is also opaque.
-  EXPECT_TRUE(root->child_at(0)->current_origin().unique());
+  EXPECT_TRUE(root->child_at(0)->current_origin().opaque());
 
   // Verify that geolocation is enabled in the document.
   bool success = false;
@@ -8777,9 +8777,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_FALSE(root->child_at(0)
                    ->current_frame_host()
                    ->GetLastCommittedOrigin()
-                   .unique());
+                   .opaque());
   // Verify that the origin in the replication state is also no longer opaque.
-  EXPECT_FALSE(root->child_at(0)->current_origin().unique());
+  EXPECT_FALSE(root->child_at(0)->current_origin().opaque());
 
   // Verify that the new document does not have geolocation enabled.
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
@@ -9004,7 +9004,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   const blink::ParsedFeaturePolicy initial_effective_policy =
       root->child_at(2)->effective_frame_policy().container_policy;
   EXPECT_EQ(1UL, initial_effective_policy[0].origins.size());
-  EXPECT_FALSE(initial_effective_policy[0].origins[0].unique());
+  EXPECT_FALSE(initial_effective_policy[0].origins[0].opaque());
 
   // Set the "sandbox" attribute; pending policy should update, and should now
   // be flagged as matching the opaque origin of the frame (without containing
@@ -9017,7 +9017,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   const blink::ParsedFeaturePolicy updated_pending_policy =
       root->child_at(2)->pending_frame_policy().container_policy;
   EXPECT_EQ(1UL, updated_effective_policy[0].origins.size());
-  EXPECT_FALSE(updated_effective_policy[0].origins[0].unique());
+  EXPECT_FALSE(updated_effective_policy[0].origins[0].opaque());
   EXPECT_TRUE(updated_pending_policy[0].matches_opaque_src);
   EXPECT_EQ(0UL, updated_pending_policy[0].origins.size());
 

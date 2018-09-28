@@ -131,7 +131,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
         } else {
           url::Origin target_origin = url::Origin::Create(
               GURL(StringUTF8Adaptor(tokens[i]).AsStringPiece()));
-          if (!target_origin.unique())
+          if (!target_origin.opaque())
             origins.push_back(target_origin);
           else if (messages)
             messages->push_back("Unrecognized origin: '" + tokens[i] + "'.");

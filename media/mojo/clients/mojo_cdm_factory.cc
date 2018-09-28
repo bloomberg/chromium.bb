@@ -38,7 +38,7 @@ void MojoCdmFactory::Create(
     const CdmCreatedCB& cdm_created_cb) {
   DVLOG(2) << __func__ << ": " << key_system;
 
-  if (security_origin.unique()) {
+  if (security_origin.opaque()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(cdm_created_cb, nullptr, "Invalid origin."));
     return;

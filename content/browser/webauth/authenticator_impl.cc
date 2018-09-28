@@ -97,7 +97,7 @@ enum class AttestationPromptResult {
 // Reference https://url.spec.whatwg.org/#valid-domain-string and
 // https://html.spec.whatwg.org/multipage/origin.html#concept-origin-effective-domain.
 bool HasValidEffectiveDomain(url::Origin caller_origin) {
-  return !caller_origin.unique() &&
+  return !caller_origin.opaque() &&
          !url::HostIsIPAddress(caller_origin.host()) &&
          content::IsOriginSecure(caller_origin.GetURL()) &&
          // Additionally, the scheme is required to be HTTP(S). Other schemes

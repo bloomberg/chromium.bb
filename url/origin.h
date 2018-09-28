@@ -104,7 +104,7 @@ class OriginDataView;
 //     origin.scheme(); // "https"
 //     origin.host(); // "example.com"
 //     origin.port(); // 443
-//     origin.unique(); // false
+//     origin.opaque(); // false
 //
 // * To answer the question "Are |this| and |that| "same-origin" with each
 //   other?", use |Origin::IsSameOriginWith|:
@@ -171,15 +171,14 @@ class URL_EXPORT Origin {
 
   // For opaque origins, these return ("", "", 0).
   const std::string& scheme() const {
-    return !unique() ? tuple_.scheme() : base::EmptyString();
+    return !opaque() ? tuple_.scheme() : base::EmptyString();
   }
   const std::string& host() const {
-    return !unique() ? tuple_.host() : base::EmptyString();
+    return !opaque() ? tuple_.host() : base::EmptyString();
   }
-  uint16_t port() const { return !unique() ? tuple_.port() : 0; }
+  uint16_t port() const { return !opaque() ? tuple_.port() : 0; }
 
-  // TODO(dcheng): Rename this to opaque().
-  bool unique() const { return nonce_.has_value(); }
+  bool opaque() const { return nonce_.has_value(); }
 
   // An ASCII serialization of the Origin as per Section 6.2 of RFC 6454, with
   // the addition that all Origins with a 'file' scheme serialize to "file://".
@@ -228,7 +227,7 @@ class URL_EXPORT Origin {
   // URL (e.g. with a path component).
   GURL GetURL() const;
 
-  // Same as GURL::DomainIs. If |this| origin is unique, then returns false.
+  // Same as GURL::DomainIs. If |this| origin is opaque, then returns false.
   bool DomainIs(base::StringPiece canonical_domain) const;
 
   // Allows Origin to be used as a key in STL (for example, a std::set or
@@ -343,7 +342,7 @@ class URL_EXPORT Origin {
   // given |nonce|.
   Origin(const Nonce& nonce, SchemeHostPort precursor);
 
-  // Get the nonce associated with this origin, if it is unique. This should be
+  // Get the nonce associated with this origin, if it is opaque. This should be
   // used only when trying to send an Origin across an IPC pipe.
   base::Optional<base::UnguessableToken> GetNonceForSerialization() const;
 

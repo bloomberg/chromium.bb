@@ -491,7 +491,7 @@ GURL SiteInstanceImpl::GetSiteForURL(BrowserContext* browser_context,
 
   // If there is no host but there is a scheme, return the scheme.
   // This is useful for cases like file URLs.
-  if (!origin.unique()) {
+  if (!origin.opaque()) {
     // Prefer to use the scheme of |origin| rather than |url|, to correctly
     // cover blob:file: and filesystem:file: URIs (see also
     // https://crbug.com/697111).

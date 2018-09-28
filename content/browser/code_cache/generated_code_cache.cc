@@ -25,7 +25,7 @@ bool IsAllowedToCache(const GURL& resource_url,
   // Don't cache the code corresponding to unique origins. The same-origin
   // checks should always fail for unique origins but the serialized value of
   // unique origins does not ensure this.
-  if (requesting_origin.unique())
+  if (requesting_origin.opaque())
     return false;
 
   // If the resource url or requesting url is invalid don't cache the code.
@@ -40,7 +40,7 @@ bool IsAllowedToCache(const GURL& resource_url,
 // serialized url and origin with a separator in between.
 std::string GetCacheKey(const GURL& resource_url,
                         const url::Origin& requesting_origin) {
-  DCHECK(!requesting_origin.unique());
+  DCHECK(!requesting_origin.opaque());
   DCHECK(resource_url.is_valid());
   // Add a prefix _ so it can't be parsed as a valid URL.
   std::string key = "_key";

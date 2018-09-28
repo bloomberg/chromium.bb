@@ -502,7 +502,7 @@ size_t GetLongestMatchingSubdomain(const url::Origin& origin,
   }
   // Otherwise look for each subdomain of the |origin| using binary search.
 
-  DCHECK(!origin.unique());
+  DCHECK(!origin.opaque());
   base::StringPiece canonicalized_host(origin.host());
   if (canonicalized_host.empty())
     return 0;
@@ -559,7 +559,7 @@ bool DoesOriginMatchDomainList(const url::Origin& origin,
     return false;
 
   // Unique |origin| matches lists of exception domains only.
-  if (origin.unique())
+  if (origin.opaque())
     return is_generic;
 
   size_t longest_matching_included_domain_length = 1;

@@ -269,7 +269,7 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_FALSE(container_policy[0].matches_opaque_src);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_FALSE(container_policy[0].origins[0].unique());
+  EXPECT_FALSE(container_policy[0].origins[0].opaque());
   EXPECT_EQ("http://example.net", container_policy[0].origins[0].Serialize());
 }
 

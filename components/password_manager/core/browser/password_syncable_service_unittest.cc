@@ -648,7 +648,7 @@ TEST_F(PasswordSyncableServiceTest, FailedProcessSyncChanges) {
 // string.
 TEST_F(PasswordSyncableServiceTest, SerializeEmptyFederation) {
   autofill::PasswordForm form;
-  EXPECT_TRUE(form.federation_origin.unique());
+  EXPECT_TRUE(form.federation_origin.opaque());
   syncer::SyncData data = SyncDataFromPassword(form);
   const sync_pb::PasswordSpecificsData& specifics = GetPasswordSpecifics(data);
   EXPECT_TRUE(specifics.has_federation_url());
@@ -656,7 +656,7 @@ TEST_F(PasswordSyncableServiceTest, SerializeEmptyFederation) {
 
   // Deserialize back.
   form = PasswordFromSpecifics(specifics);
-  EXPECT_TRUE(form.federation_origin.unique());
+  EXPECT_TRUE(form.federation_origin.opaque());
 
   // Make sure that the Origins uploaded incorrectly are still deserialized
   // correctly.
@@ -664,7 +664,7 @@ TEST_F(PasswordSyncableServiceTest, SerializeEmptyFederation) {
   sync_pb::PasswordSpecificsData specifics1;
   specifics1.set_federation_url("null");
   form = PasswordFromSpecifics(specifics1);
-  EXPECT_TRUE(form.federation_origin.unique());
+  EXPECT_TRUE(form.federation_origin.opaque());
 }
 
 // Serialize empty PasswordForm and make sure the Sync representation is

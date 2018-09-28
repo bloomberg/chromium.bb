@@ -469,7 +469,7 @@ bool ManagePasswordsBubbleModel::ShouldShowFooter() const {
           state_ == password_manager::ui::PENDING_PASSWORD_STATE) &&
          IsSyncUser(GetProfile()) &&
          // TODO(crbug.com/862269): Remove when "Smart Lock" is gone.
-         pending_password_.federation_origin.unique();
+         pending_password_.federation_origin.opaque();
 }
 
 const base::string16& ManagePasswordsBubbleModel::GetCurrentUsername() const {
@@ -532,7 +532,7 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
   PasswordTitleType type =
       state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE
           ? PasswordTitleType::UPDATE_PASSWORD
-          : (pending_password_.federation_origin.unique()
+          : (pending_password_.federation_origin.opaque()
                  ? PasswordTitleType::SAVE_PASSWORD
                  : PasswordTitleType::SAVE_ACCOUNT);
   GetSavePasswordDialogTitleTextAndLinkRange(

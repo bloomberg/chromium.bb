@@ -224,7 +224,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
     entry.index = base::checked_cast<int>(i);
     entry.num_characters_in_password = form->password_value.length();
 
-    if (!form->federation_origin.unique()) {
+    if (!form->federation_origin.opaque()) {
       entry.federation_text.reset(new std::string(l10n_util::GetStringFUTF8(
           IDS_PASSWORDS_VIA_FEDERATION,
           base::UTF8ToUTF16(form->federation_origin.host()))));

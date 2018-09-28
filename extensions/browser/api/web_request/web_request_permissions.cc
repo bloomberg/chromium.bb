@@ -156,7 +156,7 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
       PermissionsData::PageAccess request_access =
           GetHostAccessForURL(*extension, url, tab_id);
       PermissionsData::PageAccess initiator_access =
-          initiator && !initiator->unique()
+          initiator && !initiator->opaque()
               ? GetHostAccessForURL(*extension, initiator->GetURL(), tab_id)
               : PermissionsData::PageAccess::kAllowed;
       access = GetMinimumAccessType(request_access, initiator_access);

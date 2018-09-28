@@ -41,7 +41,7 @@ const int32_t kCachePreservationSeconds = 5;
 
 // TODO(lucmult): Check this before binding.
 bool OriginCanAccessCacheStorage(const url::Origin& origin) {
-  return !origin.unique() && IsOriginSecure(origin.GetURL());
+  return !origin.opaque() && IsOriginSecure(origin.GetURL());
 }
 
 void StopPreservingCache(CacheStorageCacheHandle cache_handle) {}

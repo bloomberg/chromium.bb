@@ -1594,7 +1594,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // It is possible that last_successful_url() was a nonstandard scheme (for
   // example, "about:blank"). If so, examine the replicated origin to determine
   // the site.
-  if (!candidate->GetLastCommittedOrigin().unique() &&
+  if (!candidate->GetLastCommittedOrigin().opaque() &&
       SiteInstanceImpl::IsSameWebSite(
           browser_context,
           GURL(candidate->GetLastCommittedOrigin().Serialize()), dest_url,
@@ -1609,7 +1609,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // tests rely on that behavior.  To accomplish this, compare |dest_url|
   // against the site URL.
   if (candidate->last_successful_url().IsAboutBlank() &&
-      candidate->GetLastCommittedOrigin().unique() &&
+      candidate->GetLastCommittedOrigin().opaque() &&
       SiteInstanceImpl::IsSameWebSite(
           browser_context, candidate->GetSiteInstance()->original_url(),
           dest_url, should_compare_effective_urls)) {
@@ -2573,7 +2573,7 @@ bool RenderFrameHostManager::CanSubframeSwapProcess(
   // If dest_url is a unique origin like about:blank, then the need for a swap
   // is determined by the source_instance or dest_instance.
   GURL resolved_url = dest_url;
-  if (url::Origin::Create(resolved_url).unique()) {
+  if (url::Origin::Create(resolved_url).opaque()) {
     if (source_instance) {
       resolved_url = source_instance->GetSiteURL();
     } else if (dest_instance) {

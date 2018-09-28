@@ -3660,7 +3660,7 @@ bool RenderFrameHostImpl::CanCommitOrigin(
 
   // It is safe to commit into a unique origin, regardless of the URL, as it is
   // restricted from accessing other origins.
-  if (origin.unique())
+  if (origin.opaque())
     return true;
 
   // Standard URLs must match the reported origin.
@@ -5457,7 +5457,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
 
       // Error pages must commit in a unique origin. Terminate the renderer
       // process if this is violated.
-      if (!validated_params->origin.unique()) {
+      if (!validated_params->origin.opaque()) {
         DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
         bad_message::ReceivedBadMessage(
             process, bad_message::RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT);
@@ -5475,7 +5475,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
                                      net::ERR_BLOCKED_BY_CLIENT) {
       // Since this is known to be an error page commit, verify it happened in
       // a unique origin, terminating the renderer process otherwise.
-      if (!validated_params->origin.unique()) {
+      if (!validated_params->origin.opaque()) {
         DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
         bad_message::ReceivedBadMessage(
             process, bad_message::RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT);

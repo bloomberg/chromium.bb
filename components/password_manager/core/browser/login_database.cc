@@ -154,7 +154,7 @@ void BindAddStatement(const PasswordForm& form,
   s->BindString(COLUMN_ICON_URL, form.icon_url.spec());
   // An empty Origin serializes as "null" which would be strange to store here.
   s->BindString(COLUMN_FEDERATION_URL,
-                form.federation_origin.unique()
+                form.federation_origin.opaque()
                     ? std::string()
                     : form.federation_origin.Serialize());
   s->BindInt(COLUMN_SKIP_ZERO_CLICK, form.skip_zero_click);
@@ -953,7 +953,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindString16(next_param++, form.display_name);
   s.BindString(next_param++, form.icon_url.spec());
   // An empty Origin serializes as "null" which would be strange to store here.
-  s.BindString(next_param++, form.federation_origin.unique()
+  s.BindString(next_param++, form.federation_origin.opaque()
                                  ? std::string()
                                  : form.federation_origin.Serialize());
   s.BindInt(next_param++, form.skip_zero_click);

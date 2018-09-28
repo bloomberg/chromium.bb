@@ -929,7 +929,7 @@ CacheStorageCache::CacheStorageCache(
       cache_observer_(nullptr),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
-  DCHECK(!origin_.unique());
+  DCHECK(!origin_.opaque());
   DCHECK(quota_manager_proxy_.get());
   DCHECK(cache_padding_key_.get());
 

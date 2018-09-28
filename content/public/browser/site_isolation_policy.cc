@@ -173,7 +173,7 @@ std::vector<url::Origin> SiteIsolationPolicy::ParseIsolatedOrigins(
   origins.reserve(origin_strings.size());
   for (const base::StringPiece& origin_string : origin_strings) {
     url::Origin origin = url::Origin::Create(GURL(origin_string));
-    if (!origin.unique())
+    if (!origin.opaque())
       origins.push_back(origin);
   }
   return origins;

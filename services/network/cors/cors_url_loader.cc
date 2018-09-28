@@ -463,8 +463,8 @@ void CORSURLLoader::SetCORSFlagIfNeeded() {
   // In the future blob URLs will not come here because there will be a
   // separate URLLoaderFactory for blobs.
   // TODO(yhirano): Remove this logic at the time.
-  if (request_.url.SchemeIsBlob() && request_.request_initiator->unique() &&
-      url::Origin::Create(request_.url).unique()) {
+  if (request_.url.SchemeIsBlob() && request_.request_initiator->opaque() &&
+      url::Origin::Create(request_.url).opaque()) {
     return;
   }
 

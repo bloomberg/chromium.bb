@@ -57,7 +57,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
   base::string16 message;
   gfx::Range message_link_range = gfx::Range();
   PasswordTitleType type =
-      form_to_save_->GetPendingCredentials().federation_origin.unique()
+      form_to_save_->GetPendingCredentials().federation_origin.opaque()
           ? PasswordTitleType::SAVE_PASSWORD
           : PasswordTitleType::SAVE_ACCOUNT;
   GetSavePasswordDialogTitleTextAndLinkRange(
