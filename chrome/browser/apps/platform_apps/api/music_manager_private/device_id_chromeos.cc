@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/music_manager_private/device_id.h"
+#include "chrome/browser/apps/platform_apps/api/music_manager_private/device_id.h"
 
 #include "chromeos/cryptohome/system_salt_getter.h"
 
-namespace extensions {
+namespace chrome_apps {
 namespace api {
 
 // static
@@ -15,4 +15,4 @@ void DeviceId::GetRawDeviceId(const IdCallback& callback) {
 }
 
 }  // namespace api
-}  // namespace extensions
+}  // namespace chrome_apps

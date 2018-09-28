@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/music_manager_private/device_id.h"
+#include "chrome/browser/apps/platform_apps/api/music_manager_private/device_id.h"
 
 // Note: The order of header includes is important, as we want both pre-Vista
 // and post-Vista data structures to be defined, specifically
@@ -33,9 +33,10 @@
 #include "rlz/lib/machine_id.h"
 #endif
 
-namespace {
+namespace chrome_apps {
+namespace api {
 
-using extensions::api::DeviceId;
+namespace {
 
 typedef base::Callback<bool(const void* bytes, size_t size)>
     IsValidMacAddressCallback;
@@ -43,9 +44,7 @@ typedef base::Callback<bool(const void* bytes, size_t size)>
 class MacAddressProcessor {
  public:
   MacAddressProcessor(const IsValidMacAddressCallback& is_valid_mac_address)
-    : is_valid_mac_address_(is_valid_mac_address),
-      found_index_(ULONG_MAX) {
-  }
+      : is_valid_mac_address_(is_valid_mac_address), found_index_(ULONG_MAX) {}
 
   // Iterate through the interfaces, looking for the valid MAC address with the
   // lowest IfIndex.
@@ -53,8 +52,7 @@ class MacAddressProcessor {
     if (address->IfType == IF_TYPE_TUNNEL)
       return;
 
-    ProcessPhysicalAddress(address->IfIndex,
-                           address->PhysicalAddress,
+    ProcessPhysicalAddress(address->IfIndex, address->PhysicalAddress,
                            address->PhysicalAddressLength);
   }
 
@@ -64,8 +62,7 @@ class MacAddressProcessor {
       return;
     }
 
-    ProcessPhysicalAddress(row->InterfaceIndex,
-                           row->PhysicalAddress,
+    ProcessPhysicalAddress(row->InterfaceIndex, row->PhysicalAddress,
                            row->PhysicalAddressLength);
   }
 
@@ -104,14 +101,13 @@ std::string GetMacAddressFromGetAdaptersAddresses(
   PIP_ADAPTER_ADDRESSES adapterAddresses =
       reinterpret_cast<PIP_ADAPTER_ADDRESSES>(&buffer.front());
 
-  DWORD result = GetAdaptersAddresses(AF_UNSPEC, flags, 0,
-                                      adapterAddresses, &bufferSize);
+  DWORD result =
+      GetAdaptersAddresses(AF_UNSPEC, flags, 0, adapterAddresses, &bufferSize);
   if (result == ERROR_BUFFER_OVERFLOW) {
     buffer.resize(bufferSize);
-    adapterAddresses =
-        reinterpret_cast<PIP_ADAPTER_ADDRESSES>(&buffer.front());
-    result = GetAdaptersAddresses(AF_UNSPEC, flags, 0,
-                                  adapterAddresses, &bufferSize);
+    adapterAddresses = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(&buffer.front());
+    result = GetAdaptersAddresses(AF_UNSPEC, flags, 0, adapterAddresses,
+                                  &bufferSize);
   }
 
   if (result != NO_ERROR) {
@@ -133,8 +129,8 @@ std::string GetMacAddressFromGetIfTable2(
   // This is available on Vista+ only.
   base::ScopedNativeLibrary library(base::FilePath(L"Iphlpapi.dll"));
 
-  typedef DWORD (NETIOAPI_API_ *GetIfTablePtr)(PMIB_IF_TABLE2*);
-  typedef void (NETIOAPI_API_ *FreeMibTablePtr)(PMIB_IF_TABLE2);
+  typedef DWORD(NETIOAPI_API_ * GetIfTablePtr)(PMIB_IF_TABLE2*);
+  typedef void(NETIOAPI_API_ * FreeMibTablePtr)(PMIB_IF_TABLE2);
 
   GetIfTablePtr getIfTable = reinterpret_cast<GetIfTablePtr>(
       library.GetFunctionPointer("GetIfTable2"));
@@ -145,7 +141,7 @@ std::string GetMacAddressFromGetIfTable2(
     return "";
   }
 
-  PMIB_IF_TABLE2  ifTable = NULL;
+  PMIB_IF_TABLE2 ifTable = NULL;
   DWORD result = getIfTable(&ifTable);
   if (result != NO_ERROR || ifTable == NULL) {
     VLOG(ERROR) << "GetIfTable failed with error " << result;
@@ -208,9 +204,6 @@ void GetMacAddressCallback(const DeviceId::IdCallback& callback,
 
 }  // namespace
 
-namespace extensions {
-namespace api {
-
 // static
 void DeviceId::GetRawDeviceId(const IdCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -222,4 +215,4 @@ void DeviceId::GetRawDeviceId(const IdCallback& callback) {
 }
 
 }  // namespace api
-}  // namespace extensions
+}  // namespace chrome_apps

@@ -13,6 +13,8 @@ namespace {
 constexpr extensions::APIPermissionInfo::InitInfo permissions_to_register[] = {
     {extensions::APIPermission::kBrowser, "browser"},
     {extensions::APIPermission::kEasyUnlockPrivate, "easyUnlockPrivate"},
+    {extensions::APIPermission::kMusicManagerPrivate, "musicManagerPrivate",
+     extensions::APIPermissionInfo::kFlagCannotBeOptional},
 };
 
 }  // namespace

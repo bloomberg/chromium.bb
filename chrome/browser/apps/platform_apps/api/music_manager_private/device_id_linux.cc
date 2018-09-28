@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/music_manager_private/device_id.h"
+#include "chrome/browser/apps/platform_apps/api/music_manager_private/device_id.h"
 
 #include <ifaddrs.h>
 #include <net/if.h>
@@ -25,24 +25,24 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace {
+namespace chrome_apps {
+namespace api {
 
-using extensions::api::DeviceId;
+namespace {
 
 typedef base::Callback<bool(const void* bytes, size_t size)>
     IsValidMacAddressCallback;
 
 const char kDiskByUuidDirectoryName[] = "/dev/disk/by-uuid";
 const char* const kDeviceNames[] = {
-  "sda1", "hda1", "dm-0", "xvda1", "sda2", "hda2", "dm-1", "xvda2",
+    "sda1", "hda1", "dm-0", "xvda1", "sda2", "hda2", "dm-1", "xvda2",
 };
 // Fedora 15 uses biosdevname feature where Embedded ethernet uses the
 // "em" prefix and PCI cards use the p[0-9]c[0-9] format based on PCI
 // slot and card information.
 const char* const kNetDeviceNamePrefixes[] = {
-  "eth", "em", "en", "wl", "ww", "p0", "p1", "p2", "p3", "p4", "p5", "p6",
-  "p7", "p8", "p9", "wlan"
-};
+    "eth", "em", "en", "wl", "ww", "p0", "p1", "p2",
+    "p3",  "p4", "p5", "p6", "p7", "p8", "p9", "wlan"};
 
 // Map from device name to disk uuid
 typedef std::map<base::FilePath, base::FilePath> DiskEntries;
@@ -71,8 +71,7 @@ std::string GetDiskUuid() {
   // Look for first device name matching an entry of |kDeviceNames|.
   std::string result;
   for (size_t i = 0; i < arraysize(kDeviceNames); i++) {
-    DiskEntries::iterator it =
-        disk_uuids.find(base::FilePath(kDeviceNames[i]));
+    DiskEntries::iterator it = disk_uuids.find(base::FilePath(kDeviceNames[i]));
     if (it != disk_uuids.end()) {
       DVLOG(1) << "Returning uuid: \"" << it->second.value()
                << "\" for device \"" << it->first.value() << "\"";
@@ -86,10 +85,10 @@ std::string GetDiskUuid() {
   if (result.empty() && !error_logged) {
     error_logged = true;
     LOG(ERROR) << "Could not find appropriate disk uuid.";
-    for (DiskEntries::iterator it = disk_uuids.begin();
-        it != disk_uuids.end(); ++it) {
-      LOG(ERROR) << "  DeviceID=" << it->first.value() << ", uuid="
-                 << it->second.value();
+    for (DiskEntries::iterator it = disk_uuids.begin(); it != disk_uuids.end();
+         ++it) {
+      LOG(ERROR) << "  DeviceID=" << it->first.value()
+                 << ", uuid=" << it->second.value();
     }
   }
 
@@ -100,10 +99,9 @@ class MacAddressProcessor {
  public:
   explicit MacAddressProcessor(
       const IsValidMacAddressCallback& is_valid_mac_address)
-      : is_valid_mac_address_(is_valid_mac_address) {
-  }
+      : is_valid_mac_address_(is_valid_mac_address) {}
 
-  bool ProcessInterface(struct ifaddrs *ifaddr,
+  bool ProcessInterface(struct ifaddrs* ifaddr,
                         const char* const prefixes[],
                         size_t prefixes_count) {
     const int MAC_LENGTH = 6;
@@ -190,9 +188,6 @@ void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
 
 }  // namespace
 
-namespace extensions {
-namespace api {
-
 // static
 void DeviceId::GetRawDeviceId(const IdCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -204,4 +199,4 @@ void DeviceId::GetRawDeviceId(const IdCallback& callback) {
 }
 
 }  // namespace api
-}  // namespace extensions
+}  // namespace chrome_apps

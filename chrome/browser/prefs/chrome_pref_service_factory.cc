@@ -308,7 +308,7 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
   std::string legacy_device_id;
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_RLZ)
   // This is used by
-  // chrome/browser/extensions/api/music_manager_private/device_id_win.cc
+  // chrome/browser/apps/platform_apps/api/music_manager_private/device_id_win.cc
   // but that API is private (http://crbug.com/276485) and other platforms are
   // not available synchronously.
   // As part of improving pref metrics on other platforms we may want to find

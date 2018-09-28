@@ -1203,6 +1203,7 @@ test("browser_tests") {
       sources += [
         "../browser/accessibility/accessibility_extension_api_browsertest.cc",
         "../browser/apps/platform_apps/api/browser/browser_apitest.cc",
+        "../browser/apps/platform_apps/api/music_manager_private/music_manager_private_browsertest.cc",
         "../browser/apps/platform_apps/app_browsertest_util.cc",
         "../browser/apps/platform_apps/app_browsertest_util.h",
         "../browser/extensions/active_tab_apitest.cc",
@@ -1265,7 +1266,6 @@ test("browser_tests") {
         "../browser/extensions/api/messaging/native_messaging_apitest.cc",
         "../browser/extensions/api/metrics_private/metrics_apitest.cc",
         "../browser/extensions/api/module/module_apitest.cc",
-        "../browser/extensions/api/music_manager_private/music_manager_private_browsertest.cc",
         "../browser/extensions/api/networking_config_chromeos_apitest_chromeos.cc",
         "../browser/extensions/api/omnibox/omnibox_api_browsertest.cc",
         "../browser/extensions/api/page_capture/page_capture_apitest.cc",
