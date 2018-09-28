@@ -28,6 +28,7 @@
 #include "base/auto_reset.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
@@ -404,6 +405,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   static const char* ResourceTypeToString(
       ResourceType,
       const AtomicString& fetch_initiator_name);
+
+  static blink::mojom::CodeCacheType ResourceTypeToCodeCacheType(ResourceType);
 
   class ProhibitAddRemoveClientInScope : public base::AutoReset<bool> {
    public:

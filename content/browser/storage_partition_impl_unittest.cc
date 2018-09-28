@@ -289,15 +289,15 @@ class RemoveCodeCacheTester {
     entry_exists_ = false;
     GeneratedCodeCache::ReadDataCallback callback = base::BindRepeating(
         &RemoveCodeCacheTester::FetchEntryCallback, base::Unretained(this));
-    code_cache_context_->generated_code_cache()->FetchEntry(url, origin,
-                                                            callback);
+    code_cache_context_->generated_js_code_cache()->FetchEntry(url, origin,
+                                                               callback);
     await_completion_.BlockUntilNotified();
     return entry_exists_;
   }
 
   void AddEntry(GURL url, url::Origin origin, const std::string& data) {
     std::vector<uint8_t> data_vector(data.begin(), data.end());
-    code_cache_context_->generated_code_cache()->WriteData(
+    code_cache_context_->generated_js_code_cache()->WriteData(
         url, origin, base::Time::Now(), data_vector);
     base::RunLoop().RunUntilIdle();
   }

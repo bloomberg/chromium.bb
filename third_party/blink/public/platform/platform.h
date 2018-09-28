@@ -47,6 +47,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
@@ -385,16 +386,19 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual WebString UserAgent() { return WebString(); }
 
   // A suggestion to cache this metadata in association with this URL.
-  virtual void CacheMetadata(const WebURL&,
+  virtual void CacheMetadata(blink::mojom::CodeCacheType cache_type,
+                             const WebURL&,
                              base::Time response_time,
                              const char* data,
                              size_t data_size) {}
 
   // A request to fetch contents associated with this URL from metadata cache.
   virtual void FetchCachedCode(
+      blink::mojom::CodeCacheType cache_type,
       const GURL&,
       base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>) {}
-  virtual void ClearCodeCacheEntry(const GURL&) {}
+  virtual void ClearCodeCacheEntry(blink::mojom::CodeCacheType cache_type,
+                                   const GURL&) {}
 
   // A suggestion to cache this metadata in association with this URL which
   // resource is in CacheStorage.

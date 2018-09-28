@@ -85,6 +85,7 @@ void CodeCacheHostImpl::Create(
 }
 
 void CodeCacheHostImpl::DidGenerateCacheableMetadata(
+    blink::mojom::CodeCacheType cache_type,
     const GURL& url,
     base::Time expected_response_time,
     const std::vector<uint8_t>& data) {
@@ -96,13 +97,20 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadata(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!base::FeatureList::IsEnabled(features::kIsolatedCodeCache)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&CodeCacheHostImpl::DidGenerateCacheableMetadataOnUI,
-                       render_process_id_, url, expected_response_time, data));
+    // Only store Javascript (not WebAssembly) code in the single-keyed cache.
+    if (cache_type == blink::mojom::CodeCacheType::kJavascript) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(&CodeCacheHostImpl::DidGenerateCacheableMetadataOnUI,
+                         render_process_id_, url, expected_response_time,
+                         data));
+    } else {
+      mojo::ReportBadMessage("Single-keyed code cache is Javascript only.");
+      return;
+    }
   } else {
-    if (!generated_code_cache_context_ ||
-        !generated_code_cache_context_->generated_code_cache())
+    GeneratedCodeCache* code_cache = GetCodeCache(cache_type);
+    if (!code_cache)
       return;
 
     base::Optional<url::Origin> requesting_origin =
@@ -110,15 +118,16 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadata(
     if (!requesting_origin)
       return;
 
-    generated_code_cache_context_->generated_code_cache()->WriteData(
-        url, *requesting_origin, expected_response_time, data);
+    code_cache->WriteData(url, *requesting_origin, expected_response_time,
+                          data);
   }
 }
 
-void CodeCacheHostImpl::FetchCachedCode(const GURL& url,
+void CodeCacheHostImpl::FetchCachedCode(blink::mojom::CodeCacheType cache_type,
+                                        const GURL& url,
                                         FetchCachedCodeCallback callback) {
-  if (!generated_code_cache_context_ ||
-      !generated_code_cache_context_->generated_code_cache()) {
+  GeneratedCodeCache* code_cache = GetCodeCache(cache_type);
+  if (!code_cache) {
     std::move(callback).Run(base::Time(), std::vector<uint8_t>());
     return;
   }
@@ -133,13 +142,14 @@ void CodeCacheHostImpl::FetchCachedCode(const GURL& url,
   auto read_callback = base::BindRepeating(
       &CodeCacheHostImpl::OnReceiveCachedCode, weak_ptr_factory_.GetWeakPtr(),
       base::Passed(&callback));
-  generated_code_cache_context_->generated_code_cache()->FetchEntry(
-      url, *requesting_origin, read_callback);
+  code_cache->FetchEntry(url, *requesting_origin, read_callback);
 }
 
-void CodeCacheHostImpl::ClearCodeCacheEntry(const GURL& url) {
-  if (!generated_code_cache_context_ ||
-      !generated_code_cache_context_->generated_code_cache())
+void CodeCacheHostImpl::ClearCodeCacheEntry(
+    blink::mojom::CodeCacheType cache_type,
+    const GURL& url) {
+  GeneratedCodeCache* code_cache = GetCodeCache(cache_type);
+  if (!code_cache)
     return;
 
   base::Optional<url::Origin> requesting_origin =
@@ -147,8 +157,7 @@ void CodeCacheHostImpl::ClearCodeCacheEntry(const GURL& url) {
   if (!requesting_origin)
     return;
 
-  generated_code_cache_context_->generated_code_cache()->DeleteEntry(
-      url, *requesting_origin);
+  code_cache->DeleteEntry(url, *requesting_origin);
 }
 
 void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
@@ -168,6 +177,18 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
       base::BindOnce(&CodeCacheHostImpl::OnCacheStorageOpenCallback,
                      weak_ptr_factory_.GetWeakPtr(), url,
                      expected_response_time, buf, data.size()));
+}
+
+GeneratedCodeCache* CodeCacheHostImpl::GetCodeCache(
+    blink::mojom::CodeCacheType cache_type) {
+  if (!generated_code_cache_context_)
+    return nullptr;
+
+  if (cache_type == blink::mojom::CodeCacheType::kJavascript)
+    return generated_code_cache_context_->generated_js_code_cache();
+
+  DCHECK_EQ(blink::mojom::CodeCacheType::kWebAssembly, cache_type);
+  return generated_code_cache_context_->generated_wasm_code_cache();
 }
 
 void CodeCacheHostImpl::OnReceiveCachedCode(FetchCachedCodeCallback callback,

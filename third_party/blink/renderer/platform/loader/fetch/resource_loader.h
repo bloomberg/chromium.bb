@@ -131,6 +131,7 @@ class PLATFORM_EXPORT ResourceLoader final
                int64_t decoded_body_length) override;
 
   void SendCachedCodeToResource(const char* data, int size);
+  void ClearCachedCode();
 
   void HandleError(const ResourceError&);
 
