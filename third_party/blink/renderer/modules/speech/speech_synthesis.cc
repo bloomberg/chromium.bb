@@ -113,10 +113,6 @@ void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance) {
   if (!document)
     return;
 
-  // If SpeechSynthesis followed autoplay policy, we could simply fire an error
-  // here and ignore this utterance. For now, just log some UseCounters to
-  // evaluate potential breakage.
-  //
   // Note: Non-UseCounter based TTS metrics are of the form TextToSpeech.* and
   // are generally global, whereas these are scoped to a single page load.
   UseCounter::Count(document, WebFeature::kTextToSpeech_Speak);
@@ -125,6 +121,8 @@ void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance) {
   if (!IsAllowedToStartByAutoplay()) {
     Deprecation::CountDeprecation(
         document, WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay);
+    FireErrorEvent(utterance, 0 /* char_index */, "not-allowed");
+    return;
   }
 
   utterance_queue_.push_back(utterance);

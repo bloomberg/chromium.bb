@@ -590,9 +590,13 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                              "6708326821789696 for more details.",
                              MilestoneString(kM70))};
     case WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay:
-      return {"TextToSpeech_DisallowedByAutoplay", kM71,
-              WillBeRemoved("speechSynthesis.speak() without user activation",
-                            kM71, "5687444770914304")};
+      return {
+          "TextToSpeech_DisallowedByAutoplay", kM71,
+          String::Format("speechSynthesis.speak() without user activation is"
+                         "no longer allowed since %s. See"
+                         "https://www.chromestatus.com/feature/"
+                         "5687444770914304 for more details",
+                         MilestoneString(kM71))};
 
     case WebFeature::kPPAPIWebSocket:
       // TODO(ricea): Update once we have an expected release date for M74.

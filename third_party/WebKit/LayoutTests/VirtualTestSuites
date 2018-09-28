@@ -623,6 +623,11 @@
     "args": ["--enable-blink-features=FractionalMouseEvent"]
   },
   {
+    "prefix": "speech-with-unified-autoplay",
+    "base": "external/wpt/speech-api",
+    "args": ["--autoplay-policy=document-user-activation-required"]
+  },
+  {
     "prefix": "unified-autoplay",
     "base": "external/wpt/feature-policy",
     "args": ["--autoplay-policy=document-user-activation-required"]
