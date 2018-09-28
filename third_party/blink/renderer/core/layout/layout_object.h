@@ -794,13 +794,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return LocalSVGTransform();
   }
 
-  // SVG uses FloatPoint precise hit testing, and passes the point in parent
-  // coordinates instead of in paint invalidation container coordinates.
-  // Eventually the rest of the layout tree will move to a similar model.
-  virtual bool NodeAtFloatPoint(HitTestResult&,
-                                const FloatPoint& point_in_parent,
-                                HitTestAction);
-
   // End of SVG-specific methods.
 
   bool IsAnonymous() const { return bitfields_.IsAnonymous(); }

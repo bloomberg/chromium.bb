@@ -67,9 +67,10 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
 
   bool UpdateBoundingBox();
 
-  bool NodeAtFloatPoint(HitTestResult&,
-                        const FloatPoint& point_in_parent,
-                        HitTestAction) override;
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_parent,
+                   const LayoutPoint& accumulated_offset,
+                   HitTestAction) override;
 
   AffineTransform LocalSVGTransform() const override {
     return local_transform_;

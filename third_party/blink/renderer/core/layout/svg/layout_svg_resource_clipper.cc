@@ -252,14 +252,15 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
        Traversal<SVGElement>::ChildrenOf(*GetElement())) {
     if (!ContributesToClip(child_element))
       continue;
-    HitTestLocation location((LayoutPoint()));
+    HitTestLocation location(point);
     HitTestResult result(HitTestRequest::kSVGClipContent, location);
     LayoutObject* layout_object = child_element.GetLayoutObject();
 
     DCHECK(!layout_object->IsBoxModelObject() ||
            !ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer());
 
-    if (layout_object->NodeAtFloatPoint(result, point, kHitTestForeground))
+    if (layout_object->NodeAtPoint(result, location, LayoutPoint(),
+                                   kHitTestForeground))
       return true;
   }
   return false;

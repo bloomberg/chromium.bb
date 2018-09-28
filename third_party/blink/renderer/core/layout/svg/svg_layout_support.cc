@@ -432,12 +432,21 @@ bool SVGLayoutSupport::PointInClippingArea(const LayoutObject& object,
 bool SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
     const LayoutObject& object,
     const AffineTransform& local_transform,
-    const FloatPoint& point_in_parent,
-    FloatPoint& local_point) {
+    const HitTestLocation& location_in_parent,
+    HitTestLocation& local_location) {
   if (!local_transform.IsInvertible())
     return false;
-  local_point = local_transform.Inverse().MapPoint(point_in_parent);
-  return PointInClippingArea(object, local_point);
+  const AffineTransform inverse = local_transform.Inverse();
+  if (location_in_parent.IsRectBasedTest()) {
+    local_location =
+        HitTestLocation(inverse.MapPoint(location_in_parent.TransformedPoint()),
+                        inverse.MapQuad(location_in_parent.TransformedRect()));
+  } else {
+    local_location = HitTestLocation(
+        inverse.MapPoint(location_in_parent.TransformedPoint()));
+  }
+
+  return PointInClippingArea(object, local_location.TransformedPoint());
 }
 
 DashArray SVGLayoutSupport::ResolveSVGDashArray(
