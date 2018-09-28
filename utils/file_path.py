@@ -888,7 +888,8 @@ def set_read_only(path, read_only):
 
   Zaps out access to 'group' and 'others'.
   """
-  mode = fs.lstat(path).st_mode
+  orig_mode = fs.lstat(path).st_mode
+  mode = orig_mode
   # TODO(maruel): Stop removing GO bits.
   if read_only:
     mode &= stat.S_IRUSR|stat.S_IXUSR # 0500
@@ -899,7 +900,7 @@ def set_read_only(path, read_only):
   if hasattr(os, 'lchmod'):
     fs.lchmod(path, mode)  # pylint: disable=E1101
   else:
-    if stat.S_ISLNK(mode):
+    if stat.S_ISLNK(orig_mode):
       # Skip symlink without lchmod() support.
       return
 
