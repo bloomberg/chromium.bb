@@ -64,6 +64,7 @@ struct WebrtcVideoStream::FrameStats {
   base::TimeTicks encode_ended_time;
 
   uint32_t capturer_id = 0;
+  int frame_quantizer = -1;
 };
 
 WebrtcVideoStream::WebrtcVideoStream(const SessionOptions& session_options)
@@ -242,6 +243,7 @@ void WebrtcVideoStream::OnFrameEncoded(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   current_frame_stats_->encode_ended_time = base::TimeTicks::Now();
+  current_frame_stats_->frame_quantizer = frame->quantizer;
 
   HostFrameStats stats;
   scheduler_->OnFrameEncoded(frame.get(), &stats);
@@ -296,6 +298,8 @@ void WebrtcVideoStream::OnFrameEncoded(
                          current_frame_stats_->encode_started_time;
 
     stats.capturer_id = current_frame_stats_->capturer_id;
+
+    stats.frame_quantizer = current_frame_stats_->frame_quantizer;
 
     video_stats_dispatcher_.OnVideoFrameStats(result.frame_id, stats);
   }
