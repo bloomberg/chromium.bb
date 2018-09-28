@@ -159,6 +159,9 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
   void VerifyDefaultComponents(MediaStreamAudioProcessor* audio_processor) {
     webrtc::AudioProcessing* audio_processing =
         audio_processor->audio_processing_.get();
+    const webrtc::AudioProcessing::Config apm_config =
+        audio_processing->GetConfig();
+    EXPECT_TRUE(apm_config.high_pass_filter.enabled);
 #if defined(OS_ANDROID)
     EXPECT_TRUE(audio_processing->echo_control_mobile()->is_enabled());
     EXPECT_TRUE(audio_processing->echo_control_mobile()->routing_mode() ==
@@ -176,7 +179,6 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     EXPECT_TRUE(audio_processing->noise_suppression()->is_enabled());
     EXPECT_TRUE(audio_processing->noise_suppression()->level() ==
         webrtc::NoiseSuppression::kHigh);
-    EXPECT_TRUE(audio_processing->high_pass_filter()->is_enabled());
     EXPECT_TRUE(audio_processing->gain_control()->is_enabled());
 #if defined(OS_ANDROID)
     EXPECT_TRUE(audio_processing->gain_control()->mode() ==
