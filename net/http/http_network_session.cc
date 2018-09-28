@@ -143,7 +143,6 @@ HttpNetworkSession::Params::Params()
       quic_race_cert_verification(false),
       quic_estimate_initial_rtt(false),
       quic_headers_include_h2_stream_dependency(false),
-      enable_token_binding(false),
       enable_channel_id(false),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
@@ -232,7 +231,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_headers_include_h2_stream_dependency,
           params.quic_connection_options,
           params.quic_client_connection_options,
-          params.enable_token_binding,
           params.enable_channel_id,
           params.quic_enable_socket_recv_optimization),
       spdy_session_pool_(context.host_resolver,
@@ -462,9 +460,6 @@ void HttpNetworkSession::GetSSLConfig(const HttpRequestInfo& request,
   } else {
     server_config->channel_id_enabled = params_.enable_channel_id;
     proxy_config->channel_id_enabled = params_.enable_channel_id;
-    if (params_.enable_token_binding && context_.channel_id_service) {
-      server_config->token_binding_params.push_back(TB_PARAM_ECDSAP256);
-    }
   }
 }
 

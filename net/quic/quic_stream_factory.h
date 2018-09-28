@@ -261,7 +261,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool headers_include_h2_stream_dependency,
       const quic::QuicTagVector& connection_options,
       const quic::QuicTagVector& client_connection_options,
-      bool enable_token_binding,
       bool enable_channel_id,
       bool enable_socket_recv_optimization);
   ~QuicStreamFactory() override;

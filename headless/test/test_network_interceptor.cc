@@ -54,8 +54,7 @@ class RedirectLoader : public network::mojom::URLLoader {
             UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
         url_request_.referrer_policy, url_request_.referrer.spec(),
         response_->headers.get(), response_->headers->response_code(),
-        url_.Resolve(location), false /* token_binding_negotiated */,
-        false /* insecure_scheme_was_upgraded */, true);
+        url_.Resolve(location), false /* insecure_scheme_was_upgraded */, true);
     network::ResourceResponseHead head;
     head.request_time = base::Time::Now();
     head.response_time = base::Time::Now();

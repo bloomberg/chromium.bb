@@ -54,10 +54,6 @@
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
-namespace crypto {
-class ECPrivateKey;
-}
-
 namespace net {
 
 namespace test {
@@ -428,9 +424,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // MultiplexedSession methods:
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
   bool GetSSLInfo(SSLInfo* ssl_info) const override;
-  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                 TokenBindingType tb_type,
-                                 std::vector<uint8_t>* out) override;
 
   // Returns true if ALPN was negotiated for the underlying socket.
   bool WasAlpnNegotiated() const;

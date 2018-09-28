@@ -157,8 +157,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
 base::Optional<net::RedirectInfo>
 ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
     const network::ResourceRequest& original_request,
-    const network::ResourceResponseHead& response_head,
-    bool token_binding_negotiated) {
+    const network::ResourceResponseHead& response_head) {
   std::string new_location;
   if (!response_head.headers->IsRedirect(&new_location))
     return base::nullopt;
@@ -175,8 +174,7 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
       original_request.referrer_policy,
       network::ComputeReferrer(original_request.referrer),
       response_head.headers.get(), response_head.headers->response_code(),
-      original_request.url.Resolve(new_location), false,
-      token_binding_negotiated);
+      original_request.url.Resolve(new_location), false);
 }
 
 int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(

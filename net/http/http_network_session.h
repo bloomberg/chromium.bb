@@ -226,8 +226,6 @@ class NET_EXPORT HttpNetworkSession {
     // If non-empty, QUIC will only be spoken to hosts in this list.
     base::flat_set<std::string> quic_host_whitelist;
 
-    // Enable support for Token Binding.
-    bool enable_token_binding;
     // Enable Channel ID. Channel ID is being deprecated.
     bool enable_channel_id;
 

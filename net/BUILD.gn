@@ -362,8 +362,6 @@ component("net") {
     "ssl/ssl_private_key.h",
     "ssl/ssl_server_config.cc",
     "ssl/ssl_server_config.h",
-    "ssl/token_binding.cc",
-    "ssl/token_binding.h",
     "third_party/quic/core/quic_error_codes.cc",
     "third_party/quic/core/quic_error_codes.h",
     "third_party/uri_template/uri_template.cc",

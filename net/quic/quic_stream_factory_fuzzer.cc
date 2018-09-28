@@ -101,7 +101,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   bool race_cert_verification = data_provider.ConsumeBool();
   bool estimate_initial_rtt = data_provider.ConsumeBool();
   bool headers_include_h2_stream_dependency = data_provider.ConsumeBool();
-  bool enable_token_binding = data_provider.ConsumeBool();
   bool enable_channel_id = data_provider.ConsumeBool();
   bool enable_socket_recv_optimization = data_provider.ConsumeBool();
   bool race_stale_dns_on_connection = data_provider.ConsumeBool();
@@ -150,8 +149,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
           allow_server_migration, race_cert_verification, estimate_initial_rtt,
           headers_include_h2_stream_dependency, env->connection_options,
-          env->client_connection_options, enable_token_binding,
-          enable_channel_id, enable_socket_recv_optimization);
+          env->client_connection_options, enable_channel_id,
+          enable_socket_recv_optimization);
 
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;

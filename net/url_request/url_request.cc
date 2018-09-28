@@ -963,7 +963,6 @@ void URLRequest::Redirect(
   referrer_ = redirect_info.new_referrer;
   referrer_policy_ = redirect_info.new_referrer_policy;
   site_for_cookies_ = redirect_info.new_site_for_cookies;
-  token_binding_referrer_ = redirect_info.referred_token_binding_host;
 
   url_chain_.push_back(redirect_info.new_url);
   --redirect_limit_;

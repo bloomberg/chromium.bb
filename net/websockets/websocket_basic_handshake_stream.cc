@@ -344,16 +344,6 @@ void WebSocketBasicHandshakeStream::PopulateNetErrorDetails(
   return;
 }
 
-Error WebSocketBasicHandshakeStream::GetTokenBindingSignature(
-    crypto::ECPrivateKey* key,
-    TokenBindingType tb_type,
-    std::vector<uint8_t>* out) {
-  DCHECK(url_.SchemeIsCryptographic());
-
-  return state_.connection()->socket()->GetTokenBindingSignature(key, tb_type,
-                                                                 out);
-}
-
 void WebSocketBasicHandshakeStream::Drain(HttpNetworkSession* session) {
   HttpResponseBodyDrainer* drainer = new HttpResponseBodyDrainer(this);
   drainer->Start(session);

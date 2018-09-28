@@ -988,8 +988,8 @@ Response InterceptionJob::ProcessRedirectByClient(const std::string& location) {
           request.method, request.url, request.site_for_cookies,
           first_party_url_policy, request.referrer_policy,
           request.referrer.spec(), &headers, headers.response_code(),
-          redirect_url, false /* token_binding_negotiated */,
-          false /* insecure_scheme_was_upgraded */, false /* copy_fragment */));
+          redirect_url, false /* insecure_scheme_was_upgraded */,
+          false /* copy_fragment */));
 
   client_->OnReceiveRedirect(*response_metadata_->redirect_info,
                              response_metadata_->head);

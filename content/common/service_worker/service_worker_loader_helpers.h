@@ -38,8 +38,7 @@ class ServiceWorkerLoaderHelpers {
   // Otherwise returns base::nullopt.
   static base::Optional<net::RedirectInfo> ComputeRedirectInfo(
       const network::ResourceRequest& original_request,
-      const network::ResourceResponseHead& response_head,
-      bool token_binding_negotiated);
+      const network::ResourceResponseHead& response_head);
 
   // Reads |blob| using the range in |headers| (if any), writing into
   // |handle_out|. Calls |on_blob_read_complete| when done or if an error

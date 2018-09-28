@@ -58,10 +58,6 @@ class SSLConfigService;
 class SSLInfo;
 class TransportSecurityState;
 
-using TokenBindingSignatureMap =
-    base::MRUCache<std::pair<TokenBindingType, std::string>,
-                   std::vector<uint8_t>>;
-
 namespace test {
 class QuicChromiumClientSessionPeer;
 }  // namespace test
@@ -191,12 +187,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
     // Returns the connection timing for the handshake of this session.
     const LoadTimingInfo::ConnectTiming& GetConnectTiming();
-
-    // Signs the exported keying material used for Token Binding using key
-    // |*key| and puts the signature in |*out|. Returns a net error code.
-    Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                   TokenBindingType tb_type,
-                                   std::vector<uint8_t>* out);
 
     // Returns true if |other| is a handle to the same session as this handle.
     bool SharesSameSession(const Handle& other) const;
@@ -514,9 +504,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // MultiplexedSession methods:
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
   bool GetSSLInfo(SSLInfo* ssl_info) const override;
-  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                 TokenBindingType tb_type,
-                                 std::vector<uint8_t>* out) override;
 
   // Performs a crypto handshake with the server.
   int CryptoConnect(CompletionOnceCallback callback);
@@ -783,7 +770,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool going_away_;
   // True when the session receives a go away from server due to port migration.
   bool port_migration_detected_;
-  TokenBindingSignatureMap token_binding_signatures_;
   // Not owned. |push_delegate_| outlives the session and handles server pushes
   // received by session.
   ServerPushDelegate* push_delegate_;
