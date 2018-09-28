@@ -623,6 +623,33 @@
             ]
         }
     ],
+    "AutofillPreviewStyleExperiment": [
+        {
+            "platforms": [],
+            "experiments": [
+                {
+                    "name": "Enabled_BlackOnGoogleBlue050_V2",
+                    "params": {
+                        "bg_color": "#E8F0FE",
+                        "color": "#000000"
+                    },
+                    "enable_features": [
+                        "AutofillPreviewStyleExperiment"
+                    ]
+                },
+                {
+                    "name": "Enabled_BlackOnGoogleYellow050_V2",
+                    "params": {
+                        "bg_color": "#E6F4EA",
+                        "color": "#000000"
+                    },
+                    "enable_features": [
+                        "AutofillPreviewStyleExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillResetFullServerCardsOnAuthError": [
         {
             "platforms": [
