@@ -5,15 +5,9 @@
 #ifndef ASH_ACCESSIBILITY_ACCESSIBILITY_DELEGATE_H_
 #define ASH_ACCESSIBILITY_ACCESSIBILITY_DELEGATE_H_
 
-#include <vector>
-
 #include "ash/ash_export.h"
-#include "ui/accessibility/ax_tree_id.h"
-#include "ui/accessibility/ax_tree_update.h"
-
-namespace ui {
-struct AXEvent;
-}
+#include "base/time/time.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ash {
 
@@ -41,14 +35,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Gets a saved value of the zoom scale of full screen magnifier. If a value
   // is not saved, return a negative value.
   virtual double GetSavedScreenMagnifierScale() = 0;
-
-  // Automation API support for remote mojo apps.
-  // TODO(jamescook): Convert to mojo API.
-  virtual void DispatchAccessibilityEvent(
-      const ui::AXTreeID& tree_id,
-      const std::vector<ui::AXTreeUpdate>& updates,
-      const ui::AXEvent& event) = 0;
-  virtual void DispatchTreeDestroyedEvent(const ui::AXTreeID& tree_id) = 0;
 
   // NOTE: Prefer adding methods to AccessibilityController, see class comment.
 };

@@ -2,30 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCESSIBILITY_AX_HOST_SERVICE_H_
-#define ASH_ACCESSIBILITY_AX_HOST_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_AX_HOST_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_AX_HOST_SERVICE_H_
 
 #include <memory>
 
-#include "ash/ash_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "ui/accessibility/ax_host_delegate.h"
-#include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
-
-namespace ash {
 
 // Forwards accessibility events from clients in other processes that use aura
 // and views (e.g. the Chrome OS keyboard shortcut_viewer) to accessibility
 // extensions. Renderers, PDF, etc. use a different path. Created when the first
 // client connects over mojo. Implements AXHostDelegate by routing actions over
 // mojo to the remote process.
-class ASH_EXPORT AXHostService : public service_manager::Service,
-                                 public ax::mojom::AXHost,
-                                 public ui::AXHostDelegate {
+class AXHostService : public service_manager::Service,
+                      public ax::mojom::AXHost,
+                      public ui::AXHostDelegate {
  public:
   AXHostService();
   ~AXHostService() override;
@@ -70,6 +66,4 @@ class ASH_EXPORT AXHostService : public service_manager::Service,
   DISALLOW_COPY_AND_ASSIGN(AXHostService);
 };
 
-}  // namespace ash
-
-#endif  // ASH_ACCESSIBILITY_AX_HOST_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_AX_HOST_SERVICE_H_

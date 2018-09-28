@@ -203,7 +203,6 @@ void AshService::CreateService(
     service_manager::mojom::ServiceRequest service,
     const std::string& name,
     service_manager::mojom::PIDReceiverPtr pid_receiver) {
-  // TODO(jamescook): Create the AXHostService here under mash.
   DCHECK_EQ(name, ws::mojom::kServiceName);
   Shell::Get()->window_service_owner()->BindWindowService(std::move(service));
   if (base::FeatureList::IsEnabled(features::kMash)) {

@@ -1,7 +1,6 @@
 specific_include_rules = {
   "automation_manager_aura\.cc": [
     # TODO(mash): Fix. https://crbug.com/756054
-    "+ash/accessibility/ax_host_service.h",
     "+ash/shell.h",
     "+ash/wm/window_util.h",
   ],

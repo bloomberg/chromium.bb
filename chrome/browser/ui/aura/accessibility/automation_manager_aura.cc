@@ -25,9 +25,9 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/accessibility/ax_host_service.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/widget/widget_delegate.h"
 #endif
@@ -58,8 +58,7 @@ void AutomationManagerAura::Enable() {
     }
   }
   // Gain access to out-of-process native windows.
-  // TODO(mash): Split AXHostService into chrome and ash parts.
-  ash::AXHostService::SetAutomationEnabled(true);
+  AXHostService::SetAutomationEnabled(true);
 #endif
 }
 
@@ -68,7 +67,7 @@ void AutomationManagerAura::Disable() {
   Reset(true);
 
 #if defined(OS_CHROMEOS)
-  ash::AXHostService::SetAutomationEnabled(false);
+  AXHostService::SetAutomationEnabled(false);
 #endif
 }
 
