@@ -12,6 +12,12 @@ const PagesInputErrorState = {
   OUT_OF_BOUNDS: 2,
 };
 
+/** @enum {string} */
+const PagesValue = {
+  ALL: 'all',
+  CUSTOM: 'custom',
+};
+
 Polymer({
   is: 'print-preview-pages-settings',
 
@@ -33,13 +39,27 @@ Polymer({
       computed: 'computeAllPagesArray_(documentInfo.pageCount)',
     },
 
-    /** @private {boolean} */
-    customSelected_: {
+    /** @private {string} */
+    optionSelected_: {
       type: Boolean,
-      value: false,
+      value: PagesValue.ALL,
+      observer: 'onOptionSelectedChange_',
     },
 
     disabled: Boolean,
+
+    /**
+     * Note: |disabled| specifies whether printing, and any settings section
+     * not in an error state, is disabled. |controlsDisabled_| specifies whether
+     * the pages section should be disabled, based on the value of |disabled|
+     * and the state of this section.
+     * @private {boolean} Whether this section is disabled.
+     */
+    controlsDisabled_: {
+      type: Boolean,
+      computed: 'computeControlsDisabled_(disabled, errorState_)',
+      observer: 'onControlsDisabledChanged_',
+    },
 
     /** @private {number} */
     errorState_: {
@@ -52,13 +72,22 @@ Polymer({
     pagesToPrint_: {
       type: Array,
       computed: 'computePagesToPrint_(' +
-          'inputString_, customSelected_, allPagesArray_)',
+          'inputString_, optionSelected_, allPagesArray_)',
     },
 
     /** @private {!Array<{to: number, from: number}>} */
     rangesToPrint_: {
       type: Array,
       computed: 'computeRangesToPrint_(pagesToPrint_, allPagesArray_)',
+    },
+
+    /**
+     * Mirroring the enum so that it can be used from HTML bindings.
+     * @private
+     */
+    pagesValueEnum_: {
+      type: Object,
+      value: PagesValue,
     },
   },
 
@@ -91,7 +120,7 @@ Polymer({
    * |disabled|.
    * @private
    */
-  getDisabled_: function() {
+  computeControlsDisabled_: function() {
     // Disable the input if other settings are responsible for the error state.
     return this.errorState_ == PagesInputErrorState.NO_ERROR && this.disabled;
   },
@@ -123,7 +152,7 @@ Polymer({
    * @private
    */
   computePagesToPrint_: function() {
-    if (!this.customSelected_ || this.inputString_ === '') {
+    if (this.optionSelected_ === PagesValue.ALL || this.inputString_ === '') {
       this.errorState_ = PagesInputErrorState.NO_ERROR;
       return this.allPagesArray_;
     }
@@ -274,34 +303,17 @@ Polymer({
   },
 
   /** @private */
-  onAllRadioClick_: function() {
-    this.customSelected_ = false;
-  },
-
-  /**
-   * @param {Event} event Contains information about where focus came from.
-   * @private
-   */
-  onCustomRadioFocus_: function(event) {
-    if (event.relatedTarget !== this.$.pageSettingsCustomInput)
-      this.onCustomRadioClick_();
-  },
-
-  /** @private */
-  onCustomRadioClick_: function() {
-    /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
-        .inputElement.focus();
-  },
-
-  /** @private */
-  onCustomInputFocus_: function() {
-    this.customSelected_ = true;
+  onOptionSelectedChange_: function() {
+    if (this.optionSelected_ === PagesValue.CUSTOM) {
+      /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
+          .inputElement.focus();
+    }
   },
 
   /** @private */
   resetIfEmpty_: function() {
     if (this.inputString_ === '')
-      this.customSelected_ = false;
+      this.optionSelected_ = PagesValue.ALL;
   },
 
   /**
@@ -310,6 +322,24 @@ Polymer({
   onKeydown_: function(e) {
     if (e.key == 'Enter') {
       this.resetAndUpdate();
+      this.resetIfEmpty_();
+    } else if (e.shiftKey && e.key == 'Tab') {
+      this.$.customRadioButton.focus();
+      e.stopPropagation();
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.stopPropagation();
+    }
+  },
+
+  /**
+   * @param {Event} event Contains information about where focus is going.
+   * @private
+   */
+  onCustomRadioBlur_: function(event) {
+    if (event.relatedTarget !=
+        /** @type {!CrInputElement} */
+        (this.$.pageSettingsCustomInput).inputElement) {
       this.resetIfEmpty_();
     }
   },
@@ -321,8 +351,38 @@ Polymer({
   onCustomInputBlur_: function(event) {
     this.resetAndUpdate();
 
-    if (event.relatedTarget != this.$$('#custom-radio-button'))
+    if (event.relatedTarget != this.$.customRadioButton) {
       this.resetIfEmpty_();
+
+      // Manually set tab index to -1, so that this is not identified as the
+      // target for the radio group if the user navigates back.
+      this.$.customRadioButton.tabIndex = -1;
+    }
+  },
+
+  /** @private */
+  onCustomInputFocus_: function() {
+    if (this.optionSelected_ !== PagesValue.CUSTOM)
+      this.optionSelected_ = PagesValue.CUSTOM;
+  },
+
+  /** @private */
+  onControlsDisabledChanged_: function() {
+    if (!this.controlsDisabled_) {
+      if (this.optionSelected_ === PagesValue.CUSTOM)
+        this.$.allRadioButton.tabIndex = -1;
+      else
+        this.$.customRadioButton.tabIndex = -1;
+    }
+  },
+
+  /**
+   * Gets a tab index for the custom input if it can be tabbed to.
+   * @return {number}
+   * @private
+   */
+  computeTabIndex_: function() {
+    return this.optionSelected_ === PagesValue.CUSTOM ? 0 : -1;
   },
 
   /**

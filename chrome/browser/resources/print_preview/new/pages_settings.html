@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../data/document_info.html">
 <link rel="import" href="../print_preview_utils.html">
 <link rel="import" href="input_behavior.html">
@@ -13,11 +14,15 @@
 <dom-module id="print-preview-pages-settings">
   <template>
     <style include="print-preview-shared">
+      :host {
+        --paper-radio-group-item-padding: 0;
+      }
+
       :host([error-state_='0']) #pageSettingsCustomInput {
         --cr-input-error-display: none;
       }
 
-      :host(:not([error-state_='0'])) #custom-radio-button {
+      :host(:not([error-state_='0'])) #customRadioButton {
         /* Margin = -1 * error height = -1 * (16px + 2 lines * line-height) */
         --cr-radio-button-disc: {
           margin-top: calc(-16px - 2 * .75rem);
@@ -38,30 +43,29 @@
         class="input-settings-section multirow-controls">
       <span slot="title">$i18n{pagesLabel}</span>
       <div slot="controls" id="controls">
-        <div class="radio">
-          <cr-radio-button name="pages" id="all-radio-button"
-              checked$="[[!customSelected_]]"
-              disabled$="[[getDisabled_(disabled)]]"
-              on-click="onAllRadioClick_">
-            <span>$i18n{optionAllPages}</span>
+        <paper-radio-group selectable="cr-radio-button" class="radio"
+            disabled$="[[controlsDisabled_]]"
+            selected="{{optionSelected_}}">
+          <cr-radio-button name="[[pagesValueEnum_.ALL]]" id="allRadioButton"
+              disabled$="[[controlsDisabled_]]"
+              label="$i18n{optionAllPages}">
           </cr-radio-button>
-          <cr-radio-button name="pages" id="custom-radio-button"
-              checked$="[[customSelected_]]"
-              disabled$="[[getDisabled_(disabled)]]"
-              aria-label="$i18n{optionCustomPages}"
-              on-click="onCustomRadioClick_"
-              on-focus="onCustomRadioFocus_"
-              on-blur="onCustomInputBlur_">
+          <cr-radio-button id="customRadioButton"
+              disabled$="[[controlsDisabled_]]"
+              name="[[pagesValueEnum_.CUSTOM]]"
+              on-blur="onCustomRadioBlur_"
+              aria-label="$i18n{optionCustomPages}">
             <cr-input id="pageSettingsCustomInput" type="text"
                 data-timeout-delay="500" on-keydown="onKeydown_"
-                disabled$="[[getDisabled_(disabled)]]" spellcheck="false"
+                disabled$="[[controlsDisabled_]]" spellcheck="false"
                 on-focus="onCustomInputFocus_" on-blur="onCustomInputBlur_"
+                tabindex="[[computeTabIndex_(optionSelected_)]]"
                 placeholder="$i18n{examplePageRangeText}"
                 error-message="[[getHintMessage_(errorState_,
                     documentInfo.pageCount)]]">
             </cr-input>
           </cr-radio-button>
-        </div>
+        </paper-radio-group>
       </div>
     </print-preview-settings-section>
   </template>
