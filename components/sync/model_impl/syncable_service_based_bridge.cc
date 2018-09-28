@@ -22,7 +22,7 @@ namespace syncer {
 namespace {
 
 // Same as kInvalidId in syncable/base_node.h.
-constexpr int64_t kInvalidId = 0;
+constexpr int64_t kInvalidNodeId = 0;
 
 std::unique_ptr<EntityData> ConvertPersistedToEntityData(
     const std::string& client_tag_hash,
@@ -454,7 +454,7 @@ void SyncableServiceBasedBridge::MaybeStartSyncableService() {
   for (const std::pair<std::string, sync_pb::EntitySpecifics>& record :
        in_memory_store_) {
     initial_sync_data.push_back(SyncData::CreateRemoteData(
-        /*id=*/kInvalidId, record.second,
+        /*id=*/kInvalidNodeId, record.second,
         /*last_modified_time=*/base::Time(),  // Used by legacy sessions only.
         /*client_tag_hash=*/record.first));
   }
@@ -500,7 +500,7 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
         output_change_list.emplace_back(
             FROM_HERE, SyncChange::ACTION_DELETE,
             SyncData::CreateRemoteData(
-                /*id=*/kInvalidId, in_memory_store_[storage_key],
+                /*id=*/kInvalidNodeId, in_memory_store_[storage_key],
                 change.data().modification_time,
                 change.data().client_tag_hash));
 
@@ -528,7 +528,7 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
         output_change_list.emplace_back(
             FROM_HERE, ConvertToSyncChangeType(change.type()),
             SyncData::CreateRemoteData(
-                /*id=*/kInvalidId, change.data().specifics,
+                /*id=*/kInvalidNodeId, change.data().specifics,
                 change.data().modification_time,
                 change.data().client_tag_hash));
 
