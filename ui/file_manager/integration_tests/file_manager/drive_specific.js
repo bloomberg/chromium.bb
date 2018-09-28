@@ -119,10 +119,20 @@ testcase.driveOpenSidebarOffline = function() {
  * "shared-with-me" should be shown.
  */
 testcase.driveOpenSidebarSharedWithMe = function() {
-  var appId;
+  let appId;
+  let isDriveFsEnabled;
   StepsRunner.run([
     function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
+      sendTestMessage({name: 'getDriveFsEnabled'}).then(this.next);
+    },
+    function(result) {
+      isDriveFsEnabled = result === 'true';
+
+      setupAndWaitUntilReady(
+          null, RootPath.DRIVE, this.next, [], BASIC_DRIVE_ENTRY_SET.concat([
+            ENTRIES.sharedDirectory,
+            ENTRIES.sharedDirectoryFile,
+          ]));
     },
     // Click the icon of the Shared With Me volume.
     function(results) {
@@ -132,17 +142,45 @@ testcase.driveOpenSidebarSharedWithMe = function() {
                                     appId,
                                     ['drive_shared_with_me'], this.next);
     },
-    // Wait until the file list is updated.
+    // Wait until the breadcrumb path is updated.
     function(result) {
       chrome.test.assertFalse(!result);
-      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
-          then(this.next);
+      remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Shared with me')
+          .then(this.next);
     },
     // Verify the file list.
-    function(actualFilesAfter) {
-      chrome.test.assertEq(
-          TestEntryInfo.getExpectedRows(SHARED_WITH_ME_ENTRY_SET).sort(),
-          actualFilesAfter);
+    function() {
+      remoteCall
+          .waitForFiles(
+              appId,
+              TestEntryInfo.getExpectedRows(
+                  SHARED_WITH_ME_ENTRY_SET.concat([ENTRIES.sharedDirectory])))
+          .then(this.next);
+    },
+    // Navigate to the directory within Shared with me.
+    function() {
+      remoteCall.callRemoteTestUtil('openFile', appId, ['Shared Directory'])
+          .then(this.next);
+    },
+    // Wait until the breadcrumb path is updated.
+    function(result) {
+      chrome.test.assertFalse(!result);
+      remoteCall
+          .waitUntilCurrentDirectoryIsChanged(
+              appId,
+              isDriveFsEnabled ? '/Shared with me/Shared Directory' :
+                                 '/My Drive/Shared Directory')
+          .then(this.next);
+    },
+    // Verify the file list.
+    function() {
+      remoteCall
+          .waitForFiles(
+              appId,
+              TestEntryInfo.getExpectedRows([ENTRIES.sharedDirectoryFile]))
+          .then(this.next);
+    },
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);

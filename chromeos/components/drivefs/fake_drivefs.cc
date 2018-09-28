@@ -120,7 +120,9 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
   static std::vector<drivefs::mojom::QueryItemPtr> SearchFiles(
       const base::FilePath& mount_path) {
     std::vector<drivefs::mojom::QueryItemPtr> results;
-    base::FileEnumerator walker(mount_path, true, base::FileEnumerator::FILES);
+    base::FileEnumerator walker(
+        mount_path, true,
+        base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
     for (auto file = walker.Next(); !file.empty(); file = walker.Next()) {
       auto item = drivefs::mojom::QueryItem::New();
       item->path = base::FilePath("/");
@@ -157,29 +159,26 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
 
   void OnComplete() {
     if (--pending_callbacks_ == 0) {
-      if (!query_.empty() || available_offline_ || shared_with_me_) {
-        // Filter out non-matching results.
-        base::EraseIf(results_, [=](const auto& item_ptr) {
-          const base::FilePath path = item_ptr->path;
-          const drivefs::mojom::FileMetadata* metadata =
-              item_ptr->metadata.get();
-          if (!query_.empty()) {
-            return base::ToLowerASCII(path.BaseName().value()).find(query_) ==
-                   std::string::npos;
-          }
-          if (available_offline_) {
-            if (metadata && metadata->available_offline)
-              return false;
-            if (metadata &&
-                metadata->type == mojom::FileMetadata::Type::kHosted)
-              return false;
-          }
-          if (shared_with_me_ && metadata) {
-            return !metadata->shared;
-          }
+      // Filter out non-matching results.
+      base::EraseIf(results_, [=](const auto& item_ptr) {
+        if (!item_ptr->metadata) {
           return true;
-        });
-      }
+        }
+        const base::FilePath path = item_ptr->path;
+        const drivefs::mojom::FileMetadata* metadata = item_ptr->metadata.get();
+        if (!query_.empty()) {
+          return base::ToLowerASCII(path.BaseName().value()).find(query_) ==
+                 std::string::npos;
+        }
+        if (available_offline_) {
+          return !metadata->available_offline &&
+                 metadata->type != mojom::FileMetadata::Type::kHosted;
+        }
+        if (shared_with_me_) {
+          return !metadata->shared;
+        }
+        return false;
+      });
 
       std::move(callback_).Run(drive::FileError::FILE_ERROR_OK,
                                {std::move(results_)});
