@@ -171,4 +171,6 @@ bool IsOzoneDrmMojo() {
          IsMultiProcessMash();
 }
 
+const base::Feature kDarkMode = {"DarkMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

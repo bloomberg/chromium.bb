@@ -90,6 +90,10 @@ UI_BASE_EXPORT bool IsViewsBrowserCocoa();
 UI_BASE_EXPORT extern const base::Feature kEnableOzoneDrmMojo;
 UI_BASE_EXPORT bool IsOzoneDrmMojo();
 
+// Whether default UI should use a dark mode color scheme, if enabled on
+// macOS Mojave/Windows 10, or the --force-dark-mode flag is provided.
+UI_BASE_EXPORT extern const base::Feature kDarkMode;
+
 }  // namespace features
 
 #endif  // UI_BASE_UI_BASE_FEATURES_H_
