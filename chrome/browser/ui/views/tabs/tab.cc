@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
+#include "chrome/browser/ui/views/tabs/alert_indicator.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
@@ -401,8 +401,8 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   icon_ = new TabIcon;
   AddChildView(icon_);
 
-  alert_indicator_button_ = new AlertIndicatorButton(this);
-  AddChildView(alert_indicator_button_);
+  alert_indicator_ = new AlertIndicator(this);
+  AddChildView(alert_indicator_);
 
   // Unretained is safe here because this class outlives its close button, and
   // the controller outlives this Tab.
@@ -455,10 +455,8 @@ void Tab::AnimationCanceled(const gfx::Animation* animation) {
 }
 
 void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (!alert_indicator_button_ || !alert_indicator_button_->visible())
+  if (!alert_indicator_ || !alert_indicator_->visible())
     base::RecordAction(UserMetricsAction("CloseTab_NoAlertIndicator"));
-  else if (alert_indicator_button_->enabled())
-    base::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
   else if (data_.alert_state == TabAlertState::AUDIO_PLAYING)
     base::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
   else
@@ -579,15 +577,15 @@ void Tab::Layout() {
                      : kAlertIndicatorCloseButtonPadding;
       }
     }
-    const gfx::Size image_size = alert_indicator_button_->GetPreferredSize();
+    const gfx::Size image_size = alert_indicator_->GetPreferredSize();
     gfx::Rect bounds(
         std::max(contents_rect.x(), right - image_size.width()),
         contents_rect.y() + Center(contents_rect.height(), image_size.height()),
         image_size.width(), image_size.height());
     MaybeAdjustLeftForPinnedTab(&bounds, bounds.width());
-    alert_indicator_button_->SetBoundsRect(bounds);
+    alert_indicator_->SetBoundsRect(bounds);
   }
-  alert_indicator_button_->SetVisible(showing_alert_indicator_);
+  alert_indicator_->SetVisible(showing_alert_indicator_);
 
   // Size the title to fill the remaining width and use all available height.
   bool show_title = ShouldRenderAsNormalTab();
@@ -604,7 +602,7 @@ void Tab::Layout() {
     }
     int title_right = contents_rect.right();
     if (showing_alert_indicator_) {
-      title_right = alert_indicator_button_->x() - after_title_padding;
+      title_right = alert_indicator_->x() - after_title_padding;
     } else if (showing_close_button_) {
       // Allow the title to overlay the close button's empty border padding.
       title_right = close_x - after_title_padding;
@@ -723,11 +721,6 @@ void Tab::OnMouseReleased(const ui::MouseEvent& event) {
     // selection. Reset it now to handle the case where multiple tabs were
     // selected.
     controller_->SelectTab(this);
-
-    if (alert_indicator_button_ && alert_indicator_button_->visible() &&
-        alert_indicator_button_->bounds().Contains(event.location())) {
-      base::RecordAction(UserMetricsAction("TabAlertIndicator_Clicked"));
-    }
   }
 }
 
@@ -795,7 +788,7 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
 bool Tab::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
   // Note: Anything that affects the tooltip text should be accounted for when
   // calling TooltipTextChanged() from Tab::SetData().
-  *tooltip = chrome::AssembleTabTooltipText(data_.title, data_.alert_state);
+  *tooltip = GetTooltipText(data_.title, data_.alert_state);
   return !tooltip->empty();
 }
 
@@ -906,7 +899,6 @@ bool Tab::IsActive() const {
 void Tab::ActiveStateChanged() {
   UpdateTabIconNeedsAttentionBlocked();
   UpdateForegroundColors();
-  alert_indicator_button_->UpdateEnabledForMuteToggle();
   Layout();
 }
 
@@ -955,7 +947,7 @@ void Tab::SetData(TabRendererData data) {
   title_->SetText(title);
 
   if (data_.alert_state != old.alert_state)
-    alert_indicator_button_->TransitionToAlertState(data_.alert_state);
+    alert_indicator_->TransitionToAlertState(data_.alert_state);
   if (old.pinned != data_.pinned)
     showing_alert_indicator_ = false;
 
@@ -1006,18 +998,6 @@ float Tab::GetBottomStrokeThickness(bool should_paint_as_active) const {
              : controller_->GetStrokeThickness();
 }
 
-int Tab::GetWidthOfLargestSelectableRegion() const {
-  // Assume the entire region to the left of the alert indicator and/or close
-  // buttons is available for click-to-select.  If neither are visible, the
-  // entire tab region is available.
-  const int indicator_left = alert_indicator_button_->visible()
-                                 ? alert_indicator_button_->x()
-                                 : width();
-  const int close_button_left =
-      close_button_->visible() ? close_button_->x() : width();
-  return std::min(indicator_left, close_button_left);
-}
-
 gfx::Insets Tab::GetContentsInsets() const {
   const float stroke_thickness = GetStrokeThickness();
   return GetContentsHorizontalInsets() +
@@ -1061,6 +1041,14 @@ int Tab::GetPinnedWidth() {
 }
 
 // static
+int Tab::GetTabSeparatorHeight() {
+  constexpr int kTabSeparatorHeight = 20;
+  constexpr int kTabSeparatorTouchHeight = 24;
+  return MD::IsTouchOptimizedUiEnabled() ? kTabSeparatorTouchHeight
+                                         : kTabSeparatorHeight;
+}
+
+// static
 int Tab::GetCornerRadius() {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
       views::EMPHASIS_HIGH);
@@ -1078,11 +1066,52 @@ int Tab::GetOverlap() {
 }
 
 // static
-int Tab::GetTabSeparatorHeight() {
-  constexpr int kTabSeparatorHeight = 20;
-  constexpr int kTabSeparatorTouchHeight = 24;
-  return MD::IsTouchOptimizedUiEnabled() ? kTabSeparatorTouchHeight
-                                         : kTabSeparatorHeight;
+base::string16 Tab::GetTooltipText(const base::string16& title,
+                                   TabAlertState alert_state) {
+  if (alert_state == TabAlertState::NONE)
+    return title;
+
+  base::string16 result = title;
+  if (!result.empty())
+    result.append(1, '\n');
+  switch (alert_state) {
+    case TabAlertState::AUDIO_PLAYING:
+      result.append(
+          l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_AUDIO_PLAYING));
+      break;
+    case TabAlertState::AUDIO_MUTING:
+      result.append(
+          l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_AUDIO_MUTING));
+      break;
+    case TabAlertState::MEDIA_RECORDING:
+      result.append(l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_MEDIA_RECORDING));
+      break;
+    case TabAlertState::TAB_CAPTURING:
+      result.append(
+          l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_TAB_CAPTURING));
+      break;
+    case TabAlertState::BLUETOOTH_CONNECTED:
+      result.append(l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_CONNECTED));
+      break;
+    case TabAlertState::USB_CONNECTED:
+      result.append(
+          l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED));
+      break;
+    case TabAlertState::PIP_PLAYING:
+      result.append(
+          l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_PIP_PLAYING));
+      break;
+    case TabAlertState::DESKTOP_CAPTURING:
+      result.append(l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_DESKTOP_CAPTURING));
+      break;
+    case TabAlertState::NONE:
+      NOTREACHED();
+      break;
+  }
+  return result;
 }
 
 void Tab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds,
@@ -1356,8 +1385,8 @@ void Tab::UpdateIconVisibility() {
 
   const bool has_favicon = data().show_icon;
   const bool has_alert_icon =
-      (alert_indicator_button_ ? alert_indicator_button_->showing_alert_state()
-                               : data().alert_state) != TabAlertState::NONE;
+      (alert_indicator_ ? alert_indicator_->showing_alert_state()
+                        : data().alert_state) != TabAlertState::NONE;
 
   if (data().pinned) {
     // When the tab is pinned, we can show one of the two icons; the alert icon
@@ -1372,8 +1401,7 @@ void Tab::UpdateIconVisibility() {
 
   const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
   const int favicon_width = gfx::kFaviconSize;
-  const int alert_icon_width =
-      alert_indicator_button_->GetPreferredSize().width();
+  const int alert_icon_width = alert_indicator_->GetPreferredSize().width();
   // In case of touch optimized UI, the close button has an extra padding on the
   // left that needs to be considered.
   const int close_button_width =
@@ -1647,7 +1675,7 @@ void Tab::UpdateForegroundColors() {
 
   if (button_color_ != generated_icon_color) {
     button_color_ = generated_icon_color;
-    alert_indicator_button_->OnParentTabButtonColorChanged();
+    alert_indicator_->OnParentTabButtonColorChanged();
   }
 }
 

@@ -10,10 +10,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
-#include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
+#include "chrome/browser/ui/views/tabs/alert_indicator.h"
+#include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,7 +54,6 @@ class FakeTabController : public TabController {
   void ToggleSelected(Tab* tab) override {}
   void AddSelectionFromAnchorTo(Tab* tab) override {}
   void CloseTab(Tab* tab, CloseTabSource source) override {}
-  void ToggleTabAudioMute(Tab* tab) override {}
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
                              ui::MenuSourceType source_type) override {}
@@ -144,8 +145,8 @@ class TabTest : public ChromeViewsTestBase {
 
   static views::Label* GetTabTitle(const Tab& tab) { return tab.title_; }
 
-  static views::ImageButton* GetAlertIndicator(const Tab& tab) {
-    return tab.alert_indicator_button_;
+  static views::ImageView* GetAlertIndicator(const Tab& tab) {
+    return tab.alert_indicator_;
   }
 
   static views::ImageButton* GetCloseButton(const Tab& tab) {
@@ -286,10 +287,10 @@ class TabTest : public ChromeViewsTestBase {
   static void StopFadeAnimationIfNecessary(const Tab& tab) {
     // Stop the fade animation directly instead of waiting an unknown number of
     // seconds.
-    if (gfx::Animation* fade_animation =
-            tab.alert_indicator_button_->fade_animation_.get()) {
+    gfx::Animation* fade_animation =
+        tab.alert_indicator_->fade_animation_.get();
+    if (fade_animation)
       fade_animation->Stop();
-    }
   }
 
  protected:
@@ -302,14 +303,72 @@ class TabTest : public ChromeViewsTestBase {
 
  private:
   static gfx::Rect GetAlertIndicatorBounds(const Tab& tab) {
-    if (!tab.alert_indicator_button_) {
+    if (!tab.alert_indicator_) {
       ADD_FAILURE();
       return gfx::Rect();
     }
-    return tab.alert_indicator_button_->bounds();
+    return tab.alert_indicator_->bounds();
   }
 
   std::string original_locale_;
+};
+
+class AlertIndicatorTest : public ChromeViewsTestBase {
+ public:
+  AlertIndicatorTest() {}
+  ~AlertIndicatorTest() override {}
+
+  void SetUp() override {
+    ChromeViewsTestBase::SetUp();
+
+    controller_ = new FakeBaseTabStripController;
+    tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>(controller_));
+    controller_->set_tab_strip(tab_strip_);
+    // The tab strip must be added to the view hierarchy for it to create the
+    // buttons.
+    parent_.AddChildView(tab_strip_);
+    parent_.set_owned_by_client();
+
+    widget_.reset(new views::Widget);
+    views::Widget::InitParams init_params =
+        CreateParams(views::Widget::InitParams::TYPE_POPUP);
+    init_params.ownership =
+        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    init_params.bounds = gfx::Rect(0, 0, 400, 400);
+    widget_->Init(init_params);
+    widget_->SetContentsView(&parent_);
+  }
+
+  void TearDown() override {
+    // All windows need to be closed before tear down.
+    widget_.reset();
+
+    ChromeViewsTestBase::TearDown();
+  }
+
+ protected:
+  bool showing_close_button(Tab* tab) const {
+    return tab->showing_close_button_;
+  }
+  bool showing_icon(Tab* tab) const { return tab->showing_icon_; }
+  bool showing_alert_indicator(Tab* tab) const {
+    return tab->showing_alert_indicator_;
+  }
+
+  void StopAnimation(Tab* tab) {
+    ASSERT_TRUE(tab->alert_indicator_->fade_animation_);
+    tab->alert_indicator_->fade_animation_->Stop();
+  }
+
+  // Owned by TabStrip.
+  FakeBaseTabStripController* controller_ = nullptr;
+  // Owns |tab_strip_|.
+  views::View parent_;
+  TabStrip* tab_strip_ = nullptr;
+  std::unique_ptr<views::Widget> widget_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AlertIndicatorTest);
 };
 
 TEST_F(TabTest, HitTestTopPixel) {
@@ -397,8 +456,7 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
 }
 
 // Regression test for http://crbug.com/420313: Confirms that any child Views of
-// Tab do not attempt to provide their own tooltip behavior/text. It also tests
-// that Tab provides the expected tooltip text (according to tab_utils).
+// Tab do not attempt to provide their own tooltip behavior/text.
 TEST_F(TabTest, TooltipProvidedByTab) {
   Widget widget;
   InitWidget(&widget);
@@ -424,10 +482,11 @@ TEST_F(TabTest, TooltipProvidedByTab) {
   for (int i = 0; i < 2; ++i) {
     data.alert_state =
         (i == 0 ? TabAlertState::NONE : TabAlertState::AUDIO_PLAYING);
-    SCOPED_TRACE(::testing::Message()
-                 << "Tab with alert indicator state "
-                 << static_cast<uint8_t>(data.alert_state));
+    SCOPED_TRACE(::testing::Message() << "Tab with alert indicator state "
+                                      << static_cast<int>(data.alert_state));
     tab.SetData(data);
+    const base::string16 expected_tooltip =
+        Tab::GetTooltipText(data.title, data.alert_state);
 
     for (int j = 0; j < tab.child_count(); ++j) {
       views::View& child = *tab.child_at(j);
@@ -443,10 +502,8 @@ TEST_F(TabTest, TooltipProvidedByTab) {
       const gfx::Point mouse_hover_point =
           midpoint + child.GetMirroredPosition().OffsetFromOrigin();
       base::string16 tooltip;
-      EXPECT_TRUE(static_cast<views::View&>(tab).GetTooltipText(
-          mouse_hover_point, &tooltip));
-      EXPECT_EQ(chrome::AssembleTabTooltipText(data.title, data.alert_state),
-                tooltip);
+      EXPECT_TRUE(tab.GetTooltipText(mouse_hover_point, &tooltip));
+      EXPECT_EQ(expected_tooltip, tooltip);
     }
   }
 }
@@ -751,4 +808,46 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
       EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);
     }
   }
+}
+
+// This test verifies that the tab has its icon state updated when the alert
+// animation fade-out finishes.
+TEST_F(AlertIndicatorTest, ShowsAndHidesAlertIndicator) {
+  controller_->AddPinnedTab(0, false);
+  controller_->AddTab(1, true);
+  Tab* media_tab = tab_strip_->tab_at(0);
+
+  // Pinned inactive tab only has an icon.
+  EXPECT_TRUE(showing_icon(media_tab));
+  EXPECT_FALSE(showing_alert_indicator(media_tab));
+  EXPECT_FALSE(showing_close_button(media_tab));
+
+  TabRendererData start_media;
+  start_media.alert_state = TabAlertState::AUDIO_PLAYING;
+  start_media.pinned = media_tab->data().pinned;
+  media_tab->SetData(std::move(start_media));
+
+  // When audio starts, pinned inactive tab shows indicator.
+  EXPECT_FALSE(showing_icon(media_tab));
+  EXPECT_TRUE(showing_alert_indicator(media_tab));
+  EXPECT_FALSE(showing_close_button(media_tab));
+
+  TabRendererData stop_media;
+  stop_media.alert_state = TabAlertState::NONE;
+  stop_media.pinned = media_tab->data().pinned;
+  media_tab->SetData(std::move(stop_media));
+
+  // When audio ends, pinned inactive tab fades out indicator.
+  EXPECT_FALSE(showing_icon(media_tab));
+  EXPECT_TRUE(showing_alert_indicator(media_tab));
+  EXPECT_FALSE(showing_close_button(media_tab));
+
+  // Rather than flakily waiting some unknown number of seconds for the fade
+  // out animation to stop, reach out and stop the fade animation directly,
+  // to make sure that it updates the tab appropriately when it's done.
+  StopAnimation(media_tab);
+
+  EXPECT_TRUE(showing_icon(media_tab));
+  EXPECT_FALSE(showing_alert_indicator(media_tab));
+  EXPECT_FALSE(showing_close_button(media_tab));
 }

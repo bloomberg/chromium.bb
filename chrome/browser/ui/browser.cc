@@ -305,6 +305,18 @@ MaybeCreateHostedAppController(Browser* browser) {
   return nullptr;
 }
 
+void UnmuteIfMutedByExtension(content::WebContents* contents,
+                              const std::string& extension_id) {
+  LastMuteMetadata::CreateForWebContents(contents);  // Ensures metadata exists.
+  LastMuteMetadata* const metadata =
+      LastMuteMetadata::FromWebContents(contents);
+  if (metadata->reason == TabMutedReason::EXTENSION &&
+      metadata->extension_id == extension_id) {
+    chrome::SetTabAudioMuted(contents, false, TabMutedReason::EXTENSION,
+                             extension_id);
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2219,7 +2231,7 @@ void Browser::OnExtensionUnloaded(content::BrowserContext* browser_context,
            extension->id())) {
         tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
       } else {
-        chrome::UnmuteIfMutedByExtension(web_contents, extension->id());
+        UnmuteIfMutedByExtension(web_contents, extension->id());
       }
     }
   }

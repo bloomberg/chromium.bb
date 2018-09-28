@@ -1812,11 +1812,52 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
   if (index == -1)
     return base::string16();
 
-  base::string16 window_title =
+  base::string16 title =
       browser_->GetWindowTitleForTab(include_app_name, index);
-  return chrome::AssembleTabAccessibilityLabel(
-      window_title, tabstrip_->IsTabCrashed(index),
-      tabstrip_->TabHasNetworkError(index), tabstrip_->GetTabAlertState(index));
+
+  // Tab has crashed.
+  if (tabstrip_->IsTabCrashed(index))
+    return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_CRASHED_FORMAT, title);
+
+  // Network error interstitial.
+  if (tabstrip_->TabHasNetworkError(index)) {
+    return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_NETWORK_ERROR_FORMAT,
+                                      title);
+  }
+
+  // Alert tab states.
+  switch (tabstrip_->GetTabAlertState(index)) {
+    case TabAlertState::AUDIO_PLAYING:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_AUDIO_PLAYING_FORMAT,
+                                        title);
+    case TabAlertState::USB_CONNECTED:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_USB_CONNECTED_FORMAT,
+                                        title);
+    case TabAlertState::BLUETOOTH_CONNECTED:
+      return l10n_util::GetStringFUTF16(
+          IDS_TAB_AX_LABEL_BLUETOOTH_CONNECTED_FORMAT, title);
+    case TabAlertState::MEDIA_RECORDING:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT,
+                                        title);
+    case TabAlertState::AUDIO_MUTING:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_AUDIO_MUTING_FORMAT,
+                                        title);
+    case TabAlertState::TAB_CAPTURING:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_TAB_CAPTURING_FORMAT,
+                                        title);
+    case TabAlertState::PIP_PLAYING:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_PIP_PLAYING_FORMAT,
+                                        title);
+
+    case TabAlertState::DESKTOP_CAPTURING:
+      return l10n_util::GetStringFUTF16(
+          IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT, title);
+    case TabAlertState::NONE:
+      return title;
+  }
+
+  NOTREACHED();
+  return base::string16();
 }
 
 void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {
