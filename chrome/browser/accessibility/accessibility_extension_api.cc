@@ -38,12 +38,13 @@
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
-#include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
-#include "ui/aura/window_tree_host.h"
+#include "services/ws/public/mojom/constants.mojom.h"
+#include "services/ws/public/mojom/event_injector.mojom.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/events/event_sink.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #endif
 
 namespace accessibility_private = extensions::api::accessibility_private;
@@ -233,12 +234,6 @@ AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
-  // TODO(crbug.com/876043): Mash support.
-  if (features::IsUsingWindowService()) {
-    NOTIMPLEMENTED();
-    return RespondNow(NoArguments());
-  }
-
   std::unique_ptr<accessibility_private::SendSyntheticKeyEvent::Params> params =
       accessibility_private::SendSyntheticKeyEvent::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -256,19 +251,23 @@ AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
       modifiers |= ui::EF_SHIFT_DOWN;
   }
 
-  ui::KeyEvent synthetic_key_event(
-      key_data->type ==
-              accessibility_private::SYNTHETIC_KEYBOARD_EVENT_TYPE_KEYUP
-          ? ui::ET_KEY_RELEASED
-          : ui::ET_KEY_PRESSED,
-      static_cast<ui::KeyboardCode>(key_data->key_code),
-      static_cast<ui::DomCode>(0), modifiers);
+  std::unique_ptr<ui::KeyEvent> synthetic_key_event =
+      std::make_unique<ui::KeyEvent>(
+          key_data->type ==
+                  accessibility_private::SYNTHETIC_KEYBOARD_EVENT_TYPE_KEYUP
+              ? ui::ET_KEY_RELEASED
+              : ui::ET_KEY_PRESSED,
+          static_cast<ui::KeyboardCode>(key_data->key_code),
+          static_cast<ui::DomCode>(0), modifiers);
 
-  // Only keyboard events, so dispatching to primary window suffices.
-  ui::EventSink* sink =
-      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
-  if (sink->OnEventFromSource(&synthetic_key_event).dispatcher_destroyed)
-    return RespondNow(Error("Unable to dispatch key "));
+  ws::mojom::EventInjectorPtr event_injector_ptr;
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  connection->GetConnector()->BindInterface(ws::mojom::kServiceName,
+                                            &event_injector_ptr);
+  event_injector_ptr->InjectEventNoAck(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      std::move(synthetic_key_event));
 
   return RespondNow(NoArguments());
 }
