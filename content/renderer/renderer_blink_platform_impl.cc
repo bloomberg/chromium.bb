@@ -451,26 +451,37 @@ blink::WebString RendererBlinkPlatformImpl::UserAgent() {
   return render_thread->GetUserAgent();
 }
 
-void RendererBlinkPlatformImpl::CacheMetadata(const blink::WebURL& url,
-                                              base::Time response_time,
-                                              const char* data,
-                                              size_t size) {
-  // Let the browser know we generated cacheable metadata for this resource. The
-  // browser may cache it and return it on subsequent responses to speed
-  // the processing of this resource.
-  std::vector<uint8_t> copy(data, data + size);
-  GetCodeCacheHost().DidGenerateCacheableMetadata(url, response_time, copy);
+void RendererBlinkPlatformImpl::CacheMetadata(
+    blink::mojom::CodeCacheType cache_type,
+    const blink::WebURL& url,
+    base::Time response_time,
+    const char* data,
+    size_t size) {
+  // Only cache WebAssembly if we have isolated code caches.
+  // TODO(bbudge) Remove this check when isolated code caches are on by default.
+  if (cache_type == blink::mojom::CodeCacheType::kJavascript ||
+      base::FeatureList::IsEnabled(features::kIsolatedCodeCache)) {
+    // Let the browser know we generated cacheable metadata for this resource.
+    // The browser may cache it and return it on subsequent responses to speed
+    // the processing of this resource.
+    std::vector<uint8_t> copy(data, data + size);
+    GetCodeCacheHost().DidGenerateCacheableMetadata(cache_type, url,
+                                                    response_time, copy);
+  }
 }
 
 void RendererBlinkPlatformImpl::FetchCachedCode(
+    blink::mojom::CodeCacheType cache_type,
     const GURL& url,
     base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>
         callback) {
-  GetCodeCacheHost().FetchCachedCode(url, std::move(callback));
+  GetCodeCacheHost().FetchCachedCode(cache_type, url, std::move(callback));
 }
 
-void RendererBlinkPlatformImpl::ClearCodeCacheEntry(const GURL& url) {
-  GetCodeCacheHost().ClearCodeCacheEntry(url);
+void RendererBlinkPlatformImpl::ClearCodeCacheEntry(
+    blink::mojom::CodeCacheType cache_type,
+    const GURL& url) {
+  GetCodeCacheHost().ClearCodeCacheEntry(cache_type, url);
 }
 
 void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(

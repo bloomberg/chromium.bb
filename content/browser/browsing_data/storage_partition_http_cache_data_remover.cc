@@ -174,18 +174,19 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
       }
       case CacheState::DELETE_CODE: {
         next_cache_state_ = CacheState::DONE;
-        // Embedders can disable code caches.
         if (generated_code_cache_context_) {
-          GeneratedCodeCache* code_cache =
-              generated_code_cache_context_->generated_code_cache();
-          if (code_cache) {
-            auto callback = base::BindRepeating(
-                &StoragePartitionHttpCacheDataRemover::DoClearCache,
-                base::Unretained(this));
-            // TODO(crbug.com/866419): Currently we just clear the entire cache.
-            // Change it to conditionally clear the entries based on the
-            // filters.
-            rv = code_cache->ClearCache(callback);
+          // TODO(crbug.com/866419): Currently we just clear entire caches.
+          // Change it to conditionally clear entries based on the filters.
+          auto callback = base::BindRepeating(
+              &StoragePartitionHttpCacheDataRemover::DoClearCache,
+              base::Unretained(this));
+          if (generated_code_cache_context_->generated_js_code_cache()) {
+            rv = generated_code_cache_context_->generated_js_code_cache()
+                     ->ClearCache(callback);
+          }
+          if (generated_code_cache_context_->generated_wasm_code_cache()) {
+            rv = generated_code_cache_context_->generated_wasm_code_cache()
+                     ->ClearCache(callback);
           }
         }
         break;

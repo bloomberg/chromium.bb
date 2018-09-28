@@ -166,7 +166,8 @@ bool ResourceLoader::CodeCacheRequest::FetchFromCodeCache(
   CodeCacheLoader::FetchCodeCacheCallback callback =
       base::BindOnce(&ResourceLoader::CodeCacheRequest::DidReceiveCachedCode,
                      weak_ptr_factory_.GetWeakPtr(), resource_loader);
-  code_cache_loader_->FetchFromCodeCache(gurl_, std::move(callback));
+  code_cache_loader_->FetchFromCodeCache(
+      blink::mojom::CodeCacheType::kJavascript, gurl_, std::move(callback));
   return true;
 }
 
@@ -247,7 +248,7 @@ void ResourceLoader::CodeCacheRequest::MaybeSendCachedCode(
   }
 
   if (resource_response_time_ != cached_code_response_time_) {
-    Platform::Current()->ClearCodeCacheEntry(gurl_);
+    resource_loader->ClearCachedCode();
     return;
   }
 
@@ -693,6 +694,12 @@ void ResourceLoader::DidReceiveCachedMetadata(const char* data, int length) {
 
 void ResourceLoader::SendCachedCodeToResource(const char* data, int length) {
   resource_->SetSerializedCachedMetadata(data, length);
+}
+
+void ResourceLoader::ClearCachedCode() {
+  Platform::Current()->ClearCodeCacheEntry(
+      Resource::ResourceTypeToCodeCacheType(resource_->GetType()),
+      resource_->Url());
 }
 
 void ResourceLoader::DidSendData(unsigned long long bytes_sent,

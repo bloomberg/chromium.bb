@@ -125,16 +125,20 @@ class CachedMetadataSenderImpl : public CachedMetadataSender {
  private:
   const KURL response_url_;
   const Time response_time_;
+  const ResourceType resource_type_;
 };
 
 CachedMetadataSenderImpl::CachedMetadataSenderImpl(const Resource* resource)
     : response_url_(resource->GetResponse().Url()),
-      response_time_(resource->GetResponse().ResponseTime()) {
+      response_time_(resource->GetResponse().ResponseTime()),
+      resource_type_(resource->GetType()) {
   DCHECK(resource->GetResponse().CacheStorageCacheName().IsNull());
 }
 
 void CachedMetadataSenderImpl::Send(const char* data, size_t size) {
-  Platform::Current()->CacheMetadata(response_url_, response_time_, data, size);
+  Platform::Current()->CacheMetadata(
+      Resource::ResourceTypeToCodeCacheType(resource_type_), response_url_,
+      response_time_, data, size);
 }
 
 // This is a CachedMetadataSender implementation that does nothing.
@@ -1230,6 +1234,20 @@ const char* Resource::ResourceTypeToString(
   }
   NOTREACHED();
   return InitiatorTypeNameToString(fetch_initiator_name);
+}
+
+// static
+blink::mojom::CodeCacheType Resource::ResourceTypeToCodeCacheType(
+    ResourceType resource_type) {
+  // Cacheable WebAssembly modules are fetched, so raw resource type.
+  if (resource_type == ResourceType::kRaw)
+    return blink::mojom::CodeCacheType::kWebAssembly;
+  // Cacheable Javascript is a script or a document resource. Also accept mock
+  // resources for testing.
+  DCHECK(resource_type == ResourceType::kScript ||
+         resource_type == ResourceType::kMainResource ||
+         resource_type == ResourceType::kMock);
+  return blink::mojom::CodeCacheType::kJavascript;
 }
 
 bool Resource::ShouldBlockLoadEvent() const {

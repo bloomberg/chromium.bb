@@ -30,6 +30,7 @@ namespace content {
 
 class CacheStorageContextImpl;
 class CacheStorageCacheHandle;
+class GeneratedCodeCache;
 class GeneratedCodeCacheContext;
 
 // The implementation of a CodeCacheHost, which stores and retrieves resource
@@ -53,11 +54,15 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
 
  private:
   // blink::mojom::CodeCacheHost implementation.
-  void DidGenerateCacheableMetadata(const GURL& url,
+  void DidGenerateCacheableMetadata(blink::mojom::CodeCacheType cache_type,
+                                    const GURL& url,
                                     base::Time expected_response_time,
                                     const std::vector<uint8_t>& data) override;
-  void FetchCachedCode(const GURL& url, FetchCachedCodeCallback) override;
-  void ClearCodeCacheEntry(const GURL& url) override;
+  void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
+                       const GURL& url,
+                       FetchCachedCodeCallback) override;
+  void ClearCodeCacheEntry(blink::mojom::CodeCacheType cache_type,
+                           const GURL& url) override;
   void DidGenerateCacheableMetadataInCacheStorage(
       const GURL& url,
       base::Time expected_response_time,
@@ -66,6 +71,7 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
       const std::string& cache_storage_cache_name) override;
 
   // Helpers.
+  GeneratedCodeCache* GetCodeCache(blink::mojom::CodeCacheType cache_type);
   void OnReceiveCachedCode(FetchCachedCodeCallback callback,
                            const base::Time& response_time,
                            const std::vector<uint8_t>& data);

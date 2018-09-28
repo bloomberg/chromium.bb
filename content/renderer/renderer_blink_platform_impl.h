@@ -83,15 +83,18 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   bool IsLinkVisited(unsigned long long linkHash) override;
   blink::WebPrescientNetworking* PrescientNetworking() override;
   blink::WebString UserAgent() override;
-  void CacheMetadata(const blink::WebURL&,
+  void CacheMetadata(blink::mojom::CodeCacheType cache_type,
+                     const blink::WebURL&,
                      base::Time,
                      const char*,
                      size_t) override;
   void FetchCachedCode(
+      blink::mojom::CodeCacheType cache_type,
       const GURL&,
       base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>)
       override;
-  void ClearCodeCacheEntry(const GURL&) override;
+  void ClearCodeCacheEntry(blink::mojom::CodeCacheType cache_type,
+                           const GURL&) override;
   void CacheMetadataInCacheStorage(
       const blink::WebURL&,
       base::Time,
