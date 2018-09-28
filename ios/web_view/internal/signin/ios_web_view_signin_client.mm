@@ -7,6 +7,7 @@
 #include "components/signin/core/browser/cookie_settings_util.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -84,6 +85,13 @@ void IOSWebViewSigninClient::RemoveContentSettingsObserver(
   host_content_settings_map_->RemoveObserver(observer);
 }
 
+void IOSWebViewSigninClient::PreSignOut(
+    const base::RepeatingClosure& sign_out,
+    signin_metrics::ProfileSignout signout_source_metric) {
+  sign_out.Run();
+  [sync_controller_ didSignoutWithSourceMetric:signout_source_metric];
+}
+
 void IOSWebViewSigninClient::DelayNetworkCall(const base::Closure& callback) {
   network_callback_helper_->HandleCallback(callback);
 }
@@ -97,3 +105,12 @@ std::unique_ptr<GaiaAuthFetcher> IOSWebViewSigninClient::CreateGaiaAuthFetcher(
 }
 
 void IOSWebViewSigninClient::OnErrorChanged() {}
+
+void IOSWebViewSigninClient::SetSyncController(
+    CWVSyncController* sync_controller) {
+  sync_controller_ = sync_controller;
+}
+
+CWVSyncController* IOSWebViewSigninClient::GetSyncController() const {
+  return sync_controller_;
+}
