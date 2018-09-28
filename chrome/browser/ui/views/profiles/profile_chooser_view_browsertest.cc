@@ -507,15 +507,10 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   ShowAndVerifyUi();
 }
 
-// Crashes on Win only.  http://crbug.com/820390
-#if defined(OS_WIN)
-#define MAYBE_InvokeUi_SupervisedUser DISABLED_InvokeUi_SupervisedUser
-#else
-#define MAYBE_InvokeUi_SupervisedUser InvokeUi_SupervisedUser
-#endif
+// Crashes because account consistency changes:  http://crbug.com/820390
 // Shows the |ProfileChooserView| when a supervised user is the active profile.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       MAYBE_InvokeUi_SupervisedUser) {
+                       DISABLED_InvokeUi_SupervisedUser) {
   ScopedAccountConsistencyDiceFixAuthErrors scoped_account_consistency;
   ShowAndVerifyUi();
 }
