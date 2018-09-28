@@ -167,6 +167,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     return ShouldPaintCursorCaret() || ShouldPaintDragCaret();
   }
 
+  // Returns true when associated fragment of |layout_object| has line box.
+  static bool TryMarkLineBoxDirtyFor(const LayoutObject& layout_object);
+
   // A range of fragments for |FragmentsFor()|.
   class CORE_EXPORT FragmentRange {
    public:
@@ -279,9 +282,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // Mark this line box was changed, in order to re-use part of an inline
   // formatting context.
   void MarkLineBoxDirty();
-
-  // Returns true when associated fragment of |layout_object| has line box.
-  static bool TryMarkLineBoxDirtyFor(const LayoutObject& layout_object);
 
   //
   // Following fields are computed in the layout phase.
