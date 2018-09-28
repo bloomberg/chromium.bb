@@ -369,12 +369,6 @@ const char kEnableVideoPlayerChromecastSupport[] =
 // Enables the VoiceInteraction support.
 const char kEnableVoiceInteraction[] = "enable-voice-interaction";
 
-// Enables zip archiver - packer.
-const char kEnableZipArchiverPacker[] = "enable-zip-archiver-packer";
-
-// Disables zip archiver - packer.
-const char kDisableZipArchiverPacker[] = "disable-zip-archiver-packer";
-
 // Enables zip archiver - unpacker.
 const char kEnableZipArchiverUnpacker[] = "enable-zip-archiver-unpacker";
 
@@ -705,12 +699,6 @@ bool IsZipArchiverUnpackerEnabled() {
   // Enabled by default.
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableZipArchiverUnpacker);
-}
-
-bool IsZipArchiverPackerEnabled() {
-  // Enabled by default.
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableZipArchiverPacker);
 }
 
 bool IsSigninFrameClientCertsEnabled() {
