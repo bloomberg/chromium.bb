@@ -318,6 +318,43 @@ aom_codec_err_t av1_copy_new_frame_dec(AV1_COMMON *cm,
   return cm->error.error_code;
 }
 
+static void release_frame_buffers(AV1Decoder *pbi) {
+  AV1_COMMON *const cm = &pbi->common;
+  BufferPool *const pool = cm->buffer_pool;
+  RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
+
+  lock_buffer_pool(pool);
+  // Release all the reference buffers if worker thread is holding them.
+  if (pbi->hold_ref_buf == 1) {
+    int ref_index = 0, mask;
+    for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
+      const int old_idx = cm->ref_frame_map[ref_index];
+      // Current thread releases the holding of reference frame.
+      decrease_ref_count(old_idx, frame_bufs, pool);
+
+      // Release the reference frame holding in the reference map for the
+      // decoding of the next frame.
+      if (mask & 1) {
+        const int new_idx = cm->next_ref_frame_map[ref_index];
+        decrease_ref_count(new_idx, frame_bufs, pool);
+      }
+      ++ref_index;
+    }
+
+    // Current thread releases the holding of reference frame.
+    // TODO(wtc): Remove this assertion after 2018-10-31.
+    assert(!cm->show_existing_frame || cm->reset_decoder_state);
+    for (; ref_index < REF_FRAMES; ++ref_index) {
+      const int old_idx = cm->ref_frame_map[ref_index];
+      decrease_ref_count(old_idx, frame_bufs, pool);
+    }
+    pbi->hold_ref_buf = 0;
+  }
+  // Release current frame.
+  decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
+  unlock_buffer_pool(pool);
+}
+
 /* If any buffer updating is signaled it should be done here.
    Consumes a reference to cm->new_fb_idx.
 */
@@ -460,37 +497,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
       winterface->sync(&pbi->tile_workers[i]);
     }
 
-    lock_buffer_pool(pool);
-    // Release all the reference buffers if worker thread is holding them.
-    if (pbi->hold_ref_buf == 1) {
-      int ref_index = 0, mask;
-      for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
-        const int old_idx = cm->ref_frame_map[ref_index];
-        // Current thread releases the holding of reference frame.
-        decrease_ref_count(old_idx, frame_bufs, pool);
-
-        // Release the reference frame holding in the reference map for the
-        // decoding of the next frame.
-        if (mask & 1) {
-          const int new_idx = cm->next_ref_frame_map[ref_index];
-          decrease_ref_count(new_idx, frame_bufs, pool);
-        }
-        ++ref_index;
-      }
-
-      // Current thread releases the holding of reference frame.
-      // TODO(wtc): Remove this assertion after 2018-10-31.
-      assert(!cm->show_existing_frame || cm->reset_decoder_state);
-      for (; ref_index < REF_FRAMES; ++ref_index) {
-        const int old_idx = cm->ref_frame_map[ref_index];
-        decrease_ref_count(old_idx, frame_bufs, pool);
-      }
-      pbi->hold_ref_buf = 0;
-    }
-    // Release current frame.
-    decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
-    unlock_buffer_pool(pool);
-
+    release_frame_buffers(pbi);
     aom_clear_system_state();
     return -1;
   }
@@ -502,9 +509,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   if (frame_decoded < 0) {
     assert(cm->error.error_code != AOM_CODEC_OK);
-    lock_buffer_pool(pool);
-    decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
-    unlock_buffer_pool(pool);
+    release_frame_buffers(pbi);
     cm->error.setjmp = 0;
     return 1;
   }
