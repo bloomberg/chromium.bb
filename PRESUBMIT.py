@@ -2252,6 +2252,9 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
     # WebView license viewer code cannot depend on //base; used in stub APK.
     r"^android_webview[\\\/]glue[\\\/]java[\\\/]src[\\\/]com[\\\/]android[\\\/]"
     r"webview[\\\/]chromium[\\\/]License.*",
+    # The customtabs_benchmark is a small app that does not depend on Chromium
+    # java pieces.
+    r"tools[\\\/]android[\\\/]customtabs_benchmark[\\\/].*",
   ]
 
   cr_log_import_pattern = input_api.re.compile(
