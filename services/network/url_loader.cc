@@ -868,14 +868,14 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
     // since the concern is the effect that entering suspend mode has on
     // sockets. See https://crbug.com/651120.
     if (pending_write_)
-      CompletePendingWrite();
+      CompletePendingWrite(url_request_->status().is_success());
     NotifyCompleted(url_request_->status().ToNetError());
     // |this| will have been deleted.
     return;
   }
 
   if (complete_read) {
-    CompletePendingWrite();
+    CompletePendingWrite(true /* success */);
   }
   if (completed_synchronously) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1012,9 +1012,18 @@ void URLLoader::SendResponseToClient() {
   response_ = nullptr;
 }
 
-void URLLoader::CompletePendingWrite() {
-  response_body_stream_ =
-      pending_write_->Complete(pending_write_buffer_offset_);
+void URLLoader::CompletePendingWrite(bool success) {
+  if (success) {
+    // The write can only be completed immediately in case of a success, since
+    // doing so invalidates memory of any attached NetToMojoIOBuffer's; but in
+    // case of an abort, particularly one caused by a suspend, the failure may
+    // be delivered to URLLoader while the disk_cache layer is still hanging on
+    // to the now-invalid IOBuffer in some worker thread trying to commit it to
+    // disk.  In case of an error, this will have to wait till everything is
+    // destroyed.
+    response_body_stream_ =
+        pending_write_->Complete(pending_write_buffer_offset_);
+  }
   total_written_bytes_ += pending_write_buffer_offset_;
   pending_write_ = nullptr;
   pending_write_buffer_offset_ = 0;

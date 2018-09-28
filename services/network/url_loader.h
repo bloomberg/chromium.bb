@@ -142,7 +142,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void OnResponseBodyStreamReady(MojoResult result);
   void DeleteSelf();
   void SendResponseToClient();
-  void CompletePendingWrite();
+  void CompletePendingWrite(bool success);
   void SetRawResponseHeaders(scoped_refptr<const net::HttpResponseHeaders>);
   void SendUploadProgress(const net::UploadProgress& progress);
   void OnUploadProgressACK();

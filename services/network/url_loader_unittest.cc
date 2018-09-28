@@ -266,6 +266,68 @@ class EternalSyncReadsInterceptor : public net::URLRequestInterceptor {
   DISALLOW_COPY_AND_ASSIGN(EternalSyncReadsInterceptor);
 };
 
+// Simulates handing over things to the disk to write before returning to the
+// caller.
+class URLRequestSimulatedCacheJob : public net::URLRequestJob {
+ public:
+  // If |fill_entire_buffer| is true, each read fills the entire read buffer at
+  // once. Otherwise, one byte is read at a time.
+  URLRequestSimulatedCacheJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      scoped_refptr<net::IOBuffer>* simulated_cache_dest)
+      : URLRequestJob(request, network_delegate),
+        simulated_cache_dest_(simulated_cache_dest),
+        weak_factory_(this) {}
+
+  // net::URLRequestJob implementation:
+  void Start() override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&URLRequestSimulatedCacheJob::StartAsync,
+                                  weak_factory_.GetWeakPtr()));
+  }
+
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override {
+    DCHECK_GT(buf_size, 0);
+
+    // Pretend this is the entire network stack, which has sent the buffer
+    // to some worker thread to be written to disk.
+    memset(buf->data(), 'a', buf_size);
+    *simulated_cache_dest_ = buf;
+
+    // The network stack will not report the read result until the write
+    // completes.
+    return net::ERR_IO_PENDING;
+  }
+
+ private:
+  ~URLRequestSimulatedCacheJob() override {}
+  void StartAsync() { NotifyHeadersComplete(); }
+
+  scoped_refptr<net::IOBuffer>* simulated_cache_dest_;
+  base::WeakPtrFactory<URLRequestSimulatedCacheJob> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestSimulatedCacheJob);
+};
+
+class SimulatedCacheInterceptor : public net::URLRequestInterceptor {
+ public:
+  explicit SimulatedCacheInterceptor(
+      scoped_refptr<net::IOBuffer>* simulated_cache_dest)
+      : simulated_cache_dest_(simulated_cache_dest) {}
+
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return new URLRequestSimulatedCacheJob(request, network_delegate,
+                                           simulated_cache_dest_);
+  }
+
+ private:
+  scoped_refptr<net::IOBuffer>* simulated_cache_dest_;
+  DISALLOW_COPY_AND_ASSIGN(SimulatedCacheInterceptor);
+};
+
 class RequestInterceptor : public net::URLRequestInterceptor {
  public:
   using InterceptCallback = base::Callback<void(net::URLRequest*)>;
@@ -1982,6 +2044,54 @@ TEST_F(URLLoaderTest, EnterSuspendModeWhileNoPendingRead) {
   delete_run_loop.Run();
 
   unowned_power_monitor_source->Resume();
+}
+
+TEST_F(URLLoaderTest, EnterSuspendDiskCacheWriteQueued) {
+  // Test to make sure that fetch abort on suspend doesn't yank out the backing
+  // for IOBuffer for an issued disk_cache Write.
+
+  GURL url("http://www.example.com");
+  scoped_refptr<net::IOBuffer> simulated_cache_dest;
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url, std::make_unique<SimulatedCacheInterceptor>(&simulated_cache_dest));
+
+  std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
+      std::make_unique<TestPowerMonitorSource>();
+  TestPowerMonitorSource* unowned_power_monitor_source =
+      power_monitor_source.get();
+  base::PowerMonitor power_monitor(std::move(power_monitor_source));
+
+  ResourceRequest request = CreateResourceRequest("GET", url);
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  // Spin until the job has produced a (simulated) cache write.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(simulated_cache_dest);
+
+  unowned_power_monitor_source->Suspend();
+
+  client()->RunUntilComplete();
+
+  EXPECT_EQ(net::ERR_ABORTED, client()->completion_status().error_code);
+  delete_run_loop.Run();
+
+  unowned_power_monitor_source->Resume();
+
+  // The "cache write" should still have data available.
+  EXPECT_EQ('a', simulated_cache_dest->data()[0]);
 }
 
 // A mock NetworkServiceClient that responds auth challenges with previously
