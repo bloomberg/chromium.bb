@@ -14,6 +14,8 @@
 
 namespace autofill_assistant {
 
+const char* kTargetWebsitePath = "/autofill_assistant_target_website.html";
+
 class WebControllerBrowserTest : public content::ContentBrowserTest {
  public:
   WebControllerBrowserTest() {}
@@ -26,9 +28,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     http_server_->ServeFilesFromSourceDirectory(
         "components/test/data/autofill_assistant");
     ASSERT_TRUE(http_server_->Start());
-    ASSERT_TRUE(NavigateToURL(
-        shell(),
-        http_server_->GetURL("/autofill_assistant_target_website.html")));
+    ASSERT_TRUE(
+        NavigateToURL(shell(), http_server_->GetURL(kTargetWebsitePath)));
     web_controller_ =
         WebController::CreateForWebContents(shell()->web_contents());
   }
@@ -200,9 +201,11 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     std::move(done_callback).Run();
   }
 
+ protected:
+  std::unique_ptr<WebController> web_controller_;
+
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
-  std::unique_ptr<WebController> web_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebControllerBrowserTest);
 };
@@ -396,6 +399,13 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   selectors.emplace_back("#invalid_selector");
   EXPECT_EQ("", GetFieldValue(selectors));
   EXPECT_FALSE(SetFieldValue(selectors, "foobar"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, NavigateToUrl) {
+  EXPECT_EQ(kTargetWebsitePath, web_controller_->GetUrl().path());
+  web_controller_->LoadURL(GURL(url::kAboutBlankURL));
+  WaitForLoadStop(shell()->web_contents());
+  EXPECT_EQ(url::kAboutBlankURL, web_controller_->GetUrl().spec());
 }
 
 }  // namespace

@@ -187,6 +187,7 @@ message ActionProto {
   oneof action_info {
     ClickProto click = 5;
     SelectOptionProto select_option = 7;
+    NavigateProto navigate = 9;
     TellProto tell = 11;
     FocusElementProto focus_element = 12;
     WaitForDomProto wait_for_dom = 19;
@@ -355,6 +356,11 @@ message UploadDomProto {
   // The element that should be a root of uploaded DOM. If empty then the whole
   // page is returned.
   optional ElementReferenceProto tree_root = 1;
+}
+
+// Load the given URL in the current tab.
+message NavigateProto {
+  optional string url = 1;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.

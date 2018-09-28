@@ -10,6 +10,8 @@
 
 #include "base/callback_forward.h"
 
+class GURL;
+
 namespace autofill {
 class AutofillProfile;
 }
@@ -89,6 +91,10 @@ class ActionDelegate {
   virtual void BuildNodeTree(const std::vector<std::string>& selectors,
                              NodeProto* node_tree_out,
                              base::OnceCallback<void(bool)> callback) = 0;
+
+  // Load |url| in the current tab. Returns immediately, before the new page has
+  // been loaded.
+  virtual void LoadURL(const GURL& url) = 0;
 
   // Shut down Autofill Assistant at the end of the current script.
   virtual void Shutdown() = 0;
