@@ -21,7 +21,6 @@ class WebDocumentSubresourceFilter;
 
 namespace subresource_filter {
 
-struct DocumentLoadStatistics;
 class UnverifiedRulesetDealer;
 class WebDocumentSubresourceFilterImpl;
 
@@ -62,7 +61,7 @@ class SubresourceFilterAgent
 
   // Sends statistics about the DocumentSubresourceFilter's work to the browser.
   virtual void SendDocumentLoadStatistics(
-      const DocumentLoadStatistics& statistics);
+      const mojom::DocumentLoadStatistics& statistics);
 
   // Tells the browser that the frame is an ad subframe.
   virtual void SendFrameIsAdSubframe();
