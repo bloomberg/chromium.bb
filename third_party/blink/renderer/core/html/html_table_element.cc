@@ -59,10 +59,10 @@ inline HTMLTableElement::HTMLTableElement(Document& document)
       rules_attr_(kUnsetRules),
       padding_(1) {}
 
-// An explicit empty destructor should be in HTMLTableElement.cpp, because
+// An explicit empty destructor should be in html_table_element.cc, because
 // if an implicit destructor is used or an empty destructor is defined in
-// HTMLTableElement.h, when including HTMLTableElement, msvc tries to expand
-// the destructor and causes a compile error because of lack of
+// html_table_element.h, when including html_table_element.h, msvc tries to
+// expand the destructor and causes a compile error because of lack of
 // CSSPropertyValueSet definition.
 HTMLTableElement::~HTMLTableElement() = default;
 

@@ -70,7 +70,7 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   }
 
   CSSStyleSheetResource* cached_style_sheet = ToCSSStyleSheetResource(resource);
-  // See the comment in PendingScript.cpp about why this check is necessary
+  // See the comment in pending_script.cc about why this check is necessary
   // here, instead of in the resource fetcher. https://crbug.com/500701.
   if (!cached_style_sheet->ErrorOccurred() &&
       !owner_->FastGetAttribute(integrityAttr).IsEmpty() &&

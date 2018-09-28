@@ -150,7 +150,7 @@ static bool StartsClosingScriptTagAt(const String& string, wtf_size_t start) {
 }
 
 // If other files need this, we should move this to
-// core/html/parser/HTMLParserIdioms.h
+// core/html/parser/html_parser_idioms.h
 template <wtf_size_t inlineCapacity>
 bool ThreadSafeMatch(const Vector<UChar, inlineCapacity>& vector,
                      const QualifiedName& qname) {
@@ -204,8 +204,8 @@ static inline String Decode16BitUnicodeEscapeSequences(const String& string) {
 static inline String DecodeStandardURLEscapeSequences(
     const String& string,
     const WTF::TextEncoding& encoding) {
-  // We use decodeEscapeSequences() instead of decodeURLEscapeSequences()
-  // (declared in weborigin/KURL.h) to avoid platform-specific URL decoding
+  // We use DecodeEscapeSequences() instead of DecodeURLEscapeSequences()
+  // (declared in weborigin/kurl.h) to avoid platform-specific URL decoding
   // differences (e.g. KURLGoogle).
   return DecodeEscapeSequences<URLEscapeSequence>(string, encoding);
 }

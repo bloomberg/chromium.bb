@@ -140,8 +140,8 @@ void HTMLEmbedElement::ParametersForPlugin(PluginParameters& plugin_params) {
     plugin_params.AppendAttribute(attribute);
 }
 
-// FIXME: This should be unified with HTMLObjectElement::updatePlugin and
-// moved down into HTMLPluginElement.cpp
+// FIXME: This should be unified with HTMLObjectElement::UpdatePlugin and
+// moved down into html_plugin_element.cc
 void HTMLEmbedElement::UpdatePluginInternal() {
   DCHECK(!GetLayoutEmbeddedObject()->ShowsUnavailablePluginIndicator());
   DCHECK(NeedsPluginUpdate());
