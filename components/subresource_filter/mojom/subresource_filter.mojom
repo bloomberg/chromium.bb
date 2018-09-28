@@ -80,3 +80,14 @@ interface SubresourceFilterHost {
   SetDocumentLoadStatistics(DocumentLoadStatistics statistics);
 };
 
+interface SubresourceFilterAgent {
+  // Instructs the renderer to activate subresource filtering at the specified
+  // |activation_state| for the document load committed next in a frame.
+  //
+  // Most be called just before mojom::FrameNavigationControl::CommitNavigation,
+  // at ReadyToCommitNavigation time. If not called, the default behavior is
+  // mojom::ActivationLevel::kDisabled.
+  ActivateForNextCommittedLoad(ActivationState activation_state,
+                               bool is_ad_subframe);
+};
+
