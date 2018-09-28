@@ -104,6 +104,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   GrContext* GetGrContext();
   bool is_using_ddl() const { return !!skia_output_surface_; }
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
+  const SkRect& QuadVertexSkRect() const { return quad_vertex_skrect_; }
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
@@ -138,6 +139,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   SkCanvas* current_canvas_ = nullptr;
   SkSurface* current_surface_ = nullptr;
   SkPaint current_paint_;
+  const SkRect quad_vertex_skrect_;
 
   base::Optional<SyncQueryCollection> sync_queries_;
   bool use_swap_with_bounds_ = false;
