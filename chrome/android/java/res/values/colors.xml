@@ -61,6 +61,9 @@
     <!-- App banner colors -->
     <color name="app_banner_install_button_bg">#0F9D58</color>
 
+    <!-- App menu colors -->
+    <color name="update_menu_item_text_color">#DC5554</color>
+
     <!-- Connection Info Popup colors -->
     <color name="connection_info_popup_reset_cert_decisions_button">#000000</color>
     <color name="connection_info_popup_text">@color/modern_grey_900</color>
