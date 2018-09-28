@@ -34,6 +34,8 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/shell.h"
+#include "base/base64.h"
 #include "base/feature_list.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -838,6 +840,47 @@ void AutotestPrivateRunCrostiniUninstallerFunction::CrostiniRemoved(
     Respond(NoArguments());
   } else {
     Respond(Error("Error uninstalling crostini"));
+  }
+}
+#endif
+
+AutotestPrivateTakeScreenshotFunction::
+    ~AutotestPrivateTakeScreenshotFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateTakeScreenshotFunction::Run() {
+  DVLOG(1) << "AutotestPrivateTakeScreenshotFunction";
+#if defined(OS_CHROMEOS)
+  auto grabber = std::make_unique<ui::ScreenshotGrabber>();
+  // TODO(mash): Fix for mash, http://crbug.com/557397
+  aura::Window* primary_root = ash::Shell::GetPrimaryRootWindow();
+  // Pass the ScreenshotGrabber to the callback so that it stays alive for the
+  // duration of the operation, it'll then get deallocated when the callback
+  // completes.
+  grabber->TakeScreenshot(
+      primary_root, primary_root->bounds(),
+      base::BindOnce(&AutotestPrivateTakeScreenshotFunction::ScreenshotTaken,
+                     this, base::Passed(&grabber)));
+  return RespondLater();
+#else
+  return RespondNow(Error(kOnlyAvailableOnChromeOSError));
+#endif
+}
+
+#if defined(OS_CHROMEOS)
+void AutotestPrivateTakeScreenshotFunction::ScreenshotTaken(
+    std::unique_ptr<ui::ScreenshotGrabber> grabber,
+    ui::ScreenshotResult screenshot_result,
+    scoped_refptr<base::RefCountedMemory> png_data) {
+  if (screenshot_result == ui::ScreenshotResult::SUCCESS) {
+    // Base64 encode the result so we can return it as a string.
+    std::string base64Png(png_data->front(),
+                          png_data->front() + png_data->size());
+    base::Base64Encode(base64Png, &base64Png);
+    Respond(OneArgument(std::make_unique<base::Value>(base64Png)));
+  } else {
+    Respond(Error(base::StrCat(
+        {"Error taking screenshot ",
+         base::NumberToString(static_cast<int>(screenshot_result))})));
   }
 }
 #endif
