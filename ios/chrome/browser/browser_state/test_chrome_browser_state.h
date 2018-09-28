@@ -103,17 +103,6 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
         RefcountedBrowserStateKeyedServiceFactory::TestingFactory
             testing_factory);
 
-    // Deprecated, do not use. This is kept for compatibility with downstream
-    // code and will be removed as soon as the downstream code has been fixed
-    // to use the new interface.
-    void AddTestingFactory(
-        BrowserStateKeyedServiceFactory* service_factory,
-        std::unique_ptr<KeyedService> (*testing_factory)(web::BrowserState*));
-    void AddTestingFactory(
-        RefcountedBrowserStateKeyedServiceFactory* service_factory,
-        scoped_refptr<RefcountedKeyedService> (*testing_factory)(
-            web::BrowserState*));
-
     // Sets the path to the directory to be used to hold ChromeBrowserState
     // data.
     void SetPath(const base::FilePath& path);
