@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views/cocoa/bridged_content_view.h"
+#import "ui/views_bridge_mac/bridged_content_view.h"
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
@@ -31,9 +31,9 @@
 #include "ui/gfx/path.h"
 #import "ui/gfx/path_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#import "ui/views/cocoa/bridged_native_widget.h"
-#import "ui/views/cocoa/drag_drop_client_mac.h"
 #include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
+#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#import "ui/views_bridge_mac/drag_drop_client.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 namespace {
@@ -48,9 +48,9 @@ NSString* const kFullKeyboardAccessChangedNotification =
 gfx::Point MovePointToWindow(const NSPoint& point,
                              NSWindow* source_window,
                              NSWindow* target_window) {
-  NSPoint point_in_screen = source_window
-      ? ui::ConvertPointFromWindowToScreen(source_window, point)
-      : point;
+  NSPoint point_in_screen =
+      source_window ? ui::ConvertPointFromWindowToScreen(source_window, point)
+                    : point;
 
   NSPoint point_in_window =
       ui::ConvertPointFromScreenToWindow(target_window, point_in_screen);
@@ -1338,8 +1338,9 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // or (string, string).
   BOOL valid = textInputClient_ && ((canWrite && (canRead || !returnType)) ||
                                     (canRead && (canWrite || !sendType)));
-  return valid ? self : [super validRequestorForSendType:sendType
-                                              returnType:returnType];
+  return valid
+             ? self
+             : [super validRequestorForSendType:sendType returnType:returnType];
 }
 
 // NSServicesMenuRequestor protocol
@@ -1380,9 +1381,9 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 // |self|) that we're trying to invalidate in -setTextInputClient:.
 // See https://crbug.com/817097#c12 for further details on this atrocity.
 
-- (NSAttributedString*)
-    attributedSubstringForProposedRange:(NSRange)range
-                            actualRange:(NSRangePointer)actualRange {
+- (NSAttributedString*)attributedSubstringForProposedRange:(NSRange)range
+                                               actualRange:
+                                                   (NSRangePointer)actualRange {
   // On TouchBar Macs, the IME subsystem sometimes sends an invalid range with a
   // non-zero length. This will cause a DCHECK in gfx::Range, so repair it here.
   // See https://crbug.com/888782.

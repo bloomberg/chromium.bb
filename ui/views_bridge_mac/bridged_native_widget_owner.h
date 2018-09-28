@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_OWNER_H_
-#define UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_OWNER_H_
+#ifndef UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_OWNER_H_
+#define UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_OWNER_H_
 
 namespace gfx {
 class Vector2d;
@@ -41,4 +41,4 @@ class BridgedNativeWidgetOwner {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_OWNER_H_
+#endif  // UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_OWNER_H_

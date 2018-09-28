@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_H_
-#define UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_H_
+#ifndef UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_IMPL_H_
+#define UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_IMPL_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -18,8 +18,8 @@
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
-#import "ui/views/cocoa/bridged_native_widget_owner.h"
 #include "ui/views/views_export.h"
+#import "ui/views_bridge_mac/bridged_native_widget_owner.h"
 #import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 
@@ -346,4 +346,4 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
 
 }  // namespace views
 
-#endif  // UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_H_
+#endif  // UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_IMPL_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views/cocoa/views_nswindow_delegate.h"
+#import "ui/views_bridge_mac/views_nswindow_delegate.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#import "ui/views/cocoa/bridged_content_view.h"
-#import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views_bridge_mac/bridged_content_view.h"
 #include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
+#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @implementation ViewsNSWindowDelegate
@@ -60,7 +60,7 @@
         break;
       currentWindow = parentWindow;
       if ([currentWindow isKeyWindow]) {
-        [(newCursor ? newCursor : [NSCursor arrowCursor]) set];
+        [(newCursor ? newCursor : [NSCursor arrowCursor])set];
         break;
       }
     }

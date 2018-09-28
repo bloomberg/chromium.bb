@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views/cocoa/views_scrollbar_bridge.h"
+#import "ui/views_bridge_mac/views_scrollbar_bridge.h"
 
 #import "base/mac/sdk_forward_declarations.h"
 

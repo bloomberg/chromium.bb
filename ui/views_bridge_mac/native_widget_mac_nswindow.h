@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NSWINDOW_H_
-#define UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NSWINDOW_H_
+#ifndef UI_VIEWS_BRIDGE_MAC_NATIVE_WIDGET_MAC_NSWINDOW_H_
+#define UI_VIEWS_BRIDGE_MAC_NATIVE_WIDGET_MAC_NSWINDOW_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -53,4 +53,4 @@ VIEWS_EXPORT
 @property(assign, nonatomic) uint64_t bridgedNativeWidgetId;
 @end
 
-#endif  // UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NSWINDOW_H_
+#endif  // UI_VIEWS_BRIDGE_MAC_NATIVE_WIDGET_MAC_NSWINDOW_H_

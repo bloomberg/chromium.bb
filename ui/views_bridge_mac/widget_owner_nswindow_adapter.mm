@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
+#import "ui/views_bridge_mac/widget_owner_nswindow_adapter.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -11,7 +11,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
-#import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 // Bridges an AppKit observer to observe when the (non-views) NSWindow owning a
 // views::Widget will close or change occlusion state.

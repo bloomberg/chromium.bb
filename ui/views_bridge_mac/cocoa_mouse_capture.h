@@ -50,4 +50,4 @@ class VIEWS_BRIDGE_MAC_EXPORT CocoaMouseCapture {
 
 }  // namespace views_bridge_mac
 
-#endif  // UI_VIEWS_COCOA_COCOA_MOUSE_CAPTURE_H_
+#endif  // UI_VIEWS_BRIDGE_MAC_COCOA_MOUSE_CAPTURE_H_

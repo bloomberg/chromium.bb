@@ -47,7 +47,7 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/cocoa/bridge_factory_impl.h"
+#include "ui/views_bridge_mac/bridge_factory_impl.h"
 #include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
 namespace {

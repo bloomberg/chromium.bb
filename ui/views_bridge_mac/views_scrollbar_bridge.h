@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_VIEWS_SCROLLBAR_BRIDGE_DELEGATE_H_
-#define UI_VIEWS_COCOA_VIEWS_SCROLLBAR_BRIDGE_DELEGATE_H_
+#ifndef UI_VIEWS_BRIDGE_MAC_VIEWS_SCROLLBAR_BRIDGE_H_
+#define UI_VIEWS_BRIDGE_MAC_VIEWS_SCROLLBAR_BRIDGE_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -30,7 +30,7 @@ class ViewsScrollbarBridgeDelegate {
 - (id)initWithDelegate:(ViewsScrollbarBridgeDelegate*)delegate;
 
 // Sets |delegate_| to nullptr.
--(void)clearDelegate;
+- (void)clearDelegate;
 
 // Returns the style of scrollers that OSX is using.
 + (NSScrollerStyle)getPreferredScrollerStyle;

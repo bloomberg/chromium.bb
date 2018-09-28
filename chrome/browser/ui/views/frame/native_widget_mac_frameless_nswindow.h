@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_NATIVE_WIDGET_MAC_FRAMELESS_NSWINDOW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_NATIVE_WIDGET_MAC_FRAMELESS_NSWINDOW_H_
 
-#import "ui/views/cocoa/native_widget_mac_nswindow.h"
+#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 
 // Overrides contentRect <-> frameRect conversion methods to keep them equal to
 // each other, even for windows that do not use NSBorderlessWindowMask. This

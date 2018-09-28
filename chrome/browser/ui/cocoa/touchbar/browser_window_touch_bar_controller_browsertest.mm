@@ -21,7 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest_mac.h"
-#include "ui/views/cocoa/window_touch_bar_delegate.h"
+#include "ui/views_bridge_mac/window_touch_bar_delegate.h"
 
 // TODO(spqchan): Write tests that will check for page load and bookmark
 // updates.

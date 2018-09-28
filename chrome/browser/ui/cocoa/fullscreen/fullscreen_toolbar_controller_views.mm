@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_views.h"
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "ui/views/cocoa/bridged_native_widget.h"
+#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 @implementation FullscreenToolbarControllerViews
 
