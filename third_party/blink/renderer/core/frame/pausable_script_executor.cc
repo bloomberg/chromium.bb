@@ -59,12 +59,14 @@ Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
 
   Vector<v8::Local<v8::Value>> results;
   for (const auto& source : sources_) {
+    // Note: An error event in an isolated world will never be dispatched to
+    // a foreign world.
     v8::Local<v8::Value> script_value =
         world_id_ ? frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-                        world_id_, source, KURL(), kNotSharableCrossOrigin)
+                        world_id_, source, KURL(), kSharableCrossOrigin)
                   : frame->GetScriptController()
                         .ExecuteScriptInMainWorldAndReturnValue(
-                            source, KURL(), kNotSharableCrossOrigin);
+                            source, KURL(), kSharableCrossOrigin);
     results.push_back(script_value);
   }
 

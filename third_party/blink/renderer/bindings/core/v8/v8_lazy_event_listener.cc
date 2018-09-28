@@ -218,11 +218,13 @@ void V8LazyEventListener::FireErrorEvent(v8::Local<v8::Context> v8_context,
       SourceLocation::FromMessage(GetIsolate(), message, execution_context),
       &World());
 
-  AccessControlStatus access_control_status = kNotSharableCrossOrigin;
+  AccessControlStatus access_control_status = kOpaqueResource;
   if (message->IsOpaque())
     access_control_status = kOpaqueResource;
   else if (message->IsSharedCrossOrigin())
     access_control_status = kSharableCrossOrigin;
+  else
+    NOTREACHED();
 
   execution_context->DispatchErrorEvent(event, access_control_status);
 }

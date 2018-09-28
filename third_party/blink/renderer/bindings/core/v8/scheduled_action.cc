@@ -170,11 +170,15 @@ void ScheduledAction::Execute(LocalFrame* frame) {
   } else {
     DVLOG(1) << "ScheduledAction::execute " << this
              << ": executing from source";
+    // We're using |kSharableCrossOrigin| to keep the existing behavior, but
+    // this causes failures on
+    // wpt/html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setTimeout.html
+    // and friends.
     frame->GetScriptController().ExecuteScriptAndReturnValue(
         script_state_->GetContext(),
         ScriptSourceCode(code_,
                          ScriptSourceLocationType::kEvalForScheduledAction),
-        KURL(), kNotSharableCrossOrigin);
+        KURL(), kSharableCrossOrigin);
   }
 
   // The frame might be invalid at this point because JavaScript could have
@@ -206,10 +210,14 @@ void ScheduledAction::Execute(WorkerGlobalScope* worker) {
         function, worker, script_state_->GetContext()->Global(), info.size(),
         info.data(), script_state_->GetIsolate());
   } else {
+    // We're using |kSharableCrossOrigin| to keep the existing behavior, but
+    // this causes failures on
+    // wpt/html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setTimeout.html
+    // and friends.
     worker->ScriptController()->Evaluate(
         ScriptSourceCode(code_,
                          ScriptSourceLocationType::kEvalForScheduledAction),
-        kNotSharableCrossOrigin);
+        kSharableCrossOrigin);
   }
 }
 

@@ -680,8 +680,8 @@ void WebLocalFrameImpl::DispatchUnloadEvent() {
 void WebLocalFrameImpl::ExecuteScript(const WebScriptSource& source) {
   DCHECK(GetFrame());
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
-      source, KURL(), kNotSharableCrossOrigin);
+  GetFrame()->GetScriptController().ExecuteScriptInMainWorld(source, KURL(),
+                                                             kOpaqueResource);
 }
 
 void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
@@ -691,9 +691,11 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
   CHECK_GT(world_id, 0);
   CHECK_LT(world_id, DOMWrapperWorld::kEmbedderWorldIdLimit);
 
+  // Note: An error event in an isolated world will never be dispatched to
+  // a foreign world.
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
   GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
-      world_id, source_in, KURL(), kNotSharableCrossOrigin);
+      world_id, source_in, KURL(), kSharableCrossOrigin);
 }
 
 v8::Local<v8::Value>
@@ -704,8 +706,10 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
   CHECK_GT(world_id, 0);
   CHECK_LT(world_id, DOMWrapperWorld::kEmbedderWorldIdLimit);
 
+  // Note: An error event in an isolated world will never be dispatched to
+  // a foreign world.
   return GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
-      world_id, source_in, KURL(), kNotSharableCrossOrigin);
+      world_id, source_in, KURL(), kSharableCrossOrigin);
 }
 
 void WebLocalFrameImpl::SetIsolatedWorldSecurityOrigin(
@@ -801,8 +805,7 @@ v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(
 
   return GetFrame()
       ->GetScriptController()
-      .ExecuteScriptInMainWorldAndReturnValue(source, KURL(),
-                                              kNotSharableCrossOrigin);
+      .ExecuteScriptInMainWorldAndReturnValue(source, KURL(), kOpaqueResource);
 }
 
 void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(
@@ -2111,7 +2114,7 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
   v8::Local<v8::Value> result =
       GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
           ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl),
-          KURL(), kNotSharableCrossOrigin);
+          KURL(), kOpaqueResource);
   if (result.IsEmpty() || !result->IsString())
     return;
   String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
