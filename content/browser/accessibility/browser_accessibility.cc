@@ -380,7 +380,9 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start,
       else
         start = 0;
     }
-    return bounds;
+    // When past the end of text, the area will be 0.
+    // In this case, use bounds provided for the caret.
+    return bounds.IsEmpty() ? GetPageBoundsPastEndOfText() : bounds;
   }
 
   int end = start + len;
@@ -489,6 +491,54 @@ gfx::Rect BrowserAccessibility::GetScreenBoundsForRange(int start,
   // in screen coordinates.
   bounds.Offset(manager_->GetViewBounds().OffsetFromOrigin());
 
+  return bounds;
+}
+
+// Get a rect for a 1-width character past the end of text. This is what ATs
+// expect when getting the character extents past the last character in a line,
+// and equals what the caret bounds would be when past the end of the text.
+gfx::Rect BrowserAccessibility::GetPageBoundsPastEndOfText() const {
+  // Step 1: get approximate caret bounds. The thickness may not yet be correct.
+  gfx::Rect bounds;
+  if (InternalChildCount() > 0) {
+    // When past the end of text, use bounds provided by a last child if
+    // available, and then correct for thickness of caret.
+    BrowserAccessibility* child = InternalGetChild(InternalChildCount() - 1);
+    int child_text_len = child->GetText().size();
+    bounds = child->GetPageBoundsForRange(child_text_len, child_text_len);
+    if (bounds.width() == 0 && bounds.height() == 0)
+      return bounds;  // Inline text boxes info not yet available.
+  } else {
+    // TODO(accessibility) Support bounds in an empty text field where there are
+    // no child inline text objects.
+    return bounds;
+  }
+
+  // Step 2: correct for the thickness of the caret.
+  auto text_direction = static_cast<ax::mojom::TextDirection>(
+      GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
+  constexpr int kCaretThickness = 1;
+  switch (text_direction) {
+    case ax::mojom::TextDirection::kNone:
+    case ax::mojom::TextDirection::kLtr: {
+      bounds.set_width(kCaretThickness);
+      break;
+    }
+    case ax::mojom::TextDirection::kRtl: {
+      bounds.set_x(bounds.right() - kCaretThickness);
+      bounds.set_width(kCaretThickness);
+      break;
+    }
+    case ax::mojom::TextDirection::kTtb: {
+      bounds.set_height(kCaretThickness);
+      break;
+    }
+    case ax::mojom::TextDirection::kBtt: {
+      bounds.set_y(bounds.bottom() - kCaretThickness);
+      bounds.set_height(kCaretThickness);
+      break;
+    }
+  }
   return bounds;
 }
 
