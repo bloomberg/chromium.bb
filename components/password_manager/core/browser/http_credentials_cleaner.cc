@@ -16,10 +16,16 @@ HttpCredentialCleaner::HttpCredentialCleaner(
         network_context_getter)
     : store_(std::move(store)),
       network_context_getter_(network_context_getter) {
-  store_->GetAutofillableLogins(this);
 }
 
 HttpCredentialCleaner::~HttpCredentialCleaner() = default;
+
+void HttpCredentialCleaner::StartCleaning(Observer* observer) {
+  DCHECK(observer);
+  DCHECK(!observer_);
+  observer_ = observer;
+  store_->GetAutofillableLogins(this);
+}
 
 void HttpCredentialCleaner::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
@@ -103,7 +109,7 @@ void HttpCredentialCleaner::ReportMetrics() {
         https_credential_not_found_[is_hsts_enabled]);
   }
 
-  delete this;
+  observer_->CleaningCompleted();
 }
 
 }  // namespace password_manager

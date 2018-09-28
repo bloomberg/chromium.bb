@@ -48,17 +48,6 @@ bool IsBetterMatch(const PasswordForm* lhs, const PasswordForm* rhs) {
 
 }  // namespace
 
-#if !defined(OS_IOS)
-void ReportHttpMigrationMetrics(
-    scoped_refptr<password_manager::PasswordStore> store,
-    base::RepeatingCallback<network::mojom::NetworkContext*()>
-        network_context_getter) {
-  // The object will delete itself once the metrics are recorded.
-  new password_manager::HttpCredentialCleaner(std::move(store),
-                                              network_context_getter);
-}
-#endif  // !defined(OS_IOS)
-
 // Update |credential| to reflect usage.
 void UpdateMetadataForUsage(PasswordForm* credential) {
   ++credential->times_used;
@@ -200,7 +189,9 @@ void UserTriggeredManualGenerationFromContextMenu(
 void RemoveUselessCredentials(
     scoped_refptr<password_manager::PasswordStore> store,
     PrefService* prefs,
-    int delay_in_seconds) {
+    int delay_in_seconds,
+    base::RepeatingCallback<network::mojom::NetworkContext*()>
+        network_context_getter) {
   // TODO(https://crbug.com/887889): Remove the knowledge of the particular
   // preferences from this code.
 
@@ -235,6 +226,15 @@ void RemoveUselessCredentials(
         std::make_unique<password_manager::BlacklistedDuplicatesCleaner>(
             store, prefs));
   }
+
+#if !defined(OS_IOS)
+  // Can be null for some unittests.
+  if (!network_context_getter.is_null()) {
+    cleaning_tasks_runner->AddCleaningTask(
+        std::make_unique<password_manager::HttpCredentialCleaner>(
+            store, network_context_getter));
+  }
+#endif  // !defined(OS_IOS)
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,

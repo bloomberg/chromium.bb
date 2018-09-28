@@ -15,6 +15,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/ref_counted.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
@@ -29,14 +30,20 @@ namespace password_manager {
 class PasswordStore;
 
 // This class is responsible for reporting metrics about HTTP to HTTPS
-// migration. Important note: The object will delete itself once metrics are
-// reported. Having a private destructor enforces this.
-class HttpCredentialCleaner : public PasswordStoreConsumer {
+// migration.
+class HttpCredentialCleaner : public PasswordStoreConsumer,
+                              public CredentialsCleaner {
  public:
+  // |network_context_getter| should return nullptr if it can't get the network
+  // context because whatever owns it is dead.
   HttpCredentialCleaner(
       scoped_refptr<PasswordStore> store,
       base::RepeatingCallback<network::mojom::NetworkContext*()>
           network_context_getter);
+  ~HttpCredentialCleaner() override;
+
+  // CredentialsCleaner:
+  void StartCleaning(Observer* observer) override;
 
  private:
   // This type define a subset of PasswordForm where first argument is the
@@ -46,8 +53,6 @@ class HttpCredentialCleaner : public PasswordStoreConsumer {
   using FormKey =
       std::tuple<std::string, autofill::PasswordForm::Scheme, base::string16>;
 
-  ~HttpCredentialCleaner() override;
-
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
@@ -56,6 +61,8 @@ class HttpCredentialCleaner : public PasswordStoreConsumer {
                          base::string16 password_value,
                          HSTSResult hsts_result);
 
+  // After metrics are reported, this function will inform the |observer_| about
+  // completion.
   void ReportMetrics();
 
   scoped_refptr<PasswordStore> store_;
@@ -67,6 +74,10 @@ class HttpCredentialCleaner : public PasswordStoreConsumer {
   // Map from (signon-realm excluding the protocol, Password::Scheme, username)
   // tuples of HTTPS forms to a list of passwords for that pair.
   std::map<FormKey, base::flat_set<base::string16>> https_credentials_map_;
+
+  // Used to signal completion of the clean-up. It is null until
+  // StartCleaning is called.
+  Observer* observer_ = nullptr;
 
   // The number of HTTP credentials processed after HSTS query results are
   // received.

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/blacklisted_duplicates_cleaner.h"
 
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
@@ -87,7 +88,8 @@ TEST_F(BlacklistedDuplicatesCleanerTest, RemoveBlacklistedDuplicates) {
   prefs()->registry()->RegisterBooleanPref(
       prefs::kCredentialsWithWrongSignonRealmRemoved, true);
 
-  password_manager_util::RemoveUselessCredentials(store(), prefs(), 0);
+  password_manager_util::RemoveUselessCredentials(store(), prefs(), 0,
+                                                  base::NullCallback());
   scoped_task_environment.RunUntilIdle();
 
   // Check that one of the next two forms was removed.
@@ -99,7 +101,8 @@ TEST_F(BlacklistedDuplicatesCleanerTest, RemoveBlacklistedDuplicates) {
   EXPECT_FALSE(
       prefs()->GetBoolean(prefs::kDuplicatedBlacklistedCredentialsRemoved));
 
-  password_manager_util::RemoveUselessCredentials(store(), prefs(), 0);
+  password_manager_util::RemoveUselessCredentials(store(), prefs(), 0,
+                                                  base::NullCallback());
   scoped_task_environment.RunUntilIdle();
   EXPECT_TRUE(
       prefs()->GetBoolean(prefs::kDuplicatedBlacklistedCredentialsRemoved));

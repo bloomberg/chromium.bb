@@ -290,7 +290,6 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   ps->PreparePasswordHashData(GetSyncUsername(profile));
 #endif
 
-  password_manager_util::RemoveUselessCredentials(ps, profile->GetPrefs(), 60);
   auto network_context_getter = base::BindRepeating(
       [](Profile* profile) -> network::mojom::NetworkContext* {
         if (!g_browser_process->profile_manager()->IsValidProfile(profile))
@@ -299,11 +298,8 @@ PasswordStoreFactory::BuildServiceInstanceFor(
             ->GetNetworkContext();
       },
       profile);
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&password_manager_util::ReportHttpMigrationMetrics, ps,
-                     network_context_getter),
-      base::TimeDelta::FromSeconds(60));
+  password_manager_util::RemoveUselessCredentials(ps, profile->GetPrefs(), 60,
+                                                  network_context_getter);
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

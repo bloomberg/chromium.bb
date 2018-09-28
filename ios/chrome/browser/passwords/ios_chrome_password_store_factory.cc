@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
@@ -102,8 +103,8 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
     return nullptr;
   }
   password_manager_util::RemoveUselessCredentials(
-      store, ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
-      60);
+      store, ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs(), 60,
+      base::NullCallback());
   return store;
 }
 
