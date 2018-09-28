@@ -458,8 +458,8 @@ void InstantService::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
-      BuildThemeInfo();
-      NotifyAboutThemeInfo();
+      theme_info_ = nullptr;
+      UpdateThemeInfo();
       break;
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
