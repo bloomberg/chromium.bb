@@ -677,9 +677,6 @@ class ProfileSyncService : public syncer::SyncService,
   // is decremented back to zero, Sync setup is marked no longer in progress.
   int outstanding_setup_in_progress_handles_ = 0;
 
-  // List of available data type controllers.
-  syncer::DataTypeController::TypeMap data_type_controllers_;
-
   // Whether the SyncEngine has been initialized.
   bool engine_initialized_;
 
@@ -736,6 +733,9 @@ class ProfileSyncService : public syncer::SyncService,
   std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_;
 
   std::unique_ptr<syncer::DeviceInfoSyncBridge> device_info_sync_bridge_;
+
+  // List of available data type controllers.
+  syncer::DataTypeController::TypeMap data_type_controllers_;
 
   std::unique_ptr<syncer::NetworkResources> network_resources_;
 

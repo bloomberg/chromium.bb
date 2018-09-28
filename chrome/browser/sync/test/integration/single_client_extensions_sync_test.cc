@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/fake_server.h"
+
+namespace {
 
 using extensions_helper::AllProfilesHaveSameExtensionsAsVerifier;
 using extensions_helper::DisableExtension;
@@ -16,7 +20,26 @@ using extensions_helper::GetInstalledExtensions;
 using extensions_helper::InstallExtension;
 using extensions_helper::InstallExtensionForAllProfiles;
 
-class SingleClientExtensionsSyncTest : public SyncTest {
+// Class that enables or disables USS based on test parameter. Must be the first
+// base class of the test fixture.
+class UssSwitchToggler : public testing::WithParamInterface<bool> {
+ public:
+  UssSwitchToggler() {
+    if (GetParam()) {
+      override_features_.InitAndEnableFeature(
+          switches::kSyncPseudoUSSExtensions);
+    } else {
+      override_features_.InitAndDisableFeature(
+          switches::kSyncPseudoUSSExtensions);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
+
+class SingleClientExtensionsSyncTest : public UssSwitchToggler,
+                                       public SyncTest {
  public:
   SingleClientExtensionsSyncTest() : SyncTest(SINGLE_CLIENT) {}
 
@@ -26,12 +49,12 @@ class SingleClientExtensionsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientExtensionsSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, StartWithNoExtensions) {
+IN_PROC_BROWSER_TEST_P(SingleClientExtensionsSyncTest, StartWithNoExtensions) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientExtensionsSyncTest,
                        StartWithSomeExtensions) {
   ASSERT_TRUE(SetupClients());
 
@@ -45,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, InstallSomeExtensions) {
+IN_PROC_BROWSER_TEST_P(SingleClientExtensionsSyncTest, InstallSomeExtensions) {
   ASSERT_TRUE(SetupSync());
 
   const int kNumExtensions = 5;
@@ -66,7 +89,7 @@ static bool ExtensionCountCheck(Profile* profile, size_t expected_count) {
 
 // Tests the case of an uninstall from the server conflicting with a local
 // modification, which we expect to be resolved in favor of the uninstall.
-IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, UninstallWinsConflicts) {
+IN_PROC_BROWSER_TEST_P(SingleClientExtensionsSyncTest, UninstallWinsConflicts) {
   ASSERT_TRUE(SetupClients());
 
   // Start with an extension installed, and setup sync.
@@ -102,3 +125,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, UninstallWinsConflicts) {
   EXPECT_TRUE(checker.Wait());
   EXPECT_TRUE(GetInstalledExtensions(GetProfile(0)).empty());
 }
+
+INSTANTIATE_TEST_CASE_P(USS,
+                        SingleClientExtensionsSyncTest,
+                        ::testing::Values(false, true));
+
+}  // namespace

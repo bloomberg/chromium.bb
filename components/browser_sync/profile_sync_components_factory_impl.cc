@@ -35,7 +35,9 @@
 #include "components/sync/driver/proxy_data_type_controller.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/syncable_service_based_model_type_controller.h"
 #include "components/sync/engine/sync_engine.h"
+#include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
@@ -59,6 +61,7 @@ using syncer::DataTypeManagerImpl;
 using syncer::DataTypeManagerObserver;
 using syncer::ModelTypeController;
 using syncer::ProxyDataTypeController;
+using syncer::SyncableServiceBasedModelTypeController;
 
 namespace browser_sync {
 
@@ -266,13 +269,29 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     // Favicon sync is enabled by default. Register unless explicitly disabled.
     if (!disabled_types.Has(syncer::FAVICON_IMAGES) &&
         !disabled_types.Has(syncer::FAVICON_TRACKING)) {
-      // crbug/384552. We disable error uploading for this data types for now.
-      controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-          syncer::FAVICON_IMAGES, base::RepeatingClosure(), sync_client_,
-          syncer::GROUP_UI, ui_thread_));
-      controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-          syncer::FAVICON_TRACKING, base::RepeatingClosure(), sync_client_,
-          syncer::GROUP_UI, ui_thread_));
+      if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSFavicons)) {
+        controllers.push_back(
+            std::make_unique<SyncableServiceBasedModelTypeController>(
+                syncer::FAVICON_IMAGES,
+                sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
+                base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
+                               base::Unretained(sync_client_),
+                               syncer::FAVICON_IMAGES)));
+        controllers.push_back(
+            std::make_unique<SyncableServiceBasedModelTypeController>(
+                syncer::FAVICON_TRACKING,
+                sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
+                base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
+                               base::Unretained(sync_client_),
+                               syncer::FAVICON_TRACKING)));
+      } else {
+        controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
+            syncer::FAVICON_IMAGES, base::RepeatingClosure(), sync_client_,
+            syncer::GROUP_UI, ui_thread_));
+        controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
+            syncer::FAVICON_TRACKING, base::RepeatingClosure(), sync_client_,
+            syncer::GROUP_UI, ui_thread_));
+      }
     }
   }
 
@@ -285,20 +304,40 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   }
 
   if (!disabled_types.Has(syncer::PREFERENCES)) {
-    if (!override_prefs_controller_to_uss_for_test_) {
+    if (override_prefs_controller_to_uss_for_test_) {
+      controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
+          syncer::PREFERENCES));
+    } else if (base::FeatureList::IsEnabled(
+                   switches::kSyncPseudoUSSPreferences)) {
+      controllers.push_back(
+          std::make_unique<SyncableServiceBasedModelTypeController>(
+              syncer::PREFERENCES,
+              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
+              base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
+                             base::Unretained(sync_client_),
+                             syncer::PREFERENCES)));
+    } else {
       controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
           syncer::PREFERENCES, error_callback, sync_client_, syncer::GROUP_UI,
           ui_thread_));
-    } else {
-      controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
-          syncer::PREFERENCES));
     }
   }
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
-    controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-        syncer::PRIORITY_PREFERENCES, error_callback, sync_client_,
-        syncer::GROUP_UI, ui_thread_));
+    if (base::FeatureList::IsEnabled(
+            switches::kSyncPseudoUSSPriorityPreferences)) {
+      controllers.push_back(
+          std::make_unique<SyncableServiceBasedModelTypeController>(
+              syncer::PRIORITY_PREFERENCES,
+              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
+              base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
+                             base::Unretained(sync_client_),
+                             syncer::PRIORITY_PREFERENCES)));
+    } else {
+      controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
+          syncer::PRIORITY_PREFERENCES, error_callback, sync_client_,
+          syncer::GROUP_UI, ui_thread_));
+    }
   }
 
 #if defined(OS_CHROMEOS)

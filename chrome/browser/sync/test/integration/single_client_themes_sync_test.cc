@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/test/test_utils.h"
 
 using themes_helper::GetCustomTheme;
@@ -23,7 +25,23 @@ using themes_helper::UsingSystemTheme;
 
 namespace {
 
-class SingleClientThemesSyncTest : public SyncTest {
+// Class that enables or disables USS based on test parameter. Must be the first
+// base class of the test fixture.
+class UssSwitchToggler : public testing::WithParamInterface<bool> {
+ public:
+  UssSwitchToggler() {
+    if (GetParam()) {
+      override_features_.InitAndEnableFeature(switches::kSyncPseudoUSSThemes);
+    } else {
+      override_features_.InitAndDisableFeature(switches::kSyncPseudoUSSThemes);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
+
+class SingleClientThemesSyncTest : public UssSwitchToggler, public SyncTest {
  public:
   SingleClientThemesSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientThemesSyncTest() override {}
@@ -36,7 +54,7 @@ class SingleClientThemesSyncTest : public SyncTest {
 // start with SetupClients(), change the theme state, then call
 // SetupSync()).
 
-IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, CustomTheme) {
+IN_PROC_BROWSER_TEST_P(SingleClientThemesSyncTest, CustomTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   EXPECT_FALSE(UsingCustomTheme(GetProfile(0)));
@@ -55,9 +73,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, CustomTheme) {
 
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, DISABLED_NativeTheme) {
+IN_PROC_BROWSER_TEST_P(SingleClientThemesSyncTest, DISABLED_NativeTheme) {
 #else
-IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, NativeTheme) {
+IN_PROC_BROWSER_TEST_P(SingleClientThemesSyncTest, NativeTheme) {
 #endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -79,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, NativeTheme) {
   EXPECT_TRUE(UsingSystemTheme(verifier()));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, DefaultTheme) {
+IN_PROC_BROWSER_TEST_P(SingleClientThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetCustomTheme(GetProfile(0));
@@ -99,5 +117,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, DefaultTheme) {
   EXPECT_TRUE(UsingDefaultTheme(GetProfile(0)));
   EXPECT_TRUE(UsingDefaultTheme(verifier()));
 }
+
+INSTANTIATE_TEST_CASE_P(USS,
+                        SingleClientThemesSyncTest,
+                        ::testing::Values(false, true));
 
 }  // namespace
