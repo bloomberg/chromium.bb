@@ -108,10 +108,10 @@ class ModelTypeSyncBridge {
   // Get or generate a client tag for |entity_data|. This must be the same tag
   // that was/would have been generated in the SyncableService/Directory world
   // for backward compatibility with pre-USS clients. The only time this
-  // theoretically needs to be called is on the creation of local data, however
-  // it is also used to verify the hash of remote data. If a model type was
-  // never launched pre-USS, then method does not need to be different from
-  // GetStorageKey(). Only the hash of this value is kept.
+  // theoretically needs to be called is on the creation of local data.
+  //
+  // If a model type was never launched pre-USS, then method does not need to be
+  // different from GetStorageKey(). Only the hash of this value is kept.
   virtual std::string GetClientTag(const EntityData& entity_data) = 0;
 
   // Must not be called unless SupportsGetStorageKey() returns true.
