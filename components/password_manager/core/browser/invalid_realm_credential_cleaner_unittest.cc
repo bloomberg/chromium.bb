@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/invalid_realm_credential_cleaner.h"
 
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -52,6 +53,11 @@ const GURL kOrigins[] = {GURL("https://example.org/path-0/"),
 
 const base::string16 kUsernames[] = {base::ASCIIToUTF16("user0"),
                                      base::ASCIIToUTF16("user1")};
+
+// TODO(http://crbug.com/889983): This callback is needed to be passed to
+// function that does the clean-up, but is not used. Remove it once the function
+// is skipped.
+auto null_callback = base::NullCallback();
 
 bool StoreContains(TestPasswordStore* store,
                    const autofill::PasswordForm& form) {
@@ -212,7 +218,8 @@ TEST(InvalidRealmCredentialCleanerTest,
     prefs.registry()->RegisterBooleanPref(
         prefs::kCredentialsWithWrongSignonRealmRemoved, false);
 
-    password_manager_util::RemoveUselessCredentials(password_store, &prefs, 0);
+    password_manager_util::RemoveUselessCredentials(password_store, &prefs, 0,
+                                                    null_callback);
     scoped_task_environment.RunUntilIdle();
 
     EXPECT_EQ(StoreContains(password_store.get(), https_form),
@@ -351,7 +358,8 @@ TEST(InvalidRealmCredentialCleanerTest,
     prefs.registry()->RegisterBooleanPref(
         prefs::kCredentialsWithWrongSignonRealmRemoved, false);
 
-    password_manager_util::RemoveUselessCredentials(password_store, &prefs, 0);
+    password_manager_util::RemoveUselessCredentials(password_store, &prefs, 0,
+                                                    null_callback);
     scoped_task_environment.RunUntilIdle();
 
     EXPECT_NE(StoreContains(password_store.get(), https_form),
@@ -390,7 +398,8 @@ TEST(InvalidRealmCredentialCleanerTest,
   prefs.registry()->RegisterBooleanPref(
       prefs::kCredentialsWithWrongSignonRealmRemoved, false);
 
-  password_manager_util::RemoveUselessCredentials(password_store, &prefs, 0);
+  password_manager_util::RemoveUselessCredentials(password_store, &prefs, 0,
+                                                  null_callback);
   scoped_task_environment.RunUntilIdle();
 
   // Check that credentials were not deleted.

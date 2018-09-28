@@ -10,10 +10,13 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -89,6 +92,16 @@ constexpr static TestCase kCases[] = {
      true, HttpCredentialType::kEquivalent}};
 
 }  // namespace
+
+class MockCredentialsCleanerObserver : public CredentialsCleaner::Observer {
+ public:
+  MockCredentialsCleanerObserver() = default;
+  ~MockCredentialsCleanerObserver() override = default;
+  MOCK_METHOD0(CleaningCompleted, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCredentialsCleanerObserver);
+};
 
 class HttpCredentialCleanerTest : public ::testing::TestWithParam<TestCase> {
  public:
@@ -167,12 +180,10 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   }
   scoped_task_environment.RunUntilIdle();
 
-  const TestPasswordStore::PasswordMap passwords_before_cleaning =
-      store_->stored_passwords();
-
   base::HistogramTester histogram_tester;
 
-  password_manager_util::ReportHttpMigrationMetrics(
+  MockCredentialsCleanerObserver observer;
+  HttpCredentialCleaner cleaner(
       store_,
       base::BindLambdaForTesting([&]() -> network::mojom::NetworkContext* {
         // This needs to be network_context_pipe.get() and
@@ -183,6 +194,8 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
         // even in the in-process case.
         return network_context_pipe.get();
       }));
+  EXPECT_CALL(observer, CleaningCompleted);
+  cleaner.StartCleaning(&observer);
   scoped_task_environment.RunUntilIdle();
 
   std::vector<Histogram> histograms_to_test;

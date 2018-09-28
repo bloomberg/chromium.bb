@@ -100,10 +100,16 @@ void UserTriggeredManualGenerationFromContextMenu(
 // hence blacklisted duplicates need to be removed.
 // (2) Removing or fixing of HTTPS credentials with wrong signon_realm. See
 // https://crbug.com/881731 for details.
+// (3) Report metrics about HTTP to HTTPS migration process. This feature
+// is not available on iOS platform because the HSTS query is not supported.
+// |network_context_getter| is always null for iOS and it can also be null for
+// some unittests.
 void RemoveUselessCredentials(
     scoped_refptr<password_manager::PasswordStore> store,
     PrefService* prefs,
-    int delay_in_seconds);
+    int delay_in_seconds,
+    base::RepeatingCallback<network::mojom::NetworkContext*()>
+        network_context_getter);
 
 // Excluding protocol from a signon_realm means to remove from the signon_realm
 // what is before the web origin (with the protocol excluded as well). For
@@ -112,15 +118,6 @@ void RemoveUselessCredentials(
 // This assumes that the |form|'s origin is a substring of the signon_realm.
 base::StringPiece GetSignonRealmWithProtocolExcluded(
     const autofill::PasswordForm& form);
-
-// Report metrics about HTTP to HTTPS migration process. This function cannot be
-// used on iOS platform because the HSTS query is not supported.
-// |network_context_getter| should return nullptr if it can't get the network
-// context because whatever owns it is dead.
-void ReportHttpMigrationMetrics(
-    scoped_refptr<password_manager::PasswordStore> store,
-    base::RepeatingCallback<network::mojom::NetworkContext*()>
-        network_context_getter);
 
 // Given all non-blacklisted |matches|, finds and populates
 // |best_matches_|, |preferred_match_| and |non_best_matches_| accordingly.

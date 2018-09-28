@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -176,7 +177,7 @@ TEST(PasswordManagerUtil,
         password_manager::prefs::kCredentialsWithWrongSignonRealmRemoved,
         false);
 
-    RemoveUselessCredentials(password_store, &prefs, 0);
+    RemoveUselessCredentials(password_store, &prefs, 0, base::NullCallback());
     scoped_task_environment.RunUntilIdle();
 
     // Check that invalid credentials were removed.
@@ -191,7 +192,7 @@ TEST(PasswordManagerUtil,
     EXPECT_NE(StoreContains(password_store.get(), https_blacklisted),
               StoreContains(password_store.get(), https_blacklisted_duplicate));
 
-    RemoveUselessCredentials(password_store, &prefs, 0);
+    RemoveUselessCredentials(password_store, &prefs, 0, base::NullCallback());
     scoped_task_environment.RunUntilIdle();
 
     // Nothing must be removed by a second call.
