@@ -111,7 +111,7 @@ void AnnotateRequestInfoWithFakeDownloadManagerData(
     // Fill |request_info| with a failed result.
     request_info->SetResult(std::make_unique<BackgroundFetchResult>(
         std::move(response), base::Time::Now(),
-        BackgroundFetchResult::FailureReason::UNKNOWN));
+        BackgroundFetchResult::FailureReason::FETCH_ERROR));
     return;
   }
 

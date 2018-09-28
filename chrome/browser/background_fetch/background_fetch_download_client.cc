@@ -31,7 +31,7 @@ BackgroundFetchFailureReason ToBackgroundFetchFailureReason(
     case download::Client::FailureReason::TIMEDOUT:
       return BackgroundFetchFailureReason::TIMEDOUT;
     case download::Client::FailureReason::UNKNOWN:
-      return BackgroundFetchFailureReason::UNKNOWN;
+      return BackgroundFetchFailureReason::FETCH_ERROR;
     case download::Client::FailureReason::ABORTED:
     case download::Client::FailureReason::CANCELLED:
       return BackgroundFetchFailureReason::CANCELLED;

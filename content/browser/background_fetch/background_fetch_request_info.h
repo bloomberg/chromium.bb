@@ -20,6 +20,7 @@
 #include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/browser/background_fetch_response.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -49,6 +50,11 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   void SetDownloadGuid(const std::string& download_guid);
 
   void SetResult(std::unique_ptr<BackgroundFetchResult> result);
+
+  // Creates an empty result, with no response, and assigns |failure_reason|
+  // as its failure_reason.
+  void SetEmptyResultWithFailureReason(
+      BackgroundFetchResult::FailureReason failure_reason);
 
   // Returns the index of this request within a Background Fetch registration.
   int request_index() const { return request_index_; }

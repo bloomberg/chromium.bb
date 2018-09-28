@@ -147,7 +147,7 @@ void MockBackgroundFetchDelegate::DownloadUrl(
         std::vector<GURL>({url}), test_response->headers);
     auto result = std::make_unique<BackgroundFetchResult>(
         std::move(response), base::Time::Now(),
-        BackgroundFetchResult::FailureReason::UNKNOWN);
+        BackgroundFetchResult::FailureReason::FETCH_ERROR);
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadComplete,
