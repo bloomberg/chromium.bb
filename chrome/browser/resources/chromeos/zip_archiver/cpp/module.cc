@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <clocale>
+#include <memory>
 #include <sstream>
+#include <utility>
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_message_sender_interface.h"
@@ -19,7 +21,8 @@
 
 namespace {
 
-typedef std::map<std::string, Volume*>::const_iterator volume_iterator;
+typedef std::map<std::string, std::unique_ptr<Volume>>::const_iterator
+    volume_iterator;
 typedef std::map<int, std::unique_ptr<Compressor>>::const_iterator
     compressor_iterator;
 
@@ -154,12 +157,7 @@ class NaclArchiveInstance : public pp::Instance {
         instance_handle_(instance),
         message_sender_(this) {}
 
-  virtual ~NaclArchiveInstance() {
-    for (volume_iterator iterator = volumes_.begin();
-         iterator != volumes_.end(); ++iterator) {
-      delete iterator->second;
-    }
-  }
+  virtual ~NaclArchiveInstance() = default;
 
   // Handler for messages coming in from JS via postMessage().
   virtual void HandleMessage(const pp::Var& var_message) {
@@ -222,9 +220,7 @@ class NaclArchiveInstance : public pp::Instance {
         break;
 
       case request::CLOSE_VOLUME: {
-        volume_iterator iterator = volumes_.find(file_system_id);
-        PP_DCHECK(iterator != volumes_.end());
-        delete iterator->second;
+        PP_DCHECK(volumes_.find(file_system_id) != volumes_.end());
         volumes_.erase(file_system_id);
         break;
       }
@@ -295,21 +291,21 @@ class NaclArchiveInstance : public pp::Instance {
     // Should not call ReadMetadata for a Volume already present in NaCl.
     PP_DCHECK(volumes_.find(file_system_id) == volumes_.end());
 
-    Volume* volume =
-        new Volume(instance_handle_, file_system_id, &message_sender_);
+    std::unique_ptr<Volume> volume = std::make_unique<Volume>(
+        instance_handle_, file_system_id, &message_sender_);
     if (!volume->Init()) {
       message_sender_.SendFileSystemError(
           file_system_id, request_id,
           "Could not create a volume for: " + file_system_id + ".");
-      delete volume;
       return;
     }
-    volumes_[file_system_id] = volume;
+    Volume* raw_volume = volume.get();
+    volumes_[file_system_id] = std::move(volume);
 
     PP_DCHECK(var_dict.Get(request::key::kEncoding).is_string());
     PP_DCHECK(var_dict.Get(request::key::kArchiveSize).is_string());
 
-    volume->ReadMetadata(
+    raw_volume->ReadMetadata(
         request_id, var_dict.Get(request::key::kEncoding).AsString(),
         request::GetInt64FromString(var_dict, request::key::kArchiveSize));
   }
@@ -473,7 +469,7 @@ class NaclArchiveInstance : public pp::Instance {
 
   // A map that holds for every opened archive its instance. The key is the file
   // system id of the archive.
-  std::map<std::string, Volume*> volumes_;
+  std::map<std::string, std::unique_ptr<Volume>> volumes_;
 
   // A map from compressor ids to compressors.
   std::map<int, std::unique_ptr<Compressor>> compressors_;

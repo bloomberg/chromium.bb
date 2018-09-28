@@ -8,6 +8,7 @@
 #include <ctime>
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive_minizip.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"
@@ -49,17 +50,15 @@ Compressor::Compressor(const pp::InstanceHandle& instance_handle,
     : compressor_id_(compressor_id),
       message_sender_(message_sender),
       worker_(instance_handle),
-      callback_factory_(this) {
-  requestor_ = new JavaScriptCompressorRequestor(this);
-  compressor_stream_ = new CompressorIOJavaScriptStream(requestor_);
-  compressor_archive_ = new CompressorArchiveMinizip(compressor_stream_);
-}
+      callback_factory_(this),
+      requestor_(std::make_unique<JavaScriptCompressorRequestor>(this)),
+      compressor_stream_(
+          std::make_unique<CompressorIOJavaScriptStream>(requestor_.get())),
+      compressor_archive_(std::make_unique<CompressorArchiveMinizip>(
+          compressor_stream_.get())) {}
 
 Compressor::~Compressor() {
   worker_.Join();
-  delete compressor_archive_;
-  delete compressor_stream_;
-  delete requestor_;
 }
 
 bool Compressor::Init() {

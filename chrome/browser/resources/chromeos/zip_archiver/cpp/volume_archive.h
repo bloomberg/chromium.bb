@@ -7,7 +7,9 @@
 
 #include <time.h>
 #include <cstdint>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_reader.h"
 
@@ -15,7 +17,8 @@
 // to be thread safe and its methods shouldn't be called in parallel.
 class VolumeArchive {
  public:
-  explicit VolumeArchive(VolumeReader* reader) : reader_(reader) {}
+  explicit VolumeArchive(std::unique_ptr<VolumeReader> reader)
+      : reader_(std::move(reader)) {}
 
   virtual ~VolumeArchive() {}
 
@@ -85,23 +88,17 @@ class VolumeArchive {
   // VolumeArchive::error_message().
   virtual bool Cleanup() = 0;
 
-  VolumeReader* reader() const { return reader_; }
+  VolumeReader* reader() const { return reader_.get(); }
   std::string error_message() const { return error_message_; }
 
  protected:
-  // Cleans up the reader. Can be called multiple times, but once called reader
-  // cannot be reinitialized.
-  void CleanupReader() {
-    delete reader_;
-    reader_ = nullptr;
-  }
-
   void set_error_message(const std::string& error_message) {
     error_message_ = error_message;
   }
 
  private:
-  VolumeReader* reader_;  // The reader that actually reads the archive data.
+  // The reader that actually reads the archive data.
+  std::unique_ptr<VolumeReader> reader_;
   std::string error_message_;  // An error message set in case of any errors.
 };
 

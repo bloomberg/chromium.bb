@@ -43,7 +43,7 @@ class VolumeArchiveMinizip;
 // operations.
 class VolumeArchiveMinizip : public VolumeArchive {
  public:
-  explicit VolumeArchiveMinizip(VolumeReader* reader);
+  explicit VolumeArchiveMinizip(std::unique_ptr<VolumeReader> reader);
 
   virtual ~VolumeArchiveMinizip();
 

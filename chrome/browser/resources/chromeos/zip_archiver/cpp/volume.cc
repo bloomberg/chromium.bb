@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <sstream>
+#include <utility>
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/char_coding.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_message_sender_interface.h"
@@ -15,13 +16,6 @@
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_reader_javascript_stream.h"
 
 namespace {
-
-#define LOG(x)                                                            \
-  do {                                                                    \
-    std::stringstream fmt;                                                \
-    fmt << x;                                                             \
-    message_sender_->CONSOLE_LOG(file_system_id_, request_id, fmt.str()); \
-  } while (0)
 
 typedef std::map<std::string, VolumeArchive*>::const_iterator
     volume_archive_iterator;
@@ -142,8 +136,9 @@ class JavaScriptRequestor : public JavaScriptRequestorInterface {
 // Volume constructor.
 class VolumeArchiveFactory : public VolumeArchiveFactoryInterface {
  public:
-  virtual VolumeArchive* Create(VolumeReader* reader) {
-    return new VolumeArchiveMinizip(reader);
+  virtual std::unique_ptr<VolumeArchive> Create(
+      std::unique_ptr<VolumeReader> reader) {
+    return std::make_unique<VolumeArchiveMinizip>(std::move(reader));
   }
 };
 
@@ -154,8 +149,9 @@ class VolumeReaderFactory : public VolumeReaderFactoryInterface {
   // VolumeReaderFactory does not own the volume pointer.
   explicit VolumeReaderFactory(Volume* volume) : volume_(volume) {}
 
-  virtual VolumeReader* Create(int64_t archive_size) {
-    return new VolumeReaderJavaScriptStream(archive_size, volume_->requestor());
+  virtual std::unique_ptr<VolumeReader> Create(int64_t archive_size) {
+    return std::make_unique<VolumeReaderJavaScriptStream>(archive_size,
+                                                          volume_->requestor());
   }
 
  private:
@@ -182,43 +178,36 @@ struct Volume::OpenFileArgs {
 Volume::Volume(const pp::InstanceHandle& instance_handle,
                const std::string& file_system_id,
                JavaScriptMessageSenderInterface* message_sender)
-    : volume_archive_(nullptr),
-      file_system_id_(file_system_id),
-      message_sender_(message_sender),
-      worker_(instance_handle),
-      callback_factory_(this) {
-  requestor_ = new JavaScriptRequestor(this);
-  volume_archive_factory_ = new VolumeArchiveFactory();
-  volume_reader_factory_ = new VolumeReaderFactory(this);
-  // Delegating constructors only from c++11.
-}
-
-Volume::Volume(const pp::InstanceHandle& instance_handle,
-               const std::string& file_system_id,
-               JavaScriptMessageSenderInterface* message_sender,
-               VolumeArchiveFactoryInterface* volume_archive_factory,
-               VolumeReaderFactoryInterface* volume_reader_factory)
-    : volume_archive_(nullptr),
-      file_system_id_(file_system_id),
+    : file_system_id_(file_system_id),
       message_sender_(message_sender),
       worker_(instance_handle),
       callback_factory_(this),
-      volume_archive_factory_(volume_archive_factory),
-      volume_reader_factory_(volume_reader_factory) {
-  requestor_ = new JavaScriptRequestor(this);
+      requestor_(std::make_unique<JavaScriptRequestor>(this)),
+      volume_archive_factory_(std::make_unique<VolumeArchiveFactory>()),
+      volume_reader_factory_(std::make_unique<VolumeReaderFactory>(this)) {
+  // Delegating constructors only from c++11.
 }
+
+Volume::Volume(
+    const pp::InstanceHandle& instance_handle,
+    const std::string& file_system_id,
+    JavaScriptMessageSenderInterface* message_sender,
+    std::unique_ptr<VolumeArchiveFactoryInterface> volume_archive_factory,
+    std::unique_ptr<VolumeReaderFactoryInterface> volume_reader_factory)
+    : file_system_id_(file_system_id),
+      message_sender_(message_sender),
+      worker_(instance_handle),
+      callback_factory_(this),
+      requestor_(std::make_unique<JavaScriptRequestor>(this)),
+      volume_archive_factory_(std::move(volume_archive_factory)),
+      volume_reader_factory_(std::move(volume_reader_factory)) {}
 
 Volume::~Volume() {
   worker_.Join();
 
   if (volume_archive_) {
     volume_archive_->Cleanup();
-    delete volume_archive_;
   }
-
-  delete requestor_;
-  delete volume_archive_factory_;
-  delete volume_reader_factory_;
 }
 
 bool Volume::Init() {
@@ -315,8 +304,7 @@ void Volume::ReadMetadataCallback(int32_t /*result*/,
     message_sender_->SendFileSystemError(file_system_id_, request_id,
                                          volume_archive_->error_message());
     ClearJob();
-    delete volume_archive_;
-    volume_archive_ = nullptr;
+    volume_archive_.reset();
     return;
   }
 
@@ -338,8 +326,7 @@ void Volume::ReadMetadataCallback(int32_t /*result*/,
       message_sender_->SendFileSystemError(file_system_id_, request_id,
                                            volume_archive_->error_message());
       ClearJob();
-      delete volume_archive_;
-      volume_archive_ = nullptr;
+      volume_archive_.reset();
       return;
     }
 
@@ -365,8 +352,7 @@ void Volume::ReadMetadataCallback(int32_t /*result*/,
       message_sender_->SendFileSystemError(file_system_id_, request_id,
                                            volume_archive_->error_message());
       ClearJob();
-      delete volume_archive_;
-      volume_archive_ = nullptr;
+      volume_archive_.reset();
       return;
     }
     if (return_value == VolumeArchive::RESULT_EOF)

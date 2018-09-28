@@ -9,6 +9,7 @@
 #include <cerrno>
 #include <cstring>
 #include <limits>
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -204,8 +205,8 @@ std::unique_ptr<std::string> GetPassphrase(
 
 }  // namespace volume_archive_functions
 
-VolumeArchiveMinizip::VolumeArchiveMinizip(VolumeReader* reader)
-    : VolumeArchive(reader),
+VolumeArchiveMinizip::VolumeArchiveMinizip(std::unique_ptr<VolumeReader> reader)
+    : VolumeArchive(std::move(reader)),
       reader_data_size_(kMinimumDataChunkSize),
       zip_file_(nullptr),
       dynamic_cache_(std::make_unique<char[]>(kMaximumDataChunkSize)),
@@ -498,8 +499,6 @@ bool VolumeArchiveMinizip::Cleanup() {
   }
   zip_file_ = nullptr;
   password_cache_.reset();
-
-  CleanupReader();
 
   return returnValue;
 }

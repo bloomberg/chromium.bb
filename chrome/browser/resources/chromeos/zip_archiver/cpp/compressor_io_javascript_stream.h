@@ -7,6 +7,7 @@
 
 #include <pthread.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_stream.h"
@@ -72,7 +73,7 @@ class CompressorIOJavaScriptStream : public CompressorStream {
   int64_t buffer_data_length_;
 
   // The buffer that contains cached data.
-  char* buffer_;
+  std::unique_ptr<char[]> buffer_;
 };
 
 #endif  // CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_COMPRESSOR_IO_JAVASCRIPT_STREAM_H_
