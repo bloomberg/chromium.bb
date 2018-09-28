@@ -334,6 +334,9 @@ void NGPaintFragment::PopulateDescendants(
       ToNGPhysicalContainerFragment(fragment);
   children_.ReserveCapacity(container.Children().size());
 
+  bool children_are_inline =
+      !fragment.IsBox() || ToNGPhysicalBoxFragment(fragment).ChildrenInline();
+
   unsigned child_index = 0;
   for (const NGLink& child_fragment : container.Children()) {
     bool populate_children = child_fragment->IsContainer() &&
@@ -344,20 +347,21 @@ void NGPaintFragment::PopulateDescendants(
                                        : nullptr,
         &populate_children);
 
-    if (!child_fragment->IsFloating() &&
-        !child_fragment->IsOutOfFlowPositioned() &&
-        !child_fragment->IsListMarker()) {
-      if (LayoutObject* layout_object = child_fragment->GetLayoutObject()) {
-        child->AssociateWithLayoutObject(layout_object, last_fragment_map);
+    if (children_are_inline) {
+      if (!child_fragment->IsFloating() &&
+          !child_fragment->IsOutOfFlowPositioned() &&
+          !child_fragment->IsListMarker()) {
+        if (LayoutObject* layout_object = child_fragment->GetLayoutObject())
+          child->AssociateWithLayoutObject(layout_object, last_fragment_map);
+
+        child->inline_offset_to_container_box_ =
+            inline_offset_to_container_box + child_fragment.Offset();
       }
 
-      child->inline_offset_to_container_box_ =
-          inline_offset_to_container_box + child_fragment.Offset();
-    }
-
-    if (populate_children) {
-      child->PopulateDescendants(child->inline_offset_to_container_box_,
-                                 last_fragment_map);
+      if (populate_children) {
+        child->PopulateDescendants(child->inline_offset_to_container_box_,
+                                   last_fragment_map);
+      }
     }
 
     if (child_index < children_.size())
@@ -377,15 +381,7 @@ void NGPaintFragment::AssociateWithLayoutObject(
     HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map) {
   DCHECK(layout_object);
   DCHECK(!next_for_same_layout_object_);
-
-  // TODO(kojii): The LayoutObject is inline, except for column container
-  // fragment. We should have better way to distinguish it, probably after we
-  // determined the generated fragment tree for multicol with fragmentations
-  // supported.
-  if (!layout_object->IsInline()) {
-    DCHECK(Parent() && layout_object == Parent()->GetLayoutObject());
-    return;
-  }
+  DCHECK(layout_object->IsInline());
 
   auto add_result = last_fragment_map->insert(layout_object, this);
   if (add_result.is_new_entry) {
