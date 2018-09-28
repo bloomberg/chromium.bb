@@ -30,6 +30,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
 #include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -232,6 +233,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
         switches::kAshDisableSmoothScreenRotation);
   }
 
+  statistics_provider_ =
+      std::make_unique<chromeos::system::ScopedFakeStatisticsProvider>();
+
   ui::test::EventGeneratorDelegate::SetFactoryFunction(base::BindRepeating(
       &aura::test::EventGeneratorDelegateAura::Create, nullptr));
 
@@ -383,6 +387,8 @@ void AshTestHelper::TearDown() {
 
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       ui::test::EventGeneratorDelegate::FactoryFunction());
+
+  statistics_provider_.reset();
 }
 
 void AshTestHelper::SetRunningOutsideAsh() {
