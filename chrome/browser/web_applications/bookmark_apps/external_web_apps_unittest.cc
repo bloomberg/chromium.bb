@@ -7,8 +7,10 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -134,5 +136,28 @@ TEST_F(ScanDirForExternalWebAppsTest, InvalidLaunchContainer) {
 
   // The invalidg_launch_container directory contains one JSON file which is
   // correct except for an invalid "launch_container" field.
+  EXPECT_EQ(0u, app_infos.size());
+}
+
+TEST_F(ScanDirForExternalWebAppsTest, EnabledByFinch) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      base::Feature{"test_feature_name", base::FEATURE_DISABLED_BY_DEFAULT});
+  auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
+      test_dir("enabled_by_finch"));
+
+  // The enabled_by_finch directory contains two JSON file containing apps
+  // that have field trials. As the matching featureis enabled, they should be
+  // in our list of apps to install.
+  EXPECT_EQ(2u, app_infos.size());
+}
+
+TEST_F(ScanDirForExternalWebAppsTest, NotEnabledByFinch) {
+  auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
+      test_dir("enabled_by_finch"));
+
+  // The enabled_by_finch directory contains two JSON file containing apps
+  // that have field trials. As the matching featureis enabled, they should not
+  // be in our list of apps to install.
   EXPECT_EQ(0u, app_infos.size());
 }
