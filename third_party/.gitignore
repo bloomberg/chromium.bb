@@ -211,7 +211,6 @@
 /usrsctp/usrsctplib
 /v8-i18n
 /valgrind
-/vulkan-validation-layers/src
 /visualmetrics
 /wayland/src
 /wayland-protocols/src
