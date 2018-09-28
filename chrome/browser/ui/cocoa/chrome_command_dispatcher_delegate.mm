@@ -31,18 +31,6 @@
   if (!window)
     return NO;
 
-  // Logic for handling Cocoa windows.
-  BrowserWindowController* controller =
-      BrowserWindowControllerForWindow(window);
-  if (controller) {
-    if ([controller respondsToSelector:@selector
-                    (handledByExtensionCommand:priority:)]) {
-      if ([controller handledByExtensionCommand:event priority:priority])
-        return YES;
-    }
-    return NO;
-  }
-
   // Logic for handling Views windows.
   //
   // There are 3 ways for extensions to register accelerators in Views:
