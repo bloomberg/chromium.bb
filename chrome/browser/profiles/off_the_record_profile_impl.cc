@@ -393,9 +393,14 @@ net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-net::URLRequestContextGetter*
-    OffTheRecordProfileImpl::GetRequestContextForExtensions() {
-  return io_data_->GetExtensionsRequestContextGetter().get();
+base::OnceCallback<net::CookieStore*()>
+OffTheRecordProfileImpl::GetExtensionsCookieStoreGetter() {
+  return base::BindOnce(
+      [](content::ResourceContext* context) {
+        auto* io_data = ProfileIOData::FromResourceContext(context);
+        return io_data->GetExtensionsCookieStore();
+      },
+      GetResourceContext());
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

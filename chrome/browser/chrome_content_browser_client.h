@@ -246,7 +246,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& requesting_origin,
       const url::Origin& embedding_origin) override;
   std::string GetWebBluetoothBlocklist() override;
-  net::URLRequestContext* OverrideRequestContextForURL(
+  net::CookieStore* OverrideCookieStoreForURL(
       const GURL& url,
       content::ResourceContext* context) override;
   scoped_refptr<network::SharedURLLoaderFactory>

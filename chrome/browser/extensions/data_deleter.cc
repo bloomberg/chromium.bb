@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -37,10 +38,9 @@ namespace extensions {
 
 namespace {
 
-void ClearCookiesOnIOThread(scoped_refptr<net::URLRequestContextGetter> context,
+void ClearCookiesOnIOThread(base::OnceCallback<net::CookieStore*()> getter,
                             const GURL& origin) {
-  net::CookieStore* cookie_store =
-      context->GetURLRequestContext()->cookie_store();
+  net::CookieStore* cookie_store = std::move(getter).Run();
   net::CookieDeletionInfo delete_info;
   delete_info.host = origin.host();
   cookie_store->DeleteAllMatchingInfoAsync(std::move(delete_info),
@@ -76,10 +76,8 @@ void DeleteOrigin(Profile* profile,
     // TODO(rdsmith): Mojoify this call and get rid of the thread hopping.
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ClearCookiesOnIOThread,
-            base::WrapRefCounted(profile->GetRequestContextForExtensions()),
-            origin));
+        base::BindOnce(&ClearCookiesOnIOThread,
+                       profile->GetExtensionsCookieStoreGetter(), origin));
   } else {
     // We don't need to worry about the media request context because that
     // shares the same cookie store as the main request context.

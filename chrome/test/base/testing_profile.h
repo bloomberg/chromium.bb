@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -323,7 +324,8 @@ class TestingProfile : public Profile {
   ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
 #endif  // !defined(OS_ANDROID)
   net::URLRequestContextGetter* GetRequestContext() override;
-  net::URLRequestContextGetter* GetRequestContextForExtensions() override;
+  base::OnceCallback<net::CookieStore*()> GetExtensionsCookieStoreGetter()
+      override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
   void set_last_session_exited_cleanly(bool value) {
@@ -401,9 +403,8 @@ class TestingProfile : public Profile {
   // maps to this profile.
   void CreateProfilePolicyConnector();
 
-  // Internally, this is a TestURLRequestContextGetter that creates a dummy
-  // request context. Currently, only the CookieMonster is hooked up.
-  scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;
+  std::unique_ptr<net::CookieStore, content::BrowserThread::DeleteOnIOThread>
+      extensions_cookie_store_;
 
   // Holds a dummy network context request to avoid triggering connection error
   // handler.

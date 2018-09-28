@@ -1068,8 +1068,14 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
-  return io_data_.GetExtensionsRequestContextGetter().get();
+base::OnceCallback<net::CookieStore*()>
+ProfileImpl::GetExtensionsCookieStoreGetter() {
+  return base::BindOnce(
+      [](content::ResourceContext* context) {
+        auto* io_data = ProfileIOData::FromResourceContext(context);
+        return io_data->GetExtensionsCookieStore();
+      },
+      GetResourceContext());
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

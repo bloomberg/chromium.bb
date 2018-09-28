@@ -63,20 +63,6 @@ class FactoryForMain : public ChromeURLRequestContextFactory {
   content::URLRequestInterceptorScopedVector request_interceptors_;
 };
 
-// Factory that creates the URLRequestContext for extensions.
-class FactoryForExtensions : public ChromeURLRequestContextFactory {
- public:
-  explicit FactoryForExtensions(const ProfileIOData* profile_io_data)
-      : profile_io_data_(profile_io_data) {}
-
-  net::URLRequestContext* Create() override {
-    return profile_io_data_->GetExtensionsRequestContext();
-  }
-
- private:
-  const ProfileIOData* const profile_io_data_;
-};
-
 // Factory that creates the URLRequestContext for a given isolated app.
 class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
  public:
@@ -250,15 +236,6 @@ ChromeURLRequestContextGetter::CreateForMedia(
     const ProfileIOData* profile_io_data) {
   return ChromeURLRequestContextGetter::CreateAndInit(
       std::make_unique<FactoryForMedia>(profile_io_data));
-}
-
-// static
-scoped_refptr<ChromeURLRequestContextGetter>
-ChromeURLRequestContextGetter::CreateForExtensions(
-    Profile* profile,
-    const ProfileIOData* profile_io_data) {
-  return ChromeURLRequestContextGetter::CreateAndInit(
-      std::make_unique<FactoryForExtensions>(profile_io_data));
 }
 
 // static

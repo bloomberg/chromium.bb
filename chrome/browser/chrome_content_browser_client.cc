@@ -2564,18 +2564,18 @@ std::string ChromeContentBrowserClient::GetWebBluetoothBlocklist() {
                                             "blocklist_additions");
 }
 
-net::URLRequestContext*
-ChromeContentBrowserClient::OverrideRequestContextForURL(
-    const GURL& url, content::ResourceContext* context) {
+net::CookieStore* ChromeContentBrowserClient::OverrideCookieStoreForURL(
+    const GURL& url,
+    content::ResourceContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (url.SchemeIs(extensions::kExtensionScheme)) {
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-    return io_data->extensions_request_context();
+    return io_data->GetExtensionsCookieStore();
   }
 #endif
 
-  return NULL;
+  return nullptr;
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

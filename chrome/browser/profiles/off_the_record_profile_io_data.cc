@@ -105,17 +105,6 @@ OffTheRecordProfileIOData::Handle::CreateMainRequestContextGetter(
 }
 
 scoped_refptr<ChromeURLRequestContextGetter>
-OffTheRecordProfileIOData::Handle::GetExtensionsRequestContextGetter() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  LazyInitialize();
-  if (!extensions_request_context_getter_.get()) {
-    extensions_request_context_getter_ =
-        ChromeURLRequestContextGetter::CreateForExtensions(profile_, io_data_);
-  }
-  return extensions_request_context_getter_;
-}
-
-scoped_refptr<ChromeURLRequestContextGetter>
 OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
     const base::FilePath& partition_path,
     bool in_memory) const {
@@ -205,9 +194,6 @@ OffTheRecordProfileIOData::Handle::GetAllContextGetters() {
   for (; iter != app_request_context_getter_map_.end(); ++iter)
     context_getters->push_back(iter->second);
 
-  if (extensions_request_context_getter_.get())
-    context_getters->push_back(extensions_request_context_getter_);
-
   if (main_request_context_getter_.get())
     context_getters->push_back(main_request_context_getter_);
 
@@ -241,22 +227,17 @@ void OffTheRecordProfileIOData::InitializeInternal(
 void OffTheRecordProfileIOData::OnMainRequestContextCreated(
     ProfileParams* profile_params) const {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  InitializeExtensionsRequestContext(profile_params);
+  InitializeExtensionsCookieStore(profile_params);
 #endif
 }
 
-void OffTheRecordProfileIOData::
-    InitializeExtensionsRequestContext(ProfileParams* profile_params) const {
-  // All we care about for extensions is the cookie store. For incognito, we
-  // use a non-persistent cookie store.
-  net::URLRequestContext* extensions_context = extensions_request_context();
-
+void OffTheRecordProfileIOData::InitializeExtensionsCookieStore(
+    ProfileParams* profile_params) const {
   content::CookieStoreConfig cookie_config;
   // Enable cookies for chrome-extension URLs.
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
   extensions_cookie_store_ = content::CreateCookieStore(
       cookie_config, profile_params->io_thread->net_log());
-  extensions_context->set_cookie_store(extensions_cookie_store_.get());
 }
 
 net::URLRequestContext*
@@ -280,4 +261,8 @@ OffTheRecordProfileIOData::AcquireIsolatedMediaRequestContext(
     const StoragePartitionDescriptor& partition_descriptor) const {
   NOTREACHED();
   return NULL;
+}
+
+net::CookieStore* OffTheRecordProfileIOData::GetExtensionsCookieStore() const {
+  return extensions_cookie_store_.get();
 }
