@@ -37,6 +37,8 @@
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/ns_view_bridge_factory_impl.h"
+#include "content/public/common/ns_view_bridge_factory.mojom.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -132,6 +134,8 @@ class AppShimController : public chrome::mojom::AppShim {
   void LaunchAppDone(apps::AppShimLaunchResult result) override;
   void CreateViewsBridgeFactory(
       views_bridge_mac::mojom::BridgeFactoryRequest request) override;
+  void CreateContentNSViewBridgeFactory(
+      content::mojom::NSViewBridgeFactoryAssociatedRequest request) override;
   void Hide() override;
   void UnhideWithoutActivation() override;
   void SetUserAttention(apps::AppShimAttentionType attention_type) override;
@@ -312,6 +316,11 @@ void AppShimController::LaunchAppDone(apps::AppShimLaunchResult result) {
 void AppShimController::CreateViewsBridgeFactory(
     views_bridge_mac::mojom::BridgeFactoryRequest request) {
   views_bridge_mac::BridgeFactoryImpl::Get()->BindRequest(std::move(request));
+}
+
+void AppShimController::CreateContentNSViewBridgeFactory(
+    content::mojom::NSViewBridgeFactoryAssociatedRequest request) {
+  content::NSViewBridgeFactoryImpl::Get()->BindRequest(std::move(request));
 }
 
 void AppShimController::Hide() {

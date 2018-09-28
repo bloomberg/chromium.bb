@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
 #include "ipc/ipc_message.h"
@@ -46,6 +48,8 @@ class TestingAppShim : public chrome::mojom::AppShim {
   }
   void CreateViewsBridgeFactory(
       views_bridge_mac::mojom::BridgeFactoryRequest request) override {}
+  void CreateContentNSViewBridgeFactory(
+      content::mojom::NSViewBridgeFactoryAssociatedRequest request) override {}
   void Hide() override {}
   void UnhideWithoutActivation() override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
@@ -83,9 +87,7 @@ const char kTestProfileDir[] = "Profile 1";
 class AppShimHostTest : public testing::Test,
                         public apps::AppShimHandler {
  public:
-  AppShimHostTest()
-      : task_runner_(new base::TestSimpleTaskRunner),
-        task_runner_handle_(task_runner_) {}
+  AppShimHostTest() { task_runner_ = base::ThreadTaskRunnerHandle::Get(); }
 
   ~AppShimHostTest() override {
     if (host_)
@@ -93,7 +95,8 @@ class AppShimHostTest : public testing::Test,
     DCHECK(!host_);
   }
 
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner() {
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
   }
   TestingAppShimHost* host() { return host_.get(); }
@@ -106,7 +109,7 @@ class AppShimHostTest : public testing::Test,
   }
 
   apps::AppShimLaunchResult GetLaunchResult() {
-    task_runner_->RunUntilIdle();
+    RunUntilIdle();
     return shim_->GetLaunchResult();
   }
 
@@ -149,8 +152,8 @@ class AppShimHostTest : public testing::Test,
     host_ = host->GetWeakPtr();
   }
 
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<TestingAppShim> shim_;
 
@@ -182,15 +185,15 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
 
   GetMojoHost()->FocusApp(apps::APP_SHIM_FOCUS_NORMAL,
                           std::vector<base::FilePath>());
-  task_runner()->RunUntilIdle();
+  RunUntilIdle();
   EXPECT_EQ(1, focus_count_);
 
   GetMojoHost()->QuitApp();
-  task_runner()->RunUntilIdle();
+  RunUntilIdle();
   EXPECT_EQ(1, quit_count_);
 
   SimulateDisconnect();
-  task_runner()->RunUntilIdle();
+  RunUntilIdle();
   EXPECT_EQ(1, close_count_);
   EXPECT_EQ(nullptr, host());
   apps::AppShimHandler::RemoveHandler(kTestAppId);
