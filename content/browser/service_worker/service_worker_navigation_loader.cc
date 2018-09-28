@@ -416,6 +416,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
 
   if (fetch_result ==
       ServiceWorkerFetchDispatcher::FetchEventResult::kShouldFallback) {
+    TransitionToStatus(Status::kCompleted);
     // TODO(falken): Propagate the timing info to the renderer somehow, or else
     // Navigation Timing etc APIs won't know about service worker.
     std::move(fallback_callback_)
