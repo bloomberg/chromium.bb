@@ -140,7 +140,6 @@ CrSettingsDefaultBrowserTest.*
 CrSettingsDevicePageTest.DevicePageTest
 CrSettingsDevicePageTest.PointersTest
 CrSettingsDevicePageTest.StylusTest
-CrSettingsDisplaySizeSliderTest.*
 CrSettingsDownloadsPageTest.*
 CrSettingsDropdownMenuTest.*
 CrSettingsEditDictionaryPageTest.*
