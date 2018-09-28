@@ -97,8 +97,9 @@ bool SVGGeometryElement::isPointInFill(SVGPointTearOff* point) const {
       PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request,
       GetLayoutObject()->StyleRef().PointerEvents());
   hit_rules.can_hit_stroke = false;
+  HitTestLocation location(point->Target()->Value());
   return ToLayoutSVGShape(GetLayoutObject())
-      ->NodeAtFloatPointInternal(request, point->Target()->Value(), hit_rules);
+      ->NodeAtPointInternal(request, location, hit_rules);
 }
 
 bool SVGGeometryElement::isPointInStroke(SVGPointTearOff* point) const {
@@ -114,8 +115,9 @@ bool SVGGeometryElement::isPointInStroke(SVGPointTearOff* point) const {
       PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request,
       GetLayoutObject()->StyleRef().PointerEvents());
   hit_rules.can_hit_fill = false;
+  HitTestLocation location(point->Target()->Value());
   return ToLayoutSVGShape(GetLayoutObject())
-      ->NodeAtFloatPointInternal(request, point->Target()->Value(), hit_rules);
+      ->NodeAtPointInternal(request, location, hit_rules);
 }
 
 Path SVGGeometryElement::ToClipPath() const {

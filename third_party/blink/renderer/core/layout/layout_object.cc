@@ -3818,13 +3818,6 @@ AffineTransform LayoutObject::LocalSVGTransform() const {
   return AffineTransform();
 }
 
-bool LayoutObject::NodeAtFloatPoint(HitTestResult&,
-                                    const FloatPoint&,
-                                    HitTestAction) {
-  NOTREACHED();
-  return false;
-}
-
 bool LayoutObject::IsRelayoutBoundaryForInspector() const {
   return ObjectIsRelayoutBoundary(this);
 }

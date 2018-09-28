@@ -52,6 +52,17 @@ const Node* RenderingTest::HitTest(int x, int y) {
   return result.InnerNode();
 }
 
+HitTestResult::NodeSet RenderingTest::RectBasedHitTest(LayoutRect rect) {
+  HitTestLocation location(rect);
+  HitTestResult result(
+      HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                     HitTestRequest::kAllowChildFrameContent |
+                     HitTestRequest::kListBased),
+      location);
+  GetLayoutView().HitTest(location, result);
+  return result.ListBasedTestResult();
+}
+
 void RenderingTest::SetUp() {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);

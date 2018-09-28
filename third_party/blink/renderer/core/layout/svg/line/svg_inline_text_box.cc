@@ -308,10 +308,9 @@ bool SVGInlineTextBox::NodeAtPoint(HitTestResult& result,
       DCHECK(line_layout_item.ScalingFactor());
       float baseline = font_data->GetFontMetrics().FloatAscent() /
                        line_layout_item.ScalingFactor();
-      FloatPoint float_location = FloatPoint(location_in_container.Point());
       for (const SVGTextFragment& fragment : text_fragments_) {
         FloatQuad fragment_quad = fragment.BoundingQuad(baseline);
-        if (fragment_quad.ContainsPoint(float_location)) {
+        if (location_in_container.Intersects(fragment_quad)) {
           line_layout_item.UpdateHitTestResult(
               result,
               location_in_container.Point() - ToLayoutSize(accumulated_offset));

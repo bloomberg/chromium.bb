@@ -347,27 +347,29 @@ void LayoutSVGShape::Paint(const PaintInfo& paint_info) const {
   SVGShapePainter(*this).Paint(paint_info);
 }
 
-bool LayoutSVGShape::NodeAtFloatPoint(HitTestResult& result,
-                                      const FloatPoint& point_in_parent,
-                                      HitTestAction hit_test_action) {
+bool LayoutSVGShape::NodeAtPoint(HitTestResult& result,
+                                 const HitTestLocation& location_in_parent,
+                                 const LayoutPoint& accumulated_offset,
+                                 HitTestAction hit_test_action) {
+  DCHECK_EQ(accumulated_offset, LayoutPoint());
   // We only draw in the foreground phase, so we only hit-test then.
   if (hit_test_action != kHitTestForeground)
     return false;
 
-  FloatPoint local_point;
+  HitTestLocation local_location;
   if (!SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-          *this, LocalToSVGParentTransform(), point_in_parent, local_point))
+          *this, LocalToSVGParentTransform(), location_in_parent,
+          local_location))
     return false;
 
   PointerEventsHitRules hit_rules(
       PointerEventsHitRules::SVG_GEOMETRY_HITTESTING,
       result.GetHitTestRequest(), StyleRef().PointerEvents());
-  if (NodeAtFloatPointInternal(result.GetHitTestRequest(), local_point,
-                               hit_rules)) {
-    const LayoutPoint& local_layout_point = LayoutPoint(local_point);
+  if (NodeAtPointInternal(result.GetHitTestRequest(), local_location,
+                          hit_rules)) {
+    const LayoutPoint local_layout_point(local_location.TransformedPoint());
     UpdateHitTestResult(result, local_layout_point);
-    HitTestLocation location(local_layout_point);
-    if (result.AddNodeToListBasedTestResult(GetElement(), location) ==
+    if (result.AddNodeToListBasedTestResult(GetElement(), local_location) ==
         kStopHitTesting)
       return true;
   }
@@ -375,26 +377,30 @@ bool LayoutSVGShape::NodeAtFloatPoint(HitTestResult& result,
   return false;
 }
 
-bool LayoutSVGShape::NodeAtFloatPointInternal(const HitTestRequest& request,
-                                              const FloatPoint& local_point,
-                                              PointerEventsHitRules hit_rules) {
+bool LayoutSVGShape::NodeAtPointInternal(const HitTestRequest& request,
+                                         const HitTestLocation& local_location,
+                                         PointerEventsHitRules hit_rules) {
   const ComputedStyle& style = StyleRef();
   if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
     return false;
   if (hit_rules.can_hit_bounding_box &&
-      ObjectBoundingBox().Contains(local_point))
+      local_location.Intersects(ObjectBoundingBox()))
     return true;
+
+  // TODO(chrishtr): support rect-based intersections in the cases below.
   const SVGComputedStyle& svg_style = style.SvgStyle();
   if (hit_rules.can_hit_stroke &&
       (svg_style.HasStroke() || !hit_rules.require_stroke) &&
-      StrokeContains(local_point, hit_rules.require_stroke))
+      StrokeContains(local_location.TransformedPoint(),
+                     hit_rules.require_stroke))
     return true;
   WindRule fill_rule = svg_style.FillRule();
   if (request.SvgClipContent())
     fill_rule = svg_style.ClipRule();
   if (hit_rules.can_hit_fill &&
       (svg_style.HasFill() || !hit_rules.require_fill) &&
-      FillContains(local_point, hit_rules.require_fill, fill_rule))
+      FillContains(local_location.TransformedPoint(), hit_rules.require_fill,
+                   fill_rule))
     return true;
   return false;
 }

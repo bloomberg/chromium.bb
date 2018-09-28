@@ -70,8 +70,11 @@ class CORE_EXPORT HitTestLocation {
   }
 
   bool Intersects(const LayoutRect&) const;
+  // Uses floating-point intersection, which uses inclusive intersection
+  // (see LayoutRect::InclusiveIntersect for a definition)
   bool Intersects(const FloatRect&) const;
   bool Intersects(const FloatRoundedRect&) const;
+  bool Intersects(const FloatQuad&) const;
   bool ContainsPoint(const FloatPoint&) const;
 
   const FloatPoint& TransformedPoint() const { return transformed_point_; }

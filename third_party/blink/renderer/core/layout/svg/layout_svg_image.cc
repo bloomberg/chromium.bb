@@ -166,9 +166,11 @@ void LayoutSVGImage::Paint(const PaintInfo& paint_info) const {
   SVGImagePainter(*this).Paint(paint_info);
 }
 
-bool LayoutSVGImage::NodeAtFloatPoint(HitTestResult& result,
-                                      const FloatPoint& point_in_parent,
-                                      HitTestAction hit_test_action) {
+bool LayoutSVGImage::NodeAtPoint(HitTestResult& result,
+                                 const HitTestLocation& location_in_container,
+                                 const LayoutPoint& accumulated_offset,
+                                 HitTestAction hit_test_action) {
+  DCHECK(accumulated_offset == LayoutPoint());
   // We only draw in the forground phase, so we only hit-test then.
   if (hit_test_action != kHitTestForeground)
     return false;
@@ -180,17 +182,18 @@ bool LayoutSVGImage::NodeAtFloatPoint(HitTestResult& result,
   if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
     return false;
 
-  FloatPoint local_point;
+  HitTestLocation local_location;
   if (!SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-          *this, LocalToSVGParentTransform(), point_in_parent, local_point))
+          *this, LocalToSVGParentTransform(), location_in_container,
+          local_location))
     return false;
 
   if (hit_rules.can_hit_fill || hit_rules.can_hit_bounding_box) {
-    if (object_bounding_box_.Contains(local_point)) {
-      const LayoutPoint& local_layout_point = LayoutPoint(local_point);
-      HitTestLocation location(local_layout_point);
+    if (local_location.Intersects(object_bounding_box_)) {
+      const LayoutPoint& local_layout_point =
+          LayoutPoint(local_location.TransformedPoint());
       UpdateHitTestResult(result, local_layout_point);
-      if (result.AddNodeToListBasedTestResult(GetElement(), location) ==
+      if (result.AddNodeToListBasedTestResult(GetElement(), local_location) ==
           kStopHitTesting)
         return true;
     }
