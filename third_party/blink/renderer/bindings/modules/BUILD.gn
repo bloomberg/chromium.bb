@@ -52,6 +52,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/service_worker/install_event.idl",
     "//third_party/blink/renderer/modules/speech/speech_recognition_error.idl",
     "//third_party/blink/renderer/modules/speech/speech_recognition_event.idl",
+    "//third_party/blink/renderer/modules/speech/speech_synthesis_error_event.idl",
     "//third_party/blink/renderer/modules/speech/speech_synthesis_event.idl",
     "//third_party/blink/renderer/modules/storage/storage_event.idl",
     "//third_party/blink/renderer/modules/vr/vr_display_event.idl",
