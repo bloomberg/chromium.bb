@@ -191,7 +191,8 @@ void AV1CompMaskUpVarianceTest::RunCheckOutput(comp_mask_pred_func test_impl,
   const int h = block_size_high[bsize];
   int wedge_types = (1 << get_wedge_bits_lookup(bsize));
   int subpel_search;
-  for (subpel_search = 1; subpel_search <= 2; ++subpel_search) {
+  for (subpel_search = USE_4_TAPS; subpel_search <= USE_8_TAPS;
+       ++subpel_search) {
     // loop through subx and suby
     for (int sub = 0; sub < 8 * 8; ++sub) {
       int subx = sub & 0x7;
@@ -231,7 +232,7 @@ void AV1CompMaskUpVarianceTest::RunSpeedTest(comp_mask_pred_func test_impl,
   const int num_loops = 1000000000 / (w + h);
   comp_mask_pred_func funcs[2] = { &aom_comp_mask_pred_c, test_impl };
   double elapsed_time[2] = { 0 };
-  int subpel_search = 2;  // set to 1 to test 4-tap filter.
+  int subpel_search = USE_8_TAPS;  // set to USE_4_TAPS to test 4-tap filter.
   for (int i = 0; i < 2; ++i) {
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
