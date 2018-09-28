@@ -705,7 +705,9 @@ void WizardController::ShowFingerprintSetupScreen() {
 
 void WizardController::ShowMarketingOptInScreen() {
   // Skip the screen for public sessions and non-regular ephemeral users.
-  if (IsPublicSessionOrEphemeralLogin()) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableMarketingOptInScreen) ||
+      IsPublicSessionOrEphemeralLogin()) {
     OnMarketingOptInFinished();
     return;
   }
