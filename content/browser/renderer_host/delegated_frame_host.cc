@@ -149,7 +149,7 @@ void DelegatedFrameHost::ProcessCopyOutputRequest(
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
-  return active_device_scale_factor_ != 0.f;
+  return HasFallbackSurface() && active_device_scale_factor_ != 0.f;
 }
 
 bool DelegatedFrameHost::TransformPointToLocalCoordSpaceLegacy(
@@ -330,6 +330,8 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
     return;
   }
 
+  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
+      surface_info.id());
   active_local_surface_id_ = surface_info.id().local_surface_id();
   active_device_scale_factor_ = surface_info.device_scale_factor();
 
