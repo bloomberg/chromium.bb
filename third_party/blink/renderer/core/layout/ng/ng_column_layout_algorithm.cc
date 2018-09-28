@@ -321,7 +321,6 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstaintSpaceForBalancing(
   space_builder.SetPercentageResolutionSize(column_size);
   space_builder.SetIsNewFormattingContext(true);
   space_builder.SetIsAnonymous(true);
-  space_builder.SetIsIntermediateLayout(true);
 
   return space_builder.ToConstraintSpace(Style().GetWritingMode());
 }
