@@ -122,7 +122,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
             }
         } else {
             rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_SHOWN_IN_FOREGROUND_APP;
-            mTab.showSadTab();
+            SadTab.from(mTab).show();
             // This is necessary to correlate histogram data with stability counts.
             RecordHistogram.recordBooleanHistogram("Stability.Android.RendererCrash", true);
         }
