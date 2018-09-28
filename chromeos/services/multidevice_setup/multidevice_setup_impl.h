@@ -32,7 +32,6 @@ namespace multidevice_setup {
 
 class AccountStatusChangeDelegateNotifier;
 class AndroidSmsAppHelperDelegate;
-class AndroidSmsAppInstallingStatusObserver;
 class AndroidSmsPairingStateTracker;
 class AuthTokenValidator;
 class DeviceReenroller;
@@ -125,6 +124,7 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
 
   void FlushForTesting();
 
+  std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
   std::unique_ptr<EligibleHostDevicesProvider> eligible_host_devices_provider_;
   std::unique_ptr<HostBackendDelegate> host_backend_delegate_;
   std::unique_ptr<HostVerifier> host_verifier_;
@@ -133,8 +133,6 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
   std::unique_ptr<SetupFlowCompletionRecorder> setup_flow_completion_recorder_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
   std::unique_ptr<DeviceReenroller> device_reenroller_;
-  std::unique_ptr<AndroidSmsAppInstallingStatusObserver>
-      android_sms_app_installing_host_observer_;
   AuthTokenValidator* auth_token_validator_;
 
   mojo::InterfacePtrSet<mojom::HostStatusObserver> host_status_observers_;

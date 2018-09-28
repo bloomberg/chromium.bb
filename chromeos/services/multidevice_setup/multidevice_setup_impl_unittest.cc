@@ -10,7 +10,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
-#include "chromeos/services/multidevice_setup/android_sms_app_installing_status_observer.h"
 #include "chromeos/services/multidevice_setup/device_reenroller.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
@@ -393,39 +392,6 @@ class FakeDeviceReenrollerFactory : public DeviceReenroller::Factory {
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceReenrollerFactory);
 };
 
-class FakeAndroidSmsAppInstallingStatusObserverFactory
-    : public AndroidSmsAppInstallingStatusObserver::Factory {
- public:
-  FakeAndroidSmsAppInstallingStatusObserverFactory(
-      FakeHostStatusProviderFactory* fake_host_status_provider_factory,
-      AndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate)
-      : fake_host_status_provider_factory_(fake_host_status_provider_factory),
-        expected_android_sms_app_helper_delegate_(
-            expected_android_sms_app_helper_delegate) {}
-
-  ~FakeAndroidSmsAppInstallingStatusObserverFactory() override = default;
-
- private:
-  // AndroidSmsAppInstallingStatusObserver::Factory:
-  std::unique_ptr<AndroidSmsAppInstallingStatusObserver> BuildInstance(
-      HostStatusProvider* host_status_provider,
-      std::unique_ptr<AndroidSmsAppHelperDelegate>
-          android_sms_app_helper_delegate) override {
-    EXPECT_EQ(fake_host_status_provider_factory_->instance(),
-              host_status_provider);
-    EXPECT_EQ(expected_android_sms_app_helper_delegate_,
-              android_sms_app_helper_delegate.get());
-    // Only check inputs and return nullptr. We do not want to trigger the
-    // AndroidSmsAppInstallingStatusObserver logic in these unit tests.
-    return nullptr;
-  }
-
-  FakeHostStatusProviderFactory* fake_host_status_provider_factory_;
-  AndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAndroidSmsAppInstallingStatusObserverFactory);
-};
-
 }  // namespace
 
 class MultiDeviceSetupImplTest : public testing::Test {
@@ -513,13 +479,6 @@ class MultiDeviceSetupImplTest : public testing::Test {
     DeviceReenroller::Factory::SetFactoryForTesting(
         fake_device_reenroller_factory_.get());
 
-    fake_android_sms_app_installing_status_observer_factory_ =
-        std::make_unique<FakeAndroidSmsAppInstallingStatusObserverFactory>(
-            fake_host_status_provider_factory_.get(),
-            fake_android_sms_app_helper_delegate_);
-    AndroidSmsAppInstallingStatusObserver::Factory::SetFactoryForTesting(
-        fake_android_sms_app_installing_status_observer_factory_.get());
-
     multidevice_setup_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
         test_pref_service_.get(), fake_device_sync_client_.get(),
         fake_auth_token_validator_.get(),
@@ -538,8 +497,6 @@ class MultiDeviceSetupImplTest : public testing::Test {
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         nullptr);
     DeviceReenroller::Factory::SetFactoryForTesting(nullptr);
-    AndroidSmsAppInstallingStatusObserver::Factory::SetFactoryForTesting(
-        nullptr);
   }
 
   void CallSetAccountStatusChangeDelegate() {
@@ -823,8 +780,6 @@ class MultiDeviceSetupImplTest : public testing::Test {
   std::unique_ptr<FakeAccountStatusChangeDelegateNotifierFactory>
       fake_account_status_change_delegate_notifier_factory_;
   std::unique_ptr<FakeDeviceReenrollerFactory> fake_device_reenroller_factory_;
-  std::unique_ptr<FakeAndroidSmsAppInstallingStatusObserverFactory>
-      fake_android_sms_app_installing_status_observer_factory_;
   FakeAndroidSmsAppHelperDelegate* fake_android_sms_app_helper_delegate_;
   FakeAndroidSmsPairingStateTracker* fake_android_sms_pairing_state_tracker_;
 
