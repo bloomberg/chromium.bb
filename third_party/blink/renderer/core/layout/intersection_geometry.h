@@ -38,12 +38,18 @@ class IntersectionGeometry {
 
   // Client rect in the coordinate system of the frame containing target.
   LayoutRect TargetRect() const { return target_rect_; }
+  // Target rect in CSS pixels
+  LayoutRect UnZoomedTargetRect() const;
 
   // Client rect in the coordinate system of the frame containing target.
   LayoutRect IntersectionRect() const { return intersection_rect_; }
+  // Intersection rect in CSS pixels
+  LayoutRect UnZoomedIntersectionRect() const;
 
   // Client rect in the coordinate system of the frame containing root.
   LayoutRect RootRect() const { return root_rect_; }
+  // Root rect in CSS pixels
+  LayoutRect UnZoomedRootRect() const;
 
   bool DoesIntersect() const { return does_intersect_; }
 
