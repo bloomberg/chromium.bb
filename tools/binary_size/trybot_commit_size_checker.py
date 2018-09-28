@@ -29,6 +29,30 @@ _NORMALIZED_APK_SIZE_DETAILS = (
     'binary_size/metrics.md#Normalized-APK-Size '
     'for an explanation of Normalized APK Size')
 
+_FAILURE_GUIDANCE = """
+Please look at the symbol diffs from the "Show Resource Sizes Diff",
+"Show Supersize Diff", and "Dex Method Count", and "Supersize HTML Report" bot
+steps. Try and understand the growth and see if it can be mitigated.
+
+There is guidance at:
+
+https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md#Debugging-Apk-Size-Increase
+
+If the growth is expected / justified, then you can bypass this bot failure by
+adding "Binary-Size: $JUSTIFICATION" to your commit description. Here are some
+examples:
+
+Binary-Size: Increase is due to translations and so cannot be avoided.
+Binary-Size: Increase is due to new images, which are already optimally encoded.
+Binary-Size: Increase is temporary due to a "new way" / "old way" refactoring.
+    It should go away once the "old way" is removed.
+Binary-Size: Increase is temporary and will be reverted before next branch cut.
+Binary-Size: Increase needed to reduce RAM of a common user flow.
+Binary-Size: Increase needed to reduce runtime of a common user flow.
+Binary-Size: Increase needed to implement a feature, and I've already spent a
+    non-trivial amount of time trying to reduce its size.
+"""
+
 
 class _SizeDelta(collections.namedtuple(
     'SizeDelta', ['name', 'units', 'expected', 'actual', 'details'])):
@@ -147,10 +171,10 @@ def main():
 
   # Normalized APK Size is the main metric we use to monitor binary size.
   logging.info('Creating sizes diff')
-  size_deltas.add(
-      _CreateAndWriteResourceSizesDelta(
+  resource_sizes_delta = _CreateAndWriteResourceSizesDelta(
           args.apk_name, args.before_dir, args.after_dir,
-          args.resource_sizes_diff_path))
+          args.resource_sizes_diff_path)
+  size_deltas.add(resource_sizes_delta)
 
   # .ndjson can be consumed by the html viewer.
   logging.info('Creating HTML Report')
@@ -165,8 +189,9 @@ def main():
 
   passing_deltas = set(m for m in size_deltas if m._IsAllowable())
   failing_deltas = size_deltas - passing_deltas
+  status_code = len(failing_deltas)
 
-  result = 'passed' if is_roller or len(failing_deltas) == 0 else 'failed'
+  result = 'passed' if is_roller or status_code == 0 else 'failed'
   message = """
 
 Binary size checks {}.
@@ -184,35 +209,23 @@ PASSING:
 
 *******************************************************************************
 
-Please look at the symbol diffs from the "Show Resource Sizes Diff",
-"Show Supersize Diff", and "Dex Method Count", and "Supersize HTML Report" bot
-steps. Try and understand the growth and see if it can be mitigated.
-
-There is guidance at:
-
-https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md#Debugging-Apk-Size-Increase
-
-If the growth is expected / justified, then you can bypass this bot failure by \
-adding "Binary-Size: $JUSTIFICATION" to your commit description. Here are some \
-examples:
-
-Binary-Size: Increase is due to translations and so cannot be avoided.
-Binary-Size: Increase is due to new images, which are already optimally encoded.
-Binary-Size: Increase is temporary due to a "new way" / "old way" refactoring.
-    It should go away once the "old way" is removed.
-Binary-Size: Increase is temporary and will be reverted before next branch cut.
-Binary-Size: Increase needed to reduce RAM of a common user flow.
-Binary-Size: Increase needed to reduce runtime of a common user flow.
-Binary-Size: Increase needed to implement a feature, and I've already spent a
-    non-trivial amount of time trying to reduce its size.
 """.format(result,
            '\n\n'.join(d.explanation for d in sorted(failing_deltas)),
            '\n\n'.join(d.explanation for d in sorted(passing_deltas)))
+
+  if status_code != 0:
+    message += _FAILURE_GUIDANCE
+
   # Make blank lines not blank prevent them from being stripped.
   # https://crbug.com/855671
   message.replace('\n\n', '\n.\n')
   with open(args.results_path, 'w') as f:
-    json.dump({'status_code': len(failing_deltas), 'details': message}, f)
+    results_json = {
+        'details': message,
+        'normalized_apk_size': resource_sizes_delta.actual,
+        'status_code': status_code
+    }
+    json.dump(results_json, f)
 
 
 if __name__ == '__main__':
