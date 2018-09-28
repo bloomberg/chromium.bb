@@ -1014,7 +1014,7 @@ network::mojom::NetworkContextPtr TestingProfile::CreateNetworkContext(
     const base::FilePath& relative_partition_path) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     network::mojom::NetworkContextPtr network_context;
-    mojo::MakeRequest(&network_context);
+    network_context_request_ = mojo::MakeRequest(&network_context);
     return network_context;
   }
   return nullptr;

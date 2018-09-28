@@ -14,12 +14,6 @@
 -ArcSessionManagerTest.ManagedAndroidAccount
 -ArcSessionManagerTest.ManagedChromeAccount
 -ArcSessionManagerTest.WellKnownConsumerAccount
--BackgroundFetchBrowserTest.FetchesRunToCompletionAndUpdateTitle_Failed
--BackgroundFetchBrowserTest.FetchesRunToCompletionAndUpdateTitle_Fetched
--BackgroundFetchBrowserTest.FetchFromChildFrameWithPermissions
--BackgroundFetchBrowserTest.FetchFromServiceWorker
--BackgroundFetchBrowserTest.OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalLargerThanActualSize
--BackgroundFetchBrowserTest.OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalSmallerThanActualSize
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.Basic/0
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.Basic/1
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.Basic/2
@@ -31,9 +25,6 @@
 -DeviceIDTest.Migration
 -DeviceIDTest.NewUsers
 -ExtensionWebRequestApiTest.WebRequestApiDoesNotCrashOnErrorAfterProfileDestroyed
--FileManagerPrivateApiTest.OnFileChanged
--FileManagerPrivateApiTest.Permissions
--FileManagerUITest.QuickView
 -ForceMaximizeOnFirstRunTest.TwoRuns
 -ForceMaximizePolicyFalseTest.GeneralFirstRun
 -HostedAppNonClientFrameViewAshTest.FocusableViews/material
@@ -134,11 +125,12 @@
 # https://crbug.com/882610
 -ChromeBrowserMainBrowserTest.VariationsServiceStartsRequestOnNetworkChange
 -NetworkConnectionTrackerBrowserTest.SimulateNetworkServiceCrash
-
-# Time out in StoragePartitionImpl::InitNetworkContext(). Might be related to
-# https://crbug.com/882610
--ArcAuthServiceChildAccountTest.ChildTransition
--FileManagerPrivateApiTest.OnFileChanged
+-BackgroundFetchBrowserTest.FetchesRunToCompletionAndUpdateTitle_Failed
+-BackgroundFetchBrowserTest.FetchesRunToCompletionAndUpdateTitle_Fetched
+-BackgroundFetchBrowserTest.FetchFromChildFrameWithPermissions
+-BackgroundFetchBrowserTest.FetchFromServiceWorker
+-BackgroundFetchBrowserTest.OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalLargerThanActualSize
+-BackgroundFetchBrowserTest.OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalSmallerThanActualSize
 
 # Relies on net::URLRequestInterceptor.
 # https://crbug.com/884782
