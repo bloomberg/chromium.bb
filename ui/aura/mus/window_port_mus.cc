@@ -6,12 +6,12 @@
 
 #include "base/auto_reset.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
+#include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/hit_test_data_provider_aura.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -126,7 +126,7 @@ WindowPortMus::RequestLayerTreeFrameSink(
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
   params.hit_test_data_provider =
-      std::make_unique<HitTestDataProviderAura>(window_);
+      std::make_unique<viz::HitTestDataProviderDrawQuad>(window_);
   params.local_surface_id_provider =
       std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
