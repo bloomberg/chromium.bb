@@ -175,6 +175,11 @@ DemoSession::DemoModeConfig DemoSession::GetDemoConfig() {
   bool is_demo_mode = is_demo_device_mode || is_demo_device_domain;
 
   const PrefService* prefs = g_browser_process->local_state();
+
+  // The testing browser process might not have local state.
+  if (!prefs)
+    return DemoModeConfig::kNone;
+
   // Demo mode config preference is set at the end of the demo setup after
   // device is enrolled.
   auto demo_config = DemoModeConfig::kNone;

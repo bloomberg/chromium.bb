@@ -686,4 +686,10 @@ ArcSupervisionTransition GetSupervisionTransition(const Profile* profile) {
   return supervision_transition;
 }
 
+bool IsPlayStoreAvailable() {
+  return (!IsRobotOrOfflineDemoAccountMode() ||
+          chromeos::DemoSession::IsDeviceInDemoMode()) &&
+         !ShouldArcAlwaysStartWithNoPlayStore();
+}
+
 }  // namespace arc

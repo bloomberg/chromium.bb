@@ -838,6 +838,40 @@ TEST_F(ChromeArcUtilTest, IsArcStatsReportingEnabled_PublicAccount) {
   EXPECT_FALSE(IsArcStatsReportingEnabled());
 }
 
+TEST_F(ChromeArcUtilTest, ArcStartModeDefault) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({"", "--arc-availability=installed"});
+  EXPECT_TRUE(IsPlayStoreAvailable());
+}
+
+TEST_F(ChromeArcUtilTest, ArcStartModeDefaultPublicSession) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({"", "--arc-availability=installed"});
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail("public_user@gmail.com"),
+                    user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  EXPECT_FALSE(IsPlayStoreAvailable());
+}
+
+TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoMode) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({"", "--arc-availability=installed"});
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOnline);
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail("public_user@gmail.com"),
+                    user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  EXPECT_TRUE(IsPlayStoreAvailable());
+}
+
+TEST_F(ChromeArcUtilTest, ArcStartModeWithoutPlayStore) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv(
+      {"", "--arc-availability=installed",
+       "--arc-start-mode=always-start-with-no-play-store"});
+  EXPECT_FALSE(IsPlayStoreAvailable());
+}
+
 using ArcMigrationTest = ChromeArcUtilTest;
 
 TEST_F(ArcMigrationTest, IsMigrationAllowedUnmanagedUser) {
