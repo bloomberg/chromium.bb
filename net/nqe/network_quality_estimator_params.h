@@ -174,6 +174,18 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   // network quality. Set to true only for tests.
   bool use_small_responses() const;
 
+  // Returns the typical HTTP RTT that maps to the given
+  // |effective_connection_type|. May return invalid value if
+  // |effective_connection_type| is less than Slow2G or faster than 4G,
+  static base::TimeDelta GetDefaultTypicalHttpRtt(
+      EffectiveConnectionType effective_connection_type);
+
+  // Returns the typical downslink throughput (in kbps) that maps to the given
+  // |effective_connection_type|. May return invalid value if
+  // |effective_connection_type| is less than Slow2G or faster than 4G,
+  static int32_t GetDefaultTypicalDownlinkKbps(
+      EffectiveConnectionType effective_connection_type);
+
   // |use_small_responses| should only be true when testing.
   // Allows the responses smaller than |kMinTransferSizeInBits| to be used for
   // network quality estimation.

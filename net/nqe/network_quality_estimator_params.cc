@@ -238,6 +238,24 @@ void ObtainDefaultObservations(
   }
 }
 
+// Typical HTTP RTT value corresponding to a given WebEffectiveConnectionType
+// value. Taken from
+// https://cs.chromium.org/chromium/src/net/nqe/network_quality_estimator_params.cc.
+const base::TimeDelta kTypicalHttpRttEffectiveConnectionType
+    [net::EFFECTIVE_CONNECTION_TYPE_LAST] = {
+        base::TimeDelta::FromMilliseconds(0),
+        base::TimeDelta::FromMilliseconds(0),
+        base::TimeDelta::FromMilliseconds(3600),
+        base::TimeDelta::FromMilliseconds(1800),
+        base::TimeDelta::FromMilliseconds(450),
+        base::TimeDelta::FromMilliseconds(175)};
+
+// Typical downlink throughput (in Mbps) value corresponding to a given
+// WebEffectiveConnectionType value. Taken from
+// https://cs.chromium.org/chromium/src/net/nqe/network_quality_estimator_params.cc.
+const int32_t kTypicalDownlinkKbpsEffectiveConnectionType
+    [net::EFFECTIVE_CONNECTION_TYPE_LAST] = {0, 0, 40, 75, 400, 1600};
+
 // Sets |typical_network_quality| to typical network quality for different
 // effective connection types.
 void ObtainTypicalNetworkQualities(
@@ -257,30 +275,39 @@ void ObtainTypicalNetworkQualities(
           // Set to the 77.5th percentile of 2G RTT observations on Android.
           // This corresponds to the median RTT observation when effective
           // connection type is Slow 2G.
-          base::TimeDelta::FromMilliseconds(3600),
-          base::TimeDelta::FromMilliseconds(3000), 40);
+          kTypicalHttpRttEffectiveConnectionType
+              [EFFECTIVE_CONNECTION_TYPE_SLOW_2G],
+          base::TimeDelta::FromMilliseconds(3000),
+          kTypicalDownlinkKbpsEffectiveConnectionType
+              [EFFECTIVE_CONNECTION_TYPE_SLOW_2G]);
 
   typical_network_quality[EFFECTIVE_CONNECTION_TYPE_2G] =
       nqe::internal::NetworkQuality(
           // Set to the 58th percentile of 2G RTT observations on Android. This
           // corresponds to the median RTT observation when effective connection
           // type is 2G.
-          base::TimeDelta::FromMilliseconds(1800),
-          base::TimeDelta::FromMilliseconds(1500), 75);
+          kTypicalHttpRttEffectiveConnectionType[EFFECTIVE_CONNECTION_TYPE_2G],
+          base::TimeDelta::FromMilliseconds(1500),
+          kTypicalDownlinkKbpsEffectiveConnectionType
+              [EFFECTIVE_CONNECTION_TYPE_2G]);
 
   typical_network_quality[EFFECTIVE_CONNECTION_TYPE_3G] =
       nqe::internal::NetworkQuality(
           // Set to the 75th percentile of 3G RTT observations on Android. This
           // corresponds to the median RTT observation when effective connection
           // type is 3G.
-          base::TimeDelta::FromMilliseconds(450),
-          base::TimeDelta::FromMilliseconds(400), 400);
+          kTypicalHttpRttEffectiveConnectionType[EFFECTIVE_CONNECTION_TYPE_3G],
+          base::TimeDelta::FromMilliseconds(400),
+          kTypicalDownlinkKbpsEffectiveConnectionType
+              [EFFECTIVE_CONNECTION_TYPE_3G]);
 
   // Set to the 25th percentile of 3G RTT observations on Android.
   typical_network_quality[EFFECTIVE_CONNECTION_TYPE_4G] =
-      nqe::internal::NetworkQuality(base::TimeDelta::FromMilliseconds(175),
-                                    base::TimeDelta::FromMilliseconds(125),
-                                    1600);
+      nqe::internal::NetworkQuality(
+          kTypicalHttpRttEffectiveConnectionType[EFFECTIVE_CONNECTION_TYPE_4G],
+          base::TimeDelta::FromMilliseconds(125),
+          kTypicalDownlinkKbpsEffectiveConnectionType
+              [EFFECTIVE_CONNECTION_TYPE_4G]);
 
   static_assert(
       EFFECTIVE_CONNECTION_TYPE_4G + 1 == EFFECTIVE_CONNECTION_TYPE_LAST,
@@ -517,6 +544,18 @@ bool NetworkQualityEstimatorParams::use_small_responses() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return use_small_responses_;
 };
+
+// static
+base::TimeDelta NetworkQualityEstimatorParams::GetDefaultTypicalHttpRtt(
+    EffectiveConnectionType effective_connection_type) {
+  return kTypicalHttpRttEffectiveConnectionType[effective_connection_type];
+}
+
+// static
+int32_t NetworkQualityEstimatorParams::GetDefaultTypicalDownlinkKbps(
+    EffectiveConnectionType effective_connection_type) {
+  return kTypicalDownlinkKbpsEffectiveConnectionType[effective_connection_type];
+}
 
 void NetworkQualityEstimatorParams::SetForcedEffectiveConnectionTypeForTesting(
     EffectiveConnectionType type) {
