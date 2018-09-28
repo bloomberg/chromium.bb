@@ -155,6 +155,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private BrowserSessionContentHandler mBrowserSessionContentHandler;
     private Tab mMainTab;
     private CustomTabBottomBarDelegate mBottomBarDelegate;
+    private CustomTabTopBarDelegate mTopBarDelegate;
     private CustomTabTabPersistencePolicy mTabPersistencePolicy;
 
     // This is to give the right package name while using the client's resources during an
@@ -437,6 +438,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         loadUrlInTab(mMainTab, new LoadUrlParams(uri.toString()), SystemClock.elapsedRealtime());
     }
 
+    public void setTopBarContentView(View view) {
+        mTopBarDelegate.setTopBarContentView(view);
+        mTopBarDelegate.showTopBarIfNecessary();
+    }
+
     @Override
     public boolean shouldAllocateChildConnection() {
         return !mHasCreatedTabEarly && !mHasSpeculated
@@ -475,6 +481,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mBottomBarDelegate = new CustomTabBottomBarDelegate(this, mIntentDataProvider,
                 getFullscreenManager());
         mBottomBarDelegate.showBottomBarIfNecessary();
+        mTopBarDelegate = new CustomTabTopBarDelegate(this);
     }
 
     @Override
