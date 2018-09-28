@@ -147,13 +147,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   HeapHashSet<Member<Node>> assigned_nodes_candidates_;
 
-  // For IncrementalShadowDOM
   HeapVector<Member<Node>> flat_tree_children_;
-
-  // For Non-IncrmentalShadowDOM. IncremntalShadowDOM never use these members.
-  HeapVector<Member<Node>> distributed_nodes_;
-  HeapVector<Member<Node>> old_distributed_nodes_;
-  HeapHashMap<Member<const Node>, wtf_size_t> distributed_indices_;
 
   // TODO(hayato): Move this to more appropriate directory (e.g. platform/wtf)
   // if there are more than one usages.
