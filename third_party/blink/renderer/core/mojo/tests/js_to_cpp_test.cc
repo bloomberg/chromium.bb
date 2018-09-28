@@ -74,7 +74,7 @@ v8::Local<v8::Value> ExecuteScript(const String& script_path,
   scoped_refptr<SharedBuffer> script_src = test::ReadFromFile(script_path);
   return frame.GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
       ScriptSourceCode(String(script_src->Data(), script_src->size())), KURL(),
-      kNotSharableCrossOrigin);
+      kOpaqueResource);
 }
 
 void CheckDataPipe(mojo::DataPipeConsumerHandle data_pipe_handle) {

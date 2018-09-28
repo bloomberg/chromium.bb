@@ -2307,7 +2307,9 @@ void LocalFrameView::NotifyResizeObservers() {
     ErrorEvent* error = ErrorEvent::Create(
         "ResizeObserver loop limit exceeded",
         SourceLocation::Capture(frame_->GetDocument()), nullptr);
-    frame_->GetDocument()->DispatchErrorEvent(error, kNotSharableCrossOrigin);
+    // We're using |kSharableCrossOrigin| as the error is made by blink itself.
+    // TODO(yhirano): Reconsider this.
+    frame_->GetDocument()->DispatchErrorEvent(error, kSharableCrossOrigin);
     // Ensure notifications will get delivered in next cycle.
     ScheduleAnimation();
   }

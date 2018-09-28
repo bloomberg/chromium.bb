@@ -879,9 +879,11 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
                                                       security_origin);
     }
 
+    // Note: An error event in an isolated world will never be dispatched to
+    // a foreign world.
     v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
     frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-        world_id, source, KURL(), kNotSharableCrossOrigin);
+        world_id, source, KURL(), kOpaqueResource);
   }
 
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {

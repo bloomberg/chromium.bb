@@ -1197,7 +1197,7 @@ TEST_P(FrameThrottlingTest, AllowOneAnimationFrame) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result =
       local_frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode("window.didRaf;"), KURL(), kNotSharableCrossOrigin);
+          ScriptSourceCode("window.didRaf;"), KURL(), kOpaqueResource);
   EXPECT_TRUE(result->IsTrue());
 }
 

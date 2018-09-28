@@ -251,9 +251,10 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(const KURL& url,
   // Step 12.9 "Let script be result of creating a classic script given script
   // source, settings, base URL, and the default classic script fetch options."
   // [spec text]
+  // We pass |kSharableCrossOrigin| because |muted errors| is false by default.
   v8::Local<v8::Value> result = EvaluateScriptInMainWorld(
       ScriptSourceCode(script_source, ScriptSourceLocationType::kJavascriptUrl),
-      base_url, kNotSharableCrossOrigin, ScriptFetchOptions(),
+      base_url, kSharableCrossOrigin, ScriptFetchOptions(),
       kDoNotExecuteScriptWhenScriptsDisabled);
 
   // If executing script caused this frame to be removed from the page, we
@@ -285,8 +286,8 @@ void ScriptController::ExecuteScriptInMainWorld(
     ExecuteScriptPolicy policy) {
   v8::HandleScope handle_scope(GetIsolate());
   EvaluateScriptInMainWorld(ScriptSourceCode(script, source_location_type),
-                            KURL(), kNotSharableCrossOrigin,
-                            ScriptFetchOptions(), policy);
+                            KURL(), kOpaqueResource, ScriptFetchOptions(),
+                            policy);
 }
 
 void ScriptController::ExecuteScriptInMainWorld(

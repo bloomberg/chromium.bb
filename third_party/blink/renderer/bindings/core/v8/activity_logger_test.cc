@@ -96,8 +96,7 @@ class ActivityLoggerTest : public testing::Test {
   void ExecuteScriptInIsolatedWorld(const String& script) const {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
     script_controller_->ExecuteScriptInIsolatedWorld(
-        kIsolatedWorldId, ScriptSourceCode(script), KURL(),
-        kNotSharableCrossOrigin);
+        kIsolatedWorldId, ScriptSourceCode(script), KURL(), kOpaqueResource);
     PumpPendingRequestsForFrameToLoad(web_view_helper_.LocalMainFrame());
   }
 

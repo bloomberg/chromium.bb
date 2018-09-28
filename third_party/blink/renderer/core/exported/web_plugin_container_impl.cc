@@ -564,7 +564,7 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
   v8::Local<v8::Value> result =
       frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
           ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl),
-          KURL(), kNotSharableCrossOrigin);
+          KURL(), kOpaqueResource);
 
   // Failure is reported as a null string.
   if (result.IsEmpty() || !result->IsString())
