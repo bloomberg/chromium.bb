@@ -1156,10 +1156,6 @@ bool FileManagerBrowserTestBase::GetRequiresStartupBrowser() const {
   return false;
 }
 
-bool FileManagerBrowserTestBase::GetNeedsZipSupport() const {
-  return false;
-}
-
 bool FileManagerBrowserTestBase::GetIsOffline() const {
   return false;
 }
