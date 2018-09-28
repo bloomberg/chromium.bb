@@ -22,7 +22,7 @@
  *
  */
 
-#include "third_party/blink/renderer/core/events/registered_event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/registered_event_listener.h"
 
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"

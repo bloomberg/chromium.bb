@@ -127,6 +127,8 @@ blink_core_sources("dom") {
     "events/event_target_impl.h",
     "events/node_event_context.cc",
     "events/node_event_context.h",
+    "events/registered_event_listener.cc",
+    "events/registered_event_listener.h",
     "events/scoped_event_queue.cc",
     "events/scoped_event_queue.h",
     "events/simulated_click_options.h",
