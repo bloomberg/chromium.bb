@@ -4,13 +4,16 @@
 
 #include "chrome/browser/web_applications/bookmark_apps/external_web_apps.h"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -35,6 +38,12 @@ constexpr char kAppUrl[] = "app_url";
 // The default value of kCreateShortcuts if false.
 constexpr char kCreateShortcuts[] = "create_shortcuts";
 
+// kFeatureName is an optional string parameter specifying a feature
+// associated with this app. If specified:
+//  - if the feature is enabled, the app will be installed
+//  - if the feature is not enabled, the app will be removed.
+constexpr char kFeatureName[] = "feature_name";
+
 // kLaunchContainer is a required string which can be "window" or "tab"
 // and controls what sort of container the web app is launched in.
 constexpr char kLaunchContainer[] = "launch_container";
@@ -47,6 +56,30 @@ constexpr char kLaunchContainerWindow[] = "window";
 const base::FilePath::CharType kWebAppsSubDirectory[] =
     FILE_PATH_LITERAL("web_apps");
 #endif
+
+bool IsFeatureEnabled(const std::string& feature_name) {
+  // The feature system ensures there is only ever one Feature instance for each
+  // given feature name. To enable multiple apps to be gated by the same field
+  // trial this means there needs to be a global map of Features that is used.
+  static base::NoDestructor<
+      std::map<std::string, std::unique_ptr<base::Feature>>>
+      feature_map;
+  if (!feature_map->count(feature_name)) {
+    // To ensure the string used in the feature (which is a char*) is stable
+    // (i.e. is not freed later on), the key of the map is used. So, first
+    // insert a null Feature into the map, and then swap it with a real Feature
+    // constructed using the pointer from the key.
+    auto it = feature_map->insert(std::make_pair(feature_name, nullptr)).first;
+    it->second = std::make_unique<base::Feature>(
+        base::Feature{it->first.c_str(), base::FEATURE_DISABLED_BY_DEFAULT});
+  }
+
+  // Use the feature from the map, not the one in the pair above, as it has a
+  // stable address.
+  const auto it = feature_map->find(feature_name);
+  DCHECK(it != feature_map->end());
+  return base::FeatureList::IsEnabled(*it->second);
+}
 
 std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
@@ -78,6 +111,12 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
     }
     std::unique_ptr<base::DictionaryValue> dict_value =
         base::DictionaryValue::From(std::move(value));
+
+    std::string feature_name;
+    if (dict_value->GetString(kFeatureName, &feature_name)) {
+      if (!IsFeatureEnabled(feature_name))
+        continue;
+    }
 
     std::string app_url_str;
     if (!dict_value->GetString(kAppUrl, &app_url_str) || app_url_str.empty()) {
