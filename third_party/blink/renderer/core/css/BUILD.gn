@@ -848,6 +848,8 @@ blink_core_sources("css") {
     "resolver/css_property_priority.h",
     "resolver/css_to_style_map.cc",
     "resolver/css_to_style_map.h",
+    "resolver/css_variable_animator.cc",
+    "resolver/css_variable_animator.h",
     "resolver/css_variable_resolver.cc",
     "resolver/css_variable_resolver.h",
     "resolver/element_resolve_context.cc",

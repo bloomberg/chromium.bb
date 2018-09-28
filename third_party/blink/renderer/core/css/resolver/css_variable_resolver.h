@@ -33,7 +33,7 @@ class CORE_EXPORT CSSVariableResolver {
   STACK_ALLOCATED();
 
  public:
-  CSSVariableResolver(const StyleResolverState&);
+  explicit CSSVariableResolver(const StyleResolverState&);
 
   scoped_refptr<CSSVariableData> ResolveCustomPropertyAnimationKeyframe(
       const CSSCustomPropertyDeclaration& keyframe,
@@ -47,6 +47,11 @@ class CORE_EXPORT CSSVariableResolver {
                                             bool disallow_animation_tainted);
 
   void ComputeRegisteredVariables();
+
+ protected:
+  // Called before looking up the value of some var()-reference to make it
+  // possible to apply animated properties during variable resolution.
+  virtual void ApplyAnimation(const AtomicString& name) {}
 
  private:
   struct Options {

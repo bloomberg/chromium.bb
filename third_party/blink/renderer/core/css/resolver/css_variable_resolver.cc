@@ -329,20 +329,14 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
       range.ConsumeIncludingWhitespace().Value().ToAtomicString();
   DCHECK(range.AtEnd() || (range.Peek().GetType() == kCommaToken));
 
-  PropertyHandle property(variable_name);
-  if (state_.AnimationPendingCustomProperties().Contains(property) &&
-      !variables_seen_.Contains(variable_name)) {
-    // We make the StyleResolverState mutable for animated custom properties as
-    // an optimisation. Without this we would need to compute animated values on
-    // the stack without saving the result or perform an expensive and complex
-    // value dependency graph analysis to compute them in the required order.
-    StyleResolver::ApplyAnimatedCustomProperty(
-        const_cast<StyleResolverState&>(state_), *this, property);
+  if (!variables_seen_.Contains(variable_name)) {
+    ApplyAnimation(variable_name);
     // Null custom property storage may become non-null after application, we
     // must refresh these cached values.
     inherited_variables_ = state_.Style()->InheritedVariables();
     non_inherited_variables_ = state_.Style()->NonInheritedVariables();
   }
+
   scoped_refptr<CSSVariableData> variable_data =
       is_env_variable ? ValueForEnvironmentVariable(variable_name)
                       : ValueForCustomProperty(variable_name, options);
