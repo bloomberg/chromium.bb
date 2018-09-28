@@ -441,8 +441,6 @@ void URLRequestHttpJob::Start() {
                                           referrer.spec());
   }
 
-  request_info_.token_binding_referrer = request_->token_binding_referrer();
-
   // This should be kept in sync with the corresponding code in
   // URLRequest::GetUserAgent.
   request_info_.extra_headers.SetHeaderIfMissing(

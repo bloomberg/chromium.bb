@@ -102,7 +102,6 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/ssl_server_config.h"
-#include "net/ssl/token_binding.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -4151,9 +4150,8 @@ std::unique_ptr<test_server::HttpResponse> HandleRedirectConnect(
 
 class TestSSLConfigService : public SSLConfigService {
  public:
-  explicit TestSSLConfigService(bool token_binding_enabled)
-      : token_binding_enabled_(token_binding_enabled),
-        min_version_(kDefaultSSLVersionMin),
+  TestSSLConfigService()
+      : min_version_(kDefaultSSLVersionMin),
         max_version_(kDefaultSSLVersionMax) {}
   ~TestSSLConfigService() override = default;
 
@@ -4165,9 +4163,6 @@ class TestSSLConfigService : public SSLConfigService {
     *config = SSLConfig();
     config->version_min = min_version_;
     config->version_max = max_version_;
-    if (token_binding_enabled_) {
-      config->token_binding_params.push_back(TB_PARAM_ECDSAP256);
-    }
   }
 
   bool CanShareConnectionWithClientCerts(
@@ -4176,212 +4171,11 @@ class TestSSLConfigService : public SSLConfigService {
   }
 
  private:
-  const bool token_binding_enabled_;
   uint16_t min_version_;
   uint16_t max_version_;
 };
 
 }  // namespace
-
-// TODO(svaldez): Update tests to use EmbeddedTestServer.
-#if !defined(OS_IOS)
-class TokenBindingURLRequestTest : public URLRequestTestHTTP {
- public:
-  TokenBindingURLRequestTest() = default;
-
-  void SetUp() override {
-    ssl_config_service_ = std::make_unique<TestSSLConfigService>(
-        true /* token_binding_enabled */);
-    default_context().set_ssl_config_service(ssl_config_service_.get());
-    channel_id_service_ =
-        std::make_unique<ChannelIDService>(new DefaultChannelIDStore(NULL));
-    default_context().set_channel_id_service(channel_id_service_.get());
-    URLRequestTestHTTP::SetUp();
-  }
-
- protected:
-  std::unique_ptr<TestSSLConfigService> ssl_config_service_;
-  std::unique_ptr<ChannelIDService> channel_id_service_;
-};
-
-TEST_F(TokenBindingURLRequestTest, TokenBindingTest) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
-  SpawnedTestServer https_test_server(SpawnedTestServer::TYPE_HTTPS,
-                                      ssl_options,
-                                      base::FilePath(kTestFilePath));
-  ASSERT_TRUE(https_test_server.Start());
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        https_test_server.GetURL("tokbind-ekm"), DEFAULT_PRIORITY, &d,
-        TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_EQ(OK, d.request_status());
-
-    HttpRequestHeaders headers;
-    std::string token_binding_header, token_binding_message;
-    EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
-    EXPECT_TRUE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
-                                  &token_binding_header));
-    EXPECT_TRUE(base::Base64UrlDecode(
-        token_binding_header, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
-        &token_binding_message));
-    std::vector<TokenBinding> token_bindings;
-    ASSERT_TRUE(
-        ParseTokenBindingMessage(token_binding_message, &token_bindings));
-    ASSERT_EQ(1ull, token_bindings.size());
-
-    EXPECT_GT(d.bytes_received(), 0);
-    std::string ekm = d.data_received();
-
-    EXPECT_EQ(TokenBindingType::PROVIDED, token_bindings[0].type);
-    EXPECT_TRUE(VerifyTokenBindingSignature(token_bindings[0].ec_point,
-                                            token_bindings[0].signature,
-                                            TokenBindingType::PROVIDED, ekm));
-  }
-}
-
-TEST_F(TokenBindingURLRequestTest, ForwardTokenBinding) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
-  SpawnedTestServer https_test_server(SpawnedTestServer::TYPE_HTTPS,
-                                      ssl_options,
-                                      base::FilePath(kTestFilePath));
-  ASSERT_TRUE(https_test_server.Start());
-
-  TestDelegate d;
-  {
-    GURL redirect_url =
-        https_test_server.GetURL("forward-tokbind?/tokbind-ekm");
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        redirect_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_EQ(OK, d.request_status());
-
-    HttpRequestHeaders headers;
-    std::string token_binding_header, token_binding_message;
-    EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
-    EXPECT_TRUE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
-                                  &token_binding_header));
-    EXPECT_TRUE(base::Base64UrlDecode(
-        token_binding_header, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
-        &token_binding_message));
-    std::vector<TokenBinding> token_bindings;
-    ASSERT_TRUE(
-        ParseTokenBindingMessage(token_binding_message, &token_bindings));
-    ASSERT_EQ(2ull, token_bindings.size());
-
-    EXPECT_GT(d.bytes_received(), 0);
-    std::string ekm = d.data_received();
-
-    EXPECT_EQ(TokenBindingType::PROVIDED, token_bindings[0].type);
-    EXPECT_TRUE(VerifyTokenBindingSignature(token_bindings[0].ec_point,
-                                            token_bindings[0].signature,
-                                            TokenBindingType::PROVIDED, ekm));
-    EXPECT_EQ(TokenBindingType::REFERRED, token_bindings[1].type);
-    EXPECT_TRUE(VerifyTokenBindingSignature(token_bindings[1].ec_point,
-                                            token_bindings[1].signature,
-                                            TokenBindingType::REFERRED, ekm));
-  }
-}
-
-// TODO(nharper): Remove this #ifdef and replace SpawnedTestServer with
-// EmbeddedTestServer once crbug.com/599187 is resolved.
-#if !defined(OS_ANDROID)
-TEST_F(TokenBindingURLRequestTest, DontForwardHeaderFromHttp) {
-  SpawnedTestServer http_server(SpawnedTestServer::TYPE_HTTP, base::FilePath());
-  ASSERT_TRUE(http_server.Start());
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
-  SpawnedTestServer https_test_server(SpawnedTestServer::TYPE_HTTPS,
-                                      ssl_options,
-                                      base::FilePath(kTestFilePath));
-  ASSERT_TRUE(https_test_server.Start());
-
-  TestDelegate d;
-  {
-    GURL redirect_url = http_server.GetURL(
-        "forward-tokbind?" + https_test_server.GetURL("tokbind-ekm").spec());
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        redirect_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_EQ(OK, d.request_status());
-
-    HttpRequestHeaders headers;
-    std::string token_binding_header, token_binding_message;
-    EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
-    EXPECT_TRUE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
-                                  &token_binding_header));
-    EXPECT_TRUE(base::Base64UrlDecode(
-        token_binding_header, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
-        &token_binding_message));
-    std::vector<TokenBinding> token_bindings;
-    ASSERT_TRUE(
-        ParseTokenBindingMessage(token_binding_message, &token_bindings));
-    ASSERT_EQ(1ull, token_bindings.size());
-
-    EXPECT_GT(d.bytes_received(), 0);
-    std::string ekm = d.data_received();
-
-    EXPECT_EQ(TokenBindingType::PROVIDED, token_bindings[0].type);
-    EXPECT_TRUE(VerifyTokenBindingSignature(token_bindings[0].ec_point,
-                                            token_bindings[0].signature,
-                                            TokenBindingType::PROVIDED, ekm));
-  }
-}
-
-// Test that if a server supporting Token Binding redirects (with
-// Include-Referred-Token-Binding-ID) to an https url on a server that does not
-// support Token Binding, then we do not send a Sec-Token-Binding when following
-// the redirect.
-TEST_F(TokenBindingURLRequestTest, ForwardWithoutTokenBinding) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  SpawnedTestServer https_test_server(SpawnedTestServer::TYPE_HTTPS,
-                                      ssl_options,
-                                      base::FilePath(kTestFilePath));
-  ASSERT_TRUE(https_test_server.Start());
-  ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
-  SpawnedTestServer token_binding_test_server(SpawnedTestServer::TYPE_HTTPS,
-                                              ssl_options,
-                                              base::FilePath(kTestFilePath));
-  ASSERT_TRUE(token_binding_test_server.Start());
-
-  TestDelegate d;
-  {
-    GURL redirect_url = token_binding_test_server.GetURL(
-        "forward-tokbind?" + https_test_server.GetURL("tokbind-ekm").spec());
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        redirect_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_EQ(OK, d.request_status());
-
-    HttpRequestHeaders headers;
-    std::string token_binding_header, token_binding_message;
-    EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
-    EXPECT_FALSE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
-                                   &token_binding_header));
-  }
-}
-#endif  // !defined(OS_ANDROID)
-#endif  // !defined(OS_IOS)
 
 // In this unit test, we're using the HTTPTestServer as a proxy server and
 // issuing a CONNECT request with the magic host name "www.redirect.com".
@@ -10828,8 +10622,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
 class HTTPSFallbackTest : public TestWithScopedTaskEnvironment {
  public:
   HTTPSFallbackTest() : context_(true) {
-    ssl_config_service_ = std::make_unique<TestSSLConfigService>(
-        false /* token binding enabled */);
+    ssl_config_service_ = std::make_unique<TestSSLConfigService>();
     context_.set_ssl_config_service(ssl_config_service_.get());
   }
   ~HTTPSFallbackTest() override = default;

@@ -438,7 +438,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
   // info if the given response is a redirect.
   redirect_info_ = ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
-      resource_request_, response_head_, false /* token_binding_negotiated */);
+      resource_request_, response_head_);
   if (redirect_info_) {
     if (redirect_limit_-- == 0) {
       CommitCompleted(net::ERR_TOO_MANY_REDIRECTS);

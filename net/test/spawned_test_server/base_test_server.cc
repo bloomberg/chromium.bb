@@ -114,15 +114,6 @@ bool GetLocalCertificatesDir(const base::FilePath& certificates_dir,
   return true;
 }
 
-std::unique_ptr<base::ListValue> GetTokenBindingParams(
-    std::vector<int> params) {
-  std::unique_ptr<base::ListValue> values(new base::ListValue());
-  for (int param : params) {
-    values->AppendInteger(param);
-  }
-  return values;
-}
-
 std::string OCSPStatusToString(
     const BaseTestServer::SSLOptions::OCSPStatus& ocsp_status) {
   switch (ocsp_status) {
@@ -718,13 +709,6 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     if (ssl_options_.disable_extended_master_secret) {
       arguments->Set("disable-extended-master-secret",
                      std::make_unique<base::Value>());
-    }
-    if (!ssl_options_.supported_token_binding_params.empty()) {
-      std::unique_ptr<base::ListValue> token_binding_params(
-          new base::ListValue());
-      arguments->Set(
-          "token-binding-params",
-          GetTokenBindingParams(ssl_options_.supported_token_binding_params));
     }
   }
 

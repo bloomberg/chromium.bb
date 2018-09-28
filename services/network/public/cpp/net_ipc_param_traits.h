@@ -216,7 +216,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::SSLClientCertType,
 
 IPC_ENUM_TRAITS_MAX_VALUE(net::SSLInfo::HandshakeType,
                           net::SSLInfo::HANDSHAKE_FULL)
-IPC_ENUM_TRAITS_MAX_VALUE(net::TokenBindingParam, net::TB_PARAM_ECDSAP256)
 
 IPC_ENUM_TRAITS_MAX_VALUE(net::URLRequest::ReferrerPolicy,
                           net::URLRequest::MAX_REFERRER_POLICY - 1)
@@ -243,7 +242,6 @@ IPC_STRUCT_TRAITS_BEGIN(net::RedirectInfo)
   IPC_STRUCT_TRAITS_MEMBER(new_referrer)
   IPC_STRUCT_TRAITS_MEMBER(insecure_scheme_was_upgraded)
   IPC_STRUCT_TRAITS_MEMBER(new_referrer_policy)
-  IPC_STRUCT_TRAITS_MEMBER(referred_token_binding_host)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(net::HttpResponseInfo::ConnectionInfo,

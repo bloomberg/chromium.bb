@@ -1275,12 +1275,6 @@ bool SpdySession::GetSSLInfo(SSLInfo* ssl_info) const {
   return connection_->socket()->GetSSLInfo(ssl_info);
 }
 
-Error SpdySession::GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                            TokenBindingType tb_type,
-                                            std::vector<uint8_t>* out) {
-  return connection_->socket()->GetTokenBindingSignature(key, tb_type, out);
-}
-
 bool SpdySession::WasAlpnNegotiated() const {
   return connection_->socket()->WasAlpnNegotiated();
 }

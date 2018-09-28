@@ -25,7 +25,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/ssl/token_binding.h"
 #include "url/url_canon.h"
 
 namespace net {
@@ -1136,16 +1135,6 @@ void HttpStreamParser::GetSSLCertRequestInfo(
   if (request_->url.SchemeIsCryptographic() && connection_->socket()) {
     connection_->socket()->GetSSLCertRequestInfo(cert_request_info);
   }
-}
-
-Error HttpStreamParser::GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                                 TokenBindingType tb_type,
-                                                 std::vector<uint8_t>* out) {
-  if (!request_->url.SchemeIsCryptographic() || !connection_->socket()) {
-    NOTREACHED();
-    return ERR_FAILED;
-  }
-  return connection_->socket()->GetTokenBindingSignature(key, tb_type, out);
 }
 
 int HttpStreamParser::EncodeChunk(const base::StringPiece& payload,

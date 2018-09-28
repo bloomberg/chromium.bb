@@ -290,8 +290,6 @@ void ParamTraits<net::SSLInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.pkp_bypassed);
   WriteParam(m, p.client_cert_sent);
   WriteParam(m, p.channel_id_sent);
-  WriteParam(m, p.token_binding_negotiated);
-  WriteParam(m, p.token_binding_key_param);
   WriteParam(m, p.handshake_type);
   WriteParam(m, p.public_key_hashes);
   WriteParam(m, p.pinning_failure_log);
@@ -319,8 +317,6 @@ bool ParamTraits<net::SSLInfo>::Read(const base::Pickle* m,
          ReadParam(m, iter, &r->pkp_bypassed) &&
          ReadParam(m, iter, &r->client_cert_sent) &&
          ReadParam(m, iter, &r->channel_id_sent) &&
-         ReadParam(m, iter, &r->token_binding_negotiated) &&
-         ReadParam(m, iter, &r->token_binding_key_param) &&
          ReadParam(m, iter, &r->handshake_type) &&
          ReadParam(m, iter, &r->public_key_hashes) &&
          ReadParam(m, iter, &r->pinning_failure_log) &&

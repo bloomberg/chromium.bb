@@ -70,8 +70,7 @@ void MessagePropertyProvider::GetChannelIDOnIOThread(
   net::CompletionCallback net_completion_callback =
       base::Bind(&MessagePropertyProvider::GotChannelID, original_task_runner,
                  base::Owned(output), reply);
-  if (!network_params->enable_token_binding &&
-      !network_params->enable_channel_id) {
+  if (!network_params->enable_channel_id) {
     GotChannelID(original_task_runner, output, reply, net::ERR_FILE_NOT_FOUND);
     return;
   }

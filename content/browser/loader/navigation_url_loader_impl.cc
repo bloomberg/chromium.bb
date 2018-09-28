@@ -962,7 +962,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // there likely remains more to be done.
     // a. For subframe navigations, the Origin header may need to be modified
     //    differently?
-    // b. How should redirect_info_.referred_token_binding_host be handled?
 
     bool should_clear_upload = false;
     net::RedirectUtil::UpdateHttpRequest(

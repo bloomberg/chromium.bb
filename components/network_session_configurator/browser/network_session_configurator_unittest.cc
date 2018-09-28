@@ -734,13 +734,6 @@ TEST_F(NetworkSessionConfiguratorTest, HostRules) {
   EXPECT_EQ("foo", host_port_pair.host());
 }
 
-TEST_F(NetworkSessionConfiguratorTest, TokenBindingDisabled) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  ParseCommandLineAndFieldTrials(command_line);
-
-  EXPECT_FALSE(params_.enable_token_binding);
-}
-
 TEST_F(NetworkSessionConfiguratorTest, ChannelIDEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kChannelID);

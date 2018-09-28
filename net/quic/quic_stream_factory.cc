@@ -50,7 +50,6 @@
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_performance_watcher_factory.h"
 #include "net/socket/udp_client_socket.h"
-#include "net/ssl/token_binding.h"
 #include "net/third_party/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/http/quic_client_promised_info.h"
@@ -911,7 +910,6 @@ QuicStreamFactory::QuicStreamFactory(
     bool headers_include_h2_stream_dependency,
     const quic::QuicTagVector& connection_options,
     const quic::QuicTagVector& client_connection_options,
-    bool enable_token_binding,
     bool enable_channel_id,
     bool enable_socket_recv_optimization)
     : require_confirmation_(true),
@@ -993,8 +991,6 @@ QuicStreamFactory::QuicStreamFactory(
     crypto_config_.SetChannelIDSource(
         new ChannelIDSourceChromium(channel_id_service));
   }
-  if (enable_token_binding && channel_id_service)
-    crypto_config_.tb_key_params.push_back(quic::kTB10);
   crypto::EnsureOpenSSLInit();
   bool has_aes_hardware_support = !!EVP_has_aes_hardware();
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm",
