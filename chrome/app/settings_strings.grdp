@@ -2662,6 +2662,12 @@
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_NOTIFICATION_DESCRIPTION" desc="Sub label for notification-enable toggle.">
     Enables the Assistant to show you notifications.
   </message>
+  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_LAUNCH_WITH_MIC_OPEN" desc="Title for a toggle that determines whether to open the microphone when launching the Assistant.">
+    Launch Assistant with microphone open
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_LAUNCH_WITH_MIC_OPEN_DESCRIPTION" desc="Sub label for launch-with-microphone-open toggle.">
+    Always launch the Assistant with microphone open.
+  </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_SETTINGS" desc="Title for a button that opens the Google Assistant app settings.">
     Google Assistant settings
   </message>
