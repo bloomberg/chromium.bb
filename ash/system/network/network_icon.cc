@@ -194,6 +194,8 @@ bool IconTypeHasVPNBadge(IconType icon_type) {
 }
 
 gfx::Size GetSizeForBaseIconSize(const gfx::Size& base_icon_size) {
+  if (features::IsSystemTrayUnifiedEnabled())
+    return base_icon_size;
   gfx::Size size = base_icon_size;
   const int badge_offset = base_icon_size.width() == kTrayIconSize
                                ? kTrayIconBadgeOffset
