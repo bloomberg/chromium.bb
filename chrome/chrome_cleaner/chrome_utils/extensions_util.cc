@@ -207,11 +207,8 @@ void GetDefaultExtensionsFromParsedJson(
 
   for (const auto& entry : *default_extensions) {
     base::string16 extension_id = base::UTF8ToUTF16(entry.first);
-    if (std::find(default_extension_whitelist.begin(),
-                  default_extension_whitelist.end(),
-                  extension_id) == default_extension_whitelist.end()) {
+    if (!base::ContainsValue(default_extension_whitelist, extension_id))
       policies->emplace_back(extension_id, extensions_file);
-    }
   }
 }
 
