@@ -1562,6 +1562,10 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         ->RegisterNonNetworkNavigationURLLoaderFactories(
             frame_tree_node_id, &non_network_url_loader_factories_);
 
+    // Navigation requests are not associated with any particular
+    // |network::ResourceRequest::request_initiator| origin - using an opaque
+    // origin instead.
+    url::Origin navigation_request_initiator = url::Origin();
     // The embedder may want to proxy all network-bound URLLoaderFactory
     // requests that it can. If it elects to do so, we'll pass its proxy
     // endpoints off to the URLLoaderRequestController where wthey will be
@@ -1570,8 +1574,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     auto factory_request = mojo::MakeRequest(&factory_info);
     bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
         partition->browser_context(), frame_tree_node->current_frame_host(),
-        true /* is_navigation */, new_request->url, &factory_request,
-        &bypass_redirect_checks);
+        true /* is_navigation */, navigation_request_initiator,
+        &factory_request, &bypass_redirect_checks);
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true, false,
             &factory_request)) {
@@ -1698,12 +1702,18 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
     DVLOG(1) << "Ignoring request with unknown scheme: " << url.spec();
     return;
   }
+
+  // Navigation requests are not associated with any particular
+  // |network::ResourceRequest::request_initiator| origin - using an opaque
+  // origin instead.
+  url::Origin navigation_request_initiator = url::Origin();
+
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   auto* frame = frame_tree_node->current_frame_host();
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       frame->GetSiteInstance()->GetBrowserContext(), frame,
-      true /* is_navigation */, url, &factory,
+      true /* is_navigation */, navigation_request_initiator, &factory,
       nullptr /* bypass_redirect_checks */);
   it->second->Clone(std::move(factory));
 }

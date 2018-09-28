@@ -438,7 +438,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,
       bool is_navigation,
-      const GURL& url,
+      const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
       bool* bypass_redirect_checks) override;
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>

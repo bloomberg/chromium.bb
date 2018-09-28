@@ -77,7 +77,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame_host,
       bool is_navigation,
-      const GURL& url,
+      const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
       bool* bypass_redirect_checks) override;
   bool HandleExternalProtocol(

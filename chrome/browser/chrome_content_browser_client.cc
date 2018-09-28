@@ -4531,7 +4531,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     bool is_navigation,
-    const GURL& url,
+    const url::Origin& request_initiator,
     network::mojom::URLLoaderFactoryRequest* factory_request,
     bool* bypass_redirect_checks) {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
@@ -4555,7 +4555,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
 #endif
 
   use_proxy |= signin::ProxyingURLLoaderFactory::MaybeProxyRequest(
-      frame, is_navigation, url, factory_request);
+      frame, is_navigation, request_initiator, factory_request);
 
   return use_proxy;
 }

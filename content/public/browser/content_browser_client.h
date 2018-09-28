@@ -1127,10 +1127,16 @@ class CONTENT_EXPORT ContentBrowserClient {
   // BrowserContext.
   //
   // |is_navigation| is true when it's a request used for navigation.
-  // |url| is set when it's a request for navigations or for a renderer fetching
-  // subresources. It's not set in the 3rd case (browser-initiated
-  // non-navigation requests) because in that case the factory is cached and it
-  // can be used for multiple URLs.
+  //
+  // |request_initiator| indicates which origin will be the initiator of
+  // requests that will use the URLLoaderFactory (see also
+  // |network::ResourceRequest::requests|).  |request_initiator| is set when
+  // it's a request for a renderer fetching subresources. It's not set when
+  // creating a factory for navigation requests, because navigation requests are
+  // made on behalf of the browser, rather than on behalf of any particular
+  // origin. It's not set in the case of browser-initiated, non-navigation
+  // requests, because in that case the factory is cached and it can be used for
+  // multiple URLs.
   //
   // |*factory_request| is always valid upon entry and MUST be valid upon
   // return. The embedder may swap out the value of |*factory_request| for its
@@ -1151,7 +1157,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       RenderFrameHost* frame,
       bool is_navigation,
-      const GURL& url,
+      const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
       bool* bypass_redirect_checks);
 

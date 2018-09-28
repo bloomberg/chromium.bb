@@ -442,7 +442,7 @@ ProxyingURLLoaderFactory::~ProxyingURLLoaderFactory() = default;
 bool ProxyingURLLoaderFactory::MaybeProxyRequest(
     content::RenderFrameHost* render_frame_host,
     bool is_navigation,
-    const GURL& url,
+    const url::Origin& request_initiator,
     network::mojom::URLLoaderFactoryRequest* factory_request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -452,7 +452,8 @@ bool ProxyingURLLoaderFactory::MaybeProxyRequest(
 
   // This proxy should only be installed for subresource requests from a frame
   // that is rendering the GAIA signon realm.
-  if (!render_frame_host || !gaia::IsGaiaSignonRealm(url.GetOrigin())) {
+  if (!render_frame_host ||
+      !gaia::IsGaiaSignonRealm(request_initiator.GetURL())) {
     return false;
   }
 
