@@ -86,9 +86,9 @@ void IOSWebViewSigninClient::RemoveContentSettingsObserver(
 }
 
 void IOSWebViewSigninClient::PreSignOut(
-    const base::RepeatingClosure& sign_out,
+    base::OnceCallback<void(SignoutDecision)> on_signout_decision_reached,
     signin_metrics::ProfileSignout signout_source_metric) {
-  sign_out.Run();
+  std::move(on_signout_decision_reached).Run(SignoutDecision::ALLOW_SIGNOUT);
   [sync_controller_ didSignoutWithSourceMetric:signout_source_metric];
 }
 

@@ -49,7 +49,7 @@ class IOSWebViewSigninClient : public SigninClient,
   void RemoveContentSettingsObserver(
       content_settings::Observer* observer) override;
   void PreSignOut(
-      const base::RepeatingClosure& sign_out,
+      base::OnceCallback<void(SignoutDecision)> on_signout_decision_reached,
       signin_metrics::ProfileSignout signout_source_metric) override;
   void DelayNetworkCall(const base::Closure& callback) override;
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(

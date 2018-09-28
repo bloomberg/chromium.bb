@@ -38,6 +38,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -185,22 +186,13 @@ class SigninManager : public SigninManagerBase,
   // a new account).
   static void DisableOneClickSignIn(PrefService* prefs);
 
-  // Tells the SigninManager whether to prohibit signout for this profile.
-  // If |prohibit_signout| is true, then signout will be prohibited.
-  void ProhibitSignout(bool prohibit_signout);
-
-  // If true, signout is prohibited for this profile (calls to SignOut() are
-  // ignored).
-  bool IsSignoutProhibited() const;
-
  protected:
-  // Flag saying whether signing out is allowed.
-  bool prohibit_signout_;
-
   // The sign out process which is started by SigninClient::PreSignOut()
-  virtual void DoSignOut(signin_metrics::ProfileSignout signout_source_metric,
-                         signin_metrics::SignoutDelete signout_delete_metric,
-                         RemoveAccountsOption remove_option);
+  virtual void OnSignoutDecisionReached(
+      signin_metrics::ProfileSignout signout_source_metric,
+      signin_metrics::SignoutDelete signout_delete_metric,
+      RemoveAccountsOption remove_option,
+      SigninClient::SignoutDecision signout_decision);
 
  private:
   enum SigninType {

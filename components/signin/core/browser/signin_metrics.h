@@ -69,7 +69,7 @@ enum AccessPointAction {
   HISTOGRAM_REJECTED,
   // The user pressed the X button to dismiss the infobar this time.
   HISTOGRAM_DISMISSED,
-  // The user completely ignored the infoar.  Either they navigated away, or
+  // The user completely ignored the infobar.  Either they navigated away, or
   // they used the page as is.
   HISTOGRAM_IGNORED,
   // The user clicked on the learn more link in the infobar.

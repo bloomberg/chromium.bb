@@ -25,6 +25,7 @@
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -846,7 +847,7 @@ TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureDisableManagement) {
 
   EXPECT_TRUE(manager_->IsClientRegistered());
 #if !defined(OS_ANDROID)
-  EXPECT_TRUE(signin_manager_->IsSignoutProhibited());
+  EXPECT_FALSE(signin_util::IsUserSignoutAllowedForProfile(profile_.get()));
 #endif
 
   // Kick off another policy fetch.
@@ -868,7 +869,7 @@ TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureDisableManagement) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(manager_->IsClientRegistered());
 #if !defined(OS_ANDROID)
-  EXPECT_FALSE(signin_manager_->IsSignoutProhibited());
+  EXPECT_TRUE(signin_util::IsUserSignoutAllowedForProfile(profile_.get()));
 #endif
 }
 
