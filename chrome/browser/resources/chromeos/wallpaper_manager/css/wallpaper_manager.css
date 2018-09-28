@@ -409,6 +409,7 @@ body.v2 {
 .v2 .dialog-body {
   display: flex;
   height: 100%;
+  min-height: 0;
 }
 
 .v2 .dialog-topbar {
