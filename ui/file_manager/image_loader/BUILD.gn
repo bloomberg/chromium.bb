@@ -102,7 +102,6 @@ js_library("piex_loader_unittest") {
     ":piex_loader",
     "../file_manager/common/js:unittest_util",
     "//ui/webui/resources/js:webui_resource_test",
-    "//ui/webui/resources/js/cr:ui",
   ]
 }
 
@@ -126,8 +125,7 @@ js_library("scheduler") {
 }
 
 js_unit_tests("unit_tests") {
-  # TODO(tapted): Uncomment the next line.
-  # closure_flags = default_closure_args + [ "jscomp_error=strictCheckTypes" ]
+  closure_flags = default_closure_args + [ "jscomp_error=strictCheckTypes" ]
   deps = [
     ":cache_unittest",
     ":image_loader_client_unittest",

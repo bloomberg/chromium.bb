@@ -101,6 +101,7 @@ js_library("unittest_util") {
   deps = [
     "//ui/webui/resources/js:webui_resource_test",
   ]
+  externs_list = [ "$externs_path/command_line_private.js" ]
 }
 
 js_library("util") {
