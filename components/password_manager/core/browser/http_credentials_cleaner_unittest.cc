@@ -10,6 +10,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -181,6 +183,12 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   scoped_task_environment.RunUntilIdle();
 
   base::HistogramTester histogram_tester;
+  const TestPasswordStore::PasswordMap passwords_before_cleaning =
+      store_->stored_passwords();
+
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterDoublePref(
+      prefs::kLastTimeObsoleteHttpCredentialsRemoved, 0.0);
 
   MockCredentialsCleanerObserver observer;
   HttpCredentialCleaner cleaner(
@@ -193,7 +201,8 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
         // StoragePartition::GetNetworkContext will return a mojo pipe
         // even in the in-process case.
         return network_context_pipe.get();
-      }));
+      }),
+      &prefs);
   EXPECT_CALL(observer, CleaningCompleted);
   cleaner.StartCleaning(&observer);
   scoped_task_environment.RunUntilIdle();
@@ -222,6 +231,22 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
     histogram_tester.ExpectUniqueSample(histogram.histogram_name, sample, 1);
   }
 
+  const TestPasswordStore::PasswordMap current_store =
+      store_->stored_passwords();
+  if (test.is_hsts_enabled &&
+      test.expected != HttpCredentialType::kConflicting) {
+    // HTTP credentials have to be removed.
+    EXPECT_TRUE(current_store.find(http_form.signon_realm)->second.empty());
+
+    // For no matching case https credentials were added and for an equivalent
+    // case they already existed.
+    EXPECT_TRUE(base::ContainsKey(current_store, "https://example.org/"));
+  } else {
+    // Hsts not enabled or credentials are have different passwords, so
+    // nothing should change in the password store.
+    EXPECT_EQ(current_store, passwords_before_cleaning);
+  }
+
   store_->ShutdownOnUIThread();
   scoped_task_environment.RunUntilIdle();
 }
@@ -229,5 +254,76 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
 INSTANTIATE_TEST_CASE_P(,
                         HttpCredentialCleanerTest,
                         ::testing::ValuesIn(kCases));
+
+TEST(HttpCredentialCleaner, StartCleanUpTest) {
+  for (bool should_start_clean_up : {false, true}) {
+    SCOPED_TRACE(testing::Message()
+                 << "should_start_clean_up=" << should_start_clean_up);
+
+    base::test::ScopedTaskEnvironment scoped_task_environment;
+    auto password_store = base::MakeRefCounted<TestPasswordStore>();
+    ASSERT_TRUE(password_store->Init(syncer::SyncableService::StartSyncFlare(),
+                                     nullptr));
+
+    double last_time =
+        (base::Time::Now() - base::TimeDelta::FromMinutes(10)).ToDoubleT();
+    if (should_start_clean_up) {
+      // Simulate that the clean-up was performed
+      // (HttpCredentialCleaner::kCleanUpDelayInDays + 1) days ago.
+      // We have to simulate this because the cleaning of obsolete HTTP
+      // credentials is done with low frequency (with a delay of
+      // |HttpCredentialCleaner::kCleanUpDelayInDays| days between two
+      // clean-ups)
+      last_time = (base::Time::Now() -
+                   base::TimeDelta::FromDays(
+                       HttpCredentialCleaner::kCleanUpDelayInDays + 1))
+                      .ToDoubleT();
+    }
+
+    TestingPrefServiceSimple prefs;
+    prefs.registry()->RegisterDoublePref(
+        prefs::kLastTimeObsoleteHttpCredentialsRemoved, last_time);
+
+    EXPECT_EQ(should_start_clean_up,
+              HttpCredentialCleaner::ShouldRunCleanUp(&prefs));
+
+    if (!should_start_clean_up) {
+      password_store->ShutdownOnUIThread();
+      scoped_task_environment.RunUntilIdle();
+      continue;
+    }
+
+    auto request_context =
+        base::MakeRefCounted<net::TestURLRequestContextGetter>(
+            base::ThreadTaskRunnerHandle::Get());
+    network::mojom::NetworkContextPtr network_context_pipe;
+    auto network_context = std::make_unique<network::NetworkContext>(
+        nullptr, mojo::MakeRequest(&network_context_pipe),
+        request_context->GetURLRequestContext());
+
+    MockCredentialsCleanerObserver observer;
+    HttpCredentialCleaner cleaner(
+        password_store,
+        base::BindLambdaForTesting([&]() -> network::mojom::NetworkContext* {
+          // This needs to be network_context_pipe.get() and
+          // not network_context.get() to make HSTS queries asynchronous, which
+          // is what the progress tracking logic in HttpMetricsMigrationReporter
+          // assumes.  This also matches reality, since
+          // StoragePartition::GetNetworkContext will return a mojo pipe
+          // even in the in-process case.
+          return network_context_pipe.get();
+        }),
+        &prefs);
+    EXPECT_CALL(observer, CleaningCompleted);
+    cleaner.StartCleaning(&observer);
+    scoped_task_environment.RunUntilIdle();
+
+    EXPECT_NE(prefs.GetDouble(prefs::kLastTimeObsoleteHttpCredentialsRemoved),
+              last_time);
+
+    password_store->ShutdownOnUIThread();
+    scoped_task_environment.RunUntilIdle();
+  }
+}
 
 }  // namespace password_manager

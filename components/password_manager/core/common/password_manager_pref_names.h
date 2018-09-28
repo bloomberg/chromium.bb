@@ -76,6 +76,10 @@ extern const char kDuplicatedBlacklistedCredentialsRemoved[];
 // Whether Chrome deleted credentials that had wrong signon_realm.
 extern const char kCredentialsWithWrongSignonRealmRemoved[];
 
+// Indicates the time (in seconds) when last cleaning of obsolete HTTP
+// credentials was performed.
+extern const char kLastTimeObsoleteHttpCredentialsRemoved[];
+
 // List that contains captured password hashes.
 extern const char kPasswordHashDataList[];
 

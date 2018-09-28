@@ -10,6 +10,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -186,6 +187,8 @@ void UserTriggeredManualGenerationFromContextMenu(
       autofill::password_generation::PASSWORD_GENERATION_CONTEXT_MENU_PRESSED);
 }
 
+// TODO(http://crbug.com/890318): Add unitests to check cleaners are correctly
+// created.
 void RemoveUselessCredentials(
     scoped_refptr<password_manager::PasswordStore> store,
     PrefService* prefs,
@@ -229,10 +232,11 @@ void RemoveUselessCredentials(
 
 #if !defined(OS_IOS)
   // Can be null for some unittests.
-  if (!network_context_getter.is_null()) {
+  if (!network_context_getter.is_null() &&
+      password_manager::HttpCredentialCleaner::ShouldRunCleanUp(prefs)) {
     cleaning_tasks_runner->AddCleaningTask(
         std::make_unique<password_manager::HttpCredentialCleaner>(
-            store, network_context_getter));
+            store, network_context_getter, prefs));
   }
 #endif  // !defined(OS_IOS)
 

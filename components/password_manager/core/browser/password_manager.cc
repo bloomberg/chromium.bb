@@ -347,6 +347,8 @@ void PasswordManager::RegisterProfilePrefs(
                                 false);
   registry->RegisterBooleanPref(prefs::kCredentialsWithWrongSignonRealmRemoved,
                                 false);
+  registry->RegisterDoublePref(prefs::kLastTimeObsoleteHttpCredentialsRemoved,
+                               0.0);
 
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(
