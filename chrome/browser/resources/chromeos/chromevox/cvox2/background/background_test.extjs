@@ -1761,3 +1761,18 @@ TEST_F('BackgroundTest', 'TabSwitchAndRefreshRecovery', function() {
     });
   });
 });
+
+TEST_F('BackgroundTest', 'ListName', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*
+    <div id="_md-chips-wrapper-76" tabindex="-1" class="md-chips md-readonly" aria-setsize="4" aria-label="Favorite Sports" role="list" aria-describedby="chipsNote">
+      <div role="listitem">Baseball</div>
+      <div role="listitem">Hockey</div>
+      <div role="listitem">Lacrosse</div>
+      <div role="listitem">Football</div>
+    </div>
+  */}, function(root) {
+    mockFeedback.expectSpeech('Favorite Sports')
+        .replay();
+  });
+});
