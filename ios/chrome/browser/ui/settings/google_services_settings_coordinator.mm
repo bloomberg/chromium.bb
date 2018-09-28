@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
@@ -43,6 +45,11 @@
 @property(nonatomic, strong) GoogleServicesSettingsMediator* mediator;
 // Returns the authentication service.
 @property(nonatomic, assign, readonly) AuthenticationService* authService;
+// Manages the authentication flow for a given identity.
+@property(nonatomic, strong) AuthenticationFlow* authenticationFlow;
+// View controller presented by this coordinator.
+@property(nonatomic, strong, readonly)
+    GoogleServicesSettingsViewController* googleServicesSettingsViewController;
 
 @end
 
@@ -52,6 +59,7 @@
 @synthesize delegate = _delegate;
 @synthesize dispatcher = _dispatcher;
 @synthesize mediator = _mediator;
+@synthesize authenticationFlow = _authenticationFlow;
 
 - (void)start {
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
@@ -95,10 +103,31 @@
   return AuthenticationServiceFactory::GetForBrowserState(self.browserState);
 }
 
+- (GoogleServicesSettingsViewController*)googleServicesSettingsViewController {
+  return base::mac::ObjCCast<GoogleServicesSettingsViewController>(
+      self.viewController);
+}
+
 #pragma mark - GoogleServicesSettingsLocalCommands
 
 - (void)restartAuthenticationFlow {
-  // TODO(crbug.com/849754): Restart the authentication flow.
+  ChromeIdentity* authenticatedIdentity =
+      AuthenticationServiceFactory::GetForBrowserState(self.browserState)
+          ->GetAuthenticatedIdentity();
+  [self.googleServicesSettingsViewController preventUserInteraction];
+  DCHECK(!self.authenticationFlow);
+  self.authenticationFlow = [[AuthenticationFlow alloc]
+          initWithBrowserState:self.browserState
+                      identity:authenticatedIdentity
+               shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
+              postSignInAction:POST_SIGNIN_ACTION_START_SYNC
+      presentingViewController:self.viewController];
+  self.authenticationFlow.dispatcher = self.dispatcher;
+  __weak GoogleServicesSettingsCoordinator* weakSelf = self;
+  [self.authenticationFlow startSignInWithCompletion:^(BOOL success) {
+    // TODO(crbug.com/889919): Needs to add histogram for |success|.
+    [weakSelf.googleServicesSettingsViewController allowUserInteraction];
+  }];
 }
 
 - (void)openReauthDialogAsSyncIsInAuthError {
@@ -113,7 +142,8 @@
 }
 
 - (void)openPassphraseDialog {
-  // TODO(crbug.com/849754): open the passphrase dialog.
+  [self.dispatcher
+      showSyncPassphraseSettingsFromViewController:self.viewController];
 }
 
 - (void)openGoogleActivityControlsDialog {
