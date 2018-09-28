@@ -3298,11 +3298,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
-    {"enable-zip-archiver-packer",
-     flag_descriptions::kEnableZipArchiverPackerName,
-     flag_descriptions::kEnableZipArchiverPackerDescription, kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(chromeos::switches::kEnableZipArchiverPacker,
-                               chromeos::switches::kDisableZipArchiverPacker)},
     {"enable-zip-archiver-unpacker",
      flag_descriptions::kZipArchiverUnpackerName,
      flag_descriptions::kZipArchiverUnpackerDescription, kOsCrOS,

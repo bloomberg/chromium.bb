@@ -85,7 +85,6 @@ CHROMEOS_EXPORT extern const char
     kDisableSystemTimezoneAutomaticDetectionPolicy[];
 CHROMEOS_EXPORT extern const char kDisableVolumeAdjustSound[];
 CHROMEOS_EXPORT extern const char kDisableWakeOnWifi[];
-CHROMEOS_EXPORT extern const char kDisableZipArchiverPacker[];
 CHROMEOS_EXPORT extern const char kDisableZipArchiverUnpacker[];
 CHROMEOS_EXPORT extern const char kEnableArc[];
 CHROMEOS_EXPORT extern const char kEnableArcOobeOptinNoSkip[];
@@ -109,7 +108,6 @@ CHROMEOS_EXPORT extern const char kEnableTouchCalibrationSetting[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
 CHROMEOS_EXPORT extern const char kEnableVideoPlayerChromecastSupport[];
 CHROMEOS_EXPORT extern const char kEnableVoiceInteraction[];
-CHROMEOS_EXPORT extern const char kEnableZipArchiverPacker[];
 CHROMEOS_EXPORT extern const char kEnableZipArchiverUnpacker[];
 CHROMEOS_EXPORT extern const char kEnterpriseDisableArc[];
 CHROMEOS_EXPORT extern const char kEnterpriseDisableLicenseTypeSelection[];
@@ -208,9 +206,6 @@ CHROMEOS_EXPORT bool IsAssistantEnabled();
 
 // Returns true if Zip Archiver is enabled for unpacking files.
 CHROMEOS_EXPORT bool IsZipArchiverUnpackerEnabled();
-
-// Returns true if Zip Archiver is enabled for packing files.
-CHROMEOS_EXPORT bool IsZipArchiverPackerEnabled();
 
 // Returns true if client certificate authentication for the sign-in frame on
 // the Chrome OS sign-in screen is enabled.

@@ -3274,10 +3274,6 @@ const char kEnableZeroStateSuggestionsDescription[] =
     "Enable Zero State Suggestions feature in Launcher, which will show "
     "suggetions when launcher search box is active with an empty query";
 
-const char kEnableZipArchiverPackerName[] = "ZIP archiver - Packer";
-const char kEnableZipArchiverPackerDescription[] =
-    "Enable the ability to archive files on Drive in the Files app";
-
 const char kEolNotificationName[] = "Disable Device End of Life notification.";
 const char kEolNotificationDescription[] =
     "Disable Notifcation when Device is End of Life.";

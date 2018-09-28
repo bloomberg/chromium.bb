@@ -1999,9 +1999,6 @@ extern const char kEnableVirtualKeyboardUkmDescription[];
 extern const char kEnableZeroStateSuggestionsName[];
 extern const char kEnableZeroStateSuggestionsDescription[];
 
-extern const char kEnableZipArchiverPackerName[];
-extern const char kEnableZipArchiverPackerDescription[];
-
 extern const char kEolNotificationName[];
 extern const char kEolNotificationDescription[];
 
