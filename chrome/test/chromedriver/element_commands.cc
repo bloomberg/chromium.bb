@@ -289,6 +289,21 @@ Status ExecuteClearElement(Session* session,
                            const std::string& element_id,
                            const base::DictionaryValue& params,
                            std::unique_ptr<base::Value>* value) {
+  // Scrolling to element is done by webdriver::atoms::CLEAR
+  bool is_displayed = false;
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  while (true) {
+    Status status = IsElementDisplayed(
+      session, web_view, element_id, true, &is_displayed);
+    if (status.IsError())
+      return status;
+    if (is_displayed)
+      break;
+    if (base::TimeTicks::Now() - start_time >= session->implicit_wait) {
+      return Status(kElementNotVisible);
+    }
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+  }
   base::ListValue args;
   args.Append(CreateElement(element_id));
   std::unique_ptr<base::Value> result;
