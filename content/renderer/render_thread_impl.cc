@@ -1167,25 +1167,14 @@ void RenderThreadImpl::SetResourceDispatcherDelegate(
 }
 
 void RenderThreadImpl::InitializeCompositorThread() {
-  blink::WebThreadCreationParams params(
-      blink::WebThreadType::kCompositorThread);
-#if defined(OS_ANDROID)
-  params.thread_options.priority = base::ThreadPriority::DISPLAY;
-#endif
-  blink_platform_impl_->InitializeCompositorThread(params);
-  blink::WebThread* compositor_thread =
-      blink_platform_impl_->CompositorThread();
-  compositor_task_runner_ = compositor_thread->GetTaskRunner();
+  blink_platform_impl_->InitializeCompositorThread();
+  compositor_task_runner_ = blink_platform_impl_->CompositorThreadTaskRunner();
   compositor_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),
                      false));
   GetContentClient()->renderer()->PostCompositorThreadCreated(
       compositor_task_runner_.get());
-#if defined(OS_LINUX)
-  render_message_filter()->SetThreadPriority(compositor_thread->ThreadId(),
-                                             base::ThreadPriority::DISPLAY);
-#endif
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

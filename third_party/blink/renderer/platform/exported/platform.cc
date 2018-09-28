@@ -36,6 +36,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -341,18 +342,30 @@ void Platform::UpdateWebThreadTLS(WebThread* thread,
   event->Signal();
 }
 
-void Platform::InitializeCompositorThread(
-    const WebThreadCreationParams& params) {
+void Platform::InitializeCompositorThread() {
   DCHECK(!compositor_thread_);
+
+  WebThreadCreationParams params(WebThreadType::kCompositorThread);
+#if defined(OS_ANDROID)
+  params.thread_options.priority = base::ThreadPriority::DISPLAY;
+#endif
   std::unique_ptr<scheduler::WebThreadBase> compositor_thread =
       scheduler::WebThreadBase::CreateCompositorThread(params);
   compositor_thread->Init();
   WaitUntilWebThreadTLSUpdate(compositor_thread.get());
   compositor_thread_ = std::move(compositor_thread);
+  SetDisplayThreadPriority(compositor_thread_->ThreadId());
 }
 
 WebThread* Platform::CompositorThread() {
   return compositor_thread_.get();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+Platform::CompositorThreadTaskRunner() {
+  if (WebThread* compositor_thread = CompositorThread())
+    return compositor_thread->GetTaskRunner();
+  return nullptr;
 }
 
 std::unique_ptr<WebGraphicsContext3DProvider>
