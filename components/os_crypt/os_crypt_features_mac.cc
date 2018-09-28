@@ -11,7 +11,7 @@ namespace features {
 // unavailable, but there is a preference set that the key was created in the
 // past.
 const base::Feature kPreventEncryptionKeyOverwrites = {
-    "PreventEncryptionKeyOverwrites", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PreventEncryptionKeyOverwrites", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace os_crypt

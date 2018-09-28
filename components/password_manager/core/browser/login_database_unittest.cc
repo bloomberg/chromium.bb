@@ -2111,6 +2111,12 @@ PasswordForm LoginDatabaseUndecryptableLoginsTest::AddDummyLogin(
 }
 
 TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
+  // Disable feature for deleting corrupted passwords, so GetAutofillableLogins
+  // doesn't remove any passwords.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDeleteCorruptedPasswords);
+
   auto form1 = AddDummyLogin("foo1", GURL("https://foo1.com/"), false);
   auto form2 = AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
   auto form3 = AddDummyLogin("foo3", GURL("https://foo3.com/"), false);
