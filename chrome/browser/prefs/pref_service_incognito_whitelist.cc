@@ -206,37 +206,8 @@ const char* const kPersistentPrefNames[] = {
 // audited, checked with owners, and removed or transfered to
 // |kPersistentPrefNames|.
 const char* const kTemporaryIncognitoWhitelist[] = {
-    // chrome/common/pref_names.h
-    prefs::kWebRTCMultipleRoutesEnabled,
-    prefs::kWebRTCNonProxiedUdpEnabled,
-    prefs::kWebRTCIPHandlingPolicy,
-
-    prefs::kDefaultTasksByMimeType,
-    prefs::kDefaultTasksBySuffix,
-
-    prefs::kDefaultAudioCaptureDevice,
-    prefs::kDefaultVideoCaptureDevice,
     prefs::kMediaDeviceIdSalt,
-
     prefs::kClearPluginLSODataEnabled,
-    prefs::kPepperFlashSettingsEnabled,
-
-    prefs::kPerformanceTracingEnabled,
-
-#if !defined(OS_ANDROID)
-    prefs::kMediaGalleriesUniqueId,
-    prefs::kMediaGalleriesRememberedGalleries,
-#endif  // !defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-    prefs::kPartnerBookmarkMappings,
-#endif  // defined(OS_ANDROID)
-
-#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
-// prefs::kRestartInBackground,
-#endif
-
-    prefs::kBackgroundTracingLastUpload,
 };
 
 }  // namespace
