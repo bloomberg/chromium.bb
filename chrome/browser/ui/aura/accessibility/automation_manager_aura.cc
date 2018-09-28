@@ -249,13 +249,14 @@ void AutomationManagerAura::PerformHitTest(
     ui::AXNodeData node_data;
     widget->widget_delegate()->GetContentsView()->GetAccessibleNodeData(
         &node_data);
-    child_ax_tree_id =
-        node_data.GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId);
+    child_ax_tree_id = ui::AXTreeID::FromString(
+        node_data.GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
     DCHECK_NE(child_ax_tree_id, ui::AXTreeIDUnknown());
     DCHECK_NE(child_ax_tree_id, ui::DesktopAXTreeID());
   } else {
     // For normal windows the (optional) child tree is an aura window property.
-    std::string* child_ax_tree_id_ptr = window->GetProperty(ui::kChildAXTreeID);
+    ui::AXTreeID* child_ax_tree_id_ptr =
+        window->GetProperty(ui::kChildAXTreeID);
     if (child_ax_tree_id_ptr)
       child_ax_tree_id = *child_ax_tree_id_ptr;
   }

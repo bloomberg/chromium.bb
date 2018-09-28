@@ -5,6 +5,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
 #include <stddef.h>
+#include <map>
 #include <utility>
 
 #include "base/debug/crash_logging.h"
@@ -21,7 +22,7 @@ namespace content {
 namespace {
 
 // Map from AXTreeID to BrowserAccessibilityManager
-using AXTreeIDMap = base::hash_map<ui::AXTreeID, BrowserAccessibilityManager*>;
+using AXTreeIDMap = std::map<ui::AXTreeID, BrowserAccessibilityManager*>;
 base::LazyInstance<AXTreeIDMap>::Leaky g_ax_tree_id_map =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -49,8 +50,8 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
-  tree_data.tree_id = 1;
-  tree_data.focused_tree_id = 1;
+  tree_data.tree_id = ui::AXTreeID::FromString("1");
+  tree_data.focused_tree_id = ui::AXTreeID::FromString("1");
   update.tree_data = tree_data;
   update.has_tree_data = true;
   update.root_id = node1.id;
@@ -273,8 +274,9 @@ BrowserAccessibilityManager::GetParentNodeFromParentTree() {
   for (int32_t host_node_id : host_node_ids) {
     BrowserAccessibility* parent_node = parent_manager->GetFromID(host_node_id);
     if (parent_node) {
-      DCHECK_EQ(ax_tree_id_, parent_node->GetStringAttribute(
-                                 ax::mojom::StringAttribute::kChildTreeId));
+      DCHECK_EQ(ax_tree_id_,
+                AXTreeID::FromString(parent_node->GetStringAttribute(
+                    ax::mojom::StringAttribute::kChildTreeId)));
       return parent_node;
     }
   }
@@ -520,9 +522,10 @@ BrowserAccessibilityManager::GetFocusFromThisOrDescendantFrame() {
     return GetRoot();
 
   if (obj->HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
+    AXTreeID child_tree_id = AXTreeID::FromString(
+        obj->GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
     BrowserAccessibilityManager* child_manager =
-        BrowserAccessibilityManager::FromID(
-            obj->GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
+        BrowserAccessibilityManager::FromID(child_tree_id);
     if (child_manager)
       return child_manager->GetFocusFromThisOrDescendantFrame();
   }

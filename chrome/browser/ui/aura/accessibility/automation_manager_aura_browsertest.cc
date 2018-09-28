@@ -31,8 +31,8 @@ void FindAllHostsOfWebContentsWithAXTreeID(
     std::vector<views::AXAuraObjWrapper*>* web_hosts) {
   ui::AXNodeData node_data;
   tree->SerializeNode(node, &node_data);
-  if (node_data.GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId) ==
-      target_ax_tree_id) {
+  if (ui::AXTreeID::FromString(node_data.GetStringAttribute(
+          ax::mojom::StringAttribute::kChildTreeId)) == target_ax_tree_id) {
     web_hosts->push_back(node);
   }
 

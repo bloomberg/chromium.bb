@@ -75,9 +75,10 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
 
 uint32_t BrowserAccessibility::PlatformChildCount() const {
   if (HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
+    AXTreeID child_tree_id = AXTreeID::FromString(
+        GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
     BrowserAccessibilityManager* child_manager =
-        BrowserAccessibilityManager::FromID(
-            GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
+        BrowserAccessibilityManager::FromID(child_tree_id);
     if (child_manager && child_manager->GetRoot()->PlatformGetParent() == this)
       return 1;
 
@@ -128,9 +129,10 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
 
   if (child_index == 0 &&
       HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
+    AXTreeID child_tree_id = AXTreeID::FromString(
+        GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
     BrowserAccessibilityManager* child_manager =
-        BrowserAccessibilityManager::FromID(
-            GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
+        BrowserAccessibilityManager::FromID(child_tree_id);
     if (child_manager && child_manager->GetRoot()->PlatformGetParent() == this)
       result = child_manager->GetRoot();
   } else {

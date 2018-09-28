@@ -21,7 +21,7 @@ bool AXHostService::automation_enabled_ = false;
 
 AXHostService::AXHostService() {
   // AX tree ID is automatically assigned.
-  DCHECK(!tree_id().empty());
+  DCHECK_NE(tree_id(), ui::AXTreeIDUnknown());
 
   // ash::Shell may not exist in tests.
   if (ash::Shell::HasInstance()) {
@@ -67,7 +67,7 @@ void AXHostService::SetRemoteHost(ax::mojom::AXRemoteHostPtr remote,
 }
 
 void AXHostService::HandleAccessibilityEvent(
-    const std::string& tree_id,
+    const ui::AXTreeID& tree_id,
     const std::vector<ui::AXTreeUpdate>& updates,
     const ui::AXEvent& event) {
   CHECK_EQ(tree_id, this->tree_id());

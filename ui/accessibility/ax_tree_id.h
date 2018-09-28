@@ -9,11 +9,43 @@
 
 #include "ui/accessibility/ax_export.h"
 
+namespace mojo {
+template <typename DataViewType, typename T>
+struct StructTraits;
+}
+
+namespace ax {
+namespace mojom {
+class AXTreeIDDataView;
+}
+}  // namespace ax
+
 namespace ui {
 
-// Note: Originally AXTreeID was an integer. Temporarily we're making it a
-// string with the plan to eventually make it a base::UnguessableToken.
-using AXTreeID = std::string;
+// A unique ID representing an accessibility tree.
+class AX_EXPORT AXTreeID {
+ public:
+  AXTreeID();
+  static AXTreeID FromString(const std::string& string);
+  const std::string& ToString() const { return id_; }
+  operator std::string() const { return id_; }
+
+  bool operator==(const AXTreeID& rhs) const;
+  bool operator!=(const AXTreeID& rhs) const;
+  bool operator<(const AXTreeID& rhs) const;
+  bool operator<=(const AXTreeID& rhs) const;
+  bool operator>(const AXTreeID& rhs) const;
+  bool operator>=(const AXTreeID& rhs) const;
+
+ private:
+  explicit AXTreeID(const std::string& string);
+
+  friend struct mojo::StructTraits<ax::mojom::AXTreeIDDataView, ui::AXTreeID>;
+
+  std::string id_;
+};
+
+AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXTreeID& value);
 
 // The value to use when an AXTreeID is unknown.
 AX_EXPORT extern const AXTreeID& AXTreeIDUnknown();
