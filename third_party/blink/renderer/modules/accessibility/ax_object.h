@@ -855,6 +855,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void DetachFromParent() { parent_ = nullptr; }
   virtual AXObject* ScrollBar(AccessibilityOrientation) { return nullptr; }
   virtual void AddAccessibleNodeChildren();
+  virtual void SelectedOptions(AXObjectVector&) const {}
 
   // Properties of the object's owning document or page.
   virtual double EstimatedLoadingProgress() const { return 0; }
@@ -1046,6 +1047,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   bool CanReceiveAccessibilityFocus() const;
   bool NameFromContents(bool recursive) const;
+  bool NameFromSelectedOption(bool recursive) const;
 
   ax::mojom::Role ButtonRoleType() const;
 

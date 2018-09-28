@@ -314,7 +314,7 @@ Tests name sources in invisible nodes.
         "type": "relatedElement",
         "value": {
           "type": "computedString",
-          "value": "\n          1 \n          \n            2 \n            \n            \n            \n            \n          \n          7 \n        "
+          "value": "\n          1\n          \n            2\n            \n            \n            \n            \n          \n          7\n        "
         },
         "attribute": "aria-labelledby",
         "attributeValue": {
@@ -323,7 +323,7 @@ Tests name sources in invisible nodes.
           "relatedNodes": [
             {
               "idref": "label4",
-              "text": "\n          1 \n          \n            2 \n            \n            \n            \n            \n          \n          7 \n        ",
+              "text": "\n          1\n          \n            2\n            \n            \n            \n            \n          \n          7\n        ",
               "nodeResult": "div#label4"
             }
           ]
@@ -392,7 +392,7 @@ Tests name sources in invisible nodes.
         "relatedNodes": [
           {
             "idref": "label4",
-            "text": "\n          1 \n          \n            2 \n            \n            \n            \n            \n          \n          7 \n        ",
+            "text": "\n          1\n          \n            2\n            \n            \n            \n            \n          \n          7\n        ",
             "nodeResult": "div#label4"
           }
         ]
