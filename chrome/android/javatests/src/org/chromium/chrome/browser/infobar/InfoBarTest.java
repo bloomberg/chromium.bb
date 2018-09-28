@@ -592,7 +592,7 @@ public class InfoBarTest {
         // The renderer should have been killed and the InfoBar removed.
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
         Assert.assertTrue("Wrong infobar count", mActivityTestRule.getInfoBars().isEmpty());
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mActivityTestRule.getActivity().getActivityTab().isShowingSadTab();

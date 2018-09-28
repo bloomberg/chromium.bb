@@ -51,6 +51,10 @@ public class TabTest {
         }
     };
 
+    private boolean isShowingSadTab() throws Exception {
+        return ThreadUtils.runOnUiThreadBlocking(() -> mTab.isShowingSadTab());
+    }
+
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -101,7 +105,7 @@ public class TabTest {
 
         Assert.assertFalse(mTab.needsReload());
         Assert.assertFalse(mTab.isHidden());
-        Assert.assertFalse(mTab.isShowingSadTab());
+        Assert.assertFalse(isShowingSadTab());
 
         // Stop the activity and simulate a killed renderer.
         ApplicationTestUtils.fireHomeScreenIntent(InstrumentationRegistry.getTargetContext());
@@ -114,7 +118,7 @@ public class TabTest {
             }
         });
         Assert.assertTrue(mTab.needsReload());
-        Assert.assertFalse(mTab.isShowingSadTab());
+        Assert.assertFalse(isShowingSadTab());
 
         ApplicationTestUtils.launchChrome(InstrumentationRegistry.getTargetContext());
 
@@ -126,7 +130,7 @@ public class TabTest {
             }
         });
         Assert.assertFalse(mTab.needsReload());
-        Assert.assertFalse(mTab.isShowingSadTab());
+        Assert.assertFalse(isShowingSadTab());
     }
 
     @Test
