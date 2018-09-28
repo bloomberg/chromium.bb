@@ -448,11 +448,13 @@ bool PartitionBucket::SetNewActivePage() {
 
 void* PartitionBucket::SlowPathAlloc(PartitionRootBase* root,
                                      int flags,
-                                     size_t size) {
+                                     size_t size,
+                                     bool* is_already_zeroed) {
   // The slow path is called when the freelist is empty.
   DCHECK(!this->active_pages_head->freelist_head);
 
   PartitionPage* new_page = nullptr;
+  *is_already_zeroed = false;
 
   // For the PartitionRootGeneric::Alloc() API, we have a bunch of buckets
   // marked as special cases. We bounce them through to the slow path so that
@@ -474,6 +476,7 @@ void* PartitionBucket::SlowPathAlloc(PartitionRootBase* root,
       PartitionExcessiveAllocationSize();
     }
     new_page = PartitionDirectMap(root, flags, size);
+    *is_already_zeroed = true;
   } else if (LIKELY(this->SetNewActivePage())) {
     // First, did we find an active page in the active pages list?
     new_page = this->active_pages_head;
@@ -505,6 +508,7 @@ void* PartitionBucket::SlowPathAlloc(PartitionRootBase* root,
       void* addr = PartitionPage::ToPointer(new_page);
       root->RecommitSystemPages(addr, new_page->bucket->get_bytes_per_span());
       new_page->Reset();
+      *is_already_zeroed = true;
     }
     DCHECK(new_page);
   } else {
@@ -514,6 +518,7 @@ void* PartitionBucket::SlowPathAlloc(PartitionRootBase* root,
     if (LIKELY(raw_pages != nullptr)) {
       new_page = PartitionPage::FromPointerNoAlignmentCheck(raw_pages);
       InitializeSlotSpan(new_page);
+      *is_already_zeroed = true;
     }
   }
 

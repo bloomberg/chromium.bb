@@ -348,9 +348,9 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
                                                size_t size,
                                                const char* type_name) {
   DCHECK_LT(flags, PartitionAllocLastFlag << 1);
-  const bool zero_fill = flags & PartitionAllocZeroFill;
 
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+  const bool zero_fill = flags & PartitionAllocZeroFill;
   void* result = zero_fill ? calloc(1, size) : malloc(size);
   CHECK(result || flags & PartitionAllocReturnNull);
   return result;
@@ -365,13 +365,6 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
     ret = root->AllocFromBucket(bucket, flags, size);
   }
   PartitionAllocHooks::AllocationHookIfEnabled(ret, requested_size, type_name);
-
-  // TODO(crbug.com/864462): This is suboptimal. Change `AllocFromBucket` such
-  // that it tells callers if the allocation was satisfied with a fresh mapping
-  // from the OS, so that we can skip this step and save some time.
-  if (ret && zero_fill) {
-    memset(ret, 0, requested_size);
-  }
 
   return ret;
 #endif
