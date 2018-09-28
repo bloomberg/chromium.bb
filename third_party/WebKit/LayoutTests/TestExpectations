@@ -1398,7 +1398,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-shrink-to
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/negative-flex-rounding-assert.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/negative-overflow.html [ Skip ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/nested-flexbox-min-size-auto.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/nested-orthogonal-flexbox-relayout.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/nested-stretch.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/order-painting.html [ Failure ]
@@ -1518,6 +1517,7 @@ crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-006.xht [ Skip ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Skip ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-008.xht [ Skip ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-009.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-003.xht [ Failure ]
@@ -2469,6 +2469,8 @@ crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computeds
 crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-shorthand-number.html [ Failure ]
 crbug.com/467127 [ Mac Win ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/467127 [ Mac Win ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
+
+crbug.com/596743 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-009.html [ Failure ]
 
 crbug.com/467127 external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/percentage-heights-003.html [ Failure ]
