@@ -2620,8 +2620,10 @@ void Node::SetCustomElementState(CustomElementState new_state) {
                 static_cast<NodeFlags>(new_state);
   DCHECK(new_state == GetCustomElementState());
 
-  if (element->IsDefined() != was_defined)
+  if (element->IsDefined() != was_defined) {
     element->PseudoStateChanged(CSSSelector::kPseudoDefined);
+    element->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
+  }
 }
 
 void Node::SetV0CustomElementState(V0CustomElementState new_state) {
@@ -2646,8 +2648,10 @@ void Node::SetV0CustomElementState(V0CustomElementState new_state) {
   SetFlag(kV0CustomElementFlag);
   SetFlag(new_state == kV0Upgraded, kV0CustomElementUpgradedFlag);
 
-  if (old_state == kV0NotCustomElement || new_state == kV0Upgraded)
+  if (old_state == kV0NotCustomElement || new_state == kV0Upgraded) {
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
+    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoDefined);
+  }
 }
 
 void Node::CheckSlotChange(SlotChangeType slot_change_type) {
