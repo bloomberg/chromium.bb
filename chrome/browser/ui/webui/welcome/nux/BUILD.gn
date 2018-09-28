@@ -19,6 +19,7 @@ if (is_win && is_chrome_branded) {
 
     deps = [
       "//chrome/app:generated_resources",
+      "//chrome/browser:resources",
       "//components/resources",
       "//components/strings",
       "//components/variations",
@@ -52,6 +53,7 @@ if (is_win && is_chrome_branded) {
 
     deps = [
       "//chrome/app:generated_resources",
+      "//chrome/browser:resources",
       "//components/bookmarks/browser",
       "//components/bookmarks/common",
       "//components/favicon/core",
@@ -79,6 +81,7 @@ if (is_win && is_chrome_branded) {
 
     deps = [
       "//chrome/app:generated_resources",
+      "//chrome/browser:resources",
       "//components/bookmarks/browser",
       "//components/bookmarks/common",
       "//components/favicon/core",

@@ -4,12 +4,10 @@
 
 cr.define('nux', function() {
   /** @interface */
-  class NuxSetAsDefaultProxy {
-  }
+  class NuxSetAsDefaultProxy {}
 
   /** @implements {NuxSetAsDefaultProxy} */
-  class NuxSetAsDefaultProxyImpl {
-  }
+  class NuxSetAsDefaultProxyImpl {}
 
   cr.addSingletonGetter(NuxSetAsDefaultProxyImpl);
 
