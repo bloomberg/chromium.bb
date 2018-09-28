@@ -1112,6 +1112,39 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
+    @RetryOnFailure
+    public void testSetTopBarContentView() throws Exception {
+        Intent intent = createMinimalCustomTabIntent();
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            View anyView = new View(cctActivity);
+            cctActivity.setTopBarContentView(anyView);
+            ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
+            Assert.assertNotNull(topBar);
+            Assert.assertThat(anyView.getParent(), equalTo(topBar));
+        });
+    }
+
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    public void testSetTopBarContentView_secondCallIsNoOp() throws Exception {
+        Intent intent = createMinimalCustomTabIntent();
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            View anyView = new View(cctActivity);
+            cctActivity.setTopBarContentView(anyView);
+            // Second call will not crash.
+            cctActivity.setTopBarContentView(anyView);
+        });
+    }
+
+    @Test
+    @SmallTest
     @Feature({"UiCatalogue"})
     public void testRemoteViews() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
