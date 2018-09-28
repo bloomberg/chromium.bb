@@ -56,7 +56,7 @@ class UDPSocketWin::Core : public base::RefCounted<Core> {
   void WatchForWrite();
 
   // The UDPSocketWin is going away.
-  void Detach() { socket_ = nullptr; }
+  void Detach() { socket_ = NULL; }
 
   // The separate OVERLAPPED variables for asynchronous operation.
   OVERLAPPED read_overlapped_;
@@ -260,6 +260,7 @@ UDPSocketWin::UDPSocketWin(DatagramSocket::BindType bind_type,
       recv_from_address_(nullptr),
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)),
       qos_handle_(nullptr),
+      qos_flow_id_(0),
       event_pending_(this) {
   EnsureWinsockInit();
   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
@@ -295,15 +296,12 @@ void UDPSocketWin::Close() {
   if (socket_ == INVALID_SOCKET)
     return;
 
-  if (qos_handle_) {
-    GetQwaveAPI().CloseHandle(qos_handle_);
-    dscp_manager_ = nullptr;
-    qos_handle_ = NULL;
-  }
+  if (qos_handle_)
+    QwaveAPI::Get().CloseHandle(qos_handle_);
 
   // Zero out any pending read/write callback state.
   read_callback_.Reset();
-  recv_from_address_ = nullptr;
+  recv_from_address_ = NULL;
   write_callback_.Reset();
 
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -327,7 +325,7 @@ void UDPSocketWin::Close() {
 
   if (core_) {
     core_->Detach();
-    core_ = nullptr;
+    core_ = NULL;
   }
 }
 
@@ -380,7 +378,7 @@ int UDPSocketWin::GetLocalAddress(IPEndPoint* address) const {
 int UDPSocketWin::Read(IOBuffer* buf,
                        int buf_len,
                        CompletionOnceCallback callback) {
-  return RecvFrom(buf, buf_len, nullptr, std::move(callback));
+  return RecvFrom(buf, buf_len, NULL, std::move(callback));
 }
 
 int UDPSocketWin::RecvFrom(IOBuffer* buf,
@@ -417,13 +415,6 @@ int UDPSocketWin::SendTo(IOBuffer* buf,
                          int buf_len,
                          const IPEndPoint& address,
                          CompletionOnceCallback callback) {
-  if (dscp_manager_) {
-    // Alert DscpManager in case this is a new remote address.  Failure to
-    // apply Dscp code is never fatal.
-    int rv = dscp_manager_->PrepareForSend(address);
-    if (rv != OK)
-      net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_SEND_ERROR, rv);
-  }
   return SendToOrWrite(buf, buf_len, &address, std::move(callback));
 }
 
@@ -490,10 +481,6 @@ int UDPSocketWin::InternalConnect(const IPEndPoint& address) {
     return MapSystemError(WSAGetLastError());
 
   remote_address_.reset(new IPEndPoint(address));
-
-  if (dscp_manager_)
-    dscp_manager_->PrepareForSend(*remote_address_.get());
-
   return rv;
 }
 
@@ -624,7 +611,7 @@ void UDPSocketWin::DidCompleteRead() {
   int result = ok ? num_bytes : MapSystemError(WSAGetLastError());
   // Convert address.
   IPEndPoint address;
-  IPEndPoint* address_to_log = nullptr;
+  IPEndPoint* address_to_log = NULL;
   if (result >= 0) {
     if (address.FromSockAddr(core_->recv_addr_storage_.addr,
                              core_->recv_addr_storage_.addr_len)) {
@@ -636,8 +623,8 @@ void UDPSocketWin::DidCompleteRead() {
     }
   }
   LogRead(result, core_->read_iobuffer_->data(), address_to_log);
-  core_->read_iobuffer_ = nullptr;
-  recv_from_address_ = nullptr;
+  core_->read_iobuffer_ = NULL;
+  recv_from_address_ = NULL;
   DoReadCallback(result);
 }
 
@@ -650,7 +637,7 @@ void UDPSocketWin::DidCompleteWrite() {
   LogWrite(result, core_->write_iobuffer_->data(), send_to_address_.get());
 
   send_to_address_.reset();
-  core_->write_iobuffer_ = nullptr;
+  core_->write_iobuffer_ = NULL;
   DoWriteCallback(result);
 }
 
@@ -704,9 +691,9 @@ void UDPSocketWin::OnReadSignaled() {
                                        recv_from_address_);
   if (rv == ERR_IO_PENDING)
     return;
-  read_iobuffer_ = nullptr;
+  read_iobuffer_ = NULL;
   read_iobuffer_len_ = 0;
-  recv_from_address_ = nullptr;
+  recv_from_address_ = NULL;
   DoReadCallback(rv);
 }
 
@@ -715,7 +702,7 @@ void UDPSocketWin::OnWriteSignaled() {
                                      send_to_address_.get());
   if (rv == ERR_IO_PENDING)
     return;
-  write_iobuffer_ = nullptr;
+  write_iobuffer_ = NULL;
   write_iobuffer_len_ = 0;
   send_to_address_.reset();
   DoWriteCallback(rv);
@@ -780,13 +767,13 @@ int UDPSocketWin::InternalRecvFromOverlapped(IOBuffer* buf,
   CHECK_NE(INVALID_SOCKET, socket_);
   AssertEventNotSignaled(core_->read_overlapped_.hEvent);
   int rv = WSARecvFrom(socket_, &read_buffer, 1, &num, &flags, storage.addr,
-                       &storage.addr_len, &core_->read_overlapped_, nullptr);
+                       &storage.addr_len, &core_->read_overlapped_, NULL);
   if (rv == 0) {
     if (ResetEventIfSignaled(core_->read_overlapped_.hEvent)) {
       int result = num;
       // Convert address.
       IPEndPoint address_storage;
-      IPEndPoint* address_to_log = nullptr;
+      IPEndPoint* address_to_log = NULL;
       if (result >= 0) {
         if (address_storage.FromSockAddr(core_->recv_addr_storage_.addr,
                                          core_->recv_addr_storage_.addr_len)) {
@@ -804,7 +791,7 @@ int UDPSocketWin::InternalRecvFromOverlapped(IOBuffer* buf,
     int os_error = WSAGetLastError();
     if (os_error != WSA_IO_PENDING) {
       int result = MapSystemError(os_error);
-      LogRead(result, nullptr, nullptr);
+      LogRead(result, NULL, NULL);
       return result;
     }
   }
@@ -821,12 +808,12 @@ int UDPSocketWin::InternalSendToOverlapped(IOBuffer* buf,
   struct sockaddr* addr = storage.addr;
   // Convert address.
   if (!address) {
-    addr = nullptr;
+    addr = NULL;
     storage.addr_len = 0;
   } else {
     if (!address->ToSockAddr(addr, &storage.addr_len)) {
       int result = ERR_ADDRESS_INVALID;
-      LogWrite(result, nullptr, nullptr);
+      LogWrite(result, NULL, NULL);
       return result;
     }
   }
@@ -838,8 +825,8 @@ int UDPSocketWin::InternalSendToOverlapped(IOBuffer* buf,
   DWORD flags = 0;
   DWORD num;
   AssertEventNotSignaled(core_->write_overlapped_.hEvent);
-  int rv = WSASendTo(socket_, &write_buffer, 1, &num, flags, addr,
-                     storage.addr_len, &core_->write_overlapped_, nullptr);
+  int rv = WSASendTo(socket_, &write_buffer, 1, &num, flags,
+                     addr, storage.addr_len, &core_->write_overlapped_, NULL);
   if (rv == 0) {
     if (ResetEventIfSignaled(core_->write_overlapped_.hEvent)) {
       int result = num;
@@ -850,7 +837,7 @@ int UDPSocketWin::InternalSendToOverlapped(IOBuffer* buf,
     int os_error = WSAGetLastError();
     if (os_error != WSA_IO_PENDING) {
       int result = MapSystemError(os_error);
-      LogWrite(result, nullptr, nullptr);
+      LogWrite(result, NULL, NULL);
       return result;
     }
   }
@@ -879,11 +866,11 @@ int UDPSocketWin::InternalRecvFromNonBlocking(IOBuffer* buf,
       return ERR_IO_PENDING;
     }
     rv = MapSystemError(os_error);
-    LogRead(rv, nullptr, nullptr);
+    LogRead(rv, NULL, NULL);
     return rv;
   }
   IPEndPoint address_storage;
-  IPEndPoint* address_to_log = nullptr;
+  IPEndPoint* address_to_log = NULL;
   if (rv >= 0) {
     if (address_storage.FromSockAddr(storage.addr, storage.addr_len)) {
       if (address)
@@ -907,11 +894,11 @@ int UDPSocketWin::InternalSendToNonBlocking(IOBuffer* buf,
   if (address) {
     if (!address->ToSockAddr(addr, &storage.addr_len)) {
       int result = ERR_ADDRESS_INVALID;
-      LogWrite(result, nullptr, nullptr);
+      LogWrite(result, NULL, NULL);
       return result;
     }
   } else {
-    addr = nullptr;
+    addr = NULL;
     storage.addr_len = 0;
   }
 
@@ -925,7 +912,7 @@ int UDPSocketWin::InternalSendToNonBlocking(IOBuffer* buf,
       return ERR_IO_PENDING;
     }
     rv = MapSystemError(os_error);
-    LogWrite(rv, nullptr, nullptr);
+    LogWrite(rv, NULL, NULL);
     return rv;
   }
   LogWrite(rv, buf->data(), address);
@@ -1013,10 +1000,6 @@ int UDPSocketWin::RandomBind(const IPAddress& address) {
       return rv;
   }
   return DoBind(IPEndPoint(address, 0));
-}
-
-QwaveAPI& UDPSocketWin::GetQwaveAPI() {
-  return QwaveAPI::Get();
 }
 
 int UDPSocketWin::JoinGroup(const IPAddress& group_address) const {
@@ -1128,7 +1111,28 @@ int UDPSocketWin::SetMulticastLoopbackMode(bool loopback) {
   return OK;
 }
 
-QOS_TRAFFIC_TYPE DscpToTrafficType(DiffServCodePoint dscp) {
+int UDPSocketWin::SetDiffServCodePoint(DiffServCodePoint dscp) {
+  if (dscp == DSCP_NO_CHANGE) {
+    return OK;
+  }
+
+  if (!is_connected())
+    return ERR_SOCKET_NOT_CONNECTED;
+
+  QwaveAPI& qos(QwaveAPI::Get());
+
+  if (!qos.qwave_supported())
+    return ERROR_NOT_SUPPORTED;
+
+  if (qos_handle_ == NULL) {
+    QOS_VERSION version;
+    version.MajorVersion = 1;
+    version.MinorVersion = 0;
+    qos.CreateHandle(&version, &qos_handle_);
+    if (qos_handle_ == NULL)
+      return ERROR_NOT_SUPPORTED;
+  }
+
   QOS_TRAFFIC_TYPE traffic_type = QOSTrafficTypeBestEffort;
   switch (dscp) {
     case DSCP_CS0:
@@ -1168,36 +1172,34 @@ QOS_TRAFFIC_TYPE DscpToTrafficType(DiffServCodePoint dscp) {
       NOTREACHED();
       break;
   }
-  return traffic_type;
-}
-
-int UDPSocketWin::SetDiffServCodePoint(DiffServCodePoint dscp) {
-  if (dscp == DSCP_NO_CHANGE)
-    return OK;
-
-  if (!is_connected())
-    return ERR_SOCKET_NOT_CONNECTED;
-
-  QwaveAPI& qos(GetQwaveAPI());
-
-  if (!qos.qwave_supported())
-    return ERROR_NOT_SUPPORTED;
-
-  if (!qos_handle_) {
-    QOS_VERSION version;
-    version.MajorVersion = 1;
-    version.MinorVersion = 0;
-    qos.CreateHandle(&version, &qos_handle_);
-    if (!qos_handle_)
-      return ERROR_NOT_SUPPORTED;
+  if (qos_flow_id_ != 0) {
+    qos.RemoveSocketFromFlow(qos_handle_, NULL, qos_flow_id_, 0);
+    qos_flow_id_ = 0;
   }
-
-  if (!dscp_manager_)
-    dscp_manager_ = std::make_unique<DscpManager>(qos, socket_, qos_handle_);
-
-  dscp_manager_->Set(dscp);
-  if (remote_address_)
-    return dscp_manager_->PrepareForSend(*remote_address_.get());
+  if (!qos.AddSocketToFlow(qos_handle_,
+                           socket_,
+                           NULL,
+                           traffic_type,
+                           QOS_NON_ADAPTIVE_FLOW,
+                           &qos_flow_id_)) {
+    DWORD err = GetLastError();
+    if (err == ERROR_DEVICE_REINITIALIZATION_NEEDED) {
+      qos.CloseHandle(qos_handle_);
+      qos_flow_id_ = 0;
+      qos_handle_ = 0;
+    }
+    return MapSystemError(err);
+  }
+  // This requires admin rights, and may fail, if so we ignore it
+  // as AddSocketToFlow should still do *approximately* the right thing.
+  DWORD buf = dscp;
+  qos.SetFlow(qos_handle_,
+              qos_flow_id_,
+              QOSSetOutgoingDSCPValue,
+              sizeof(buf),
+              &buf,
+              0,
+              NULL);
 
   return OK;
 }
@@ -1247,71 +1249,6 @@ DatagramBuffers UDPSocketWin::GetUnwrittenBuffers() {
   DatagramBuffers result;
   NOTIMPLEMENTED();
   return result;
-}
-DscpManager::DscpManager(QwaveAPI& qos, SOCKET socket, HANDLE qos_handle)
-    : qos_(qos), socket_(socket), qos_handle_(qos_handle) {}
-
-DscpManager::~DscpManager() {
-  if (flow_id_ != 0)
-    qos_.RemoveSocketFromFlow(qos_handle_, NULL, flow_id_, 0);
-}
-
-void DscpManager::Set(DiffServCodePoint dscp) {
-  if (dscp == DSCP_NO_CHANGE || dscp == dscp_value_)
-    return;
-
-  dscp_value_ = dscp;
-  // TODO(zstein): We could reuse the flow when the value changes
-  // by calling QOSSetFlow with the new traffic type and dscp value.
-  if (flow_id_ != 0) {
-    qos_.RemoveSocketFromFlow(qos_handle_, NULL, flow_id_, 0);
-    configured_.clear();
-    flow_id_ = 0;
-  }
-}
-
-int DscpManager::PrepareForSend(const IPEndPoint& remote_address) {
-  if (dscp_value_ == DSCP_NO_CHANGE) {
-    // No DSCP value has been set.
-    return OK;
-  }
-
-  if (configured_.find(remote_address) != configured_.end())
-    return OK;
-
-  SockaddrStorage storage;
-  if (!remote_address.ToSockAddr(storage.addr, &storage.addr_len))
-    return ERR_ADDRESS_INVALID;
-
-  // We won't try again if we get an error.
-  configured_.emplace(remote_address);
-
-  // We don't need to call SetFlow if we already have a qos flow.
-  bool new_flow = flow_id_ == 0;
-
-  const QOS_TRAFFIC_TYPE traffic_type = DscpToTrafficType(dscp_value_);
-
-  if (!qos_.AddSocketToFlow(qos_handle_, socket_, storage.addr, traffic_type,
-                            QOS_NON_ADAPTIVE_FLOW, &flow_id_)) {
-    DWORD err = GetLastError();
-    if (err == ERROR_DEVICE_REINITIALIZATION_NEEDED) {
-      qos_.CloseHandle(qos_handle_);
-      flow_id_ = 0;
-      qos_handle_ = 0;
-      dscp_value_ = DSCP_NO_CHANGE;
-    }
-    return MapSystemError(err);
-  }
-
-  if (new_flow) {
-    DWORD buf = dscp_value_;
-    // This requires admin rights, and may fail, if so we ignore it
-    // as AddSocketToFlow should still do *approximately* the right thing.
-    qos_.SetFlow(qos_handle_, flow_id_, QOSSetOutgoingDSCPValue, sizeof(buf),
-                 &buf, 0, nullptr);
-  }
-
-  return OK;
 }
 
 }  // namespace net
