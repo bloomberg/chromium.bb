@@ -104,7 +104,8 @@ UiDevToolsServer::GetClientNamesAndUrls() {
        i++) {
     pairs.push_back(std::pair<std::string, std::string>(
         devtools_server_->clients_[i]->name(),
-        base::StringPrintf("%s0.0.0.0:%d/%" PRIuS, kChromeDeveloperToolsPrefix,
+        base::StringPrintf("%s127.0.0.1:%d/%" PRIuS,
+                           kChromeDeveloperToolsPrefix,
                            devtools_server_->port(), i)));
   }
   return pairs;
