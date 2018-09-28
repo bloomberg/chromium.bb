@@ -1503,6 +1503,12 @@ config("default_warnings") {
           "-Wno-ignored-pragma-optimize",
         ]
       }
+      if (llvm_force_head_revision) {
+        cflags += [
+          # TODO(hans): https://crbug.com/890307
+          "-Wno-defaulted-function-deleted",
+        ]
+      }
     }
   }
 }
