@@ -115,6 +115,7 @@ void TableRowPainter::PaintBoxDecorationBackground(
 
 void TableRowPainter::PaintCollapsedBorders(const PaintInfo& paint_info,
                                             const CellSpan& dirtied_columns) {
+  ScopedPaintState paint_state(layout_table_row_, paint_info);
   base::Optional<DrawingRecorder> recorder;
 
   if (LIKELY(!layout_table_row_.Table()->ShouldPaintAllCollapsedBorders())) {
@@ -134,8 +135,10 @@ void TableRowPainter::PaintCollapsedBorders(const PaintInfo& paint_info,
   unsigned row = layout_table_row_.RowIndex();
   for (unsigned c = std::min(dirtied_columns.End(), section->NumCols(row));
        c > dirtied_columns.Start(); c--) {
-    if (const auto* cell = section->OriginatingCellAt(row, c - 1))
-      CollapsedBorderPainter(*cell).PaintCollapsedBorders(paint_info);
+    if (const auto* cell = section->OriginatingCellAt(row, c - 1)) {
+      CollapsedBorderPainter(*cell).PaintCollapsedBorders(
+          paint_state.GetPaintInfo());
+    }
   }
 }
 
