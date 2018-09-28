@@ -671,18 +671,17 @@ WebRequestProxyingURLLoaderFactory::~WebRequestProxyingURLLoaderFactory() =
 void WebRequestProxyingURLLoaderFactory::OnTargetFactoryError() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   target_factory_.reset();
-  if (proxy_bindings_.empty()) {
-    // Deletes |this|.
-    proxies_->RemoveProxy(this);
-  }
+  proxy_bindings_.CloseAllBindings();
+
+  MaybeRemoveProxy();
 }
 
 void WebRequestProxyingURLLoaderFactory::OnProxyBindingError() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (proxy_bindings_.empty() && !target_factory_.is_bound()) {
-    // Deletes |this|.
-    proxies_->RemoveProxy(this);
-  }
+  if (proxy_bindings_.empty())
+    target_factory_.reset();
+
+  MaybeRemoveProxy();
 }
 
 void WebRequestProxyingURLLoaderFactory::RemoveRequest(
@@ -695,6 +694,18 @@ void WebRequestProxyingURLLoaderFactory::RemoveRequest(
         this, content::GlobalRequestID(render_process_id_,
                                        network_service_request_id));
   }
+
+  MaybeRemoveProxy();
+}
+
+void WebRequestProxyingURLLoaderFactory::MaybeRemoveProxy() {
+  // Even if all URLLoaderFactory pipes connected to this object have been
+  // closed it has to stay alive until all active requests have completed.
+  if (target_factory_.is_bound() || !requests_.empty())
+    return;
+
+  // Deletes |this|.
+  proxies_->RemoveProxy(this);
 }
 
 }  // namespace extensions
