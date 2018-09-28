@@ -737,18 +737,21 @@ static AOM_FORCE_INLINE void compute_stats_highbd(
       }
       assert(idx == wiener_win2);
       for (k = 0; k < wiener_win2; ++k) {
-        M[k] += (int64_t)Y[k] * X / bit_depth_divider;
+        M[k] += (int64_t)Y[k] * X;
         for (l = k; l < wiener_win2; ++l) {
           // H is a symmetric matrix, so we only need to fill out the upper
           // triangle here. We can copy it down to the lower triangle outside
           // the (i, j) loops.
-          H[k * wiener_win2 + l] += (int64_t)Y[k] * Y[l] / bit_depth_divider;
+          H[k * wiener_win2 + l] += (int64_t)Y[k] * Y[l];
         }
       }
     }
   }
   for (k = 0; k < wiener_win2; ++k) {
+    M[k] /= bit_depth_divider;
+    H[k * wiener_win2 + k] /= bit_depth_divider;
     for (l = k + 1; l < wiener_win2; ++l) {
+      H[k * wiener_win2 + l] /= bit_depth_divider;
       H[l * wiener_win2 + k] = H[k * wiener_win2 + l];
     }
   }
