@@ -187,6 +187,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Overridden from WallpaperControllerObserver:
   void OnWallpaperBlurChanged() override;
+  void OnFirstWallpaperShown() override;
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.

@@ -541,8 +541,10 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.session_state == session_manager::SessionState::OOBE)
     return SHELF_BACKGROUND_OOBE;
   if (state_.session_state != session_manager::SessionState::ACTIVE) {
-    if (!Shell::Get()->wallpaper_controller()->IsWallpaperBlurred())
+    if (Shell::Get()->wallpaper_controller()->HasShownAnyWallpaper() &&
+        !Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
       return SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER;
+    }
     return SHELF_BACKGROUND_LOGIN;
   }
 
@@ -1140,6 +1142,10 @@ void ShelfLayoutManager::OnSessionStateChanged(
 }
 
 void ShelfLayoutManager::OnWallpaperBlurChanged() {
+  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+}
+
+void ShelfLayoutManager::OnFirstWallpaperShown() {
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 

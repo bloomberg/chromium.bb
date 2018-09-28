@@ -646,6 +646,10 @@ bool WallpaperController::CanOpenWallpaperPicker() {
          !IsActiveUserWallpaperControlledByPolicyImpl();
 }
 
+bool WallpaperController::HasShownAnyWallpaper() const {
+  return !!current_wallpaper_;
+}
+
 void WallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image,
                                              WallpaperInfo info,
                                              bool preview_mode) {
@@ -687,6 +691,10 @@ void WallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image,
   current_wallpaper_->AddObserver(this);
   current_wallpaper_->StartResize();
 
+  if (is_first_wallpaper_) {
+    for (auto& observer : observers_)
+      observer.OnFirstWallpaperShown();
+  }
   mojo_observers_.ForAllPtrs([this](mojom::WallpaperObserver* observer) {
     observer->OnWallpaperChanged(current_wallpaper_->original_image_id());
   });
@@ -732,6 +740,10 @@ bool WallpaperController::IsBlurAllowed() const {
   return !IsDevicePolicyWallpaper() && !IsOneShotWallpaper() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kAshDisableLoginDimAndBlur);
+}
+
+bool WallpaperController::IsWallpaperBlurred() const {
+  return is_wallpaper_blurred_;
 }
 
 bool WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,

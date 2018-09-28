@@ -269,10 +269,15 @@ class TestWallpaperControllerObserver : public WallpaperControllerObserver {
   TestWallpaperControllerObserver() = default;
 
   void OnWallpaperBlurChanged() override { ++wallpaper_blur_changed_count_; }
+  void OnFirstWallpaperShown() override { ++first_wallpaper_shown_count_; }
 
   void Reset() { wallpaper_blur_changed_count_ = 0; }
 
   int wallpaper_blur_changed_count_ = 0;
+  int first_wallpaper_shown_count_ = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWallpaperControllerObserver);
 };
 
 }  // namespace
@@ -2357,6 +2362,30 @@ TEST_F(WallpaperControllerTest, ShowOneShotWallpaper) {
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
   EXPECT_EQ(WallpaperType::CUSTOMIZED, controller_->GetWallpaperType());
+}
+
+TEST_F(WallpaperControllerTest, OnFirstWallpaperShown) {
+  TestWallpaperControllerObserver observer;
+  controller_->AddObserver(&observer);
+  EXPECT_EQ(0, GetWallpaperCount());
+  EXPECT_EQ(0, observer.first_wallpaper_shown_count_);
+  // Show the first wallpaper, verify the observer is notified.
+  controller_->ShowWallpaperImage(CreateImage(640, 480, SK_ColorBLUE),
+                                  CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
+                                  false /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(SK_ColorBLUE, GetWallpaperColor());
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(1, observer.first_wallpaper_shown_count_);
+  // Show the second wallpaper, verify the observer is not notified.
+  controller_->ShowWallpaperImage(CreateImage(640, 480, SK_ColorCYAN),
+                                  CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
+                                  false /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(SK_ColorCYAN, GetWallpaperColor());
+  EXPECT_EQ(2, GetWallpaperCount());
+  EXPECT_EQ(1, observer.first_wallpaper_shown_count_);
+  controller_->RemoveObserver(&observer);
 }
 
 // A test wallpaper controller client class.

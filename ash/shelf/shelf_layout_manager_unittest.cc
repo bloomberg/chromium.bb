@@ -254,6 +254,29 @@ class ShelfLayoutObserverTest : public ShelfLayoutManagerObserver {
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutObserverTest);
 };
 
+class WallpaperShownWaiter : public WallpaperControllerObserver {
+ public:
+  WallpaperShownWaiter() {
+    Shell::Get()->wallpaper_controller()->AddObserver(this);
+  }
+
+  ~WallpaperShownWaiter() override {
+    Shell::Get()->wallpaper_controller()->RemoveObserver(this);
+  }
+
+  // Note this could only be called once because RunLoop would not run after
+  // Quit is called. Create a new instance if there's need to wait again.
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  // WallpaperControllerObserver:
+  void OnFirstWallpaperShown() override { run_loop_.Quit(); }
+
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WallpaperShownWaiter);
+};
+
 }  // namespace
 
 class ShelfLayoutManagerTest : public AshTestBase {
@@ -987,22 +1010,32 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
 // Assertions around the login screen.
 TEST_F(ShelfLayoutManagerTest, VisibleWhenLoginScreenShowing) {
   Shelf* shelf = GetPrimaryShelf();
+  WallpaperController* wallpaper_controller =
+      Shell::Get()->wallpaper_controller();
+  WallpaperShownWaiter waiter;
 
   mojom::SessionInfoPtr info = mojom::SessionInfo::New();
   info->state = session_manager::SessionState::LOGIN_PRIMARY;
-  ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
+  Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  // Blurred wallpaper.
-  ash::Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(/*blur=*/true);
+  // No wallpaper.
+  ASSERT_FALSE(wallpaper_controller->HasShownAnyWallpaper());
   EXPECT_EQ(SHELF_BACKGROUND_LOGIN, GetShelfWidget()->GetBackgroundType());
 
+  // Showing wallpaper is asynchronous.
+  wallpaper_controller->ShowDefaultWallpaperForTesting();
+  waiter.Wait();
+  ASSERT_TRUE(wallpaper_controller->HasShownAnyWallpaper());
+
   // Non-blurred wallpaper.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshDisableLoginDimAndBlur);
-  ash::Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(/*blur=*/true);
+  wallpaper_controller->UpdateWallpaperBlur(/*blur=*/false);
   EXPECT_EQ(SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER,
             GetShelfWidget()->GetBackgroundType());
+
+  // Blurred wallpaper.
+  wallpaper_controller->UpdateWallpaperBlur(/*blur=*/true);
+  EXPECT_EQ(SHELF_BACKGROUND_LOGIN, GetShelfWidget()->GetBackgroundType());
 }
 
 // Assertions around the lock screen showing.
