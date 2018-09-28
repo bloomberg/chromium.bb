@@ -239,13 +239,14 @@ void AdvancedProtectionStatusManager::UpdateLastRefreshTime() {
 // static
 bool AdvancedProtectionStatusManager::IsUnderAdvancedProtection(
     Profile* profile) {
-  // Advanced protection is off for incognito mode.
-  if (profile->IsOffTheRecord())
-    return false;
+  Profile* original_profile =
+      profile->IsOffTheRecord() ? profile->GetOriginalProfile() : profile;
 
-  return AdvancedProtectionStatusManagerFactory::GetInstance()
-      ->GetForBrowserContext(static_cast<content::BrowserContext*>(profile))
-      ->is_under_advanced_protection();
+  return original_profile &&
+         AdvancedProtectionStatusManagerFactory::GetInstance()
+             ->GetForBrowserContext(
+                 static_cast<content::BrowserContext*>(original_profile))
+             ->is_under_advanced_protection();
 }
 
 bool AdvancedProtectionStatusManager::IsPrimaryAccount(

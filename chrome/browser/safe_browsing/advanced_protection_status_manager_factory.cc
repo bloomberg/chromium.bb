@@ -51,9 +51,4 @@ bool AdvancedProtectionStatusManagerFactory::
   return true;
 }
 
-bool AdvancedProtectionStatusManagerFactory::ServiceIsNULLWhileTesting() const {
-  // TODO(jialiul): Change this to 'false' when this class is wired into Chrome.
-  return true;
-}
-
 }  // namespace safe_browsing

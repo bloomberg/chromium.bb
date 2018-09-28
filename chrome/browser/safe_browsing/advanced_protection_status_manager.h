@@ -17,8 +17,10 @@ namespace safe_browsing {
 
 // Responsible for keeping track of advanced protection status of the sign-in
 // profile.
-// Note that for profile that is not signed-in or is in incognito mode, we
-// consider it NOT under advanced protection.
+// Note that for profile that is not signed-in, we consider it NOT under
+// advanced protection.
+// For incognito profile Chrome returns users' advanced protection status
+// of its original profile.
 class AdvancedProtectionStatusManager : public KeyedService,
                                         public AccountTrackerService::Observer,
                                         public SigninManagerBase::Observer {
