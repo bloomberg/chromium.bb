@@ -97,6 +97,9 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   static void Shutdown();
   static DeviceSettingsService* Get();
 
+  // Returns a human-readable string describing |status|.
+  static const char* StatusToString(Status status);
+
   // Creates a device settings service instance. This is meant for unit tests,
   // production code uses the singleton returned by Get() above.
   DeviceSettingsService();

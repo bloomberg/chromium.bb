@@ -76,6 +76,67 @@ void UMACryptohomeMigrationToGaiaId(const CryptohomeMigrationToGaiaId status) {
                             CryptohomeMigrationToGaiaId::ENTRIES_COUNT);
 }
 
+// Returns a human-readable string describing |state|.
+const char* AuthStateToString(CryptohomeAuthenticator::AuthState state) {
+  switch (state) {
+    case CryptohomeAuthenticator::CONTINUE:
+      return "CONTINUE";
+    case CryptohomeAuthenticator::NO_MOUNT:
+      return "NO_MOUNT";
+    case CryptohomeAuthenticator::FAILED_MOUNT:
+      return "FAILED_MOUNT";
+    case CryptohomeAuthenticator::FAILED_REMOVE:
+      return "FAILED_REMOVE";
+    case CryptohomeAuthenticator::FAILED_TMPFS:
+      return "FAILED_TMPFS";
+    case CryptohomeAuthenticator::FAILED_TPM:
+      return "FAILED_TPM";
+    case CryptohomeAuthenticator::CREATE_NEW:
+      return "CREATE_NEW";
+    case CryptohomeAuthenticator::RECOVER_MOUNT:
+      return "RECOVER_MONUT";
+    case CryptohomeAuthenticator::POSSIBLE_PW_CHANGE:
+      return "POSSIBLE_PW_CHANGE";
+    case CryptohomeAuthenticator::NEED_NEW_PW:
+      return "NEED_NEW_PW";
+    case CryptohomeAuthenticator::NEED_OLD_PW:
+      return "NEED_OLD_PW";
+    case CryptohomeAuthenticator::HAVE_NEW_PW:
+      return "HAVE_NEW_PW";
+    case CryptohomeAuthenticator::OFFLINE_LOGIN:
+      return "OFFLINE_LOGIN";
+    case CryptohomeAuthenticator::ONLINE_LOGIN:
+      return "ONLINE_LOGIN";
+    case CryptohomeAuthenticator::UNLOCK:
+      return "UNLOCK";
+    case CryptohomeAuthenticator::ONLINE_FAILED:
+      return "ONLINE_FAILED";
+    case CryptohomeAuthenticator::GUEST_LOGIN:
+      return "GUEST_LOGIN";
+    case CryptohomeAuthenticator::PUBLIC_ACCOUNT_LOGIN:
+      return "PUBLIC_ACCOUNT_LOGIN";
+    case CryptohomeAuthenticator::SUPERVISED_USER_LOGIN:
+      return "SUPERVISED_USER_LOGIN";
+    case CryptohomeAuthenticator::LOGIN_FAILED:
+      return "LOGIN_FAILED";
+    case CryptohomeAuthenticator::OWNER_REQUIRED:
+      return "OWNER_REQUIRED";
+    case CryptohomeAuthenticator::FAILED_USERNAME_HASH:
+      return "FAILED_USERNAME_HASH";
+    case CryptohomeAuthenticator::KIOSK_ACCOUNT_LOGIN:
+      return "KIOSK_ACCOUNT_LOGIN";
+    case CryptohomeAuthenticator::REMOVED_DATA_AFTER_FAILURE:
+      return "REMOVED_DATA_AFTER_FAILURE";
+    case CryptohomeAuthenticator::FAILED_OLD_ENCRYPTION:
+      return "FAILED_OLD_ENCRYPTION";
+    case CryptohomeAuthenticator::FAILED_PREVIOUS_MIGRATION_INCOMPLETE:
+      return "FAILED_PREVIOUS_MIGRATION_INCOMPLETE";
+    case CryptohomeAuthenticator::OFFLINE_NO_MOUNT:
+      return "OFFLINE_NO_MOUNT";
+  }
+  return "UNKNOWN";
+}
+
 // Hashes |key| with |system_salt| if it its type is KEY_TYPE_PASSWORD_PLAIN.
 // Returns the keys unmodified otherwise.
 std::unique_ptr<Key> TransformKeyIfNeeded(const Key& key,
@@ -808,7 +869,8 @@ void CryptohomeAuthenticator::Resolve() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   bool create_if_nonexistent = false;
   CryptohomeAuthenticator::AuthState state = ResolveState();
-  VLOG(1) << "Resolved state to: " << state;
+  VLOG(1) << "Resolved state to " << state << " (" << AuthStateToString(state)
+          << ")";
   switch (state) {
     case CONTINUE:
     case POSSIBLE_PW_CHANGE:
