@@ -25,25 +25,45 @@ class NetworkContext;
 }  // namespace mojom
 }  // namespace network
 
+class PrefService;
+
 namespace password_manager {
 
 class PasswordStore;
 
-// This class is responsible for reporting metrics about HTTP to HTTPS
-// migration.
+// This class is responsible for removing obsolete HTTP credentials that can
+// safely be deleted and reporting metrics about HTTP to HTTPS migration. This
+// class will delete HTTP credentials with HSTS enabled for that site and for
+// which an equivalent (i.e. same signon_realm excluding protocol,
+// PasswordForm::scheme (i.e. HTML, BASIC, etc.), username and password) HTTPS
+// credential exists in the password store. Also it replace HTTP credentials for
+// which no HTTPS credential with same signon_realm excluding protocol,
+// PasswordForm::scheme and username exists and site has
+// HSTS enabled, by an HTTPS version of that form.
 class HttpCredentialCleaner : public PasswordStoreConsumer,
                               public CredentialsCleaner {
  public:
+  // The cleaning will be made for credentials from |store|.
   // |network_context_getter| should return nullptr if it can't get the network
   // context because whatever owns it is dead.
+  // A preference from |prefs| is used to set the last time (in seconds) when
+  // the cleaning was performed.
   HttpCredentialCleaner(
       scoped_refptr<PasswordStore> store,
       base::RepeatingCallback<network::mojom::NetworkContext*()>
-          network_context_getter);
+          network_context_getter,
+      PrefService* prefs);
   ~HttpCredentialCleaner() override;
+
+  // Indicate whether there are at least |kCleanUpDelayInDays| days passed in
+  // order to run the clean-up.
+  static bool ShouldRunCleanUp(PrefService* prefs);
 
   // CredentialsCleaner:
   void StartCleaning(Observer* observer) override;
+
+  // The time that should pass in order to do the clean-up again.
+  static constexpr int kCleanUpDelayInDays = 90;
 
  private:
   // This type define a subset of PasswordForm where first argument is the
@@ -57,19 +77,29 @@ class HttpCredentialCleaner : public PasswordStoreConsumer,
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
-  void OnHSTSQueryResult(FormKey key,
-                         base::string16 password_value,
+  // This function will inform us using |hsts_result| parameter if the |form|'s
+  // host has HSTS enabled. |key| is |form|'s encoding which is used for
+  // matching |form| with an HTTPS credential with the same FormKey.
+  // Inside the function the metric counters are updated and, if needed, the
+  // |form| is removed or migrated to HTTPS.
+  void OnHSTSQueryResult(std::unique_ptr<autofill::PasswordForm> form,
+                         FormKey key,
                          HSTSResult hsts_result);
 
   // After metrics are reported, this function will inform the |observer_| about
   // completion.
   void ReportMetrics();
 
+  // Clean-up is performed on |store_|.
   scoped_refptr<PasswordStore> store_;
 
   // Needed to create HSTS request.
   base::RepeatingCallback<network::mojom::NetworkContext*()>
       network_context_getter_;
+
+  // |prefs_| is not an owning pointer. It is used to record he last time (in
+  // seconds) when the cleaning was performed.
+  PrefService* prefs_;
 
   // Map from (signon-realm excluding the protocol, Password::Scheme, username)
   // tuples of HTTPS forms to a list of passwords for that pair.

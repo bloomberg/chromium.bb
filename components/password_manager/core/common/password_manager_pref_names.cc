@@ -47,6 +47,9 @@ const char kDuplicatedBlacklistedCredentialsRemoved[] =
 const char kCredentialsWithWrongSignonRealmRemoved[] =
     "profile.credentials_with_wrong_signon_realm_removed";
 
+const char kLastTimeObsoleteHttpCredentialsRemoved[] =
+    "profile.last_time_obsolete_http_credentials_removed";
+
 const char kPasswordHashDataList[] = "profile.password_hash_data_list";
 
 }  // namespace prefs

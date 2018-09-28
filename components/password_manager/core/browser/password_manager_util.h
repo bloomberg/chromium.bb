@@ -100,10 +100,10 @@ void UserTriggeredManualGenerationFromContextMenu(
 // hence blacklisted duplicates need to be removed.
 // (2) Removing or fixing of HTTPS credentials with wrong signon_realm. See
 // https://crbug.com/881731 for details.
-// (3) Report metrics about HTTP to HTTPS migration process. This feature
-// is not available on iOS platform because the HSTS query is not supported.
-// |network_context_getter| is always null for iOS and it can also be null for
-// some unittests.
+// (3) Report metrics about HTTP to HTTPS migration process and remove obsolete
+// HTTP credentials. This feature is not available on iOS platform because the
+// HSTS query is not supported. |network_context_getter| is always null for iOS
+// and it can also be null for some unittests.
 void RemoveUselessCredentials(
     scoped_refptr<password_manager::PasswordStore> store,
     PrefService* prefs,
