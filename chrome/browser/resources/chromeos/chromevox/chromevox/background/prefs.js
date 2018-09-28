@@ -10,9 +10,9 @@
 
 goog.provide('cvox.ChromeVoxPrefs');
 
+goog.require('ConsoleTts');
 goog.require('EventStreamLogger');
 goog.require('cvox.ChromeVox');
-goog.require('cvox.ConsoleTts');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.KeyMap');
 
@@ -303,7 +303,7 @@ cvox.ChromeVoxPrefs.loggingPrefs = {
 cvox.ChromeVoxPrefs.prototype.setLoggingPrefs = function(key, value) {
   localStorage[key] = value;
   if (key == 'enableSpeechLogging')
-    cvox.ConsoleTts.getInstance().setEnabled(value);
+    ConsoleTts.getInstance().setEnabled(value);
   else if (key == 'enableEventStreamLogging')
     EventStreamLogger.instance.notifyEventStreamFilterChangedAll(value);
 };
