@@ -25,6 +25,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "ipc/ipc_message.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -40,8 +41,16 @@ SubresourceFilterAgent::SubresourceFilterAgent(
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<SubresourceFilterAgent>(render_frame),
       ruleset_dealer_(ruleset_dealer),
-      ad_resource_tracker_(std::move(ad_resource_tracker)) {
+      ad_resource_tracker_(std::move(ad_resource_tracker)),
+      binding_(this) {
   DCHECK(ruleset_dealer);
+  // |render_frame| can be nullptr in unit tests.
+  if (render_frame) {
+    render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+        base::BindRepeating(
+            &SubresourceFilterAgent::OnSubresourceFilterAgentRequest,
+            base::Unretained(this)));
+  }
 }
 
 SubresourceFilterAgent::~SubresourceFilterAgent() {
@@ -98,14 +107,6 @@ mojom::ActivationState SubresourceFilterAgent::GetParentActivationState(
       return agent->filter_for_last_committed_load_->activation_state();
   }
   return mojom::ActivationState();
-}
-
-void SubresourceFilterAgent::OnActivateForNextCommittedLoad(
-    const mojom::ActivationState& activation_state,
-    bool is_ad_subframe) {
-  activation_state_for_next_commit_ = activation_state;
-  if (is_ad_subframe)
-    SetIsAdSubframe();
 }
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted(
@@ -176,6 +177,19 @@ SubresourceFilterAgent::GetSubresourceFilterHost() {
         &subresource_filter_host_);
   }
   return subresource_filter_host_;
+}
+
+void SubresourceFilterAgent::OnSubresourceFilterAgentRequest(
+    mojom::SubresourceFilterAgentAssociatedRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void SubresourceFilterAgent::ActivateForNextCommittedLoad(
+    mojom::ActivationStatePtr activation_state,
+    bool is_ad_subframe) {
+  activation_state_for_next_commit_ = *activation_state;
+  if (is_ad_subframe)
+    SetIsAdSubframe();
 }
 
 void SubresourceFilterAgent::OnDestruct() {
@@ -253,16 +267,6 @@ void SubresourceFilterAgent::DidFinishLoad() {
   if (!filter_for_last_committed_load_)
     return;
   RecordHistogramsOnLoadFinished();
-}
-
-bool SubresourceFilterAgent::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SubresourceFilterAgent, message)
-    IPC_MESSAGE_HANDLER(SubresourceFilterMsg_ActivateForNextCommittedLoad,
-                        OnActivateForNextCommittedLoad)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void SubresourceFilterAgent::WillCreateWorkerFetchContext(

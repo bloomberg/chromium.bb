@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/console_message_level.h"
 #include "net/base/net_errors.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace subresource_filter {
 
@@ -122,8 +123,10 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
       transferred_ad_frame || base::ContainsKey(ad_frames_, frame_host);
   DCHECK(!is_ad_subframe || !navigation_handle->IsInMainFrame());
 
-  frame_host->Send(new SubresourceFilterMsg_ActivateForNextCommittedLoad(
-      frame_host->GetRoutingID(), filter->activation_state(), is_ad_subframe));
+  mojom::SubresourceFilterAgentAssociatedPtr agent;
+  frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
+  agent->ActivateForNextCommittedLoad(filter->activation_state().Clone(),
+                                      is_ad_subframe);
 }
 
 void ContentSubresourceFilterThrottleManager::DidFinishNavigation(

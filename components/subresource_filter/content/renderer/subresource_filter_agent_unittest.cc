@@ -78,6 +78,8 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
     return std::move(last_injected_filter_);
   }
 
+  using SubresourceFilterAgent::ActivateForNextCommittedLoad;
+
  private:
   std::unique_ptr<blink::WebDocumentSubresourceFilter> last_injected_filter_;
   bool is_ad_subframe_ = false;
@@ -157,9 +159,7 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   void StartLoadAndSetActivationState(mojom::ActivationState state,
                                       bool is_ad_subframe = false) {
     agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
-    EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
-        SubresourceFilterMsg_ActivateForNextCommittedLoad(0, state,
-                                                          is_ad_subframe)));
+    agent()->ActivateForNextCommittedLoad(state.Clone(), is_ad_subframe);
     agent_as_rfo()->DidCommitProvisionalLoad(
         false /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
   }
@@ -462,12 +462,11 @@ TEST_F(SubresourceFilterAgentTest,
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestBothURLsPathSuffix));
   ExpectNoSubresourceFilterGetsInjected();
   agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
-  mojom::ActivationState state;
-  state.activation_level = mojom::ActivationLevel::kEnabled;
-  state.measure_performance = true;
-  EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
-      SubresourceFilterMsg_ActivateForNextCommittedLoad(
-          0, state, false /* is_ad_subframe */)));
+  mojom::ActivationStatePtr state = mojom::ActivationState::New();
+  state->activation_level = mojom::ActivationLevel::kEnabled;
+  state->measure_performance = true;
+  agent()->ActivateForNextCommittedLoad(std::move(state),
+                                        false /* is_ad_subframe */);
   agent_as_rfo()->DidFailProvisionalLoad(
       blink::WebURLError(net::ERR_FAILED, blink::WebURL()));
   agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
