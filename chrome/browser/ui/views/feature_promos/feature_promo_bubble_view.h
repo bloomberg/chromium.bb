@@ -64,6 +64,9 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   gfx::Rect GetBubbleBounds() override;
+  void UpdateHighlightedButton(bool highlighted) override {
+    // Do nothing: the anchor for promo bubbles should not highlight.
+  }
 
   // Starts a timer to close the promo bubble.
   void StartAutoCloseTimer(base::TimeDelta auto_close_duration);

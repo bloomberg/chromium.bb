@@ -186,8 +186,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   void UpdateAnchorWidgetRenderState(bool visible);
 
   // Update the button highlight, which may be the anchor view or an explicit
-  // view set in |highlighted_button_tracker_|.
-  void UpdateHighlightedButton(bool highlighted);
+  // view set in |highlighted_button_tracker_|. This can be overridden to
+  // provide different highlight effects.
+  virtual void UpdateHighlightedButton(bool highlighted);
 
   // A flag controlling bubble closure on deactivation.
   bool close_on_deactivate_;
