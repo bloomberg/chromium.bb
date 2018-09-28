@@ -20,6 +20,7 @@ class ExceptionState;
 class RTCIceCandidate;
 class RTCIceGatherOptions;
 class IceTransportAdapterCrossThreadFactory;
+class RTCQuicTransport;
 
 enum class RTCIceTransportState {
   kNew,
@@ -58,7 +59,25 @@ class MODULES_EXPORT RTCIceTransport final
 
   ~RTCIceTransport() override;
 
+  // Returns true if start() has been called.
+  bool IsStarted() const { return role_ != cricket::ICEROLE_UNKNOWN; }
+
+  // Returns the role specified in start().
+  cricket::IceRole GetRole() const { return role_; }
+
+  // Returns true if the RTCIceTransport is in a terminal state.
   bool IsClosed() const { return state_ == RTCIceTransportState::kClosed; }
+
+  // An RTCQuicTransport can be connected to this RTCIceTransport. Only one can
+  // be connected at a time. The consumer will be automatically disconnected
+  // if stop() is called on this object. Otherwise, the RTCQuicTransport is
+  // responsible for disconnecting itself when it is done.
+  // ConnectConsumer returns an IceTransportProxy that can be used to connect
+  // a QuicTransportProxy. It may be called repeatedly with the same
+  // RTCQuicTransport.
+  bool HasConsumer() const;
+  IceTransportProxy* ConnectConsumer(RTCQuicTransport* consumer);
+  void DisconnectConsumer(RTCQuicTransport* consumer);
 
   // rtc_ice_transport.idl
   String role() const;
@@ -124,6 +143,8 @@ class MODULES_EXPORT RTCIceTransport final
   base::Optional<RTCIceParameters> remote_parameters_;
 
   base::Optional<RTCIceCandidatePair> selected_candidate_pair_;
+
+  Member<RTCQuicTransport> consumer_;
 
   // Handle to the WebRTC ICE transport. Created when this binding is
   // constructed and deleted once network traffic should be stopped.

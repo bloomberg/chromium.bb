@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event_init.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 #include "third_party/webrtc/api/jsepicecandidate.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/p2p/base/portallocator.h"
@@ -121,6 +122,29 @@ RTCIceTransport::RTCIceTransport(
 
 RTCIceTransport::~RTCIceTransport() {
   DCHECK(!proxy_);
+}
+
+bool RTCIceTransport::HasConsumer() const {
+  return consumer_;
+}
+
+IceTransportProxy* RTCIceTransport::ConnectConsumer(
+    RTCQuicTransport* consumer) {
+  DCHECK(consumer);
+  DCHECK(proxy_);
+  if (!consumer_) {
+    consumer_ = consumer;
+  } else {
+    DCHECK_EQ(consumer_, consumer);
+  }
+  return proxy_.get();
+}
+
+void RTCIceTransport::DisconnectConsumer(RTCQuicTransport* consumer) {
+  DCHECK(consumer);
+  DCHECK(proxy_);
+  DCHECK_EQ(consumer, consumer_);
+  consumer_ = nullptr;
 }
 
 String RTCIceTransport::role() const {
@@ -335,6 +359,9 @@ void RTCIceTransport::start(const RTCIceParameters& remote_parameters,
     }
     proxy_->Start(ConvertIceParameters(remote_parameters), role,
                   initial_remote_candidates);
+    if (consumer_) {
+      consumer_->OnTransportStarted();
+    }
   } else {
     remote_candidates_.clear();
     state_ = RTCIceTransportState::kNew;
@@ -347,6 +374,11 @@ void RTCIceTransport::stop() {
   if (IsClosed()) {
     return;
   }
+  if (HasConsumer()) {
+    consumer_->stop();
+  }
+  // Stopping the consumer should cause it to disconnect.
+  DCHECK(!HasConsumer());
   state_ = RTCIceTransportState::kClosed;
   proxy_.reset();
 }
@@ -459,6 +491,7 @@ void RTCIceTransport::Trace(blink::Visitor* visitor) {
   visitor->Trace(local_candidates_);
   visitor->Trace(remote_candidates_);
   visitor->Trace(selected_candidate_pair_);
+  visitor->Trace(consumer_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

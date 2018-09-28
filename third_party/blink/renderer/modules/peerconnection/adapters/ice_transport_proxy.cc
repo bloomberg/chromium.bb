@@ -17,7 +17,8 @@ IceTransportProxy::IceTransportProxy(
     scoped_refptr<base::SingleThreadTaskRunner> host_thread,
     Delegate* delegate,
     std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory)
-    : host_thread_(std::move(host_thread)),
+    : proxy_thread_(std::move(proxy_thread)),
+      host_thread_(std::move(host_thread)),
       host_(nullptr, base::OnTaskRunnerDeleter(host_thread_)),
       delegate_(delegate),
       connection_handle_for_scheduler_(
@@ -26,14 +27,14 @@ IceTransportProxy::IceTransportProxy(
   DCHECK(host_thread_);
   DCHECK(delegate_);
   DCHECK(adapter_factory);
-  DCHECK(proxy_thread->BelongsToCurrentThread());
+  DCHECK(proxy_thread_->BelongsToCurrentThread());
   adapter_factory->InitializeOnMainThread();
   // Wait to initialize the host until the weak_ptr_factory_ is initialized.
   // The IceTransportHost is constructed on the proxy thread but should only be
   // interacted with via PostTask to the host thread. The OnTaskRunnerDeleter
   // (configured above) will ensure it gets deleted on the host thread.
-  host_.reset(new IceTransportHost(std::move(proxy_thread),
-                                   weak_ptr_factory_.GetWeakPtr()));
+  host_.reset(
+      new IceTransportHost(proxy_thread_, weak_ptr_factory_.GetWeakPtr()));
   PostCrossThreadTask(*host_thread_, FROM_HERE,
                       CrossThreadBind(&IceTransportHost::Initialize,
                                       CrossThreadUnretained(host_.get()),
@@ -42,7 +43,20 @@ IceTransportProxy::IceTransportProxy(
 
 IceTransportProxy::~IceTransportProxy() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!HasConsumer());
   // Note: The IceTransportHost will be deleted on the host thread.
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> IceTransportProxy::proxy_thread()
+    const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return proxy_thread_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> IceTransportProxy::host_thread()
+    const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return host_thread_;
 }
 
 void IceTransportProxy::StartGathering(
@@ -86,6 +100,27 @@ void IceTransportProxy::AddRemoteCandidate(
       *host_thread_, FROM_HERE,
       CrossThreadBind(&IceTransportHost::AddRemoteCandidate,
                       CrossThreadUnretained(host_.get()), candidate));
+}
+
+bool IceTransportProxy::HasConsumer() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return consumer_proxy_;
+}
+
+IceTransportHost* IceTransportProxy::ConnectConsumer(
+    QuicTransportProxy* consumer_proxy) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(consumer_proxy);
+  DCHECK(!consumer_proxy_);
+  consumer_proxy_ = consumer_proxy;
+  return host_.get();
+}
+
+void IceTransportProxy::DisconnectConsumer(QuicTransportProxy* consumer_proxy) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(consumer_proxy);
+  DCHECK_EQ(consumer_proxy, consumer_proxy_);
+  consumer_proxy_ = nullptr;
 }
 
 void IceTransportProxy::OnGatheringStateChanged(

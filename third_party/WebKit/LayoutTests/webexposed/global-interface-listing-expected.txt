@@ -5561,8 +5561,10 @@ interface RTCQuicStream
     getter transport
     getter writeBufferedAmount
     method constructor
-interface RTCQuicTransport
+interface RTCQuicTransport : EventTarget
     attribute @@toStringTag
+    getter onerror
+    getter onstatechange
     getter state
     getter transport
     method constructor
@@ -5571,7 +5573,10 @@ interface RTCQuicTransport
     method getLocalParameters
     method getRemoteCertificates
     method getRemoteParameters
+    method start
     method stop
+    setter onerror
+    setter onstatechange
 interface RTCRtpContributingSource
     attribute @@toStringTag
     getter source
