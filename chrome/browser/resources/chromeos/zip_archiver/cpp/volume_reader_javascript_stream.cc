@@ -42,6 +42,14 @@ VolumeReaderJavaScriptStream::~VolumeReaderJavaScriptStream() {
     second_array_buffer_.Unmap();
 }
 
+int64_t VolumeReaderJavaScriptStream::offset() {
+  return offset_;
+}
+
+int64_t VolumeReaderJavaScriptStream::archive_size() {
+  return archive_size_;
+}
+
 void VolumeReaderJavaScriptStream::SetBufferAndSignal(
     const pp::VarArrayBuffer& array_buffer,
     int64_t read_offset) {

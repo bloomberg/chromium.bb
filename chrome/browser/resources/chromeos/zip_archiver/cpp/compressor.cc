@@ -26,14 +26,14 @@ class JavaScriptCompressorRequestor
   explicit JavaScriptCompressorRequestor(Compressor* compressor)
       : compressor_(compressor) {}
 
-  virtual void WriteChunkRequest(int64_t offset,
-                                 int64_t length,
-                                 const pp::VarArrayBuffer& buffer) {
+  void WriteChunkRequest(int64_t offset,
+                         int64_t length,
+                         const pp::VarArrayBuffer& buffer) override {
     compressor_->message_sender()->SendWriteChunk(compressor_->compressor_id(),
                                                   buffer, offset, length);
   }
 
-  virtual void ReadFileChunkRequest(int64_t length) {
+  void ReadFileChunkRequest(int64_t length) override {
     compressor_->message_sender()->SendReadFileChunk(
         compressor_->compressor_id(), length);
   }

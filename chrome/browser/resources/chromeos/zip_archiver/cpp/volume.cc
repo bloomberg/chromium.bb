@@ -63,7 +63,7 @@ void ConstructMetadata(int64_t index,
   pp::VarDictionary parent_entries =
       pp::VarDictionary(parent_metadata->Get("entries"));
 
-  unsigned int position = entry_path.find(kPathDelimiter);
+  std::string::size_type position = entry_path.find(kPathDelimiter);
   pp::VarDictionary entry_metadata;
   std::string entry_name;
 
@@ -114,16 +114,16 @@ class JavaScriptRequestor : public JavaScriptRequestorInterface {
   // JavaScriptRequestor does not own the volume pointer.
   explicit JavaScriptRequestor(Volume* volume) : volume_(volume) {}
 
-  virtual void RequestFileChunk(const std::string& request_id,
-                                int64_t offset,
-                                int64_t bytes_to_read) {
+  void RequestFileChunk(const std::string& request_id,
+                        int64_t offset,
+                        int64_t bytes_to_read) override {
     PP_DCHECK(offset >= 0);
     PP_DCHECK(bytes_to_read > 0);
     volume_->message_sender()->SendFileChunkRequest(
         volume_->file_system_id(), request_id, offset, bytes_to_read);
   }
 
-  virtual void RequestPassphrase(const std::string& request_id) {
+  void RequestPassphrase(const std::string& request_id) override {
     volume_->message_sender()->SendPassphraseRequest(volume_->file_system_id(),
                                                      request_id);
   }
@@ -136,8 +136,8 @@ class JavaScriptRequestor : public JavaScriptRequestorInterface {
 // Volume constructor.
 class VolumeArchiveFactory : public VolumeArchiveFactoryInterface {
  public:
-  virtual std::unique_ptr<VolumeArchive> Create(
-      std::unique_ptr<VolumeReader> reader) {
+  std::unique_ptr<VolumeArchive> Create(
+      std::unique_ptr<VolumeReader> reader) override {
     return std::make_unique<VolumeArchiveMinizip>(std::move(reader));
   }
 };
@@ -149,7 +149,7 @@ class VolumeReaderFactory : public VolumeReaderFactoryInterface {
   // VolumeReaderFactory does not own the volume pointer.
   explicit VolumeReaderFactory(Volume* volume) : volume_(volume) {}
 
-  virtual std::unique_ptr<VolumeReader> Create(int64_t archive_size) {
+  std::unique_ptr<VolumeReader> Create(int64_t archive_size) override {
     return std::make_unique<VolumeReaderJavaScriptStream>(archive_size,
                                                           volume_->requestor());
   }
