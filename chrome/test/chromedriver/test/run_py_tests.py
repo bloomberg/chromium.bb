@@ -106,6 +106,8 @@ _VERSION_SPECIFIC_FILTER['70'] = [
 ]
 
 _VERSION_SPECIFIC_FILTER['69'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
+    'ChromeDriverTest.testWindowFullScreen',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2515
     'HeadlessInvalidCertificateTest.*',
     # Feature not yet supported in this version
@@ -113,6 +115,8 @@ _VERSION_SPECIFIC_FILTER['69'] = [
 ]
 
 _VERSION_SPECIFIC_FILTER['68'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
+    'ChromeDriverTest.testWindowFullScreen',
     # Feature not yet supported in this version
     'ChromeDriverTest.testGenerateTestReport',
 ]
