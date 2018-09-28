@@ -676,6 +676,7 @@ void NGBlockNode::CopyChildFragmentPosition(
     FloatingObject* floating_object =
         ToLayoutBlockFlow(containing_block)->InsertFloatingObject(*layout_box);
     floating_object->SetIsInPlacedTree(false);
+    floating_object->SetShouldPaint(!layout_box->HasSelfPaintingLayer());
     LayoutUnit horizontal_margin_edge_offset = horizontal_offset;
     if (has_flipped_x_axis)
       horizontal_margin_edge_offset -= layout_box->MarginRight();
