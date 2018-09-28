@@ -21,7 +21,8 @@ AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(int process_id, int routing_id) {
   if (it != frame_to_ax_tree_id_map_.end())
     return it->second;
 
-  AXTreeID new_id = base::IntToString(++ax_tree_id_counter_);
+  AXTreeID new_id =
+      AXTreeID::FromString(base::IntToString(++ax_tree_id_counter_));
   frame_to_ax_tree_id_map_[frame_id] = new_id;
   ax_tree_to_frame_id_map_[new_id] = frame_id;
 
@@ -41,7 +42,8 @@ AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(AXHostDelegate* delegate) {
     if (it.second == delegate)
       return it.first;
   }
-  AXTreeID new_id = base::IntToString(++ax_tree_id_counter_);
+  AXTreeID new_id =
+      AXTreeID::FromString(base::IntToString(++ax_tree_id_counter_));
   id_to_host_delegate_[new_id] = delegate;
   return new_id;
 }

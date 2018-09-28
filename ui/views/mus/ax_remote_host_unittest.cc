@@ -46,15 +46,15 @@ class TestAXHostService : public ax::mojom::AXHost {
   void SetRemoteHost(ax::mojom::AXRemoteHostPtr client,
                      SetRemoteHostCallback cb) override {
     ++add_client_count_;
-    const ui::AXTreeID tree_id("123");
+    const ui::AXTreeID tree_id = ui::AXTreeID::FromString("123");
     std::move(cb).Run(tree_id, automation_enabled_);
     client.FlushForTesting();
   }
-  void HandleAccessibilityEvent(const std::string& tree_id,
+  void HandleAccessibilityEvent(const ui::AXTreeID& tree_id,
                                 const std::vector<ui::AXTreeUpdate>& updates,
                                 const ui::AXEvent& event) override {
     ++event_count_;
-    last_tree_id_ = ui::AXTreeID(tree_id);
+    last_tree_id_ = ui::AXTreeID::FromString(tree_id);
     last_updates_ = updates;
     last_event_ = event;
   }

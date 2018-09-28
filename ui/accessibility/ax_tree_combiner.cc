@@ -17,7 +17,7 @@ AXTreeCombiner::~AXTreeCombiner() {
 void AXTreeCombiner::AddTree(const AXTreeUpdate& tree, bool is_root) {
   trees_.push_back(tree);
   if (is_root) {
-    DCHECK_EQ(root_tree_id_, "");
+    DCHECK_EQ(root_tree_id_, AXTreeIDUnknown());
     root_tree_id_ = tree.tree_data.tree_id;
   }
 }
@@ -80,8 +80,8 @@ void AXTreeCombiner::ProcessTree(const AXTreeUpdate* tree) {
   AXTreeID tree_id = tree->tree_data.tree_id;
   for (size_t i = 0; i < tree->nodes.size(); ++i) {
     AXNodeData node = tree->nodes[i];
-    AXTreeID child_tree_id =
-        node.GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId);
+    AXTreeID child_tree_id = AXTreeID::FromString(
+        node.GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
 
     // Map the node's ID.
     node.id = MapId(tree_id, node.id);

@@ -7,18 +7,19 @@
 
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/mojom/ax_tree_data.mojom-shared.h"
+#include "ui/accessibility/mojom/ax_tree_id_mojom_traits.h"
 
 namespace mojo {
 
 template <>
 struct StructTraits<ax::mojom::AXTreeDataDataView, ui::AXTreeData> {
-  static const std::string& tree_id(const ui::AXTreeData& p) {
+  static const ui::AXTreeID& tree_id(const ui::AXTreeData& p) {
     return p.tree_id;
   }
-  static const std::string& parent_tree_id(const ui::AXTreeData& p) {
+  static const ui::AXTreeID& parent_tree_id(const ui::AXTreeData& p) {
     return p.parent_tree_id;
   }
-  static const std::string& focused_tree_id(const ui::AXTreeData& p) {
+  static const ui::AXTreeID& focused_tree_id(const ui::AXTreeData& p) {
     return p.focused_tree_id;
   }
   static const std::string& doctype(const ui::AXTreeData& p) {

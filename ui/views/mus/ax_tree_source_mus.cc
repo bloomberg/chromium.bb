@@ -15,7 +15,7 @@ AXTreeSourceMus::AXTreeSourceMus(AXAuraObjWrapper* root,
                                  const ui::AXTreeID& tree_id)
     : root_(root), tree_id_(tree_id) {
   DCHECK(root_);
-  DCHECK(!tree_id_.empty());
+  DCHECK_NE(tree_id_, ui::AXTreeIDUnknown());
 }
 
 AXTreeSourceMus::~AXTreeSourceMus() = default;

@@ -7,6 +7,7 @@
 
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/mojom/ax_action_data.mojom-shared.h"
+#include "ui/accessibility/mojom/ax_tree_id_mojom_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
@@ -16,7 +17,7 @@ struct StructTraits<ax::mojom::AXActionDataDataView, ui::AXActionData> {
   static ax::mojom::Action action(const ui::AXActionData& a) {
     return a.action;
   }
-  static const std::string& target_tree_id(const ui::AXActionData& a) {
+  static const ui::AXTreeID& target_tree_id(const ui::AXActionData& a) {
     return a.target_tree_id;
   }
   static const std::string& source_extension_id(const ui::AXActionData& a) {

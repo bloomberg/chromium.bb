@@ -140,7 +140,7 @@ class AXPosition {
         } else {
           str_child_index = base::IntToString(child_index_);
         }
-        str = "TreePosition tree_id=" + tree_id_ +
+        str = "TreePosition tree_id=" + tree_id_.ToString() +
               " anchor_id=" + base::IntToString(anchor_id_) +
               " child_index=" + str_child_index;
         break;
@@ -152,7 +152,7 @@ class AXPosition {
         } else {
           str_text_offset = base::IntToString(text_offset_);
         }
-        str = "TextPosition tree_id=" + tree_id_ +
+        str = "TextPosition tree_id=" + tree_id_.ToString() +
               " anchor_id=" + base::IntToString(anchor_id_) +
               " text_offset=" + str_text_offset + " affinity=" +
               ui::ToString(static_cast<ax::mojom::TextAffinity>(affinity_));

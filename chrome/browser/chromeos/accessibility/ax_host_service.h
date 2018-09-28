@@ -40,7 +40,7 @@ class AXHostService : public service_manager::Service,
   // ax::mojom::AXHost:
   void SetRemoteHost(ax::mojom::AXRemoteHostPtr remote,
                      SetRemoteHostCallback cb) override;
-  void HandleAccessibilityEvent(const std::string& tree_id,
+  void HandleAccessibilityEvent(const ui::AXTreeID& tree_id,
                                 const std::vector<ui::AXTreeUpdate>& updates,
                                 const ui::AXEvent& event) override;
 

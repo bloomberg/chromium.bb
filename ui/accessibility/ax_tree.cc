@@ -722,17 +722,20 @@ void AXTree::UpdateReverseRelations(AXNode* node, const AXNodeData& new_data) {
     if (attr == ax::mojom::StringAttribute::kChildTreeId) {
       // Remove old_string -> id from the map, and clear map keys if
       // their values are now empty.
-      if (child_tree_id_reverse_map_.find(old_string) !=
+      AXTreeID old_ax_tree_id = AXTreeID::FromString(old_string);
+      if (child_tree_id_reverse_map_.find(old_ax_tree_id) !=
           child_tree_id_reverse_map_.end()) {
-        child_tree_id_reverse_map_[old_string].erase(id);
-        if (child_tree_id_reverse_map_[old_string].empty())
-          child_tree_id_reverse_map_.erase(old_string);
+        child_tree_id_reverse_map_[old_ax_tree_id].erase(id);
+        if (child_tree_id_reverse_map_[old_ax_tree_id].empty())
+          child_tree_id_reverse_map_.erase(old_ax_tree_id);
       }
 
       // Add new_string -> id to the map, unless new_id is zero indicating that
       // we're only removing a relation.
-      if (!new_string.empty())
-        child_tree_id_reverse_map_[new_string].insert(id);
+      if (!new_string.empty()) {
+        AXTreeID new_ax_tree_id = AXTreeID::FromString(new_string);
+        child_tree_id_reverse_map_[new_ax_tree_id].insert(id);
+      }
     }
   };
 

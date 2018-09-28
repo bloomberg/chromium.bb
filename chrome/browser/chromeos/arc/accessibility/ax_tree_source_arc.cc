@@ -396,8 +396,8 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
   if (out_data->role == ax::mojom::Role::kRootWebArea) {
     std::string package_name;
     if (GetProperty(node, AXStringProperty::PACKAGE_NAME, &package_name)) {
-      const std::string& url =
-          base::StringPrintf("%s/%s", package_name.c_str(), tree_id().c_str());
+      const std::string& url = base::StringPrintf("%s/%s", package_name.c_str(),
+                                                  tree_id().ToString().c_str());
       out_data->AddStringAttribute(ax::mojom::StringAttribute::kUrl, url);
     }
   }
