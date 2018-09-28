@@ -655,7 +655,7 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
           record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_GPU:
       return TraceConfig(
-          "benchmark,toplevel,gpu,base,mojom,"
+          "benchmark,toplevel,gpu,base,mojom,ipc,"
           "disabled-by-default-system_stats,disabled-by-default-cpu_profiler",
           record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_IPC:
