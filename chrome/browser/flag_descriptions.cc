@@ -1810,12 +1810,6 @@ const char kSystemKeyboardLockDescription[] =
     "keyboard shortcuts and have the events routed directly to the website "
     "when in fullscreen mode.";
 
-const char kTabAudioMutingName[] = "Tab audio muting UI control";
-const char kTabAudioMutingDescription[] =
-    "When enabled, the audio indicators in the tab strip double as tab audio "
-    "mute controls. This also adds commands in the tab context menu for "
-    "quickly muting multiple selected tabs.";
-
 const char kTabsInCbdName[] = "Enable tabs for the Clear Browsing Data dialog.";
 const char kTabsInCbdDescription[] =
     "Enables a basic and an advanced tab for the Clear Browsing Data dialog.";

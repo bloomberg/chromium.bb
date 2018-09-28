@@ -25,7 +25,7 @@
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/view.h"
 
-class AlertIndicatorButton;
+class AlertIndicator;
 class TabCloseButton;
 class TabController;
 class TabIcon;
@@ -183,10 +183,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the thickness of the stroke drawn below the tab.
   float GetBottomStrokeThickness(bool should_paint_as_active = false) const;
 
-  // Returns the width of the largest part of the tab that is available for the
-  // user to click to select/activate the tab.
-  int GetWidthOfLargestSelectableRegion() const;
-
   // Returns the insets to use for laying out tab contents.
   gfx::Insets GetContentsInsets() const;
 
@@ -222,8 +218,14 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the overlap between adjacent tabs.
   static int GetOverlap();
 
+  // Returns the text to show in a tab's tooltip: The contents |title|, followed
+  // by a break, followed by a localized string describing the |alert_state|.
+  // Exposed publicly for tests.
+  static base::string16 GetTooltipText(const base::string16& title,
+                                       TabAlertState alert_state);
+
  private:
-  friend class AlertIndicatorButtonTest;
+  friend class AlertIndicatorTest;
   friend class TabTest;
   friend class TabStripTest;
   FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibilityWhenStacked);
@@ -327,7 +329,7 @@ class Tab : public gfx::AnimationDelegate,
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 
   TabIcon* icon_ = nullptr;
-  AlertIndicatorButton* alert_indicator_button_ = nullptr;
+  AlertIndicator* alert_indicator_ = nullptr;
   TabCloseButton* close_button_ = nullptr;
 
   views::Label* title_;

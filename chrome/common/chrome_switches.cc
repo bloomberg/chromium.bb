@@ -329,9 +329,6 @@ const char kEnablePowerOverlay[]            = "enable-power-overlay";
 const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";
 
-// Enables user control over muting tab audio from the tab strip.
-const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
-
 // Enables DevTools server for UI (mus, ash, etc). Value should be the port the
 // server is started on. Default port is 9223.
 const char kEnableUiDevTools[] = "enable-ui-devtools";

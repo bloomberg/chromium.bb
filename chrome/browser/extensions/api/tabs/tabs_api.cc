@@ -54,7 +54,6 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/extensions/api/windows.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -1313,23 +1312,11 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
     tab_index = tab_strip->GetIndexOfWebContents(contents);
   }
 
-  if (params->update_properties.muted.get()) {
-    TabMutedResult tab_muted_result = chrome::SetTabAudioMuted(
-        contents, *params->update_properties.muted,
-        TabMutedReason::EXTENSION, extension()->id());
-
-    switch (tab_muted_result) {
-      case TabMutedResult::SUCCESS:
-        break;
-      case TabMutedResult::FAIL_NOT_ENABLED:
-        return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-            tabs_constants::kCannotUpdateMuteDisabled,
-            base::IntToString(tab_id), ::switches::kEnableTabAudioMuting)));
-      case TabMutedResult::FAIL_TABCAPTURE:
-        return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-            tabs_constants::kCannotUpdateMuteCaptured,
-            base::IntToString(tab_id))));
-    }
+  if (params->update_properties.muted.get() &&
+      !chrome::SetTabAudioMuted(contents, *params->update_properties.muted,
+                                TabMutedReason::EXTENSION, extension()->id())) {
+    return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+        tabs_constants::kCannotUpdateMuteCaptured, base::IntToString(tab_id))));
   }
 
   if (params->update_properties.opener_tab_id.get()) {

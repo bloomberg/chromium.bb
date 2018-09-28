@@ -544,6 +544,9 @@ class TabStripModel {
   // starting at |start| to |index|. See MoveSelectedTabsTo for more details.
   void MoveSelectedTabsToImpl(int index, size_t start, size_t length);
 
+  // Sets the sound content setting for each site at the |indices|.
+  void SetSitesMuted(const std::vector<int>& indices, bool mute) const;
+
   // Returns true if the tab represented by the specified data has an opener
   // that matches the specified one. If |use_group| is true, then this will
   // fall back to check the group relationship as well.
