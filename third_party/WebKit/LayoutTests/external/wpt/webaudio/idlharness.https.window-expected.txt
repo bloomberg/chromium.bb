@@ -41,7 +41,7 @@ PASS AudioContext interface: existence and properties of interface prototype obj
 PASS AudioContext interface: attribute baseLatency
 FAIL AudioContext interface: attribute outputLatency assert_true: The prototype object must have a property "outputLatency" expected true got false
 PASS AudioContext interface: operation getOutputTimestamp()
-FAIL AudioContext interface: operation resume() assert_own_property: interface prototype object missing non-static operation expected property "resume" missing
+PASS AudioContext interface: operation resume()
 PASS AudioContext interface: operation suspend()
 PASS AudioContext interface: operation close()
 FAIL AudioContext interface: operation createMediaElementSource(HTMLMediaElement) assert_own_property: interface prototype object missing non-static operation expected property "createMediaElementSource" missing
@@ -104,7 +104,7 @@ PASS OfflineAudioContext interface: existence and properties of interface protot
 PASS OfflineAudioContext interface: existence and properties of interface prototype object's "constructor" property
 PASS OfflineAudioContext interface: existence and properties of interface prototype object's @@unscopables property
 PASS OfflineAudioContext interface: operation startRendering()
-FAIL OfflineAudioContext interface: operation resume() assert_own_property: interface prototype object missing non-static operation expected property "resume" missing
+PASS OfflineAudioContext interface: operation resume()
 PASS OfflineAudioContext interface: operation suspend(double)
 PASS OfflineAudioContext interface: attribute length
 PASS OfflineAudioContext interface: attribute oncomplete

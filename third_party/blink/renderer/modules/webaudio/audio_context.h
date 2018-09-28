@@ -42,7 +42,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   bool IsContextClosed() const final;
 
   ScriptPromise suspendContext(ScriptState*);
-  ScriptPromise resumeContext(ScriptState*) final;
+  ScriptPromise resumeContext(ScriptState*);
 
   bool HasRealtimeConstraint() final { return true; }
 
