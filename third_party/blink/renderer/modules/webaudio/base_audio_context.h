@@ -220,9 +220,6 @@ class MODULES_EXPORT BaseAudioContext
                                    const PeriodicWaveConstraints&,
                                    ExceptionState&);
 
-  // Resume
-  virtual ScriptPromise resumeContext(ScriptState*) = 0;
-
   // IIRFilter
   IIRFilterNode* createIIRFilter(Vector<double> feedforward_coef,
                                  Vector<double> feedback_coef,

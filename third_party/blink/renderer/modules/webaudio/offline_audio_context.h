@@ -59,7 +59,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   ScriptPromise startOfflineRendering(ScriptState*);
 
   ScriptPromise suspendContext(ScriptState*, double);
-  ScriptPromise resumeContext(ScriptState*) final;
+  ScriptPromise resumeContext(ScriptState*);
 
   void RejectPendingResolvers() override;
 
