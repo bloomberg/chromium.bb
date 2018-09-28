@@ -4657,6 +4657,18 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
          REF_FRAMES * sizeof(WarpedMotionParams));
 }
 
+// Release the references to the frame buffers in cm->ref_frame_map and reset
+// all elements of cm->ref_frame_map to -1.
+static void reset_ref_frame_map(AV1_COMMON *const cm) {
+  BufferPool *const pool = cm->buffer_pool;
+  RefCntBuffer *const frame_bufs = pool->frame_bufs;
+
+  for (int i = 0; i < REF_FRAMES; i++) {
+    decrease_ref_count(cm->ref_frame_map[i], frame_bufs, pool);
+  }
+  memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+}
+
 // Generate next_ref_frame_map.
 static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
   AV1_COMMON *const cm = &pbi->common;
@@ -4705,7 +4717,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   }
 
   if (pbi->need_resync) {
-    memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+    reset_ref_frame_map(cm);
     pbi->need_resync = 0;
   }
 
@@ -4992,7 +5004,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->frame_refs[i].buf = NULL;
     }
     if (pbi->need_resync) {
-      memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+      reset_ref_frame_map(cm);
       pbi->need_resync = 0;
     }
   } else {
@@ -5003,7 +5015,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                            "Intra only frames cannot have refresh flags 0xFF");
       }
       if (pbi->need_resync) {
-        memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+        reset_ref_frame_map(cm);
         pbi->need_resync = 0;
       }
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
