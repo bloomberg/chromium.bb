@@ -784,7 +784,12 @@ class CC_EXPORT LayerTreeHostImpl
       ScrollState* scroll_state,
       ScrollNode* scrolling_node,
       InputHandler::ScrollInputType type);
-  bool IsInitialScrollHitTestReliable(LayerImpl* layer, const gfx::PointF&);
+  bool IsTouchDraggingScrollbar(
+      LayerImpl* first_scrolling_layer_or_drawn_scrollbar,
+      InputHandler::ScrollInputType type);
+  bool IsInitialScrollHitTestReliable(
+      LayerImpl* layer,
+      LayerImpl* first_scrolling_layer_or_drawn_scrollbar);
   void DistributeScrollDelta(ScrollState* scroll_state);
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);

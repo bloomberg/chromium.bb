@@ -502,7 +502,7 @@ class CC_EXPORT LayerTreeImpl {
   void UnregisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer);
   ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const;
 
-  LayerImpl* FindFirstScrollingLayerOrDrawnScrollbarThatIsHitByPoint(
+  LayerImpl* FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
       const gfx::PointF& screen_space_point);
 
   LayerImpl* FindLayerThatIsHitByPoint(const gfx::PointF& screen_space_point);
