@@ -17,7 +17,6 @@ class FakeAndroidSmsAppHelperDelegate : public AndroidSmsAppHelperDelegate {
   ~FakeAndroidSmsAppHelperDelegate() override;
   bool HasInstalledApp();
   bool HasLaunchedApp();
-  void Reset();
 
   // AndroidSmsAppHelperDelegate:
   void InstallAndroidSmsApp() override;

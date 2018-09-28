@@ -9,7 +9,6 @@
 #include "base/time/default_clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
-#include "chromeos/services/multidevice_setup/android_sms_app_installing_status_observer.h"
 #include "chromeos/services/multidevice_setup/device_reenroller.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
@@ -75,7 +74,9 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     std::unique_ptr<AndroidSmsPairingStateTracker>
         android_sms_pairing_state_tracker,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
-    : eligible_host_devices_provider_(
+    : android_sms_app_helper_delegate_(
+          std::move(android_sms_app_helper_delegate)),
+      eligible_host_devices_provider_(
           EligibleHostDevicesProviderImpl::Factory::Get()->BuildInstance(
               device_sync_client)),
       host_backend_delegate_(
@@ -112,10 +113,6 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
       device_reenroller_(DeviceReenroller::Factory::Get()->BuildInstance(
           device_sync_client,
           gcm_device_info_provider)),
-      android_sms_app_installing_host_observer_(
-          AndroidSmsAppInstallingStatusObserver::Factory::Get()->BuildInstance(
-              host_status_provider_.get(),
-              std::move(android_sms_app_helper_delegate))),
       auth_token_validator_(auth_token_validator) {
   host_status_provider_->AddObserver(this);
   feature_state_manager_->AddObserver(this);
@@ -305,6 +302,7 @@ bool MultiDeviceSetupImpl::AttemptSetHost(const std::string& host_device_id) {
     return false;
 
   host_backend_delegate_->AttemptToSetMultiDeviceHostOnBackend(*it);
+  android_sms_app_helper_delegate_->InstallAndroidSmsApp();
 
   return true;
 }
