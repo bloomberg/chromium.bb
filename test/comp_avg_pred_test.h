@@ -451,7 +451,8 @@ class AV1HighBDJNTCOMPAVGUPSAMPLEDTest
     jnt_comp_params.use_jnt_comp_avg = 1;
     int sub_x_q3, sub_y_q3;
     int subpel_search;
-    for (subpel_search = 1; subpel_search <= 2; ++subpel_search) {
+    for (subpel_search = USE_4_TAPS; subpel_search <= USE_8_TAPS;
+         ++subpel_search) {
       for (sub_x_q3 = 0; sub_x_q3 < 8; ++sub_x_q3) {
         for (sub_y_q3 = 0; sub_y_q3 < 8; ++sub_y_q3) {
           for (int ii = 0; ii < 2; ii++) {

@@ -969,13 +969,13 @@ void aom_highbd_upsampled_pred_c(MACROBLOCKD *xd,
   } else if (!subpel_y_q3) {
     const int16_t *const kernel =
         av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
-    aom_highbd_convolve8_horiz(ref8, ref_stride, comp_pred8, width, kernel, 16,
-                               NULL, -1, width, height, bd);
+    aom_highbd_convolve8_horiz_c(ref8, ref_stride, comp_pred8, width, kernel,
+                                 16, NULL, -1, width, height, bd);
   } else if (!subpel_x_q3) {
     const int16_t *const kernel =
         av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
-    aom_highbd_convolve8_vert(ref8, ref_stride, comp_pred8, width, NULL, -1,
-                              kernel, 16, width, height, bd);
+    aom_highbd_convolve8_vert_c(ref8, ref_stride, comp_pred8, width, NULL, -1,
+                                kernel, 16, width, height, bd);
   } else {
     DECLARE_ALIGNED(16, uint16_t,
                     temp[((MAX_SB_SIZE + 16) + 16) * MAX_SB_SIZE]);
@@ -986,11 +986,11 @@ void aom_highbd_upsampled_pred_c(MACROBLOCKD *xd,
     const int intermediate_height =
         (((height - 1) * 8 + subpel_y_q3) >> 3) + filter->taps;
     assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
-    aom_highbd_convolve8_horiz(ref8 - ref_stride * ((filter->taps >> 1) - 1),
-                               ref_stride, CONVERT_TO_BYTEPTR(temp),
-                               MAX_SB_SIZE, kernel_x, 16, NULL, -1, width,
-                               intermediate_height, bd);
-    aom_highbd_convolve8_vert(
+    aom_highbd_convolve8_horiz_c(ref8 - ref_stride * ((filter->taps >> 1) - 1),
+                                 ref_stride, CONVERT_TO_BYTEPTR(temp),
+                                 MAX_SB_SIZE, kernel_x, 16, NULL, -1, width,
+                                 intermediate_height, bd);
+    aom_highbd_convolve8_vert_c(
         CONVERT_TO_BYTEPTR(temp + MAX_SB_SIZE * ((filter->taps >> 1) - 1)),
         MAX_SB_SIZE, comp_pred8, width, NULL, -1, kernel_y, 16, width, height,
         bd);
@@ -1052,9 +1052,9 @@ void aom_highbd_jnt_comp_avg_upsampled_pred_c(
   const int bck_offset = jcp_param->bck_offset;
   const uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
   uint16_t *comp_pred = CONVERT_TO_SHORTPTR(comp_pred8);
-  aom_highbd_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred8, width,
-                            height, subpel_x_q3, subpel_y_q3, ref8, ref_stride,
-                            bd, subpel_search);
+  aom_highbd_upsampled_pred_c(xd, cm, mi_row, mi_col, mv, comp_pred8, width,
+                              height, subpel_x_q3, subpel_y_q3, ref8,
+                              ref_stride, bd, subpel_search);
 
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {

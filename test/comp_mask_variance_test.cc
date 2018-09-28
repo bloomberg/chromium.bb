@@ -459,6 +459,7 @@ AV1HighbdCompMaskUpVarianceTest::~AV1HighbdCompMaskUpVarianceTest() { ; }
 
 void AV1HighbdCompMaskUpVarianceTest::RunCheckOutput(
     highbd_comp_mask_pred_func test_impl, BLOCK_SIZE bsize, int inv) {
+  (void)test_impl;
   int bd_ = GET_PARAM(2);
   const int w = block_size_wide[bsize];
   const int h = block_size_high[bsize];
@@ -481,19 +482,24 @@ void AV1HighbdCompMaskUpVarianceTest::RunCheckOutput(
         const uint8_t *mask =
             av1_get_contiguous_soft_mask(wedge_index, 1, bsize);
 
-        aom_highbd_comp_mask_pred = aom_highbd_comp_mask_pred_c;  // ref
-        aom_highbd_comp_mask_upsampled_pred(
-            NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(comp_pred1_),
-            CONVERT_TO_BYTEPTR(pred_), w, h, subx, suby,
-            CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w, inv, bd_,
-            subpel_search);
+        // ref
+        aom_highbd_upsampled_pred_c(
+            NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(comp_pred1_), w, h, subx,
+            suby, CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, bd_, subpel_search);
 
-        aom_highbd_comp_mask_pred = test_impl;  // test
-        aom_highbd_comp_mask_upsampled_pred(
-            NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(comp_pred2_),
-            CONVERT_TO_BYTEPTR(pred_), w, h, subx, suby,
-            CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w, inv, bd_,
-            subpel_search);
+        aom_highbd_comp_mask_pred_c(
+            CONVERT_TO_BYTEPTR(comp_pred1_), CONVERT_TO_BYTEPTR(pred_), w, h,
+            CONVERT_TO_BYTEPTR(comp_pred1_), w, mask, w, inv);
+
+        // test
+        aom_highbd_upsampled_pred(
+            NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(comp_pred2_), w, h, subx,
+            suby, CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, bd_, subpel_search);
+
+        aom_highbd_comp_mask_pred(
+            CONVERT_TO_BYTEPTR(comp_pred2_), CONVERT_TO_BYTEPTR(pred_), w, h,
+            CONVERT_TO_BYTEPTR(comp_pred2_), w, mask, w, inv);
+
         ASSERT_EQ(CheckResult(w, h), true)
             << " wedge " << wedge_index << " inv " << inv << "sub (" << subx
             << "," << suby << ")";
