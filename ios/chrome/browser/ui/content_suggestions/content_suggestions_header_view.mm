@@ -229,10 +229,7 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
 
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
-  CGFloat constantDiff = IsUIRefreshPhase1Enabled()
-                             ? -maxXInset * percent
-                             : percent * (ntp_header::kMaxHorizontalMarginDiff +
-                                          inset + safeAreaInsets.left);
+  CGFloat constantDiff = -maxXInset * percent;
   for (NSLayoutConstraint* constraint in constraints) {
     if (constraint.constant > 0)
       constraint.constant = constantDiff + ntp_header::kHintLabelSidePadding;

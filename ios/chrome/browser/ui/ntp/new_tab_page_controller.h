@@ -27,13 +27,8 @@ class ChromeBrowserState;
 @class TabModel;
 @protocol UrlLoader;
 
-// A controller for the New Tab Page user interface. Supports multiple "panels",
-// each with its own controller. The panels are created lazily.
-//
-// The strongly retained instance variables |*Controller_| are instances of
-// subclasses of CRWNativeContent that are created lazily.
-// Each Panel is its own controller with the accessible views are added to the
-// |ntpView_|.
+// A controller for the New Tab Page user interface. Supports content
+// suggestions and incognito, each with its own controller.
 //
 // The currently visible CRWNativeContent is accessible through
 // |currentController_|.
@@ -47,7 +42,7 @@ class ChromeBrowserState;
     swipeRecognizerProvider;
 
 // Exposes content inset of contentSuggestions collectionView to ensure all of
-// content is visible under the bottom toolbar in ui refresh.
+// content is visible under the bottom toolbar.
 @property(nonatomic) UIEdgeInsets contentInset;
 
 // Init with the given url (presumably "chrome://newtab") and loader object.
@@ -74,8 +69,6 @@ class ChromeBrowserState;
 @end
 
 #pragma mark - Testing
-
-@class NewTabPageView;
 
 @interface NewTabPageController (TestSupport)
 - (id<CRWNativeContent>)currentController;

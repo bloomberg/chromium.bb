@@ -37,10 +37,6 @@
 
 using base::UserMetricsAction;
 
-namespace {
-const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
-}  // namespace
-
 @interface ContentSuggestionsHeaderViewController ()
 
 // |YES| when notifications indicate the omnibox is focused.
@@ -128,9 +124,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
                   (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super willTransitionToTraitCollection:newCollection
                withTransitionCoordinator:coordinator];
-  if (!IsUIRefreshPhase1Enabled())
-    return;
-
   void (^transition)(id<UIViewControllerTransitionCoordinatorContext>) =
       ^(id<UIViewControllerTransitionCoordinatorContext> context) {
         // Ensure omnibox is reset when not a regular tablet.
@@ -152,9 +145,9 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 - (void)updateFakeOmniboxForOffset:(CGFloat)offset
                        screenWidth:(CGFloat)screenWidth
                     safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  if (self.isShowing && IsUIRefreshPhase1Enabled()) {
+  if (self.isShowing) {
     CGFloat progress =
-        self.logoIsShowing || !content_suggestions::IsRegularXRegularSizeClass()
+        self.logoIsShowing || !IsRegularXRegularSizeClass()
             ? [self.headerView searchFieldProgressForOffset:offset
                                              safeAreaInsets:safeAreaInsets]
             // RxR with no logo hides the fakebox, so always show the omnibox.
@@ -209,11 +202,11 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
-  if (!content_suggestions::IsRegularXRegularSizeClass(self)) {
+  if (!IsRegularXRegularSizeClass(self)) {
     CGFloat top = 0;
     if (@available(iOS 11, *)) {
       top = self.parentViewController.view.safeAreaInsets.top;
-    } else if (IsUIRefreshPhase1Enabled()) {
+    } else {
       // TODO(crbug.com/826369) Replace this when the NTP is contained by the
       // BVC with |self.parentViewController.topLayoutGuide.length|.
       top = StatusBarHeight();
@@ -274,12 +267,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 // Initialize and add a search field tap target and a voice search button.
 - (void)addFakeOmnibox {
   self.fakeOmnibox = [[UIButton alloc] init];
-  if (IsIPadIdiom() && !IsUIRefreshPhase1Enabled()) {
-    UIImage* searchBoxImage = [[UIImage imageNamed:@"ntp_google_search_box"]
-        resizableImageWithCapInsets:kSearchBoxStretchInsets];
-    [self.fakeOmnibox setBackgroundImage:searchBoxImage
-                                forState:UIControlStateNormal];
-  }
   [self.fakeOmnibox setAdjustsImageWhenHighlighted:NO];
 
   // Set isAccessibilityElement to NO so that Voice Search button is accessible.
@@ -292,15 +279,9 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   content_suggestions::configureSearchHintLabel(self.searchHintLabel,
                                                 self.fakeOmnibox);
 
-  if (IsUIRefreshPhase1Enabled()) {
-    self.hintLabelLeadingConstraint = [self.searchHintLabel.leadingAnchor
-        constraintGreaterThanOrEqualToAnchor:[self.fakeOmnibox leadingAnchor]
-                                    constant:ntp_header::kHintLabelSidePadding];
-  } else {
-    self.hintLabelLeadingConstraint = [self.searchHintLabel.leadingAnchor
-        constraintEqualToAnchor:[self.fakeOmnibox leadingAnchor]
-                       constant:ntp_header::kHintLabelSidePaddingLegacy];
-  }
+  self.hintLabelLeadingConstraint = [self.searchHintLabel.leadingAnchor
+      constraintGreaterThanOrEqualToAnchor:[self.fakeOmnibox leadingAnchor]
+                                  constant:ntp_header::kHintLabelSidePadding];
   self.hintLabelLeadingConstraint.active = YES;
 
   // Set a button the same size as the fake omnibox as the accessibility
@@ -394,11 +375,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 }
 
 - (void)focusFakebox {
-  if (IsUIRefreshPhase1Enabled()) {
-    [self shiftTilesUp];
-  } else {
-    [self.dispatcher fakeboxFocused];
-  }
+  [self shiftTilesUp];
 }
 
 // TODO(crbug.com/807330) The fakebox is currently a collection of views spread
@@ -420,7 +397,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
     self.logoVendor.showingLogo = self.logoIsShowing;
     [self.doodleHeightConstraint
         setConstant:content_suggestions::doodleHeight(self.logoIsShowing)];
-    if (content_suggestions::IsRegularXRegularSizeClass(self))
+    if (IsRegularXRegularSizeClass(self))
       [self.fakeOmnibox setHidden:!self.logoIsShowing];
     [self.collectionSynchronizer invalidateLayout];
   }
@@ -456,9 +433,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 }
 
 - (void)shiftTilesDown {
-  if ((IsUIRefreshPhase1Enabled() && IsSplitToolbarMode()) ||
-      (!IsUIRefreshPhase1Enabled() &&
-       !content_suggestions::IsRegularXRegularSizeClass(self))) {
+  if (IsSplitToolbarMode()) {
     [self.dispatcher onFakeboxBlur];
   }
   [self.collectionSynchronizer shiftTilesDown];
@@ -468,12 +443,8 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 - (void)shiftTilesUp {
   void (^completionBlock)() = ^{
-    if (IsUIRefreshPhase1Enabled()) {
-      [self.dispatcher fakeboxFocused];
-    }
-    if ((IsUIRefreshPhase1Enabled() && IsSplitToolbarMode()) ||
-        (!IsUIRefreshPhase1Enabled() &&
-         !content_suggestions::IsRegularXRegularSizeClass(self))) {
+    [self.dispatcher fakeboxFocused];
+    if (IsSplitToolbarMode()) {
       [self.dispatcher onFakeboxAnimationComplete];
     }
   };

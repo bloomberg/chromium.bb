@@ -109,7 +109,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   ContentSuggestionsService* service =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
           browserState);
-  RegisterReadingListProvider(service, browserState);
   [[ContentSuggestionsTestSingleton sharedInstance]
       registerArticleProvider:service];
 }
@@ -206,7 +205,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testOmniboxWidthRotationBehindSettings {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
-  if (content_suggestions::IsRegularXRegularSizeClass()) {
+  if (IsRegularXRegularSizeClass()) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -246,7 +245,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testOmniboxPinnedWidthRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
-  if (content_suggestions::IsRegularXRegularSizeClass()) {
+  if (IsRegularXRegularSizeClass()) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
 
@@ -272,17 +271,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,
                      @"The collection width has not changed.");
 
-  if (IsUIRefreshPhase1Enabled()) {
-    // In UI refresh, scrolled, landscape, the fake omnibox is hidden.
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            FakeOmniboxAccessibilityID())]
-        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-  } else {
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            FakeOmniboxAccessibilityID())]
-        assertWithMatcher:OmniboxWidthBetween(collectionWidthAfterRotation + 1,
-                                              2)];
-  }
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 // Tests that the promo is correctly displayed and removed once tapped.
@@ -395,8 +386,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testTapFakeOmnibox {
   // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
   // grey_typeText works on iOS 11.
-  if (content_suggestions::IsRegularXRegularSizeClass() &&
-      base::ios::IsRunningOnIOS11OrLater()) {
+  if (IsRegularXRegularSizeClass() && base::ios::IsRunningOnIOS11OrLater()) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
   }
   // Setup the server.
@@ -419,41 +409,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
 }
 
-// Tests that tapping the fake omnibox logs correctly.
-// It is important for ranking algorithm of omnibox that requests from fakebox
-// and real omnibox are marked appropriately.
-- (void)testTapFakeOmniboxLogsCorrectly {
-  if (!IsIPadIdiom() || IsUIRefreshPhase1Enabled()) {
-    // This logging only happens on iPad pre-UIRefresh, since on iPhone there is
-    // no real omnibox on NTP, only fakebox, and post-UIRefresh the NTP never
-    // shows multiple omniboxes.
-    return;
-  }
-
-  // Swizzle the method that needs to be called for correct logging.
-  __block BOOL tapped = NO;
-  ScopedBlockSwizzler swizzler([LocationBarLegacyCoordinator class],
-                               @selector(focusOmniboxFromFakebox), ^{
-                                 tapped = YES;
-                               });
-
-  // Tap the fake omnibox.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
-
-  // Check that the page is loaded.
-  GREYAssertTrue(tapped, @"The tap on the fakebox was not correctly logged.");
-}
-
 // Tests that tapping the omnibox search button logs correctly.
 // It is important for ranking algorithm of omnibox that requests from the
 // search button and real omnibox are marked appropriately.
 - (void)testTapOmniboxSearchButtonLogsCorrectly {
-  if (!IsUIRefreshPhase1Enabled() || !IsRefreshLocationBarEnabled() ||
-      content_suggestions::IsRegularXRegularSizeClass()) {
+  if (IsRegularXRegularSizeClass()) {
     // This logging only happens on iPhone, since on iPad there's no secondary
     // toolbar.
     return;
@@ -515,7 +475,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // TODO(crbug.com/826369) This should use collectionView.safeAreaInsets.top
   // instead of -StatusBarHeight once iOS10 is dropped and the NTP is out of
   // native content.
-  CGFloat top = IsUIRefreshPhase1Enabled() ? StatusBarHeight() : 0;
+  CGFloat top = StatusBarHeight();
   GREYAssertTrue(offsetAfterTap.y >= origin.y + headerHeight - (60 + top),
                  @"The collection has not moved.");
 
@@ -578,8 +538,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests tapping the search button when the fake omnibox is scrolled.
 - (void)testTapSearchButtonFakeOmniboxScrolled {
-  if (!IsUIRefreshPhase1Enabled() ||
-      content_suggestions::IsRegularXRegularSizeClass()) {
+  if (IsRegularXRegularSizeClass()) {
     // This only happens on iPhone, since on iPad there's no secondary toolbar.
     return;
   }
