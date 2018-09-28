@@ -928,7 +928,7 @@ void NavigationRequest::OnResponseStarted(
     bool is_stream,
     PreviewsState previews_state,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
-  DCHECK(state_ == STARTED);
+  DCHECK_EQ(state_, STARTED);
   DCHECK(response);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "OnResponseStarted");

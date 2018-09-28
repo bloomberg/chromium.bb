@@ -114,14 +114,23 @@ bool IsRendererDebugURL(const GURL& url) {
   return false;
 }
 
-bool IsSafeRedirectTarget(const GURL& url) {
+bool IsSafeRedirectTarget(const GURL& from_url, const GURL& to_url) {
   static base::NoDestructor<std::set<std::string>> kUnsafeSchemes(
       std::set<std::string>({
           url::kAboutScheme, url::kDataScheme, url::kFileScheme,
           url::kFileSystemScheme,
       }));
-  return !HasWebUIScheme(url) &&
-         kUnsafeSchemes->find(url.scheme()) == kUnsafeSchemes->end();
+  if (HasWebUIScheme(to_url))
+    return false;
+  if (kUnsafeSchemes->find(to_url.scheme()) == kUnsafeSchemes->end())
+    return true;
+  if (from_url.is_empty())
+    return false;
+  if (from_url.SchemeIsFile() && to_url.SchemeIsFile())
+    return true;
+  if (from_url.SchemeIsFileSystem() && to_url.SchemeIsFileSystem())
+    return true;
+  return false;
 }
 
 }  // namespace content

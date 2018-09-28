@@ -318,10 +318,12 @@ bool IsURLHandledByDefaultLoader(const GURL& url) {
   return IsURLHandledByNetworkService(url) || url.SchemeIs(url::kDataScheme);
 }
 
-// Determines whether it is safe to redirect to |url|.
-bool IsRedirectSafe(const GURL& url, ResourceContext* resource_context) {
-  return IsSafeRedirectTarget(url) &&
-         GetContentClient()->browser()->IsSafeRedirectTarget(url,
+// Determines whether it is safe to redirect from |from_url| to |to_url|.
+bool IsRedirectSafe(const GURL& from_url,
+                    const GURL& to_url,
+                    ResourceContext* resource_context) {
+  return IsSafeRedirectTarget(from_url, to_url) &&
+         GetContentClient()->browser()->IsSafeRedirectTarget(to_url,
                                                              resource_context);
 }
 
@@ -1182,7 +1184,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                          const network::ResourceResponseHead& head) override {
     if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
         !bypass_redirect_checks_ &&
-        !IsRedirectSafe(redirect_info.new_url, resource_context_)) {
+        !IsRedirectSafe(url_, redirect_info.new_url, resource_context_)) {
       OnComplete(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
       return;
     }

@@ -86,6 +86,13 @@ enum class LinkFollowingPolicy {
   kDoNotFollow,
 };
 
+GURL AppendUrlSeparator(const GURL& url) {
+  std::string new_path = url.path() + '/';
+  GURL::Replacements replacements;
+  replacements.SetPathStr(new_path);
+  return url.ReplaceComponents(replacements);
+}
+
 class FileURLDirectoryLoader
     : public network::mojom::URLLoader,
       public net::DirectoryLister::DirectoryListerDelegate {
@@ -321,7 +328,26 @@ class FileURLLoader : public network::mojom::URLLoader {
   void FollowRedirect(const base::Optional<std::vector<std::string>>&
                           to_be_removed_request_headers,
                       const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override {}
+                          modified_request_headers) override {
+    std::unique_ptr<RedirectData> redirect_data = std::move(redirect_data_);
+    if (redirect_data->is_directory) {
+      FileURLDirectoryLoader::CreateAndStart(
+          redirect_data->profile_path, redirect_data->request,
+          binding_.Unbind(), client_.PassInterface(),
+          std::move(redirect_data->observer),
+          std::move(redirect_data->extra_response_headers));
+    } else {
+      FileURLLoader::CreateAndStart(
+          redirect_data->profile_path, redirect_data->request,
+          binding_.Unbind(), client_.PassInterface(),
+          redirect_data->directory_loading_policy,
+          redirect_data->file_access_policy,
+          redirect_data->link_following_policy,
+          std::move(redirect_data->observer),
+          std::move(redirect_data->extra_response_headers));
+    }
+    MaybeDeleteSelf();
+  }
   void ProceedWithResponse() override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
@@ -329,6 +355,23 @@ class FileURLLoader : public network::mojom::URLLoader {
   void ResumeReadingBodyFromNet() override {}
 
  private:
+  // Used to save outstanding redirect data while waiting for FollowRedirect
+  // to be called. Values default to their most restrictive in case they are
+  // not set.
+  struct RedirectData {
+    bool is_directory = false;
+    base::FilePath profile_path;
+    network::ResourceRequest request;
+    network::mojom::URLLoaderRequest loader;
+    DirectoryLoadingPolicy directory_loading_policy =
+        DirectoryLoadingPolicy::kFail;
+    FileAccessPolicy file_access_policy = FileAccessPolicy::kRestricted;
+    LinkFollowingPolicy link_following_policy =
+        LinkFollowingPolicy::kDoNotFollow;
+    std::unique_ptr<FileURLLoaderObserver> observer;
+    scoped_refptr<net::HttpResponseHeaders> extra_response_headers;
+  };
+
   FileURLLoader() : binding_(this) {}
   ~FileURLLoader() override = default;
 
@@ -349,62 +392,50 @@ class FileURLLoader : public network::mojom::URLLoader {
     binding_.set_connection_error_handler(base::BindOnce(
         &FileURLLoader::OnConnectionError, base::Unretained(this)));
 
-    network::mojom::URLLoaderClientPtr client;
-    client.Bind(std::move(client_info));
+    client_.Bind(std::move(client_info));
 
     base::FilePath path;
     if (!net::FileURLToFilePath(request.url, &path)) {
-      client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
-      if (observer)
-        observer->OnDoneReading();
+      OnClientComplete(net::ERR_FAILED, std::move(observer));
       return;
     }
 
     base::File::Info info;
     if (!base::GetFileInfo(path, &info)) {
-      client->OnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_FILE_NOT_FOUND));
-      if (observer)
-        observer->OnDoneReading();
+      OnClientComplete(net::ERR_FILE_NOT_FOUND, std::move(observer));
       return;
     }
 
     if (info.is_directory) {
       if (directory_loading_policy == DirectoryLoadingPolicy::kFail) {
-        client->OnComplete(
-            network::URLLoaderCompletionStatus(net::ERR_FILE_NOT_FOUND));
-        if (observer)
-          observer->OnDoneReading();
+        OnClientComplete(net::ERR_FILE_NOT_FOUND, std::move(observer));
         return;
       }
 
       DCHECK_EQ(directory_loading_policy,
                 DirectoryLoadingPolicy::kRespondWithListing);
 
-      GURL directory_url = request.url;
-      if (!path.EndsWithSeparator()) {
-        // If the named path is a directory with no trailing slash, redirect to
-        // the same path, but with a trailing slash.
-        std::string new_path = directory_url.path() + '/';
-        GURL::Replacements replacements;
-        replacements.SetPathStr(new_path);
-        directory_url = directory_url.ReplaceComponents(replacements);
+      net::RedirectInfo redirect_info;
+      redirect_info.new_method = "GET";
+      redirect_info.status_code = 301;
+      redirect_info.new_url = path.EndsWithSeparator()
+                                  ? request.url
+                                  : AppendUrlSeparator(request.url);
+      head.encoded_data_length = 0;
 
-        net::RedirectInfo redirect_info;
-        redirect_info.new_method = "GET";
-        redirect_info.status_code = 301;
-        redirect_info.new_url = directory_url;
-        head.encoded_data_length = 0;
-        client->OnReceiveRedirect(redirect_info, head);
-      }
+      redirect_data_ = std::make_unique<RedirectData>();
+      redirect_data_->is_directory = true;
+      redirect_data_->profile_path = std::move(profile_path);
+      redirect_data_->request = request;
+      redirect_data_->directory_loading_policy = directory_loading_policy;
+      redirect_data_->file_access_policy = file_access_policy;
+      redirect_data_->link_following_policy = link_following_policy;
+      redirect_data_->request.url = redirect_info.new_url;
+      redirect_data_->observer = std::move(observer);
+      redirect_data_->extra_response_headers =
+          std::move(extra_response_headers);
 
-      // Restart the request with a directory loader.
-      network::ResourceRequest new_request = request;
-      new_request.url = directory_url;
-      FileURLDirectoryLoader::CreateAndStart(
-          profile_path, new_request, binding_.Unbind(), client.PassInterface(),
-          std::move(observer), std::move(extra_response_headers));
-      MaybeDeleteSelf();
+      client_->OnReceiveRedirect(redirect_info, head);
       return;
     }
 
@@ -414,40 +445,48 @@ class FileURLLoader : public network::mojom::URLLoader {
         base::LowerCaseEqualsASCII(path.Extension(), ".lnk") &&
         base::win::ResolveShortcut(path, &shortcut_target, nullptr)) {
       // Follow Windows shortcuts
+      redirect_data_ = std::make_unique<RedirectData>();
+      if (!base::GetFileInfo(shortcut_target, &info)) {
+        OnClientComplete(net::ERR_FILE_NOT_FOUND, std::move(observer));
+        return;
+      }
+
       GURL new_url = net::FilePathToFileURL(shortcut_target);
+      if (info.is_directory && !path.EndsWithSeparator())
+        new_url = AppendUrlSeparator(new_url);
 
       net::RedirectInfo redirect_info;
       redirect_info.new_method = "GET";
       redirect_info.status_code = 301;
       redirect_info.new_url = new_url;
       head.encoded_data_length = 0;
-      client->OnReceiveRedirect(redirect_info, head);
 
-      // Restart the request with the new URL.
-      network::ResourceRequest new_request = request;
-      new_request.url = redirect_info.new_url;
-      return Start(profile_path, request, binding_.Unbind(),
-                   client.PassInterface(), directory_loading_policy,
-                   file_access_policy, link_following_policy,
-                   std::move(observer), std::move(extra_response_headers));
+      redirect_data_->is_directory = info.is_directory;
+      redirect_data_->profile_path = std::move(profile_path);
+      redirect_data_->request = request;
+      redirect_data_->directory_loading_policy = directory_loading_policy;
+      redirect_data_->file_access_policy = file_access_policy;
+      redirect_data_->link_following_policy = link_following_policy;
+      redirect_data_->request.url = redirect_info.new_url;
+      redirect_data_->observer = std::move(observer);
+      redirect_data_->extra_response_headers =
+          std::move(extra_response_headers);
+
+      client_->OnReceiveRedirect(redirect_info, head);
+      return;
     }
 #endif  // defined(OS_WIN)
 
     if (file_access_policy == FileAccessPolicy::kRestricted &&
         !GetContentClient()->browser()->IsFileAccessAllowed(
             path, base::MakeAbsoluteFilePath(path), profile_path)) {
-      client->OnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
-      if (observer)
-        observer->OnDoneReading();
+      OnClientComplete(net::ERR_ACCESS_DENIED, std::move(observer));
       return;
     }
 
     mojo::DataPipe pipe(kDefaultFileUrlPipeSize);
     if (!pipe.consumer_handle.is_valid()) {
-      client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
-      if (observer)
-        observer->OnDoneReading();
+      OnClientComplete(net::ERR_FAILED, std::move(observer));
       return;
     }
 
@@ -466,7 +505,8 @@ class FileURLLoader : public network::mojom::URLLoader {
         observer->OnDoneReading();
       }
       net::Error net_error = net::FileErrorToNetError(file.error_details());
-      client->OnComplete(network::URLLoaderCompletionStatus(net_error));
+      client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
+      client_.reset();
       MaybeDeleteSelf();
       return;
     }
@@ -484,7 +524,9 @@ class FileURLLoader : public network::mojom::URLLoader {
         observer->OnDoneReading();
       }
       net::Error net_error = net::FileErrorToNetError(read_error);
-      client->OnComplete(network::URLLoaderCompletionStatus(net_error));
+      client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
+      client_.reset();
+      MaybeDeleteSelf();
       return;
     } else if (observer) {
       observer->OnBytesRead(initial_read_buffer, initial_read_result,
@@ -509,10 +551,8 @@ class FileURLLoader : public network::mojom::URLLoader {
       }
 
       if (fail) {
-        client->OnComplete(network::URLLoaderCompletionStatus(
-            net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
-        if (observer)
-          observer->OnDoneReading();
+        OnClientComplete(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
+                         std::move(observer));
         return;
       }
     }
@@ -567,9 +607,8 @@ class FileURLLoader : public network::mojom::URLLoader {
           base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
                              head.mime_type.c_str()));
     }
-    client->OnReceiveResponse(head);
-    client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
-    client_ = std::move(client);
+    client_->OnReceiveResponse(head);
+    client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
 
     if (total_bytes_to_send == 0) {
       // There's definitely no more data, so we're already done.
@@ -595,6 +634,15 @@ class FileURLLoader : public network::mojom::URLLoader {
 
   void OnConnectionError() {
     binding_.Close();
+    MaybeDeleteSelf();
+  }
+
+  void OnClientComplete(net::Error net_error,
+                        std::unique_ptr<FileURLLoaderObserver> observer) {
+    client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
+    client_.reset();
+    if (observer)
+      observer->OnDoneReading();
     MaybeDeleteSelf();
   }
 
@@ -627,6 +675,7 @@ class FileURLLoader : public network::mojom::URLLoader {
   std::unique_ptr<mojo::FileDataPipeProducer> data_producer_;
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr client_;
+  std::unique_ptr<RedirectData> redirect_data_;
 
   // In case of successful loads, this holds the total of bytes written.
   // It is used to set some of the URLLoaderCompletionStatus data passed back
@@ -654,8 +703,12 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   base::FilePath file_path;
-  const bool is_file = net::FileURLToFilePath(request.url, &file_path);
-  if (is_file && file_path.EndsWithSeparator() && file_path.IsAbsolute()) {
+  if (!net::FileURLToFilePath(request.url, &file_path)) {
+    client->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_INVALID_URL));
+    return;
+  }
+  if (file_path.EndsWithSeparator() && file_path.IsAbsolute()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&FileURLDirectoryLoader::CreateAndStart, profile_path_,

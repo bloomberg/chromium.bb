@@ -22,4 +22,23 @@ TEST(UrlUtilsTest, IsURLHandledByNetworkStack) {
   EXPECT_FALSE(IsURLHandledByNetworkStack(GURL()));
 }
 
+TEST(UrlUtilsTest, IsSafeRedirectTarget) {
+  EXPECT_FALSE(IsSafeRedirectTarget(GURL(), GURL("chrome://foo/bar.html")));
+  EXPECT_TRUE(IsSafeRedirectTarget(GURL(), GURL("http://foo/bar.html")));
+  EXPECT_FALSE(IsSafeRedirectTarget(GURL(), GURL("file:///foo/bar/")));
+  EXPECT_TRUE(
+      IsSafeRedirectTarget(GURL("file:///foo/bar"), GURL("file:///foo/bar/")));
+  EXPECT_TRUE(IsSafeRedirectTarget(GURL("filesystem://foo/bar"),
+                                   GURL("filesystem://foo/bar/")));
+  EXPECT_TRUE(IsSafeRedirectTarget(GURL(), GURL("unknown://foo/bar/")));
+  EXPECT_FALSE(IsSafeRedirectTarget(GURL("http://foo/bar.html"),
+                                    GURL("file:///foo/bar/")));
+  EXPECT_TRUE(IsSafeRedirectTarget(GURL("file:///foo/bar/"),
+                                   GURL("http://foo/bar.html")));
+
+  // TODO(cmumford): Capturing current behavior, but should probably prevent
+  //                 redirect to invalid URL.
+  EXPECT_TRUE(IsSafeRedirectTarget(GURL(), GURL()));
+}
+
 }  // namespace content

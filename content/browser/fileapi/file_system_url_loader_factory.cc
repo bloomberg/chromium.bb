@@ -446,14 +446,6 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
           original_request_.url.ReplaceComponents(replacements);
       head_.encoded_data_length = 0;
       client_->OnReceiveRedirect(redirect_info, head_);
-
-      // Restart the request with a directory loader.
-      network::ResourceRequest new_request = original_request_;
-      new_request.url = redirect_info.new_url;
-      FileSystemDirectoryURLLoader::CreateAndStart(
-          new_request, binding_.Unbind(), client_.PassInterface(),
-          std::move(params_), io_task_runner_);
-      MaybeDeleteSelf();
       return;
     }
 
