@@ -421,6 +421,7 @@ void ProfileChooserView::ResetView() {
   passwords_button_ = nullptr;
   credit_cards_button_ = nullptr;
   addresses_button_ = nullptr;
+  signout_button_ = nullptr;
 }
 
 void ProfileChooserView::Init() {
@@ -754,6 +755,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     dice_accounts_menu_->SetSignOutButtonCallback(base::BindOnce(
         &ProfileChooserView::SignOutAllWebAccounts, base::Unretained(this)));
     dice_accounts_menu_->Show(sender, sync_to_another_account_button_);
+  } else if (sender == signout_button_) {
+    SignOutAllWebAccounts();
   } else {
     // Either one of the "other profiles", or one of the profile accounts
     // buttons was pressed.
@@ -1175,37 +1178,39 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
       views::BoxLayout::kVertical,
       gfx::Insets(0, 0, additional_bottom_spacing, 0)));
 
-  if (GetDiceSigninPromoShowCount() <=
-      kDiceSigninPromoIllustrationShowCountMax) {
-    // Add the illustration.
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* illustration = new NonAccessibleImageView();
-    illustration->SetImage(
-        *rb.GetNativeImageNamed(IDR_PROFILES_DICE_TURN_ON_SYNC).ToImageSkia());
-    view->AddChildView(illustration);
-    // Adjust the spacing between illustration and promo text.
-    promotext_top_spacing = 24;
-  }
-  // Add the promo text.
-  bool show_personalized_promo = !dice_sync_promo_accounts_.empty();
-  views::Label* promo = new views::Label(l10n_util::GetStringUTF16(
-      show_personalized_promo ? IDS_PROFILES_DICE_SYNC_PROMO
-                              : IDS_PROFILES_DICE_SIGNIN_PROMO));
-  promo->SetMultiLine(true);
-  promo->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  promo->SetMaximumWidth(menu_width_ - 2 * kMenuEdgeMargin);
-  promo->SetBorder(views::CreateEmptyBorder(
-      promotext_top_spacing, kMenuEdgeMargin, 0, kMenuEdgeMargin));
-  view->AddChildView(promo);
+  const bool promo_account_available = !dice_sync_promo_accounts_.empty();
 
   // Log sign-in impressions user metrics.
   signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
   signin_metrics::RecordSigninImpressionWithAccountUserActionForAccessPoint(
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
-      show_personalized_promo);
+      promo_account_available);
 
-  if (!show_personalized_promo) {
+  if (!promo_account_available) {
+    // Show promo illustration+text when there is no promo account.
+    if (GetDiceSigninPromoShowCount() <=
+        kDiceSigninPromoIllustrationShowCountMax) {
+      // Add the illustration.
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      views::ImageView* illustration = new NonAccessibleImageView();
+      illustration->SetImage(
+          *rb.GetNativeImageNamed(IDR_PROFILES_DICE_TURN_ON_SYNC)
+               .ToImageSkia());
+      view->AddChildView(illustration);
+      // Adjust the spacing between illustration and promo text.
+      promotext_top_spacing = 24;
+    }
+    // Add the promo text.
+    views::Label* promo = new views::Label(
+        l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO));
+    promo->SetMultiLine(true);
+    promo->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    promo->SetMaximumWidth(menu_width_ - 2 * kMenuEdgeMargin);
+    promo->SetBorder(views::CreateEmptyBorder(
+        promotext_top_spacing, kMenuEdgeMargin, 0, kMenuEdgeMargin));
+    view->AddChildView(promo);
+
     // Create a sign-in button without account information.
     dice_signin_button_view_ = new DiceSigninButtonView(this);
     dice_signin_button_view_->SetBorder(
@@ -1226,19 +1231,29 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   }
   dice_signin_button_view_ =
       new DiceSigninButtonView(dice_promo_default_account, account_icon, this,
-                               true /* show_drop_down_arrow */);
-  views::View* signin_button_container = new views::View();
-  // Create a container for the signin button, so the special highlighting of
-  // the button won't go over the border. (DiceSigninButtonView sets a custom
-  // highlighting view with |HoverButton::SetHighlightingView|.)
-  signin_button_container->SetLayoutManager(
-      std::make_unique<views::FillLayout>());
-  signin_button_container->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kMenuEdgeMargin)));
-  signin_button_container->AddChildView(dice_signin_button_view_);
-  view->AddChildView(signin_button_container);
+                               /*show_drop_down_arrow=*/false);
   signin_with_gaia_account_button_ = dice_signin_button_view_->signin_button();
-  sync_to_another_account_button_ = dice_signin_button_view_->drop_down_arrow();
+
+  views::View* promo_button_container = new views::View();
+  const int content_list_vert_spacing =
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
+  const int bottom_spacing = kMenuEdgeMargin - content_list_vert_spacing;
+  promo_button_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical,
+      gfx::Insets(kMenuEdgeMargin, kMenuEdgeMargin, bottom_spacing,
+                  kMenuEdgeMargin),
+      content_list_vert_spacing));
+  promo_button_container->AddChildView(dice_signin_button_view_);
+
+  // Add sign out button.
+  signout_button_ = views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT),
+      views::style::CONTEXT_BUTTON);
+  promo_button_container->AddChildView(signout_button_);
+
+  view->AddChildView(promo_button_container);
+
   return view;
 }
 
