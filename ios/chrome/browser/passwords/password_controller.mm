@@ -621,12 +621,11 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   if (!_webState)
     return;
 
-  bool isSmartLockBrandingEnabled = false;
+  bool isSyncUser = false;
   if (self.browserState) {
     syncer::SyncService* sync_service =
         ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
-    isSmartLockBrandingEnabled =
-        password_bubble_experiment::IsSmartLockUser(sync_service);
+    isSyncUser = password_bubble_experiment::IsSmartLockUser(sync_service);
   }
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(_webState);
@@ -634,14 +633,13 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   switch (type) {
     case PasswordInfoBarType::SAVE:
       IOSChromeSavePasswordInfoBarDelegate::Create(
-          isSmartLockBrandingEnabled, infoBarManager, std::move(form),
-          self.dispatcher);
+          isSyncUser, infoBarManager, std::move(form), self.dispatcher);
       break;
 
     case PasswordInfoBarType::UPDATE:
       IOSChromeUpdatePasswordInfoBarDelegate::Create(
-          isSmartLockBrandingEnabled, infoBarManager, std::move(form),
-          self.baseViewController, self.dispatcher);
+          isSyncUser, infoBarManager, std::move(form), self.baseViewController,
+          self.dispatcher);
       break;
   }
 }

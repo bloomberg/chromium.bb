@@ -27,16 +27,14 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  protected:
   IOSChromePasswordManagerInfoBarDelegate(
-      bool is_smart_lock_branding_enabled,
+      bool is_sync_user,
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager);
 
   password_manager::PasswordFormManagerForUI* form_to_save() const {
     return form_to_save_.get();
   }
 
-  bool is_smart_lock_branding_enabled() const {
-    return is_smart_lock_branding_enabled_;
-  }
+  bool is_sync_user() const { return is_sync_user_; }
 
   void set_infobar_response(
       password_manager::metrics_util::UIDismissalReason response) {
@@ -53,9 +51,7 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate implementation.
-  base::string16 GetLinkText() const override;
   int GetIconId() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
 
   // The password_manager::PasswordFormManager managing the form we're asking
   // the user about, and should save as per their decision.
@@ -64,8 +60,8 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Used to track the results we get from the info bar.
   password_manager::metrics_util::UIDismissalReason infobar_response_;
 
-  // Whether to show the password manager branded as Smart Lock.
-  const bool is_smart_lock_branding_enabled_;
+  // Whether to show the additional footer.
+  const bool is_sync_user_;
 
   // Dispatcher for calling Application commands.
   __weak id<ApplicationCommands> dispatcher_ = nil;
