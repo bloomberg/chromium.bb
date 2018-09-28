@@ -179,7 +179,7 @@ LayoutUnit LayoutFlexibleBox::BaselinePosition(FontBaseline,
 
 LayoutUnit LayoutFlexibleBox::FirstLineBoxBaseline() const {
   if (IsWritingModeRoot() || number_of_in_flow_children_on_first_line_ <= 0 ||
-      ShouldApplySizeContainment())
+      ShouldApplyLayoutContainment())
     return LayoutUnit(-1);
   LayoutBox* baseline_child = nullptr;
   int child_number = 0;
