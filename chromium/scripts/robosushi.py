@@ -49,7 +49,7 @@ def main(argv):
       # We want to push the merge and make the local branch track it, so that
       # future 'git cl upload's don't try to review the merge commit, and spam
       # the ffmpeg committers.
-      robo_branch.PushToOriginWithoutReviewAndTrack(robo_configuration)
+      robo_branch.PushToOriginWithoutReviewAndTrackIfNeeded(robo_configuration)
 
       # Try to get everything to build.
       # auto-merge-test is just to make this quicker while i'm developing it

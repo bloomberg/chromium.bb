@@ -138,15 +138,30 @@ def AddAndCommit(cfg, commit_title):
   if call(["git", "commit", "-m", commit_title]):
     raise Exception("Could create commit")
 
-def PushToOriginWithoutReviewAndTrack(cfg):
-  """Push the local branch to origin/ """
-  # This would do a 'git push origin %s:%s" % local branch name.
-  log("TODO: push merge commit to origin/%s without review!" %
-      cfg.sushi_branch_name())
-  # This would also get branch --set-upstream-to=origin/%s %s
-  log("TODO: set upstream tracking branch to origin/%s!" %
-      cfg.sushi_branch_name())
-  raise Exception("Please do these things and comment this exception out.")
+def IsTrackingBranchSet(cfg):
+  """Check if the local branch is tracking upstream."""
+  # git branch -vv --list ffmpeg_roll
+  # ffmpeg_roll 28e7fbe889 [origin/master: behind 8859] Merge branch 'merge-m57'
+  output = check_output(["git", "branch", "-vv", "--list",
+                         cfg.sushi_branch_name()])
+  # Note that it might have ": behind" or other things.
+  return "[origin/%s" % cfg.sushi_branch_name() in output
+
+def PushToOriginWithoutReviewAndTrackIfNeeded(cfg):
+  """Push the local branch to origin/ if we haven't yet."""
+  cfg.chdir_to_ffmpeg_home();
+  # If the tracking branch is unset, then assume that we haven't done this yet.
+  if IsTrackingBranchSet(cfg):
+    log("Already have local tracking branch")
+    return
+  log("Pushing merge to origin without review")
+  call(["git", "push", "origin", cfg.sushi_branch_name()])
+  log("Setting tracking branch")
+  call(["git", "branch", "--set-upstream-to=origin/%s" %
+         cfg.sushi_branch_name()])
+  # Sanity check.  We don't want to start pushing other commits without review.
+  if not IsTrackingBranchSet(cfg):
+    raise Exception("Tracking branch is not set, but I just set it!")
 
 def HandleAutorename(cfg):
   # Note that you probably also want to comment out the "build and import all
