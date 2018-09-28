@@ -141,13 +141,6 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
     device_is_modified = true;
   }
 
-  if (device().input.sample_rate() % 100 != 0) {
-    // We cannot have 10 ms buffers with this sample rate, so audio processing
-    // won't work. Try another one.
-    modified_device.input.set_sample_rate(16000);
-    device_is_modified = true;
-  }
-
   if (device_is_modified)
     SetDevice(modified_device);
 
