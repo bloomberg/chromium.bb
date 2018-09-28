@@ -178,7 +178,6 @@
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_presenting.h"
-#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
@@ -4511,17 +4510,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)showReadingList {
-  _readingListCoordinator =
-      experimental_flags::IsReadingListUIRebootEnabled()
-          ? [[ReadingListCoordinator alloc]
-                initWithBaseViewController:self
-                              browserState:self.browserState
-                                    loader:self]
-          : [[LegacyReadingListCoordinator alloc]
-                initWithBaseViewController:self
-                              browserState:self.browserState
-                                    loader:self];
-
+  _readingListCoordinator = [[ReadingListCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:self.browserState
+                          loader:self];
   [_readingListCoordinator start];
 }
 
