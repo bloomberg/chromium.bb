@@ -16,6 +16,7 @@
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
+#include "ui/snapshot/screenshot_grabber.h"
 #endif
 
 namespace message_center {
@@ -308,6 +309,23 @@ class AutotestPrivateRunCrostiniUninstallerFunction
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(AutotestPrivateRunCrostiniUninstallerFunction);
+};
+
+class AutotestPrivateTakeScreenshotFunction : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateTakeScreenshotFunction() = default;
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.takeScreenshot",
+                             AUTOTESTPRIVATE_TAKESCREENSHOT)
+
+ private:
+  ~AutotestPrivateTakeScreenshotFunction() override;
+  ResponseAction Run() override;
+#if defined(OS_CHROMEOS)
+  void ScreenshotTaken(std::unique_ptr<ui::ScreenshotGrabber> grabber,
+                       ui::ScreenshotResult screenshot_result,
+                       scoped_refptr<base::RefCountedMemory> png_data);
+#endif
+  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateTakeScreenshotFunction);
 };
 
 class AutotestPrivateGetPrinterListFunction : public UIThreadExtensionFunction {

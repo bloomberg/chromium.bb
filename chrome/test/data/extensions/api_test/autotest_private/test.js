@@ -193,6 +193,15 @@ chrome.test.runTests([
     chrome.autotestPrivate.runCrostiniUninstaller(chrome.test.callbackFail(
         'Crostini is not available for the current user'));
   },
+  function takeScreenshot() {
+    chrome.autotestPrivate.takeScreenshot(
+      function(base64Png) {
+        chrome.test.assertTrue(base64Png.length > 0);
+        chrome.test.assertNoLastError();
+        chrome.test.succeed();
+      }
+    )
+  },
   function getPrinterList() {
     chrome.autotestPrivate.getPrinterList(function(){
       chrome.test.succeed();

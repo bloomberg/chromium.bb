@@ -16880,6 +16880,7 @@ Called by update_net_error_codes.py.-->
   <int value="1280" label="AUTOTESTPRIVATE_LAUNCHAPP"/>
   <int value="1281" label="AUTOTESTPRIVATE_BOOTSTRAPMACHINELEARNINGSERVICE"/>
   <int value="1282" label="AUTOTESTPRIVATE_RUNCROSTINIUNINSTALLER"/>
+  <int value="1283" label="AUTOTESTPRIVATE_TAKESCREENSHOT"/>
 </enum>
 
 <enum name="ExtensionIconState">
