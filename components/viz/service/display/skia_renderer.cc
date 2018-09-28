@@ -182,6 +182,7 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
                            SkiaOutputSurface* skia_output_surface)
     : DirectRenderer(settings, output_surface, resource_provider),
       skia_output_surface_(skia_output_surface),
+      quad_vertex_skrect_(gfx::RectFToSkRect(QuadVertexRect())),
       lock_set_for_external_use_(resource_provider) {
   if (auto* context_provider = output_surface_->context_provider()) {
     const auto& context_caps = context_provider->ContextCapabilities();
@@ -562,7 +563,7 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
 void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
   // We need to apply the matrix manually to have pixel-sized stroke width.
   SkPoint vertices[4];
-  gfx::RectFToSkRect(QuadVertexRect()).toQuad(vertices);
+  QuadVertexSkRect().toQuad(vertices);
   SkPoint transformed_vertices[4];
   current_canvas_->getTotalMatrix().mapPoints(transformed_vertices, vertices,
                                               4);
@@ -580,8 +581,7 @@ void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
 void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
   SkMatrix content_matrix;
   content_matrix.setRectToRect(gfx::RectFToSkRect(quad->tex_coord_rect),
-                               gfx::RectFToSkRect(QuadVertexRect()),
-                               SkMatrix::kFill_ScaleToFit);
+                               QuadVertexSkRect(), SkMatrix::kFill_ScaleToFit);
   current_canvas_->concat(content_matrix);
 
   const bool needs_transparency =
@@ -815,7 +815,6 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   if (!can_draw)
     return;
 
-  const auto dest_rect = gfx::RectFToSkRect(QuadVertexRect());
   SkRect content_rect;
   SkRect dest_visible_rect;
   if (params.filter_image) {
@@ -841,7 +840,7 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
     SkRect mask_rect = gfx::RectFToSkRect(
         gfx::ScaleRect(quad->mask_uv_rect, quad->mask_texture_size.width(),
                        quad->mask_texture_size.height()));
-    mask_to_dest_matrix.setRectToRect(mask_rect, dest_rect,
+    mask_to_dest_matrix.setRectToRect(mask_rect, QuadVertexSkRect(),
                                       SkMatrix::kFill_ScaleToFit);
     mask_filter =
         SkShaderMaskFilter::Make(mask_image->makeShader(&mask_to_dest_matrix));
@@ -865,7 +864,7 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
     // Convert the content_image to a shader, and use drawRect() with the
     // shader.
     SkMatrix content_to_dest_matrix;
-    content_to_dest_matrix.setRectToRect(content_rect, dest_rect,
+    content_to_dest_matrix.setRectToRect(content_rect, QuadVertexSkRect(),
                                          SkMatrix::kFill_ScaleToFit);
     auto shader = content_image->makeShader(&content_to_dest_matrix);
     current_paint_.setShader(std::move(shader));
@@ -882,7 +881,7 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
                               : nullptr;
   DCHECK(background_image_filter);
   SkMatrix content_to_dest_matrix;
-  content_to_dest_matrix.setRectToRect(content_rect, dest_rect,
+  content_to_dest_matrix.setRectToRect(content_rect, QuadVertexSkRect(),
                                        SkMatrix::kFill_ScaleToFit);
   SkMatrix local_matrix;
   local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
@@ -892,7 +891,7 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
       background_image_filter->makeWithLocalMatrix(local_matrix);
 
   SkAutoCanvasRestore auto_canvas_restore(current_canvas_, true /* do_save */);
-  current_canvas_->clipRect(dest_rect);
+  current_canvas_->clipRect(QuadVertexSkRect());
 
   SkPaint paint;
   paint.setMaskFilter(mask_filter);
@@ -919,8 +918,7 @@ void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
   current_paint_.setColor(SK_ColorMAGENTA);
 #endif
   current_paint_.setAlpha(quad->shared_quad_state->opacity * 255);
-  current_canvas_->drawRect(gfx::RectFToSkRect(QuadVertexRect()),
-                            current_paint_);
+  current_canvas_->drawRect(QuadVertexSkRect(), current_paint_);
 }
 
 void SkiaRenderer::CopyDrawnRenderPass(
