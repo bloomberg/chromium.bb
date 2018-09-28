@@ -267,7 +267,14 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kManagedDefaultGeolocationSetting,
     base::Value::Type::INTEGER },
   { key::kSigninAllowed,
+#if defined(OS_ANDROID)
+    // The new kSigninAllowedOnNextStartup pref is only used on Desktop.
+    // Keep the old kSigninAllowed pref for Android until the policy is
+    // fully depricated in M71 and can be removed.
     prefs::kSigninAllowed,
+#else
+    prefs::kSigninAllowedOnNextStartup,
+#endif
     base::Value::Type::BOOLEAN },
   { key::kEnableOnlineRevocationChecks,
     prefs::kCertRevocationCheckingEnabled,
