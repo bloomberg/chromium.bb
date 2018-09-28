@@ -136,7 +136,7 @@ config("compiler") {
     ldflags += [ "/TIMESTAMP:" + build_timestamp ]
   }
 
-  if (!is_debug && !is_component_build && !use_libfuzzer) {
+  if (!is_debug && !is_component_build) {
     # Enable standard linker optimizations like GC (/OPT:REF) and ICF in static
     # release builds. These are implied by /PROFILE below, but /PROFILE is
     # incompatible with /debug:fastlink and LLD ignores it as of this writing.
