@@ -71,7 +71,8 @@ bool IsTextRTL(const ui::TextInputClient* client) {
 // otherwise be ignored by a ui::TextInputClient when inserted.
 bool IsImeTriggerEvent(NSEvent* event) {
   ui::KeyboardCode key = ui::KeyboardCodeFromNSEvent(event);
-  return key == ui::VKEY_RETURN || key == ui::VKEY_TAB;
+  return key == ui::VKEY_RETURN || key == ui::VKEY_TAB ||
+         key == ui::VKEY_ESCAPE;
 }
 
 // Returns the boundary rectangle for composition characters in the
@@ -834,10 +835,23 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)keyDown:(NSEvent*)theEvent {
+  BOOL hadMarkedTextAtKeyDown = [self hasMarkedText];
+
   // Convert the event into an action message, according to OSX key mappings.
   keyDownEvent_ = theEvent;
   hasUnhandledKeyDownEvent_ = YES;
   [self interpretKeyEvents:@[ theEvent ]];
+
+  // When there is marked text, -[NSView interpretKeyEvents:] may handle the
+  // event by dismissing the IME window in a way that neither unmarks text, nor
+  // updates any composition. That is, no signal is given either to the
+  // NSTextInputClient or the NSTextInputContext that the IME changed state.
+  // However, we must ensure this key down is not processed as an accelerator.
+  // TODO(tapted): Investigate removing the IsImeTriggerEvent() check - it's
+  // probably not required, but helps tests that expect some events to always
+  // get processed (i.e. TextfieldTest.TextInputClientTest).
+  if (hadMarkedTextAtKeyDown && IsImeTriggerEvent(theEvent))
+    hasUnhandledKeyDownEvent_ = NO;
 
   // If |keyDownEvent_| wasn't cleared during -interpretKeyEvents:, it wasn't
   // handled. Give Widget accelerators a chance to handle it.
@@ -1375,6 +1389,12 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (NSAttributedString*)
     attributedSubstringForProposedRange:(NSRange)range
                             actualRange:(NSRangePointer)actualRange {
+  // On TouchBar Macs, the IME subsystem sometimes sends an invalid range with a
+  // non-zero length. This will cause a DCHECK in gfx::Range, so repair it here.
+  // See https://crbug.com/888782.
+  if (range.location == NSNotFound)
+    range.length = 0;
+
   gfx::Range actual_range;
   base::string16 substring = AttributedSubstringForRangeHelper(
       textInputClient_, gfx::Range(range), &actual_range);

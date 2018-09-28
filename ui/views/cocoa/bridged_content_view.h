@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
 #import "ui/base/cocoa/tracking_area.h"
+#include "ui/views/views_export.h"
 
 namespace ui {
 class TextInputClient;
@@ -22,6 +23,7 @@ class BridgedNativeWidget;
 // The NSView that sits as the root contentView of the NSWindow, whilst it has
 // a views::RootView present. Bridges requests from Cocoa to the hosted
 // views::View.
+VIEWS_EXPORT
 @interface BridgedContentView : ToolTipBaseView<NSTextInputClient,
                                                 NSUserInterfaceValidations,
                                                 NSDraggingSource> {

@@ -212,12 +212,15 @@ NSTextInputContext* g_fake_current_input_context = nullptr;
 
 }  // namespace
 
-// Class to hook [NSView interpretKeyEvents:] to simulate it interacting with an
-// IME window.
-@interface InterpretKeyEventsDonorForNSView : NSView
+// Subclass of BridgedContentView with an override of interpretKeyEvents:. Note
+// the size of the class must match BridgedContentView since the method table
+// is swapped out at runtime. This is basically a mock, but mocks are banned
+// under ui/views. Method swizzling causes these tests to flake when
+// parallelized in the same process.
+@interface InterpretKeyEventMockedBridgedContentView : BridgedContentView
 @end
 
-@implementation InterpretKeyEventsDonorForNSView
+@implementation InterpretKeyEventMockedBridgedContentView
 
 - (void)interpretKeyEvents:(NSArray<NSEvent*>*)eventArray {
   ASSERT_TRUE(g_fake_interpret_key_events);
@@ -486,6 +489,23 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase,
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTest);
+};
+
+// Class that counts occurrences of a VKEY_RETURN accelerator, marking them
+// processed.
+class EnterAcceleratorView : public View {
+ public:
+  EnterAcceleratorView() { AddAccelerator({ui::VKEY_RETURN, 0}); }
+  int count() const { return count_; }
+
+  // View:
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
+    ++count_;
+    return true;
+  }
+
+ private:
+  int count_ = 0;
 };
 
 BridgedNativeWidgetTest::BridgedNativeWidgetTest()
@@ -1082,6 +1102,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_AccentedCharacter) {
       widget_->GetNativeWindow(), true, ui::VKEY_A, 0));
   [ns_view_ insertText:@"a" replacementRange:EmptyRange()];
   [dummy_text_view_ insertText:@"a" replacementRange:EmptyRange()];
+  SetKeyDownEvent(nil);
   EXPECT_EQ_3(NO, [dummy_text_view_ hasMarkedText], [ns_view_ hasMarkedText]);
   EXPECT_NSEQ_3(@"abca", GetExpectedText(), GetActualText());
 
@@ -1096,6 +1117,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_AccentedCharacter) {
   [dummy_text_view_ setMarkedText:@"à"
                     selectedRange:NSMakeRange(0, 1)
                  replacementRange:NSMakeRange(3, 1)];
+  SetKeyDownEvent(nil);
   EXPECT_EQ_3(YES, [dummy_text_view_ hasMarkedText], [ns_view_ hasMarkedText]);
   EXPECT_EQ_RANGE_3(NSMakeRange(3, 1), [dummy_text_view_ markedRange],
                     [ns_view_ markedRange]);
@@ -1108,6 +1130,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_AccentedCharacter) {
       widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0));
   [ns_view_ insertText:@"à" replacementRange:EmptyRange()];
   [dummy_text_view_ insertText:@"à" replacementRange:EmptyRange()];
+  SetKeyDownEvent(nil);
   EXPECT_EQ_3(NO, [dummy_text_view_ hasMarkedText], [ns_view_ hasMarkedText]);
   EXPECT_EQ_RANGE_3(NSMakeRange(4, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
@@ -1407,9 +1430,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_SimulatePhoneticIme) {
   Textfield* textfield = InstallTextField("");
   EXPECT_TRUE([ns_view_ textInputClient]);
 
-  base::mac::ScopedObjCClassSwizzler interpret_key_events_swizzler(
-      [NSView class], [InterpretKeyEventsDonorForNSView class],
-      @selector(interpretKeyEvents:));
+  object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
 
   // Sequence of calls (and corresponding keyDown events) obtained via tracing
   // with 2-Set Korean IME and pressing q, o, then Enter on the keyboard.
@@ -1475,6 +1496,136 @@ TEST_F(BridgedNativeWidgetTest, TextInput_SimulatePhoneticIme) {
   g_fake_interpret_key_events = nullptr;
 }
 
+// Simulate 'a', Enter in Hiragana. This should just insert "あ", suppressing
+// accelerators.
+TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorEnterComposition) {
+  Textfield* textfield = InstallTextField("");
+  EXPECT_TRUE([ns_view_ textInputClient]);
+
+  EnterAcceleratorView* enter_view = new EnterAcceleratorView();
+  textfield->parent()->AddChildView(enter_view);
+
+  // Sequence of calls (and corresponding keyDown events) obtained via tracing
+  // with Hiragana IME and pressing 'a', then Enter on the keyboard.
+  NSEvent* a_in_ime = cocoa_test_event_utils::KeyEventWithKeyCode(
+      0, [@"a" characterAtIndex:0], NSKeyDown, 0);
+  InterpretKeyEventsCallback handle_a_in_ime = base::BindRepeating([](id view) {
+    // TODO(crbug/612675): |text| should be an NSAttributedString.
+    [view setMarkedText:@"あ"
+           selectedRange:NSMakeRange(1, 0)
+        replacementRange:NSMakeRange(NSNotFound, 0)];
+  });
+
+  NSEvent* return_event = cocoa_test_event_utils::SynthesizeKeyEvent(
+      widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0);
+  InterpretKeyEventsCallback handle_return_in_ime =
+      base::BindRepeating([](id view) {
+        [view insertText:@"あ" replacementRange:NSMakeRange(NSNotFound, 0)];
+      });
+
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(0, enter_view->count());
+
+  object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
+  g_fake_interpret_key_events = &handle_a_in_ime;
+  [ns_view_ keyDown:a_in_ime];
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
+  EXPECT_EQ(0, enter_view->count());
+
+  g_fake_interpret_key_events = &handle_return_in_ime;
+  [ns_view_ keyDown:return_event];
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
+  EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
+
+  // IME Window is dismissed here and there is no marked text, so remove the
+  // swizzler.
+  object_setClass(ns_view_, [BridgedContentView class]);
+
+  [ns_view_ keyDown:return_event];  // Sanity check: send Enter again.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());  // No change.
+  EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
+}
+
+// Simulate 'a', Tab, Enter, Enter in Hiragana. This should just insert "a",
+// suppressing accelerators.
+TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorTabEnterComposition) {
+  Textfield* textfield = InstallTextField("");
+  EXPECT_TRUE([ns_view_ textInputClient]);
+
+  EnterAcceleratorView* enter_view = new EnterAcceleratorView();
+  textfield->parent()->AddChildView(enter_view);
+
+  // Sequence of calls (and corresponding keyDown events) obtained via tracing
+  // with Hiragana IME and pressing 'a', Tab, then Enter on the keyboard.
+  NSEvent* a_in_ime = cocoa_test_event_utils::KeyEventWithKeyCode(
+      0, [@"a" characterAtIndex:0], NSKeyDown, 0);
+  InterpretKeyEventsCallback handle_a_in_ime = base::BindRepeating([](id view) {
+    // TODO(crbug/612675): |text| should have an underline.
+    [view setMarkedText:@"あ"
+           selectedRange:NSMakeRange(1, 0)
+        replacementRange:NSMakeRange(NSNotFound, 0)];
+  });
+
+  NSEvent* tab_in_ime = cocoa_test_event_utils::SynthesizeKeyEvent(
+      widget_->GetNativeWindow(), true, ui::VKEY_TAB, 0);
+  InterpretKeyEventsCallback handle_tab_in_ime =
+      base::BindRepeating([](id view) {
+        // TODO(crbug/612675): |text| should be an NSAttributedString (now with
+        // a different underline color).
+        [view setMarkedText:@"a"
+               selectedRange:NSMakeRange(0, 1)
+            replacementRange:NSMakeRange(NSNotFound, 0)];
+      });
+
+  NSEvent* return_event = cocoa_test_event_utils::SynthesizeKeyEvent(
+      widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0);
+  InterpretKeyEventsCallback handle_first_return_in_ime =
+      base::BindRepeating([](id view) {
+        // Do *nothing*. Enter does not confirm nor change the composition, it
+        // just dismisses the IME window, leaving the text marked.
+      });
+  InterpretKeyEventsCallback handle_second_return_in_ime =
+      base::BindRepeating([](id view) {
+        // The second return will confirm the composition.
+        [view insertText:@"a" replacementRange:NSMakeRange(NSNotFound, 0)];
+      });
+
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(0, enter_view->count());
+
+  object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
+  g_fake_interpret_key_events = &handle_a_in_ime;
+  [ns_view_ keyDown:a_in_ime];
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
+  EXPECT_EQ(0, enter_view->count());
+
+  g_fake_interpret_key_events = &handle_tab_in_ime;
+  [ns_view_ keyDown:tab_in_ime];
+  // Tab will switch to a Romanji (Latin) character.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
+  EXPECT_EQ(0, enter_view->count());
+
+  g_fake_interpret_key_events = &handle_first_return_in_ime;
+  [ns_view_ keyDown:return_event];
+  // Enter just dismisses the IME window. The composition is still active.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
+  EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
+
+  g_fake_interpret_key_events = &handle_second_return_in_ime;
+  [ns_view_ keyDown:return_event];
+  // Enter now confirms the composition (unmarks text). Note there is still no
+  // IME window visible but, since there is marked text, IME is still active.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
+  EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
+
+  // No marked text, no IME window. We could remove the swizzler here, but
+  // that is equivalent to the "do nothing" case, so set than handler again.
+  g_fake_interpret_key_events = &handle_first_return_in_ime;
+  [ns_view_ keyDown:return_event];  // Send Enter a _third_ time.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());  // No change.
+  EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
+}
+
 // Test a codepath that could hypothetically cause [NSApp updateWindows] to be
 // called recursively due to IME dismissal during teardown triggering a focus
 // change. Twice.
@@ -1482,9 +1633,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
   Textfield* textfield = InstallTextField("");
   EXPECT_TRUE([ns_view_ textInputClient]);
 
-  base::mac::ScopedObjCClassSwizzler interpret_key_events_swizzler(
-      [NSView class], [InterpretKeyEventsDonorForNSView class],
-      @selector(interpretKeyEvents:));
+  object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
   base::mac::ScopedObjCClassSwizzler update_windows_swizzler(
       [NSApplication class], [UpdateWindowsDonorForNSApp class],
       @selector(updateWindows));
