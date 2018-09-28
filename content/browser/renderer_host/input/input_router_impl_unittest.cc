@@ -433,11 +433,11 @@ class InputRouterImplTest : public testing::Test {
     input_router_->TouchEventHandled(
         TouchEventWithLatencyInfo(touch_event_), InputEventAckSource::BROWSER,
         ui::LatencyInfo(), state, overscroll, touch_action);
-    EXPECT_EQ(input_router_->num_of_active_touches_for_test(), 1);
+    EXPECT_EQ(input_router_->touch_action_filter_.num_of_active_touches_, 1);
     ReleaseTouchPoint(0);
     input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
                                    InputEventAckSource::BROWSER, state);
-    EXPECT_EQ(input_router_->num_of_active_touches_for_test(), 0);
+    EXPECT_EQ(input_router_->touch_action_filter_.num_of_active_touches_, 0);
   }
 
   void OnTouchEventAckWithAckState(InputEventAckState ack_state) {
