@@ -49,6 +49,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // overflow clip; i.e., AllowOverflowClip() returns false.
   bool HasOverflowClip() const;
   bool ShouldClipOverflow() const;
+  bool HasControlClip() const;
 
   NGPhysicalOffsetRect ScrollableOverflow() const;
 

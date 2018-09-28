@@ -278,7 +278,7 @@ Node* NGPhysicalFragment::GetNode() const {
 }
 
 bool NGPhysicalFragment::HasLayer() const {
-  return layout_object_->HasLayer();
+  return layout_object_ && layout_object_->HasLayer();
 }
 
 PaintLayer* NGPhysicalFragment::Layer() const {

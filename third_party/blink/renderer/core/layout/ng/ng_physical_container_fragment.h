@@ -13,6 +13,8 @@
 
 namespace blink {
 
+enum class NGOutlineType;
+
 class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
  public:
   const Vector<NGLink>& Children() const { return children_; }
@@ -21,6 +23,14 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
   const NGPhysicalOffsetRect& ContentsInkOverflow() const {
     return contents_ink_overflow_;
   }
+
+  void AddOutlineRectsForNormalChildren(Vector<LayoutRect>* outline_rects,
+                                        const LayoutPoint& additional_offset,
+                                        NGOutlineType outline_type) const;
+  void AddOutlineRectsForDescendant(const NGLink& descendant,
+                                    Vector<LayoutRect>* rects,
+                                    const LayoutPoint& additional_offset,
+                                    NGOutlineType outline_type) const;
 
  protected:
   // This modifies the passed-in children vector.
