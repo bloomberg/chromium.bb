@@ -1339,7 +1339,8 @@ void WizardController::ShowCurrentScreen() {
     return;
 
   // First remember how far have we reached so that we can resume if needed.
-  if (is_out_of_box_ && IsResumableScreen(current_screen_->screen_id())) {
+  if (is_out_of_box_ && !demo_setup_controller_ &&
+      IsResumableScreen(current_screen_->screen_id())) {
     StartupUtils::SaveOobePendingScreen(
         GetOobeScreenName(current_screen_->screen_id()));
   }
