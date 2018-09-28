@@ -308,6 +308,10 @@ void UnifiedSystemTray::UpdateAfterShelfAlignmentChange() {
 }
 
 void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
+  // Never show System Tray bubble in kiosk app mode.
+  if (Shell::Get()->session_controller()->IsRunningInAppMode())
+    return;
+
   // Hide volume/brightness slider popup.
   slider_bubble_controller_->CloseBubble();
 
