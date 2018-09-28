@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_MEDIA_WEBAUDIO_AUDIO_CONTEXT_MANAGER_IMPL_H_
 
 #include "content/common/content_export.h"
+#include "content/public/browser/frame_service_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 
@@ -17,10 +18,12 @@ class RenderFrameHostImpl;
 // Implements the mojo interface between WebAudio and the browser so that
 // WebAudio can report when audible sounds from an AudioContext starts and
 // stops.
-class CONTENT_EXPORT AudioContextManagerImpl
-    : public blink::mojom::AudioContextManager {
+class CONTENT_EXPORT AudioContextManagerImpl final
+    : public content::FrameServiceBase<blink::mojom::AudioContextManager> {
  public:
-  explicit AudioContextManagerImpl(RenderFrameHost* render_frame_host);
+  explicit AudioContextManagerImpl(
+      RenderFrameHost* render_frame_host,
+      blink::mojom::AudioContextManagerRequest request);
   ~AudioContextManagerImpl() override;
 
   static void Create(RenderFrameHost* render_frame_host,
