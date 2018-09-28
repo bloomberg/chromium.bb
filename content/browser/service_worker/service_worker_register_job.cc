@@ -19,6 +19,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -299,7 +300,9 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
         registration()->GetNewestVersion();
     std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
     version_to_update->script_cache_map()->GetResources(&resources);
-    update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(resources);
+    update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
+        resources, version_to_update,
+        context_->loader_factory_getter()->GetNetworkFactory());
     update_checker_->Start(
         base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
                        weak_factory_.GetWeakPtr()));
