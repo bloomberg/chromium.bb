@@ -424,6 +424,24 @@ void LogRendererKillCrashKeys(const GURL& site_url) {
   base::debug::SetCrashKeyString(site_url_key, site_url.spec());
 }
 
+url::Origin GetOriginForURLLoaderFactory(GURL target_url,
+                                         SiteInstanceImpl* site_instance) {
+  // Calculate the origin that will be used as a fallback for URLs such as
+  // about:blank and/or data:.  If full site isolation is enabled, then
+  // |site_instance|-based origin will be correct.  Otherwise, falling back to a
+  // unique/opaque origin should be safe.
+  //
+  // TODO(lukasza, nasko): https://crbug.com/888079: Do not fall back to
+  // |site_instance| - instead the browser process should already know at
+  // ready-to-commit time the origin to be committed.
+  url::Origin fallback_origin =
+      SiteIsolationPolicy::UseDedicatedProcessesForAllSites()
+          ? url::Origin::Create(site_instance->GetSiteURL())
+          : url::Origin();
+
+  return url::Origin::Resolve(target_url, fallback_origin);
+}
+
 }  // namespace
 
 class RenderFrameHostImpl::DroppedInterfaceRequestLogger
@@ -864,7 +882,7 @@ void RenderFrameHostImpl::ExecuteMediaPlayerActionAtLocation(
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
   return CreateNetworkServiceDefaultFactoryInternal(
-      last_committed_url_, std::move(default_factory_request));
+      last_committed_origin_, std::move(default_factory_request));
 }
 
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {
@@ -4032,7 +4050,9 @@ void RenderFrameHostImpl::CommitNavigation(
       // appropriate NetworkContext.
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
-              common_params.url, mojo::MakeRequest(&default_factory_info));
+              GetOriginForURLLoaderFactory(common_params.url,
+                                           GetSiteInstance()),
+              mojo::MakeRequest(&default_factory_info));
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
     }
@@ -4079,7 +4099,8 @@ void RenderFrameHostImpl::CommitNavigation(
       network::mojom::URLLoaderFactoryPtrInfo factory_proxy_info;
       auto factory_request = mojo::MakeRequest(&factory_proxy_info);
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
-          browser_context, this, false /* is_navigation */, common_params.url,
+          browser_context, this, false /* is_navigation */,
+          GetOriginForURLLoaderFactory(common_params.url, GetSiteInstance()),
           &factory_request, nullptr /* bypass_redirect_checks */);
       // Keep DevTools proxy lasy, i.e. closest to the network.
       RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
@@ -4208,11 +4229,17 @@ void RenderFrameHostImpl::FailedNavigation(
   // completing an unload handler.
   ResetWaitingState();
 
+  // Error page will commit in an opaque origin.
+  //
+  // TODO(lukasza): https://crbug.com/888079: Use this origin when committing
+  // later on.
+  url::Origin origin = url::Origin();
+
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
     bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-        common_params.url, mojo::MakeRequest(&default_factory_info));
+        origin, mojo::MakeRequest(&default_factory_info));
     subresource_loader_factories = std::make_unique<URLLoaderFactoryBundleInfo>(
         std::move(default_factory_info),
         URLLoaderFactoryBundleInfo::SchemeMap(), bypass_redirect_checks);
@@ -4753,7 +4780,7 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
 
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-      last_committed_url_, mojo::MakeRequest(&default_factory_info));
+      last_committed_origin_, mojo::MakeRequest(&default_factory_info));
 
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
       std::make_unique<URLLoaderFactoryBundleInfo>(
@@ -4774,10 +4801,10 @@ std::set<int> RenderFrameHostImpl::GetNavigationEntryIdsPendingCommit() {
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
-    const GURL& url,
+    const url::Origin& origin,
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryInternal(
-      url, std::move(default_factory_request));
+      origin, std::move(default_factory_request));
 
   // Add connection error observer when Network Service is running
   // out-of-process.
@@ -4801,7 +4828,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
-    const GURL& url,
+    const url::Origin& origin,
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
@@ -4816,8 +4843,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
-        context, this, false /* is_navigation */, url, &default_factory_request,
-        &bypass_redirect_checks);
+        context, this, false /* is_navigation */, origin,
+        &default_factory_request, &bypass_redirect_checks);
   }
 
   // Keep DevTools proxy lasy, i.e. closest to the network.
