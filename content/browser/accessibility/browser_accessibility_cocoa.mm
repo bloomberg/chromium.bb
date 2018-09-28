@@ -833,7 +833,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self isIgnored]) {
     children_.reset();
   } else {
-    [ToBrowserAccessibilityCocoa(owner_->PlatformGetParent()) childrenChanged];
+    auto* parent = owner_->PlatformGetParent();
+    if (parent)
+      [ToBrowserAccessibilityCocoa(parent) childrenChanged];
   }
 }
 
