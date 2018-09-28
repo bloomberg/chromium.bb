@@ -28542,6 +28542,8 @@ from previous Chrome versions.
   <int value="-1937077699" label="http-form-warning"/>
   <int value="-1934661084" label="ForceUnifiedConsentBump:disabled"/>
   <int value="-1933425042" label="OfflinePreviews:enabled"/>
+  <int value="-1932379839"
+      label="OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains:enabled"/>
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1925117279" label="disable-quic-https"/>
@@ -28944,6 +28946,8 @@ from previous Chrome versions.
   <int value="-1224962996" label="PwaImprovedSplashScreen:disabled"/>
   <int value="-1222805155" label="PdfIsolation:enabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
+  <int value="-1217462552"
+      label="OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains:disabled"/>
   <int value="-1217425153" label="ChromeHomeClearUrlOnOpen:enabled"/>
   <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
   <int value="-1214870820" label="EnableNewStyleLauncher:enabled"/>
@@ -29089,6 +29093,8 @@ from previous Chrome versions.
   <int value="-949178861" label="enable-new-avatar-menu"/>
   <int value="-945806012" label="DownloadsUi:enabled"/>
   <int value="-938178614" label="enable-suggestions-with-substring-match"/>
+  <int value="-933377608"
+      label="OmniboxUIExperimentHideSteadyStateUrlScheme:enabled"/>
   <int value="-933316841" label="enable-permissions-blacklist"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>
@@ -29620,6 +29626,8 @@ from previous Chrome versions.
   <int value="125581289" label="WebRtcHWVP8Encoding:disabled"/>
   <int value="125934378" label="enable-password-link"/>
   <int value="131881947" label="D3DVsync:enabled"/>
+  <int value="132560299"
+      label="OmniboxUIExperimentHideSteadyStateUrlScheme:disabled"/>
   <int value="133482330" label="AppNotificationStatusMessaging:enabled"/>
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>

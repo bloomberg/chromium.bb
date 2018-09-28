@@ -185,12 +185,9 @@ public class ToolbarModel implements ToolbarDataProvider {
             return buildUrlBarData(url, searchTerms);
         }
 
-        if (ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.OMNIBOX_HIDE_SCHEME_DOMAIN_IN_STEADY_STATE)) {
-            String urlForDisplay = getUrlForDisplay();
-            if (!urlForDisplay.equals(formattedUrl)) {
-                return buildUrlBarData(url, urlForDisplay, formattedUrl);
-            }
+        String urlForDisplay = getUrlForDisplay();
+        if (!urlForDisplay.equals(formattedUrl)) {
+            return buildUrlBarData(url, urlForDisplay, formattedUrl);
         }
 
         return buildUrlBarData(url, formattedUrl);
@@ -402,7 +399,9 @@ public class ToolbarModel implements ToolbarDataProvider {
             list = AppCompatResources.getColorStateList(mContext, R.color.light_mode_tint);
         } else if (!hasTab() || isUsingBrandColor()
                 || ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.OMNIBOX_HIDE_SCHEME_DOMAIN_IN_STEADY_STATE)) {
+                           ChromeFeatureList.OMNIBOX_HIDE_SCHEME_IN_STEADY_STATE)
+                || ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.OMNIBOX_HIDE_TRIVIAL_SUBDOMAINS_IN_STEADY_STATE)) {
             // For theme colors which are not dark and are also not
             // light enough to warrant an opaque URL bar, use dark
             // icons.

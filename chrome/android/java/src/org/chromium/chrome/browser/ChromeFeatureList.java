@@ -247,8 +247,10 @@ public abstract class ChromeFeatureList {
             "OfflinePagesDescriptivePendingStatus";
     public static final String OFFLINE_PAGES_LIVE_PAGE_SHARING = "OfflinePagesLivePageSharing";
     public static final String OFFLINE_PAGES_PREFETCHING = "OfflinePagesPrefetching";
-    public static final String OMNIBOX_HIDE_SCHEME_DOMAIN_IN_STEADY_STATE =
-            "OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains";
+    public static final String OMNIBOX_HIDE_SCHEME_IN_STEADY_STATE =
+            "OmniboxUIExperimentHideSteadyStateUrlScheme";
+    public static final String OMNIBOX_HIDE_TRIVIAL_SUBDOMAINS_IN_STEADY_STATE =
+            "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains";
     public static final String OMNIBOX_SPARE_RENDERER = "OmniboxSpareRenderer";
     public static final String OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE =
             "OmniboxVoiceSearchAlwaysVisible";
