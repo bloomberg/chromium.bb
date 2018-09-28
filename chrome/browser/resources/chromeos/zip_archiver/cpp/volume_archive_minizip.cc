@@ -246,8 +246,8 @@ bool VolumeArchiveMinizip::Init(const std::string& encoding) {
   int64_t previous_offset = reader()->offset();
   char* buffer_pointer = static_cache_.get();
   int64_t left_length = static_cache_size_;
-  static_cache_offset_ =
-      std::max(reader()->archive_size() - static_cache_size_, 0LL);
+  static_cache_offset_ = std::max(reader()->archive_size() - static_cache_size_,
+                                  static_cast<int64_t>(0));
   if (reader()->Seek(static_cache_offset_, ZLIB_FILEFUNC_SEEK_SET) < 0) {
     set_error_message(kArchiveOpenError);
     return false /* Error */;

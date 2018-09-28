@@ -45,31 +45,33 @@ class VolumeArchiveMinizip : public VolumeArchive {
  public:
   explicit VolumeArchiveMinizip(std::unique_ptr<VolumeReader> reader);
 
-  virtual ~VolumeArchiveMinizip();
+  ~VolumeArchiveMinizip() override;
 
   // See volume_archive_interface.h.
-  virtual bool Init(const std::string& encoding);
+  bool Init(const std::string& encoding) override;
 
   // See volume_archive_interface.h.
-  virtual VolumeArchive::Result GetCurrentFileInfo(std::string* path_name,
-                                                   bool* isEncodedInUtf8,
-                                                   int64_t* size,
-                                                   bool* is_directory,
-                                                   time_t* modification_time);
+  VolumeArchive::Result GetCurrentFileInfo(std::string* path_name,
+                                           bool* isEncodedInUtf8,
+                                           int64_t* size,
+                                           bool* is_directory,
+                                           time_t* modification_time) override;
 
-  virtual VolumeArchive::Result GoToNextFile();
-
-  // See volume_archive_interface.h.
-  virtual bool SeekHeader(const std::string& path_name);
+  VolumeArchive::Result GoToNextFile() override;
 
   // See volume_archive_interface.h.
-  virtual int64_t ReadData(int64_t offset, int64_t length, const char** buffer);
+  bool SeekHeader(const std::string& path_name) override;
 
   // See volume_archive_interface.h.
-  virtual void MaybeDecompressAhead();
+  int64_t ReadData(int64_t offset,
+                   int64_t length,
+                   const char** buffer) override;
 
   // See volume_archive_interface.h.
-  virtual bool Cleanup();
+  void MaybeDecompressAhead() override;
+
+  // See volume_archive_interface.h.
+  bool Cleanup() override;
 
   int64_t reader_data_size() const { return reader_data_size_; }
 

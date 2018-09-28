@@ -23,23 +23,23 @@ class CompressorIOJavaScriptStream : public CompressorStream {
   CompressorIOJavaScriptStream(
       JavaScriptCompressorRequestorInterface* requestor);
 
-  virtual ~CompressorIOJavaScriptStream();
+  ~CompressorIOJavaScriptStream() override;
 
   // Flushes the data in buffer_. Since minizip sends tons of write requests and
   // communication between C++ and JS is very expensive, we need to cache data
   // in buffer_ and send them in a lump.
-  virtual int64_t Flush();
+  int64_t Flush() override;
 
-  virtual int64_t Write(int64_t zip_offset,
-                        int64_t zip_length,
-                        const char* zip_buffer);
+  int64_t Write(int64_t zip_offset,
+                int64_t zip_length,
+                const char* zip_buffer) override;
 
-  virtual int64_t WriteChunkDone(int64_t write_bytes);
+  int64_t WriteChunkDone(int64_t write_bytes) override;
 
-  virtual int64_t Read(int64_t bytes_to_read, char* destination_buffer);
+  int64_t Read(int64_t bytes_to_read, char* destination_buffer) override;
 
-  virtual int64_t ReadFileChunkDone(int64_t read_bytes,
-                                    pp::VarArrayBuffer* buffer);
+  int64_t ReadFileChunkDone(int64_t read_bytes,
+                            pp::VarArrayBuffer* buffer) override;
 
  private:
   // A requestor that makes calls to JavaScript to read and write chunks.

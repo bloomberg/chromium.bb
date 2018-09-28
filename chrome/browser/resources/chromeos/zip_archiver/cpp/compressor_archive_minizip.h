@@ -35,22 +35,22 @@ class CompressorArchiveMinizip : public CompressorArchive {
  public:
   explicit CompressorArchiveMinizip(CompressorStream* compressor_stream);
 
-  virtual ~CompressorArchiveMinizip();
+  ~CompressorArchiveMinizip() override;
 
   // Creates an archive object.
-  virtual bool CreateArchive();
+  bool CreateArchive() override;
 
   // Closes the archive.
-  virtual bool CloseArchive(bool has_error);
+  bool CloseArchive(bool has_error) override;
 
   // Cancels the compression process.
-  virtual void CancelArchive();
+  void CancelArchive() override;
 
   // Adds an entry to the archive.
-  virtual bool AddToArchive(const std::string& filename,
-                            int64_t file_size,
-                            int64_t modification_time,
-                            bool is_directory);
+  bool AddToArchive(const std::string& filename,
+                    int64_t file_size,
+                    int64_t modification_time,
+                    bool is_directory) override;
 
   // A getter function for zip_file_.
   zipFile zip_file() const { return zip_file_; }

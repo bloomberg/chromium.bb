@@ -28,7 +28,7 @@ class VolumeReaderJavaScriptStream : public VolumeReader {
   VolumeReaderJavaScriptStream(int64_t archive_size,
                                JavaScriptRequestorInterface* requestor);
 
-  virtual ~VolumeReaderJavaScriptStream();
+  ~VolumeReaderJavaScriptStream() override;
 
   // Sets the internal array buffer used for reads and signal the blocked
   // VolumeReaderJavaScriptStream::Read to continue execution. Must be done in
@@ -60,10 +60,10 @@ class VolumeReaderJavaScriptStream : public VolumeReader {
   // See volume_reader.h for description. This method blocks on
   // available_data_cond_. SetBufferAndSignal should unblock it from another
   // thread.
-  virtual int64_t Read(int64_t bytes_to_read, const void** destination_buffer);
+  int64_t Read(int64_t bytes_to_read, const void** destination_buffer) override;
 
   // See volume_reader.h for description.
-  virtual int64_t Seek(int64_t offset, int whence);
+  int64_t Seek(int64_t offset, int whence) override;
 
   // Sets the request Id to be used by the reader.
   void SetRequestId(const std::string& request_id);
@@ -71,11 +71,11 @@ class VolumeReaderJavaScriptStream : public VolumeReader {
   // See volume_reader.h for description. The method blocks on
   // available_passphrase_cond_. SetPassphraseAndSignal should unblock it from
   // another thread.
-  virtual std::unique_ptr<std::string> Passphrase();
+  std::unique_ptr<std::string> Passphrase() override;
 
-  virtual int64_t offset() { return offset_; }
+  int64_t offset() override;
 
-  int64_t archive_size() { return archive_size_; }
+  int64_t archive_size() override;
 
  private:
   // Request a chunk of length number of bytes from JavaScript starting from

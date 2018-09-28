@@ -22,6 +22,7 @@ executable("zip_archiver_pnacl") {
     "request.h",
     "volume.cc",
     "volume.h",
+    "volume_archive.cc",
     "volume_archive.h",
     "volume_archive_minizip.cc",
     "volume_archive_minizip.h",

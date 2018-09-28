@@ -17,10 +17,9 @@
 // to be thread safe and its methods shouldn't be called in parallel.
 class VolumeArchive {
  public:
-  explicit VolumeArchive(std::unique_ptr<VolumeReader> reader)
-      : reader_(std::move(reader)) {}
+  explicit VolumeArchive(std::unique_ptr<VolumeReader> reader);
 
-  virtual ~VolumeArchive() {}
+  virtual ~VolumeArchive();
 
   // For functions that need to return more than pass/fail results.
   enum Result {
