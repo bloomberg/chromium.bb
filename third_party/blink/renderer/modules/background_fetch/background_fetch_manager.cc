@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_options.h"
@@ -82,14 +81,6 @@ bool ShouldBlockScheme(const KURL& request_url) {
   // https://github.com/WICG/background-fetch/issues/44
   return !request_url.ProtocolIs(WTF::g_http_atom) &&
          !request_url.ProtocolIs(WTF::g_https_atom);
-}
-
-bool ShouldBlockMixedContent(ExecutionContext* execution_context,
-                             const KURL& request_url) {
-  // TODO(crbug.com/757441): Using MixedContentChecker::ShouldBlockFetch would
-  // log better metrics.
-  return MixedContentChecker::IsMixedContent(
-      execution_context->GetSecurityOrigin(), request_url);
 }
 
 bool ShouldBlockDanglingMarkup(const KURL& request_url) {
@@ -201,14 +192,6 @@ ScriptPromise BackgroundFetchManager::fetch(
   // the Download Service in the browser process can use it without having to
   // spin up a renderer process.
   for (const WebServiceWorkerRequest& web_request : web_requests) {
-    // TODO(crbug.com/757441): Decide whether to support upgrading requests to
-    // potentially secure URLs (https://w3c.github.io/webappsec-upgrade-
-    // insecure-requests/) and/or HSTS rewriting. Since this is a new API only
-    // exposed on Secure Contexts, and the Mixed Content check below will block
-    // any requests to insecure contexts, it'd be cleanest not to support it.
-    // Depends how closely compatible with Fetch we want to be. If support is
-    // added, make sure to report CSP violations before upgrading the URL.
-
     KURL request_url(web_request.Url());
 
     if (!request_url.IsValid()) {
@@ -225,7 +208,7 @@ ScriptPromise BackgroundFetchManager::fetch(
     }
 
     // Check this before mixed content, so that if mixed content is blocked by
-    // CSP they get a CSP warning rather than a mixed content warning.
+    // CSP they get a CSP warning rather than a mixed content failure.
     if (ShouldBlockDueToCSP(execution_context, request_url)) {
       return RejectWithTypeError(script_state, request_url,
                                  "it violates the Content Security Policy");
@@ -245,13 +228,6 @@ ScriptPromise BackgroundFetchManager::fetch(
       return RejectWithTypeError(script_state, request_url,
                                  "only the https: scheme is allowed, or http: "
                                  "for loopback IPs");
-    }
-
-    // Blocking fetches due to mixed content is done after Content Security
-    // Policy to prioritize warnings caused by the latter.
-    if (ShouldBlockMixedContent(execution_context, request_url)) {
-      return RejectWithTypeError(script_state, request_url,
-                                 "it is insecure; use https instead");
     }
 
     if (ShouldBlockDanglingMarkup(request_url)) {

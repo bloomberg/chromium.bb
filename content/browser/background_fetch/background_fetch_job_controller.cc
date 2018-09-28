@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
+#include "content/public/common/origin_util.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 #include <utility>
@@ -74,6 +75,15 @@ bool BackgroundFetchJobController::HasMoreRequests() {
   return completed_downloads_ < total_downloads_;
 }
 
+bool BackgroundFetchJobController::IsMixedContent(
+    const BackgroundFetchRequestInfo& request) {
+  // Empty request is valid, it shouldn't fail the mixed content check.
+  if (request.fetch_request().url.is_empty())
+    return false;
+
+  return !IsOriginSecure(request.fetch_request().url);
+}
+
 void BackgroundFetchJobController::StartRequest(
     scoped_refptr<BackgroundFetchRequestInfo> request,
     RequestFinishedCallback request_finished_callback) {
@@ -84,6 +94,15 @@ void BackgroundFetchJobController::StartRequest(
 
   active_request_downloaded_bytes_ = 0;
   active_request_finished_callback_ = std::move(request_finished_callback);
+
+  if (IsMixedContent(*request.get())) {
+    request->SetEmptyResultWithFailureReason(
+        BackgroundFetchResult::FailureReason::FETCH_ERROR);
+
+    ++completed_downloads_;
+    std::move(active_request_finished_callback_).Run(request);
+    return;
+  }
 
   delegate_proxy_->StartRequest(registration_id().unique_id(),
                                 registration_id().origin(), request);

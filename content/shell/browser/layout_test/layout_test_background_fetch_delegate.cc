@@ -103,7 +103,8 @@ class LayoutTestBackgroundFetchDelegate::LayoutTestBackgroundFetchDownloadClient
             content::BackgroundFetchResult::FailureReason::TIMEDOUT;
         break;
       case download::Client::FailureReason::UNKNOWN:
-        failure_reason = content::BackgroundFetchResult::FailureReason::UNKNOWN;
+        failure_reason =
+            content::BackgroundFetchResult::FailureReason::FETCH_ERROR;
         break;
       case download::Client::FailureReason::ABORTED:
       case download::Client::FailureReason::CANCELLED:

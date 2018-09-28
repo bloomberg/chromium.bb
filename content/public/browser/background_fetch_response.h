@@ -52,8 +52,9 @@ struct CONTENT_EXPORT BackgroundFetchResult {
     // Used when the download was cancelled by the user.
     CANCELLED,
 
-    // Used when the failure reason is unknown.
-    UNKNOWN,
+    // Catch-all error. Used when the failure reason is unknown or not exposed
+    // to the developer.
+    FETCH_ERROR,
   };
 
   // Constructor for failed downloads.

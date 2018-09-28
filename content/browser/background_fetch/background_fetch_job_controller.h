@@ -116,6 +116,13 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       blink::mojom::BackgroundFetchFailureReason reason_to_abort) override;
 
  private:
+  // Performs mixed content checks on the |request| for Background Fetch.
+  // Background Fetch depends on Service Workers, which are restricted for use
+  // on secure origins. We can therefore assume that the registration's origin
+  // is secure. This test ensures that the origin for the url of every
+  // request is also secure.
+  bool IsMixedContent(const BackgroundFetchRequestInfo& request);
+
   // Options for the represented background fetch registration.
   BackgroundFetchOptions options_;
 
