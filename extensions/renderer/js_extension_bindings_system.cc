@@ -36,9 +36,9 @@ namespace {
 // exist.
 v8::Local<v8::Object> GetOrCreateObject(const v8::Local<v8::Object>& object,
                                         const std::string& field,
-                                        v8::Isolate* isolate) {
+                                        ScriptContext* context) {
   v8::Local<v8::String> key =
-      v8::String::NewFromUtf8(isolate, field.c_str(),
+      v8::String::NewFromUtf8(context->isolate(), field.c_str(),
                               v8::NewStringType::kInternalized)
           .ToLocalChecked();
   // If the object has a callback property, it is assumed it is an unavailable
@@ -52,8 +52,8 @@ v8::Local<v8::Object> GetOrCreateObject(const v8::Local<v8::Object>& object,
     return v8::Local<v8::Object>::Cast(value);
   }
 
-  v8::Local<v8::Object> new_object = v8::Object::New(isolate);
-  object->Set(key, new_object);
+  v8::Local<v8::Object> new_object = v8::Object::New(context->isolate());
+  object->Set(context->v8_context(), key, new_object).ToChecked();
   return new_object;
 }
 
@@ -70,7 +70,7 @@ v8::Local<v8::Object> GetOrCreateChrome(ScriptContext* context) {
   v8::Local<v8::Value> chrome(global->Get(chrome_string));
   if (chrome->IsUndefined()) {
     chrome = v8::Object::New(context->isolate());
-    global->Set(chrome_string, chrome);
+    global->Set(context->v8_context(), chrome_string, chrome).ToChecked();
   }
   return chrome->IsObject() ? chrome.As<v8::Object>() : v8::Local<v8::Object>();
 }
@@ -113,7 +113,7 @@ v8::Local<v8::Object> GetOrCreateBindObjectIfAvailable(
       if (bind_object.IsEmpty())
         return v8::Local<v8::Object>();
     }
-    bind_object = GetOrCreateObject(bind_object, split[i], context->isolate());
+    bind_object = GetOrCreateObject(bind_object, split[i], context);
   }
 
   if (only_ancestor_available)
