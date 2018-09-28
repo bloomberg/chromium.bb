@@ -137,9 +137,12 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
     // This is used for bezel gesture events (eg. swiping in from screen edge).
     display::Display display =
         display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
-    const gfx::Point screen_location =
-        event.target() ? event.target()->GetScreenLocation(event)
-                       : event.root_location();
+    // The window target may be null, so use the root's ScreenPositionClient.
+    gfx::Point screen_location = event.root_location();
+    if (client::GetScreenPositionClient(root_window)) {
+      client::GetScreenPositionClient(root_window)
+          ->ConvertPointToScreen(root_window, &screen_location);
+    }
     if (!display.bounds().Contains(screen_location))
       return root_window;
   }
