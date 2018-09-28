@@ -85,7 +85,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Returns the state of the access token and token request, for display in
   // internals UI.
-  const syncer::SyncTokenStatus& GetSyncTokenStatus() const;
+  syncer::SyncTokenStatus GetSyncTokenStatus() const;
 
   // Called by ProfileSyncService when the status of the connection to the Sync
   // server changed. Updates auth error state accordingly.
@@ -136,7 +136,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Immediately starts an access token request, unless one is already ongoing.
   // If another request is scheduled for later, it is canceled. Any access token
-  // we currently have is dropped and removed from IdentityManager's cache.
+  // we currently have is invalidated.
   void RequestAccessToken();
 
   void AccessTokenFetched(GoogleServiceAuthError error,
@@ -179,7 +179,9 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   net::BackoffEntry request_access_token_backoff_;
 
   // Info about the state of our access token, for display in the internals UI.
-  syncer::SyncTokenStatus token_status_;
+  // "Partial" because this instance is not fully populated - in particular,
+  // |next_token_request_time| gets computed on demand.
+  syncer::SyncTokenStatus partial_token_status_;
 
   base::WeakPtrFactory<SyncAuthManager> weak_ptr_factory_;
 
