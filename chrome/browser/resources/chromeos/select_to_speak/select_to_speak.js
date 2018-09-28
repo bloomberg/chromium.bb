@@ -113,8 +113,14 @@ SelectToSpeak.CONTROL_KEY_CODE = 17;
 /** @const {number} */
 SelectToSpeak.READ_SELECTION_KEY_CODE = 83;
 
-/** @const {number} */
-SelectToSpeak.NODE_STATE_TEST_INTERVAL_MS = 1000;
+/**
+ * How often (in ms) to check that the currently spoken node is
+ * still valid and in the same position. Decreasing this will make
+ * STS seem more reactive to page changes but decreasing it too much
+ * could cause performance issues.
+ * @const {number}
+ */
+SelectToSpeak.NODE_STATE_TEST_INTERVAL_MS = 500;
 
 SelectToSpeak.prototype = {
   /**
