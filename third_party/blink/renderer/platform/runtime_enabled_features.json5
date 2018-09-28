@@ -1143,10 +1143,6 @@
       name: "ServiceWorkerScriptFullCodeCache",
     },
     {
-      name: "ServiceWorkerUpdateViaCache",
-      status: "stable",
-    },
-    {
       name: "SetRootScroller",
       status: "experimental",
     },
