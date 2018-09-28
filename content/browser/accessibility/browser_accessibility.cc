@@ -772,6 +772,24 @@ std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() const {
   return name;
 }
 
+std::string BrowserAccessibility::GetLiveRegionText() const {
+  if (GetRole() == ax::mojom::Role::kIgnored)
+    return "";
+
+  std::string text = GetStringAttribute(ax::mojom::StringAttribute::kName);
+  if (!text.empty())
+    return text;
+
+  for (size_t i = 0; i < InternalChildCount(); ++i) {
+    BrowserAccessibility* child = InternalGetChild(i);
+    if (!child)
+      continue;
+
+    text += child->GetLiveRegionText();
+  }
+  return text;
+}
+
 std::vector<int> BrowserAccessibility::GetLineStartOffsets() const {
   if (!instance_active())
     return std::vector<int>();
