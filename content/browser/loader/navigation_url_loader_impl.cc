@@ -221,8 +221,10 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       request_info->begin_params->headers);
 
   std::string accept_value = network::kFrameAcceptHeader;
-  if (signed_exchange_utils::ShouldAdvertiseAcceptHeader(
-          url::Origin::Create(request_info->common_params.url))) {
+  // TODO(https://crbug.com/840704): Decide whether the Accept header should
+  // advertise the state of kSignedHTTPExchangeOriginTrial before starting the
+  // Origin-Trial.
+  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
     DCHECK(!accept_value.empty());
     accept_value.append(kAcceptHeaderSignedExchangeSuffix);
   }
@@ -985,27 +987,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Need to cache modified headers for |url_loader_| since it doesn't use
     // |resource_request_| during redirect.
     url_loader_modified_request_headers_ = modified_request_headers;
-
-    if (signed_exchange_utils::NeedToCheckRedirectedURLForAcceptHeader()) {
-      // Currently we send the SignedExchange accept header only for the limited
-      // origins when SignedHTTPExchangeOriginTrial feature is enabled without
-      // SignedHTTPExchange feature. We need to put the SignedExchange accept
-      // header on when redirecting to the origins in the OriginList of
-      // SignedHTTPExchangeAcceptHeader field trial, and need to remove it when
-      // redirecting to out of the OriginList.
-      if (!url_loader_modified_request_headers_)
-        url_loader_modified_request_headers_ = net::HttpRequestHeaders();
-      std::string accept_value = network::kFrameAcceptHeader;
-      if (signed_exchange_utils::ShouldAdvertiseAcceptHeader(
-              url::Origin::Create(resource_request_->url))) {
-        DCHECK(!accept_value.empty());
-        accept_value.append(kAcceptHeaderSignedExchangeSuffix);
-      }
-      url_loader_modified_request_headers_->SetHeader(network::kAcceptHeader,
-                                                      accept_value);
-      resource_request_->headers.SetHeader(network::kAcceptHeader,
-                                           accept_value);
-    }
 
     Restart();
   }

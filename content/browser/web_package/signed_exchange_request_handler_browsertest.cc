@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
-#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -33,16 +32,13 @@
 #include "content/shell/browser/shell.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 
@@ -187,6 +183,14 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
   mock_cert_verifier()->AddResultForCertAndHost(
       original_cert, "test.example.org", dummy_result, net::OK);
 
+  embedded_test_server()->RegisterRequestMonitor(
+      base::BindRepeating([](const net::test_server::HttpRequest& request) {
+        if (request.relative_url == "/sxg/test.example.org_test.sxg") {
+          const auto& accept_value = request.headers.find("accept")->second;
+          EXPECT_THAT(accept_value,
+                      ::testing::HasSubstr("application/signed-exchange;v=b2"));
+        }
+      }));
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
@@ -326,6 +330,14 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
 
+  embedded_test_server()->RegisterRequestMonitor(
+      base::BindRepeating([](const net::test_server::HttpRequest& request) {
+        if (request.relative_url == "/sxg/test.example.org_test.sxg") {
+          const auto& accept_value = request.headers.find("accept")->second;
+          EXPECT_THAT(accept_value,
+                      ::testing::HasSubstr("application/signed-exchange;v=b2"));
+        }
+      }));
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
@@ -344,190 +356,5 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
   histogram_tester_.ExpectUniqueSample("SignedExchange.LoadResult",
                                        SignedExchangeLoadResult::kOCSPError, 1);
 }
-
-struct SignedExchangeAcceptHeaderBrowserTestParam {
-  SignedExchangeAcceptHeaderBrowserTestParam(bool sxg_enabled,
-                                             bool sxg_origin_trial_enabled,
-                                             bool sxg_accept_header_enabled)
-      : sxg_enabled(sxg_enabled),
-        sxg_origin_trial_enabled(sxg_origin_trial_enabled),
-        sxg_accept_header_enabled(sxg_accept_header_enabled) {}
-  const bool sxg_enabled;
-  const bool sxg_origin_trial_enabled;
-  const bool sxg_accept_header_enabled;
-};
-
-class SignedExchangeAcceptHeaderBrowserTest
-    : public ContentBrowserTest,
-      public testing::WithParamInterface<
-          SignedExchangeAcceptHeaderBrowserTestParam> {
- public:
-  using self = SignedExchangeAcceptHeaderBrowserTest;
-  SignedExchangeAcceptHeaderBrowserTest()
-      : enabled_https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        disabled_https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
-  ~SignedExchangeAcceptHeaderBrowserTest() override = default;
-
- protected:
-  void SetUpOnMainThread() override {
-    std::vector<base::Feature> enable_features;
-    if (GetParam().sxg_enabled)
-      enable_features.push_back(features::kSignedHTTPExchange);
-    if (GetParam().sxg_origin_trial_enabled)
-      enable_features.push_back(features::kSignedHTTPExchangeOriginTrial);
-    feature_list_.InitWithFeatures(enable_features, {});
-
-    enabled_https_server_.ServeFilesFromSourceDirectory("content/test/data");
-    enabled_https_server_.RegisterRequestHandler(
-        base::BindRepeating(&self::RedirectResponseHandler));
-    enabled_https_server_.RegisterRequestMonitor(
-        base::BindRepeating(&self::MonitorRequest, base::Unretained(this)));
-    ASSERT_TRUE(enabled_https_server_.Start());
-
-    disabled_https_server_.ServeFilesFromSourceDirectory("content/test/data");
-    disabled_https_server_.RegisterRequestHandler(
-        base::BindRepeating(&self::RedirectResponseHandler));
-    disabled_https_server_.RegisterRequestMonitor(
-        base::BindRepeating(&self::MonitorRequest, base::Unretained(this)));
-    ASSERT_TRUE(disabled_https_server_.Start());
-
-    if (GetParam().sxg_accept_header_enabled) {
-      std::map<std::string, std::string> feature_parameters;
-      feature_parameters["OriginsList"] =
-          base::StringPrintf("127.0.0.1:%u", enabled_https_server_.port());
-      feature_list_for_accept_header_.InitAndEnableFeatureWithParameters(
-          features::kSignedHTTPExchangeAcceptHeader, feature_parameters);
-    }
-  }
-
-  void NavigateAndWaitForTitle(const GURL& url, const std::string title) {
-    base::string16 expected_title = base::ASCIIToUTF16(title);
-    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-    NavigateToURL(shell(), url);
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-  }
-
-  bool ShouldHaveSXGAcceptHeaderInEnabledOrigin() {
-    return GetParam().sxg_enabled || (GetParam().sxg_origin_trial_enabled &&
-                                      GetParam().sxg_accept_header_enabled);
-  }
-
-  void CheckNavigationAcceptHeader(const GURL& url, bool should_have_sxg) {
-    if (should_have_sxg) {
-      EXPECT_EQ(GetInterceptedAcceptHeader(url),
-                std::string(network::kFrameAcceptHeader) +
-                    std::string(kAcceptHeaderSignedExchangeSuffix));
-    } else {
-      EXPECT_EQ(GetInterceptedAcceptHeader(url),
-                std::string(network::kFrameAcceptHeader));
-    }
-  }
-
-  net::EmbeddedTestServer enabled_https_server_;
-  net::EmbeddedTestServer disabled_https_server_;
-
- private:
-  static std::unique_ptr<net::test_server::HttpResponse>
-  RedirectResponseHandler(const net::test_server::HttpRequest& request) {
-    if (!base::StartsWith(request.relative_url, "/r?",
-                          base::CompareCase::SENSITIVE)) {
-      return std::unique_ptr<net::test_server::HttpResponse>();
-    }
-    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-        new net::test_server::BasicHttpResponse);
-    http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
-    http_response->AddCustomHeader("Location", request.relative_url.substr(3));
-    return std::move(http_response);
-  }
-
-  void MonitorRequest(const net::test_server::HttpRequest& request) {
-    const auto it = request.headers.find(std::string(network::kAcceptHeader));
-    if (it == request.headers.end())
-      return;
-    url_accept_header_map_[request.base_url.Resolve(request.relative_url)] =
-        it->second;
-  }
-
-  std::string GetInterceptedAcceptHeader(const GURL& url) {
-    return url_accept_header_map_[url];
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-  base::test::ScopedFeatureList feature_list_for_accept_header_;
-
-  std::map<GURL, std::string> url_accept_header_map_;
-};
-
-IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, EnabledOrigin) {
-  const GURL enabled_test_url = enabled_https_server_.GetURL("/sxg/test.html");
-  EXPECT_EQ(ShouldHaveSXGAcceptHeaderInEnabledOrigin(),
-            signed_exchange_utils::ShouldAdvertiseAcceptHeader(
-                url::Origin::Create(enabled_test_url)));
-  NavigateAndWaitForTitle(enabled_test_url, enabled_test_url.spec());
-  CheckNavigationAcceptHeader(enabled_test_url,
-                              ShouldHaveSXGAcceptHeaderInEnabledOrigin());
-}
-
-IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, DisabledOrigin) {
-  const GURL disabled_test_url =
-      disabled_https_server_.GetURL("/sxg/test.html");
-  EXPECT_EQ(GetParam().sxg_enabled,
-            signed_exchange_utils::ShouldAdvertiseAcceptHeader(
-                url::Origin::Create(disabled_test_url)));
-
-  NavigateAndWaitForTitle(disabled_test_url, disabled_test_url.spec());
-  CheckNavigationAcceptHeader(disabled_test_url, GetParam().sxg_enabled);
-}
-
-IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
-                       RedirectEnabledToDisabledToEnabled) {
-  const GURL enabled_test_url = enabled_https_server_.GetURL("/sxg/test.html");
-  const GURL redirect_disabled_to_enabled_url =
-      disabled_https_server_.GetURL("/r?" + enabled_test_url.spec());
-  const GURL redirect_enabled_to_disabled_to_enabled_url =
-      enabled_https_server_.GetURL("/r?" +
-                                   redirect_disabled_to_enabled_url.spec());
-  NavigateAndWaitForTitle(redirect_enabled_to_disabled_to_enabled_url,
-                          enabled_test_url.spec());
-
-  CheckNavigationAcceptHeader(redirect_enabled_to_disabled_to_enabled_url,
-                              ShouldHaveSXGAcceptHeaderInEnabledOrigin());
-  CheckNavigationAcceptHeader(redirect_disabled_to_enabled_url,
-                              GetParam().sxg_enabled);
-  CheckNavigationAcceptHeader(enabled_test_url,
-                              ShouldHaveSXGAcceptHeaderInEnabledOrigin());
-}
-
-IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
-                       RedirectDisabledToEnabledToDisabled) {
-  const GURL disabled_test_url =
-      disabled_https_server_.GetURL("/sxg/test.html");
-  const GURL redirect_enabled_to_disabled_url =
-      enabled_https_server_.GetURL("/r?" + disabled_test_url.spec());
-  const GURL redirect_disabled_to_enabled_to_disabled_url =
-      disabled_https_server_.GetURL("/r?" +
-                                    redirect_enabled_to_disabled_url.spec());
-  NavigateAndWaitForTitle(redirect_disabled_to_enabled_to_disabled_url,
-                          disabled_test_url.spec());
-
-  CheckNavigationAcceptHeader(redirect_disabled_to_enabled_to_disabled_url,
-                              GetParam().sxg_enabled);
-  CheckNavigationAcceptHeader(redirect_enabled_to_disabled_url,
-                              ShouldHaveSXGAcceptHeaderInEnabledOrigin());
-  CheckNavigationAcceptHeader(disabled_test_url, GetParam().sxg_enabled);
-}
-
-INSTANTIATE_TEST_CASE_P(
-    SignedExchangeAcceptHeaderBrowserTest,
-    SignedExchangeAcceptHeaderBrowserTest,
-    testing::Values(
-        SignedExchangeAcceptHeaderBrowserTestParam(false, false, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, false, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, true, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, true, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, false, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, false, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, true, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, true, true)));
 
 }  // namespace content
