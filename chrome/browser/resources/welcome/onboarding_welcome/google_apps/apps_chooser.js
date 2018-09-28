@@ -5,7 +5,7 @@
 /**
  * @const
  */
-var nux_google_apps = nux_google_apps || {};
+var nuxGoogleApps = nuxGoogleApps || {};
 
 /**
  * @typedef {{
@@ -17,7 +17,7 @@ var nux_google_apps = nux_google_apps || {};
  *   set: function(string, boolean):void
  * }}
  */
-nux_google_apps.AppsArrayModel;
+nuxGoogleApps.AppsArrayModel;
 
 Polymer({
   is: 'apps-chooser',
@@ -73,12 +73,12 @@ Polymer({
    * @return {Array<boolean>}
    */
   getSelectedAppList() {
-    return this.appList.map(a => a.selected)
+    return this.appList.map(a => a.selected);
   },
 
   /**
    * Handle toggling the apps selected.
-   * @param {!{model: !nux_google_apps.AppsArrayModel}} e
+   * @param {!{model: !nuxGoogleApps.AppsArrayModel}} e
    * @private
    */
   onAppClick_: function(e) {

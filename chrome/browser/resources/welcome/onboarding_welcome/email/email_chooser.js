@@ -5,7 +5,7 @@
 /**
  * @const
  */
-var nux_email = nux_email || {};
+var nuxEmail = nuxEmail || {};
 
 /**
  * @typedef {{
@@ -15,7 +15,7 @@ var nux_email = nux_email || {};
  *    bookmarkId: {string|undefined},
  * }}
  */
-nux_email.EmailProviderModel;
+nuxEmail.EmailProviderModel;
 
 Polymer({
   is: 'email-chooser',
@@ -34,7 +34,7 @@ Polymer({
     /** @private */
     finalized_: Boolean,
 
-    /** @private {nux_email.EmailProviderModel} */
+    /** @private {nuxEmail.EmailProviderModel} */
     selectedEmailProvider_: {
       type: Object,
       value: () => null,
@@ -75,7 +75,7 @@ Polymer({
 
   /**
    * Handle toggling the email selected.
-   * @param {!{model: {item: !nux_email.EmailProviderModel}}} e
+   * @param {!{model: {item: !nuxEmail.EmailProviderModel}}} e
    * @private
    */
   onEmailClick_: function(e) {
@@ -110,7 +110,7 @@ Polymer({
   },
 
   /**
-   * @param {nux_email.EmailProviderModel=} newEmail
+   * @param {nuxEmail.EmailProviderModel=} newEmail
    * @private
    */
   revertBookmark_: function(emailProvider) {
@@ -121,8 +121,8 @@ Polymer({
   },
 
   /**
-   * @param {nux_email.EmailProviderModel} newEmail
-   * @param {nux_email.EmailProviderModel} prevEmail
+   * @param {nuxEmail.EmailProviderModel} newEmail
+   * @param {nuxEmail.EmailProviderModel} prevEmail
    * @private
    */
   onSelectedEmailProviderChange_: function(newEmail, prevEmail) {

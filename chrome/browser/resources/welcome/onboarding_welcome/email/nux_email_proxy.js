@@ -102,7 +102,7 @@ cr.define('nux', function() {
           name: loadTimeData.getString(`email_name_${i}`),
           icon: loadTimeData.getString(`email_name_${i}`).toLowerCase(),
           url: loadTimeData.getString(`email_url_${i}`)
-        })
+        });
       }
       return emailList;
     }
