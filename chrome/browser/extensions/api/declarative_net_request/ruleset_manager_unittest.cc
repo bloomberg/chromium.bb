@@ -519,6 +519,68 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
   }
 }
 
+TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
+  RulesetManager* manager = info_map()->GetRulesetManager();
+  ASSERT_TRUE(manager);
+
+  // Add an extension which blocks all sub-resource and sub-frame requests to
+  // example.com. By default, the "main_frame" type is excluded if no
+  // "resource_types" are specified.
+  {
+    std::unique_ptr<RulesetMatcher> matcher;
+
+    TestRule rule = CreateGenericRule();
+    rule.id = kMinValidID;
+    rule.condition->url_filter = std::string("example.com");
+
+    std::vector<std::string> host_permissions = {"*://yahoo.com/*",
+                                                 "*://example.com/*"};
+
+    ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
+        {rule}, "test extension", &matcher, host_permissions,
+        false /* has_background_script */));
+
+    manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
+                        URLPatternSet());
+  }
+
+  struct {
+    std::string url;
+    base::Optional<url::Origin> initiator;
+    bool expect_blocked;
+  } cases[] = {
+      // empty initiator. Has access.
+      {"https://example.com", base::nullopt, true},
+      // Opaque origin as initiator. Has access.
+      {"https://example.com", url::Origin(), true},
+      // yahoo.com as initiator. Has access.
+      {"https://example.com", url::Origin::Create(GURL("http://yahoo.com")),
+       true},
+      // No matching rule.
+      {"https://yahoo.com", url::Origin::Create(GURL("http://example.com")),
+       false},
+      // Doesn't have access to initiator.
+      {"https://example.com", url::Origin::Create(GURL("http://google.com")),
+       false},
+  };
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(base::StringPrintf(
+        "Url-%s initiator-%s", test.url.c_str(),
+        test.initiator ? test.initiator->Serialize().c_str() : "empty"));
+
+    WebRequestInfo request = GetRequestForURL(test.url);
+    request.initiator = test.initiator;
+    GURL redirect_url;
+
+    RulesetManager::Action action = manager->EvaluateRequest(
+        request, false /* is_incognito_context */, &redirect_url);
+    EXPECT_EQ(test.expect_blocked ? RulesetManager::Action::BLOCK
+                                  : RulesetManager::Action::NONE,
+              action);
+  }
+}
+
 INSTANTIATE_TEST_CASE_P(,
                         RulesetManagerTest,
                         ::testing::Values(ExtensionLoadType::PACKED,
