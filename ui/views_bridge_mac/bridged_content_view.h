@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_BRIDGED_CONTENT_VIEW_H_
-#define UI_VIEWS_COCOA_BRIDGED_CONTENT_VIEW_H_
+#ifndef UI_VIEWS_BRIDGE_MAC_BRIDGED_CONTENT_VIEW_H_
+#define UI_VIEWS_BRIDGE_MAC_BRIDGED_CONTENT_VIEW_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -82,4 +82,4 @@ VIEWS_EXPORT
 
 @end
 
-#endif  // UI_VIEWS_COCOA_BRIDGED_CONTENT_VIEW_H_
+#endif  // UI_VIEWS_BRIDGE_MAC_BRIDGED_CONTENT_VIEW_H_

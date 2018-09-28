@@ -24,15 +24,15 @@
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_mac.h"
-#import "ui/views/cocoa/bridged_content_view.h"
-#import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
-#import "ui/views/cocoa/native_widget_mac_nswindow.h"
-#import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/native_frame_view.h"
+#import "ui/views_bridge_mac/bridged_content_view.h"
+#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
+#import "ui/views_bridge_mac/views_nswindow_delegate.h"
 
 using views_bridge_mac::mojom::WindowVisibilityState;
 

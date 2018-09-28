@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_BRIDGE_FACTORY_IMPL_H_
-#define UI_VIEWS_COCOA_BRIDGE_FACTORY_IMPL_H_
+#ifndef UI_VIEWS_BRIDGE_MAC_BRIDGE_FACTORY_IMPL_H_
+#define UI_VIEWS_BRIDGE_MAC_BRIDGE_FACTORY_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/views/views_export.h"
@@ -38,4 +38,4 @@ class VIEWS_EXPORT BridgeFactoryImpl : public mojom::BridgeFactory {
 
 }  // namespace views_bridge_mac
 
-#endif  // UI_VIEWS_COCOA_BRIDGE_FACTORY_IMPL_H_
+#endif  // UI_VIEWS_BRIDGE_MAC_BRIDGE_FACTORY_IMPL_H_

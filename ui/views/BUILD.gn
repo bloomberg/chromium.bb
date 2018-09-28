@@ -54,6 +54,11 @@ jumbo_component("views") {
   all_dependent_configs = [ ":flags" ]
 
   public = [
+    # TODO(ccameron): Move these sources to the views_bridge_mac component
+    "../views_bridge_mac/bridge_factory_impl.h",
+    "../views_bridge_mac/bridged_native_widget_impl.h",
+    "../views_bridge_mac/native_widget_mac_nswindow.h",
+    "../views_bridge_mac/window_touch_bar_delegate.h",
     "accessibility/view_accessibility.h",
     "accessibility/view_accessibility_utils.h",
     "accessible_pane_view.h",
@@ -86,10 +91,6 @@ jumbo_component("views") {
     "bubble/tooltip_icon.h",
     "button_drag_utils.h",
     "cocoa/bridge_factory_host.h",
-    "cocoa/bridge_factory_impl.h",
-    "cocoa/bridged_native_widget.h",
-    "cocoa/native_widget_mac_nswindow.h",
-    "cocoa/window_touch_bar_delegate.h",
     "color_chooser/color_chooser_listener.h",
     "color_chooser/color_chooser_view.h",
     "context_menu_controller.h",
@@ -260,6 +261,9 @@ jumbo_component("views") {
   ]
 
   sources = [
+    # TODO(ccameron): Move these sources to the views_bridge_mac component
+    "../views_bridge_mac/bridged_native_widget_impl.mm",
+    "../views_bridge_mac/native_widget_mac_nswindow.mm",
     "accessibility/view_accessibility.cc",
     "accessibility/view_accessibility_utils.cc",
     "accessible_pane_view.cc",
@@ -286,8 +290,6 @@ jumbo_component("views") {
     "bubble/info_bubble.cc",
     "bubble/tooltip_icon.cc",
     "button_drag_utils.cc",
-    "cocoa/bridged_native_widget.mm",
-    "cocoa/native_widget_mac_nswindow.mm",
     "color_chooser/color_chooser_view.cc",
     "controls/animated_icon_view.cc",
     "controls/button/blue_button.cc",
@@ -440,26 +442,27 @@ jumbo_component("views") {
   # Internal sources. TODO(https://crbug.com/871123): Move more headers from
   # public into this list, along with the implementation file.
   sources += [
+    # TODO(ccameron): Move these sources to the views_bridge_mac component
+    "../views_bridge_mac/bridge_factory_impl.mm",
+    "../views_bridge_mac/bridged_content_view.h",
+    "../views_bridge_mac/bridged_content_view.mm",
+    "../views_bridge_mac/bridged_content_view_touch_bar.mm",
+    "../views_bridge_mac/bridged_native_widget_owner.h",
+    "../views_bridge_mac/cocoa_window_move_loop.h",
+    "../views_bridge_mac/cocoa_window_move_loop.mm",
+    "../views_bridge_mac/views_nswindow_delegate.h",
+    "../views_bridge_mac/views_nswindow_delegate.mm",
+    "../views_bridge_mac/views_scrollbar_bridge.h",
+    "../views_bridge_mac/views_scrollbar_bridge.mm",
+    "../views_bridge_mac/widget_owner_nswindow_adapter.h",
+    "../views_bridge_mac/widget_owner_nswindow_adapter.mm",
     "cocoa/bridge_factory_host.cc",
-    "cocoa/bridge_factory_impl.mm",
-    "cocoa/bridged_content_view.h",
-    "cocoa/bridged_content_view.mm",
-    "cocoa/bridged_content_view_touch_bar.mm",
     "cocoa/bridged_native_widget_host_impl.h",
     "cocoa/bridged_native_widget_host_impl.mm",
-    "cocoa/bridged_native_widget_owner.h",
-    "cocoa/cocoa_window_move_loop.h",
-    "cocoa/cocoa_window_move_loop.mm",
     "cocoa/drag_drop_client_mac.h",
     "cocoa/drag_drop_client_mac.mm",
     "cocoa/tooltip_manager_mac.h",
     "cocoa/tooltip_manager_mac.mm",
-    "cocoa/views_nswindow_delegate.h",
-    "cocoa/views_nswindow_delegate.mm",
-    "cocoa/views_scrollbar_bridge.h",
-    "cocoa/views_scrollbar_bridge.mm",
-    "cocoa/widget_owner_nswindow_adapter.h",
-    "cocoa/widget_owner_nswindow_adapter.mm",
     "controls/button/label_button_label.cc",
     "controls/button/label_button_label.h",
     "controls/menu/menu_pre_target_handler.h",

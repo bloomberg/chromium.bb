@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/cocoa/bridge_factory_impl.h"
+#include "ui/views_bridge_mac/bridge_factory_impl.h"
 
 #include "base/no_destructor.h"
-#include "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
+#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 namespace views_bridge_mac {
 

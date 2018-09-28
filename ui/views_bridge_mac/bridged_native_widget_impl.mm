@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 #import <objc/runtime.h>
 #include <stddef.h>
@@ -27,15 +27,14 @@
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
-#import "ui/views/cocoa/bridged_content_view.h"
-#import "ui/views/cocoa/cocoa_window_move_loop.h"
-#import "ui/views/cocoa/drag_drop_client_mac.h"
-#import "ui/views/cocoa/native_widget_mac_nswindow.h"
-#import "ui/views/cocoa/views_nswindow_delegate.h"
-#import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
+#import "ui/views_bridge_mac/bridged_content_view.h"
 #import "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 #import "ui/views_bridge_mac/cocoa_mouse_capture.h"
+#import "ui/views_bridge_mac/cocoa_window_move_loop.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
+#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
+#import "ui/views_bridge_mac/views_nswindow_delegate.h"
+#import "ui/views_bridge_mac/widget_owner_nswindow_adapter.h"
 
 using views_bridge_mac::mojom::VisibilityTransition;
 using views_bridge_mac::mojom::WindowVisibilityState;
@@ -596,8 +595,7 @@ void BridgedNativeWidgetImpl::SetVisibilityState(
       parent_window_number = [parent_->GetNSWindow() windowNumber];
     }
 
-    [window_ orderWindow:NSWindowAbove
-              relativeTo:parent_window_number];
+    [window_ orderWindow:NSWindowAbove relativeTo:parent_window_number];
   }
   DCHECK(window_visible_);
 
@@ -1139,8 +1137,8 @@ bool BridgedNativeWidgetImpl::IsVisibleParent() const {
 
 void BridgedNativeWidgetImpl::RemoveChildWindow(
     BridgedNativeWidgetImpl* child) {
-  auto location = std::find(
-      child_windows_.begin(), child_windows_.end(), child);
+  auto location =
+      std::find(child_windows_.begin(), child_windows_.end(), child);
   DCHECK(location != child_windows_.end());
   child_windows_.erase(location);
 

@@ -14,8 +14,6 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/native_theme/native_theme_mac.h"
-#include "ui/views/cocoa/bridged_native_widget.h"
-#include "ui/views/cocoa/native_widget_mac_nswindow.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -26,7 +24,9 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
+#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 #include "ui/views_bridge_mac/cocoa_mouse_capture.h"
+#include "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 
 using views_bridge_mac::mojom::BridgedNativeWidgetInitParams;
 using views_bridge_mac::mojom::WindowVisibilityState;

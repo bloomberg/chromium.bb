@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_COCOA_WINDOW_MOVE_LOOP_H_
-#define UI_VIEWS_COCOA_COCOA_WINDOW_MOVE_LOOP_H_
+#ifndef UI_VIEWS_BRIDGE_MAC_COCOA_WINDOW_MOVE_LOOP_H_
+#define UI_VIEWS_BRIDGE_MAC_COCOA_WINDOW_MOVE_LOOP_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/views/widget/widget.h"
 
 namespace views {
 class BridgedNativeWidgetImpl;
@@ -51,4 +50,4 @@ class CocoaWindowMoveLoop {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_COCOA_COCOA_WINDOW_MOVE_LOOP_H_
+#endif  // UI_VIEWS_BRIDGE_MAC_COCOA_WINDOW_MOVE_LOOP_H_

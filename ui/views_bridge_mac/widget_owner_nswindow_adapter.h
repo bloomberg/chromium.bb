@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_WIDGET_OWNER_NSWINDOW_ADAPTER_H_
-#define UI_VIEWS_COCOA_WIDGET_OWNER_NSWINDOW_ADAPTER_H_
+#ifndef UI_VIEWS_BRIDGE_MAC_WIDGET_OWNER_NSWINDOW_ADAPTER_H_
+#define UI_VIEWS_BRIDGE_MAC_WIDGET_OWNER_NSWINDOW_ADAPTER_H_
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#import "ui/views/cocoa/bridged_native_widget_owner.h"
+#import "ui/views_bridge_mac/bridged_native_widget_owner.h"
 
 @class NSView;
 @class NSWindow;
@@ -51,4 +51,4 @@ class WidgetOwnerNSWindowAdapter : public BridgedNativeWidgetOwner {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_COCOA_WIDGET_OWNER_NSWINDOW_ADAPTER_H_
+#endif  // UI_VIEWS_BRIDGE_MAC_WIDGET_OWNER_NSWINDOW_ADAPTER_H_

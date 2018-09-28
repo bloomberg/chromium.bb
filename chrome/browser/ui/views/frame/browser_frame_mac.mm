@@ -18,7 +18,7 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
-#import "ui/views/cocoa/window_touch_bar_delegate.h"
+#import "ui/views_bridge_mac/window_touch_bar_delegate.h"
 
 namespace {
 

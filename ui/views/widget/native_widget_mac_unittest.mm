@@ -28,9 +28,6 @@
 #include "ui/events/test/event_generator.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#import "ui/views/cocoa/bridged_content_view.h"
-#import "ui/views/cocoa/bridged_native_widget.h"
-#import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -42,6 +39,9 @@
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
+#import "ui/views_bridge_mac/bridged_content_view.h"
+#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 
 // Donates an implementation of -[NSAnimation stopAnimation] which calls the
 // original implementation, then quits a nested run loop.
