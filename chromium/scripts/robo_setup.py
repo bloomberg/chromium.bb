@@ -6,6 +6,7 @@
 #
 # Set up everything for the roll.
 
+import io
 import os
 from subprocess import call
 import subprocess
@@ -88,6 +89,10 @@ def EnsureASANDirWorks(robo_configuration):
       raise Exception("Unable to gn gen %s" %
               robo_configuration.local_asan_directory())
 
+def FileRead(filename):
+  with io.open(filename, encoding='utf-8') as f:
+    return f.read()
+
 def EnsureGClientTargets(robo_configuration):
   """Make sure that we've got the right sdks if we're on a linux host."""
   if not robo_configuration.host_operating_system() == "linux":
@@ -96,17 +101,28 @@ def EnsureGClientTargets(robo_configuration):
   log("Checking gclient target_os list")
   gclient_filename = os.path.join(robo_configuration.chrome_src(), "..",
     ".gclient")
-  # Ensure that we've got our target_os line
-  for line in open(gclient_filename, "r"):
-    if "target_os" in line:
-      if (not "'android'" in line) or (not "'win'" in line):
-        log("Missing 'android' and/or 'win' in target_os, which goes at the")
-        log("end of .gclient, OUTSIDE of the solutions = [] section")
-        log("Example line:")
-        log("target_os = [ 'android', 'win' ]")
-        raise Exception("Please add 'android' and 'win' to target_os in %s" %
-            gclient_filename)
-      break
+
+  # Ensure that target_os include 'android' and 'win'
+  scope = {}
+  try:
+    exec(FileRead(gclient_filename), scope)
+  except SyntaxError, e:
+    raise Exception("Unable to read %s" % gclient_filename)
+
+  if 'target_os' not in scope:
+    log("Missing 'target_os', which goes at the end of .gclient,")
+    log("OUTSIDE of the solutions = [] section")
+    log("Example line:")
+    log("target_os = [ 'android', 'win' ]")
+    raise Exception("Please add target_os to %s" % gclient_filename)
+
+  if ('android' not in scope['target_os']) or ('win' not in scope['target_os']):
+    log("Missing 'android' and/or 'win' in target_os, which goes at the")
+    log("end of .gclient, OUTSIDE of the solutions = [] section")
+    log("Example line:")
+    log("target_os = [ 'android', 'win' ]")
+    raise Exception("Please add 'android' and 'win' to target_os in %s" %
+        gclient_filename)
 
   # Sync regardless of whether we changed the config.
   log("Running gclient sync")
@@ -126,9 +142,9 @@ def FetchMacSDK(robo_configuration):
   """Download the 10.10 MacOSX sdk."""
   log("Installing Mac OSX sdk")
   robo_configuration.chdir_to_chrome_src()
-  sdk_base="build/win_files/Xcode.app"
+  sdk_base = "build/win_files/Xcode.app"
   if not os.path.exists(sdk_base):
-    os.mkdirs(sdk_base)
+    os.makedirs(sdk_base)
   os.chdir(sdk_base)
   if call(
       "gsutil.py cat gs://chrome-mac-sdk/toolchain-8E2002-3.tgz | tar xzvf -",
