@@ -25,6 +25,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/toolbar/test_toolbar_model.h"
+#include "components/toolbar/toolbar_field_trial.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/input_method.h"
@@ -496,8 +497,10 @@ TEST_F(OmniboxViewViewsTest, BackspaceExitsKeywordMode) {
 class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
  public:
   OmniboxViewViewsSteadyStateElisionsTest()
-      : OmniboxViewViewsTest(
-            {omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains}) {}
+      : OmniboxViewViewsTest({
+            toolbar::features::kHideSteadyStateUrlScheme,
+            toolbar::features::kHideSteadyStateUrlTrivialSubdomains,
+        }) {}
 
  protected:
   explicit OmniboxViewViewsSteadyStateElisionsTest(
@@ -897,7 +900,8 @@ class OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest
  public:
   OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest()
       : OmniboxViewViewsSteadyStateElisionsTest({
-            omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains,
+            toolbar::features::kHideSteadyStateUrlScheme,
+            toolbar::features::kHideSteadyStateUrlTrivialSubdomains,
             omnibox::kQueryInOmnibox,
         }) {}
 };

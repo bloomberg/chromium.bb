@@ -39,7 +39,6 @@ extern const base::Feature kZeroSuggestSwapTitleAndUrl;
 extern const base::Feature kDisplayTitleForCurrentUrl;
 extern const base::Feature kQueryInOmnibox;
 extern const base::Feature kUIExperimentElideSuggestionUrlAfterHost;
-extern const base::Feature kUIExperimentHideSteadyStateUrlSchemeAndSubdomains;
 extern const base::Feature kUIExperimentJogTextfieldOnPopup;
 extern const base::Feature kUIExperimentMaxAutocompleteMatches;
 extern const base::Feature kUIExperimentShowSuggestionFavicons;
@@ -438,10 +437,6 @@ class OmniboxFieldTrial {
 
   // Returns the #omnibox-pedal-suggestions feature's mode parameter as enum.
   static PedalSuggestionMode GetPedalSuggestionMode();
-
-  // Returns true if either the steady-state elision flag or the
-  // #upcoming-ui-features flag is enabled.
-  static bool IsHideSteadyStateUrlSchemeAndSubdomainsEnabled();
 
   // Returns true if the jog textfield flag and refresh UI are both enabled.
   static bool IsJogTextfieldOnPopupEnabled();

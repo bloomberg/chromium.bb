@@ -58,7 +58,6 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
     const bool write_url;
     const char* expected_url;
 
-    bool steady_state_elisions_on = false;
     const char* url_for_display = "";
   } input[] = {
       // Test that http:// is inserted if all text is selected.
@@ -103,7 +102,8 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
        "http://a.de/"},
 
       // Makes sure intranet urls get 'http://' prefixed to them.
-      {"b/foo", 0, "", false, "b/foo", "http://b/foo", true, "http://b/foo"},
+      {"b/foo", 0, "", false, "b/foo", "http://b/foo", true, "http://b/foo",
+       "b/foo"},
 
       // Verifies a search term 'foo' doesn't end up with http.
       {"www.google.com/search?", 0, "", false, "foo", "foo", false, ""},
@@ -126,19 +126,10 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
 
       // Steady State Elisions test for re-adding an elided 'https://'.
       {"https://a.de/b", 0, "", false, "a.de/b", "https://a.de/b", true,
-       "https://a.de/b", true, "a.de/b"},
+       "https://a.de/b", "a.de/b"},
   };
 
   for (size_t i = 0; i < arraysize(input); ++i) {
-    base::test::ScopedFeatureList feature_list;
-    if (input[i].steady_state_elisions_on) {
-      feature_list.InitAndEnableFeature(
-          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
-    } else {
-      feature_list.InitAndDisableFeature(
-          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
-    }
-
     toolbar_model()->set_formatted_full_url(
         base::ASCIIToUTF16(input[i].url_for_editing));
     toolbar_model()->set_url_for_display(
@@ -242,41 +233,23 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
       base::ASCIIToUTF16("https://www.example.com/"));
   toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
-  // Verify the displayed text with Steady State Elisions Enabled.
+  // Verify we show the display text when there is no Query in Omnibox match.
   {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
     model()->ResetDisplayTexts();
+#if defined(OS_IOS)
+    // iOS OmniboxEditModel always provides the full URL as the OmniboxView
+    // permanent display text.
     EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
               model()->GetPermanentDisplayText());
-
-    base::string16 search_terms;
-    EXPECT_FALSE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
-    EXPECT_TRUE(search_terms.empty());
-  }
-
-// TODO(tommycli): For now, it's not possible to enable Steady State Elisions
-// in the edit model for iOS.
-#if !defined(OS_IOS)
-  // Verify the displayed text with Steady State Elisions Disabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
-
-    ASSERT_TRUE(
-        OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled());
-
-    model()->ResetDisplayTexts();
+#else
     EXPECT_EQ(base::ASCIIToUTF16("example.com"),
               model()->GetPermanentDisplayText());
+#endif
 
     base::string16 search_terms;
     EXPECT_FALSE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
     EXPECT_TRUE(search_terms.empty());
   }
-#endif  // !defined(OS_IOS)
 
   // Verify the displayed text when there is a Query in Omnibox match.
   TestOmniboxClient* client =

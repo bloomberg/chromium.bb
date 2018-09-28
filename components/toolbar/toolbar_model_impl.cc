@@ -44,12 +44,18 @@ base::string16 ToolbarModelImpl::GetFormattedFullURL() const {
 
 base::string16 ToolbarModelImpl::GetURLForDisplay() const {
   url_formatter::FormatUrlTypes format_types =
+      url_formatter::kFormatUrlOmitDefaults;
+
 #if defined(OS_IOS)
-      url_formatter::kFormatUrlTrimAfterHost |
+  format_types |= url_formatter::kFormatUrlTrimAfterHost;
 #endif
-      url_formatter::kFormatUrlOmitDefaults |
-      url_formatter::kFormatUrlOmitHTTPS |
-      url_formatter::kFormatUrlOmitTrivialSubdomains;
+
+  if (toolbar::features::IsHideSteadyStateUrlSchemeEnabled())
+    format_types |= url_formatter::kFormatUrlOmitHTTPS;
+
+  if (toolbar::features::IsHideSteadyStateUrlTrivialSubdomainsEnabled())
+    format_types |= url_formatter::kFormatUrlOmitTrivialSubdomains;
+
   return GetFormattedURL(format_types);
 }
 

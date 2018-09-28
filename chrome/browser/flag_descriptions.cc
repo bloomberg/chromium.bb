@@ -1276,12 +1276,19 @@ const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
     "Elides the path, query, and ref of suggested URLs in the Omnibox "
     "dropdown.";
 
-const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsName[] =
-    "Omnibox UI Hide Steady-State URL Scheme and Trivial Subdomains";
-const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsDescription[] =
-    "In the Omnibox, hide the scheme and trivial subdomains from steady state "
-    "displayed URLs. Hidden portions are restored during editing. For Mac, "
-    "this flag will have no effect unless MacViews is enabled.";
+const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
+    "Omnibox UI Hide Steady-State URL Scheme";
+const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =
+    "In the omnibox, hide the scheme from steady state displayed URLs. It is "
+    "restored during editing. For Mac, this flag will have no effect unless "
+    "MacViews is enabled.";
+
+const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsName[] =
+    "Omnibox UI Hide Steady-State URL Trivial Subdomains";
+const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription[] =
+    "In the omnibox, hide trivial subdomains from steady state displayed URLs. "
+    "Hidden portions are restored during editing. For Mac, this flag will have "
+    "no effect unless MacViews is enabled.";
 
 const char kOmniboxUIJogTextfieldOnPopupName[] =
     "Omnibox UI Jog Textfield on Popup";

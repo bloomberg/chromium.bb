@@ -34,6 +34,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/toolbar/toolbar_field_trial.h"
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
@@ -631,8 +632,11 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
 }
 
 bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
-  if (!OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled())
+  // Early exit if no steady state elision features are enabled.
+  if (!toolbar::features::IsHideSteadyStateUrlSchemeEnabled() &&
+      !toolbar::features::IsHideSteadyStateUrlTrivialSubdomainsEnabled()) {
     return false;
+  }
 
   // No need to update the text if the user is already inputting text.
   if (model()->user_input_in_progress())

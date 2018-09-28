@@ -3375,13 +3375,18 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentElideSuggestionUrlAfterHost)},
 
-    {"omnibox-ui-hide-steady-state-url-scheme-and-subdomains",
-     flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsName,
+    {"omnibox-ui-hide-steady-state-url-scheme",
+     flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeName,
+     flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(toolbar::features::kHideSteadyStateUrlScheme)},
+
+    {"omnibox-ui-hide-steady-state-url-trivial-subdomains",
+     flag_descriptions::kOmniboxUIHideSteadyStateUrlTrivialSubdomainsName,
      flag_descriptions::
-         kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsDescription,
+         kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(
-         omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)},
+         toolbar::features::kHideSteadyStateUrlTrivialSubdomains)},
 
     {"omnibox-ui-jog-textfield-on-popup",
      flag_descriptions::kOmniboxUIJogTextfieldOnPopupName,

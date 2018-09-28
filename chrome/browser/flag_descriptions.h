@@ -795,8 +795,11 @@ extern const char kOmniboxSpareRendererDescription[];
 extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];
 extern const char kOmniboxUIElideSuggestionUrlAfterHostDescription[];
 
-extern const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsName[];
-extern const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsDescription[];
+extern const char kOmniboxUIHideSteadyStateUrlSchemeName[];
+extern const char kOmniboxUIHideSteadyStateUrlSchemeDescription[];
+
+extern const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsName[];
+extern const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription[];
 
 extern const char kOmniboxUIJogTextfieldOnPopupName[];
 extern const char kOmniboxUIJogTextfieldOnPopupDescription[];

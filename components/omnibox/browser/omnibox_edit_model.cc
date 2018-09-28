@@ -235,11 +235,15 @@ bool OmniboxEditModel::ResetDisplayTexts() {
   if (GetQueryInOmniboxSearchTerms(&display_text_)) {
     // The search query has been inserted into |display_text_|.
     DCHECK(!display_text_.empty());
-  } else if (OmniboxFieldTrial::
-                 IsHideSteadyStateUrlSchemeAndSubdomainsEnabled()) {
-    display_text_ = toolbar_model->GetURLForDisplay();
   } else {
+#if defined(OS_IOS)
+    // iOS is unusual in that it uses a separate LocationView to show the
+    // ToolbarModel's display-only URL. The actual OmniboxViewIOS widget is
+    // hidden in the defocused state, and always contains the URL for editing.
     display_text_ = url_for_editing_;
+#else
+    display_text_ = toolbar_model->GetURLForDisplay();
+#endif
   }
 
   // When there's new permanent text, and the user isn't interacting with the
