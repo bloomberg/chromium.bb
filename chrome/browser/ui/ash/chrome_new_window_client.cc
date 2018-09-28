@@ -37,6 +37,7 @@
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/was_activated_option.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -151,8 +152,9 @@ void ChromeNewWindowClient::NewTab() {
   browser->SetFocusToLocationBar(false);
 }
 
-void ChromeNewWindowClient::NewTabWithUrl(const GURL& url) {
-  OpenUrlImpl(url);
+void ChromeNewWindowClient::NewTabWithUrl(const GURL& url,
+                                          bool from_user_interaction) {
+  OpenUrlImpl(url, from_user_interaction);
 }
 
 void ChromeNewWindowClient::NewWindow(bool is_incognito) {
@@ -269,7 +271,8 @@ void ChromeNewWindowClient::OpenUrlFromArc(const GURL& url) {
     url_to_open = arc::ArcUrlToExternalFileUrl(url_to_open);
   }
 
-  content::WebContents* tab = OpenUrlImpl(url_to_open);
+  content::WebContents* tab =
+      OpenUrlImpl(url_to_open, false /* from_user_interaction */);
   if (!tab)
     return;
 
@@ -278,7 +281,9 @@ void ChromeNewWindowClient::OpenUrlFromArc(const GURL& url) {
                    std::make_unique<arc::ArcWebContentsData>());
 }
 
-content::WebContents* ChromeNewWindowClient::OpenUrlImpl(const GURL& url) {
+content::WebContents* ChromeNewWindowClient::OpenUrlImpl(
+    const GURL& url,
+    bool from_user_interaction) {
   // If the url is for system settings, show the settings in a window instead of
   // a browser tab.
   if (url.GetContent() == "settings" &&
@@ -293,6 +298,10 @@ content::WebContents* ChromeNewWindowClient::OpenUrlImpl(const GURL& url) {
       ProfileManager::GetActiveUserProfile(), url,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_FROM_API));
+
+  if (from_user_interaction)
+    navigate_params.was_activated = content::WasActivatedOption::kYes;
+
   Navigate(&navigate_params);
 
   if (navigate_params.browser) {

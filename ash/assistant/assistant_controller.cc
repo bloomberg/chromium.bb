@@ -303,7 +303,10 @@ void AssistantController::OpenUrl(const GURL& url) {
     return;
   }
 
-  Shell::Get()->new_window_controller()->NewTabWithUrl(url);
+  // The new tab should be opened with a user activation since the user
+  // interacted with the assistant to open the url.
+  Shell::Get()->new_window_controller()->NewTabWithUrl(
+      url, true /* from_user_interaction */);
   NotifyUrlOpened(url);
 }
 

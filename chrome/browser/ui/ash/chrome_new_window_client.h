@@ -29,7 +29,7 @@ class ChromeNewWindowClient : public ash::mojom::NewWindowClient,
 
   // Overridden from ash::mojom::NewWindowClient:
   void NewTab() override;
-  void NewTabWithUrl(const GURL& url) override;
+  void NewTabWithUrl(const GURL& url, bool from_user_interaction) override;
   void NewWindow(bool incognito) override;
   void OpenFileManager() override;
   void OpenCrosh() override;
@@ -48,8 +48,11 @@ class ChromeNewWindowClient : public ash::mojom::NewWindowClient,
 
   // Opens a URL in a new tab. Returns the WebContents for the tab that
   // opened the URL. If the URL is for a chrome://settings page, opens settings
-  // in a new window and returns null.
-  content::WebContents* OpenUrlImpl(const GURL& url);
+  // in a new window and returns null. If the |from_user_interaction| is true
+  // then the page will load with a user activation. This means it will be able
+  // to autoplay media without restriction.
+  content::WebContents* OpenUrlImpl(const GURL& url,
+                                    bool from_user_interaction);
 
   std::unique_ptr<TabRestoreHelper> tab_restore_helper_;
 
