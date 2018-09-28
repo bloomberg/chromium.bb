@@ -27,6 +27,7 @@ class CrostiniDialogBrowserTest : public DialogBrowserTest {
       content::BrowserMainParts* browser_main_parts) override;
   void SetUp() override;
   void SetUpOnMainThread() override;
+  virtual void InitCrosTermina();
 
   void SetConnectionType(
       net::NetworkChangeNotifier::ConnectionType connection_type);
