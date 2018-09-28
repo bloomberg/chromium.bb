@@ -114,10 +114,10 @@ HTMLPlugInElement::HTMLPlugInElement(
     PreferPlugInsForImagesOption prefer_plug_ins_for_images_option)
     : HTMLFrameOwnerElement(tag_name, doc),
       is_delaying_load_event_(false),
-      // m_needsPluginUpdate(!createdByParser) allows HTMLObjectElement to delay
-      // EmbeddedContentView updates until after all children are parsed. For
-      // HTMLEmbedElement this delay is unnecessary, but it is simpler to make
-      // both classes share the same codepath in this class.
+      // needs_plugin_update_(!IsCreatedByParser) allows HTMLObjectElement to
+      // delay EmbeddedContentView updates until after all children are
+      // parsed. For HTMLEmbedElement this delay is unnecessary, but it is
+      // simpler to make both classes share the same codepath in this class.
       needs_plugin_update_(!flags.IsCreatedByParser()),
       should_prefer_plug_ins_for_images_(prefer_plug_ins_for_images_option ==
                                          kShouldPreferPlugInsForImages) {
@@ -553,7 +553,7 @@ LayoutEmbeddedObject* HTMLPlugInElement::GetLayoutEmbeddedObject() const {
   return ToLayoutEmbeddedObject(GetLayoutObject());
 }
 
-// We don't use m_url, as it may not be the final URL that the object loads,
+// We don't use url_, as it may not be the final URL that the object loads,
 // depending on <param> values.
 bool HTMLPlugInElement::AllowedToLoadFrameURL(const String& url) {
   KURL complete_url = GetDocument().CompleteURL(url);

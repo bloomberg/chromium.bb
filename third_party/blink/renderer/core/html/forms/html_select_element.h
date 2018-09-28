@@ -285,7 +285,7 @@ class CORE_EXPORT HTMLSelectElement final
   void ObserveTreeMutation();
   void UnobserveTreeMutation();
 
-  // m_listItems contains HTMLOptionElement, HTMLOptGroupElement, and
+  // list_items_ contains HTMLOptionElement, HTMLOptGroupElement, and
   // HTMLHRElement objects.
   mutable ListItems list_items_;
   Vector<bool> last_on_change_selection_;

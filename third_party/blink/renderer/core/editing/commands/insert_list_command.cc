@@ -363,8 +363,8 @@ bool InsertListCommand::DoApplyForSingleParagraph(
     DCHECK(HasEditableStyle(*list_element));
     DCHECK(HasEditableStyle(*list_element->parentNode()));
     if (!list_element->HasTagName(list_tag)) {
-      // |listChildNode| will be removed from the list and a list of type
-      // |m_type| will be created.
+      // |list_child_node| will be removed from the list and a list of type
+      // |type_| will be created.
       switch_list_type = true;
     }
 

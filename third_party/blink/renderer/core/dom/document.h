@@ -1259,8 +1259,8 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   HTMLDialogElement* ActiveModalDialog() const;
 
-  // A non-null m_templateDocumentHost implies that |this| was created by
-  // ensureTemplateDocument().
+  // A non-null template_document_host_ implies that |this| was created by
+  // EnsureTemplateDocument().
   bool IsTemplateDocument() const { return !!template_document_host_; }
   Document& EnsureTemplateDocument();
   Document* TemplateDocumentHost() { return template_document_host_; }
@@ -1642,9 +1642,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Document URLs.
   KURL url_;  // Document.URL: The URL from which this document was retrieved.
   KURL base_url_;  // Node.baseURI: The URL to use when resolving relative URLs.
-  KURL
-      base_url_override_;  // An alternative base URL that takes precedence over
-                           // m_baseURL (but not m_baseElementURL).
+  // An alternative base URL that takes precedence over base_url_ (but
+  // not base_element_url_).
+  KURL base_url_override_;
   KURL base_element_url_;  // The URL set by the <base> element.
   KURL cookie_url_;        // The URL to use for cookie access.
   std::unique_ptr<OriginAccessEntry> access_entry_from_url_;
@@ -1792,7 +1792,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // For early return in Fullscreen::fromIfExists()
   bool has_fullscreen_supplement_;
 
-  // The last element in |m_topLayerElements| is topmost in the top layer
+  // The last element in |top_layer_elements_| is topmost in the top layer
   // stack and is thus the one that will be visually on top.
   HeapVector<Member<Element>> top_layer_elements_;
 

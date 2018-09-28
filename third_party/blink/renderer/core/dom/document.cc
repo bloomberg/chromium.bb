@@ -747,9 +747,9 @@ Document::Document(const DocumentInit& initializer,
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInactive);
 
-  // Since CSSFontSelector requires Document::m_fetcher and StyleEngine owns
-  // CSSFontSelector, need to initialize m_styleEngine after initializing
-  // m_fetcher.
+  // Since CSSFontSelector requires Document::fetcher_ and StyleEngine owns
+  // CSSFontSelector, need to initialize style_engine_ after initializing
+  // fetcher_.
   style_engine_ = StyleEngine::Create(*this);
 
   // The parent's parser should be suspended together with all the other
@@ -2984,8 +2984,8 @@ void Document::ClearAXObjectCache() {
 AXObjectCache* Document::ExistingAXObjectCache() const {
   auto& cache_owner = AXObjectCacheOwner();
 
-  // If the layoutObject is gone then we are in the process of destruction.
-  // This method will be called before m_frame = nullptr.
+  // If the LayoutView is gone then we are in the process of destruction.
+  // This method will be called before frame_ = nullptr.
   if (!cache_owner.GetLayoutView())
     return nullptr;
 
@@ -4005,8 +4005,7 @@ void Document::UpdateBaseURL() {
   // DOM 3 Core: When the Document supports the feature "HTML" [DOM Level 2
   // HTML], the base URI is computed using first the value of the href attribute
   // of the HTML BASE element if any, and the value of the documentURI attribute
-  // from the Document interface otherwise (which we store, preparsed, in
-  // m_url).
+  // from the Document interface otherwise (which we store, preparsed, in url_).
   if (!base_element_url_.IsEmpty())
     base_url_ = base_element_url_;
   else if (!base_url_override_.IsEmpty())
@@ -6575,7 +6574,7 @@ void Document::AttachRange(Range* range) {
 }
 
 void Document::DetachRange(Range* range) {
-  // We don't ASSERT m_ranges.contains(range) to allow us to call this
+  // We don't DCHECK ranges_.contains(range) to allow us to call this
   // unconditionally to fix: https://bugs.webkit.org/show_bug.cgi?id=26044
   ranges_.erase(range);
 }

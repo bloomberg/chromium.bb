@@ -188,10 +188,10 @@ Node::InsertionNotificationRequest ShadowRoot::InsertedInto(
 
   GetDocument().GetSlotAssignmentEngine().Connected(*this);
 
-  // FIXME: When parsing <video controls>, insertedInto() is called many times
-  // without invoking removedFrom.  For now, we check
-  // m_registeredWithParentShadowroot. We would like to
-  // DCHECK(!m_registeredShadowRoot) here.
+  // FIXME: When parsing <video controls>, InsertedInto() is called many times
+  // without invoking RemovedFrom().  For now, we check
+  // registered_with_parent_shadow_root. We would like to
+  // DCHECK(!registered_with_parent_shadow_root) here.
   // https://bugs.webkit.org/show_bug.cig?id=101316
   if (registered_with_parent_shadow_root_)
     return kInsertionDone;

@@ -451,7 +451,7 @@ class HTMLToken {
   bool self_closing_;
   AttributeList attributes_;
 
-  // A pointer into m_attributes used during lexing.
+  // A pointer into attributes_ used during lexing.
   Attribute* current_attribute_;
 
   // For DOCTYPE

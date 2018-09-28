@@ -242,7 +242,7 @@ void FrameSelection::DidSetSelectionDeprecated(
   if (!GetSelectionInDOMTree().IsNone() && !options.DoNotSetFocus()) {
     SetFocusedNodeIfNeeded();
     // |setFocusedNodeIfNeeded()| dispatches sync events "FocusOut" and
-    // "FocusIn", |m_frame| may associate to another document.
+    // "FocusIn", |frame_| may associate to another document.
     if (!IsAvailable() || GetDocument() != current_document) {
       // Once we get test case to reach here, we should change this
       // if-statement to |DCHECK()|.
@@ -1123,7 +1123,7 @@ bool FrameSelection::SelectWordAroundCaret() {
 }
 
 GranularityStrategy* FrameSelection::GetGranularityStrategy() {
-  // We do lazy initalization for m_granularityStrategy, because if we
+  // We do lazy initialization for granularity_strategy_, because if we
   // initialize it right in the constructor - the correct settings may not be
   // set yet.
   SelectionStrategy strategy_type = SelectionStrategy::kCharacter;

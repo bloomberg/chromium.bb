@@ -603,9 +603,8 @@ DocumentFragment* Range::ProcessContents(ActionType action,
   // delete all children of commonRoot between the start and end container
   Node* process_start = ChildOfCommonRootBeforeOffset(
       &original_start.Container(), original_start.Offset(), common_root);
-  if (process_start &&
-      original_start.Container() !=
-          common_root)  // processStart contains nodes before m_start.
+  // process_start contains nodes before start_.
+  if (process_start && original_start.Container() != common_root)
     process_start = process_start->nextSibling();
   Node* process_end = ChildOfCommonRootBeforeOffset(
       &original_end.Container(), original_end.Offset(), common_root);

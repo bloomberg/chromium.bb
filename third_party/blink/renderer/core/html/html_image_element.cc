@@ -796,9 +796,9 @@ void HTMLImageElement::DidAddUserAgentShadowRoot(ShadowRoot&) {
 }
 
 void HTMLImageElement::EnsureFallbackForGeneratedContent() {
-  // The special casing for generated content in createLayoutObject breaks the
+  // The special casing for generated content in CreateLayoutObject breaks the
   // invariant that the layout object attached to this element will always be
-  // appropriate for |m_layoutDisposition|. Force recreate it.
+  // appropriate for |layout_disposition_|. Force recreate it.
   // TODO(engedy): Remove this hack. See: https://crbug.com/671953.
   SetLayoutDisposition(LayoutDisposition::kFallbackContent,
                        true /* force_reattach */);

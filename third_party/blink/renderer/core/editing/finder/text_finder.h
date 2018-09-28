@@ -242,7 +242,7 @@ class CORE_EXPORT TextFinder final
 
   // Keeps track of how many matches this frame has found so far, so that we
   // don't lose count between scoping efforts, and is also used (in conjunction
-  // with m_lastSearchString) to figure out if we need to search the frame
+  // with last_search_string_) to figure out if we need to search the frame
   // again.
   int last_match_count_;
 

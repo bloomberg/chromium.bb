@@ -79,7 +79,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-// Upper limit of m_listItems. According to the HTML standard, options larger
+// Upper limit of list_items_. According to the HTML standard, options larger
 // than this limit doesn't work well because |selectedIndex| IDL attribute is
 // signed.
 static const unsigned kMaxListItems = INT_MAX;
@@ -523,7 +523,7 @@ HTMLOptionElement* HTMLSelectElement::NextSelectableOptionPageAway(
     HTMLOptionElement* start_option,
     SkipDirection direction) const {
   const ListItems& items = GetListItems();
-  // Can't use m_size because layoutObject forces a minimum size.
+  // Can't use size_ because LayoutObject forces a minimum size.
   int page_size = 0;
   if (GetLayoutObject()->IsListBox()) {
     // -1 so we still show context.
@@ -585,12 +585,14 @@ void HTMLSelectElement::SaveListboxActiveSelection() {
   // selection pivots around this anchor index.
   // Example:
   // 1. Press the mouse button on the second OPTION
-  //   m_activeSelectionAnchorIndex = 1
+  //   active_selection_anchor_ points the second OPTION.
   // 2. Drag the mouse pointer onto the fifth OPTION
-  //   m_activeSelectionEndIndex = 4, options at 1-4 indices are selected.
+  //   active_selection_end_ points the fifth OPTION, OPTIONs at 1-4 indices
+  //   are selected.
   // 3. Drag the mouse pointer onto the fourth OPTION
-  //   m_activeSelectionEndIndex = 3, options at 1-3 indices are selected.
-  //   updateListBoxSelection needs to clear selection of the fifth OPTION.
+  //   active_selection_end_ points the fourth OPTION, OPTIONs at 1-3 indices
+  //   are selected.
+  //   UpdateListBoxSelection needs to clear selection of the fifth OPTION.
   cached_state_for_active_selection_.resize(0);
   for (auto* const option : GetOptionList()) {
     cached_state_for_active_selection_.push_back(option->Selected());
@@ -654,7 +656,7 @@ void HTMLSelectElement::ListBoxOnChange() {
     return;
   }
 
-  // Update m_lastOnChangeSelection and fire dispatchFormControlChangeEvent.
+  // Update last_on_change_selection_ and fire a 'change' event.
   bool fire_on_change = false;
   for (unsigned i = 0; i < items.size(); ++i) {
     HTMLElement* element = items[i];
@@ -903,7 +905,7 @@ void HTMLSelectElement::ScrollToOptionTask() {
   HTMLOptionElement* option = option_to_scroll_to_.Release();
   if (!option || !isConnected())
     return;
-  // optionRemoved() makes sure m_optionToScrollTo doesn't have an option with
+  // OptionRemoved() makes sure option_to_scroll_to_ doesn't have an option with
   // another owner.
   DCHECK_EQ(option->OwnerSelectElement(), this);
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -999,7 +1001,7 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
 
   bool should_update_popup = false;
 
-  // selectedOption() is O(N).
+  // SelectedOption() is O(N).
   if (IsAutofilled() && SelectedOption() != element)
     SetAutofillState(WebAutofillState::kNotFilled);
 
@@ -1011,7 +1013,7 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
       element->SetDirty(true);
   }
 
-  // deselectItemsWithoutValidation() is O(N).
+  // DeselectItemsWithoutValidation() is O(N).
   if (flags & kDeselectOtherOptions)
     should_update_popup |= DeselectItemsWithoutValidation(element);
 
@@ -1027,8 +1029,8 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
       SetActiveSelectionEnd(element);
   }
 
-  // Need to update m_lastOnChangeOption before
-  // LayoutMenuList::updateFromElement.
+  // Need to update last_on_change_option_ before
+  // LayoutMenuList::UpdateFromElement.
   bool should_dispatch_events = false;
   if (UsesMenuList()) {
     should_dispatch_events = (flags & kDispatchInputAndChangeEvent) &&
@@ -1039,7 +1041,7 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
   // For the menu list case, this is what makes the selected element appear.
   if (LayoutObject* layout_object = GetLayoutObject())
     layout_object->UpdateFromElement();
-  // PopupMenu::updateFromElement() posts an O(N) task.
+  // PopupMenu::UpdateFromElement() posts an O(N) task.
   if (PopupIsVisible() && should_update_popup)
     popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
 
@@ -1052,10 +1054,10 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
       DispatchChangeEvent();
     }
     if (LayoutObject* layout_object = GetLayoutObject()) {
-      // Need to check usesMenuList() again because event handlers might
+      // Need to check UsesMenuList() again because event handlers might
       // change the status.
       if (UsesMenuList()) {
-        // didSelectOption() is O(N) because of HTMLOptionElement::index().
+        // DidSelectOption() is O(N) because of HTMLOptionElement::index().
         ToLayoutMenuList(layout_object)->DidSelectOption(element);
       }
     }

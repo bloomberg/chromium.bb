@@ -1088,8 +1088,8 @@ bool ApplyStyleCommand::ShouldApplyInlineStyleToRun(EditingStyle* style,
        node = NodeTraversal::Next(*node)) {
     if (node->hasChildren())
       continue;
-    // We don't consider m_isInlineElementToRemoveFunction here because we never
-    // apply style when m_isInlineElementToRemoveFunction is specified
+    // We don't consider is_inline_element_to_remove_function_ here because we
+    // never apply style when is_inline_element_to_remove_function_ is specified
     if (!style->StyleIsPresentInComputedStyleOfNode(node))
       return true;
     if (styled_inline_element_ &&
