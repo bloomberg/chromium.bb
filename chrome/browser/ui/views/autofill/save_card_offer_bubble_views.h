@@ -55,7 +55,7 @@ class SaveCardOfferBubbleViews : public SaveCardBubbleViews,
 
   views::Textfield* cardholder_name_textfield_ = nullptr;
 
-  LegalMessageView* footnote_view_ = nullptr;
+  LegalMessageView* legal_message_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardOfferBubbleViews);
 };
