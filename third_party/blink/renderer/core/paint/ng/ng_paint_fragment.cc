@@ -550,31 +550,16 @@ void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
     if (marked)
       return;
   }
-  // Since |layout_object| isn't in fragment tree, check both following and
-  // preceding siblings.
-  bool marked = false;
-  for (LayoutObject* next = layout_object.NextSibling(); next;
-       next = next->NextSibling()) {
-    if (next->IsFloatingOrOutOfFlowPositioned())
-      continue;
-    // |next| may not be in inline formatting context, e.g. <object>.
-    if (TryMarkLineBoxDirtyFor(*next)) {
-      marked = true;
-      break;
-    }
-  }
+  // Since |layout_object| isn't in fragment tree, check preceding siblings.
+  // Note: Once we reuse lines below dirty lines, we should check next siblings.
   for (LayoutObject* previous = layout_object.PreviousSibling(); previous;
        previous = previous->PreviousSibling()) {
     if (previous->IsFloatingOrOutOfFlowPositioned())
       continue;
     // |previous| may not be in inline formatting context, e.g. <object>.
-    if (TryMarkLineBoxDirtyFor(*previous)) {
-      marked = true;
-      break;
-    }
+    if (TryMarkLineBoxDirtyFor(*previous))
+      return;
   }
-  if (marked)
-    return;
   // There is no siblings, try parent.
   const LayoutObject& parent = *layout_object.Parent();
   if (parent.IsInline())

@@ -490,7 +490,7 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveSpanWithBr) {
   const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
   EXPECT_FALSE(container.Children()[0]->IsDirty());
   EXPECT_TRUE(container.Children()[1]->IsDirty());
-  EXPECT_TRUE(container.Children()[2]->IsDirty());
+  EXPECT_FALSE(container.Children()[2]->IsDirty());
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtStart) {
@@ -510,7 +510,7 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtStart) {
   GetDocument().UpdateStyleAndLayout();
 
   EXPECT_TRUE(line1->IsDirty());
-  EXPECT_TRUE(line2->IsDirty());
+  EXPECT_FALSE(line2->IsDirty());
   EXPECT_FALSE(line3->IsDirty());
 }
 
@@ -551,7 +551,7 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtMiddle) {
   GetDocument().UpdateStyleAndLayout();
 
   EXPECT_TRUE(line1->IsDirty());
-  EXPECT_TRUE(line2->IsDirty());
+  EXPECT_FALSE(line2->IsDirty());
   EXPECT_FALSE(line3->IsDirty());
 }
 
