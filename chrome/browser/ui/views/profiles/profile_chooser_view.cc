@@ -1425,25 +1425,24 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
       profiles::kAvatarBubbleAccountsBackgroundColor));
   views::GridLayout* layout = CreateSingleColumnLayout(view, menu_width_);
 
-  Profile* profile = browser_->profile();
-  std::string primary_account =
-      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
-  DCHECK(!primary_account.empty());
-  std::vector<std::string> accounts =
-      profiles::GetSecondaryAccountsForProfile(profile, primary_account);
-
   // Get state of authentication error, if any.
+  Profile* profile = browser_->profile();
   std::string error_account_id = GetAuthErrorAccountId(profile);
 
   // The primary account should always be listed first.
   // TODO(rogerta): we still need to further differentiate the primary account
   // from the others in the UI, so more work is likely required here:
   // crbug.com/311124.
+  std::string primary_account =
+      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
+  DCHECK(!primary_account.empty());
   CreateAccountButton(layout, primary_account, true,
                       error_account_id == primary_account, menu_width_);
-  for (size_t i = 0; i < accounts.size(); ++i)
-    CreateAccountButton(layout, accounts[i], false,
-                        error_account_id == accounts[i], menu_width_);
+  for (const std::string& account :
+       profiles::GetSecondaryAccountsForSignedInProfile(profile)) {
+    CreateAccountButton(layout, account, false, error_account_id == account,
+                        menu_width_);
+  }
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int vertical_spacing =
