@@ -109,9 +109,6 @@ class WebContentsModalDialogManager
   // True while closing the dialogs on WebContents close.
   bool closing_all_dialogs_;
 
-  // True if the WebContents is blocked.
-  bool web_contents_is_blocked_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogManager);
 };
 

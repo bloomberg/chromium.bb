@@ -106,10 +106,6 @@ WebContentsModalDialogManager::DialogState::~DialogState() = default;
 // then set the block state. Advantage: could restrict some of the
 // WCMDM delegate methods, then, and pass them behind the scenes.
 void WebContentsModalDialogManager::BlockWebContentsInteraction(bool blocked) {
-  if (blocked == web_contents_is_blocked_)
-    return;
-  web_contents_is_blocked_ = blocked;
-
   WebContents* contents = web_contents();
   if (!contents) {
     // The WebContents has already disconnected.
@@ -128,7 +124,6 @@ void WebContentsModalDialogManager::CloseAllDialogs() {
   while (!child_dialogs_.empty()) {
     child_dialogs_.front().manager->Close();
   }
-  BlockWebContentsInteraction(false);
 
   closing_all_dialogs_ = false;
 }
