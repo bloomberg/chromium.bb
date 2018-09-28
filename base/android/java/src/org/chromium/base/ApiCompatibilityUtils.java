@@ -21,6 +21,7 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.VectorDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -709,6 +710,54 @@ public class ApiCompatibilityUtils {
     public static void setAccessibilityTraversalBefore(View view, int viewFocusedAfter) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             view.setAccessibilityTraversalBefore(viewFocusedAfter);
+        }
+    }
+
+    /**
+     * Creates regular LayerDrawable on Android L+. On older versions creates a helper class that
+     * fixes issues around {@link LayerDrawable#mutate()}. See https://crbug.com/890317 for details.
+     * @param layers A list of drawables to use as layers in this new drawable.
+     */
+    public static LayerDrawable createLayerDrawable(@NonNull Drawable[] layers) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+            return new LayerDrawableCompat(layers);
+        }
+        return new LayerDrawable(layers);
+    }
+
+    private static class LayerDrawableCompat extends LayerDrawable {
+        private boolean mMutated;
+
+        LayerDrawableCompat(@NonNull Drawable[] layers) {
+            super(layers);
+        }
+
+        @Override
+        public Drawable mutate() {
+            // LayerDrawable in Android K loses bounds of layers, so this method works around that.
+            if (mMutated) {
+                // This object has already been mutated and shouldn't have any shared state.
+                return this;
+            }
+
+            // Save bounds before mutation.
+            Rect[] oldBounds = new Rect[getNumberOfLayers()];
+            for (int i = 0; i < getNumberOfLayers(); i++) {
+                oldBounds[i] = getDrawable(i).getBounds();
+            }
+
+            Drawable superResult = super.mutate();
+            if (superResult != this) {
+                // Unexpected, LayerDrawable.mutate() always returns this.
+                return superResult;
+            }
+
+            // Restore the saved bounds.
+            for (int i = 0; i < getNumberOfLayers(); i++) {
+                getDrawable(i).setBounds(oldBounds[i]);
+            }
+            mMutated = true;
+            return this;
         }
     }
 }
