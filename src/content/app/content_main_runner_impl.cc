@@ -73,6 +73,7 @@
 #include <cstring>
 
 #include "base/trace_event/trace_event_etw_export_win.h"
+#include "base/win/process_startup_helper.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mach_port_broker.h"
@@ -402,6 +403,14 @@ bool IsRootProcess() {
 }
 
 }  // namespace
+
+// static
+void ContentMainRunner::SetCRTErrorHandlerFunctions(_invalid_parameter_handler ivph, _purecall_handler pch) {
+  if (ivph)
+    base::win::SetInvalidParamHandler(ivph);
+  if (pch)
+    base::win::SetPurecallHandler(pch);
+}
 
 class ContentClientInitializer {
  public:
