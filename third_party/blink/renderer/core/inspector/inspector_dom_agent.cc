@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/xml/document_xpath_evaluator.h"
 #include "third_party/blink/renderer/core/xml/xpath_result.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -752,11 +753,15 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
       element->GetDocument().IsHTMLDocument() && element->IsHTMLElement();
   // Not all elements can represent the context (i.e. IFRAME), hence using
   // document.body.
-  if (should_ignore_case && element->GetDocument().body())
+  if (should_ignore_case && element->GetDocument().body()) {
     fragment->ParseHTML(markup, element->GetDocument().body(),
                         kAllowScriptingContent);
-  else
-    fragment->ParseXML(markup, nullptr, kAllowScriptingContent);
+  } else {
+    Element* contextElement = nullptr;
+    if (element->IsSVGElement())
+      contextElement = ToSVGElement(element)->ownerSVGElement();
+    fragment->ParseXML(markup, contextElement, kAllowScriptingContent);
+  }
 
   Element* parsed_element =
       fragment->firstChild() && fragment->firstChild()->IsElementNode()
