@@ -568,7 +568,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
     return manager->GetRoot()->GetNativeViewAccessible();
 #endif
 
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return static_cast<gfx::NativeViewAccessible>(nullptr);
 }
 
@@ -1272,7 +1272,7 @@ ui::TextInputMode RenderWidgetHostViewAura::GetTextInputMode() const {
 }
 
 base::i18n::TextDirection RenderWidgetHostViewAura::GetTextDirection() const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return base::i18n::UNKNOWN_DIRECTION;
 }
 
@@ -1382,7 +1382,7 @@ bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) const {
 bool RenderWidgetHostViewAura::GetCompositionTextRange(
     gfx::Range* range) const {
   // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
@@ -1402,13 +1402,13 @@ bool RenderWidgetHostViewAura::GetSelectionRange(gfx::Range* range) const {
 
 bool RenderWidgetHostViewAura::SetSelectionRange(const gfx::Range& range) {
   // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool RenderWidgetHostViewAura::DeleteRange(const gfx::Range& range) {
   // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
