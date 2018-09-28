@@ -120,6 +120,12 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // account to another is exposed to observers as a sign-out + sign-in.
   bool UpdateSyncAccountIfNecessary();
 
+  // Invalidates any current access token, which means invalidating it with the
+  // IdentityManager and also dropping our own cached copy. Meant to be called
+  // when we know the current token is invalid (e.g. expired). Does not do
+  // anything about any scheduled or ongoing request.
+  void InvalidateAccessToken();
+
   // Clears any access token we have, and cancels any pending or scheduled
   // request for one.
   void ClearAccessTokenAndRequest();
