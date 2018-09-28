@@ -430,6 +430,7 @@
 
     'chromeos_gtests_experimental': {
       'base_unittests': {},
+      'chrome_login_tast_tests': {},
       'chromeos_unittests': {
         'args': [
           # TODO(crbug.com/865693): Don't stub out dbus clients.

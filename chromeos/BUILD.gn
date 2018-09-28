@@ -782,6 +782,14 @@ if (is_chromeos_chrome) {
     ]
   }
 
+  tast_test("chrome_login_tast_tests") {
+    tast_tests = [
+      "ui.ChromeLogin",
+      "ui.ChromeCrashLoggedIn",
+      "ui.ChromeCrashNotLoggedIn",
+    ]
+  }
+
   group("cros_chrome_deploy") {
     # The following run-time dependencies are needed to deploy chrome to a
     # ChromeOS device. See the link for the full list:

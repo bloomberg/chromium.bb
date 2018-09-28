@@ -299,6 +299,10 @@
     "label": "//chrome/android:chrome_junit_tests",
     "type": "junit_test",
   },
+  "chrome_login_tast_tests": {
+    "label": "//chromeos:chrome_login_tast_tests",
+    "type": "raw",
+  },
   "chrome_official_builder": {
     "label": "//:chrome_official_builder",
     "type": "additional_compile_target",
