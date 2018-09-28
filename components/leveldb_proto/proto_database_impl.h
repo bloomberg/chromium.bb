@@ -64,6 +64,16 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename ProtoDatabase<T>::LoadCallback callback) override;
+  void LoadKeysAndEntries(
+      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) override;
+  void LoadKeysAndEntriesWithFilter(
+      const LevelDB::KeyFilter& filter,
+      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) override;
+  void LoadKeysAndEntriesWithFilter(
+      const LevelDB::KeyFilter& filter,
+      const leveldb::ReadOptions& options,
+      const std::string& target_prefix,
+      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) override;
   void LoadKeys(typename ProtoDatabase<T>::LoadKeysCallback callback) override;
   void GetEntry(const std::string& key,
                 typename ProtoDatabase<T>::GetCallback callback) override;
@@ -107,6 +117,14 @@ void RunLoadCallback(typename ProtoDatabase<T>::LoadCallback callback,
                      bool* success,
                      std::unique_ptr<std::vector<T>> entries) {
   std::move(callback).Run(*success, std::move(entries));
+}
+
+template <typename T>
+void RunLoadKeysAndEntriesCallback(
+    typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback,
+    bool* success,
+    std::unique_ptr<std::map<std::string, T>> keys_entries) {
+  std::move(callback).Run(*success, std::move(keys_entries));
 }
 
 template <typename T>
@@ -184,30 +202,46 @@ void UpdateEntriesWithRemoveFilterFromTaskRunner(
 }
 
 template <typename T>
+void LoadKeysAndEntriesFromTaskRunner(LevelDB* database,
+                                      const LevelDB::KeyFilter& filter,
+                                      const leveldb::ReadOptions& options,
+                                      const std::string& target_prefix,
+                                      std::map<std::string, T>* keys_entries,
+                                      bool* success) {
+  DCHECK(success);
+  DCHECK(keys_entries);
+
+  keys_entries->clear();
+
+  std::map<std::string, std::string> loaded_entries;
+  *success = database->LoadKeysAndEntriesWithFilter(filter, &loaded_entries,
+                                                    options, target_prefix);
+
+  for (const auto& pair : loaded_entries) {
+    T entry;
+    if (!entry.ParseFromString(pair.second)) {
+      DLOG(WARNING) << "Unable to parse leveldb_proto entry";
+      // TODO(cjhopman): Decide what to do about un-parseable entries.
+    }
+
+    keys_entries->insert(std::make_pair(pair.first, entry));
+  }
+}
+
+template <typename T>
 void LoadEntriesFromTaskRunner(LevelDB* database,
                                const LevelDB::KeyFilter& filter,
                                const leveldb::ReadOptions& options,
                                const std::string& target_prefix,
                                std::vector<T>* entries,
                                bool* success) {
-  DCHECK(success);
-  DCHECK(entries);
-
   entries->clear();
 
-  std::vector<std::string> loaded_entries;
-  *success =
-      database->LoadWithFilter(filter, &loaded_entries, options, target_prefix);
-
-  for (const auto& serialized_entry : loaded_entries) {
-    T entry;
-    if (!entry.ParseFromString(serialized_entry)) {
-      DLOG(WARNING) << "Unable to parse leveldb_proto entry";
-      // TODO(cjhopman): Decide what to do about un-parseable entries.
-    }
-
-    entries->push_back(entry);
-  }
+  std::map<std::string, T> keys_entries;
+  LoadKeysAndEntriesFromTaskRunner<T>(database, filter, options, target_prefix,
+                                      &keys_entries, success);
+  for (const auto& pair : keys_entries)
+    entries->push_back(pair.second);
 }
 
 inline void LoadKeysFromTaskRunner(LevelDB* database,
@@ -360,7 +394,7 @@ void ProtoDatabaseImpl<T>::LoadEntriesWithFilter(
   DCHECK(thread_checker_.CalledOnValidThread());
   bool* success = new bool(false);
 
-  std::unique_ptr<std::vector<T>> entries(new std::vector<T>());
+  auto entries = std::make_unique<std::vector<T>>();
   // Get this pointer before entries is std::move()'d so we can use it below.
   std::vector<T>* entries_ptr = entries.get();
 
@@ -370,6 +404,42 @@ void ProtoDatabaseImpl<T>::LoadEntriesWithFilter(
                      key_filter, options, target_prefix, entries_ptr, success),
       base::BindOnce(RunLoadCallback<T>, std::move(callback),
                      base::Owned(success), std::move(entries)));
+}
+
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadKeysAndEntries(
+    typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) {
+  LoadKeysAndEntriesWithFilter(LevelDB::KeyFilter(), std::move(callback));
+}
+
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadKeysAndEntriesWithFilter(
+    const LevelDB::KeyFilter& key_filter,
+    typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) {
+  LoadKeysAndEntriesWithFilter(key_filter, leveldb::ReadOptions(),
+                               std::string(), std::move(callback));
+}
+
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadKeysAndEntriesWithFilter(
+    const LevelDB::KeyFilter& key_filter,
+    const leveldb::ReadOptions& options,
+    const std::string& target_prefix,
+    typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool* success = new bool(false);
+
+  auto keys_entries = std::make_unique<std::map<std::string, T>>();
+  // Get this pointer before entries is std::move()'d so we can use it below.
+  std::map<std::string, T>* keys_entries_ptr = keys_entries.get();
+
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(LoadKeysAndEntriesFromTaskRunner<T>,
+                     base::Unretained(db_.get()), key_filter, options,
+                     target_prefix, keys_entries_ptr, success),
+      base::BindOnce(RunLoadKeysAndEntriesCallback<T>, std::move(callback),
+                     base::Owned(success), std::move(keys_entries)));
 }
 
 template <typename T>

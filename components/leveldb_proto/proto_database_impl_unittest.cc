@@ -62,6 +62,14 @@ class MockDB : public LevelDB {
                     std::vector<std::string>*,
                     const leveldb::ReadOptions&,
                     const std::string&));
+  MOCK_METHOD1(LoadKeysAndEntries, bool(std::map<std::string, std::string>*));
+  MOCK_METHOD2(LoadKeysAndEntriesWithFilter,
+               bool(const KeyFilter&, std::map<std::string, std::string>*));
+  MOCK_METHOD4(LoadKeysAndEntriesWithFilter,
+               bool(const KeyFilter&,
+                    std::map<std::string, std::string>*,
+                    const leveldb::ReadOptions&,
+                    const std::string&));
   MOCK_METHOD3(Get, bool(const std::string&, bool*, std::string*));
   MOCK_METHOD0(Destroy, bool());
 
@@ -78,6 +86,13 @@ class MockDatabaseCaller {
     LoadCallback1(success, entries.get());
   }
   MOCK_METHOD2(LoadCallback1, void(bool, std::vector<TestProto>*));
+  void LoadKeysAndEntriesCallback(
+      bool success,
+      std::unique_ptr<std::map<std::string, TestProto>> keys_entries) {
+    LoadKeysAndEntriesCallback1(success, keys_entries.get());
+  }
+  MOCK_METHOD2(LoadKeysAndEntriesCallback1,
+               void(bool, std::map<std::string, TestProto>*));
   void GetCallback(bool success, std::unique_ptr<TestProto> entry) {
     GetCallback1(success, entry.get());
   }
@@ -265,9 +280,25 @@ ACTION_P(AppendLoadEntries, model) {
   return true;
 }
 
+ACTION_P(AppendLoadKeysAndEntries, model) {
+  std::map<std::string, std::string>* output = arg1;
+  for (const auto& pair : model)
+    output->insert(std::make_pair(pair.first, pair.second.SerializeAsString()));
+
+  return true;
+}
+
 ACTION_P(VerifyLoadEntries, expected) {
   std::vector<TestProto>* actual = arg1;
   ExpectEntryPointersEquals(expected, *actual);
+}
+
+ACTION_P(VerifyLoadKeysAndEntries, expected) {
+  std::map<std::string, TestProto>* actual_map = arg1;
+  std::vector<TestProto> actual;
+  for (const auto& pair : *actual_map)
+    actual.push_back(pair.second);
+  ExpectEntryPointersEquals(expected, actual);
 }
 
 // Test that ProtoDatabaseImpl calls Load on the underlying database and that
@@ -287,8 +318,8 @@ TEST_F(ProtoDatabaseImplTest, TestDBLoadSuccess) {
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, LoadWithFilter(_, _, _, _))
-      .WillOnce(AppendLoadEntries(model));
+  EXPECT_CALL(*mock_db, LoadKeysAndEntriesWithFilter(_, _, _, _))
+      .WillOnce(AppendLoadKeysAndEntries(model));
   EXPECT_CALL(caller, LoadCallback1(true, _))
       .WillOnce(VerifyLoadEntries(testing::ByRef(model)));
   db_->LoadEntries(base::BindOnce(&MockDatabaseCaller::LoadCallback,
@@ -309,7 +340,8 @@ TEST_F(ProtoDatabaseImplTest, TestDBLoadFailure) {
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, LoadWithFilter(_, _, _, _)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, LoadKeysAndEntriesWithFilter(_, _, _, _))
+      .WillOnce(Return(false));
   EXPECT_CALL(caller, LoadCallback1(false, _));
   db_->LoadEntries(base::BindOnce(&MockDatabaseCaller::LoadCallback,
                                   base::Unretained(&caller)));
@@ -736,6 +768,35 @@ TEST_F(ProtoDatabaseImplLevelDBTest, TestDBLoadWithFilter) {
   TestProto entry;
   ASSERT_TRUE(entry.ParseFromString(load_entries[0]));
   EXPECT_EQ(entry.SerializeAsString(), model["0"].SerializeAsString());
+}
+
+TEST_F(ProtoDatabaseImplLevelDBTest, TestDBLoadKeysAndEntries) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  EntryMap model = GetSmallModel();
+
+  KeyValueVector save_entries;
+  std::map<std::string, std::string> load_keys_entries;
+  KeyVector remove_keys;
+
+  for (const auto& pair : model) {
+    save_entries.push_back(
+        std::make_pair(pair.second.id(), pair.second.SerializeAsString()));
+  }
+
+  std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
+  EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
+  EXPECT_TRUE(db->Save(save_entries, remove_keys));
+
+  EXPECT_TRUE(db->LoadKeysAndEntries(&load_keys_entries));
+
+  EXPECT_EQ(load_keys_entries.size(), model.size());
+  for (const auto& pair : load_keys_entries) {
+    TestProto entry;
+    ASSERT_TRUE(entry.ParseFromString(pair.second));
+    EXPECT_EQ(entry.SerializeAsString(), model[pair.first].SerializeAsString());
+  }
 }
 
 TEST_F(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {

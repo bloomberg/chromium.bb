@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_H_
 #define COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -32,6 +33,9 @@ class ProtoDatabase {
   using LoadKeysCallback =
       base::OnceCallback<void(bool success,
                               std::unique_ptr<std::vector<std::string>>)>;
+  using LoadKeysAndEntriesCallback =
+      base::OnceCallback<void(bool success,
+                              std::unique_ptr<std::map<std::string, T>>)>;
   using GetCallback =
       base::OnceCallback<void(bool success, std::unique_ptr<T>)>;
   using DestroyCallback = base::OnceCallback<void(bool success)>;
@@ -78,6 +82,17 @@ class ProtoDatabase {
                                      const leveldb::ReadOptions& options,
                                      const std::string& target_prefix,
                                      LoadCallback callback) = 0;
+
+  virtual void LoadKeysAndEntries(
+      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) = 0;
+  virtual void LoadKeysAndEntriesWithFilter(
+      const LevelDB::KeyFilter& filter,
+      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) = 0;
+  virtual void LoadKeysAndEntriesWithFilter(
+      const LevelDB::KeyFilter& filter,
+      const leveldb::ReadOptions& options,
+      const std::string& target_prefix,
+      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) = 0;
 
   // Asynchronously loads all keys from the database and invokes |callback| with
   // those keys when complete.
