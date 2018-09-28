@@ -252,6 +252,9 @@
 
   <!-- Autofill Local card migration bubble or dialog -->
   <if expr="not is_ios and not is_android">
+    <message name="IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME" desc="The accessible name for the Google Pay logo in the local card migration bubble or dialog.">
+      Google Pay logo
+    </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE" desc="The title text for a bubble that offers users to start the process of migrating local cards to cloud.">
       Save all your cards in one place?
     </message>

@@ -138,9 +138,17 @@ void ImageView::OnPaint(gfx::Canvas* canvas) {
   OnPaintImage(canvas);
 }
 
+void ImageView::SetAccessibleName(const base::string16& accessible_name) {
+  accessible_name_ = accessible_name;
+}
+
+base::string16 ImageView::GetAccessibleName() const {
+  return accessible_name_;
+}
+
 void ImageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kImage;
-  node_data->SetName(tooltip_text_);
+  node_data->SetName(accessible_name_);
 }
 
 const char* ImageView::GetClassName() const {
@@ -169,8 +177,11 @@ ImageView::Alignment ImageView::GetVerticalAlignment() const {
   return vertical_alignment_;
 }
 
+// TODO(crbug.com/890465): Update the duplicate code here and in views::Button.
 void ImageView::SetTooltipText(const base::string16& tooltip) {
   tooltip_text_ = tooltip;
+  if (accessible_name_.empty())
+    accessible_name_ = tooltip_text_;
 }
 
 base::string16 ImageView::GetTooltipText() const {

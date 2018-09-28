@@ -164,7 +164,7 @@ void LocalCardMigrationBubbleControllerImpl::ShowBubbleImplementation() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   local_card_migration_bubble_ =
       browser->window()->ShowLocalCardMigrationBubble(web_contents(), this,
-                                                      true);
+                                                      is_reshow_);
   DCHECK(local_card_migration_bubble_);
   UpdateIcon();
   timer_.reset(new base::ElapsedTimer());

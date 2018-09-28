@@ -221,6 +221,8 @@ void LocalCardMigrationDialogView::Init() {
   std::unique_ptr<views::ImageView> image =
       std::make_unique<views::ImageView>();
   image->SetImage(rb.GetImageSkiaNamed(GetHeaderImageId()));
+  image->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   image_container->AddChildView(image.release());
   main_container->AddChildView(image_container.release());
 

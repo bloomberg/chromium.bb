@@ -84,10 +84,14 @@ void MigratableCardView::Init(
   checkbox_ = new views::Checkbox(base::string16(), listener);
   checkbox_->SetChecked(true);
   checkbox_->set_tag(card_index);
-  checkbox_->SetVisible(true);
   // TODO(crbug/867194): Currently the ink drop animation circle is cut by the
   // border of scroll bar view. Find a way to adjust the format.
   checkbox_->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
+  std::unique_ptr<views::Label> card_description =
+      std::make_unique<views::Label>(
+          migratable_credit_card.credit_card().NetworkAndLastFourDigits(),
+          views::style::CONTEXT_LABEL);
+  checkbox_->SetAssociatedLabel(card_description.get());
   AddChildView(checkbox_);
 
   constexpr int kMigrationResultImageSize = 16;
@@ -116,12 +120,10 @@ void MigratableCardView::Init(
       rb.GetImageNamed(CreditCard::IconResourceId(
                            migratable_credit_card.credit_card().network()))
           .AsImageSkia());
+  card_image->SetAccessibleName(
+      migratable_credit_card.credit_card().NetworkForDisplay());
   card_network_and_last_four_digits->AddChildView(card_image.release());
 
-  std::unique_ptr<views::Label> card_description =
-      std::make_unique<views::Label>(
-          migratable_credit_card.credit_card().NetworkAndLastFourDigits(),
-          views::style::CONTEXT_LABEL);
   card_network_and_last_four_digits->AddChildView(card_description.release());
 
   std::unique_ptr<views::Label> card_expiration =
