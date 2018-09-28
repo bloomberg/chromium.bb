@@ -19,6 +19,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
@@ -39,6 +41,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using autofill::FormData;
+using autofill::FormFieldData;
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using base::TestMockTimeTaskRunner;
@@ -148,6 +152,20 @@ ACTION(InvokeEmptyConsumerWithForms) {
 }
 
 ACTION_P(SaveToScopedPtr, scoped) { scoped->reset(arg0); }
+
+void SanitizeFormData(FormData* form) {
+  form->main_frame_origin = url::Origin();
+  for (FormFieldData& field : form->fields) {
+    field.label.clear();
+    field.value.clear();
+    field.autocomplete_attribute.clear();
+    field.option_values.clear();
+    field.option_contents.clear();
+    field.placeholder.clear();
+    field.css_classes.clear();
+    field.id.clear();
+  }
+}
 
 }  // namespace
 
@@ -1781,20 +1799,26 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePassword) {
 
   // The user accepts a generated password.
   form.password_value = base::ASCIIToUTF16("password");
-  EXPECT_CALL(*store_, AddLogin(form)).WillOnce(Return());
+  PasswordForm sanitized_form(form);
+  SanitizeFormData(&sanitized_form.form_data);
+
+  EXPECT_CALL(*store_, AddLogin(sanitized_form)).WillOnce(Return());
   manager()->OnPresaveGeneratedPassword(form);
 
   // The user updates the generated password.
   PasswordForm updated_form(form);
   updated_form.password_value = base::ASCIIToUTF16("password_12345");
-  EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(updated_form, form))
+  PasswordForm sanitized_updated_form(updated_form);
+  SanitizeFormData(&sanitized_updated_form.form_data);
+  EXPECT_CALL(*store_,
+              UpdateLoginWithPrimaryKey(sanitized_updated_form, sanitized_form))
       .WillOnce(Return());
   manager()->OnPresaveGeneratedPassword(updated_form);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.GeneratedFormHasNoFormManager", false, 2);
 
   // The user removes the generated password.
-  EXPECT_CALL(*store_, RemoveLogin(updated_form)).WillOnce(Return());
+  EXPECT_CALL(*store_, RemoveLogin(sanitized_updated_form)).WillOnce(Return());
   manager()->OnPasswordNoLongerGenerated(updated_form);
 }
 
@@ -1830,6 +1854,7 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     SCOPED_TRACE(testing::Message("found_matched_logins_in_store = ")
                  << found_matched_logins_in_store);
     PasswordForm form(MakeFormWithOnlyNewPasswordField());
+    SanitizeFormData(&form.form_data);
     std::vector<PasswordForm> observed = {form};
     if (found_matched_logins_in_store) {
       EXPECT_CALL(*store_, GetLogins(_, _))
