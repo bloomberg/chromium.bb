@@ -464,7 +464,7 @@ void InternalPopupMenu::SetValue(const String& value) {
 }
 
 void InternalPopupMenu::DidClosePopup() {
-  // Clearing m_popup first to prevent from trying to close the popup again.
+  // Clearing popup_ first to prevent from trying to close the popup again.
   popup_ = nullptr;
   if (owner_element_)
     owner_element_->PopupDidHide();

@@ -61,8 +61,8 @@ CanvasRenderingContext::CanvasRenderingContext(
   if (!OriginTrials::LowLatencyCanvasEnabled(host->GetTopExecutionContext()))
     creation_attributes_.low_latency = false;
 
-  // Make m_creationAttributes reflect the effective colorSpace and pixelFormat
-  // rather than the requested one.
+  // Make creation_attributes_ reflect the effective color_space and
+  // pixel_format rather than the requested one.
   creation_attributes_.color_space = ColorSpaceAsString();
   creation_attributes_.pixel_format = PixelFormatAsString();
 }

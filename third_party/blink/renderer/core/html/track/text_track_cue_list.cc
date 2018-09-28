@@ -126,13 +126,13 @@ void TextTrackCueList::InvalidateCueIndex(wtf_size_t index) {
   //   cueIndex(list[index-1]) + 1 == cueIndex(list[index]) [index > 0]
   // This is a stronger requirement than we need, but it's easier to maintain.
   // We can then check if a cue's index is valid by comparing it with
-  // |m_firstInvalidIndex| - if it's strictly less it is valid.
+  // |first_invalid_index_| - if it's strictly less it is valid.
   first_invalid_index_ = std::min(first_invalid_index_, index);
 }
 
 void TextTrackCueList::ValidateCueIndexes() {
   // Compute new index values for the cues starting at
-  // |m_firstInvalidIndex|. If said index is beyond the end of the list, no
+  // |first_invalid_index_|. If said index is beyond the end of the list, no
   // cues will need to be updated.
   for (wtf_size_t i = first_invalid_index_; i < list_.size(); ++i)
     list_[i]->UpdateCueIndex(i);

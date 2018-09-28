@@ -564,7 +564,7 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
         break;
 
       // The only non-VTTElement would be the DocumentFragment root. (Text
-      // nodes and PIs will never appear as m_currentNode.)
+      // nodes and PIs will never appear as current_node_.)
       if (!current_node_->IsVTTElement())
         break;
 

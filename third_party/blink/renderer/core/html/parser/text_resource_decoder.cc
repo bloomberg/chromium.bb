@@ -369,7 +369,7 @@ void TextResourceDecoder::CheckForMetaCharset(const char* data,
 //      the encoding of the parent frame, which is also auto-detected.
 //   Note that condition #2 is NOT satisfied unless parent-child frame
 //   relationship is compliant to the same-origin policy. If they're from
-//   different domains, |m_source| would not be set to EncodingFromParentFrame
+//   different domains, |source_| would not be set to EncodingFromParentFrame
 //   in the first place.
 void TextResourceDecoder::AutoDetectEncodingIfAllowed(const char* data,
                                                       wtf_size_t len) {

@@ -61,8 +61,8 @@ class HTMLFormattingElementList {
 
     HTMLStackItem* StackItem() const { return item_; }
     Element* GetElement() const {
-      // The fact that !m_item == isMarker() is an implementation detail callers
-      // should check isMarker() before calling element().
+      // The fact that !item_ == IsMarker() is an implementation detail callers
+      // should check IsMarker() before calling GetElement().
       DCHECK(item_);
       return item_->GetElement();
     }

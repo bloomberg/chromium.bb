@@ -110,7 +110,7 @@ HTMLDocumentParser::HTMLDocumentParser(
     : HTMLDocumentParser(fragment->GetDocument(),
                          parser_content_policy,
                          kForceSynchronousParsing) {
-  // No m_scriptRunner in fragment parser.
+  // No script_runner_ in fragment parser.
   tree_builder_ = HTMLTreeBuilder::Create(this, fragment, context_element,
                                           parser_content_policy, options_);
 
@@ -191,10 +191,10 @@ void HTMLDocumentParser::Detach() {
     parser_scheduler_->Detach();
     parser_scheduler_.Clear();
   }
-  // Oilpan: It is important to clear m_token to deallocate backing memory of
-  // HTMLToken::m_data and let the allocator reuse the memory for
-  // HTMLToken::m_data of a next HTMLDocumentParser. We need to clear
-  // m_tokenizer first because m_tokenizer has a raw pointer to m_token.
+  // Oilpan: It is important to clear token_ to deallocate backing memory of
+  // HTMLToken::data_ and let the allocator reuse the memory for
+  // HTMLToken::data_ of a next HTMLDocumentParser. We need to clear
+  // tokenizer_ first because tokenizer_ has a raw pointer to token_.
   tokenizer_.reset();
   token_.reset();
 }
@@ -370,14 +370,14 @@ void HTMLDocumentParser::ValidateSpeculations(
     std::unique_ptr<TokenizedChunk> chunk) {
   DCHECK(chunk);
   // TODO(kouhei): We should simplify codepath here by disallowing
-  // validateSpeculations
-  // while isPaused, and m_lastChunkBeforePause can simply be
-  // pushed to m_speculations.
+  // ValidateSpeculations
+  // while IsPaused, and last_chunk_before_pause_ can simply be
+  // pushed to speculations_.
   if (IsPaused()) {
     // We're waiting on a network script or stylesheet, just save the chunk,
-    // we'll get a second validateSpeculations call after the script or
+    // we'll get a second ValidateSpeculations call after the script or
     // stylesheet completes. This call should have been made immediately after
-    // runScriptsForPausedTreeBuilder in the script case which may have started
+    // RunScriptsForPausedTreeBuilder in the script case which may have started
     // a network load and left us waiting.
     DCHECK(!last_chunk_before_pause_);
     last_chunk_before_pause_ = std::move(chunk);
@@ -561,8 +561,8 @@ size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
 }
 
 void HTMLDocumentParser::PumpPendingSpeculations() {
-  // If this assert fails, you need to call validateSpeculations to make sure
-  // m_tokenizer and m_token don't have state that invalidates m_speculations.
+  // If this assert fails, you need to call ValidateSpeculations to make sure
+  // tokenizer_ and token_ don't have state that invalidates speculations_.
   DCHECK(!tokenizer_);
   DCHECK(!token_);
   DCHECK(!last_chunk_before_pause_);
@@ -593,9 +593,9 @@ void HTMLDocumentParser::PumpPendingSpeculations() {
         ProcessTokenizedChunkFromBackgroundParser(speculations_.TakeFirst());
     session.AddedElementTokens(element_token_count);
 
-    // Always check isParsing first as m_document may be null. Surprisingly,
-    // isScheduledForUnpause() may be set here as a result of
-    // processTokenizedChunkFromBackgroundParser running arbitrary javascript
+    // Always check IsParsing first as document_ may be null. Surprisingly,
+    // IsScheduledForUnpause() may be set here as a result of
+    // ProcessTokenizedChunkFromBackgroundParser running arbitrary javascript
     // which invokes nested event loops. (e.g. inspector breakpoints)
     CheckIfBodyStylesheetAdded();
     if (!IsParsing() || IsPaused() || IsScheduledForUnpause())
@@ -632,9 +632,9 @@ void HTMLDocumentParser::PumpTokenizer() {
 
   // We tell the InspectorInstrumentation about every pump, even if we end up
   // pumping nothing.  It can filter out empty pumps itself.
-  // FIXME: m_input.current().length() is only accurate if we end up parsing the
+  // FIXME: input_.Current().length() is only accurate if we end up parsing the
   // whole buffer in this pump.  We should pass how much we parsed as part of
-  // didWriteHTML instead of willWriteHTML.
+  // DidWriteHTML instead of WillWriteHTML.
   probe::ParseHTML probe(GetDocument(), this);
 
   if (!IsParsingFragment())
@@ -684,7 +684,7 @@ void HTMLDocumentParser::PumpTokenizer() {
     DCHECK_EQ(tokenizer_->GetState(), HTMLTokenizer::kDataState);
 
     DCHECK(preloader_);
-    // TODO(kouhei): m_preloader should be always available for synchronous
+    // TODO(kouhei): preloader_ should be always available for synchronous
     // parsing case, adding paranoia if for speculative crash fix for
     // crbug.com/465478
     if (preloader_) {
@@ -702,23 +702,23 @@ void HTMLDocumentParser::ConstructTreeFromHTMLToken() {
   DCHECK(!GetDocument()->IsPrefetchOnly());
   AtomicHTMLToken atomic_token(Token());
 
-  // We clear the m_token in case constructTreeFromAtomicToken
+  // We clear the token_ in case ConstructTreeFromAtomicToken
   // synchronously re-enters the parser. We don't clear the token immedately
-  // for Character tokens because the AtomicHTMLToken avoids copying the
+  // for kCharacter tokens because the AtomicHTMLToken avoids copying the
   // characters by keeping a pointer to the underlying buffer in the
-  // HTMLToken. Fortunately, Character tokens can't cause us to re-enter
+  // HTMLToken. Fortunately, kCharacter tokens can't cause us to re-enter
   // the parser.
   //
-  // FIXME: Stop clearing the m_token once we start running the parser off
+  // FIXME: Stop clearing the token_ once we start running the parser off
   // the main thread or once we stop allowing synchronous JavaScript
-  // execution from parseAttribute.
+  // execution from ParseAttribute.
   if (Token().GetType() != HTMLToken::kCharacter)
     Token().Clear();
 
   tree_builder_->ConstructTree(&atomic_token);
   CheckIfBodyStylesheetAdded();
 
-  // FIXME: constructTree may synchronously cause Document to be detached.
+  // FIXME: ConstructTree may synchronously cause Document to be detached.
   if (!token_)
     return;
 
@@ -931,9 +931,9 @@ void HTMLDocumentParser::EndIfDelayed() {
 }
 
 void HTMLDocumentParser::Finish() {
-  // FIXME: We should DCHECK(!m_parserStopped) here, since it does not makes
+  // FIXME: We should DCHECK(!parser_stopped_) here, since it does not makes
   // sense to call any methods on DocumentParser once it's been stopped.
-  // However, FrameLoader::stop calls DocumentParser::finish unconditionally.
+  // However, FrameLoader::Stop calls DocumentParser::Finish unconditionally.
 
   Flush();
   if (IsDetached())

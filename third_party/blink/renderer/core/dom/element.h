@@ -382,7 +382,7 @@ class CORE_EXPORT Element : public ContainerNode {
     return ContainerNode::HasTagName(tag_name);
   }
 
-  // Should be called only by Document::createElementNS to fix up m_tagName
+  // Should be called only by Document::createElementNS to fix up tag_name_
   // immediately after construction.
   void SetTagNameForCreateElementNS(const QualifiedName&);
 

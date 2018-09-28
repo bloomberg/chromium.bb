@@ -441,10 +441,10 @@ void Element::SynchronizeAttribute(const AtomicString& local_name) const {
     // animated SVG Attribute. It would seem we should only call this method
     // if SVGElement::isAnimatableAttribute is true, but the list of
     // animatable attributes in isAnimatableAttribute does not suffice to
-    // pass all layout tests. Also, m_animatedSVGAttributesAreDirty stays
-    // dirty unless synchronizeAnimatedSVGAttribute is called with
-    // anyQName(). This means that even if Element::synchronizeAttribute()
-    // is called on all attributes, m_animatedSVGAttributesAreDirty remains
+    // pass all layout tests. Also, animated_svg_attributes_are_dirty_ stays
+    // dirty unless SynchronizeAnimatedSVGAttribute is called with
+    // AnyQName(). This means that even if Element::SynchronizeAttribute()
+    // is called on all attributes, animated_svg_attributes_are_dirty_ remains
     // true.
     ToSVGElement(this)->SynchronizeAnimatedSVGAttribute(
         QualifiedName(g_null_atom, local_name, g_null_atom));
@@ -1972,8 +1972,8 @@ void Element::ParserSetAttributes(const Vector<Attribute>& attribute_vector) {
 
   ParserDidSetAttributes();
 
-  // Use attributeVector instead of m_elementData because attributeChanged might
-  // modify m_elementData.
+  // Use attribute_vector instead of element_data_ because AttributeChanged
+  // might modify element_data_.
   for (const auto& attribute : attribute_vector) {
     AttributeChanged(AttributeModificationParams(
         attribute.GetName(), g_null_atom, attribute.Value(),

@@ -81,11 +81,11 @@ class CORE_EXPORT V0CustomElementProcessingStack
   }
 
   // The start of the element queue on the top of the processing
-  // stack. An offset into instance().m_flattenedProcessingStack.
+  // stack. An offset into Instance().flattened_processing_stack_.
   static wtf_size_t element_queue_start_;
 
   // The end of the element queue on the top of the processing
-  // stack. A cache of instance().m_flattenedProcessingStack.size().
+  // stack. A cache of Instance().flattened_processing_stack_.size().
   static wtf_size_t element_queue_end_;
 
   static V0CustomElementCallbackQueue::ElementQueueId CurrentElementQueue() {

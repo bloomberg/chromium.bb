@@ -305,7 +305,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
                   ToMouseEvent(*event_).type() == EventTypeNames::click;
   if (is_click) {
     // Fire an accessibility event indicating a node was clicked on.  This is
-    // safe if m_event->target()->toNode() returns null.
+    // safe if event_->target()->ToNode() returns null.
     if (AXObjectCache* cache = node_->GetDocument().ExistingAXObjectCache())
       cache->HandleClicked(event_->target()->ToNode());
 

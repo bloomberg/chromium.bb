@@ -692,7 +692,7 @@ VTTDisplayParameters VTTCue::CalculateDisplayParameters() const {
         NOTREACHED();
     }
   } else {
-    // Cases for m_writingDirection being VerticalGrowing{Left|Right}
+    // Cases for writing_direction_ being kVerticalGrowing{Left|Right}
     switch (computed_cue_alignment) {
       case kStart:
         display_parameters.position.SetY(computed_text_position);

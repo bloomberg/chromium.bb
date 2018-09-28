@@ -44,7 +44,7 @@ SelectionEditor::~SelectionEditor() = default;
 void SelectionEditor::AssertSelectionValid() const {
 #if DCHECK_IS_ON()
   // Since We don't track dom tree version during attribute changes, we can't
-  // use it for validity of |m_selection|.
+  // use it for validity of |selection_|.
   const_cast<SelectionEditor*>(this)->selection_.dom_tree_version_ =
       GetDocument().DomTreeVersion();
 #endif

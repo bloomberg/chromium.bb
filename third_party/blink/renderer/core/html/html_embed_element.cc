@@ -150,7 +150,7 @@ void HTMLEmbedElement::UpdatePluginInternal() {
   if (url_.IsEmpty() && service_type_.IsEmpty())
     return;
 
-  // Note these pass m_url and m_serviceType to allow better code sharing with
+  // Note these pass url_ and service_type_ to allow better code sharing with
   // <object> which modifies url and serviceType before calling these.
   if (!AllowedToLoadFrameURL(url_))
     return;
@@ -158,8 +158,8 @@ void HTMLEmbedElement::UpdatePluginInternal() {
   PluginParameters plugin_params;
   ParametersForPlugin(plugin_params);
 
-  // FIXME: Can we not have layoutObject here now that beforeload events are
-  // gone?
+  // FIXME: Can we not have GetLayoutObject() here now that beforeload events
+  // are gone?
   if (!GetLayoutObject())
     return;
 

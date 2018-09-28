@@ -192,7 +192,7 @@ void LinkStyle::RemovePendingSheet() {
   if (type == kNone)
     return;
   if (type == kNonBlocking) {
-    // Tell StyleEngine to re-compute styleSheets of this m_owner's treescope.
+    // Tell StyleEngine to re-compute styleSheets of this owner_'s treescope.
     GetDocument().GetStyleEngine().ModifiedStyleSheetCandidateNode(*owner_);
     return;
   }

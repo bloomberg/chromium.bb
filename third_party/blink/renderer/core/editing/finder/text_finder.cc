@@ -497,7 +497,7 @@ void TextFinder::ScopeStringMatches(IdleDeadline* deadline,
     }
 
     // If the Find function found a match it will have stored where the
-    // match was found in m_activeSelectionRect on the current frame. If we
+    // match was found in active_selection_rect_ on the current frame. If we
     // find this rect during scoping it means we have found the active
     // tickmark.
     bool found_active_match = false;

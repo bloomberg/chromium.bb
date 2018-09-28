@@ -190,8 +190,8 @@ void HTMLVideoElement::ParseAttribute(
     // In case the poster attribute is set after playback, don't update the
     // display state, post playback the correct state will be picked up.
     if (GetDisplayMode() < kVideo || !HasAvailableVideoFrame()) {
-      // Force a poster recalc by setting m_displayMode to Unknown directly
-      // before calling updateDisplayState.
+      // Force a poster recalc by setting display_mode_ to kUnknown directly
+      // before calling UpdateDisplayState.
       HTMLMediaElement::SetDisplayMode(kUnknown);
       UpdateDisplayState();
     }

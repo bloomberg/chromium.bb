@@ -271,7 +271,7 @@ HTMLTextDecorationEquivalent::HTMLTextDecorationEquivalent(
     : HTMLElementEquivalent(CSSPropertyTextDecorationLine,
                             primitive_value,
                             tag_name)
-// m_propertyID is used in HTMLElementEquivalent::addToStyle
+// CSSPropertyTextDecorationLine is used in HTMLElementEquivalent::AddToStyle
 {}
 
 bool HTMLTextDecorationEquivalent::PropertyExistsInStyle(

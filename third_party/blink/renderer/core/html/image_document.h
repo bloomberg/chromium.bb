@@ -67,7 +67,7 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
   // Calculates how large the div needs to be to properly center the image.
   int CalculateDivWidth();
 
-  // These methods are for m_shrinkToFitMode == Desktop.
+  // These methods are for shrink_to_fit_mode_ == kDesktop.
   void ResizeImageToFit();
   void RestoreImageSize();
   bool ImageFitsInWindow() const;
