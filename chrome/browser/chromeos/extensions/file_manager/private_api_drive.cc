@@ -48,6 +48,7 @@
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -825,10 +826,19 @@ void SearchDriveFs(
   drivefs::mojom::SearchQueryPtr search;
   integration_service->GetDriveFsInterface()->StartSearchQuery(
       mojo::MakeRequest(&search), query.Clone());
-  auto* raw_search = search.get();
-  raw_search->GetNextPage(base::BindOnce(&OnSearchDriveFs, std::move(function),
-                                         std::move(search), std::move(query),
-                                         filter_dirs, std::move(callback)));
+  if (net::NetworkChangeNotifier::IsOffline() &&
+      query->query_source !=
+          drivefs::mojom::QueryParameters::QuerySource::kLocalOnly) {
+    // No point trying cloud query if we know we are offline.
+    OnSearchDriveFs(std::move(function), std::move(search), std::move(query),
+                    filter_dirs, std::move(callback),
+                    drive::FILE_ERROR_NO_CONNECTION, {});
+  } else {
+    auto* raw_search = search.get();
+    raw_search->GetNextPage(
+        base::BindOnce(&OnSearchDriveFs, std::move(function), std::move(search),
+                       std::move(query), filter_dirs, std::move(callback)));
+  }
 }
 
 }  // namespace
