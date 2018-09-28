@@ -1999,6 +1999,12 @@ enum WebFeature {
   kSerialRequestPort = 2546,
   kSerialPortOpen = 2547,
   kSerialPortClose = 2548,
+  kBackgroundFetchManagerFetch = 2549,
+  kBackgroundFetchManagerGet = 2550,
+  kBackgroundFetchManagerGetIds = 2551,
+  kBackgroundFetchRegistrationAbort = 2552,
+  kBackgroundFetchRegistrationMatch = 2553,
+  kBackgroundFetchRegistrationMatchAll = 2554,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
