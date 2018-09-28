@@ -196,6 +196,13 @@ class GaiaAuthFetcher {
 
   void SetPendingFetch(bool pending_fetch);
 
+  // Needed to use XmlHTTPRequest for Multilogin requeston iOS even after
+  // iOS11 because WKWebView cannot read response body if content-disposition
+  // header is set.
+  // TODO(https://crbug.com/889471) Remove this once requests are done using
+  // NSUrlSession in iOS.
+  bool IsMultiloginUrl(const GURL& url);
+
  private:
   // The format of the POST body for IssueAuthToken.
   static const char kIssueAuthTokenFormat[];
