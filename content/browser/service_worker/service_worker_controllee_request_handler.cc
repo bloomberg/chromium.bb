@@ -767,6 +767,12 @@ void ServiceWorkerControlleeRequestHandler::
 }
 
 void ServiceWorkerControlleeRequestHandler::ClearJob() {
+  // Invalidate weak pointers to cancel RegisterStatusChangeCallback().
+  // Otherwise we may end up calling ForwardToServiceWorer()
+  // or FallbackToNetwork() twice on the same |url_job_|.
+  // TODO(bashi): Consider not to reuse this handler when restarting the
+  // request after S13nServiceWorker is shipped.
+  weak_factory_.InvalidateWeakPtrs();
   url_job_.reset();
 }
 
