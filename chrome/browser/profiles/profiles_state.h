@@ -53,11 +53,6 @@ void SetLastUsedProfile(const std::string& profile_dir);
 base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path);
 
 #if !defined(OS_CHROMEOS)
-// Returns the string to use in the avatar button for the specified profile.
-// This is essentially the name returned by GetAvatarNameForProfile, but it
-// may be elided and contain an indicator for supervised users.
-base::string16 GetAvatarButtonTextForProfile(Profile* profile);
-
 // Returns the string to use in the fast user switcher menu for the specified
 // menu item. Adds a supervision indicator to the profile name if appropriate.
 base::string16 GetProfileSwitcherTextForItem(const AvatarMenu::Item& item);

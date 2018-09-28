@@ -25,6 +25,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"

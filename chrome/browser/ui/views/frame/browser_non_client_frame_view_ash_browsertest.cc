@@ -58,7 +58,6 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
-#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
@@ -310,7 +309,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   aura::Window* window = browser()->window()->GetNativeWindow();
 
   EXPECT_FALSE(MultiUserWindowManager::ShouldShowAvatar(window));
-  EXPECT_FALSE(frame_view->profile_indicator_icon());
+  EXPECT_FALSE(frame_view->profile_indicator_icon_);
 
   const AccountId account_id1 =
       multi_user_util::GetAccountIdFromProfile(browser()->profile());
@@ -325,7 +324,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // Teleport the window back to owner desktop.
   manager->ShowWindowForUser(window, account_id1);
   EXPECT_FALSE(MultiUserWindowManager::ShouldShowAvatar(window));
-  EXPECT_FALSE(frame_view->profile_indicator_icon());
+  EXPECT_FALSE(frame_view->profile_indicator_icon_);
 }
 
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,

@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_platform_specific.h"
-#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -257,28 +256,9 @@ gfx::Rect OpaqueBrowserFrameView::GetWindowBoundsForClientBounds(
   return layout_->GetWindowBoundsForClientBounds(client_bounds);
 }
 
-bool OpaqueBrowserFrameView::IsWithinAvatarMenuButtons(
-    const gfx::Point& point) const {
-  if (profile_indicator_icon() &&
-      profile_indicator_icon()->GetMirroredBounds().Contains(point)) {
-    return true;
-  }
-  views::View* profile_switcher_view = GetProfileSwitcherButton();
-  if (profile_switcher_view &&
-      profile_switcher_view->GetMirroredBounds().Contains(point)) {
-    return true;
-  }
-
-  return false;
-}
-
 int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!bounds().Contains(point))
     return HTNOWHERE;
-
-  // See if the point is within the avatar menu button.
-  if (IsWithinAvatarMenuButtons(point))
-    return HTCLIENT;
 
   int frame_component = frame()->client_view()->NonClientHitTest(point);
 
@@ -496,10 +476,6 @@ bool OpaqueBrowserFrameView::IsRegularOrGuestSession() const {
   return browser_view()->IsRegularOrGuestSession();
 }
 
-gfx::ImageSkia OpaqueBrowserFrameView::GetIncognitoAvatarIcon() const {
-  return BrowserNonClientFrameView::GetIncognitoAvatarIcon();
-}
-
 bool OpaqueBrowserFrameView::IsMaximized() const {
   return frame()->IsMaximized();
 }
@@ -527,10 +503,6 @@ int OpaqueBrowserFrameView::GetTabStripHeight() const {
 
 gfx::Size OpaqueBrowserFrameView::GetTabstripPreferredSize() const {
   return browser_view()->tabstrip()->GetPreferredSize();
-}
-
-gfx::Size OpaqueBrowserFrameView::GetNewTabButtonPreferredSize() const {
-  return browser_view()->tabstrip()->new_tab_button()->GetPreferredSize();
 }
 
 int OpaqueBrowserFrameView::GetTopAreaHeight() const {
@@ -600,10 +572,6 @@ bool OpaqueBrowserFrameView::ShouldPaintAsThemed() const {
   // Theme app and popup windows if |platform_observer_| wants it.
   return browser_view()->IsBrowserTypeNormal() ||
          platform_observer_->IsUsingSystemTheme();
-}
-
-AvatarButtonStyle OpaqueBrowserFrameView::GetAvatarButtonStyle() const {
-  return AvatarButtonStyle::THEMED;
 }
 
 void OpaqueBrowserFrameView::MaybeRedrawFrameButtons() {}

@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -76,6 +77,9 @@ constexpr SkColor kMdWebUiFrameColor = SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
 constexpr SkColor kNormalWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
 constexpr SkColor kIncognitoWindowTitleTextColor = SK_ColorWHITE;
 
+// The indicator for teleported windows is 24 DIP on a side.
+constexpr int kProfileIndicatorSize = 24;
+
 bool IsV1AppBackButtonEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ash::switches::kAshEnableV1AppBackButton);
@@ -104,6 +108,12 @@ bool IsSnappedInSplitView(aura::Window* window,
 
 const views::WindowManagerFrameValues& frame_values() {
   return views::WindowManagerFrameValues::instance();
+}
+
+// Returns the padding on the left, right, and bottom of the profile
+// indicator.
+int GetProfileIndicatorPadding() {
+  return ui::MaterialDesignController::IsNewerMaterialUi() ? 8 : 4;
 }
 
 }  // namespace
@@ -171,8 +181,7 @@ void BrowserNonClientFrameViewAsh::Init() {
     window_icon_->Update();
   }
 
-  if (browser->is_app() && IsV1AppBackButtonEnabled())
-    browser->command_controller()->AddCommandObserver(IDC_BACK, this);
+  UpdateProfileIcons();
 
   aura::Window* window = frame()->GetNativeWindow();
   window->SetProperty(
@@ -203,6 +212,7 @@ void BrowserNonClientFrameViewAsh::Init() {
     TabletModeClient::Get()->AddObserver(this);
 
   if (browser->is_app() && IsV1AppBackButtonEnabled()) {
+    browser->command_controller()->AddCommandObserver(IDC_BACK, this);
     back_button_ = new ash::FrameBackButton();
     AddChildView(back_button_);
     // TODO(oshima): Add Tooltip, accessibility name.
@@ -294,8 +304,11 @@ void BrowserNonClientFrameViewAsh::UpdateMinimumSize() {
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
-  return BrowserNonClientFrameView::GetTabStripLeftInset() +
-         frame_values().normal_insets.left();
+  int left_inset = BrowserNonClientFrameView::GetTabStripLeftInset() +
+                   frame_values().normal_insets.left();
+  if (profile_indicator_icon_)
+    left_inset += GetProfileIndicatorPadding() + kProfileIndicatorSize;
+  return left_inset;
 }
 
 void BrowserNonClientFrameViewAsh::OnTabsMaxXChanged() {
@@ -368,6 +381,8 @@ void BrowserNonClientFrameViewAsh::SizeConstraintsChanged() {}
 void BrowserNonClientFrameViewAsh::ActivationChanged(bool active) {
   BrowserNonClientFrameView::ActivationChanged(active);
 
+  UpdateProfileIcons();
+
   const bool should_paint_as_active = ShouldPaintAsActive();
   frame_header_->SetPaintAsActive(should_paint_as_active);
 
@@ -400,8 +415,8 @@ void BrowserNonClientFrameViewAsh::Layout() {
 
   frame_header_->SetHeaderHeightForPainting(painted_height);
 
-  if (profile_indicator_icon())
-    LayoutIncognitoButton();
+  if (profile_indicator_icon_)
+    LayoutProfileIndicator();
   if (hosted_app_button_container_) {
     hosted_app_button_container_->LayoutInContainer(
         0, caption_button_container_->x(), 0, painted_height);
@@ -656,10 +671,10 @@ bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle(
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, protected:
 
-// BrowserNonClientFrameView:
-AvatarButtonStyle BrowserNonClientFrameViewAsh::GetAvatarButtonStyle() const {
-  // Ash doesn't support a profile switcher button.
-  return AvatarButtonStyle::NONE;
+void BrowserNonClientFrameViewAsh::OnProfileAvatarChanged(
+    const base::FilePath& profile_path) {
+  BrowserNonClientFrameView::OnProfileAvatarChanged(profile_path);
+  UpdateProfileIcons();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -802,6 +817,55 @@ void BrowserNonClientFrameViewAsh::UpdateTopViewInset() {
   const int inset =
       (tab_strip_visible || immersive) ? 0 : GetTopInset(/*restored=*/false);
   frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewInset, inset);
+}
+
+bool BrowserNonClientFrameViewAsh::ShouldShowProfileIndicatorIcon() const {
+  // We only show the profile indicator for the teleported browser windows
+  // between multi-user sessions. Note that you can't teleport an incognito
+  // window.
+  Browser* browser = browser_view()->browser();
+  if (browser->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE)
+    return false;
+
+  if (!browser->is_type_tabbed() && !browser->is_app())
+    return false;
+
+  return MultiUserWindowManager::ShouldShowAvatar(
+      browser_view()->GetNativeWindow());
+}
+
+void BrowserNonClientFrameViewAsh::UpdateProfileIcons() {
+  View* root_view = frame()->GetRootView();
+  if (ShouldShowProfileIndicatorIcon()) {
+    if (!profile_indicator_icon_) {
+      profile_indicator_icon_ = new ProfileIndicatorIcon();
+      AddChildView(profile_indicator_icon_);
+      if (root_view) {
+        // Adding a child does not invalidate the layout.
+        InvalidateLayout();
+        root_view->Layout();
+      }
+    }
+
+    profile_indicator_icon_->SetIcon(gfx::Image(
+        GetAvatarImageForContext(browser_view()->browser()->profile())));
+    profile_indicator_icon_->set_stroke_color(GetToolbarTopSeparatorColor());
+  } else if (profile_indicator_icon_) {
+    delete profile_indicator_icon_;
+    profile_indicator_icon_ = nullptr;
+    if (root_view)
+      root_view->Layout();
+  }
+}
+
+void BrowserNonClientFrameViewAsh::LayoutProfileIndicator() {
+  DCHECK(profile_indicator_icon_);
+  const int bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
+                     GetProfileIndicatorPadding();
+  profile_indicator_icon_->SetBounds(
+      GetProfileIndicatorPadding(), bottom - kProfileIndicatorSize,
+      kProfileIndicatorSize, kProfileIndicatorSize);
+  profile_indicator_icon_->SetVisible(true);
 }
 
 ws::Id BrowserNonClientFrameViewAsh::GetServerWindowId() const {

@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/hit_test.h"
@@ -83,12 +82,10 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
   // calling through private APIs.
   DCHECK(tabstrip);
 
+  const int x = GetTabStripLeftInset();
   const bool restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
-  gfx::Rect bounds = gfx::Rect(0, GetTopInset(restored), width(),
-                               tabstrip->GetPreferredSize().height());
-  bounds.Inset(GetTabStripLeftInset(), 0,
-               GetAfterTabstripItemWidth() + GetTabstripPadding(), 0);
-  return bounds;
+  return gfx::Rect(x, GetTopInset(restored), width() - x - GetTabstripPadding(),
+                   tabstrip->GetPreferredSize().height());
 }
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
@@ -122,18 +119,6 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   }
 
   return y_offset + top_inset;
-}
-
-int BrowserNonClientFrameViewMac::GetAfterTabstripItemWidth() const {
-  int item_width;
-  views::View* profile_switcher_button = GetProfileSwitcherButton();
-  if (profile_indicator_icon() && browser_view()->IsTabStripVisible())
-    item_width = profile_indicator_icon()->width();
-  else if (profile_switcher_button)
-    item_width = profile_switcher_button->GetPreferredSize().width();
-  else
-    return 0;
-  return item_width + GetAvatarIconPadding();
 }
 
 int BrowserNonClientFrameViewMac::GetThemeBackgroundXInset() const {
@@ -187,11 +172,8 @@ void BrowserNonClientFrameViewMac::UpdateThrobber(bool running) {
 
 int BrowserNonClientFrameViewMac::GetTabStripLeftInset() const {
   constexpr int kTabstripLeftInset = 70;  // Make room for caption buttons.
-
-  if (frame()->IsFullscreen())
-    return 0;  // Do not draw caption buttons on fullscreen.
-  else
-    return kTabstripLeftInset;
+  // Do not draw caption buttons on fullscreen.
+  return frame()->IsFullscreen() ? 0 : kTabstripLeftInset;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -207,24 +189,12 @@ gfx::Rect BrowserNonClientFrameViewMac::GetWindowBoundsForClientBounds(
 }
 
 int BrowserNonClientFrameViewMac::NonClientHitTest(const gfx::Point& point) {
-  views::View* profile_switcher_view = GetProfileSwitcherButton();
-  if (profile_switcher_view) {
-    gfx::Point point_in_switcher(point);
-    views::View::ConvertPointToTarget(this, profile_switcher_view,
-                                      &point_in_switcher);
-    if (profile_switcher_view->HitTestPoint(point_in_switcher)) {
-      return HTCLIENT;
-    }
-  }
-  int component = frame()->client_view()->NonClientHitTest(point);
-
   // BrowserView::NonClientHitTest will return HTNOWHERE for points that hit
   // the native title bar. On Mac, we need to explicitly return HTCAPTION for
   // those points.
-  if (component == HTNOWHERE && bounds().Contains(point))
-    return HTCAPTION;
-
-  return component;
+  const int component = frame()->client_view()->NonClientHitTest(point);
+  return (component == HTNOWHERE && bounds().Contains(point)) ? HTCAPTION
+                                                              : component;
 }
 
 void BrowserNonClientFrameViewMac::GetWindowMask(const gfx::Size& size,
@@ -261,31 +231,6 @@ gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
 
 // views::View:
 
-void BrowserNonClientFrameViewMac::Layout() {
-  DCHECK(browser_view());
-  views::View* profile_switcher_button = GetProfileSwitcherButton();
-  if (profile_indicator_icon() && browser_view()->IsTabStripVisible()) {
-    LayoutIncognitoButton();
-    // Mac lays out the incognito icon on the right, as the stoplight
-    // buttons live in its Windows/Linux location.
-    profile_indicator_icon()->SetX(width() - GetAfterTabstripItemWidth());
-  } else if (profile_switcher_button) {
-    gfx::Size button_size = profile_switcher_button->GetPreferredSize();
-    int button_x = width() - GetAfterTabstripItemWidth();
-    int button_y = 0;
-    TabStrip* tabstrip = browser_view()->tabstrip();
-    if (tabstrip && browser_view()->IsTabStripVisible()) {
-      int new_tab_button_bottom =
-          tabstrip->bounds().y() + tabstrip->new_tab_button_bounds().height();
-      // Align the switcher's bottom to bottom of the new tab button;
-      button_y = new_tab_button_bottom - button_size.height();
-    }
-    profile_switcher_button->SetBounds(button_x, button_y, button_size.width(),
-                                       button_size.height());
-  }
-  BrowserNonClientFrameView::Layout();
-}
-
 void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
   if (!browser_view()->IsBrowserTypeNormal())
     return;
@@ -294,11 +239,6 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
 
   if (!GetThemeProvider()->UsingSystemTheme())
     PaintThemedFrame(canvas);
-}
-
-// BrowserNonClientFrameView:
-AvatarButtonStyle BrowserNonClientFrameViewMac::GetAvatarButtonStyle() const {
-  return AvatarButtonStyle::NATIVE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

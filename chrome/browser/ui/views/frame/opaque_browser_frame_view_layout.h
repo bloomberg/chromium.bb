@@ -85,9 +85,8 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   int GetTabStripInsetsTop(bool restored) const;
 
   // Returns the y-coordinate of the caption button when native frame buttons
-  // are disabled.  Also used to position the profile chooser button.  If
-  // |restored| is true, acts as if the window is restored regardless of the
-  // real mode.
+  // are disabled.  If |restored| is true, acts as if the window is restored
+  // regardless of the real mode.
   int DefaultCaptionButtonY(bool restored) const;
 
   // Returns the y-coordinate of button |button_id|.  If |restored| is true,
@@ -150,30 +149,21 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   bool has_trailing_buttons() const { return has_trailing_buttons_; }
 
-  virtual void LayoutNewStyleAvatar(views::View* host);
-
   virtual bool ShouldDrawImageMirrored(views::ImageButton* button,
                                        ButtonAlignment alignment) const;
 
   OpaqueBrowserFrameViewLayoutDelegate* delegate_;
-
-  views::View* new_avatar_button_;
 
   // The leading and trailing x positions of the empty space available for
   // laying out titlebar elements.
   int available_space_leading_x_;
   int available_space_trailing_x_;
 
-  // The size of the window buttons, and the avatar menu item (if any). This
-  // does not count labels or other elements that should be counted in a
-  // minimal frame.
+  // The size of the window buttons. This does not count labels or other
+  // elements that should be counted in a minimal frame.
   int minimum_size_for_buttons_;
 
  private:
-  // Determines whether the incognito icon should be shown on the right side of
-  // the tab strip (instead of the usual left).
-  bool ShouldIncognitoIconBeOnRight() const;
-
   // Determines the amount of spacing between the tabstrip and the caption
   // buttons.
   int TabStripCaptionSpacing() const;
@@ -181,7 +171,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // Layout various sub-components of this view.
   void LayoutWindowControls(views::View* host);
   void LayoutTitleBar(views::View* host);
-  void LayoutIncognitoIcon(views::View* host);
 
   void ConfigureButton(views::View* host,
                        views::FrameButton button_id,
@@ -234,8 +223,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   views::Label* window_title_;
 
   HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
-
-  views::View* incognito_icon_;
 
   std::vector<views::FrameButton> leading_buttons_;
   std::vector<views::FrameButton> trailing_buttons_;

@@ -241,12 +241,6 @@ ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
   return menu_model_builder_->menu_model();
 }
 
-views::Button* BrowserFrame::GetNewAvatarMenuButton() {
-  // Note: This profile switcher is being replaced with a toolbar menu button.
-  // See ToolbarView.
-  return browser_frame_view_->GetProfileSwitcherButton();
-}
-
 void BrowserFrame::OnMenuClosed() {
   menu_runner_.reset();
 }

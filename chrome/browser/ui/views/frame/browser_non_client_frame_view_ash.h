@@ -29,6 +29,7 @@ class HostedAppNonClientFrameViewAshTest;
 }
 
 class HostedAppButtonContainer;
+class ProfileIndicatorIcon;
 class TabIconView;
 
 namespace ash {
@@ -134,7 +135,7 @@ class BrowserNonClientFrameViewAsh
 
  protected:
   // BrowserNonClientFrameView:
-  AvatarButtonStyle GetAvatarButtonStyle() const override;
+  void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
@@ -202,6 +203,14 @@ class BrowserNonClientFrameViewAsh
   // Updates the kTopViewInset window property after a layout.
   void UpdateTopViewInset();
 
+  // Returns true if |profile_indicator_icon_| should be shown.
+  bool ShouldShowProfileIndicatorIcon() const;
+
+  // Updates the icon that indicates a teleported window.
+  void UpdateProfileIcons();
+
+  void LayoutProfileIndicator();
+
   ws::Id GetServerWindowId() const;
 
   // Returns whether this window is currently in the overview list.
@@ -218,6 +227,9 @@ class BrowserNonClientFrameViewAsh
 
   // For popups, the window icon.
   TabIconView* window_icon_ = nullptr;
+
+  // This is used for teleported windows (in multi-profile mode).
+  ProfileIndicatorIcon* profile_indicator_icon_ = nullptr;
 
   // Helper class for painting the header.
   std::unique_ptr<ash::FrameHeader> frame_header_;

@@ -2892,10 +2892,9 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   // Never show any avatar bubble in Incognito.
   if (!IsRegularOrGuestSession())
     return;
-  views::Button* avatar_button = toolbar_->avatar_button();
-  if (!avatar_button)
-    avatar_button = frame_->GetNewAvatarMenuButton();
+
   // Do not show avatar bubble if there is no avatar menu button.
+  views::Button* avatar_button = toolbar_->avatar_button();
   if (!avatar_button)
     return;
 

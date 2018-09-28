@@ -34,7 +34,6 @@ class MenuModel;
 }
 
 namespace views {
-class Button;
 class MenuRunner;
 class View;
 }
@@ -112,8 +111,6 @@ class BrowserFrame
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& p,
                               ui::MenuSourceType source_type) override;
-
-  views::Button* GetNewAvatarMenuButton();
 
   // Returns the menu model. BrowserFrame owns the returned model.
   // Note that in multi user mode this will upon each call create a new model.
