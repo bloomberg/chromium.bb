@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.Fullscreen
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton;
@@ -289,7 +290,8 @@ class ContextualSuggestionsMediator
         reportEvent(ContextualSuggestionsEvent.UI_BUTTON_SHOWN);
         TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
                 EventConstants.CONTEXTUAL_SUGGESTIONS_BUTTON_SHOWN);
-        maybeShowHelpBubble();
+        mHandler.postDelayed(() -> maybeShowHelpBubble(),
+                ToolbarPhone.LOC_BAR_WIDTH_CHANGE_ANIMATION_DURATION_MS);
     }
 
     @Override
@@ -433,13 +435,19 @@ class ContextualSuggestionsMediator
     }
 
     private void maybeShowHelpBubble() {
+        View anchorView =
+                mIphParentView.getRootView().findViewById(R.id.experimental_toolbar_button);
+        if (mToolbarManager.isUrlBarFocused() || anchorView == null
+                || anchorView.getVisibility() != View.VISIBLE) {
+            return;
+        }
+
         Tracker tracker = TrackerFactory.getTrackerForProfile(mProfile);
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE)) {
             return;
         }
 
-        ViewRectProvider rectProvider = new ViewRectProvider(
-                mIphParentView.getRootView().findViewById(R.id.experimental_toolbar_button));
+        ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
         rectProvider.setInsetPx(0, 0, 0,
                 mIphParentView.getResources().getDimensionPixelOffset(
                         R.dimen.text_bubble_menu_anchor_y_inset));
