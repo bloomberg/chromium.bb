@@ -150,9 +150,6 @@ TranslatePolicyValidationResultSeverity(
 
 CloudPolicyClient::Observer::~Observer() {}
 
-void CloudPolicyClient::Observer::OnRobotAuthCodesFetched(
-    CloudPolicyClient* client) {}
-
 CloudPolicyClient::CloudPolicyClient(
     const std::string& machine_id,
     const std::string& machine_model,
@@ -461,7 +458,8 @@ void CloudPolicyClient::UploadPolicyValidationReport(
   request_jobs_.back()->Start(job_callback);
 }
 
-void CloudPolicyClient::FetchRobotAuthCodes(std::unique_ptr<DMAuth> auth) {
+void CloudPolicyClient::FetchRobotAuthCodes(std::unique_ptr<DMAuth> auth,
+                                            RobotAuthCodeCallback callback) {
   CHECK(is_registered());
   DCHECK(auth->has_dm_token());
 
@@ -479,9 +477,9 @@ void CloudPolicyClient::FetchRobotAuthCodes(std::unique_ptr<DMAuth> auth) {
   request->add_auth_scope(GaiaConstants::kAnyApiOAuth2Scope);
   request->set_device_type(em::DeviceServiceApiAccessRequest::CHROME_OS);
 
-  policy_fetch_request_job_->Start(
-      base::Bind(&CloudPolicyClient::OnFetchRobotAuthCodesCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+  policy_fetch_request_job_->Start(base::AdaptCallbackForRepeating(
+      base::BindOnce(&CloudPolicyClient::OnFetchRobotAuthCodesCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 
 void CloudPolicyClient::Unregister() {
@@ -870,6 +868,7 @@ void CloudPolicyClient::OnRegisterCompleted(
 }
 
 void CloudPolicyClient::OnFetchRobotAuthCodesCompleted(
+    RobotAuthCodeCallback callback,
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
@@ -878,16 +877,14 @@ void CloudPolicyClient::OnFetchRobotAuthCodesCompleted(
     LOG(WARNING) << "Invalid service api access response.";
     status = DM_STATUS_RESPONSE_DECODING_ERROR;
   }
-
   status_ = status;
   if (status == DM_STATUS_SUCCESS) {
-    robot_api_auth_code_ = response.service_api_access_response().auth_code();
     DVLOG(1) << "Device robot account auth code fetch complete - code = "
-             << robot_api_auth_code_;
-
-    NotifyRobotAuthCodesFetched();
+             << response.service_api_access_response().auth_code();
+    std::move(callback).Run(status,
+                            response.service_api_access_response().auth_code());
   } else {
-    NotifyClientError();
+    std::move(callback).Run(status, std::string());
   }
 }
 
@@ -1140,11 +1137,6 @@ void CloudPolicyClient::NotifyPolicyFetched() {
 void CloudPolicyClient::NotifyRegistrationStateChanged() {
   for (auto& observer : observers_)
     observer.OnRegistrationStateChanged(this);
-}
-
-void CloudPolicyClient::NotifyRobotAuthCodesFetched() {
-  for (auto& observer : observers_)
-    observer.OnRobotAuthCodesFetched(this);
 }
 
 void CloudPolicyClient::NotifyClientError() {
