@@ -12,12 +12,14 @@ var INTERVAL_FOR_WAIT_UNTIL = 100; // ms
  *     test failed.
  */
 function reportPromise(promise, callback) {
-  promise.then(function() {
-    callback(/* error */ false);
-  }, function(error) {
-    console.error(error.stack || error);
-    callback(/* error */ true);
-  });
+  promise.then(
+      function() {
+        callback(/* error */ false);
+      },
+      function(/** @type {Error} */ error) {
+        console.error(error.stack || error);
+        callback(/* error */ true);
+      });
 }
 
 /**

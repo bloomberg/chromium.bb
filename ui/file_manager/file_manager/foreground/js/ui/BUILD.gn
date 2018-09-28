@@ -45,7 +45,6 @@ js_type_check("closure_compile") {
 js_library("closure_compile_externs") {
   sources = []
   externs_list = [
-    "$externs_path/command_line_private.js",
     "$externs_path/metrics_private.js",
     "$externs_path/web_animations.js",
     "../../../../externs/app_window_common.js",
