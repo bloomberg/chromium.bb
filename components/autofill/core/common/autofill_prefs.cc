@@ -60,6 +60,17 @@ const char kAutofillOrphanRowsRemoved[] = "autofill.orphan_rows_removed";
 // Boolean that is true if Autofill is enabled and allowed to save profile data.
 const char kAutofillProfileEnabled[] = "autofill.profile_enabled";
 
+// Dictionary pref used to track which form signature uploads have been
+// performed. Each entry in the dictionary maps a form signature (reduced
+// via a 10-bit modulus) to a integer bit-field where each bit denotes whether
+// or not a given upload event has occurred.
+const char kAutofillUploadEvents[] = "autofill.upload_events";
+
+// The timestamp (seconds since the Epoch UTC) for when the the upload event
+// pref was last reset.
+const char kAutofillUploadEventsLastResetTimestamp[] =
+    "autofill.upload_events_last_reset_timestamp";
+
 // Boolean that's true when Wallet card and address import is enabled by the
 // user.
 const char kAutofillWalletImportEnabled[] = "autofill.wallet_import_enabled";
@@ -106,6 +117,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDisusedCreditCardsDeleted, 0);
   registry->RegisterBooleanPref(prefs::kAutofillOrphanRowsRemoved, false);
+  registry->RegisterDictionaryPref(prefs::kAutofillUploadEvents);
+  registry->RegisterTimePref(prefs::kAutofillUploadEventsLastResetTimestamp,
+                             base::Time());
 }
 
 void MigrateDeprecatedAutofillPrefs(PrefService* prefs) {

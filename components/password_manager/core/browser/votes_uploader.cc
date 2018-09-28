@@ -306,7 +306,8 @@ bool VotesUploader::UploadPasswordVote(
 
   bool success = autofill_manager->download_manager()->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
-      login_form_signature, true /* observed_submission */);
+      login_form_signature, true /* observed_submission */,
+      nullptr /* prefs */);
 
   UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", success);
   return success;
@@ -354,7 +355,7 @@ void VotesUploader::UploadFirstLoginVotes(
 
   autofill_manager->download_manager()->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
-      std::string(), true /* observed_submission */);
+      std::string(), true /* observed_submission */, nullptr /* prefs */);
 }
 
 void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {

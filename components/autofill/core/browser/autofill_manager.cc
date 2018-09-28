@@ -303,8 +303,11 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
                                           SubmissionSource source,
                                           base::TimeTicks timestamp) {
   // TODO(crbug.com/801698): handle PROBABLY_FORM_SUBMITTED.
-  if (source == SubmissionSource::PROBABLY_FORM_SUBMITTED)
+  if (source == SubmissionSource::PROBABLY_FORM_SUBMITTED &&
+      !base::FeatureList::IsEnabled(
+          features::kAutofillSaveOnProbablySubmitted)) {
     return;
+  }
 
   // We will always give Autocomplete a chance to save the data.
   std::unique_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
@@ -329,6 +332,7 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   if (IsCreditCardAutofillEnabled())
     credit_card_form_event_logger_->OnWillSubmitForm();
 
+  submitted_form->set_submission_source(source);
   MaybeStartVoteUploadProcess(std::move(submitted_form), timestamp,
                               /*observed_submission=*/true);
 
@@ -338,6 +342,8 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   DCHECK(submitted_form);
   if (!submitted_form)
     return;
+
+  submitted_form->set_submission_source(source);
 
   CreditCard credit_card =
       form_data_importer_->ExtractCreditCardFromForm(*submitted_form);
@@ -1083,7 +1089,8 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form,
 
   download_manager_->StartUploadRequest(
       submitted_form, was_autofilled, non_empty_types,
-      /*login_form_signature=*/std::string(), observed_submission);
+      /*login_form_signature=*/std::string(), observed_submission,
+      client_->GetPrefs());
 }
 
 void AutofillManager::Reset() {

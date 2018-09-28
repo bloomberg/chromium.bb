@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/submission_source.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -292,6 +293,11 @@ class FormStructure {
   }
 #endif
 
+  SubmissionSource submission_source() const { return submission_source_; }
+  void set_submission_source(SubmissionSource submission_source) {
+    submission_source_ = submission_source;
+  }
+
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
@@ -535,6 +541,8 @@ class FormStructure {
   // UPI-VPA hints, This is a bitmask of DeveloperEngagementMetric and set in
   // DetermineHeuristicTypes().
   int developer_engagement_metrics_;
+
+  SubmissionSource submission_source_ = SubmissionSource::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

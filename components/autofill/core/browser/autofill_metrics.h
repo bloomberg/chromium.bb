@@ -27,6 +27,7 @@ namespace autofill {
 
 class AutofillField;
 class CreditCard;
+enum class SubmissionSource;
 
 class AutofillMetrics {
  public:
@@ -1132,6 +1133,15 @@ class AutofillMetrics {
 
   // Logs if there is any suggestions for an autocomplete query.
   static void LogAutocompleteSuggestions(bool has_suggestions);
+
+  // Returns the UMA metric used to track whether or not an upload was sent
+  // after being triggered by |submission_source|. This is exposed for testing.
+  static const char* SubmissionSourceToUploadEventMetric(
+      SubmissionSource submission_source);
+
+  // Logs whether or not an upload |was_sent| after being triggered by a
+  // |submission_source| event.
+  static void LogUploadEvent(SubmissionSource submission_source, bool was_sent);
 
   // Logs the card upload decisions ukm for the specified |url|.
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.

@@ -23,6 +23,8 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
+class PrefService;
+
 namespace autofill {
 
 class AutofillDriver;
@@ -86,7 +88,8 @@ class AutofillDownloadManager {
       bool form_was_autofilled,
       const ServerFieldTypeSet& available_field_types,
       const std::string& login_form_signature,
-      bool observed_submission);
+      bool observed_submission,
+      PrefService* pref_service);
 
   // Returns true if the autofill server communication is enabled.
   bool IsEnabled() const { return autofill_server_url_.is_valid(); }

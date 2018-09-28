@@ -32,6 +32,8 @@ extern const char kAutofillLastVersionDisusedCreditCardsDeleted[];
 extern const char kAutofillOrphanRowsRemoved[];
 // Do not get/set the value of this pref directly. Use provided getter/setter.
 extern const char kAutofillProfileEnabled[];
+extern const char kAutofillUploadEvents[];
+extern const char kAutofillUploadEventsLastResetTimestamp[];
 extern const char kAutofillWalletImportEnabled[];
 extern const char kAutofillWalletImportStorageCheckboxState[];
 extern const char kAutofillProfileValidity[];

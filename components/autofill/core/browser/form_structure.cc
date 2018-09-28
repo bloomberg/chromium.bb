@@ -438,13 +438,19 @@ bool FormStructure::EncodeUploadRequest(
   upload->set_autofill_used(form_was_autofilled);
   upload->set_data_present(EncodeFieldTypes(available_field_types));
   upload->set_passwords_revealed(passwords_were_revealed_);
-  if (submission_event_ != PasswordForm::SubmissionIndicatorEvent::NONE) {
-    DCHECK(submission_event_ != PasswordForm::SubmissionIndicatorEvent::
-                                    SUBMISSION_INDICATOR_EVENT_COUNT);
-    upload->set_submission_event(
-        static_cast<AutofillUploadContents_SubmissionIndicatorEvent>(
-            submission_event_));
-  }
+
+  auto triggering_event =
+      (submission_event_ != PasswordForm::SubmissionIndicatorEvent::NONE)
+          ? submission_event_
+          : ToSubmissionIndicatorEvent(submission_source_);
+
+  DCHECK_LT(
+      submission_event_,
+      PasswordForm::SubmissionIndicatorEvent::SUBMISSION_INDICATOR_EVENT_COUNT);
+  upload->set_submission_event(
+      static_cast<AutofillUploadContents_SubmissionIndicatorEvent>(
+          triggering_event));
+
   if (password_attributes_vote_) {
     EncodePasswordAttributesVote(*password_attributes_vote_,
                                  password_length_vote_, upload);

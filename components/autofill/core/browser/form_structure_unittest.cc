@@ -2407,6 +2407,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
   upload.set_password_has_numeric(true);
   upload.set_password_length(10u);
   upload.set_action_signature(15724779818122431245U);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_NONE);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
                         nullptr, 3U, 0);
@@ -2723,6 +2725,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMultipleValidities) {
   upload.set_password_has_numeric(true);
   upload.set_password_length(10u);
   upload.set_action_signature(15724779818122431245U);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_NONE);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
                         nullptr, 3U, {0, 2});
@@ -2909,6 +2913,9 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   // Adjust the expected proto string.
   upload.set_form_signature(7816485729218079147U);
   upload.set_autofill_used(false);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_HTML_FORM_SUBMISSION);
+
   // Create an additional 2 fields (total of 7).
   for (int i = 0; i < 2; ++i) {
     test::FillUploadField(upload.add_field(), 509334676U, "address", "text",
@@ -3037,6 +3044,8 @@ TEST_F(FormStructureTest,
   upload.set_action_signature(15724779818122431245U);
   upload.set_login_form_signature(42);
   upload.set_passwords_revealed(false);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_NONE);
 
   AutofillUploadContents::Field* upload_firstname_field = upload.add_field();
   test::FillUploadField(upload_firstname_field, 4224610201U, "firstname", "",
@@ -3132,6 +3141,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
   upload.set_passwords_revealed(false);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_NONE);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
                         "given-name", 3U);
@@ -3220,6 +3231,8 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_passwords_revealed(false);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_NONE);
 
   test::FillUploadField(upload.add_field(), 3763331450U, nullptr, nullptr,
                         nullptr, 3U);
@@ -3298,6 +3311,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
   upload.set_passwords_revealed(false);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_NONE);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
                         nullptr, 3U);
@@ -3368,6 +3383,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
   upload.set_passwords_revealed(false);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_NONE);
 
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
                         nullptr, 3U);
@@ -3435,6 +3452,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClassesAndIds) {
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
   upload.set_passwords_revealed(false);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_NONE);
 
   AutofillUploadContents::Field* firstname_field = upload.add_field();
   test::FillUploadField(firstname_field, 1318412689U, nullptr, "text", nullptr,
@@ -3486,7 +3505,9 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
+
   form_structure.reset(new FormStructure(form));
+  form_structure->set_submission_source(SubmissionSource::FRAME_DETACHED);
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3513,6 +3534,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
   upload.set_action_signature(15724779818122431245U);
   upload.set_form_name("myform");
   upload.set_passwords_revealed(false);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_FRAME_DETACHED);
 
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
                         nullptr, 3U);
@@ -3588,6 +3611,8 @@ TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
   upload.set_data_present("1440");
   upload.set_passwords_revealed(false);
   upload.set_action_signature(15724779818122431245U);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_NONE);
 
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
                         nullptr, 3U);
@@ -3672,6 +3697,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_passwords_revealed(false);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_NONE);
 
   test::FillUploadField(upload.add_field(), 3763331450U, nullptr, nullptr,
                         nullptr, 3U);
@@ -3713,6 +3740,7 @@ TEST_F(FormStructureTest, CheckDataPresence) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
+  form_structure.set_submission_source(SubmissionSource::FORM_SUBMISSION);
 
   std::vector<ServerFieldTypeSet> possible_field_types;
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
@@ -3739,6 +3767,8 @@ TEST_F(FormStructureTest, CheckDataPresence) {
   upload.set_data_present("");
   upload.set_passwords_revealed(false);
   upload.set_action_signature(15724779818122431245U);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_HTML_FORM_SUBMISSION);
 
   test::FillUploadField(upload.add_field(), 1089846351U, "first", "text",
                         nullptr, 1U);
@@ -3997,7 +4027,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
                                              {ADDRESS_HOME_LINE1});
 
   form_structure.reset(new FormStructure(form));
-
+  form_structure->set_submission_source(SubmissionSource::XHR_SUCCEEDED);
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
     form_structure->field(i)->set_possible_types_validities(
@@ -4013,6 +4043,8 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   upload.set_data_present("1440000360000008");
   upload.set_passwords_revealed(false);
   upload.set_action_signature(15724779818122431245U);
+  upload.set_submission_event(
+      AutofillUploadContents_SubmissionIndicatorEvent_XHR_SUCCEEDED);
 
   test::FillUploadField(upload.add_field(), 420638584U, "email", "text",
                         nullptr, 9U);
