@@ -35,6 +35,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
@@ -313,11 +314,20 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(notifier_.GetManager());
 
+  int cancelled_download_cleared_from_history = 0;
   for (InfoVector::const_iterator it = infos->begin();
        it != infos->end(); ++it) {
     loading_id_ = history::ToContentDownloadId(it->id);
     download::DownloadItem::DownloadState history_download_state =
         history::ToContentDownloadState(it->state);
+#if defined(OS_ANDROID)
+    // Clean up cancelled download on Android.
+    if (history_download_state == download::DownloadItem::CANCELLED) {
+      ScheduleRemoveDownload(it->id);
+      ++cancelled_download_cleared_from_history;
+      continue;
+    }
+#endif  // defined(OS_ANDROID)
     download::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
         it->guid, loading_id_, it->current_path, it->target_path, it->url_chain,
         it->referrer_url, it->site_url, it->tab_url, it->tab_referrer_url,
@@ -349,6 +359,12 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
     DCHECK_EQ(DownloadHistoryData::PERSISTED,
               DownloadHistoryData::Get(item)->state());
     ++history_size_;
+  }
+
+  if (cancelled_download_cleared_from_history > 0) {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "MobileDownload.CancelledDownloadRemovedFromHistory",
+        cancelled_download_cleared_from_history);
   }
 
   // Indicate that the history db is initialized.
