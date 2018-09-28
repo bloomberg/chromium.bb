@@ -42,6 +42,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/cocoa/bridge_factory_impl.h"
@@ -650,6 +651,7 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   AppShimController controller;
   base::MessageLoopForUI main_message_loop;
   base::PlatformThread::SetName("CrAppShimMain");
+  ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 
   // In tests, launching Chrome does nothing, and we won't get a ping response,
   // so just assume the socket exists.
