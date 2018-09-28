@@ -2464,6 +2464,7 @@ if (enable_java_templates) {
   # the variables properly.
   #
   # Variables:
+  #  main_target_name: Used when extracting srcjars for codesearch.
   #  java_files: Optional list of Java source file paths.
   #  srcjar_deps: Optional list of .srcjar dependencies (not file paths).
   #    The corresponding source files they contain will be compiled too.
@@ -2578,8 +2579,12 @@ if (enable_java_templates) {
           rebase_path(invoker.javac_jar_path, root_build_dir)
       _rebased_java_srcjars = rebase_path(_java_srcjars, root_build_dir)
       _rebased_depfile = rebase_path(depfile, root_build_dir)
+      _rebased_generated_dir = rebase_path(
+              "$target_gen_dir/${invoker.main_target_name}/generated_java",
+              root_build_dir)
       args = [
         "--depfile=$_rebased_depfile",
+        "--generated-dir=$_rebased_generated_dir",
         "--jar-path=$_rebased_javac_jar_path",
         "--java-srcjars=$_rebased_java_srcjars",
         "--java-version=1.8",
@@ -3081,6 +3086,7 @@ if (enable_java_templates) {
                                  "provider_configurations",
                                  "javac_args",
                                ])
+        main_target_name = _main_target_name
         build_config = _build_config
         java_files = _java_files
         if (_java_files != []) {
