@@ -62,6 +62,15 @@
   <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_DESC" desc="Brief explanation of the capability of Google services.">
     Communicates with Google to improve browsing and Chromium
   </message>
+  <message name="IDS_SETTINGS_RESTART_TO_APPLY_CHANGES" desc="Description in the snackbar to restart Chrome and apply changes.">
+    To apply your changes, relaunch Chromium
+  </message>
+  <message name="IDS_SETTINGS_SIGNIN_ALLOWED" desc="The title of the preference to allow to sign-in to Chrome">
+    Allow Chromium sign-in
+  </message>
+  <message name="IDS_SETTINGS_SIGNIN_ALLOWED_DESC" desc="The description of the preference to allow to sign-in to Chrome">
+    By turning this off, you can sign in to Google sites like Gmail without signing in to Chromium
+  </message>
 
   <!-- People Page -->
   <message name="IDS_SETTINGS_SYNC_DISABLED_BY_ADMINISTRATOR" desc="The text to display when sync is disabled by administrator policy.">

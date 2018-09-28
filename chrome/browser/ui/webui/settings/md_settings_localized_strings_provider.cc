@@ -139,6 +139,9 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
     {"ok", IDS_OK},
     {"restart", IDS_SETTINGS_RESTART},
+#if !defined(OS_CHROMEOS)
+    {"restartToApplyChanges", IDS_SETTINGS_RESTART_TO_APPLY_CHANGES},
+#endif
     {"retry", IDS_SETTINGS_RETRY},
     {"save", IDS_SAVE},
     {"settings", IDS_SETTINGS_SETTINGS},
@@ -1964,6 +1967,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
                        Profile* profile) {
   LocalizedString localized_strings[] = {
       {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
+      {"signinAllowedTitle", IDS_SETTINGS_SIGNIN_ALLOWED},
+      {"signinAllowedDescription", IDS_SETTINGS_SIGNIN_ALLOWED_DESC},
       {"doNotTrack", IDS_SETTINGS_ENABLE_DO_NOT_TRACK},
       {"doNotTrackDialogTitle", IDS_SETTINGS_ENABLE_DO_NOT_TRACK_DIALOG_TITLE},
       {"enableContentProtectionAttestation",

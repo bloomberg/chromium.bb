@@ -787,6 +787,7 @@ extern const char kPacHttpsUrlStrippingEnabled[];
 extern const char kBrowserGuestModeEnabled[];
 extern const char kBrowserAddPersonEnabled[];
 extern const char kForceBrowserSignin[];
+extern const char kSigninAllowedOnNextStartup[];
 
 extern const char kCryptAuthDeviceId[];
 extern const char kEasyUnlockHardlockState[];

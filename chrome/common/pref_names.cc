@@ -2262,6 +2262,10 @@ const char kBrowserAddPersonEnabled[] = "profile.add_person_enabled";
 // Whether profile can be used before sign in.
 const char kForceBrowserSignin[] = "profile.force_browser_signin";
 
+// Boolean which indicates if the user is allowed to sign into Chrome on the
+// next startup.
+const char kSigninAllowedOnNextStartup[] = "signin.allowed_on_next_startup";
+
 // Device identifier used by CryptAuth stored in local state. This ID is
 // combined with a user ID before being registered with the CryptAuth server,
 // so it can't correlate users on the same device.

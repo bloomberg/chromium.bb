@@ -163,6 +163,11 @@ Polymer({
         return loadTimeData.getBoolean('enableEphemeralFlashPermission');
       },
     },
+
+    // <if expr="not chromeos">
+    /** @private */
+    showRestart_: Boolean,
+    // </if>
   },
 
   listeners: {
@@ -351,6 +356,20 @@ Polymer({
   getProtectedContentIdentifiersLabel_: function(value) {
     return value ? this.i18n('siteSettingsProtectedContentEnableIdentifiers') :
                    this.i18n('siteSettingsBlocked');
+  },
+
+  /** @private */
+  onSigninAllowedChange_: function() {
+    this.showRestart_ = true;
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onRestartTap_: function(e) {
+    e.stopPropagation();
+    settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },
 });
 })();

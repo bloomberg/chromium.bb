@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -121,6 +122,21 @@ AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
       account_consistency_initialized_(false) {
   DCHECK(profile_);
   DCHECK(!profile_->IsOffTheRecord());
+
+  PrefService* prefs = profile->GetPrefs();
+  bool signin_allowed = prefs->GetBoolean(prefs::kSigninAllowed);
+  if (prefs->IsUserModifiablePreference(prefs::kSigninAllowed)) {
+    // Propagate settings changes from the previous launch to the signin-allowed
+    // pref.
+    signin_allowed = prefs->GetBoolean(prefs::kSigninAllowedOnNextStartup);
+    prefs->SetBoolean(prefs::kSigninAllowed, signin_allowed);
+  } else {
+    // When the signin-allowed pref is not user-modifiable(e.g. managed), reset
+    // signin-allowed-on-next-startup.
+    prefs->SetBoolean(prefs::kSigninAllowedOnNextStartup, signin_allowed);
+  }
+  UMA_HISTOGRAM_BOOLEAN("Signin.SigninAllowed", signin_allowed);
+
   account_consistency_ = ComputeAccountConsistencyMethod(profile_);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -160,6 +176,7 @@ void AccountConsistencyModeManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kAccountConsistencyMirrorRequired,
                                 false);
 #endif
+  registry->RegisterBooleanPref(prefs::kSigninAllowedOnNextStartup, true);
 }
 
 // static
@@ -282,6 +299,12 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
   if (!can_enable_dice_for_build) {
     LOG(WARNING) << "Desktop Identity Consistency cannot be enabled as no "
                     "OAuth client ID and client secret have been configured.";
+    return AccountConsistencyMethod::kDiceFixAuthErrors;
+  }
+
+  if (!profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed)) {
+    VLOG(1) << "Desktop Identity Consistency disabled as sign-in to Chrome"
+               "is not allowed";
     return AccountConsistencyMethod::kDiceFixAuthErrors;
   }
 

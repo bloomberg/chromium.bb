@@ -29,6 +29,9 @@
 <link rel="import" href="../site_settings/zoom_levels.html">
 <link rel="import" href="../site_settings_page/site_settings_page.html">
 
+<if expr="not chromeos">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
+</if>
 <if expr="use_nss_certs">
   <link rel="import" href="chrome://resources/cr_components/certificate_manager/certificate_manager.html">
 </if>
@@ -38,6 +41,18 @@
 <dom-module id="settings-privacy-page">
   <template>
     <style include="settings-shared">
+<if expr="not chromeos">
+      #toast {
+        color: white;
+        left: 0;
+        z-index: 1;
+      }
+
+      :host-context([dir='rtl']) #toast {
+        left: auto;
+        right: 0;
+      }
+</if>
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
@@ -77,6 +92,14 @@
               unified-consent-enabled="[[unifiedConsentEnabled_]]">
           </settings-personalization-options>
         </template>
+<if expr="not chromeos">
+        <settings-toggle-button id="signinAllowedToggle"
+            pref="{{prefs.signin.allowed_on_next_startup}}"
+            label="$i18n{signinAllowedTitle}"
+            sub-label="$i18n{signinAllowedDescription}"
+            on-settings-boolean-control-change="onSigninAllowedChange_">
+        </settings-toggle-button>
+</if><!-- not chromeos -->
         <settings-toggle-button id="doNotTrack"
             pref="{{prefs.enable_do_not_track}}" label="$i18n{doNotTrack}"
             on-settings-boolean-control-change="onDoNotTrackChange_"
@@ -556,6 +579,14 @@
        </template>
       </template>
     </settings-animated-pages>
+<if expr="not chromeos">
+    <cr-toast id="toast" open="[[showRestart_]]">
+      <div>$i18n{restartToApplyChanges}</div>
+      <paper-button on-click="onRestartTap_">
+        $i18n{restart}
+      </paper-button>
+    </cr-toast>
+</if>
   </template>
   <script src="privacy_page.js"></script>
 </dom-module>
