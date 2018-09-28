@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -190,7 +191,8 @@ void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
   UserCloudPolicyManager* manager = policy_manager();
   // Allow the user to signout again.
   if (manager)
-    signin_manager()->ProhibitSignout(false);
+    signin_util::SetUserSignoutAllowedForProfile(profile_, true);
+
   UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager();
 }
 
@@ -245,7 +247,7 @@ void UserPolicySigninService::OnRegistrationComplete() {
 void UserPolicySigninService::ProhibitSignoutIfNeeded() {
   if (policy_manager()->IsClientRegistered()) {
     DVLOG(1) << "User is registered for policy - prohibiting signout";
-    signin_manager()->ProhibitSignout(true);
+    signin_util::SetUserSignoutAllowedForProfile(profile_, false);
   }
 }
 

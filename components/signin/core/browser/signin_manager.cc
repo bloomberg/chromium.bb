@@ -15,7 +15,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -37,7 +36,6 @@ SigninManager::SigninManager(
     : SigninManagerBase(client,
                         account_tracker_service,
                         signin_error_controller),
-      prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
       client_(client),
       token_service_(token_service),
@@ -185,15 +183,17 @@ void SigninManager::StartSignOut(
     signin_metrics::SignoutDelete signout_delete_metric,
     RemoveAccountsOption remove_option) {
   client_->PreSignOut(
-      base::Bind(&SigninManager::DoSignOut, base::Unretained(this),
-                 signout_source_metric, signout_delete_metric, remove_option),
+      base::BindOnce(&SigninManager::OnSignoutDecisionReached,
+                     base::Unretained(this), signout_source_metric,
+                     signout_delete_metric, remove_option),
       signout_source_metric);
 }
 
-void SigninManager::DoSignOut(
+void SigninManager::OnSignoutDecisionReached(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
-    RemoveAccountsOption remove_option) {
+    RemoveAccountsOption remove_option,
+    SigninClient::SignoutDecision signout_decision) {
   DCHECK(IsInitialized());
 
   signin_metrics::LogSignout(signout_source_metric, signout_delete_metric);
@@ -213,8 +213,10 @@ void SigninManager::DoSignOut(
     return;
   }
 
-  if (IsSignoutProhibited()) {
-    DVLOG(1) << "Ignoring attempt to sign out while signout is prohibited";
+  // TODO(crbug.com/887756): Consider moving this higher up, or document why
+  // the above blocks are exempt from the |signout_decision| early return.
+  if (signout_decision == SigninClient::SignoutDecision::DISALLOW_SIGNOUT) {
+    DVLOG(1) << "Ignoring attempt to sign out while signout disallowed";
     return;
   }
 
@@ -504,9 +506,3 @@ void SigninManager::OnRefreshTokensLoaded() {
     token_service_->RemoveObserver(this);
   }
 }
-
-void SigninManager::ProhibitSignout(bool prohibit_signout) {
-  prohibit_signout_ = prohibit_signout;
-}
-
-bool SigninManager::IsSignoutProhibited() const { return prohibit_signout_; }

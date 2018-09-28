@@ -49,7 +49,8 @@ TestSigninClient::TestSigninClient(PrefService* pref_service)
               &test_url_loader_factory_)),
       pref_service_(pref_service),
       are_signin_cookies_allowed_(true),
-      network_calls_delayed_(false) {}
+      network_calls_delayed_(false),
+      is_signout_allowed_(true) {}
 
 TestSigninClient::~TestSigninClient() {}
 
@@ -73,6 +74,14 @@ void TestSigninClient::PostSignedIn(const std::string& account_id,
                   const std::string& username,
                   const std::string& password) {
   signed_in_password_ = password;
+}
+
+void TestSigninClient::PreSignOut(
+    base::OnceCallback<void(SignoutDecision)> on_signout_decision_reached,
+    signin_metrics::ProfileSignout signout_source_metric) {
+  std::move(on_signout_decision_reached)
+      .Run(is_signout_allowed_ ? SignoutDecision::ALLOW_SIGNOUT
+                               : SignoutDecision::DISALLOW_SIGNOUT);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

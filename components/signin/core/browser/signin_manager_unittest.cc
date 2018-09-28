@@ -335,11 +335,11 @@ TEST_F(SigninManagerTest, SignOutWhileProhibited) {
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
 
   manager_->SetAuthenticatedAccountInfo("gaia_id", "user@gmail.com");
-  manager_->ProhibitSignout(true);
+  signin_client()->set_is_signout_allowed(false);
   manager_->SignOut(signin_metrics::SIGNOUT_TEST,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_TRUE(manager_->IsAuthenticated());
-  manager_->ProhibitSignout(false);
+  signin_client()->set_is_signout_allowed(true);
   manager_->SignOut(signin_metrics::SIGNOUT_TEST,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_FALSE(manager_->IsAuthenticated());
