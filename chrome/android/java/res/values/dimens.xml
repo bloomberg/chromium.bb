@@ -267,6 +267,7 @@
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>
     <dimen name="location_bar_status_separator_width">1dp</dimen>
+    <dimen name="toolbar_optional_button_animation_translation">10dp</dimen>
 
     <!-- Modern toolbar dimensions -->
     <dimen name="modern_toolbar_background_size">40dp</dimen>

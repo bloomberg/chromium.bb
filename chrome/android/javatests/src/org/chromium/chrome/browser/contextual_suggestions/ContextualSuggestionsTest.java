@@ -528,7 +528,10 @@ public class ContextualSuggestionsTest {
                 "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
 
         // Simulate suggestions being cleared.
-        ThreadUtils.runOnUiThreadBlocking(() -> mMediator.clearState());
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mMediator.clearState();
+            getToolbarPhone().endExperimentalButtonAnimationForTesting();
+        });
         assertEquals("Toolbar button should be gone", View.GONE, toolbarButton.getVisibility());
         assertEquals("Suggestions should be cleared", 0, mModel.getClusterList().getItemCount());
 
@@ -598,10 +601,8 @@ public class ContextualSuggestionsTest {
     }
 
     private View getToolbarButton(ChromeActivity activity) throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(() -> {
-            return ((ToolbarPhone) activity.getToolbarManager().getToolbarLayout())
-                    .getExperimentalButtonForTesting();
-        });
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> { return getToolbarPhone(activity).getExperimentalButtonForTesting(); });
     }
 
     private void clickToolbarButton() throws ExecutionException {
@@ -641,6 +642,9 @@ public class ContextualSuggestionsTest {
         CriteriaHelper.pollUiThread(() -> {
             return mActivityTestRule.getActivity().getActivityTab().getUrl().equals(expectedUrl);
         });
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> getToolbarPhone().endExperimentalButtonAnimationForTesting());
     }
 
     private void dismissHelpBubble() {
@@ -649,5 +653,13 @@ public class ContextualSuggestionsTest {
                 mMediator.getHelpBubbleForTesting().dismiss();
             }
         });
+    }
+
+    private ToolbarPhone getToolbarPhone() {
+        return getToolbarPhone(mActivityTestRule.getActivity());
+    }
+
+    private ToolbarPhone getToolbarPhone(ChromeActivity activity) {
+        return (ToolbarPhone) activity.getToolbarManager().getToolbarLayout();
     }
 }

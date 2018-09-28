@@ -668,6 +668,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @return  Whether the UrlBar currently has focus.
+     */
+    public boolean isUrlBarFocused() {
+        return getToolbarLayout().getLocationBar().isUrlBarFocused();
+    }
+
+    /**
      * @param reason A {@link OmniboxFocusReason} that the omnibox was focused.
      */
     public static void recordOmniboxFocusReason(@OmniboxFocusReason int reason) {
