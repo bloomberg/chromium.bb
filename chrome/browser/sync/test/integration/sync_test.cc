@@ -34,6 +34,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -647,6 +648,8 @@ void SyncTest::SetupMockGaiaResponsesForProfile(Profile* profile) {
 }
 
 void SyncTest::SetUpInvalidations(int index) {
+  bool fcm_invalidations_enabled =
+      base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
   switch (server_type_) {
     case EXTERNAL_LIVE_SERVER:
       // DO NOTHING. External live sync servers use GCM to notify profiles of
@@ -655,12 +658,22 @@ void SyncTest::SetUpInvalidations(int index) {
       break;
 
     case IN_PROCESS_FAKE_SERVER: {
-      KeyedService* test_factory =
-          invalidation::DeprecatedProfileInvalidationProviderFactory::
-              GetInstance()
-                  ->SetTestingFactoryAndUse(
-                      GetProfile(index),
-                      BuildFakeServerProfileInvalidationProvider);
+      KeyedService* test_factory;
+      if (fcm_invalidations_enabled) {
+        test_factory =
+            invalidation::ProfileInvalidationProviderFactory::GetInstance()
+                ->SetTestingFactoryAndUse(
+                    GetProfile(index),
+                    BuildFakeServerProfileInvalidationProvider);
+
+      } else {
+        test_factory =
+            invalidation::DeprecatedProfileInvalidationProviderFactory::
+                GetInstance()
+                    ->SetTestingFactoryAndUse(
+                        GetProfile(index),
+                        BuildFakeServerProfileInvalidationProvider);
+      }
       invalidation::InvalidationService* invalidation_service =
           static_cast<invalidation::ProfileInvalidationProvider*>(test_factory)
               ->GetInvalidationService();
@@ -683,8 +696,15 @@ void SyncTest::SetUpInvalidations(int index) {
               TestUsesSelfNotifications()
                   ? BuildSelfNotifyingP2PProfileInvalidationProvider
                   : BuildRealisticP2PProfileInvalidationProvider;
-      invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
-          ->SetTestingFactoryAndUse(GetProfile(index), invalidation_provider);
+      if (fcm_invalidations_enabled) {
+        invalidation::ProfileInvalidationProviderFactory::GetInstance()
+            ->SetTestingFactoryAndUse(GetProfile(index), invalidation_provider);
+      } else {
+        invalidation::DeprecatedProfileInvalidationProviderFactory::
+            GetInstance()
+                ->SetTestingFactoryAndUse(GetProfile(index),
+                                          invalidation_provider);
+      }
   }
 }
 
@@ -704,10 +724,20 @@ void SyncTest::InitializeInvalidations(int index) {
     }
     case SERVER_TYPE_UNDECIDED:
     case LOCAL_PYTHON_SERVER:
-      invalidation::InvalidationService* invalidation_service =
-          invalidation::DeprecatedProfileInvalidationProviderFactory::
-              GetForProfile(GetProfile(index))
-                  ->GetInvalidationService();
+      bool fcm_invalidations_enabled = base::FeatureList::IsEnabled(
+          invalidation::switches::kFCMInvalidations);
+      invalidation::InvalidationService* invalidation_service;
+      if (fcm_invalidations_enabled) {
+        invalidation_service =
+            invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+                GetProfile(index))
+                ->GetInvalidationService();
+      } else {
+        invalidation_service =
+            invalidation::DeprecatedProfileInvalidationProviderFactory::
+                GetForProfile(GetProfile(index))
+                    ->GetInvalidationService();
+      }
       invalidation::P2PInvalidationService* p2p_invalidation_service =
           static_cast<invalidation::P2PInvalidationService*>(
               invalidation_service);

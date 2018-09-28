@@ -1797,6 +1797,23 @@
             ]
         }
     ],
+    "FCMInvalidationsExperiment": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "FCMInvalidationsEnabled",
+                    "enable_features": [
+                        "FCMInvalidations"
+                    ]
+                }
+            ]
+        }
+    ],
     "FrameTypePriorityExperiment": [
         {
             "platforms": [
