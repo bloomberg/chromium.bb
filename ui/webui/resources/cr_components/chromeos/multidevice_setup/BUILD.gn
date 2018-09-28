@@ -13,17 +13,11 @@ js_type_check("closure_compile") {
     ":mojo_api",
     ":multidevice_setup",
     ":multidevice_setup_browser_proxy",
+    ":multidevice_setup_delegate",
     ":setup_failed_page",
     ":setup_succeeded_page",
     ":start_setup_page",
-    ":ui_mode",
     ":ui_page_container_behavior",
-  ]
-}
-
-js_library("multidevice_setup_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
   ]
 }
 
@@ -50,6 +44,9 @@ js_library("fake_mojo_service") {
 }
 
 js_library("mojo_api") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
 }
 
 js_library("multidevice_setup") {
@@ -57,11 +54,11 @@ js_library("multidevice_setup") {
     ":button_bar",
     ":fake_mojo_service",
     ":mojo_api",
+    ":multidevice_setup_delegate",
     ":password_page",
     ":setup_failed_page",
     ":setup_succeeded_page",
     ":start_setup_page",
-    ":ui_mode",
     "//ui/webui/resources/js:cr",
   ]
 
@@ -76,6 +73,18 @@ js_library("multidevice_setup") {
     "$root_gen_dir/chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.externs.js",
     "$root_gen_dir/mojo/public/mojom/base/time.mojom.externs.js",
     "$externs_path/mojo.js",
+  ]
+}
+
+js_library("multidevice_setup_browser_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("multidevice_setup_delegate") {
+  deps = [
+    "//ui/webui/resources/js:cr",
   ]
 }
 
@@ -106,12 +115,6 @@ js_library("setup_succeeded_page") {
 js_library("start_setup_page") {
   deps = [
     ":ui_page_container_behavior",
-  ]
-}
-
-js_library("ui_mode") {
-  deps = [
-    "//ui/webui/resources/js:cr",
   ]
 }
 

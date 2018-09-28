@@ -20,11 +20,10 @@ cr.define('multidevice_setup', function() {
 
     properties: {
       /**
-       * Indicates whether UI was opened during OOBE flow or afterward.
-       *
-       * @type {!multidevice_setup.UiMode}
+       * Delegate object which performs differently in OOBE vs. non-OOBE mode.
+       * @type {!multidevice_setup.MultiDeviceSetupDelegate}
        */
-      uiMode: Number,
+      delegate: Object,
 
       /**
        * Element name of the currently visible page.
@@ -34,8 +33,7 @@ cr.define('multidevice_setup', function() {
       visiblePageName_: {
         type: String,
         value: PageName.START,
-        // For testing purporses only
-        notify: true,
+        notify: true,  // For testing purporses only.
       },
 
       /**
@@ -145,37 +143,44 @@ cr.define('multidevice_setup', function() {
           this.visiblePageName_ = PageName.START;
           return;
         case PageName.PASSWORD:
-          this.$.passwordPage.clearPasswordTextInput();
-          let deviceId = /** @type {string} */ (this.selectedDeviceId_);
-          this.multideviceSetup_.setHostDevice(deviceId, this.authToken_)
-              .then((responseParams) => {
-                if (!responseParams.success) {
-                  console.warn(
-                      'Failure setting device with device ID: ' +
-                      this.selectedDeviceId_);
-                  return;
-                }
-
-                switch (this.uiMode) {
-                  case multidevice_setup.UiMode.OOBE:
-                    this.exitSetupFlow_();
-                    return;
-                  case multidevice_setup.UiMode.POST_OOBE:
-                    this.visiblePageName_ = PageName.SUCCESS;
-                    return;
-                }
-              })
-              .catch((error) => {
-                console.warn('Mojo service failure: ' + error);
-              });
+          this.$$('password-page').clearPasswordTextInput();
+          this.setHostDevice_();
           return;
         case PageName.SUCCESS:
           this.exitSetupFlow_();
           return;
         case PageName.START:
-          this.visiblePageName_ = PageName.PASSWORD;
+          if (this.delegate.isPasswordRequiredToSetHost())
+            this.visiblePageName_ = PageName.PASSWORD;
+          else
+            this.setHostDevice_();
           return;
       }
+    },
+
+    /** @private */
+    setHostDevice_: function() {
+      // An authentication token must be set if a password is required.
+      assert(this.delegate.isPasswordRequiredToSetHost() == !!this.authToken_);
+
+      let deviceId = /** @type {string} */ (this.selectedDeviceId_);
+      this.delegate.setHostDevice(deviceId, this.authToken_)
+          .then((responseParams) => {
+            if (!responseParams.success) {
+              console.warn('Failure setting host with device ID: ' + deviceId);
+              return;
+            }
+
+            if (this.delegate.shouldExitSetupFlowAfterSettingHost()) {
+              this.exitSetupFlow_();
+              return;
+            }
+
+            this.visiblePageName_ = PageName.SUCCESS;
+          })
+          .catch((error) => {
+            console.warn('Mojo service failure: ' + error);
+          });
     },
 
     /** @private */
@@ -193,12 +198,27 @@ cr.define('multidevice_setup', function() {
     },
 
     /**
+     * @return {boolean}
+     * @private
+     */
+    shouldPasswordPageBeIncluded_: function() {
+      return this.delegate.isPasswordRequiredToSetHost();
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    shouldSetupSucceededPageBeIncluded_: function() {
+      return !this.delegate.shouldExitSetupFlowAfterSettingHost();
+    },
+
+    /**
      * Notifies observers that the setup flow has completed.
      *
      * @private
      */
     exitSetupFlow_: function() {
-      console.log('Exiting Setup Flow');
       this.fire('setup-exited');
     },
   });
