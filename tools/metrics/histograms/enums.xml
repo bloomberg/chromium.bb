@@ -25144,6 +25144,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IE7LookupResultStatus">
+  <obsolete>
+    Deprecated as of 07/2018. The corresponding metric was deleted in
+    https://chromium-review.googlesource.com/c/chromium/src/+/1131495.
+  </obsolete>
   <int value="0" label="No stored passwords from IE7 found."/>
   <int value="1" label="Some stored passwords from IE7 found."/>
 </enum>
