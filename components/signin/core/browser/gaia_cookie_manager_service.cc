@@ -1005,6 +1005,9 @@ void GaiaCookieManagerService::StartFetchingListAccounts() {
 
 void GaiaCookieManagerService::OnSetAccountsFinished(
     const GoogleServiceAuthError& error) {
+  // Set ListAccounts result to stale manually because on iOS
+  // GaiaCookieManagerService is not notified about changes in cookie storage.
+  list_accounts_stale_ = true;
   access_tokens_.clear();
   token_requests_.clear();
   cookies_to_set_.clear();

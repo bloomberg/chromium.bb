@@ -422,8 +422,9 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
     OnSetAccountsInCookieCompleted(GoogleServiceAuthError::AuthErrorNone());
   }
   // TODO(valeriyas): Log operation here.
+  // TODO (valeriyas): Write correct first gaia account to cache for desktop.
   if (!is_reconcile_started_)
-    delegate_->OnReconcileFinished(gaia_accounts[0].id, reconcile_is_noop_);
+    delegate_->OnReconcileFinished(primary_account, reconcile_is_noop_);
   first_execution_ = false;
   ScheduleStartReconcileIfChromeAccountsChanged();
 }

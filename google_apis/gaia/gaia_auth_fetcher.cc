@@ -227,6 +227,11 @@ void GaiaAuthFetcher::CancelRequest() {
   fetch_pending_ = false;
 }
 
+bool GaiaAuthFetcher::IsMultiloginUrl(const GURL& url) {
+  return base::StartsWith(url.spec(), oauth_multilogin_gurl_.spec(),
+                          base::CompareCase::SENSITIVE);
+}
+
 void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
     const std::string& body,
     const std::string& headers,
@@ -1116,8 +1121,7 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
     OnUberAuthTokenFetch(data, net_error, response_code);
   } else if (url == oauth_login_gurl_) {
     OnOAuthLoginFetched(data, net_error, response_code);
-  } else if (base::StartsWith(url.spec(), oauth_multilogin_gurl_.spec(),
-                              base::CompareCase::SENSITIVE)) {
+  } else if (IsMultiloginUrl(url)) {
     OnOAuthMultiloginFetched(data, net_error, response_code);
   } else if (url == oauth2_revoke_gurl_) {
     OnOAuth2RevokeTokenFetched(data, net_error, response_code);
