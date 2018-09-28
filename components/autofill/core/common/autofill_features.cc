@@ -158,6 +158,9 @@ const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout{
     "AutofillRestrictUnownedFieldsToFormlessCheckout",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAutofillSaveOnProbablySubmitted{
+    "AutofillSaveOnProbablySubmitted", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate{
     "AutofillSaveCardDialogUnlabeledExpirationDate",
     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -222,6 +225,9 @@ const base::Feature kAutofillSuppressDisusedAddresses{
 
 const base::Feature kAutofillSuppressDisusedCreditCards{
     "AutofillSuppressDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAutofillUploadThrottling{"AutofillUploadThrottling",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillUpstream{"AutofillUpstream",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

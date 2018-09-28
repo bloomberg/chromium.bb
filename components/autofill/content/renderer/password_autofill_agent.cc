@@ -621,22 +621,6 @@ WebInputElement FindUsernameElementPrecedingPasswordElement(
   return WebInputElement();
 }
 
-PasswordForm::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
-    SubmissionSource source) {
-  switch (source) {
-    case SubmissionSource::FRAME_DETACHED:
-      return PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED;
-    case SubmissionSource::SAME_DOCUMENT_NAVIGATION:
-      return PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
-    case SubmissionSource::XHR_SUCCEEDED:
-      return PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED;
-    case SubmissionSource::DOM_MUTATION_AFTER_XHR:
-      return PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
-    default:
-      return PasswordForm::SubmissionIndicatorEvent::NONE;
-  }
-}
-
 WebInputElement ConvertToWebInput(const WebFormControlElement& element) {
   if (element.IsNull())
     return WebInputElement();

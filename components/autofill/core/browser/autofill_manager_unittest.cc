@@ -102,12 +102,13 @@ class MockAutofillDownloadManager : public TestAutofillDownloadManager {
                               AutofillDownloadManager::Observer* observer)
       : TestAutofillDownloadManager(driver, observer) {}
 
-  MOCK_METHOD5(StartUploadRequest,
+  MOCK_METHOD6(StartUploadRequest,
                bool(const FormStructure&,
                     bool,
                     const ServerFieldTypeSet&,
                     const std::string&,
-                    bool));
+                    bool,
+                    PrefService*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDownloadManager);
@@ -6169,7 +6170,7 @@ TEST_F(AutofillManagerTest, SmallForm_Upload_NoHeuristicsOrQuery) {
   autofill_manager_->SetExpectedObservedSubmission(true);
   autofill_manager_->SetCallParentUploadFormData(true);
   EXPECT_CALL(*download_manager_,
-              StartUploadRequest(_, false, _, std::string(), true));
+              StartUploadRequest(_, false, _, std::string(), true, _));
 
   base::HistogramTester histogram_tester;
   FormSubmitted(form);

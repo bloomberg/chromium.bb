@@ -57,6 +57,7 @@ enum PasswordFormSubmissionIndicatorEvent {
     FRAME_DETACHED,
     DOM_MUTATION_AFTER_XHR,
     PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD,
+    PROBABLE_FORM_SUBMISSION,
     SUBMISSION_INDICATOR_EVENT_COUNT
 };
 
@@ -70,6 +71,7 @@ enum PasswordFormFieldPredictionType {
 
 // autofill::SubmissionSource
 enum SubmissionSource {
+  NONE,
   SAME_DOCUMENT_NAVIGATION,
   XHR_SUCCEEDED,
   FRAME_DETACHED,
