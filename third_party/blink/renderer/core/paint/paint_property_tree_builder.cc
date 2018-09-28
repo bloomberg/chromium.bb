@@ -180,6 +180,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateReplacedContentTransform();
   ALWAYS_INLINE void UpdateScrollAndScrollTranslation();
   ALWAYS_INLINE void UpdateOutOfFlowContext();
+  // See core/paint/README.md for the description of isolation nodes.
   ALWAYS_INLINE void UpdateTransformIsolationNode();
   ALWAYS_INLINE void UpdateEffectIsolationNode();
   ALWAYS_INLINE void UpdateClipIsolationNode();
