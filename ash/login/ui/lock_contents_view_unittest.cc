@@ -1949,4 +1949,40 @@ TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
   EXPECT_TRUE(test_api.warning_banner_bubble()->IsVisible());
 }
 
+TEST_F(LockContentsViewUnitTest, RemoveUserFocusMovesBackToPrimaryUser) {
+  // Build lock screen with one public account and one normal user.
+  auto* lock = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  AddPublicAccountUsers(1);
+  AddUsers(1);
+  users()[1]->can_remove = true;
+  data_dispatcher()->NotifyUsers(users());
+  SetWidget(CreateWidgetWithContent(lock));
+
+  LockContentsView::TestApi test_api(lock);
+  LoginAuthUserView::TestApi secondary_test_api(
+      test_api.opt_secondary_big_view()->auth_user());
+  LoginUserView::TestApi user_test_api(secondary_test_api.user_view());
+
+  // Remove the user.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  // Focus the dropdown to raise the bubble.
+  user_test_api.dropdown()->RequestFocus();
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  base::RunLoop().RunUntilIdle();
+  // Focus the remove user bubble, tap twice to remove the user.
+  user_test_api.menu()->bubble_view()->RequestFocus();
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  base::RunLoop().RunUntilIdle();
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  base::RunLoop().RunUntilIdle();
+
+  // Secondary user was removed.
+  EXPECT_EQ(nullptr, test_api.opt_secondary_big_view());
+  // Primary user has focus.
+  EXPECT_TRUE(HasFocusInAnyChildView(test_api.primary_big_view()));
+}
+
 }  // namespace ash
