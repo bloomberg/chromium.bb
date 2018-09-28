@@ -82,8 +82,6 @@ class WebContentsModalDialogManager
     std::unique_ptr<SingleWebContentsDialogManager> manager;
   };
 
-  using WebContentsModalDialogList = base::circular_deque<DialogState>;
-
   // Blocks/unblocks interaction with renderer process.
   void BlockWebContentsInteraction(bool blocked);
 
@@ -101,7 +99,7 @@ class WebContentsModalDialogManager
   WebContentsModalDialogManagerDelegate* delegate_;
 
   // All active dialogs.
-  WebContentsModalDialogList child_dialogs_;
+  base::circular_deque<DialogState> child_dialogs_;
 
   // Whether the WebContents' visibility is content::Visibility::HIDDEN.
   bool web_contents_is_hidden_;
