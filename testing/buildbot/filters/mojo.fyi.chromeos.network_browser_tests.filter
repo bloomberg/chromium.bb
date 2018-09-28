@@ -9,18 +9,13 @@
 # Uncategorized timeouts or test failures.
 -AffiliationCheck/EnterpriseDeviceAttributesTest.Success/Affiliated
 -AffiliationCheck/EnterpriseDeviceAttributesTest.Success/NotAffiliated
--ArcRobotAccountAuthServiceTest.GetOfflineDemoAccount
--ArcSessionManagerTest.ConsumerAccount
--ArcSessionManagerTest.ManagedAndroidAccount
--ArcSessionManagerTest.ManagedChromeAccount
--ArcSessionManagerTest.WellKnownConsumerAccount
+-BackgroundFetchBrowserTest.FetchCanBePausedAndResumed
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.Basic/0
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.Basic/1
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.Basic/2
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.Basic/3
 -ChromeNewWindowClientBrowserTest.NewWindowForActiveWindowProfileTest
 -ChromeSessionManagerTest.OobeNewUser
--DeclarativeContentApiTest.RemoveAllRulesAfterExtensionUninstall
 -DeviceIDTest.LegacyUsers
 -DeviceIDTest.Migration
 -DeviceIDTest.NewUsers
@@ -31,19 +26,6 @@
 -HostedAppNonClientFrameViewAshTest.FocusableViews/material_refresh
 -HostedAppNonClientFrameViewAshTest.FocusableViews/material_refresh_touch_optimized
 -HostedAppNonClientFrameViewAshTest.FocusableViews/material_touch_optimized
--KeyboardEndToEndFocusTest.TriggerAsyncInputFocusFromUserGestureAfterBlurShowsKeyboard
--KeyboardEndToEndFocusTest.TriggerAsyncInputFocusFromUserGestureAfterBlurTimeoutDoesNotShowKeyboard
--KeyboardEndToEndFocusTest.TriggerAsyncInputFocusFromUserGestureDoesNotShowKeyboard
--KeyboardEndToEndFocusTest.TriggerInputFocusFromUserGestureShowsKeyboard
--KeyboardEndToEndFocusTest.TriggerInputFocusWithoutUserGestureDoesNotShowKeyboard
--KeyboardEndToEndFormTest.ChangeInputModeToNoneHidesKeyboard
--KeyboardEndToEndFormTest.ChangeInputModeToNumericDoesNotHideKeyboard
--KeyboardEndToEndFormTest.ChangeInputToReadOnlyHidesKeyboard
--KeyboardEndToEndFormTest.ChangeInputTypeToNonTextHidesKeyboard
--KeyboardEndToEndFormTest.ChangeInputTypeToTextDoesNotHideKeyboard
--KeyboardEndToEndFormTest.ClickBodyHidesKeyboard
--KeyboardEndToEndFormTest.ClickTextFieldShowsKeyboard
--KeyboardEndToEndFormTest.DeleteInputHidesKeyboard
 -KioskUpdateTest.LaunchCachedOfflineEnabledAppNoNetwork
 -LoginPolicyTestBase.AllowedInputMethods
 -LoginPolicyTestBase.AllowedUILocales
@@ -53,8 +35,6 @@
 -OAuth2Test.TerminateOnBadMergeSessionAfterOnlineAuth
 -OAuth2Test.VerifyInAdvancedProtectionAfterOnlineAuth
 -OAuth2Test.VerifyNotInAdvancedProtectionAfterOnlineAuth
--OutOfProcessPPAPITest.UDPSocket_DropReceiverPipeOnReceiveMore
--OutOfProcessPPAPITest.UDPSocket_ReadError
 -PolicyProvidedTrustAnchorsOnUserSessionInitTest.TrustAnchorsAvailableImmediatelyAfterSessionStart
 -PolicyProvidedTrustAnchorsRegularUserTest.AllowedForRegularUser
 -SAMLPolicyTest.NoSAML
@@ -68,7 +48,6 @@
 -SamlTest.ScrapedNone
 -SamlTest.ScrapedSingle
 -SamlTest.UseAutenticatedUserEmailAddress
--ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.EventsToStoppedWorker/0
 -SigninProfileAppsPolicyPerChannelTest.ExtensionInstallation/0
 -SigninProfileAppsPolicyPerChannelTest.ExtensionInstallation/1
 -SigninProfileAppsPolicyPerChannelTest.ExtensionInstallation/2
@@ -110,16 +89,6 @@
 -WizardControllerDeviceStateExplicitRequirement/WizardControllerDeviceStateExplicitRequirementTest.ControlFlowForcedReEnrollment/1
 -WizardControllerDeviceStateTest.ControlFlowDeviceDisabled
 -WizardControllerDeviceStateWithInitialEnrollmentTest.ControlFlowInitialEnrollment
--ZipFiles/FilesAppBrowserTest.Test/zipCreateFileDownloads
--ZipFiles/FilesAppBrowserTest.Test/zipCreateFileDownloads_GuestMode
--ZipFiles/FilesAppBrowserTest.Test/zipCreateFileDrive
--ZipFiles/FilesAppBrowserTest.Test/zipCreateFileDrive_DriveFs
--ZipFiles/FilesAppBrowserTest.Test/zipCreateFileUsb
--ZipFiles/FilesAppBrowserTest.Test/zipFileOpenDownloads
--ZipFiles/FilesAppBrowserTest.Test/zipFileOpenDownloads_GuestMode
--ZipFiles/FilesAppBrowserTest.Test/zipFileOpenDrive
--ZipFiles/FilesAppBrowserTest.Test/zipFileOpenDrive_DriveFs
--ZipFiles/FilesAppBrowserTest.Test/zipFileOpenUsb
 
 # NetworkChangeNotifier() Not implemented.
 # https://crbug.com/882610
@@ -149,6 +118,9 @@
 
 # Flaky with error: `Check failed: (sequence_checker_).CalledOnValidSequence()`.
 -DevToolsSanityTest.DisposeEmptyBrowserContext
+
+# Flaky with error: `picture_in_picture_window_controller_impl.cc(167)] Check failed: media_player_id_.has_value()`.
+-PictureInPictureWindowControllerBrowserTest.TabIconUpdated
 
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
