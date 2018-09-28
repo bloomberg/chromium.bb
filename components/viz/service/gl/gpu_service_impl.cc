@@ -710,8 +710,7 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
       client_id, client_tracing_id, is_gpu_host, cache_shaders_on_disk);
 
   mojo::MessagePipe pipe;
-  gpu_channel->Init(std::make_unique<gpu::SyncChannelFilteredSender>(
-      pipe.handle0.release(), gpu_channel, io_runner_, shutdown_event_));
+  gpu_channel->Init(pipe.handle0.release(), shutdown_event_);
 
   media_gpu_channel_manager_->AddChannel(client_id);
 
