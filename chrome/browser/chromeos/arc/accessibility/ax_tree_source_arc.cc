@@ -632,6 +632,11 @@ void AXTreeSourceArc::PopulateAXRole(AXNodeInfoData* node,
                                  class_name);
   }
 
+  if (!GetProperty(node, AXBooleanProperty::IMPORTANCE)) {
+    out_data->role = ax::mojom::Role::kIgnored;
+    return;
+  }
+
   if (GetProperty(node, AXBooleanProperty::EDITABLE)) {
     out_data->role = ax::mojom::Role::kTextField;
     return;
