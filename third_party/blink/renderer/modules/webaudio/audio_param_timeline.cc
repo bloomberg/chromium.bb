@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/cpu.h"
@@ -853,8 +854,8 @@ float AudioParamTimeline::ValuesForFrameRange(size_t start_frame,
                               number_of_values, sample_rate, control_rate);
 
   // Clamp the values now to the nominal range
-  for (unsigned k = 0; k < number_of_values; ++k)
-    values[k] = clampTo(values[k], min_value, max_value);
+  VectorMath::Vclip(values, 1, &min_value, &max_value, values, 1,
+                    number_of_values);
 
   return last_value;
 }
