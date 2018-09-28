@@ -112,6 +112,14 @@ void DemoSetupController::RegisterLocalStatePrefs(
 }
 
 // static
+void DemoSetupController::ClearDemoRequisition(
+    policy::DeviceCloudPolicyManagerChromeOS* policy_manager) {
+  if (policy_manager->GetDeviceRequisition() == kDemoRequisition) {
+    policy_manager->SetDeviceRequisition(std::string());
+  }
+}
+
+// static
 bool DemoSetupController::IsDemoModeAllowed() {
   // Demo mode is only allowed on devices that support ARC++.
   return arc::IsArcAvailable();
@@ -206,10 +214,12 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded(
     return;
   }
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  connector->GetDeviceCloudPolicyManager()->SetDeviceRequisition(
-      kDemoRequisition);
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceCloudPolicyManager();
+  DCHECK(policy_manager->GetDeviceRequisition().empty());
+  policy_manager->SetDeviceRequisition(kDemoRequisition);
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_ATTESTATION;
   config.management_domain = DemoSetupController::kDemoModeDomain;
@@ -390,6 +400,7 @@ void DemoSetupController::Reset() {
   DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone);
   DCHECK_NE(demo_config_ == DemoSession::DemoModeConfig::kOffline,
             policy_dir_.empty());
+
   // |demo_config_| is not reset here, because it is needed for retrying setup.
   enrollment_helper_.reset();
   policy_dir_.clear();
@@ -397,6 +408,11 @@ void DemoSetupController::Reset() {
     device_local_account_policy_store_->RemoveObserver(this);
     device_local_account_policy_store_ = nullptr;
   }
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceCloudPolicyManager();
+  ClearDemoRequisition(policy_manager);
 }
 
 void DemoSetupController::OnStoreLoaded(policy::CloudPolicyStore* store) {
