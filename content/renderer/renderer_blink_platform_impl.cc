@@ -380,6 +380,16 @@ RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
   return url_loader_factory;
 }
 
+void RendererBlinkPlatformImpl::SetDisplayThreadPriority(
+    base::PlatformThreadId thread_id) {
+#if defined(OS_LINUX)
+  if (RenderThreadImpl* render_thread = RenderThreadImpl::current()) {
+    render_thread->render_message_filter()->SetThreadPriority(
+        thread_id, base::ThreadPriority::DISPLAY);
+  }
+#endif
+}
+
 blink::BlameContext* RendererBlinkPlatformImpl::GetTopLevelBlameContext() {
   return &top_level_blame_context_;
 }

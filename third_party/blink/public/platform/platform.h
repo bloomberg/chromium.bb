@@ -447,7 +447,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Create and initialize the compositor thread. The thread is saved in
   // Platform, and will be accessible through CompositorThread().
-  void InitializeCompositorThread(const WebThreadCreationParams&);
+  void InitializeCompositorThread();
 
   // Returns an interface to the current thread.
   WebThread* CurrentThread();
@@ -458,6 +458,17 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Returns an interface to the compositor thread. This can be null if the
   // renderer was created with threaded rendering disabled.
   WebThread* CompositorThread();
+
+  // Returns the task runner of the compositor thread. This is available
+  // once InitializeCompositorThread() is called.
+  scoped_refptr<base::SingleThreadTaskRunner> CompositorThreadTaskRunner();
+
+  // This is called after the compositor thread is created, so the embedder
+  // can initiate an IPC to change its thread priority (on Linux we can't
+  // increase the nice value, so we need to ask the browser process). This
+  // function is only called from the main thread (where InitializeCompositor-
+  // Thread() is called).
+  virtual void SetDisplayThreadPriority(base::PlatformThreadId) {}
 
   // Returns a blame context for attributing top-level work which does not
   // belong to a particular frame scope.
