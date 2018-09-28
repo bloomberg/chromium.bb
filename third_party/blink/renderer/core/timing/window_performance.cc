@@ -185,7 +185,8 @@ WindowPerformance::CreateNavigationTimingInstance() {
     return nullptr;
   const DocumentLoader* document_loader =
       GetFrame()->Loader().GetDocumentLoader();
-  DCHECK(document_loader);
+  if (!document_loader)
+    return nullptr;
   ResourceTimingInfo* info = document_loader->GetNavigationTimingInfo();
   if (!info)
     return nullptr;
