@@ -437,14 +437,6 @@ bool LayoutFlexibleBox::IsMultiline() const {
   return StyleRef().FlexWrap() != EFlexWrap::kNowrap;
 }
 
-bool LayoutFlexibleBox::ShouldApplyMinSizeAutoForChild(
-    const LayoutBox& child) const {
-  Length min = IsHorizontalFlow() ? child.StyleRef().MinWidth()
-                                  : child.StyleRef().MinHeight();
-  return min.IsAuto() && !child.ShouldApplySizeContainment() &&
-         MainAxisOverflowForChild(child) == EOverflow::kVisible;
-}
-
 Length LayoutFlexibleBox::FlexBasisForChild(const LayoutBox& child) const {
   Length flex_length = child.StyleRef().FlexBasis();
   if (flex_length.IsAuto()) {
@@ -1005,7 +997,14 @@ MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
     // computeMainAxisExtentForChild can return -1 when the child has a
     // percentage min size, but we have an indefinite size in that axis.
     sizes.min_size = std::max(LayoutUnit(), sizes.min_size);
-  } else if (ShouldApplyMinSizeAutoForChild(child)) {
+  } else if (min.IsAuto() && !child.ShouldApplySizeContainment() &&
+             MainAxisOverflowForChild(child) == EOverflow::kVisible &&
+             !(IsColumnFlow() && child.IsFlexibleBox())) {
+    // TODO(cbiesinger): For now, we do not handle min-height: auto for nested
+    // column flexboxes. We need to implement
+    // https://drafts.csswg.org/css-flexbox/#intrinsic-sizes before that
+    // produces reasonable results. Tracking bug: https://crbug.com/581553
+    // css-flexbox section 4.5
     LayoutUnit content_size =
         ComputeMainAxisExtentForChild(child, kMinSize, Length(kMinContent));
     DCHECK_GE(content_size, LayoutUnit());
@@ -1125,14 +1124,6 @@ LayoutUnit LayoutFlexibleBox::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
 DISABLE_CFI_PERF
 FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
                                               ChildLayoutType layout_type) {
-  if (layout_type == kLayoutIfNeeded && IsColumnFlow() &&
-      child.IsFlexibleBox() && ShouldApplyMinSizeAutoForChild(child)) {
-    // In this case, we have to force-layout to update the intrinsic height of
-    // our child; otherwise, it may be too big because it is based on previous
-    // flexing of a descendant, which would be a problem for applying
-    // min-size: auto.
-    layout_type = kForceLayout;
-  }
   if (layout_type != kNeverLayout && ChildHasIntrinsicMainAxisSize(child)) {
     // If this condition is true, then ComputeMainAxisExtentForChild will call
     // child.IntrinsicContentLogicalHeight() and
