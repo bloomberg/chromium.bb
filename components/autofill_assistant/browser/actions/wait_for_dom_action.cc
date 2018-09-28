@@ -32,8 +32,8 @@ void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
                                      ProcessActionCallback callback) {
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
 
-  // Fail the action if the selector is empty.
-  if (proto_.wait_for_dom().element().selectors().empty()) {
+  // Fail the action if selectors is empty.
+  if (proto_.wait_for_dom().selectors().empty()) {
     UpdateProcessedAction(false);
     DLOG(ERROR) << "Empty selector, failing action.";
     std::move(callback).Run(std::move(processed_action_proto_));
@@ -54,7 +54,7 @@ void WaitForDomAction::CheckElementExists(ActionDelegate* delegate,
                                           ProcessActionCallback callback) {
   DCHECK(rounds > 0);
   std::vector<std::string> selectors;
-  for (const auto& selector : proto_.wait_for_dom().element().selectors()) {
+  for (const auto& selector : proto_.wait_for_dom().selectors()) {
     selectors.emplace_back(selector);
   }
   delegate->ElementExists(

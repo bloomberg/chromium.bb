@@ -340,11 +340,11 @@ message UseCreditCardProto {
 // Ask Chrome to wait for an element in the DOM. This can be used to only
 // proceed to the next action once the page is ready.
 message WaitForDomProto {
-  // The element to wait.
-  optional ElementReferenceProto element = 1;
-
   // Fail after waiting this amount of time.
-  optional int32 timeout_ms = 2;
+  optional int32 timeout_ms = 1;
+
+  // The element to wait for.
+  repeated string selectors = 2;
 }
 
 // Volatile upload of a portion of the dom for backend analysis, does not store
