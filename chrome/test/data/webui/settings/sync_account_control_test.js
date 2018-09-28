@@ -146,8 +146,6 @@ cr.define('settings_sync_account_control', function() {
       // correct account when clicked.
       assertVisible(syncButton, true);
       assertVisible(testElement.$$('#turn-off'), false);
-      assertTrue(syncButton.textContent.includes('foo'));
-      assertFalse(syncButton.textContent.includes('bar'));
       syncButton.click();
       Polymer.dom.flush();
 
@@ -175,8 +173,6 @@ cr.define('settings_sync_account_control', function() {
             assertTrue(userInfo.textContent.includes('barName'));
             assertTrue(userInfo.textContent.includes('bar@bar.com'));
             assertVisible(syncButton, true);
-            assertTrue(syncButton.textContent.includes('bar'));
-            assertFalse(syncButton.textContent.includes('foo'));
 
             browserProxy.resetResolver('startSyncingWithEmail');
             syncButton.click();

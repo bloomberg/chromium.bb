@@ -3449,9 +3449,6 @@
     <message name="IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT" desc="The label for the button that lets the user choose another account to sync with.">
       Use another account
     </message>
-    <message name="IDS_SETTINGS_PEOPLE_SYNC_AS_NAME" desc="The label for the button that lets the user start syncing with the selected account.">
-      Sync as <ph name="FULL_NAME">$1<ex>Bob Smith</ex></ph>
-    </message>
     <message name="IDS_SETTINGS_PEOPLE_SYNCING_TO_ACCOUNT" desc="The text displayed to the user that the profile is currently syncing to a specific account.">
       Syncing to <ph name="EMAIL">$1<ex>abcd@google.com</ex></ph>
     </message>
