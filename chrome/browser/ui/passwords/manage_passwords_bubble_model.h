@@ -173,6 +173,7 @@ class ManagePasswordsBubbleModel {
   base::string16 title_;
   // Range of characters in the title that contains the Smart Lock Brand and
   // should point to an article. For the default title the range is empty.
+  // TODO(crbug/890336): remove.
   gfx::Range title_brand_link_range_;
   autofill::PasswordForm pending_password_;
   std::vector<autofill::PasswordForm> local_credentials_;

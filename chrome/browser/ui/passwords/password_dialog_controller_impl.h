@@ -34,9 +34,11 @@ class PasswordDialogControllerImpl : public PasswordDialogController {
 
   // PasswordDialogController:
   const FormsVector& GetLocalForms() const override;
+  // TODO(890336): get rid of the range.
   std::pair<base::string16, gfx::Range> GetAccoutChooserTitle() const override;
   bool ShouldShowSignInButton() const override;
   base::string16 GetAutoSigninPromoTitle() const override;
+  // TODO(890336): get rid of the range.
   std::pair<base::string16, gfx::Range> GetAutoSigninText() const override;
   void OnSmartLockLinkClicked() override;
   void OnChooseCredentials(
