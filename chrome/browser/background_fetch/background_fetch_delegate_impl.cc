@@ -73,8 +73,7 @@ BackgroundFetchDelegateImpl::JobDetails::JobDetails(
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description,
     const std::string& provider_namespace,
     bool is_off_the_record)
-    : cancelled(false),
-      offline_item(offline_items_collection::ContentId(
+    : offline_item(offline_items_collection::ContentId(
           provider_namespace,
           fetch_description->job_unique_id)),
       fetch_description(std::move(fetch_description)) {
@@ -125,6 +124,8 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
     // response was an HTTP error, e.g. 404.
     offline_item.state = OfflineItemState::COMPLETE;
     offline_item.is_openable = true;
+  } else if (paused) {
+    offline_item.state = OfflineItemState::PAUSED;
   } else {
     offline_item.state = OfflineItemState::IN_PROGRESS;
   }
@@ -253,9 +254,6 @@ void BackgroundFetchDelegateImpl::DownloadUrl(
   DCHECK(job_details_map_.count(job_unique_id));
   DCHECK(!download_job_unique_id_map_.count(download_guid));
 
-  JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
-  job_details.current_download_guids.insert(download_guid);
-
   download_job_unique_id_map_.emplace(download_guid, job_unique_id);
 
   download::DownloadParams params;
@@ -269,6 +267,22 @@ void BackgroundFetchDelegateImpl::DownloadUrl(
   params.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
 
+  JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
+  if (job_details.paused) {
+    job_details.on_resume =
+        base::BindOnce(&BackgroundFetchDelegateImpl::StartDownload,
+                       GetWeakPtr(), job_unique_id, params);
+  } else {
+    StartDownload(job_unique_id, params);
+  }
+}
+
+void BackgroundFetchDelegateImpl::StartDownload(
+    const std::string& job_unique_id,
+    const download::DownloadParams& params) {
+  DCHECK(job_details_map_.count(job_unique_id));
+  JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
+  job_details.current_download_guids.insert(params.guid);
   GetDownloadService()->StartDownload(params);
 }
 
@@ -520,12 +534,9 @@ void BackgroundFetchDelegateImpl::PauseDownload(
     return;
 
   JobDetails& job_details = job_details_iter->second;
+  job_details.paused = true;
   for (auto& download_guid : job_details.current_download_guids)
     GetDownloadService()->PauseDownload(download_guid);
-
-  // TODO(delphick): Mark overall download job as paused so that future
-  // downloads are not started until resume. (Initially not a worry because only
-  // one download will be scheduled at a time).
 }
 
 void BackgroundFetchDelegateImpl::ResumeDownload(
@@ -536,10 +547,12 @@ void BackgroundFetchDelegateImpl::ResumeDownload(
     return;
 
   JobDetails& job_details = job_details_iter->second;
+  job_details.paused = false;
   for (auto& download_guid : job_details.current_download_guids)
     GetDownloadService()->ResumeDownload(download_guid);
 
-  // TODO(delphick): Start new downloads that weren't started because of pause.
+  if (job_details.on_resume)
+    std::move(job_details.on_resume).Run();
 }
 
 void BackgroundFetchDelegateImpl::GetItemById(
