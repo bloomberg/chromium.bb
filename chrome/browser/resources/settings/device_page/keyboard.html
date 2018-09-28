@@ -100,7 +100,7 @@
         <div class="start" id="repeatDelayLabel">$i18n{keyRepeatDelay}</div>
         <settings-slider id="delaySlider"
             pref="{{prefs.settings.language.xkb_auto_repeat_delay_r2}}"
-            tick-values="[[autoRepeatDelays_]]"
+            ticks="[[autoRepeatDelays_]]"
             disabled="[[
                 !prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]"
             aria-labelledby="repeatDelayLabel"
@@ -113,7 +113,7 @@
         <settings-slider id="repeatRateSlider"
             pref="{{
                 prefs.settings.language.xkb_auto_repeat_interval_r2}}"
-            tick-values="[[autoRepeatIntervals_]]"
+            ticks="[[autoRepeatIntervals_]]"
             disabled="[[
                 !prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]"
             aria-labelledby="repeatRateLabel"

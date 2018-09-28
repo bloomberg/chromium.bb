@@ -102,7 +102,9 @@ Polymer({
     /** @private {!Array<number>} Mode index values for slider. */
     modeValues_: Array,
 
-    /** @private {SliderTicks} Display zoom slider tick values. */
+    /**
+     * @private {!Array<cr_slider.SliderTick>} Display zoom slider tick values.
+     */
     zoomValues_: Array,
 
     /** @private {!DropdownMenuOptionList} */
@@ -331,19 +333,17 @@ Polymer({
    * Given the display with the current display mode, this function lists all
    * the display zoom values and their labels to be used by the slider.
    * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
-   * @return {SliderTicks}
+   * @return {!Array<cr_slider.SliderTick>}
    */
   getZoomValues_: function(selectedDisplay) {
-    /** @type {SliderTicks} */
-    let zoomValues = [];
-    for (let i = 0; i < selectedDisplay.availableDisplayZoomFactors.length;
-         i++) {
-      const value = selectedDisplay.availableDisplayZoomFactors[i];
+    return selectedDisplay.availableDisplayZoomFactors.map(value => {
       const ariaValue = Math.round(value * 100);
-      const label = this.i18n('displayZoomValue', ariaValue.toString());
-      zoomValues.push({value: value, label: label, ariaValue: ariaValue});
-    }
-    return zoomValues;
+      return {
+        value,
+        ariaValue,
+        label: this.i18n('displayZoomValue', ariaValue.toString())
+      };
+    });
   },
 
   /**
@@ -621,6 +621,8 @@ Polymer({
    * @private
    */
   onDisplaySizeSliderDrag_: function(e) {
+    if (!this.selectedDisplay)
+      return;
     this.updateLogicalResolutionText_(/** @type {number} */ (e.detail.value));
   },
 
