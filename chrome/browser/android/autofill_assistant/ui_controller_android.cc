@@ -87,6 +87,11 @@ void UiControllerAndroid::HideOverlay() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
+void UiControllerAndroid::Shutdown() {
+  Java_AutofillAssistantUiController_onShutdown(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+}
+
 void UiControllerAndroid::UpdateScripts(
     const std::vector<ScriptHandle>& scripts) {
   std::vector<std::string> script_paths;

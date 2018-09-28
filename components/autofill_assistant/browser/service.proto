@@ -193,6 +193,8 @@ message ActionProto {
     UseCreditCardProto use_card = 28;
     UseAddressProto use_address = 29;
     UploadDomProto upload_dom = 18;
+    ResetProto reset = 34;
+    StopProto stop = 35;
   }
 }
 
@@ -354,3 +356,9 @@ message UploadDomProto {
   // page is returned.
   optional ElementReferenceProto tree_root = 1;
 }
+
+// Resets Autofill Assistant: clears any state and server payload.
+message ResetProto {}
+
+// Stop Autofill Assistant.
+message StopProto {}

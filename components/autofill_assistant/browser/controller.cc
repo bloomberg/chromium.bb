@@ -56,7 +56,8 @@ Controller::Controller(
       client_(std::move(client)),
       web_controller_(std::move(web_controller)),
       service_(std::move(service)),
-      script_tracker_(std::make_unique<ScriptTracker>(this, this)),
+      script_tracker_(std::make_unique<ScriptTracker>(/* delegate= */ this,
+                                                      /* listener= */ this)),
       parameters_(std::move(parameters)),
       memory_(std::make_unique<ClientMemory>()),
       allow_autostart_(true) {
@@ -106,13 +107,32 @@ void Controller::OnGetScripts(const GURL& url,
 }
 
 void Controller::OnScriptExecuted(const std::string& script_path,
-                                  bool success) {
+                                  ScriptExecutor::Result result) {
   GetUiController()->HideOverlay();
-  if (!success) {
+  if (!result.success) {
     LOG(ERROR) << "Failed to execute script " << script_path;
     // TODO(crbug.com/806868): Handle script execution failure.
   }
 
+  switch (result.at_end) {
+    case ScriptExecutor::SHUTDOWN:
+      GetUiController()->Shutdown();  // indirectly deletes this
+      return;
+
+    case ScriptExecutor::RESTART:
+      script_tracker_ = std::make_unique<ScriptTracker>(/* delegate= */ this,
+                                                        /* listener= */ this);
+      memory_ = std::make_unique<ClientMemory>();
+      script_domain_ = "";
+      break;
+
+    case ScriptExecutor::CONTINUE:
+      break;
+
+    default:
+      DLOG(ERROR) << "Unexpected value for at_end: " << result.at_end;
+      break;
+  }
   GetOrCheckScripts(web_contents()->GetLastCommittedURL());
 }
 

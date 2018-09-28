@@ -90,6 +90,13 @@ class ActionDelegate {
                              NodeProto* node_tree_out,
                              base::OnceCallback<void(bool)> callback) = 0;
 
+  // Shut down Autofill Assistant at the end of the current script.
+  virtual void Shutdown() = 0;
+
+  // Restart Autofill Assistant at the end of the current script with a cleared
+  // state.
+  virtual void Restart() = 0;
+
   // Return the current ClientMemory.
   virtual ClientMemory* GetClientMemory() = 0;
 

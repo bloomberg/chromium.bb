@@ -59,9 +59,11 @@ void ScriptTracker::CheckScripts() {
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
-                                  base::OnceCallback<void(bool)> callback) {
+                                  ScriptExecutor::RunScriptCallback callback) {
   if (running()) {
-    std::move(callback).Run(false);
+    ScriptExecutor::Result result;
+    result.success = false;
+    std::move(callback).Run(result);
     return;
   }
 
@@ -74,12 +76,10 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
 
 void ScriptTracker::OnScriptRun(
     const std::string& script_path,
-    base::OnceCallback<void(bool)> original_callback,
-    bool success) {
-  executed_scripts_[script_path] =
-      success ? SCRIPT_STATUS_SUCCESS : SCRIPT_STATUS_FAILURE;
+    ScriptExecutor::RunScriptCallback original_callback,
+    ScriptExecutor::Result result) {
   executor_.reset();
-  std::move(original_callback).Run(success);
+  std::move(original_callback).Run(result);
 }
 
 void ScriptTracker::UpdateRunnableScriptsIfNecessary() {

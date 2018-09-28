@@ -62,7 +62,8 @@ class Controller : public ScriptExecutorDelegate,
   void GetOrCheckScripts(const GURL& url);
   void OnGetScripts(const GURL& url, bool result, const std::string& response);
   void OnScriptChosen(const std::string& script_path);
-  void OnScriptExecuted(const std::string& script_path, bool success);
+  void OnScriptExecuted(const std::string& script_path,
+                        ScriptExecutor::Result result);
 
   // Overrides content::UiDelegate:
   void OnClickOverlay() override;

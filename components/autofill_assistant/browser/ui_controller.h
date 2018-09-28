@@ -5,13 +5,12 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
 
-#include "components/autofill_assistant/browser/script.h"
-#include "components/autofill_assistant/browser/ui_delegate.h"
-
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "components/autofill_assistant/browser/script.h"
+#include "components/autofill_assistant/browser/ui_delegate.h"
 
 namespace autofill_assistant {
 struct ScriptHandle;
@@ -32,6 +31,11 @@ class UiController {
 
   // Hide the overlay.
   virtual void HideOverlay() = 0;
+
+  // Shuts down Autofill Assistant: hide the UI and frees any associated state.
+  //
+  // Warning: this indirectly deletes the caller.
+  virtual void Shutdown() = 0;
 
   // Update the list of scripts in the UI.
   virtual void UpdateScripts(const std::vector<ScriptHandle>& scripts) = 0;

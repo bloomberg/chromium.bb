@@ -27,7 +27,25 @@ class ScriptExecutor : public ActionDelegate {
                  ScriptExecutorDelegate* delegate);
   ~ScriptExecutor() override;
 
-  using RunScriptCallback = base::OnceCallback<void(bool)>;
+  // What should happen after the script has run.
+  enum AtEnd {
+    // Continue normally.
+    CONTINUE = 0,
+
+    // Shut down Autofill Assistant.
+    SHUTDOWN,
+
+    // Reset all state and restart.
+    RESTART
+  };
+
+  // Contains the result of the Run operation.
+  struct Result {
+    bool success = false;
+    AtEnd at_end = AtEnd::CONTINUE;
+  };
+
+  using RunScriptCallback = base::OnceCallback<void(Result)>;
   void Run(RunScriptCallback callback);
 
   // Override ActionDelegate:
@@ -62,10 +80,13 @@ class ScriptExecutor : public ActionDelegate {
   void BuildNodeTree(const std::vector<std::string>& selectors,
                      NodeProto* node_tree_out,
                      base::OnceCallback<void(bool)> callback) override;
+  void Shutdown() override;
+  void Restart() override;
   ClientMemory* GetClientMemory() override;
 
  private:
   void OnGetActions(bool result, const std::string& response);
+  void RunCallback(bool success);
   void ProcessNextAction();
   void ProcessAction(Action* action);
   void GetNextActions();
@@ -78,6 +99,7 @@ class ScriptExecutor : public ActionDelegate {
   std::vector<std::unique_ptr<Action>> actions_;
   std::vector<ProcessedActionProto> processed_actions_;
   std::string last_server_payload_;
+  AtEnd at_end_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);

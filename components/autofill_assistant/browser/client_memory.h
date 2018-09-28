@@ -34,9 +34,6 @@ class ClientMemory {
   virtual void set_selected_address(const std::string& name,
                                     const std::string& guid);
 
-  // TODO(crbug.com/806868): Add a clear() method that resets the memory and
-  // call it when necessary (TBD).
-
  private:
   base::Optional<std::string> selected_card_;
 

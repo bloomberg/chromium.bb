@@ -103,8 +103,7 @@ class AutofillAssistantUiDelegate {
         mBottomBar.findViewById(R.id.close_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mFullContainer.setVisibility(View.GONE);
-                mClient.onDismiss();
+                shutdown();
             }
         });
         mBottomBar.findViewById(R.id.feedback_button)
@@ -163,5 +162,13 @@ class AutofillAssistantUiDelegate {
     /** Called to hide overlay. */
     public void hideOverlay() {
         mOverlay.setVisibility(View.GONE);
+    }
+
+    /**
+     * Shuts down the Autofill Assistant. The UI disappears and any associated state goes away.
+     */
+    public void shutdown() {
+        mFullContainer.setVisibility(View.GONE);
+        mClient.onDismiss();
     }
 }

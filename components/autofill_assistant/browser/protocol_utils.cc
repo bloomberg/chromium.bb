@@ -10,7 +10,9 @@
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
+#include "components/autofill_assistant/browser/actions/reset_action.h"
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
+#include "components/autofill_assistant/browser/actions/stop_action.h"
 #include "components/autofill_assistant/browser/actions/tell_action.h"
 #include "components/autofill_assistant/browser/actions/upload_dom_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
@@ -170,16 +172,22 @@ bool ProtocolUtils::ParseActions(
         actions->emplace_back(std::make_unique<WaitForDomAction>(action));
         break;
       }
-      case ActionProto::ActionInfoCase::kUploadDom: {
-        actions->emplace_back(std::make_unique<UploadDomAction>(action));
-        break;
-      }
       case ActionProto::ActionInfoCase::kSelectOption: {
         actions->emplace_back(std::make_unique<SelectOptionAction>(action));
         break;
       }
+      case ActionProto::ActionInfoCase::kStop: {
+        actions->emplace_back(std::make_unique<StopAction>(action));
+        break;
+      }
+      case ActionProto::ActionInfoCase::kReset: {
+        actions->emplace_back(std::make_unique<ResetAction>(action));
+        break;
+      }
+      default:
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
-        LOG(ERROR) << "Unknown or unspported action.";
+        DLOG(ERROR) << "Unknown or unsupported action with action_case="
+                    << action.action_info_case();
         break;
       }
     }
