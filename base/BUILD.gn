@@ -2973,7 +2973,10 @@ if (is_android) {
       "android/java/src/org/chromium/base/memory/MemoryPressureUma.java",
       "android/java/src/org/chromium/base/task/AsyncTask.java",
       "android/java/src/org/chromium/base/task/ChromeThreadPoolExecutor.java",
+      "android/java/src/org/chromium/base/task/SequencedTaskRunner.java",
       "android/java/src/org/chromium/base/task/SerialExecutor.java",
+      "android/java/src/org/chromium/base/task/SingleThreadTaskRunner.java",
+      "android/java/src/org/chromium/base/task/TaskRunner.java",
     ]
 
     # New versions of BuildConfig.java and NativeLibraries.java
