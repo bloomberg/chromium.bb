@@ -233,7 +233,7 @@ jumbo_static_library("renderer") {
     }
   }
 
-  if (enable_library_cdms && enable_widevine) {
+  if (enable_widevine_cdm_component) {
     deps += [ "//third_party/widevine/cdm:headers" ]
   }
 

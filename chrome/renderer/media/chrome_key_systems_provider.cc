@@ -6,10 +6,9 @@
 
 #include "base/time/default_tick_clock.h"
 #include "chrome/renderer/media/chrome_key_systems.h"
-#include "media/media_buildflags.h"
 #include "third_party/widevine/cdm/buildflags.h"
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && BUILDFLAG(ENABLE_WIDEVINE)
+#if BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #endif
 
@@ -36,8 +35,7 @@ void ChromeKeySystemsProvider::AddSupportedKeySystems(
 
 // Check whether all potentially supported key systems are supported. If so,
 // no need to update again.
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && BUILDFLAG(ENABLE_WIDEVINE) && \
-    defined(WIDEVINE_CDM_IS_COMPONENT)
+#if BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
   for (const auto& properties : *key_systems) {
     if (properties->GetKeySystemName() == kWidevineKeySystem) {
       is_update_needed_ = false;

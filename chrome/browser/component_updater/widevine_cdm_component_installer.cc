@@ -46,16 +46,14 @@
 #include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
-#if !BUILDFLAG(ENABLE_WIDEVINE)
-#error This file should only be compiled when Widevine is enabled
+#if !BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
+#error This file should only be compiled when Widevine CDM component is enabled
 #endif
 
 using content::BrowserThread;
 using content::CdmRegistry;
 
 namespace component_updater {
-
-#if defined(WIDEVINE_CDM_IS_COMPONENT)
 
 namespace {
 
@@ -515,14 +513,10 @@ void WidevineCdmComponentInstallerPolicy::UpdateCdmPath(
                          absolute_cdm_install_dir, base::Passed(&manifest)));
 }
 
-#endif  // defined(WIDEVINE_CDM_IS_COMPONENT)
-
 void RegisterWidevineCdmComponent(ComponentUpdateService* cus) {
-#if defined(WIDEVINE_CDM_IS_COMPONENT)
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<WidevineCdmComponentInstallerPolicy>());
   installer->Register(cus, base::OnceClosure());
-#endif  // defined(WIDEVINE_CDM_IS_COMPONENT)
 }
 
 }  // namespace component_updater

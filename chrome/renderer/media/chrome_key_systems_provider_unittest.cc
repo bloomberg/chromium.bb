@@ -127,7 +127,7 @@ TEST(ChromeKeySystemsProviderTest, IsKeySystemsUpdateNeeded) {
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
   tick_clock.Advance(base::TimeDelta::FromMilliseconds(10));
 
-#if BUILDFLAG(ENABLE_WIDEVINE) && defined(WIDEVINE_CDM_IS_COMPONENT)
+#if BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
   // Require update once enough time has passed for builds that install Widevine
   // as a component.
   EXPECT_TRUE(key_systems_provider.IsKeySystemsUpdateNeeded());
@@ -157,5 +157,5 @@ TEST(ChromeKeySystemsProviderTest, IsKeySystemsUpdateNeeded) {
   // No update needed for builds that either don't offer Widevine or do so
   // as part of Chrome rather than component installer.
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
-#endif  // BUILDFLAG(ENABLE_WIDEVINE) && defined(WIDEVINE_CDM_IS_COMPONENT)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
 }

@@ -96,16 +96,12 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"  // nogncheck
-// The order is sensitive here as WIDEVINE_CDM_IS_COMPONENT is defined in
-// widevine_cdm_common.h.
-// TODO(xhwang): Also make WIDEVINE_CDM_IS_COMPONENT a buildflag to avoid this.
-#include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
 // Registers Widevine CDM if Widevine is enabled, the Widevine CDM is
 // bundled and not a component. When the Widevine CDM is a component, it is
 // registered in widevine_cdm_component_installer.cc.
-#if BUILDFLAG(ENABLE_WIDEVINE) && BUILDFLAG(SHOULD_BUNDLE_WIDEVINE_CDM) && \
-    !defined(WIDEVINE_CDM_IS_COMPONENT)
+#if BUILDFLAG(SHOULD_BUNDLE_WIDEVINE_CDM) && !BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
 #define REGISTER_BUNDLED_WIDEVINE_CDM
+#include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
 // TODO(crbug.com/663554): Needed for WIDEVINE_CDM_VERSION_STRING. Support
 // component updated CDM on all desktop platforms and remove this.
 // This file is In SHARED_INTERMEDIATE_DIR.
