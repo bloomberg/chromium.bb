@@ -113,8 +113,17 @@ SyncAuthManager::SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
   return sync_account_;
 }
 
-const syncer::SyncTokenStatus& SyncAuthManager::GetSyncTokenStatus() const {
-  return token_status_;
+syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
+  DCHECK(partial_token_status_.next_token_request_time.is_null());
+
+  syncer::SyncTokenStatus token_status = partial_token_status_;
+  if (request_access_token_retry_timer_.IsRunning()) {
+    base::TimeDelta delta =
+        request_access_token_retry_timer_.desired_run_time() -
+        base::TimeTicks::Now();
+    token_status.next_token_request_time = base::Time::Now() + delta;
+  }
+  return token_status;
 }
 
 syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
@@ -132,8 +141,8 @@ syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
 }
 
 void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
-  token_status_.connection_status_update_time = base::Time::Now();
-  token_status_.connection_status = status;
+  partial_token_status_.connection_status_update_time = base::Time::Now();
+  partial_token_status_.connection_status = status;
 
   switch (status) {
     case syncer::CONNECTION_AUTH_ERROR:
@@ -160,14 +169,11 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
         // this point.
         DCHECK(access_token_.empty());
         DCHECK(!request_access_token_retry_timer_.IsRunning());
-        DCHECK(token_status_.next_token_request_time.is_null());
       } else if (request_access_token_retry_timer_.IsRunning()) {
         // The timer to perform a request later is already running; nothing
         // further needs to be done at this point.
         DCHECK(access_token_.empty());
-        DCHECK(!token_status_.next_token_request_time.is_null());
       } else if (request_access_token_backoff_.failure_count() == 0) {
-        DCHECK(token_status_.next_token_request_time.is_null());
         // First time request without delay. Currently invalid token is used
         // to initialize sync engine and we'll always end up here. We don't
         // want to delay initialization.
@@ -189,7 +195,6 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
       // thus hammers token server. To be safe, only reset backoff delay when
       // no scheduled request.
       if (!request_access_token_retry_timer_.IsRunning()) {
-        DCHECK(token_status_.next_token_request_time.is_null());
         request_access_token_backoff_.Reset();
       }
       last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
@@ -224,7 +229,6 @@ void SyncAuthManager::InvalidateAccessToken() {
 void SyncAuthManager::ClearAccessTokenAndRequest() {
   access_token_.clear();
   request_access_token_retry_timer_.Stop();
-  token_status_.next_token_request_time = base::Time();
   ongoing_access_token_fetch_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
@@ -233,12 +237,9 @@ void SyncAuthManager::ScheduleAccessTokenRequest() {
   DCHECK(access_token_.empty());
   DCHECK(!ongoing_access_token_fetch_);
   DCHECK(!request_access_token_retry_timer_.IsRunning());
-  DCHECK(token_status_.next_token_request_time.is_null());
 
-  base::TimeDelta delay = request_access_token_backoff_.GetTimeUntilRelease();
-  token_status_.next_token_request_time = base::Time::Now() + delay;
   request_access_token_retry_timer_.Start(
-      FROM_HERE, delay,
+      FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
       base::BindRepeating(&SyncAuthManager::RequestAccessToken,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -412,12 +413,6 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
 }
 
 void SyncAuthManager::RequestAccessToken() {
-  // First reset the next request time: Either we were called back by the retry
-  // timer, in which case this is now obsolete, or we'll cancel the timer below.
-  // Note that if we were called back by the retry timer, then it's already
-  // considered not running, so we reset this time unconditionally.
-  token_status_.next_token_request_time = base::Time();
-
   // Only one active request at a time.
   if (ongoing_access_token_fetch_) {
     DCHECK(access_token_.empty());
@@ -439,8 +434,8 @@ void SyncAuthManager::RequestAccessToken() {
   InvalidateAccessToken();
 
   // Finally, kick off a new access token fetch.
-  token_status_.token_request_time = base::Time::Now();
-  token_status_.token_receive_time = base::Time();
+  partial_token_status_.token_request_time = base::Time::Now();
+  partial_token_status_.token_receive_time = base::Time();
   ongoing_access_token_fetch_ =
       identity_manager_->CreateAccessTokenFetcherForAccount(
           sync_account_.account_info.account_id, kSyncOAuthConsumerName,
@@ -458,14 +453,14 @@ void SyncAuthManager::AccessTokenFetched(
   DCHECK(!request_access_token_retry_timer_.IsRunning());
 
   access_token_ = access_token_info.token;
-  token_status_.last_get_token_error = error;
+  partial_token_status_.last_get_token_error = error;
 
   DCHECK_EQ(access_token_.empty(),
             error.state() != GoogleServiceAuthError::NONE);
 
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
-      token_status_.token_receive_time = base::Time::Now();
+      partial_token_status_.token_receive_time = base::Time::Now();
       sync_prefs_->SetSyncAuthError(false);
       last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
       break;
