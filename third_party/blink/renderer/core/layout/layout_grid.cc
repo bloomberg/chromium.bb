@@ -2109,8 +2109,8 @@ void LayoutGrid::GridAreaPositionForInFlowChild(
     LayoutUnit& start,
     LayoutUnit& end) const {
   DCHECK(!child.IsOutOfFlowPositioned());
-  const GridSpan& span =
-      track_sizing_algorithm_.GetGrid().GridItemSpan(child, direction);
+  const Grid& grid = track_sizing_algorithm_.GetGrid();
+  const GridSpan& span = grid.GridItemSpan(child, direction);
   // TODO (lajava): This is a common pattern, why not defining a function like
   // positions(direction) ?
   auto& positions =
@@ -2120,8 +2120,11 @@ void LayoutGrid::GridAreaPositionForInFlowChild(
   // The 'positions' vector includes distribution offset (because of content
   // alignment) and gutters so we need to subtract them to get the actual
   // end position for a given track (this does not have to be done for the
-  // last track as there are no more positions's elements after it).
-  if (span.EndLine() < positions.size() - 1)
+  // last track as there are no more positions's elements after it, nor for
+  // collapsed tracks).
+  if (span.EndLine() < positions.size() - 1 &&
+      !(grid.HasAutoRepeatEmptyTracks(direction) &&
+        grid.IsEmptyAutoRepeatTrack(direction, span.EndLine())))
     end -= GridGap(direction) + GridItemOffset(direction);
 }
 
