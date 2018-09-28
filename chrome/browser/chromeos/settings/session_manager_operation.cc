@@ -213,7 +213,10 @@ void SessionManagerOperation::ReportValidatorStatus(
     device_settings_ = std::move(validator->payload());
     ReportResult(DeviceSettingsService::STORE_SUCCESS);
   } else {
-    LOG(ERROR) << "Policy validation failed: " << validator->status();
+    LOG(ERROR) << "Policy validation failed: " << validator->status() << " ("
+               << policy::DeviceCloudPolicyValidator::StatusToString(
+                      validator->status())
+               << ")";
     ReportResult(DeviceSettingsService::STORE_VALIDATION_ERROR);
   }
 }

@@ -1011,11 +1011,14 @@ bool DeviceSettingsProvider::UpdateFromService() {
       break;
     case DeviceSettingsService::STORE_VALIDATION_ERROR:
     case DeviceSettingsService::STORE_INVALID_POLICY:
-    case DeviceSettingsService::STORE_OPERATION_FAILED:
-      LOG(ERROR) << "Failed to retrieve cros policies. Reason: "
-                 << device_settings_service_->status();
+    case DeviceSettingsService::STORE_OPERATION_FAILED: {
+      DeviceSettingsService::Status status = device_settings_service_->status();
+      LOG(ERROR) << "Failed to retrieve cros policies. Reason: " << status
+                 << " (" << DeviceSettingsService::StatusToString(status)
+                 << ")";
       trusted_status_ = PERMANENTLY_UNTRUSTED;
       break;
+    }
   }
 
   // Notify the observers we are done.

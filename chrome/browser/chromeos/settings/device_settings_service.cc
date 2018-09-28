@@ -66,6 +66,25 @@ DeviceSettingsService* DeviceSettingsService::Get() {
   return g_device_settings_service;
 }
 
+// static
+const char* DeviceSettingsService::StatusToString(Status status) {
+  switch (status) {
+    case STORE_SUCCESS:
+      return "SUCCESS";
+    case STORE_KEY_UNAVAILABLE:
+      return "KEY_UNAVAILABLE";
+    case STORE_OPERATION_FAILED:
+      return "OPERATION_FAILED";
+    case STORE_NO_POLICY:
+      return "NO_POLICY";
+    case STORE_INVALID_POLICY:
+      return "INVALID_POLICY";
+    case STORE_VALIDATION_ERROR:
+      return "VALIDATION_ERROR";
+  }
+  return "UNKNOWN";
+}
+
 DeviceSettingsService::DeviceSettingsService() {
   device_off_hours_controller_ =
       std::make_unique<policy::off_hours::DeviceOffHoursController>();
@@ -311,7 +330,8 @@ void DeviceSettingsService::HandleCompletedOperation(
         device_settings_.swap(off_device_settings);
     }
   } else if (status != STORE_KEY_UNAVAILABLE) {
-    LOG(ERROR) << "Session manager operation failed: " << status;
+    LOG(ERROR) << "Session manager operation failed: " << status << " ("
+               << StatusToString(status) << ")";
   }
 
   public_key_ = scoped_refptr<PublicKey>(operation->public_key());
