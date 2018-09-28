@@ -137,6 +137,7 @@
 <translation id="1387596372902085462">Se a confiança deve ou não ser ativada na Infraestrutura PKI de legado da Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressoras empresariais ativadas</translation>
 <translation id="1397855852561539316">URL sugerido do provedor de pesquisa padrão</translation>
+<translation id="1413936351612032792">Informações de relatório sobre o uso de apps Linux</translation>
 <translation id="142346659686073702">Permitir que usuários sem afiliação utilizem o Crostini</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
@@ -2141,6 +2142,13 @@
 
       Se esta política for deixada sem definição, o valor padrão de 32 será utilizado.</translation>
 <translation id="6943577887654905793">Nome de preferência Mac/Linux:</translation>
+<translation id="6944167205014013774">As informações sobre o uso de apps Linux são enviadas de volta para o
+      servidor.
+
+      Se a política for definida como falsa ou não for configurada, nenhuma informação de uso será enviada.
+      Se for definida como verdadeira, as informações de uso serão enviadas.
+
+      Esta política se aplicará apenas se a compatibilidade com apps Linux estiver ativada.</translation>
 <translation id="69525503251220566">Parâmetro que fornece recursos de pesquisa por imagem para o provedor de pesquisa padrão</translation>
 <translation id="6956272732789158625">Não permitir que nenhum site use a geração de chaves</translation>
 <translation id="6965859329738616662">Especifica se um modelo de escurecimento inteligente é permitido para aumentar o tempo que a tela permanece ativa.

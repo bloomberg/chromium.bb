@@ -141,6 +141,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
 <translation id="1397855852561539316">Privzeti URL iskalnika za predlog</translation>
+<translation id="1413936351612032792">Poročanje podatkov o uporabi aplikacij za Linux</translation>
 <translation id="142346659686073702">Omogočanje uporabe Crostinija nepovezanim uporabnikom</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Naslov ali URL strežnika proxy</translation>
@@ -2244,6 +2245,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če ta pravilnik ni nastavljen, bo uporabljena privzeta vrednost, ki je 32.</translation>
 <translation id="6943577887654905793">Ime nastavitve za Mac/Linux:</translation>
+<translation id="6944167205014013774">Podatki o uporabi aplikacij za Linux se pošljejo nazaj v
+      strežnik.
+
+      Če je pravilnik onemogočen ali ni nastavljen, se podatki o uporabi ne
+      poročajo. Če je omogočen, se podatki o uporabi poročajo.
+
+      Ta pravilnik se uporabi samo, če je podpora za aplikacije za Linux omogočena.</translation>
 <translation id="69525503251220566">Parameter, ki omogoča funkcijo iskanja po sliki za privzetega ponudnika iskanja</translation>
 <translation id="6956272732789158625">Spletnim mestom ne dovoli uporabe ustvarjanja ključev</translation>
 <translation id="6965859329738616662">Določa, ali je pametnemu modelu zatemnitve dovoljeno podaljšati čas do zatemnitve zaslona.

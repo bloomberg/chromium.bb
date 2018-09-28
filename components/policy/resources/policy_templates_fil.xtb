@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
+<translation id="1413936351612032792">Mag-ulat ng impormasyon tungkol sa paggamit ng mga Linux app</translation>
 <translation id="142346659686073702">Payagan ang mga hindi affiliate na user na gamitin ang Crostini</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="1427655258943162134">Address o URL ng mga proxy server</translation>
@@ -2227,6 +2228,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang default na halaga na 32.</translation>
 <translation id="6943577887654905793">Kagustuhang pangalan ng Mac/Linux:</translation>
+<translation id="6944167205014013774">Nagbabalik sa server ng impormasyon tungkol sa paggamit ng
+      mga Linux app.
+
+      Kung nakatakda ang patakaran sa false o kung hindi ito itinakda, walang iuulat na impormasyon sa
+      paggamit. Kung nakatakda ito sa true, mag-uulat ng impormasyon sa paggamit.
+
+      Nalalapat lang ang patakarang ito kung naka-enable ang suporta sa Linux app.</translation>
 <translation id="69525503251220566">Parameter na nagbibigay ng tampok na maghanap sa pamamagitan ng larawan para sa default na provider ng paghahanap</translation>
 <translation id="6956272732789158625">Huwag payagan ang anumang site na gumamit ng pagbuo ng key</translation>
 <translation id="6965859329738616662">Tinutukoy kung papayagan ang smart dim model na patagalin ang oras bago ma-dim ang screen.

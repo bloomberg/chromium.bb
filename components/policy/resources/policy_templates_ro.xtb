@@ -129,6 +129,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1387596372902085462">Dacă se acordă încredere infrastructurii PKI vechi a Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantele activate asociate dispozitivelor companiei</translation>
 <translation id="1397855852561539316">Adresă URL de sugerare a furnizorului de căutare prestabilit</translation>
+<translation id="1413936351612032792">Raportează informații despre utilizarea aplicațiilor Linux</translation>
 <translation id="142346659686073702">Permite utilizatorilor neafiliați să folosească Crostini</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa IP sau adresa URL a serverului proxy</translation>
@@ -2155,6 +2156,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică nu este setată, va fi utilizată valoarea prestabilită, 32.</translation>
 <translation id="6943577887654905793">Nume preferință Mac/Linux:</translation>
+<translation id="6944167205014013774">Informațiile despre utilizarea aplicațiilor Linux sunt trimise înapoi la
+      server.
+
+      Dacă politica este dezactivată sau nu este setată, nu se raportează informații
+      despre utilizare. Dacă este activată, se raportează informații despre utilizare.
+
+      Această politică se aplică doar dacă este activată asistența pentru aplicațiile Linux.</translation>
 <translation id="69525503251220566">Parametru care pune la dispoziție funcția Căutare după imagine pentru furnizorul de căutare prestabilit</translation>
 <translation id="6956272732789158625">Nu permite niciunui site să folosească generarea cheilor</translation>
 <translation id="6965859329738616662">Specifică dacă un model inteligent de reducere a luminozității poate extinde timpul până la întunecarea ecranului

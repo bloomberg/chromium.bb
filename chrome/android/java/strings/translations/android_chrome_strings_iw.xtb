@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">סימניות שנשמרו במכשירים האחרים שלך יופיעו כאן.</translation>
 <translation id="1113597929977215864">צפייה בתצוגה נקייה</translation>
 <translation id="1121094540300013208">דוחות קריסה ושימוש</translation>
-<translation id="11221688409173367">הקשה על לחצן הבית תציג מאמרים שנבחרו במיוחד בשבילך</translation>
 <translation id="1129510026454351943">פרטים: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{הורדה אחת בהמתנה.}two{# הורדות בהמתנה.}many{# הורדות בהמתנה.}other{# הורדות בהמתנה.}}</translation>
 <translation id="1145536944570833626">מחק נתונים קיימים.</translation>
@@ -167,7 +166,6 @@
 <translation id="2154484045852737596">עריכת כרטיס</translation>
 <translation id="2154710561487035718">העתק כתובת אתר</translation>
 <translation id="2156074688469523661">אתרים שנותרו (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2184766556418880456">הקשה תציג בכרטיסייה הנוכחית את דף הכרטיסייה החדשה</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, אפליקציית אינטרנט. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">המשך בשם <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">‏שליחת חלק מפרטי המערכת ותוכן הדף אל Google</translation>
@@ -234,7 +232,6 @@
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="271033894570825754">חדש</translation>
 <translation id="2728754400939377704">מיון לפי אתר</translation>
-<translation id="2736391366332017384">הקשה על לחצן הבית תציג בכרטיסייה הנוכחית את דף הכרטיסייה החדשה</translation>
 <translation id="2744248271121720757">כדי לחפש באופן מיידי או לראות פעולות קשורות, צריך להקיש על מילה</translation>
 <translation id="2762000892062317888">ברגע זה</translation>
 <translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
@@ -639,7 +636,7 @@
 <translation id="5956665950594638604">‏פתח את מרכז העזרה של Chrome בכרטיסייה חדשה</translation>
 <translation id="5958275228015807058">מצא את הקבצים והדפים שלך ב'הורדות'</translation>
 <translation id="5962718611393537961">הקש כדי לכווץ</translation>
-<translation id="5990142338020175451">‏שירותי Google בהתאמה אישית יותר, כמו הצעות טובות יותר לדפים</translation>
+<translation id="5990142338020175451">‏התאמה אישית יותר של שירותי Google - למשל, הצעות לדפים מתאימים יותר</translation>
 <translation id="6000066717592683814">‏המשך להשתמש ב-Google</translation>
 <translation id="6005538289190791541">הצעה לסיסמה</translation>
 <translation id="6039379616847168523">עבור לכרטיסייה הבאה</translation>
@@ -1001,7 +998,6 @@
 <translation id="8912362522468806198">‏חשבון Google</translation>
 <translation id="8920114477895755567">ממתין לפרטי ההורים.</translation>
 <translation id="8922289737868596582">כדי להשתמש בדפים במצב לא מקוון, אפשר להוריד אותם דרך הלחצן 'אפשרויות נוספות'</translation>
-<translation id="8934029156920711950">הקשה תציג מאמרים שנבחרו במיוחד בשבילך</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">פתח בחלון האחר</translation>
 <translation id="8951232171465285730">‏Chrome חסך לך ‎<ph name="MEGABYTES" /> MB</translation>

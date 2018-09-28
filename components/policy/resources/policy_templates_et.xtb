@@ -143,6 +143,7 @@
 <translation id="1387596372902085462">Määrab, kas usaldada Symantec Corporationi PKI pärandtaristut</translation>
 <translation id="1393485621820363363">Ettevõtte seadmete jaoks lubatud printerid</translation>
 <translation id="1397855852561539316">Vaikeotsingupakkuja soovitatud URL</translation>
+<translation id="1413936351612032792">Linuxi rakenduste kasutusteabe saatmine</translation>
 <translation id="142346659686073702">Seoseta kasutajatel Crostini kasutamise lubamine</translation>
 <translation id="1426410128494586442">Jah</translation>
 <translation id="1427655258943162134">Puhverserveri aadress või URL</translation>
@@ -2230,6 +2231,13 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
       Kui reegel on määramata, siis kasutatakse vaikeväärtust 32.</translation>
 <translation id="6943577887654905793">Maci/Linuxi eelistuse nimi:</translation>
+<translation id="6944167205014013774">Teave Linuxi rakenduste kasutuse kohta saadetakse tagasi
+      serverisse.
+
+      Kui reegel on määratud väärtusele Väär või see on määramata, siis kasutusteavet
+      ei saadeta. Kui väärtuseks on määratud Tõene, siis kasutusteavet saadetakse.
+
+      See reegel kehtib ainult juhul, kui Linuxi rakenduste tugi on lubatud.</translation>
 <translation id="69525503251220566">Parameeter otsingu vaikepakkujale pildi järgi otsimise funktsiooni pakkumiseks</translation>
 <translation id="6956272732789158625">Ära luba ühelgi saidil võtmeid luua</translation>
 <translation id="6965859329738616662">Määrab, kas nutikal hämardamismudelil on lubatud ekraani hämardamise aega pikendada.

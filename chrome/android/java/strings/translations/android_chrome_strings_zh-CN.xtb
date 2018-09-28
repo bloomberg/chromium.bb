@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">您在其他设备上保存的书签将列在此处。</translation>
 <translation id="1113597929977215864">显示简化版视图</translation>
 <translation id="1121094540300013208">使用情况统计信息和崩溃报告</translation>
-<translation id="11221688409173367">点按主页按钮即可查看系统专门为您挑选的文章</translation>
 <translation id="1129510026454351943">错误详情：<ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{有 1 项下载尚待处理。}other{有 # 项下载尚待处理。}}</translation>
 <translation id="1145536944570833626">删除现有数据。</translation>
@@ -167,7 +166,6 @@
 <translation id="2154484045852737596">修改支付卡</translation>
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="2156074688469523661">其余的网站（<ph name="NUMBER_OF_SITES" /> 个）</translation>
-<translation id="2184766556418880456">点按即可在当前标签中转到新标签页</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，网络应用。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以“<ph name="USER_FULL_NAME" />”的身份继续</translation>
 <translation id="2232379019872353004">将一些系统信息和网页内容发送至 Google</translation>
@@ -234,7 +232,6 @@
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="271033894570825754">新建</translation>
 <translation id="2728754400939377704">按网站排序</translation>
-<translation id="2736391366332017384">点按主页按钮即可在当前标签中转到新标签页</translation>
 <translation id="2744248271121720757">点按某个字词可立即开始搜索或查看相关操作</translation>
 <translation id="2762000892062317888">刚刚</translation>
 <translation id="2777555524387840389">还剩 <ph name="SECONDS" /> 秒</translation>
@@ -1003,7 +1000,6 @@
 <translation id="8912362522468806198">Google 帐号</translation>
 <translation id="8920114477895755567">正在等待获取家长的详细信息。</translation>
 <translation id="8922289737868596582">通过“更多选项”按钮下载网页以供离线查看</translation>
-<translation id="8934029156920711950">点按即可查看系统专门为您挑选的文章</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">在其他窗口中打开</translation>
 <translation id="8951232171465285730">Chrome 已为您保存的数据量：<ph name="MEGABYTES" /> MB</translation>

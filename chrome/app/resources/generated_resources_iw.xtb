@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">‏המחשב שלך מכיל התקן אבטחה מסוג Trusted Platform Module‏ (TPM), המשמש ליישם תכונות אבטחה קריטיות רבות במערכת ההפעלה של Chrome. היכנס למרכז העזרה של Chromebook כדי לקבל מידע נוסף: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">מצב שינה מופעל כשהמכסה סגור</translation>
 <translation id="1115324527092594775">‏הגדרת Better Together</translation>
+<translation id="1116639326869298217">אי אפשר היה לאמת את זהותך</translation>
 <translation id="1116694919640316211">מידע כללי</translation>
 <translation id="1116779635164066733">התוסף "<ph name="NAME" />" אוכף את ההגדרה הזו.</translation>
 <translation id="111844081046043029">האם אתה בטוח שברצונך לצאת מדף זה?</translation>
@@ -975,6 +976,7 @@
 <translation id="2464089476039395325">‏שרת proxy של HTTP</translation>
 <translation id="2468205691404969808">‏שימוש בקובצי cookie כדי לשמור את ההעדפות שלך, גם אם לא נכנסת אל הדפים האלה</translation>
 <translation id="2468902267404883140">‏לא ניתן לבצע התחברות לטלפון שלך. יש לוודא שימוש בטלפון Android תואם ושהוא מופעל ונמצא בקרבתך. &lt;a&gt;מידע נוסף&lt;/a&gt;</translation>
+<translation id="247051149076336810">כתובת אתר של התקן רשת לשיתוף קבצים</translation>
 <translation id="2470702053775288986">תוספים שלא נתמכים הושבתו</translation>
 <translation id="2473195200299095979">תרגם את הדף הזה</translation>
 <translation id="2475982808118771221">אירעה שגיאה</translation>
@@ -1708,7 +1710,7 @@
 <translation id="3569382839528428029">האם אתה רוצה ש-<ph name="APP_NAME" /> ישתף את המסך שלך?</translation>
 <translation id="3570985609317741174">תוכן אינטרנט</translation>
 <translation id="3571734092741541777">הגדר</translation>
-<translation id="3574210789297084292">היכנס</translation>
+<translation id="3574210789297084292">כניסה</translation>
 <translation id="3574917942258583917">לצאת בכל זאת ממצב גלישה בסתר?</translation>
 <translation id="3576324189521867626">הותקן בהצלחה</translation>
 <translation id="3578594933904494462">התוכן בכרטיסייה הזו משותף.</translation>
@@ -1771,6 +1773,7 @@
 <translation id="3650952250015018111">הענקת גישה ל-"<ph name="APP_NAME" />":</translation>
 <translation id="3651488188562686558">‏נתק את חיבור ה-Wi-Fi</translation>
 <translation id="3652817283076144888">מתבצע אתחול</translation>
+<translation id="3653160965917900914">התקני רשת לשיתוף קבצים</translation>
 <translation id="3653999333232393305">המשך לאפשר ל-<ph name="HOST" /> לגשת למיקרופון שלך</translation>
 <translation id="3654045516529121250">קרא את הגדרות הנגישות שלך</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{יש לו גישה קבועה אל קובץ אחד.}two{יש לו גישה קבועה אל # קבצים.}many{יש לו גישה קבועה אל # קבצים.}other{יש לו גישה קבועה אל # קבצים.}}</translation>
@@ -2859,6 +2862,7 @@
 <translation id="5332624210073556029">אזור זמן:</translation>
 <translation id="5334142896108694079">מטמון של סקריפט</translation>
 <translation id="5334844597069022743">הצג מקור</translation>
+<translation id="5334899159203764908">אפשר לקרוא מידע נוסף לגבי <ph name="BEGIN_LINK" />גישת אתרים<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">‏מגבה <ph name="FILE_COUNT" /> ב-<ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">‏חסימת הגישה של אתרים למכשירי USB</translation>
 <translation id="5337771866151525739">הותקן על ידי צד שלישי.</translation>
@@ -3148,6 +3152,7 @@
 <translation id="5756163054456765343">מרכז עזרה</translation>
 <translation id="5759728514498647443">תוכל להשתמש ב-<ph name="APP_NAME" /> כדי לקרוא מסמכים שתשלח להדפסה באמצעות <ph name="APP_NAME" />.</translation>
 <translation id="5762172915276660232">הגדרות של כרטיסי אשראי</translation>
+<translation id="5763315388120433852">הגדרה או ניהול של התקני רשת לשיתוף קבצים.</translation>
 <translation id="5763751966069581670">‏לא נמצאו התקני USB</translation>
 <translation id="5764483294734785780">ש&amp;מור שמע כ...</translation>
 <translation id="57646104491463491">תארך השינוי</translation>
@@ -3303,11 +3308,12 @@
 <translation id="5979469435153841984">כדי להוסיף דפים לסימניות, לחץ על הכוכב בסרגל הכתובות</translation>
 <translation id="5982621672636444458">אפשרויות מיון</translation>
 <translation id="5984222099446776634">ביקרת לאחרונה</translation>
-<translation id="5990142338020175451">‏שירותי Google בהתאמה אישית יותר, כמו הצעות טובות יותר לדפים</translation>
+<translation id="5985458664595100876">‏פורמט כתובת האתר לא חוקי. הפורמטים הנתמכים הם ‎\\server\share ו-smb://server/share.</translation>
+<translation id="5990142338020175451">‏התאמה אישית יותר של שירותי Google - למשל, הצעות לדפים מתאימים יותר</translation>
 <translation id="5990386583461751448">מתורגם</translation>
 <translation id="5991049340509704927">הגדל</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציה הזו.}two{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}many{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}other{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}}</translation>
-<translation id="5997337190805127100">מידע נוסף על גישה לאתר</translation>
+<translation id="5997337190805127100">מידע נוסף על גישה לאתרים</translation>
 <translation id="6002458620803359783">קולות מועדפים</translation>
 <translation id="6005695835120147974">נתב מדיה</translation>
 <translation id="6006484371116297560">קלאסי</translation>
@@ -3443,7 +3449,6 @@
 <translation id="6185132558746749656">מיקום מכשיר</translation>
 <translation id="6185617499004995178">‏מאמת CUPS IPP</translation>
 <translation id="6185696379715117369">Page up</translation>
-<translation id="6189273858858366896">הגדרה או ניהול של שיתופי קבצים ברשת.</translation>
 <translation id="6189412234224385711">פתח באמצעות <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">‏חסום קובצי Cookie של צד שלישי</translation>
 <translation id="6196854373336333322">‏התוסף "<ph name="EXTENSION_NAME" />" השתלט על הגדרות שרת ה-Proxy. פירוש הדבר שהוא יכול לשנות ולקטוע לכל פעולה שתבצע באינטרנט או לצותת לה. אם אינך יודע בוודאות מדוע שינוי זה התרחש, סביר להניח שזהו שינוי לא רצוי.</translation>
@@ -3493,7 +3498,6 @@
 <translation id="6263082573641595914">‏גרסת רשות אישורים של Microsoft</translation>
 <translation id="6263284346895336537">לא קריטי</translation>
 <translation id="6264365405983206840">בחר &amp;הכל</translation>
-<translation id="6264422956566238156">הפעלת את הסינכרון</translation>
 <translation id="6267166720438879315">בחר אישור כדי לאמת את עצמך מול <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">פתח באמצעות <ph name="APP" /></translation>
 <translation id="6268747994388690914">‏יבוא סימניות מקובץ HTML...</translation>
@@ -4003,7 +4007,7 @@
 <translation id="7040230719604914234">ספק</translation>
 <translation id="7042418530779813870">הדבק וחפש</translation>
 <translation id="7043108582968290193">סיימת. לא נמצאו יותר אפליקציות שאינן תואמות.</translation>
-<translation id="7044124535091449260">מידע נוסף על גישה לאתר</translation>
+<translation id="7044124535091449260">מידע נוסף על גישה לאתרים</translation>
 <translation id="7049293980323620022">להשאיר את הקובץ?</translation>
 <translation id="7051943809462976355">מחפש עכבר...</translation>
 <translation id="7052237160939977163">שלח נתוני מעקב אחר ביצועים</translation>
@@ -4159,7 +4163,7 @@
 <translation id="7270858098575133036">‏שאל כשאתר רוצה להשתמש בהודעות בלעדיות של המערכת כדי לגשת להתקני MIDI</translation>
 <translation id="7272674038937250585">לא סופק תיאור</translation>
 <translation id="7273110280511444812">חובר לאחרונה ב-<ph name="DATE" /></translation>
-<translation id="727441411541283857">‏%‎<ph name="PERCENTAGE" /> - ‏<ph name="TIME" /> עד טעינה מלאה</translation>
+<translation id="727441411541283857"><ph name="PERCENTAGE" />% - ‏<ph name="TIME" /> עד טעינה מלאה</translation>
 <translation id="727952162645687754">שגיאה בהורדה</translation>
 <translation id="7279701417129455881">‏ניהול חסימת קובץ Cookie...</translation>
 <translation id="7280041992884344566">‏אירעה שגיאה בזמן ש-Chrome חיפש תוכנות מזיקות</translation>
@@ -4800,7 +4804,6 @@
 <translation id="8230134520748321204">האם לשמור את הסיסמה של <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">עזור למהנדסים שלנו לפתור את הבעיה הזו. ספר לנו מה קרה לפני שהוצגה לך הודעת השגיאה לגבי הפרופיל:</translation>
 <translation id="8234989666557591529">יש לבחור טלפון לביטול הנעילה של <ph name="DEVICE_TYPE" /></translation>
-<translation id="8239020549147958415">סינכרון בשם <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">מוצל</translation>
 <translation id="8241806945692107836">קובע את תצורת המכשיר...</translation>
 <translation id="8241868517363889229">לקרוא ולשנות את הסימניות שלך</translation>
@@ -5092,7 +5095,6 @@
 <translation id="869884720829132584">תפריט יישומים</translation>
 <translation id="869891660844655955">תאריך תפוגה</translation>
 <translation id="8699566574894671540">כדי להפעיל את האפשרות הזאת, צריך לבחור 'בדיקת איות בעת ההקלדה' בתפריט 'עריכה'.</translation>
-<translation id="870073306461175568">שיתופי קבצים ברשת</translation>
 <translation id="8701677791353449257">שם המכשיר חייב להתאים לביטוי הרגולרי <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">הפעולה נמשכת זמן רב מהרגיל. תוכל להמשיך להמתין, או לבטל את הפעולה ולנסות שוב מאוחר יותר.</translation>
 <translation id="8705331520020532516">מספר סידורי</translation>
@@ -5277,7 +5279,6 @@
 <translation id="897939795688207351">ב-<ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - קרס</translation>
 <translation id="8983677657449185470">עזרה בשיפור של גלישה בטוחה</translation>
-<translation id="8984654317541110628">כתובת אתר של התקן רשת לשיתוף קבצים</translation>
 <translation id="8986362086234534611">שכח</translation>
 <translation id="8986494364107987395">‏שלח ל-Google דוחות קריסה וסטטיסטיקת שימוש באופן אוטומטי</translation>
 <translation id="8987927404178983737">חודש</translation>

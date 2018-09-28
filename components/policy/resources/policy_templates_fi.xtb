@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Luotetaanko Symantec Corporationin vanhaan PKI-infrastruktuuriin vai ei</translation>
 <translation id="1393485621820363363">Käytössä olevat yrityslaitteiden tulostimet</translation>
 <translation id="1397855852561539316">Oletushakupalvelun ehdottama URL-osoite</translation>
+<translation id="1413936351612032792">Raportoi tietoja Linux-sovellusten käytöstä</translation>
 <translation id="142346659686073702">Salli ulkopuolisten käyttäjien käyttää Crostinia</translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1427655258943162134">Välityspalvelimen osoite tai URL-osoite</translation>
@@ -2152,6 +2153,13 @@ Jotkin verkkosovellukset käyttävät paljon yhteyksiä GETien vuoksi, joten 32:
 
 Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</translation>
 <translation id="6943577887654905793">Mac/Linux-asetuksen nimi:</translation>
+<translation id="6944167205014013774">Linux-sovellusten käyttötietoja lähetetään takaisin
+      palvelimelle.
+
+      Jos käytännön arvo on epätosi tai sitä ei ole määritetty, käyttötietoja ei lähetetä.
+      Jos käytännön arvo on tosi, käyttötiedot lähetetään.
+
+      Tätä käytäntöä sovelletaan vain jos Linux-sovelluksia tuetaan.</translation>
 <translation id="69525503251220566">Parametri, joka tarjoaa kuvan perusteella haku -ominaisuuden oletushakupalvelulle</translation>
 <translation id="6956272732789158625">Älä salli sivustojen käyttää avainten luomistoimintoa.</translation>
 <translation id="6965859329738616662">Määrittää, saako älykäs himmennysmalli pidentää näytön himmennysaikaa

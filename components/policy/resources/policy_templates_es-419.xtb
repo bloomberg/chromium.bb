@@ -140,6 +140,7 @@
 <translation id="1387596372902085462">Habilitar o inhabilitar la confianza en la infraestructura del PKI heredado de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impresoras empresariales habilitadas asociadas a dispositivos</translation>
 <translation id="1397855852561539316">Dirección URL sugerida para el proveedor de búsqueda predeterminado</translation>
+<translation id="1413936351612032792">Informar datos sobre el uso de las apps de Linux</translation>
 <translation id="142346659686073702">Permitir que los usuarios no afiliados usen Crostini</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Dirección o dirección URL del servidor proxy</translation>
@@ -2145,6 +2146,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si no se establece esta política, se utilizará el valor predeterminado de 32.</translation>
 <translation id="6943577887654905793">Nombre de preferencia de Mac/Linux:</translation>
+<translation id="6944167205014013774">Se envía la información sobre el uso de las apps de Linux nuevamente al
+      servidor.
+
+      Si se establece la política como falsa, o no se establece, no se informarán
+      los datos sobre el uso. Si se establece como verdadera, se informarán estos datos.
+
+      Se aplicará esta política solo si está habilitado el soporte para las apps de Linux.</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios utilicen la generación de claves</translation>
 <translation id="6965859329738616662">Especifica si se permite que un modelo de atenuación inteligente extienda el tiempo de atenuación de la pantalla.

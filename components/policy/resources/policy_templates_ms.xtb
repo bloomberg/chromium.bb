@@ -143,6 +143,7 @@
 <translation id="1387596372902085462">Sama ada hendak mendayakan kepercayaan dalam Infrastruktur PKI Lama Symantec Corporation</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
 <translation id="1397855852561539316">Pembekal carian lalai mencadangkan URL</translation>
+<translation id="1413936351612032792">Laporkan maklumat tentang penggunaan apl Linux</translation>
 <translation id="142346659686073702">Benarkan pengguna yang bukan ahli gabungan menggunakan Crostini</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL pelayan proksi</translation>
@@ -2235,6 +2236,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai, iaitu 32 akan digunakan.</translation>
 <translation id="6943577887654905793">Nama keutamaan Mac/Linux:</translation>
+<translation id="6944167205014013774">Maklumat tentang penggunaan apl Linux dihantar kembali ke
+      pelayan.
+
+      Jika dasar ditetapkan kepada palsu atau dibiarkan tanpa ditetapkan, tiada maklumat penggunaan akan
+      dilaporkan. Jika dasar ditetapkan kepada benar, maklumat penggunaan akan dilaporkan.
+
+      Dasar ini hanya diguna pakai jika sokongan apl Linux didayakan.</translation>
 <translation id="69525503251220566">Parameter yang menyediakan ciri cari melalui imej untuk penyedia carian lalai</translation>
 <translation id="6956272732789158625">Jangan benarkan mana-mana tapak untuk menggunakan penghasilan kunci</translation>
 <translation id="6965859329738616662">Menentukan sama ada model pemalapan pintar dibenarkan untuk melanjutkan masa sebelum skrin dimalapkan.

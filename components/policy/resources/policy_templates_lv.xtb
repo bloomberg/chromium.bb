@@ -129,6 +129,7 @@
 <translation id="1387596372902085462">Vai norādīt, ka Symantec Corporation mantotā PKI infrastruktūra ir uzticama</translation>
 <translation id="1393485621820363363">Iespējoti uzņēmuma ierīču printeri</translation>
 <translation id="1397855852561539316">Noklusējuma meklētājprogrammas ieteikumu URL</translation>
+<translation id="1413936351612032792">Sniegt informāciju par Linux lietotņu izmantošanu</translation>
 <translation id="142346659686073702">Ļauj nesaistītiem lietotājiem izmantot Crostini</translation>
 <translation id="1426410128494586442">Jā</translation>
 <translation id="1427655258943162134">Starpniekservera adrese vai URL</translation>
@@ -2220,6 +2221,13 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šī politika nav iestatīta, tiks izmantota noklusējuma vērtība (32).</translation>
 <translation id="6943577887654905793">Mac/Linux preferences nosaukums:</translation>
+<translation id="6944167205014013774">Informācija par Linux lietotņu izmantošanu tika nosūtīta atpakaļ uz
+      serveri.
+
+      Ja politikai ir iestatīta vērtība “false” vai politika nav iestatīta, lietojuma
+      informācija netiek nosūtīta. Ja politikai ir iestatīta vērtība “true”, tiek nosūtīta lietojuma informācija.
+
+      Šī politika ir spēkā tikai tad, ja ir iespējots Linux lietotņu atbalsts.</translation>
 <translation id="69525503251220566">Parametrs, kas noklusējuma meklēšanas pakalpojumu sniedzējam nodrošina funkciju Meklēšana pēc attēla</translation>
 <translation id="6956272732789158625">Neatļaut izmantot atslēgu ģenerēšanu nevienā vietnē</translation>
 <translation id="6965859329738616662">Norāda, vai viedās aptumšošanas modelis var paildzināt laiku, līdz ekrāns ir aptumšots.

@@ -128,6 +128,7 @@
 <translation id="1387596372902085462">是否信任 Symantec 公司的舊版 PKI 基礎架構</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
 <translation id="1397855852561539316">預設搜尋引擎建議網址</translation>
+<translation id="1413936351612032792">回報 Linux 應用程式使用情形資訊</translation>
 <translation id="142346659686073702">允許無關聯的使用者使用 Crostini</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
@@ -2138,6 +2139,12 @@
 
       如果你未設定這項政策，系統將採用 32 做為預設值。</translation>
 <translation id="6943577887654905793">Mac/Linux 偏好設定名稱：</translation>
+<translation id="6944167205014013774">將 Linux 應用程式使用情形資訊傳回伺服器。
+
+      如果將這項政策設為 false 或不予設定，系統不會回報使用情形資訊。
+      如果設為 true，則會回報使用情形資訊。
+
+      必須啟用 Linux 應用程式支援功能才可套用這項政策。</translation>
 <translation id="69525503251220566">為預設搜尋引擎提供圖片搜尋功能的參數</translation>
 <translation id="6956272732789158625">不允許任何網站使用金鑰產生功能</translation>
 <translation id="6965859329738616662">指定是否允許智慧型調光模式延長使用時間，直到螢幕變暗為止。

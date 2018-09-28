@@ -140,6 +140,7 @@
 <translation id="1387596372902085462">Symantec Corporation の古い PKI インフラストラクチャを信頼するかどうか</translation>
 <translation id="1393485621820363363">有効な企業デバイス プリンタ</translation>
 <translation id="1397855852561539316">デフォルト検索プロバイダ サジェスト URL</translation>
+<translation id="1413936351612032792">Linux アプリの使用に関する情報を報告します</translation>
 <translation id="142346659686073702">外部のユーザーに Crostini の使用を許可する</translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="1427655258943162134">プロキシ サーバーのアドレスまたは URL</translation>
@@ -2150,6 +2151,13 @@
 
       このポリシーが未設定の場合、デフォルト値の 32 が使用されます。</translation>
 <translation id="6943577887654905793">Mac/Linux 設定名:</translation>
+<translation id="6944167205014013774">Linux アプリの使用に関する情報をサーバーに返します。
+      
+
+      このポリシーを false に設定するか未設定のままにした場合、使用情報は
+      報告されません。true に設定した場合は、使用情報が報告されます。
+
+      このポリシーは、Linux アプリが有効になっている場合にのみ適用されます。</translation>
 <translation id="69525503251220566">既定の検索プロバイダに画像検索機能を提供するパラメータ</translation>
 <translation id="6956272732789158625">すべてのサイトにキー生成の使用を許可しない</translation>
 <translation id="6965859329738616662">スマート消灯モデルを使って画面が暗くなるまでの時間を延長するかどうかを指定します。

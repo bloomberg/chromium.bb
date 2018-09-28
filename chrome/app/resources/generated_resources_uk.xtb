@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">Ваш комп’ютер оснащено пристроєм Trusted Platform Module (TPM), який виконує багато важливих функцій безпеки в ОС Chrome. Щоб дізнатися більше, відвідайте Довідковий центр Chromebook: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">Переходити в режим сну, коли кришка закрита</translation>
 <translation id="1115324527092594775">Налаштувати Better Together</translation>
+<translation id="1116639326869298217">Не вдалося підтвердити вашу особу</translation>
 <translation id="1116694919640316211">Про Google Chrome</translation>
 <translation id="1116779635164066733">Цей параметр встановлюється розширенням "<ph name="NAME" />".</translation>
 <translation id="111844081046043029">Дійсно залишити цю сторінку?</translation>
@@ -978,6 +979,7 @@
 <translation id="2464089476039395325">Проксі-сервер HTTP</translation>
 <translation id="2468205691404969808">Використовує файли cookie, щоб запам’ятовувати налаштування, навіть якщо ви не відвідуєте ці сторінки</translation>
 <translation id="2468902267404883140">Не вдається під’єднатися до телефона. Переконайтеся, що ваш телефон Android сумісний, увімкнений і розташований поблизу. &lt;a&gt;Докладніше&lt;/a&gt;</translation>
+<translation id="247051149076336810">URL-адреса файлообмінника</translation>
 <translation id="2470702053775288986">Непідтримувані розширення вимкнено</translation>
 <translation id="2473195200299095979">Перекласти цю сторінку</translation>
 <translation id="2475982808118771221">Сталася помилка</translation>
@@ -1774,6 +1776,7 @@
 <translation id="3650952250015018111">Надати додатку "<ph name="APP_NAME" />" доступ:</translation>
 <translation id="3651488188562686558">Відключитися від Wi-Fi</translation>
 <translation id="3652817283076144888">Ініціалізація</translation>
+<translation id="3653160965917900914">Мережеві файлообмінники</translation>
 <translation id="3653999333232393305">Продовжити надавати хосту <ph name="HOST" /> доступ до вашого мікрофона</translation>
 <translation id="3654045516529121250">Переглядати налаштування доступності</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Має постійний доступ до одного файлу.}one{Має постійний доступ до # файлу.}few{Має постійний доступ до # файлів.}many{Має постійний доступ до # файлів.}other{Має постійний доступ до # файлу.}}</translation>
@@ -3151,6 +3154,7 @@
 <translation id="5756163054456765343">Довідковий центр</translation>
 <translation id="5759728514498647443">Документи, які ви друкуєте через додаток <ph name="APP_NAME" />, може переглядати додаток <ph name="APP_NAME" />.</translation>
 <translation id="5762172915276660232">Налаштування кредитних карток</translation>
+<translation id="5763315388120433852">Налаштувати мережеві файлообмінники або керувати ними.</translation>
 <translation id="5763751966069581670">Пристроїв USB не знайдено</translation>
 <translation id="5764483294734785780">Збере&amp;гти аудіо як...</translation>
 <translation id="57646104491463491">Дата змінення</translation>
@@ -3306,6 +3310,7 @@
 <translation id="5979469435153841984">Щоб створити закладку сторінки, натисніть значок зірочки в адресному рядку</translation>
 <translation id="5982621672636444458">Параметри сортування</translation>
 <translation id="5984222099446776634">Нещодавно відвідані</translation>
+<translation id="5985458664595100876">Недійсний формат URL-адреси. Підтримувані формати: \\server\share і smb://server/share.</translation>
 <translation id="5990142338020175451">Більш персоналізовані сервіси Google, як-от кращі пропозиції сторінок</translation>
 <translation id="5990386583461751448">Перекладено</translation>
 <translation id="5991049340509704927">Збільшити</translation>
@@ -3446,7 +3451,6 @@
 <translation id="6185132558746749656">Місцезнаходження пристрою</translation>
 <translation id="6185617499004995178">Засіб перевірки CUPS IPP</translation>
 <translation id="6185696379715117369">Сторінка вгору</translation>
-<translation id="6189273858858366896">Налаштувати або керувати спільними мережевими файлами.</translation>
 <translation id="6189412234224385711">Відкрити за допомогою розширення "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="6196640612572343990">Блокувати сторонні файли cookie</translation>
 <translation id="6196854373336333322">Розширення "<ph name="EXTENSION_NAME" />" керує налаштуваннями проксі-сервера, тобто може змінювати та переривати будь-які ваші дії онлайн, а також стежити за ними. Якщо ви не знаєте причини такої зміни, імовірно, вона небажана.</translation>
@@ -3496,7 +3500,6 @@
 <translation id="6263082573641595914">Версія ЦС Microsoft</translation>
 <translation id="6263284346895336537">Не вирішальні</translation>
 <translation id="6264365405983206840">Вибрати &amp;всі</translation>
-<translation id="6264422956566238156">Ви ввімкнули синхронізацію</translation>
 <translation id="6267166720438879315">Виберіть сертифікат, щоб ідентифікувати себе на <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Відкрити за допомогою додатка <ph name="APP" /></translation>
 <translation id="6268747994388690914">Імпортувати закладки з файлу HTML...</translation>
@@ -4806,7 +4809,6 @@
 <translation id="8230134520748321204">Зберегти пароль для <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Допоможіть нашим розробникам вирішити цю проблему. Опишіть, що сталося перед тим, як з’явилося повідомлення про помилку профілю.</translation>
 <translation id="8234989666557591529">Виберіть телефон, щоб розблокувати пристрій <ph name="DEVICE_TYPE" /></translation>
-<translation id="8239020549147958415">Синхронізувати як <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Хмаринка</translation>
 <translation id="8241806945692107836">Визначення конфігурації пристрою…</translation>
 <translation id="8241868517363889229">Читати й змінювати закладки</translation>
@@ -5098,7 +5100,6 @@
 <translation id="869884720829132584">Меню програм</translation>
 <translation id="869891660844655955">Діє до</translation>
 <translation id="8699566574894671540">Щоб увімкнути цю функцію, спершу виберіть опцію "Перевіряти правопис під час введення" в меню "Редагування"</translation>
-<translation id="870073306461175568">Спільні мережеві файли</translation>
 <translation id="8701677791353449257">Назва пристрою має відповідати регулярному виразу <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">Це триває довше, ніж зазвичай. Можна зачекати або скасувати дію та спробувати пізніше.</translation>
 <translation id="8705331520020532516">Серійний номер</translation>
@@ -5283,7 +5284,6 @@
 <translation id="897939795688207351">На сайті <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – аварійне завершення роботи</translation>
 <translation id="8983677657449185470">Допоможіть покращити безпечний перегляд</translation>
-<translation id="8984654317541110628">URL-адреса спільного файлу</translation>
 <translation id="8986362086234534611">Видалити</translation>
 <translation id="8986494364107987395">Автоматично надсилати статистику використання та звіти про аварійне завершення роботи в Google</translation>
 <translation id="8987927404178983737">Місяць</translation>

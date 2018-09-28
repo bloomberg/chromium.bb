@@ -129,6 +129,7 @@
 <translation id="1387596372902085462">Apakah untuk mengaktifkan kepercayaan pada Infrastruktur PKI Lama milik Symantec Corporation</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
+<translation id="1413936351612032792">Informasi laporan tentang penggunaan aplikasi Linux</translation>
 <translation id="142346659686073702">Izinkan pengguna tak terafiliasi menggunakan Crostini</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL server proxy</translation>
@@ -2138,6 +2139,11 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 
       Jika kebijakan ini tidak disetel, nilai default 32 akan digunakan.</translation>
 <translation id="6943577887654905793">Nama preferensi Mac/Linux:</translation>
+<translation id="6944167205014013774">Informasi tentang penggunaan aplikasi Linux dikirim kembali ke server.
+
+Jika kebijakan disetel ke SALAH atau tidak disetel, tidak ada informasi penggunaan yang dilaporkan. Jika disetel ke BENAR, informasi penggunaan akan dilaporkan.
+
+Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translation>
 <translation id="69525503251220566">Parameter menyediakan fitur telusuri pakai gambar untuk penyedia penelusuran default</translation>
 <translation id="6956272732789158625">Jangan izinkan situs apa pun menggunakan pembuatan kunci</translation>
 <translation id="6965859329738616662">Menentukan apakah model redup smart diizinkan untuk memperpanjang waktu hingga layar diredupkan.

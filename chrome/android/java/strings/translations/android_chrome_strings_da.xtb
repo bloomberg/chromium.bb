@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">Bogmærker, der er gemt på dine andre enheder, vises her.</translation>
 <translation id="1113597929977215864">Se Enkel visning</translation>
 <translation id="1121094540300013208">Forbrugs- og nedbrudsrapporter</translation>
-<translation id="11221688409173367">Tryk på knappen Hjem for at få vist artikler, der er særligt udvalgt til dig</translation>
 <translation id="1129510026454351943">Oplysninger: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download afventer.}one{# download afventer.}other{# downloads afventer.}}</translation>
 <translation id="1145536944570833626">Slet eksisterende data.</translation>
@@ -167,7 +166,6 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="2154484045852737596">Rediger kort</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2156074688469523661">Tilbageværende websites (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2184766556418880456">Tryk for at gå til siden Ny fane på den aktuelle fane</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Sender nogle systemoplysninger og noget sideindhold til Google</translation>
@@ -234,7 +232,6 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="2709516037105925701">AutoFyld</translation>
 <translation id="271033894570825754">Nyt</translation>
 <translation id="2728754400939377704">Sortér efter website</translation>
-<translation id="2736391366332017384">Tryk på knappen Hjem for at gå til siden Ny fane på den aktuelle fane</translation>
 <translation id="2744248271121720757">Tryk på et ord for at søge øjeblikkeligt eller se relaterede handlinger</translation>
 <translation id="2762000892062317888">lige nu</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder tilbage</translation>
@@ -1003,7 +1000,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på oplysninger om forældre.</translation>
 <translation id="8922289737868596582">Download sider via knappen Flere valgmuligheder for at bruge dem, når du er offline</translation>
-<translation id="8934029156920711950">Tryk for at få vist artikler, der er særligt udvalgt til dig</translation>
 <translation id="8941729603749328384">www.eksempel.com</translation>
 <translation id="8942627711005830162">Åbn i et andet vindue</translation>
 <translation id="8951232171465285730">Chrome har sparet dig <ph name="MEGABYTES" /> MB</translation>

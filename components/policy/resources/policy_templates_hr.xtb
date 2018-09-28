@@ -131,6 +131,7 @@
 <translation id="1387596372902085462">Odlučivanje o pouzdanosti naslijeđene infrastrukture javnog ključa tvrtke Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogućeni pisači za uređaje tvrtke</translation>
 <translation id="1397855852561539316">Predloženi URL zadanog davatelja usluge pretraživanja</translation>
+<translation id="1413936351612032792">Prijavi informacije o upotrebi Linux aplikacija</translation>
 <translation id="142346659686073702">Omogućuje nepridruženim korisnicima da upotrebljavaju Crostini</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa ili URL proxy poslužitelja</translation>
@@ -2140,6 +2141,13 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
       Ako to pravilo nije postavljeno, upotrebljavat će se zadana vrijednost, a to je 32.</translation>
 <translation id="6943577887654905793">Naziv Mac/Linux preferencije:</translation>
+<translation id="6944167205014013774">Informacije o upotrebi Linux aplikacija šalju se
+      poslužitelju.
+
+      Ako se to pravilo postavi na False ili se ne postavi, informacije o upotrebi
+      neće se prijavljivati. Ako se postavi na True, te će se informacije prijavljivati.
+
+      To se pravilo primjenjuje samo ako je omogućena podrška za Linux aplikacije.</translation>
 <translation id="69525503251220566">Značajka pretraživanja po slici koja pruža parametre za zadanog davatelja usluge pretraživanja</translation>
 <translation id="6956272732789158625">Nemoj dopustiti nijednoj web-lokaciji da upotrebljava generiranje ključeva</translation>
 <translation id="6965859329738616662">Navodi se je li dopušten model pametnog zatamnjenja kako bi se produljilo vrijeme do zatamnjenja zaslona.

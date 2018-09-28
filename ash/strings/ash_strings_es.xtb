@@ -337,7 +337,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6715542151869432661">No se han encontrado dispositivos móviles.</translation>
 <translation id="671928215901716392">Bloquear pantalla</translation>
 <translation id="6723839937902243910">Batería</translation>
-<translation id="6725073593266469338">Servicio de IU</translation>
+<translation id="6725073593266469338">Servicio de UI</translation>
 <translation id="6751826523481687655">El control del rendimiento está activado</translation>
 <translation id="6785414152754474415">La batería se está cargando y está al <ph name="PERCENTAGE" />%.</translation>
 <translation id="6803622936009808957">No se han podido duplicar las pantallas porque no se han encontrado resoluciones compatibles. Se ha utilizado el modo de escritorio ampliado en su lugar.</translation>
@@ -356,7 +356,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
 <translation id="7068360136237591149">Abrir un archivo</translation>
-<translation id="7076293881109082629">Iniciando sesión</translation>
 <translation id="7092922358121866860">Mostrar la configuración de luz nocturna</translation>
 <translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
 <translation id="7131634465328662194">Tu sesión se cerrará automáticamente.</translation>

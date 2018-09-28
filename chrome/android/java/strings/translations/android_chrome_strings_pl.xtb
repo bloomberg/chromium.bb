@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">Tutaj wyświetlą się zakładki z innych urządzeń.</translation>
 <translation id="1113597929977215864">Pokaż widok uproszczony</translation>
 <translation id="1121094540300013208">Raporty o użytkowaniu i awariach</translation>
-<translation id="11221688409173367">Dotknij przycisku ekranu głównego, by wyświetlić artykuły wybrane specjalnie dla Ciebie</translation>
 <translation id="1129510026454351943">Szczegóły: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 plik oczekuje na pobranie.}few{# pliki oczekują na pobranie.}many{# plików oczekuje na pobranie.}other{# pliku oczekuje na pobranie.}}</translation>
 <translation id="1145536944570833626">Usuń istniejące dane.</translation>
@@ -167,7 +166,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2154484045852737596">Edytowanie karty</translation>
 <translation id="2154710561487035718">Kopiuj adres URL</translation>
 <translation id="2156074688469523661">Pozostałe strony (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2184766556418880456">Dotknij, by przejść do strony nowej karty na bieżącej karcie</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> – aplikacja internetowa. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Kontynuuj jako <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Wysyła do Google pewne informacje o systemie i część zawartości stron</translation>
@@ -234,7 +232,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2709516037105925701">Autouzupełnianie</translation>
 <translation id="271033894570825754">Nowy</translation>
 <translation id="2728754400939377704">Sortuj według witryny</translation>
-<translation id="2736391366332017384">Dotknij przycisku ekranu głównego, by przejść do strony nowej karty na bieżącej karcie</translation>
 <translation id="2744248271121720757">Kliknij słowo, by szybko je wyszukać lub wyświetlić powiązane czynności</translation>
 <translation id="2762000892062317888">przed chwilą</translation>
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
@@ -1003,7 +1000,6 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8912362522468806198">Konta Google</translation>
 <translation id="8920114477895755567">Oczekiwanie na informacje o rodzicach.</translation>
 <translation id="8922289737868596582">Pobierz strony, używając przycisku Więcej opcji, by korzystać z nich w trybie offline</translation>
-<translation id="8934029156920711950">Dotknij, by wyświetlić artykuły wybrane specjalnie dla Ciebie</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Otwórz w innym oknie</translation>
 <translation id="8951232171465285730">Chrome pozwolił Ci zaoszczędzić <ph name="MEGABYTES" /> MB</translation>

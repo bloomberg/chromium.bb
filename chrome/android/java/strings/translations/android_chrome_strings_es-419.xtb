@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">Los favoritos guardados en tus otros dispositivos aparecerán aquí.</translation>
 <translation id="1113597929977215864">Mostrar la vista simplificada</translation>
 <translation id="1121094540300013208">Informes de uso y de fallos</translation>
-<translation id="11221688409173367">Presiona el botón de inicio para ver artículos seleccionados específicamente para ti</translation>
 <translation id="1129510026454351943">Detalles: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 descarga pendiente}other{# descargas pendientes}}</translation>
 <translation id="1145536944570833626">Borra los datos existentes.</translation>
@@ -167,7 +166,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="2154484045852737596">Editar tarjeta</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios restantes (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2184766556418880456">Presiona para obtener la página Nueva pestaña en tu pestaña actual</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> (aplicación web), <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Envía información del sistema y contenido de la página a Google</translation>
@@ -234,7 +232,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="271033894570825754">Nuevo</translation>
 <translation id="2728754400939377704">Ordenar por sitio</translation>
-<translation id="2736391366332017384">Presiona el botón de inicio para obtener la página Nueva pestaña en tu pestaña actual</translation>
 <translation id="2744248271121720757">Presiona una palabra para realizar una búsqueda instantánea o ver acciones relacionadas</translation>
 <translation id="2762000892062317888">recién</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
@@ -1003,7 +1000,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8912362522468806198">Cuenta de Google</translation>
 <translation id="8920114477895755567">Esperando los detalles parentales</translation>
 <translation id="8922289737868596582">Descarga páginas desde el botón Más opciones para usarlas sin conexión</translation>
-<translation id="8934029156920711950">Presiona para ver artículos seleccionados específicamente para ti</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
 <translation id="8942627711005830162">Abrir en otra ventana</translation>
 <translation id="8951232171465285730">Chrome te permitió ahorrar <ph name="MEGABYTES" /> megabytes</translation>

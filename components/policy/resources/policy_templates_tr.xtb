@@ -124,6 +124,7 @@
 <translation id="1387596372902085462">Symantec Corporation'ın Eski PKI Altyapısı'ndaki güvenin etkinleştirilip etkinleştirilmemesi</translation>
 <translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
 <translation id="1397855852561539316">Arama önerileri için varsayılan arama sağlayıcı URL'si</translation>
+<translation id="1413936351612032792">Linux uygulamalarının kullanımıyla ilgili bilgileri raporla</translation>
 <translation id="142346659686073702">Bağlı olmayan kullanıcıların Crostini'yi kullanmasına izin verir</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1427655258943162134">Proxy sunucunun adresi veya URL'si</translation>
@@ -2207,6 +2208,12 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa, varsayılan değer olan 32 değeri kullanılır.</translation>
 <translation id="6943577887654905793">Mac/Linux tercih adı:</translation>
+<translation id="6944167205014013774">Linux'un kullanımıyla ilgili bilgiler sunucuya geri gönderilir.
+
+      Politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa kullanım bilgisi bildirilmez.
+      Doğru (true) değerine ayarlanırsa kullanım bilgisi bildirilir.
+
+      Bu politika, yalnızca Linux uygulama desteği etkin olduğunda geçerlidir.</translation>
 <translation id="69525503251220566">Varsayılan arama sağlayıcısı için resme göre arama özelliği sağlayan parametre</translation>
 <translation id="6956272732789158625">Hiçbir sitenin anahtar oluşturma işlevini kullanmasına izin verme</translation>
 <translation id="6965859329738616662">Ekran karartma süresini uzatmak için akıllı karartma modeline izin verip verilmeyeceğini belirtir.

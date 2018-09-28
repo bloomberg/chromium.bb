@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">మీ కంప్యూటర్ ట్రస్టెడ్ ప్లాట్‌ఫారమ్ మాడ్యూల్ (TPM) భద్రతా పరికరాన్ని కలిగి ఉంది, ఇది Chrome OSలో అనేక కీలకమైన భద్రతా ఫీచర్లను అమలు చేయడానికి ఉపయోగించబడుతుంది. మరింత తెలుసుకోవడానికి Chromebook సహాయ కేంద్రాన్ని సందర్శించండి: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">మూత మూసి ఉన్నప్పుడు స్లీప్ స్థితికి వెళ్లు</translation>
 <translation id="1115324527092594775">Better Togetherను సెటప్ చేయండి</translation>
+<translation id="1116639326869298217">మీ గుర్తింపును ధృవీకరించడం సాధ్యపడలేదు</translation>
 <translation id="1116694919640316211">గురించి</translation>
 <translation id="1116779635164066733">ఈ సెట్టింగ్‌ని "<ph name="NAME" />" ఎక్స్‌టెన్షన్ అమలు చేస్తుంది.</translation>
 <translation id="111844081046043029">మీరు దీన్ని ఖచ్చితంగా వదిలేయాలనుకుంటున్నారా?</translation>
@@ -978,6 +979,7 @@
 <translation id="2464089476039395325">HTTP ప్రాక్సీ</translation>
 <translation id="2468205691404969808">మీ ప్రాధాన్యతలను గుర్తుంచుకోవడానికి కుక్కీలను ఉపయోగిస్తుంది, మీరు ఆ పేజీలను సందర్శించకపోయినా కూడా అది అమలవుతుంది</translation>
 <translation id="2468902267404883140">మీ ఫోన్‌కు కనెక్ట్ కావటంలేదు. మీరు ఆన్ చేసి ఉన్న అనుకూల Android ఫోన్‌ని ఉపయోగిస్తున్నారని మరియు అది చేతికి అందేంత దగ్గర్లో ఉందని నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
+<translation id="247051149076336810">ఫైల్ షేర్ URL</translation>
 <translation id="2470702053775288986">మద్దతు లేని పొడిగింపులు నిలిపివేయబడ్డాయి</translation>
 <translation id="2473195200299095979">ఈ పేజీని అనువదించండి</translation>
 <translation id="2475982808118771221">ఒక లోపం సంభవించింది</translation>
@@ -1774,6 +1776,7 @@
 <translation id="3650952250015018111">యాక్సెస్ చేయడానికి "<ph name="APP_NAME" />"ని అనుమతించండి:</translation>
 <translation id="3651488188562686558">Wi-Fi నుండి డిస్‌కనెక్ట్ చేయి</translation>
 <translation id="3652817283076144888">ప్రారంభిస్తోంది</translation>
+<translation id="3653160965917900914">నెట్‌వర్క్ ఫైల్ షేర్‌లు</translation>
 <translation id="3653999333232393305">మీ మైక్రోఫోన్‌ను ప్రాప్యత చేయడానికి <ph name="HOST" />కి అనుమతిని కొనసాగించండి</translation>
 <translation id="3654045516529121250">మీ ప్రాప్యత సెట్టింగ్‌లను చదవండి</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{ఇది ఒక ఫైల్‌కు శాశ్వత ప్రాప్యతను కలిగి ఉంది.}other{ఇది # ఫైల్‌లకు శాశ్వత ప్రాప్యతను కలిగి ఉంది.}}</translation>
@@ -3151,6 +3154,7 @@
 <translation id="5756163054456765343">స&amp;హాయ కేంద్రం</translation>
 <translation id="5759728514498647443">మీరు <ph name="APP_NAME" /> ద్వారా ముద్రించడానికి పంపే పత్రాలు <ph name="APP_NAME" /> ద్వారా చదవబడతాయి.</translation>
 <translation id="5762172915276660232">క్రెడిట్ కార్డ్ సెట్టింగ్‌లు</translation>
+<translation id="5763315388120433852">నెట్‌వర్క్ ఫైల్ షేర్‌లను సెటప్ చేయండి లేదా నిర్వహించండి.</translation>
 <translation id="5763751966069581670">USB పరికరాలు కనుగొనబడలేదు</translation>
 <translation id="5764483294734785780">ఆడియోని ఇలా సే&amp;వ్ చెయ్యి...</translation>
 <translation id="57646104491463491">తేదీ సవరించబడింది</translation>
@@ -3306,6 +3310,7 @@
 <translation id="5979469435153841984">పేజీలను బుక్‌మార్క్ చేయాలంటే, చిరునామా బార్‌లో ఉన్న నక్షత్రాన్ని క్లిక్ చేయండి</translation>
 <translation id="5982621672636444458">క్రమబద్ధీకరణ ఎంపికలు</translation>
 <translation id="5984222099446776634">ఇటీవల సందర్శించినవి</translation>
+<translation id="5985458664595100876">URL ఫార్మాట్ చెల్లదు. మద్దతు ఉన్న ఫార్మాట్‌లు \\server\share మరియు smb://server/share.</translation>
 <translation id="5990142338020175451">మెరుగైన పేజీ సూచనల వంటి, మరిన్ని వ్యక్తిగత Google సేవలు</translation>
 <translation id="5990386583461751448">అనువదించబడింది</translation>
 <translation id="5991049340509704927">పెద్దదిగా చేయండి</translation>
@@ -3446,7 +3451,6 @@
 <translation id="6185132558746749656">పరికర స్థానం</translation>
 <translation id="6185617499004995178">CUPS IPP వాలిడేటర్</translation>
 <translation id="6185696379715117369">ఎగువ పేజీకి వెళ్లుతుంది</translation>
-<translation id="6189273858858366896">నెట్‌వర్క్ ఫైల్ షేర్‌లను సెటప్ చేయండి లేదా నిర్వహించండి.</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" />తో తెరవండి</translation>
 <translation id="6196640612572343990">మూడవ పక్షం కుక్కీలను బ్లాక్ చేయి</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" పొడిగింపు మీ ప్రాక్సీ సెట్టింగ్‌లపై నియంత్రణను కలిగి ఉంది, అంటే ఇది మీరు ఆన్‌లైన్‌‍లో చేసే ప్రతిదీ మార్చగలదు, విచ్ఛిన్నం చేయగలదు లేదా మీకు తెలియకుండా గమనించగలదు. ఈ మార్పు ఎందుకు జరిగిందో మీకు సరిగ్గా తెలియదంటే, బహుశా మీరు ఇది కోరుకొని ఉండకపోవచ్చు.</translation>
@@ -3496,7 +3500,6 @@
 <translation id="6263082573641595914">Microsoft CA సంస్కరణ</translation>
 <translation id="6263284346895336537">క్లిష్టమైనది కాదు</translation>
 <translation id="6264365405983206840">&amp;అన్నీ ఎంచుకోండి</translation>
-<translation id="6264422956566238156">మీరు సింక్‌ని ఆన్ చేసారు</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" />కు మిమ్మల్ని మీరు ప్రమాణీకరించడానికి ఒక సర్టిఫికెట్ను ఎంచుకోండి</translation>
 <translation id="6268252012308737255"><ph name="APP" />తో తెరువు</translation>
 <translation id="6268747994388690914">HTML ఫైల్ నుండి బుక్‌మార్క్‌లను దిగుమతి చేయి...</translation>
@@ -4802,7 +4805,6 @@
 <translation id="8230134520748321204"><ph name="ORIGIN" /> కోసం పాస్‌వర్డ్‌ని సేవ్ చేయాలా?</translation>
 <translation id="8234795456569844941">దయచేసి ఈ సమస్యను పరిష్కరించడంలో మా ఇంజినీర్‌లకు సహాయపడండి. మీకు ప్రొఫైల్ లోప సందేశం ఎదురుకావడం కంటే ముందు ఏమి జరిగిందో మాకు తెలియజేయండి:</translation>
 <translation id="8234989666557591529">మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి ఫోన్‌ని ఎంచుకోండి</translation>
-<translation id="8239020549147958415"><ph name="FULL_NAME" /> వలె సమకాలీకరించండి</translation>
 <translation id="8241040075392580210">షేడీ</translation>
 <translation id="8241806945692107836">పరికర కాన్ఫిగరేషన్‌ను గుర్తిస్తోంది...</translation>
 <translation id="8241868517363889229">మీ బుక్‌మార్క్‌లను చదవడం మరియు మార్చడం</translation>
@@ -5095,7 +5097,6 @@
 <translation id="869884720829132584">అనువర్తనాల మెను</translation>
 <translation id="869891660844655955">గడువు తేదీ</translation>
 <translation id="8699566574894671540">దీన్ని ఆన్ చేయడానికి, మొదట సవరణ మెనూలో టైప్ చేస్తున్నప్పుడు స్పెల్లింగ్‌ను తనిఖీ చేయిని ఎంచుకోండి</translation>
-<translation id="870073306461175568">నెట్‌వర్క్ ఫైల్ షేర్‌లు</translation>
 <translation id="8701677791353449257">పరికరం పేరు రెగ్యులర్ ఎక్స్‌ప్రెషన్‌ <ph name="REGEX" />కు సరిపోలాలి.</translation>
 <translation id="8704521619148782536">ఇందుకు సాధారణంగా పట్టే సమయం కంటే ఎక్కువసేపు పడుతోంది. మీరు నిరీక్షించవచ్చు లేదా రద్దు చేసి, తర్వాత మళ్లీ ప్రయత్నించవచ్చు.</translation>
 <translation id="8705331520020532516">క్రమ సంఖ్య</translation>
@@ -5280,7 +5281,6 @@
 <translation id="897939795688207351"><ph name="ORIGIN" />లో</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - క్రాష్ అయ్యింది</translation>
 <translation id="8983677657449185470">సురక్షిత బ్రౌజింగ్‌ను మెరుగుపరచడంలో సహాయపడండి</translation>
-<translation id="8984654317541110628">ఫైల్ షేర్ URL</translation>
 <translation id="8986362086234534611">మరిచిపోయారా</translation>
 <translation id="8986494364107987395">వినియోగ గణాంకాలు మరియు క్రాష్ నివేదికలను ఆటోమేటిక్‌గా Googleకు పంపు</translation>
 <translation id="8987927404178983737">నెల</translation>

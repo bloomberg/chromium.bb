@@ -140,6 +140,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1387596372902085462">Festlegen, ob der veralteten Symantec-PKI vertraut werden soll</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
+<translation id="1413936351612032792">Informationen zur Nutzung von Linux-Apps senden</translation>
 <translation id="142346659686073702">Nicht verknüpften Nutzern die Verwendung von Crostini gestatten</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse oder URL des Proxyservers</translation>
@@ -2147,6 +2148,13 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
       Ist diese Richtlinie nicht konfiguriert, so kommt der Standardwert von 32 zum Einsatz.</translation>
 <translation id="6943577887654905793">Bevorzugter Mac-/Linux-Name:</translation>
+<translation id="6944167205014013774">Durch diese Richtlinie werden Informationen zur Nutzung von Linux-Apps an den Server
+      zurückgesendet.
+
+      Wenn für die Richtlinie "false" festgelegt oder sie gar nicht konfiguriert wird, werden keine
+      Nutzungsinformationen gesendet. Wird "true" festgelegt, werden Nutzungsinformationen gesendet.
+
+      Diese Richtlinie wird nur angewendet, wenn der Support für Linux-Apps aktiviert ist.</translation>
 <translation id="69525503251220566">Parameter für Funktion zur bildgesteuerten Suche für Standardsuchanbieter</translation>
 <translation id="6956272732789158625">Schlüsselgenerierung für keine Website zulassen</translation>
 <translation id="6965859329738616662">Gibt an, ob der Zeitraum bis zum Dimmen des Bildschirms durch ein intelligentes Dimmmodell verlängert werden kann.

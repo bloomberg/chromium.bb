@@ -125,6 +125,7 @@
 <translation id="1387596372902085462">是否信任赛门铁克公司的旧版 PKI 基础架构</translation>
 <translation id="1393485621820363363">已启用企业设备打印机</translation>
 <translation id="1397855852561539316">默认搜索服务提供商建议网址</translation>
+<translation id="1413936351612032792">报告有关 Linux 应用使用情况的信息</translation>
 <translation id="142346659686073702">允许独立用户使用 Crostini</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
@@ -2086,6 +2087,11 @@
 
       如果未设置此策略，系统将使用默认值 32。</translation>
 <translation id="6943577887654905793">Mac/Linux 偏好设置名称：</translation>
+<translation id="6944167205014013774">系统会将有关 Linux 应用使用情况的信息发送回服务器。
+
+      如果此政策设为 false 或未设置，系统便不会报告使用情况信息。如果此政策设为 true，系统将会报告使用情况信息。
+
+      仅当已启用 Linux 应用支持后，此政策才适用。</translation>
 <translation id="69525503251220566">用来为默认搜索服务提供商提供图片搜索功能的参数</translation>
 <translation id="6956272732789158625">不允许任何网站使用密钥生成功能</translation>
 <translation id="6965859329738616662">指定是否允许使用智能调暗模式来最大限度地推迟屏幕变暗时间。

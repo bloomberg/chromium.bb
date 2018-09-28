@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Symantec Corporation의 Legacy PKI Infrastructure 신뢰 사용 여부</translation>
 <translation id="1393485621820363363">사용 설정된 엔터프라이즈 기기 프린터</translation>
 <translation id="1397855852561539316">기본 검색 공급자 추천 URL</translation>
+<translation id="1413936351612032792">Linux 앱 사용에 관한 정보 보고</translation>
 <translation id="142346659686073702">제휴되지 않은 사용자가 Crostini를 사용할 수 있게 허용</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="1427655258943162134">프록시 서버의 주소 또는 URL</translation>
@@ -2229,6 +2230,13 @@
 
       이 정책을 설정하지 않은 경우 기본값인 32가 사용됩니다.</translation>
 <translation id="6943577887654905793">Mac 및 Linux 환경설정 이름:</translation>
+<translation id="6944167205014013774">Linux 앱 사용에 관한 정보가 서버로 다시
+      전송됩니다.
+
+      정책을 False로 설정하거나 설정하지 않으면 사용 정보가
+      보고되지 않습니다. True로 설정하면 사용 정보가 보고됩니다.
+
+      이 정책은 Linux 앱 지원이 사용 설정된 경우에만 적용됩니다.</translation>
 <translation id="69525503251220566">기본 검색엔진에 이미지로 검색 기능을 제공하는 매개변수</translation>
 <translation id="6956272732789158625">모든 사이트에서 키 생성 사용 허용 안함</translation>
 <translation id="6965859329738616662">스마트 밝기 낮추기 모델을 사용하여 화면이 어두워질 때까지의 시간을 연장하도록 허용할지 설정합니다.

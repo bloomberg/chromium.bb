@@ -129,6 +129,7 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 <translation id="1387596372902085462">Angiver, om der skal aktiveres tillid til Symantec Corporations forældede PKI-infrastruktur</translation>
 <translation id="1393485621820363363">Aktiverede virksomhedsprintere for enheder</translation>
 <translation id="1397855852561539316">Foreslået webadresse fra standardsøgemaskinen</translation>
+<translation id="1413936351612032792">Rapportér oplysninger om brug af Linux-apps</translation>
 <translation id="142346659686073702">Tillad, at brugere uden tilknytning benytter Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller webadresse på proxyserveren</translation>
@@ -2141,6 +2142,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne politik ikke angives, anvendes standardværdien på 32.</translation>
 <translation id="6943577887654905793">Præferencenavn for Mac/Linux:</translation>
+<translation id="6944167205014013774">Oplysninger om brug af Linux-apps sendes tilbage til
+      serveren.
+
+      Hvis politikken indstilles til falsk eller ikke indstilles, rapporteres oplysninger om
+      brug ikke. Hvis den indstilles til sand, rapporteres brugsoplysninger.
+
+      Denne politik gælder kun, hvis understøttelse af Linux-apps er aktiveret.</translation>
 <translation id="69525503251220566">Parameter, der leverer funktion til billedsøgning i standardsøgemaskinen</translation>
 <translation id="6956272732789158625">Tillad ikke, at websites anvender nøglegenerering</translation>
 <translation id="6965859329738616662">Angiver, om det er tilladt at bruge en smart nedtoningsmodel for at forlænge den tid, der går, inden skærmen nedtones.

@@ -127,6 +127,7 @@
 <translation id="1387596372902085462">በSymantec Corporation የLegacy PKI Infrastructure ውስጥ እምነትን ማንቃት ወይም አለማንቃት</translation>
 <translation id="1393485621820363363">የድርጅት መሣሪያ አታሚዎች አንቅቷል</translation>
 <translation id="1397855852561539316">ነባሪ ፍለጋ አቅራቢ የሚጠቁመው ዩአርኤል</translation>
+<translation id="1413936351612032792">ስለLinux መተግበሪያዎች አጠቃቀም መረጃን ሪፖርት አድርግ</translation>
 <translation id="142346659686073702">አጋር ያልሆኑ ተጠቃሚዎች Crostiniን እንዲጠቀሙ ይፍቀዱ</translation>
 <translation id="1426410128494586442">አዎ</translation>
 <translation id="1427655258943162134">የተኪ አገልጋይ አድራሻ ወይም ዩአርኤል</translation>
@@ -2207,6 +2208,13 @@
 
       ይህ መመሪያ እንዳልተዋቀረ ከተተወ ስራ ላይ የሚውለው ነባሪው ዋጋ 32 ነው።</translation>
 <translation id="6943577887654905793">የMac/Linux ምርጫ ስም፦</translation>
+<translation id="6944167205014013774">ስለ Linux መተግበሪያዎች አጠቃቀም መረጃ ወደ አገልጋዩ ተምልሶ
+      ይላካል።
+
+      መመሪያው ወደ ሐሰት ከተዋቀረ ወይም እንዳልተዋቀረ ከተተወ ምንም የአጠቃቀም መረጃ
+      ሪፖርት አይደረግም። ወደ እውነት ከተዋቀረ የአጠቃቀም መረጃው ሪፖርት ይደረጋል።
+
+      ይህ መመሪያ የLinux መተግበሪያ ድጋፍ እንዲነቃ ከተደረገ ብቻ ተፈጻሚ ይሆናል።</translation>
 <translation id="69525503251220566">ለነባሪው የፍለጋ አቅራቢ በምስል የመፈለግ ባህሪይን የሚያቀርብ መለኪያ።</translation>
 <translation id="6956272732789158625">ማንኛውም ጣቢያ ቁልፍ ማመንጨትን እንዳይጠቀም ይከልክሉ</translation>
 <translation id="6965859329738616662">ዘመናዊ የማደብዘዣ ሞዴሉ ማያ ገጹ እስኪደበዝዝ ድረስ ጊዜን ማርዘም ይፈቅድ እንደሆነ ይገልጻል።

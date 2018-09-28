@@ -140,6 +140,7 @@
 <translation id="1387596372902085462">Om Symantec Corporations äldre PKI-infrastruktur ska vara betrodd eller inte</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
+<translation id="1413936351612032792">Rapportera information om användning av Linux-appar</translation>
 <translation id="142346659686073702">Tillåt oanknutna användare att använda Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
@@ -2241,6 +2242,13 @@
 
       Om policyn inte anges används standardvärdet 32.</translation>
 <translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
+<translation id="6944167205014013774">Information om användning av Linux-appar skickas till
+      servern.
+
+      Om principen har ställts in på falskt eller lämnats utan värde rapporteras ingen
+      användningsinformation. Om principen har ställts in på sant rapporteras användningsinformation.
+
+      Principen gäller bara om stöd för Linux-appar är aktiverat.</translation>
 <translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
 <translation id="6956272732789158625">Tillåt inte att någon webbplats använder nyckelgenerering</translation>
 <translation id="6965859329738616662">Anger om en smart modell för nedtoning får utöka tiden tills skärmen tonas ned.

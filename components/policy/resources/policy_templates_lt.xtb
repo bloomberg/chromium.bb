@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Nurodoma, ar įgalinti patikimumo nustatymus „Symantec Corporation“ pasenusioje PKI infrastruktūroje</translation>
 <translation id="1393485621820363363">Įgalinti įmonės įrenginių spausdintuvai</translation>
 <translation id="1397855852561539316">Numatytojo paieškos teikėjo siūlymo URL</translation>
+<translation id="1413936351612032792">Informacijos apie „Linux“ programų pateikimas</translation>
 <translation id="142346659686073702">Leidimas nesusietiems naudotojams naudoti „Crostini“</translation>
 <translation id="1426410128494586442">Taip</translation>
 <translation id="1427655258943162134">Tarpinio serverio adresas arba URL</translation>
@@ -2237,6 +2238,13 @@
 
       Nenustačius šios politikos, bus naudojama numatytoji vertė, kuri yra 32.</translation>
 <translation id="6943577887654905793">„Mac“ / „Linux“ nuostatos pavadinimas:</translation>
+<translation id="6944167205014013774">Informacija apie „Linux“ programų naudojimą siunčiama atgal į
+      serverį.
+
+      Jei politika nustatyta į „False“ arba nenustatyta, naudojimo informacija nebus
+      pateikiama. Jei nustatyta į „True“, naudojimo informacija bus pateikiama.
+
+      Ši politika taikoma tik įgalinus „Linux“ programų palaikymą.</translation>
 <translation id="69525503251220566">Parametras, nurodantis paieškos pagal vaizdą funkciją numatytajam paieškos teikėjui</translation>
 <translation id="6956272732789158625">Neleisti jokiai svetainei naudoti rakto generavimo</translation>
 <translation id="6965859329738616662">Nurodoma, ar išmaniajam pritemdymo modeliui leidžiama pratęsti laiką iki ekrano pritemdymo.

@@ -124,6 +124,7 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
 <translation id="1387596372902085462">Zda důvěřovat starší infrastruktuře PKI od společnosti Symantec</translation>
 <translation id="1393485621820363363">Povolené podnikové tiskárny pro zařízení</translation>
 <translation id="1397855852561539316">URL výchozího vyhledávače pro návrhy</translation>
+<translation id="1413936351612032792">Hlásit informace o využití Linuxových aplikací</translation>
 <translation id="142346659686073702">Povolit cizím uživatelům používat Crostini</translation>
 <translation id="1426410128494586442">Ano</translation>
 <translation id="1427655258943162134">Adresa (nebo adresa URL) proxy serveru</translation>
@@ -2169,6 +2170,11 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
 
      Není-li zásada nastavena, bude použita výchozí hodnota, což je 32.</translation>
 <translation id="6943577887654905793">Název nastavení v systémech Mac/Linux:</translation>
+<translation id="6944167205014013774">Informace o využití Linuxových aplikací se odesílají na server.
+
+Je-li tato zásada nastavena na hodnotu False nebo nenastavena, nebudou hlášeny žádné informace o využití. Pokud je nastavena na hodnotu True, informace budou hlášeny.
+
+Tato zásada se používá pouze v případě, že jsou povoleny aplikace pro Linux.</translation>
 <translation id="69525503251220566">Parametr poskytující funkci vyhledávání podle obrázku pro výchozího poskytovatele vyhledávání</translation>
 <translation id="6956272732789158625">Nepovolit žádnému webu generovat klíče</translation>
 <translation id="6965859329738616662">Udává, zda chytrý model ztmavování může prodloužit dobu do ztmavení obrazovky.

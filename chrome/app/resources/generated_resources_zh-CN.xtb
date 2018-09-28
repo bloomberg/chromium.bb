@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">您的计算机包含可信平台模块 (TPM) 安全装置，该装置可用于在 Chrome 操作系统中实施许多关键的安全功能。要了解详情，请访问 Chromebook 帮助中心：https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">在盖被合上之后进入休眠模式</translation>
 <translation id="1115324527092594775">设置 Better Together</translation>
+<translation id="1116639326869298217">无法验证您的身份</translation>
 <translation id="1116694919640316211">关于</translation>
 <translation id="1116779635164066733">此设置是由“<ph name="NAME" />”这一扩展程序强制指定的。</translation>
 <translation id="111844081046043029">确定要离开此页吗？</translation>
@@ -975,6 +976,7 @@
 <translation id="2464089476039395325">HTTP 代理</translation>
 <translation id="2468205691404969808">使用 Cookie 记住您的偏好设置（即使您不访问这些网页）</translation>
 <translation id="2468902267404883140">无法连接到您的手机。请确保您使用的是兼容的 Android 手机，而且该手机正处于开机状态且就在您身边。&lt;a&gt;了解详情&lt;/a&gt;</translation>
+<translation id="247051149076336810">文件共享网址</translation>
 <translation id="2470702053775288986">已停用不支持的扩展程序</translation>
 <translation id="2473195200299095979">翻译此页</translation>
 <translation id="2475982808118771221">出现错误</translation>
@@ -1768,6 +1770,7 @@
 <translation id="3650952250015018111">允许“<ph name="APP_NAME" />”访问：</translation>
 <translation id="3651488188562686558">断开 Wi-Fi 连接</translation>
 <translation id="3652817283076144888">正在初始化</translation>
+<translation id="3653160965917900914">网络文件共享</translation>
 <translation id="3653999333232393305">继续允许 <ph name="HOST" /> 使用您的麦克风</translation>
 <translation id="3654045516529121250">读取您的无障碍设置</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{此应用对 1 个文件拥有永久访问权限。}other{此应用对 # 个文件拥有永久访问权限。}}</translation>
@@ -3138,6 +3141,7 @@
 <translation id="5756163054456765343">帮助中心(&amp;E)</translation>
 <translation id="5759728514498647443">您通过“<ph name="APP_NAME" />”发送以进行打印的文档可由“<ph name="APP_NAME" />”读取。</translation>
 <translation id="5762172915276660232">信用卡设置</translation>
+<translation id="5763315388120433852">设置或管理网络文件共享。</translation>
 <translation id="5763751966069581670">未找到任何 USB 设备</translation>
 <translation id="5764483294734785780">音频另存为(&amp;V)...</translation>
 <translation id="57646104491463491">修改日期</translation>
@@ -3293,6 +3297,7 @@
 <translation id="5979469435153841984">要为网页添加书签，请点击地址栏中的星形图标</translation>
 <translation id="5982621672636444458">排序选项</translation>
 <translation id="5984222099446776634">最近访问过的内容</translation>
+<translation id="5985458664595100876">网址格式无效。支持的格式为 \\server\share 和 smb://server/share。</translation>
 <translation id="5990142338020175451">畅享更加个性化的 Google 服务，例如更贴合个人需求的网页建议</translation>
 <translation id="5990386583461751448">已翻译</translation>
 <translation id="5991049340509704927">放大</translation>
@@ -3433,7 +3438,6 @@
 <translation id="6185132558746749656">设备位置</translation>
 <translation id="6185617499004995178">CUPS IPP 验证程序</translation>
 <translation id="6185696379715117369">向上翻页</translation>
-<translation id="6189273858858366896">设置或管理网络文件共享。</translation>
 <translation id="6189412234224385711">使用“<ph name="EXTENSION_NAME" />”打开</translation>
 <translation id="6196640612572343990">阻止第三方 Cookie</translation>
 <translation id="6196854373336333322">“<ph name="EXTENSION_NAME" />”扩展程序控制了您的代理设置，也就是说，它可以更改、中断或窃听您在网上执行的任何操作。如果您不确定出现这种变化的原因，那么这种变化可能并不是您所希望的。</translation>
@@ -3483,7 +3487,6 @@
 <translation id="6263082573641595914">Microsoft CA 版本</translation>
 <translation id="6263284346895336537">非关键</translation>
 <translation id="6264365405983206840">全选(&amp;A)</translation>
-<translation id="6264422956566238156">您已开启同步功能</translation>
 <translation id="6267166720438879315">请选择证书，以在 <ph name="HOST_NAME" /> 上对您本人进行身份验证</translation>
 <translation id="6268252012308737255">使用<ph name="APP" />打开</translation>
 <translation id="6268747994388690914">从 HTML 文件导入书签...</translation>
@@ -4790,7 +4793,6 @@
 <translation id="8230134520748321204">要保存 <ph name="ORIGIN" /> 的密码吗？</translation>
 <translation id="8234795456569844941">请告诉我们在您收到个人资料错误消息之前发生的情况，以帮助我们的工程师解决此问题：</translation>
 <translation id="8234989666557591529">选择一部手机，以用来解锁您的 <ph name="DEVICE_TYPE" /></translation>
-<translation id="8239020549147958415">与“<ph name="FULL_NAME" />”同步</translation>
 <translation id="8241040075392580210">晴间多云</translation>
 <translation id="8241806945692107836">正在确定设备配置…</translation>
 <translation id="8241868517363889229">读取和更改您的书签</translation>
@@ -5082,7 +5084,6 @@
 <translation id="869884720829132584">应用菜单</translation>
 <translation id="869891660844655955">截止日期</translation>
 <translation id="8699566574894671540">要启用此功能，请先在“修改”菜单中选择“键入内容时检查拼写”</translation>
-<translation id="870073306461175568">网络文件共享</translation>
 <translation id="8701677791353449257">设备名称必须与正则表达式 <ph name="REGEX" /> 匹配。</translation>
 <translation id="8704521619148782536">所用的时间远远超出了正常情况。您可以继续等待，也可以取消并稍后重试。</translation>
 <translation id="8705331520020532516">序列号</translation>
@@ -5267,7 +5268,6 @@
 <translation id="897939795688207351">在 <ph name="ORIGIN" /> 上</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 已崩溃</translation>
 <translation id="8983677657449185470">帮助我们改进安全浏览功能</translation>
-<translation id="8984654317541110628">文件共享网址</translation>
 <translation id="8986362086234534611">不保存</translation>
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8987927404178983737">月</translation>

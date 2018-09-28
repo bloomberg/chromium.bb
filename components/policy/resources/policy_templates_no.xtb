@@ -130,6 +130,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="1387596372902085462">Angir om Symantec Corporations eldre PKI-infrastruktur skal klareres eller ikke</translation>
 <translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
 <translation id="1397855852561539316">Foreslått nettadresse for standard søkeleverandør</translation>
+<translation id="1413936351612032792">Rapportér informasjon om bruken av Linux-apper</translation>
 <translation id="142346659686073702">Tillat at brukere uten tilknytning bruker Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxy-tjener</translation>
@@ -2202,6 +2203,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Standardverdien på 32 brukes om denne retningslinjen ikke er angitt.</translation>
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
+<translation id="6944167205014013774">Informasjon om bruken av Linux-apper sendes tilbake til tjeneren. Hvis regelen er angitt som «false» (usann) eller ikke er angitt, blir det ikke rapportert noen bruksinformasjon. Hvis den er angitt som «true» (sann), blir bruksinformasjon rapportert. Denne regelen gjelder bare hvis støtten for Linux-apper er slått på.</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
 <translation id="6956272732789158625">Ikke tillat noen nettsteder å bruke nøkkelgenerering</translation>
 <translation id="6965859329738616662">Angir om en smart modell for nedtoning kan forlenge tiden det tar før skjermen nedtones.

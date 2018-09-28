@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">Tu ordenador contiene un dispositivo de seguridad del módulo de plataforma de confianza (TPM), que se utiliza para implementar un gran número de funciones clave de seguridad en Chrome OS. Puedes consultar más información en el Centro de ayuda de los Chromebook (https://support.google.com/chromebook/?p=tpm).</translation>
 <translation id="1114525161406758033">Suspender cuando la tapa esté cerrada</translation>
 <translation id="1115324527092594775">Configurar Better Together</translation>
+<translation id="1116639326869298217">No se ha podido verificar tu identidad</translation>
 <translation id="1116694919640316211">Información</translation>
 <translation id="1116779635164066733">La extensión "<ph name="NAME" />" aplica esta opción.</translation>
 <translation id="111844081046043029">¿Seguro que quieres abandonar esta página?</translation>
@@ -978,6 +979,7 @@
 <translation id="2464089476039395325">Proxy HTTP</translation>
 <translation id="2468205691404969808">Usa cookies para recordar tus preferencias aunque no visites esas páginas</translation>
 <translation id="2468902267404883140">No se puede establecer conexión con tu teléfono. Asegúrate de que estás utilizando un teléfono Android compatible que esté encendido y que tengas cerca. &lt;a&gt;Más información&lt;/a&gt;</translation>
+<translation id="247051149076336810">URL del sistema de archivos compartidos</translation>
 <translation id="2470702053775288986">Extensiones no admitidas inhabilitadas</translation>
 <translation id="2473195200299095979">Traducir esta página</translation>
 <translation id="2475982808118771221">Se ha producido un error.</translation>
@@ -1772,6 +1774,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3650952250015018111">Permitir que "<ph name="APP_NAME" />" acceda a:</translation>
 <translation id="3651488188562686558">Se desconectará de la red Wi-Fi</translation>
 <translation id="3652817283076144888">Inicializando</translation>
+<translation id="3653160965917900914">Sistemas de archivos compartidos de red</translation>
 <translation id="3653999333232393305">Seguir permitiendo que <ph name="HOST" /> acceda al micrófono</translation>
 <translation id="3654045516529121250">Leer tu configuración de accesibilidad</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tiene acceso permanente a un archivo.}other{Tiene acceso permanente a # archivos.}}</translation>
@@ -2857,6 +2860,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5332624210073556029">Zona horaria:</translation>
 <translation id="5334142896108694079">Caché de secuencia de comandos</translation>
 <translation id="5334844597069022743">Ver código fuente</translation>
+<translation id="5334899159203764908">Más información sobre el <ph name="BEGIN_LINK" />acceso del sitio web<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Creando copia de seguridad de <ph name="FILE_COUNT" /> en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">No permitir que ningún sitio web acceda a los dispositivos USB</translation>
 <translation id="5337771866151525739">Instalada por una aplicación externa</translation>
@@ -3146,6 +3150,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5756163054456765343">C&amp;entro de ayuda</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> puede leer los documentos que envías para imprimirse a través de <ph name="APP_NAME" />.</translation>
 <translation id="5762172915276660232">Configuración de tarjetas de crédito</translation>
+<translation id="5763315388120433852">Configurar o gestionar sistemas de archivos compartidos de red.</translation>
 <translation id="5763751966069581670">No se ha encontrado ningún dispositivo USB</translation>
 <translation id="5764483294734785780">G&amp;uardar audio como...</translation>
 <translation id="57646104491463491">Fecha de modificación</translation>
@@ -3301,6 +3306,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="5979469435153841984">Para añadir páginas a marcadores, haz clic en la estrella situada en la barra de direcciones</translation>
 <translation id="5982621672636444458">Opciones de orden</translation>
 <translation id="5984222099446776634">Visitados recientemente</translation>
+<translation id="5985458664595100876">El formato de la URL no es válido. Los formatos admitidos son \\server\share y smb://server/share.</translation>
 <translation id="5990142338020175451">Servicios de Google más personalizados, como mejores sugerencias de páginas</translation>
 <translation id="5990386583461751448">Traducida</translation>
 <translation id="5991049340509704927">Ampliar</translation>
@@ -3441,7 +3447,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6185132558746749656">Ubicación del dispositivo</translation>
 <translation id="6185617499004995178">Validador de IPP de CUPS</translation>
 <translation id="6185696379715117369">Retroceder página</translation>
-<translation id="6189273858858366896">Configurar o gestionar archivos compartidos de la red.</translation>
 <translation id="6189412234224385711">Abrir con <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Bloquear cookies de terceros</translation>
 <translation id="6196854373336333322">La extensión <ph name="EXTENSION_NAME" /> ahora controla la configuración del proxy, lo que significa que puede cambiar, deshacer o espiar cualquier acción que hagas online. Si no estás seguro de los motivos por los que se ha producido este cambio, probablemente no haya sido intencionado.</translation>
@@ -3491,7 +3496,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6263082573641595914">Versión de entidad emisora de certificados de Microsoft</translation>
 <translation id="6263284346895336537">No crítica</translation>
 <translation id="6264365405983206840">Seleccionar &amp;todo</translation>
-<translation id="6264422956566238156">Has activado la sincronización</translation>
 <translation id="6267166720438879315">Selecciona un certificado para autenticar tu identidad en <ph name="HOST_NAME" />.</translation>
 <translation id="6268252012308737255">Abrir con <ph name="APP" /></translation>
 <translation id="6268747994388690914">Importar marcadores desde archivo HTML...</translation>
@@ -4800,7 +4804,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8230134520748321204">¿Quieres guardar la contraseña de <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Ayuda a nuestros ingenieros a solucionar este problema. Indícanos lo que ha ocurrido justo antes de que apareciera el mensaje de error del perfil:</translation>
 <translation id="8234989666557591529">Elige un teléfono para desbloquear tu <ph name="DEVICE_TYPE" /></translation>
-<translation id="8239020549147958415">Sincronizar como <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Nublado</translation>
 <translation id="8241806945692107836">Determinando la configuración del dispositivo...</translation>
 <translation id="8241868517363889229">Leer y modificar tus marcadores</translation>
@@ -4932,7 +4935,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8457451314607652708">Importar marcadores</translation>
 <translation id="8460336040822756677">Si desactivas Smart Lock para <ph name="DEVICE_TYPE" />, no podrás desbloquear los dispositivos Chrome con el teléfono. Deberás introducir la contraseña.</translation>
 <translation id="8461329675984532579">Nombre del proveedor inicial</translation>
-<translation id="84613761564611563">Se ha solicitado la configuración de red de la IU. Por favor, espera...</translation>
+<translation id="84613761564611563">Se ha solicitado la configuración de red de la UI. Por favor, espera...</translation>
 <translation id="8461914792118322307">Proxy</translation>
 <translation id="8463215747450521436">Es posible que el administrador haya eliminado o inhabilitado este usuario supervisado. Ponte en contacto con el administrador si quieres seguir iniciando sesión como este usuario.</translation>
 <translation id="846374874681391779">Barra de descargas</translation>
@@ -5092,7 +5095,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="869884720829132584">Menú de aplicaciones</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
 <translation id="8699566574894671540">Para activar esta opción, antes debes seleccionar Comprobar ortografía al escribir en el menú Editar</translation>
-<translation id="870073306461175568">Uso compartido de archivos del sistema</translation>
 <translation id="8701677791353449257">El nombre del dispositivo debe coincidir con la expresión regular <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">Esta acción está tardando mucho más tiempo del habitual. Puedes seguir esperando o cancelar la acción y volver a intentarlo más tarde.</translation>
 <translation id="8705331520020532516">Número de serie</translation>
@@ -5277,7 +5279,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="897939795688207351">En <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" />: ha fallado</translation>
 <translation id="8983677657449185470">Ayudar a mejorar la función Navegación Segura</translation>
-<translation id="8984654317541110628">URL de recurso compartido</translation>
 <translation id="8986362086234534611">Dejar de recordar</translation>
 <translation id="8986494364107987395">Envía automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8987927404178983737">Mes</translation>

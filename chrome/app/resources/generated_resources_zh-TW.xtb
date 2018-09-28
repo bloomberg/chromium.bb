@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">您的電腦含有可信任平台模組 (TPM) 安全性裝置，用於實作 Chrome 作業系統中許多重要的安全性功能。如需瞭解詳情，請造訪 Chromebook 說明中心：https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">蓋上機蓋時進入休眠狀態</translation>
 <translation id="1115324527092594775">設定 Better Together</translation>
+<translation id="1116639326869298217">無法驗證你的身分</translation>
 <translation id="1116694919640316211">關於</translation>
 <translation id="1116779635164066733">這項設定是由「<ph name="NAME" />」擴充功能強制執行。</translation>
 <translation id="111844081046043029">你確定要離開此網頁嗎?</translation>
@@ -978,6 +979,7 @@
 <translation id="2464089476039395325">HTTP Proxy</translation>
 <translation id="2468205691404969808">使用 Cookie 記住你的偏好設定 (即使你沒有造訪這些網頁)</translation>
 <translation id="2468902267404883140">無法連上你的手機。請確定你使用的是相容的 Android 手機並已開機，且手機在適當距離範圍內。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
+<translation id="247051149076336810">檔案共用網址</translation>
 <translation id="2470702053775288986">已停用不支援的擴充功能</translation>
 <translation id="2473195200299095979">翻譯這個網頁</translation>
 <translation id="2475982808118771221">發生錯誤</translation>
@@ -1774,6 +1776,7 @@
 <translation id="3650952250015018111">允許「<ph name="APP_NAME" />」存取：</translation>
 <translation id="3651488188562686558">中斷 Wi-Fi 連線</translation>
 <translation id="3652817283076144888">正在初始化</translation>
+<translation id="3653160965917900914">網路檔案共用</translation>
 <translation id="3653999333232393305">繼續允許 <ph name="HOST" /> 存取你的麥克風</translation>
 <translation id="3654045516529121250">讀取你的協助工具設定</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{應用程式可永久存取 1 個檔案。}other{應用程式可永久存取 # 個檔案。}}</translation>
@@ -2859,6 +2862,7 @@
 <translation id="5332624210073556029">時區：</translation>
 <translation id="5334142896108694079">指令碼快取</translation>
 <translation id="5334844597069022743">查看原始碼</translation>
+<translation id="5334899159203764908">進一步瞭解<ph name="BEGIN_LINK" />網站存取權<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">正在將 <ph name="FILE_COUNT" />備份到 <ph name="BEGIN_LINK" />Google 雲端硬碟<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">禁止任何網站存取 USB 裝置</translation>
 <translation id="5337771866151525739">由第三方安裝。</translation>
@@ -3148,6 +3152,7 @@
 <translation id="5756163054456765343">說明中心(&amp;E)</translation>
 <translation id="5759728514498647443">「<ph name="APP_NAME" />」可以讀取您透過「<ph name="APP_NAME" />」傳送的待列印文件。</translation>
 <translation id="5762172915276660232">信用卡設定</translation>
+<translation id="5763315388120433852">設定或管理網路檔案共用。</translation>
 <translation id="5763751966069581670">找不到 USB 裝置</translation>
 <translation id="5764483294734785780">將音訊另存為(&amp;V)...</translation>
 <translation id="57646104491463491">已修改日期</translation>
@@ -3303,6 +3308,7 @@
 <translation id="5979469435153841984">如要將網頁加入書籤，請按一下網址列的星號</translation>
 <translation id="5982621672636444458">排序選項</translation>
 <translation id="5984222099446776634">最近造訪的網站</translation>
+<translation id="5985458664595100876">網址格式無效。支援的格式為 \\server\share 和 smb://server/share。</translation>
 <translation id="5990142338020175451">體驗更加個人化的 Google 服務 (例如更適切的網頁建議)</translation>
 <translation id="5990386583461751448">已翻譯</translation>
 <translation id="5991049340509704927">放大</translation>
@@ -3443,7 +3449,6 @@
 <translation id="6185132558746749656">裝置位置</translation>
 <translation id="6185617499004995178">CUPS IPP 驗證工具</translation>
 <translation id="6185696379715117369">Page Up 鍵</translation>
-<translation id="6189273858858366896">設定或管理網路檔案共用。</translation>
 <translation id="6189412234224385711">使用「<ph name="EXTENSION_NAME" />」開啟</translation>
 <translation id="6196640612572343990">封鎖第三方 Cookie</translation>
 <translation id="6196854373336333322">您的 Proxy 設定已受到擴充功能「<ph name="EXTENSION_NAME" />」控制，該擴充功能可變更、中斷、或監視您在網路上的行為。如果您不確定這項變更的發生原因，建議您停用該擴充功能。</translation>
@@ -3493,7 +3498,6 @@
 <translation id="6263082573641595914">Microsoft CA 版本</translation>
 <translation id="6263284346895336537">非重要</translation>
 <translation id="6264365405983206840">選取全部(&amp;A)</translation>
-<translation id="6264422956566238156">已開啟同步處理功能</translation>
 <translation id="6267166720438879315">請選取你在 <ph name="HOST_NAME" /> 的驗證憑證</translation>
 <translation id="6268252012308737255">使用「<ph name="APP" />」開啟</translation>
 <translation id="6268747994388690914">從 HTML 檔案匯入書籤...</translation>
@@ -4801,7 +4805,6 @@
 <translation id="8230134520748321204">要儲存 <ph name="ORIGIN" /> 的密碼嗎？</translation>
 <translation id="8234795456569844941">請告訴我們在你收到設定檔錯誤訊息前執行的動作，以協助工程師修正此問題：</translation>
 <translation id="8234989666557591529">選擇要用於為 <ph name="DEVICE_TYPE" /> 解鎖的手機</translation>
-<translation id="8239020549147958415">和<ph name="FULL_NAME" />同步</translation>
 <translation id="8241040075392580210">晴時多雲</translation>
 <translation id="8241806945692107836">正在確定裝置設定...</translation>
 <translation id="8241868517363889229">讀取及變更你的書籤</translation>
@@ -5093,7 +5096,6 @@
 <translation id="869884720829132584">應用程式選單</translation>
 <translation id="869891660844655955">到期日</translation>
 <translation id="8699566574894671540">如要啟用這項功能，請先選取 [編輯] 選單中的 [輸入時檢查拼字]</translation>
-<translation id="870073306461175568">網路檔案共用</translation>
 <translation id="8701677791353449257">裝置名稱必須符合規則運算式 <ph name="REGEX" />。</translation>
 <translation id="8704521619148782536">作業時間過長。你可以繼續等待，或是取消後重試一次。</translation>
 <translation id="8705331520020532516">序號</translation>
@@ -5278,7 +5280,6 @@
 <translation id="897939795688207351">在 <ph name="ORIGIN" /> 上</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 已當機</translation>
 <translation id="8983677657449185470">協助改善「安全瀏覽」的品質</translation>
-<translation id="8984654317541110628">檔案共用網址</translation>
 <translation id="8986362086234534611">清除</translation>
 <translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>
 <translation id="8987927404178983737">月</translation>

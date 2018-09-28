@@ -126,6 +126,7 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 <translation id="1387596372902085462">Consente di stabilire se considerare attendibile o meno l'infrastruttura PKI precedente di Symantec Corporation</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
 <translation id="1397855852561539316">URL di suggerimento del provider di ricerca predefinito</translation>
+<translation id="1413936351612032792">Segnala informazioni sull'utilizzo delle app Linux</translation>
 <translation id="142346659686073702">Consenti agli utenti non affiliati di usare Crostini</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
@@ -2097,6 +2098,13 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
 
       Se questa norma non viene impostata viene utilizzato il valore predefinito 32.</translation>
 <translation id="6943577887654905793">Nome di preferenza per Mac/Linux:</translation>
+<translation id="6944167205014013774">Le informazioni sull'utilizzo delle app Linux vengono rimandate al
+      server.
+
+      Se la norma viene impostata su false o non viene impostata, non vengono segnalate
+      informazioni sull'utilizzo. Se viene impostata su true, queste informazioni vengono invece segnalate.
+
+      Questa norma viene applicata soltanto se le app Linux sono attive.</translation>
 <translation id="69525503251220566">Parametro che fornisce la funzione di ricerca tramite immagine per il provider di ricerca predefinito</translation>
 <translation id="6956272732789158625">Non consentire a nessun sito di utilizzare la generazione di chiavi</translation>
 <translation id="6965859329738616662">Specifica se al modello di oscuramento smart è consentito estendere la quantità di tempo prima che lo schermo venga oscurato.

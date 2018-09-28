@@ -124,6 +124,7 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
 <translation id="1387596372902085462">Určuje, či sa má dôverovať starej infraštruktúre PKI spoločnosti Symantec Corporation</translation>
 <translation id="1393485621820363363">Povolené podnikové tlačiarne zariadenia</translation>
 <translation id="1397855852561539316">Webová adresa návrhu predvoleného poskytovateľa vyhľadávania</translation>
+<translation id="1413936351612032792">Nahlasovať informácie o používaní aplikácií pre Linux</translation>
 <translation id="142346659686073702">Povoliť používať funkciu Crostini používateľom, ktorí nie sú partneri</translation>
 <translation id="1426410128494586442">Áno</translation>
 <translation id="1427655258943162134">Adresa alebo webová adresa servera proxy</translation>
@@ -2200,6 +2201,13 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak toto pravidlo ponecháte nenastavené, použije sa predvolená hodnota (32).</translation>
 <translation id="6943577887654905793">Názov predvoľby v systéme Mac/Linux:</translation>
+<translation id="6944167205014013774">Informácie o používaní aplikácií pre Linux sa odosielajú späť na
+      server.
+
+      Ak je toto pravidlo nastavené na hodnotu false alebo nie je nastavené, nebudú sa hlásiť žiadne informácie o používaní.
+      Ak je nastavené na hodnotu true, informácie o používaní sa budú nahlasovať.
+
+      Toto pravidlo platí iba vtedy, keď je povolená podpora aplikácií pre Linux.</translation>
 <translation id="69525503251220566">Parameter poskytujúci funkciu vyhľadávania podľa obrázka pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="6956272732789158625">Nepovoliť žiadnym webovým stránkam používať generovanie kľúčov</translation>
 <translation id="6965859329738616662">Určuje, či je povolený inteligentný model stlmenia na predĺženie času do stlmenia obrazovky.

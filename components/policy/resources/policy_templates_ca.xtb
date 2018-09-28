@@ -125,6 +125,7 @@
 <translation id="1387596372902085462">Determina si es confia en la infraestructura de PKI heretada de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressores activades per a dispositius d'empresa</translation>
 <translation id="1397855852561539316">URL de suggeriments del proveïdor de cerca predeterminat</translation>
+<translation id="1413936351612032792">Ofereix informació sobre l'ús d'aplicacions per a Linux</translation>
 <translation id="142346659686073702">Permet que els usuaris no afiliats facin servir Crostini</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Adreça o URL del servidor intermediari</translation>
@@ -1520,7 +1521,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si la política s'estableix en "false", no s'activa Crostini per a l'usuari.
       Si s'estableix en "true" o es deixa sense establir, s'activa Crostini per a l'usuari sempre que altres opcions de configuració ho permetin.
-      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan siguin rellevants perquè Crostini tingui permís per executar-se.
+      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan sol·licitin que es pugui executar Crostini.
       Quan la política es canvia a "false", afecta l'inici de contenidors de Crostini nous, però no tanca els que ja s'estiguin executant.</translation>
 <translation id="5283457834853986457">Desactiva el cercador de connectors (política obsoleta)</translation>
 <translation id="5288772341821359899">Si es defineix la política, l'interval de ports UDP que utilitza WebRTC estarà restringit a un interval de ports específic (extrems inclosos).
@@ -2119,6 +2120,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si no es defineix aquesta política, el valor predeterminat que s'utilitzarà serà 32.</translation>
 <translation id="6943577887654905793">Nom de la preferència de Mac/Linux:</translation>
+<translation id="6944167205014013774">Es torna a enviar informació sobre l'ús d'aplicacions per a Linux al
+      servidor.
+
+      Si la política s'estableix en "false" o es deixa sense establir, no es proporciona
+      informació d'ús. Si s'estableix en "true", es proporciona informació d'ús.
+
+      Aquesta política només s'aplica si l'assistència de l'aplicació per a Linux està activada.</translation>
 <translation id="69525503251220566">Paràmetre que proporciona la funció de cerca per imatge per al proveïdor de cerca predeterminat</translation>
 <translation id="6956272732789158625">No permetis que cap lloc utilitzi la generació de claus</translation>
 <translation id="6965859329738616662">Especifica si es permet que un model d'atenuació intel·ligent ampliï el temps fins que s'atenua la pantalla.
@@ -2223,7 +2231,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7232816984286843471">Si la política s'estableix en "false", els usuaris no afiliats no tindran permís per fer servir Crostini.
 
       Si no s'estableix o s'estableix en "true", tots els usuaris tindran permís per fer servir Crostini sempre que altres opcions de configuració ho permetin.
-      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan siguin rellevants perquè Crostini tingui permís per executar-se.
+      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan sol·licitin que es pugui executar Crostini.
       Quan la política es canvia a "false", afecta l'inici de contenidors de Crostini nous, però no tanca els que ja s'estiguin executant.</translation>
 <translation id="7234280155140786597">Noms dels amfitrions de missatgeria nativa prohibits (o bé * per a tots)</translation>
 <translation id="7236775576470542603">Establiu el tipus de lupa predeterminada activada a la pàgina d'inici de sessió.
@@ -2572,7 +2580,7 @@ NOTA: a Android, l'aïllament de llocs web és experimental. Amb el temps se'n m
 
       Si la política s'estableix en "true", el dispositiu podrà executar màquines virtuals.
       Si s'estableix en "false", el dispositiu no podrà executar màquines virtuals.
-      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan siguin rellevants perquè Crostini tingui permís per executar-se.
+      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan sol·licitin que es pugui executar Crostini.
       Quan la política es canvia a "false", afecta l'execució de màquines virtuals noves, però no tanca les que ja s'estan executant.
       Quan la política no s'estableix en un dispositiu gestionat, el dispositiu no té permís per executar màquines virtuals.
       Els dispositius no gestionats tenen permís per executar màquines virtuals.</translation>

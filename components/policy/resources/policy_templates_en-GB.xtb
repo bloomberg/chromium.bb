@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
+<translation id="1413936351612032792">Report information about usage of Linux apps</translation>
 <translation id="142346659686073702">Allow unaffiliated users to use Crostini</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
@@ -2238,6 +2239,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left not set the default value will be used which is 32.</translation>
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
+<translation id="6944167205014013774">Information about the usage of Linux apps is sent back to the
+      server.
+
+      If the policy is set to false or left unset, no usage information is
+      reported. If set to true, usage information is reported.
+
+      This policy only applies if Linux app support is enabled.</translation>
 <translation id="69525503251220566">Parameter providing search-by-image feature for the default search provider</translation>
 <translation id="6956272732789158625">Do not allow any site to use key generation</translation>
 <translation id="6965859329738616662">Specifies whether a smart dim model is allowed to extend the time until the screen is dimmed.

@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">आपके कंप्यूटर में एक 'ट्रस्टेड प्लैटफ़ॉर्म मॉड्यूल' (टीपीएम) सुरक्षा डिवाइस है, जिसका उपयोग Chrome OS में कई ज़रूरी सुरक्षा सुविधाओं को लागू करने में किया जाता है. और जानने के लिए 'Chromebook सहायता केंद्र' पर जाएं: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">लिड बंद होने पर सुलाएं (कम बैटरी मोड)</translation>
 <translation id="1115324527092594775">'एक साथ बेहतर' सेट अप करें</translation>
+<translation id="1116639326869298217">आपकी पहचान की पुष्टि नहीं की जा सकी</translation>
 <translation id="1116694919640316211">इसके बारे में</translation>
 <translation id="1116779635164066733">यह सेटिंग "<ph name="NAME" />" एक्सटेंशन के ज़रिए लागू की गई है.</translation>
 <translation id="111844081046043029">क्या आप वाकई इस पेज को छोड़ना चाहते हैं ?</translation>
@@ -978,6 +979,7 @@
 <translation id="2464089476039395325">HTTP प्रॉक्‍सी</translation>
 <translation id="2468205691404969808">आपकी पसंद याद रखने के लिए कुकी का इस्तेमाल करती है, भले ही आप उन पेजों पर नहीं जाते</translation>
 <translation id="2468902267404883140">आपके फ़ोन से कनेक्ट नहीं हो पा रहा है. पक्का करें कि आप ऐसे संगत Android फ़ोन का उपयोग कर रहे हैं जो चालू है और पहुंच में है. &lt;a&gt;अधिक जानें&lt;/a&gt;</translation>
+<translation id="247051149076336810">फ़ाइल शेयर यूआरएल</translation>
 <translation id="2470702053775288986">असमर्थित एक्‍सटेंशन अक्षम</translation>
 <translation id="2473195200299095979">इस पेज का अनुवाद करें</translation>
 <translation id="2475982808118771221">कोई गड़बड़ी आई</translation>
@@ -1774,6 +1776,7 @@
 <translation id="3650952250015018111">"<ph name="APP_NAME" />" को इन्हें एक्सेस करने की मंज़ूरी दें:</translation>
 <translation id="3651488188562686558">वाई-फ़ाई से डिसकनेक्ट करें</translation>
 <translation id="3652817283076144888">शुरू हो रहा है</translation>
+<translation id="3653160965917900914">नेटवर्क फ़ाइल शेयर</translation>
 <translation id="3653999333232393305"><ph name="HOST" /> को अपना माइक्रोफ़ोन एक्सेस करते रहने दें</translation>
 <translation id="3654045516529121250">अपनी पहुंच-योग्यता सेटिंग पढ़ें</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{उसे एक फ़ाइल की स्‍थायी ऐक्‍सेस प्राप्‍त है.}one{उसे # फ़ाइलों की स्‍थायी ऐक्‍सेस प्राप्‍त है.}other{उसे # फ़ाइलों की स्‍थायी ऐक्‍सेस प्राप्‍त है.}}</translation>
@@ -3150,6 +3153,7 @@
 <translation id="5756163054456765343">&amp;सहायता केंद्र</translation>
 <translation id="5759728514498647443">आपके द्वारा <ph name="APP_NAME" /> के माध्‍यम से प्रिंट करने के लिए भेजे जाने वाले दस्‍तावेज़ <ph name="APP_NAME" /> द्वारा पढ़े जा सकते हैं.</translation>
 <translation id="5762172915276660232">क्रेडिट कार्ड सेटिंग</translation>
+<translation id="5763315388120433852">'नेटवर्क फ़ाइल शेयर' सेट अप करें या प्रबंधित करें.</translation>
 <translation id="5763751966069581670">कोई USB डिवाइस नहीं मि‍ला</translation>
 <translation id="5764483294734785780">इस रूप में ऑडियो स&amp;हेजें...</translation>
 <translation id="57646104491463491">संशोधन की तिथि</translation>
@@ -3305,6 +3309,7 @@
 <translation id="5979469435153841984">पेज बुकमार्क करने के लिए, पता बार में मौजूद तारे पर क्‍लिक करें.</translation>
 <translation id="5982621672636444458">विकल्पों को क्रमबद्ध करें</translation>
 <translation id="5984222099446776634">हाल ही में देखे गए</translation>
+<translation id="5985458664595100876">यूआरएल का फ़ॉर्मेट गलत है. काम करने वाले फ़ॉर्मेट \\server\share और smb://server/share हैं.</translation>
 <translation id="5990142338020175451">ज़्यादा निजी Google सेवाएं, जैसे कि बेहतर पेज सुझाव</translation>
 <translation id="5990386583461751448">अनुवाद किया गया</translation>
 <translation id="5991049340509704927">आवर्धित करें</translation>
@@ -3445,7 +3450,6 @@
 <translation id="6185132558746749656">डिवाइस स्थान</translation>
 <translation id="6185617499004995178">CUPS IPP वैलिडेटर</translation>
 <translation id="6185696379715117369">Page up</translation>
-<translation id="6189273858858366896">Network File Shares सेट अप करें या प्रबंधित करें.</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> से खोलें</translation>
 <translation id="6196640612572343990">तृतीय पक्ष कुकी ब्लॉक करें</translation>
 <translation id="6196854373336333322">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने आपकी प्रॉक्सी सेटिंग पर नियंत्रण कर लिया है, जिसका अर्थ है कि यह आपके द्वारा ऑनलाइन किए जाने वाले कार्यों को बदल सकता है, रोक सकता है या उसे छिप कर सुन सकता है. यदि आप सुनिश्चित नहीं हैं कि यह बदलाव क्यों हुआ है, तो संभवत: आप उसे नहीं चाहते हैं.</translation>
@@ -3495,7 +3499,6 @@
 <translation id="6263082573641595914">Microsoft CA Version</translation>
 <translation id="6263284346895336537">महत्वपूर्ण नहीं</translation>
 <translation id="6264365405983206840">&amp;सभी को चुनें</translation>
-<translation id="6264422956566238156">आपने सिंक चालू कर दिया है</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> पर अपना प्रमाणन करने के लिए किसी प्रमाणपत्र को चुनें</translation>
 <translation id="6268252012308737255"><ph name="APP" /> में खोलें</translation>
 <translation id="6268747994388690914">HTML फ़ाइल से बुकमार्क आयात करें...</translation>
@@ -4805,7 +4808,6 @@
 <translation id="8230134520748321204"><ph name="ORIGIN" /> के लिए पासवर्ड सेव करें?</translation>
 <translation id="8234795456569844941">कृपया इस समस्या को ठीक करने में हमारे इंजीनियरों की सहायता करें. हमें बताएं कि प्रोफ़ाइल से जुड़ी गड़बड़ी का संदेश मिलने से ठीक पहले क्या हुआ था:</translation>
 <translation id="8234989666557591529">अपना <ph name="DEVICE_TYPE" /> अनलॉक करने के लिए कोई फ़ोन चुनें</translation>
-<translation id="8239020549147958415"><ph name="FULL_NAME" /> के रूप में सिंक करें</translation>
 <translation id="8241040075392580210">शेडी</translation>
 <translation id="8241806945692107836">डिवाइस कॉन्फ़िगरेशन निर्धारित किया जा रहा है...</translation>
 <translation id="8241868517363889229">अपने बुकमार्क पढ़ें और बदलें</translation>
@@ -5097,7 +5099,6 @@
 <translation id="869884720829132584">ऐप्स  मेनू</translation>
 <translation id="869891660844655955">समय समाप्ति दिनांक</translation>
 <translation id="8699566574894671540">इसे चालू करने के लिए, पहले 'बदलाव करें' मेन्यू में जाकर 'लिखते समय वर्तनी जांचें' चुनें</translation>
-<translation id="870073306461175568">Network File Shares</translation>
 <translation id="8701677791353449257">डिवाइस के नाम का मिलान रेगुलर एक्सप्रेशन <ph name="REGEX" /> से होना चाहिए.</translation>
 <translation id="8704521619148782536">इसमें सामान्य से अधिक समय लग रहा है. आप प्रतीक्षा कर सकते हैं, या रद्द कर सकते हैं और बाद में फिर से प्रयास कर सकते हैं.</translation>
 <translation id="8705331520020532516">क्रम संख्या</translation>
@@ -5282,7 +5283,6 @@
 <translation id="897939795688207351"><ph name="ORIGIN" /> पर</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - क्रैश हो गया है</translation>
 <translation id="8983677657449185470">सुरक्षित ब्राउज़िंग को बेहतर बनाने में सहायता करें</translation>
-<translation id="8984654317541110628">फ़ाइल शेयर यूआरएल</translation>
 <translation id="8986362086234534611">भूल जाएं</translation>
 <translation id="8986494364107987395">'इस्तेमाल के आंकड़े' और 'खराबी रिपोर्ट' Google को अपने आप भेजे जाने की अनुमति दें</translation>
 <translation id="8987927404178983737">माह</translation>

@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">Komputer anda mengandungi peranti keselamatan Modul Platform Dipercayai (TPM), yang digunakan untuk melaksanakan banyak ciri keselamatan kritikal dalam OS Chrome. Lawati Pusat Bantuan Chromebook untuk mengetahui lebih lanjut: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">Tidur apabila penutup ditutup</translation>
 <translation id="1115324527092594775">Sediakan Lebih Baik Bersama-sama</translation>
+<translation id="1116639326869298217">Identiti anda tidak dapat disahkan</translation>
 <translation id="1116694919640316211">Mengenai</translation>
 <translation id="1116779635164066733">Tetapan ini dikuatkuasakan oleh sambungan "<ph name="NAME" />".</translation>
 <translation id="111844081046043029">Adakah anda pasti anda mahu meninggalkan halaman ini?</translation>
@@ -978,6 +979,7 @@
 <translation id="2464089476039395325">Proksi HTTP</translation>
 <translation id="2468205691404969808">Menggunakan kuki untuk mengingati pilihan anda, walaupun anda tidak melawati halaman tersebut</translation>
 <translation id="2468902267404883140">Tidak dapat menyambung ke telefon anda. Pastikan anda menggunakan telefon Android yang serasi, telah dihidupkan dan ada bersama anda. &lt;a&gt;Ketahui lebih lanjut&lt;/a&gt;</translation>
+<translation id="247051149076336810">URL perkongsian fail</translation>
 <translation id="2470702053775288986">Pelanjutan yang tidak disokong dilumpuhkan</translation>
 <translation id="2473195200299095979">Terjemahkan halaman ini</translation>
 <translation id="2475982808118771221">Ralat berlaku</translation>
@@ -1775,6 +1777,7 @@
 <translation id="3650952250015018111">Benarkan "<ph name="APP_NAME" />" untuk mengakses:</translation>
 <translation id="3651488188562686558">Putuskan sambungan daripada Wi-Fi</translation>
 <translation id="3652817283076144888">Memulakan</translation>
+<translation id="3653160965917900914">Perkongsian fail rangkaian</translation>
 <translation id="3653999333232393305">Terus benarkan <ph name="HOST" /> mengakses mikrofon anda</translation>
 <translation id="3654045516529121250">Baca tetapan kebolehaksesan anda</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Apl mempunyai akses tetap kepada satu fail.}other{Apl mempunyai akses tetap kepada # fail.}}</translation>
@@ -3152,6 +3155,7 @@
 <translation id="5756163054456765343">P&amp;usat bantuan</translation>
 <translation id="5759728514498647443">Dokumen yang anda hantar untuk dicetak melalui <ph name="APP_NAME" /> boleh dibaca oleh <ph name="APP_NAME" />.</translation>
 <translation id="5762172915276660232">Tetapan kad kredit</translation>
+<translation id="5763315388120433852">Sediakan atau urus perkongsian fail rangkaian.</translation>
 <translation id="5763751966069581670">Tiada peranti USB ditemui</translation>
 <translation id="5764483294734785780">Si&amp;mpan audio sebagai...</translation>
 <translation id="57646104491463491">Tarikh Diubah Suai</translation>
@@ -3307,6 +3311,7 @@
 <translation id="5979469435153841984">Untuk menandai halaman, klik bintang dalam bar alamat</translation>
 <translation id="5982621672636444458">Pilihan isihan</translation>
 <translation id="5984222099446776634">Dilawati Baru-baru Ini</translation>
+<translation id="5985458664595100876">Format URL tidak sah. Format yang disokong ialah \\server\share dan smb://server/share.</translation>
 <translation id="5990142338020175451">Perkhidmatan Google yang lebih peribadi, seperti cadangan halaman yang lebih baik</translation>
 <translation id="5990386583461751448">Diterjemahkan</translation>
 <translation id="5991049340509704927">Membesarkan</translation>
@@ -3447,7 +3452,6 @@
 <translation id="6185132558746749656">Lokasi Peranti</translation>
 <translation id="6185617499004995178">Pengesah IPP CUPS</translation>
 <translation id="6185696379715117369">Halaman atas</translation>
-<translation id="6189273858858366896">Sediakan atau urus Perkongsian Fail Rangkaian.</translation>
 <translation id="6189412234224385711">Buka dengan <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Sekat kuki pihak ketiga</translation>
 <translation id="6196854373336333322">Sambungan "<ph name="EXTENSION_NAME" />" telah mengambil alih kawalan tetapan proksi anda, yang bermakna sambungan ini boleh mengubah, menghentikan atau mencuri dengar apa-apa sahaja yang anda lakukan dalam talian. Jika anda tidak pasti mengapa perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
@@ -3497,7 +3501,6 @@
 <translation id="6263082573641595914">Versi Microsoft CA</translation>
 <translation id="6263284346895336537">Tidak Kritikal</translation>
 <translation id="6264365405983206840">Pilih &amp;Semua</translation>
-<translation id="6264422956566238156">Anda telah menghidupkan Penyegerakan</translation>
 <translation id="6267166720438879315">Pilih sijil untuk mengesahkan dengan sendiri pada <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Buka menggunakan <ph name="APP" /></translation>
 <translation id="6268747994388690914">Import Penanda Halaman dari Fail HTML...</translation>
@@ -4807,7 +4810,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8230134520748321204">Simpan kata laluan untuk <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Sila bantu jurutera kami menyelesaikan masalah ini. Beritahu kami perkara yang berlaku sejurus sebelum anda mendapat mesej ralat profil:</translation>
 <translation id="8234989666557591529">Pilih telefon anda untuk membuka kunci <ph name="DEVICE_TYPE" /></translation>
-<translation id="8239020549147958415">Segerakkan sebagai <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Redup</translation>
 <translation id="8241806945692107836">Menentukan konfigurasi peranti...</translation>
 <translation id="8241868517363889229">Baca dan ubah penanda halaman anda</translation>
@@ -5100,7 +5102,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="869884720829132584">Menu aplikasi</translation>
 <translation id="869891660844655955">Tarikh tamat tempoh</translation>
 <translation id="8699566574894671540">Untuk menghidupkan ciri ini, mula-mula pilih Semak Ejaan Semasa Menaip dalam menu Edit</translation>
-<translation id="870073306461175568">Perkongsian Fail Rangkaian</translation>
 <translation id="8701677791353449257">Nama peranti mesti sepadan dengan ungkapan nalar <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">Ini mengambil masa lebih lama daripada biasa. Anda boleh terus menunggu atau batalkan dan cuba sebentar lagi.</translation>
 <translation id="8705331520020532516">Nombor Siri</translation>
@@ -5285,7 +5286,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="897939795688207351">Di <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Mengalami ranap sistem</translation>
 <translation id="8983677657449185470">Bantu meningkatkan Penyemakan Imbas Selamat</translation>
-<translation id="8984654317541110628">URL Perkongsian Fail</translation>
 <translation id="8986362086234534611">Lupa</translation>
 <translation id="8986494364107987395">Hantar statistik penggunaan dan laporan nahas kepada Google secara automatik</translation>
 <translation id="8987927404178983737">Bulan</translation>

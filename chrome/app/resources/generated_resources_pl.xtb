@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">Twój komputer ma układ TPM (Trusted Platform Module), który umożliwia zastosowanie wielu krytycznych funkcji zabezpieczeń w Chrome OS. Więcej informacji znajdziesz w Centrum pomocy Chromebooka na stronie https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">Przejdź w tryb uśpienia, gdy pokrywa jest zamknięta</translation>
 <translation id="1115324527092594775">Skonfiguruj Better Together</translation>
+<translation id="1116639326869298217">Nie udało się zweryfikować Twojej tożsamości</translation>
 <translation id="1116694919640316211">Informacje</translation>
 <translation id="1116779635164066733">To ustawienie jest wymuszone przez rozszerzenie <ph name="NAME" />.</translation>
 <translation id="111844081046043029">Czy na pewno chcesz opuścić tę stronę?</translation>
@@ -732,7 +733,7 @@
 <translation id="2080070583977670716">Więcej ustawień</translation>
 <translation id="2084108471225856927">Ustawienia urządzenia</translation>
 <translation id="2085470240340828803">Plik o nazwie „<ph name="FILENAME" />” już istnieje. Co chcesz zrobić?</translation>
-<translation id="2085483813371386023">Otwórz <ph name="LINK_BEGIN" />Ustawienia<ph name="LINK_END" />, by zobaczyć opcje Razem lepiej</translation>
+<translation id="2085483813371386023">Otwórz <ph name="LINK_BEGIN" />Ustawienia<ph name="LINK_END" />, by zobaczyć opcje Better Together</translation>
 <translation id="208586643495776849">Spróbuj ponownie</translation>
 <translation id="2087822576218954668">Drukuj: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Przeglądaj bezpiecznie w Google Chrome</translation>
@@ -978,6 +979,7 @@
 <translation id="2464089476039395325">Serwer proxy HTTP</translation>
 <translation id="2468205691404969808">Zapisuje Twoje ustawienia w plikach cookie, nawet jeśli nie odwiedzasz tych stron</translation>
 <translation id="2468902267404883140">Nie można połączyć się z telefonem. Upewnij się, że używasz zgodnego telefonu z Androidem oraz że jest on włączony i znajduje się w zasięgu ręki. &lt;a&gt;Więcej informacji&lt;/a&gt;</translation>
+<translation id="247051149076336810">URL magazynu plików</translation>
 <translation id="2470702053775288986">Wyłączono nieobsługiwane rozszerzenia</translation>
 <translation id="2473195200299095979">Przetłumacz tę stronę</translation>
 <translation id="2475982808118771221">Wystąpił błąd</translation>
@@ -1407,7 +1409,7 @@
 <translation id="3085412380278336437">Strona może używać kamery</translation>
 <translation id="3085752524577180175">Host SOCKS</translation>
 <translation id="3088325635286126843">&amp;Zmień nazwę</translation>
-<translation id="3088402208262982892">Funkcja Razem lepiej jest wyłączona</translation>
+<translation id="3088402208262982892">Funkcja Better Together jest wyłączona</translation>
 <translation id="3090193911106258841">Otwieram wejście audio i wideo</translation>
 <translation id="3090819949319990166">Nie można skopiować zewnętrznego pliku CRX jako <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">Sparowano „<ph name="DEVICE_NAME" />”</translation>
@@ -1734,7 +1736,7 @@
 <translation id="3603622770190368340">Pobierz certyfikat sieci</translation>
 <translation id="3604048165392640554">Nie znaleziono połączenia komórkowego. Włącz Instant Tethering na drugim urządzeniu i spróbuj jeszcze raz. &lt;a target="_blank" href="<ph name="URL" />"&gt;Więcej informacji&lt;/a&gt;</translation>
 <translation id="3605780360466892872">Garnitur</translation>
-<translation id="3606712892509067288">Usuń z Razem lepiej</translation>
+<translation id="3606712892509067288">Usuń z Better Together</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Podgląd obrazu użytkownika</translation>
 <translation id="3609446736023031597">Chcę otrzymywać najnowsze wiadomości i rekomendacje aplikacji ze Sklepu Play</translation>
@@ -1774,6 +1776,7 @@
 <translation id="3650952250015018111">Zezwól aplikacji „<ph name="APP_NAME" />” na dostęp do:</translation>
 <translation id="3651488188562686558">rozłączy się z siecią Wi-Fi</translation>
 <translation id="3652817283076144888">Inicjuję</translation>
+<translation id="3653160965917900914">Sieciowe magazyny plików</translation>
 <translation id="3653999333232393305">Nadal zezwalaj witrynie <ph name="HOST" /> na dostęp do mikrofonu</translation>
 <translation id="3654045516529121250">Odczyt ustawień ułatwień dostępu</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ma stały dostęp do jednego pliku.}few{Ma stały dostęp do # plików.}many{Ma stały dostęp do # plików.}other{Ma stały dostęp do # pliku.}}</translation>
@@ -2320,7 +2323,7 @@
 <translation id="4538417792467843292">Usuń słowo</translation>
 <translation id="4538684596480161368">Zawsze blokuj wtyczki poza piaskownicą na <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Zainstalowane na podstawie zasad przedsiębiorstwa.</translation>
-<translation id="4539754285405390318">Razem lepiej umożliwia:</translation>
+<translation id="4539754285405390318">Better Together umożliwia:</translation>
 <translation id="4542520061254486227">Odczyt Twoich danych na stronie <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /></translation>
 <translation id="4543733025292526486">esc</translation>
 <translation id="4543778593405494224">Menedżer certyfikatów</translation>
@@ -2777,7 +2780,7 @@
 <translation id="5233736638227740678">&amp;Wklej</translation>
 <translation id="5234764350956374838">Zamknij</translation>
 <translation id="5235050375939235066">Odinstalować aplikację?</translation>
-<translation id="5235565664420173924">Razem lepiej</translation>
+<translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Zmiana strony, która wyświetla się, gdy otwierasz nową kartę</translation>
 <translation id="5238278114306905396">Aplikacja „<ph name="EXTENSION_NAME" />” została automatycznie usunięta.</translation>
 <translation id="5238369540257804368">Zakresy</translation>
@@ -2861,7 +2864,7 @@
 <translation id="5332624210073556029">Strefa czasowa</translation>
 <translation id="5334142896108694079">Pamięć podręczna skryptów</translation>
 <translation id="5334844597069022743">Wyświetl źródło</translation>
-<translation id="5334899159203764908">Więcej informacji o uprawnieniach <ph name="BEGIN_LINK" />dostępu dla strony<ph name="END_LINK" /></translation>
+<translation id="5334899159203764908">Więcej informacji o uprawnieniach <ph name="BEGIN_LINK" />dostępu do stron<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Tworzą kopię zapasową (<ph name="FILE_COUNT" />) na <ph name="BEGIN_LINK" />Dysku Google<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Nie zezwalaj żadnym stronom na dostęp do urządzeń USB</translation>
 <translation id="5337771866151525739">Zainstalowane przez inną firmę.</translation>
@@ -3049,7 +3052,7 @@
 <translation id="5595152862129936745">Bardzo daleko</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
 <translation id="5596627076506792578">Więcej opcji</translation>
-<translation id="5598551463564921617">Funkcja Razem lepiej jest włączona</translation>
+<translation id="5598551463564921617">Funkcja Better Together jest włączona</translation>
 <translation id="5600706100022181951">Pobranie aktualizacji wykorzysta <ph name="UPDATE_SIZE_MB" /> MB mobilnej transmisji danych. Czy chcesz kontynuować?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5602765853043467355">Usuń z tego urządzenia zakładki, historię, hasła i inne informacje</translation>
@@ -3151,6 +3154,7 @@
 <translation id="5756163054456765343">C&amp;entrum pomocy</translation>
 <translation id="5759728514498647443">Dokumenty wysłane do drukowania z aplikacji <ph name="APP_NAME" /> można odczytać w aplikacji <ph name="APP_NAME" />.</translation>
 <translation id="5762172915276660232">Ustawienia kart kredytowych</translation>
+<translation id="5763315388120433852">Skonfiguruj sieciowe magazyny plików i zarządzaj nimi.</translation>
 <translation id="5763751966069581670">Nie znaleziono urządzeń USB</translation>
 <translation id="5764483294734785780">Za&amp;pisz element audio jako...</translation>
 <translation id="57646104491463491">Data modyfikacji</translation>
@@ -3306,11 +3310,12 @@
 <translation id="5979469435153841984">Aby dodać stronę do zakładek, kliknij gwiazdkę na pasku adresu</translation>
 <translation id="5982621672636444458">Opcje sortowania</translation>
 <translation id="5984222099446776634">Ostatnio odwiedzone</translation>
+<translation id="5985458664595100876">Nieprawidłowy format adresu URL. Obsługiwane formaty to \\server\share i smb://server/share.</translation>
 <translation id="5990142338020175451">Bardziej spersonalizowane usługi Google, na przykład lepsze podpowiedzi stron</translation>
 <translation id="5990386583461751448">Przetłumaczona</translation>
 <translation id="5991049340509704927">Powiększ</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tej aplikacji.}few{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tych aplikacji.}many{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tych aplikacji.}other{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tych aplikacji.}}</translation>
-<translation id="5997337190805127100">Więcej informacji o uprawnieniach dostępu dla stron</translation>
+<translation id="5997337190805127100">Więcej informacji o uprawnieniach dostępu do stron</translation>
 <translation id="6002458620803359783">Preferowane głosy</translation>
 <translation id="6005695835120147974">Router multimediów</translation>
 <translation id="6006484371116297560">Klasyczny</translation>
@@ -3446,7 +3451,6 @@
 <translation id="6185132558746749656">Lokalizacja urządzenia</translation>
 <translation id="6185617499004995178">Walidator CUPS IPP</translation>
 <translation id="6185696379715117369">Strona do góry</translation>
-<translation id="6189273858858366896">Skonfiguruj sieciowe magazyny plików lub nimi zarządzaj.</translation>
 <translation id="6189412234224385711">Otwórz w rozszerzeniu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokuj pliki cookie innych firm</translation>
 <translation id="6196854373336333322">Rozszerzenie „<ph name="EXTENSION_NAME" />” przejęło kontrolę nad ustawieniami serwera proxy, co oznacza, że może zmieniać, przerywać lub podglądać wszystko, co robisz online. Jeśli nie masz pewności, skąd wzięła się ta zmiana, prawdopodobnie jej nie chcesz.</translation>
@@ -3496,7 +3500,6 @@
 <translation id="6263082573641595914">Wersja urzędu certyfikacji firmy Microsoft</translation>
 <translation id="6263284346895336537">Niekrytyczne</translation>
 <translation id="6264365405983206840">Wybierz &amp;wszystko</translation>
-<translation id="6264422956566238156">Synchronizacja została włączona</translation>
 <translation id="6267166720438879315">Wybierz certyfikat, aby uwierzytelnić się na serwerze <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Otwórz w <ph name="APP" /></translation>
 <translation id="6268747994388690914">Importuj zakładki z pliku HTML</translation>
@@ -4006,7 +4009,7 @@
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7042418530779813870">Wk&amp;lej i wyszukaj</translation>
 <translation id="7043108582968290193">Gotowe. Nie ma niezgodnych aplikacji.</translation>
-<translation id="7044124535091449260">Dowiedz się więcej o uprawnieniach dostępu dla stron</translation>
+<translation id="7044124535091449260">Więcej informacji o uprawnieniach dostępu do stron</translation>
 <translation id="7049293980323620022">Zachować plik?</translation>
 <translation id="7051943809462976355">Szukam myszy...</translation>
 <translation id="7052237160939977163">Wyślij dane śledzenia wydajności</translation>
@@ -4598,7 +4601,7 @@
 <translation id="7925285046818567682">Czekam na <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">Nie synchronizuj przez połączenie komórkowe</translation>
 <translation id="7926423016278357561">To nie ja.</translation>
-<translation id="7927336497913514109">Konfiguracja funkcji Razem lepiej nie udała się</translation>
+<translation id="7927336497913514109">Konfiguracja funkcji Better Together nie udała się</translation>
 <translation id="7928710562641958568">Odłącz urządzenie</translation>
 <translation id="7930294771522048157">Tutaj pojawią się zapisane formy płatności</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> udostępnia ekran i dźwięk.</translation>
@@ -4710,7 +4713,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8068253693380742035">Kliknij, by się zalogować</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Drukuj jako grafikę</translation>
-<translation id="8072033737676488034">Usuń telefon i wyłącz Razem lepiej</translation>
+<translation id="8072033737676488034">Usuń telefon i wyłącz Better Together</translation>
 <translation id="8072988827236813198">Przypinanie kart</translation>
 <translation id="8074127646604999664">Zezwól niedawno zamkniętym stronom na dokończenie wysyłania i odbierania danych</translation>
 <translation id="8075191520954018715">Stan pamięci</translation>
@@ -4806,7 +4809,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8230134520748321204">Zapisać hasło do: <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Pomóż naszym inżynierom rozwiązać ten problem. Powiedz nam, co się działo tuż przed wyświetleniem się komunikatu o błędzie profilu:</translation>
 <translation id="8234989666557591529">Wybierz telefon do odblokowania urządzenia <ph name="DEVICE_TYPE" /></translation>
-<translation id="8239020549147958415">Synchronizuj jako <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Zacieniony</translation>
 <translation id="8241806945692107836">Określam konfigurację urządzenia...</translation>
 <translation id="8241868517363889229">Odczytywanie i zmienianie zakładek</translation>
@@ -5099,7 +5101,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="869884720829132584">Menu aplikacji</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="8699566574894671540">Aby włączyć tę funkcję, najpierw w menu Edytuj włącz Sprawdzaj pisownię w trakcie pisania</translation>
-<translation id="870073306461175568">Sieciowe magazyny plików</translation>
 <translation id="8701677791353449257">Nazwa urządzenia musi odpowiadać wyrażeniu regularnemu <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">To trwa o wiele dłużej niż zwykle. Możesz zaczekać albo anulować i spróbować ponownie później.</translation>
 <translation id="8705331520020532516">Numer seryjny</translation>
@@ -5284,7 +5285,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="897939795688207351">Na <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – awaria</translation>
 <translation id="8983677657449185470">Pomóż ulepszyć Bezpieczne przeglądanie</translation>
-<translation id="8984654317541110628">URL udziału plików</translation>
 <translation id="8986362086234534611">Zapomnij</translation>
 <translation id="8986494364107987395">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="8987927404178983737">Miesiąc</translation>

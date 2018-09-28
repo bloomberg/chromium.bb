@@ -140,6 +140,7 @@
 <translation id="1387596372902085462">Czy włączyć zaufanie w starszej infrastrukturze klucza publicznego Symantec Corporation</translation>
 <translation id="1393485621820363363">Włączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
+<translation id="1413936351612032792">Przesyłaj informacje o używaniu aplikacji na Linuxa</translation>
 <translation id="142346659686073702">Zezwalaj użytkownikom z innych domen na używanie Crostini</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres IP lub URL serwera proxy</translation>
@@ -2146,6 +2147,13 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6931242315485576290">Wyłącz synchronizację danych z Google</translation>
 <translation id="6936894225179401731">Określa maksymalną liczbę jednoczesnych połączeń z serwerem proxy. Niektóre serwery proxy nie są w stanie obsłużyć dużej liczby jednoczesnych połączeń z tym samym klientem. W takiej sytuacji można rozwiązać problem, ustawiając dla tej zasady mniejszą wartość. Jej wartość powinna być mniejsza niż 100 i większa niż 6. Wartość domyślna wynosi 32. Niektóre aplikacje sieciowe używają wielu połączeń z oczekującymi żądaniami GET, dlatego zmniejszenie wartości tej zasady poniżej wartości 32 może powodować przerwy w działaniu sieci, jeśli zbyt wiele takich aplikacji będzie otwartych. Zmniejszasz wartości domyślne na własne ryzyko. W przypadku nieskonfigurowania tej zasady będzie używana wartość domyślna, czyli 32.</translation>
 <translation id="6943577887654905793">Nazwa ustawienia w systemie macOS/Linux:</translation>
+<translation id="6944167205014013774">Informacje o używaniu aplikacji na Linuxa są wysyłane z powrotem
+      na serwer.
+
+      Jeśli zasada jest wyłączona lub nieskonfigurowana, nie są wysyłane żadne informacje o używaniu aplikacji.
+      Jeśli jest włączona, informacje o używaniu aplikacji są wysyłane.
+
+      Ta zasada ma zastosowanie tylko wtedy, gdy jest włączona obsługa aplikacji na Linuxa.</translation>
 <translation id="69525503251220566">Parametr udostępniający funkcję wyszukiwania obrazem dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="6956272732789158625">Nie zezwalaj na generowanie kluczy w żadnej witrynie</translation>
 <translation id="6965859329738616662">Określa, czy model inteligentnego przyciemniania może opóźniać przyciemnienie ekranu.

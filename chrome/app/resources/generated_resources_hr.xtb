@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">Vaše računalo sadrži sigurnosni uređaj Trusted Platform Module (TPM) koji se upotrebljava za primjenu mnogih važnih sigurnosnih značajki u OS-u Chrome. Posjetite Chromebookov centar za pomoć da biste saznali više: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">Prijeđi u mirovanje kada se zatvori poklopac</translation>
 <translation id="1115324527092594775">Postavljanje značajke Better Together</translation>
+<translation id="1116639326869298217">Vaš identitet nije potvrđen</translation>
 <translation id="1116694919640316211">O opcijama</translation>
 <translation id="1116779635164066733">Tom postavkom upravlja proširenje "<ph name="NAME" />".</translation>
 <translation id="111844081046043029">Jeste li sigurni da želite zatvoriti ovu stranicu?</translation>
@@ -978,6 +979,7 @@
 <translation id="2464089476039395325">HTTP proxy</translation>
 <translation id="2468205691404969808">Upotrebljava kolačiće za pamćenje vaših postavki, čak i ako ne posjetite te stranice</translation>
 <translation id="2468902267404883140">Povezivanje s telefonom nije moguće. Provjerite je li vaš Android telefon kompatibilan, uključen i pri ruci. &lt;a&gt;Saznajte više&lt;/a&gt;</translation>
+<translation id="247051149076336810">URL za dijeljenje datoteka</translation>
 <translation id="2470702053775288986">Onemogućena su nepodržana proširenja</translation>
 <translation id="2473195200299095979">Prevedi ovu stranicu</translation>
 <translation id="2475982808118771221">Došlo je do pogreške</translation>
@@ -1774,6 +1776,7 @@
 <translation id="3650952250015018111">Dopusti aplikaciji "<ph name="APP_NAME" />" da pristupi:</translation>
 <translation id="3651488188562686558">prekinuti vezu s Wi-Fi-jem</translation>
 <translation id="3652817283076144888">Inicijalizacija</translation>
+<translation id="3653160965917900914">Mrežna dijeljenja datoteka</translation>
 <translation id="3653999333232393305">Nastavi dopuštati hostu <ph name="HOST" /> pristup mikrofonu</translation>
 <translation id="3654045516529121250">čitati postavke pristupačnosti</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ima trajni pristup jednoj datoteci.}one{Ima trajni pristup # datoteci.}few{Ima trajni pristup do # datoteke.}other{Ima trajni pristup do # datoteka.}}</translation>
@@ -3151,6 +3154,7 @@
 <translation id="5756163054456765343">Centar za pomoć</translation>
 <translation id="5759728514498647443">Dokumente koje šaljete za ispis putem aplikacije <ph name="APP_NAME" /> može čitati aplikacija <ph name="APP_NAME" />.</translation>
 <translation id="5762172915276660232">Postavke za kreditne kartice</translation>
+<translation id="5763315388120433852">Postavite mrežna dijeljenja datoteka ili upravljajte njima.</translation>
 <translation id="5763751966069581670">Nije pronađen nijedan USB uređaj</translation>
 <translation id="5764483294734785780">Sp&amp;remi zvučni zapis kao...</translation>
 <translation id="57646104491463491">Datum izmjene</translation>
@@ -3306,6 +3310,7 @@
 <translation id="5979469435153841984">Da biste označili stranice, kliknite zvjezdicu u adresnoj traci</translation>
 <translation id="5982621672636444458">Opcije razvrstavanja</translation>
 <translation id="5984222099446776634">Nedavno posjećeno</translation>
+<translation id="5985458664595100876">Format URL-a nije važeći. Podržani su formati \\server\share i smb://server/share.</translation>
 <translation id="5990142338020175451">Više prilagođenih Googleovih usluga, na primjer bolji prijedlozi stranica</translation>
 <translation id="5990386583461751448">Prevedeno</translation>
 <translation id="5991049340509704927">Uvećanje</translation>
@@ -3446,7 +3451,6 @@
 <translation id="6185132558746749656">Lokacija uređaja</translation>
 <translation id="6185617499004995178">CUPS IPP validator</translation>
 <translation id="6185696379715117369">Stranica prema gore</translation>
-<translation id="6189273858858366896">Postavite mrežno dijeljenje datoteka ili upravljajte njime.</translation>
 <translation id="6189412234224385711">Otvori proširenjem <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokiraj kolačiće trećih strana</translation>
 <translation id="6196854373336333322">Proširenje "<ph name="EXTENSION_NAME" />" preuzelo je kontrolu nad vašim postavkama proxyja, a to znači da može promijeniti, prekinuti ili prisluškivati sve što radite na mreži. Ako niste sigurni kako je došlo do te promjene, vjerojatno je ne želite.</translation>
@@ -3496,7 +3500,6 @@
 <translation id="6263082573641595914">Microsoft CA verzija</translation>
 <translation id="6263284346895336537">Nije kritično</translation>
 <translation id="6264365405983206840">Odaberi &amp;sve</translation>
-<translation id="6264422956566238156">Sinkronizacija je uključena</translation>
 <translation id="6267166720438879315">Odaberite certifikat za svoju autentikaciju na <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Otvori aplikacijom <ph name="APP" /></translation>
 <translation id="6268747994388690914">Uvoz oznaka iz HTML datoteke...</translation>
@@ -4806,7 +4809,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8230134520748321204">Želite li spremiti zaporku za <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Pomognite našim inženjerima da riješe taj problem. Opišite što se dogodilo neposredno prije nego što se prikazala poruka pogreške za profil:</translation>
 <translation id="8234989666557591529">Odaberite telefon koji će otključavati vaš <ph name="DEVICE_TYPE" /></translation>
-<translation id="8239020549147958415">Sinkroniziraj kao <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Sjena</translation>
 <translation id="8241806945692107836">Određivanje konfiguracije uređaja...</translation>
 <translation id="8241868517363889229">pročitati i promijeniti vaše oznake</translation>
@@ -5099,7 +5101,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="869884720829132584">Izbornik aplikacija</translation>
 <translation id="869891660844655955">Datum isteka</translation>
 <translation id="8699566574894671540">Da biste uključili tu postavku, prvo odaberite opciju Provjeravaj pravopis tijekom pisanja na izborniku Uređivanje</translation>
-<translation id="870073306461175568">Mrežno dijeljenje datoteka</translation>
 <translation id="8701677791353449257">Naziv uređaja mora se podudarati s regularnim izrazom <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">Ovo traje mnogo dulje nego što je to uobičajeno. Možete pričekati ili odustati pa pokušati ponovo.</translation>
 <translation id="8705331520020532516">Serijski broj</translation>
@@ -5284,7 +5285,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="897939795688207351">Na <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – kartica se srušila</translation>
 <translation id="8983677657449185470">Pomozite poboljšati Sigurno pregledavanje</translation>
-<translation id="8984654317541110628">URL za dijeljenje datoteka</translation>
 <translation id="8986362086234534611">Zaboravi</translation>
 <translation id="8986494364107987395">Automatski šalji Googleu statistiku o upotrebi i izvješća o padu programa</translation>
 <translation id="8987927404178983737">Mjesec</translation>

@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Xem có cho phép tin cậy Cơ sở hạ tầng khóa công khai (KPI) cũ của Symantec Corporation hay không</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="1413936351612032792">Báo cáo thông tin về việc sử dụng các ứng dụng Linux</translation>
 <translation id="142346659686073702">Cho phép người dùng chưa liên kết sử dụng Crostini</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
@@ -2231,6 +2232,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không đặt chính sách này, giá trị mặc định được sử dụng sẽ là 32.</translation>
 <translation id="6943577887654905793">Tên tùy chọn Mac/Linux:</translation>
+<translation id="6944167205014013774">Thông tin về việc sử dụng các ứng dụng Linux được gửi về
+      máy chủ.
+
+      Nếu không đặt chính sách hoặc đặt thành false, thông tin sử dụng sẽ không được
+      báo cáo. Nếu đặt chính sách thành true, thông tin sử dụng sẽ được báo cáo.
+
+      Chính sách này chỉ áp dụng nếu bật tính năng hỗ trợ ứng dụng Linux.</translation>
 <translation id="69525503251220566">Tham số cung cấp tính năng tìm theo hình ảnh cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="6956272732789158625">Không cho phép bất kỳ trang web nào sử dụng tạo khóa</translation>
 <translation id="6965859329738616662">Nêu rõ liệu mô hình giảm độ sáng thông minh có được phép kéo dài thời gian cho đến khi màn hình tối đi hay không.

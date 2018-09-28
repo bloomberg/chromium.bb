@@ -76,6 +76,7 @@
 <translation id="1114335938027186412">ご使用のパソコンには Trusted Platform Module（TPM）セキュリティ デバイスが組み込まれています。これは Chrome OS の多くの重要なセキュリティ機能を実装するために使用されます。詳しくは Chromebook ヘルプセンター（https://support.google.com/chromebook/?p=tpm）をご覧ください。</translation>
 <translation id="1114525161406758033">ディスプレイを閉じたときにスリープ状態にする</translation>
 <translation id="1115324527092594775">Better Together の設定</translation>
+<translation id="1116639326869298217">本人確認ができませんでした</translation>
 <translation id="1116694919640316211">概要</translation>
 <translation id="1116779635164066733">この設定は拡張機能「<ph name="NAME" />」により制御されています。</translation>
 <translation id="111844081046043029">このページから移動してもよろしいですか？</translation>
@@ -978,6 +979,7 @@
 <translation id="2464089476039395325">HTTP プロキシ</translation>
 <translation id="2468205691404969808">Cookie を使って設定を保存する（これらのページにアクセスしない場合も Cookie が保持されます）</translation>
 <translation id="2468902267404883140">スマートフォンに接続できません。使用している Android スマートフォンが対応機種で、電源が入っており、手の届く範囲にあることを確認してください。&lt;a&gt;詳細&lt;/a&gt;</translation>
+<translation id="247051149076336810">ファイル共有 URL</translation>
 <translation id="2470702053775288986">サポートされていない拡張機能が無効</translation>
 <translation id="2473195200299095979">このページを翻訳</translation>
 <translation id="2475982808118771221">エラーが発生しました</translation>
@@ -1774,6 +1776,7 @@
 <translation id="3650952250015018111">「<ph name="APP_NAME" />」のアクセスを許可する:</translation>
 <translation id="3651488188562686558">Wi-Fi から切断します</translation>
 <translation id="3652817283076144888">初期化しています</translation>
+<translation id="3653160965917900914">ネットワーク ファイル共有</translation>
 <translation id="3653999333232393305"><ph name="HOST" /> によるマイクへのアクセスを引き続き許可する</translation>
 <translation id="3654045516529121250">ユーザー補助設定の読み取り</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{1 個のファイルに永続的にアクセスできます。}other{# 個のファイルに永続的にアクセスできます。}}</translation>
@@ -3151,6 +3154,7 @@
 <translation id="5756163054456765343">ヘルプセンター(&amp;E)</translation>
 <translation id="5759728514498647443">「<ph name="APP_NAME" />」を使用して印刷に送信したドキュメントは「<ph name="APP_NAME" />」で読めます。</translation>
 <translation id="5762172915276660232">クレジット カードの設定</translation>
+<translation id="5763315388120433852">ネットワーク ファイル共有を設定または管理する。</translation>
 <translation id="5763751966069581670">USB デバイスが見つかりませんでした</translation>
 <translation id="5764483294734785780">名前を付けてオーディオを保存(&amp;V)...</translation>
 <translation id="57646104491463491">更新日</translation>
@@ -3306,6 +3310,7 @@
 <translation id="5979469435153841984">ページをブックマークするには、アドレスバーのスターアイコンをクリックしてください</translation>
 <translation id="5982621672636444458">並べ替え方法</translation>
 <translation id="5984222099446776634">最近のアクセス</translation>
+<translation id="5985458664595100876">URL の形式が無効です。サポートされている形式は \\server\share と smb://server/share です。</translation>
 <translation id="5990142338020175451">おすすめのページなど、カスタマイズされた Google サービスを利用できます</translation>
 <translation id="5990386583461751448">翻訳済み</translation>
 <translation id="5991049340509704927">拡大表示</translation>
@@ -3446,7 +3451,6 @@
 <translation id="6185132558746749656">デバイスの位置情報</translation>
 <translation id="6185617499004995178">CUPS IPP 検証ツール</translation>
 <translation id="6185696379715117369">ページ内を上に移動</translation>
-<translation id="6189273858858366896">ネットワーク ファイル共有を設定または管理する。</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> で開く</translation>
 <translation id="6196640612572343990">サードパーティの Cookie をブロックする</translation>
 <translation id="6196854373336333322">拡張機能「<ph name="EXTENSION_NAME" />」によってプロキシ設定が制御されています。オンラインで行う操作は、この拡張機能によって変更、遮断、傍受される可能性があります。この変更が行われた理由に心当たりがない場合、これは不正な変更と考えられます。</translation>
@@ -3496,7 +3500,6 @@
 <translation id="6263082573641595914">Microsoft CA バージョン</translation>
 <translation id="6263284346895336537">非重要</translation>
 <translation id="6264365405983206840">すべて選択(&amp;A)</translation>
-<translation id="6264422956566238156">同期を有効にしました</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> での認証に使用する証明書を選択してください</translation>
 <translation id="6268252012308737255"><ph name="APP" /> で開く</translation>
 <translation id="6268747994388690914">HTML ファイルからブックマークをインポート...</translation>
@@ -4807,7 +4810,6 @@
 <translation id="8230134520748321204"><ph name="ORIGIN" /> のパスワードを保存しますか？</translation>
 <translation id="8234795456569844941">問題解決の手がかりとして、具体的にどのような操作を行ったときにプロフィール エラーのメッセージが表示されたかをお知らせください。</translation>
 <translation id="8234989666557591529"><ph name="DEVICE_TYPE" /> のロック解除に使用するスマートフォンを選択してください</translation>
-<translation id="8239020549147958415">「<ph name="FULL_NAME" />」として同期</translation>
 <translation id="8241040075392580210">シェイディ</translation>
 <translation id="8241806945692107836">デバイスの設定を確認しています...</translation>
 <translation id="8241868517363889229">ブックマークの読み取りと変更</translation>
@@ -5099,7 +5101,6 @@
 <translation id="869884720829132584">アプリケーション メニュー</translation>
 <translation id="869891660844655955">有効期限</translation>
 <translation id="8699566574894671540">この機能をオンにするには、まず [編集] メニューの [入力中にスペルチェック] を選択します</translation>
-<translation id="870073306461175568">ネットワーク ファイル共有</translation>
 <translation id="8701677791353449257">デバイス名は正規表現 <ph name="REGEX" /> と一致する必要があります。</translation>
 <translation id="8704521619148782536">通常よりもかなり時間がかかっています。そのままお待ちいただくか、キャンセルし、しばらくしてからもう一度お試しください。</translation>
 <translation id="8705331520020532516">シリアル番号</translation>
@@ -5284,7 +5285,6 @@
 <translation id="897939795688207351"><ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - クラッシュしました</translation>
 <translation id="8983677657449185470">セーフ ブラウジングの改善に協力する</translation>
-<translation id="8984654317541110628">ファイル共有 URL</translation>
 <translation id="8986362086234534611">切断</translation>
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信します</translation>
 <translation id="8987927404178983737">月</translation>

@@ -142,6 +142,7 @@
 <translation id="1387596372902085462">A Symantec Corporation régi PKI-infrastruktúrájának megbízhatóként való elfogadása</translation>
 <translation id="1393485621820363363">Eszközökhöz kötött engedélyezett vállalati nyomtatók</translation>
 <translation id="1397855852561539316">Alapértelmezett keresési szolgáltató javasolt URL-je</translation>
+<translation id="1413936351612032792">A Linux-alkalmazások használatával kapcsolatos információk jelentése</translation>
 <translation id="142346659686073702">Crostini használatának engedélyezése nem társult felhasználók számára</translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1427655258943162134">Proxyszerver címe vagy URL-je</translation>
@@ -2151,6 +2152,14 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha a házirend beállítatlanul marad, akkor a rendszer az alapértelmezés szerinti értéket (32) használja.</translation>
 <translation id="6943577887654905793">Mac/Linux preferencia neve:</translation>
+<translation id="6944167205014013774">A rendszer visszaküldi a szervernek a Linux-alkalmazások
+      használatával kapcsolatos információkat.
+
+      Ha a házirend értéke hamis, vagy nincs beállítva, akkor a rendszer
+      nem küld jelentést. Ha igaz, akkor elküldi a használati információkat.
+
+      A házirend csak akkor érvényes, ha a Linux-alkalmazások támogatása
+      engedélyezve van.</translation>
 <translation id="69525503251220566">Paraméter az alapértelmezett keresési szolgáltatóval végezhető képalapú keresési funkció biztosításához</translation>
 <translation id="6956272732789158625">A kulcsgenerálás használatának letiltása minden webhelyen</translation>
 <translation id="6965859329738616662">Meghatározza, hogy lehet-e használni intelligens elsötétítési modellt, amely lehetővé teszi a képernyő elsötétített állapotáig tartó időtartam növelését.
