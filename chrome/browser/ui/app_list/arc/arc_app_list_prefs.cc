@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1000,9 +1001,12 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
                                         const bool launchable) {
   const std::string app_id = shortcut ? GetAppId(package_name, intent_uri)
                                       : GetAppId(package_name, activity);
-  // Do not add Play Store app for Public Session and Kiosk modes.
-  if (app_id == arc::kPlayStoreAppId && arc::IsRobotOrOfflineDemoAccountMode())
+  // TODO(khmel): Use show_in_launcher flag to hide the Play Store app.
+  if (app_id == arc::kPlayStoreAppId &&
+      arc::IsRobotOrOfflineDemoAccountMode() &&
+      !chromeos::DemoSession::IsDeviceInDemoMode()) {
     return;
+  }
 
   std::string updated_name = name;
   // Add "(beta)" string to Play Store. See crbug.com/644576 for details.

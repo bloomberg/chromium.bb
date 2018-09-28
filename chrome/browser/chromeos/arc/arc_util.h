@@ -9,6 +9,7 @@
 
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/callback_forward.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "components/arc/arc_supervision_transition.h"
 
 // Most utility should be put in components/arc/arc_util.{h,cc}, rather than
@@ -159,6 +160,10 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
 
 // Returns the supervision transition status as stored in profile prefs.
 ArcSupervisionTransition GetSupervisionTransition(const Profile* profile);
+
+// Returns true if Play Store package is present and can be launched in this
+// session.
+bool IsPlayStoreAvailable();
 
 }  // namespace arc
 
