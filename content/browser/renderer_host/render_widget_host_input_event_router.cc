@@ -573,9 +573,12 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
     // of the touch sequence, though this could be wrong; a better approach
     // might be to always transform each point to the |touch_target_.target|
     // for the duration of the sequence.
-    DCHECK(target_location.has_value());
-    touch_target_.delta =
-        target_location.value() - touch_event.touches[0].PositionInWidget();
+    if (target_location.has_value()) {
+      touch_target_.delta =
+          target_location.value() - touch_event.touches[0].PositionInWidget();
+    } else {
+      touch_target_.delta = gfx::Vector2dF();
+    }
 
     DCHECK(touchscreen_gesture_target_map_.find(
                touch_event.unique_touch_event_id) ==
