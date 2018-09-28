@@ -177,10 +177,7 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
         // Drop any access token here, to maintain the invariant that only one
         // of a token OR a pending request OR a pending retry can exist at any
         // time.
-        if (!access_token_.empty()) {
-          access_token_.clear();
-          credentials_changed_callback_.Run();
-        }
+        InvalidateAccessToken();
         request_access_token_backoff_.InformOfRequest(false);
         ScheduleAccessTokenRequest();
       }
@@ -208,6 +205,20 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
       NOTREACHED();
       break;
   }
+}
+
+void SyncAuthManager::InvalidateAccessToken() {
+  if (access_token_.empty()) {
+    return;
+  }
+
+  identity_manager_->RemoveAccessTokenFromCache(
+      sync_account_.account_info.account_id,
+      OAuth2TokenService::ScopeSet{GaiaConstants::kChromeSyncOAuth2Scope},
+      access_token_);
+
+  access_token_.clear();
+  credentials_changed_callback_.Run();
 }
 
 void SyncAuthManager::ClearAccessTokenAndRequest() {
@@ -425,13 +436,7 @@ void SyncAuthManager::RequestAccessToken() {
 
   // Invalidate any previous token, otherwise the token service will return the
   // same token again.
-  if (!access_token_.empty()) {
-    identity_manager_->RemoveAccessTokenFromCache(
-        sync_account_.account_info.account_id, kOAuth2ScopeSet, access_token_);
-
-    access_token_.clear();
-    credentials_changed_callback_.Run();
-  }
+  InvalidateAccessToken();
 
   // Finally, kick off a new access token fetch.
   token_status_.token_request_time = base::Time::Now();
