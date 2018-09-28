@@ -146,10 +146,11 @@ def PushToOriginWithoutReviewAndTrack(cfg):
   # This would also get branch --set-upstream-to=origin/%s %s
   log("TODO: set upstream tracking branch to origin/%s!" %
       cfg.sushi_branch_name())
-  raise Exception("Please do these things and comment this exception out.")
+  #raise Exception("Please do these things and comment this exception out.")
 
 def HandleAutorename(cfg):
   # Note that you probably also want to comment out the "build and import all
   # configs" call in robosushi.  it'll work if you re-run it, but it takes a
   # while and only needs to be done once.
-  raise Exception("Please commit autorename file changes and comment this out.")
+  #raise Exception("Please commit autorename file changes and comment this out.")
+  log("Skipping rename")
