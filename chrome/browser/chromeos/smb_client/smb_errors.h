@@ -23,7 +23,8 @@ enum class SmbMountResult {
   NOT_FOUND = 3,              // The specified share was not found.
   UNSUPPORTED_DEVICE = 4,     // The specified share is not supported.
   MOUNT_EXISTS = 5,           // The specified share is already mounted.
-  kMaxValue = MOUNT_EXISTS    // Max enum value for use in metrics.
+  INVALID_URL = 6,            // The mount URL is an invalid SMB URL.
+  kMaxValue = INVALID_URL     // Max enum value for use in metrics.
 };
 
 // Translates an smbprovider::ErrorType to a base::File::Error. Since

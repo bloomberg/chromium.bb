@@ -19,6 +19,7 @@ const SmbMountResult = {
   NOT_FOUND: 3,
   UNSUPPORTED_DEVICE: 4,
   MOUNT_EXISTS: 5,
+  INVALID_URL: 6,
 };
 
 cr.define('settings', function() {

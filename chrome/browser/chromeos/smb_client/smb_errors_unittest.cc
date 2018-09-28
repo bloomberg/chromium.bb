@@ -127,7 +127,7 @@ TEST_F(SmbErrorsTest, SmbErrorToMountResult) {
             TranslateErrorToMountResult(smbprovider::ERROR_NOT_A_FILE));
   EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
             TranslateErrorToMountResult(smbprovider::ERROR_NOT_EMPTY));
-  EXPECT_EQ(SmbMountResult::NOT_FOUND,
+  EXPECT_EQ(SmbMountResult::INVALID_URL,
             TranslateErrorToMountResult(smbprovider::ERROR_INVALID_URL));
   EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
             TranslateErrorToMountResult(smbprovider::ERROR_IO));
@@ -169,7 +169,7 @@ TEST_F(SmbErrorsTest, FileErrorToMountResult) {
             TranslateErrorToMountResult(base::File::FILE_ERROR_NOT_A_FILE));
   EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
             TranslateErrorToMountResult(base::File::FILE_ERROR_NOT_EMPTY));
-  EXPECT_EQ(SmbMountResult::NOT_FOUND,
+  EXPECT_EQ(SmbMountResult::INVALID_URL,
             TranslateErrorToMountResult(base::File::FILE_ERROR_INVALID_URL));
   EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
             TranslateErrorToMountResult(base::File::FILE_ERROR_IO));
