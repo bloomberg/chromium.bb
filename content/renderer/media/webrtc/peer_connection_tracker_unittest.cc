@@ -151,8 +151,9 @@ class PeerConnectionTrackerTest : public ::testing::Test {
  public:
   void CreateTrackerWithMocks() {
     mock_host_.reset(new MockPeerConnectionTrackerHost());
-    tracker_.reset(
-        new PeerConnectionTracker(mock_host_->CreateInterfacePtrAndBind()));
+    tracker_.reset(new PeerConnectionTracker(
+        mock_host_->CreateInterfacePtrAndBind(),
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
     target_thread_.reset(new MockSendTargetThread());
     tracker_->OverrideSendTargetForTesting(target_thread_.get());
   }
@@ -177,7 +178,8 @@ class PeerConnectionTrackerTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(PeerConnectionTrackerTest, CreatingObject) {
-  PeerConnectionTracker tracker;
+  PeerConnectionTracker tracker(
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 }
 
 TEST_F(PeerConnectionTrackerTest, TrackCreateOffer) {
