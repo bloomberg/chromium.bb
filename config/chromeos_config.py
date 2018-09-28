@@ -2166,11 +2166,10 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   ])
   _pi_hwtest_boards = frozenset([
       'caroline-arcnext',
+      'grunt',
       'kevin-arcnext',
   ])
-  _pi_hwtest_experimental_boards = frozenset([
-      'grunt',
-  ])
+  _pi_hwtest_experimental_boards = frozenset([])
   _pi_vmtest_boards = frozenset([
       'betty-arcnext'
   ])
@@ -2423,6 +2422,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'gale',
       'glados',
+      'grunt',
       'guado_moblab',
       'hana',
       'kevin',
@@ -2491,7 +2491,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
-      'grunt',
       'rammus', # contact:zhuohao@
       'kalista', # contact:zhuohao@
   ])
@@ -3351,6 +3350,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'daisy_skate',
       'eve',
       'eve-arcnext',
+      'grunt',
       'kevin-arcnext',
       'nocturne',
       'peach_pit',
@@ -3363,7 +3363,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
 
   _chrome_pfq_experimental_boards = frozenset([
       'bob',
-      'grunt',
       'hana',
       'reef',
       'nyan_big',
