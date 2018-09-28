@@ -95,6 +95,8 @@ class MockActionDelegate : public ActionDelegate {
                void(const std::vector<std::string>& selectors,
                     NodeProto* node_tree_out,
                     base::OnceCallback<void(bool)> callback));
+  MOCK_METHOD0(Shutdown, void());
+  MOCK_METHOD0(Restart, void());
   MOCK_METHOD0(GetClientMemory, ClientMemory*());
 };
 

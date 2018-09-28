@@ -53,7 +53,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                 parameters.keySet().toArray(new String[parameters.size()]),
                 parameters.values().toArray(new String[parameters.size()]));
 
-        // Stop Autofill Assistant when the tab is detached from the activity.
+        // Shut down Autofill Assistant when the tab is detached from the activity.
         activityTab.addObserver(new EmptyTabObserver() {
             @Override
             public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
@@ -64,7 +64,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             }
         });
 
-        // Stop Autofill Assistant when the selected tab (foreground tab) is changed.
+        // Shut down Autofill Assistant when the selected tab (foreground tab) is changed.
         TabModel currentTabModel = activity.getTabModelSelector().getCurrentModel();
         currentTabModel.addObserver(new EmptyTabModelObserver() {
             @Override
@@ -119,6 +119,11 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     @CalledByNative
     private void onHideOverlay() {
         mUiDelegate.hideOverlay();
+    }
+
+    @CalledByNative
+    private void onShutdown() {
+        mUiDelegate.shutdown();
     }
 
     @CalledByNative

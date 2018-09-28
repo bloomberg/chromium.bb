@@ -23,6 +23,7 @@ using ::testing::_;
 using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::InSequence;
 using ::testing::NiceMock;
 using ::testing::Pair;
 using ::testing::ReturnRef;
@@ -101,6 +102,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   // Updates the current url of the controller and forces a refresh, without
   // bothering with actually rendering any page content.
   void SimulateNavigateToUrl(const GURL& url) {
+    url_ = url;
     tester_->SetLastCommittedURL(url);
     controller_->DidFinishLoad(nullptr, url);
   }
@@ -161,6 +163,65 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
 
   // Start the flow.
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+}
+
+TEST_F(ControllerTest, Stop) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_stop();
+  std::string actions_response_str;
+  actions_response.SerializeToString(&actions_response_str);
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _))
+      .WillOnce(RunOnceCallback<2>(true, actions_response_str));
+  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, ""));
+
+  EXPECT_CALL(*mock_ui_controller_, Shutdown());
+  GetUiDelegate()->OnScriptSelected("stop");
+}
+
+TEST_F(ControllerTest, Reset) {
+  {
+    InSequence sequence;
+
+    // 1. Fetch scripts for URL, which in contains a single "reset" script.
+    SupportsScriptResponseProto script_response;
+    AddRunnableScript(&script_response, "reset");
+    std::string script_response_str;
+    script_response.SerializeToString(&script_response_str);
+    EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
+        .WillOnce(RunOnceCallback<2>(true, script_response_str));
+
+    EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(1)));
+
+    // 2. Execute the "reset" script, which contains a reset action.
+    ActionsResponseProto actions_response;
+    actions_response.add_actions()->mutable_reset();
+    std::string actions_response_str;
+    actions_response.SerializeToString(&actions_response_str);
+    EXPECT_CALL(*mock_service_, OnGetActions(StrEq("reset"), _, _))
+        .WillOnce(RunOnceCallback<2>(true, actions_response_str));
+
+    // 3. Report the result of running that action.
+    EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _))
+        .WillOnce(RunOnceCallback<2>(true, ""));
+
+    // 4. The reset action forces a reload of the scripts, even though the URL
+    // hasn't changed. The "reset" script is reported again to UpdateScripts.
+    EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
+        .WillOnce(RunOnceCallback<2>(true, script_response_str));
+
+    // Reset forces the controller to fetch the scripts twice, even though the
+    // URL doesn't change..
+    EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(1)));
+  }
+
+  // Resetting should clear the client memory
+  controller_->GetClientMemory()->set_selected_card("set");
+
+  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  GetUiDelegate()->OnScriptSelected("reset");
+
+  EXPECT_FALSE(controller_->GetClientMemory()->selected_card());
 }
 
 TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {

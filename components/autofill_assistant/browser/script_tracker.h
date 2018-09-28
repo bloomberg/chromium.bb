@@ -59,7 +59,7 @@ class ScriptTracker {
   // Call CheckScripts to refresh the set of runnable script after script
   // execution.
   void ExecuteScript(const std::string& path,
-                     base::OnceCallback<void(bool)> callback);
+                     ScriptExecutor::RunScriptCallback callback);
 
   // Checks whether a script is currently running. There can be at most one
   // script running at a time.
@@ -67,8 +67,8 @@ class ScriptTracker {
 
  private:
   void OnScriptRun(const std::string& script_path,
-                   base::OnceCallback<void(bool)> original_callback,
-                   bool success);
+                   ScriptExecutor::RunScriptCallback original_callback,
+                   ScriptExecutor::Result result);
   void UpdateRunnableScriptsIfNecessary();
 
   // Returns true if |runnable_| should be updated.

@@ -30,6 +30,7 @@ class UiControllerAndroid : public UiController, public Client {
   void ShowStatusMessage(const std::string& message) override;
   void ShowOverlay() override;
   void HideOverlay() override;
+  void Shutdown() override;
   void UpdateScripts(const std::vector<ScriptHandle>& scripts) override;
   void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) override;

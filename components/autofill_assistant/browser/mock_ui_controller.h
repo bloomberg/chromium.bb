@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_UI_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_UI_CONTROLLER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
@@ -21,6 +24,7 @@ class MockUiController : public UiController {
   MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));
   MOCK_METHOD0(ShowOverlay, void());
   MOCK_METHOD0(HideOverlay, void());
+  MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD1(UpdateScripts, void(const std::vector<ScriptHandle>& scripts));
 
   void ChooseAddress(

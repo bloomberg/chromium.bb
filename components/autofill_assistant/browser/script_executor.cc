@@ -21,7 +21,10 @@ namespace autofill_assistant {
 
 ScriptExecutor::ScriptExecutor(const std::string& script_path,
                                ScriptExecutorDelegate* delegate)
-    : script_path_(script_path), delegate_(delegate), weak_ptr_factory_(this) {
+    : script_path_(script_path),
+      delegate_(delegate),
+      at_end_(CONTINUE),
+      weak_ptr_factory_(this) {
   DCHECK(delegate_);
 }
 ScriptExecutor::~ScriptExecutor() {}
@@ -112,13 +115,21 @@ void ScriptExecutor::BuildNodeTree(const std::vector<std::string>& selectors,
                                                std::move(callback));
 }
 
+void ScriptExecutor::Shutdown() {
+  at_end_ = SHUTDOWN;
+}
+
+void ScriptExecutor::Restart() {
+  at_end_ = RESTART;
+}
+
 ClientMemory* ScriptExecutor::GetClientMemory() {
   return delegate_->GetClientMemory();
 }
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   if (!result) {
-    std::move(callback_).Run(false);
+    RunCallback(false);
     return;
   }
   processed_actions_.clear();
@@ -127,17 +138,26 @@ void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   bool parse_result =
       ProtocolUtils::ParseActions(response, &last_server_payload_, &actions_);
   if (!parse_result) {
-    std::move(callback_).Run(false);
+    RunCallback(false);
     return;
   }
 
   if (actions_.empty()) {
     // Finished executing the script if there are no more actions.
-    std::move(callback_).Run(true);
+    RunCallback(true);
     return;
   }
 
   ProcessNextAction();
+}
+
+void ScriptExecutor::RunCallback(bool success) {
+  DCHECK(callback_);
+
+  ScriptExecutor::Result result;
+  result.success = success;
+  result.at_end = at_end_;
+  std::move(callback_).Run(result);
 }
 
 void ScriptExecutor::ProcessNextAction() {
