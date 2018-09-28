@@ -105,10 +105,7 @@ WebContentsView* CreateWebContentsView(
 
 WebContentsViewMac::WebContentsViewMac(WebContentsImpl* web_contents,
                                        WebContentsViewDelegate* delegate)
-    : web_contents_(web_contents),
-      delegate_(delegate),
-      allow_other_views_(false) {
-}
+    : web_contents_(web_contents), delegate_(delegate) {}
 
 WebContentsViewMac::~WebContentsViewMac() {
   // This handles the case where a renderer close call was deferred
@@ -322,21 +319,6 @@ gfx::Rect WebContentsViewMac::GetViewBounds() const {
   return gfx::ScreenRectFromNSRect(window_bounds);
 }
 
-void WebContentsViewMac::SetAllowOtherViews(bool allow) {
-  if (allow_other_views_ == allow)
-    return;
-
-  allow_other_views_ = allow;
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      web_contents_->GetRenderWidgetHostView());
-  if (view)
-    view->SetAllowPauseForResizeOrRepaint(!allow_other_views_);
-}
-
-bool WebContentsViewMac::GetAllowOtherViews() const {
-  return allow_other_views_;
-}
-
 void WebContentsViewMac::CreateView(
     const gfx::Size& initial_size, gfx::NativeView context) {
   WebContentsViewCocoa* view =
@@ -369,7 +351,6 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
 
     view->SetDelegate(rw_delegate.get());
   }
-  view->SetAllowPauseForResizeOrRepaint(!allow_other_views_);
 
   // Add the RenderWidgetHostView to the ui::Layer heirarchy.
   child_views_.push_back(view->GetWeakPtr());

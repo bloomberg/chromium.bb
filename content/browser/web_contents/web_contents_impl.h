@@ -464,9 +464,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ActivateNearestFindResult(float x, float y) override;
   void RequestFindMatchRects(int current_version) override;
   service_manager::InterfaceProvider* GetJavaInterfaces() override;
-#elif defined(OS_MACOSX)
-  void SetAllowOtherViews(bool allow) override;
-  bool GetAllowOtherViews() override;
 #endif
 
   bool HasRecentInteractiveInputEvent() const override;

@@ -92,7 +92,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // |delegate| should be set at most once.
   CONTENT_EXPORT void SetDelegate(
     NSObject<RenderWidgetHostViewMacDelegate>* delegate);
-  void SetAllowPauseForResizeOrRepaint(bool allow);
 
   // RenderWidgetHostView implementation.
   void InitAsChild(gfx::NativeView parent_view) override;

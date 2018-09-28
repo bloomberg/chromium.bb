@@ -14,7 +14,9 @@
 namespace views_mode_controller {
 
 // Returns whether a Views-capable browser build should use the Cocoa browser
-// UI.
+// UI. Always returns false.
+// TODO(https://crbug.com/832676): Delete all code guarded on this function
+// returning true and then remove this function.
 bool IsViewsBrowserCocoa();
 
 }  // namespace views_mode_controller
