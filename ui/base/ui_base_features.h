@@ -73,14 +73,6 @@ UI_BASE_EXPORT extern const base::Feature kHostWindowsInAppShimProcess;
 // Returns true if the NSWindows for apps will be created in the app's process,
 // and will forward input to the browser process.
 UI_BASE_EXPORT bool HostWindowsInAppShimProcess();
-
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-// Returns whether a Views-capable browser build should use the Cocoa browser
-// UI. Always returns false.
-// TODO(https://crbug.com/832676): Delete all code guarded on this function
-// returning true and then remove this function.
-UI_BASE_EXPORT bool IsViewsBrowserCocoa();
-#endif  //  BUILDFLAG(MAC_VIEWS_BROWSER)
 #endif  //  defined(OS_MACOSX)
 
 // Use mojo communication in the drm platform instead of paramtraits. Remove

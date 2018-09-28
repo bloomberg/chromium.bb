@@ -217,13 +217,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   // startup raciness and decrease latency.
   needs_begin_frames_ = needs_begin_frames;
   UpdateNeedsBeginFramesInternal();
-  if (features::IsViewsBrowserCocoa())
-    ui::CATransactionCoordinator::Get().AddPreCommitObserver(this);
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
-  if (features::IsViewsBrowserCocoa())
-    ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
   if (popup_parent_host_view_) {
     DCHECK(!popup_parent_host_view_->popup_child_host_view_ ||
            popup_parent_host_view_->popup_child_host_view_ == this);
@@ -306,11 +302,6 @@ RenderWidgetHostViewCocoa* RenderWidgetHostViewMac::cocoa_view() const {
 void RenderWidgetHostViewMac::SetDelegate(
     NSObject<RenderWidgetHostViewMacDelegate>* delegate) {
   [cocoa_view() setResponderDelegate:delegate];
-}
-
-void RenderWidgetHostViewMac::SetAllowPauseForResizeOrRepaint(bool allow) {
-  // TODO: Remove SetAllowPauseForResizeOrRepaint and SetAllowOtherViews, since
-  // they aren't used anymore.
 }
 
 ui::TextInputType RenderWidgetHostViewMac::GetTextInputType() {
@@ -408,9 +399,6 @@ void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
     // created, so this should not be a fatal error.
     LOG(ERROR) << "Failed to create display link.";
   }
-
-  if (features::IsViewsBrowserCocoa())
-    ui::CATransactionCoordinator::Get().Synchronize();
 
   // During auto-resize it is the responsibility of the caller to ensure that
   // the NSView and RenderWidgetHostImpl are kept in sync.

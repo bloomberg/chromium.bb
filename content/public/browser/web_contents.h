@@ -912,13 +912,6 @@ class WebContents : public PageNavigator,
   // scoped to this WebContents. This provides access to interfaces implemented
   // in Java in the browser process to C++ code in the browser process.
   virtual service_manager::InterfaceProvider* GetJavaInterfaces() = 0;
-#elif defined(OS_MACOSX)
-  // Allowing other views disables optimizations which assume that only a single
-  // WebContents is present.
-  virtual void SetAllowOtherViews(bool allow) = 0;
-
-  // Returns true if other views are allowed, false otherwise.
-  virtual bool GetAllowOtherViews() = 0;
 #endif  // OS_ANDROID
 
   // Returns true if the WebContents has completed its first meaningful paint

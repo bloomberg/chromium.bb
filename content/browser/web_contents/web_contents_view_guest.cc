@@ -117,16 +117,6 @@ gfx::Rect WebContentsViewGuest::GetViewBounds() const {
   return gfx::Rect(size_);
 }
 
-#if defined(OS_MACOSX)
-void WebContentsViewGuest::SetAllowOtherViews(bool allow) {
-  platform_view_->SetAllowOtherViews(allow);
-}
-
-bool WebContentsViewGuest::GetAllowOtherViews() const {
-  return platform_view_->GetAllowOtherViews();
-}
-#endif
-
 void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,
                                       gfx::NativeView context) {
   platform_view_->CreateView(initial_size, context);

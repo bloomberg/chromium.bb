@@ -153,14 +153,6 @@ const base::Feature kHostWindowsInAppShimProcess{
 bool HostWindowsInAppShimProcess() {
   return base::FeatureList::IsEnabled(kHostWindowsInAppShimProcess);
 }
-
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-bool IsViewsBrowserCocoa() {
-  // TODO(https://crbug.com/832676): Delete all code guarded on this function
-  // returning true and then remove this function.
-  return false;
-}
-#endif  //  BUILDFLAG(MAC_VIEWS_BROWSER)
 #endif  //  defined(OS_MACOSX)
 
 const base::Feature kEnableOzoneDrmMojo = {"OzoneDrmMojo",

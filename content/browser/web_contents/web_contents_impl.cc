@@ -6229,16 +6229,6 @@ service_manager::InterfaceProvider* WebContentsImpl::GetJavaInterfaces() {
   return java_interfaces_.get();
 }
 
-#elif defined(OS_MACOSX)
-
-void WebContentsImpl::SetAllowOtherViews(bool allow) {
-  view_->SetAllowOtherViews(allow);
-}
-
-bool WebContentsImpl::GetAllowOtherViews() {
-  return view_->GetAllowOtherViews();
-}
-
 #endif
 
 bool WebContentsImpl::CompletedFirstVisuallyNonEmptyPaint() const {

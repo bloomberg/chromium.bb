@@ -91,8 +91,6 @@ class WebContentsViewMac : public WebContentsView,
   void FocusThroughTabTraversal(bool reverse) override;
   DropData* GetDropData() const override;
   gfx::Rect GetViewBounds() const override;
-  void SetAllowOtherViews(bool allow) override;
-  bool GetAllowOtherViews() const override;
   void CreateView(const gfx::Size& initial_size,
                   gfx::NativeView context) override;
   RenderWidgetHostViewBase* CreateViewForWidget(
@@ -164,9 +162,6 @@ class WebContentsViewMac : public WebContentsView,
 
   // Our optional delegate.
   std::unique_ptr<WebContentsViewDelegate> delegate_;
-
-  // Whether to allow other views.
-  bool allow_other_views_;
 
   // This contains all RenderWidgetHostViewMacs that have been added as child
   // NSViews to this NSView. Note that this list may contain RWHVMacs besides
