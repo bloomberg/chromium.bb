@@ -16,7 +16,6 @@
 #include "components/subresource_filter/content/common/subresource_filter_utils.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/content/renderer/web_document_subresource_filter_impl.h"
-#include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/document_subresource_filter.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
@@ -71,9 +70,8 @@ void SubresourceFilterAgent::
 }
 
 void SubresourceFilterAgent::SendDocumentLoadStatistics(
-    const DocumentLoadStatistics& statistics) {
-  render_frame()->Send(new SubresourceFilterHostMsg_DocumentLoadStatistics(
-      render_frame()->GetRoutingID(), statistics));
+    const mojom::DocumentLoadStatistics& statistics) {
+  GetSubresourceFilterHost()->SetDocumentLoadStatistics(statistics.Clone());
 }
 
 void SubresourceFilterAgent::SendFrameIsAdSubframe() {

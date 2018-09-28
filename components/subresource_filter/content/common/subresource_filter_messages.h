@@ -6,7 +6,6 @@
 // no-include-guard-because-multiply-included
 
 #include "base/time/time.h"
-#include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message.h"
@@ -25,15 +24,6 @@ IPC_STRUCT_TRAITS_BEGIN(subresource_filter::mojom::ActivationState)
   IPC_STRUCT_TRAITS_MEMBER(generic_blocking_rules_disabled)
   IPC_STRUCT_TRAITS_MEMBER(measure_performance)
   IPC_STRUCT_TRAITS_MEMBER(enable_logging)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(subresource_filter::DocumentLoadStatistics)
-  IPC_STRUCT_TRAITS_MEMBER(num_loads_total)
-  IPC_STRUCT_TRAITS_MEMBER(num_loads_evaluated)
-  IPC_STRUCT_TRAITS_MEMBER(num_loads_matching_rules)
-  IPC_STRUCT_TRAITS_MEMBER(num_loads_disallowed)
-  IPC_STRUCT_TRAITS_MEMBER(evaluation_total_wall_duration)
-  IPC_STRUCT_TRAITS_MEMBER(evaluation_total_cpu_duration)
 IPC_STRUCT_TRAITS_END()
 
 // ----------------------------------------------------------------------------
@@ -63,16 +53,3 @@ IPC_MESSAGE_ROUTED2(
     SubresourceFilterMsg_ActivateForNextCommittedLoad,
     subresource_filter::mojom::ActivationState /* activation_state */,
     bool /* is_ad_subframe */)
-
-// ----------------------------------------------------------------------------
-// Messages sent from the renderer to the browser.
-// ----------------------------------------------------------------------------
-
-// This is sent to a RenderFrameHost in the browser when a document load is
-// finished, just before the DidFinishLoad message, and contains statistics
-// collected by the DocumentSubresourceFilter up until that point: the number of
-// subresources evaluated/disallowed/etc, and total time spent on evaluating
-// subresource loads in its allowLoad method. The time metrics are equal to zero
-// if performance measurements were disabled for the load.
-IPC_MESSAGE_ROUTED1(SubresourceFilterHostMsg_DocumentLoadStatistics,
-                    subresource_filter::DocumentLoadStatistics /* statistics */)

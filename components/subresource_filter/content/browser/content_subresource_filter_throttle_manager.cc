@@ -196,18 +196,6 @@ void ContentSubresourceFilterThrottleManager::DidFinishLoad(
   statistics_->OnDidFinishLoad();
 }
 
-bool ContentSubresourceFilterThrottleManager::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ContentSubresourceFilterThrottleManager, message)
-    IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DocumentLoadStatistics,
-                        OnDocumentLoadStatistics)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 // Sets the desired page-level |activation_state| for the currently ongoing
 // page load, identified by its main-frame |navigation_handle|. If this method
 // is not called for a main-frame navigation, the default behavior is no
@@ -382,12 +370,6 @@ void ContentSubresourceFilterThrottleManager::
   }
 }
 
-void ContentSubresourceFilterThrottleManager::OnDocumentLoadStatistics(
-    const DocumentLoadStatistics& statistics) {
-  if (statistics_)
-    statistics_->OnDocumentLoadStatistics(statistics);
-}
-
 void ContentSubresourceFilterThrottleManager::OnFrameIsAdSubframe(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(render_frame_host);
@@ -403,6 +385,12 @@ void ContentSubresourceFilterThrottleManager::DidDisallowFirstSubresource() {
 
 void ContentSubresourceFilterThrottleManager::FrameIsAdSubframe() {
   OnFrameIsAdSubframe(binding_.GetCurrentTargetFrame());
+}
+
+void ContentSubresourceFilterThrottleManager::SetDocumentLoadStatistics(
+    mojom::DocumentLoadStatisticsPtr statistics) {
+  if (statistics_)
+    statistics_->OnDocumentLoadStatistics(*statistics);
 }
 
 void ContentSubresourceFilterThrottleManager::MaybeActivateSubframeSpecialUrls(

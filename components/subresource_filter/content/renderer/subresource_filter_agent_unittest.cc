@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
-#include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
@@ -52,7 +51,8 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   MOCK_METHOD0(GetDocumentURL, GURL());
   MOCK_METHOD0(OnSetSubresourceFilterForCommittedLoadCalled, void());
   MOCK_METHOD0(SignalFirstSubresourceDisallowedForCommittedLoad, void());
-  MOCK_METHOD1(SendDocumentLoadStatistics, void(const DocumentLoadStatistics&));
+  MOCK_METHOD1(SendDocumentLoadStatistics,
+               void(const mojom::DocumentLoadStatistics&));
   MOCK_METHOD0(SendFrameIsAdSubframe, void());
 
   bool IsMainFrame() override { return true; }
