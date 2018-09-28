@@ -25,13 +25,13 @@ using password_manager::PasswordFormManagerForUI;
 
 // static
 void IOSChromeSavePasswordInfoBarDelegate::Create(
-    bool is_smart_lock_branding_enabled,
+    bool is_sync_user,
     infobars::InfoBarManager* infobar_manager,
     std::unique_ptr<PasswordFormManagerForUI> form_to_save,
     id<ApplicationCommands> dispatcher) {
   DCHECK(infobar_manager);
   auto delegate = base::WrapUnique(new IOSChromeSavePasswordInfoBarDelegate(
-      is_smart_lock_branding_enabled, std::move(form_to_save)));
+      is_sync_user, std::move(form_to_save)));
   delegate->set_dispatcher(dispatcher);
   infobar_manager->AddInfoBar(
       infobar_manager->CreateConfirmInfoBar(std::move(delegate)));
@@ -44,9 +44,9 @@ IOSChromeSavePasswordInfoBarDelegate::~IOSChromeSavePasswordInfoBarDelegate() {
 }
 
 IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
-    bool is_smart_lock_branding_enabled,
+    bool is_sync_user,
     std::unique_ptr<PasswordFormManagerForUI> form_manager)
-    : IOSChromePasswordManagerInfoBarDelegate(is_smart_lock_branding_enabled,
+    : IOSChromePasswordManagerInfoBarDelegate(is_sync_user,
                                               std::move(form_manager)) {
   form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
       form_to_save()->GetCredentialSource(),
@@ -59,10 +59,6 @@ IOSChromeSavePasswordInfoBarDelegate::GetIdentifier() const {
 }
 
 base::string16 IOSChromeSavePasswordInfoBarDelegate::GetMessageText() const {
-  if (is_smart_lock_branding_enabled()) {
-    return l10n_util::GetStringUTF16(
-        IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT_SMART_LOCK_BRANDING);
-  }
   return l10n_util::GetStringUTF16(
       IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
 }
