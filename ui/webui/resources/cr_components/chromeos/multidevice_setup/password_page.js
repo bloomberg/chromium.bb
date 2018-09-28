@@ -138,8 +138,15 @@ Polymer({
     this.passwordInvalid_ = false;
   },
 
-  /** @private */
-  onUserPressedEnter_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onInputKeypress_: function(e) {
+    // We are only listening for the user trying to enter their password.
+    if (e.key != 'Enter')
+      return;
+
     this.fire('user-submitted-password');
   },
 
