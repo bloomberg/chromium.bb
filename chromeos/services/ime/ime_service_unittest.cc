@@ -152,19 +152,20 @@ TEST_F(ImeServiceTest, ConnectInvalidImeEngine) {
 
 TEST_F(ImeServiceTest, MultipleClients) {
   bool success = false;
-  TestClientChannel test_channel;
+  TestClientChannel test_channel1;
+  TestClientChannel test_channel2;
   mojom::InputChannelPtr to_engine_ptr1;
   mojom::InputChannelPtr to_engine_ptr2;
 
   ime_manager_->ConnectToImeEngine(
       "m17n:ar", mojo::MakeRequest(&to_engine_ptr1),
-      test_channel.CreateInterfacePtrAndBind(), extra,
+      test_channel1.CreateInterfacePtrAndBind(), extra,
       base::BindOnce(&ConnectCallback, &success));
   ime_manager_.FlushForTesting();
 
   ime_manager_->ConnectToImeEngine(
       "m17n:ar", mojo::MakeRequest(&to_engine_ptr2),
-      test_channel.CreateInterfacePtrAndBind(), extra,
+      test_channel2.CreateInterfacePtrAndBind(), extra,
       base::BindOnce(&ConnectCallback, &success));
   ime_manager_.FlushForTesting();
 
