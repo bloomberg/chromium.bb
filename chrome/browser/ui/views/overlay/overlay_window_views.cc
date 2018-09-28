@@ -734,10 +734,10 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
     TogglePlayPause();
 
   if (sender == first_custom_controls_view_.get())
-    controller_->ClickCustomControl(first_custom_controls_view_->id());
+    controller_->CustomControlPressed(first_custom_controls_view_->id());
 
   if (sender == second_custom_controls_view_.get())
-    controller_->ClickCustomControl(second_custom_controls_view_->id());
+    controller_->CustomControlPressed(second_custom_controls_view_->id());
 }
 
 gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
@@ -778,10 +778,6 @@ void OverlayWindowViews::TogglePlayPause() {
   // the media player yet.
   bool is_active = controller_->TogglePlayPause();
   play_pause_controls_view_->SetToggled(is_active);
-}
-
-void OverlayWindowViews::ClickCustomControl(const std::string& control_id) {
-  controller_->ClickCustomControl(control_id);
 }
 
 views::ToggleImageButton*

@@ -56,7 +56,6 @@ class MockPictureInPictureWindowController
   MOCK_METHOD0(Show, gfx::Size());
   MOCK_METHOD1(Close, void(bool));
   MOCK_METHOD0(OnWindowDestroyed, void());
-  MOCK_METHOD1(ClickCustomControl, void(const std::string&));
   MOCK_METHOD1(SetPictureInPictureCustomControls,
                void(const std::vector<blink::PictureInPictureControlInfo>&));
   MOCK_METHOD2(EmbedSurface, void(const viz::SurfaceId&, const gfx::Size&));
@@ -66,6 +65,7 @@ class MockPictureInPictureWindowController
   MOCK_METHOD0(GetInitiatorWebContents, content::WebContents*());
   MOCK_METHOD2(UpdatePlaybackState, void(bool, bool));
   MOCK_METHOD0(TogglePlayPause, bool());
+  MOCK_METHOD1(CustomControlPressed, void(const std::string&));
   MOCK_METHOD1(SetAlwaysHidePlayPauseButton, void(bool));
 
  private:
@@ -427,8 +427,7 @@ IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
   std::string control_id = "Test custom control ID";
   base::string16 expected_title = base::ASCIIToUTF16(control_id);
 
-  static_cast<OverlayWindowViews*>(overlay_window)
-      ->ClickCustomControl(control_id);
+  window_controller()->CustomControlPressed(control_id);
 
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
@@ -466,8 +465,7 @@ IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
 
   base::string16 expected_title = base::ASCIIToUTF16(kControlId);
 
-  static_cast<OverlayWindowViews*>(overlay_window)
-      ->ClickCustomControl(kControlId);
+  window_controller()->CustomControlPressed(kControlId);
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -507,8 +505,7 @@ IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
 
   base::string16 left_expected_title = base::ASCIIToUTF16(kLeftControlId);
 
-  static_cast<OverlayWindowViews*>(overlay_window)
-      ->ClickCustomControl(kLeftControlId);
+  window_controller()->CustomControlPressed(kLeftControlId);
   EXPECT_EQ(left_expected_title,
             content::TitleWatcher(active_web_contents, left_expected_title)
                 .WaitAndGetTitle());
@@ -548,8 +545,7 @@ IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
 
   base::string16 right_expected_title = base::ASCIIToUTF16(kRightControlId);
 
-  static_cast<OverlayWindowViews*>(overlay_window)
-      ->ClickCustomControl(kRightControlId);
+  window_controller()->CustomControlPressed(kRightControlId);
   EXPECT_EQ(right_expected_title,
             content::TitleWatcher(active_web_contents, right_expected_title)
                 .WaitAndGetTitle());
