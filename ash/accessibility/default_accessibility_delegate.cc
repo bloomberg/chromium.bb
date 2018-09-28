@@ -40,4 +40,12 @@ double DefaultAccessibilityDelegate::GetSavedScreenMagnifierScale() {
   return std::numeric_limits<double>::min();
 }
 
+void DefaultAccessibilityDelegate::DispatchAccessibilityEvent(
+    const ui::AXTreeID& tree_id,
+    const std::vector<ui::AXTreeUpdate>& updates,
+    const ui::AXEvent& event) {}
+
+void DefaultAccessibilityDelegate::DispatchTreeDestroyedEvent(
+    const ui::AXTreeID& tree_id) {}
+
 }  // namespace ash
