@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.photo_picker;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.os.Build;
 import android.support.test.filters.LargeTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -20,7 +21,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -198,12 +199,8 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         });
     }
 
-    /**
-     * Continues to be flaky on bots which doesn't reproduce on local devices,
-     * continuing to investigate offline.
-     */
     @Test
-    @DisabledTest(message = "crbug.com/761060")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/761060")
     @LargeTest
     public void testNoSelection() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
@@ -220,12 +217,8 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         dismissDialog();
     }
 
-    /**
-     * Continues to be flaky on bots which doesn't reproduce on local devices,
-     * continuing to investigate offline.
-     */
     @Test
-    @DisabledTest(message = "crbug.com/761060")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/761060")
     @LargeTest
     public void testSingleSelectionPhoto() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
@@ -245,12 +238,8 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         dismissDialog();
     }
 
-    /**
-     * Continues to be flaky on bots which doesn't reproduce on local devices,
-     * continuing to investigate offline.
-     */
     @Test
-    @DisabledTest(message = "crbug.com/761060")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/761060")
     @LargeTest
     public void testMultiSelectionPhoto() throws Throwable {
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
