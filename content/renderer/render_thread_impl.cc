@@ -775,7 +775,8 @@ void RenderThreadImpl::Init() {
   browser_plugin_manager_.reset(new BrowserPluginManager());
   AddObserver(browser_plugin_manager_.get());
 
-  peer_connection_tracker_.reset(new PeerConnectionTracker());
+  peer_connection_tracker_.reset(
+      new PeerConnectionTracker(main_thread_runner()));
   AddObserver(peer_connection_tracker_.get());
 
   p2p_socket_dispatcher_ = new P2PSocketDispatcher();

@@ -149,7 +149,7 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalAudioTrack(
   webrtc::AudioSourceInterface* source_interface = nullptr;
   local_track_audio_sink_.reset(
       new WebRtcAudioSink(web_track_.Id().Utf8(), source_interface,
-                          factory_->GetWebRtcSignalingThread()));
+                          factory_->GetWebRtcSignalingThread(), main_thread_));
 
   if (auto* media_stream_source = ProcessedLocalAudioSource::From(
           MediaStreamAudioSource::From(web_track_.Source()))) {

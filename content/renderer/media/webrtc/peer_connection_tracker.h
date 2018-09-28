@@ -45,8 +45,11 @@ class CONTENT_EXPORT PeerConnectionTracker
     : public RenderThreadObserver,
       public base::SupportsWeakPtr<PeerConnectionTracker> {
  public:
-  PeerConnectionTracker();
-  PeerConnectionTracker(mojom::PeerConnectionTrackerHostAssociatedPtr host);
+  explicit PeerConnectionTracker(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
+  PeerConnectionTracker(
+      mojom::PeerConnectionTrackerHostAssociatedPtr host,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~PeerConnectionTracker() override;
 
   enum Source {
@@ -261,6 +264,8 @@ class CONTENT_EXPORT PeerConnectionTracker
   RenderThread* send_target_for_test_;
   mojom::PeerConnectionTrackerHostAssociatedPtr
       peer_connection_tracker_host_ptr_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionTracker);
 };
