@@ -70,16 +70,6 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
   return window_->GetBounds().size();
 }
 
-void PictureInPictureWindowControllerImpl::ClickCustomControl(
-    const std::string& control_id) {
-  DCHECK(window_);
-
-  media_player_id_->render_frame_host->Send(
-      new MediaPlayerDelegateMsg_ClickPictureInPictureControl(
-          media_player_id_->render_frame_host->GetRoutingID(),
-          media_player_id_->delegate_id, control_id));
-}
-
 void PictureInPictureWindowControllerImpl::SetPictureInPictureCustomControls(
     const std::vector<blink::PictureInPictureControlInfo>& controls) {
   DCHECK(window_);
@@ -184,6 +174,16 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
       media_player_id_->render_frame_host->GetRoutingID(),
       media_player_id_->delegate_id));
   return true;
+}
+
+void PictureInPictureWindowControllerImpl::CustomControlPressed(
+    const std::string& control_id) {
+  DCHECK(window_);
+
+  media_player_id_->render_frame_host->Send(
+      new MediaPlayerDelegateMsg_ClickPictureInPictureControl(
+          media_player_id_->render_frame_host->GetRoutingID(),
+          media_player_id_->delegate_id, control_id));
 }
 
 void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
