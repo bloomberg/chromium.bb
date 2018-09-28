@@ -12,14 +12,12 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "services/audio/stream_monitor.h"
 
@@ -45,10 +43,6 @@ enum StreamCreationResult {
 
 void LogStreamCreationResult(bool for_device_change,
                              StreamCreationResult result) {
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/867827) remove histogram allocator check.
-  CHECK(base::GlobalHistogramAllocator::Get());
-#endif
   if (for_device_change) {
     UMA_HISTOGRAM_ENUMERATION(
         "Media.AudioOutputController.ProxyStreamCreationResultForDeviceChange",
@@ -97,10 +91,6 @@ OutputController::ErrorStatisticsTracker::ErrorStatisticsTracker()
 }
 
 OutputController::ErrorStatisticsTracker::~ErrorStatisticsTracker() {
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/867827) remove histogram allocator check.
-  CHECK(base::GlobalHistogramAllocator::Get());
-#endif
   UMA_HISTOGRAM_LONG_TIMES("Media.OutputStreamDuration",
                            base::TimeTicks::Now() - start_time_);
   UMA_HISTOGRAM_BOOLEAN("Media.AudioOutputController.CallbackError",
@@ -166,10 +156,6 @@ OutputController::~OutputController() {
 }
 
 bool OutputController::Create(bool is_for_device_change) {
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/867827) remove histogram allocator check.
-  CHECK(base::GlobalHistogramAllocator::Get());
-#endif
   DCHECK(task_runner_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CreateTime");
   TRACE_EVENT0("audio", "OutputController::Create");
@@ -240,10 +226,6 @@ bool OutputController::Create(bool is_for_device_change) {
 }
 
 void OutputController::Play() {
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/867827) remove histogram allocator check.
-  CHECK(base::GlobalHistogramAllocator::Get());
-#endif
   DCHECK(task_runner_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PlayTime");
   TRACE_EVENT0("audio", "OutputController::Play");
@@ -289,10 +271,6 @@ void OutputController::StopStream() {
 }
 
 void OutputController::Pause() {
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/867827) remove histogram allocator check.
-  CHECK(base::GlobalHistogramAllocator::Get());
-#endif
   DCHECK(task_runner_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PauseTime");
   TRACE_EVENT0("audio", "OutputController::Pause");
@@ -312,10 +290,6 @@ void OutputController::Pause() {
 }
 
 void OutputController::Close() {
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/867827) remove histogram allocator check.
-  CHECK(base::GlobalHistogramAllocator::Get());
-#endif
   DCHECK(task_runner_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CloseTime");
   TRACE_EVENT0("audio", "OutputController::Close");
@@ -567,10 +541,6 @@ void OutputController::OnMemberLeftGroup(StreamMonitor* monitor) {
 }
 
 void OutputController::OnDeviceChange() {
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/867827) remove histogram allocator check.
-  CHECK(base::GlobalHistogramAllocator::Get());
-#endif
   DCHECK(task_runner_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.DeviceChangeTime");
   TRACE_EVENT0("audio", "OutputController::OnDeviceChange");
