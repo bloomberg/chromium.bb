@@ -3973,12 +3973,13 @@ jumbo_split_static_library("browser") {
     deps += [ "//media/mojo/interfaces" ]
 
     if (enable_widevine) {
-      # TODO(crbug.com/349182): Also check WIDEVINE_CDM_IS_COMPONENT.
-      sources += [
-        "component_updater/widevine_cdm_component_installer.cc",
-        "component_updater/widevine_cdm_component_installer.h",
-      ]
-      deps += [ "//third_party/widevine/cdm:headers" ]
+      if (enable_widevine_cdm_component) {
+        sources += [
+          "component_updater/widevine_cdm_component_installer.cc",
+          "component_updater/widevine_cdm_component_installer.h",
+        ]
+        deps += [ "//third_party/widevine/cdm:headers" ]
+      }
       if (is_win) {
         sources += [
           "media/widevine_hardware_caps_win.cc",

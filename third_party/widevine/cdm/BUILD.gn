@@ -15,6 +15,7 @@ buildflag_header("buildflags") {
   flags = [
     "ENABLE_WIDEVINE=$enable_widevine",
     "SHOULD_BUNDLE_WIDEVINE_CDM=$should_bundle_widevine_cdm",
+    "ENABLE_WIDEVINE_CDM_COMPONENT=$enable_widevine_cdm_component",
   ]
 }
 

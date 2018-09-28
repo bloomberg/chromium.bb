@@ -11,13 +11,20 @@ declare_args() {
   enable_widevine = is_chrome_branded || is_android
 }
 
-enable_widevine_cdm_host_verification =
-    enable_widevine && enable_cdm_host_verification
+# The Widevine CDM can be updated as a component. This only applies to platforms
+# where the CDM is a standalone library (enable_library_cdms == true). Currently
+# it's only supported on Windows and Mac. The CDM can still be bundled when it's
+# a component, see below.
+enable_widevine_cdm_component =
+    enable_widevine && enable_library_cdms && (is_win || is_mac)
 
-# Only bundle Widevine CDM in Google Chrome builds.
-# TODO: Provide prebuilt libraries for ARM64.
+# The Widevine CDM is bundled as part of Google Chrome builds.
+# TODO(hmchen): Provide prebuilt libraries for ARM64.
 should_bundle_widevine_cdm = enable_widevine && is_chrome_branded &&
                              enable_library_cdms && target_cpu != "arm64"
+
+enable_widevine_cdm_host_verification =
+    enable_widevine && enable_cdm_host_verification
 
 template("widevine_sign_file") {
   # For official builds, generate a signature file for |file| which will
