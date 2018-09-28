@@ -316,6 +316,9 @@ const char kTPMFirmwareUpdateLearnMoreURL[] =
 
 const char kTimeZoneSettingsLearnMoreURL[] =
     "https://support.google.com/chromebook?p=chromebook_timezone&hl=%s";
+
+const char kSmbSharesLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=network_file_shares";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
