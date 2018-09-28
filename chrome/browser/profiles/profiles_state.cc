@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -157,11 +158,13 @@ void UpdateProfileName(Profile* profile,
                           base::UTF16ToUTF8(new_profile_name));
 }
 
-std::vector<std::string> GetSecondaryAccountsForProfile(
-    Profile* profile,
-    const std::string& primary_account) {
+std::vector<std::string> GetSecondaryAccountsForSignedInProfile(
+    Profile* profile) {
   std::vector<std::string> accounts =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->GetAccounts();
+  std::string primary_account =
+      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
+  DCHECK(!primary_account.empty());
 
   // The vector returned by ProfileOAuth2TokenService::GetAccounts() contains
   // the primary account too, so we need to remove it from the list.
