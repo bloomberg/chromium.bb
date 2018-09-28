@@ -20,7 +20,14 @@
           "--gtest_filter=WebRtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "K",
+              "device_type": "hammerhead",
+              "os": "Android"
+            }
+          ]
         },
         "test": "content_browsertests"
       }
@@ -33,7 +40,14 @@
           "--gtest_filter=WebRtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ]
         },
         "test": "content_browsertests"
       }
@@ -79,7 +93,13 @@
         ],
         "name": "browser_tests_functional",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-14.04"
+            }
+          ]
         },
         "test": "browser_tests"
       },
@@ -88,7 +108,13 @@
           "--gtest_filter=WebRtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-14.04"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -100,7 +126,13 @@
         ],
         "name": "content_browsertests_stress",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-14.04"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -109,13 +141,25 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-14.04"
+            }
+          ]
         },
         "test": "content_unittests"
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-14.04"
+            }
+          ]
         },
         "test": "jingle_unittests"
       },
@@ -124,7 +168,13 @@
           "--gtest_filter=Webrtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-14.04"
+            }
+          ]
         },
         "test": "remoting_unittests"
       }
@@ -170,7 +220,13 @@
         ],
         "name": "browser_tests_functional",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
         },
         "test": "browser_tests"
       },
@@ -179,7 +235,13 @@
           "--gtest_filter=WebRtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -191,7 +253,13 @@
         ],
         "name": "content_browsertests_stress",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -200,13 +268,25 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
         },
         "test": "content_unittests"
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
         },
         "test": "jingle_unittests"
       },
@@ -215,7 +295,13 @@
           "--gtest_filter=Webrtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
         },
         "test": "remoting_unittests"
       }
@@ -261,7 +347,13 @@
         ],
         "name": "browser_tests_functional",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
         },
         "test": "browser_tests"
       },
@@ -270,7 +362,13 @@
           "--gtest_filter=WebRtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -282,7 +380,13 @@
         ],
         "name": "content_browsertests_stress",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -291,13 +395,25 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
         },
         "test": "content_unittests"
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
         },
         "test": "jingle_unittests"
       },
@@ -306,7 +422,13 @@
           "--gtest_filter=Webrtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
         },
         "test": "remoting_unittests"
       }
@@ -334,7 +456,13 @@
         ],
         "name": "browser_tests_functional",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-7-SP1"
+            }
+          ]
         },
         "test": "browser_tests"
       },
@@ -343,7 +471,13 @@
           "--gtest_filter=WebRtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-7-SP1"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -355,7 +489,13 @@
         ],
         "name": "content_browsertests_stress",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-7-SP1"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -364,13 +504,25 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-7-SP1"
+            }
+          ]
         },
         "test": "content_unittests"
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-7-SP1"
+            }
+          ]
         },
         "test": "jingle_unittests"
       },
@@ -379,7 +531,13 @@
           "--gtest_filter=Webrtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-7-SP1"
+            }
+          ]
         },
         "test": "remoting_unittests"
       }
@@ -407,7 +565,13 @@
         ],
         "name": "browser_tests_functional",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-8.1-SP0"
+            }
+          ]
         },
         "test": "browser_tests"
       },
@@ -416,7 +580,13 @@
           "--gtest_filter=WebRtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-8.1-SP0"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -428,7 +598,13 @@
         ],
         "name": "content_browsertests_stress",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-8.1-SP0"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -437,13 +613,25 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-8.1-SP0"
+            }
+          ]
         },
         "test": "content_unittests"
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-8.1-SP0"
+            }
+          ]
         },
         "test": "jingle_unittests"
       },
@@ -452,7 +640,13 @@
           "--gtest_filter=Webrtc*"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-8.1-SP0"
+            }
+          ]
         },
         "test": "remoting_unittests"
       }

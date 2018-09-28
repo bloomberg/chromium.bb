@@ -3549,11 +3549,19 @@
       'WebRTC Chromium FYI Android Builder (dbg)': {},
       'WebRTC Chromium FYI Android Builder ARM64 (dbg)': {},
       'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)': {
+        'swarming_mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_android_gtests',
         },
       },
       'WebRTC Chromium FYI Android Tests (dbg) (M Nexus5X)': {
+        'swarming_mixins': [
+          'marshmallow',
+          'bullhead',
+        ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_android_gtests',
         },
@@ -3577,6 +3585,10 @@
         ],
       },
       'WebRTC Chromium FYI Linux Tester': {
+        'swarming_mixins': [
+          'x86-64',
+          'linux-trusty',
+        ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
@@ -3600,6 +3612,9 @@
         ],
       },
       'WebRTC Chromium FYI Mac Tester': {
+        'swarming_mixins': [
+          'mac_mini_10.12',
+        ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
@@ -3623,16 +3638,28 @@
         ],
       },
       'WebRTC Chromium FYI Win10 Tester': {
+        'swarming_mixins': [
+          'x86-64',
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
       'WebRTC Chromium FYI Win7 Tester': {
+        'swarming_mixins': [
+          'x86-64',
+          'win7',
+        ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
       'WebRTC Chromium FYI Win8 Tester': {
+        'swarming_mixins': [
+          'x86-64',
+          'win8',
+        ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
