@@ -208,6 +208,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   virtual bool IsBeforeTextInsertedEvent() const;
 
   virtual bool IsBeforeUnloadEvent() const;
+  virtual bool IsErrorEvent() const;
 
   virtual bool IsActivateInvisibleEvent() const;
 
