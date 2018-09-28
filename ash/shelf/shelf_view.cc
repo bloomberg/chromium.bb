@@ -1793,12 +1793,6 @@ void ShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ASH_SHELF_ACCESSIBLE_NAME));
 }
 
-void ShelfView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this)
-    tooltip_.Init();
-}
-
 void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
   // Do not forward events to |shelf_| (which forwards events to the shelf
   // layout manager) as we do not want gestures on the overflow to open the app
