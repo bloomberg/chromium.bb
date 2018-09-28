@@ -12,13 +12,8 @@
 // visible here (or in any files that import this header). Declare a protocol
 // instead that describes the dependencies needed outside of Cocoa-specific
 // code.
-@class BrowserWindowController;
 @class NSWindow;
 @class TabWindowController;
-
-// Returns the BrowserWindowController backing a Cocoa browser window. Always
-// returns nil if |window| is a views browser window.
-BrowserWindowController* BrowserWindowControllerForWindow(NSWindow* window);
 
 // Returns the TabWindowController backing a Cocoa browser window. Always
 // returns nil if |window| is a views browser window.

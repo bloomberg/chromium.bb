@@ -4,12 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_views_mac.h"
 
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
-
-BrowserWindowController* BrowserWindowControllerForWindow(NSWindow* window) {
-  return [BrowserWindowController browserWindowControllerForWindow:window];
-}
 
 TabWindowController* TabWindowControllerForWindow(NSWindow* window) {
   return [TabWindowController tabWindowControllerForWindow:window];
