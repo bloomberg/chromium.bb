@@ -188,6 +188,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -4579,6 +4580,28 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
                std::move(disabled_urls), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_ok.GetURL("/simple.html"));
+
+  // There should be no interstitial after the page loads.
+  EXPECT_FALSE(IsShowingInterstitial(tab));
+  EXPECT_EQ(base::UTF8ToUTF16("OK"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+
+  // Now ensure that this setting still works after a network process crash.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess) ||
+      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess)) {
+    return;
+  }
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_ok.GetURL("/title1.html"));
+
+  SimulateNetworkServiceCrash();
+  SetShouldRequireCTForTesting(&required);
 
   ui_test_utils::NavigateToURL(browser(),
                                https_server_ok.GetURL("/simple.html"));

@@ -9,9 +9,11 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -86,6 +88,15 @@ class ProfileNetworkContextService : public KeyedService,
 
   void UpdateReferrersEnabled();
 
+  // Update the CTPolicy for the given NetworkContexts.
+  void UpdateCTPolicyForContexts(
+      const std::vector<network::mojom::NetworkContext*>& contexts);
+
+  // Update the CTPolicy for the all of profiles_'s NetworkContexts.
+  void UpdateCTPolicy();
+
+  void ScheduleUpdateCTPolicy();
+
   // Creates parameters for the NetworkContext. Use |in_memory| instead of
   // |profile_->IsOffTheRecord()| because sometimes normal profiles want off the
   // record partitions (e.g. for webview tag).
@@ -123,8 +134,11 @@ class ProfileNetworkContextService : public KeyedService,
   BooleanPrefMember quic_allowed_;
   StringPrefMember pref_accept_language_;
   BooleanPrefMember block_third_party_cookies_;
-
   BooleanPrefMember enable_referrers_;
+  PrefChangeRegistrar pref_change_registrar_;
+
+  // Used to post schedule CT policy updates
+  base::OneShotTimer ct_policy_update_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileNetworkContextService);
 };
