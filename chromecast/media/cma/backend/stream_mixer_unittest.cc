@@ -1482,12 +1482,9 @@ TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   mixer_->SetNumOutputChannelsForTest(kNumOutputChannels);
-  mixer_->ResetPostProcessorsForTest(
-      std::make_unique<MockPostProcessorFactory>(), config);
-
-  ASSERT_DEATH(mixer_->ValidatePostProcessorsForTest(),
-               DeathRegex("PostProcessor configuration channel count does not "
-                          "match command line flag"));
+  ASSERT_DEATH(mixer_->ResetPostProcessorsForTest(
+                   std::make_unique<MockPostProcessorFactory>(), config),
+               DeathRegex("PostProcessorsHaveCorrectNumOutputs"));
 }
 
 TEST_F(StreamMixerDeathTest, CrashesIfMoreThan2LoopbackChannels) {
@@ -1514,11 +1511,9 @@ TEST_F(StreamMixerDeathTest, CrashesIfMoreThan2LoopbackChannels) {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   mixer_->SetNumOutputChannelsForTest(kNumOutputChannels);
 
-  mixer_->ResetPostProcessorsForTest(
-      std::make_unique<MockPostProcessorFactory>(), config);
-
-  ASSERT_DEATH(mixer_->ValidatePostProcessorsForTest(),
-               DeathRegex("loopback_channel_count <= 2"));
+  ASSERT_DEATH(mixer_->ResetPostProcessorsForTest(
+                   std::make_unique<MockPostProcessorFactory>(), config),
+               DeathRegex("PostProcessorsHaveCorrectNumOutputs"));
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
