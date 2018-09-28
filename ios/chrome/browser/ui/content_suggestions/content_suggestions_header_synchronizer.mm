@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ios/web/public/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,10 +25,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
 
 UIEdgeInsets SafeAreaInsetsForViewWithinNTP(UIView* view) {
   UIEdgeInsets insets = SafeAreaInsetsForView(view);
-  if ((IsUIRefreshPhase1Enabled() ||
-       base::FeatureList::IsEnabled(
-           web::features::kBrowserContainerFullscreen)) &&
-      !base::ios::IsRunningOnIOS11OrLater()) {
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
     // TODO(crbug.com/826369) Replace this when the NTP is contained by the
     // BVC with |self.collectionController.topLayoutGuide.length|.
     insets = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
@@ -180,10 +176,6 @@ initWithCollectionController:
     [self.headerController unfocusOmnibox];
   }
 
-  if (IsIPadIdiom() && !IsUIRefreshPhase1Enabled()) {
-    return;
-  }
-
   if (self.shouldAnimateHeader) {
     UIEdgeInsets insets = SafeAreaInsetsForViewWithinNTP(self.collectionView);
     [self.headerController
@@ -194,8 +186,7 @@ initWithCollectionController:
 }
 
 - (void)updateFakeOmniboxOnNewWidth:(CGFloat)width {
-  if (self.shouldAnimateHeader &&
-      (IsUIRefreshPhase1Enabled() || !IsIPadIdiom())) {
+  if (self.shouldAnimateHeader) {
     // We check -superview here because in certain scenarios (such as when the
     // VC is rotated underneath another presented VC), in a
     // UICollectionViewController -viewSafeAreaInsetsDidChange the VC.view has
