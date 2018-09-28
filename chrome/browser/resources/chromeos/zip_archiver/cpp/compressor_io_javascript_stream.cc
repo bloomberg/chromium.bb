@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstring>
 #include <limits>
+#include <utility>
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_compressor_requestor_interface.h"
 #include "ppapi/cpp/logging.h"
@@ -20,20 +21,21 @@ const int64_t kMaximumDataChunkSize = 512 * 1024;
 
 CompressorIOJavaScriptStream::CompressorIOJavaScriptStream(
     JavaScriptCompressorRequestorInterface* requestor)
-    : requestor_(requestor), buffer_offset_(-1), buffer_data_length_(0) {
+    : requestor_(requestor),
+      buffer_offset_(-1),
+      buffer_data_length_(0),
+      buffer_(std::make_unique<char[]>(kMaximumDataChunkSize)) {
   pthread_mutex_init(&shared_state_lock_, nullptr);
   pthread_cond_init(&available_data_cond_, nullptr);
   pthread_cond_init(&data_written_cond_, nullptr);
 
   pthread_mutex_lock(&shared_state_lock_);
   available_data_ = false;
-  buffer_ = new char[kMaximumDataChunkSize];
   pthread_mutex_unlock(&shared_state_lock_);
 }
 
 CompressorIOJavaScriptStream::~CompressorIOJavaScriptStream() {
   pthread_mutex_lock(&shared_state_lock_);
-  delete buffer_;
   pthread_mutex_unlock(&shared_state_lock_);
   pthread_cond_destroy(&data_written_cond_);
   pthread_cond_destroy(&available_data_cond_);
@@ -51,7 +53,7 @@ int64_t CompressorIOJavaScriptStream::Flush() {
   // Copy the data in buffer_ to array_buffer.
   pp::VarArrayBuffer array_buffer(buffer_data_length_);
   char* array_buffer_data = static_cast<char*>(array_buffer.Map());
-  memcpy(array_buffer_data, buffer_, buffer_data_length_);
+  memcpy(array_buffer_data, buffer_.get(), buffer_data_length_);
   array_buffer.Unmap();
 
   requestor_->WriteChunkRequest(buffer_offset_, buffer_data_length_,
@@ -118,7 +120,7 @@ int64_t CompressorIOJavaScriptStream::Write(int64_t zip_offset,
     int64_t offset_in_buffer = current_offset - buffer_offset_;
     // Copy data from zip_buffer, which is pointed by buffer_pointer, to
     // buffer_.
-    memcpy(buffer_ + offset_in_buffer, buffer_pointer, copy_length);
+    memcpy(buffer_.get() + offset_in_buffer, buffer_pointer, copy_length);
 
     buffer_pointer += copy_length;
     buffer_data_length_ =
