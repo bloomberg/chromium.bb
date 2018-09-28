@@ -971,6 +971,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("table-column-hidden.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityLabelWithSelectedAriaOption) {
+  RunAriaTest(FILE_PATH_LITERAL("label-with-selected-option.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityArticle) {
   RunHtmlTest(FILE_PATH_LITERAL("article.html"));
 }
@@ -1847,6 +1852,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityInputImageWithTitle) {
   RunHtmlTest(FILE_PATH_LITERAL("input-image-with-title.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityLabelWithSelectedOption) {
+  RunHtmlTest(FILE_PATH_LITERAL("label-with-selected-option.html"));
 }
 
 //

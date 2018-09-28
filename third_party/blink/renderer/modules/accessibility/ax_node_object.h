@@ -198,6 +198,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool NeedsToUpdateChildren() const override { return children_dirty_; }
   void SetNeedsToUpdateChildren() override { children_dirty_ = true; }
   void UpdateChildrenIfNecessary() override;
+  void SelectedOptions(AXObjectVector&) const override;
 
   // DOM and Render tree access.
   Element* ActionElement() const override;

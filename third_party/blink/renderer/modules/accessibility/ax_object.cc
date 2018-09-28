@@ -3116,6 +3116,19 @@ ax::mojom::Role AXObject::AriaRoleToWebCoreRole(const String& value) {
   return role;
 }
 
+bool AXObject::NameFromSelectedOption(bool recursive) const {
+  switch (RoleValue()) {
+    // Step 2E from: http://www.w3.org/TR/accname-aam-1.1
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kPopUpButton:
+      return recursive;
+    default:
+      return false;
+  }
+}
+
 bool AXObject::NameFromContents(bool recursive) const {
   // ARIA 1.1, section 5.2.7.5.
   bool result = false;

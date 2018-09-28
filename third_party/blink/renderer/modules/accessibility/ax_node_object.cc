@@ -1814,6 +1814,21 @@ String AXNodeObject::TextAlternative(bool recursive,
     return StringValue();
   }
 
+  // Step 2E from: http://www.w3.org/TR/accname-aam-1.1
+  // "If the embedded control has role combobox or listbox, return the text
+  // alternative of the chosen option."
+  if (NameFromSelectedOption(recursive)) {
+    StringBuilder accumulated_text;
+    AXObjectVector selected_options;
+    SelectedOptions(selected_options);
+    for (const auto& child : selected_options) {
+      if (accumulated_text.length())
+        accumulated_text.Append(" ");
+      accumulated_text.Append(child->ComputedName());
+    }
+    return accumulated_text.ToString();
+  }
+
   // Step 2D from: http://www.w3.org/TR/accname-aam-1.1
   text_alternative =
       NativeTextAlternative(visited, name_from, related_objects, name_sources,
@@ -1937,9 +1952,11 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
       result = RecursiveTextAlternative(*child, false, visited);
 
     if (!result.IsEmpty() && previous && accumulated_text.length() &&
-        !IsHTMLSpace(accumulated_text[accumulated_text.length() - 1])) {
-      if (ShouldInsertSpaceBetweenObjectsIfNeeded(previous, child))
+        !IsHTMLSpace(accumulated_text[accumulated_text.length() - 1]) &&
+        !IsHTMLSpace(result[0])) {
+      if (ShouldInsertSpaceBetweenObjectsIfNeeded(previous, child)) {
         accumulated_text.Append(' ');
+      }
     }
 
     accumulated_text.Append(result);
@@ -2473,6 +2490,36 @@ void AXNodeObject::UpdateChildrenIfNecessary() {
     ClearChildren();
 
   AXObject::UpdateChildrenIfNecessary();
+}
+
+void AXNodeObject::SelectedOptions(AXObjectVector& options) const {
+  if (IsHTMLSelectElement(GetNode())) {
+    HTMLSelectElement* select = ToHTMLSelectElement(GetNode());
+    for (auto* const option : *select->selectedOptions()) {
+      options.push_back(AXObjectCache().GetOrCreate(option));
+    }
+    return;
+  }
+
+  // If the combobox or listbox is a descendant of a label element for another
+  // widget, it may be ignored and Children() won't return all its children.
+  // As a result, we need to use RawFirstChild and RawNextSibling to iterate
+  // over the children in search of the selected option(s).
+
+  if (RoleValue() == ax::mojom::Role::kComboBoxGrouping ||
+      RoleValue() == ax::mojom::Role::kComboBoxMenuButton) {
+    for (AXObject* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
+      if (obj->RoleValue() == ax::mojom::Role::kListBox) {
+        obj->SelectedOptions(options);
+        return;
+      }
+    }
+  }
+
+  for (AXObject* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
+    if (obj->IsSelected() == kSelectedStateTrue)
+      options.push_back(obj);
+  }
 }
 
 void AXNodeObject::SelectionChanged() {
