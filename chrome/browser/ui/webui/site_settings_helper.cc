@@ -318,7 +318,7 @@ std::string GetDisplayNameForGURL(
     const GURL& url,
     const extensions::ExtensionRegistry* extension_registry) {
   const url::Origin origin = url::Origin::Create(url);
-  if (origin.unique())
+  if (origin.opaque())
     return url.spec();
 
   std::string display_name =

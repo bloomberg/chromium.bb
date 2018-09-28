@@ -479,7 +479,7 @@ void PluginInfoHostImpl::ReportMetrics(int render_frame_id,
       g_browser_process->rappor_service();
   if (!rappor_service)
     return;
-  if (main_frame_origin.unique())
+  if (main_frame_origin.opaque())
     return;
 
   if (mime_type != content::kFlashPluginSwfMimeType &&

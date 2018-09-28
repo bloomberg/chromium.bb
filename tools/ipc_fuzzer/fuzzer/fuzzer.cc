@@ -1524,7 +1524,7 @@ struct FuzzTraits<ui::LatencyInfo> {
 template <>
 struct FuzzTraits<url::Origin> {
   static bool Fuzz(url::Origin* p, Fuzzer* fuzzer) {
-    bool opaque = p->unique();
+    bool opaque = p->opaque();
     if (!FuzzParam(&opaque, fuzzer))
       return false;
     std::string scheme = p->GetTupleOrPrecursorTupleIfOpaque().scheme();

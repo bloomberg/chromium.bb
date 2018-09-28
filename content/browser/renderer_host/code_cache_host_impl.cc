@@ -49,7 +49,7 @@ base::Optional<url::Origin> GetRendererOrigin(const GURL& url,
   // Don't cache the code corresponding to unique origins. The same-origin
   // checks should always fail for unique origins but the serialized value of
   // unique origins does not ensure this.
-  if (origin.unique())
+  if (origin.opaque())
     return base::nullopt;
 
   return origin;

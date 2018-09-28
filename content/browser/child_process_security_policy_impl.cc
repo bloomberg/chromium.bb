@@ -120,13 +120,13 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
   // Grant permission to request and commit URLs with the specified origin.
   void GrantCommitOrigin(const url::Origin& origin) {
-    if (origin.unique())
+    if (origin.opaque())
       return;
     origin_map_[origin] = CommitRequestPolicy::kCommitAndRequest;
   }
 
   void GrantRequestOrigin(const url::Origin& origin) {
-    if (origin.unique())
+    if (origin.opaque())
       return;
     // Anything already in |origin_map_| must have at least request permission
     // already. In that case, the emplace() below will be a no-op.
@@ -510,7 +510,7 @@ void ChildProcessSecurityPolicyImpl::GrantCommitURL(int child_id,
   // TODO(dcheng): In the future, URLs with opaque origins would ideally carry
   // around an origin with them, so we wouldn't need to grant commit access to
   // the entire scheme.
-  if (!origin.unique())
+  if (!origin.opaque())
     GrantCommitOrigin(child_id, origin);
 
   // The scheme has already been whitelisted for every child process, so no need
@@ -524,7 +524,7 @@ void ChildProcessSecurityPolicyImpl::GrantCommitURL(int child_id,
   if (state == security_state_.end())
     return;
 
-  if (origin.unique()) {
+  if (origin.opaque()) {
     // If it's impossible to grant commit rights to just the origin (among other
     // things, URLs with non-standard schemes will be treated as opaque
     // origins), then grant access to commit all URLs of that scheme.
@@ -742,7 +742,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
       return false;
 
     url::Origin origin = url::Origin::Create(url);
-    return origin.unique() || CanRequestURL(child_id, GURL(origin.Serialize()));
+    return origin.opaque() || CanRequestURL(child_id, GURL(origin.Serialize()));
   }
 
   if (IsWebSafeScheme(scheme))
@@ -814,7 +814,7 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
       return false;
 
     url::Origin origin = url::Origin::Create(url);
-    return origin.unique() ||
+    return origin.opaque() ||
            CanCommitURL(child_id, GURL(origin.Serialize()), check_origin_locks);
   }
 

@@ -67,7 +67,7 @@ void SpeechRecognitionDispatcherHost::Start(
 
   // Check that the origin specified by the renderer process is one
   // that it is allowed to access.
-  if (!params->origin.unique() &&
+  if (!params->origin.opaque() &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
           render_process_id_, params->origin.GetURL())) {
     LOG(ERROR) << "SRDH::OnStartRequest, disallowed origin: "

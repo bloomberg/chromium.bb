@@ -232,7 +232,7 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
             .release();
   }
 
-  const bool is_password_credential = password_form.federation_origin.unique();
+  const bool is_password_credential = password_form.federation_origin.opaque();
   if (is_password_credential) {
     password_view_button_ =
         CreatePasswordViewButton(this, are_passwords_revealed_).release();

@@ -133,7 +133,7 @@ class CacheStorage::CacheLoader {
         cache_storage_(cache_storage),
         origin_(origin),
         owner_(owner) {
-    DCHECK(!origin_.unique());
+    DCHECK(!origin_.opaque());
   }
 
   virtual ~CacheLoader() {}

@@ -121,7 +121,7 @@ void TrimUsernameOnlyCredentials(
   base::EraseIf(*android_credentials,
                 [](const std::unique_ptr<PasswordForm>& form) {
                   return form->scheme == PasswordForm::SCHEME_USERNAME_ONLY &&
-                         form->federation_origin.unique();
+                         form->federation_origin.opaque();
                 });
 
   // Set "skip_zero_click" on federated credentials.

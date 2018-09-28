@@ -80,7 +80,7 @@ void CSPContext::SetSelf(const url::Origin origin) {
 
   // When the origin is unique, no URL should match with 'self'. That's why
   // |self_source_| stays undefined here.
-  if (origin.unique())
+  if (origin.opaque())
     return;
 
   if (origin.scheme() == url::kFileScheme) {

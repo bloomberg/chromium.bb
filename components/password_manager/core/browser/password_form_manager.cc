@@ -589,7 +589,7 @@ void PasswordFormManager::ProcessLoginPrompt() {
 
 void PasswordFormManager::ProcessUpdate() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
-  DCHECK(preferred_match_ || !pending_credentials_.federation_origin.unique());
+  DCHECK(preferred_match_ || !pending_credentials_.federation_origin.opaque());
   // If we're doing an Update, we either autofilled correctly and need to
   // update the stats, or the user typed in a new password for autofilled
   // username, or the user selected one of the non-preferred matches,
@@ -792,7 +792,7 @@ const PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
 
 const PasswordForm* PasswordFormManager::FindBestSavedMatch(
     const PasswordForm* submitted_form) const {
-  if (!submitted_form->federation_origin.unique())
+  if (!submitted_form->federation_origin.opaque())
     return nullptr;
 
   // Return form with matching |username_value|.
@@ -1035,7 +1035,7 @@ void PasswordFormManager::SetUserAction(UserAction user_action) {
 
 std::vector<PasswordForm> PasswordFormManager::FindOtherCredentialsToUpdate() {
   std::vector<autofill::PasswordForm> credentials_to_update;
-  if (!pending_credentials_.federation_origin.unique())
+  if (!pending_credentials_.federation_origin.opaque())
     return credentials_to_update;
 
   auto updated_password_it =

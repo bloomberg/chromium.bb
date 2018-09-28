@@ -118,7 +118,7 @@ OriginPolicyThrottle::WillProcessResponse() {
 
   url::Origin origin = GetRequestOrigin();
   DCHECK(!origin.Serialize().empty());
-  DCHECK(!origin.unique());
+  DCHECK(!origin.opaque());
   KnownVersionMap& versions = GetKnownVersions();
   KnownVersionMap::iterator iter = versions.find(origin);
 

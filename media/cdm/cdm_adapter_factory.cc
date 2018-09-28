@@ -31,7 +31,7 @@ void CdmAdapterFactory::Create(
     const CdmCreatedCB& cdm_created_cb) {
   DVLOG(1) << __func__ << ": key_system=" << key_system;
 
-  if (security_origin.unique()) {
+  if (security_origin.opaque()) {
     LOG(ERROR) << "Invalid Origin: " << security_origin;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(cdm_created_cb, nullptr, "Invalid origin."));

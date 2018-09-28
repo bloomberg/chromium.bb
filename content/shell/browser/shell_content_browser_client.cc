@@ -172,7 +172,7 @@ bool ShellContentBrowserClient::DoesSiteRequireDedicatedProcess(
 
   url::Origin origin = url::Origin::Create(effective_site_url);
 
-  if (!origin.unique()) {
+  if (!origin.opaque()) {
     // Schemes like blob or filesystem, which have an embedded origin, should
     // already have been canonicalized to the origin site.
     CHECK_EQ(origin.scheme(), effective_site_url.scheme())

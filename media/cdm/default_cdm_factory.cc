@@ -41,7 +41,7 @@ void DefaultCdmFactory::Create(
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
-  if (security_origin.unique()) {
+  if (security_origin.opaque()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(cdm_created_cb, nullptr, "Invalid origin."));
     return;

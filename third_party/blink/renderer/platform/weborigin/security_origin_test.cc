@@ -580,8 +580,8 @@ TEST_F(SecurityOriginTest, UrlOriginConversions) {
     url::Origin origin_roundtrip_via_gurl =
         security_origin_via_gurl->ToUrlOrigin();
 
-    EXPECT_EQ(test_case.opaque, origin_roundtrip_via_kurl.unique());
-    EXPECT_EQ(test_case.opaque, origin_roundtrip_via_gurl.unique());
+    EXPECT_EQ(test_case.opaque, origin_roundtrip_via_kurl.opaque());
+    EXPECT_EQ(test_case.opaque, origin_roundtrip_via_gurl.opaque());
     if (!test_case.opaque) {
       EXPECT_EQ(origin_via_gurl, origin_roundtrip_via_kurl);
       EXPECT_EQ(origin_roundtrip_via_kurl, origin_roundtrip_via_gurl);

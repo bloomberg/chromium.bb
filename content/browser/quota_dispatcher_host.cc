@@ -117,7 +117,7 @@ void QuotaDispatcherHost::RequestStorageQuota(
     return;
   }
 
-  if (origin.unique()) {
+  if (origin.opaque()) {
     mojo::ReportBadMessage("Unique origins may not request storage quota.");
     return;
   }

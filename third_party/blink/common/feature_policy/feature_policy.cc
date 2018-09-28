@@ -83,7 +83,7 @@ bool FeaturePolicy::Allowlist::Contains(const url::Origin& origin) const {
   if (matches_all_origins_)
     return true;
   for (const auto& targetOrigin : origins_) {
-    if (!origin.unique() && targetOrigin.IsSameOriginWith(origin))
+    if (!origin.opaque() && targetOrigin.IsSameOriginWith(origin))
       return true;
   }
   return false;
@@ -168,7 +168,7 @@ void FeaturePolicy::SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header) {
 FeaturePolicy::FeaturePolicy(url::Origin origin,
                              const FeatureList& feature_list)
     : origin_(std::move(origin)), feature_list_(feature_list) {
-  if (origin_.unique()) {
+  if (origin_.opaque()) {
     // FeaturePolicy was written expecting opaque Origins to be indistinct, but
     // this has changed. Split out a new opaque origin here, to defend against
     // origin-equality.
@@ -223,7 +223,7 @@ void FeaturePolicy::AddContainerPolicy(
     // must not.
     inherited_policy = false;
     if (parent_policy->IsFeatureEnabled(feature)) {
-      if (parsed_declaration.matches_opaque_src && origin_.unique()) {
+      if (parsed_declaration.matches_opaque_src && origin_.opaque()) {
         // If the child frame has an opaque origin, and the declared container
         // policy indicates that the feature should be enabled, enable it for
         // the child frame.

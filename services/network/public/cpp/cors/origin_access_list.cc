@@ -49,7 +49,7 @@ void OriginAccessList::ClearBlockList() {
 
 bool OriginAccessList::IsAllowed(const url::Origin& source_origin,
                                  const GURL& destination) const {
-  if (source_origin.unique())
+  if (source_origin.opaque())
     return false;
   std::string source = source_origin.Serialize();
   url::Origin destination_origin = url::Origin::Create(destination);
@@ -63,7 +63,7 @@ void OriginAccessList::SetForOrigin(
     const std::vector<mojom::CorsOriginPatternPtr>& patterns,
     PatternMap* map) {
   DCHECK(map);
-  DCHECK(!source_origin.unique());
+  DCHECK(!source_origin.opaque());
 
   std::string source = source_origin.Serialize();
   map->erase(source);
@@ -86,7 +86,7 @@ void OriginAccessList::AddForOrigin(const url::Origin& source_origin,
                                     bool allow_subdomains,
                                     PatternMap* map) {
   DCHECK(map);
-  DCHECK(!source_origin.unique());
+  DCHECK(!source_origin.opaque());
 
   std::string source = source_origin.Serialize();
   (*map)[source].push_back(OriginAccessEntry(

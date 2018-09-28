@@ -173,7 +173,7 @@ void ShowSiteSettingsImpl(Browser* browser, Profile* profile, const GURL& url) {
   std::string link_destination(chrome::kChromeUIContentSettingsURL);
   // TODO(https://crbug.com/444047): Site Details should work with file:// urls
   // when this bug is fixed, so add it to the whitelist when that happens.
-  if (!site_origin.unique() && (url.SchemeIsHTTPOrHTTPS() ||
+  if (!site_origin.opaque() && (url.SchemeIsHTTPOrHTTPS() ||
                                 url.SchemeIs(extensions::kExtensionScheme))) {
     std::string origin_string = site_origin.Serialize();
     url::RawCanonOutputT<char> percent_encoded_origin;

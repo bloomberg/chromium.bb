@@ -376,7 +376,7 @@ blink::mojom::WebDatabase& WebDatabaseHostImpl::GetWebDatabase() {
 }
 
 bool WebDatabaseHostImpl::ValidateOrigin(const url::Origin& origin) {
-  if (origin.unique()) {
+  if (origin.opaque()) {
     mojo::ReportBadMessage("Invalid origin.");
     return false;
   }
