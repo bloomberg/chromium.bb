@@ -72,6 +72,9 @@ const char* const kPersistentPrefNames[] = {
     bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
     bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
     bookmarks::prefs::kShowBookmarkBar,
+#if defined(OS_ANDROID)
+    prefs::kPartnerBookmarkMappings,
+#endif  // defined(OS_ANDROID)
 
     // Metrics preferences are out of profile scope and are merged between
     // incognito and regular modes.
