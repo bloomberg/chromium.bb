@@ -27,6 +27,7 @@ class MockIceTransportAdapter : public testing::NiceMock<IceTransportAdapter> {
                     const std::vector<cricket::Candidate>&));
   MOCK_METHOD1(HandleRemoteRestart, void(const cricket::IceParameters&));
   MOCK_METHOD1(AddRemoteCandidate, void(const cricket::Candidate&));
+  MOCK_CONST_METHOD0(packet_transport, P2PQuicPacketTransport*());
 };
 
 }  // namespace blink

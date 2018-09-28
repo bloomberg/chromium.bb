@@ -23,6 +23,7 @@ IceTransportHost::IceTransportHost(
 
 IceTransportHost::~IceTransportHost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!HasConsumer());
 }
 
 void IceTransportHost::Initialize(
@@ -60,6 +61,27 @@ void IceTransportHost::AddRemoteCandidate(const cricket::Candidate& candidate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   transport_->AddRemoteCandidate(candidate);
 
+}
+
+bool IceTransportHost::HasConsumer() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return consumer_host_;
+}
+
+IceTransportAdapter* IceTransportHost::ConnectConsumer(
+    QuicTransportHost* consumer_host) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(consumer_host);
+  DCHECK(!consumer_host_);
+  consumer_host_ = consumer_host;
+  return transport_.get();
+}
+
+void IceTransportHost::DisconnectConsumer(QuicTransportHost* consumer_host) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(consumer_host);
+  DCHECK_EQ(consumer_host, consumer_host_);
+  consumer_host_ = nullptr;
 }
 
 void IceTransportHost::OnGatheringStateChanged(

@@ -37,8 +37,7 @@ class P2PQuicPacketWriter : public quic::QuicPacketWriter,
   // to get the packet numbers of QUIC packets we write. The QuicConnection
   // is created with a quic::QuicPacketWriter, so we can't set the connection
   // in the constructor.
-  void InitializeWithQuicConnection(
-      const quic::QuicConnection* const connection) {
+  void InitializeWithQuicConnection(quic::QuicConnection* connection) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(connection);
     if (packet_transport_->Writable()) {
@@ -122,6 +121,7 @@ class P2PQuicPacketWriter : public quic::QuicPacketWriter,
   void OnCanWrite() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     SetWritable();
+    connection_->OnCanWrite();
   }
 
  private:
@@ -129,7 +129,7 @@ class P2PQuicPacketWriter : public quic::QuicPacketWriter,
   // BlinkPacketWriter.
   P2PQuicPacketTransport* packet_transport_;
   // The QuicConnection owns this packet writer and will outlive it.
-  const quic::QuicConnection* connection_;
+  quic::QuicConnection* connection_;
 
   bool writable_ = false;
   THREAD_CHECKER(thread_checker_);
