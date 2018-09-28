@@ -10,24 +10,24 @@ for more details about the presubmit API built into depot_tools.
 
 
 _EXCLUDED_PATHS = (
-    r"^native_client_sdk[\\\/]src[\\\/]build_tools[\\\/]make_rules.py",
-    r"^native_client_sdk[\\\/]src[\\\/]build_tools[\\\/]make_simple.py",
-    r"^native_client_sdk[\\\/]src[\\\/]tools[\\\/].*.mk",
-    r"^net[\\\/]tools[\\\/]spdyshark[\\\/].*",
-    r"^skia[\\\/].*",
-    r"^third_party[\\\/](WebKit|blink)[\\\/].*",
-    r"^third_party[\\\/]breakpad[\\\/].*",
-    r"^v8[\\\/].*",
+    r"^native_client_sdk[\\/]src[\\/]build_tools[\\/]make_rules.py",
+    r"^native_client_sdk[\\/]src[\\/]build_tools[\\/]make_simple.py",
+    r"^native_client_sdk[\\/]src[\\/]tools[\\/].*.mk",
+    r"^net[\\/]tools[\\/]spdyshark[\\/].*",
+    r"^skia[\\/].*",
+    r"^third_party[\\/](WebKit|blink)[\\/].*",
+    r"^third_party[\\/]breakpad[\\/].*",
+    r"^v8[\\/].*",
     r".*MakeFile$",
     r".+_autogen\.h$",
-    r".+[\\\/]pnacl_shim\.c$",
-    r"^gpu[\\\/]config[\\\/].*_list_json\.cc$",
-    r"^chrome[\\\/]browser[\\\/]resources[\\\/]pdf[\\\/]index.js",
-    r"tools[\\\/]md_browser[\\\/].*\.css$",
+    r".+[\\/]pnacl_shim\.c$",
+    r"^gpu[\\/]config[\\/].*_list_json\.cc$",
+    r"^chrome[\\/]browser[\\/]resources[\\/]pdf[\\/]index.js",
+    r"tools[\\/]md_browser[\\/].*\.css$",
     # Test pages for Maps telemetry tests.
-    r"tools[\\\/]perf[\\\/]page_sets[\\\/]maps_perf_test.*",
+    r"tools[\\/]perf[\\/]page_sets[\\/]maps_perf_test.*",
     # Test pages for WebRTC telemetry tests.
-    r"tools[\\\/]perf[\\\/]page_sets[\\\/]webrtc_cases.*",
+    r"tools[\\/]perf[\\/]page_sets[\\/]webrtc_cases.*",
 )
 
 
@@ -44,18 +44,18 @@ _HEADER_EXTENSIONS = r'\.(h|hpp|hxx)$'
 # Regular expression that matches code only used for test binaries
 # (best effort).
 _TEST_CODE_EXCLUDED_PATHS = (
-    r'.*[\\\/](fake_|test_|mock_).+%s' % _IMPLEMENTATION_EXTENSIONS,
+    r'.*[\\/](fake_|test_|mock_).+%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.+_test_(base|support|util)%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.+_(api|browser|eg|int|perf|pixel|unit|ui)?test(_[a-z]+)?%s' %
         _IMPLEMENTATION_EXTENSIONS,
     r'.+profile_sync_service_harness%s' % _IMPLEMENTATION_EXTENSIONS,
-    r'.*[\\\/](test|tool(s)?)[\\\/].*',
+    r'.*[\\/](test|tool(s)?)[\\/].*',
     # content_shell is used for running layout tests.
-    r'content[\\\/]shell[\\\/].*',
+    r'content[\\/]shell[\\/].*',
     # Non-production example code.
-    r'mojo[\\\/]examples[\\\/].*',
+    r'mojo[\\/]examples[\\/].*',
     # Launcher for running iOS tests on the simulator.
-    r'testing[\\\/]iossim[\\\/]iossim\.mm$',
+    r'testing[\\/]iossim[\\/]iossim\.mm$',
 )
 
 
@@ -238,9 +238,9 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (
-        r"^ui[\\\/]gl[\\\/].*\.cc$",
-        r"^media[\\\/]gpu[\\\/].*\.cc$",
-        r"^gpu[\\\/].*\.cc$",
+        r"^ui[\\/]gl[\\/].*\.cc$",
+        r"^media[\\/]gpu[\\/].*\.cc$",
+        r"^gpu[\\/].*\.cc$",
       ),
     ),
     (
@@ -250,9 +250,9 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (
-        r"^gpu[\\\/]ipc[\\\/]service[\\\/]gpu_watchdog_thread\.cc$",
-        r"^remoting[\\\/]host[\\\/]linux[\\\/]x_server_clipboard\.cc$",
-        r"^ui[\\\/]gfx[\\\/]x[\\\/]x11_atom_cache\.cc$",
+        r"^gpu[\\/]ipc[\\/]service[\\/]gpu_watchdog_thread\.cc$",
+        r"^remoting[\\/]host[\\/]linux[\\/]x_server_clipboard\.cc$",
+        r"^ui[\\/]gfx[\\/]x[\\/]x11_atom_cache\.cc$",
       ),
     ),
     (
@@ -321,8 +321,8 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (
         # Files that #define IGNORE_EINTR.
-        r'^base[\\\/]posix[\\\/]eintr_wrapper\.h$',
-        r'^ppapi[\\\/]tests[\\\/]test_broker\.cc$',
+        r'^base[\\/]posix[\\/]eintr_wrapper\.h$',
+        r'^ppapi[\\/]tests[\\/]test_broker\.cc$',
       ),
     ),
     (
@@ -333,7 +333,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (
-        r'extensions[\\\/]renderer[\\\/]safe_builtins\.*',
+        r'extensions[\\/]renderer[\\/]safe_builtins\.*',
       ),
     ),
     (
@@ -343,7 +343,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (
-          r'^third_party[\\\/]abseil-cpp[\\\/].*',
+          r'^third_party[\\/]abseil-cpp[\\/].*',
       ),
     ),
     (
@@ -386,9 +386,9 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       False,
       (
-        r'^content[\\\/]browser[\\\/]webui[\\\/]web_ui_impl\.(cc|h)$',
-        r'^content[\\\/]public[\\\/]browser[\\\/]web_ui\.h$',
-        r'^content[\\\/]public[\\\/]test[\\\/]test_web_ui\.(cc|h)$',
+        r'^content[\\/]browser[\\/]webui[\\/]web_ui_impl\.(cc|h)$',
+        r'^content[\\/]public[\\/]browser[\\/]web_ui\.h$',
+        r'^content[\\/]public[\\/]test[\\/]test_web_ui\.(cc|h)$',
       ),
     ),
     (
@@ -557,11 +557,11 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       False,
       (
-        r'^ios[\\\/].*\.(cc|h)$',
-        r'.*[\\\/]ios[\\\/].*\.(cc|h)$',
+        r'^ios[\\/].*\.(cc|h)$',
+        r'.*[\\/]ios[\\/].*\.(cc|h)$',
         r'.*_ios\.(cc|h)$',
-        r'^net[\\\/].*\.(cc|h)$',
-        r'.*[\\\/]tools[\\\/].*\.(cc|h)$',
+        r'^net[\\/].*\.(cc|h)$',
+        r'.*[\\/]tools[\\/].*\.(cc|h)$',
       ),
     ),
     (
@@ -597,18 +597,18 @@ _LONG_PATH_ERROR = (
 )
 
 _JAVA_MULTIPLE_DEFINITION_EXCLUDED_PATHS = [
-    r".*[\\\/]BuildHooksAndroidImpl\.java",
-    r".*[\\\/]LicenseContentProvider\.java",
-    r".*[\\\/]PlatformServiceBridgeImpl.java",
+    r".*[\\/]BuildHooksAndroidImpl\.java",
+    r".*[\\/]LicenseContentProvider\.java",
+    r".*[\\/]PlatformServiceBridgeImpl.java",
 ]
 
 # These paths contain test data and other known invalid JSON files.
 _KNOWN_INVALID_JSON_FILE_PATTERNS = [
-    r'test[\\\/]data[\\\/]',
-    r'^components[\\\/]policy[\\\/]resources[\\\/]policy_templates\.json$',
-    r'^third_party[\\\/]protobuf[\\\/]',
-    r'^third_party[\\\/]WebKit[\\\/]LayoutTests[\\\/]external[\\\/]wpt[\\\/]',
-    r'^third_party[\\\/]blink[\\\/]renderer[\\\/]devtools[\\\/]protocol\.json$',
+    r'test[\\/]data[\\/]',
+    r'^components[\\/]policy[\\/]resources[\\/]policy_templates\.json$',
+    r'^third_party[\\/]protobuf[\\/]',
+    r'^third_party[\\/]WebKit[\\/]LayoutTests[\\/]external[\\/]wpt[\\/]',
+    r'^third_party[\\/]blink[\\/]renderer[\\/]devtools[\\/]protocol\.json$',
 ]
 
 
@@ -1412,7 +1412,7 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
     """
     return input_api.FilterSourceFile(
       affected_file,
-      white_list=[r'^(android_webview|base|content|net)[\\\/].*'],
+      white_list=[r'^(android_webview|base|content|net)[\\/].*'],
       black_list=(_EXCLUDED_PATHS +
                   _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST))
@@ -1445,7 +1445,7 @@ def _CheckNoAbbreviationInPngFileName(input_api, output_api):
   """
   errors = []
   white_list = [r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$']
-  black_list = [r'^native_client_sdk[\\\/]']
+  black_list = [r'^native_client_sdk[\\/]']
   file_filter = lambda f: input_api.FilterSourceFile(
       f, white_list=white_list, black_list=black_list)
   for f in input_api.AffectedFiles(include_deletes=False,
@@ -1540,7 +1540,7 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   virtual_depended_on_files = set()
 
   file_filter = lambda f: not input_api.re.match(
-      r"^third_party[\\\/](WebKit|blink)[\\\/].*", f.LocalPath())
+      r"^third_party[\\/](WebKit|blink)[\\/].*", f.LocalPath())
   for f in input_api.AffectedFiles(include_deletes=False,
                                    file_filter=file_filter):
     filename = input_api.os_path.basename(f.LocalPath())
@@ -1615,44 +1615,44 @@ def _CheckSpamLogging(input_api, output_api):
   black_list = (_EXCLUDED_PATHS +
                 _TEST_CODE_EXCLUDED_PATHS +
                 input_api.DEFAULT_BLACK_LIST +
-                (r"^base[\\\/]logging\.h$",
-                 r"^base[\\\/]logging\.cc$",
-                 r"^chrome[\\\/]app[\\\/]chrome_main_delegate\.cc$",
-                 r"^chrome[\\\/]browser[\\\/]chrome_browser_main\.cc$",
-                 r"^chrome[\\\/]browser[\\\/]ui[\\\/]startup[\\\/]"
+                (r"^base[\\/]logging\.h$",
+                 r"^base[\\/]logging\.cc$",
+                 r"^chrome[\\/]app[\\/]chrome_main_delegate\.cc$",
+                 r"^chrome[\\/]browser[\\/]chrome_browser_main\.cc$",
+                 r"^chrome[\\/]browser[\\/]ui[\\/]startup[\\/]"
                      r"startup_browser_creator\.cc$",
-                 r"^chrome[\\\/]installer[\\\/]setup[\\\/].*",
-                 r"^chrome[\\\/]chrome_cleaner[\\\/].*",
-                 r"chrome[\\\/]browser[\\\/]diagnostics[\\\/]" +
+                 r"^chrome[\\/]installer[\\/]setup[\\/].*",
+                 r"^chrome[\\/]chrome_cleaner[\\/].*",
+                 r"chrome[\\/]browser[\\/]diagnostics[\\/]" +
                      r"diagnostics_writer\.cc$",
-                 r"^chrome_elf[\\\/]dll_hash[\\\/]dll_hash_main\.cc$",
-                 r"^chromecast[\\\/]",
-                 r"^cloud_print[\\\/]",
-                 r"^components[\\\/]browser_watcher[\\\/]"
+                 r"^chrome_elf[\\/]dll_hash[\\/]dll_hash_main\.cc$",
+                 r"^chromecast[\\/]",
+                 r"^cloud_print[\\/]",
+                 r"^components[\\/]browser_watcher[\\/]"
                      r"dump_stability_report_main_win.cc$",
-                 r"^components[\\\/]html_viewer[\\\/]"
+                 r"^components[\\/]html_viewer[\\/]"
                      r"web_test_delegate_impl\.cc$",
-                 r"^components[\\\/]zucchini[\\\/].*",
+                 r"^components[\\/]zucchini[\\/].*",
                  # TODO(peter): Remove this exception. https://crbug.com/534537
-                 r"^content[\\\/]browser[\\\/]notifications[\\\/]"
+                 r"^content[\\/]browser[\\/]notifications[\\/]"
                      r"notification_event_dispatcher_impl\.cc$",
-                 r"^content[\\\/]common[\\\/]gpu[\\\/]client[\\\/]"
+                 r"^content[\\/]common[\\/]gpu[\\/]client[\\/]"
                      r"gl_helper_benchmark\.cc$",
-                 r"^courgette[\\\/]courgette_minimal_tool\.cc$",
-                 r"^courgette[\\\/]courgette_tool\.cc$",
-                 r"^extensions[\\\/]renderer[\\\/]logging_native_handler\.cc$",
-                 r"^ipc[\\\/]ipc_logging\.cc$",
-                 r"^native_client_sdk[\\\/]",
-                 r"^remoting[\\\/]base[\\\/]logging\.h$",
-                 r"^remoting[\\\/]host[\\\/].*",
-                 r"^sandbox[\\\/]linux[\\\/].*",
-                 r"^tools[\\\/]",
-                 r"^ui[\\\/]base[\\\/]resource[\\\/]data_pack.cc$",
-                 r"^ui[\\\/]aura[\\\/]bench[\\\/]bench_main\.cc$",
-                 r"^ui[\\\/]ozone[\\\/]platform[\\\/]cast[\\\/]",
-                 r"^storage[\\\/]browser[\\\/]fileapi[\\\/]" +
+                 r"^courgette[\\/]courgette_minimal_tool\.cc$",
+                 r"^courgette[\\/]courgette_tool\.cc$",
+                 r"^extensions[\\/]renderer[\\/]logging_native_handler\.cc$",
+                 r"^ipc[\\/]ipc_logging\.cc$",
+                 r"^native_client_sdk[\\/]",
+                 r"^remoting[\\/]base[\\/]logging\.h$",
+                 r"^remoting[\\/]host[\\/].*",
+                 r"^sandbox[\\/]linux[\\/].*",
+                 r"^tools[\\/]",
+                 r"^ui[\\/]base[\\/]resource[\\/]data_pack.cc$",
+                 r"^ui[\\/]aura[\\/]bench[\\/]bench_main\.cc$",
+                 r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]",
+                 r"^storage[\\/]browser[\\/]fileapi[\\/]" +
                      r"dump_file_system.cc$",
-                 r"^headless[\\\/]app[\\\/]headless_shell\.cc$"))
+                 r"^headless[\\/]app[\\/]headless_shell\.cc$"))
   source_file_filter = lambda x: input_api.FilterSourceFile(
       x, white_list=file_inclusion_pattern, black_list=black_list)
 
@@ -1916,12 +1916,12 @@ def _CheckParseErrors(input_api, output_api):
   }
   # Most JSON files are preprocessed and support comments, but these do not.
   json_no_comments_patterns = [
-    r'^testing[\\\/]',
+    r'^testing[\\/]',
   ]
   # Only run IDL checker on files in these directories.
   idl_included_patterns = [
-    r'^chrome[\\\/]common[\\\/]extensions[\\\/]api[\\\/]',
-    r'^extensions[\\\/]common[\\\/]api[\\\/]',
+    r'^chrome[\\/]common[\\/]extensions[\\/]api[\\/]',
+    r'^extensions[\\/]common[\\/]api[\\/]',
   ]
 
   def get_action(affected_file):
@@ -2217,8 +2217,8 @@ def _CheckAndroidToastUsage(input_api, output_api):
       black_list=(_EXCLUDED_PATHS +
                   _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST +
-                  (r'^chromecast[\\\/].*',
-                   r'^remoting[\\\/].*')),
+                  (r'^chromecast[\\/].*',
+                   r'^remoting[\\/].*')),
       white_list=[r'.*\.java$'])
 
   for f in input_api.AffectedSourceFiles(sources):
@@ -2248,13 +2248,13 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   # Do not check format of logs in the given files
   cr_log_check_excluded_paths = [
     # //chrome/android/webapk cannot depend on //base
-    r"^chrome[\\\/]android[\\\/]webapk[\\\/].*",
+    r"^chrome[\\/]android[\\/]webapk[\\/].*",
     # WebView license viewer code cannot depend on //base; used in stub APK.
-    r"^android_webview[\\\/]glue[\\\/]java[\\\/]src[\\\/]com[\\\/]android[\\\/]"
-    r"webview[\\\/]chromium[\\\/]License.*",
+    r"^android_webview[\\/]glue[\\/]java[\\/]src[\\/]com[\\/]android[\\/]"
+    r"webview[\\/]chromium[\\/]License.*",
     # The customtabs_benchmark is a small app that does not depend on Chromium
     # java pieces.
-    r"tools[\\\/]android[\\\/]customtabs_benchmark[\\\/].*",
+    r"tools[\\/]android[\\/]customtabs_benchmark[\\/].*",
   ]
 
   cr_log_import_pattern = input_api.re.compile(
@@ -2459,7 +2459,7 @@ def _CheckAndroidWebkitImports(input_api, output_api):
       black_list=(_EXCLUDED_PATHS +
                   _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST +
-                  (r'^android_webview[\\\/]glue[\\\/].*',)),
+                  (r'^android_webview[\\/]glue[\\/].*',)),
       white_list=[r'.*\.java$'])
 
   for f in input_api.AffectedSourceFiles(sources):
@@ -2600,8 +2600,8 @@ def _CheckSingletonInHeaders(input_api, output_api):
     # It's ok for base/memory/singleton.h to have |Singleton<|.
     black_list = (_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST +
-                  (r"^base[\\\/]memory[\\\/]singleton\.h$",
-                   r"^net[\\\/]quic[\\\/]platform[\\\/]impl[\\\/]"
+                  (r"^base[\\/]memory[\\/]singleton\.h$",
+                   r"^net[\\/]quic[\\/]platform[\\/]impl[\\/]"
                        r"quic_singleton_impl\.h$"))
     return input_api.FilterSourceFile(affected_file, black_list=black_list)
 
