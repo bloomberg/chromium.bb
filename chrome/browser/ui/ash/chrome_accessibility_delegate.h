@@ -20,6 +20,10 @@ class ChromeAccessibilityDelegate : public ash::AccessibilityDelegate {
   bool ShouldShowAccessibilityMenu() const override;
   void SaveScreenMagnifierScale(double scale) override;
   double GetSavedScreenMagnifierScale() override;
+  void DispatchAccessibilityEvent(const ui::AXTreeID& tree_id,
+                                  const std::vector<ui::AXTreeUpdate>& updates,
+                                  const ui::AXEvent& event) override;
+  void DispatchTreeDestroyedEvent(const ui::AXTreeID& tree_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeAccessibilityDelegate);
