@@ -187,6 +187,9 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
       policies.SetInteger(
           printing::kAllowedColorModes,
           profile_->GetPrefs()->GetInteger(prefs::kPrintingAllowedColorModes));
+      policies.SetInteger(
+          printing::kAllowedDuplexModes,
+          profile_->GetPrefs()->GetInteger(prefs::kPrintingAllowedDuplexModes));
       // fetch settings on the blocking pool and invoke callback.
       FetchCapabilities(std::move(printer), std::move(policies), std::move(cb));
       return;
