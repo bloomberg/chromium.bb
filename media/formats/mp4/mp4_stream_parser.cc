@@ -809,15 +809,15 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
         runs_->video_description().video_codec == kCodecHEVC ||
         runs_->video_description().video_codec == kCodecDolbyVision) {
       DCHECK(runs_->video_description().frame_bitstream_converter);
-      if (!runs_->video_description().frame_bitstream_converter->ConvertFrame(
-              &frame_buf, is_keyframe, &subsamples)) {
+      BitstreamConverter::AnalysisResult analysis;
+      if (!runs_->video_description()
+               .frame_bitstream_converter->ConvertAndAnalyzeFrame(
+                   &frame_buf, is_keyframe, &subsamples, &analysis)) {
         MEDIA_LOG(ERROR, media_log_)
             << "Failed to prepare video sample for decode";
         return ParseResult::kError;
       }
-      BitstreamConverter::AnalysisResult analysis =
-          runs_->video_description().frame_bitstream_converter->Analyze(
-              &frame_buf, &subsamples);
+
       // If conformance analysis was not actually performed, assume the frame is
       // conformant.  If it was performed and found to be non-conformant, log
       // it.
