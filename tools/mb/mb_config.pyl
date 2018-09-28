@@ -352,7 +352,7 @@
     },
 
     'chromium.mac': {
-      'Mac Builder': 'gpu_tests_release_bot',
+      'Mac Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
       'mac-jumbo-rel': 'jumbo_release_bot_minimal_symbols',
       'ios-device': 'ios',
