@@ -20244,6 +20244,12 @@ Called by update_net_error_codes.py.-->
   <int value="2546" label="SerialRequestPort"/>
   <int value="2547" label="SerialPortOpen"/>
   <int value="2548" label="SerialPortClose"/>
+  <int value="2549" label="BackgroundFetchManagerFetch"/>
+  <int value="2550" label="BackgroundFetchManagerGet"/>
+  <int value="2551" label="BackgroundFetchManagerGetIds"/>
+  <int value="2552" label="BackgroundFetchRegistrationAbort"/>
+  <int value="2553" label="BackgroundFetchRegistrationMatch"/>
+  <int value="2554" label="BackgroundFetchRegistrationMatchAll"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
