@@ -90,6 +90,7 @@ Refer to README.md for content description and update process.
  <item id="doodle_service" hash_code="41154842" type="0" deprecated="2017-08-28" content_hash_code="28273962" file_path=""/>
  <item id="download_internals_webui_source" hash_code="38670228" type="0" content_hash_code="129391056" os_list="linux,windows" file_path="chrome/browser/ui/webui/download_internals/download_internals_ui_message_handler.cc"/>
  <item id="download_manager_resume" hash_code="35380758" type="0" content_hash_code="41227674" os_list="linux,windows" file_path="components/download/internal/common/download_item_impl.cc"/>
+ <item id="download_recovery_component" hash_code="131711536" type="0" content_hash_code="110581751" os_list="windows" file_path="chrome/chrome_cleaner/components/recovery_component.cc"/>
  <item id="download_web_contents_frame" hash_code="56351037" type="0" content_hash_code="3657889" os_list="linux,windows" file_path="content/browser/web_contents/web_contents_impl.cc"/>
  <item id="downloads_api_run_async" hash_code="121068967" type="0" content_hash_code="87443585" os_list="linux,windows" file_path="chrome/browser/extensions/api/downloads/downloads_api.cc"/>
  <item id="drag_download_file" hash_code="95910019" type="0" content_hash_code="126492858" os_list="linux,windows" file_path="content/browser/download/drag_download_file.cc"/>
