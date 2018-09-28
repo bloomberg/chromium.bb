@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/web_controller.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -81,6 +83,11 @@ WebController::~WebController() {}
 
 const GURL& WebController::GetUrl() {
   return web_contents_->GetLastCommittedURL();
+}
+
+void WebController::LoadURL(const GURL& url) {
+  web_contents_->GetController().LoadURLWithParams(
+      content::NavigationController::LoadURLParams(url));
 }
 
 void WebController::ClickElement(const std::vector<std::string>& selectors,

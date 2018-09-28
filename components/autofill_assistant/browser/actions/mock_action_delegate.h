@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_MOCK_ACTION_DELEGATE_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_MOCK_ACTION_DELEGATE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -95,6 +98,7 @@ class MockActionDelegate : public ActionDelegate {
                void(const std::vector<std::string>& selectors,
                     NodeProto* node_tree_out,
                     base::OnceCallback<void(bool)> callback));
+  MOCK_METHOD1(LoadURL, void(const GURL& url));
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(Restart, void());
   MOCK_METHOD0(GetClientMemory, ClientMemory*());

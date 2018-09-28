@@ -115,6 +115,10 @@ void ScriptExecutor::BuildNodeTree(const std::vector<std::string>& selectors,
                                                std::move(callback));
 }
 
+void ScriptExecutor::LoadURL(const GURL& url) {
+  delegate_->GetWebController()->LoadURL(url);
+}
+
 void ScriptExecutor::Shutdown() {
   at_end_ = SHUTDOWN;
 }

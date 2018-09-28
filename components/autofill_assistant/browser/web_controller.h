@@ -45,6 +45,10 @@ class WebController {
   // Returns the last committed URL of the associated |web_contents_|.
   virtual const GURL& GetUrl();
 
+  // Load |url| in the current tab. Returns immediately, before the new page has
+  // been loaded.
+  virtual void LoadURL(const GURL& url);
+
   // Perform a mouse left button click on the element given by |selectors| and
   // return the result through callback.
   // CSS selectors in |selectors| are ordered from top frame to the frame

@@ -80,6 +80,7 @@ class ScriptExecutor : public ActionDelegate {
   void BuildNodeTree(const std::vector<std::string>& selectors,
                      NodeProto* node_tree_out,
                      base::OnceCallback<void(bool)> callback) override;
+  void LoadURL(const GURL& url) override;
   void Shutdown() override;
   void Restart() override;
   ClientMemory* GetClientMemory() override;
