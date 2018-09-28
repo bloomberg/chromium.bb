@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "content/public/browser/notification_service.h"
 
@@ -64,6 +65,12 @@ class OobeInteractiveUITest : public OobeBaseTest {
  public:
   OobeInteractiveUITest() = default;
   ~OobeInteractiveUITest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kEnableMarketingOptInScreen);
+
+    OobeBaseTest::SetUpCommandLine(command_line);
+  }
 
   void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
