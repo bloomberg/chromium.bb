@@ -62,8 +62,6 @@ void MarkRequestCompleteTask::Start() {
 void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
   auto response = blink::mojom::FetchAPIResponse::New();
   response->url_list = request_info_->GetURLChain();
-  // TODO(crbug.com/838837): fill error and cors_exposed_header_names in
-  // response.
   response->response_type = network::mojom::FetchResponseType::kDefault;
   response->response_time = request_info_->GetResponseTime();
 
