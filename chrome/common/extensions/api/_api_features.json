@@ -588,10 +588,6 @@
     "channel": "stable",
     "matches": ["<all_urls>"]
   },
-  "musicManagerPrivate": {
-    "dependencies": ["permission:musicManagerPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "networking.castPrivate": {
     "channel": "stable",
     "contexts": ["blessed_extension"],

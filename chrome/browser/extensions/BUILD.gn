@@ -260,14 +260,6 @@ jumbo_static_library("extensions") {
     "api/metrics_private/chrome_metrics_private_delegate.h",
     "api/module/module.cc",
     "api/module/module.h",
-    "api/music_manager_private/device_id.cc",
-    "api/music_manager_private/device_id.h",
-    "api/music_manager_private/device_id_chromeos.cc",
-    "api/music_manager_private/device_id_linux.cc",
-    "api/music_manager_private/device_id_mac.cc",
-    "api/music_manager_private/device_id_win.cc",
-    "api/music_manager_private/music_manager_private_api.cc",
-    "api/music_manager_private/music_manager_private_api.h",
     "api/networking_private/networking_private_credentials_getter_chromeos.cc",
     "api/networking_private/networking_private_ui_delegate_chromeos.cc",
     "api/networking_private/networking_private_ui_delegate_chromeos.h",
@@ -986,7 +978,6 @@ jumbo_static_library("extensions") {
       "updater/local_extension_cache.h",
     ]
 
-    sources -= [ "api/music_manager_private/device_id_linux.cc" ]
     if (use_dbus) {
       configs += [ "//build/config/linux/dbus" ]
     }

@@ -125,8 +125,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kMediaRouterPrivate, "mediaRouterPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
-    {APIPermission::kMusicManagerPrivate, "musicManagerPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kNetworkingCastPrivate, "networking.castPrivate"},
     {APIPermission::kPreferencesPrivate, "preferencesPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},

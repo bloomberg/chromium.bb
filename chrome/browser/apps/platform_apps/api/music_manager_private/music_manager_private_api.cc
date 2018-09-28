@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/music_manager_private/music_manager_private_api.h"
+#include "chrome/browser/apps/platform_apps/api/music_manager_private/music_manager_private_api.h"
 
 #include <memory>
 
-#include "chrome/browser/extensions/api/music_manager_private/device_id.h"
+#include "base/bind.h"
+#include "base/values.h"
+#include "chrome/browser/apps/platform_apps/api/music_manager_private/device_id.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -15,28 +17,24 @@ namespace {
 
 const char kDeviceIdNotSupported[] =
     "Device ID API is not supported on this platform.";
-
 }
 
-namespace extensions {
+namespace chrome_apps {
 namespace api {
 
 MusicManagerPrivateGetDeviceIdFunction::
-    MusicManagerPrivateGetDeviceIdFunction() {
-}
+    MusicManagerPrivateGetDeviceIdFunction() {}
 
 MusicManagerPrivateGetDeviceIdFunction::
-    ~MusicManagerPrivateGetDeviceIdFunction() {
-}
+    ~MusicManagerPrivateGetDeviceIdFunction() {}
 
 ExtensionFunction::ResponseAction
 MusicManagerPrivateGetDeviceIdFunction::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DeviceId::GetDeviceId(
-      this->extension_id(),
-      base::Bind(
-          &MusicManagerPrivateGetDeviceIdFunction::DeviceIdCallback,
-          this));
+      extension_id(),
+      base::Bind(&MusicManagerPrivateGetDeviceIdFunction::DeviceIdCallback,
+                 this));
   // GetDeviceId will respond asynchronously.
   return RespondLater();
 }
@@ -51,5 +49,5 @@ void MusicManagerPrivateGetDeviceIdFunction::DeviceIdCallback(
   }
 }
 
-} // namespace api
-} // namespace extensions
+}  // namespace api
+}  // namespace chrome_apps

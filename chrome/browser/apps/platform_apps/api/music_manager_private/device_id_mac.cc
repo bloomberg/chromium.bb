@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/music_manager_private/device_id.h"
+#include "chrome/browser/apps/platform_apps/api/music_manager_private/device_id.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <DiskArbitration/DADisk.h>
@@ -26,9 +26,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace {
+namespace chrome_apps {
+namespace api {
 
-using extensions::api::DeviceId;
+namespace {
 
 const char kRootDirectory[] = "/";
 
@@ -83,8 +84,7 @@ std::string GetVolumeUUIDFromBSDName(const std::string& bsd_name) {
   }
 
   CFUUIDRef volume_uuid = base::mac::GetValueFromDictionary<CFUUIDRef>(
-      disk_description,
-      kDADiskDescriptionVolumeUUIDKey);
+      disk_description, kDADiskDescriptionVolumeUUIDKey);
   if (volume_uuid == NULL) {
     VLOG(1) << "Error getting volume UUID of disk.";
     return std::string();
@@ -116,18 +116,14 @@ std::string GetVolumeUUID() {
 class MacAddressProcessor {
  public:
   MacAddressProcessor(const IsValidMacAddressCallback& is_valid_mac_address)
-    : is_valid_mac_address_(is_valid_mac_address) {
-  }
+      : is_valid_mac_address_(is_valid_mac_address) {}
 
   bool ProcessNetworkController(io_object_t network_controller) {
     // Use the MAC address of the first network interface.
     bool keep_going = true;
     base::ScopedCFTypeRef<CFDataRef> mac_address_data(
-        static_cast<CFDataRef>(
-            IORegistryEntryCreateCFProperty(network_controller,
-                                            CFSTR(kIOMACAddress),
-                                            kCFAllocatorDefault,
-                                            0)));
+        static_cast<CFDataRef>(IORegistryEntryCreateCFProperty(
+            network_controller, CFSTR(kIOMACAddress), kCFAllocatorDefault, 0)));
     if (!mac_address_data)
       return keep_going;
 
@@ -136,18 +132,16 @@ class MacAddressProcessor {
     if (!is_valid_mac_address_.Run(mac_address, mac_address_size))
       return keep_going;
 
-    std::string mac_address_string = base::ToLowerASCII(base::HexEncode(
-        mac_address, mac_address_size));
+    std::string mac_address_string =
+        base::ToLowerASCII(base::HexEncode(mac_address, mac_address_size));
 
     base::ScopedCFTypeRef<CFStringRef> provider_class(
-        static_cast<CFStringRef>(
-            IORegistryEntryCreateCFProperty(network_controller,
-                                            CFSTR(kIOProviderClassKey),
-                                            kCFAllocatorDefault,
-                                            0)));
+        static_cast<CFStringRef>(IORegistryEntryCreateCFProperty(
+            network_controller, CFSTR(kIOProviderClassKey), kCFAllocatorDefault,
+            0)));
     if (provider_class) {
       if (CFStringCompare(provider_class, CFSTR("IOPCIDevice"), 0) ==
-              kCFCompareEqualTo) {
+          kCFCompareEqualTo) {
         // MAC address from built-in network card is always best choice.
         found_mac_address_ = mac_address_string;
         keep_going = false;
@@ -186,9 +180,7 @@ std::string GetMacAddress(
   }
 
   io_iterator_t iterator_ref;
-  kr = IOServiceGetMatchingServices(master_port,
-                                    match_classes,
-                                    &iterator_ref);
+  kr = IOServiceGetMatchingServices(master_port, match_classes, &iterator_ref);
   if (kr != KERN_SUCCESS) {
     LOG(ERROR) << "IOServiceGetMatchingServices failed: " << kr;
     return "";
@@ -203,8 +195,7 @@ std::string GetMacAddress(
       break;
 
     io_object_t controller_service_ref;
-    kr = IORegistryEntryGetParentEntry(interface_service,
-                                       kIOServicePlane,
+    kr = IORegistryEntryGetParentEntry(interface_service, kIOServicePlane,
                                        &controller_service_ref);
     if (kr != KERN_SUCCESS) {
       LOG(ERROR) << "IORegistryEntryGetParentEntry failed: " << kr;
@@ -236,9 +227,6 @@ void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
 
 }  // namespace
 
-namespace extensions {
-namespace api {
-
 // static
 void DeviceId::GetRawDeviceId(const IdCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -250,4 +238,4 @@ void DeviceId::GetRawDeviceId(const IdCallback& callback) {
 }
 
 }  // namespace api
-}  // namespace extensions
+}  // namespace chrome_apps

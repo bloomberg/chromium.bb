@@ -14,5 +14,9 @@
   "easyUnlockPrivate": {
     "dependencies": ["permission:easyUnlockPrivate"],
     "contexts": ["blessed_extension"]
+  },
+  "musicManagerPrivate": {
+    "dependencies": ["permission:musicManagerPrivate"],
+    "contexts": ["blessed_extension"]
   }
 }
