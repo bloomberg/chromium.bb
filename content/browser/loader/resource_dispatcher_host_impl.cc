@@ -1505,10 +1505,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   headers.AddHeadersFromString(info.begin_params->headers);
 
   std::string accept_value = network::kFrameAcceptHeader;
-  // TODO(https://crbug.com/840704): Decide whether the Accept header should
-  // advertise the state of kSignedHTTPExchangeOriginTrial before starting the
-  // Origin-Trial.
-  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
+  if (signed_exchange_utils::ShouldAdvertiseAcceptHeader(
+          url::Origin::Create(info.common_params.url))) {
     DCHECK(!accept_value.empty());
     accept_value.append(kAcceptHeaderSignedExchangeSuffix);
   }
