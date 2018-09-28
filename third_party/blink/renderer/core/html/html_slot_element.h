@@ -53,19 +53,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   const HeapVector<Member<Element>> AssignedElementsForBinding(
       const AssignedNodesOptions&);
 
-  HeapVector<Member<Node>> DeleteCommonAssignedNodeAndReturnAddedAssignedNode(
-      const HeapVector<Member<Node>>& new_assigned_nodes);
-
-  void assign(HeapVector<Member<Node>> nodes);
-  bool ContainsInAssignedNodesCandidates(Node&) const;
-  HeapHashSet<Member<Node>>& AssignedNodesCandidate() {
-    return assigned_nodes_candidates_;
-  }
-  void SignalSlotChange();
-  void SignalSlotChangeAfterRemoved();
-
-  const HeapVector<Member<Node>> FlattenedAssignedNodes();
-
   Node* FirstAssignedNode() const {
     auto& nodes = AssignedNodes();
     return nodes.IsEmpty() ? nullptr : nodes.front().Get();
@@ -79,6 +66,10 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   Node* AssignedNodePreviousTo(const Node&) const;
 
   void AppendAssignedNode(Node&);
+  void ClearAssignedNodes();
+
+  const HeapVector<Member<Node>> FlattenedAssignedNodes();
+  void RecalcFlatTreeChildren();
 
   void AttachLayoutTree(AttachContext&) final;
   void DetachLayoutTree(const AttachContext& = AttachContext()) final;
@@ -112,10 +103,18 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   static const AtomicString& UserAgentCustomAssignSlotName();
   static const AtomicString& UserAgentDefaultSlotName();
 
-  void Trace(blink::Visitor*) override;
+  // For imperative Shadow DOM distribution APIs
+  HeapVector<Member<Node>> DeleteCommonAssignedNodeAndReturnAddedAssignedNode(
+      const HeapVector<Member<Node>>& new_assigned_nodes);
+  void assign(HeapVector<Member<Node>> nodes);
+  bool ContainsInAssignedNodesCandidates(Node&) const;
+  HeapHashSet<Member<Node>>& AssignedNodesCandidate() {
+    return assigned_nodes_candidates_;
+  }
+  void SignalSlotChange();
+  void SignalSlotChangeAfterRemoved();
 
-  void ClearAssignedNodes();
-  void RecalcFlatTreeChildren();
+  void Trace(blink::Visitor*) override;
 
  private:
   HTMLSlotElement(Document&);
@@ -143,11 +142,12 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void ClearAssignedNodesAndFlatTreeChildren();
 
   HeapVector<Member<Node>> assigned_nodes_;
+  HeapVector<Member<Node>> flat_tree_children_;
+
   bool slotchange_event_enqueued_ = false;
 
+  // For imperative Shadow DOM distribution APIs
   HeapHashSet<Member<Node>> assigned_nodes_candidates_;
-
-  HeapVector<Member<Node>> flat_tree_children_;
 
   // TODO(hayato): Move this to more appropriate directory (e.g. platform/wtf)
   // if there are more than one usages.
