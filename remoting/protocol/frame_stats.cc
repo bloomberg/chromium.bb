@@ -95,6 +95,12 @@ HostFrameStats HostFrameStats::FromFrameStatsMessage(
   if (message.has_bandwidth_estimate_kbps()) {
     result.bandwidth_estimate_kbps = message.bandwidth_estimate_kbps();
   }
+  if (message.has_capturer_id()) {
+    result.capturer_id = message.capturer_id();
+  }
+  if (message.has_frame_quantizer()) {
+    result.frame_quantizer = message.frame_quantizer();
+  }
 
   return result;
 }
@@ -135,6 +141,9 @@ void HostFrameStats::ToFrameStatsMessage(FrameStatsMessage* message_out) const {
   }
   if (capturer_id != webrtc::DesktopCapturerId::kUnknown) {
     message_out->set_capturer_id(capturer_id);
+  }
+  if (frame_quantizer != -1) {
+    message_out->set_frame_quantizer(frame_quantizer);
   }
 }
 
