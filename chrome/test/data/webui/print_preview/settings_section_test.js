@@ -557,8 +557,8 @@ cr.define('settings_sections_tests', function() {
       assertFalse(pagesElement.hidden);
 
       // Default value is all pages. Print ticket expects this to be empty.
-      const allRadio = pagesElement.$$('#all-radio-button');
-      const customRadio = pagesElement.$$('#custom-radio-button');
+      const allRadio = pagesElement.$.allRadioButton;
+      const customRadio = pagesElement.$.customRadioButton;
       const pagesCrInput = pagesElement.$.pageSettingsCustomInput;
       const pagesInput = pagesCrInput.inputElement;
 
@@ -582,10 +582,10 @@ cr.define('settings_sections_tests', function() {
       // Set selection of pages 1 and 2.
       customRadio.click();
 
-      // Manually set |customSelected_| since focus may not work correctly on
+      // Manually set |optionSelected_| since focus may not work correctly on
       // MacOS. The PageSettingsTests verify this behavior is correct on all
       // platforms.
-      pagesElement.set('customSelected_', true);
+      pagesElement.set('optionSelected_', pagesElement.pagesValueEnum_.CUSTOM);
 
       triggerInputEvent(pagesInput, '1-2');
       return test_util.eventToPromise('input-change', pagesElement)
