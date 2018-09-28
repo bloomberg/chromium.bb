@@ -32,6 +32,13 @@ def GetAuthorFromGitBlame(blame_output):
   return None
 
 
+def GetGitCommand():
+  """Returns a git command that does not need to be executed using shell=True.
+  On non-Windows platforms: 'git'. On Windows: 'git.bat'.
+  """
+  return 'git.bat' if sys.platform == 'win32' else 'git'
+
+
 def GetOwnersIfThirdParty(source):
   """Return owners using OWNERS file if in third_party."""
   match_index = source.find(THIRD_PARTY_SEARCH_STRING)
@@ -72,8 +79,9 @@ def GetOwnersForFuzzer(sources):
       # Found the fuzzer source (and not dependency of fuzzer).
 
       git_dir = os.path.join(CHROMIUM_SRC_DIR, '.git')
+      git_command = GetGitCommand()
       is_git_file = bool(subprocess.check_output(
-          ['git', '--git-dir', git_dir, 'ls-files', source],
+          [git_command, '--git-dir', git_dir, 'ls-files', source],
           cwd=CHROMIUM_SRC_DIR))
       if not is_git_file:
         # File is not in working tree. Return owners for third_party.
@@ -84,9 +92,8 @@ def GetOwnersForFuzzer(sources):
       # the original author has authored line 1 which is usually the
       # copyright line and does not change even with file rename / move.
       blame_output = subprocess.check_output(
-          ['git', '--git-dir', git_dir,
-           'blame', '--porcelain', '-L1,1', source],
-          cwd=CHROMIUM_SRC_DIR)
+          [git_command, '--git-dir', git_dir, 'blame', '--porcelain', '-L1,1',
+           source], cwd=CHROMIUM_SRC_DIR)
       return GetAuthorFromGitBlame(blame_output)
 
   return None
