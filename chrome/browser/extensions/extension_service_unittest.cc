@@ -4848,9 +4848,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   std::string origin_id = storage::GetIdentifierFromOrigin(ext_url);
 
   // Set a cookie for the extension.
-  net::CookieStore* cookie_store = profile()->GetRequestContextForExtensions()
-                                            ->GetURLRequestContext()
-                                            ->cookie_store();
+  net::CookieStore* cookie_store =
+      profile()->GetExtensionsCookieStoreGetter().Run();
   ASSERT_TRUE(cookie_store);
   net::CookieOptions options;
   cookie_store->SetCookieWithOptionsAsync(

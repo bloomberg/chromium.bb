@@ -110,12 +110,12 @@ class AuthCredentials;
 class ClientCertIdentity;
 using ClientCertIdentityList = std::vector<std::unique_ptr<ClientCertIdentity>>;
 class ClientCertStore;
+class CookieStore;
 class HttpRequestHeaders;
 class NetLog;
 class SSLCertRequestInfo;
 class SSLInfo;
 class URLRequest;
-class URLRequestContext;
 }  // namespace net
 
 namespace network {
@@ -611,12 +611,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // "1812:e, 00001800-0000-1000-8000-00805f9b34fb:w, ignored:1, alsoignored."
   virtual std::string GetWebBluetoothBlocklist();
 
-  // Allow the embedder to override the request context based on the URL for
-  // certain operations, like cookie access. Returns nullptr to indicate the
-  // regular request context should be used.
+  // Allow the embedder to override the cookie store for a particular URL.
+  // Returns nullptr to indicate the regular cookie store should be used.
   // This is called on the IO thread.
-  virtual net::URLRequestContext* OverrideRequestContextForURL(
-      const GURL& url, ResourceContext* context);
+  virtual net::CookieStore* OverrideCookieStoreForURL(const GURL& url,
+                                                      ResourceContext* context);
 
   // Allows the embedder to override the LocationProvider implementation.
   // Return nullptr to indicate the default one for the platform should be

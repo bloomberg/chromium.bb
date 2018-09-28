@@ -632,11 +632,6 @@ ProfileIOData::~ProfileIOData() {
   if (domain_reliability_monitor_unowned_)
     domain_reliability_monitor_unowned_->Shutdown();
 
-  // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
-  // are already done in the URLRequestContext destructor.
-  if (extensions_request_context_)
-    extensions_request_context_->AssertNoURLRequests();
-
   current_context = 0;
   for (URLRequestContextMap::iterator it =
            isolated_media_request_context_map_.begin();
@@ -747,11 +742,6 @@ net::URLRequestContext* ProfileIOData::GetMediaRequestContext() const {
   net::URLRequestContext* context = AcquireMediaRequestContext();
   DCHECK(context);
   return context;
-}
-
-net::URLRequestContext* ProfileIOData::GetExtensionsRequestContext() const {
-  DCHECK(initialized_);
-  return extensions_request_context_.get();
 }
 
 net::URLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
@@ -966,10 +956,6 @@ void ProfileIOData::Init(
   IOThread::Globals* const io_thread_globals = io_thread->globals();
 
   account_consistency_ = profile_params_->account_consistency;
-
-  // Create extension request context.  Only used for cookies.
-  extensions_request_context_.reset(new net::URLRequestContext());
-  extensions_request_context_->set_name("extensions");
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;

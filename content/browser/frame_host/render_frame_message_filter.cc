@@ -466,12 +466,11 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
     const GURL& site_for_cookies,
     GetCookiesCallback callback,
     const net::CookieList& cookie_list) {
-  net::URLRequestContext* context = GetRequestContextForURL(url);
   // Check the policy for get cookies, and pass cookie_list to the
   // TabSpecificContentSetting for logging purpose.
-  if (context && GetContentClient()->browser()->AllowGetCookie(
-                     url, site_for_cookies, cookie_list, resource_context_,
-                     render_process_id_, render_frame_id)) {
+  if (GetContentClient()->browser()->AllowGetCookie(
+          url, site_for_cookies, cookie_list, resource_context_,
+          render_process_id_, render_frame_id)) {
     std::move(callback).Run(net::CanonicalCookie::BuildCookieLine(cookie_list));
   } else {
     std::move(callback).Run(std::string());
@@ -553,26 +552,32 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
 
   if (!GetContentClient()->browser()->AllowSetCookie(
           url, site_for_cookies, *cookie, resource_context_, render_process_id_,
-          render_frame_id))
-    return;
-
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  // If the embedder overrides the URLRequestContext then always use it, even if
-  // the network service is enabled, instead of the CookieManager associated
-  // this process' StoragePartition.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      context == request_context_->GetURLRequestContext()) {
-    (*GetCookieManager())
-        ->SetCanonicalCookie(*cookie, url.SchemeIsCryptographic(),
-                             !options.exclude_httponly(),
-                             net::CookieStore::SetCookiesCallback());
+          render_frame_id)) {
     return;
   }
 
-  // Pass a null callback since we don't care about when the 'set' completes.
-  context->cookie_store()->SetCanonicalCookieAsync(
-      std::move(cookie), url.SchemeIsCryptographic(),
-      !options.exclude_httponly(), net::CookieStore::SetCookiesCallback());
+  // If the embedder overrides the cookie store then always use it, even if
+  // the network service is enabled, instead of the CookieManager associated
+  // this process' StoragePartition.
+  net::CookieStore* cookie_store =
+      GetContentClient()->browser()->OverrideCookieStoreForURL(
+          url, resource_context_);
+  if (cookie_store ||
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (!cookie_store)
+      cookie_store = request_context_->GetURLRequestContext()->cookie_store();
+
+    // Pass a null callback since we don't care about when the 'set' completes.
+    cookie_store->SetCanonicalCookieAsync(
+        std::move(cookie), url.SchemeIsCryptographic(),
+        !options.exclude_httponly(), net::CookieStore::SetCookiesCallback());
+    return;
+  }
+
+  (*GetCookieManager())
+      ->SetCanonicalCookie(*cookie, url.SchemeIsCryptographic(),
+                           !options.exclude_httponly(),
+                           net::CookieStore::SetCookiesCallback());
 }
 
 void RenderFrameMessageFilter::GetCookies(int render_frame_id,
@@ -603,33 +608,35 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
     options.set_same_site_cookie_mode(
         net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
   }
-
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  // If the embedder overrides the URLRequestContext then always use it, even if
+  // If the embedder overrides the cookie store then always use it, even if
   // the network service is enabled, instead of the CookieManager associated
   // this process' StoragePartition.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      context == request_context_->GetURLRequestContext()) {
-    // TODO(jam): modify GetRequestContextForURL to work with network service.
-    // Merge this with code path below for non-network service.
-    (*GetCookieManager())
-        ->GetCookieList(
-            url, options,
-            base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies,
-                           this, render_frame_id, url, site_for_cookies,
-                           std::move(callback)));
+  net::CookieStore* cookie_store =
+      GetContentClient()->browser()->OverrideCookieStoreForURL(
+          url, resource_context_);
+  if (cookie_store ||
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (!cookie_store)
+      cookie_store = request_context_->GetURLRequestContext()->cookie_store();
+
+    // If we crash here, figure out what URL the renderer was requesting.
+    // http://crbug.com/99242
+    DEBUG_ALIAS_FOR_GURL(url_buf, url);
+
+    cookie_store->GetCookieListWithOptionsAsync(
+        url, options,
+        base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
+                       render_frame_id, url, site_for_cookies,
+                       std::move(callback)));
     return;
   }
 
-  // If we crash here, figure out what URL the renderer was requesting.
-  // http://crbug.com/99242
-  DEBUG_ALIAS_FOR_GURL(url_buf, url);
-
-  context->cookie_store()->GetCookieListWithOptionsAsync(
-      url, options,
-      base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
-                     render_frame_id, url, site_for_cookies,
-                     std::move(callback)));
+  (*GetCookieManager())
+      ->GetCookieList(
+          url, options,
+          base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
+                         render_frame_id, url, site_for_cookies,
+                         std::move(callback)));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -719,18 +726,5 @@ void RenderFrameMessageFilter::OnPluginInstanceThrottleStateChange(
 }
 
 #endif  // ENABLE_PLUGINS
-
-net::URLRequestContext* RenderFrameMessageFilter::GetRequestContextForURL(
-    const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  net::URLRequestContext* context =
-      GetContentClient()->browser()->OverrideRequestContextForURL(
-          url, resource_context_);
-  if (!context)
-    context = request_context_->GetURLRequestContext();
-
-  return context;
-}
 
 }  // namespace content

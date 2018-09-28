@@ -133,7 +133,8 @@ class ProfileImpl : public Profile {
   PrefService* GetOffTheRecordPrefs() override;
   PrefService* GetReadOnlyOffTheRecordPrefs() override;
   net::URLRequestContextGetter* GetRequestContext() override;
-  net::URLRequestContextGetter* GetRequestContextForExtensions() override;
+  base::OnceCallback<net::CookieStore*()> GetExtensionsCookieStoreGetter()
+      override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;

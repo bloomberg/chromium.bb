@@ -155,41 +155,6 @@ namespace {
 // Default profile name
 const char kTestingProfile[] = "testing_profile";
 
-class TestExtensionURLRequestContext : public net::URLRequestContext {
- public:
-  TestExtensionURLRequestContext() {
-    content::CookieStoreConfig cookie_config;
-    cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-    cookie_store_ =
-        content::CreateCookieStore(cookie_config, nullptr /* netlog */);
-    set_cookie_store(cookie_store_.get());
-  }
-
-  std::unique_ptr<net::CookieStore> cookie_store_;
-
-  ~TestExtensionURLRequestContext() override { AssertNoURLRequests(); }
-};
-
-class TestExtensionURLRequestContextGetter
-    : public net::URLRequestContextGetter {
- public:
-  net::URLRequestContext* GetURLRequestContext() override {
-    if (!context_.get())
-      context_.reset(new TestExtensionURLRequestContext());
-    return context_.get();
-  }
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
-  }
-
- protected:
-  ~TestExtensionURLRequestContextGetter() override {}
-
- private:
-  std::unique_ptr<net::URLRequestContext> context_;
-};
-
 std::unique_ptr<KeyedService> BuildHistoryService(
     content::BrowserContext* context) {
   return std::make_unique<history::HistoryService>(
@@ -852,10 +817,23 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
-  if (!extensions_request_context_.get())
-    extensions_request_context_ = new TestExtensionURLRequestContextGetter();
-  return extensions_request_context_.get();
+base::OnceCallback<net::CookieStore*()>
+TestingProfile::GetExtensionsCookieStoreGetter() {
+  return base::BindOnce(
+      [](std::unique_ptr<net::CookieStore,
+                         content::BrowserThread::DeleteOnIOThread>*
+             cookie_store) {
+        if (!*cookie_store) {
+          content::CookieStoreConfig cookie_config;
+          cookie_config.cookieable_schemes.push_back(
+              extensions::kExtensionScheme);
+          cookie_store->reset(
+              content::CreateCookieStore(cookie_config, nullptr /* netlog */)
+                  .release());
+        }
+        return cookie_store->get();
+      },
+      &extensions_cookie_store_);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

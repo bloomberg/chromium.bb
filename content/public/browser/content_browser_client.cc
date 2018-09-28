@@ -382,8 +382,9 @@ void ContentBrowserClient::SelectClientCertificate(
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<ClientCertificateDelegate> delegate) {}
 
-net::URLRequestContext* ContentBrowserClient::OverrideRequestContextForURL(
-    const GURL& url, ResourceContext* context) {
+net::CookieStore* ContentBrowserClient::OverrideCookieStoreForURL(
+    const GURL& url,
+    ResourceContext* context) {
   return nullptr;
 }
 
