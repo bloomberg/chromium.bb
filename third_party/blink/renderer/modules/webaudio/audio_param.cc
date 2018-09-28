@@ -52,7 +52,9 @@ AudioParamHandler::AudioParamHandler(BaseAudioContext& context,
       automation_rate_(rate),
       rate_mode_(rate_mode),
       min_value_(min_value),
-      max_value_(max_value) {
+      max_value_(max_value),
+      summing_bus_(
+          AudioBus::Create(1, AudioUtilities::kRenderQuantumFrames, false)) {
   // The destination MUST exist because we need the destination handler for the
   // AudioParam.
   CHECK(context.destination());
@@ -258,23 +260,25 @@ void AudioParamHandler::CalculateFinalValues(float* values,
     SetIntrinsicValue(value);
   }
 
-  // Now sum all of the audio-rate connections together (unity-gain summing
-  // junction).  Note that connections would normally be mono, but we mix down
-  // to mono if necessary.
-  scoped_refptr<AudioBus> summing_bus =
-      AudioBus::Create(1, number_of_values, false);
-  summing_bus->SetChannelMemory(0, values, number_of_values);
+  // If there are any connections, sum all of the audio-rate connections
+  // together (unity-gain summing junction).  Note that connections would
+  // normally be mono, but we mix down to mono if necessary.
+  if (NumberOfRenderingConnections() > 0) {
+    DCHECK_LE(number_of_values, AudioUtilities::kRenderQuantumFrames);
 
-  for (unsigned i = 0; i < NumberOfRenderingConnections(); ++i) {
-    AudioNodeOutput* output = RenderingOutput(i);
-    DCHECK(output);
+    summing_bus_->SetChannelMemory(0, values, number_of_values);
 
-    // Render audio from this output.
-    AudioBus* connection_bus =
-        output->Pull(nullptr, AudioUtilities::kRenderQuantumFrames);
+    for (unsigned i = 0; i < NumberOfRenderingConnections(); ++i) {
+      AudioNodeOutput* output = RenderingOutput(i);
+      DCHECK(output);
 
-    // Sum, with unity-gain.
-    summing_bus->SumFrom(*connection_bus);
+      // Render audio from this output.
+      AudioBus* connection_bus =
+          output->Pull(nullptr, AudioUtilities::kRenderQuantumFrames);
+
+      // Sum, with unity-gain.
+      summing_bus_->SumFrom(*connection_bus);
+    }
   }
 }
 
