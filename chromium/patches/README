@@ -718,23 +718,6 @@ Date:   Mon Mar 5 12:36:28 2018 -0800
 libavformat/oggparseflac.c
 
 ------------------------------------------------------------------
-commit c73a378a91143356644b89768850c9903d52b4e4
-Author: Matt Wolenetz <wolenetz@chromium.org>
-Date:   Mon Mar 12 17:10:42 2018 -0700
-
-    Update chromium patches README
-    
-    Removes patch entries for those that came in during the M67 merge from
-    upstream.
-    
-    Removes another UNCHECKED_BITSTREAM_READER (lavc/utvideodec.c)
-    
-    BUG=803898,812567,816787,804097,806122,801821,806580
-
- Affects: 
-libavcodec/utvideodec.c
-
-------------------------------------------------------------------
 commit 24bf13b3c13a22c5d1ae4295badc9b79f94e6398
 Author: Dale Curtis <dalecurtis@chromium.org>
 Date:   Tue Apr 17 11:14:57 2018 -0700
@@ -803,86 +786,17 @@ Date:   Thu May 24 13:43:24 2018 -0700
 libavutil/encryption_info.c
 
 ------------------------------------------------------------------
-commit a69bb2d3a1420cc4eed7b37e99cd3145a091a59d
-Author: Jacob Trimble <modmaker@google.com>
-Date:   Mon Aug 13 15:29:32 2018 -0700
+commit 9846ee38e057a93db62f6730d0107bf68d8329ae
+Merge: bbe6b81a6c 179ed2d2e0
+Author: John Rummell <jrummell@chromium.org>
+Date:   Fri Sep 28 10:56:34 2018 -0700
 
-    avutil/encryption_info: Fix size calculation.
+    Merge remote-tracking branch 'upstream/master' into sushi-2018-09-28-10-43-19
     
-    Bug: 873693
-    Change-Id: Ibc46ef48e86e38a17f0bb833c1ff972f9dde37d6
-    Reviewed-on: https://chromium-review.googlesource.com/1173449
-    Reviewed-by: Dale Curtis <dalecurtis@chromium.org>
+    Conflicts:
+      configure
+      libavcodec/utvideodec.c
 
  Affects: 
-libavutil/encryption_info.c
-
-------------------------------------------------------------------
-commit ddbe19a87228d61d131fe3b1876cd68bb4cbc3be
-Author: Jacob Trimble <modmaker@google.com>
-Date:   Tue Aug 14 10:53:06 2018 -0700
-
-    avformat/mov: Allow saio/saiz in clear content.
-    
-    If there is a saio/saiz in clear content, we shouldn't create the
-    encryption index if we don't already have one.  Otherwise it will
-    confuse the cenc_filter.
-    
-    Bug: 873432
-    Change-Id: I1bfb20f590d667a2ff3c4fcb5efecbcc7ed99387
-    Reviewed-on: https://chromium-review.googlesource.com/1174892
-    Reviewed-by: Matthew Wolenetz <wolenetz@chromium.org>
-    Reviewed-by: Dale Curtis <dalecurtis@chromium.org>
-
- Affects: 
-libavformat/mov.c
-
-------------------------------------------------------------------
-commit 97b257f94dbc861d8a5a59a6be85dc540c3f210e
-Author: Dale Curtis <dalecurtis@chromium.org>
-Date:   Tue Aug 21 15:42:31 2018 -0700
-
-    Correct opus-in-mp4 pre-skip to be uint16_t versus int16_t.
-    
-    This field is a uint16_t, see docs:
-    http://opus-codec.org/docs/opus_in_isobmff.html#4.3.2
-    
-    Signed-off-by: Dale Curtis <dalecurtis@chromium.org>
-
- Affects: 
-libavformat/mov.c
-
-------------------------------------------------------------------
-commit 178c540a56c919146cb66751c5165d7b486c4299
-Author: Dale Curtis <dalecurtis@chromium.org>
-Date:   Thu Aug 30 15:18:25 2018 -0700
-
-    avformat/mov: Error on too large stsd entry counts.
-    
-    Entries are always at least 8 bytes per the parsing code, so if we
-    see an impossible entry count avoid massive allocations. This is
-    similar to an existing check in mov_read_stsc().
-    
-    Since ff_mov_read_stsd_entries() does eof checks, an alternative
-    approach could be to clamp the entry count to atom.size / 8.
-    
-    Signed-off-by: Dale Curtis <dalecurtis@chromium.org>
-    Signed-off-by: Michael Niedermayer <michael@niedermayer.cc>
-
- Affects: 
-libavformat/mov.c
-
-------------------------------------------------------------------
-commit fa9c18db8b63d9217e3c55885f81e13138487522
-Author: Dale Curtis <dalecurtis@chromium.org>
-Date:   Fri Sep 7 15:37:09 2018 -0700
-
-    avformat/utils: Don't calculate duration using AV_NOPTS_VALUE for start_time.
-    
-    Found by ClusterFuzz, https://crbug.com/879852
-    
-    Signed-off-by: Michael Niedermayer <michael@niedermayer.cc>
-
- Affects: 
-libavformat/utils.c
+libavcodec/utvideodec.c
 
