@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accessibility/ax_host_service.h"
+#include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 
-#include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
@@ -12,7 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
 
-namespace ash {
 namespace {
 
 class TestAXRemoteHost : ax::mojom::AXRemoteHost {
@@ -53,7 +51,16 @@ class TestAXRemoteHost : ax::mojom::AXRemoteHost {
   DISALLOW_COPY_AND_ASSIGN(TestAXRemoteHost);
 };
 
-using AXHostServiceTest = AshTestBase;
+class AXHostServiceTest : public testing::Test {
+ public:
+  AXHostServiceTest() = default;
+  ~AXHostServiceTest() override = default;
+
+ private:
+  base::test::ScopedTaskEnvironment scoped_task_enviroment_;
+
+  DISALLOW_COPY_AND_ASSIGN(AXHostServiceTest);
+};
 
 TEST_F(AXHostServiceTest, AddClientThenEnable) {
   AXHostService service;
@@ -113,4 +120,3 @@ TEST_F(AXHostServiceTest, PerformAction) {
 }
 
 }  // namespace
-}  // namespace ash

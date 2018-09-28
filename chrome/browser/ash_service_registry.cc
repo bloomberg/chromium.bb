@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash_service_registry.h"
 
-#include "ash/accessibility/ax_host_service.h"
 #include "ash/ash_service.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
@@ -16,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 #include "chrome/browser/chromeos/prefs/pref_connector_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/service_manager_connection.h"
@@ -84,19 +84,19 @@ void RegisterInProcessServices(
     (*services)[ash::mojom::kPrefConnectorServiceName] = info;
   }
 
-  if (features::IsMultiProcessMash())
-    return;
-
   {
     // Register the accessibility host service.
     service_manager::EmbeddedServiceInfo info;
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
     info.factory =
         base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
-          return std::make_unique<ash::AXHostService>();
+          return std::make_unique<AXHostService>();
         });
     (*services)[ax::mojom::kAXHostServiceName] = info;
   }
+
+  if (features::IsMultiProcessMash())
+    return;
 
   (*services)[ash::mojom::kServiceName] =
       ash::AshService::CreateEmbeddedServiceInfo();

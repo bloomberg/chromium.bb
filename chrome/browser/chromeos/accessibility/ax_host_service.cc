@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accessibility/ax_host_service.h"
+#include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
+#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "ui/accessibility/ax_event.h"
+#include "ui/aura/env.h"
 #include "ui/views/mus/ax_remote_host.h"
-
-namespace ash {
 
 AXHostService* AXHostService::instance_ = nullptr;
 
@@ -23,8 +23,12 @@ AXHostService::AXHostService() {
   // AX tree ID is automatically assigned.
   DCHECK(!tree_id().empty());
 
-  // TODO(jamescook): Eliminate this when multiple remote trees are supported.
-  Shell::Get()->accessibility_controller()->set_remote_ax_tree_id(tree_id());
+  // ash::Shell may not exist in tests.
+  if (ash::Shell::HasInstance()) {
+    // TODO(jamescook): Eliminate this when tree ID assignment is handed in ash.
+    ash::Shell::Get()->accessibility_controller()->set_remote_ax_tree_id(
+        tree_id());
+  }
 
   DCHECK(!instance_);
   instance_ = this;
@@ -67,12 +71,16 @@ void AXHostService::HandleAccessibilityEvent(
     const std::vector<ui::AXTreeUpdate>& updates,
     const ui::AXEvent& event) {
   CHECK_EQ(tree_id, this->tree_id());
-  // Use an in-process delegate back to Chrome for efficiency in classic ash.
-  // For mash we'll need to pass around a mojo interface pointer such that a
-  // remote app can talk directly to the browser process and not ping-pong
-  // through the ash process.
-  Shell::Get()->accessibility_delegate()->DispatchAccessibilityEvent(
-      tree_id, updates, event);
+  ExtensionMsg_AccessibilityEventBundleParams event_bundle;
+  event_bundle.tree_id = tree_id;
+  for (const ui::AXTreeUpdate& update : updates)
+    event_bundle.updates.push_back(update);
+  event_bundle.events.push_back(event);
+  event_bundle.mouse_location = aura::Env::GetInstance()->last_mouse_location();
+
+  // Forward the tree updates and the event to the accessibility extension.
+  extensions::AutomationEventRouter::GetInstance()->DispatchAccessibilityEvents(
+      event_bundle);
 }
 
 void AXHostService::PerformAction(const ui::AXActionData& data) {
@@ -96,7 +104,6 @@ void AXHostService::NotifyAutomationEnabled() {
 }
 
 void AXHostService::OnRemoteHostDisconnected() {
-  Shell::Get()->accessibility_delegate()->DispatchTreeDestroyedEvent(tree_id());
+  extensions::AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
+      tree_id(), nullptr /* browser_context */);
 }
-
-}  // namespace ash
