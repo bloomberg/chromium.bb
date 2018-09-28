@@ -314,21 +314,13 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
   if (SupportsAssignment()) {
     AttachContext children_context(context);
 
-    for (auto& node : ChildrenInFlatTreeIfAssignmentIsSupported()) {
+    for (auto& node : AssignedNodes()) {
       if (node->NeedsAttach())
         node->AttachLayoutTree(children_context);
     }
     if (children_context.previous_in_flow)
       context.previous_in_flow = children_context.previous_in_flow;
   }
-}
-
-// TODO(hayato): Rename this function once we enable IncrementalShadowDOM
-// by default because this function doesn't consider fallback elements in case
-// of IncementalShadowDOM.
-const HeapVector<Member<Node>>&
-HTMLSlotElement::ChildrenInFlatTreeIfAssignmentIsSupported() {
-  return AssignedNodes();
 }
 
 void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
@@ -345,13 +337,11 @@ void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees(
   if (!SupportsAssignment())
     return;
 
-  const HeapVector<Member<Node>>& flat_tree_children =
-      ChildrenInFlatTreeIfAssignmentIsSupported();
+  const HeapVector<Member<Node>>& assigned_nodes = AssignedNodes();
 
   // This loop traverses the nodes from right to left for the same reason as the
   // one described in ContainerNode::RebuildChildrenLayoutTrees().
-  for (auto it = flat_tree_children.rbegin(); it != flat_tree_children.rend();
-       ++it) {
+  for (auto it = assigned_nodes.rbegin(); it != assigned_nodes.rend(); ++it) {
     RebuildLayoutTreeForChild(*it, whitespace_attacher);
   }
 }
