@@ -2168,9 +2168,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 150m interval',
   )
 
-  _pi_no_hwtest_boards = frozenset([
-      'grunt',
-  ])
+  _pi_no_hwtest_boards = frozenset([])
   _pi_no_hwtest_experimental_boards = frozenset([
       'eve-arcnext',
   ])
@@ -2178,7 +2176,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'caroline-arcnext',
       'kevin-arcnext',
   ])
-  _pi_hwtest_experimental_boards = frozenset([])
+  _pi_hwtest_experimental_boards = frozenset([
+      'grunt',
+  ])
   _pi_vmtest_boards = frozenset([
       'betty-arcnext'
   ])
@@ -2751,7 +2751,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     (None,            None,            'caroline-arcnext', None),            # arcnext
     ('nyan_blaze',    None,            None,               None),            # Add for Skylab test
     ('scarlet'   ,    None,            None,               None),            # scarlet (RK3399 unibuild)
-    ('grunt',         None,            None,               None),            # grunt (AMD unibuild)
+    ('grunt',         None,            'grunt',            None),            # grunt (AMD unibuild)
   ])
   # pylint: enable=bad-continuation, bad-whitespace, line-too-long
 
@@ -3370,6 +3370,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
 
   _chrome_pfq_experimental_boards = frozenset([
       'bob',
+      'grunt',
       'hana',
       'reef',
       'nyan_big',
@@ -4002,6 +4003,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
       'caroline-arcnext-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'grunt-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
