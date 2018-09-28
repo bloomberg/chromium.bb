@@ -19,7 +19,8 @@ class PLATFORM_EXPORT FrameResourceCoordinator final
   WTF_MAKE_NONCOPYABLE(FrameResourceCoordinator);
 
  public:
-  static FrameResourceCoordinator* Create(service_manager::InterfaceProvider*);
+  static std::unique_ptr<FrameResourceCoordinator> Create(
+      service_manager::InterfaceProvider*);
   ~FrameResourceCoordinator();
 
   void SetNetworkAlmostIdle(bool);
