@@ -19,6 +19,7 @@
 #include "components/domain_reliability/clear_mode.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "extensions/buildflags/buildflags.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 #if defined(OS_CHROMEOS)
@@ -403,6 +404,10 @@ class TestingProfile : public Profile {
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.
   scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;
+
+  // Holds a dummy network context request to avoid triggering connection error
+  // handler.
+  network::mojom::NetworkContextRequest network_context_request_;
 
   bool force_incognito_;
   std::unique_ptr<Profile> incognito_profile_;
