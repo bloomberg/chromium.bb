@@ -100,7 +100,8 @@ AppLauncherTabHelper::~AppLauncherTabHelper() = default;
 bool AppLauncherTabHelper::IsAppUrl(const GURL& url) {
   return !(web::UrlHasWebScheme(url) ||
            web::GetWebClient()->IsAppSpecificURL(url) ||
-           url.SchemeIs(url::kFileScheme) || url.SchemeIs(url::kAboutScheme));
+           url.SchemeIs(url::kFileScheme) || url.SchemeIs(url::kAboutScheme) ||
+           url.SchemeIs(url::kBlobScheme));
 }
 
 bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
