@@ -246,18 +246,25 @@ void OverlayWindowViews::SetUpViews() {
   GetControlsScrimLayer()->SetColor(gfx::kGoogleGrey900);
   GetControlsScrimLayer()->SetOpacity(0.43f);
 
-  // views::View that toggles play/pause. -------------------------------------
-  play_pause_controls_view_->SetImageAlignment(
-      views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
-  play_pause_controls_view_->SetToggled(controller_->IsPlayerActive());
-  play_pause_controls_view_->set_owned_by_client();
+  // view::View that holds the controls. --------------------------------------
+  controls_parent_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  controls_parent_view_->SetSize(GetBounds().size());
+  controls_parent_view_->layer()->SetFillsBoundsOpaquely(false);
+  controls_parent_view_->set_owned_by_client();
 
   // views::View that closes the window. --------------------------------------
   close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   close_controls_view_->layer()->SetFillsBoundsOpaquely(false);
   close_controls_view_->set_owned_by_client();
 
-  UpdatePlayPauseControlsSize();
+  // view::View that holds the video. -----------------------------------------
+  video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+
+  // views::View that toggles play/pause. -------------------------------------
+  play_pause_controls_view_->SetImageAlignment(
+      views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
+  play_pause_controls_view_->SetToggled(controller_->IsPlayerActive());
+  play_pause_controls_view_->set_owned_by_client();
 
   // Accessibility.
   play_pause_controls_view_->SetFocusForPlatform();  // Make button focusable.
@@ -274,21 +281,13 @@ void OverlayWindowViews::SetUpViews() {
   play_pause_controls_view_->SetToggledTooltipText(pause_button_label);
   play_pause_controls_view_->SetInstallFocusRingOnFocus(true);
 
-  // Add as child views to |controls_parent_view_|. --------------------------
-  controls_parent_view_->SetSize(GetBounds().size());
-  controls_parent_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  // Set up view::Views heirarchy. --------------------------------------------
   controls_parent_view_->AddChildView(play_pause_controls_view_.get());
-  controls_parent_view_->layer()->SetFillsBoundsOpaquely(false);
-  controls_parent_view_->set_owned_by_client();
-
-  // Add as child views to this widget. ---------------------------------------
   GetContentsView()->AddChildView(controls_scrim_view_.get());
   GetContentsView()->AddChildView(controls_parent_view_.get());
   GetContentsView()->AddChildView(close_controls_view_.get());
 
-  // Paint to ui::Layers. -----------------------------------------------------
-  video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
-
+  UpdatePlayPauseControlsSize();
   UpdateControlsVisibility(false);
 }
 
