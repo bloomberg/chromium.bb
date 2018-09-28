@@ -302,15 +302,9 @@ void EnableLongPressTipTriggering(base::test::ScopedFeatureList& feature_list) {
   }
 
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() showReadingList];
-  if (experimental_flags::IsReadingListUIRebootEnabled()) {
-    [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(
-                                     kTableViewNavigationDismissButtonId)]
-        performAction:grey_tap()];
-  } else {
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Done")]
-        performAction:grey_tap()];
-  }
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kTableViewNavigationDismissButtonId)]
+      performAction:grey_tap()];
 
   [ChromeEarlGreyUI openToolsMenu];
 

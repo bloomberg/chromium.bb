@@ -130,8 +130,4 @@ bool IsBookmarksUIRebootEnabled() {
   return true;
 }
 
-bool IsReadingListUIRebootEnabled() {
-  return true;
-}
-
 }  // namespace experimental_flags
