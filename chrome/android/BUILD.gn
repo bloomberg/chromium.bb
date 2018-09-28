@@ -22,6 +22,8 @@ import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("channel.gni")
 import("java_sources.gni")
 import("static_initializers.gni")
+import("trichrome.gni")
+
 if (modularize_ar) {
   import("//chrome/android/modules/ar/ar_module_tmpl.gni")
 }
@@ -41,6 +43,10 @@ chrome_sync_shell_android_manifest =
     "$target_gen_dir/chrome_sync_shell_apk/AndroidManifest.xml"
 monochrome_public_android_manifest =
     "$target_gen_dir/monochrome_public_apk/AndroidManifest.xml"
+trichrome_library_android_manifest =
+    "$target_gen_dir/trichrome_library_apk/AndroidManifest.xml"
+trichrome_chrome_android_manifest =
+    "$target_gen_dir/trichrome_chrome_apk/AndroidManifest.xml"
 
 chrome_sync_shell_jinja_variables =
     default_chrome_public_jinja_variables +
@@ -87,6 +93,20 @@ jinja_template("monochrome_public_android_manifest") {
   variables = chrome_public_jinja_variables +
               monochrome_android_manifest_jinja_variables +
               [ "target_sdk_version=$android_sdk_version" ]
+}
+
+jinja_template("trichrome_library_android_manifest") {
+  input = "java/AndroidManifest_trichrome_library.xml"
+  output = trichrome_library_android_manifest
+  variables = trichrome_jinja_variables +
+              [ "manifest_package=$trichrome_library_package" ]
+}
+
+jinja_template("trichrome_chrome_android_manifest") {
+  input = "java/AndroidManifest_trichrome_chrome.xml"
+  includes = [ "java/AndroidManifest.xml" ]
+  output = trichrome_chrome_android_manifest
+  variables = chrome_public_jinja_variables + trichrome_jinja_variables
 }
 
 jinja_template("chrome_sync_shell_android_manifest") {
@@ -1441,15 +1461,20 @@ template("monochrome_public_apk_or_module_tmpl") {
   monochrome_public_common_apk_or_module_tmpl(target_name) {
     forward_variables_from(invoker,
                            [
+                             "android_manifest",
+                             "android_manifest_dep",
                              "apk_name",
                              "is_base_module",
                              "module_name",
                              "proguard_jar_path",
                              "target_type",
+                             "use_trichrome_library",
                            ])
 
-    android_manifest = monochrome_public_android_manifest
-    android_manifest_dep = ":monochrome_public_android_manifest"
+    if (!defined(android_manifest) && !defined(android_manifest_dep)) {
+      android_manifest = monochrome_public_android_manifest
+      android_manifest_dep = ":monochrome_public_android_manifest"
+    }
 
     if (public_android_sdk) {
       # Resource whitelist used when generating R.java files and causes
@@ -1465,8 +1490,10 @@ template("monochrome_public_apk_or_module_tmpl") {
       "//chrome/android:chrome_java",
     ]
 
-    add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-    if (_add_unwind_tables_in_chrome_public_apk && can_unwind_with_cfi_table) {
+    add_unwind_tables_in_apk =
+        _add_unwind_tables_in_chrome_public_apk &&
+        (!defined(use_trichrome_library) || !use_trichrome_library)
+    if (add_unwind_tables_in_apk && can_unwind_with_cfi_table) {
       shared_library_for_unwind_asset = "monochrome"
     }
 
@@ -1484,6 +1511,52 @@ monochrome_public_apk_or_module_tmpl("monochrome_public_base_module") {
   module_name = "MonochromePublicBase"
   target_type = "android_app_bundle_module"
   is_base_module = true
+}
+
+android_apk("trichrome_library_apk") {
+  apk_name = "TrichromeLibrary"
+  android_manifest = trichrome_library_android_manifest
+  android_manifest_dep = ":trichrome_library_android_manifest"
+
+  # TODO(torne): this contains the list of locales amongst other things.
+  # Skip building it because the version in the library won't be used anyway;
+  # the one in the main APK will take precedence.
+  generate_buildconfig_java = false
+
+  # TODO(torne): since there's no real java code in the library right now,
+  # leave out the build hooks and let them get compiled into each APK. Later
+  # this should probably be in the library.
+  no_build_hooks = true
+
+  alternative_android_sdk_dep = webview_framework_dep
+  app_as_shared_lib = true
+  use_chromium_linker = false
+  uncompress_shared_libraries = true
+
+  _native_lib_file =
+      rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
+  native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
+  native_lib_version_rule = "//build/util:chrome_version_json"
+
+  if (android_64bit_target_cpu) {
+    # Include a 64-bit placeholder library to ensure that the library is treated
+    # as multiarch and gets its Java code precompiled for both architectures.
+    native_lib_placeholders = [ "libdummy.so" ]
+    if (build_apk_secondary_abi) {
+      # Include the actual 32-bit libmonochrome library.
+      secondary_abi_shared_libraries = [ ":monochrome_secondary_abi_lib" ]
+    }
+  } else {
+    shared_libraries = [ ":monochrome" ]
+  }
+}
+
+monochrome_public_apk_or_module_tmpl("trichrome_chrome_apk") {
+  apk_name = "TrichromeChrome"
+  target_type = "android_apk"
+  android_manifest = trichrome_chrome_android_manifest
+  android_manifest_dep = ":trichrome_chrome_android_manifest"
+  use_trichrome_library = true
 }
 
 chrome_public_common_apk_or_module_tmpl("chrome_sync_shell_apk") {
