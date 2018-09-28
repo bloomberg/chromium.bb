@@ -274,7 +274,7 @@ TEST_F(ProximityAuthSystemTest, FocusRegisteredUser) {
 
   EXPECT_EQ(life_cycle(), unlock_manager_life_cycle);
   EXPECT_TRUE(life_cycle());
-  EXPECT_TRUE(life_cycle()->started());
+  EXPECT_FALSE(life_cycle()->started());
   EXPECT_EQ(kUser1, life_cycle()->GetRemoteDevice().user_id());
 
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))

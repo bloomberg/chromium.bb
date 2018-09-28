@@ -249,24 +249,23 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
               life_cycle_.GetMessenger()->GetChannel());
   }
 
-  void SimulateFailureToAuthenticateConnection() {
+  void SimulateFailureToAuthenticateConnection(
+      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason
+          failure_reason,
+      RemoteDeviceLifeCycle::State expected_life_cycle_state) {
     EXPECT_EQ(RemoteDeviceLifeCycle::State::FINDING_CONNECTION,
               life_cycle_.GetState());
 
-    EXPECT_CALL(*this,
-                OnLifeCycleStateChanged(
-                    RemoteDeviceLifeCycle::State::FINDING_CONNECTION,
-                    RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED));
+    EXPECT_CALL(*this, OnLifeCycleStateChanged(
+                           RemoteDeviceLifeCycle::State::FINDING_CONNECTION,
+                           expected_life_cycle_state));
 
-    fake_connection_attempt_->NotifyConnectionAttemptFailure(
-        chromeos::secure_channel::mojom::ConnectionAttemptFailureReason::
-            AUTHENTICATION_ERROR);
+    fake_connection_attempt_->NotifyConnectionAttemptFailure(failure_reason);
 
     EXPECT_EQ(nullptr, life_cycle_.GetChannel());
     EXPECT_EQ(nullptr, life_cycle_.GetMessenger());
 
-    EXPECT_EQ(RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED,
-              life_cycle_.GetState());
+    EXPECT_EQ(expected_life_cycle_state, life_cycle_.GetState());
   }
 
   cryptauth::FakeConnection* OnConnectionFound() {
@@ -340,7 +339,35 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
   CreateFakeConnectionAttempt();
 
   StartLifeCycle();
-  SimulateFailureToAuthenticateConnection();
+  SimulateFailureToAuthenticateConnection(
+      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason::
+          AUTHENTICATION_ERROR /* failure_reason */,
+      RemoteDeviceLifeCycle::State::
+          AUTHENTICATION_FAILED /* expected_life_cycle_state */);
+}
+
+TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
+       MultiDeviceApiEnabled_Failure_BluetoothNotPresent) {
+  SetMultiDeviceApiEnabled();
+  CreateFakeConnectionAttempt();
+
+  StartLifeCycle();
+  SimulateFailureToAuthenticateConnection(
+      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason::
+          ADAPTER_NOT_PRESENT /* failure_reason */,
+      RemoteDeviceLifeCycle::State::STOPPED /* expected_life_cycle_state */);
+}
+
+TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
+       MultiDeviceApiEnabled_Failure_BluetoothNotPowered) {
+  SetMultiDeviceApiEnabled();
+  CreateFakeConnectionAttempt();
+
+  StartLifeCycle();
+  SimulateFailureToAuthenticateConnection(
+      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason::
+          ADAPTER_DISABLED /* failure_reason */,
+      RemoteDeviceLifeCycle::State::STOPPED /* expected_life_cycle_state */);
 }
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticateAndDisconnect) {
