@@ -333,7 +333,7 @@ deps = {
   },
 
   'src/ios/third_party/material_sprited_animation_view_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-foundation/material-sprited-animation-view-ios.git' + '@' + 'c6e16d06bdafd95540c62b3402d9414692fbca81',
+      'url': Var('chromium_git') + '/external/github.com/material-foundation/material-sprited-animation-view-ios.git' + '@' + '8af9adaa182044cf2920dfb620b863669e1aeb7c',
       'condition': 'checkout_ios',
   },
 
