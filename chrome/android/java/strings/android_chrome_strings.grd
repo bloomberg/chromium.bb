@@ -149,6 +149,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_DELETE" desc="Label for a delete button. Used in multiple contexts. [CHAR-LIMIT=20]">
         Delete
       </message>
+      <message name="IDS_DELETE_GROUP" desc="Label for button that deletes a group of items. [CHAR-LIMIT=20]">
+        Delete group
+      </message>
       <message name="IDS_REMOVE" desc="Label for a button to remove an item (e.g. a bookmark) from a list. [CHAR-LIMIT=20]">
         Remove
       </message>
@@ -214,6 +217,9 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_SHARE" desc="Content description for a button to share item(s). [CHAR-LIMIT=20]">
         Share
+      </message>
+      <message name="IDS_SHARE_GROUP" desc="Content description for a button to share a group item(s). [CHAR-LIMIT=20]">
+        Share group
       </message>
       <message name="IDS_SEARCH" desc="The label for a search button.">
         Search
@@ -3276,7 +3282,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
           =1 {1 selected}
           other {# selected}}
       </message>
-
+      <message name="IDS_SELECT_ITEMS" desc="Label shown on toolbar asking user to select items from the list.">
+        Select items
+      </message>
       <message name="IDS_MEDIA_NOTIFICATION_LINK_TEXT" desc="Url of the current tab. The notification will display this text for the user to identify the tab to return to.">
         Touch to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph>
       </message>

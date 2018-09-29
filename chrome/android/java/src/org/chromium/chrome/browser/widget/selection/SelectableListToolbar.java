@@ -312,6 +312,7 @@ public class SelectableListToolbar<E>
         LayoutInflater.from(getContext()).inflate(R.layout.number_roll_view, this);
         mNumberRollView = (NumberRollView) findViewById(R.id.selection_mode_number);
         mNumberRollView.setString(R.plurals.selected_items);
+        mNumberRollView.setStringForZero(R.string.select_items);
     }
 
     @Override
@@ -598,6 +599,7 @@ public class SelectableListToolbar<E>
     protected void showSelectionView(List<E> selectedItems, boolean wasSelectionEnabled) {
         getMenu().setGroupVisible(mNormalGroupResId, false);
         getMenu().setGroupVisible(mSelectedGroupResId, true);
+        getMenu().setGroupEnabled(mSelectedGroupResId, !selectedItems.isEmpty());
         if (mHasSearchView) mSearchView.setVisibility(View.GONE);
 
         setNavigationButton(NAVIGATION_BUTTON_SELECTION_BACK);

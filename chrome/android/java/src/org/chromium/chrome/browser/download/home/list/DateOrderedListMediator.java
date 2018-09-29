@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Intent;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
 
 import org.chromium.base.CollectionUtil;
@@ -150,10 +151,11 @@ class DateOrderedListMediator {
                 ListProperties.CALLBACK_RESUME, item -> mProvider.resumeDownload(item, true));
         mModel.getProperties().set(ListProperties.CALLBACK_CANCEL, mProvider::cancelDownload);
         mModel.getProperties().set(ListProperties.CALLBACK_SHARE, this ::onShareItem);
+        mModel.getProperties().set(ListProperties.CALLBACK_SHARE_ALL, this ::onShareItems);
         mModel.getProperties().set(ListProperties.CALLBACK_REMOVE, this ::onDeleteItem);
+        mModel.getProperties().set(ListProperties.CALLBACK_REMOVE_ALL, this ::onDeleteItems);
         mModel.getProperties().set(ListProperties.PROVIDER_VISUALS, this ::getVisuals);
-        mModel.getProperties().set(
-                ListProperties.CALLBACK_SELECTION, selectionDelegate::toggleSelectionForItem);
+        mModel.getProperties().set(ListProperties.CALLBACK_SELECTION, this ::onSelection);
     }
 
     /** Tears down this mediator. */
@@ -225,6 +227,14 @@ class DateOrderedListMediator {
      */
     public OfflineItemFilterSource getEmptySource() {
         return mTypeFilter;
+    }
+
+    private void onSelection(@Nullable ListItem item) {
+        if (item == null) {
+            mSelectionDelegate.setSelectionModeEnabledForZeroItems(true);
+        } else {
+            mSelectionDelegate.toggleSelectionForItem(item);
+        }
     }
 
     private void onDeleteItem(OfflineItem item) {

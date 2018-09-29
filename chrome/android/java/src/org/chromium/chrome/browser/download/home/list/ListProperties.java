@@ -12,6 +12,8 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
+import java.util.List;
+
 /**
  * The properties required to build a {@link ListItem} which contain two types of properties for the
  * download manager: (1) A set of properties that act directly on the list view itself. (2) A set of
@@ -54,8 +56,16 @@ public interface ListProperties {
     WritableObjectPropertyKey<Callback<OfflineItem>> CALLBACK_SHARE =
             new WritableObjectPropertyKey<>();
 
+    /** The callback for when a UI action should share all selected {@link OfflineItem}s. */
+    WritableObjectPropertyKey < Callback < List<OfflineItem>>> CALLBACK_SHARE_ALL =
+            new WritableObjectPropertyKey<>();
+
     /** The callback for when a UI action should remove a {@link OfflineItem}. */
     WritableObjectPropertyKey<Callback<OfflineItem>> CALLBACK_REMOVE =
+            new WritableObjectPropertyKey<>();
+
+    /** The callback for when a UI action should remove all selected {@link OfflineItem}s. */
+    WritableObjectPropertyKey < Callback < List<OfflineItem>>> CALLBACK_REMOVE_ALL =
             new WritableObjectPropertyKey<>();
 
     /** The provider to retrieve expensive assets for a {@link OfflineItem}. */
@@ -69,6 +79,7 @@ public interface ListProperties {
     WritableBooleanPropertyKey SELECTION_MODE_ACTIVE = new WritableBooleanPropertyKey();
 
     PropertyKey[] ALL_KEYS = new PropertyKey[] {ENABLE_ITEM_ANIMATIONS, CALLBACK_OPEN,
-            CALLBACK_PAUSE, CALLBACK_RESUME, CALLBACK_CANCEL, CALLBACK_SHARE, CALLBACK_REMOVE,
-            PROVIDER_VISUALS, CALLBACK_SELECTION, SELECTION_MODE_ACTIVE};
+            CALLBACK_PAUSE, CALLBACK_RESUME, CALLBACK_CANCEL, CALLBACK_SHARE, CALLBACK_SHARE_ALL,
+            CALLBACK_REMOVE, CALLBACK_REMOVE_ALL, PROVIDER_VISUALS, CALLBACK_SELECTION,
+            SELECTION_MODE_ACTIVE};
 }
