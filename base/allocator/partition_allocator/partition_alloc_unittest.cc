@@ -7,13 +7,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <limits>
 #include <memory>
 #include <vector>
 
 #include "base/allocator/partition_allocator/address_space_randomization.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/bit_cast.h"
-#include "base/bits.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"

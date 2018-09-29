@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/allocator/partition_allocator/partition_bucket.h"
+
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
@@ -160,7 +161,8 @@ uint8_t PartitionBucket::get_system_pages_per_slot_span() {
             ? (kNumSystemPagesPerPartitionPage - num_remainder_pages)
             : 0;
     waste += sizeof(void*) * num_unfaulted_pages;
-    double waste_ratio = (double)waste / (double)page_size;
+    double waste_ratio =
+        static_cast<double>(waste) / static_cast<double>(page_size);
     if (waste_ratio < best_waste_ratio) {
       best_waste_ratio = waste_ratio;
       best_pages = i;
