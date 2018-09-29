@@ -2207,7 +2207,7 @@ void RenderWidgetHostImpl::DidUpdateVisualProperties(
       NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
       Source<RenderWidgetHost>(this), NotificationService::NoDetails());
 
-  if (!view_ || is_hidden_)
+  if (!view_)
     return;
 
   viz::ScopedSurfaceIdAllocator scoped_allocator =
