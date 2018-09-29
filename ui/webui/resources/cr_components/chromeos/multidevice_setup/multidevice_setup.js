@@ -26,6 +26,34 @@ cr.define('multidevice_setup', function() {
       delegate: Object,
 
       /**
+       * Text to be shown on the forward navigation button.
+       * @type {string|undefined}
+       */
+      forwardButtonText: {
+        type: String,
+        computed: 'getForwardButtonText_(visiblePage_)',
+        notify: true,
+      },
+
+      /** Whether the forward button should be disabled. */
+      forwardButtonDisabled: {
+        type: Boolean,
+        computed: 'shouldForwardButtonBeDisabled_(' +
+            'passwordPageForwardButtonDisabled_, visiblePageName_)',
+        notify: true
+      },
+
+      /**
+       * Text to be shown on the backward navigation button.
+       * @type {string|undefined}
+       */
+      backwardButtonText: {
+        type: String,
+        computed: 'getBackwardButtonText_(visiblePage_)',
+        notify: true,
+      },
+
+      /**
        * Element name of the currently visible page.
        *
        * @private {!multidevice_setup.PageName}
@@ -76,16 +104,6 @@ cr.define('multidevice_setup', function() {
        * @private {boolean}
        */
       passwordPageForwardButtonDisabled_: Boolean,
-
-      /**
-       * Whether the forward button should be disabled.
-       * @private {boolean}
-       */
-      forwardButtonDisabled_: {
-        type: Boolean,
-        computed: 'shouldForwardButtonBeDisabled_(' +
-            'passwordPageForwardButtonDisabled_, visiblePageName_)',
-      },
 
       /**
        * Interface to the MultiDeviceSetup Mojo service.
@@ -189,12 +207,35 @@ cr.define('multidevice_setup', function() {
     },
 
     /**
+     * @return {string|undefined} The forward button text, which is undefined
+     *     if no button should be displayed.
+     * @private
+     */
+    getForwardButtonText_: function() {
+      if (!this.visiblePage_)
+        return undefined;
+      return this.visiblePage_.forwardButtonText;
+    },
+
+    /**
      * @return {boolean} Whether the forward button should be disabled.
      * @private
      */
     shouldForwardButtonBeDisabled_: function() {
       return (this.visiblePageName_ == PageName.PASSWORD) &&
           this.passwordPageForwardButtonDisabled_;
+    },
+
+    /**
+     * @return {string|undefined} The backward button text, which is undefined
+     *     if no button should be displayed.
+     * @private
+     */
+    getBackwardButtonText_: function() {
+      if (!this.visiblePage_)
+        return undefined;
+      return this.visiblePage_.backwardButtonText;
+
     },
 
     /**
