@@ -173,13 +173,13 @@ void BlockPainter::RecordHitTestData(const PaintInfo& paint_info,
 
   // TODO(pdr): If we are painting the background into the scrolling contents
   // layer, we need to use the overflow rect instead of the border box rect. We
-  // may want to move the call to RecordTouchActionRect into
+  // may want to move the call to RecordHitTestRect into
   // BoxPainter::PaintBoxDecorationBackgroundWithRect and share the logic
   // the background painting code already uses.
   auto rect = layout_block_.BorderBoxRect();
   rect.MoveBy(paint_offset);
-  HitTestData::RecordTouchActionRect(paint_info.context, layout_block_,
-                                     TouchActionRect(rect, touch_action));
+  HitTestData::RecordHitTestRect(paint_info.context, layout_block_,
+                                 HitTestRect(rect, touch_action));
 }
 
 DISABLE_CFI_PERF

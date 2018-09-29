@@ -2895,9 +2895,9 @@ void LayoutObject::AddLayerHitTestRects(
   const size_t kMaxRectsPerLayer = 100;
 
   LayerHitTestRects::iterator iter = layer_rects.find(current_layer);
-  Vector<TouchActionRect>* iter_value;
+  Vector<HitTestRect>* iter_value;
   if (iter == layer_rects.end()) {
-    iter_value = &layer_rects.insert(current_layer, Vector<TouchActionRect>())
+    iter_value = &layer_rects.insert(current_layer, Vector<HitTestRect>())
                       .stored_value->value;
   } else {
     iter_value = &iter->value;
@@ -2910,7 +2910,7 @@ void LayoutObject::AddLayerHitTestRects(
     if (whitelisted_touch_action != container_whitelisted_touch_action ||
         !container_rect.Contains(own_rects[i])) {
       iter_value->push_back(
-          TouchActionRect(own_rects[i], whitelisted_touch_action));
+          HitTestRect(own_rects[i], whitelisted_touch_action));
       if (iter_value->size() > kMaxRectsPerLayer) {
         // Just mark the entire layer instead, and switch to walking the layer
         // tree instead of the layout tree.

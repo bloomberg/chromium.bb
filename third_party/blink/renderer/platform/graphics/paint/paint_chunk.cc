@@ -30,19 +30,25 @@ String PaintChunk::ToString() const {
       properties.ToString().Ascii().data(), bounds.ToString().Ascii().data(),
       known_to_be_opaque);
   if (hit_test_data) {
-    ret_val.append(
-        String::Format(", touch_action_rects=(%u), "
-                       "wheel_event_handler_region=(%s) "
-                       "non_fast_scrollable_region=(%s))",
-                       hit_test_data->touch_action_rects.size(),
-                       hit_test_data->wheel_event_handler_region.Bounds()
-                           .ToString()
-                           .Ascii()
-                           .data(),
-                       hit_test_data->non_fast_scrollable_region.Bounds()
-                           .ToString()
-                           .Ascii()
-                           .data()));
+    ret_val.append(String::Format(
+        ", touch_action_rects=(rects: %u, bounds: %s), "
+        "wheel_event_handler_region=(rects: %u, bounds: %s), "
+        "non_fast_scrollable_region=(rects: %u, bounds: %s))",
+        hit_test_data->touch_action_rects.size(),
+        HitTestRect::GetBounds(hit_test_data->touch_action_rects)
+            .ToString()
+            .Ascii()
+            .data(),
+        hit_test_data->wheel_event_handler_region.size(),
+        HitTestRect::GetBounds(hit_test_data->wheel_event_handler_region)
+            .ToString()
+            .Ascii()
+            .data(),
+        hit_test_data->non_fast_scrollable_region.size(),
+        HitTestRect::GetBounds(hit_test_data->non_fast_scrollable_region)
+            .ToString()
+            .Ascii()
+            .data()));
   } else {
     ret_val.append(")");
   }

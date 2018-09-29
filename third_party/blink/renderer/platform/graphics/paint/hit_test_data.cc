@@ -10,9 +10,9 @@
 
 namespace blink {
 
-void HitTestData::RecordTouchActionRect(GraphicsContext& context,
-                                        const DisplayItemClient& client,
-                                        const TouchActionRect& action) {
+void HitTestData::RecordHitTestRect(GraphicsContext& context,
+                                    const DisplayItemClient& client,
+                                    const HitTestRect& action) {
   DCHECK(RuntimeEnabledFeatures::PaintTouchActionRectsEnabled());
 
   PaintController& paint_controller = context.GetPaintController();

@@ -205,16 +205,16 @@ void NGBoxFragmentPainter::RecordHitTestData(const PaintInfo& paint_info,
 
   // TODO(pdr): If we are painting the background into the scrolling contents
   // layer, we need to use the overflow rect instead of the border box rect. We
-  // may want to move the call to RecordTouchActionRect into
+  // may want to move the call to RecordHitTestRect into
   // BoxPainter::PaintBoxDecorationBackgroundWithRect and share the logic
   // the background painting code already uses.
   NGPhysicalOffsetRect border_box = physical_fragment.LocalRect();
   if (physical_fragment.IsInline())
     border_box.offset += box_fragment_.InlineOffsetToContainerBox();
   border_box.offset += NGPhysicalOffset(paint_offset);
-  HitTestData::RecordTouchActionRect(
+  HitTestData::RecordHitTestRect(
       paint_info.context, box_fragment_,
-      TouchActionRect(border_box.ToLayoutRect(), touch_action));
+      HitTestRect(border_box.ToLayoutRect(), touch_action));
 }
 
 void NGBoxFragmentPainter::PaintObject(

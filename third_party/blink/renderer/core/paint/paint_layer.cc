@@ -3375,7 +3375,7 @@ void PaintLayer::ComputeSelfHitTestRects(
     LayerHitTestRects& rects,
     TouchAction supported_fast_actions) const {
   if (!Size().IsEmpty()) {
-    Vector<TouchActionRect> rect;
+    Vector<HitTestRect> rect;
     TouchAction whitelisted_touch_action =
         GetLayoutObject().StyleRef().GetEffectiveTouchAction() &
         supported_fast_actions;
@@ -3388,25 +3388,25 @@ void PaintLayer::ComputeSelfHitTestRects(
       // composited layer. Skip reporting contents for non-composited layers as
       // they'll get projected to the same layer as the bounding box.
       if (GetCompositingState() != kNotComposited && scrollable_area_) {
-        rect.push_back(TouchActionRect(scrollable_area_->OverflowRect(),
-                                       whitelisted_touch_action));
+        rect.push_back(HitTestRect(scrollable_area_->OverflowRect(),
+                                   whitelisted_touch_action));
       }
 
       rects.Set(this, rect);
       if (const PaintLayer* parent_layer = Parent()) {
         LayerHitTestRects::iterator iter = rects.find(parent_layer);
         if (iter == rects.end()) {
-          rects.insert(parent_layer, Vector<TouchActionRect>())
-              .stored_value->value.push_back(TouchActionRect(
+          rects.insert(parent_layer, Vector<HitTestRect>())
+              .stored_value->value.push_back(HitTestRect(
                   PhysicalBoundingBox(parent_layer), whitelisted_touch_action));
         } else {
-          iter->value.push_back(TouchActionRect(
-              PhysicalBoundingBox(parent_layer), whitelisted_touch_action));
+          iter->value.push_back(HitTestRect(PhysicalBoundingBox(parent_layer),
+                                            whitelisted_touch_action));
         }
       }
     } else {
       rect.push_back(
-          TouchActionRect(LogicalBoundingBox(), whitelisted_touch_action));
+          HitTestRect(LogicalBoundingBox(), whitelisted_touch_action));
       rects.Set(this, rect);
     }
   }
