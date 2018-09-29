@@ -355,7 +355,7 @@ Status ExecuteSendKeysToElement(Session* session,
       if (is_desktop && !base::PathExists(base::FilePath(path_piece))) {
         return Status(
             kInvalidArgument,
-            base::StringPrintf("File not found : %" PRIsFP,
+            base::StringPrintf("File not found : %" PRFilePath,
                                base::FilePath(path_piece).value().c_str()));
       }
       paths.push_back(base::FilePath(path_piece));
