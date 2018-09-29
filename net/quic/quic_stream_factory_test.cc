@@ -8690,6 +8690,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceAndHostResolutionSync) {
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
   cache->OnNetworkChange();
+
   MockQuicData quic_data;
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
@@ -9128,14 +9129,16 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
 
   MockQuicData quic_data;
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
   quic_data.AddWrite(
       SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
-                       2, true, quic::QUIC_CONNECTION_CANCELLED, "net error"));
+                       1, true, quic::QUIC_CONNECTION_CANCELLED, "net error"));
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
   MockQuicData quic_data2;
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   quic_data2.AddSocketDataToFactory(socket_factory_.get());
 
   QuicStreamRequest request(factory_.get());
@@ -9147,9 +9150,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
                 failed_on_default_network_callback_, callback_.callback()));
   // Finish dns resolution, but need to wait for stale connection.
   host_resolver_->ResolveAllPending();
-  EXPECT_FALSE(callback_.have_result());
-
-  // Finish stale connection and expect the job to be done.
+  base::RunLoop().RunUntilIdle();
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
       quic::QuicSession::HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
@@ -9270,8 +9271,6 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleSyncHostResolveError) {
   // Finish host resolution.
   host_resolver_->ResolveAllPending();
   EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
-
-  EXPECT_FALSE(HasLiveSession(host_port_pair_));
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -9491,82 +9490,6 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
-}
-
-// With dns race experiment on, dns resolve async and stale connect async, dns
-// resolve returns fine then preconnect fails
-TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncError) {
-  race_stale_dns_on_connection_ = true;
-  host_resolver_ = std::make_unique<MockCachingHostResolver>();
-  Initialize();
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  // Set asynchronous fresh address in host resolver.
-  host_resolver_->set_ondemand_mode(true);
-  factory_->set_require_confirmation(true);
-  crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::ZERO_RTT);
-  host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
-                                            kNonCachedIPAddress, "");
-
-  // Set up an address in stale resolver cache.
-  HostCache::Key key(host_port_pair_.host(), ADDRESS_FAMILY_UNSPECIFIED, 0);
-  HostCache::Entry entry(OK,
-                         AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
-                         HostCache::Entry::SOURCE_DNS);
-  base::TimeDelta zero;
-  HostCache* cache = host_resolver_->GetHostCache();
-  cache->Set(key, entry, base::TimeTicks::Now(), zero);
-  // Expire the cache
-  cache->OnNetworkChange();
-
-  MockQuicData quic_data;
-  quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  quic_data.AddSocketDataToFactory(socket_factory_.get());
-
-  MockQuicData quic_data2;
-  quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
-  quic_data2.AddSocketDataToFactory(socket_factory_.get());
-
-  QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(
-                host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
-                SocketTag(),
-                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
-                failed_on_default_network_callback_, callback_.callback()));
-
-  // Host resolution finishes but stale connection is still running.
-  host_resolver_->ResolveAllPending();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(callback_.have_result());
-
-  // Kill the session so that crypto connect will return error.
-  QuicChromiumClientSession* session = GetPendingSession(host_port_pair_);
-  session->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
-                               quic::ConnectionCloseBehavior::SILENT_CLOSE);
-  EXPECT_FALSE(callback_.have_result());
-
-  // Send crypto handshake for the new connection and check that it finishes.
-  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
-  EXPECT_THAT(callback_.WaitForResult(), IsOk());
-
-  std::unique_ptr<HttpStream> stream = CreateStream(&request);
-  EXPECT_TRUE(stream.get());
-
-  QuicChromiumClientSession* session2 = GetActiveSession(host_port_pair_);
-
-  EXPECT_EQ(
-      session2->peer_address().impl().socket_address().ToStringWithoutPort(),
-      kNonCachedIPAddress);
-
-  EXPECT_TRUE(quic_data.AllReadDataConsumed());
-  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
-  EXPECT_TRUE(quic_data2.AllReadDataConsumed());
-  EXPECT_TRUE(quic_data2.AllWriteDataConsumed());
 }
 
 // With dns race experiment on, dns resolve async and stale connect async, dns
