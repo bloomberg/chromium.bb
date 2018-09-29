@@ -83,11 +83,39 @@ void AppendMetric(protocol::Array<protocol::Performance::Metric>* container,
                          .setValue(value)
                          .build());
 }
-
-TimeTicks GetTimeTicksNow() {
-  return base::subtle::TimeTicksNowIgnoringOverride();
-}
 }  // namespace
+
+Response InspectorPerformanceAgent::setTimeDomain(const String& time_domain) {
+  if (enabled_.Get()) {
+    return Response::Error(
+        "Cannot set time domain while performance metrics collection"
+        " is enabled.");
+  }
+
+  using namespace protocol::Performance::SetTimeDomain;
+
+  if (time_domain == TimeDomainEnum::TimeTicks) {
+    use_thread_ticks_ = false;
+  } else if (time_domain == TimeDomainEnum::ThreadTicks) {
+    if (!base::ThreadTicks::IsSupported()) {
+      return Response::Error("Thread time is not supported on this platform.");
+    }
+    base::ThreadTicks::WaitUntilInitialized();
+    use_thread_ticks_ = true;
+  } else {
+    return Response::Error("Invalid time domain specification.");
+  }
+
+  return Response::OK();
+}
+
+TimeTicks InspectorPerformanceAgent::GetTimeTicksNow() {
+  return use_thread_ticks_
+             ? base::TimeTicks() +
+                   base::TimeDelta::FromMicroseconds(
+                       base::ThreadTicks::Now().since_origin().InMicroseconds())
+             : base::subtle::TimeTicksNowIgnoringOverride();
+}
 
 Response InspectorPerformanceAgent::getMetrics(
     std::unique_ptr<protocol::Array<protocol::Performance::Metric>>*
