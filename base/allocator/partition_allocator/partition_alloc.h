@@ -74,7 +74,7 @@
 #include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 
@@ -431,7 +431,7 @@ class SizeSpecificPartitionAllocator {
  public:
   SizeSpecificPartitionAllocator() {
     memset(actual_buckets_, 0,
-           sizeof(internal::PartitionBucket) * arraysize(actual_buckets_));
+           sizeof(internal::PartitionBucket) * base::size(actual_buckets_));
   }
   ~SizeSpecificPartitionAllocator() = default;
   static const size_t kMaxAllocation = N - kAllocationGranularity;
