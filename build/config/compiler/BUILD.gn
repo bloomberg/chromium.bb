@@ -1501,10 +1501,7 @@ config("default_warnings") {
           # Ignore warnings about MSVC optimization pragmas.
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/505314
           "-Wno-ignored-pragma-optimize",
-        ]
-      }
-      if (llvm_force_head_revision) {
-        cflags += [
+
           # TODO(hans): https://crbug.com/890307
           "-Wno-defaulted-function-deleted",
         ]
