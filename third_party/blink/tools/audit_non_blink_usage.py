@@ -52,6 +52,7 @@ _CONFIG = [
             'base::Time',
             'base::TimeDelta',
             'base::TimeTicks',
+            'base::ThreadTicks',
             'base::UnguessableToken',
             'base::UnsafeSharedMemoryRegion',
             'base::WeakPtr',
