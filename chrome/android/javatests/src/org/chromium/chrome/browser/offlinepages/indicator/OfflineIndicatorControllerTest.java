@@ -68,6 +68,7 @@ public class OfflineIndicatorControllerTest {
     @Before
     public void setUp() throws Exception {
         ConnectivityDetector.skipSystemCheckForTesting();
+        ConnectivityDetector.skipHttpProbeForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             if (!NetworkChangeNotifier.isInitialized()) {
@@ -75,6 +76,9 @@ public class OfflineIndicatorControllerTest {
             }
             NetworkChangeNotifier.forceConnectivityState(true);
             OfflineIndicatorController.initialize();
+            OfflineIndicatorController.getInstance()
+                    .getConnectivityDetectorForTesting()
+                    .updateConnectionState(ConnectivityDetector.ConnectionState.VALIDATED);
         });
     }
 
@@ -245,7 +249,7 @@ public class OfflineIndicatorControllerTest {
     public void testDoNotShowOfflineIndicatorOnPageLoadingWhenOffline() throws Exception {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        String testUrl = testServer.getURL(TEST_PAGE);
+        String testUrl = testServer.getURL("/slow?1");
 
         // Load a page without waiting it to finish.
         loadPageWithoutWaiting(testUrl, null);
@@ -303,6 +307,8 @@ public class OfflineIndicatorControllerTest {
     private void waitForPageLoaded(String pageUrl) throws Exception {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         ChromeTabUtils.waitForTabPageLoaded(tab, pageUrl);
+        ChromeTabUtils.waitForInteractable(tab);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private void savePage(String url) throws InterruptedException {

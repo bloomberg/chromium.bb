@@ -115,6 +115,7 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     private static final int CONNECTIVITY_CHECK_MAX_DELAY_MS = 2 * 60 * 1000;
 
     private static boolean sSkipSystemCheckForTesting;
+    private static boolean sSkipHttpProbeForTesting;
     private static String sDefaultProbeUrl = DEFAULT_PROBE_URL;
     private static String sFallbackProbeUrl = FALLBACK_PROBE_URL;
     private static String sProbeMethod = PROBE_METHOD;
@@ -171,6 +172,11 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
         int newConnectionState = getConnectionStateFromSystem();
         if (newConnectionState != ConnectionState.NONE) {
             updateConnectionState(newConnectionState);
+            return;
+        }
+
+        if (sSkipHttpProbeForTesting) {
+            updateConnectionState(ConnectionState.VALIDATED);
             return;
         }
 
@@ -409,6 +415,11 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     @VisibleForTesting
     static void skipSystemCheckForTesting() {
         sSkipSystemCheckForTesting = true;
+    }
+
+    @VisibleForTesting
+    static void skipHttpProbeForTesting() {
+        sSkipHttpProbeForTesting = true;
     }
 
     @VisibleForTesting
