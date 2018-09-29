@@ -270,7 +270,7 @@ FAKE OUTPUT. Will be filled in later.
                  '--tags=priority:%s' % priority,
                  '--tags=build:test-build',
                  '--tags=task_name:test-build-test-suite',
-                 '--tags=luci_project:chromiumos',
+                 '--tags=luci_project:chromeos',
                  '--tags=suite:test-suite',
                  '--tags=board:test-board',
                  '--', commands.SKYLAB_RUN_SUITE_PATH,
