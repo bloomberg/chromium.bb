@@ -12,7 +12,9 @@
 
 #include "base/base64.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/build_time.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
@@ -254,6 +256,14 @@ std::unique_ptr<SeedResponse> MaybeImportFirstRunSeed(
   return nullptr;
 }
 
+// Called when the VariationsSeedStore first stores a seed.
+void OnInitialSeedStored() {
+#if defined(OS_ANDROID)
+  android::MarkVariationsSeedAsStored();
+  android::ClearJavaFirstRunPrefs();
+#endif
+}
+
 }  // namespace
 
 VariationsService::VariationsService(
@@ -274,8 +284,11 @@ VariationsService::VariationsService(
                          local_state),
       field_trial_creator_(local_state,
                            client_.get(),
-                           ui_string_overrider,
-                           MaybeImportFirstRunSeed(local_state)),
+                           std::make_unique<VariationsSeedStore>(
+                               local_state,
+                               MaybeImportFirstRunSeed(local_state),
+                               base::BindOnce(&OnInitialSeedStored)),
+                           ui_string_overrider),
       weak_ptr_factory_(this) {
   DCHECK(client_);
   DCHECK(resource_request_allowed_notifier_);

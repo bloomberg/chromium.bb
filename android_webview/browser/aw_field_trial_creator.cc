@@ -13,6 +13,7 @@
 #include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_variations_seed_bridge.h"
 #include "base/base_switches.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/path_service.h"
@@ -49,10 +50,13 @@ void AwFieldTrialCreator::SetUpFieldTrials(PrefService* pref_service) {
 
   variations::UIStringOverrider ui_string_overrider;
   client_ = std::make_unique<AwVariationsServiceClient>();
+  auto seed_store = std::make_unique<variations::VariationsSeedStore>(
+      pref_service, /*initial_seed=*/GetAndClearJavaSeed(),
+      /*on_initial_seed_stored=*/base::DoNothing());
   variations_field_trial_creator_ =
       std::make_unique<variations::VariationsFieldTrialCreator>(
-          pref_service, client_.get(), ui_string_overrider,
-          GetAndClearJavaSeed());
+          pref_service, client_.get(), std::move(seed_store),
+          ui_string_overrider);
   variations_field_trial_creator_->OverrideVariationsPlatform(
       variations::Study::PLATFORM_ANDROID_WEBVIEW);
 

@@ -32,20 +32,15 @@ class VariationsFieldTrialCreator {
   // stay valid for the lifetime of this object.
   VariationsFieldTrialCreator(PrefService* local_state,
                               VariationsServiceClient* client,
+                              std::unique_ptr<VariationsSeedStore> seed_store,
                               const UIStringOverrider& ui_string_overrider);
-  // |initial_seed| may be null. If not null, then it will be stored in the
-  // contained seed store.
-  VariationsFieldTrialCreator(PrefService* local_state,
-                              VariationsServiceClient* client,
-                              const UIStringOverrider& ui_string_overrider,
-                              std::unique_ptr<SeedResponse> initial_seed);
   virtual ~VariationsFieldTrialCreator();
 
   // Returns what variations will consider to be the latest country. Returns
   // empty if it is not available.
   std::string GetLatestCountry() const;
 
-  VariationsSeedStore* seed_store() { return &seed_store_; }
+  VariationsSeedStore* seed_store() { return seed_store_.get(); }
 
   // Sets up field trials based on stored variations seed data. Returns whether
   // setup completed successfully.
@@ -137,14 +132,14 @@ class VariationsFieldTrialCreator {
   // Get the platform we're running on, respecting OverrideVariationsPlatform().
   Study::Platform GetPlatform();
 
-  PrefService* local_state() { return seed_store_.local_state(); }
-  const PrefService* local_state() const { return seed_store_.local_state(); }
+  PrefService* local_state() { return seed_store_->local_state(); }
+  const PrefService* local_state() const { return seed_store_->local_state(); }
 
   VariationsServiceClient* client_;
 
   UIStringOverrider ui_string_overrider_;
 
-  VariationsSeedStore seed_store_;
+  std::unique_ptr<VariationsSeedStore> seed_store_;
 
   // Tracks whether |CreateTrialsFromSeed| has been called, to ensure that it is
   // called at most once.
