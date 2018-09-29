@@ -324,6 +324,40 @@ FindAndCloneMatchedNewPasswordFormManager(
   return nullptr;
 }
 
+// Records the difference between how |old_manager| and |new_manager| understood
+// the pending credentials.
+void RecordParsingOnSavingDifference(
+    const PasswordFormManagerInterface& old_manager,
+    const PasswordFormManagerInterface& new_manager,
+    PasswordFormMetricsRecorder* metrics_recorder) {
+  const PasswordForm& old_form = old_manager.GetPendingCredentials();
+  const PasswordForm& new_form = new_manager.GetPendingCredentials();
+  uint64_t result = 0;
+
+  if (old_form.username_element != new_form.username_element ||
+      old_form.username_value != new_form.username_value ||
+      old_form.password_element != new_form.password_element ||
+      old_form.password_value != new_form.password_value) {
+    result |= static_cast<int>(
+        PasswordFormMetricsRecorder::ParsingOnSavingDifference::kFields);
+  }
+  if (old_form.signon_realm != new_form.signon_realm) {
+    result |= static_cast<int>(
+        PasswordFormMetricsRecorder::ParsingOnSavingDifference::kSignonRealm);
+  }
+  if (old_manager.IsNewLogin() != new_manager.IsNewLogin()) {
+    result |= static_cast<int>(PasswordFormMetricsRecorder::
+                                   ParsingOnSavingDifference::kNewLoginStatus);
+  }
+  if (old_manager.HasGeneratedPassword() !=
+      new_manager.HasGeneratedPassword()) {
+    result |= static_cast<int>(
+        PasswordFormMetricsRecorder::ParsingOnSavingDifference::kGenerated);
+  }
+
+  metrics_recorder->RecordParsingOnSavingDifference(result);
+}
+
 }  // namespace
 
 // static
@@ -1065,6 +1099,18 @@ void PasswordManager::OnLoginSuccessful() {
     // |submitted_manager| is not null here and put DCHECK(submitted_manager)
     // instead.
     return;
+  }
+
+  // TODO(https://crbug.com/831123): Remove logging when the old form parsing is
+  // removed.
+  if (is_new_form_parsing_for_saving_enabled_) {
+    // In this case, |submitted_manager| points to a NewPasswordFormManager and
+    // |provisional_save_manager_| to a PasswordFormManager. They use the new
+    // and the old FormData parser, respectively. Log the differences using UKM
+    // to be alerted of regressions early.
+    RecordParsingOnSavingDifference(*provisional_save_manager_,
+                                    *submitted_manager,
+                                    submitted_manager->GetMetricsRecorder());
   }
 
   if (ShouldPromptUserToSavePassword(*submitted_manager)) {

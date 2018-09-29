@@ -283,6 +283,11 @@ void PasswordFormMetricsRecorder::RecordParsingsComparisonResult(
       static_cast<uint64_t>(comparison_result));
 }
 
+void PasswordFormMetricsRecorder::RecordParsingOnSavingDifference(
+    uint64_t comparison_result) {
+  ukm_entry_builder_.SetParsingOnSavingDifference(comparison_result);
+}
+
 void PasswordFormMetricsRecorder::RecordShowManualFallbackForSaving(
     bool has_generated_password,
     bool is_update) {

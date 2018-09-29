@@ -3127,6 +3127,14 @@ be describing additional metrics about the same event.
       password_manager::PasswordFormMetricsRecorder::ParsingComparisonResult.
     </summary>
   </metric>
+  <metric name="ParsingOnSavingDifference">
+    <summary>
+      Records the comparison of the old and new password form parsing for
+      saving. Multiple values from the
+      password_manager::PasswordFormMetricsRecorder::ParsingOnSavingDifference
+      bitmask can be combined.
+    </summary>
+  </metric>
   <metric name="Saving.Prompt.Interaction">
     <summary>
       Records how the user interacted with a saving prompt. Recorded values

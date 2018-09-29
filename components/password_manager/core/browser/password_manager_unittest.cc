@@ -2782,4 +2782,37 @@ TEST_F(PasswordManagerTest, ManualFallbackForSavingNewParser) {
   manager()->HideManualFallbackForSaving();
 }
 
+// Check that some value for the ParsingOnSavingDifference UKM metric is emitted
+// on a successful login.
+TEST_F(PasswordManagerTest, ParsingOnSavingMetricRecorded) {
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  PasswordForm form = MakeSimpleForm();
+  std::vector<PasswordForm> observed = {form};
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+
+  // Provisionally save and simulate a successful landing page load to make
+  // manager() believe this password should be saved.
+  manager()->ProvisionallySavePassword(form, nullptr);
+  manager()->OnPasswordFormsRendered(&driver_, {}, true);
+
+  // Destroy |manager_| to send off UKM metrics.
+  manager_.reset();
+
+  std::vector<const ukm::mojom::UkmEntry*> ukm_entries =
+      test_ukm_recorder.GetEntriesByName(
+          ukm::builders::PasswordForm::kEntryName);
+  ASSERT_EQ(1u, ukm_entries.size());
+  test_ukm_recorder.EntryHasMetric(
+      ukm_entries[0],
+      ukm::builders::PasswordForm::kParsingOnSavingDifferenceName);
+}
+
 }  // namespace password_manager
