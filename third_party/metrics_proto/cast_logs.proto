@@ -163,7 +163,7 @@ message CastLogsProto {
   repeated CastConnectionInfo cast_connection_info = 2;
 
   // Stores Cast-enabled device specific events with a various context data.
-  // Next tag: 20
+  // Next tag: 21
   message CastEventProto {
     // The name of the action, hashed by same logic used to hash user action
     // event and histogram.
@@ -209,7 +209,7 @@ message CastLogsProto {
 
     optional string aogh_request_id = 16;
 
-    optional int64 aogh_local_agent_id = 18;
+    optional int64 aogh_local_device_id = 18;
 
     // Optional value associated with the event. For example, may be used for
     // error codes.
@@ -224,6 +224,9 @@ message CastLogsProto {
 
     // Optional value associated with timezone update event.
     optional string timezone_id = 17;
+
+    // Optional value to log ui version.
+    optional string ui_version = 20;
   }
   repeated CastEventProto cast_event = 3;
 
@@ -232,7 +235,7 @@ message CastLogsProto {
   optional fixed32 virtual_release_track = 4;
 
   // Cast specific device information which is expected to change over time.
-  // Next tag: 8
+  // Next tag: 9
   message CastDeviceMutableInfo {
     // This is the last type of reboot the device encountered
     // Next tag: 11
@@ -277,6 +280,8 @@ message CastLogsProto {
 
     // Current timezone which the device is using.
     optional string timezone_id = 7;
+    // Optional value to log latest ui version.
+    optional string latest_ui_version = 8;
   }
   // The device sends this information at least once per day.
   optional CastDeviceMutableInfo cast_device_mutable_info = 5;
