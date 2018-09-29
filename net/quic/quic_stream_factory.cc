@@ -379,13 +379,25 @@ class QuicStreamFactory::Job {
   };
 
   void CloseStaleHostConnection() {
+    DVLOG(1) << "Closing connection from stale host.";
     if (session_) {
       QuicChromiumClientSession* session = session_;
       session_ = nullptr;
-      session->CloseSessionOnError(
+      session->CloseSessionOnErrorLater(
           ERR_ABORTED, quic::QUIC_CONNECTION_CANCELLED,
           quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     }
+  }
+
+  bool DoesPeerAddressMatchWithFreshAddressList() {
+    std::vector<net::IPEndPoint> endpoints = address_list_.endpoints();
+    IPEndPoint stale_address = session_->peer_address().impl().socket_address();
+
+    if (std::find(endpoints.begin(), endpoints.end(), stale_address) !=
+        endpoints.end()) {
+      return true;
+    }
+    return false;
   }
 
   IoState io_state_;
@@ -533,11 +545,17 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
       return;
     } else if (io_state_ != STATE_HOST_VALIDATION) {
       // Case where host resolution returns successfully, but stale connection
-      // hasn't finished yet. Host validation will be handled in
-      // DoValidateHost().
-      // TODO(renjietang): In the future, we can also compare IPs here and if
-      // they don't match, we can close the stale connection early.
-      return;
+      // hasn't finished yet.
+      if (DoesPeerAddressMatchWithFreshAddressList()) {
+        dns_race_ongoing_ = false;
+        return;
+      }
+      net_log_.AddEvent(
+          NetLogEventType::
+              QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_NO_MATCH);
+      CloseStaleHostConnection();
+      dns_race_ongoing_ = false;
+      io_state_ = STATE_RESOLVE_HOST_COMPLETE;
     }
   }
 
@@ -694,11 +712,7 @@ int QuicStreamFactory::Job::DoWaitForHostResolution() {
 // This state is reached iff both host resolution and connection from stale dns
 // have finished successfully.
 int QuicStreamFactory::Job::DoValidateHost() {
-  std::vector<net::IPEndPoint> endpoints = address_list_.endpoints();
-  IPEndPoint stale_address = session_->peer_address().impl().socket_address();
-
-  if (std::find(endpoints.begin(), endpoints.end(), stale_address) !=
-      endpoints.end()) {
+  if (DoesPeerAddressMatchWithFreshAddressList()) {
     io_state_ = STATE_CONFIRM_CONNECTION;
     return OK;
   }
