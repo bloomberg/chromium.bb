@@ -52,6 +52,9 @@ namespace {
 
 const uint64_t kSignatureHeaderDate = 1520834000;  // 2018-03-12T05:53:20Z
 
+constexpr char kExpectedSXGEnabledAcceptHeaderForPrefetch[] =
+    "application/signed-exchange;v=b2;q=0.9,*/*;q=0.8";
+
 class RedirectObserver : public WebContentsObserver {
  public:
   explicit RedirectObserver(WebContents* web_contents)
@@ -424,6 +427,16 @@ class SignedExchangeAcceptHeaderBrowserTest
     }
   }
 
+  void CheckPrefetchAcceptHeader(const GURL& url, bool should_have_sxg) {
+    if (should_have_sxg) {
+      EXPECT_EQ(GetInterceptedAcceptHeader(url),
+                std::string(kExpectedSXGEnabledAcceptHeaderForPrefetch));
+    } else {
+      EXPECT_EQ(GetInterceptedAcceptHeader(url),
+                std::string(network::kDefaultAcceptHeader));
+    }
+  }
+
   net::EmbeddedTestServer enabled_https_server_;
   net::EmbeddedTestServer disabled_https_server_;
 
@@ -516,6 +529,67 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
   CheckNavigationAcceptHeader(redirect_enabled_to_disabled_url,
                               ShouldHaveSXGAcceptHeaderInEnabledOrigin());
   CheckNavigationAcceptHeader(disabled_test_url, GetParam().sxg_enabled);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
+                       PrefetchEnabledPageEnabledTarget) {
+  const GURL enabled_target = enabled_https_server_.GetURL("/sxg/hello.txt");
+  const GURL enabled_page_url = enabled_https_server_.GetURL(
+      std::string("/sxg/prefetch.html#") + enabled_target.spec());
+  NavigateAndWaitForTitle(enabled_page_url, "OK");
+  CheckPrefetchAcceptHeader(enabled_target,
+                            ShouldHaveSXGAcceptHeaderInEnabledOrigin());
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
+                       PrefetchEnabledPageDisabledTarget) {
+  const GURL disabled_target = disabled_https_server_.GetURL("/sxg/hello.txt");
+  const GURL enabled_page_url = enabled_https_server_.GetURL(
+      std::string("/sxg/prefetch.html#") + disabled_target.spec());
+  NavigateAndWaitForTitle(enabled_page_url, "OK");
+  CheckPrefetchAcceptHeader(disabled_target, GetParam().sxg_enabled);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
+                       PrefetchDisabledPageEnabledTarget) {
+  const GURL enabled_target = enabled_https_server_.GetURL("/sxg/hello.txt");
+  const GURL disabled_page_url = disabled_https_server_.GetURL(
+      std::string("/sxg/prefetch.html#") + enabled_target.spec());
+  NavigateAndWaitForTitle(disabled_page_url, "OK");
+  CheckPrefetchAcceptHeader(enabled_target,
+                            ShouldHaveSXGAcceptHeaderInEnabledOrigin());
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
+                       PrefetchDisabledPageDisabledTarget) {
+  const GURL disabled_target = disabled_https_server_.GetURL("/sxg/hello.txt");
+  const GURL disabled_page_url = disabled_https_server_.GetURL(
+      std::string("/sxg/prefetch.html#") + disabled_target.spec());
+  NavigateAndWaitForTitle(disabled_page_url, "OK");
+  CheckPrefetchAcceptHeader(disabled_target, GetParam().sxg_enabled);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SignedExchangeAcceptHeaderBrowserTest,
+    PrefetchEnabledPageRedirectFromDisabledToEnabledToDisabledTarget) {
+  const GURL disabled_target = disabled_https_server_.GetURL("/sxg/hello.txt");
+  const GURL redirect_enabled_to_disabled_url =
+      enabled_https_server_.GetURL("/r?" + disabled_target.spec());
+  const GURL redirect_disabled_to_enabled_to_disabled_url =
+      disabled_https_server_.GetURL("/r?" +
+                                    redirect_enabled_to_disabled_url.spec());
+
+  const GURL enabled_page_url = enabled_https_server_.GetURL(
+      std::string("/sxg/prefetch.html#") +
+      redirect_disabled_to_enabled_to_disabled_url.spec());
+
+  NavigateAndWaitForTitle(enabled_page_url, "OK");
+
+  CheckPrefetchAcceptHeader(redirect_disabled_to_enabled_to_disabled_url,
+                            GetParam().sxg_enabled);
+  CheckPrefetchAcceptHeader(redirect_enabled_to_disabled_url,
+                            ShouldHaveSXGAcceptHeaderInEnabledOrigin());
+  CheckPrefetchAcceptHeader(disabled_target, GetParam().sxg_enabled);
 }
 
 INSTANTIATE_TEST_CASE_P(
