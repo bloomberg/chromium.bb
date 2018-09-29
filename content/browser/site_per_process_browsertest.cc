@@ -10478,6 +10478,27 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
             parent_view->touch_selection_controller()->active_status());
 
+  // Check that selection handles are close to the selection range.
+  ui::TouchSelectionController* touch_selection_controller =
+      parent_view->touch_selection_controller();
+
+  gfx::PointF selection_start = touch_selection_controller->GetStartPosition();
+  gfx::PointF selection_end = touch_selection_controller->GetEndPosition();
+  gfx::RectF handle_start = touch_selection_controller->GetStartHandleRect();
+  gfx::RectF handle_end = touch_selection_controller->GetEndHandleRect();
+
+  // Not all Android bots seem to actually show the handle, so check first.
+  if (!handle_start.IsEmpty()) {
+    EXPECT_FALSE(touch_selection_controller->GetEndHandleRect().IsEmpty());
+    // handle_start.y() defined the top of the handle's rect, and x() is left.
+    EXPECT_NEAR(selection_start.y(), handle_start.y(), 3.f);
+    EXPECT_GE(selection_start.x(), handle_start.x());
+    EXPECT_LE(selection_start.x(), handle_start.right());
+    EXPECT_NEAR(selection_end.y(), handle_end.y(), 3.f);
+    EXPECT_GE(selection_end.x(), handle_end.x());
+    EXPECT_LE(selection_end.x(), handle_end.right());
+  }
+
   // Tap inside/outside the iframe and make sure the selection handles go away.
   selection_controller_client->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_CLEARED);
