@@ -116,6 +116,7 @@ const DecodeParam kAV1InvalidFileTests[] = {
   { 1, "invalid-oss-fuzz-10227.ivf" },
   { 4, "invalid-oss-fuzz-10555.ivf" },
   { 1, "invalid-oss-fuzz-10705.ivf" },
+  { 1, "invalid-oss-fuzz-10723.ivf" },
 };
 
 AV1_INSTANTIATE_TEST_CASE(InvalidFileTest,

@@ -4795,6 +4795,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->show_existing_frame = 0;
     cm->show_frame = 1;
     cm->frame_type = KEY_FRAME;
+    if (pbi->sequence_header_changed) {
+      // This is the start of a new coded video sequence.
+      pbi->sequence_header_changed = 0;
+      pbi->decoding_first_frame = 1;
+      reset_frame_buffers(cm);
+    }
     cm->error_resilient_mode = 1;
   } else {
     cm->show_existing_frame = aom_rb_read_bit(rb);
@@ -4857,11 +4863,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
     if (pbi->sequence_header_changed) {
-      if (pbi->common.frame_type == KEY_FRAME) {
+      if (cm->frame_type == KEY_FRAME) {
         // This is the start of a new coded video sequence.
         pbi->sequence_header_changed = 0;
         pbi->decoding_first_frame = 1;
-        reset_frame_buffers(&pbi->common);
+        reset_frame_buffers(cm);
       } else {
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Sequence header has changed without a keyframe.");
