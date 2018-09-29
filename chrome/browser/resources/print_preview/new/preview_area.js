@@ -244,19 +244,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Whether the system dialog button should be shown.
-   * @private
-   */
-  displaySystemDialogButton_: function() {
-    return this.previewState ==
-        print_preview_new.PreviewAreaState.INVALID_SETTINGS ||
-        this.previewState ==
-        print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING ||
-        this.previewState ==
-        print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED;
-  },
-
-  /**
    * @return {boolean} Whether the "learn more" link to the cloud print help
    *     page should be shown.
    * @private
