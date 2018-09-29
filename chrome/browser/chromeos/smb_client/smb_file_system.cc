@@ -230,16 +230,11 @@ AbortCallback SmbFileSystem::ExecuteAction(
 AbortCallback SmbFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     storage::AsyncFileUtil::ReadDirectoryCallback callback) {
-  base::ElapsedTimer metrics_timer;
+  OperationId operation_id = task_queue_.GetNextOperationId();
 
-  auto reply =
-      base::BindOnce(&SmbFileSystem::HandleRequestReadDirectoryCallback,
-                     AsWeakPtr(), callback, std::move(metrics_timer));
-  SmbTask task = base::BindOnce(&SmbProviderClient::ReadDirectory,
-                                GetWeakSmbProviderClient(), GetMountId(),
-                                directory_path, std::move(reply));
+  StartReadDirectory(directory_path, operation_id, std::move(callback));
 
-  return EnqueueTaskAndGetCallback(std::move(task));
+  return CreateAbortCallback(operation_id);
 }
 
 AbortCallback SmbFileSystem::OpenFile(const base::FilePath& file_path,
