@@ -80,14 +80,8 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWebXrDisabled,
 
 // Tests that WebVR does not return any devices if OpenVR support is disabled.
 // Since WebVR isn't actually used, we can remove the GPU requirement.
-#if defined(OS_WIN)
-#define MAYBE_TestWebVrNoDevicesWithoutOpenVr \
-  DISABLED_TestWebVrNoDevicesWithoutOpenVr
-#else
-#define MAYBE_TestWebVrNoDevicesWithoutOpenVr TestWebVrNoDevicesWithoutOpenVr
-#endif
 IN_PROC_BROWSER_TEST_F(WebVrBrowserTestOpenVrDisabled,
-                       MAYBE_TestWebVrNoDevicesWithoutOpenVr) {
+                       TestWebVrNoDevicesWithoutOpenVr) {
   LoadUrlAndAwaitInitialization(GetHtmlTestFile("generic_webvr_page"));
   EXPECT_FALSE(XrDeviceFound())
       << "Found a VRDisplay even with OpenVR disabled";
