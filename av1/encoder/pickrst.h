@@ -33,7 +33,8 @@ static INLINE uint8_t find_average(const uint8_t *src, int h_start, int h_end,
       sum += src[i * stride + j];
     }
   }
-  return sum / ((v_end - v_start) * (h_end - h_start));
+  uint64_t avg = sum / ((v_end - v_start) * (h_end - h_start));
+  return (uint8_t)avg;
 }
 
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi);

@@ -701,7 +701,8 @@ static uint16_t find_average_highbd(const uint16_t *src, int h_start, int h_end,
       sum += src[i * stride + j];
     }
   }
-  return sum / ((v_end - v_start) * (h_end - h_start));
+  uint64_t avg = sum / ((v_end - v_start) * (h_end - h_start));
+  return (uint16_t)avg;
 }
 
 static AOM_FORCE_INLINE void compute_stats_highbd(
@@ -1005,9 +1006,9 @@ static void finalize_sym_filter(int wiener_win, int32_t *f, InterpKernel fi) {
     const int64_t divisor = WIENER_TAP_SCALE_FACTOR;
     // Perform this division with proper rounding rather than truncation
     if (dividend < 0) {
-      fi[i] = (dividend - (divisor / 2)) / divisor;
+      fi[i] = (int16_t)((dividend - (divisor / 2)) / divisor);
     } else {
-      fi[i] = (dividend + (divisor / 2)) / divisor;
+      fi[i] = (int16_t)((dividend + (divisor / 2)) / divisor);
     }
   }
   // Specialize for 7-tap filter
