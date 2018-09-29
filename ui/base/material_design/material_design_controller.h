@@ -6,7 +6,13 @@
 #define UI_BASE_MATERIAL_DESIGN_MATERIAL_DESIGN_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/base/ui_base_export.h"
+
+namespace base {
+template <typename T>
+class NoDestructor;
+}
 
 namespace ui {
 
@@ -40,10 +46,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Get the current Mode that should be used by the system.
   static Mode GetMode();
 
-  static void AddObserver(MaterialDesignControllerObserver* observer);
-
-  static void RemoveObserver(MaterialDesignControllerObserver* observer);
-
   // Returns true if the touch-optimized UI material design mode is enabled.
   static bool IsTouchOptimizedUiEnabled();
 
@@ -61,8 +63,19 @@ class UI_BASE_EXPORT MaterialDesignController {
 
   static bool is_mode_initialized() { return is_mode_initialized_; }
 
+  static MaterialDesignController* GetInstance();
+
+  void AddObserver(MaterialDesignControllerObserver* observer);
+
+  void RemoveObserver(MaterialDesignControllerObserver* observer);
+
  private:
+  friend class base::NoDestructor<MaterialDesignController>;
   friend class test::MaterialDesignControllerTestAPI;
+
+  MaterialDesignController();
+
+  ~MaterialDesignController() = delete;
 
   // Resets the initialization state to uninitialized. To be used by tests to
   // allow calling Initialize() more than once.
@@ -83,6 +96,8 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Whether |mode_| should toggle between MATERIAL_REFRESH and
   // MATERIAL_TOUCH_REFRESH depending on the tablet state.
   static bool is_refresh_dynamic_ui_;
+
+  base::ObserverList<MaterialDesignControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MaterialDesignController);
 };

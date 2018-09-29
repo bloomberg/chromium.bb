@@ -14,9 +14,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -91,8 +93,6 @@ constexpr int kStackedPadding = 6;
 int g_drop_indicator_width = 0;
 int g_drop_indicator_height = 0;
 
-TabSizeInfo* g_tab_size_info = nullptr;
-
 // Animation delegate used for any automatic tab movement.  Hides the tab if it
 // is not fully visible within the tabstrip area, to prevent overflow clipping.
 class TabAnimationDelegate : public gfx::AnimationDelegate {
@@ -154,6 +154,14 @@ void ResetDraggingStateDelegate::AnimationCanceled(
   AnimationEnded(animation);
 }
 
+base::flat_map<ui::MaterialDesignController::Mode, TabSizeInfo>*
+GetTabSizeInfoMap() {
+  static base::NoDestructor<
+      base::flat_map<ui::MaterialDesignController::Mode, TabSizeInfo>>
+      tab_size_info_map;
+  return tab_size_info_map.get();
+}
+
 // If |dest| contains the point |point_in_source| the event handler from |dest|
 // is returned. Otherwise returns null.
 views::View* ConvertPointToViewAndGetEventHandler(
@@ -185,17 +193,19 @@ TabDragController::EventSource EventSourceFromEvent(
 }
 
 const TabSizeInfo& GetTabSizeInfo() {
-  if (g_tab_size_info)
-    return *g_tab_size_info;
+  TabSizeInfo& tab_size_info =
+      (*GetTabSizeInfoMap())[ui::MaterialDesignController::GetMode()];
 
-  g_tab_size_info = new TabSizeInfo;
-  g_tab_size_info->pinned_tab_width = Tab::GetPinnedWidth();
-  g_tab_size_info->min_active_width = Tab::GetMinimumActiveWidth();
-  g_tab_size_info->min_inactive_width = Tab::GetMinimumInactiveWidth();
-  g_tab_size_info->standard_size =
+  if (!tab_size_info.standard_size.IsEmpty())
+    return tab_size_info;
+
+  tab_size_info.pinned_tab_width = Tab::GetPinnedWidth();
+  tab_size_info.min_active_width = Tab::GetMinimumActiveWidth();
+  tab_size_info.min_inactive_width = Tab::GetMinimumInactiveWidth();
+  tab_size_info.standard_size =
       gfx::Size(Tab::GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
-  g_tab_size_info->tab_overlap = Tab::GetOverlap();
-  return *g_tab_size_info;
+  tab_size_info.tab_overlap = Tab::GetOverlap();
+  return tab_size_info;
 }
 
 int GetStackableTabWidth() {
@@ -2298,10 +2308,7 @@ bool TabStrip::IsPointInTab(Tab* tab,
 
 // static
 void TabStrip::ResetTabSizeInfoForTesting() {
-  if (g_tab_size_info) {
-    delete g_tab_size_info;
-    g_tab_size_info = nullptr;
-  }
+  *GetTabSizeInfoMap() = {};
 }
 
 Tab* TabStrip::FindTabForEvent(const gfx::Point& point) {

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -136,11 +137,11 @@ class ToolbarButton : public views::LabelButton,
   // to extend to the full window width.
   int leading_margin_ = 0;
 
-  // Base layout insets (normally GetLayoutInsets(TOOLBAR_BUTTON)) that are used
-  // for the button. This is overridable as AvatarToolbarButton uses smaller
-  // insets to accomodate for a larger avatar avatar icon. |leading_margin_| and
-  // |ink_drop_large_corner_radius()| are also used to calculate final insets.
-  gfx::Insets layout_insets_;
+  // Base layout insets that are used for the button. This is overridable as
+  // AvatarToolbarButton uses smaller insets to accommodate for a larger avatar
+  // avatar icon. |leading_margin_| and |ink_drop_large_corner_radius()| are
+  // also used to calculate final insets.
+  base::Optional<gfx::Insets> layout_insets_;
 
   // A highlight color is used to signal error states. When set this color is
   // used as a base for background, text and ink drops. When not set, uses the

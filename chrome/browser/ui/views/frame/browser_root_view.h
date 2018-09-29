@@ -57,7 +57,7 @@ class BrowserRootView : public views::internal::RootView {
   BrowserRootView(BrowserView* browser_view, views::Widget* widget);
   ~BrowserRootView() override;
 
-  // Overridden from views::View:
+  // views::View:
   bool GetDropFormats(
       int* formats,
       std::set<ui::Clipboard::FormatType>* format_types) override;
