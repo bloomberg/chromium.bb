@@ -678,18 +678,18 @@ bool RenderWidgetHostViewAndroid::TransformPointToCoordSpaceForView(
     RenderWidgetHostViewBase* target_view,
     gfx::PointF* transformed_point,
     viz::EventSource source) {
-  if (target_view == this || !delegated_frame_host_) {
+  if (target_view == this) {
     *transformed_point = point;
     return true;
   }
 
-  // In TransformPointToLocalCoordSpace() there is a Point-to-Pixel conversion,
-  // but it is not necessary here because the final target view is responsible
-  // for converting before computing the final transform.
-  viz::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
+  viz::SurfaceId surface_id = GetCurrentSurfaceId();
   if (!surface_id.is_valid())
     return false;
 
+  // In TransformPointToLocalCoordSpace() there is a Point-to-Pixel conversion,
+  // but it is not necessary here because the final target view is responsible
+  // for converting before computing the final transform.
   return target_view->TransformPointToLocalCoordSpace(
       point, surface_id, transformed_point, source);
 }
@@ -1315,8 +1315,6 @@ void RenderWidgetHostViewAndroid::UpdateTouchSelectionController(
   DCHECK(touch_selection_controller_client_manager_);
   touch_selection_controller_client_manager_->UpdateClientSelectionBounds(
       selection.start, selection.end, this, nullptr);
-  touch_selection_controller_client_manager_->SetPageScaleFactor(
-      page_scale_factor);
 
   // Set parameters for adaptive handle orientation.
   gfx::SizeF viewport_size(scrollable_viewport_size_dip);
