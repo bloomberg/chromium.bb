@@ -33,7 +33,6 @@ namespace media {
 
 class CdmContext;
 class DecryptingDemuxerStream;
-class ScopedDecodeTrace;
 
 // Wraps a DemuxerStream and a list of Decoders and provides decoded
 // output to its client (e.g. Audio/VideoRendererImpl).

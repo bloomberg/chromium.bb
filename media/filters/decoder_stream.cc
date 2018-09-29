@@ -24,40 +24,6 @@
 
 namespace media {
 
-// Helper class for ensuring that Decode() traces are properly unique and closed
-// if the Decode is aborted via a WeakPtr invalidation. We use the |this|
-// pointer of the ScopedDecodeTrace object itself as the id. Since the callback
-// owns the class it's guaranteed to be unique.
-class ScopedDecodeTrace {
- public:
-  ScopedDecodeTrace(const char* trace_name, const DecoderBuffer& buffer)
-      : trace_name_(trace_name) {
-    DCHECK(trace_name_);
-    TRACE_EVENT_ASYNC_BEGIN2(
-        "media", trace_name_, this, "is_key_frame",
-        !buffer.end_of_stream() && buffer.is_key_frame(), "timestamp_us",
-        !buffer.end_of_stream() ? buffer.timestamp().InMicroseconds() : 0);
-  }
-
-  void EndTrace(DecodeStatus status) {
-    DCHECK(!closed_);
-    closed_ = true;
-    TRACE_EVENT_ASYNC_END1("media", trace_name_, this, "status",
-                           GetDecodeStatusString(status));
-  }
-
-  ~ScopedDecodeTrace() {
-    if (!closed_)
-      EndTrace(DecodeStatus::ABORTED);
-  }
-
- private:
-  const char* trace_name_;
-  bool closed_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDecodeTrace);
-};
-
 #define FUNCTION_DVLOG(level) \
   DVLOG(level) << __func__ << "<" << GetStreamTypeString() << ">"
 
@@ -481,10 +447,7 @@ void DecoderStream<StreamType>::DecodeInternal(
   DCHECK(buffer);
 
   std::unique_ptr<ScopedDecodeTrace> trace_event;
-
-  bool enable_decode_traces = false;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED("media", &enable_decode_traces);
-  if (enable_decode_traces) {
+  if (ScopedDecodeTrace::IsEnabled()) {
     // Because multiple Decode() calls may be in flight, each call needs a
     // unique trace event class to identify it. This scoped event is bound
     // into the OnDecodeDone callback to ensure the trace is always closed.
