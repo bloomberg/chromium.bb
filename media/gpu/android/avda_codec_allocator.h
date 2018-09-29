@@ -173,7 +173,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // Wait for a bounded amount of time for |overlay| to be freed, if it's
   // in use pending release of a codec.  Returns true on success, or false if
   // the wait times out.
-  bool WaitForPendingRelease(AndroidOverlay* overlay);
+  bool WaitForPendingReleaseForTesting(AndroidOverlay* overlay);
 
  protected:
   // |tick_clock| and |stop_event| are for tests only.

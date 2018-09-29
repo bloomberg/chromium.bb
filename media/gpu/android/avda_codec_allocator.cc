@@ -40,7 +40,7 @@ std::unique_ptr<MediaCodecBridge> CreateMediaCodecInternal(
     AVDACodecAllocator::CodecFactoryCB factory_cb,
     scoped_refptr<CodecConfig> codec_config,
     bool requires_software_codec) {
-  TRACE_EVENT0("media", "CreateMediaCodecInternal");
+  TRACE_EVENT0("media", "CodecAllocator::CreateMediaCodec");
 
   const base::android::JavaRef<jobject>& media_crypto =
       codec_config->media_crypto ? *codec_config->media_crypto : nullptr;
@@ -72,6 +72,7 @@ std::unique_ptr<MediaCodecBridge> CreateMediaCodecInternal(
 // Delete |codec| and signal |done_event| if it's not null.
 void DeleteMediaCodecAndSignal(std::unique_ptr<MediaCodecBridge> codec,
                                base::WaitableEvent* done_event) {
+  TRACE_EVENT0("media", "CodecAllocator::DeleteMediaCodec");
   codec.reset();
   if (done_event)
     done_event->Signal();
@@ -370,7 +371,7 @@ void AVDACodecAllocator::ReleaseMediaCodec(
   DCHECK(erased);
 
   // Save a waitable event for the release if the codec is attached to an
-  // overlay so we can block on it in WaitForPendingRelease().
+  // overlay so we can block on it in WaitForPendingReleaseForTesting().
   base::WaitableEvent* released_event = nullptr;
   if (surface_bundle->overlay) {
     pending_codec_releases_.emplace(
@@ -388,7 +389,7 @@ void AVDACodecAllocator::ReleaseMediaCodec(
       TaskRunnerFor(task_type);
   if (!task_runner) {
     // Thread isn't running, so just delete it now and hope for the best.
-    media_codec.reset();
+    DeleteMediaCodecAndSignal(std::move(media_codec), nullptr);
     OnMediaCodecReleased(std::move(surface_bundle));
     return;
   }
@@ -430,7 +431,8 @@ base::Thread& AVDACodecAllocator::GetThreadForTesting(TaskType task_type) {
   return threads_[task_type]->thread;
 }
 
-bool AVDACodecAllocator::WaitForPendingRelease(AndroidOverlay* overlay) {
+bool AVDACodecAllocator::WaitForPendingReleaseForTesting(
+    AndroidOverlay* overlay) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!pending_codec_releases_.count(overlay))
     return true;
