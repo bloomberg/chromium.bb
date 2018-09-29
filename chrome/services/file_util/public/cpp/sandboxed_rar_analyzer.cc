@@ -90,7 +90,7 @@ void SandboxedRarAnalyzer::ReportFileFailure() {
 }
 
 std::string SandboxedRarAnalyzer::DebugString() const {
-  return base::StringPrintf("path: %" PRIsFP "; analyzer_ptr_: %p",
+  return base::StringPrintf("path: %" PRFilePath "; analyzer_ptr_: %p",
                             file_path_.value().c_str(), analyzer_ptr_.get());
 }
 
