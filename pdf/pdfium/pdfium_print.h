@@ -33,6 +33,15 @@ class PDFiumPrint {
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count);
 
+  // Performs N-up PDF generation for |doc| based on |pages_per_sheet|,
+  // |page_size|, and |printable_area|.
+  // On success, returns the N-up version of |doc| as a vector.
+  // On failure, returns an empty vector.
+  static std::vector<uint8_t> CreateNupPdf(ScopedFPDFDocument doc,
+                                           size_t pages_per_sheet,
+                                           const gfx::Size& page_size,
+                                           const gfx::Rect& printable_area);
+
   // Check the source doc orientation.  Returns true if the doc is landscape.
   // For now the orientation of the doc is determined by its first page's
   // orientation.  Improvement can be added in the future to better determine
@@ -69,7 +78,6 @@ class PDFiumPrint {
       const PP_PrintSettings_Dev& print_settings);
 
   bool FlattenPrintData(FPDF_DOCUMENT doc) const;
-  std::vector<uint8_t> ConvertDocToBuffer(ScopedFPDFDocument doc) const;
 
   PDFiumEngine* const engine_;
 
