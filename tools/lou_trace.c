@@ -43,10 +43,12 @@ to inspect liblouis translation tables by printing out the list of\n\
 applied translation rules for a given input.\n\n",
 			stdout);
 	fputs("\
-  -h, --help          display this help and exit\n\
-  -v, --version       display version information and exit\n\
-  -f, --forward       forward translation using the given table\n\
-  -b, --backward      backward translation using the given table\n\
+  -h, --help              display this help and exit\n\
+  -v, --version           display version information and exit\n\
+  -f, --forward           forward translation using the given table\n\
+  -b, --backward          backward translation using the given table\n\
+  -n, --noContractions    Use no contractions\n\
+  -d, --dotsIO            Display dot patterns\n\
                       If neither -f nor -b are specified forward translation\n\
                       is assumed\n",
 			stdout);
