@@ -156,20 +156,11 @@ void ExitWithMessage(const std::string& message) {
 VariationsFieldTrialCreator::VariationsFieldTrialCreator(
     PrefService* local_state,
     VariationsServiceClient* client,
+    std::unique_ptr<VariationsSeedStore> seed_store,
     const UIStringOverrider& ui_string_overrider)
-    : VariationsFieldTrialCreator(local_state,
-                                  client,
-                                  ui_string_overrider,
-                                  nullptr) {}
-
-VariationsFieldTrialCreator::VariationsFieldTrialCreator(
-    PrefService* local_state,
-    VariationsServiceClient* client,
-    const UIStringOverrider& ui_string_overrider,
-    std::unique_ptr<SeedResponse> initial_seed)
     : client_(client),
       ui_string_overrider_(ui_string_overrider),
-      seed_store_(local_state, std::move(initial_seed)),
+      seed_store_(std::move(seed_store)),
       create_trials_from_seed_called_(false),
       has_platform_override_(false),
       platform_override_(Study::PLATFORM_WINDOWS) {}
@@ -232,7 +223,7 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   if (!run_in_safe_mode) {
     safe_seed_manager->SetActiveSeedState(seed_data, base64_seed_signature,
                                           std::move(client_filterable_state),
-                                          seed_store_.GetLastFetchTime());
+                                          seed_store_->GetLastFetchTime());
   }
 
   UMA_HISTOGRAM_TIMES("Variations.SeedProcessingTime",
@@ -378,11 +369,11 @@ bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,
   if (!GetSeedStore()->LoadSeed(seed, seed_data, base64_signature))
     return false;
 
-  const base::Time last_fetch_time = seed_store_.GetLastFetchTime();
+  const base::Time last_fetch_time = seed_store_->GetLastFetchTime();
   if (last_fetch_time.is_null()) {
     // If the last fetch time is missing and we have a seed, then this must be
     // the first run of Chrome. Store the current time as the last fetch time.
-    seed_store_.RecordLastFetchTime();
+    seed_store_->RecordLastFetchTime();
     RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_FETCH_TIME_MISSING);
     return true;
   }
@@ -514,7 +505,7 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
 }
 
 VariationsSeedStore* VariationsFieldTrialCreator::GetSeedStore() {
-  return &seed_store_;
+  return seed_store_.get();
 }
 
 Study::Platform VariationsFieldTrialCreator::GetPlatform() {

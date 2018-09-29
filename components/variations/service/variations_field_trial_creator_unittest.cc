@@ -8,6 +8,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -21,6 +23,7 @@
 #include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/service/variations_service_client.h"
+#include "components/variations/variations_seed_store.h"
 #include "components/variations/variations_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -240,7 +243,11 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
   TestVariationsFieldTrialCreator(PrefService* local_state,
                                   TestVariationsServiceClient* client,
                                   SafeSeedManager* safe_seed_manager)
-      : VariationsFieldTrialCreator(local_state, client, UIStringOverrider()),
+      : VariationsFieldTrialCreator(
+            local_state,
+            client,
+            std::make_unique<VariationsSeedStore>(local_state),
+            UIStringOverrider()),
         seed_store_(local_state),
         safe_seed_manager_(safe_seed_manager) {}
 
@@ -492,9 +499,12 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_LoadsCountryOnFirstRun) {
 
   // Note: Unlike other tests, this test does not mock out the seed store, since
   // the interaction between these two classes is what's being tested.
+  auto seed_store = std::make_unique<VariationsSeedStore>(
+      &prefs_, std::move(initial_seed),
+      /*on_initial_seed_stored=*/base::DoNothing());
   VariationsFieldTrialCreator field_trial_creator(
-      &prefs_, &variations_service_client, UIStringOverrider(),
-      std::move(initial_seed));
+      &prefs_, &variations_service_client, std::move(seed_store),
+      UIStringOverrider());
 
   // Check that field trials are created from the seed. The test seed contains a
   // single study with an experiment targeting 100% of users in India. Since
