@@ -164,16 +164,24 @@ class QuotaDatabaseTest : public testing::Test {
     const url::Origin kOrigin4 = url::Origin::Create(GURL("http://p/"));
 
     // Adding three temporary storages, and
-    EXPECT_TRUE(db.SetOriginLastAccessTime(kOrigin1, kTemporary,
-                                           base::Time::FromInternalValue(10)));
-    EXPECT_TRUE(db.SetOriginLastAccessTime(kOrigin2, kTemporary,
-                                           base::Time::FromInternalValue(20)));
-    EXPECT_TRUE(db.SetOriginLastAccessTime(kOrigin3, kTemporary,
-                                           base::Time::FromInternalValue(30)));
+    EXPECT_TRUE(
+        db.SetOriginLastAccessTime(kOrigin1, kTemporary,
+                                   base::Time::FromDeltaSinceWindowsEpoch(
+                                       base::TimeDelta::FromMicroseconds(10))));
+    EXPECT_TRUE(
+        db.SetOriginLastAccessTime(kOrigin2, kTemporary,
+                                   base::Time::FromDeltaSinceWindowsEpoch(
+                                       base::TimeDelta::FromMicroseconds(20))));
+    EXPECT_TRUE(
+        db.SetOriginLastAccessTime(kOrigin3, kTemporary,
+                                   base::Time::FromDeltaSinceWindowsEpoch(
+                                       base::TimeDelta::FromMicroseconds(30))));
 
     // one persistent.
-    EXPECT_TRUE(db.SetOriginLastAccessTime(kOrigin4, kPersistent,
-                                           base::Time::FromInternalValue(40)));
+    EXPECT_TRUE(
+        db.SetOriginLastAccessTime(kOrigin4, kPersistent,
+                                   base::Time::FromDeltaSinceWindowsEpoch(
+                                       base::TimeDelta::FromMicroseconds(40))));
 
     EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
     EXPECT_EQ(kOrigin1, origin);
@@ -234,12 +242,18 @@ class QuotaDatabaseTest : public testing::Test {
     const url::Origin kOrigin3 = url::Origin::Create(GURL("http://c/"));
 
     // Report last mod time for the test origins.
-    EXPECT_TRUE(db.SetOriginLastModifiedTime(kOrigin1, kTemporary,
-                                             base::Time::FromInternalValue(0)));
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
-        kOrigin2, kTemporary, base::Time::FromInternalValue(10)));
+        kOrigin1, kTemporary,
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(0))));
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
-        kOrigin3, kTemporary, base::Time::FromInternalValue(20)));
+        kOrigin2, kTemporary,
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(10))));
+    EXPECT_TRUE(db.SetOriginLastModifiedTime(
+        kOrigin3, kTemporary,
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(20))));
 
     EXPECT_TRUE(db.GetOriginsModifiedSince(kTemporary, &origins, base::Time()));
     EXPECT_EQ(3U, origins.size());
@@ -247,31 +261,41 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_EQ(1U, origins.count(kOrigin2));
     EXPECT_EQ(1U, origins.count(kOrigin3));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(kTemporary, &origins,
-                                           base::Time::FromInternalValue(5)));
+    EXPECT_TRUE(
+        db.GetOriginsModifiedSince(kTemporary, &origins,
+                                   base::Time::FromDeltaSinceWindowsEpoch(
+                                       base::TimeDelta::FromMicroseconds(5))));
     EXPECT_EQ(2U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
     EXPECT_EQ(1U, origins.count(kOrigin3));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(kTemporary, &origins,
-                                           base::Time::FromInternalValue(15)));
+    EXPECT_TRUE(
+        db.GetOriginsModifiedSince(kTemporary, &origins,
+                                   base::Time::FromDeltaSinceWindowsEpoch(
+                                       base::TimeDelta::FromMicroseconds(15))));
     EXPECT_EQ(1U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(0U, origins.count(kOrigin2));
     EXPECT_EQ(1U, origins.count(kOrigin3));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(kTemporary, &origins,
-                                           base::Time::FromInternalValue(25)));
+    EXPECT_TRUE(
+        db.GetOriginsModifiedSince(kTemporary, &origins,
+                                   base::Time::FromDeltaSinceWindowsEpoch(
+                                       base::TimeDelta::FromMicroseconds(25))));
     EXPECT_TRUE(origins.empty());
 
     // Update origin1's mod time but for persistent storage.
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
-        kOrigin1, kPersistent, base::Time::FromInternalValue(30)));
+        kOrigin1, kPersistent,
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(30))));
 
     // Must have no effects on temporary origins info.
-    EXPECT_TRUE(db.GetOriginsModifiedSince(kTemporary, &origins,
-                                           base::Time::FromInternalValue(5)));
+    EXPECT_TRUE(
+        db.GetOriginsModifiedSince(kTemporary, &origins,
+                                   base::Time::FromDeltaSinceWindowsEpoch(
+                                       base::TimeDelta::FromMicroseconds(5))));
     EXPECT_EQ(2U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
@@ -279,17 +303,23 @@ class QuotaDatabaseTest : public testing::Test {
 
     // One more update for persistent origin2.
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
-        kOrigin2, kPersistent, base::Time::FromInternalValue(40)));
+        kOrigin2, kPersistent,
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(40))));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(kPersistent, &origins,
-                                           base::Time::FromInternalValue(25)));
+    EXPECT_TRUE(
+        db.GetOriginsModifiedSince(kPersistent, &origins,
+                                   base::Time::FromDeltaSinceWindowsEpoch(
+                                       base::TimeDelta::FromMicroseconds(25))));
     EXPECT_EQ(2U, origins.size());
     EXPECT_EQ(1U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
     EXPECT_EQ(0U, origins.count(kOrigin3));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(kPersistent, &origins,
-                                           base::Time::FromInternalValue(35)));
+    EXPECT_TRUE(
+        db.GetOriginsModifiedSince(kPersistent, &origins,
+                                   base::Time::FromDeltaSinceWindowsEpoch(
+                                       base::TimeDelta::FromMicroseconds(35))));
     EXPECT_EQ(1U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
@@ -311,21 +341,33 @@ class QuotaDatabaseTest : public testing::Test {
 
     // Report last eviction time for the test origins.
     EXPECT_TRUE(db.SetOriginLastEvictionTime(
-        kOrigin1, kTemporary, base::Time::FromInternalValue(10)));
+        kOrigin1, kTemporary,
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(10))));
     EXPECT_TRUE(db.SetOriginLastEvictionTime(
-        kOrigin2, kTemporary, base::Time::FromInternalValue(20)));
+        kOrigin2, kTemporary,
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(20))));
     EXPECT_TRUE(db.SetOriginLastEvictionTime(
-        kOrigin3, kTemporary, base::Time::FromInternalValue(30)));
+        kOrigin3, kTemporary,
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(30))));
 
     EXPECT_TRUE(db.GetOriginLastEvictionTime(kOrigin1, kTemporary,
                                              &last_eviction_time));
-    EXPECT_EQ(base::Time::FromInternalValue(10), last_eviction_time);
+    EXPECT_EQ(base::Time::FromDeltaSinceWindowsEpoch(
+                  base::TimeDelta::FromMicroseconds(10)),
+              last_eviction_time);
     EXPECT_TRUE(db.GetOriginLastEvictionTime(kOrigin2, kTemporary,
                                              &last_eviction_time));
-    EXPECT_EQ(base::Time::FromInternalValue(20), last_eviction_time);
+    EXPECT_EQ(base::Time::FromDeltaSinceWindowsEpoch(
+                  base::TimeDelta::FromMicroseconds(20)),
+              last_eviction_time);
     EXPECT_TRUE(db.GetOriginLastEvictionTime(kOrigin3, kTemporary,
                                              &last_eviction_time));
-    EXPECT_EQ(base::Time::FromInternalValue(30), last_eviction_time);
+    EXPECT_EQ(base::Time::FromDeltaSinceWindowsEpoch(
+                  base::TimeDelta::FromMicroseconds(30)),
+              last_eviction_time);
 
     // Delete last eviction times for the test origins.
     EXPECT_TRUE(db.DeleteOriginLastEvictionTime(kOrigin1, kTemporary));
@@ -505,8 +547,11 @@ class QuotaDatabaseTest : public testing::Test {
       statement.BindString(0, itr->origin.GetURL().spec());
       statement.BindInt(1, static_cast<int>(itr->type));
       statement.BindInt(2, itr->used_count);
-      statement.BindInt64(3, itr->last_access_time.ToInternalValue());
-      statement.BindInt64(4, itr->last_modified_time.ToInternalValue());
+      statement.BindInt64(
+          3, itr->last_access_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+      statement.BindInt64(
+          4,
+          itr->last_modified_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
       EXPECT_TRUE(statement.Run());
     }
   }
