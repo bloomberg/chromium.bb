@@ -1068,7 +1068,9 @@ TEST_P(QuicSpdySessionTestServer,
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream->id(),
                                QUIC_STREAM_CANCELLED, kByteOffset);
   session_.OnRstStream(rst_frame);
-  session_.PostProcessAfterData();
+  if (!session_.deprecate_post_process_after_data()) {
+    session_.PostProcessAfterData();
+  }
   EXPECT_EQ(kByteOffset, session_.flow_controller()->bytes_consumed());
 }
 
@@ -1085,7 +1087,9 @@ TEST_P(QuicSpdySessionTestServer,
       kInitialSessionFlowControlWindowForTest / 2 - 1;
   QuicStreamFrame frame(stream->id(), true, kByteOffset, ".");
   session_.OnStreamFrame(frame);
-  session_.PostProcessAfterData();
+  if (!session_.deprecate_post_process_after_data()) {
+    session_.PostProcessAfterData();
+  }
   EXPECT_TRUE(connection_->connected());
 
   EXPECT_EQ(0u, stream->flow_controller()->bytes_consumed());
@@ -1284,7 +1288,9 @@ TEST_P(QuicSpdySessionTestServer,
 
   // Called after any new data is received by the session, and triggers the
   // call to close the connection.
-  session_.PostProcessAfterData();
+  if (!session_.deprecate_post_process_after_data()) {
+    session_.PostProcessAfterData();
+  }
 }
 
 TEST_P(QuicSpdySessionTestServer, DrainingStreamsDoNotCountAsOpened) {
@@ -1310,7 +1316,9 @@ TEST_P(QuicSpdySessionTestServer, DrainingStreamsDoNotCountAsOpened) {
 
   // Called after any new data is received by the session, and triggers the call
   // to close the connection.
-  session_.PostProcessAfterData();
+  if (!session_.deprecate_post_process_after_data()) {
+    session_.PostProcessAfterData();
+  }
 }
 
 TEST_P(QuicSpdySessionTestServer, TestMaxIncomingAndOutgoingStreamsAllowed) {
@@ -1372,7 +1380,9 @@ TEST_P(QuicSpdySessionTestClient, RecordFinAfterReadSideClosed) {
   EXPECT_TRUE(QuicStreamPeer::read_side_closed(stream));
 
   // Allow the session to delete the stream object.
-  session_.PostProcessAfterData();
+  if (!session_.deprecate_post_process_after_data()) {
+    session_.PostProcessAfterData();
+  }
   EXPECT_TRUE(connection_->connected());
   EXPECT_TRUE(QuicSessionPeer::IsStreamClosed(&session_, stream_id));
   EXPECT_FALSE(QuicSessionPeer::IsStreamCreated(&session_, stream_id));

@@ -258,6 +258,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // with newly acked packets.
   void OnAckRange(QuicPacketNumber start, QuicPacketNumber end);
 
+  // Called when a timestamp is processed.  If it's present in packets_acked_,
+  // the timestamp field is set.  Otherwise, the timestamp is ignored.
+  void OnAckTimestamp(QuicPacketNumber packet_number, QuicTime timestamp);
+
   // Called when an ack frame is parsed completely. Returns true if a previously
   // -unacked packet is acked.
   bool OnAckFrameEnd(QuicTime ack_receive_time);

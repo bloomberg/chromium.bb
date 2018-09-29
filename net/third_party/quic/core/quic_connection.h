@@ -471,6 +471,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override;
   bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override;
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override;
   bool OnAckFrameEnd(QuicPacketNumber start) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;
@@ -787,6 +789,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // quic_reloadable_flag_quic_donot_retransmit_old_window_update is deprecated.
   void set_donot_retransmit_old_window_updates(bool value) {
     donot_retransmit_old_window_updates_ = value;
+  }
+
+  bool deprecate_post_process_after_data() const {
+    return deprecate_post_process_after_data_;
   }
 
  protected:
@@ -1315,6 +1321,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Latched value of
   // quic_reloadable_flag_quic_notify_debug_visitor_on_connectivity_probing_sent
   const bool notify_debug_visitor_on_connectivity_probing_sent_;
+
+  // Latched value of quic_reloadable_flag_quic_move_post_process_after_data.
+  const bool deprecate_post_process_after_data_;
 };
 
 }  // namespace quic

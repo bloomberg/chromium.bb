@@ -4,6 +4,7 @@
 
 #include "net/third_party/quic/core/qpack/qpack_encoder.h"
 
+#include "net/third_party/quic/core/qpack/qpack_encoder_test_utils.h"
 #include "net/third_party/quic/core/qpack/qpack_test_utils.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
@@ -21,9 +22,8 @@ class QpackEncoderTest : public QuicTestWithParam<FragmentMode> {
   QpackEncoderTest() : fragment_mode_(GetParam()) {}
 
   QuicString Encode(const spdy::SpdyHeaderBlock* header_list) {
-    return QpackTestUtils::Encode(
-        QpackTestUtils::FragmentModeToFragmentSizeGenerator(fragment_mode_),
-        header_list);
+    return QpackEncode(FragmentModeToFragmentSizeGenerator(fragment_mode_),
+                       header_list);
   }
 
  private:

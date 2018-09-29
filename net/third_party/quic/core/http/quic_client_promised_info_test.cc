@@ -71,6 +71,7 @@ class QuicClientPromisedInfoTest : public QuicTest {
         session_(connection_, &push_promise_index_),
         body_("hello world"),
         promise_id_(kInvalidStreamId) {
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_.Initialize();
 
     headers_[":status"] = "200";

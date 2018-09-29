@@ -186,7 +186,7 @@ class QuartcStreamTest : public QuicTest, public QuicConnectionHelperInterface {
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
         alarm_factory_.get(), new DummyPacketWriter(), owns_writer, perspective,
         CurrentSupportedVersions());
-
+    clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_ = QuicMakeUnique<MockQuicSession>(connection_.get(), QuicConfig(),
                                                &write_buffer_);
     mock_stream_delegate_ =

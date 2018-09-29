@@ -22,6 +22,24 @@ using spdy::SpdyPriority;
 
 namespace quic {
 
+namespace {
+
+class ClosedStreamsCleanUpDelegate : public QuicAlarm::Delegate {
+ public:
+  explicit ClosedStreamsCleanUpDelegate(QuicSession* session)
+      : session_(session) {}
+  ClosedStreamsCleanUpDelegate(const ClosedStreamsCleanUpDelegate&) = delete;
+  ClosedStreamsCleanUpDelegate& operator=(const ClosedStreamsCleanUpDelegate&) =
+      delete;
+
+  void OnAlarm() override { session_->CleanUpClosedStreams(); }
+
+ private:
+  QuicSession* session_;
+};
+
+}  // namespace
+
 #define ENDPOINT \
   (perspective() == Perspective::IS_SERVER ? "Server: " : "Client: ")
 
@@ -55,9 +73,15 @@ QuicSession::QuicSession(QuicConnection* connection,
       goaway_received_(false),
       faster_get_stream_(GetQuicReloadableFlag(quic_session_faster_get_stream)),
       control_frame_manager_(this),
-      last_message_id_(0) {
+      last_message_id_(0),
+      closed_streams_clean_up_alarm_(nullptr) {
   if (faster_get_stream_) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_session_faster_get_stream);
+  }
+  if (connection_->deprecate_post_process_after_data()) {
+    closed_streams_clean_up_alarm_ =
+        QuicWrapUnique<QuicAlarm>(connection_->alarm_factory()->CreateAlarm(
+            new ClosedStreamsCleanUpDelegate(this)));
   }
 }
 
@@ -190,6 +214,10 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error,
     ZombieStreamMap::iterator it = zombie_streams_.begin();
     closed_streams_.push_back(std::move(it->second));
     zombie_streams_.erase(it);
+  }
+
+  if (deprecate_post_process_after_data()) {
+    closed_streams_clean_up_alarm_->Cancel();
   }
 
   if (visitor_) {
@@ -515,6 +543,11 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
     closed_streams_.push_back(std::move(it->second));
     // Do not retransmit data of a closed stream.
     streams_with_pending_retransmission_.erase(stream_id);
+    if (deprecate_post_process_after_data() &&
+        !closed_streams_clean_up_alarm_->IsSet()) {
+      closed_streams_clean_up_alarm_->Set(
+          connection_->clock()->ApproximateNow());
+    }
   }
 
   // If we haven't received a FIN or RST for this stream, we need to keep track
@@ -978,6 +1011,7 @@ bool QuicSession::HasDataToWrite() const {
 }
 
 void QuicSession::PostProcessAfterData() {
+  DCHECK(!deprecate_post_process_after_data());
   closed_streams_.clear();
 }
 
@@ -1039,6 +1073,10 @@ void QuicSession::OnStreamDoneWaitingForAcks(QuicStreamId id) {
   }
 
   closed_streams_.push_back(std::move(it->second));
+  if (deprecate_post_process_after_data() &&
+      !closed_streams_clean_up_alarm_->IsSet()) {
+    closed_streams_clean_up_alarm_->Set(connection_->clock()->ApproximateNow());
+  }
   zombie_streams_.erase(it);
   // Do not retransmit data of a closed stream.
   streams_with_pending_retransmission_.erase(id);
@@ -1304,12 +1342,23 @@ void QuicSession::OnMessageLost(QuicMessageId message_id) {
                 << " is considered lost";
 }
 
+void QuicSession::CleanUpClosedStreams() {
+  DCHECK(deprecate_post_process_after_data());
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_deprecate_post_process_after_data,
+                    1, 3);
+  closed_streams_.clear();
+}
+
 bool QuicSession::session_decides_what_to_write() const {
   return connection_->session_decides_what_to_write();
 }
 
 QuicPacketLength QuicSession::GetLargestMessagePayload() const {
   return connection_->GetLargestMessagePayload();
+}
+
+bool QuicSession::deprecate_post_process_after_data() const {
+  return connection_->deprecate_post_process_after_data();
 }
 
 #undef ENDPOINT  // undef for jumbo builds

@@ -726,7 +726,13 @@ bool QuicDispatcher::OnAckRange(QuicPacketNumber /*start*/,
   return false;
 }
 
-bool QuicDispatcher::OnAckFrameEnd(QuicPacketNumber start) {
+bool QuicDispatcher::OnAckTimestamp(QuicPacketNumber /*packet_number*/,
+                                    QuicTime /*timestamp*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnAckFrameEnd(QuicPacketNumber /*start*/) {
   DCHECK(false);
   return false;
 }

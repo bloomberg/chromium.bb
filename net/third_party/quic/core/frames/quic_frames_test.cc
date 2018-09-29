@@ -84,7 +84,8 @@ TEST_F(QuicFramesTest, ConnectionCloseFrameToString) {
   std::ostringstream stream;
   stream << frame;
   EXPECT_EQ(
-      "{ error_code: 25, error_details: 'No recent network activity.' "
+      "{ error_code: 25, error_details: 'No recent network activity.', "
+      "frame_type: 0"
       "}\n",
       stream.str());
 }

@@ -42,6 +42,8 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override;
   bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override;
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override;
   bool OnAckFrameEnd(QuicPacketNumber start) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
   bool OnPingFrame(const QuicPingFrame& frame) override;
@@ -152,6 +154,11 @@ bool ChloFramerVisitor::OnAckFrameStart(QuicPacketNumber /*largest_acked*/,
 
 bool ChloFramerVisitor::OnAckRange(QuicPacketNumber /*start*/,
                                    QuicPacketNumber /*end*/) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnAckTimestamp(QuicPacketNumber /*packet_number*/,
+                                       QuicTime /*timestamp*/) {
   return true;
 }
 

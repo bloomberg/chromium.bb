@@ -115,6 +115,13 @@ const uint8_t kLargestAckedOffset = 2;
 // Acks may have only one ack block.
 const uint8_t kQuicHasMultipleAckBlocksOffset = 5;
 
+// Timestamps are 4 bytes followed by 2 bytes.
+const uint8_t kQuicNumTimestampsLength = 1;
+const uint8_t kQuicFirstTimestampLength = 4;
+const uint8_t kQuicTimestampLength = 2;
+// Gaps between packet numbers are 1 byte.
+const uint8_t kQuicTimestampPacketNumberGapLength = 1;
+
 // Maximum length of encoded error strings.
 const int kMaxErrorStringLength = 256;
 
@@ -243,6 +250,9 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       alternative_decrypter_latch_(false),
       perspective_(perspective),
       validate_flags_(true),
+      process_timestamps_(false),
+      creation_time_(creation_time),
+      last_timestamp_(QuicTime::Delta::Zero()),
       data_producer_(nullptr),
       process_stateless_reset_at_client_only_(
           GetQuicReloadableFlag(quic_process_stateless_reset_at_client_only)) {
@@ -325,6 +335,7 @@ size_t QuicFramer::GetMinConnectionCloseFrameSize(
   if (version == QUIC_VERSION_99) {
     return QuicDataWriter::GetVarInt62Len(
                TruncatedErrorStringSize(frame.error_details)) +
+           QuicDataWriter::GetVarInt62Len(frame.frame_type) +
            kQuicFrameTypeSize + kQuicIetfQuicErrorCodeSize;
   }
   return kQuicFrameTypeSize + kQuicErrorCodeSize + kQuicErrorDetailsLengthSize;
@@ -520,7 +531,8 @@ size_t QuicFramer::GetNewConnectionIdFrameSize(
     const QuicNewConnectionIdFrame& frame) {
   return kQuicFrameTypeSize +
          QuicDataWriter::GetVarInt62Len(frame.sequence_number) +
-         sizeof(frame.connection_id) + sizeof(frame.stateless_reset_token);
+         kConnectionIdLengthSize + kQuicConnectionIdLength +
+         sizeof(frame.stateless_reset_token);
 }
 
 // static
@@ -1564,6 +1576,29 @@ bool QuicFramer::AppendIetfPacketHeader(const QuicPacketHeader& header,
   return true;
 }
 
+const QuicTime::Delta QuicFramer::CalculateTimestampFromWire(
+    uint32_t time_delta_us) {
+  // The new time_delta might have wrapped to the next epoch, or it
+  // might have reverse wrapped to the previous epoch, or it might
+  // remain in the same epoch. Select the time closest to the previous
+  // time.
+  //
+  // epoch_delta is the delta between epochs. A delta is 4 bytes of
+  // microseconds.
+  const uint64_t epoch_delta = UINT64_C(1) << 32;
+  uint64_t epoch = last_timestamp_.ToMicroseconds() & ~(epoch_delta - 1);
+  // Wrapping is safe here because a wrapped value will not be ClosestTo below.
+  uint64_t prev_epoch = epoch - epoch_delta;
+  uint64_t next_epoch = epoch + epoch_delta;
+
+  uint64_t time = ClosestTo(
+      last_timestamp_.ToMicroseconds(), epoch + time_delta_us,
+      ClosestTo(last_timestamp_.ToMicroseconds(), prev_epoch + time_delta_us,
+                next_epoch + time_delta_us));
+
+  return QuicTime::Delta::FromMicroseconds(time);
+}
+
 QuicPacketNumber QuicFramer::CalculatePacketNumberFromWire(
     QuicPacketNumberLength packet_number_length,
     QuicPacketNumber base_packet_number,
@@ -2097,16 +2132,28 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
   DCHECK_EQ(QUIC_VERSION_99, version_.transport_version)
       << "Attempt to process frames as IETF frames but version is "
       << version_.transport_version << ", not 99.";
-
   if (reader->IsDoneReading()) {
     set_detailed_error("Packet has no frames.");
     return RaiseError(QUIC_MISSING_PAYLOAD);
   }
   while (!reader->IsDoneReading()) {
-    uint8_t frame_type;
-    if (!reader->ReadBytes(&frame_type, 1)) {
+    uint64_t frame_type;
+    // Will be the number of bytes into which frame_type was encoded.
+    size_t encoded_bytes = reader->BytesRemaining();
+    if (!reader->ReadVarInt62(&frame_type)) {
       set_detailed_error("Unable to read frame type.");
       return RaiseError(QUIC_INVALID_FRAME_DATA);
+    }
+
+    // Is now the number of bytes into which the frame type was encoded.
+    encoded_bytes -= reader->BytesRemaining();
+
+    // Check that the frame type is minimally encoded.
+    if (encoded_bytes !=
+        static_cast<size_t>(QuicDataWriter::GetVarInt62Len(frame_type))) {
+      // The frame type was not minimally encoded.
+      set_detailed_error("Frame type not minimally encoded.");
+      return RaiseError(IETF_QUIC_PROTOCOL_VIOLATION);
     }
 
     if (IS_IETF_STREAM_FRAME(frame_type)) {
@@ -2639,7 +2686,8 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
     return false;
   }
 
-  if (!ProcessTimestampsInAckFrame(num_received_packets, reader)) {
+  if (!ProcessTimestampsInAckFrame(num_received_packets, largest_acked,
+                                   reader)) {
     return false;
   }
 
@@ -2648,35 +2696,50 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
 }
 
 bool QuicFramer::ProcessTimestampsInAckFrame(uint8_t num_received_packets,
+                                             QuicPacketNumber largest_acked,
                                              QuicDataReader* reader) {
-  if (num_received_packets > 0) {
-    uint8_t delta_from_largest_observed;
+  if (num_received_packets == 0) {
+    return true;
+  }
+  uint8_t delta_from_largest_observed;
+  if (!reader->ReadUInt8(&delta_from_largest_observed)) {
+    set_detailed_error("Unable to read sequence delta in received packets.");
+    return false;
+  }
+
+  // Time delta from the framer creation.
+  uint32_t time_delta_us;
+  if (!reader->ReadUInt32(&time_delta_us)) {
+    set_detailed_error("Unable to read time delta in received packets.");
+    return false;
+  }
+
+  QuicPacketNumber seq_num = largest_acked - delta_from_largest_observed;
+  if (process_timestamps_) {
+    last_timestamp_ = CalculateTimestampFromWire(time_delta_us);
+
+    visitor_->OnAckTimestamp(seq_num, creation_time_ + last_timestamp_);
+  }
+
+  for (uint8_t i = 1; i < num_received_packets; ++i) {
     if (!reader->ReadUInt8(&delta_from_largest_observed)) {
       set_detailed_error("Unable to read sequence delta in received packets.");
       return false;
     }
+    seq_num = largest_acked - delta_from_largest_observed;
 
-    // Time delta from the framer creation.
-    uint32_t time_delta_us;
-    if (!reader->ReadUInt32(&time_delta_us)) {
-      set_detailed_error("Unable to read time delta in received packets.");
+    // Time delta from the previous timestamp.
+    uint64_t incremental_time_delta_us;
+    if (!reader->ReadUFloat16(&incremental_time_delta_us)) {
+      set_detailed_error(
+          "Unable to read incremental time delta in received packets.");
       return false;
     }
 
-    for (uint8_t i = 1; i < num_received_packets; ++i) {
-      if (!reader->ReadUInt8(&delta_from_largest_observed)) {
-        set_detailed_error(
-            "Unable to read sequence delta in received packets.");
-        return false;
-      }
-
-      // Time delta from the previous timestamp.
-      uint64_t incremental_time_delta_us;
-      if (!reader->ReadUFloat16(&incremental_time_delta_us)) {
-        set_detailed_error(
-            "Unable to read incremental time delta in received packets.");
-        return false;
-      }
+    if (process_timestamps_) {
+      last_timestamp_ = last_timestamp_ + QuicTime::Delta::FromMicroseconds(
+                                              incremental_time_delta_us);
+      visitor_->OnAckTimestamp(seq_num, creation_time_ + last_timestamp_);
     }
   }
   return true;
@@ -3266,7 +3329,22 @@ size_t QuicFramer::GetAckFrameSize(
                 (ack_block_length + PACKET_1BYTE_PACKET_NUMBER);
   }
 
+  // Include timestamps.
+  if (process_timestamps_) {
+    ack_size += GetAckFrameTimeStampSize(ack);
+  }
+
   return ack_size;
+}
+
+size_t QuicFramer::GetAckFrameTimeStampSize(const QuicAckFrame& ack) {
+  if (ack.received_packet_times.empty()) {
+    return 0;
+  }
+
+  return kQuicNumTimestampsLength + kQuicFirstTimestampLength +
+         (kQuicTimestampLength + kQuicTimestampPacketNumberGapLength) *
+             (ack.received_packet_times.size() - 1);
 }
 
 size_t QuicFramer::ComputeFrameLength(
@@ -3761,13 +3839,84 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
     DCHECK_EQ(num_ack_blocks, num_ack_blocks_written);
   }
   // Timestamps.
-  // If we don't have enough available space to append all the timestamps, don't
-  // append any of them.
-  uint8_t num_received_packets = 0;
-  if (!writer->WriteBytes(&num_received_packets, 1)) {
+  // If we don't process timestamps or if we don't have enough available space
+  // to append all the timestamps, don't append any of them.
+  if (process_timestamps_ && writer->capacity() - writer->length() >=
+                                 GetAckFrameTimeStampSize(frame)) {
+    if (!AppendTimestampsToAckFrame(frame, writer)) {
+      return false;
+    }
+  } else {
+    uint8_t num_received_packets = 0;
+    if (!writer->WriteBytes(&num_received_packets, 1)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool QuicFramer::AppendTimestampsToAckFrame(const QuicAckFrame& frame,
+                                            QuicDataWriter* writer) {
+  DCHECK_GE(std::numeric_limits<uint8_t>::max(),
+            frame.received_packet_times.size());
+  // num_received_packets is only 1 byte.
+  if (frame.received_packet_times.size() >
+      std::numeric_limits<uint8_t>::max()) {
     return false;
   }
 
+  uint8_t num_received_packets = frame.received_packet_times.size();
+  if (!writer->WriteBytes(&num_received_packets, 1)) {
+    return false;
+  }
+  if (num_received_packets == 0) {
+    return true;
+  }
+
+  PacketTimeVector::const_iterator it = frame.received_packet_times.begin();
+  QuicPacketNumber packet_number = it->first;
+  QuicPacketNumber delta_from_largest_observed =
+      LargestAcked(frame) - packet_number;
+
+  DCHECK_GE(std::numeric_limits<uint8_t>::max(), delta_from_largest_observed);
+  if (delta_from_largest_observed > std::numeric_limits<uint8_t>::max()) {
+    return false;
+  }
+
+  if (!writer->WriteUInt8(delta_from_largest_observed)) {
+    return false;
+  }
+
+  // Use the lowest 4 bytes of the time delta from the creation_time_.
+  const uint64_t time_epoch_delta_us = UINT64_C(1) << 32;
+  uint32_t time_delta_us =
+      static_cast<uint32_t>((it->second - creation_time_).ToMicroseconds() &
+                            (time_epoch_delta_us - 1));
+  if (!writer->WriteUInt32(time_delta_us)) {
+    return false;
+  }
+
+  QuicTime prev_time = it->second;
+
+  for (++it; it != frame.received_packet_times.end(); ++it) {
+    packet_number = it->first;
+    delta_from_largest_observed = LargestAcked(frame) - packet_number;
+
+    if (delta_from_largest_observed > std::numeric_limits<uint8_t>::max()) {
+      return false;
+    }
+
+    if (!writer->WriteUInt8(delta_from_largest_observed)) {
+      return false;
+    }
+
+    uint64_t frame_time_delta_us = (it->second - prev_time).ToMicroseconds();
+    prev_time = it->second;
+    if (!writer->WriteUFloat16(frame_time_delta_us)) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -4126,6 +4275,10 @@ bool QuicFramer::AppendIetfConnectionCloseFrame(
     set_detailed_error("Can not write connection close frame error code");
     return false;
   }
+  if (!writer->WriteVarInt62(frame.frame_type)) {
+    set_detailed_error("Writing frame type failed.");
+    return false;
+  }
 
   if (!writer->WriteStringPieceVarInt62(
           TruncateErrorString(frame.error_details))) {
@@ -4160,6 +4313,11 @@ bool QuicFramer::ProcessIetfConnectionCloseFrame(
     return false;
   }
   frame->ietf_error_code = static_cast<QuicIetfTransportErrorCodes>(code);
+
+  if (!reader->ReadVarInt62(&frame->frame_type)) {
+    set_detailed_error("Unable to read connection close frame type.");
+    return false;
+  }
 
   uint64_t phrase_length;
   if (!reader->ReadVarInt62(&phrase_length)) {
@@ -4450,7 +4608,12 @@ bool QuicFramer::AppendNewConnectionIdFrame(
     set_detailed_error("Can not write New Connection ID sequence number");
     return false;
   }
-  if (!writer->WriteUInt64(frame.connection_id)) {
+  if (!writer->WriteUInt8(kQuicConnectionIdLength)) {
+    set_detailed_error(
+        "Can not write New Connection ID frame connection ID Length");
+    return false;
+  }
+  if (!writer->WriteConnectionId(frame.connection_id)) {
     set_detailed_error("Can not write New Connection ID frame connection ID");
     return false;
   }
@@ -4472,7 +4635,19 @@ bool QuicFramer::ProcessNewConnectionIdFrame(QuicDataReader* reader,
     return false;
   }
 
-  if (!reader->ReadUInt64(&frame->connection_id)) {
+  uint8_t connection_id_length;
+  if (!reader->ReadUInt8(&connection_id_length)) {
+    set_detailed_error(
+        "Unable to read new connection ID frame connection id length.");
+    return false;
+  }
+
+  if (connection_id_length != kQuicConnectionIdLength) {
+    set_detailed_error("Invalid new connection ID length.");
+    return false;
+  }
+
+  if (!reader->ReadConnectionId(&frame->connection_id)) {
     set_detailed_error("Unable to read new connection ID frame connection id.");
     return false;
   }

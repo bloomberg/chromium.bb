@@ -69,14 +69,15 @@ PacketDroppingTestWriter::PacketDroppingTestWriter()
 
 PacketDroppingTestWriter::~PacketDroppingTestWriter() = default;
 
-void PacketDroppingTestWriter::Initialize(QuicConnectionHelperInterface* helper,
-                                          QuicAlarmFactory* alarm_factory,
-                                          Delegate* on_can_write) {
+void PacketDroppingTestWriter::Initialize(
+    QuicConnectionHelperInterface* helper,
+    QuicAlarmFactory* alarm_factory,
+    std::unique_ptr<Delegate> on_can_write) {
   clock_ = helper->GetClock();
   write_unblocked_alarm_.reset(
       alarm_factory->CreateAlarm(new WriteUnblockedAlarm(this)));
   delay_alarm_.reset(alarm_factory->CreateAlarm(new DelayAlarm(this)));
-  on_can_write_.reset(on_can_write);
+  on_can_write_ = std::move(on_can_write);
 }
 
 WriteResult PacketDroppingTestWriter::WritePacket(

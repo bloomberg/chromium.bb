@@ -336,7 +336,12 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Set transmission type of next sending packets.
   void SetTransmissionType(TransmissionType type);
 
+  // Clean up closed_streams_.
+  void CleanUpClosedStreams();
+
   bool session_decides_what_to_write() const;
+
+  bool deprecate_post_process_after_data() const;
 
  protected:
   using StaticStreamMap = QuicSmallMap<QuicStreamId, QuicStream*, 2>;
@@ -586,6 +591,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // is not used here.
   // List of streams with pending retransmissions.
   QuicLinkedHashMap<QuicStreamId, bool> streams_with_pending_retransmission_;
+
+  // Clean up closed_streams_ when this alarm fires.
+  std::unique_ptr<QuicAlarm> closed_streams_clean_up_alarm_;
 };
 
 }  // namespace quic

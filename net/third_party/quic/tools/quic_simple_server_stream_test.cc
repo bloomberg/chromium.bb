@@ -213,6 +213,7 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
         &session_, &memory_cache_backend_);
     // Register stream_ in dynamic_stream_map_ and pass ownership to session_.
     session_.ActivateStream(QuicWrapUnique(stream_));
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
   const QuicString& StreamBody() {

@@ -5,6 +5,7 @@
 #include "net/third_party/quic/core/qpack/qpack_decoder.h"
 
 #include "base/logging.h"
+#include "net/third_party/quic/core/qpack/qpack_decoder_test_utils.h"
 #include "net/third_party/quic/core/qpack/qpack_test_utils.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
@@ -35,10 +36,8 @@ class QpackDecoderTest : public QuicTestWithParam<FragmentMode> {
   QpackDecoderTest() : fragment_mode_(GetParam()) {}
 
   void Decode(QuicStringPiece data) {
-    QpackTestUtils::Decode(
-        &handler_,
-        QpackTestUtils::FragmentModeToFragmentSizeGenerator(fragment_mode_),
-        data);
+    QpackDecode(&handler_, FragmentModeToFragmentSizeGenerator(fragment_mode_),
+                data);
   }
 
  protected:

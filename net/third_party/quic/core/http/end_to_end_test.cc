@@ -417,7 +417,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
               client_->client()->client_session()->connection()),
           QuicConnectionPeer::GetAlarmFactory(
               client_->client()->client_session()->connection()),
-          new ClientDelegate(client_->client()));
+          std::make_unique<ClientDelegate>(client_->client()));
     }
     initialized_ = true;
     return client_->client()->connected();
@@ -463,7 +463,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
 
     server_writer_->Initialize(QuicDispatcherPeer::GetHelper(dispatcher),
                                QuicDispatcherPeer::GetAlarmFactory(dispatcher),
-                               new ServerDelegate(dispatcher));
+                               std::make_unique<ServerDelegate>(dispatcher));
     if (stream_factory_ != nullptr) {
       static_cast<QuicTestServer*>(server_thread_->server())
           ->SetSpdyStreamFactory(stream_factory_);
@@ -2937,7 +2937,7 @@ TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
           client_->client()->client_session()->connection()),
       QuicConnectionPeer::GetAlarmFactory(
           client_->client()->client_session()->connection()),
-      new ClientDelegate(client_->client()));
+      std::make_unique<ClientDelegate>(client_->client()));
   initialized_ = true;
   ASSERT_TRUE(client_->client()->connected());
 

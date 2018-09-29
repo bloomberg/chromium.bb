@@ -140,6 +140,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override;
   bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override;
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override;
   bool OnAckFrameEnd(QuicPacketNumber start) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;

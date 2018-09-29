@@ -204,6 +204,7 @@ class QuicSimpleServerSessionTest
     ParsedQuicVersionVector supported_versions = SupportedVersions(GetParam());
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_ = QuicMakeUnique<MockQuicSimpleServerSession>(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
         &compressed_certs_cache_, &memory_cache_backend_);

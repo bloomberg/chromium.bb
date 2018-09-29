@@ -313,6 +313,7 @@ void QuicSentPacketManager::PostProcessAfterMarkingPacketHandled(
   // Remove packets below least unacked from all_packets_acked_ and
   // last_ack_frame_.
   last_ack_frame_.packets.RemoveUpTo(unacked_packets_.GetLeastUnacked());
+  last_ack_frame_.received_packet_times.clear();
 }
 
 void QuicSentPacketManager::MaybeInvokeCongestionEvent(
@@ -1083,6 +1084,17 @@ void QuicSentPacketManager::OnAckRange(QuicPacketNumber start,
     end = std::min(end, acked_packets_iter_->min());
     ++acked_packets_iter_;
   } while (start < end);
+}
+
+void QuicSentPacketManager::OnAckTimestamp(QuicPacketNumber packet_number,
+                                           QuicTime timestamp) {
+  last_ack_frame_.received_packet_times.push_back({packet_number, timestamp});
+  for (AckedPacket& packet : packets_acked_) {
+    if (packet.packet_number == packet_number) {
+      packet.receive_timestamp = timestamp;
+      return;
+    }
+  }
 }
 
 bool QuicSentPacketManager::OnAckFrameEnd(QuicTime ack_receive_time) {

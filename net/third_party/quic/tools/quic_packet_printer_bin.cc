@@ -121,6 +121,12 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     std::cerr << "OnAckRange: [" << start << ", " << end << ")";
     return true;
   }
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override {
+    std::cerr << "OnAckTimestamp: [" << packet_number << ", "
+              << timestamp.ToDebuggingValue() << ")";
+    return true;
+  }
   bool OnAckFrameEnd(QuicPacketNumber start) override {
     std::cerr << "OnAckFrameEnd, start: " << start;
     return true;
