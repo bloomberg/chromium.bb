@@ -135,7 +135,7 @@ class AVDACodecAllocatorTest : public testing::Test {
     PostAndWait(FROM_HERE,
                 base::Bind(
                     [](AVDACodecAllocator* allocator, AndroidOverlay* overlay) {
-                      allocator->WaitForPendingRelease(overlay);
+                      allocator->WaitForPendingReleaseForTesting(overlay);
                       return true;
                     },
                     allocator_, surface_bundle_->overlay.get()));
