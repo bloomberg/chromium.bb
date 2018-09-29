@@ -207,6 +207,23 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
                     int32_t copy_token,
                     storage::AsyncFileUtil::StatusCallback callback);
 
+  // Starts a ReadDirectory operation for |directory_path| with the OperationId
+  // |operation_id|.
+  void StartReadDirectory(
+      const base::FilePath& directory_path,
+      OperationId operation_id,
+      storage::AsyncFileUtil::ReadDirectoryCallback callback);
+
+  // Continues a ReadDirectory corresponding to |operation_id| and
+  // |read_dir_token|. |entries_count| and |metrics_timer| are used for metrics
+  // recording.
+  void ContinueReadDirectory(
+      OperationId operation_id,
+      int32_t read_dir_token,
+      storage::AsyncFileUtil::ReadDirectoryCallback callback,
+      int entires_count,
+      base::ElapsedTimer metrics_timer);
+
   void HandleRequestUnmountCallback(
       storage::AsyncFileUtil::StatusCallback callback,
       smbprovider::ErrorType error);
@@ -266,6 +283,32 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
       OperationId operation_id,
       int32_t copy_token,
       smbprovider::ErrorType error);
+
+  void HandleStartReadDirectoryCallback(
+      storage::AsyncFileUtil::ReadDirectoryCallback callback,
+      OperationId operation_id,
+      base::ElapsedTimer metrics_timer,
+      smbprovider::ErrorType error,
+      int32_t read_dir_token,
+      const smbprovider::DirectoryEntryListProto& entries);
+
+  void HandleContinueReadDirectoryCallback(
+      storage::AsyncFileUtil::ReadDirectoryCallback callback,
+      OperationId operation_id,
+      int32_t read_dir_token,
+      int entries_count,
+      base::ElapsedTimer metrics_timer,
+      smbprovider::ErrorType error,
+      const smbprovider::DirectoryEntryListProto& entries);
+
+  void ProcessReadDirectoryResults(
+      storage::AsyncFileUtil::ReadDirectoryCallback callback,
+      OperationId operation_id,
+      int32_t read_dir_token,
+      smbprovider::ErrorType error,
+      const smbprovider::DirectoryEntryListProto& entries,
+      int entries_count,
+      base::ElapsedTimer metrics_timer);
 
   int32_t GetMountId() const;
 
