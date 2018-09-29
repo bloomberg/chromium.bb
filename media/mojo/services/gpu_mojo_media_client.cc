@@ -27,7 +27,7 @@
 #include "media/base/android/android_cdm_factory.h"
 #include "media/filters/android/media_codec_audio_decoder.h"
 #include "media/gpu/android/android_video_surface_chooser_impl.h"
-#include "media/gpu/android/avda_codec_allocator.h"
+#include "media/gpu/android/codec_allocator.h"
 #include "media/gpu/android/media_codec_video_decoder.h"
 #include "media/gpu/android/video_frame_factory_impl.h"
 #include "media/mojo/interfaces/media_drm_storage.mojom.h"
@@ -138,7 +138,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                  command_buffer_id->channel_token, command_buffer_id->route_id);
   return std::make_unique<MediaCodecVideoDecoder>(
       gpu_preferences_, DeviceInfo::GetInstance(),
-      AVDACodecAllocator::GetInstance(gpu_task_runner_),
+      CodecAllocator::GetInstance(gpu_task_runner_),
       std::make_unique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
       android_overlay_factory_cb_, std::move(request_overlay_info_cb),
