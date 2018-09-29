@@ -391,7 +391,11 @@ void PepperVideoDecoderHost::PictureReady(const media::Picture& picture) {
   PictureBufferMap::iterator it =
       picture_buffer_map_.find(picture.picture_buffer_id());
   DCHECK(it != picture_buffer_map_.end());
-  DCHECK(it->second == PictureBufferState::ASSIGNED);
+  // VDA might send the same picture multiple times in VP9 video. However the
+  // Pepper client might not able to handle it. Therefore we just catch it here.
+  // https://crbug.com/755887
+  CHECK(it->second == PictureBufferState::ASSIGNED);
+
   it->second = PictureBufferState::IN_USE;
 
   // Don't bother validating the visible rect, since the plugin process is less

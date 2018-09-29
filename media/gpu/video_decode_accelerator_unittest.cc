@@ -370,9 +370,12 @@ class GLRenderingVDAClient
   TextureRefMap active_textures_;
 
   // A map of the textures that are still pending in the renderer.
+  // The texture might be sent multiple times to the renderer in the case of VP9
+  // show_existing_frame feature, so we track it by multimap.
   // We check this to ensure all frames are rendered before entering the
   // CS_RESET_State.
-  TextureRefMap pending_textures_;
+  std::multimap<int32_t, scoped_refptr<media::test::TextureRef>>
+      pending_textures_;
 
   int32_t next_picture_buffer_id_;
 
@@ -581,15 +584,16 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
       texture_target_, texture_it->second->texture_id(),
       base::Bind(&GLRenderingVDAClient::ReturnPicture, AsWeakPtr(),
                  picture.picture_buffer_id()));
-  ASSERT_TRUE(pending_textures_.insert(*texture_it).second);
+  pending_textures_.insert(*texture_it);
   rendering_helper_->ConsumeVideoFrame(config_.window_id,
                                        std::move(video_frame));
 }
 
 void GLRenderingVDAClient::ReturnPicture(int32_t picture_buffer_id) {
-  // Remove TextureRef from pending_textures_ regardless whether decoder is
-  // deleted.
-  LOG_ASSERT(1U == pending_textures_.erase(picture_buffer_id));
+  auto it = pending_textures_.find(picture_buffer_id);
+  LOG_ASSERT(it != pending_textures_.end());
+  pending_textures_.erase(it);
+
   if (decoder_deleted())
     return;
 

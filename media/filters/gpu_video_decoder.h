@@ -127,8 +127,9 @@ class MEDIA_EXPORT GpuVideoDecoder
   void PutSharedMemory(std::unique_ptr<base::SharedMemory> shm_buffer,
                        int32_t last_bitstream_buffer_id);
 
-  // Destroy all PictureBuffers in |buffers|, and delete their textures.
-  void DestroyPictureBuffers(PictureBufferMap* buffers);
+  // Destroy all the assigned picture buffers and delete their textures, but
+  // skip the textures of the buffers which is still at display.
+  void DestroyPictureBuffers();
 
   // Returns true if the video decoder with |capabilities| can support
   // |profile|, |coded_size|, and |is_encrypted|.
@@ -207,11 +208,12 @@ class MEDIA_EXPORT GpuVideoDecoder
   PictureBufferMap assigned_picture_buffers_;
   // PictureBuffers given to us by VDA via PictureReady, which we sent forward
   // as VideoFrames to be rendered via decode_cb_, and which will be returned
-  // to us via ReusePictureBuffer.
-  typedef std::map<int32_t /* picture_buffer_id */,
-                   PictureBuffer::TextureIds /* texture_id */>
-      PictureBufferTextureMap;
-  PictureBufferTextureMap picture_buffers_at_display_;
+  // to us via ReusePictureBuffer. Note that a picture buffer might be sent from
+  // VDA multiple times. Therefore we use multimap to track the number of times
+  // we passed the picture buffer for display.
+  std::multimap<int32_t /* picture_buffer_id */,
+                PictureBuffer::TextureIds /* texture_id */>
+      picture_buffers_at_display_;
 
   struct BufferData {
     BufferData(int32_t bbid,
