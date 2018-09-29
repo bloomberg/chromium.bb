@@ -211,10 +211,12 @@ bool QuotaDatabase::SetOriginLastAccessTime(const url::Origin& origin,
         " (used_count, last_access_time, origin, type, last_modified_time)"
         " VALUES (?, ?, ?, ?, ?)";
     statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-    statement.BindInt64(4, last_access_time.ToInternalValue());
+    statement.BindInt64(
+        4, last_access_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   }
   statement.BindInt(0, entry.used_count);
-  statement.BindInt64(1, last_access_time.ToInternalValue());
+  statement.BindInt64(
+      1, last_access_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   statement.BindString(2, origin.GetURL().spec());
   statement.BindInt(3, static_cast<int>(type));
 
@@ -246,9 +248,12 @@ bool QuotaDatabase::SetOriginLastModifiedTime(const url::Origin& origin,
         "INSERT INTO OriginInfoTable"
         " (last_modified_time, origin, type, last_access_time)  VALUES (?, ?, ?, ?)";
     statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-    statement.BindInt64(3, last_modified_time.ToInternalValue());
+    statement.BindInt64(
+        3, last_modified_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   }
-  statement.BindInt64(0, last_modified_time.ToInternalValue());
+  statement.BindInt64(
+      0, last_modified_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+
   statement.BindString(1, origin.GetURL().spec());
   statement.BindInt(2, static_cast<int>(type));
 
@@ -278,7 +283,8 @@ bool QuotaDatabase::GetOriginLastEvictionTime(const url::Origin& origin,
   if (!statement.Step())
     return false;
 
-  *last_modified_time = base::Time::FromInternalValue(statement.ColumnInt64(0));
+  *last_modified_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(statement.ColumnInt64(0)));
   return true;
 }
 
@@ -293,7 +299,8 @@ bool QuotaDatabase::SetOriginLastEvictionTime(const url::Origin& origin,
       " (last_eviction_time, origin, type)"
       " VALUES (?, ?, ?)";
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindInt64(0, last_modified_time.ToInternalValue());
+  statement.BindInt64(
+      0, last_modified_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   statement.BindString(1, origin.GetURL().spec());
   statement.BindInt(2, static_cast<int>(type));
 
@@ -366,8 +373,10 @@ bool QuotaDatabase::GetOriginInfo(const url::Origin& origin,
   *entry = OriginInfoTableEntry(
       url::Origin::Create(GURL(statement.ColumnString(0))),
       static_cast<StorageType>(statement.ColumnInt(1)), statement.ColumnInt(2),
-      base::Time::FromInternalValue(statement.ColumnInt64(3)),
-      base::Time::FromInternalValue(statement.ColumnInt64(4)));
+      base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromMicroseconds(statement.ColumnInt64(3))),
+      base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromMicroseconds(statement.ColumnInt64(4))));
 
   return true;
 }
@@ -474,7 +483,8 @@ bool QuotaDatabase::GetOriginsModifiedSince(StorageType type,
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(type));
-  statement.BindInt64(1, modified_since.ToInternalValue());
+  statement.BindInt64(
+      1, modified_since.ToDeltaSinceWindowsEpoch().InMicroseconds());
 
   origins->clear();
   while (statement.Step())
@@ -757,8 +767,10 @@ bool QuotaDatabase::DumpOriginInfoTable(
         url::Origin::Create(GURL(statement.ColumnString(0))),
         static_cast<StorageType>(statement.ColumnInt(1)),
         statement.ColumnInt(2),
-        base::Time::FromInternalValue(statement.ColumnInt64(3)),
-        base::Time::FromInternalValue(statement.ColumnInt64(4)));
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(statement.ColumnInt64(3))),
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(statement.ColumnInt64(4))));
 
     if (!callback.Run(entry))
       return true;
