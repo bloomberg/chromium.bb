@@ -4,13 +4,28 @@
      found in the LICENSE file.
 -->
 
-<TextView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="@dimen/download_manager_section_title_padding_top"
-    android:paddingBottom="@dimen/download_manager_section_title_padding_bottom"
-    android:paddingStart="@dimen/list_item_default_margin"
-    android:gravity="start|center_vertical"
-    android:textAppearance="@style/BlackHint2"
-    android:textAlignment="viewStart" />
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingTop="@dimen/download_manager_section_title_padding_top"
+        android:paddingBottom="@dimen/download_manager_section_title_padding_bottom"
+        android:paddingStart="@dimen/list_item_default_margin"
+        android:textAppearance="@style/BlackHint2"
+        android:textAlignment="viewStart"/>
+
+    <include layout="@layout/list_menu_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical" />
+
+</LinearLayout>

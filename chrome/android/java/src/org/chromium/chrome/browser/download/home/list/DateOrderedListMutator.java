@@ -146,6 +146,7 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                 if (!mHideSectionHeaders && !mHideAllHeaders) {
                     SectionHeaderListItem sectionHeaderItem =
                             new SectionHeaderListItem(filter, date.getTime());
+                    sectionHeaderItem.items = new ArrayList<>(section.items.values());
                     sectionHeaderItem.isFirstSectionOfDay = sectionIndex == 0;
                     listItems.add(sectionHeaderItem);
                 }

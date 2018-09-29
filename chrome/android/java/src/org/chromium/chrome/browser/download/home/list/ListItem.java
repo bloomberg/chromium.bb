@@ -11,6 +11,7 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /** An abstract class that represents a variety of possible list items to show in downloads home. */
 public abstract class ListItem {
@@ -74,6 +75,7 @@ public abstract class ListItem {
     public static class SectionHeaderListItem extends DateListItem {
         public final int filter;
         public boolean isFirstSectionOfDay;
+        public List<OfflineItem> items;
 
         /**
          * Creates a {@link SectionHeaderListItem} instance for a given {@code filter} and
