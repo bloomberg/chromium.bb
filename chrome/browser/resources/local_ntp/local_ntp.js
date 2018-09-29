@@ -288,11 +288,13 @@ var ntpApiHandle;
  * Returns a timeout that can be executed early.
  * @param {!Function} timeout The timeout function.
  * @param {number} delay The timeout delay.
+ * @param {Object} previousContainer The pre-existing notification container.
  * @return {Object}
  */
-function createExecutableTimeout(timeout, delay) {
+function createExecutableTimeout(timeout, delay, previousContainer) {
   let timeoutId = window.setTimeout(timeout, delay);
   return {
+    previousContainer: previousContainer,
     clear: () => {
       window.clearTimeout(timeoutId);
     },
@@ -700,9 +702,13 @@ function showErrorNotification(msg, linkName, linkOnClick) {
  * @param {!Element} notificationContainer The notification container element.
  */
 function floatUpNotification(notification, notificationContainer) {
-  // Hide any pre-existing notification.
+  // Hide pre-existing notification if it was different type. Clear timeout and
+  // replace it with the new timeout and new message if it was the same type.
   if (delayedHideNotification) {
-    delayedHideNotification.trigger();
+    if (delayedHideNotification.previousContainer === notificationContainer)
+      delayedHideNotification.clear();
+    else
+      delayedHideNotification.trigger();
     delayedHideNotification = null;
   }
 
@@ -716,7 +722,7 @@ function floatUpNotification(notification, notificationContainer) {
   // Automatically hide the notification after a period of time.
   delayedHideNotification = createExecutableTimeout(() => {
     floatDownNotification(notification, notificationContainer);
-  }, NOTIFICATION_TIMEOUT);
+  }, NOTIFICATION_TIMEOUT, notificationContainer);
 }
 
 
