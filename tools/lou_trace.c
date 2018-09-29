@@ -268,17 +268,17 @@ int
 main(int argc, char **argv) {
 	int optc;
 	char *table;
-	set_program_name(argv[0]);
 
-	static int forward_flag = 0;
-	static int backward_flag = 0;
+	int forward_flag = 0;
+	int backward_flag = 0;
 
-	static const struct option longopts[] = {
+	const struct option longopts[] = {
 		{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
 		{ "forward", no_argument, NULL, 'f' }, { "backward", no_argument, NULL, 'b' },
 		{ NULL, 0, NULL, 0 },
 	};
 
+	set_program_name(argv[0]);
 	while ((optc = getopt_long(argc, argv, "hvfb", longopts, NULL)) != -1) {
 		switch (optc) {
 		case 'v':
