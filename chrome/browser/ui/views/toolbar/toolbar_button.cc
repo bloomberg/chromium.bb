@@ -38,7 +38,6 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
       model_(std::move(model)),
       tab_strip_model_(tab_strip_model),
       trigger_menu_on_long_press_(trigger_menu_on_long_press),
-      layout_insets_(GetLayoutInsets(TOOLBAR_BUTTON)),
       show_menu_factory_(this) {
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
@@ -92,7 +91,9 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
     SetEnabledTextColors(*highlight_color_);
   }
 
-  gfx::Insets insets = layout_insets_ + gfx::Insets(0, leading_margin_, 0, 0);
+  gfx::Insets insets = (layout_insets_ ? layout_insets_.value()
+                                       : GetLayoutInsets(TOOLBAR_BUTTON)) +
+                       gfx::Insets(0, leading_margin_, 0, 0);
   if (highlight_color_)
     insets += gfx::Insets(0, ink_drop_large_corner_radius() / 2, 0, 0);
 

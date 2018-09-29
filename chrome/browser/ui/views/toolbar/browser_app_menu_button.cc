@@ -54,8 +54,7 @@ constexpr base::TimeDelta kDelayTime = base::TimeDelta::FromMilliseconds(1500);
 bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
 
 BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
-    : AppMenuButton(toolbar_view),
-      toolbar_view_(toolbar_view) {
+    : AppMenuButton(toolbar_view), toolbar_view_(toolbar_view) {
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -73,6 +72,8 @@ BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
   const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
       views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
   set_ink_drop_corner_radii(radii, radii);
+
+  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
 BrowserAppMenuButton::~BrowserAppMenuButton() {}
@@ -239,6 +240,11 @@ void BrowserAppMenuButton::SetTrailingMargin(int margin) {
   margin_trailing_ = margin;
   UpdateThemedBorder();
   InvalidateLayout();
+}
+
+void BrowserAppMenuButton::OnMdModeChanged() {
+  UpdateIcon(false);
+  PreferredSizeChanged();
 }
 
 void BrowserAppMenuButton::AnimateIconIfPossible(bool with_delay) {

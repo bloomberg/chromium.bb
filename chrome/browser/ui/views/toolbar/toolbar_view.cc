@@ -127,6 +127,7 @@ ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
   chrome::AddCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 
   UpgradeDetector::GetInstance()->AddObserver(this);
+  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
 ToolbarView::~ToolbarView() {
@@ -678,6 +679,12 @@ bool ToolbarView::SetPaneFocusAndFocusDefault() {
 void ToolbarView::RemovePaneFocus() {
   AccessiblePaneView::RemovePaneFocus();
   location_bar_->SetFullKeyboardAcessibilityMode(false);
+}
+
+// ui::MaterialDesignControllerObserver:
+void ToolbarView::OnMdModeChanged() {
+  LoadImages();
+  PreferredSizeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

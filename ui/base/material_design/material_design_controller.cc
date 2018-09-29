@@ -42,13 +42,6 @@
 namespace ui {
 namespace {
 
-base::ObserverList<MaterialDesignControllerObserver>* GetObservers() {
-  static base::NoDestructor<
-      base::ObserverList<MaterialDesignControllerObserver>>
-      observers;
-  return observers.get();
-}
-
 #if defined(OS_CHROMEOS)
 
 // Whether to use touchable UI.
@@ -174,18 +167,6 @@ MaterialDesignController::Mode MaterialDesignController::GetMode() {
 }
 
 // static
-void MaterialDesignController::AddObserver(
-    MaterialDesignControllerObserver* observer) {
-  GetObservers()->AddObserver(observer);
-}
-
-// static
-void MaterialDesignController::RemoveObserver(
-    MaterialDesignControllerObserver* observer) {
-  GetObservers()->RemoveObserver(observer);
-}
-
-// static
 bool MaterialDesignController::IsTouchOptimizedUiEnabled() {
   return GetMode() == MATERIAL_TOUCH_OPTIMIZED ||
          GetMode() == MATERIAL_TOUCH_REFRESH;
@@ -227,6 +208,24 @@ void MaterialDesignController::OnTabletModeToggled(bool enabled) {
 }
 
 // static
+MaterialDesignController* MaterialDesignController::GetInstance() {
+  static base::NoDestructor<MaterialDesignController> instance;
+  return instance.get();
+}
+
+void MaterialDesignController::AddObserver(
+    MaterialDesignControllerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MaterialDesignController::RemoveObserver(
+    MaterialDesignControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+MaterialDesignController::MaterialDesignController() = default;
+
+// static
 void MaterialDesignController::Uninitialize() {
   is_mode_initialized_ = false;
 }
@@ -236,8 +235,8 @@ void MaterialDesignController::SetMode(MaterialDesignController::Mode mode) {
   if (!is_mode_initialized_ || mode_ != mode) {
     is_mode_initialized_ = true;
     mode_ = mode;
-    for (auto& observer : *GetObservers())
-      observer.OnModeChanged();
+    for (auto& observer : GetInstance()->observers_)
+      observer.OnMdModeChanged();
   }
 }
 
