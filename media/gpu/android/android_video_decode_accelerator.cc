@@ -118,7 +118,7 @@ constexpr base::TimeDelta IdleTimerTimeOut = base::TimeDelta::FromSeconds(1);
 // On low end devices (< KitKat is always low-end due to buggy MediaCodec),
 // defer the surface creation until the codec is actually used if we know no
 // software fallback exists.
-bool ShouldDeferSurfaceCreation(AVDACodecAllocator* codec_allocator,
+bool ShouldDeferSurfaceCreation(CodecAllocator* codec_allocator,
                                 const OverlayInfo& overlay_info,
                                 VideoCodec codec,
                                 DeviceInfo* device_info) {
@@ -259,7 +259,7 @@ AndroidVideoDecodeAccelerator::BitstreamRecord::BitstreamRecord(
 AndroidVideoDecodeAccelerator::BitstreamRecord::~BitstreamRecord() {}
 
 AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
-    AVDACodecAllocator* codec_allocator,
+    CodecAllocator* codec_allocator,
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const GetContextGroupCallback& get_context_group_cb,

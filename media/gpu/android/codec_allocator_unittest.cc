@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/avda_codec_allocator.h"
+#include "media/gpu/android/codec_allocator.h"
 
 #include <stdint.h>
 
@@ -30,8 +30,8 @@ namespace {
 template <typename ReturnType>
 void RunAndSignalTask(base::WaitableEvent* event,
                       ReturnType* return_value,
-                      const base::Callback<ReturnType(void)>& cb) {
-  *return_value = cb.Run();
+                      base::OnceCallback<ReturnType(void)> cb) {
+  *return_value = std::move(cb).Run();
   event->Signal();
 }
 
@@ -48,7 +48,7 @@ void SignalImmediately(base::WaitableEvent* event) {
 }
 }  // namespace
 
-class MockClient : public AVDACodecAllocatorClient {
+class MockClient : public CodecAllocatorClient {
  public:
   MockClient()
       : codec_arrived_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -65,7 +65,7 @@ class MockClient : public AVDACodecAllocatorClient {
     codec_arrived_event_.Signal();
   }
 
-  base::WeakPtr<AVDACodecAllocatorClient> GetWeakPtr() {
+  base::WeakPtr<CodecAllocatorClient> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
@@ -74,12 +74,12 @@ class MockClient : public AVDACodecAllocatorClient {
 
   base::WaitableEvent codec_arrived_event_;
 
-  base::WeakPtrFactory<AVDACodecAllocatorClient> weak_factory_;
+  base::WeakPtrFactory<CodecAllocatorClient> weak_factory_;
 };
 
-class AVDACodecAllocatorTest : public testing::Test {
+class CodecAllocatorTest : public testing::Test {
  public:
-  AVDACodecAllocatorTest()
+  CodecAllocatorTest()
       : allocator_thread_("AllocatorThread"),
         stop_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                     base::WaitableEvent::InitialState::NOT_SIGNALED) {
@@ -87,7 +87,7 @@ class AVDACodecAllocatorTest : public testing::Test {
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
   }
 
-  ~AVDACodecAllocatorTest() override {}
+  ~CodecAllocatorTest() override {}
 
   // Utility fn to test out threading.
   void AllocateCodec() {
@@ -133,8 +133,8 @@ class AVDACodecAllocatorTest : public testing::Test {
   void WaitForSurfaceDestruction() {
     // This may be called from any thread.
     PostAndWait(FROM_HERE,
-                base::Bind(
-                    [](AVDACodecAllocator* allocator, AndroidOverlay* overlay) {
+                base::BindOnce(
+                    [](CodecAllocator* allocator, AndroidOverlay* overlay) {
                       allocator->WaitForPendingReleaseForTesting(overlay);
                       return true;
                     },
@@ -147,23 +147,22 @@ class AVDACodecAllocatorTest : public testing::Test {
     // main thread.
     ASSERT_TRUE(allocator_thread_.Start());
 
-    AVDACodecAllocator::CodecFactoryCB factory_cb(
+    CodecAllocator::CodecFactoryCB factory_cb(
         base::BindRepeating(&MockMediaCodecBridge::CreateVideoDecoder));
 
     // Create the first allocator on the allocator thread.
     allocator_ = PostAndWait(
-        FROM_HERE, base::Bind(
-                       [](AVDACodecAllocator::CodecFactoryCB factory_cb,
-                          scoped_refptr<base::SequencedTaskRunner> task_runner,
-                          const base::TickClock* clock,
-                          base::WaitableEvent* event) {
-                         return new AVDACodecAllocator(factory_cb, task_runner,
-                                                       clock, event);
-                       },
-                       factory_cb, allocator_thread_.task_runner(),
-                       &tick_clock_, &stop_event_));
-    allocator2_ = new AVDACodecAllocator(
-        factory_cb, base::SequencedTaskRunnerHandle::Get());
+        FROM_HERE,
+        base::BindOnce(
+            [](CodecAllocator::CodecFactoryCB factory_cb,
+               scoped_refptr<base::SequencedTaskRunner> task_runner,
+               const base::TickClock* clock, base::WaitableEvent* event) {
+              return new CodecAllocator(factory_cb, task_runner, clock, event);
+            },
+            factory_cb, allocator_thread_.task_runner(), &tick_clock_,
+            &stop_event_));
+    allocator2_ =
+        new CodecAllocator(factory_cb, base::SequencedTaskRunnerHandle::Get());
 
     // Create a SurfaceBundle that provides an overlay.  It will provide a null
     // java ref if requested.
@@ -179,8 +178,8 @@ class AVDACodecAllocatorTest : public testing::Test {
     // Don't leave any threads hung, or this will hang too.
     // It would be nice if we could let a unique ptr handle this, but the
     // destructor is private.  We also have to destroy it on the right thread.
-    PostAndWait(FROM_HERE, base::Bind(
-                               [](AVDACodecAllocator* allocator) {
+    PostAndWait(FROM_HERE, base::BindOnce(
+                               [](CodecAllocator* allocator) {
                                  delete allocator;
                                  return true;
                                },
@@ -192,26 +191,26 @@ class AVDACodecAllocatorTest : public testing::Test {
 
  protected:
   // Start / stop the threads for |avda| on the right thread.
-  void StartThread(AVDACodecAllocatorClient* avda) {
-    PostAndWait(FROM_HERE, base::Bind(
-                               [](AVDACodecAllocator* allocator,
-                                  AVDACodecAllocatorClient* avda) {
-                                 allocator->StartThread(avda);
-                                 return true;  // void won't work.
-                               },
-                               allocator_, avda));
+  void StartThread(CodecAllocatorClient* avda) {
+    PostAndWait(FROM_HERE,
+                base::BindOnce(
+                    [](CodecAllocator* allocator, CodecAllocatorClient* avda) {
+                      allocator->StartThread(avda);
+                      return true;  // void won't work.
+                    },
+                    allocator_, avda));
   }
 
-  void StopThread(AVDACodecAllocatorClient* avda) {
+  void StopThread(CodecAllocatorClient* avda) {
     // Note that we also wait for the stop event, so that we know that the
     // stop has completed.  It's async with respect to the allocator thread.
-    PostAndWait(FROM_HERE, base::Bind(
-                               [](AVDACodecAllocator* allocator,
-                                  AVDACodecAllocatorClient* avda) {
-                                 allocator->StopThread(avda);
-                                 return true;
-                               },
-                               allocator_, avda));
+    PostAndWait(FROM_HERE,
+                base::BindOnce(
+                    [](CodecAllocator* allocator, CodecAllocatorClient* avda) {
+                      allocator->StopThread(avda);
+                      return true;
+                    },
+                    allocator_, avda));
     // Note that we don't do this on the allocator thread, since that's the
     // thread that will signal it.
     stop_event_.Wait();
@@ -221,8 +220,8 @@ class AVDACodecAllocatorTest : public testing::Test {
   bool IsThreadRunning(TaskType task_type) {
     return PostAndWait(
         FROM_HERE,
-        base::Bind(
-            [](AVDACodecAllocator* allocator, TaskType task_type) {
+        base::BindOnce(
+            [](CodecAllocator* allocator, TaskType task_type) {
               return allocator->GetThreadForTesting(task_type).IsRunning();
             },
             allocator_, task_type));
@@ -232,15 +231,15 @@ class AVDACodecAllocatorTest : public testing::Test {
       bool software_codec_forbidden) {
     return PostAndWait(
         FROM_HERE,
-        base::Bind(&AVDACodecAllocator::TaskTypeForAllocation,
-                   base::Unretained(allocator_), software_codec_forbidden));
+        base::BindOnce(&CodecAllocator::TaskTypeForAllocation,
+                       base::Unretained(allocator_), software_codec_forbidden));
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerFor(
       TaskType task_type) {
     return PostAndWait(FROM_HERE,
-                       base::Bind(&AVDACodecAllocator::TaskRunnerFor,
-                                  base::Unretained(allocator_), task_type));
+                       base::BindOnce(&CodecAllocator::TaskRunnerFor,
+                                      base::Unretained(allocator_), task_type));
   }
 
   // Post |cb| to the allocator thread, and wait for a response.  Note that we
@@ -248,13 +247,13 @@ class AVDACodecAllocatorTest : public testing::Test {
   // be sure to return something.
   template <typename ReturnType>
   ReturnType PostAndWait(const base::Location& from_here,
-                         const base::Callback<ReturnType(void)>& cb) {
+                         base::OnceCallback<ReturnType(void)> cb) {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     ReturnType return_value = ReturnType();
     allocator_thread_.task_runner()->PostTask(
-        from_here,
-        base::Bind(&RunAndSignalTask<ReturnType>, &event, &return_value, cb));
+        from_here, base::BindOnce(&RunAndSignalTask<ReturnType>, &event,
+                                  &return_value, std::move(cb)));
     event.Wait();
     return return_value;
   }
@@ -272,8 +271,8 @@ class AVDACodecAllocatorTest : public testing::Test {
   // thread and the second one is initialized on the test thread. Each test
   // should only be using one of the two. They are not unique_ptrs because the
   // destructor is private and they need to be destructed on the right thread.
-  AVDACodecAllocator* allocator_ = nullptr;
-  AVDACodecAllocator* allocator2_ = nullptr;
+  CodecAllocator* allocator_ = nullptr;
+  CodecAllocator* allocator2_ = nullptr;
 
   NiceMock<MockClient> client1_, client2_, client3_;
   NiceMock<MockClient>* avda1_ = &client1_;
@@ -285,7 +284,7 @@ class AVDACodecAllocatorTest : public testing::Test {
   base::android::JavaRef<jobject> null_java_ref_;
 };
 
-TEST_F(AVDACodecAllocatorTest, ThreadsStartWhenClientsStart) {
+TEST_F(CodecAllocatorTest, ThreadsStartWhenClientsStart) {
   ASSERT_FALSE(IsThreadRunning(AUTO_CODEC));
   ASSERT_FALSE(IsThreadRunning(SW_CODEC));
   StartThread(avda1_);
@@ -293,7 +292,7 @@ TEST_F(AVDACodecAllocatorTest, ThreadsStartWhenClientsStart) {
   ASSERT_TRUE(IsThreadRunning(SW_CODEC));
 }
 
-TEST_F(AVDACodecAllocatorTest, ThreadsStopAfterAllClientsStop) {
+TEST_F(CodecAllocatorTest, ThreadsStopAfterAllClientsStop) {
   StartThread(avda1_);
   StartThread(avda2_);
   StopThread(avda1_);
@@ -303,7 +302,7 @@ TEST_F(AVDACodecAllocatorTest, ThreadsStopAfterAllClientsStop) {
   ASSERT_FALSE(IsThreadRunning(SW_CODEC));
 }
 
-TEST_F(AVDACodecAllocatorTest, TestHangThread) {
+TEST_F(CodecAllocatorTest, TestHangThread) {
   StartThread(avda1_);
   ASSERT_EQ(AUTO_CODEC, TaskTypeForAllocation(false));
 
@@ -315,8 +314,8 @@ TEST_F(AVDACodecAllocatorTest, TestHangThread) {
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   TaskRunnerFor(AUTO_CODEC)
-      ->PostTask(FROM_HERE, base::Bind(&WaitUntilRestarted,
-                                       &about_to_wait_event, &wait_event));
+      ->PostTask(FROM_HERE, base::BindOnce(&WaitUntilRestarted,
+                                           &about_to_wait_event, &wait_event));
   // Wait until the task starts, so that |allocator_| starts the hang timer.
   about_to_wait_event.Wait();
 
@@ -331,7 +330,7 @@ TEST_F(AVDACodecAllocatorTest, TestHangThread) {
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   TaskRunnerFor(AUTO_CODEC)
       ->PostTask(FROM_HERE,
-                 base::Bind(&SignalImmediately, &done_waiting_event));
+                 base::BindOnce(&SignalImmediately, &done_waiting_event));
   wait_event.Signal();
   done_waiting_event.Wait();
 
@@ -339,20 +338,20 @@ TEST_F(AVDACodecAllocatorTest, TestHangThread) {
   ASSERT_EQ(AUTO_CODEC, TaskTypeForAllocation(false));
 }
 
-TEST_F(AVDACodecAllocatorTest, AllocateAndDestroyCodecOnAllocatorThread) {
+TEST_F(CodecAllocatorTest, AllocateAndDestroyCodecOnAllocatorThread) {
   // Make sure that allocating / freeing a codec on the allocator's thread
   // completes, and doesn't DCHECK.
   allocator_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AVDACodecAllocatorTest::AllocateCodec,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&CodecAllocatorTest::AllocateCodec,
+                                base::Unretained(this)));
 
   // Wait for the codec on this thread, rather than the allocator thread, since
   // that's where the codec will be posted.
   avda1_->codec_arrived_event_.Wait();
 
   allocator_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AVDACodecAllocatorTest::DestroyCodec,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&CodecAllocatorTest::DestroyCodec,
+                                base::Unretained(this)));
 
   // Note that TearDown will join |allocator_thread_|.
   WaitForSurfaceDestruction();
@@ -361,22 +360,22 @@ TEST_F(AVDACodecAllocatorTest, AllocateAndDestroyCodecOnAllocatorThread) {
   stop_event_.Wait();
 }
 
-TEST_F(AVDACodecAllocatorTest, AllocateAndDestroyCodecOnNewThread) {
+TEST_F(CodecAllocatorTest, AllocateAndDestroyCodecOnNewThread) {
   // Make sure that allocating / freeing a codec on a random thread completes,
   // and doesn't DCHECK.
   base::Thread new_thread("NewThreadForTesting");
   ASSERT_TRUE(new_thread.Start());
   new_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AVDACodecAllocatorTest::AllocateCodec,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&CodecAllocatorTest::AllocateCodec,
+                                base::Unretained(this)));
 
   // Wait for the codec on this thread, rather than |new_thread|, since that's
   // where the codec will be posted.
   avda1_->codec_arrived_event_.Wait();
 
   new_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AVDACodecAllocatorTest::DestroyCodec,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&CodecAllocatorTest::DestroyCodec,
+                                base::Unretained(this)));
   new_thread.Stop();
   WaitForSurfaceDestruction();
   stop_event_.Wait();

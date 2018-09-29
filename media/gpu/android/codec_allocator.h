@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_AVDA_CODEC_ALLOCATOR_H_
-#define MEDIA_GPU_ANDROID_AVDA_CODEC_ALLOCATOR_H_
+#ifndef MEDIA_GPU_ANDROID_CODEC_ALLOCATOR_H_
+#define MEDIA_GPU_ANDROID_CODEC_ALLOCATOR_H_
 
 #include <stddef.h>
 
@@ -34,7 +34,7 @@
 namespace media {
 
 // For TaskRunnerFor. These are used as vector indices, so please update
-// AVDACodecAllocator's constructor if you add / change them.
+// CodecAllocator's constructor if you add / change them.
 enum TaskType {
   // Task for an autodetected MediaCodec instance.
   AUTO_CODEC = 0,
@@ -104,7 +104,7 @@ class AVDASurfaceAllocatorClient {
   ~AVDASurfaceAllocatorClient() {}
 };
 
-class AVDACodecAllocatorClient {
+class CodecAllocatorClient {
  public:
   // Called on the main thread when a new MediaCodec is configured.
   // |media_codec| will be null if configuration failed.
@@ -113,16 +113,16 @@ class AVDACodecAllocatorClient {
       scoped_refptr<AVDASurfaceBundle> surface_bundle) = 0;
 
  protected:
-  ~AVDACodecAllocatorClient() {}
+  ~CodecAllocatorClient() {}
 };
 
-// AVDACodecAllocator manages threads for allocating and releasing MediaCodec
+// CodecAllocator manages threads for allocating and releasing MediaCodec
 // instances.  These activities can hang, depending on android version, due
-// to mediaserver bugs.  AVDACodecAllocator detects these cases, and reports
+// to mediaserver bugs.  CodecAllocator detects these cases, and reports
 // on them to allow software fallback if the HW path is hung up.
-class MEDIA_GPU_EXPORT AVDACodecAllocator {
+class MEDIA_GPU_EXPORT CodecAllocator {
  public:
-  static AVDACodecAllocator* GetInstance(
+  static CodecAllocator* GetInstance(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   using CodecFactoryCB =
@@ -141,8 +141,8 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
 
   // Make sure the construction threads are started for |client|.  If the
   // threads fail to start, then codec allocation may fail.
-  virtual void StartThread(AVDACodecAllocatorClient* client);
-  virtual void StopThread(AVDACodecAllocatorClient* client);
+  virtual void StartThread(CodecAllocatorClient* client);
+  virtual void StopThread(CodecAllocatorClient* client);
 
   // Create and configure a MediaCodec synchronously.
   virtual std::unique_ptr<MediaCodecBridge> CreateMediaCodecSync(
@@ -150,9 +150,8 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
 
   // Create and configure a MediaCodec asynchronously. The result is delivered
   // via OnCodecConfigured().
-  virtual void CreateMediaCodecAsync(
-      base::WeakPtr<AVDACodecAllocatorClient> client,
-      scoped_refptr<CodecConfig> codec_config);
+  virtual void CreateMediaCodecAsync(base::WeakPtr<CodecAllocatorClient> client,
+                                     scoped_refptr<CodecConfig> codec_config);
 
   // Asynchronously release |media_codec| with the attached surface.  We will
   // drop our reference to |surface_bundle| on the main thread after the codec
@@ -177,11 +176,11 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
 
  protected:
   // |tick_clock| and |stop_event| are for tests only.
-  AVDACodecAllocator(AVDACodecAllocator::CodecFactoryCB factory_cb,
-                     scoped_refptr<base::SequencedTaskRunner> task_runner,
-                     const base::TickClock* tick_clock = nullptr,
-                     base::WaitableEvent* stop_event = nullptr);
-  virtual ~AVDACodecAllocator();
+  CodecAllocator(CodecAllocator::CodecFactoryCB factory_cb,
+                 scoped_refptr<base::SequencedTaskRunner> task_runner,
+                 const base::TickClock* tick_clock = nullptr,
+                 base::WaitableEvent* stop_event = nullptr);
+  virtual ~CodecAllocator();
 
   // Struct to own a codec and surface bundle, with a custom deleter to post
   // destruction to the right thread.
@@ -199,7 +198,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // It may only reference |client| from |client_task_runner|.
   void ForwardOrDropCodec(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-      base::WeakPtr<AVDACodecAllocatorClient> client,
+      base::WeakPtr<CodecAllocatorClient> client,
       TaskType task_type,
       scoped_refptr<AVDASurfaceBundle> surface_bundle,
       std::unique_ptr<MediaCodecBridge> media_codec);
@@ -207,11 +206,11 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // Forward |surface_bundle| and |media_codec| to |client| on the right thread
   // to access |client|.
   void ForwardOrDropCodecOnClientThread(
-      base::WeakPtr<AVDACodecAllocatorClient> client,
+      base::WeakPtr<CodecAllocatorClient> client,
       std::unique_ptr<MediaCodecAndSurface> codec_and_surface);
 
  private:
-  friend class AVDACodecAllocatorTest;
+  friend class CodecAllocatorTest;
 
   struct OwnerRecord {
     AVDASurfaceAllocatorClient* owner = nullptr;
@@ -249,7 +248,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // which it should post the reply to |client|.
   void CreateMediaCodecAsyncInternal(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-      base::WeakPtr<AVDACodecAllocatorClient> client,
+      base::WeakPtr<CodecAllocatorClient> client,
       scoped_refptr<CodecConfig> codec_config);
 
   // Return the task type to use for a new codec allocation, or nullopt if
@@ -275,7 +274,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // All registered AVDAs.
-  std::set<AVDACodecAllocatorClient*> clients_;
+  std::set<CodecAllocatorClient*> clients_;
 
   // Waitable events for ongoing release tasks indexed by overlay so we can
   // wait on the codec release if the surface attached to it is being destroyed.
@@ -297,11 +296,11 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   CodecFactoryCB factory_cb_;
 
   // For canceling pending StopThreadTask()s.
-  base::WeakPtrFactory<AVDACodecAllocator> weak_this_factory_;
+  base::WeakPtrFactory<CodecAllocator> weak_this_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(AVDACodecAllocator);
+  DISALLOW_COPY_AND_ASSIGN(CodecAllocator);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_ANDROID_AVDA_CODEC_ALLOCATOR_H_
+#endif  // MEDIA_GPU_ANDROID_CODEC_ALLOCATOR_H_

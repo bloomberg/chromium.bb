@@ -26,7 +26,7 @@
 #include "media/base/android/mock_media_codec_bridge.h"
 #include "media/gpu/android/android_video_decode_accelerator.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
-#include "media/gpu/android/avda_codec_allocator.h"
+#include "media/gpu/android/codec_allocator.h"
 #include "media/gpu/android/fake_codec_allocator.h"
 #include "media/gpu/android/mock_android_video_surface_chooser.h"
 #include "media/gpu/android/mock_device_info.h"
