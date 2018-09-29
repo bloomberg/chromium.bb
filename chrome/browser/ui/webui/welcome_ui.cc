@@ -64,7 +64,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   // There are multiple possible configurations that affects the layout, but
   // first add resources that are shared across all layouts.
-  html_source->AddLocalizedString("acceptText", IDS_WELCOME_ACCEPT_BUTTON);
   html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
   html_source->AddResourcePath("logo2x.png", IDR_PRODUCT_LOGO_256);
 
@@ -72,6 +71,8 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   // Otherwise use the default layout.
   if (kIsBranded && is_dice) {
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
+    html_source->AddLocalizedString("acceptText",
+                                    IDS_PROFILES_DICE_SIGNIN_BUTTON);
     html_source->AddLocalizedString("secondHeaderText",
                                     IDS_DICE_WELCOME_SECOND_HEADER);
     html_source->AddLocalizedString("descriptionText",
@@ -104,6 +105,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     int header_id = is_everywhere_variant ? IDS_WELCOME_HEADER_AFTER_FIRST_RUN
                                           : IDS_WELCOME_HEADER;
     html_source->AddString("headerText", l10n_util::GetStringUTF16(header_id));
+    html_source->AddLocalizedString("acceptText", IDS_WELCOME_ACCEPT_BUTTON);
     html_source->AddLocalizedString("descriptionText", IDS_WELCOME_DESCRIPTION);
     html_source->AddLocalizedString("declineText", IDS_WELCOME_DECLINE_BUTTON);
     html_source->AddResourcePath("welcome.js", IDR_WELCOME_JS);
