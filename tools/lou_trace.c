@@ -49,6 +49,9 @@ applied translation rules for a given input.\n\n",
   -b, --backward          backward translation using the given table\n\
   -n, --noContractions    Use no contractions\n\
   -d, --dotsIO            Display dot patterns\n\
+  -u, --ucBrl             Use Unicode Braille patterns\n\
+  -N, --noUndefinedDots   Disable output of undefined dot numbers during back-translation\n\
+  -p, --partialTrans      Use partial back-translation\n\
                       If neither -f nor -b are specified forward translation\n\
                       is assumed\n",
 			stdout);
@@ -282,11 +285,12 @@ main(int argc, char **argv) {
 		{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
 		{ "forward", no_argument, NULL, 'f' }, { "backward", no_argument, NULL, 'b' },
 		{ "noContractions", no_argument, NULL, 'n' }, { "dotsIO", no_argument, NULL, 'd' },
-		{ NULL, 0, NULL, 0 },
+		{ "ucBrl", no_argument, NULL, 'u' }, { "noUndefinedDots", no_argument, NULL, 'N' },
+		{ "partialTrans", no_argument, NULL, 'p' }, { NULL, 0, NULL, 0 },
 	};
 
 	set_program_name(argv[0]);
-	while ((optc = getopt_long(argc, argv, "hvfbnd", longopts, NULL)) != -1) {
+	while ((optc = getopt_long(argc, argv, "hvfbnduNp", longopts, NULL)) != -1) {
 		switch (optc) {
 		case 'v':
 			version_etc(
@@ -308,6 +312,15 @@ main(int argc, char **argv) {
 			break;
 		case 'd':
 			mode |= dotsIO;
+			break;
+		case 'u':
+			mode |= ucBrl;
+			break;
+		case 'N':
+			mode |= noUndefinedDots;
+			break;
+		case 'p':
+			mode |= partialTrans;
 			break;
 		default:
 			fprintf(stderr, "Try `%s --help' for more information.\n", program_name);
