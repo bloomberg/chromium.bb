@@ -102,6 +102,29 @@ void RunCallbacks(std::vector<base::OnceClosure> callbacks) {
 
 }  // anonymous namespace
 
+GLES2DecoderPassthroughImpl::TexturePendingBinding::TexturePendingBinding(
+    GLenum target,
+    GLuint unit,
+    base::WeakPtr<TexturePassthrough> texture)
+    : target(target), unit(unit), texture(std::move(texture)) {}
+
+GLES2DecoderPassthroughImpl::TexturePendingBinding::TexturePendingBinding(
+    const TexturePendingBinding& other) = default;
+
+GLES2DecoderPassthroughImpl::TexturePendingBinding::TexturePendingBinding(
+    TexturePendingBinding&& other) = default;
+
+GLES2DecoderPassthroughImpl::TexturePendingBinding::~TexturePendingBinding() =
+    default;
+
+GLES2DecoderPassthroughImpl::TexturePendingBinding&
+GLES2DecoderPassthroughImpl::TexturePendingBinding::operator=(
+    const TexturePendingBinding& other) = default;
+
+GLES2DecoderPassthroughImpl::TexturePendingBinding&
+GLES2DecoderPassthroughImpl::TexturePendingBinding::operator=(
+    TexturePendingBinding&& other) = default;
+
 PassthroughResources::PassthroughResources() : texture_object_map(nullptr) {}
 PassthroughResources::~PassthroughResources() = default;
 
@@ -1596,8 +1619,8 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
 }
 
 void GLES2DecoderPassthroughImpl::BindPendingImagesForSamplers() {
-  for (auto iter : textures_pending_binding_)
-    BindOnePendingImage(iter.first.first /* target */, iter.second.get());
+  for (TexturePendingBinding& pending : textures_pending_binding_)
+    BindOnePendingImage(pending.target, pending.texture.get());
 
   // Note that we clear the texures even if they fail.  We could keep
   // them around.
@@ -2216,7 +2239,7 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
 
   // If there was any GLImage bound to |target| on this texture unit, then
   // forget it.
-  textures_pending_binding_.erase(TargetUnitPair(target, active_texture_unit_));
+  RemovePendingBindingTexture(target, active_texture_unit_);
 
   return error::kNoError;
 }

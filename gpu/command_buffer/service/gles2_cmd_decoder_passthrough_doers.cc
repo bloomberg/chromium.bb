@@ -482,11 +482,9 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
   DCHECK(GLenumToTextureTarget(target) != TextureTarget::kUnkown);
   scoped_refptr<TexturePassthrough> texture_passthrough = nullptr;
 
-  TargetUnitPair target_unit_pair(target, active_texture_unit_);
-
-  // If there was anything bound to |target_unit_pair| that required an image
-  // bind / copy, forget it since it's no longer bound to a sampler.
-  textures_pending_binding_.erase(target_unit_pair);
+  // If there was anything bound that required an image bind / copy,
+  // forget it since it's no longer bound to a sampler.
+  RemovePendingBindingTexture(target, active_texture_unit_);
 
   if (service_id != 0) {
     // Create a new texture object to track this texture
@@ -505,8 +503,8 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
     // If |texture_passthrough| has a bound image that requires processing
     // before a draw, then keep track of it.
     if (texture_passthrough->is_bind_pending()) {
-      textures_pending_binding_[target_unit_pair] =
-          texture_passthrough->AsWeakPtr();
+      textures_pending_binding_.emplace_back(target, active_texture_unit_,
+                                             texture_passthrough->AsWeakPtr());
     }
   }
 
