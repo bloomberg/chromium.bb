@@ -33,6 +33,7 @@ class QuicSpdyServerStreamBaseTest : public QuicTest {
         QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0),
         &session_);
     session_.ActivateStream(QuicWrapUnique(stream_));
+    helper_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
   QuicSpdyServerStreamBase* stream_ = nullptr;

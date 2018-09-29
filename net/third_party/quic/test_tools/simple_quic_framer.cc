@@ -84,6 +84,11 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override {
+    return true;
+  }
+
   bool OnAckFrameEnd(QuicPacketNumber /*start*/) override { return true; }
 
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {

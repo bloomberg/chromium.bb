@@ -329,7 +329,9 @@ QuicConnection::QuicConnection(
       release_time_into_future_(QuicTime::Delta::Zero()),
       donot_retransmit_old_window_updates_(false),
       notify_debug_visitor_on_connectivity_probing_sent_(GetQuicReloadableFlag(
-          quic_notify_debug_visitor_on_connectivity_probing_sent)) {
+          quic_notify_debug_visitor_on_connectivity_probing_sent)),
+      deprecate_post_process_after_data_(
+          GetQuicReloadableFlag(quic_deprecate_post_process_after_data)) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
   }
@@ -444,6 +446,11 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.HasReceivedStatelessResetToken()) {
     stateless_reset_token_received_ = true;
     received_stateless_reset_token_ = config.ReceivedStatelessResetToken();
+  }
+  if (GetQuicReloadableFlag(quic_send_timestamps) &&
+      config.HasClientSentConnectionOption(kSTMP, perspective_)) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_send_timestamps);
+    framer_.set_process_timestamps(true);
   }
 }
 
@@ -853,7 +860,9 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
     return false;
   }
   visitor_->OnStreamFrame(frame);
-  visitor_->PostProcessAfterData();
+  if (!deprecate_post_process_after_data_) {
+    visitor_->PostProcessAfterData();
+  }
   stats_.stream_bytes_received += frame.data_length;
   should_last_packet_instigate_acks_ = true;
   return connected_;
@@ -928,6 +937,21 @@ bool QuicConnection::OnAckRange(QuicPacketNumber start, QuicPacketNumber end) {
   }
 
   sent_packet_manager_.OnAckRange(start, end);
+  return true;
+}
+
+bool QuicConnection::OnAckTimestamp(QuicPacketNumber packet_number,
+                                    QuicTime timestamp) {
+  DCHECK(connected_);
+  QUIC_DVLOG(1) << ENDPOINT << "OnAckTimestamp: [" << packet_number << ", "
+                << timestamp.ToDebuggingValue() << ")";
+
+  if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
+    QUIC_DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
+    return true;
+  }
+
+  sent_packet_manager_.OnAckTimestamp(packet_number, timestamp);
   return true;
 }
 
@@ -1088,7 +1112,9 @@ bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
                   << " with error: "
                   << QuicRstStreamErrorCodeToString(frame.error_code);
   visitor_->OnRstStream(frame);
-  visitor_->PostProcessAfterData();
+  if (!deprecate_post_process_after_data_) {
+    visitor_->PostProcessAfterData();
+  }
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -1164,7 +1190,9 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
                   << " and reason: " << frame.reason_phrase;
 
   visitor_->OnGoAway(frame);
-  visitor_->PostProcessAfterData();
+  if (!deprecate_post_process_after_data_) {
+    visitor_->PostProcessAfterData();
+  }
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -1183,7 +1211,9 @@ bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
                   << frame.stream_id
                   << " with byte offset: " << frame.byte_offset;
   visitor_->OnWindowUpdateFrame(frame);
-  visitor_->PostProcessAfterData();
+  if (!deprecate_post_process_after_data_) {
+    visitor_->PostProcessAfterData();
+  }
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -1221,7 +1251,9 @@ bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   QUIC_DLOG(INFO) << ENDPOINT
                   << "BLOCKED_FRAME received for stream: " << frame.stream_id;
   visitor_->OnBlockedFrame(frame);
-  visitor_->PostProcessAfterData();
+  if (!deprecate_post_process_after_data_) {
+    visitor_->PostProcessAfterData();
+  }
   stats_.blocked_frames_received++;
   should_last_packet_instigate_acks_ = true;
   return connected_;
@@ -1706,7 +1738,9 @@ void QuicConnection::WriteNewData() {
   {
     ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
     visitor_->OnCanWrite();
-    visitor_->PostProcessAfterData();
+    if (!deprecate_post_process_after_data_) {
+      visitor_->PostProcessAfterData();
+    }
   }
 
   // After the visitor writes, it may have caused the socket to become write

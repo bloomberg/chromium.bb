@@ -133,10 +133,12 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   }
   bool write_side_closed() const { return write_side_closed_; }
 
-  bool rst_received() { return rst_received_; }
-  bool rst_sent() { return rst_sent_; }
-  bool fin_received() { return fin_received_; }
-  bool fin_sent() { return fin_sent_; }
+  bool rst_received() const { return rst_received_; }
+  bool rst_sent() const { return rst_sent_; }
+  bool fin_received() const { return fin_received_; }
+  bool fin_sent() const { return fin_sent_; }
+  bool fin_outstanding() const { return fin_outstanding_; }
+  bool fin_lost() const { return fin_lost_; }
 
   uint64_t BufferedDataBytes() const;
 
@@ -194,8 +196,6 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // Returns the crypto handshake protocol that was used on this stream's
   // connection.
   HandshakeProtocol handshake_protocol() const;
-
-  bool fin_received() const { return fin_received_; }
 
   // Sets the sequencer to consume all incoming data itself and not call
   // OnDataAvailable().

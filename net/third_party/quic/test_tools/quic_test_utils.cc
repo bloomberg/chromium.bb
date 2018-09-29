@@ -205,6 +205,11 @@ bool NoOpFramerVisitor::OnAckRange(QuicPacketNumber start,
   return true;
 }
 
+bool NoOpFramerVisitor::OnAckTimestamp(QuicPacketNumber packet_number,
+                                       QuicTime timestamp) {
+  return true;
+}
+
 bool NoOpFramerVisitor::OnAckFrameEnd(QuicPacketNumber start) {
   return true;
 }

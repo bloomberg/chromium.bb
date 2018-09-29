@@ -194,6 +194,12 @@ enum QuicFrameType : uint8_t {
 // the symbol will map to the correct stream type.
 // All types are defined here, even if we have not yet implmented the
 // quic/core/stream/.... stuff needed.
+// Note: The protocol specifies that frame types are varint-62 encoded,
+// further stating that the shortest encoding must be used.  The current set of
+// frame types all have values less than 0x40 (64) so can be encoded in a single
+// byte, with the two most significant bits being 0. Thus, the following
+// enumerations are valid as both the numeric values of frame types AND their
+// encodings.
 enum QuicIetfFrameType : uint8_t {
   IETF_PADDING = 0x00,
   IETF_RST_STREAM = 0x01,
@@ -219,6 +225,9 @@ enum QuicIetfFrameType : uint8_t {
   // bit specifically when/as needed.
   IETF_STREAM = 0x10,
   IETF_CRYPTO = 0x18,
+  // TODO(fkastenholz): When the NEW_TOKEN frame type value is added, need
+  // to update the test in ProcessIetfFrameData that checks to see if the frame
+  // type has not been minimally encoded.
   // MESSAGE frame type is not yet determined, use 0x2x temporarily to give
   // stream frame some wiggle room.
   IETF_EXTENSION_MESSAGE_NO_LENGTH = 0x20,
@@ -226,7 +235,7 @@ enum QuicIetfFrameType : uint8_t {
 };
 // Masks for the bits that indicate the frame is a Stream frame vs the
 // bits used as flags.
-#define IETF_STREAM_FRAME_TYPE_MASK 0xf8
+#define IETF_STREAM_FRAME_TYPE_MASK 0xfffffffffffffff8
 #define IETF_STREAM_FRAME_FLAG_MASK 0x07
 #define IS_IETF_STREAM_FRAME(_stype_) \
   (((_stype_)&IETF_STREAM_FRAME_TYPE_MASK) == IETF_STREAM)

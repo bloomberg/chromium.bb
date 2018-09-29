@@ -117,6 +117,11 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override {
+    return true;
+  }
+
   bool OnAckFrameEnd(QuicPacketNumber start) override { return true; }
 
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
@@ -221,6 +226,10 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // A StreamFrame to hold the results... we know the frame type,
     // put it into the QuicIetfStreamFrame
     QuicStreamFrame sink_stream_frame;
+    if (xmit_packet_data_size) {
+      EXPECT_EQ(sink_stream_frame.data_buffer, nullptr);
+      EXPECT_EQ(sink_stream_frame.data_length, 0u);
+    }
 
     EXPECT_TRUE(QuicFramerPeer::ProcessIetfStreamFrame(
         &framer_, &reader, frame_type, &sink_stream_frame));
@@ -237,11 +246,17 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
       // Offset not in frame, so it better come out 0.
       EXPECT_EQ(sink_stream_frame.offset, 0u);
     }
-    ASSERT_NE(sink_stream_frame.data_buffer, nullptr);
-    ASSERT_NE(source_stream_frame.data_buffer, nullptr);
-    EXPECT_EQ(
-        strcmp(sink_stream_frame.data_buffer, source_stream_frame.data_buffer),
-        0);
+    if (xmit_packet_data_size) {
+      ASSERT_NE(sink_stream_frame.data_buffer, nullptr);
+      ASSERT_NE(source_stream_frame.data_buffer, nullptr);
+      EXPECT_EQ(strcmp(sink_stream_frame.data_buffer,
+                       source_stream_frame.data_buffer),
+                0);
+    } else {
+      // No data in the frame.
+      EXPECT_EQ(source_stream_frame.data_length, 0u);
+      EXPECT_EQ(sink_stream_frame.data_length, 0u);
+    }
   }
 
   // Overall ack frame encode/decode/compare function
@@ -561,6 +576,20 @@ TEST_F(QuicIetfFramerTest, StreamFrame) {
                    static_cast<QuicIetfFrameType>(variant->frame_type));
   }
 }
+// As the previous test, but with no data.
+TEST_F(QuicIetfFramerTest, ZeroLengthStreamFrame) {
+  char packet_buffer[kNormalPacketBufferSize];
+
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(stream_frame_to_test); ++i) {
+    SCOPED_TRACE(i);
+    struct stream_frame_variant* variant = &stream_frame_to_test[i];
+    TryStreamFrame(packet_buffer, sizeof(packet_buffer),
+                   /* xmit_packet_data = */ NULL,
+                   /* xmit_packet_data_size = */ 0, variant->stream_id,
+                   variant->offset, variant->fin_bit, variant->last_frame_bit,
+                   static_cast<QuicIetfFrameType>(variant->frame_type));
+  }
+}
 
 TEST_F(QuicIetfFramerTest, ConnectionCloseEmptyString) {
   char packet_buffer[kNormalPacketBufferSize];
@@ -575,6 +604,7 @@ TEST_F(QuicIetfFramerTest, ConnectionCloseEmptyString) {
   QuicConnectionCloseFrame sent_frame;
   sent_frame.error_code = static_cast<QuicErrorCode>(0);
   sent_frame.error_details = test_string;
+  sent_frame.frame_type = 123;
   // write the frame to the packet buffer.
   EXPECT_TRUE(QuicFramerPeer::AppendIetfConnectionCloseFrame(
       &framer_, sent_frame, &writer));
@@ -1045,11 +1075,13 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
   EXPECT_TRUE(QuicFramerPeer::AppendNewConnectionIdFrame(
       &framer_, transmit_frame, &writer));
   // Check that buffer length is correct
-  EXPECT_EQ(28u, writer.length());
+  EXPECT_EQ(29u, writer.length());
   // clang-format off
   uint8_t packet[] = {
     // sequence number, 0x80 for varint62 encoding
     0x80 + 0x01, 0x02, 0x03, 0x04,
+    // new connection id length, is not varint62 encoded.
+    0x08,
     // new connection id, is not varint62 encoded.
     0x0E, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x01,
     // the reset token:

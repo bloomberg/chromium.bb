@@ -309,8 +309,8 @@ TEST_P(QuicSpdyClientSessionTest, ReceivedMalformedTrailersAfterSendingRst) {
   session_->OnStreamHeaderList(stream_id, /*fin=*/false, 0, trailers);
 }
 
-TEST_P(QuicSpdyClientSessionTest, OnHeaderListWithStaticStream) {
-  // Test situation where OnStreamHeadList is called by stream with static id.
+TEST_P(QuicSpdyClientSessionTest, OnStreamHeaderListWithStaticStream) {
+  // Test situation where OnStreamHeaderList is called by stream with static id.
   FLAGS_quic_restart_flag_quic_check_stream_nonstatic_on_header_list = true;
   CompleteCryptoHandshake();
 
@@ -321,6 +321,23 @@ TEST_P(QuicSpdyClientSessionTest, OnHeaderListWithStaticStream) {
 
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(1);
   session_->OnStreamHeaderList(kCryptoStreamId, /*fin=*/false, 0, trailers);
+}
+
+TEST_P(QuicSpdyClientSessionTest, OnPromiseHeaderListWithStaticStream) {
+  // Test situation where OnPromiseHeaderList is called by stream with static
+  // id.
+  FLAGS_quic_reloadable_flag_quic_check_stream_nonstatic_on_promised_headers =
+      true;
+  CompleteCryptoHandshake();
+
+  QuicHeaderList trailers;
+  trailers.OnHeaderBlockStart();
+  trailers.OnHeader(kFinalOffsetHeaderKey, "0");
+  trailers.OnHeaderBlockEnd(0, 0);
+
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(1);
+  session_->OnPromiseHeaderList(kCryptoStreamId, promised_stream_id_, 0,
+                                trailers);
 }
 
 TEST_P(QuicSpdyClientSessionTest, GoAwayReceived) {

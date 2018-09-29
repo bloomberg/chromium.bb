@@ -305,8 +305,11 @@ enum QuicErrorCode {
   QUIC_INVALID_PATH_CHALLENGE_DATA = 109,
   QUIC_INVALID_PATH_RESPONSE_DATA = 110,
 
+  // This is used to indicate an IETF QUIC PROTOCOL VIOLATION
+  // transport error within Google (pre-v99) QUIC.
+  IETF_QUIC_PROTOCOL_VIOLATION = 113,
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 113,
+  QUIC_LAST_ERROR = 114,
 };
 // QuicErrorCodes is encoded as a single octet on-the-wire.
 static_assert(static_cast<int>(QUIC_LAST_ERROR) <=

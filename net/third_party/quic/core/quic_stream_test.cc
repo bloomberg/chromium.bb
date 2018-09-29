@@ -77,6 +77,7 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
   void Initialize(bool stream_should_process_data) {
     connection_ = new StrictMock<MockQuicConnection>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions_);
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_ = QuicMakeUnique<StrictMock<MockQuicSession>>(connection_);
 
     // New streams rely on having the peer's flow control receive window
@@ -1270,7 +1271,6 @@ TEST_F(QuicStreamTest, ResetStreamOnTtlExpiresRetransmitLostData) {
   QuicString body(200, 'a');
   stream_->WriteOrBufferData(body, true, nullptr);
 
-  EXPECT_TRUE(session_->connection()->clock()->WallNow().IsZero());
   // Set TTL to be 1 s.
   QuicTime::Delta ttl = QuicTime::Delta::FromSeconds(1);
   ASSERT_TRUE(stream_->MaybeSetTtl(ttl));
@@ -1295,7 +1295,6 @@ TEST_F(QuicStreamTest, ResetStreamOnTtlExpiresEarlyRetransmitData) {
   QuicString body(200, 'a');
   stream_->WriteOrBufferData(body, true, nullptr);
 
-  EXPECT_TRUE(session_->connection()->clock()->WallNow().IsZero());
   // Set TTL to be 1 s.
   QuicTime::Delta ttl = QuicTime::Delta::FromSeconds(1);
   ASSERT_TRUE(stream_->MaybeSetTtl(ttl));

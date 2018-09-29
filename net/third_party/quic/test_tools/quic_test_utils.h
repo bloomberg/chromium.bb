@@ -259,6 +259,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   MOCK_METHOD1(OnCryptoFrame, bool(const QuicCryptoFrame& frame));
   MOCK_METHOD2(OnAckFrameStart, bool(QuicPacketNumber, QuicTime::Delta));
   MOCK_METHOD2(OnAckRange, bool(QuicPacketNumber, QuicPacketNumber));
+  MOCK_METHOD2(OnAckTimestamp, bool(QuicPacketNumber, QuicTime));
   MOCK_METHOD1(OnAckFrameEnd, bool(QuicPacketNumber));
   MOCK_METHOD1(OnStopWaitingFrame, bool(const QuicStopWaitingFrame& frame));
   MOCK_METHOD1(OnPaddingFrame, bool(const QuicPaddingFrame& frame));
@@ -307,6 +308,8 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override;
   bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override;
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override;
   bool OnAckFrameEnd(QuicPacketNumber start) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;

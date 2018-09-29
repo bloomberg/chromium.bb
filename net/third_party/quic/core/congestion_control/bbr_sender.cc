@@ -509,7 +509,6 @@ bool BbrSender::UpdateBandwidthAndMinRtt(
     app_limited_since_last_probe_rtt_ = false;
   }
   DCHECK(!min_rtt_.IsZero());
-  DCHECK_GE(min_rtt_, rtt_stats_->min_rtt());
 
   return min_rtt_expired;
 }
