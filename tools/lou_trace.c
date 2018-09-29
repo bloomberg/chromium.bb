@@ -235,7 +235,7 @@ print_rule(const TranslationTableRule *rule) {
 }
 
 static void
-main_loop(int backward_translation, char *table) {
+main_loop(int backward_translation, char *table, int mode) {
 	widechar inbuf[BUFSIZE];
 	widechar outbuf[BUFSIZE];
 	int inlen;
@@ -249,12 +249,15 @@ main_loop(int backward_translation, char *table) {
 		ruleslen = RULESSIZE;
 		if (backward_translation) {
 			if (!_lou_backTranslateWithTracing(table, inbuf, &inlen, outbuf, &outlen,
-						NULL, NULL, NULL, NULL, NULL, 0, rules, &ruleslen))
+						NULL, NULL, NULL, NULL, NULL, mode, rules, &ruleslen))
 				break;
 		} else if (!_lou_translateWithTracing(table, inbuf, &inlen, outbuf, &outlen, NULL,
-						   NULL, NULL, NULL, NULL, 0, rules, &ruleslen))
+						   NULL, NULL, NULL, NULL, mode, rules, &ruleslen))
 			break;
-		printf("%s\n", print_chars(outbuf, outlen));
+		if ((mode&dotsIO) && !backward_translation)
+				printf("Dot patterns: %s\n", _lou_showDots(outbuf, outlen));
+		else
+				printf("%s\n", print_chars(outbuf, outlen));
 		j = 0;
 		for (i = 0; i < ruleslen; i++) {
 			if (rules[i]->opcode < 0 || rules[i]->opcode >= CTO_None) continue;
@@ -271,15 +274,17 @@ main(int argc, char **argv) {
 
 	int forward_flag = 0;
 	int backward_flag = 0;
+	int mode = 0;
 
 	const struct option longopts[] = {
 		{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
 		{ "forward", no_argument, NULL, 'f' }, { "backward", no_argument, NULL, 'b' },
+		{ "noContractions", no_argument, NULL, 'n' }, { "dotsIO", no_argument, NULL, 'd' },
 		{ NULL, 0, NULL, 0 },
 	};
 
 	set_program_name(argv[0]);
-	while ((optc = getopt_long(argc, argv, "hvfb", longopts, NULL)) != -1) {
+	while ((optc = getopt_long(argc, argv, "hvfbnd", longopts, NULL)) != -1) {
 		switch (optc) {
 		case 'v':
 			version_etc(
@@ -295,6 +300,12 @@ main(int argc, char **argv) {
 			break;
 		case 'b':
 			backward_flag = 1;
+			break;
+		case 'n':
+			mode |= noContractions;
+			break;
+		case 'd':
+			mode |= dotsIO;
 			break;
 		default:
 			fprintf(stderr, "Try `%s --help' for more information.\n", program_name);
@@ -320,7 +331,7 @@ main(int argc, char **argv) {
 		lou_free();
 		exit(EXIT_FAILURE);
 	}
-	main_loop(backward_flag, table);
+	main_loop(backward_flag, table, mode);
 	lou_free();
 	exit(EXIT_SUCCESS);
 }
