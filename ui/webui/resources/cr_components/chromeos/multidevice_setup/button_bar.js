@@ -10,30 +10,16 @@ Polymer({
   is: 'button-bar',
 
   properties: {
-    /**
-     * Translated text to display on the forward-naviation button. Undefined if
-     * the visible page has no forward-navigation button.
-     * @type {string|undefined}
-     */
-    forwardButtonText: {
-      type: String,
-      value: '',
+    /** Whether the forward button should be hidden. */
+    forwardButtonHidden: {
+      type: Boolean,
+      value: false,
     },
 
-    /**
-     * Whether the forward button should be disabled.
-     * @type {boolean}
-     */
-    forwardButtonDisabled: {type: Boolean, value: false},
-
-    /**
-     * Translated text to display on the backward-naviation button. undefined if
-     * the visible page has no backward-navigation button.
-     * @type {string|undefined}
-     */
-    backwardButtonText: {
-      type: String,
-      value: '',
+    /** Whether the backward button should be hidden. */
+    backwardButtonHidden: {
+      type: Boolean,
+      value: false,
     },
   },
 

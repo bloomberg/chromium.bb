@@ -53,9 +53,10 @@
       </start-setup-page>
     </iron-pages>
     <div class="flex"></div>
-    <button-bar forward-button-text="[[visiblePage_.forwardButtonText]]"
-        forward-button-disabled="[[forwardButtonDisabled_]]"
-        backward-button-text="[[visiblePage_.backwardButtonText]]">
+    <button-bar forward-button-hidden="[[!forwardButtonText]]"
+        backward-button-hidden="[[!backwardButtonText]]">
+      <slot name="backward-button" slot="backward-button"></slot>
+      <slot name="forward-button" slot="backward-button"></slot>
     </button-bar>
   </template>
   <script src="chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup.js">
