@@ -767,6 +767,11 @@
           'gtest_tests': 'chromium_android_gtests',
         },
       },
+      'ToTAndroidOfficial': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'ToTLinux': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',

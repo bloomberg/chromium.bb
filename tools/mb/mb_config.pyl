@@ -124,6 +124,7 @@
       'ToTAndroidASan': 'android_clang_tot_asan',
       'ToTAndroid (dbg)': 'android_clang_tot_dbg',
       'ToTAndroidCFI': 'android_clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
+      'ToTAndroidOfficial': 'android_clang_tot_release_minimal_symbols_official',
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroid x64': 'android_clang_tot_x64',
       'ToTLinux': 'clang_tot_linux_full_symbols_shared_release',
@@ -781,6 +782,16 @@
       'android_without_codecs', 'clang_tot', 'release', 'arm64',
     ],
 
+    'android_clang_tot_release_minimal_symbols': [
+      'android', 'release', 'static', 'minimal_symbols',
+      'strip_debug_info', 'clang_tot',
+    ],
+
+    'android_clang_tot_release_minimal_symbols_official': [
+      'android', 'release', 'static', 'minimal_symbols', 'official',
+      'clang_tot',
+    ],
+
     'android_clang_tot_x64': [
       'android_without_codecs', 'clang_tot', 'shared', 'x64', 'release',
       'dcheck_always_on',
@@ -909,11 +920,6 @@
     'android_release_bot_minimal_symbols': [
       'android', 'release_bot', 'minimal_symbols',
       'strip_debug_info',
-    ],
-
-    'android_clang_tot_release_minimal_symbols': [
-      'android', 'release', 'static', 'minimal_symbols',
-      'strip_debug_info', 'clang_tot',
     ],
 
     'android_release_bot_minimal_symbols_arm64': [

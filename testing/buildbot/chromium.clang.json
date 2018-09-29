@@ -10011,6 +10011,11 @@
       }
     ]
   },
+  "ToTAndroidOfficial": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "ToTLinux": {
     "gtest_tests": [
       {
