@@ -2413,6 +2413,9 @@ now we are only interested in H264, VP8 and VP9.
 <rappor-metric
     name="ServiceWorker.ContextRequestHandlerStatus.UninstalledScriptImport"
     type="ETLD_PLUS_ONE">
+  <obsolete>
+    No longer being logged since Sep 2018.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <summary>
     The domain and registry of the URL of service worker script which used

@@ -209,7 +209,7 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   // The factory from RPH::CreateURLLoaderFactory() doesn't support
   // reconnection to the network service after a crash, but it's probably OK
   // since it's used for a single service worker startup until installation
-  // finishes (with the exception of https://crbug.com/719052).
+  // finishes.
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     // For performance, we only create the loader factories for non-http(s)
     // URLs (e.g. chrome-extension://) when the main script URL is
