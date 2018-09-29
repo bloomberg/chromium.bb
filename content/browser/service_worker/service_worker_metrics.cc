@@ -894,15 +894,6 @@ void ServiceWorkerMetrics::RecordRuntime(base::TimeDelta time) {
                              kBucketCount);
 }
 
-void ServiceWorkerMetrics::RecordUninstalledScriptImport(const GURL& url) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&RecordURLMetricOnUI,
-                     "ServiceWorker.ContextRequestHandlerStatus."
-                     "UninstalledScriptImport",
-                     url));
-}
-
 void ServiceWorkerMetrics::RecordStartServiceWorkerForNavigationHintResult(
     StartServiceWorkerForNavigationHintResult result) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartForNavigationHint.Result",

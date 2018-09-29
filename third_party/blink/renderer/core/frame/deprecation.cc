@@ -604,12 +604,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "The Native Client Pepper WebSocket API is deprecated and will "
               "be disabled in M74, mid-2019"};
 
-    case WebFeature::kServiceWorkerImportScriptNotInstalled:
-      return {"ServiceWorkerImportScriptNotInstalled", kM71,
-              WillBeRemoved("importScripts() of new scripts after service "
-                            "worker installation",
-                            kM71, "5748516353736704")};
-
     case WebFeature::kCacheStorageAddAllSuccessWithDuplicate:
       return {"CacheStorageAddAllSuccessWithDuplicate", kM72,
               WillBeRemoved("Cache.addAll() with duplicate requests", kM72,

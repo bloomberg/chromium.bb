@@ -44322,7 +44322,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Error: no context"/>
   <int value="8" label="Error: redirect"/>
   <int value="9"
-      label="Error: fell back to network for an uninstalled script import"/>
+      label="Error: fell back to network for an uninstalled script import
+             (obsolete)"/>
   <int value="10" label="Error: out of resource ids"/>
 </enum>
 
