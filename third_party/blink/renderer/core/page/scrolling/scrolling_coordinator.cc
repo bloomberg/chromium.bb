@@ -265,10 +265,10 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
     return;
 
   const auto& layer_state = layer.GetPropertyTreeState();
-  Vector<TouchActionRect> touch_action_rects_in_layer_space;
+  Vector<HitTestRect> touch_action_rects_in_layer_space;
   if (layer.Client().ShouldThrottleRendering()) {
     layer.CcLayer()->SetTouchActionRegion(
-        TouchActionRect::BuildRegion(touch_action_rects_in_layer_space));
+        HitTestRect::BuildRegion(touch_action_rects_in_layer_space));
     return;
   }
   for (const auto& chunk : layer.GetPaintController().PaintChunks()) {
@@ -286,12 +286,12 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
       }
       LayoutRect layout_rect = LayoutRect(rect.Rect());
       layout_rect.MoveBy(-layer.GetOffsetFromTransformNode());
-      touch_action_rects_in_layer_space.emplace_back(TouchActionRect(
-          layout_rect, touch_action_rect.whitelisted_touch_action));
+      touch_action_rects_in_layer_space.emplace_back(
+          HitTestRect(layout_rect, touch_action_rect.whitelisted_touch_action));
     }
   }
   layer.CcLayer()->SetTouchActionRegion(
-      TouchActionRect::BuildRegion(touch_action_rects_in_layer_space));
+      HitTestRect::BuildRegion(touch_action_rects_in_layer_space));
 }
 
 static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
@@ -630,7 +630,7 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
 }
 
 using GraphicsLayerHitTestRects =
-    WTF::HashMap<const GraphicsLayer*, Vector<TouchActionRect>>;
+    WTF::HashMap<const GraphicsLayer*, Vector<HitTestRect>>;
 
 // In order to do a DFS cross-frame walk of the Layer tree, we need to know
 // which Layers have child frames inside of them. This computes a mapping for
@@ -685,18 +685,17 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
 
     GraphicsLayerHitTestRects::iterator gl_iter =
         graphics_rects.find(graphics_layer);
-    Vector<TouchActionRect>* gl_rects;
+    Vector<HitTestRect>* gl_rects;
     if (gl_iter == graphics_rects.end()) {
-      gl_rects =
-          &graphics_rects.insert(graphics_layer, Vector<TouchActionRect>())
-               .stored_value->value;
+      gl_rects = &graphics_rects.insert(graphics_layer, Vector<HitTestRect>())
+                      .stored_value->value;
     } else {
       gl_rects = &gl_iter->value;
     }
 
     // Transform each rect to the co-ordinate space of the graphicsLayer.
     for (wtf_size_t i = 0; i < layer_iter->value.size(); ++i) {
-      TouchActionRect rect = layer_iter->value[i];
+      HitTestRect rect = layer_iter->value[i];
       if (composited_layer != cur_layer) {
         FloatQuad compositor_quad = geometry_map.MapToAncestor(
             FloatRect(rect.rect), &composited_layer->GetLayoutObject());
@@ -873,14 +872,13 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
     GraphicsLayer* main_graphics_layer =
         layer->GraphicsLayerBacking(&layer->GetLayoutObject());
     if (main_graphics_layer) {
-      graphics_layer_rects.insert(main_graphics_layer,
-                                  Vector<TouchActionRect>());
+      graphics_layer_rects.insert(main_graphics_layer, Vector<HitTestRect>());
     }
     GraphicsLayer* scrolling_contents_layer = layer->GraphicsLayerBacking();
     if (scrolling_contents_layer &&
         scrolling_contents_layer != main_graphics_layer) {
       graphics_layer_rects.insert(scrolling_contents_layer,
-                                  Vector<TouchActionRect>());
+                                  Vector<HitTestRect>());
     }
   }
 
@@ -905,7 +903,7 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
   for (const auto& layer_rect : graphics_layer_rects) {
     const GraphicsLayer* graphics_layer = layer_rect.key;
     graphics_layer->CcLayer()->SetTouchActionRegion(
-        TouchActionRect::BuildRegion(layer_rect.value));
+        HitTestRect::BuildRegion(layer_rect.value));
   }
 }
 

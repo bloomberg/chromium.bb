@@ -80,8 +80,8 @@ void TableRowPainter::RecordHitTestData(const PaintInfo& paint_info,
 
   auto rect = layout_table_row_.BorderBoxRect();
   rect.MoveBy(paint_offset);
-  HitTestData::RecordTouchActionRect(paint_info.context, layout_table_row_,
-                                     TouchActionRect(rect, touch_action));
+  HitTestData::RecordHitTestRect(paint_info.context, layout_table_row_,
+                                 HitTestRect(rect, touch_action));
 }
 
 void TableRowPainter::PaintBoxDecorationBackground(

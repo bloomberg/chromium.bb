@@ -200,8 +200,8 @@ void ReplacedPainter::RecordHitTestData(const PaintInfo& paint_info,
 
   auto rect = layout_replaced_.VisualOverflowRect();
   rect.MoveBy(paint_offset);
-  HitTestData::RecordTouchActionRect(paint_info.context, layout_replaced_,
-                                     TouchActionRect(rect, touch_action));
+  HitTestData::RecordHitTestRect(paint_info.context, layout_replaced_,
+                                 HitTestRect(rect, touch_action));
 }
 
 bool ReplacedPainter::ShouldPaint(const ScopedPaintState& paint_state) const {
