@@ -37,6 +37,7 @@ constexpr struct {
   int id;
 } const kLocalizedStringsWithoutPlaceholders[] = {
     {"accept", IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL},
+    {"back", IDS_MULTIDEVICE_SETUP_BACK_LABEL},
     {"cancel", IDS_CANCEL},
     {"done", IDS_DONE},
     {"passwordPageHeader", IDS_MULTIDEVICE_SETUP_PASSWORD_PAGE_HEADER},
