@@ -55,6 +55,8 @@ void WhitespaceAttacher::DidReattachElement(Element* element,
 void WhitespaceAttacher::DidVisitText(Text* text) {
   DCHECK(text);
   if (!last_text_node_ || !last_text_node_needs_reattach_) {
+    if (text->data().IsEmpty())
+      return;
     SetLastTextNode(text);
     if (reattach_all_whitespace_nodes_ && text->ContainsOnlyWhitespace())
       last_text_node_needs_reattach_ = true;
