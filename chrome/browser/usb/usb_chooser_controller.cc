@@ -163,10 +163,10 @@ void UsbChooserController::OpenHelpCenterUrl() const {
 }
 
 void UsbChooserController::OnDeviceAdded(
-    device::mojom::UsbDeviceInfoPtr device_info) {
-  if (DisplayDevice(*device_info)) {
-    base::string16 device_name = FormatUsbDeviceName(*device_info);
-    devices_.push_back(std::make_pair(std::move(device_info), device_name));
+    const device::mojom::UsbDeviceInfo& device_info) {
+  if (DisplayDevice(device_info)) {
+    base::string16 device_name = FormatUsbDeviceName(device_info);
+    devices_.push_back(std::make_pair(device_info.Clone(), device_name));
     ++device_name_map_[device_name];
     if (view())
       view()->OnOptionAdded(devices_.size() - 1);
@@ -174,9 +174,9 @@ void UsbChooserController::OnDeviceAdded(
 }
 
 void UsbChooserController::OnDeviceRemoved(
-    device::mojom::UsbDeviceInfoPtr device_info) {
+    const device::mojom::UsbDeviceInfo& device_info) {
   for (auto it = devices_.begin(); it != devices_.end(); ++it) {
-    if (it->first->guid == device_info->guid) {
+    if (it->first->guid == device_info.guid) {
       size_t index = it - devices_.begin();
       DCHECK_GT(device_name_map_[it->second], 0);
       if (--device_name_map_[it->second] == 0)

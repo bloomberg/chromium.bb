@@ -28,8 +28,8 @@ class UsbChooserContext : public ChooserContextBase,
 
   class Observer : public base::CheckedObserver {
    public:
-    virtual void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr);
-    virtual void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr);
+    virtual void OnDeviceAdded(const device::mojom::UsbDeviceInfo&);
+    virtual void OnDeviceRemoved(const device::mojom::UsbDeviceInfo&);
     virtual void OnDeviceManagerConnectionError();
   };
 
