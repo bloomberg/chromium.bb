@@ -27,12 +27,17 @@ per-file skia_paint_util*=danakj@chromium.org
 # GPU memory buffer and GpuFence interfaces.
 per-file gpu_fence*=reveman@chromium.org
 per-file gpu_fence*=dcastagna@chromium.org
+per-file gpu_fence*=rjkroege@chromium.org
 per-file gpu_memory_buffer*=reveman@chromium.org
 per-file gpu_memory_buffer*=dcastagna@chromium.org
+per-file gpu_memory_buffer*=rjkroege@chromium.org
 per-file buffer_format*=reveman@chromium.org
 per-file buffer_format*=dcastagna@chromium.org
+per-file buffer_format*=rjkroege@chromium.org
 per-file *buffer_types.*=reveman@chromium.org
 per-file *buffer_types.*=dcastagna@chromium.org
+per-file *buffer_types.*=rjkroege@chromium.org
+per-file *pixmap.*=rjkroege@chromium.org
 
 # Vector icons.
 per-file *vector_icon*=estade@chromium.org
