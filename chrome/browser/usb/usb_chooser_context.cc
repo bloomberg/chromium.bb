@@ -74,10 +74,10 @@ base::DictionaryValue DeviceInfoToDictValue(
 }  // namespace
 
 void UsbChooserContext::Observer::OnDeviceAdded(
-    device::mojom::UsbDeviceInfoPtr device_info) {}
+    const device::mojom::UsbDeviceInfo& device_info) {}
 
 void UsbChooserContext::Observer::OnDeviceRemoved(
-    device::mojom::UsbDeviceInfoPtr device_info) {}
+    const device::mojom::UsbDeviceInfo& device_info) {}
 
 void UsbChooserContext::Observer::OnDeviceManagerConnectionError() {}
 
@@ -300,7 +300,7 @@ void UsbChooserContext::OnDeviceAdded(
 
   // Notify all observers.
   for (auto& observer : observer_list_)
-    observer.OnDeviceAdded(device_info->Clone());
+    observer.OnDeviceAdded(*device_info);
 }
 
 void UsbChooserContext::OnDeviceRemoved(
@@ -309,7 +309,7 @@ void UsbChooserContext::OnDeviceRemoved(
 
   // Notify all observers.
   for (auto& observer : observer_list_)
-    observer.OnDeviceRemoved(device_info->Clone());
+    observer.OnDeviceRemoved(*device_info);
 
   for (auto& map_entry : ephemeral_devices_)
     map_entry.second.erase(device_info->guid);

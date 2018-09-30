@@ -47,8 +47,9 @@ class UsbChooserController : public ChooserController,
   void OpenHelpCenterUrl() const override;
 
   // UsbChooserContext::Observer implementation:
-  void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info) override;
-  void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info) override;
+  void OnDeviceAdded(const device::mojom::UsbDeviceInfo& device_info) override;
+  void OnDeviceRemoved(
+      const device::mojom::UsbDeviceInfo& device_info) override;
   void OnDeviceManagerConnectionError() override;
 
  private:
