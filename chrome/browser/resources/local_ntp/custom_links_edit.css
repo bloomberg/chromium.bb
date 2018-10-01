@@ -192,6 +192,10 @@ button.secondary:active:not(:disabled) {
       0 3px 6px 2px rgba(60, 64, 67, 0.15);
 }
 
-#cancel {
+html:not([dir=rtl]) #cancel {
   margin-right: 8px;
+}
+
+html[dir=rtl] #cancel {
+  margin-left: 8px;
 }
