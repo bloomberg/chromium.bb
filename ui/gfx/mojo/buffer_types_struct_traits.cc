@@ -13,6 +13,10 @@
 #include "mojo/public/cpp/system/scope_to_message_pipe.h"
 #endif
 
+#if !defined(OS_LINUX)
+#include "base/no_destructor.h"
+#endif
+
 namespace mojo {
 
 // static
@@ -74,8 +78,8 @@ StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
 #if defined(OS_LINUX)
   return handle.native_pixmap_handle;
 #else
-  static gfx::NativePixmapHandle pixmap_handle;
-  return pixmap_handle;
+  static base::NoDestructor<gfx::NativePixmapHandle> pixmap_handle;
+  return *pixmap_handle;
 #endif
 }
 
