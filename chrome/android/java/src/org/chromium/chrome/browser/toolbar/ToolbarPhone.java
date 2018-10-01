@@ -30,9 +30,7 @@ import android.support.annotation.StringRes;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.graphics.drawable.DrawableWrapper;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.util.Property;
 import android.util.TypedValue;
@@ -78,6 +76,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
@@ -148,11 +147,11 @@ public class ToolbarPhone extends ToolbarLayout
     private IncognitoToggleTabLayout mIncognitoToggleTabLayout;
     protected ImageView mToggleTabStackButton;
     protected NewTabButton mNewTabButton;
-    protected @Nullable AppCompatImageButton mHomeButton;
+    protected @Nullable TintedImageButton mHomeButton;
     private TextView mUrlBar;
     protected View mUrlActionContainer;
     protected ImageView mToolbarShadow;
-    private @Nullable AppCompatImageButton mExperimentalButton;
+    private @Nullable TintedImageButton mExperimentalButton;
 
     private final int mProgressBackBackgroundColorWhite;
 
@@ -394,7 +393,7 @@ public class ToolbarPhone extends ToolbarLayout
 
             mToolbarButtonsContainer = (ViewGroup) findViewById(R.id.toolbar_buttons);
 
-            mHomeButton = (AppCompatImageButton) findViewById(R.id.home_button);
+            mHomeButton = (TintedImageButton) findViewById(R.id.home_button);
             changeIconToNTPIcon(mHomeButton);
             if (FeatureUtilities.isBottomToolbarEnabled()) {
                 disableMenuButton();
@@ -494,7 +493,7 @@ public class ToolbarPhone extends ToolbarLayout
         mToggleTabStackButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
             public View getNextFocusForward() {
-                final AppCompatImageButton menuButton = getMenuButton();
+                final TintedImageButton menuButton = getMenuButton();
                 if (menuButton != null && menuButton.isShown()) {
                     return menuButton;
                 } else {
@@ -1381,7 +1380,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         // Draw the menu button if necessary.
-        final AppCompatImageButton menuButton = getMenuButton();
+        final TintedImageButton menuButton = getMenuButton();
         if (menuButton != null && !mShowMenuBadge && mTabSwitcherAnimationMenuDrawable != null
                 && mUrlExpansionPercent != 1f) {
             mTabSwitcherAnimationMenuDrawable.setBounds(menuButton.getPaddingLeft(),
@@ -1721,8 +1720,7 @@ public class ToolbarPhone extends ToolbarLayout
     private void addHomeButton() {
         mHomeButton.setVisibility(
                 urlHasFocus() || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
-        ColorStateList tintList = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
-        ImageViewCompat.setImageTintList(mHomeButton, tintList);
+        mHomeButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
         mBrowsingModeViews.add(mHomeButton);
     }
 
@@ -2576,14 +2574,12 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         if (getMenuButton() != null) {
-            ColorStateList tintList = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
-            ImageViewCompat.setImageTintList(getMenuButton(), tintList);
+            getMenuButton().setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
         }
 
         updateModernLocationBarColor(getLocationBarColorForToolbarColor(currentPrimaryColor));
         if (mExperimentalButton != null) {
-            ColorStateList tintList = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
-            ImageViewCompat.setImageTintList(mExperimentalButton, tintList);
+            mExperimentalButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
         }
 
         setMenuButtonHighlightDrawable(mHighlightingMenu);
@@ -2591,9 +2587,7 @@ public class ToolbarPhone extends ToolbarLayout
             setAppMenuUpdateBadgeDrawable(mUseLightToolbarDrawables);
         }
         ColorStateList tint = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
-        if (mIsHomeButtonEnabled && mHomeButton != null) {
-            ImageViewCompat.setImageTintList(mHomeButton, tint);
-        }
+        if (mIsHomeButtonEnabled && mHomeButton != null) mHomeButton.setTint(tint);
 
         mLocationBar.updateVisualsForState();
 
@@ -2695,7 +2689,7 @@ public class ToolbarPhone extends ToolbarLayout
             OnClickListener onClickListener, int drawableResId, int contentDescriptionResId) {
         if (mExperimentalButton == null) {
             ViewStub viewStub = findViewById(R.id.experimental_button_stub);
-            mExperimentalButton = (AppCompatImageButton) viewStub.inflate();
+            mExperimentalButton = (TintedImageButton) viewStub.inflate();
 
             if (!isMenuButtonPresent()) mExperimentalButton.setPadding(0, 0, 0, 0);
             mExperimentalButtonTranslation = getResources().getDimensionPixelSize(
@@ -2714,8 +2708,7 @@ public class ToolbarPhone extends ToolbarLayout
         mExperimentalButton.setImageResource(drawableResId);
         mExperimentalButton.setContentDescription(
                 getContext().getResources().getString(contentDescriptionResId));
-        ImageViewCompat.setImageTintList(
-                mExperimentalButton, mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
+        mExperimentalButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
 
         if (mTabSwitcherState == STATIC_TAB) {
             if (!mUrlFocusChangeInProgress && !urlHasFocus()) {

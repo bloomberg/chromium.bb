@@ -99,6 +99,7 @@
                 android:layout_marginStart="6dp"
                 android:contentDescription="@string/accessibility_ntp_offline_badge"
                 android:visibility="gone"
-                android:src="@drawable/offline_pin_round" />
+                android:src="@drawable/offline_pin_round"
+                app:chrometint="@color/default_icon_color" />
         </LinearLayout>
 </RelativeLayout>

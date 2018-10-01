@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.infobar;
 
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.AppCompatImageButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,6 +20,7 @@ import org.chromium.chrome.browser.infobar.translate.TranslateMenuHelper;
 import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -104,7 +104,7 @@ public class TranslateCompactInfoBar extends InfoBar
     private TranslateMenuHelper mOverflowMenuHelper;
     private TranslateMenuHelper mLanguageMenuHelper;
 
-    private AppCompatImageButton mMenuButton;
+    private TintedImageButton mMenuButton;
     private InfoBarCompactLayout mParent;
 
     private TranslateSnackbarController mSnackbarController;
@@ -239,8 +239,7 @@ public class TranslateCompactInfoBar extends InfoBar
             }
         });
 
-        mMenuButton =
-                (AppCompatImageButton) content.findViewById(R.id.translate_infobar_menu_button);
+        mMenuButton = (TintedImageButton) content.findViewById(R.id.translate_infobar_menu_button);
         mMenuButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

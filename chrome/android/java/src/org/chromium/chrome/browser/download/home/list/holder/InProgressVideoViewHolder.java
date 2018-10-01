@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download.home.list.holder;
 
-import android.support.v7.widget.AppCompatImageButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +15,7 @@ import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -28,7 +28,7 @@ public class InProgressVideoViewHolder extends ListItemViewHolder {
     private final TextView mTitle;
     private final TextView mCaption;
     private final CircularProgressView mActionButton;
-    private final AppCompatImageButton mCancelButton;
+    private final TintedImageButton mCancelButton;
 
     /**
      * Creates a new {@link InProgressViewHolder} instance.
