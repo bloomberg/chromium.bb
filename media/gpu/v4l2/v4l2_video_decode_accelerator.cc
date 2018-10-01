@@ -378,14 +378,16 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
       return;
   }
 
+  // Reserve all buffers until ImportBufferForPictureTask() is called
   while (output_queue_->FreeBuffersCount() > 0) {
     V4L2WritableBufferRef buffer(output_queue_->GetFreeBuffer());
     DCHECK(buffer.IsValid());
     int i = buffer.BufferId();
 
-    // Keep the buffer on our side until ImportBufferForPictureTask() is called
     output_wait_map_.emplace(buffers[i].id(), std::move(buffer));
+  }
 
+  for (size_t i = 0; i < buffers.size(); i++) {
     DCHECK(buffers[i].size() == egl_image_size_);
 
     OutputRecord& output_record = output_buffer_map_[i];
