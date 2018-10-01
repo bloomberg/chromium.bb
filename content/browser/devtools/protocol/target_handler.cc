@@ -549,6 +549,10 @@ Response TargetHandler::SetDiscoverTargets(bool discover) {
 Response TargetHandler::SetAutoAttach(bool auto_attach,
                                       bool wait_for_debugger_on_start,
                                       Maybe<bool> flatten) {
+  if (flatten.fromMaybe(false) && !target_registry_) {
+    return Response::InvalidParams(
+        "Will only provide flatten access for browser endpoint");
+  }
   flatten_auto_attach_ = flatten.fromMaybe(false);
   auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start);
   if (!auto_attacher_.ShouldThrottleFramesNavigation())
