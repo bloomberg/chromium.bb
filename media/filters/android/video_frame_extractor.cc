@@ -107,7 +107,8 @@ void VideoFrameExtractor::ConvertPacket(AVPacket* packet) {
       break;
   }
 
-  bitstream_converter_->ConvertPacket(packet);
+  if (bitstream_converter_)
+    bitstream_converter_->ConvertPacket(packet);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 }
 

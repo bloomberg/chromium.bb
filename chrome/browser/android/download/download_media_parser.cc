@@ -9,15 +9,17 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/android/download/local_media_data_source_factory.h"
-#include "chrome/browser/android/download/video_frame_thumbnail_converter.h"
 #include "content/public/browser/android/gpu_video_accelerator_factories_provider.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/base/overlay_info.h"
+#include "media/base/video_thumbnail_decoder.h"
 #include "media/mojo/clients/mojo_video_decoder.h"
 #include "media/mojo/interfaces/constants.mojom.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
@@ -76,7 +78,7 @@ void DownloadMediaParser::OnMediaParserCreated() {
                                        weak_factory_.GetWeakPtr()));
 
   media_parser()->ParseMediaMetadata(
-      mime_type_, size_, true /* get_attached_images */, std::move(source_ptr),
+      mime_type_, size_, false /* get_attached_images */, std::move(source_ptr),
       base::BindOnce(&DownloadMediaParser::OnMediaMetadataParsed,
                      weak_factory_.GetWeakPtr()));
 }
@@ -95,10 +97,6 @@ void DownloadMediaParser::OnMediaMetadataParsed(
   }
   metadata_ = std::move(metadata);
   DCHECK(metadata_);
-
-  // TODO(xingliu): Make |attached_images| movable and use this as a thumbnail
-  // source as well as video frame.
-  attached_images_ = attached_images;
 
   // For audio file, we only need metadata and poster.
   if (base::StartsWith(mime_type_, "audio/",
@@ -128,22 +126,39 @@ void DownloadMediaParser::RetrieveEncodedVideoFrame() {
 
   media_parser()->ExtractVideoFrame(
       mime_type_, base::saturated_cast<uint32_t>(size_), std::move(source_ptr),
-      base::BindOnce(&DownloadMediaParser::OnEncodedVideoFrameRetrieved,
+      base::BindOnce(&DownloadMediaParser::OnVideoFrameRetrieved,
                      weak_factory_.GetWeakPtr()));
 }
 
-void DownloadMediaParser::OnEncodedVideoFrameRetrieved(
+void DownloadMediaParser::OnVideoFrameRetrieved(
     bool success,
-    const std::vector<uint8_t>& data,
+    chrome::mojom::VideoFrameDataPtr video_frame_data,
     const media::VideoDecoderConfig& config) {
-  if (data.empty()) {
+  if (!success) {
     OnError();
     return;
   }
 
-  encoded_data_ = data;
+  video_frame_data_ = std::move(video_frame_data);
   config_ = config;
 
+  // For vp8, vp9 codec, we directly do software decoding in utility process.
+  // Render now.
+  if (video_frame_data_->which() ==
+      chrome::mojom::VideoFrameData::Tag::DECODED_FRAME) {
+    decode_done_ = true;
+    RenderVideoFrame(std::move(video_frame_data_->get_decoded_frame()));
+    return;
+  }
+
+  // For other codec, the encoded frame is retrieved in utility process, send
+  // the data to GPU process to do hardware decoding.
+  if (video_frame_data_->get_encoded_data().empty()) {
+    OnError();
+    return;
+  }
+
+  // Starts to decode with MojoVideoDecoder.
   content::CreateGpuVideoAcceleratorFactories(base::BindRepeating(
       &DownloadMediaParser::OnGpuVideoAcceleratorFactoriesReady,
       weak_factory_.GetWeakPtr()));
@@ -162,82 +177,49 @@ void DownloadMediaParser::DecodeVideoFrame() {
 
   // Build and config the decoder.
   DCHECK(gpu_factories_);
-  decoder_ = std::make_unique<media::MojoVideoDecoder>(
+  auto mojo_decoder = std::make_unique<media::MojoVideoDecoder>(
       base::ThreadTaskRunnerHandle::Get(), gpu_factories_.get(), this,
       std::move(video_decoder_ptr), base::BindRepeating(&OnRequestOverlayInfo),
       gfx::ColorSpace());
 
-  decoder_->Initialize(
-      config_, false, nullptr,
-      base::BindRepeating(&DownloadMediaParser::OnVideoDecoderInitialized,
-                          weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&DownloadMediaParser::OnVideoFrameDecoded,
-                          weak_factory_.GetWeakPtr()),
-      base::RepeatingClosure());
-}
+  decoder_ = std::make_unique<media::VideoThumbnailDecoder>(
+      std::move(mojo_decoder), config_,
+      std::move(video_frame_data_->get_encoded_data()));
 
-void DownloadMediaParser::OnVideoDecoderInitialized(bool success) {
-  if (!success) {
-    OnError();
-    return;
-  }
-
-  // Build the video buffer to decode.
-  auto buffer =
-      media::DecoderBuffer::CopyFrom(&encoded_data_[0], encoded_data_.size());
-  encoded_data_.clear();
-
-  // Decode one frame buffer, followed by eos buffer.
-  DCHECK_GE(decoder_->GetMaxDecodeRequests(), 2);
-  decoder_->Decode(
-      buffer, base::BindRepeating(&DownloadMediaParser::OnVideoBufferDecoded,
-                                  weak_factory_.GetWeakPtr()));
-  decoder_->Decode(media::DecoderBuffer::CreateEOSBuffer(),
-                   base::BindRepeating(&DownloadMediaParser::OnEosBufferDecoded,
-                                       weak_factory_.GetWeakPtr()));
-}
-
-void DownloadMediaParser::OnVideoBufferDecoded(media::DecodeStatus status) {
-  if (status != media::DecodeStatus::OK)
-    OnError();
-}
-
-void DownloadMediaParser::OnEosBufferDecoded(media::DecodeStatus status) {
-  if (status != media::DecodeStatus::OK)
-    OnError();
-
-  // Fails if no decoded video frame is generated when eos arrives.
-  if (!decode_done_)
-    OnError();
+  decoder_->Start(base::BindOnce(&DownloadMediaParser::OnVideoFrameDecoded,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 void DownloadMediaParser::OnVideoFrameDecoded(
-    const scoped_refptr<media::VideoFrame>& frame) {
-  DCHECK(frame);
-  DCHECK(frame->HasTextures());
-  decode_done_ = true;
-
-  RenderVideoFrame(frame);
-}
-
-void DownloadMediaParser::RenderVideoFrame(
-    const scoped_refptr<media::VideoFrame>& video_frame) {
-  auto converter = VideoFrameThumbnailConverter::Create(
-      config_.codec(), gpu_factories_->GetMediaContextProvider());
-  converter->ConvertToBitmap(
-      video_frame,
-      base::BindOnce(&DownloadMediaParser::OnBitmapGenerated,
-                     weak_factory_.GetWeakPtr(), std::move(converter)));
-}
-
-void DownloadMediaParser::OnBitmapGenerated(
-    std::unique_ptr<VideoFrameThumbnailConverter>,
-    bool success,
-    SkBitmap bitmap) {
-  if (!success) {
+    scoped_refptr<media::VideoFrame> frame) {
+  if (!frame) {
     OnError();
     return;
   }
+
+  DCHECK(frame->HasTextures());
+  decode_done_ = true;
+
+  RenderVideoFrame(std::move(frame));
+}
+
+void DownloadMediaParser::RenderVideoFrame(
+    scoped_refptr<media::VideoFrame> video_frame) {
+  auto context_provider =
+      gpu_factories_ ? gpu_factories_->GetMediaContextProvider() : nullptr;
+
+  media::PaintCanvasVideoRenderer renderer;
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(video_frame->visible_rect().width(),
+                        video_frame->visible_rect().height());
+
+  // Draw the video frame to |bitmap|.
+  cc::SkiaPaintCanvas canvas(bitmap);
+  media::Context3D context =
+      context_provider ? media::Context3D(context_provider->ContextGL(),
+                                          context_provider->GrContext())
+                       : media::Context3D();
+  renderer.Copy(video_frame, &canvas, context);
 
   NotifyComplete(std::move(bitmap));
 }
@@ -275,8 +257,6 @@ void DownloadMediaParser::OnMediaDataReady(
 }
 
 void DownloadMediaParser::NotifyComplete(SkBitmap bitmap) {
-  // TODO(xingliu): Return the metadata and video thumbnail data in
-  // |parse_complete_cb_|.
   DCHECK(metadata_);
   if (parse_complete_cb_)
     std::move(parse_complete_cb_)

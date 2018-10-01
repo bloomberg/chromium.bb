@@ -2127,8 +2127,6 @@ jumbo_split_static_library("browser") {
       "android/download/service/download_background_task.cc",
       "android/download/service/download_task_scheduler.cc",
       "android/download/service/download_task_scheduler.h",
-      "android/download/video_frame_thumbnail_converter.cc",
-      "android/download/video_frame_thumbnail_converter.h",
       "android/explore_sites/catalog.cc",
       "android/explore_sites/catalog.h",
       "android/explore_sites/explore_sites_bridge.cc",
