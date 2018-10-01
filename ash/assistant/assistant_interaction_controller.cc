@@ -162,13 +162,7 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       model_.SetInputModality(InputModality::kKeyboard);
       break;
     case AssistantVisibility::kVisible:
-      if (source == AssistantSource::kLauncherSearchBox ||
-          source == AssistantSource::kLongPressLauncher) {
-        if (IsTabletMode())
-          StartVoiceInteraction();
-      } else if (source == AssistantSource::kStylus) {
-        model_.SetInputModality(InputModality::kStylus);
-      }
+      OnUiVisible(source);
       break;
   }
 }
@@ -449,6 +443,34 @@ void AssistantInteractionController::OnDialogPlateContentsCommitted(
     const std::string& text) {
   DCHECK(!text.empty());
   StartTextInteraction(text);
+}
+
+void AssistantInteractionController::OnUiVisible(AssistantSource source) {
+  DCHECK_EQ(AssistantVisibility::kVisible,
+            assistant_controller_->ui_controller()->model()->visibility());
+
+  switch (source) {
+    case AssistantSource::kHotkey:
+    case AssistantSource::kLauncherSearchBox:
+    case AssistantSource::kLongPressLauncher: {
+      // When the user prefers it or when we are in tablet mode, launching
+      // Assistant UI will immediately start a voice interaction.
+      const bool launch_with_mic_open =
+          Shell::Get()->voice_interaction_controller()->launch_with_mic_open();
+      if (launch_with_mic_open || IsTabletMode())
+        StartVoiceInteraction();
+      break;
+    }
+    case AssistantSource::kStylus:
+      model_.SetInputModality(InputModality::kStylus);
+      break;
+    case AssistantSource::kUnspecified:
+    case AssistantSource::kDeepLink:
+    case AssistantSource::kHotword:
+    case AssistantSource::kSetup:
+      // No action necessary.
+      break;
+  }
 }
 
 void AssistantInteractionController::StartMetalayerInteraction(
