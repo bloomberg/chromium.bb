@@ -377,6 +377,12 @@ class CONTENT_EXPORT FrameTreeNode {
     return replication_state_.has_received_user_gesture;
   }
 
+  // Returns whether the frame received a user gesture on a previous navigation
+  // on the same eTLD+1.
+  bool has_received_user_gesture_before_nav() const {
+    return replication_state_.has_received_user_gesture_before_nav;
+  }
+
   // When a tab is discarded, WebContents sets was_discarded on its
   // root FrameTreeNode.
   // In addition, when a child frame is created, this bit is passed on from
