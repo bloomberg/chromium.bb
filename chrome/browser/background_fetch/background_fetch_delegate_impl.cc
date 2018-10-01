@@ -112,8 +112,9 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
         base::StringPrintf("%s (%s)", fetch_description->title.c_str(),
                            fetch_description->origin.Serialize().c_str());
   }
-  // TODO(delphick): Figure out what to put in offline_item.description.
+
   offline_item.is_transient = true;
+  offline_item.is_resumable = true;
 
   using OfflineItemState = offline_items_collection::OfflineItemState;
   if (cancelled) {
@@ -519,11 +520,14 @@ void BackgroundFetchDelegateImpl::FailFetch(const std::string& job_unique_id) {
 
 void BackgroundFetchDelegateImpl::CancelDownload(
     const offline_items_collection::ContentId& id) {
-  Abort(id.id);
+  // Save a copy before Abort() deletes the reference.
+  const std::string unique_id = id.id;
+  Abort(unique_id);
 
   if (client()) {
     client()->OnJobCancelled(
-        id.id, blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
+        unique_id,
+        blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
   }
 }
 
