@@ -48,7 +48,8 @@ void OnFetchEventCommon(
   response->status_code = 200;
   response->status_text = "OK";
   response->response_type = network::mojom::FetchResponseType::kDefault;
-  response_callback->OnResponse(std::move(response), base::TimeTicks::Now());
+  response_callback->OnResponse(
+      std::move(response), blink::mojom::ServiceWorkerFetchEventTiming::New());
   std::move(finish_callback)
       .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
            base::TimeTicks::Now());

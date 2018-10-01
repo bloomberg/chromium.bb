@@ -180,7 +180,8 @@ void FetchRespondWithObserver::OnResponseRejected(
   WebServiceWorkerResponse web_response;
   web_response.SetError(error);
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_);
+      ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_,
+                            base::TimeTicks::Now());
 }
 
 void FetchRespondWithObserver::OnResponseFulfilled(
@@ -284,7 +285,8 @@ void FetchRespondWithObserver::OnResponseFulfilled(
       // Handle the blob response body.
       web_response.SetBlobDataHandle(blob_data_handle);
       ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-          ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_);
+          ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_,
+                                base::TimeTicks::Now());
       return;
     }
     // Handle the stream response body.
@@ -302,9 +304,9 @@ void FetchRespondWithObserver::OnResponseFulfilled(
         std::make_unique<WebServiceWorkerStreamHandle>(
             std::move(pipe.consumer_handle));
     ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-        ->RespondToFetchEventWithResponseStream(event_id_, web_response,
-                                                body_stream_handle.get(),
-                                                event_dispatch_time_);
+        ->RespondToFetchEventWithResponseStream(
+            event_id_, web_response, body_stream_handle.get(),
+            event_dispatch_time_, base::TimeTicks::Now());
 
     buffer->StartLoading(FetchDataLoader::CreateLoaderAsDataPipe(
                              std::move(pipe.producer_handle), task_runner_),
@@ -317,12 +319,14 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     return;
   }
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_);
+      ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_,
+                            base::TimeTicks::Now());
 }
 
 void FetchRespondWithObserver::OnNoResponse() {
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToFetchEventWithNoResponse(event_id_, event_dispatch_time_);
+      ->RespondToFetchEventWithNoResponse(event_id_, event_dispatch_time_,
+                                          base::TimeTicks::Now());
 }
 
 FetchRespondWithObserver::FetchRespondWithObserver(

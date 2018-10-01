@@ -233,8 +233,9 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
     switch (response_mode_) {
       case ResponseMode::kDefault:
-        response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
-                                      base::TimeTicks::Now());
+        response_callback->OnResponse(
+            OkResponse(nullptr /* blob_body */),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED,
             base::TimeTicks());
@@ -244,28 +245,32 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
                                 base::TimeTicks());
         break;
       case ResponseMode::kStream:
-        response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
-                                            std::move(stream_handle_),
-                                            base::TimeTicks::Now());
+        response_callback->OnResponseStream(
+            OkResponse(nullptr /* blob_body */), std::move(stream_handle_),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED,
             base::TimeTicks());
         break;
       case ResponseMode::kBlob:
-        response_callback->OnResponse(OkResponse(std::move(blob_body_)),
-                                      base::TimeTicks::Now());
+        response_callback->OnResponse(
+            OkResponse(std::move(blob_body_)),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED,
             base::TimeTicks());
         break;
       case ResponseMode::kFallbackResponse:
-        response_callback->OnFallback(base::TimeTicks::Now());
+        response_callback->OnFallback(
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED,
             base::TimeTicks::Now());
         break;
       case ResponseMode::kErrorResponse:
-        response_callback->OnResponse(ErrorResponse(), base::TimeTicks::Now());
+        response_callback->OnResponse(
+            ErrorResponse(),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::REJECTED,
             base::TimeTicks::Now());
@@ -273,7 +278,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
       case ResponseMode::kRedirectResponse: {
         response_callback->OnResponse(
             RedirectResponse(redirect_location_header_),
-            base::TimeTicks::Now());
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED,
             base::TimeTicks());

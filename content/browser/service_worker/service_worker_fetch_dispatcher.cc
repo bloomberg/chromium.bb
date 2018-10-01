@@ -325,25 +325,27 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
   }
 
   // Implements blink::mojom::ServiceWorkerFetchResponseCallback.
-  void OnResponse(blink::mojom::FetchAPIResponsePtr response,
-                  base::TimeTicks dispatch_event_time) override {
+  void OnResponse(
+      blink::mojom::FetchAPIResponsePtr response,
+      blink::mojom::ServiceWorkerFetchEventTimingPtr timing) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
                    std::move(response), nullptr /* body_as_stream */,
-                   FetchEventResult::kGotResponse, dispatch_event_time);
+                   FetchEventResult::kGotResponse, std::move(timing));
   }
   void OnResponseStream(
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-      base::TimeTicks dispatch_event_time) override {
+      blink::mojom::ServiceWorkerFetchEventTimingPtr timing) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
                    std::move(response), std::move(body_as_stream),
-                   FetchEventResult::kGotResponse, dispatch_event_time);
+                   FetchEventResult::kGotResponse, std::move(timing));
   }
-  void OnFallback(base::TimeTicks dispatch_event_time) override {
+  void OnFallback(
+      blink::mojom::ServiceWorkerFetchEventTimingPtr timing) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
                    blink::mojom::FetchAPIResponse::New(),
                    nullptr /* body_as_stream */,
-                   FetchEventResult::kShouldFallback, dispatch_event_time);
+                   FetchEventResult::kShouldFallback, std::move(timing));
   }
 
  private:
@@ -356,10 +358,10 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       FetchEventResult fetch_result,
-      base::TimeTicks dispatch_event_time) {
+      blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
     if (!version->FinishRequest(fetch_event_id.value(),
                                 fetch_result == FetchEventResult::kGotResponse,
-                                dispatch_event_time))
+                                timing->dispatch_event_time))
       NOTREACHED() << "Should only receive one reply per event";
     // |fetch_dispatcher| is null if the URLRequest was killed.
     if (!fetch_dispatcher)

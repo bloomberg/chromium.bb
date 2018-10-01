@@ -161,15 +161,18 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                              base::TimeTicks event_dispatch_time) override;
   void RespondToFetchEventWithNoResponse(
       int fetch_event_id,
-      base::TimeTicks event_dispatch_time) override;
+      base::TimeTicks event_dispatch_time,
+      base::TimeTicks respond_with_settled_time) override;
   void RespondToFetchEvent(int fetch_event_id,
                            const blink::WebServiceWorkerResponse& response,
-                           base::TimeTicks event_dispatch_time) override;
+                           base::TimeTicks event_dispatch_time,
+                           base::TimeTicks respond_with_settled_time) override;
   void RespondToFetchEventWithResponseStream(
       int fetch_event_id,
       const blink::WebServiceWorkerResponse& response,
       blink::WebServiceWorkerStreamHandle* web_body_as_stream,
-      base::TimeTicks event_dispatch_time) override;
+      base::TimeTicks event_dispatch_time,
+      base::TimeTicks respond_with_settled_time) override;
   void DidHandleFetchEvent(int fetch_event_id,
                            blink::mojom::ServiceWorkerEventStatus status,
                            base::TimeTicks event_dispatch_time) override;
