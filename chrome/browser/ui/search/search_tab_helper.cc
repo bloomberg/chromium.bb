@@ -19,11 +19,14 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/search/ntp_user_data_logger.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -220,6 +223,17 @@ void SearchTabHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
     if (search::IsInstantNTP(web_contents_))
       RecordNewTabLoadTime(web_contents_);
   }
+
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          features::kHappinessTrackingSurveysForDesktop)) {
+    HatsService* hats_service =
+        HatsServiceFactory::GetForProfile(profile(), true);
+    if (hats_service->ShouldShowSurvey()) {
+      // TODO launch bubble;
+    }
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 void SearchTabHelper::NavigationEntryCommitted(
