@@ -33,4 +33,3 @@ PASS ev.layerX is 550
 PASS ev.layerY is 550
 PASS ev.offsetX is 542
 PASS ev.offsetY is 542
-

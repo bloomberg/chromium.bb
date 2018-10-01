@@ -13,4 +13,3 @@ PASS internals.counterValue(document.getElementById('two')) is '2'
 PASS internals.counterValue(document.getElementById('three')) is '3'
 
 TEST COMPLETE
-

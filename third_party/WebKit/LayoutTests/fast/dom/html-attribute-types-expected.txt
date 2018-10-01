@@ -4,4 +4,3 @@ PASS successfullyParsed is true
 TEST COMPLETE
 PASS typeof img.border is 'string'
 PASS typeof pre.width is 'number'
-

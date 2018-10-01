@@ -30,4 +30,3 @@ PASS target.offsetHeight - old_height is deltaYExpected
 Resize textarea2in iframe iframe1 at offset (-6,-7)
 PASS target.offsetWidth - old_width is deltaXExpected
 PASS target.offsetHeight - old_height is deltaYExpected
-

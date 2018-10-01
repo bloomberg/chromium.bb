@@ -9,4 +9,3 @@ PASS successfullyParsed is true
 TEST COMPLETE
 PASS div.offsetWidth is 100
 PASS div.offsetWidth is 0
-

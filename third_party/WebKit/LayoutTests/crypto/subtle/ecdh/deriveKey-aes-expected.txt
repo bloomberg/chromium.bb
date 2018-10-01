@@ -4,11 +4,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Importing the private key...
-
 Importing the public key...
-
 Deriving an AES 128 bit key...
-
 PASS key.type is "secret"
 PASS typeof key.extractable is 'boolean'
 PASS key.extractable is true
@@ -17,7 +14,6 @@ PASS key.algorithm.length is 128
 PASS key.usages.join(',') is "encrypt"
 PASS: Derived Bytes should be [0117d54d84379d0fd385be068455a77a] and was
 Deriving an AES 256 bit key...
-
 PASS key.type is "secret"
 PASS typeof key.extractable is 'boolean'
 PASS key.extractable is true
@@ -26,7 +22,6 @@ PASS key.algorithm.length is 256
 PASS key.usages.join(',') is "encrypt,decrypt"
 PASS: Derived Bytes should be [0117d54d84379d0fd385be068455a77a5366ab534ff172ab0a121f37d180dccd] and was
 Deriving an AES 256 bit key...
-
 PASS key.type is "secret"
 PASS typeof key.extractable is 'boolean'
 PASS key.extractable is false

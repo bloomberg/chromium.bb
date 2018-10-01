@@ -7,4 +7,3 @@ PASS internals.counterValue(document.getElementById('div1')) is '0'
 PASS internals.counterValue(document.getElementById('div2')) is '0.0'
 
 TEST COMPLETE
-

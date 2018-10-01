@@ -70,7 +70,8 @@ var unexpectedErrorMessage; // set by onerror when expectingError is not true
             var span = document.createElement("div");
             // insert it first so XHTML knows the namespace;
             getOrCreateTestElement("console", "div").appendChild(span);
-            span.innerHTML = msg + '<br />';
+            // Some tests use debug('') to insert an empty line.
+            span.innerHTML = msg !== '' ? msg : '<br />';
         }
     };
 
@@ -766,7 +767,7 @@ function isSuccessfullyParsed()
     // FIXME: Remove this and only report unexpected syntax errors.
     successfullyParsed = !unexpectedErrorMessage;
     shouldBeTrue("successfullyParsed");
-    debug('<br /><span class="pass">TEST COMPLETE</span>');
+    debug('<br /><span class="pass">TEST COMPLETE<br /></span>');
 }
 
 var wasPostTestScriptParsed, wasFinishJSTestCalled, jsTestIsAsync;
