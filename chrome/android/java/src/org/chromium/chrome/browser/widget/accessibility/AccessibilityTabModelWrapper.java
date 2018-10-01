@@ -115,9 +115,16 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
             mModernStandardButtonIcon = new TintedImageView(getContext());
             mModernStandardButtonIcon.setImageResource(R.drawable.btn_normal_tabs);
             mModernStandardButtonIcon.setScaleY(-1.0f);
+            mModernStandardButtonIcon.setContentDescription(
+                    getResources().getString(R.string.accessibility_tab_switcher_standard_stack));
             mModernIncognitoButtonIcon = new TintedImageView(getContext());
             mModernIncognitoButtonIcon.setImageResource(R.drawable.btn_incognito_tabs);
             mModernIncognitoButtonIcon.setScaleY(-1.0f);
+            mModernIncognitoButtonIcon.setContentDescription(getResources().getString(
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                            ? R.string.accessibility_tab_switcher_private_stack
+                            : R.string.accessibility_tab_switcher_incognito_stack));
+
 
             setDividerDrawable(null);
             ((ListView) findViewById(R.id.list_view)).setDivider(null);
@@ -125,18 +132,10 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
             mModernLayout = findViewById(R.id.tab_wrapper);
             mModernStackButtonWrapper = findViewById(R.id.tab_layout);
             mModernStandardButton =
-                    mModernStackButtonWrapper.newTab()
-                            .setCustomView(mModernStandardButtonIcon)
-                            .setContentDescription(
-                                    R.string.accessibility_tab_switcher_standard_stack);
+                    mModernStackButtonWrapper.newTab().setCustomView(mModernStandardButtonIcon);
             mModernStackButtonWrapper.addTab(mModernStandardButton);
             mModernIncognitoButton =
-                    mModernStackButtonWrapper.newTab()
-                            .setCustomView(mModernIncognitoButtonIcon)
-                            .setContentDescription(
-                                    ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                                            ? R.string.accessibility_tab_switcher_private_stack
-                                            : R.string.accessibility_tab_switcher_incognito_stack);
+                    mModernStackButtonWrapper.newTab().setCustomView(mModernIncognitoButtonIcon);
             mModernStackButtonWrapper.addTab(mModernIncognitoButton);
             mModernStackButtonWrapper.addOnTabSelectedListener(
                     new TabLayout.OnTabSelectedListener() {
