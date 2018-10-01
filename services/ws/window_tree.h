@@ -135,6 +135,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   ClientWindowId ClientWindowIdForWindow(aura::Window* window) const;
 
+  // If |window| is a client root, the ClientRoot is returned. This does not
+  // recurse.
+  ClientRoot* GetClientRootForWindow(aura::Window* window);
+
  private:
   friend class ClientRoot;
   // TODO(sky): WindowTree should be refactored such that it is not

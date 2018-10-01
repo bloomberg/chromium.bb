@@ -29,9 +29,6 @@ ClientRoot::ClientRoot(WindowTree* window_tree,
   window_->AddObserver(this);
   if (window_->GetHost())
     window->GetHost()->AddObserver(this);
-  // TODO: wire up gfx::Insets() correctly below. See usage in
-  // aura::ClientSurfaceEmbedder for details. Insets here are used for
-  // guttering.
   client_surface_embedder_ = std::make_unique<aura::ClientSurfaceEmbedder>(
       window_, is_top_level, gfx::Insets());
   // Ensure there is a valid LocalSurfaceId (if necessary).
@@ -48,6 +45,13 @@ ClientRoot::~ClientRoot() {
       window_->env()->context_factory_private()->GetHostFrameSinkManager();
   host_frame_sink_manager->InvalidateFrameSinkId(
       server_window->frame_sink_id());
+}
+
+void ClientRoot::SetClientAreaInsets(const gfx::Insets& client_area_insets) {
+  if (!is_top_level_)
+    return;
+
+  client_surface_embedder_->SetClientAreaInsets(client_area_insets);
 }
 
 void ClientRoot::RegisterVizEmbeddingSupport() {

@@ -41,6 +41,9 @@ class AURA_EXPORT ClientSurfaceEmbedder {
   // updated.
   void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info);
 
+  void SetClientAreaInsets(const gfx::Insets& client_area_insets);
+  const gfx::Insets& client_area_insets() const { return client_area_insets_; }
+
   // Update the surface layer size and the right and bottom gutter layers for
   // the current window size.
   void UpdateSizeAndGutters();

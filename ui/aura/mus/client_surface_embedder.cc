@@ -50,6 +50,16 @@ void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(
   UpdateSizeAndGutters();
 }
 
+void ClientSurfaceEmbedder::SetClientAreaInsets(
+    const gfx::Insets& client_area_insets) {
+  if (client_area_insets_ == client_area_insets)
+    return;
+
+  client_area_insets_ = client_area_insets;
+  if (inject_gutter_)
+    UpdateSizeAndGutters();
+}
+
 void ClientSurfaceEmbedder::UpdateSizeAndGutters() {
   surface_layer_owner_->layer()->SetBounds(gfx::Rect(window_->bounds().size()));
   if (!inject_gutter_)

@@ -307,6 +307,11 @@ ClientWindowId WindowTree::ClientWindowIdForWindow(aura::Window* window) const {
                                           : iter->second.client_window_id;
 }
 
+ClientRoot* WindowTree::GetClientRootForWindow(aura::Window* window) {
+  auto iter = FindClientRootWithRoot(window);
+  return iter == client_roots_.end() ? nullptr : iter->get();
+}
+
 ClientRoot* WindowTree::CreateClientRoot(aura::Window* window,
                                          bool is_top_level) {
   DCHECK(window);

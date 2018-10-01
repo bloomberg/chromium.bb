@@ -119,6 +119,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "client_root_test_helper.cc",
+    "client_root_test_helper.h",
     "event_test_utils.cc",
     "event_test_utils.h",
     "server_window_test_helper.cc",
