@@ -59,10 +59,14 @@ TEST_F(PreviewsUserDataTest, DeepCopy) {
   EXPECT_EQ(0, data->data_savings_inflation_percent());
   EXPECT_FALSE(data->cache_control_no_transform_directive());
   EXPECT_EQ(previews::PreviewsType::NONE, data->committed_previews_type());
+  EXPECT_FALSE(data->black_listed_for_lite_page());
+  EXPECT_FALSE(data->offline_preview_used());
 
   data->SetDataSavingsInflationPercent(123);
   data->SetCacheControlNoTransformDirective();
   data->SetCommittedPreviewsType(previews::PreviewsType::NOSCRIPT);
+  data->set_offline_preview_used(true);
+  data->set_black_listed_for_lite_page(true);
 
   std::unique_ptr<PreviewsUserData> deep_copy = data->DeepCopy();
   EXPECT_EQ(id, deep_copy->page_id());
@@ -70,6 +74,8 @@ TEST_F(PreviewsUserDataTest, DeepCopy) {
   EXPECT_TRUE(deep_copy->cache_control_no_transform_directive());
   EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
             deep_copy->committed_previews_type());
+  EXPECT_TRUE(data->black_listed_for_lite_page());
+  EXPECT_TRUE(data->offline_preview_used());
 }
 
 }  // namespace

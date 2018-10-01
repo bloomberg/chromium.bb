@@ -92,6 +92,8 @@ class PreviewsUserData : public base::SupportsUserData::Data {
   bool offline_preview_used() { return offline_preview_used_; }
 
  private:
+  PreviewsUserData(const PreviewsUserData& previews_user_data);
+
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
   // A previews data savings inflation percent for the navigation if not 0.
@@ -109,7 +111,7 @@ class PreviewsUserData : public base::SupportsUserData::Data {
   // The committed previews type, if any.
   previews::PreviewsType committed_previews_type_ = PreviewsType::NONE;
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsUserData);
+  DISALLOW_ASSIGN(PreviewsUserData);
 };
 
 }  // namespace previews
