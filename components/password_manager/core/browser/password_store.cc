@@ -151,22 +151,22 @@ void PasswordStore::SetAffiliatedMatchHelper(
 }
 
 void PasswordStore::AddLogin(const PasswordForm& form) {
-  ScheduleTask(base::Bind(&PasswordStore::AddLoginInternal, this, form));
+  ScheduleTask(base::BindOnce(&PasswordStore::AddLoginInternal, this, form));
 }
 
 void PasswordStore::UpdateLogin(const PasswordForm& form) {
-  ScheduleTask(base::Bind(&PasswordStore::UpdateLoginInternal, this, form));
+  ScheduleTask(base::BindOnce(&PasswordStore::UpdateLoginInternal, this, form));
 }
 
 void PasswordStore::UpdateLoginWithPrimaryKey(
     const autofill::PasswordForm& new_form,
     const autofill::PasswordForm& old_primary_key) {
-  ScheduleTask(base::Bind(&PasswordStore::UpdateLoginWithPrimaryKeyInternal,
-                          this, new_form, old_primary_key));
+  ScheduleTask(base::BindOnce(&PasswordStore::UpdateLoginWithPrimaryKeyInternal,
+                              this, new_form, old_primary_key));
 }
 
 void PasswordStore::RemoveLogin(const PasswordForm& form) {
-  ScheduleTask(base::Bind(&PasswordStore::RemoveLoginInternal, this, form));
+  ScheduleTask(base::BindOnce(&PasswordStore::RemoveLoginInternal, this, form));
 }
 
 void PasswordStore::RemoveLoginsByURLAndTime(
@@ -174,23 +174,24 @@ void PasswordStore::RemoveLoginsByURLAndTime(
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
-  ScheduleTask(base::Bind(&PasswordStore::RemoveLoginsByURLAndTimeInternal,
-                          this, url_filter, delete_begin, delete_end,
-                          completion));
+  ScheduleTask(base::BindOnce(&PasswordStore::RemoveLoginsByURLAndTimeInternal,
+                              this, url_filter, delete_begin, delete_end,
+                              completion));
 }
 
 void PasswordStore::RemoveLoginsCreatedBetween(
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
-  ScheduleTask(base::Bind(&PasswordStore::RemoveLoginsCreatedBetweenInternal,
-                          this, delete_begin, delete_end, completion));
+  ScheduleTask(
+      base::BindOnce(&PasswordStore::RemoveLoginsCreatedBetweenInternal, this,
+                     delete_begin, delete_end, completion));
 }
 
 void PasswordStore::RemoveLoginsSyncedBetween(base::Time delete_begin,
                                               base::Time delete_end) {
-  ScheduleTask(base::Bind(&PasswordStore::RemoveLoginsSyncedBetweenInternal,
-                          this, delete_begin, delete_end));
+  ScheduleTask(base::BindOnce(&PasswordStore::RemoveLoginsSyncedBetweenInternal,
+                              this, delete_begin, delete_end));
 }
 
 void PasswordStore::RemoveStatisticsByOriginAndTime(
@@ -198,17 +199,17 @@ void PasswordStore::RemoveStatisticsByOriginAndTime(
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
-  ScheduleTask(
-      base::Bind(&PasswordStore::RemoveStatisticsByOriginAndTimeInternal, this,
-                 origin_filter, delete_begin, delete_end, completion));
+  ScheduleTask(base::BindOnce(
+      &PasswordStore::RemoveStatisticsByOriginAndTimeInternal, this,
+      origin_filter, delete_begin, delete_end, completion));
 }
 
 void PasswordStore::DisableAutoSignInForOrigins(
     const base::Callback<bool(const GURL&)>& origin_filter,
     const base::Closure& completion) {
-  ScheduleTask(
-      base::Bind(&PasswordStore::DisableAutoSignInForOriginsInternal, this,
-                 base::Callback<bool(const GURL&)>(origin_filter), completion));
+  ScheduleTask(base::BindOnce(
+      &PasswordStore::DisableAutoSignInForOriginsInternal, this,
+      base::RepeatingCallback<bool(const GURL&)>(origin_filter), completion));
 }
 
 void PasswordStore::GetLogins(const FormDigest& form,
@@ -242,8 +243,8 @@ void PasswordStore::GetLogins(const FormDigest& form,
         form, base::Bind(&PasswordStore::ScheduleGetLoginsWithAffiliations,
                          this, form, base::Passed(&request)));
   } else {
-    ScheduleTask(base::Bind(&PasswordStore::GetLoginsImpl, this, form,
-                            base::Passed(&request)));
+    ScheduleTask(base::BindOnce(&PasswordStore::GetLoginsImpl, this, form,
+                                base::Passed(&request)));
   }
 }
 
@@ -251,8 +252,9 @@ void PasswordStore::GetLoginsForSameOrganizationName(
     const std::string& signon_realm,
     PasswordStoreConsumer* consumer) {
   std::unique_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
-  ScheduleTask(base::Bind(&PasswordStore::GetLoginsForSameOrganizationNameImpl,
-                          this, signon_realm, base::Passed(&request)));
+  ScheduleTask(
+      base::BindOnce(&PasswordStore::GetLoginsForSameOrganizationNameImpl, this,
+                     signon_realm, base::Passed(&request)));
 }
 
 void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
@@ -302,25 +304,25 @@ void PasswordStore::ReportMetrics(const std::string& sync_username,
 }
 
 void PasswordStore::AddSiteStats(const InteractionsStats& stats) {
-  ScheduleTask(base::Bind(&PasswordStore::AddSiteStatsImpl, this, stats));
+  ScheduleTask(base::BindOnce(&PasswordStore::AddSiteStatsImpl, this, stats));
 }
 
 void PasswordStore::RemoveSiteStats(const GURL& origin_domain) {
   ScheduleTask(
-      base::Bind(&PasswordStore::RemoveSiteStatsImpl, this, origin_domain));
+      base::BindOnce(&PasswordStore::RemoveSiteStatsImpl, this, origin_domain));
 }
 
 void PasswordStore::GetAllSiteStats(PasswordStoreConsumer* consumer) {
   std::unique_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
-  ScheduleTask(base::Bind(&PasswordStore::NotifyAllSiteStats, this,
-                          base::Passed(&request)));
+  ScheduleTask(base::BindOnce(&PasswordStore::NotifyAllSiteStats, this,
+                              base::Passed(&request)));
 }
 
 void PasswordStore::GetSiteStats(const GURL& origin_domain,
                                  PasswordStoreConsumer* consumer) {
   std::unique_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
-  ScheduleTask(base::Bind(&PasswordStore::NotifySiteStats, this, origin_domain,
-                          base::Passed(&request)));
+  ScheduleTask(base::BindOnce(&PasswordStore::NotifySiteStats, this,
+                              origin_domain, base::Passed(&request)));
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
@@ -331,9 +333,9 @@ void PasswordStore::RemoveObserver(Observer* observer) {
   observers_->RemoveObserver(observer);
 }
 
-bool PasswordStore::ScheduleTask(const base::Closure& task) {
+bool PasswordStore::ScheduleTask(base::OnceClosure task) {
   if (background_task_runner_)
-    return background_task_runner_->PostTask(FROM_HERE, task);
+    return background_task_runner_->PostTask(FROM_HERE, std::move(task));
   return false;
 }
 

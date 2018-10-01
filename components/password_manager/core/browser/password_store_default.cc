@@ -25,7 +25,7 @@ PasswordStoreDefault::~PasswordStoreDefault() {
 
 void PasswordStoreDefault::ShutdownOnUIThread() {
   PasswordStore::ShutdownOnUIThread();
-  ScheduleTask(base::Bind(&PasswordStoreDefault::ResetLoginDB, this));
+  ScheduleTask(base::BindOnce(&PasswordStoreDefault::ResetLoginDB, this));
 }
 
 bool PasswordStoreDefault::InitOnBackgroundSequence(

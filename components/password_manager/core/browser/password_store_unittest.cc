@@ -718,15 +718,15 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
       }
       if (test_remove_and_add_login) {
         store->ScheduleTask(
-            base::Bind(IgnoreResult(&PasswordStore::RemoveLoginSync), store,
-                       *all_credentials[0]));
+            base::BindOnce(IgnoreResult(&PasswordStore::RemoveLoginSync), store,
+                           *all_credentials[0]));
         store->ScheduleTask(
-            base::Bind(IgnoreResult(&PasswordStore::AddLoginSync), store,
-                       *expected_credentials_after_update[0]));
+            base::BindOnce(IgnoreResult(&PasswordStore::AddLoginSync), store,
+                           *expected_credentials_after_update[0]));
       } else {
         store->ScheduleTask(
-            base::Bind(IgnoreResult(&PasswordStore::UpdateLoginSync), store,
-                       *expected_credentials_after_update[0]));
+            base::BindOnce(IgnoreResult(&PasswordStore::UpdateLoginSync), store,
+                           *expected_credentials_after_update[0]));
       }
       WaitForPasswordStore();
       store->RemoveObserver(&mock_observer);
