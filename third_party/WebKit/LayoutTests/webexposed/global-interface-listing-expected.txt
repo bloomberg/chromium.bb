@@ -1907,7 +1907,6 @@ interface Element : Node
     getter onfullscreenerror
     getter onpaste
     getter onsearch
-    getter onselectstart
     getter onwebkitfullscreenchange
     getter onwebkitfullscreenerror
     getter outerHTML
@@ -2030,7 +2029,6 @@ interface Element : Node
     setter onfullscreenerror
     setter onpaste
     setter onsearch
-    setter onselectstart
     setter onwebkitfullscreenchange
     setter onwebkitfullscreenerror
     setter outerHTML
@@ -2626,6 +2624,8 @@ interface HTMLElement : Element
     getter onseeked
     getter onseeking
     getter onselect
+    getter onselectionchange
+    getter onselectstart
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -2724,6 +2724,8 @@ interface HTMLElement : Element
     setter onseeked
     setter onseeking
     setter onselect
+    setter onselectionchange
+    setter onselectstart
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -5984,6 +5986,8 @@ interface SVGElement : Element
     getter onseeked
     getter onseeking
     getter onselect
+    getter onselectionchange
+    getter onselectstart
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -6069,6 +6073,8 @@ interface SVGElement : Element
     setter onseeked
     setter onseeking
     setter onselect
+    setter onselectionchange
+    setter onselectstart
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -10581,6 +10587,8 @@ interface webkitURL
     getter onseeked
     getter onseeking
     getter onselect
+    getter onselectionchange
+    getter onselectstart
     getter onstalled
     getter onstorage
     getter onsubmit
@@ -10769,6 +10777,8 @@ interface webkitURL
     setter onseeked
     setter onseeking
     setter onselect
+    setter onselectionchange
+    setter onselectstart
     setter onstalled
     setter onstorage
     setter onsubmit

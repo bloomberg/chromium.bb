@@ -216,8 +216,6 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [RuntimeEnabled=PageLifecycle] attribute EventHandler onresume;
     attribute EventHandler onsearch;
     [RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute EventHandler onsecuritypolicyviolation;
-    attribute EventHandler onselectionchange;
-    attribute EventHandler onselectstart;
     attribute EventHandler onvisibilitychange;
 };
 

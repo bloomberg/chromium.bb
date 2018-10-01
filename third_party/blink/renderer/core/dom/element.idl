@@ -145,7 +145,6 @@ interface Element : Node {
     attribute EventHandler oncut;
     attribute EventHandler onpaste;
     attribute EventHandler onsearch;
-    attribute EventHandler onselectstart;
 };
 
 Element implements ParentNode;
