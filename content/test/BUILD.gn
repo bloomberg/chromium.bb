@@ -861,7 +861,6 @@ test("content_browsertests") {
     "../browser/site_per_process_mac_browsertest.mm",
     "../browser/snapshot_browsertest.cc",
     "../browser/storage_partition_impl_browsertest.cc",
-    "../browser/top_document_isolation_browsertest.cc",
     "../browser/tracing/background_tracing_manager_browsertest.cc",
     "../browser/tracing/memory_instrumentation_browsertest.cc",
     "../browser/tracing/memory_tracing_browsertest.cc",

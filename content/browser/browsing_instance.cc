@@ -44,32 +44,9 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURL(
   return instance;
 }
 
-scoped_refptr<SiteInstanceImpl>
-BrowsingInstance::GetDefaultSubframeSiteInstance() {
-  // This should only be used for --top-document-isolation mode.
-  CHECK(SiteIsolationPolicy::IsTopDocumentIsolationEnabled());
-  if (!default_subframe_site_instance_) {
-    SiteInstanceImpl* instance = new SiteInstanceImpl(this);
-    instance->set_process_reuse_policy(
-        SiteInstanceImpl::ProcessReusePolicy::USE_DEFAULT_SUBFRAME_PROCESS);
-
-    // TODO(nick): This is a hack for now.
-    instance->SetSite(GURL("http://web-subframes.invalid"));
-
-    default_subframe_site_instance_ = instance;
-  }
-
-  return base::WrapRefCounted(default_subframe_site_instance_);
-}
-
 void BrowsingInstance::RegisterSiteInstance(SiteInstanceImpl* site_instance) {
   DCHECK(site_instance->browsing_instance_.get() == this);
   DCHECK(site_instance->HasSite());
-
-  // Don't register the default subframe SiteInstance, to prevent it from being
-  // returned by GetSiteInstanceForURL.
-  if (default_subframe_site_instance_ == site_instance)
-    return;
 
   std::string site = site_instance->GetSiteURL().possibly_invalid_spec();
 
@@ -98,8 +75,6 @@ void BrowsingInstance::UnregisterSiteInstance(SiteInstanceImpl* site_instance) {
     // Matches, so erase it.
     site_instance_map_.erase(i);
   }
-  if (default_subframe_site_instance_ == site_instance)
-    default_subframe_site_instance_ = nullptr;
 }
 
 BrowsingInstance::~BrowsingInstance() {

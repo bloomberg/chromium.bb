@@ -2606,8 +2606,6 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
     std::string site_isolation_mode;
     if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
       site_isolation_mode += "spp ";
-    if (SiteIsolationPolicy::IsTopDocumentIsolationEnabled())
-      site_isolation_mode += "tdi ";
     if (SiteIsolationPolicy::AreIsolatedOriginsEnabled())
       site_isolation_mode += "io ";
     if (site_isolation_mode.empty())
@@ -3959,12 +3957,6 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
       render_process_host = GetSoleProcessHostForSite(
           browser_context, site_url, site_instance->lock_url());
       break;
-    case SiteInstanceImpl::ProcessReusePolicy::USE_DEFAULT_SUBFRAME_PROCESS:
-      DCHECK(SiteIsolationPolicy::IsTopDocumentIsolationEnabled());
-      DCHECK(!site_instance->is_for_service_worker());
-      render_process_host = GetDefaultSubframeProcessHost(
-          browser_context, site_instance, is_for_guests_only);
-      break;
     case SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE:
       render_process_host =
           FindReusableProcessHostForSiteInstance(site_instance);
@@ -4496,23 +4488,6 @@ void RenderProcessHostImpl::OnCloseACK(int closed_widget_route_id) {
 
 void RenderProcessHostImpl::OnGpuSwitched() {
   RecomputeAndUpdateWebKitPreferences();
-}
-
-// static
-RenderProcessHost* RenderProcessHostImpl::GetDefaultSubframeProcessHost(
-    BrowserContext* browser_context,
-    SiteInstanceImpl* site_instance,
-    bool is_for_guests_only) {
-  DefaultSubframeProcessHostHolder* holder =
-      static_cast<DefaultSubframeProcessHostHolder*>(
-          browser_context->GetUserData(&kDefaultSubframeProcessHostHolderKey));
-  if (!holder) {
-    holder = new DefaultSubframeProcessHostHolder(browser_context);
-    browser_context->SetUserData(kDefaultSubframeProcessHostHolderKey,
-                                 base::WrapUnique(holder));
-  }
-
-  return holder->GetProcessHost(site_instance, is_for_guests_only);
 }
 
 // static

@@ -160,13 +160,6 @@ bool ContentBrowserClient::IsURLAcceptableForWebUI(
   return false;
 }
 
-bool ContentBrowserClient::
-    ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
-        const GURL& url,
-        SiteInstance* parent_site_instance) {
-  return false;
-}
-
 bool ContentBrowserClient::ShouldStayInParentProcessForNTP(
     const GURL& url,
     SiteInstance* parent_site_instance) {

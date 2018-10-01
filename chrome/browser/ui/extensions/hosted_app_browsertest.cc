@@ -1528,8 +1528,7 @@ constexpr const char kHostedAppProcessModelManifest[] =
           } )";
 
 // This set of tests verifies the hosted app process model behavior in various
-// isolation modes. They can be run by default, with --site-per-process, or
-// with --top-document-isolation. In each mode, they contain an isolated origin.
+// isolation modes.
 //
 // Relevant frames in the tests:
 // - |app| - app.site.com/frame_tree/cross_origin_but_same_site_frames.html
@@ -1566,13 +1565,6 @@ class HostedAppProcessModelTest : public HostedAppTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->StartAcceptingConnections();
 
-    // TODO(alexmos): This should also be true for TDI, if
-    // base::FeatureList::IsEnabled(features::kTopDocumentIsolation) is true.
-    // However, we can't do that yet, because
-    // ChromeContentBrowserClientExtensionsPart::
-    // ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation() returns
-    // true for all hosted apps and hence forces even cross-site subframes to
-    // be kept in the app process.
     should_swap_for_cross_site_ = content::AreAllSitesIsolatedForTesting();
 
     process_map_ = extensions::ProcessMap::Get(browser()->profile());

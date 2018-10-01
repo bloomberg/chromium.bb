@@ -426,12 +426,6 @@ const base::Feature kSpareRendererForSitePerProcess{
 const base::Feature kTimerThrottlingForHiddenFrames{
     "TimerThrottlingForHiddenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Groups all out-of-process iframes to a different process from the process of
-// the top document. This is a performance isolation mode.  Launch bug:
-// https://crbug.com/595987.
-const base::Feature kTopDocumentIsolation{"top-document-isolation",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables async touchpad pinch zoom events. We check the ACK of the first
 // synthetic wheel event in a pinch sequence, then send the rest of the
 // synthetic wheel events of the pinch sequence as non-blocking if the first

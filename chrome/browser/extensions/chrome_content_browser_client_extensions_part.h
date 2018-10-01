@@ -84,10 +84,6 @@ class ChromeContentBrowserClientExtensionsPart
   static std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy(
       content::BrowserContext* browser_context);
 
-  static bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
-      const GURL& url,
-      content::SiteInstance* parent_site_instance);
-
   static void LogInitiatorSchemeBypassingDocumentBlocking(
       const url::Origin& initiator_origin,
       int render_process_id,

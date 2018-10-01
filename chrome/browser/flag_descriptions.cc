@@ -1859,12 +1859,6 @@ const char kTLS13VariantDeprecated[] = "Disabled (Deprecated Setting)";
 const char kTLS13VariantDraft23[] = "Enabled (Draft 23)";
 const char kTLS13VariantFinal[] = "Enabled (Final)";
 
-const char kTopDocumentIsolationName[] = "Top document isolation";
-const char kTopDocumentIsolationDescription[] =
-    "Highly experimental performance mode where cross-site iframes are kept in "
-    "a separate process from the top document. In this mode, iframes from "
-    "different third-party sites will be allowed to share a process.";
-
 const char kTopSitesFromSiteEngagementName[] = "Top Sites from Site Engagement";
 const char kTopSitesFromSiteEngagementDescription[] =
     "Enable Top Sites on the New Tab Page to be sourced and sorted using site "

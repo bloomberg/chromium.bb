@@ -872,55 +872,6 @@ TEST_F(SiteInstanceTest, IsSameWebsiteForNestedURLs) {
   EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, https_bar_url, fs_bar_url));
 }
 
-TEST_F(SiteInstanceTest, DefaultSubframeSiteInstance) {
-  if (AreAllSitesIsolatedForTesting())
-    return;  // --top-document-isolation is not possible.
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kTopDocumentIsolation);
-
-  std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
-  scoped_refptr<SiteInstanceImpl> main_instance =
-      SiteInstanceImpl::Create(browser_context.get());
-  scoped_refptr<SiteInstanceImpl> subframe_instance =
-      main_instance->GetDefaultSubframeSiteInstance();
-  int subframe_instance_id = subframe_instance->GetId();
-
-  EXPECT_NE(main_instance, subframe_instance);
-  EXPECT_EQ(subframe_instance, main_instance->GetDefaultSubframeSiteInstance());
-  EXPECT_FALSE(main_instance->IsDefaultSubframeSiteInstance());
-  EXPECT_TRUE(subframe_instance->IsDefaultSubframeSiteInstance());
-
-  EXPECT_EQ(0, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  // Free the subframe instance.
-  subframe_instance = nullptr;
-  EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  // Calling GetDefaultSubframeSiteInstance again should return a new
-  // SiteInstance with a different ID from the original.
-  subframe_instance = main_instance->GetDefaultSubframeSiteInstance();
-  EXPECT_NE(subframe_instance->GetId(), subframe_instance_id);
-  EXPECT_FALSE(main_instance->IsDefaultSubframeSiteInstance());
-  EXPECT_TRUE(subframe_instance->IsDefaultSubframeSiteInstance());
-  EXPECT_EQ(subframe_instance->GetDefaultSubframeSiteInstance(),
-            subframe_instance);
-  EXPECT_EQ(0, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  // Free the main instance.
-  main_instance = nullptr;
-  EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  // Free the subframe instance, which should free the browsing instance.
-  subframe_instance = nullptr;
-  EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(1, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-}
-
 TEST_F(SiteInstanceTest, IsolatedOrigins) {
   GURL foo_url("http://www.foo.com");
   GURL isolated_foo_url("http://isolated.foo.com");

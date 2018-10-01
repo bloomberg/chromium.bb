@@ -273,21 +273,11 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
       origin_lock);
 }
 
-scoped_refptr<SiteInstanceImpl>
-SiteInstanceImpl::GetDefaultSubframeSiteInstance() {
-  return browsing_instance_->GetDefaultSubframeSiteInstance();
-}
-
 bool SiteInstanceImpl::RequiresDedicatedProcess() {
   if (!has_site_)
     return false;
 
   return DoesSiteRequireDedicatedProcess(GetBrowserContext(), site_);
-}
-
-bool SiteInstanceImpl::IsDefaultSubframeSiteInstance() const {
-  return process_reuse_policy_ ==
-         ProcessReusePolicy::USE_DEFAULT_SUBFRAME_PROCESS;
 }
 
 void SiteInstanceImpl::IncrementActiveFrameCount() {

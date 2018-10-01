@@ -807,19 +807,6 @@ ChromeContentBrowserClientExtensionsPart::GetVpnServiceProxy(
 }
 
 // static
-bool ChromeContentBrowserClientExtensionsPart::
-    ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
-        const GURL& subframe_url,
-        content::SiteInstance* parent_site_instance) {
-  const Extension* extension =
-      ExtensionRegistry::Get(parent_site_instance->GetBrowserContext())
-          ->enabled_extensions()
-          .GetExtensionOrAppByURL(parent_site_instance->GetSiteURL());
-
-  return extension && extension->is_hosted_app();
-}
-
-// static
 void ChromeContentBrowserClientExtensionsPart::
     LogInitiatorSchemeBypassingDocumentBlocking(
         const url::Origin& initiator_origin,

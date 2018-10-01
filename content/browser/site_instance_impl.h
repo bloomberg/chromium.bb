@@ -64,7 +64,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   bool IsRelatedSiteInstance(const SiteInstance* instance) override;
   size_t GetRelatedActiveContentsCount() override;
   bool RequiresDedicatedProcess() override;
-  bool IsDefaultSubframeSiteInstance() const override;
 
   // The policy to apply when selecting a RenderProcessHost for the
   // SiteInstance. If no suitable RenderProcessHost for the SiteInstance exists
@@ -78,9 +77,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
     // In this mode, all instances of the site will be hosted in the same
     // RenderProcessHost.
     PROCESS_PER_SITE,
-
-    // In this mode, subframes will be hosted in a designated RenderProcessHost.
-    USE_DEFAULT_SUBFRAME_PROCESS,
 
     // In this mode, the site will be rendered in a RenderProcessHost that is
     // already in use for the site, either for a pending navigation or a
@@ -145,12 +141,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // This is computed similarly to the site URL (see GetSiteForURL), but
   // without resolving effective URLs.
   static GURL DetermineProcessLockURL(BrowserContext* context, const GURL& url);
-
-  // Returns the SiteInstance, related to this one, that should be used
-  // for subframes when an oopif is required, but a dedicated process is not.
-  // This SiteInstance will be created if it doesn't already exist. There is
-  // at most one of these per BrowsingInstance.
-  scoped_refptr<SiteInstanceImpl> GetDefaultSubframeSiteInstance();
 
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
@@ -258,11 +248,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Used to restrict a process' origin access rights.
   void LockToOriginIfNeeded();
-
-  // This gets the render process to use for default subframe site instances.
-  RenderProcessHost* GetDefaultSubframeProcessHost(
-      BrowserContext* browser_context,
-      bool is_for_guests_only);
 
   // An object used to construct RenderProcessHosts.
   static const RenderProcessHostFactory* g_render_process_host_factory_;

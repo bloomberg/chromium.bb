@@ -146,9 +146,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                 ui::PageTransition* transition,
                                 bool* is_renderer_initiated,
                                 content::Referrer* referrer) override;
-  bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
-      const GURL& url,
-      content::SiteInstance* parent_site_instance) override;
   bool ShouldStayInParentProcessForNTP(
       const GURL& url,
       content::SiteInstance* parent_site_instance) override;

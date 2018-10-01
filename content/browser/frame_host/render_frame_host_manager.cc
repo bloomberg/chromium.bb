@@ -1353,29 +1353,10 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
       return SiteInstanceDescriptor(opener_frame->GetSiteInstance());
   }
 
-  if (!frame_tree_node_->IsMainFrame() &&
-      SiteIsolationPolicy::IsTopDocumentIsolationEnabled() &&
-      !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(browser_context,
-                                                         dest_url)) {
-    if (GetContentClient()
-            ->browser()
-            ->ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
-                dest_url, current_instance)) {
-      return SiteInstanceDescriptor(render_frame_host_->GetSiteInstance());
-    }
-
-    // This is a cross-site subframe of a non-isolated origin, so place this
-    // frame in the default subframe site instance.
-    return SiteInstanceDescriptor(
-        browser_context, dest_url,
-        SiteInstanceRelation::RELATED_DEFAULT_SUBFRAME);
-  }
-
   // Keep subframes in the parent's SiteInstance unless a dedicated process is
   // required for either the parent or the subframe's destination URL.  This
   // isn't a strict invariant but rather a heuristic to avoid unnecessary
-  // OOPIFs; see https://crbug.com/711006.  Note that this shouldn't apply to
-  // TopDocumentIsolation, so do this after TDI checks above.
+  // OOPIFs; see https://crbug.com/711006.
   //
   // TODO(alexmos): Remove this check after fixing https://crbug.com/787576.
   if (!frame_tree_node_->IsMainFrame()) {
@@ -1476,13 +1457,6 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
     return true;
   }
 
-  if (SiteIsolationPolicy::IsTopDocumentIsolationEnabled() &&
-      (!frame_tree_node_->IsMainFrame() ||
-       rfh->GetSiteInstance()->IsDefaultSubframeSiteInstance())) {
-    // Always attempt a transfer in these cases.
-    return true;
-  }
-
   // If the destination URL is not same-site with current RenderFrameHost and
   // doesn't require a dedicated process (see above), but it is same-site with
   // the opener RenderFrameHost, attempt a transfer so that the destination URL
@@ -1514,9 +1488,6 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
   // GetRelatedSiteInstance will return it.
   if (descriptor.relation == SiteInstanceRelation::RELATED)
     return current_instance->GetRelatedSiteInstance(descriptor.dest_url);
-
-  if (descriptor.relation == SiteInstanceRelation::RELATED_DEFAULT_SUBFRAME)
-    return current_instance->GetDefaultSubframeSiteInstance();
 
   // At this point we know an unrelated site instance must be returned. First
   // check if the candidate matches.
