@@ -36,6 +36,14 @@ public class ExploreSitesBridge {
         nativeGetIcon(profile, siteID, callback);
     }
 
+    public static void getCategoryImage(
+            Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback) {
+        // TODO(dewittj): Remove this when image decoding works correctly.
+        Bitmap image = Bitmap.createBitmap(pixelSize, pixelSize, Bitmap.Config.ARGB_8888);
+        image.eraseColor(android.graphics.Color.GREEN);
+        callback.onResult(image);
+    }
+
     /**
      * Causes a network request for updating the catalog.
      */

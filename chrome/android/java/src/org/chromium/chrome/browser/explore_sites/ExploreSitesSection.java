@@ -5,12 +5,14 @@
 package org.chromium.chrome.browser.explore_sites;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesCategory.CategoryType;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
@@ -20,7 +22,9 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Describes a portion of UI responsible for rendering a group of categories.
@@ -28,11 +32,6 @@ import java.util.List;
  */
 public class ExploreSitesSection {
     private static final int MAX_CATEGORIES = 3;
-
-    /** These should be kept in sync with //chrome/browser/android/explore_sites/catalog.proto */
-    private static final int SPORT = 3;
-    private static final int SHOPPING = 5;
-    private static final int FOOD = 15;
 
     @TileStyle
     private int mStyle;
@@ -52,7 +51,7 @@ public class ExploreSitesSection {
     }
 
     private void initialize() {
-        ExploreSitesBridge.getEspCatalog(mProfile, this ::initializeCategoryTiles);
+        ExploreSitesBridge.getEspCatalog(mProfile, this::gotEspCatalog);
     }
 
     private Drawable getVectorDrawable(int resource) {
@@ -72,27 +71,28 @@ public class ExploreSitesSection {
         List<ExploreSitesCategory> categoryList = new ArrayList<>();
 
         // Sport category.
-        ExploreSitesCategory category = new ExploreSitesCategory(
-                SPORT, getContext().getString(R.string.explore_sites_default_category_sports));
+        ExploreSitesCategory category =
+                new ExploreSitesCategory(-1 /* category_id */, CategoryType.SPORT,
+                        getContext().getString(R.string.explore_sites_default_category_sports));
         category.setDrawable(getVectorDrawable(R.drawable.ic_directions_run_blue_24dp));
         categoryList.add(category);
 
         // Shopping category.
-        category = new ExploreSitesCategory(
-                SHOPPING, getContext().getString(R.string.explore_sites_default_category_shopping));
+        category = new ExploreSitesCategory(-1 /* category_id */, CategoryType.SHOPPING,
+                getContext().getString(R.string.explore_sites_default_category_shopping));
         category.setDrawable(getVectorDrawable(R.drawable.ic_shopping_basket_blue_24dp));
         categoryList.add(category);
 
         // Food category.
-        category = new ExploreSitesCategory(
-                FOOD, getContext().getString(R.string.explore_sites_default_category_cooking));
+        category = new ExploreSitesCategory(-1 /* category_id */, CategoryType.FOOD,
+                getContext().getString(R.string.explore_sites_default_category_cooking));
         category.setDrawable(getVectorDrawable(R.drawable.ic_restaurant_menu_blue_24dp));
         categoryList.add(category);
         return categoryList;
     }
 
     private ExploreSitesCategory createMoreTileCategory() {
-        ExploreSitesCategory category = new ExploreSitesCategory(
+        ExploreSitesCategory category = new ExploreSitesCategory(-1 /* category_id */,
                 ExploreSitesCategory.MORE_BUTTON_ID, getContext().getString(R.string.more));
         category.setDrawable(getVectorDrawable(R.drawable.ic_arrow_forward_blue_24dp));
         return category;
@@ -114,9 +114,55 @@ public class ExploreSitesSection {
         tileView.setOnClickListener((View v) -> onClicked(category, v));
     }
 
+    /**
+     * Checks the result, if it indicates that we don't have a valid catalog, request one from the
+     * network.  If the network request fails, just continue but otherwise retry getting the catalog
+     * from the ExploreSitesBridge.
+     */
+    private void gotEspCatalog(List<ExploreSitesCategory> categoryList) {
+        if (categoryList == null || categoryList.size() == 0) {
+            ExploreSitesBridge.updateCatalogFromNetwork(
+                    mProfile, (Boolean success) -> { updateCategoryIcons(); });
+        }
+        // Initialize with defaults right away.
+        initializeCategoryTiles(categoryList);
+    }
+
+    private void updateCategoryIcons() {
+        Map<Integer, ExploreSitesCategoryTileView> viewTypes = new HashMap<>();
+        for (int i = 0; i < mExploreSection.getChildCount(); i++) {
+            ExploreSitesCategoryTileView v =
+                    (ExploreSitesCategoryTileView) mExploreSection.getChildAt(i);
+            ExploreSitesCategory category = v.getCategory();
+            if (category == null || category.getType() == ExploreSitesCategory.MORE_BUTTON_ID)
+                continue;
+            viewTypes.put(category.getType(), v);
+        }
+
+        ExploreSitesBridge.getEspCatalog(mProfile, (List<ExploreSitesCategory> categoryList) -> {
+            for (ExploreSitesCategory category : categoryList) {
+                ExploreSitesCategoryTileView v = viewTypes.get(category.getType());
+                if (v == null) {
+                    continue;
+                }
+                ExploreSitesBridge.getCategoryImage(mProfile, category.getId(),
+                        v.getContext().getResources().getDimensionPixelSize(
+                                R.dimen.tile_view_icon_size),
+                        (Bitmap image) -> {
+                            if (image != null) {
+                                category.setIcon(mExploreSection.getContext(), image);
+                                v.renderIcon(category);
+                            }
+                        });
+            }
+        });
+    }
+
     private void initializeCategoryTiles(List<ExploreSitesCategory> categoryList) {
+        boolean needIcons = true;
         if (categoryList == null || categoryList.size() == 0) {
             categoryList = createDefaultCategoryTiles();
+            needIcons = false; // Icons are already prepared in the default tiles.
         }
 
         int tileCount = 0;
@@ -126,6 +172,9 @@ public class ExploreSitesSection {
             createTileView(category);
         }
         createTileView(createMoreTileCategory());
+        if (needIcons) {
+            updateCategoryIcons();
+        }
     }
 
     private void onClicked(ExploreSitesCategory category, View v) {
