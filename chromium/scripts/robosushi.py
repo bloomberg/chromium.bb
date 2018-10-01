@@ -63,6 +63,8 @@ def main(argv):
       robo_branch.CheckMerge(robo_configuration)
       robo_branch.WritePatchesReadme(robo_configuration)
       robo_branch.AddAndCommit(robo_configuration, "Chromium patches file")
+      robo_branch.WriteConfigChangesFile(robo_configuration)
+      robo_branch.AddAndCommit(robo_configuration, "Build Cfg Changes Summary")
       robo_build.RunTests(robo_configuration)
 
       # TODO: Start a fake deps roll.  To do this, we would:

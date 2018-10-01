@@ -126,6 +126,15 @@ def WritePatchesReadme(cfg):
   with open(os.path.join("chromium", "patches", "README"), "w+") as f:
     find_patches.write_patches_file("HEAD", f)
 
+def WriteConfigChangesFile(cfg):
+  """Write a file that summarizes the config changes, for easier reviewing."""
+  cfg.chdir_to_ffmpeg_home();
+  # This looks for things that were added / deleted that look like #define or
+  # %define (for asm) ending in 0 or 1, that have changed in any of the configs.
+  os.system("git diff origin/master --unified=0 -- chromium/config/* |"
+            "grep '^[+-].*[01]$' | sed -e 's/[%#]define//g' |sort |"
+            "uniq -s 1 >chromium/patches/config_flag_changes.txt")
+
 def AddAndCommit(cfg, commit_title):
   """Add everything, and commit locally with |commit_title|"""
   log("Creating local commit %s" % commit_title)
