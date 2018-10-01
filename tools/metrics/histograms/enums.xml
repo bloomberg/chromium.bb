@@ -12104,6 +12104,7 @@ Called by update_net_error_codes.py.-->
   </int>
   <int value="6" label="Virtual Contact File">text/vcard MIME type.</int>
   <int value="7" label="iCalendar">text/calendar MIME type.</int>
+  <int value="8" label="Universal Scene Description">model/usd MIME type.</int>
 </enum>
 
 <enum name="DownloadNotificationForegroundLifecycle">
