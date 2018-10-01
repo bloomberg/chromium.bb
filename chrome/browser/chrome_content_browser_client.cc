@@ -314,6 +314,7 @@
 #elif defined(OS_CHROMEOS)
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/ash_service_registry.h"
+#include "chrome/browser/badging/badge_service_impl.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -4245,6 +4246,11 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
       &ForwardToJavaWebContentsRegistry<blink::mojom::ShareService>));
 #elif defined(OS_LINUX) || defined(OS_WIN)
   frame_interfaces_->AddInterface(base::Bind(&ShareServiceImpl::Create));
+#endif
+
+#if defined(OS_CHROMEOS)
+  frame_interfaces_->AddInterface(
+      base::BindRepeating(&BadgeServiceImpl::Create));
 #endif
 
   frame_interfaces_parameterized_->AddInterface(

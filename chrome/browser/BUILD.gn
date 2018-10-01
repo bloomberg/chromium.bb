@@ -3061,6 +3061,8 @@ jumbo_split_static_library("browser") {
     sources += [
       "ash_service_registry.cc",
       "ash_service_registry.h",
+      "badging/badge_service_impl.cc",
+      "badging/badge_service_impl.h",
       "component_updater/cros_component_installer_chromeos.cc",
       "component_updater/cros_component_installer_chromeos.h",
       "component_updater/metadata_table_chromeos.cc",

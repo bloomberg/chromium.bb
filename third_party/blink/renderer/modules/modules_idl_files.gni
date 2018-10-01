@@ -73,6 +73,7 @@ modules_idl_files =
           "background_fetch/background_fetch_update_ui_event.idl",
           "background_sync/sync_event.idl",
           "background_sync/sync_manager.idl",
+          "badging/badge.idl",
           "battery/battery_manager.idl",
           "bluetooth/bluetooth.idl",
           "bluetooth/bluetooth_characteristic_properties.idl",
