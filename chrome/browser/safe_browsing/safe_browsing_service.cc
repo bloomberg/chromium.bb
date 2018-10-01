@@ -544,8 +544,10 @@ network::mojom::NetworkContextParamsPtr
 SafeBrowsingService::CreateNetworkContextParams() {
   auto params = g_browser_process->system_network_context_manager()
                     ->CreateDefaultNetworkContextParams();
-  if (!proxy_config_monitor_)
-    proxy_config_monitor_ = std::make_unique<ProxyConfigMonitor>();
+  if (!proxy_config_monitor_) {
+    proxy_config_monitor_ =
+        std::make_unique<ProxyConfigMonitor>(g_browser_process->local_state());
+  }
   proxy_config_monitor_->AddToNetworkContextParams(params.get());
   return params;
 }
