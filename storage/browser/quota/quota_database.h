@@ -195,6 +195,12 @@ class STORAGE_EXPORT QuotaDatabase {
   bool DumpQuotaTable(const QuotaTableCallback& callback);
   bool DumpOriginInfoTable(const OriginInfoTableCallback& callback);
 
+  // Serialize/deserialize base::Time objects to a stable representation for
+  // persistence in the database.
+  // TODO(pwnall): Add support for base::Time values to //sql directly.
+  static base::Time TimeFromSqlValue(int64_t time);
+  static int64_t TimeToSqlValue(const base::Time& time);
+
   base::FilePath db_file_path_;
 
   std::unique_ptr<sql::Database> db_;
