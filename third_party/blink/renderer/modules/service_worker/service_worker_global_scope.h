@@ -88,7 +88,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   void CountImportedScript(size_t script_size, size_t cached_metadata_size);
 
   // Called when the main worker script is evaluated.
-  void DidEvaluateClassicScript();
+  void DidEvaluateScript();
 
   // ServiceWorkerGlobalScope.idl
   ServiceWorkerClients* clients();
@@ -151,9 +151,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       const Vector<char>* meta_data) override;
   void ExceptionThrown(ErrorEvent*) override;
 
-  // Records the |script_size| and |cached_metadata_size| for UMA to measure the
+  // Counts the |script_size| and |cached_metadata_size| for UMA to measure the
   // number of scripts and the total bytes of scripts.
-  void RecordScriptSize(size_t script_size, size_t cached_metadata_size);
+  void CountScriptInternal(size_t script_size, size_t cached_metadata_size);
 
   Member<ServiceWorkerClients> clients_;
   Member<ServiceWorkerRegistration> registration_;

@@ -203,6 +203,7 @@ void ServiceWorkerGlobalScope::Dispose() {
 
 void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
                                                  size_t cached_metadata_size) {
+  DCHECK_EQ(GetScriptType(), ScriptType::kClassic);
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, script_size_histogram,
       ("ServiceWorker.ScriptSize", 1000, 5000000, 50));
@@ -215,23 +216,29 @@ void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
     script_cached_metadata_size_histogram.Count(cached_metadata_size);
   }
 
-  RecordScriptSize(script_size, cached_metadata_size);
+  CountScriptInternal(script_size, cached_metadata_size);
 }
 
 void ServiceWorkerGlobalScope::CountImportedScript(
     size_t script_size,
     size_t cached_metadata_size) {
-  RecordScriptSize(script_size, cached_metadata_size);
+  DCHECK_EQ(GetScriptType(), ScriptType::kClassic);
+  CountScriptInternal(script_size, cached_metadata_size);
 }
 
-void ServiceWorkerGlobalScope::RecordScriptSize(size_t script_size,
-                                                size_t cached_metadata_size) {
-  ++script_count_;
-  script_total_size_ += script_size;
-  script_cached_metadata_total_size_ += cached_metadata_size;
-}
+void ServiceWorkerGlobalScope::DidEvaluateScript() {
+  DCHECK(!did_evaluate_script_);
+  did_evaluate_script_ = true;
 
-void ServiceWorkerGlobalScope::DidEvaluateClassicScript() {
+  // Skip recording UMAs for module scripts because there're no ways to get the
+  // number of static-imported scripts and the total size of the imported
+  // scripts.
+  if (GetScriptType() == ScriptType::kModule) {
+    return;
+  }
+
+  // TODO(asamidoi,nhiroki): Record the UMAs for module scripts, or remove them
+  // if they're no longer used.
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, script_count_histogram,
                                   ("ServiceWorker.ScriptCount", 1, 1000, 50));
   script_count_histogram.Count(script_count_);
@@ -245,14 +252,14 @@ void ServiceWorkerGlobalScope::DidEvaluateClassicScript() {
         ("ServiceWorker.ScriptCachedMetadataTotalSize", 1000, 50000000, 50));
     cached_metadata_histogram.Count(script_cached_metadata_total_size_);
   }
-  did_evaluate_script_ = true;
 }
 
-ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* script_state,
-                                              const RequestInfo& input,
-                                              const RequestInit& init,
-                                              ExceptionState& exception_state) {
-  return GlobalFetch::fetch(script_state, *this, input, init, exception_state);
+void ServiceWorkerGlobalScope::CountScriptInternal(
+    size_t script_size,
+    size_t cached_metadata_size) {
+  ++script_count_;
+  script_total_size_ += script_size;
+  script_cached_metadata_total_size_ += cached_metadata_size;
 }
 
 ServiceWorkerClients* ServiceWorkerGlobalScope::clients() {
@@ -373,6 +380,13 @@ ServiceWorkerGlobalScope::CreateWorkerScriptCachedMetadataHandler(
     const Vector<char>* meta_data) {
   return ServiceWorkerScriptCachedMetadataHandler::Create(this, script_url,
                                                           meta_data);
+}
+
+ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* script_state,
+                                              const RequestInfo& input,
+                                              const RequestInit& init,
+                                              ExceptionState& exception_state) {
+  return GlobalFetch::fetch(script_state, *this, input, init, exception_state);
 }
 
 void ServiceWorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {

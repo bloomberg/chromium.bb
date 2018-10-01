@@ -190,6 +190,8 @@ class CORE_EXPORT WorkerGlobalScope
 
   void AddPausedCall(base::OnceClosure closure);
 
+  ScriptType GetScriptType() const { return script_type_; }
+
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
 

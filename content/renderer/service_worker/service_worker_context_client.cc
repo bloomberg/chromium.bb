@@ -738,13 +738,13 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "EVALUATE_SCRIPT", this);
 }
 
-void ServiceWorkerContextClient::WillEvaluateClassicScript() {
+void ServiceWorkerContextClient::WillEvaluateScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   start_timing_->script_evaluation_start_time = base::TimeTicks::Now();
   (*instance_host_)->OnScriptEvaluationStart();
 }
 
-void ServiceWorkerContextClient::DidEvaluateClassicScript(bool success) {
+void ServiceWorkerContextClient::DidEvaluateScript(bool success) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   start_timing_->script_evaluation_end_time = base::TimeTicks::Now();
 
