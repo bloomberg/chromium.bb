@@ -1928,6 +1928,13 @@ RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
   if (receiver_it == rtp_receivers_.end()) {
     // Create new receiver.
     receiver = new RTCRtpReceiver(std::move(web_receiver), track, {});
+    // Receiving tracks should be muted by default. SetReadyState() propagates
+    // the related state changes to ensure it is muted on all layers. It also
+    // fires events - which is not desired - but because they fire synchronously
+    // there are no listeners to detect this so this is indistinguishable from
+    // having constructed the track in an already muted state.
+    receiver->track()->Component()->Source()->SetReadyState(
+        MediaStreamSource::kReadyStateMuted);
     rtp_receivers_.push_back(receiver);
   } else {
     // Update existing receiver is a no-op.
@@ -2214,9 +2221,20 @@ void RTCPeerConnection::DidModifyTransceivers(
   }
 
   for (auto& track : mute_tracks) {
+    // Mute the track. Fires "track.onmute" synchronously.
     track->Component()->Source()->SetReadyState(
         MediaStreamSource::kReadyStateMuted);
   }
+  // Remove/add tracks to streams, this fires "stream.onremovetrack" and
+  // "stream.onaddtrack" asynchronously (delayed with ScheduleDispatchEvent()).
+  // This means that the streams will be updated immediately, but the
+  // corresponding events will fire after "pc.ontrack".
+  // TODO(https://crbug.com/788558): These should probably also fire
+  // synchronously (before "pc.ontrack"). The webrtc-pc spec references the
+  // mediacapture-streams spec for adding and removing tracks to streams, which
+  // adds/removes and fires synchronously, but it says to do this in a queued
+  // task, which would lead to unexpected behavior: the streams would be empty
+  // at "pc.ontrack".
   for (auto& pair : remove_list) {
     auto& stream = pair.first;
     auto& track = pair.second;
@@ -2232,10 +2250,20 @@ void RTCPeerConnection::DidModifyTransceivers(
     }
   }
 
+  // Fire "pc.ontrack" synchronously.
   for (auto& transceiver : track_events) {
-    ScheduleDispatchEvent(new RTCTrackEvent(
+    auto* track_event = new RTCTrackEvent(
         transceiver->receiver(), transceiver->receiver()->track(),
-        transceiver->receiver()->streams(), transceiver));
+        transceiver->receiver()->streams(), transceiver);
+    DispatchEvent(*track_event);
+  }
+
+  // Unmute "pc.ontrack" tracks. Fires "track.onunmute" synchronously.
+  // TODO(https://crbug.com/889487): The correct thing to do is to unmute in
+  // response to receiving RTP packets.
+  for (auto& transceiver : track_events) {
+    transceiver->receiver()->track()->Component()->Source()->SetReadyState(
+        MediaStreamSource::kReadyStateLive);
   }
 }
 

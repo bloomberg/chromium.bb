@@ -4734,6 +4734,17 @@ crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass T
 crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
 crbug.com/840659 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
 
+# WebRTC: In "Plan B", remote tracks are unmuted by default, so tests time out
+# waiting for "unmute".
+crbug.com/889487 external/wpt/webrtc/RTCPeerConnection-remote-track-mute.https.html [ Timeout ]
+# WebRTC: In "Unified Plan", remote tracks are correctly muted by default, but
+# they unmute whether or not RTP packets arrive which is incorrect, this causes
+# a timeout in the "checkMute" test because the "unmute" listeners are hooked up
+# after we've already unmuted. The "checkMute" test likely contain bugs that
+# would cause a timeout anyway, but our implementation times out even before
+# that part due to incorrect behavior.
+crbug.com/889487 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
+
 # Sheriff 2018-04-11
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canvas.lighter.html [ Pass Timeout ]
