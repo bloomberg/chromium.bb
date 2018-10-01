@@ -13,6 +13,12 @@ if (is_android) {
 # TODO(crbug.com/706392): Fix password reuse detection for Android.
 password_reuse_detection_support = !is_android && !is_ios
 
+config("password_reuse_detection_config") {
+  if (password_reuse_detection_support) {
+    defines = [ "SYNC_PASSWORD_REUSE_DETECTION_ENABLED" ]
+  }
+}
+
 jumbo_static_library("browser") {
   sources = [
     "android_affiliation/affiliated_match_helper.cc",
@@ -128,7 +134,6 @@ jumbo_static_library("browser") {
     "password_manager_util.h",
     "password_requirements_service.cc",
     "password_requirements_service.h",
-    "password_reuse_defines.h",
     "password_store.cc",
     "password_store.h",
     "password_store_change.cc",
@@ -162,6 +167,8 @@ jumbo_static_library("browser") {
     "votes_uploader.cc",
     "votes_uploader.h",
   ]
+
+  all_dependent_configs = [ ":password_reuse_detection_config" ]
 
   if (password_reuse_detection_support) {
     sources += [

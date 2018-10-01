@@ -10,7 +10,6 @@
 #include <string>
 
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/password_reuse_defines.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 
 namespace password_manager {
