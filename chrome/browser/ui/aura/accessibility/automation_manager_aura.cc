@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
-#include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
