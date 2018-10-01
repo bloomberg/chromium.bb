@@ -151,6 +151,13 @@ var NUM_TITLE_LINES = 1;
 
 
 /**
+ * Largest minimum font size in settings.
+ * @const {number}
+ */
+const LARGEST_MINIMUM_FONT_SIZE = 24;
+
+
+/**
  * The origin of this request, i.e. 'https://www.google.TLD' for the remote NTP,
  * or 'chrome-search://local-ntp' for the local NTP.
  * @const {string}
@@ -480,7 +487,8 @@ function truncateTitleText(titles) {
     let el = titles[i];
     const originalTitle = el.innerText;
     let truncatedTitle = el.innerText;
-    while (el.scrollHeight > el.offsetHeight && truncatedTitle.length > 0) {
+    while (el.scrollHeight > LARGEST_MINIMUM_FONT_SIZE
+    && truncatedTitle.length > 0) {
       el.innerText = (truncatedTitle = truncatedTitle.slice(0, -1)) + '\u2026';
     }
     if (truncatedTitle.length === 0) {
