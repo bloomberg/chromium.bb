@@ -19,15 +19,18 @@ public class ExploreSitesCategoryUnitTest {
     @Test
     public void testAddSite() {
         final int id = 1;
+        @ExploreSitesCategory.CategoryType
+        final int type = ExploreSitesCategory.CategoryType.SCIENCE;
         final int siteId = 100;
         final String title = "test";
         final String url = "http://www.google.com";
         final String categoryTitle = "Movies";
 
-        ExploreSitesCategory category = new ExploreSitesCategory(id, categoryTitle);
+        ExploreSitesCategory category = new ExploreSitesCategory(id, type, categoryTitle);
         category.addSite(new ExploreSitesSite(siteId, title, url));
 
         assertEquals(id, category.getId());
+        assertEquals(type, category.getType());
         assertEquals(1, category.getSites().size());
         assertEquals(siteId, category.getSites().get(0).getId());
         assertEquals(title, category.getSites().get(0).getTitle());
