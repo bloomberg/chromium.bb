@@ -128,6 +128,10 @@ class GaiaCookieManagerService : public KeyedService,
         const std::vector<gaia::ListedAccount>& signed_out_accounts,
         const GoogleServiceAuthError& error) {}
 
+    // Called when the Gaia cookie has been deleted explicitly by a user action,
+    // e.g. from the settings or by an extension.
+    virtual void OnGaiaCookieDeletedByUserAction() {}
+
    protected:
     virtual ~Observer() {}
   };

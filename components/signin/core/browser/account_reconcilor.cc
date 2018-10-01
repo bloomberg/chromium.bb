@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -120,6 +121,18 @@ AccountReconcilor::Lock::Lock(AccountReconcilor* reconcilor)
 AccountReconcilor::Lock::~Lock() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   reconcilor_->DecrementLockCount();
+}
+
+AccountReconcilor::ScopedSyncedDataDeletion::ScopedSyncedDataDeletion(
+    AccountReconcilor* reconcilor)
+    : reconcilor_(reconcilor) {
+  DCHECK(reconcilor_);
+  ++reconcilor_->synced_data_deletion_in_progress_count_;
+}
+
+AccountReconcilor::ScopedSyncedDataDeletion::~ScopedSyncedDataDeletion() {
+  DCHECK_GT(reconcilor_->synced_data_deletion_in_progress_count_, 0);
+  --reconcilor_->synced_data_deletion_in_progress_count_;
 }
 
 AccountReconcilor::AccountReconcilor(
@@ -263,6 +276,11 @@ signin_metrics::AccountReconcilorState AccountReconcilor::GetState() {
   }
 
   return signin_metrics::ACCOUNT_RECONCILOR_RUNNING;
+}
+
+std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion>
+AccountReconcilor::GetScopedSyncDataDeletion() {
+  return base::WrapUnique(new ScopedSyncedDataDeletion(this));
 }
 
 void AccountReconcilor::AddObserver(Observer* observer) {
@@ -487,6 +505,26 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
   } else {
     FinishReconcile(primary_account, LoadValidAccountsFromTokenService(),
                     std::move(verified_gaia_accounts));
+  }
+}
+
+void AccountReconcilor::OnGaiaCookieDeletedByUserAction() {
+  if (!delegate_->ShouldRevokeTokensOnCookieDeleted())
+    return;
+
+  const std::string& primary_account =
+      signin_manager_->GetAuthenticatedAccountId();
+  // Revoke secondary tokens.
+  RevokeAllSecondaryTokens(
+      token_service_, AccountReconcilorDelegate::RevokeTokenOption::kRevoke,
+      primary_account, /*account_consistency_enforced=*/true);
+  if (primary_account.empty())
+    return;
+  if (token_service_->RefreshTokenHasError(primary_account) ||
+      synced_data_deletion_in_progress_count_ == 0) {
+    // Invalidate the primary token, but do not revoke it.
+    token_service_->UpdateCredentials(
+        primary_account, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
   }
 }
 
