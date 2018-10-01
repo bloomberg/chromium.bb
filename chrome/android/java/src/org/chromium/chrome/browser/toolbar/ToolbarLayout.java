@@ -18,6 +18,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.MotionEvent;
@@ -44,7 +45,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -63,7 +63,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * The ImageButton view that represents the menu button.
      */
-    protected TintedImageButton mMenuButton;
+    protected AppCompatImageButton mMenuButton;
     private ImageView mMenuBadge;
     private View mMenuButtonWrapper;
     private AppMenuButtonHelper mAppMenuButtonHelper;
@@ -156,7 +156,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
+        mMenuButton = (AppCompatImageButton) findViewById(R.id.menu_button);
         mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
         mMenuButtonWrapper = findViewById(R.id.menu_button_wrapper);
 
@@ -306,9 +306,9 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     /**
-     * @return The {@link TintedImageButton} containing the menu button.
+     * @return The {@link AppCompatImageButton} containing the menu button.
      */
-    protected TintedImageButton getMenuButton() {
+    protected AppCompatImageButton getMenuButton() {
         return mMenuButton;
     }
 
@@ -986,7 +986,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * #onNativeLibraryReady() & once in #onFinishInflate() (see https://crbug.com/862887).
      * @param ntpButton The button that needs to be changed.
      */
-    protected void changeIconToNTPIcon(TintedImageButton ntpButton) {
+    protected void changeIconToNTPIcon(AppCompatImageButton ntpButton) {
         if (FeatureUtilities.isNewTabPageButtonEnabled())
             ntpButton.setImageResource(R.drawable.ic_home);
     }

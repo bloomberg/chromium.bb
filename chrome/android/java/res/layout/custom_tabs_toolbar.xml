@@ -19,7 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical" >
-        <org.chromium.chrome.browser.widget.TintedImageButton
+        <android.support.v7.widget.AppCompatImageButton
             android:id="@+id/security_button"
             style="@style/LocationBarButton"
             android:layout_width="@dimen/location_bar_icon_width"
@@ -27,7 +27,7 @@
             android:layout_gravity="center_vertical"
             android:scaleType="center"
             android:visibility="invisible"
-            app:chrometint="@color/dark_mode_tint" />
+            app:tint="@color/dark_mode_tint" />
         <view
             class="org.chromium.chrome.browser.toolbar.CustomTabToolbar$InterceptTouchLayout"
             android:id="@+id/title_url_container"
@@ -96,7 +96,7 @@
         android:layout_gravity="center_vertical|end"
         android:gravity="center_vertical"
         android:orientation="horizontal" />
-    <org.chromium.chrome.browser.widget.TintedImageButton
+    <android.support.v7.widget.AppCompatImageButton
         android:id="@+id/menu_button"
         style="@style/ToolbarButton"
         android:layout_gravity="center_vertical|end"
@@ -105,5 +105,5 @@
         android:src="@drawable/ic_more_vert_black_24dp"
         android:contentDescription="@string/accessibility_toolbar_btn_menu"
         android:background="@null"
-        app:chrometint="@color/dark_mode_tint" />
+        app:tint="@color/dark_mode_tint" />
 </org.chromium.chrome.browser.toolbar.CustomTabToolbar>

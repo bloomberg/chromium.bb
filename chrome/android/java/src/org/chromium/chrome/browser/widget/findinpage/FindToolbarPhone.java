@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.widget.findinpage;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
@@ -48,17 +49,17 @@ public class FindToolbarPhone extends FindToolbar {
             setBackgroundColor(ColorUtils.getDefaultThemeColor(getResources(), true));
             ColorStateList white =
                     AppCompatResources.getColorStateList(getContext(), R.color.light_mode_tint);
-            mFindNextButton.setTint(white);
-            mFindPrevButton.setTint(white);
-            mCloseFindButton.setTint(white);
+            ImageViewCompat.setImageTintList(mFindNextButton, white);
+            ImageViewCompat.setImageTintList(mFindPrevButton, white);
+            ImageViewCompat.setImageTintList(mCloseFindButton, white);
             queryTextColorId = R.color.find_in_page_query_white_color;
         } else {
             setBackgroundColor(Color.WHITE);
             ColorStateList dark =
                     AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint);
-            mFindNextButton.setTint(dark);
-            mFindPrevButton.setTint(dark);
-            mCloseFindButton.setTint(dark);
+            ImageViewCompat.setImageTintList(mFindNextButton, dark);
+            ImageViewCompat.setImageTintList(mFindPrevButton, dark);
+            ImageViewCompat.setImageTintList(mCloseFindButton, dark);
             queryTextColorId = R.color.default_text_color;
         }
         mFindQuery.setTextColor(
