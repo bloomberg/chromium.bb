@@ -973,7 +973,8 @@ void ServiceWorkerContextClient::DidHandleInstallEvent(
 
 void ServiceWorkerContextClient::RespondToFetchEventWithNoResponse(
     int fetch_event_id,
-    base::TimeTicks event_dispatch_time) {
+    base::TimeTicks event_dispatch_time,
+    base::TimeTicks respond_with_settled_time) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerContextClient::RespondToFetchEventWithNoResponse",
@@ -984,14 +985,20 @@ void ServiceWorkerContextClient::RespondToFetchEventWithNoResponse(
   const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
   DCHECK(response_callback.is_bound());
-  response_callback->OnFallback(event_dispatch_time);
+
+  auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
+  timing->dispatch_event_time = event_dispatch_time;
+  timing->respond_with_settled_time = respond_with_settled_time;
+
+  response_callback->OnFallback(std::move(timing));
   context_->fetch_response_callbacks.erase(fetch_event_id);
 }
 
 void ServiceWorkerContextClient::RespondToFetchEvent(
     int fetch_event_id,
     const blink::WebServiceWorkerResponse& web_response,
-    base::TimeTicks event_dispatch_time) {
+    base::TimeTicks event_dispatch_time,
+    base::TimeTicks respond_with_settled_time) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerContextClient::RespondToFetchEvent",
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
@@ -1003,7 +1010,11 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
   const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
 
-  response_callback->OnResponse(std::move(response), event_dispatch_time);
+  auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
+  timing->dispatch_event_time = event_dispatch_time;
+  timing->respond_with_settled_time = respond_with_settled_time;
+
+  response_callback->OnResponse(std::move(response), std::move(timing));
   context_->fetch_response_callbacks.erase(fetch_event_id);
 }
 
@@ -1011,7 +1022,8 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
     int fetch_event_id,
     const blink::WebServiceWorkerResponse& web_response,
     blink::WebServiceWorkerStreamHandle* web_body_as_stream,
-    base::TimeTicks event_dispatch_time) {
+    base::TimeTicks event_dispatch_time,
+    base::TimeTicks respond_with_settled_time) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerContextClient::RespondToFetchEventWithResponseStream",
@@ -1033,8 +1045,12 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
   web_body_as_stream->SetListener(
       std::make_unique<StreamHandleListener>(std::move(callback_ptr)));
 
+  auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
+  timing->dispatch_event_time = event_dispatch_time;
+  timing->respond_with_settled_time = respond_with_settled_time;
+
   response_callback->OnResponseStream(
-      std::move(response), std::move(body_as_stream), event_dispatch_time);
+      std::move(response), std::move(body_as_stream), std::move(timing));
   context_->fetch_response_callbacks.erase(fetch_event_id);
 }
 

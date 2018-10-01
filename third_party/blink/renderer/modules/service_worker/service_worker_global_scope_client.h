@@ -109,16 +109,20 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
   void DidHandleExtendableMessageEvent(int event_id,
                                        mojom::ServiceWorkerEventStatus,
                                        base::TimeTicks event_dispatch_time);
-  void RespondToFetchEventWithNoResponse(int fetch_event_id,
-                                         base::TimeTicks event_dispatch_time);
+  void RespondToFetchEventWithNoResponse(
+      int fetch_event_id,
+      base::TimeTicks event_dispatch_time,
+      base::TimeTicks respond_with_settled_time);
   void RespondToFetchEvent(int fetch_event_id,
                            const WebServiceWorkerResponse&,
-                           base::TimeTicks event_dispatch_time);
+                           base::TimeTicks event_dispatch_time,
+                           base::TimeTicks respond_with_settled_time);
   void RespondToFetchEventWithResponseStream(
       int fetch_event_id,
       const WebServiceWorkerResponse&,
       WebServiceWorkerStreamHandle*,
-      base::TimeTicks event_dispatch_time);
+      base::TimeTicks event_dispatch_time,
+      base::TimeTicks respond_with_settled_time);
   void RespondToAbortPaymentEvent(int event_id,
                                   bool abort_payment,
                                   base::TimeTicks event_dispatch_time);

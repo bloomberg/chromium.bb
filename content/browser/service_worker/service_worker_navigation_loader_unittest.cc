@@ -137,7 +137,8 @@ class NavigationPreloadLoaderClient final
     response->status_text = response_head_.headers->GetStatusText();
     response->response_type = response_head_.response_type;
     response_callback_->OnResponseStream(
-        std::move(response), std::move(stream_handle), base::TimeTicks::Now());
+        std::move(response), std::move(stream_handle),
+        blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback_)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
              base::TimeTicks::Now());
@@ -239,8 +240,9 @@ class Helper : public EmbeddedWorkerTestHelper {
   // providing the response to the fetch event.
   void DeferResponse() { response_mode_ = ResponseMode::kDeferredResponse; }
   void FinishRespondWith() {
-    response_callback_->OnResponse(OkResponse(nullptr /* blob_body */),
-                                   base::TimeTicks::Now());
+    response_callback_->OnResponse(
+        OkResponse(nullptr /* blob_body */),
+        blink::mojom::ServiceWorkerFetchEventTiming::New());
     response_callback_.FlushForTesting();
     std::move(finish_callback_)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
@@ -288,28 +290,32 @@ class Helper : public EmbeddedWorkerTestHelper {
             std::move(response_callback), std::move(finish_callback));
         break;
       case ResponseMode::kBlob:
-        response_callback->OnResponse(OkResponse(std::move(blob_body_)),
-                                      base::TimeTicks::Now());
+        response_callback->OnResponse(
+            OkResponse(std::move(blob_body_)),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::TimeTicks::Now());
         break;
       case ResponseMode::kStream:
-        response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
-                                            std::move(stream_handle_),
-                                            base::TimeTicks::Now());
+        response_callback->OnResponseStream(
+            OkResponse(nullptr /* blob_body */), std::move(stream_handle_),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::TimeTicks::Now());
         break;
       case ResponseMode::kFallbackResponse:
-        response_callback->OnFallback(base::TimeTicks::Now());
+        response_callback->OnFallback(
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::TimeTicks::Now());
         break;
       case ResponseMode::kErrorResponse:
-        response_callback->OnResponse(ErrorResponse(), base::TimeTicks::Now());
+        response_callback->OnResponse(
+            ErrorResponse(),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
                  base::TimeTicks::Now());
@@ -343,13 +349,15 @@ class Helper : public EmbeddedWorkerTestHelper {
         break;
       case ResponseMode::kEarlyResponse:
         finish_callback_ = std::move(finish_callback);
-        response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
-                                      base::TimeTicks::Now());
+        response_callback->OnResponse(
+            OkResponse(nullptr /* blob_body */),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         // Now the caller must call FinishWaitUntil() to finish the event.
         break;
       case ResponseMode::kRedirect:
-        response_callback->OnResponse(RedirectResponse(redirected_url_.spec()),
-                                      base::TimeTicks::Now());
+        response_callback->OnResponse(
+            RedirectResponse(redirected_url_.spec()),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::TimeTicks::Now());

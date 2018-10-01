@@ -348,7 +348,7 @@ void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch(
 
 void ServiceWorkerSubresourceLoader::OnResponse(
     blink::mojom::FetchAPIResponsePtr response,
-    base::TimeTicks dispatch_event_time) {
+    blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
   TRACE_EVENT_WITH_FLOW0("ServiceWorker",
                          "ServiceWorkerSubresourceLoader::OnResponse", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
@@ -359,7 +359,7 @@ void ServiceWorkerSubresourceLoader::OnResponse(
 void ServiceWorkerSubresourceLoader::OnResponseStream(
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-    base::TimeTicks dispatch_event_time) {
+    blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
@@ -368,7 +368,7 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
 }
 
 void ServiceWorkerSubresourceLoader::OnFallback(
-    base::TimeTicks dispatch_event_time) {
+    blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
   SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
   // When the request mode is CORS or CORS-with-forced-preflight and the origin
   // of the request URL is different from the security origin of the document,

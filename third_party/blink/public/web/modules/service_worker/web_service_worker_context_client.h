@@ -184,18 +184,21 @@ class WebServiceWorkerContextClient {
   // native fetch.
   virtual void RespondToFetchEventWithNoResponse(
       int fetch_event_id,
-      base::TimeTicks event_dispatch_time) {}
+      base::TimeTicks event_dispatch_time,
+      base::TimeTicks respond_with_settled_time) {}
   // Responds to the fetch event with |response|.
   virtual void RespondToFetchEvent(int fetch_event_id,
                                    const WebServiceWorkerResponse& response,
-                                   base::TimeTicks event_dispatch_time) {}
+                                   base::TimeTicks event_dispatch_time,
+                                   base::TimeTicks respond_with_settled_time) {}
   // Responds to the fetch event with |response|, where body is
   // |body_as_stream|.
   virtual void RespondToFetchEventWithResponseStream(
       int fetch_event_id,
       const WebServiceWorkerResponse& response,
       WebServiceWorkerStreamHandle* body_as_stream,
-      base::TimeTicks event_dispatch_time) {}
+      base::TimeTicks event_dispatch_time,
+      base::TimeTicks respond_with_settled_time) {}
   virtual void DidHandleFetchEvent(int fetch_event_id,
                                    mojom::ServiceWorkerEventStatus,
                                    base::TimeTicks event_dispatch_time) {}

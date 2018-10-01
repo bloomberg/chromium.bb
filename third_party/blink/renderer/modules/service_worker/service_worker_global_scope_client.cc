@@ -202,25 +202,30 @@ void ServiceWorkerGlobalScopeClient::DidHandleExtendableMessageEvent(
 
 void ServiceWorkerGlobalScopeClient::RespondToFetchEventWithNoResponse(
     int fetch_event_id,
-    base::TimeTicks event_dispatch_time) {
-  client_.RespondToFetchEventWithNoResponse(fetch_event_id,
-                                            event_dispatch_time);
+    base::TimeTicks event_dispatch_time,
+    base::TimeTicks respond_with_settled_time) {
+  client_.RespondToFetchEventWithNoResponse(fetch_event_id, event_dispatch_time,
+                                            respond_with_settled_time);
 }
 
 void ServiceWorkerGlobalScopeClient::RespondToFetchEvent(
     int fetch_event_id,
     const WebServiceWorkerResponse& response,
-    base::TimeTicks event_dispatch_time) {
-  client_.RespondToFetchEvent(fetch_event_id, response, event_dispatch_time);
+    base::TimeTicks event_dispatch_time,
+    base::TimeTicks respond_with_settled_time) {
+  client_.RespondToFetchEvent(fetch_event_id, response, event_dispatch_time,
+                              respond_with_settled_time);
 }
 
 void ServiceWorkerGlobalScopeClient::RespondToFetchEventWithResponseStream(
     int fetch_event_id,
     const WebServiceWorkerResponse& response,
     WebServiceWorkerStreamHandle* stream_handle,
-    base::TimeTicks event_dispatch_time) {
+    base::TimeTicks event_dispatch_time,
+    base::TimeTicks respond_with_settled_time) {
   client_.RespondToFetchEventWithResponseStream(
-      fetch_event_id, response, stream_handle, event_dispatch_time);
+      fetch_event_id, response, stream_handle, event_dispatch_time,
+      respond_with_settled_time);
 }
 
 void ServiceWorkerGlobalScopeClient::RespondToAbortPaymentEvent(

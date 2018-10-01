@@ -491,7 +491,8 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   }
 
   void Respond() {
-    response_callback_->OnResponse(MakeOkResponse(), base::TimeTicks::Now());
+    response_callback_->OnResponse(
+        MakeOkResponse(), blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback_)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
              base::TimeTicks::Now());
@@ -708,7 +709,8 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     context()->RemoveProviderHost(mock_render_process_id(), kProviderID);
-    response_callback->OnResponse(MakeOkResponse(), base::TimeTicks::Now());
+    response_callback->OnResponse(
+        MakeOkResponse(), blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
              base::TimeTicks::Now());
@@ -795,7 +797,9 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
     // Mojo, we give it a dummy value.
     auto dummy_request = mojo::MakeRequest(&response->blob->blob);
 
-    response_callback->OnResponse(std::move(response), base::TimeTicks::Now());
+    response_callback->OnResponse(
+        std::move(response),
+        blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
              base::TimeTicks::Now());
@@ -890,7 +894,8 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
     blink::mojom::FetchAPIResponsePtr response = MakeOkResponse();
     response->headers = MakeHeaders();
     response_callback->OnResponseStream(
-        std::move(response), std::move(stream_handle_), base::TimeTicks::Now());
+        std::move(response), std::move(stream_handle_),
+        blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
              base::TimeTicks::Now());
@@ -1364,7 +1369,8 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     finish_callback_ = std::move(finish_callback);
-    response_callback->OnResponse(MakeOkResponse(), base::TimeTicks::Now());
+    response_callback->OnResponse(
+        MakeOkResponse(), blink::mojom::ServiceWorkerFetchEventTiming::New());
   }
 
  private:
