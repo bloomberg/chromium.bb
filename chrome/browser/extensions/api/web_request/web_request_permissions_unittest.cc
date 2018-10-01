@@ -32,6 +32,7 @@ using content::ResourceRequestInfo;
 using extensions::Extension;
 using extensions::Manifest;
 using extensions::PermissionsData;
+using extensions::WebRequestInfo;
 using extension_test_util::LoadManifestUnchecked;
 
 class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
@@ -104,46 +105,115 @@ void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {
 
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   net::TestURLRequestContext context;
-  const char* const sensitive_urls[] = {
-      "http://clients2.google.com",
-      "http://clients22.google.com",
-      "https://clients2.google.com",
-      "http://clients2.google.com/service/update2/crx",
-      "https://clients.google.com",
-      "https://test.clients.google.com",
-      "https://clients2.google.com/service/update2/crx",
-      "http://www.gstatic.com/chrome/extensions/blacklist",
-      "https://www.gstatic.com/chrome/extensions/blacklist",
-      "notregisteredscheme://www.foobar.com",
-      "https://chrome.google.com/webstore/",
-      "https://chrome.google.com/webstore/"
-          "inlineinstall/detail/kcnhkahnjcbndmmehfkdnkjomaanaooo"
-  };
-  const char* const non_sensitive_urls[] = {
-      "http://www.google.com/"
+
+  // TODO(karandeepb): Merge some of this test with
+  // ExtensionWebRequestPermissions.IsSensitiveRequest.
+  enum HideRequestMask {
+    HIDE_NONE = 0,
+    HIDE_RENDERER_REQUEST = 1,
+    HIDE_SUB_FRAME_NAVIGATION = 2,
+    HIDE_MAIN_FRAME_NAVIGATION = 4,
+    HIDE_BROWSER_SUB_RESOURCE_REQUEST = 8,
+    HIDE_ALL = HIDE_RENDERER_REQUEST | HIDE_SUB_FRAME_NAVIGATION |
+               HIDE_MAIN_FRAME_NAVIGATION | HIDE_BROWSER_SUB_RESOURCE_REQUEST,
   };
 
-  // Check that requests are rejected based on the destination
-  for (size_t i = 0; i < arraysize(sensitive_urls); ++i) {
-    GURL sensitive_url(sensitive_urls[i]);
-    std::unique_ptr<net::URLRequest> request(
-        context.CreateRequest(sensitive_url, net::DEFAULT_PRIORITY, NULL,
-                              TRAFFIC_ANNOTATION_FOR_TESTS));
-    extensions::WebRequestInfo request_info(request.get());
-    EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
-                                                   request_info))
-        << sensitive_urls[i];
-  }
-  // Check that requests are accepted if they don't touch sensitive urls.
-  for (size_t i = 0; i < arraysize(non_sensitive_urls); ++i) {
-    GURL non_sensitive_url(non_sensitive_urls[i]);
-    std::unique_ptr<net::URLRequest> request(
-        context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL,
-                              TRAFFIC_ANNOTATION_FOR_TESTS));
-    extensions::WebRequestInfo request_info(request.get());
-    EXPECT_FALSE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
-                                                    request_info))
-        << non_sensitive_urls[i];
+  struct {
+    std::string url;
+    int expected_hide_request_mask;
+  } test_cases[] = {
+      // clientX.google.com urls.
+      {"http://clients2.google.com",
+       HIDE_SUB_FRAME_NAVIGATION | HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"http://clients22.google.com",
+       HIDE_SUB_FRAME_NAVIGATION | HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://clients2.google.com",
+       HIDE_SUB_FRAME_NAVIGATION | HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://clients.google.com",
+       HIDE_SUB_FRAME_NAVIGATION | HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://test.clients.google.com",
+       HIDE_SUB_FRAME_NAVIGATION | HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+
+      // Sensitive urls.
+      {"http://clients2.google.com/service/update2/crx", HIDE_ALL},
+      {"https://clients2.google.com/service/update2/crx", HIDE_ALL},
+      {"http://www.gstatic.com/chrome/extensions/blacklist", HIDE_ALL},
+      {"https://www.gstatic.com/chrome/extensions/blacklist", HIDE_ALL},
+      {"https://chrome.google.com/webstore/", HIDE_ALL},
+      {"https://chrome.google.com/webstore/inlineinstall/detail/"
+       "kcnhkahnjcbndmmehfkdnkjomaanaooo",
+       HIDE_ALL},
+
+      // Scheme not allowed by web request api.
+      {"notregisteredscheme://www.foobar.com", HIDE_ALL},
+
+      // Non-sensitive url.
+      {"http://www.google.com/", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+  };
+
+  const int kRendererProcessId = 2;
+  const int kBrowserProcessId = -1;
+
+  // Returns a WebRequestInfo instance constructed as per the given parameters.
+  auto create_request = [](const GURL& url, content::ResourceType type,
+                           int render_process_id) {
+    WebRequestInfo request;
+    request.url = url;
+    request.type = type;
+    request.render_process_id = render_process_id;
+
+    request.web_request_type = extensions::ToWebRequestResourceType(type);
+    request.is_browser_side_navigation =
+        type == content::RESOURCE_TYPE_MAIN_FRAME ||
+        type == content::RESOURCE_TYPE_SUB_FRAME;
+    return request;
+  };
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.url);
+
+    GURL request_url(test_case.url);
+    ASSERT_TRUE(request_url.is_valid());
+
+    {
+      SCOPED_TRACE("Renderer initiated sub-resource request");
+      WebRequestInfo request = create_request(
+          request_url, content::RESOURCE_TYPE_SUB_RESOURCE, kRendererProcessId);
+      bool expect_hidden =
+          test_case.expected_hide_request_mask & HIDE_RENDERER_REQUEST;
+      EXPECT_EQ(expect_hidden, WebRequestPermissions::HideRequest(
+                                   extension_info_map_.get(), request));
+    }
+
+    {
+      SCOPED_TRACE("Browser initiated sub-resource request");
+      WebRequestInfo request = create_request(
+          request_url, content::RESOURCE_TYPE_SUB_RESOURCE, kBrowserProcessId);
+      bool expect_hidden = test_case.expected_hide_request_mask &
+                           HIDE_BROWSER_SUB_RESOURCE_REQUEST;
+      EXPECT_EQ(expect_hidden, WebRequestPermissions::HideRequest(
+                                   extension_info_map_.get(), request));
+    }
+
+    {
+      SCOPED_TRACE("Main-frame navigation");
+      WebRequestInfo request = create_request(
+          request_url, content::RESOURCE_TYPE_MAIN_FRAME, kBrowserProcessId);
+      bool expect_hidden =
+          test_case.expected_hide_request_mask & HIDE_MAIN_FRAME_NAVIGATION;
+      EXPECT_EQ(expect_hidden, WebRequestPermissions::HideRequest(
+                                   extension_info_map_.get(), request));
+    }
+
+    {
+      SCOPED_TRACE("Sub-frame navigation");
+      WebRequestInfo request = create_request(
+          request_url, content::RESOURCE_TYPE_SUB_FRAME, kBrowserProcessId);
+      bool expect_hidden =
+          test_case.expected_hide_request_mask & HIDE_SUB_FRAME_NAVIGATION;
+      EXPECT_EQ(expect_hidden, WebRequestPermissions::HideRequest(
+                                   extension_info_map_.get(), request));
+    }
   }
 
   // Check protection of requests originating from the frame showing the Chrome
@@ -153,8 +223,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   std::unique_ptr<net::URLRequest> non_sensitive_request(
       context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL,
                             TRAFFIC_ANNOTATION_FOR_TESTS));
-  extensions::WebRequestInfo non_sensitive_request_info(
-      non_sensitive_request.get());
+  WebRequestInfo non_sensitive_request_info(non_sensitive_request.get());
+  non_sensitive_request_info.render_process_id = kRendererProcessId;
   EXPECT_FALSE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
                                                   non_sensitive_request_info));
   // If the origin is labeled by the WebStoreAppId, it becomes protected.
@@ -174,7 +244,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
         /*navigation_ui_data*/ nullptr);
     extension_info_map_->RegisterExtensionProcess(extensions::kWebStoreAppId,
                                                   process_id, site_instance_id);
-    extensions::WebRequestInfo sensitive_request_info(sensitive_request.get());
+    WebRequestInfo sensitive_request_info(sensitive_request.get());
     EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
                                                    sensitive_request_info));
   }
@@ -185,7 +255,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
       context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL,
                             TRAFFIC_ANNOTATION_FOR_TESTS));
   request->set_is_pac_request(true);
-  extensions::WebRequestInfo request_info(request.get());
+  WebRequestInfo request_info(request.get());
   EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
                                                  request_info));
 }
