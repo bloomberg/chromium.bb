@@ -1672,6 +1672,7 @@ public class Tab
     }
 
     private void maybeShowPreviewVerboseStatusInProductHelp(final Tracker tracker) {
+        if (!isPreview()) return;
         if (!(getActivity() instanceof ChromeTabbedActivity)) return;
         final View anchorView = getActivity().getToolbarManager().getSecurityIconView();
         if (anchorView == null) return;
