@@ -56,13 +56,18 @@ enum DataReductionSettingsEnabledAction {
   DATA_REDUCTION_SETTINGS_ACTION_BOUNDARY,
 };
 
-// Classes may derive from |ProxyRequestHeadersObserver| and register as an
-// observer of |DataReductionProxySettings| to get notified when the proxy
-// request headers change.
-class ProxyRequestHeadersObserver {
+// Classes may derive from |DataReductionProxySettingsObserver| and register as
+// an observer of |DataReductionProxySettings| to get notified when the proxy
+// request headers change or when the DRPSettings class is initialized.
+class DataReductionProxySettingsObserver {
  public:
+  // Notifies when the proxy server request header change.
   virtual void OnProxyRequestHeadersChanged(
       const net::HttpRequestHeaders& headers) = 0;
+
+  // Notifies when |DataReductionProxySettings::InitDataReductionProxySettings|
+  // is finished.
+  virtual void OnSettingsInitialized() = 0;
 };
 
 // Central point for configuring the data reduction proxy.
@@ -152,11 +157,13 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   // Adds an observer that is notified every time the proxy request headers
   // change.
-  void AddProxyRequestHeadersObserver(ProxyRequestHeadersObserver* observer);
+  void AddDataReductionProxySettingsObserver(
+      DataReductionProxySettingsObserver* observer);
 
   // Removes an observer that is notified every time the proxy request headers
   // change.
-  void RemoveProxyRequestHeadersObserver(ProxyRequestHeadersObserver* observer);
+  void RemoveDataReductionProxySettingsObserver(
+      DataReductionProxySettingsObserver* observer);
 
   // Returns the event store being used. May be null if
   // InitDataReductionProxySettings has not been called.
@@ -298,9 +305,9 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Should not be null.
   base::Clock* clock_;
 
-  // Observers to notify when the proxy request headers change.
-  base::ObserverList<ProxyRequestHeadersObserver>::Unchecked
-      proxy_request_headers_observers_;
+  // Observers to notify when the proxy request headers change or |this| is
+  // initialized.
+  base::ObserverList<DataReductionProxySettingsObserver>::Unchecked observers_;
 
   // The headers to use for requests to the proxy server.
   net::HttpRequestHeaders proxy_request_headers_;
