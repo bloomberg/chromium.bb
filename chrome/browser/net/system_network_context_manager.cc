@@ -346,7 +346,8 @@ SystemNetworkContextManager::SystemNetworkContextManager(
     PrefService* local_state)
     : local_state_(local_state),
       ssl_config_service_manager_(
-          SSLConfigServiceManager::CreateDefaultManager(local_state_)) {
+          SSLConfigServiceManager::CreateDefaultManager(local_state_)),
+      proxy_config_monitor_(local_state_) {
 #if !defined(OS_ANDROID)
   // QuicAllowed was not part of Android policy.
   const base::Value* value =
@@ -682,7 +683,8 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
 
   network_context_params->primary_network_context = true;
 
-  proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
+  proxy_config_monitor_.AddToNetworkContextParams(
+      network_context_params.get());
 
   return network_context_params;
 }
