@@ -10,6 +10,7 @@
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 namespace autofill_assistant {
 // static
@@ -19,11 +20,13 @@ void Controller::CreateAndStartForWebContents(
     std::unique_ptr<std::map<std::string, std::string>> parameters) {
   // Get the key early since |client| will be invalidated when moved below.
   const std::string api_key = client->GetApiKey();
-  new Controller(
-      web_contents, std::move(client),
-      WebController::CreateForWebContents(web_contents),
-      std::make_unique<Service>(api_key, web_contents->GetBrowserContext()),
-      std::move(parameters));
+  GURL server_url(client->GetServerUrl());
+  DCHECK(server_url.is_valid());
+  new Controller(web_contents, std::move(client),
+                 WebController::CreateForWebContents(web_contents),
+                 std::make_unique<Service>(api_key, server_url,
+                                           web_contents->GetBrowserContext()),
+                 std::move(parameters));
 }
 
 Service* Controller::GetService() {

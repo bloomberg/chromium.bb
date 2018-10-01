@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/strings/strcat.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -20,7 +19,6 @@
 
 namespace {
 // TODO(crbug.com/806868): Provide correct server and endpoint.
-const char* const kAutofillAssistantServer = "";
 const char* const kScriptEndpoint = "/v1/supportsSite2";
 const char* const kActionEndpoint = "/v1/actions2";
 
@@ -46,37 +44,22 @@ net::NetworkTrafficAnnotationTag traffic_annotation =
 
 namespace autofill_assistant {
 
-namespace switches {
-const char* const kAutofillAssistantServerURL = "autofill-assistant-url";
-}  // namespace switches
-
-Service::Service(const std::string& api_key, content::BrowserContext* context)
+Service::Service(const std::string& api_key,
+                 const GURL& server_url,
+                 content::BrowserContext* context)
     : context_(context) {
-  const auto* command_line = base::CommandLine::ForCurrentProcess();
-  GURL service_url(kAutofillAssistantServer);
-  if (command_line->HasSwitch(switches::kAutofillAssistantServerURL)) {
-    GURL custom_url(command_line->GetSwitchValueASCII(
-        switches::kAutofillAssistantServerURL));
-    if (custom_url.is_valid()) {
-      service_url = custom_url;
-    } else {
-      LOG(WARNING) << "The following autofill assisstant URL specified in "
-                      "the command line is invalid: "
-                   << custom_url;
-    }
-  }
+  DCHECK(server_url.is_valid());
 
   std::string api_key_query = base::StrCat({"key=", api_key});
   url::StringPieceReplacements<std::string> script_replacements;
   script_replacements.SetPathStr(kScriptEndpoint);
   script_replacements.SetQueryStr(api_key_query);
-  script_server_url_ = service_url.ReplaceComponents(script_replacements);
+  script_server_url_ = server_url.ReplaceComponents(script_replacements);
 
   url::StringPieceReplacements<std::string> action_replacements;
   action_replacements.SetPathStr(kActionEndpoint);
   action_replacements.SetQueryStr(api_key_query);
-  script_action_server_url_ =
-      service_url.ReplaceComponents(action_replacements);
+  script_action_server_url_ = server_url.ReplaceComponents(action_replacements);
 }
 
 Service::~Service() {}

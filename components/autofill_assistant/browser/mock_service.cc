@@ -4,9 +4,11 @@
 
 #include "components/autofill_assistant/browser/mock_service.h"
 
+#include "url/gurl.h"
+
 namespace autofill_assistant {
 
-MockService::MockService() : Service("api_key", nullptr) {}
+MockService::MockService() : Service("api_key", GURL("http://fake"), nullptr) {}
 MockService::~MockService() {}
 
 }  // namespace autofill_assistant

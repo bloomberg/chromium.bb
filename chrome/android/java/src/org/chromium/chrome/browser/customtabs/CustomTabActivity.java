@@ -683,7 +683,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         // TODO(crbug.com/806868): Only enable Autofill Assistant when the flag is enabled in the
         // intent.
         if (mAutofillAssistantUiController == null
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)) {
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
+                && AutofillAssistantUiController.isConfigured()) {
             mAutofillAssistantUiController = new AutofillAssistantUiController(this);
         }
 

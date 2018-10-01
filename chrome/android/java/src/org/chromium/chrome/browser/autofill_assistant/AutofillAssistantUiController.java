@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -30,9 +31,23 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /** Prefix for Intent extras relevant to this feature. */
     private static final String INTENT_EXTRA_PREFIX =
             "org.chromium.chrome.browser.autofill_assistant.";
+    /** Autofill Assistant Study name. */
+    private static final String STUDY_NAME = "AutofillAssistant";
+    /** Variation url parameter name. */
+    private static final String URL_PARAMETER_NAME = "url";
 
     private final long mUiControllerAndroid;
     private final AutofillAssistantUiDelegate mUiDelegate;
+
+    /**
+     * Returns true if all conditions are satisfied to construct an AutofillAssistantUiController.
+     *
+     * @return True if a controller can be constructed.
+     */
+    public static boolean isConfigured() {
+        return !VariationsAssociatedData.getVariationParamValue(STUDY_NAME, URL_PARAMETER_NAME)
+                        .isEmpty();
+    }
 
     /**
      * Construct Autofill Assistant UI controller.
