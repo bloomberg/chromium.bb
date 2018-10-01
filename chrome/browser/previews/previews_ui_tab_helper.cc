@@ -88,8 +88,7 @@ void PreviewsUITabHelper::ShowUIElement(
   on_dismiss_callback_ = std::move(on_dismiss_callback);
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(
-          previews::features::kAndroidOmniboxPreviewsBadge)) {
+  if (previews::params::IsPreviewsOmniboxUiEnabled()) {
     should_display_android_omnibox_badge_ = true;
     return;
   }

@@ -18,6 +18,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/previews/content/previews_content_util.h"
+#include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
@@ -129,7 +130,7 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
   if (resource_loading_hints_seen_)
     builder.Setresource_loading_hints(1);
   if (opt_out_occurred_)
-    builder.Setopt_out(1);
+    builder.Setopt_out(previews::params::IsPreviewsOmniboxUiEnabled() ? 2 : 1);
   if (origin_opt_out_occurred_)
     builder.Setorigin_opt_out(1);
   if (save_data_enabled_)
