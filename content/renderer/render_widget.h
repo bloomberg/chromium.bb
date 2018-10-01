@@ -270,7 +270,6 @@ class CONTENT_EXPORT RenderWidget
   void DidCommitAndDrawCompositorFrame() override;
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
-  void DidReceiveCompositorFrameAck() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   bool IsClosing() const override;
   void RequestScheduleAnimation() override;

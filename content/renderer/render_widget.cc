@@ -1013,9 +1013,6 @@ void RenderWidget::DidCompletePageScaleAnimation() {
     owner_delegate_->DidCompletePageScaleAnimationForWidget();
 }
 
-void RenderWidget::DidReceiveCompositorFrameAck() {
-}
-
 bool RenderWidget::IsClosing() const {
   // TODO(ajwong): There is oddly 2 closing states. This API is used by
   // LayerTreeView only as part of the LayerTreeViewDelegate interface and
@@ -2782,6 +2779,9 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 
   settings.always_request_presentation_time =
       cmd.HasSwitch(cc::switches::kAlwaysRequestPresentationTime);
+
+  settings.send_compositor_frame_ack = false;
+
   return settings;
 }
 
