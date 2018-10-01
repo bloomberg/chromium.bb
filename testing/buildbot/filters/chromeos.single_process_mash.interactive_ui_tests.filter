@@ -52,6 +52,8 @@
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.FocusToolbar/1
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OpenStatusTray/0
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OpenStatusTray/1
+-TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/0
+-TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/1
 
 # TabDragging: crbug.com/890071
 -DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest.CancelDragTabToWindowIn1stDisplay
