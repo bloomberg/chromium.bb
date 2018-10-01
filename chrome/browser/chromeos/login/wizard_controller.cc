@@ -275,14 +275,9 @@ bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
   return true;
 }
 
-// Return true if the feature flag for recommend app screen is on and the screen
-// is never triggered before.
+// Return true if the feature flag for recommend app screen is on.
 bool ShouldShowRecommendAppsScreen() {
-  return base::FeatureList::IsEnabled(features::kOobeRecommendAppsScreen) &&
-         (!ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
-              prefs::kOobeRecommendAppScreenFinished) ||
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              chromeos::switches::kForceShowRecommendAppsScreenForTest));
+  return base::FeatureList::IsEnabled(features::kOobeRecommendAppsScreen);
 }
 
 chromeos::LoginDisplayHost* GetLoginDisplayHost() {

@@ -437,11 +437,6 @@ const char kForceHappinessTrackingSystem[] = "force-happiness-tracking-system";
 // tests can change how it's brought up. This flag disables that.
 const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
 
-// Recommend-apps screen is only shown to first-time Chromebook users. This flag
-// skips the check so that testers can reuse the same accounts.
-const char kForceShowRecommendAppsScreenForTest[] =
-    "force-show-recommend-apps-screen-for-test";
-
 // Force system compositor mode when set.
 const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
 
