@@ -6013,6 +6013,21 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
 }
 
+// Make sure that a 304 response to a navigation aborts the navigation.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, NavigateTo304) {
+  // URL that just returns a blank page.
+  GURL initial_url = embedded_test_server()->GetURL("/set-header");
+  // URL that returns a response with a 304 status code.
+  GURL not_modified_url = embedded_test_server()->GetURL("/echo?status=304");
+
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+  EXPECT_EQ(initial_url, shell()->web_contents()->GetVisibleURL());
+
+  // The navigation should be aborted.
+  EXPECT_FALSE(NavigateToURL(shell(), not_modified_url));
+  EXPECT_EQ(initial_url, shell()->web_contents()->GetVisibleURL());
+}
+
 // Ensure that we do not corrupt a NavigationEntry's PageState if two forward
 // navigations compete in different frames.  See https://crbug.com/623319.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
