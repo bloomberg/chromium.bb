@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/application_status_listener.h"
 #include "base/base_switches.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/viz/common/features.h"
@@ -198,6 +199,8 @@ IN_PROC_BROWSER_TEST_P(CompositorImplLowEndBrowserTest,
 
   ContextLostRunLoop run_loop(context.get());
   compositor->SetVisibleForTesting(false);
+  base::android::ApplicationStatusListener::NotifyApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
   rwhva->OnRootWindowVisibilityChanged(false);
   rwhva->Hide();
 
@@ -208,6 +211,8 @@ IN_PROC_BROWSER_TEST_P(CompositorImplLowEndBrowserTest,
 
   // Become visible again:
   compositor->SetVisibleForTesting(true);
+  base::android::ApplicationStatusListener::NotifyApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
   rwhva->Show();
   rwhva->OnRootWindowVisibilityChanged(true);
 
