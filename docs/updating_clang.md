@@ -52,7 +52,8 @@ An archive of all packages built so far is at https://is.gd/chromeclang
     git cl try -B luci.chromium.try -b ios-device -b mac_chromium_asan_rel_ng \
       -b linux_chromium_cfi_rel_ng \
       -b linux_chromium_chromeos_asan_rel_ng -b linux_chromium_msan_rel_ng \
-      -b linux_chromium_chromeos_msan_rel_ng -b linux-chromeos-dbg
+      -b linux_chromium_chromeos_msan_rel_ng -b linux-chromeos-dbg \
+      -b win-asan
     ```
 
 1.  Optional: Start Pinpoint perf tryjobs. These are generally too noisy to
