@@ -116,8 +116,8 @@ class TaskQueueSelectorTest : public testing::Test {
     for (size_t i = 0; i < num_tasks; i++) {
       changed_queue_set.insert(queue_indices[i]);
       task_queues_[queue_indices[i]]->immediate_work_queue()->Push(
-          TaskQueueImpl::Task(TaskQueue::PostedTask(test_closure_, FROM_HERE),
-                              TimeTicks(), EnqueueOrder(),
+          TaskQueueImpl::Task(PostedTask(test_closure_, FROM_HERE), TimeTicks(),
+                              EnqueueOrder(),
                               enqueue_order_generator.GenerateNext()));
     }
   }
@@ -130,8 +130,7 @@ class TaskQueueSelectorTest : public testing::Test {
       changed_queue_set.insert(queue_indices[i]);
       task_queues_[queue_indices[i]]->immediate_work_queue()->Push(
           TaskQueueImpl::Task(
-              TaskQueue::PostedTask(test_closure_, FROM_HERE), TimeTicks(),
-              EnqueueOrder(),
+              PostedTask(test_closure_, FROM_HERE), TimeTicks(), EnqueueOrder(),
               EnqueueOrder::FromIntForTesting(enqueue_orders[i])));
     }
   }
@@ -738,9 +737,9 @@ TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_Empty) {
 }
 
 TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyDelayed) {
-  task_queues_[0]->delayed_work_queue()->Push(TaskQueueImpl::Task(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE), TimeTicks(),
-      EnqueueOrder(), EnqueueOrder::FromIntForTesting(2)));
+  task_queues_[0]->delayed_work_queue()->Push(
+      TaskQueueImpl::Task(PostedTask(test_closure_, FROM_HERE), TimeTicks(),
+                          EnqueueOrder(), EnqueueOrder::FromIntForTesting(2)));
 
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
@@ -752,9 +751,9 @@ TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyDelayed) {
 }
 
 TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyImmediate) {
-  task_queues_[0]->immediate_work_queue()->Push(TaskQueueImpl::Task(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE), TimeTicks(),
-      EnqueueOrder(), EnqueueOrder::FromIntForTesting(2)));
+  task_queues_[0]->immediate_work_queue()->Push(
+      TaskQueueImpl::Task(PostedTask(test_closure_, FROM_HERE), TimeTicks(),
+                          EnqueueOrder(), EnqueueOrder::FromIntForTesting(2)));
 
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
@@ -778,9 +777,8 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   task_queue->SetQueueEnabledForTest(false);
   selector.DisableQueue(task_queue.get());
 
-  TaskQueueImpl::Task task(TaskQueue::PostedTask(test_closure_, FROM_HERE),
-                           TimeTicks(), EnqueueOrder(),
-                           EnqueueOrder::FromIntForTesting(2));
+  TaskQueueImpl::Task task(PostedTask(test_closure_, FROM_HERE), TimeTicks(),
+                           EnqueueOrder(), EnqueueOrder::FromIntForTesting(2));
   task_queue->immediate_work_queue()->Push(std::move(task));
 
   WorkQueue* chosen_work_queue;
@@ -809,11 +807,11 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
 
   selector.SetQueuePriority(task_queue2.get(), TaskQueue::kControlPriority);
 
-  TaskQueueImpl::Task task1(TaskQueue::PostedTask(test_closure_, FROM_HERE),
-                            TimeTicks(), EnqueueOrder::FromIntForTesting(2),
+  TaskQueueImpl::Task task1(PostedTask(test_closure_, FROM_HERE), TimeTicks(),
+                            EnqueueOrder::FromIntForTesting(2),
                             EnqueueOrder::FromIntForTesting(2));
-  TaskQueueImpl::Task task2(TaskQueue::PostedTask(test_closure_, FROM_HERE),
-                            TimeTicks(), EnqueueOrder::FromIntForTesting(3),
+  TaskQueueImpl::Task task2(PostedTask(test_closure_, FROM_HERE), TimeTicks(),
+                            EnqueueOrder::FromIntForTesting(3),
                             EnqueueOrder::FromIntForTesting(3));
   task_queue->immediate_work_queue()->Push(std::move(task1));
   task_queue2->immediate_work_queue()->Push(std::move(task2));
@@ -859,13 +857,13 @@ class ChooseOldestWithPriorityTest
 
 TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
   task_queues_[0]->immediate_work_queue()->Push(TaskQueueImpl::Task(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE), TimeTicks(),
+      PostedTask(test_closure_, FROM_HERE), TimeTicks(),
       EnqueueOrder::FromIntForTesting(GetParam().immediate_task_enqueue_order),
       EnqueueOrder::FromIntForTesting(
           GetParam().immediate_task_enqueue_order)));
 
   task_queues_[0]->delayed_work_queue()->Push(TaskQueueImpl::Task(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE), TimeTicks(),
+      PostedTask(test_closure_, FROM_HERE), TimeTicks(),
       EnqueueOrder::FromIntForTesting(GetParam().delayed_task_enqueue_order),
       EnqueueOrder::FromIntForTesting(GetParam().delayed_task_enqueue_order)));
 

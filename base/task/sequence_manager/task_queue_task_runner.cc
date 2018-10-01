@@ -21,16 +21,16 @@ TaskQueueTaskRunner::~TaskQueueTaskRunner() {}
 bool TaskQueueTaskRunner::PostDelayedTask(const Location& location,
                                           OnceClosure callback,
                                           TimeDelta delay) {
-  return task_queue_proxy_->PostTask(TaskQueue::PostedTask(
+  return task_queue_proxy_->PostTask(PostedTask(
       std::move(callback), location, delay, Nestable::kNestable, task_type_));
 }
 
 bool TaskQueueTaskRunner::PostNonNestableDelayedTask(const Location& location,
                                                      OnceClosure callback,
                                                      TimeDelta delay) {
-  return task_queue_proxy_->PostTask(
-      TaskQueue::PostedTask(std::move(callback), location, delay,
-                            Nestable::kNonNestable, task_type_));
+  return task_queue_proxy_->PostTask(PostedTask(std::move(callback), location,
+                                                delay, Nestable::kNonNestable,
+                                                task_type_));
 }
 
 bool TaskQueueTaskRunner::RunsTasksInCurrentSequence() const {

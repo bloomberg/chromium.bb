@@ -45,15 +45,15 @@ class WorkQueueSetsTest : public testing::Test {
 
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(BindOnce([] {}), FROM_HERE), TimeTicks(),
-        EnqueueOrder(), EnqueueOrder::FromIntForTesting(enqueue_order));
+        PostedTask(BindOnce([] {}), FROM_HERE), TimeTicks(), EnqueueOrder(),
+        EnqueueOrder::FromIntForTesting(enqueue_order));
     return fake_task;
   }
 
   TaskQueueImpl::Task FakeNonNestableTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(BindOnce([] {}), FROM_HERE), TimeTicks(),
-        EnqueueOrder(), EnqueueOrder::FromIntForTesting(enqueue_order));
+        PostedTask(BindOnce([] {}), FROM_HERE), TimeTicks(), EnqueueOrder(),
+        EnqueueOrder::FromIntForTesting(enqueue_order));
     fake_task.nestable = Nestable::kNonNestable;
     return fake_task;
   }

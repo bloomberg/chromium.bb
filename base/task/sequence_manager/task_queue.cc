@@ -20,8 +20,6 @@ namespace sequence_manager {
 
 namespace {
 
-constexpr int kTaskTypeNone = 0;
-
 // TODO(kraynov): Move NullTaskRunner from //base/test to //base.
 scoped_refptr<SingleThreadTaskRunner> CreateNullTaskRunner() {
   return MakeRefCounted<internal::TaskQueueTaskRunner>(
@@ -54,12 +52,13 @@ TaskQueue::~TaskQueue() {
       TakeTaskQueueImpl());
 }
 
-TaskQueue::Task::Task(TaskQueue::PostedTask task, TimeTicks desired_run_time)
-    : PendingTask(task.posted_from,
-                  std::move(task.callback),
+TaskQueue::Task::Task(internal::PostedTask posted_task,
+                      TimeTicks desired_run_time)
+    : PendingTask(posted_task.location,
+                  std::move(posted_task.callback),
                   desired_run_time,
-                  task.nestable),
-      task_type_(task.task_type) {}
+                  posted_task.nestable),
+      task_type_(posted_task.task_type) {}
 
 TaskQueue::TaskTiming::TaskTiming(bool has_wall_time, bool has_thread_time)
     : has_wall_time_(has_wall_time), has_thread_time_(has_thread_time) {}
@@ -77,26 +76,6 @@ void TaskQueue::TaskTiming::RecordTaskEnd(LazyNow* now) {
   if (has_thread_time())
     end_thread_time_ = base::ThreadTicks::Now();
 }
-
-TaskQueue::PostedTask::PostedTask(OnceClosure callback,
-                                  Location posted_from,
-                                  TimeDelta delay,
-                                  Nestable nestable,
-                                  int task_type)
-    : callback(std::move(callback)),
-      posted_from(posted_from),
-      delay(delay),
-      nestable(nestable),
-      task_type(task_type) {}
-
-TaskQueue::PostedTask::PostedTask(PostedTask&& move_from)
-    : callback(std::move(move_from.callback)),
-      posted_from(move_from.posted_from),
-      delay(move_from.delay),
-      nestable(move_from.nestable),
-      task_type(move_from.task_type) {}
-
-TaskQueue::PostedTask::~PostedTask() = default;
 
 void TaskQueue::ShutdownTaskQueue() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
