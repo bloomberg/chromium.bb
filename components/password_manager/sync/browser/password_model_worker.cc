@@ -33,8 +33,8 @@ void PasswordModelWorker::ScheduleWork(base::OnceClosure work) {
   base::AutoLock lock(password_store_lock_);
   if (password_store_) {
     password_store_->ScheduleTask(
-        base::Bind([](base::OnceClosure work) { std::move(work).Run(); },
-                   base::Passed(std::move(work))));
+        base::BindOnce([](base::OnceClosure work) { std::move(work).Run(); },
+                       base::Passed(std::move(work))));
   }
 }
 
