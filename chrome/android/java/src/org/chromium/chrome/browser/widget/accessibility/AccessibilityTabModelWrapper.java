@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.widget.accessibility;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.design.widget.TabLayout;
+import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -21,7 +23,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelAdapter.AccessibilityTabModelAdapterListener;
 
 /**
@@ -36,8 +37,8 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
     private TabLayout mStackButtonWrapper;
     private TabLayout.Tab mStandardButton;
     private TabLayout.Tab mIncognitoButton;
-    private TintedImageView mStandardButtonIcon;
-    private TintedImageView mIncognitoButtonIcon;
+    private AppCompatImageView mStandardButtonIcon;
+    private AppCompatImageView mIncognitoButtonIcon;
 
     private ColorStateList mTabIconDarkColor;
     private ColorStateList mTabIconLightColor;
@@ -106,12 +107,12 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
                 AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
         // Setting scaleY here to make sure the icons are not flipped due to the scaleY of its
         // container layout.
-        mStandardButtonIcon = new TintedImageView(getContext());
+        mStandardButtonIcon = new AppCompatImageView(getContext());
         mStandardButtonIcon.setImageResource(R.drawable.btn_normal_tabs);
         mStandardButtonIcon.setScaleY(-1.0f);
         mStandardButtonIcon.setContentDescription(
                 getResources().getString(R.string.accessibility_tab_switcher_standard_stack));
-        mIncognitoButtonIcon = new TintedImageView(getContext());
+        mIncognitoButtonIcon = new AppCompatImageView(getContext());
         mIncognitoButtonIcon.setImageResource(R.drawable.btn_incognito_tabs);
         mIncognitoButtonIcon.setScaleY(-1.0f);
         mIncognitoButtonIcon.setContentDescription(getResources().getString(
@@ -178,15 +179,15 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
                     getResources(), R.color.incognito_modern_primary_color));
             mStackButtonWrapper.setSelectedTabIndicatorColor(
                     mTabIconSelectedLightColor.getDefaultColor());
-            mStandardButtonIcon.setTint(mTabIconLightColor);
-            mIncognitoButtonIcon.setTint(mTabIconSelectedLightColor);
+            ImageViewCompat.setImageTintList(mStandardButtonIcon, mTabIconLightColor);
+            ImageViewCompat.setImageTintList(mIncognitoButtonIcon, mTabIconSelectedLightColor);
         } else {
             setBackgroundColor(
                     ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
             mStackButtonWrapper.setSelectedTabIndicatorColor(
                     mTabIconSelectedDarkColor.getDefaultColor());
-            mStandardButtonIcon.setTint(mTabIconSelectedDarkColor);
-            mIncognitoButtonIcon.setTint(mTabIconDarkColor);
+            ImageViewCompat.setImageTintList(mStandardButtonIcon, mTabIconSelectedDarkColor);
+            ImageViewCompat.setImageTintList(mIncognitoButtonIcon, mTabIconDarkColor);
         }
         // Ensure the tab in tab layout is correctly selected when tab switcher is
         // first opened.

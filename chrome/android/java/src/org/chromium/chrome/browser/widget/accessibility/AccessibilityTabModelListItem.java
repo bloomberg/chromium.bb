@@ -13,7 +13,10 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.AppCompatImageButton;
+import android.support.v7.widget.AppCompatImageView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -34,8 +37,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.widget.TintedImageButton;
-import org.chromium.chrome.browser.widget.TintedImageView;
 
 /**
  * A widget that shows a single row of the {@link AccessibilityTabModelListView} list.
@@ -72,8 +73,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     private LinearLayout mTabContents;
     private TextView mTitleView;
     private TextView mDescriptionView;
-    private TintedImageView mFaviconView;
-    private TintedImageButton mCloseButton;
+    private AppCompatImageView mFaviconView;
+    private AppCompatImageButton mCloseButton;
 
     // The children on the undo view.
     private LinearLayout mUndoContents;
@@ -311,13 +312,13 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
             mFaviconView.getBackground().setLevel(mIncognitoLevel);
             ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.WhiteTitle1);
             ApiCompatibilityUtils.setTextAppearance(mDescriptionView, R.style.WhiteBody);
-            mCloseButton.setTint(mLightCloseIconColor);
+            ImageViewCompat.setImageTintList(mCloseButton, mLightCloseIconColor);
         } else {
             setBackgroundResource(R.color.modern_primary_color);
             mFaviconView.getBackground().setLevel(mDefaultLevel);
             ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.BlackTitle1);
             ApiCompatibilityUtils.setTextAppearance(mDescriptionView, R.style.BlackBody);
-            mCloseButton.setTint(mDarkCloseIconColor);
+            ImageViewCompat.setImageTintList(mCloseButton, mDarkCloseIconColor);
         }
 
         if (TextUtils.isEmpty(url)) {
@@ -333,11 +334,11 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
             Bitmap bitmap = mTab.getFavicon();
             if (bitmap != null) {
                 // Don't tint favicon bitmaps.
-                mFaviconView.setTint(null);
+                ImageViewCompat.setImageTintList(mFaviconView, null);
                 mFaviconView.setImageBitmap(bitmap);
             } else {
                 mFaviconView.setImageResource(R.drawable.ic_globe_24dp);
-                mFaviconView.setTint(mDarkIconColor);
+                ImageViewCompat.setImageTintList(mFaviconView, mDarkIconColor);
             }
         }
     }
