@@ -20,7 +20,7 @@ extern "C" {
 #include "av1/decoder/accounting.h"
 #endif
 
-#ifndef AOM_AOMDX_H_
+#ifndef AOM_AOM_AOMDX_H_
 typedef void (*aom_inspect_cb)(void *decoder, void *data);
 #endif
 

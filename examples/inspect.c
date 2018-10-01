@@ -618,21 +618,36 @@ int open_file(char *file) {
   return EXIT_SUCCESS;
 }
 
+Av1DecodeReturn adr;
+int have_frame = 0;
+const unsigned char *frame;
+const unsigned char *end_frame;
+size_t frame_size = 0;
+
 EMSCRIPTEN_KEEPALIVE
 int read_frame() {
-  if (!aom_video_reader_read_frame(reader)) return EXIT_FAILURE;
   img = NULL;
-  aom_codec_iter_t iter = NULL;
-  size_t frame_size = 0;
-  const unsigned char *frame = aom_video_reader_get_frame(reader, &frame_size);
-  if (aom_codec_decode(&codec, frame, (unsigned int)frame_size, NULL) !=
+
+  if (!have_frame) {
+    if (!aom_video_reader_read_frame(reader)) return EXIT_FAILURE;
+    frame = aom_video_reader_get_frame(reader, &frame_size);
+    have_frame = 1;
+    end_frame = frame + frame_size;
+  }
+
+  if (aom_codec_decode(&codec, frame, (unsigned int)frame_size, &adr) !=
       AOM_CODEC_OK) {
     die_codec(&codec, "Failed to decode frame.");
   }
+  frame = adr.buf;
+  if (frame == end_frame) have_frame = 0;
+
   int got_any_frames = 0;
   aom_image_t *frame_img;
-  while ((frame_img = aom_codec_get_frame(&codec, &iter))) {
-    img = frame_img;
+  struct av1_ref_frame ref_dec;
+  ref_dec.idx = adr.idx;
+  if (!aom_codec_control(&codec, AV1_GET_REFERENCE, &ref_dec)) {
+    img = frame_img = &ref_dec.img;
     ++frame_count;
     got_any_frames = 1;
   }
