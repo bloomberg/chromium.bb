@@ -103,6 +103,9 @@ class ActionDelegate {
   // state.
   virtual void Restart() = 0;
 
+  // Stop the current script and show |message| if it is not empty .
+  virtual void StopCurrentScript(const std::string& message);
+
   // Return the current ClientMemory.
   virtual ClientMemory* GetClientMemory() = 0;
 

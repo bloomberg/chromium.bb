@@ -101,6 +101,7 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(LoadURL, void(const GURL& url));
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(Restart, void());
+  MOCK_METHOD1(StopCurrentScript, void(const std::string& message));
   MOCK_METHOD0(GetClientMemory, ClientMemory*());
 };
 
