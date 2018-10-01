@@ -58,8 +58,6 @@ void ExploreSitesServiceImpl::GetCategoryImage(int category_id,
       explore_sites_store_.get(), category_id, kFaviconsPerCategoryImage,
       base::BindOnce(&ExploreSitesServiceImpl::DecodeImageBytes,
                      std::move(callback))));
-  // TODO(dewittj, freedjm): implement.
-  std::move(callback).Run(nullptr);
 }
 
 void ExploreSitesServiceImpl::GetSiteImage(int site_id,
@@ -136,6 +134,8 @@ void ExploreSitesServiceImpl::AddUpdatedCatalog(
 // static
 void ExploreSitesServiceImpl::OnDecodeDone(BitmapCallback callback,
                                            const SkBitmap& decoded_image) {
+  DVLOG(1) << "Decoded images, result "
+           << (decoded_image.isNull() ? "null" : "non-null");
   std::unique_ptr<SkBitmap> bitmap = std::make_unique<SkBitmap>(decoded_image);
   std::move(callback).Run(std::move(bitmap));
 }
@@ -145,8 +145,11 @@ void ExploreSitesServiceImpl::DecodeImageBytes(BitmapCallback callback,
                                                EncodedImageList images) {
   // TODO(freedjm) Fix to handle multiple images when support is added for
   // creating composite images for the NTP tiles.
-  DCHECK(images.size() > 0);
-  std::unique_ptr<EncodedImageBytes> image_data = std::move(images[0]);
+  DVLOG(1) << "Requested decoding for " << images.size() << " images";
+  if (images.size() == 0) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
 
   service_manager::mojom::ConnectorRequest connector_request;
   std::unique_ptr<service_manager::Connector> connector =
@@ -155,7 +158,7 @@ void ExploreSitesServiceImpl::DecodeImageBytes(BitmapCallback callback,
       ->GetConnector()
       ->BindConnectorRequest(std::move(connector_request));
 
-  data_decoder::DecodeImage(connector.get(), *image_data,
+  data_decoder::DecodeImage(connector.get(), *images[0],
                             data_decoder::mojom::ImageCodec::DEFAULT, false,
                             data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
                             base::BindOnce(&OnDecodeDone, std::move(callback)));
