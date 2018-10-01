@@ -1298,6 +1298,68 @@ TEST_F(AccountReconcilorTest, MigrationClearAllTokens) {
   EXPECT_TRUE(test_signin_client()->is_ready_for_dice_migration());
 }
 
+TEST_F(AccountReconcilorTest, DiceDeleteCookie) {
+  SetAccountConsistency(signin::AccountConsistencyMethod::kDice);
+
+  const std::string primary_account_id =
+      account_tracker()->SeedAccountInfo("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(primary_account_id, "refresh_token");
+  signin_manager()->SignIn("12345", "user@gmail.com", "password");
+  const std::string secondary_account_id =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  token_service()->UpdateCredentials(secondary_account_id, "refresh_token");
+
+  ASSERT_TRUE(token_service()->RefreshTokenIsAvailable(primary_account_id));
+  ASSERT_FALSE(token_service()->RefreshTokenHasError(primary_account_id));
+  ASSERT_TRUE(token_service()->RefreshTokenIsAvailable(secondary_account_id));
+  ASSERT_FALSE(token_service()->RefreshTokenHasError(secondary_account_id));
+
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+
+  // With scoped deletion, only secondary tokens are revoked.
+  {
+    std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion =
+        reconcilor->GetScopedSyncDataDeletion();
+    reconcilor->OnGaiaCookieDeletedByUserAction();
+    EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(primary_account_id));
+    EXPECT_FALSE(token_service()->RefreshTokenHasError(primary_account_id));
+    EXPECT_FALSE(
+        token_service()->RefreshTokenIsAvailable(secondary_account_id));
+  }
+
+  token_service()->UpdateCredentials(secondary_account_id, "refresh_token");
+  reconcilor->OnGaiaCookieDeletedByUserAction();
+
+  // Without scoped deletion, the primary token is also invalidated.
+  EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(primary_account_id));
+  EXPECT_TRUE(token_service()->RefreshTokenHasError(primary_account_id));
+  EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                CREDENTIALS_REJECTED_BY_CLIENT,
+            token_service()
+                ->GetAuthError(primary_account_id)
+                .GetInvalidGaiaCredentialsReason());
+  EXPECT_FALSE(token_service()->RefreshTokenIsAvailable(secondary_account_id));
+
+  // If the primary account has an error, always revoke it.
+  token_service()->UpdateCredentials(primary_account_id, "refresh_token");
+  ASSERT_FALSE(token_service()->RefreshTokenHasError(primary_account_id));
+  token_service()->UpdateAuthErrorForTesting(
+      primary_account_id,
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_SERVER));
+  {
+    std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion =
+        reconcilor->GetScopedSyncDataDeletion();
+    reconcilor->OnGaiaCookieDeletedByUserAction();
+    EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                  CREDENTIALS_REJECTED_BY_CLIENT,
+              token_service()
+                  ->GetAuthError(primary_account_id)
+                  .GetInvalidGaiaCredentialsReason());
+  }
+}
+
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 // clang-format off

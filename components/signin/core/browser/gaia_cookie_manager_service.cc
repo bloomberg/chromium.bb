@@ -26,6 +26,7 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/load_flags.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -625,6 +626,14 @@ void GaiaCookieManagerService::OnCookieChange(
   DCHECK_EQ(kGaiaCookieName, cookie.Name());
   DCHECK(cookie.IsDomainMatch(GaiaUrls::GetInstance()->google_url().host()));
   list_accounts_stale_ = true;
+
+  if (cause == network::mojom::CookieChangeCause::EXPLICIT) {
+    DCHECK(net::CookieChangeCauseIsDeletion(net::CookieChangeCause::EXPLICIT));
+    for (auto& observer : observer_list_) {
+      observer.OnGaiaCookieDeletedByUserAction();
+    }
+  }
+
   // Ignore changes to the cookie while requests are pending.  These changes
   // are caused by the service itself as it adds accounts.  A side effects is
   // that any changes to the gaia cookie outside of this class, while requests
