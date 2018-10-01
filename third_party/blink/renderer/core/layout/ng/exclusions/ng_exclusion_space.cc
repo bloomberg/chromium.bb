@@ -259,39 +259,42 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
   // NOTE: This could potentially be done lazily when we query the exclusion
   // space for a layout opportunity.
   for (size_t i = 0; i < shelves_.size(); ++i) {
-    // Check if we need to insert a new shelf between two other shelves. E.g.
-    //
-    //    0 1 2 3 4 5 6 7 8
-    // 0  +-----+X----X+---+
-    //    |xxxxx|      |xxx|
-    // 10 +-----+      |xxx|
-    //      +---+      |xxx|
-    // 20   |NEW|      |xxx|
-    //    X-----------X|xxx|
-    // 30              |xxx|
-    //    X----------------X
-    //
-    // In the above example the "NEW" left exclusion creates a shelf between
-    // the two other shelves drawn.
-    //
-    // NOTE: We calculate this upfront as we may remove the shelf we need to
-    // check against.
-    //
-    // NOTE: If there is no "next" shelf, we consider this between shelves.
-    bool is_between_shelves =
-        exclusion_end_offset >= shelves_[i].block_offset &&
-        (i + 1 >= shelves_.size() ||
-         exclusion_end_offset < shelves_[i + 1].block_offset);
-
     // We modify the current shelf in-place. However we need to keep a copy of
     // the shelf if we need to insert a new shelf later in the loop.
     base::Optional<NGShelf> shelf_copy;
-    if (is_between_shelves)
-      shelf_copy.emplace(shelves_[i]);
+
+    bool is_between_shelves;
 
     // A new scope is created as shelf may be removed.
     {
       NGShelf& shelf = shelves_[i];
+
+      // Check if we need to insert a new shelf between two other shelves. E.g.
+      //
+      //    0 1 2 3 4 5 6 7 8
+      // 0  +-----+X----X+---+
+      //    |xxxxx|      |xxx|
+      // 10 +-----+      |xxx|
+      //      +---+      |xxx|
+      // 20   |NEW|      |xxx|
+      //    X-----------X|xxx|
+      // 30              |xxx|
+      //    X----------------X
+      //
+      // In the above example the "NEW" left exclusion creates a shelf between
+      // the two other shelves drawn.
+      //
+      // NOTE: We calculate this upfront as we may remove the shelf we need to
+      // check against.
+      //
+      // NOTE: If there is no "next" shelf, we consider this between shelves.
+      is_between_shelves =
+          exclusion_end_offset >= shelf.block_offset &&
+          (i + 1 >= shelves_.size() ||
+           exclusion_end_offset < shelves_[i + 1].block_offset);
+
+      if (is_between_shelves)
+        shelf_copy.emplace(shelf);
 
       // Check if the new exclusion will be below this shelf. E.g.
       //
