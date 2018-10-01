@@ -319,7 +319,7 @@ static av_cold int aom_init(AVCodecContext *avctx,
     enccfg.g_h            = avctx->height;
     enccfg.g_timebase.num = avctx->time_base.num;
     enccfg.g_timebase.den = avctx->time_base.den;
-    enccfg.g_threads      = avctx->thread_count;
+    enccfg.g_threads      = avctx->thread_count ? avctx->thread_count : av_cpu_count();
 
     if (ctx->lag_in_frames >= 0)
         enccfg.g_lag_in_frames = ctx->lag_in_frames;
@@ -731,17 +731,13 @@ static av_cold int av1_init(AVCodecContext *avctx)
 #define OFFSET(x) offsetof(AOMContext, x)
 #define VE AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
 static const AVOption options[] = {
-    { "cpu-used",        "Quality/Speed ratio modifier",           OFFSET(cpu_used),        AV_OPT_TYPE_INT, {.i64 = 1}, -8, 8, VE},
+    { "cpu-used",        "Quality/Speed ratio modifier",           OFFSET(cpu_used),        AV_OPT_TYPE_INT, {.i64 = 1}, 0, 8, VE},
     { "auto-alt-ref",    "Enable use of alternate reference "
                          "frames (2-pass only)",                   OFFSET(auto_alt_ref),    AV_OPT_TYPE_INT, {.i64 = -1},      -1,      2,       VE},
     { "lag-in-frames",   "Number of frames to look ahead at for "
                          "alternate reference frame selection",    OFFSET(lag_in_frames),   AV_OPT_TYPE_INT, {.i64 = -1},      -1,      INT_MAX, VE},
     { "error-resilience", "Error resilience configuration", OFFSET(error_resilient), AV_OPT_TYPE_FLAGS, {.i64 = 0}, INT_MIN, INT_MAX, VE, "er"},
     { "default",         "Improve resiliency against losses of whole frames", 0, AV_OPT_TYPE_CONST, {.i64 = AOM_ERROR_RESILIENT_DEFAULT}, 0, 0, VE, "er"},
-    { "partitions",      "The frame partitions are independently decodable "
-                         "by the bool decoder, meaning that partitions can be decoded even "
-                         "though earlier partitions have been lost. Note that intra predicition"
-                         " is still done over the partition boundary.",       0, AV_OPT_TYPE_CONST, {.i64 = AOM_ERROR_RESILIENT_PARTITIONS}, 0, 0, VE, "er"},
     { "crf",              "Select the quality for constant quality mode", offsetof(AOMContext, crf), AV_OPT_TYPE_INT, {.i64 = -1}, -1, 63, VE },
     { "static-thresh",    "A change threshold on blocks below which they will be skipped by the encoder", OFFSET(static_thresh), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, VE },
     { "drop-threshold",   "Frame drop threshold", offsetof(AOMContext, drop_threshold), AV_OPT_TYPE_INT, {.i64 = 0 }, INT_MIN, INT_MAX, VE },

@@ -369,6 +369,7 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_ZMBV,         MKTAG('Z', 'M', 'B', 'V') },
     { AV_CODEC_ID_KMVC,         MKTAG('K', 'M', 'V', 'C') },
     { AV_CODEC_ID_CAVS,         MKTAG('C', 'A', 'V', 'S') },
+    { AV_CODEC_ID_AVS2,         MKTAG('A', 'V', 'S', '2') },
     { AV_CODEC_ID_JPEG2000,     MKTAG('m', 'j', 'p', '2') },
     { AV_CODEC_ID_JPEG2000,     MKTAG('M', 'J', '2', 'C') },
     { AV_CODEC_ID_JPEG2000,     MKTAG('L', 'J', '2', 'C') },
@@ -469,6 +470,11 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_AV1,          MKTAG('A', 'V', '0', '1') },
     { AV_CODEC_ID_MSCC,         MKTAG('M', 'S', 'C', 'C') },
     { AV_CODEC_ID_SRGC,         MKTAG('S', 'R', 'G', 'C') },
+    { AV_CODEC_ID_IMM4,         MKTAG('I', 'M', 'M', '4') },
+    { AV_CODEC_ID_PROSUMER,     MKTAG('B', 'T', '2', '0') },
+    { AV_CODEC_ID_MWSC,         MKTAG('M', 'W', 'S', 'C') },
+    { AV_CODEC_ID_WCMV,         MKTAG('W', 'C', 'M', 'V') },
+    { AV_CODEC_ID_RASC,         MKTAG('R', 'A', 'S', 'C') },
     { AV_CODEC_ID_NONE,         0 }
 };
 

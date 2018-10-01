@@ -177,3 +177,11 @@ def HandleAutorename(cfg):
   # configs" call in robosushi.  it'll work if you re-run it, but it takes a
   # while and only needs to be done once.
   raise Exception("Please commit autorename file changes and comment this out.")
+
+def IsCommitOnThisBranch(robo_configuration, commit_title):
+  """Detect if we've already committed the |commit_title| locally."""
+  # Get all commit titles between us and origin/master
+  titles = check_output(["git", "log", "--format=%s",
+          "origin/master..%s" % robo_configuration.branch_name()])
+  print titles
+  return commit_title in titles
