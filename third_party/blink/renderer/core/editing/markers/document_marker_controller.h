@@ -79,10 +79,10 @@ class CORE_EXPORT DocumentMarkerController final
   void RemoveMarkersInRange(const EphemeralRange&, DocumentMarker::MarkerTypes);
   void RemoveMarkersOfTypes(DocumentMarker::MarkerTypes);
   void RemoveMarkersForNode(
-      const Node*,
+      const Text&,
       DocumentMarker::MarkerTypes = DocumentMarker::MarkerTypes::All());
   void RemoveSpellingMarkersUnderWords(const Vector<String>& words);
-  void RemoveSuggestionMarkerByTag(const Node*, int32_t marker_tag);
+  void RemoveSuggestionMarkerByTag(const Text&, int32_t marker_tag);
   void RepaintMarkers(
       DocumentMarker::MarkerTypes = DocumentMarker::MarkerTypes::All());
   // Returns true if markers within a range are found.
@@ -154,7 +154,7 @@ class CORE_EXPORT DocumentMarkerController final
   bool PossiblyHasMarkers(DocumentMarker::MarkerType) const;
   void RemoveMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
   void RemoveMarkers(TextIterator&, DocumentMarker::MarkerTypes);
-  void RemoveMarkersInternal(const Node&,
+  void RemoveMarkersInternal(const Text&,
                              unsigned start_offset,
                              int length,
                              DocumentMarker::MarkerTypes);

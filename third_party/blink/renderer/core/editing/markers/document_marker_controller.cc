@@ -221,11 +221,13 @@ void DocumentMarkerController::RemoveMarkers(
     if (!PossiblyHasMarkers(marker_types))
       return;
     DCHECK(!markers_.IsEmpty());
-
+    const Node& node = marked_text.CurrentContainer();
+    if (!node.IsTextNode())
+      continue;
     int start_offset = marked_text.StartOffsetInCurrentContainer();
     int end_offset = marked_text.EndOffsetInCurrentContainer();
-    RemoveMarkersInternal(marked_text.CurrentContainer(), start_offset,
-                          end_offset - start_offset, marker_types);
+    RemoveMarkersInternal(ToText(node), start_offset, end_offset - start_offset,
+                          marker_types);
   }
 }
 
@@ -336,13 +338,10 @@ void DocumentMarkerController::MoveMarkers(const Text& src_node,
 }
 
 void DocumentMarkerController::RemoveMarkersInternal(
-    const Node& node,
+    const Text& text,
     unsigned start_offset,
     int length,
     DocumentMarker::MarkerTypes marker_types) {
-  // TODO(yoichio): Make this function to take Text instead of Node.
-  if (!node.IsTextNode())
-    return;
   if (length <= 0)
     return;
 
@@ -350,7 +349,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
     return;
   DCHECK(!(markers_.IsEmpty()));
 
-  MarkerLists* const markers = markers_.at(&ToText(node));
+  MarkerLists* const markers = markers_.at(&text);
   if (!markers)
     return;
 
@@ -377,7 +376,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
   }
 
   if (empty_lists_count == DocumentMarker::kMarkerTypeIndexesCount) {
-    markers_.erase(&ToText(node));
+    markers_.erase(&text);
     if (markers_.IsEmpty()) {
       possibly_existing_marker_types_ = DocumentMarker::MarkerTypes();
       SetContext(nullptr);
@@ -387,7 +386,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
   if (!doc_dirty)
     return;
 
-  InvalidatePaintForNode(node);
+  InvalidatePaintForNode(text);
 }
 
 DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingOffsetRange(
@@ -675,16 +674,13 @@ void DocumentMarkerController::Trace(blink::Visitor* visitor) {
 }
 
 void DocumentMarkerController::RemoveMarkersForNode(
-    const Node* node,
+    const Text& text,
     DocumentMarker::MarkerTypes marker_types) {
-  // TODO(yoichio): Make this function to take Text instead of Node.
-  if (!node->IsTextNode())
-    return;
   if (!PossiblyHasMarkers(marker_types))
     return;
   DCHECK(!markers_.IsEmpty());
 
-  MarkerMap::iterator iterator = markers_.find(ToText(node));
+  MarkerMap::iterator iterator = markers_.find(&text);
   if (iterator != markers_.end())
     RemoveMarkersFromList(iterator, marker_types);
 }
@@ -707,17 +703,14 @@ void DocumentMarkerController::RemoveSpellingMarkersUnderWords(
   }
 }
 
-void DocumentMarkerController::RemoveSuggestionMarkerByTag(const Node* node,
+void DocumentMarkerController::RemoveSuggestionMarkerByTag(const Text& text,
                                                            int32_t marker_tag) {
-  // TODO(yoichio): Make this function to take Text instead of Node.
-  if (!node->IsTextNode())
-    return;
-  MarkerLists* markers = markers_.at(ToText(node));
+  MarkerLists* markers = markers_.at(&text);
   SuggestionMarkerListImpl* const list = ToSuggestionMarkerListImpl(
       ListForType(markers, DocumentMarker::kSuggestion));
   if (!list->RemoveMarkerByTag(marker_tag))
     return;
-  InvalidatePaintForNode(*node);
+  InvalidatePaintForNode(text);
 }
 
 void DocumentMarkerController::RemoveMarkersOfTypes(

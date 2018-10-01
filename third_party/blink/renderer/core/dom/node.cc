@@ -2044,8 +2044,8 @@ void Node::DidMoveToNewDocument(Document& old_document) {
         GetDocument().AddListenerTypeIfNeeded(type, *this);
     }
   }
-
-  old_document.Markers().RemoveMarkersForNode(this);
+  if (IsTextNode())
+    old_document.Markers().RemoveMarkersForNode(*ToText(this));
   if (GetDocument().GetPage() &&
       GetDocument().GetPage() != old_document.GetPage()) {
     GetDocument().GetFrame()->GetEventHandlerRegistry().DidMoveIntoPage(*this);
