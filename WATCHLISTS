@@ -2304,6 +2304,7 @@
     'origin_trials': ['chasej+watch@chromium.org',
                       'iclelland+watch@chromium.org'],
     'ozone': ['kalyan.kondapally@intel.com',
+              'msisov@igalia.com',
               'ozone-reviews@chromium.org'],
     'page_info' : ['raymes+watch@chromium.org'],
     'page_load_metrics' : ['bmcquade+watch@chromium.org',
