@@ -663,8 +663,11 @@ void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
     size_t script_size,
     size_t cached_metadata_size) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
+  // TODO(asamidoi): Remove CountWorkerScript which is called for recording
+  // metrics if the metrics are no longer referenced, and then merge
+  // WillEvaluateClassicScript and WillEvaluateModuleScript for cleanup.
   worker_global_scope_->CountWorkerScript(script_size, cached_metadata_size);
-  Client().WillEvaluateClassicScript();
+  Client().WillEvaluateScript();
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedClassicScript(
@@ -674,10 +677,21 @@ void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedClassicScript(
   worker_global_scope_->CountImportedScript(script_size, cached_metadata_size);
 }
 
+void ServiceWorkerGlobalScopeProxy::WillEvaluateModuleScript() {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+  Client().WillEvaluateScript();
+}
+
 void ServiceWorkerGlobalScopeProxy::DidEvaluateClassicScript(bool success) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  WorkerGlobalScope()->DidEvaluateClassicScript();
-  Client().DidEvaluateClassicScript(success);
+  WorkerGlobalScope()->DidEvaluateScript();
+  Client().DidEvaluateScript(success);
+}
+
+void ServiceWorkerGlobalScopeProxy::DidEvaluateModuleScript(bool success) {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+  WorkerGlobalScope()->DidEvaluateScript();
+  Client().DidEvaluateScript(success);
 }
 
 void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {

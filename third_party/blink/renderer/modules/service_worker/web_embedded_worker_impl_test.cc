@@ -45,7 +45,7 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
     // message.
     proxy->ReadyToEvaluateScript();
   }
-  void DidEvaluateClassicScript(bool /* success */) override {
+  void DidEvaluateScript(bool /* success */) override {
     script_evaluated_event_.Signal();
   }
 

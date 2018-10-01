@@ -335,7 +335,7 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent) {
   MockWebServiceWorkerContextProxy mock_proxy;
   std::unique_ptr<ServiceWorkerContextClient> context_client =
       CreateContextClient(&pipes, &mock_proxy);
-  context_client->DidEvaluateClassicScript(true /* success */);
+  context_client->DidEvaluateScript(true /* success */);
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
@@ -373,7 +373,7 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent_Headers) {
   MockWebServiceWorkerContextProxy mock_proxy;
   std::unique_ptr<ServiceWorkerContextClient> context_client =
       CreateContextClient(&pipes, &mock_proxy);
-  context_client->DidEvaluateClassicScript(true /* success */);
+  context_client->DidEvaluateScript(true /* success */);
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
@@ -415,7 +415,7 @@ TEST_F(ServiceWorkerContextClientTest,
   MockWebServiceWorkerContextProxy mock_proxy;
   std::unique_ptr<ServiceWorkerContextClient> context_client =
       CreateContextClient(&pipes, &mock_proxy);
-  context_client->DidEvaluateClassicScript(true /* success */);
+  context_client->DidEvaluateScript(true /* success */);
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
@@ -453,7 +453,7 @@ TEST_F(ServiceWorkerContextClientTest,
   MockWebServiceWorkerContextProxy mock_proxy;
   std::unique_ptr<ServiceWorkerContextClient> context_client =
       CreateContextClient(&pipes, &mock_proxy);
-  context_client->DidEvaluateClassicScript(true /* success */);
+  context_client->DidEvaluateScript(true /* success */);
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
@@ -501,7 +501,7 @@ TEST_F(ServiceWorkerContextClientTest,
   MockWebServiceWorkerContextProxy mock_proxy;
   std::unique_ptr<ServiceWorkerContextClient> context_client =
       CreateContextClient(&pipes, &mock_proxy);
-  context_client->DidEvaluateClassicScript(true /* success */);
+  context_client->DidEvaluateScript(true /* success */);
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
   bool is_idle = false;
