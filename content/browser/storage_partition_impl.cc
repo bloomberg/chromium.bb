@@ -124,22 +124,24 @@ void OnQuotaManagedOriginDeleted(const url::Origin& origin,
   CheckQuotaManagedDataDeletionStatus(deletion_task_count, std::move(callback));
 }
 
-void ClearedShaderCache(const base::Closure& callback) {
+void ClearedShaderCache(base::OnceClosure callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(&ClearedShaderCache, callback));
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&ClearedShaderCache, std::move(callback)));
     return;
   }
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void ClearShaderCacheOnIOThread(const base::FilePath& path,
                                 const base::Time begin,
                                 const base::Time end,
-                                const base::Closure& callback) {
+                                base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GetShaderCacheFactorySingleton()->ClearByPath(
-      path, begin, end, base::Bind(&ClearedShaderCache, callback));
+      path, begin, end,
+      base::BindOnce(&ClearedShaderCache, std::move(callback)));
 }
 
 void OnLocalStorageUsageInfo(
