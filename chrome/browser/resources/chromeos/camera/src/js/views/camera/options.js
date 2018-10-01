@@ -318,6 +318,8 @@ camera.views.camera.Options.prototype.onToggleTimerClicked_ = function(event) {
  * @private
  */
 camera.views.camera.Options.prototype.onToggleGridClicked_ = function(event) {
+  Array.from(document.querySelector('#preview-grid').children).forEach(
+      grid => camera.util.animateOnce(grid));
   chrome.storage.local.set(
       {toggleGrid: this.updateClass_(this.toggleGrid_, 'grid')});
 };
