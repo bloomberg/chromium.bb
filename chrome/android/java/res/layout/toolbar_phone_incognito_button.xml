@@ -4,5 +4,5 @@
      found in the LICENSE file. -->
 
 <!-- The incognito toggle toolbar button. -->
-<org.chromium.chrome.browser.toolbar.IncognitoToggleTabLayout
+<org.chromium.chrome.browser.widget.incognitotoggle.IncognitoToggleButton
     style="@style/ToolbarButton" />
