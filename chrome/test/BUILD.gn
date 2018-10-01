@@ -2805,6 +2805,7 @@ test("unit_tests") {
     # platforms.
     sources += [
       "../browser/component_updater/crl_set_component_installer_unittest.cc",
+      "../browser/ui/hats/hats_unittest.cc",
     ]
   }
 
