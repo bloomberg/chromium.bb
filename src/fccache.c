@@ -171,20 +171,23 @@ FcDirCacheDeleteUUID (const FcChar8  *dir,
     }
     target = FcStrBuildFilename (d, ".uuid", NULL);
     ret = unlink ((char *) target) == 0;
-    times[0].tv_sec = statb.st_atime;
-    times[1].tv_sec = statb.st_mtime;
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-    times[0].tv_usec = statb.st_atim.tv_nsec / 1000;
-    times[1].tv_usec = statb.st_mtim.tv_nsec / 1000;
-#else
-    times[0].tv_usec = 0;
-    times[1].tv_usec = 0;
-#endif
-    if (utimes ((const char *) d, times) != 0)
+    if (ret)
     {
-	fprintf (stderr, "Unable to revert mtime: %s\n", d);
+	times[0].tv_sec = statb.st_atime;
+	times[1].tv_sec = statb.st_mtime;
+#ifdef HAVE_STRUCT_STAT_ST_MTIM
+	times[0].tv_usec = statb.st_atim.tv_nsec / 1000;
+	times[1].tv_usec = statb.st_mtim.tv_nsec / 1000;
+#else
+	times[0].tv_usec = 0;
+	times[1].tv_usec = 0;
+#endif
+	if (utimes ((const char *) d, times) != 0)
+	{
+	    fprintf (stderr, "Unable to revert mtime: %s\n", d);
+	}
+	FcHashTableRemove (config->uuid_table, target);
     }
-    FcHashTableRemove (config->uuid_table, target);
     FcStrFree (target);
 bail:
     FcStrFree (d);
