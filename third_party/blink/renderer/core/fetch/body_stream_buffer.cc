@@ -143,8 +143,9 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
       script_state_(script_state),
       signal_(nullptr),
       made_from_readable_stream_(true) {
-  // TODO(ricea): Perhaps this is not needed since the caller must have a strong
-  // reference to |stream| anyway?
+  // This is needed because sometimes a BodyStreamBuffer can be detached from
+  // the owner object such as Request. We rely on the wrapper and
+  // HasPendingActivity in such a case.
   RetainWrapperDuringConstruction(this, script_state);
   DCHECK(ReadableStreamOperations::IsReadableStreamForDCheck(script_state,
                                                              stream));

@@ -468,7 +468,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
 
  private:
   scoped_refptr<EncodedFormData> form_data_;
-  Member<BytesConsumer> blob_bytes_consumer_;
+  TraceWrapperMember<BytesConsumer> blob_bytes_consumer_;
 };
 
 }  // namespace

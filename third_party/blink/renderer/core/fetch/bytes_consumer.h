@@ -24,6 +24,8 @@ class ExecutionContext;
 // BytesConsumer has four states: waiting, readable, closed and errored. Once
 // the state becomes closed or errored, it will never change. |readable| means
 // that the BytesConsumer is ready to read non-empty bytes synchronously.
+// A BytesConsumer should be retained by TraceWrapperMember, not Member, as
+// a subclass has a reference to a v8::Value.
 class CORE_EXPORT BytesConsumer
     : public GarbageCollectedFinalized<BytesConsumer> {
  public:

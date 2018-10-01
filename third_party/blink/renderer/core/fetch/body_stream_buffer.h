@@ -101,9 +101,9 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
 
   Member<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Object> stream_;
-  Member<BytesConsumer> consumer_;
+  TraceWrapperMember<BytesConsumer> consumer_;
   // We need this member to keep it alive while loading.
-  Member<FetchDataLoader> loader_;
+  TraceWrapperMember<FetchDataLoader> loader_;
   // We need this to ensure that we detect that abort has been signalled
   // correctly.
   Member<AbortSignal> signal_;
