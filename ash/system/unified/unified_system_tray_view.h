@@ -54,9 +54,6 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
                         bool initially_expanded);
   ~UnifiedSystemTrayView() override;
 
-  // Initialize after the view is attached to the widget.
-  void Init();
-
   // Set the maximum height that the view can take.
   void SetMaxHeight(int max_height);
 

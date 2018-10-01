@@ -24,12 +24,6 @@ class MessageCenter;
 
 }  // namespace message_center
 
-namespace views {
-
-class FocusManager;
-
-}  // namespace views
-
 namespace ash {
 
 class UnifiedSystemTrayController;
@@ -67,9 +61,6 @@ class ASH_EXPORT UnifiedMessageCenterView
                            message_center::MessageCenter* message_center);
   ~UnifiedMessageCenterView() override;
 
-  // Initialize focus listener.
-  void Init();
-
   // Set the maximum height that the view can take.
   void SetMaxHeight(int max_height);
 
@@ -85,6 +76,8 @@ class ASH_EXPORT UnifiedMessageCenterView
   // views::View:
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  void RemovedFromWidget() override;
+  void AddedToWidget() override;
 
   // message_center::MessageCenterObserver:
   void OnNotificationAdded(const std::string& id) override;

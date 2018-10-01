@@ -90,7 +90,9 @@ MessageView::MessageView(const Notification& notification)
   UpdateWithNotification(notification);
 }
 
-MessageView::~MessageView() {}
+MessageView::~MessageView() {
+  RemovedFromWidget();
+}
 
 void MessageView::UpdateWithNotification(const Notification& notification) {
   pinned_ = notification.pinned();
@@ -306,6 +308,19 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
+void MessageView::RemovedFromWidget() {
+  if (!focus_manager_)
+    return;
+  focus_manager_->RemoveFocusChangeListener(this);
+  focus_manager_ = nullptr;
+}
+
+void MessageView::AddedToWidget() {
+  focus_manager_ = GetFocusManager();
+  if (focus_manager_)
+    focus_manager_->AddFocusChangeListener(this);
+}
+
 ui::Layer* MessageView::GetSlideOutLayer() {
   return is_nested_ ? layer() : GetWidget()->GetLayer();
 }
@@ -323,6 +338,16 @@ void MessageView::AddSlideObserver(MessageView::SlideObserver* observer) {
 void MessageView::OnSlideOut() {
   MessageCenter::Get()->RemoveNotification(notification_id_,
                                            true /* by_user */);
+}
+
+void MessageView::OnWillChangeFocus(views::View* before, views::View* now) {}
+
+void MessageView::OnDidChangeFocus(views::View* before, views::View* now) {
+  if (Contains(before) || Contains(now) ||
+      (GetControlButtonsView() && (GetControlButtonsView()->Contains(before) ||
+                                   GetControlButtonsView()->Contains(now)))) {
+    UpdateControlButtonsVisibility();
+  }
 }
 
 SlideOutController::SlideMode MessageView::CalculateSlideMode() const {

@@ -22,14 +22,6 @@ class MESSAGE_CENTER_EXPORT SlidableMessageView
   // MessageView::SlideObserver
   void OnSlideChanged(const std::string& notification_id) override;
 
-  NotificationControlButtonsView* GetControlButtonsView() {
-    return message_view_->GetControlButtonsView();
-  }
-
-  void UpdateControlButtonsVisibility() {
-    return message_view_->UpdateControlButtonsVisibility();
-  }
-
   void SetExpanded(bool expanded) {
     return message_view_->SetExpanded(expanded);
   }
@@ -79,4 +71,4 @@ class MESSAGE_CENTER_EXPORT SlidableMessageView
 
 }  // namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_VIEWS_SLIDABLE_MESSAGE_VIEW_H_q
+#endif  // UI_MESSAGE_CENTER_VIEWS_SLIDABLE_MESSAGE_VIEW_H_

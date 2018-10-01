@@ -113,7 +113,6 @@ void MessageCenterBubble::InitializeContents(
   message_center_view_ = new MessageCenterView(message_center_, max_height_);
   bubble_view_->AddChildView(new ContentsView(this, message_center_view_));
   message_center_view_->SetMaxHeight(max_height_);
-  message_center_view_->Init();
   // Resize the content of the bubble view to the given bubble size. This is
   // necessary in case of the bubble border forcing a bigger size then the
   // |new_bubble_view| actually wants. See crbug.com/169390.

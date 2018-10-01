@@ -249,15 +249,6 @@ MessageCenterView::~MessageCenterView() {
 
   if (!is_closing_)
     message_center_->RemoveObserver(this);
-
-  if (focus_manager_)
-    focus_manager_->RemoveFocusChangeListener(this);
-}
-
-void MessageCenterView::Init() {
-  focus_manager_ = GetFocusManager();
-  if (focus_manager_)
-    focus_manager_->AddFocusChangeListener(this);
 }
 
 void MessageCenterView::SetNotifications(
@@ -334,26 +325,6 @@ void MessageCenterView::SetIsClosing(bool is_closing) {
     message_center_->RemoveObserver(this);
   else
     message_center_->AddObserver(this);
-}
-
-void MessageCenterView::OnDidChangeFocus(views::View* before,
-                                         views::View* now) {
-  // Update the button visibility when the focus state is changed.
-  size_t count = message_list_view_->GetNotificationCount();
-  for (size_t i = 0; i < count; ++i) {
-    MessageView* view = message_list_view_->GetNotificationAt(i);
-    // ControlButtonsView is not in the same view hierarchy on ARC++
-    // notifications, so check it separately.
-    if (view->Contains(before) || view->Contains(now) ||
-        (view->GetControlButtonsView() &&
-         (view->GetControlButtonsView()->Contains(before) ||
-          view->GetControlButtonsView()->Contains(now)))) {
-      view->UpdateControlButtonsVisibility();
-    }
-
-    // Ensure that a notification is not removed or added during iteration.
-    DCHECK_EQ(count, message_list_view_->GetNotificationCount());
-  }
 }
 
 void MessageCenterView::UpdateScrollerShadowVisibility() {
