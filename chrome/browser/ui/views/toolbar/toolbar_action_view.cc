@@ -76,11 +76,6 @@ ToolbarActionView::ToolbarActionView(
 
   set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
 
-  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
-  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
-  set_ink_drop_corner_radii(radii, radii);
-
   UpdateState();
 }
 
@@ -305,6 +300,15 @@ void ToolbarActionView::ShowContextMenuForView(
 
   // Otherwise, no other menu is showing, and we can proceed normally.
   DoShowContextMenu(source_type);
+}
+
+void ToolbarActionView::Layout() {
+  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
+  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
+  set_ink_drop_corner_radii(radii, radii);
+
+  views::MenuButton::Layout();
 }
 
 void ToolbarActionView::DoShowContextMenu(

@@ -68,11 +68,6 @@ BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
 
   set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
 
-  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
-  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
-  set_ink_drop_corner_radii(radii, radii);
-
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
@@ -151,6 +146,11 @@ void BrowserAppMenuButton::Layout() {
     ink_drop_container()->SetBoundsRect(GetLocalBounds());
     image()->SetBoundsRect(GetContentsBounds());
   }
+
+  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
+  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
+  set_ink_drop_corner_radii(radii, radii);
 
   AppMenuButton::Layout();
 }
