@@ -342,6 +342,10 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
       const GetHistoryCountCallback& callback,
       base::CancelableTaskTracker* tracker);
 
+  // Returns, via a callback, the number of Hosts visited in the last month.
+  void CountUniqueHostsVisitedLastMonth(const GetHistoryCountCallback& callback,
+                                        base::CancelableTaskTracker* tracker);
+
   // Database management operations --------------------------------------------
 
   // Delete all the information related to a single url.

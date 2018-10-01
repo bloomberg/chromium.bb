@@ -1141,11 +1141,12 @@ HistoryBackend::GetTypedURLSyncControllerDelegate() {
 
 HistoryCountResult HistoryBackend::GetHistoryCount(const Time& begin_time,
                                                    const Time& end_time) {
-  HistoryCountResult result;
-  result.count = 0;
-  result.success =
-      db_ && db_->GetHistoryCount(begin_time, end_time, &result.count);
-  return result;
+  int count = 0;
+  return {db_ && db_->GetHistoryCount(begin_time, end_time, &count), count};
+}
+
+HistoryCountResult HistoryBackend::CountUniqueHostsVisitedLastMonth() {
+  return {!!db_, db_ ? db_->CountUniqueHostsVisitedLastMonth() : 0};
 }
 
 // Keyword visits --------------------------------------------------------------

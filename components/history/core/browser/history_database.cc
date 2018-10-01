@@ -229,6 +229,29 @@ void HistoryDatabase::ComputeDatabaseMetrics(
   }
 }
 
+int HistoryDatabase::CountUniqueHostsVisitedLastMonth() {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  // Collect all URLs visited within the last month.
+  base::Time one_month_ago = base::Time::Now() - base::TimeDelta::FromDays(30);
+
+  sql::Statement url_sql(
+      db_.GetUniqueStatement("SELECT url FROM urls "
+                             "WHERE last_visit_time > ? "
+                             "AND hidden = 0 "
+                             "AND visit_count > 0"));
+  url_sql.BindInt64(0, one_month_ago.ToInternalValue());
+
+  std::set<std::string> hosts;
+  while (url_sql.Step()) {
+    GURL url(url_sql.ColumnString(0));
+    hosts.insert(url.host());
+  }
+
+  UMA_HISTOGRAM_TIMES("History.DatabaseMonthlyHostCountTime",
+                      base::TimeTicks::Now() - start_time);
+  return hosts.size();
+}
+
 TopHostsList HistoryDatabase::TopHosts(size_t num_hosts) {
   base::Time one_month_ago =
       std::max(base::Time::Now() - base::TimeDelta::FromDays(30), base::Time());
