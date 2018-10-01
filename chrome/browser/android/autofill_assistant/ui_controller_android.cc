@@ -12,8 +12,10 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/common/channel_info.h"
 #include "components/autofill_assistant/browser/controller.h"
+#include "components/variations/variations_associated_data.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
@@ -141,6 +143,11 @@ std::string UiControllerAndroid::GetApiKey() {
         switches::kAutofillAssistantServerKey);
   }
   return api_key;
+}
+
+std::string UiControllerAndroid::GetServerUrl() {
+  return variations::GetVariationParamValueByFeature(
+      chrome::android::kAutofillAssistant, "url");
 }
 
 UiController* UiControllerAndroid::GetUiController() {

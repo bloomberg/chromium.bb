@@ -24,8 +24,9 @@ namespace autofill_assistant {
 // client actions.
 class Service {
  public:
-  explicit Service(const std::string& api_key,
-                   content::BrowserContext* context);
+  Service(const std::string& api_key,
+          const GURL& server_url,
+          content::BrowserContext* context);
   virtual ~Service();
 
   using ResponseCallback =

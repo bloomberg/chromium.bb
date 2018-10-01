@@ -19,6 +19,9 @@ class Client {
   // Returns the API key to be used for requests to the backend.
   virtual std::string GetApiKey() = 0;
 
+  // Returns the server URL to be used for requests to the backend.
+  virtual std::string GetServerUrl() = 0;
+
   // Returns a UiController.
   virtual UiController* GetUiController() = 0;
 
