@@ -9,7 +9,6 @@ PASS test.sheet.disabled is true
 PASS test.sheet.disabled is false
 FAIL test.disabled should be false. Was true.
 
-
 PASS test_nostyle.sheet is null
 PASS test_nostyle.disabled is false
 FAIL test_nostyle.disabled should be false. Was true.

@@ -7,4 +7,3 @@ New iconURL is: http://test.com/newfavicon.ico
 Setting icon URL back to: http://test.com/oldfavicon.ico
 Original iconURL is still: http://test.com/oldfavicon.ico
 PASS URL list matches expected
-

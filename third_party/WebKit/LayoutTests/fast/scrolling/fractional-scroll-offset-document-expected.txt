@@ -14,4 +14,3 @@ PASS document.scrollingElement.scrollTop is within 0.00001 of 31
 PASS document.scrollingElement.scrollLeft is within 0.00001 of 9
 PASS document.scrollingElement.scrollTop is within 0.00001 of 0
 PASS document.scrollingElement.scrollLeft is within 0.00001 of 0
-

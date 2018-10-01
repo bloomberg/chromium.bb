@@ -55,7 +55,6 @@ PASS targetChild.getAttribute('translate') is "yes"
 PASS target.translate is false
 PASS target.getAttribute('translate') is "no"
 
-
 PASS target.translate is initialExpectation
 PASS target.translate is lastExpectation
 PASS target.getAttribute('translate') is lastAttributeExpectation

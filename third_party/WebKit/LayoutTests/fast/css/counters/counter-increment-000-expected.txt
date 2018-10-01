@@ -14,4 +14,3 @@ PASS internals.counterValue(document.getElementById('three')) is '3'
 PASS internals.counterValue(document.getElementById('four')) is '4'
 
 TEST COMPLETE
-
