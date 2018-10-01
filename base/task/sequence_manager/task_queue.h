@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/moveable_auto_lock.h"
+#include "base/task/sequence_manager/tasks.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
@@ -60,26 +61,6 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     // observer about cancellations.
     virtual void OnQueueNextWakeUpChanged(TaskQueue* queue,
                                           TimeTicks next_wake_up) = 0;
-  };
-
-  // A wrapper around OnceClosure with additional metadata to be passed
-  // to PostTask and plumbed until PendingTask is created.
-  // TODO(kraynov): Move to TaskQueueTaskRunner.
-  struct BASE_EXPORT PostedTask {
-    PostedTask(OnceClosure callback,
-               Location posted_from,
-               TimeDelta delay = TimeDelta(),
-               Nestable nestable = Nestable::kNestable,
-               int task_type = 0);
-    PostedTask(PostedTask&& move_from);
-    PostedTask(const PostedTask& copy_from) = delete;
-    ~PostedTask();
-
-    OnceClosure callback;
-    Location posted_from;
-    TimeDelta delay;
-    Nestable nestable;
-    int task_type;
   };
 
   // Prepare the task queue to get released.
@@ -147,10 +128,12 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     bool should_notify_observers;
   };
 
-  // Interface to pass per-task metadata to RendererScheduler.
+  // Interface to inspect task type by a scheduler controlling SequenceManager.
+  // TODO(kraynov): Merge with TaskQueueImpl::Task (keeping enqueue order
+  // private with friend classes) and move to tasks.(h|cc).
   class BASE_EXPORT Task : public PendingTask {
    public:
-    Task(PostedTask posted_task, TimeTicks desired_run_time);
+    Task(internal::PostedTask posted_task, TimeTicks desired_run_time);
 
     int task_type() const { return task_type_; }
 

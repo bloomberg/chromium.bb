@@ -98,7 +98,7 @@ class BASE_EXPORT TaskQueueImpl {
       if (time == other.time) {
         // Debug gcc builds can compare an element against itself.
         DCHECK(sequence_num != other.sequence_num || this == &other);
-        // |PostedTask::sequence_num| is int and might wrap around to
+        // |PendingTask::sequence_num| is int and might wrap around to
         // a negative number when casted from EnqueueOrder.
         // This way of comparison handles that properly.
         return (sequence_num - other.sequence_num) <= 0;
@@ -109,11 +109,11 @@ class BASE_EXPORT TaskQueueImpl {
 
   class BASE_EXPORT Task : public TaskQueue::Task {
    public:
-    Task(TaskQueue::PostedTask task,
+    Task(PostedTask task,
          TimeTicks desired_run_time,
          EnqueueOrder sequence_number);
 
-    Task(TaskQueue::PostedTask task,
+    Task(PostedTask task,
          TimeTicks desired_run_time,
          EnqueueOrder sequence_number,
          EnqueueOrder enqueue_order);
@@ -172,7 +172,7 @@ class BASE_EXPORT TaskQueueImpl {
   // TaskQueue implementation.
   const char* GetName() const;
   bool RunsTasksInCurrentSequence() const;
-  void PostTask(TaskQueue::PostedTask task);
+  void PostTask(PostedTask task);
   // Require a reference to enclosing task queue for lifetime control.
   std::unique_ptr<TaskQueue::QueueEnabledVoter> CreateQueueEnabledVoter(
       scoped_refptr<TaskQueue> owning_task_queue);
@@ -360,8 +360,8 @@ class BASE_EXPORT TaskQueueImpl {
     bool is_enabled_for_test;
   };
 
-  void PostImmediateTaskImpl(TaskQueue::PostedTask task);
-  void PostDelayedTaskImpl(TaskQueue::PostedTask task);
+  void PostImmediateTaskImpl(PostedTask task);
+  void PostDelayedTaskImpl(PostedTask task);
 
   // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
   // only fast path.

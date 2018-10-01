@@ -10,6 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/moveable_auto_lock.h"
 #include "base/task/sequence_manager/task_queue.h"
+#include "base/task/sequence_manager/tasks.h"
 
 namespace base {
 namespace sequence_manager {
@@ -30,7 +31,7 @@ class TaskQueueProxy : public RefCountedThreadSafe<TaskQueueProxy> {
                  scoped_refptr<AssociatedThreadId> associated_thread);
 
   // May be called on any thread.
-  bool PostTask(TaskQueue::PostedTask task) const;
+  bool PostTask(PostedTask task) const;
   bool RunsTasksInCurrentSequence() const;
 
   // PostTask will reject any task after this call.

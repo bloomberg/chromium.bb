@@ -73,7 +73,7 @@ TaskQueueImpl::~TaskQueueImpl() {
 #endif
 }
 
-TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
+TaskQueueImpl::Task::Task(PostedTask task,
                           TimeTicks desired_run_time,
                           EnqueueOrder sequence_number)
     : TaskQueue::Task(std::move(task), desired_run_time) {
@@ -81,7 +81,7 @@ TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
   sequence_num = static_cast<int>(sequence_number);
 }
 
-TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
+TaskQueueImpl::Task::Task(PostedTask task,
                           TimeTicks desired_run_time,
                           EnqueueOrder sequence_number,
                           EnqueueOrder enqueue_order)
@@ -180,7 +180,7 @@ bool TaskQueueImpl::RunsTasksInCurrentSequence() const {
   return PlatformThread::CurrentId() == associated_thread_->thread_id;
 }
 
-void TaskQueueImpl::PostTask(TaskQueue::PostedTask task) {
+void TaskQueueImpl::PostTask(PostedTask task) {
   // This method can only be called if task queue is able to accept tasks,
   // i.e. has a sequence manager and not being unregistered. This is enforced
   // by |proxy_| which is detached if this condition not met.
@@ -191,7 +191,7 @@ void TaskQueueImpl::PostTask(TaskQueue::PostedTask task) {
   }
 }
 
-void TaskQueueImpl::PostImmediateTaskImpl(TaskQueue::PostedTask task) {
+void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task.callback);
@@ -206,7 +206,7 @@ void TaskQueueImpl::PostImmediateTaskImpl(TaskQueue::PostedTask task) {
                                             sequence_number, sequence_number));
 }
 
-void TaskQueueImpl::PostDelayedTaskImpl(TaskQueue::PostedTask task) {
+void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task.callback);
@@ -259,13 +259,13 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
   EnqueueOrder thread_hop_task_sequence_number =
       any_thread().sequence_manager->GetNextSequenceNumber();
   // TODO(altimin): Add a copy method to Task to capture metadata here.
-  PushOntoImmediateIncomingQueueLocked(Task(
-      TaskQueue::PostedTask(BindOnce(&TaskQueueImpl::ScheduleDelayedWorkTask,
-                                     Unretained(this), std::move(pending_task)),
-                            FROM_HERE, TimeDelta(), Nestable::kNonNestable,
-                            pending_task.task_type()),
-      TimeTicks(), thread_hop_task_sequence_number,
-      thread_hop_task_sequence_number));
+  PushOntoImmediateIncomingQueueLocked(
+      Task(PostedTask(BindOnce(&TaskQueueImpl::ScheduleDelayedWorkTask,
+                               Unretained(this), std::move(pending_task)),
+                      FROM_HERE, TimeDelta(), Nestable::kNonNestable,
+                      pending_task.task_type()),
+           TimeTicks(), thread_hop_task_sequence_number,
+           thread_hop_task_sequence_number));
 }
 
 void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {

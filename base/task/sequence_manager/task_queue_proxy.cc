@@ -20,7 +20,7 @@ TaskQueueProxy::TaskQueueProxy(
 
 TaskQueueProxy::~TaskQueueProxy() = default;
 
-bool TaskQueueProxy::PostTask(TaskQueue::PostedTask task) const {
+bool TaskQueueProxy::PostTask(PostedTask task) const {
   // NOTE: Task's destructor might attempt to post another task,
   // so ensure it never happens inside this lock.
   Optional<MoveableAutoLock> lock(AcquireLockIfNeeded());
