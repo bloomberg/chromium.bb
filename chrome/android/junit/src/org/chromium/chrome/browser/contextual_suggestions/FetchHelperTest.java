@@ -165,6 +165,27 @@ public final class FetchHelperTest {
     }
 
     @Test
+    public void tabObserver_onUrlUpdated() {
+        FetchHelper helper = createFetchHelper();
+        doReturn(DIFFERENT_URL).when(mTab).getUrl();
+        getTabObserver().onUrlUpdated(mTab);
+        verify(mDelegate, times(1)).clearState();
+        // Normally we would change the suffix here, but ShadowUrlUtilities don't support that now.
+        doReturn(STARTING_URL).when(mTab).getUrl();
+        getTabObserver().onUrlUpdated(mTab);
+        verify(mDelegate, times(2)).clearState();
+
+        // Should be ignored, because URL is the same.
+        getTabObserver().onUrlUpdated(mTab);
+        verify(mDelegate, times(2)).clearState();
+
+        // Should be ignored, because tab is different.
+        doReturn(STARTING_URL).when(mTab2).getUrl();
+        getTabObserver().onUrlUpdated(mTab2);
+        verify(mDelegate, times(2)).clearState();
+    }
+
+    @Test
     public void tabObserver_didFirstVisuallyNonEmptyPaint() {
         delayFetchExecutionTest((tabObserver) -> tabObserver.didFirstVisuallyNonEmptyPaint(mTab));
     }

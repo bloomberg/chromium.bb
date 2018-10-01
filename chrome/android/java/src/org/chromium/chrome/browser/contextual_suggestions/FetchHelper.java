@@ -188,6 +188,18 @@ class FetchHelper {
             }
 
             @Override
+            public void onUrlUpdated(Tab tab) {
+                assert !tab.isIncognito();
+                // This address cases, where pages are implemented as a single page app and
+                // switching between articles updates URL, but does not cause a page reload.
+                if (tab == mCurrentTab
+                        && !getTabFetchReadinessState(tab).isContextTheSame(tab.getUrl())) {
+                    clearState();
+                    getTabFetchReadinessState(tab).updateUrl(tab.getUrl());
+                }
+            }
+
+            @Override
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
                 setTimeBaselineAndMaybeFetch(tab);
             }
