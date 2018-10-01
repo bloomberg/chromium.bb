@@ -58,20 +58,11 @@ void ReportUsage(Usage usage) {
 
 }  // namespace
 
-MidiManager::MidiManager(MidiService* service)
-    : initialization_state_(InitializationState::NOT_STARTED),
-      finalized_(false),
-      result_(Result::NOT_INITIALIZED),
-      data_sent_(false),
-      data_received_(false),
-      service_(service) {
+MidiManager::MidiManager(MidiService* service) : service_(service) {
   ReportUsage(Usage::CREATED);
 }
 
 MidiManager::~MidiManager() {
-  // Make sure that Finalize() is called to clean up resources allocated on
-  // the Chrome_IOThread.
-  base::AutoLock auto_lock(lock_);
   CHECK(finalized_);
 }
 
@@ -85,12 +76,13 @@ MidiManager* MidiManager::Create(MidiService* service) {
 
 void MidiManager::Shutdown() {
   Finalize();
+  finalized_ = true;
 
   base::AutoLock auto_lock(lock_);
-  if (session_thread_runner_)
+  if (session_thread_runner_) {
     DCHECK(session_thread_runner_->BelongsToCurrentThread());
-
-  finalized_ = true;
+    session_thread_runner_ = nullptr;
+  }
 
   UMA_HISTOGRAM_ENUMERATION("Media.Midi.ResultOnShutdown", result_,
                             static_cast<Sample>(Result::MAX) + 1);
@@ -110,18 +102,16 @@ void MidiManager::Shutdown() {
   for (auto* client : clients_)
     client->Detach();
   clients_.clear();
-
-  session_thread_runner_ = nullptr;
 }
 
 void MidiManager::StartSession(MidiManagerClient* client) {
+  DCHECK(!finalized_);
   ReportUsage(Usage::SESSION_STARTED);
 
   bool needs_initialization = false;
 
   {
     base::AutoLock auto_lock(lock_);
-    DCHECK(!finalized_);
 
     if (clients_.find(client) != clients_.end() ||
         pending_clients_.find(client) != pending_clients_.end()) {
@@ -207,22 +197,23 @@ void MidiManager::StartInitialization() {
 }
 
 void MidiManager::CompleteInitialization(Result result) {
+  DCHECK(!finalized_);
+  DCHECK_EQ(InitializationState::STARTED, initialization_state_);
+
   TRACE_EVENT0("midi", "MidiManager::CompleteInitialization");
   ReportUsage(Usage::INITIALIZED);
 
   base::AutoLock auto_lock(lock_);
+  if (!session_thread_runner_)
+    return;
+  DCHECK(session_thread_runner_->BelongsToCurrentThread());
+
   UMA_HISTOGRAM_ENUMERATION("Media.Midi.InputPorts", input_ports_.size(),
                             kMaxUmaDevices + 1);
   UMA_HISTOGRAM_ENUMERATION("Media.Midi.OutputPorts", output_ports_.size(),
                             kMaxUmaDevices + 1);
 
-  if (!session_thread_runner_)
-    return;
-  DCHECK(session_thread_runner_->BelongsToCurrentThread());
-
-  DCHECK(!finalized_);
   DCHECK(clients_.empty());
-  DCHECK_EQ(initialization_state_, InitializationState::STARTED);
   initialization_state_ = InitializationState::COMPLETED;
   result_ = result;
 
@@ -298,6 +289,15 @@ void MidiManager::ReceiveMidiData(uint32_t port_index,
 
   for (auto* client : clients_)
     client->ReceiveMidiData(port_index, data, length, timestamp);
+}
+
+size_t MidiManager::GetClientCountForTesting() {
+  base::AutoLock auto_lock(lock_);
+  return clients_.size();
+}
+
+size_t MidiManager::GetPendingClientCountForTesting() {
+  return pending_clients_.size();
 }
 
 }  // namespace midi

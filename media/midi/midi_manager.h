@@ -165,10 +165,8 @@ class MIDI_EXPORT MidiManager {
                        base::TimeTicks time);
 
   // Only for testing.
-  size_t clients_size_for_testing() const { return clients_.size(); }
-  size_t pending_clients_size_for_testing() const {
-    return pending_clients_.size();
-  }
+  size_t GetClientCountForTesting();
+  size_t GetPendingClientCountForTesting();
 
   MidiService* service() { return service_; }
 
@@ -179,34 +177,38 @@ class MIDI_EXPORT MidiManager {
     COMPLETED,
   };
 
-  // Keeps track of all clients who wish to receive MIDI data.
-  // TODO(toyoshim): Enable GUARDED_BY once a testing function is fixed.
-  std::set<MidiManagerClient*> clients_;  // GUARDED_BY(lock_);
+  // Note: Members that are not protected by any lock should be accessed only on
+  // the I/O thread.
+
+  // Tracks platform dependent initialization state.
+  InitializationState initialization_state_ = InitializationState::NOT_STARTED;
+
+  // Keeps false until Finalize() is called.
+  bool finalized_ = false;
+
+  // Keeps the platform dependent initialization result if initialization is
+  // completed. Otherwise keeps mojom::Result::NOT_INITIALIZED.
+  mojom::Result result_ = mojom::Result::NOT_INITIALIZED;
 
   // Keeps track of all clients who are waiting for CompleteStartSession().
   std::set<MidiManagerClient*> pending_clients_;
 
+  // Keeps track of all clients who wish to receive MIDI data.
+  std::set<MidiManagerClient*> clients_ GUARDED_BY(lock_);
+
   // Keeps a SingleThreadTaskRunner of the thread that calls StartSession in
-  // order to invoke CompleteStartSession() on the thread.
-  scoped_refptr<base::SingleThreadTaskRunner> session_thread_runner_;
-
-  // Tracks platform dependent initialization state.
-  InitializationState initialization_state_;
-
-  // Keeps false until Finalize() is called.
-  bool finalized_;
-
-  // Keeps the platform dependent initialization result if initialization is
-  // completed. Otherwise keeps mojom::Result::NOT_INITIALIZED.
-  mojom::Result result_;
+  // order to invoke CompleteStartSession() on the thread. This is touched only
+  // on the IO thread usually, but to be guarded by |lock_| for thread checks.
+  scoped_refptr<base::SingleThreadTaskRunner> session_thread_runner_
+      GUARDED_BY(lock_);
 
   // Keeps all MidiPortInfo.
   MidiPortInfoList input_ports_ GUARDED_BY(lock_);
   MidiPortInfoList output_ports_ GUARDED_BY(lock_);
 
   // Tracks if actual data transmission happens.
-  bool data_sent_ GUARDED_BY(lock_);
-  bool data_received_ GUARDED_BY(lock_);
+  bool data_sent_ GUARDED_BY(lock_) = false;
+  bool data_received_ GUARDED_BY(lock_) = false;
 
   // Protects members above.
   base::Lock lock_;
