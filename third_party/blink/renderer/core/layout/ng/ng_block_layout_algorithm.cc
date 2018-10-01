@@ -78,25 +78,32 @@ bool ApplyClearance(const NGConstraintSpace& constraint_space,
 // Returns if the resulting fragment should be considered an "empty block".
 // There is special casing for fragments like this, e.g. margins "collapse
 // through", etc.
-bool IsEmptyBlock(const NGLayoutInputNode child,
-                  const NGLayoutResult& layout_result) {
+bool IsEmptyBlock(bool is_new_fc, const NGLayoutResult& layout_result) {
   // TODO(ikilpatrick): This should be a DCHECK.
-  if (child.CreatesNewFormattingContext())
+  if (is_new_fc)
     return false;
 
   if (layout_result.BfcBlockOffset())
     return false;
 
 #if DCHECK_IS_ON()
+  const NGPhysicalFragment& physical_fragment =
+      *layout_result.PhysicalFragment();
   // This just checks that the fragments block size is actually zero. We can
   // assume that its in the same writing mode as its parent, as a different
-  // writing mode child will be caught by the CreatesNewFormattingContext check.
-  NGFragment fragment(child.Style().GetWritingMode(),
-                      *layout_result.PhysicalFragment());
-  DCHECK_EQ(LayoutUnit(), fragment.BlockSize()) << child.ToString();
+  // writing mode child will be caught by the is_new_fc check.
+  NGFragment fragment(physical_fragment.Style().GetWritingMode(),
+                      physical_fragment);
+  DCHECK_EQ(LayoutUnit(), fragment.BlockSize());
 #endif
 
   return true;
+}
+
+// As above; for convenience if you have a child_space.
+bool IsEmptyBlock(const NGConstraintSpace& child_space,
+                  const NGLayoutResult& layout_result) {
+  return IsEmptyBlock(child_space.IsNewFormattingContext(), layout_result);
 }
 
 LayoutUnit LogicalFromBfcLineOffset(const NGFragment& fragment,
@@ -197,6 +204,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
 
     const ComputedStyle& child_style = child.Style();
     const EClear child_clear = child_style.Clear();
+    bool child_is_new_fc = child.CreatesNewFormattingContext();
 
     // Conceptually floats and a single new-FC would just get positioned on a
     // single "line". If there is a float/new-FC with clearance, this creates a
@@ -204,7 +212,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     //
     // Both of the float size trackers get reset for anything that isn't a float
     // (inflow and new-FC) at the end of the loop, as this creates a new "line".
-    if (child.IsFloating() || child.CreatesNewFormattingContext()) {
+    if (child.IsFloating() || child_is_new_fc) {
       LayoutUnit float_inline_size =
           float_left_inline_size + float_right_inline_size;
 
@@ -276,7 +284,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
 
       max_inline_contribution =
           float_left_inline_size + float_right_inline_size;
-    } else if (child.CreatesNewFormattingContext()) {
+    } else if (child_is_new_fc) {
       // As floats are line relative, we perform the margin calculations in the
       // line relative coordinate system as well.
       LayoutUnit margin_line_left = margins.LineLeft(direction);
@@ -1111,7 +1119,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   bool relayout_child_when_bfc_resolved =
       layout_result->AdjoiningFloatTypes() && !child_bfc_block_offset &&
       !child_space.FloatsBfcBlockOffset();
-  bool is_empty_block = IsEmptyBlock(child, *layout_result);
+  bool is_empty_block = IsEmptyBlock(child_space, *layout_result);
 
   // A child may have aborted its layout if it resolved its BFC block offset.
   // If we don't have a BFC block offset yet, we need to propagate the abortion
@@ -1366,7 +1374,8 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
   // Determine the child's end logical offset, for the next child to use.
   LayoutUnit logical_block_offset;
 
-  bool is_empty_block = IsEmptyBlock(child, layout_result);
+  bool is_empty_block =
+      IsEmptyBlock(child.CreatesNewFormattingContext(), layout_result);
   if (is_empty_block) {
     // The default behaviour for empty blocks is they just pass through the
     // previous inflow position.
@@ -1467,7 +1476,7 @@ LayoutUnit NGBlockLayoutAlgorithm::PositionEmptyChildWithParentBfc(
     const NGConstraintSpace& child_space,
     const NGInflowChildData& child_data,
     const NGLayoutResult& layout_result) const {
-  DCHECK(IsEmptyBlock(child, layout_result));
+  DCHECK(IsEmptyBlock(child_space, layout_result));
 
   // The child must be an in-flow zero-block-size fragment, use its end margin
   // strut for positioning.

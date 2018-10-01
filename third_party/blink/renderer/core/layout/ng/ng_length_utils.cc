@@ -403,7 +403,8 @@ MinMaxSize ComputeMinAndMaxContentContribution(
               .SetPercentageResolutionSize(
                   constraint_space->PercentageResolutionSize())
               .SetFloatsBfcBlockOffset(LayoutUnit())
-              .SetIsNewFormattingContext(node.CreatesNewFormattingContext())
+              .SetIsNewFormattingContext(
+                  constraint_space->IsNewFormattingContext())
               .SetIsShrinkToFit(true)
               .ToConstraintSpace(node.Style().GetWritingMode());
       constraint_space = &adjusted_constraint_space;
