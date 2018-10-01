@@ -518,12 +518,12 @@ INSTANTIATE_TEST_CASE_P(SRC_ClearKey,
                                 Values(SrcType::SRC)));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-#if BUILDFLAG(SHOULD_BUNDLE_WIDEVINE_CDM)
+#if BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                         EncryptedMediaTest,
                         Combine(Values(kWidevineKeySystem),
                                 Values(SrcType::MSE)));
-#endif  // #if BUILDFLAG(SHOULD_BUNDLE_WIDEVINE_CDM)
+#endif  // #if BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-a.webm", kWebMVorbisAudioVp8Video);

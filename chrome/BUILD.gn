@@ -1036,7 +1036,7 @@ if (is_win) {
     }
   }
 
-  if (should_bundle_widevine_cdm) {
+  if (bundle_widevine_cdm) {
     bundle_data("widevine_cdm_library_binaries") {
       sources = [
         "$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib",
@@ -1067,7 +1067,7 @@ if (is_win) {
   }
 
   group("widevine_cdm_library") {
-    if (should_bundle_widevine_cdm) {
+    if (bundle_widevine_cdm) {
       deps = [
         ":widevine_cdm_library_binaries",
         ":widevine_cdm_library_manifest",

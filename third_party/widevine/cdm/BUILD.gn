@@ -14,7 +14,7 @@ buildflag_header("buildflags") {
 
   flags = [
     "ENABLE_WIDEVINE=$enable_widevine",
-    "SHOULD_BUNDLE_WIDEVINE_CDM=$should_bundle_widevine_cdm",
+    "BUNDLE_WIDEVINE_CDM=$bundle_widevine_cdm",
     "ENABLE_WIDEVINE_CDM_COMPONENT=$enable_widevine_cdm_component",
   ]
 }
@@ -29,7 +29,7 @@ widevine_cdm_manifest_file = []
 
 # TODO(xhwang): widevine_cdm_version.h is only used in few places. Clean this up
 # so we don't need to copy it in most cases.
-if (should_bundle_widevine_cdm) {
+if (bundle_widevine_cdm) {
   if (is_chromeos) {
     widevine_cdm_version_h_file =
         "chromeos/$widevine_arch/widevine_cdm_version.h"
@@ -56,7 +56,7 @@ if (should_bundle_widevine_cdm) {
   widevine_cdm_version_h_file = "widevine_cdm_version.h"
 }
 
-if (should_bundle_widevine_cdm && enable_widevine_cdm_host_verification) {
+if (bundle_widevine_cdm && enable_widevine_cdm_host_verification) {
   if (is_win) {
     widevine_cdm_binary_files += [ "win/$widevine_arch/widevinecdm.dll.sig" ]
   } else if (is_mac) {
