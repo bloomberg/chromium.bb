@@ -40,10 +40,6 @@
 
 namespace {
 
-// The minimium chrome build no that supports window management devtools
-// commands.
-const int kBrowserWindowDevtoolsBuildNo = 3076;
-
 const int kWifiMask = 0x2;
 const int k4GMask = 0x8;
 const int k3GMask = 0x10;
@@ -874,17 +870,8 @@ Status ExecuteSetWindowPosition(Session* session,
   if (status.IsError())
     return status;
 
-  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo) {
-    return desktop->SetWindowPosition(session->window, static_cast<int>(x),
+  return desktop->SetWindowPosition(session->window, static_cast<int>(x),
                                       static_cast<int>(y));
-  }
-
-  AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
-  if (status.IsError())
-    return status;
-
-  return extension->SetWindowPosition(static_cast<int>(x), static_cast<int>(y));
 }
 
 Status ExecuteGetWindowSize(Session* session,
@@ -952,18 +939,8 @@ Status ExecuteSetWindowSize(Session* session,
   if (status.IsError())
     return status;
 
-  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo) {
-    return desktop->SetWindowSize(session->window, static_cast<int>(width),
+  return desktop->SetWindowSize(session->window, static_cast<int>(width),
                                   static_cast<int>(height));
-  }
-
-  AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
-  if (status.IsError())
-    return status;
-
-  return extension->SetWindowSize(
-      static_cast<int>(width), static_cast<int>(height));
 }
 
 Status ExecuteMaximizeWindow(Session* session,
