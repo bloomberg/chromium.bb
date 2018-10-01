@@ -234,6 +234,12 @@ class CORE_EXPORT ObjectPaintProperties {
            "scroll translation and a replaced content transform.";
     DCHECK(!ClipPathClip() || !ClipPath())
         << "ClipPathClip and ClipPathshould be mutually exclusive.";
+    DCHECK((!TransformIsolationNode() && !ClipIsolationNode() &&
+            !EffectIsolationNode()) ||
+           (TransformIsolationNode() && ClipIsolationNode() &&
+            EffectIsolationNode()))
+        << "Isolation nodes have to be created for all of transform, clip, and "
+           "effect trees.";
   }
 #endif
 

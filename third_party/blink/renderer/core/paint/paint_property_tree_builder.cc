@@ -151,6 +151,17 @@ class FragmentPaintPropertyTreeBuilder {
 
   bool PropertyChanged() const { return property_changed_; }
   bool PropertyAddedOrRemoved() const { return property_added_or_removed_; }
+  bool HasIsolationNodes() const {
+    // All or nothing check on the isolation nodes.
+    DCHECK(!properties_ ||
+           (properties_->TransformIsolationNode() &&
+            properties_->ClipIsolationNode() &&
+            properties_->EffectIsolationNode()) ||
+           (!properties_->TransformIsolationNode() &&
+            !properties_->ClipIsolationNode() &&
+            !properties_->EffectIsolationNode()));
+    return properties_ && properties_->TransformIsolationNode();
+  }
 
  private:
   ALWAYS_INLINE void UpdatePaintOffset();
@@ -2925,21 +2936,26 @@ bool PaintPropertyTreeBuilder::UpdateForChildren() {
   bool property_changed = false;
   bool property_added_or_removed = false;
   auto* fragment_data = &object_.GetMutableForPainting().FirstFragment();
+  // For now, only consider single fragment elements as possible isolation
+  // boundaries.
+  // TODO(crbug.com/890932): See if this is needed.
+  bool is_isolated = context_.fragments.size() == 1u;
   for (auto& fragment_context : context_.fragments) {
     FragmentPaintPropertyTreeBuilder builder(object_, context_,
                                              fragment_context, *fragment_data);
+    // The element establishes an isolation boundary if it has isolation nodes
+    // before and after updating the children. In other words, if it didn't have
+    // isolation nodes previously then we still want to do a subtree walk. If it
+    // now doesn't have isolation nodes, then of course it is also not isolated.
+    is_isolated &= builder.HasIsolationNodes();
     builder.UpdateForChildren();
+    is_isolated &= builder.HasIsolationNodes();
+
     property_changed |= builder.PropertyChanged();
     property_added_or_removed |= builder.PropertyAddedOrRemoved();
     fragment_data = fragment_data->NextFragment();
   }
   DCHECK(!fragment_data);
-  // TODO(vmpstr): With isolation nodes, we can be selective with which reasons
-  // cause a forced subtree update. We'll likely need to propagate these reasons
-  // via |context_| so that children can also clear this flag. For example, with
-  // "container chain may change" reason, the child might fully contains all
-  // out of flow elements (before and after the property tree update), which
-  // means it can clear that reason and possibly skip the subtree update.
   if (object_.SubtreePaintPropertyUpdateReasons() !=
       static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)) {
     if (AreSubtreeUpdateReasonsIsolationPiercing(
@@ -2955,6 +2971,11 @@ bool PaintPropertyTreeBuilder::UpdateForChildren() {
     context_.container_for_absolute_position = &object_;
   if (object_.CanContainFixedPositionObjects())
     context_.container_for_fixed_position = &object_;
+
+  if (is_isolated) {
+    context_.force_subtree_update_reasons &=
+        ~PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
+  }
 
   // We need to update property tree states of paint chunks.
   if (property_added_or_removed)

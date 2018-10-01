@@ -266,9 +266,6 @@ void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
   paint_layer.SetPreviousPaintPhaseDescendantOutlinesEmpty(false);
   paint_layer.SetPreviousPaintPhaseFloatEmpty(false);
   paint_layer.SetPreviousPaintPhaseDescendantBlockBackgroundsEmpty(false);
-  // TODO(vmpstr): Investigate if this is required across an isolation boundary.
-  context.paint_invalidator_context.subtree_flags |=
-      PaintInvalidatorContext::kSubtreeVisualRectUpdate;
 }
 
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
