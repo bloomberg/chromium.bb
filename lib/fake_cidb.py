@@ -59,7 +59,8 @@ class FakeCIDBConnection(object):
                   build_config, bot_hostname, master_build_id=None,
                   timeout_seconds=None, status=constants.BUILDER_STATUS_PASSED,
                   important=None, buildbucket_id=None, milestone_version=None,
-                  platform_version=None, start_time=None, build_type=None):
+                  platform_version=None, start_time=None, build_type=None,
+                  branch=None):
     """Insert a build row.
 
     Note this API slightly differs from cidb as we pass status to avoid having
@@ -91,7 +92,8 @@ class FakeCIDBConnection(object):
            'final': False,
            'milestone_version': milestone_version,
            'platform_version': platform_version,
-           'build_type': build_type}
+           'build_type': build_type,
+           'branch': branch}
     self.buildTable.append(row)
     return build_id
 

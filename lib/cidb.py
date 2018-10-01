@@ -730,10 +730,11 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     return self._Execute('SELECT NOW()').fetchall()[0][0]
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
-                  timeout_seconds=None, important=None, buildbucket_id=None):
+                  timeout_seconds=None, important=None, buildbucket_id=None,
+                  branch=None):
     """Insert a build row.
 
     Args:
@@ -749,6 +750,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       important: (Optional) If provided, the |important| value for this build.
       buildbucket_id: (Optional) If provided, the |buildbucket_id| value for
                        this build.
+      branch: (Optional) Manifest branch name of this build.
     """
     values = {
         'builder_name': builder_name,
@@ -760,7 +762,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         'start_time': sqlalchemy.func.current_timestamp(),
         'master_build_id': master_build_id,
         'important': important,
-        'buildbucket_id': buildbucket_id
+        'buildbucket_id': buildbucket_id,
+        'branch': branch,
     }
     if timeout_seconds is not None:
       now = self.GetTime()

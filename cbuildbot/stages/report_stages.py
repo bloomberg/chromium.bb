@@ -273,7 +273,8 @@ class BuildStartStage(generic_stages.BuilderStage):
               master_build_id=d['master_build_id'],
               timeout_seconds=self._GetBuildTimeoutSeconds(),
               important=d['important'],
-              buildbucket_id=self._run.options.buildbucket_id)
+              buildbucket_id=self._run.options.buildbucket_id,
+              branch=self._run.manifest_branch)
         except Exception as e:
           logging.error('Error: %s\n If the buildbucket_id to insert is '
                         'duplicated to the buildbucket_id of an old build and '
