@@ -449,21 +449,6 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kPost, "session/:sessionId/keys",
           WrapToCommand("Type", base::Bind(&ExecuteSendKeysToActiveElement))),
-      CommandMapping(kGet, "session/:sessionId/ime/available_engines",
-                     WrapToCommand("GetAvailableEngines",
-                                   base::Bind(&ExecuteUnimplementedCommand))),
-      CommandMapping(kGet, "session/:sessionId/ime/active_engine",
-                     WrapToCommand("GetActiveEngine",
-                                   base::Bind(&ExecuteUnimplementedCommand))),
-      CommandMapping(
-          kGet, "session/:sessionId/ime/activated",
-          WrapToCommand("Activated", base::Bind(&ExecuteUnimplementedCommand))),
-      CommandMapping(kPost, "session/:sessionId/ime/deactivate",
-                     WrapToCommand("Deactivate",
-                                   base::Bind(&ExecuteUnimplementedCommand))),
-      CommandMapping(
-          kPost, "session/:sessionId/ime/activate",
-          WrapToCommand("Activate", base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(kPost, "session/:sessionId/touch/click",
                      WrapToCommand("Tap", base::Bind(&ExecuteTouchSingleTap))),
       CommandMapping(kPost, "session/:sessionId/touch/down",
@@ -505,12 +490,6 @@ HttpHandler::HttpHandler(
           kGet, "session/:sessionId/chromium/heap_snapshot",
           WrapToCommand("HeapSnapshot", base::Bind(&ExecuteTakeHeapSnapshot))),
       CommandMapping(
-          kPost, "session/:sessionId/visible",
-          WrapToCommand("Visible", base::Bind(&ExecuteUnimplementedCommand))),
-      CommandMapping(
-          kGet, "session/:sessionId/visible",
-          WrapToCommand("Visible", base::Bind(&ExecuteUnimplementedCommand))),
-      CommandMapping(
           kPost, "session/:sessionId/file",
           WrapToCommand("UploadFile", base::Bind(&ExecuteUploadFile))),
       CommandMapping(kGet, "session/:sessionId/element/:id/value",
@@ -519,14 +498,6 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kPost, "session/:sessionId/element/:id/hover",
           WrapToCommand("HoverElement", base::Bind(&ExecuteHoverOverElement))),
-      CommandMapping(
-          kPost, "session/:sessionId/element/:id/drag",
-          WrapToCommand("Drag", base::Bind(&ExecuteUnimplementedCommand))),
-
-      CommandMapping(kPost, "session/:sessionId/execute_sql",
-                     WrapToCommand("ExecuteSql",
-                                   base::Bind(&ExecuteUnimplementedCommand))),
-
       CommandMapping(kGet, "session/:sessionId/network_connection",
                      WrapToCommand("GetNetworkConnection",
                                    base::Bind(&ExecuteGetNetworkConnection))),
@@ -540,20 +511,10 @@ HttpHandler::HttpHandler(
           kDelete, "session/:sessionId/chromium/network_conditions",
           WrapToCommand("DeleteNetworkConditions",
                         base::Bind(&ExecuteDeleteNetworkConditions))),
-
-      CommandMapping(kGet, "session/:sessionId/browser_connection",
-                     WrapToCommand("GetBrowserConnection",
-                                   base::Bind(&ExecuteUnimplementedCommand))),
-      CommandMapping(kPost, "session/:sessionId/browser_connection",
-                     WrapToCommand("SetBrowserConnection",
-                                   base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(
           kDelete, "session/:sessionId/orientation",
           WrapToCommand("DeleteScreenOrientation",
                         base::Bind(&ExecuteDeleteScreenOrientation))),
-      CommandMapping(
-          kPost, "Logs",
-          WrapToCommand("Logs", base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(
           kGet, kShutdownPath,
           base::Bind(&ExecuteQuitAll,
