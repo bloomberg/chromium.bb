@@ -142,6 +142,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
       const FrameSinkId& parent_frame_sink_id,
       const FrameSinkId& child_frame_sink_id) const;
 
+  // Returns the first ancestor of |start| (including |start|) that is a root.
+  base::Optional<FrameSinkId> FindRootFrameSinkId(
+      const FrameSinkId& start) const;
+
   void DropTemporaryReference(const SurfaceId& surface_id);
 
   // These two functions should only be used by WindowServer.

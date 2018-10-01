@@ -547,6 +547,37 @@ TEST_F(HostFrameSinkManagerLocalTest, HitTestAggregatorQuery) {
   EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkChild1));
 }
 
+TEST_F(HostFrameSinkManagerRemoteTest, FindRootFrameSinkId) {
+  FakeHostFrameSinkClient host_client;
+
+  EXPECT_FALSE(host().FindRootFrameSinkId(kFrameSinkParent1));
+  EXPECT_FALSE(host().FindRootFrameSinkId(kFrameSinkChild1));
+
+  // Register two FrameSinkIds, hierarchy between them and create a
+  // CompositorFrameSink for one.
+  host().RegisterFrameSinkId(kFrameSinkParent1, &host_client);
+  host().RegisterFrameSinkId(kFrameSinkChild1, &host_client);
+  host().RegisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1);
+
+  EXPECT_FALSE(host().FindRootFrameSinkId(kFrameSinkParent1));
+  EXPECT_FALSE(host().FindRootFrameSinkId(kFrameSinkChild1));
+
+  RootCompositorFrameSinkData root_data;
+  host().CreateRootCompositorFrameSink(
+      root_data.BuildParams(kFrameSinkParent1));
+
+  MockCompositorFrameSinkClient compositor_frame_sink_client;
+  mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  host().CreateCompositorFrameSink(
+      kFrameSinkChild1, MakeRequest(&compositor_frame_sink),
+      compositor_frame_sink_client.BindInterfacePtr());
+
+  EXPECT_EQ(base::Optional<FrameSinkId>(kFrameSinkParent1),
+            host().FindRootFrameSinkId(kFrameSinkParent1));
+  EXPECT_EQ(base::Optional<FrameSinkId>(kFrameSinkParent1),
+            host().FindRootFrameSinkId(kFrameSinkChild1));
+}
+
 // Verify that HostFrameSinkManager can handle restarting after a GPU crash.
 TEST_F(HostFrameSinkManagerRemoteTest, RestartOnGpuCrash) {
   FakeHostFrameSinkClient host_client;
