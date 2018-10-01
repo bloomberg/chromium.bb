@@ -1363,6 +1363,16 @@
           'scripts': 'chromium_linux_scripts',
         },
       },
+      'mac-osxbeta-rel': {
+        'swarming_mixins': [
+            'mac_10.14',
+            'no_gpu',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
+        },
+      },
       'mac-views-rel': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
