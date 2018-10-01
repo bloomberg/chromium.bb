@@ -2064,6 +2064,7 @@ test("browser_tests") {
     if (enable_app_list) {
       sources += [
         "../browser/ui/app_list/app_list_client_impl_browsertest.cc",
+        "../browser/ui/app_list/chrome_app_list_model_updater_browsertest.cc",
         "../browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc",
       ]
     }

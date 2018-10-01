@@ -26,7 +26,7 @@ ArcAppItem::ArcAppItem(
   if (sync_item && sync_item->item_ordinal.IsValid())
     UpdateFromSync(sync_item);
   else
-    SetDefaultPositionIfApplicable();
+    SetDefaultPositionIfApplicable(model_updater);
 
   // Set model updater last to avoid being called during construction.
   set_model_updater(model_updater);
