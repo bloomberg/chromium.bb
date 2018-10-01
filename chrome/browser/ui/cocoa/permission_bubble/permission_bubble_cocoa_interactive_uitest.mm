@@ -23,22 +23,7 @@
 #include "ui/base/ui_base_features.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
-namespace {
-
-enum class UiMode {
-  VIEWS,
-};
-
-std::string UiModeToString(const ::testing::TestParamInfo<UiMode>& info) {
-  return "Views";
-}
-
-}  // namespace
-
-// TODO(crbug.com/630357): Remove parameterized testing for this class.
-class PermissionBubbleInteractiveUITest
-    : public InProcessBrowserTest,
-      public ::testing::WithParamInterface<UiMode> {
+class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
  public:
   PermissionBubbleInteractiveUITest() {}
 
@@ -100,9 +85,7 @@ class PermissionBubbleInteractiveUITest
 };
 
 // There is only one tab. Cmd+w will close it along with the browser window.
-// TDOO(thakis): Reenable this once this test tests views.
-IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest,
-                       DISABLED_CmdWClosesWindow) {
+IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, CmdWClosesWindow) {
   base::scoped_nsobject<NSWindow> browser_window(
       browser()->window()->GetNativeWindow(), base::scoped_policy::RETAIN);
   EXPECT_TRUE([browser_window isVisible]);
@@ -120,9 +103,7 @@ IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest,
 
 // Add a tab, ensure we can switch away and back using Cmd+Alt+Left/Right and
 // curly braces.
-// Disabled. See https://crbug.com/845389 - this regressed somewhere between
-// r545258 and r559030, but it may be obsolete soon.
-IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest, DISABLED_SwitchTabs) {
+IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, SwitchTabs) {
   NSWindow* browser_window = browser()->window()->GetNativeWindow();
 
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
@@ -180,8 +161,3 @@ IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest, DISABLED_SwitchTabs) {
   EnsureWindowActive(browser_window, "switch away with curly brace");
   EXPECT_FALSE(test_api_->GetPromptWindow());
 }
-
-INSTANTIATE_TEST_CASE_P(,
-                        PermissionBubbleInteractiveUITest,
-                        ::testing::Values(UiMode::VIEWS),
-                        &UiModeToString);
