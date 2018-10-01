@@ -101,6 +101,7 @@ let SelectToSpeak = function() {
   this.prefsManager_ = new PrefsManager();
   this.prefsManager_.initPreferences();
 
+  this.runContentScripts_();
   this.setUpEventListeners_();
 };
 
@@ -396,6 +397,31 @@ SelectToSpeak.prototype = {
     chrome.accessibilityPrivate.setFocusRing([]);
     chrome.accessibilityPrivate.setHighlights(
         [], this.prefsManager_.highlightColor());
+  },
+
+  /**
+   * Runs content scripts that allow Select-to-Speak access to
+   * Google Docs content without a11y mode enabled, in every open
+   * tab. Should be run when Select-to-Speak starts up so that any
+   * tabs already opened will be checked.
+   * This should be kept in sync with the "content_scripts" section in
+   * the Select-to-Speak manifest.
+   * @private
+   */
+  runContentScripts_: function() {
+    chrome.tabs.query(
+        {
+          url: [
+            'https://docs.google.com/document*',
+            'https://docs.sandbox.google.com/*'
+          ]
+        },
+        (tabs) => {
+          tabs.forEach((tab) => {
+            chrome.tabs.executeScript(
+                tab.id, {file: 'select_to_speak_gdocs_script.js'});
+          });
+        });
   },
 
   /**
