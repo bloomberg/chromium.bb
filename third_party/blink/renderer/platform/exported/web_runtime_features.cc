@@ -212,14 +212,6 @@ void WebRuntimeFeatures::EnableModernMediaControls(bool enable) {
   RuntimeEnabledFeatures::SetModernMediaControlsEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableModuleScriptsDynamicImport(bool enable) {
-  RuntimeEnabledFeatures::SetModuleScriptsDynamicImportEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableModuleScriptsImportMetaUrl(bool enable) {
-  RuntimeEnabledFeatures::SetModuleScriptsImportMetaUrlEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableNoHoverAfterLayoutChange(bool enable) {
   RuntimeEnabledFeatures::SetNoHoverAfterLayoutChangeEnabled(enable);
 }

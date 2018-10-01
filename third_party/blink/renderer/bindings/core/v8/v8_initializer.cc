@@ -567,7 +567,6 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
     v8::Local<v8::Context> context,
     v8::Local<v8::ScriptOrModule> v8_referrer,
     v8::Local<v8::String> v8_specifier) {
-  CHECK(RuntimeEnabledFeatures::ModuleScriptsDynamicImportEnabled());
   ScriptState* script_state = ScriptState::From(context);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -600,7 +599,6 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
 static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
                                         v8::Local<v8::Module> module,
                                         v8::Local<v8::Object> meta) {
-  CHECK(RuntimeEnabledFeatures::ModuleScriptsImportMetaUrlEnabled());
   ScriptState* script_state = ScriptState::From(context);
   v8::Isolate* isolate = context->GetIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -637,14 +635,9 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetWasmModuleCallback(WasmModuleOverride);
   isolate->SetWasmInstanceCallback(WasmInstanceOverride);
   isolate->SetWasmThreadsEnabledCallback(WasmThreadsEnabledCallback);
-  if (RuntimeEnabledFeatures::ModuleScriptsDynamicImportEnabled()) {
-    isolate->SetHostImportModuleDynamicallyCallback(
-        HostImportModuleDynamically);
-  }
-  if (RuntimeEnabledFeatures::ModuleScriptsImportMetaUrlEnabled()) {
-    isolate->SetHostInitializeImportMetaObjectCallback(
-        HostGetImportMetaProperties);
-  }
+  isolate->SetHostImportModuleDynamicallyCallback(HostImportModuleDynamically);
+  isolate->SetHostInitializeImportMetaObjectCallback(
+      HostGetImportMetaProperties);
 
   V8ContextSnapshot::EnsureInterfaceTemplates(isolate);
 

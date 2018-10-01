@@ -245,14 +245,6 @@ const base::Feature kMemoryCoordinator{"MemoryCoordinator",
 const base::Feature kMimeHandlerViewInCrossProcessFrame{
     "MimeHandlerViewInCrossProcessFrame", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// ES6 Modules dynamic imports.
-const base::Feature kModuleScriptsDynamicImport{
-    "ModuleScriptsDynamicImport", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// ES6 Modules import.meta.url.
-const base::Feature kModuleScriptsImportMetaUrl{
-    "ModuleScriptsImportMetaUrl", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Mojo-based Session Storage.
 const base::Feature kMojoSessionStorage{"MojoSessionStorage",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

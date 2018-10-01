@@ -3604,11 +3604,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRegionalLocalesAsDisplayUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kRegionalLocalesAsDisplayUI)},
 
-    {"enable-module-scripts-dynamic-import",
-     flag_descriptions::kModuleScriptsDynamicImportName,
-     flag_descriptions::kModuleScriptsDynamicImportDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kModuleScriptsDynamicImport)},
-
     {"enable-v8-context-snapshot", flag_descriptions::kV8ContextSnapshotName,
      flag_descriptions::kV8ContextSnapshotDescription,
      kOsMac | kOsWin | kOsLinux | kOsAndroid,
@@ -3702,11 +3697,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsLinux | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kNtlmV2Enabled)},
 #endif  // defined(OS_POSIX)
-
-    {"enable-module-scripts-import-meta-url",
-     flag_descriptions::kModuleScriptsImportMetaUrlName,
-     flag_descriptions::kModuleScriptsImportMetaUrlDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kModuleScriptsImportMetaUrl)},
 
     {"stop-non-timers-in-background",
      flag_descriptions::kStopNonTimersInBackgroundName,

@@ -761,12 +761,6 @@
       status: "stable",
     },
     {
-      name: "ModuleScriptsDynamicImport",
-    },
-    {
-      name: "ModuleScriptsImportMetaUrl",
-    },
-    {
       name: "ModuleServiceWorker",
       status: "test",
     },
