@@ -123,6 +123,9 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
 // Whether any previews are allowed. Acts as a kill-switch or holdback check.
 bool ArePreviewsAllowed();
 
+// Whether the Previews UI is in the omnibox instead of an infobar.
+bool IsPreviewsOmniboxUiEnabled();
+
 // Whether the preview type is enabled.
 bool IsOfflinePreviewsEnabled();
 bool IsClientLoFiEnabled();

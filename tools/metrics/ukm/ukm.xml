@@ -3470,7 +3470,8 @@ be describing additional metrics about the same event.
   <metric name="opt_out">
     <summary>
       Set to 1 when a user clicks &quot;Show Original&quot; on a preview page
-      load.
+      load using the infobar. Set to 2 when a user opts out of a Preview using
+      the omnibox.
     </summary>
   </metric>
   <metric name="origin_opt_out">
