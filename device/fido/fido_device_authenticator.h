@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "device/fido/fido_authenticator.h"
 
 namespace device {
@@ -40,6 +41,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                     GetAssertionCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;
+  base::string16 GetDisplayName() const override;
   const AuthenticatorSupportedOptions& Options() const override;
   FidoTransportProtocol AuthenticatorTransport() const override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;

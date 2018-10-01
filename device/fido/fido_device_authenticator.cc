@@ -60,6 +60,10 @@ std::string FidoDeviceAuthenticator::GetId() const {
   return device_->GetId();
 }
 
+base::string16 FidoDeviceAuthenticator::GetDisplayName() const {
+  return device_->GetDisplayName();
+}
+
 const AuthenticatorSupportedOptions& FidoDeviceAuthenticator::Options() const {
   static const AuthenticatorSupportedOptions default_options;
   switch (device_->supported_protocol()) {

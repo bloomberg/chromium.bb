@@ -10,6 +10,7 @@
 
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
 #include "chrome/browser/webauthn/transport_list_model.h"
@@ -72,11 +73,13 @@ class AuthenticatorRequestDialogModel {
     kCableActivate,
   };
 
-  // Encapsulates information about authenticators that have been found but are
-  // in inactive state because we want to dispatch the requests after receiving
-  // confirmation from the user via the WebAuthN UI flow.
+  // Encapsulates information about authenticators that have been found and
+  // whose request is controlled by the UI embedder because we want to dispatch
+  // the requests after receiving confirmation from the user via the WebAuthN UI
+  // flow.
   struct AuthenticatorReference {
     AuthenticatorReference(base::StringPiece device_id,
+                           base::StringPiece16 authenticator_display_name,
                            device::FidoTransportProtocol transport);
     AuthenticatorReference(AuthenticatorReference&& data);
     AuthenticatorReference& operator=(AuthenticatorReference&& other);
@@ -84,6 +87,7 @@ class AuthenticatorRequestDialogModel {
     ~AuthenticatorReference();
 
     std::string authenticator_id;
+    base::string16 authenticator_display_name;
     device::FidoTransportProtocol transport;
     bool dispatched = false;
   };

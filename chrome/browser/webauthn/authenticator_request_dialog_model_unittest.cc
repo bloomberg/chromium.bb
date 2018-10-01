@@ -474,7 +474,9 @@ TEST_F(AuthenticatorRequestDialogModelTest,
       &num_called));
   model.saved_authenticators().emplace_back(
       AuthenticatorRequestDialogModel::AuthenticatorReference(
-          "authenticator", AuthenticatorTransport::kInternal));
+          "authenticator" /* authenticator_id */,
+          base::string16() /* authenticator_display_name */,
+          AuthenticatorTransport::kInternal));
 
   model.StartFlow(std::move(transports_info), base::nullopt);
   EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTransportSelection,

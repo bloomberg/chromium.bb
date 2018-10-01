@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "device/fido/authenticator_get_info_response.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -59,6 +60,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   virtual void TryWink(WinkCallback callback) = 0;
   virtual void Cancel() = 0;
   virtual std::string GetId() const = 0;
+  virtual base::string16 GetDisplayName() const;
   virtual FidoTransportProtocol DeviceTransport() const = 0;
   virtual base::WeakPtr<FidoDevice> GetWeakPtr() = 0;
 
