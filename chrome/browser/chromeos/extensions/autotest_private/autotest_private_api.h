@@ -7,27 +7,22 @@
 
 #include <string>
 
+#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "ui/message_center/public/cpp/notification_types.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
-#include "chrome/browser/chromeos/printing/cups_printers_manager.h"
-#include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "ui/snapshot/screenshot_grabber.h"
-#endif
 
 namespace message_center {
 class Notification;
 }
 
-#if defined(OS_CHROMEOS)
 namespace crostini {
 enum class ConciergeClientResult;
 }
-#endif
 
 namespace extensions {
 
@@ -68,9 +63,7 @@ class AutotestPrivateLoginStatusFunction : public UIThreadExtensionFunction {
   ~AutotestPrivateLoginStatusFunction() override;
   ResponseAction Run() override;
 
-#if defined(OS_CHROMEOS)
   void OnIsReadyForPassword(bool is_ready);
-#endif
 };
 
 class AutotestPrivateLockScreenFunction : public UIThreadExtensionFunction {
@@ -194,21 +187,18 @@ class AutotestPrivateSetMouseReverseScrollFunction
 class AutotestPrivateGetVisibleNotificationsFunction
     : public UIThreadExtensionFunction {
  public:
+  AutotestPrivateGetVisibleNotificationsFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getVisibleNotifications",
                              AUTOTESTPRIVATE_GETVISIBLENOTIFICATIONS)
-
-  AutotestPrivateGetVisibleNotificationsFunction();
 
  private:
   ~AutotestPrivateGetVisibleNotificationsFunction() override;
   ResponseAction Run() override;
 
-#if defined(OS_CHROMEOS)
   void OnGotNotifications(
       const std::vector<message_center::Notification>& notifications);
 
   ash::mojom::AshMessageCenterControllerPtr controller_;
-#endif
 };
 
 class AutotestPrivateGetPlayStoreStateFunction
@@ -266,109 +256,82 @@ class AutotestPrivateLaunchAppFunction : public UIThreadExtensionFunction {
 class AutotestPrivateSetCrostiniEnabledFunction
     : public UIThreadExtensionFunction {
  public:
-  AutotestPrivateSetCrostiniEnabledFunction() = default;
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setCrostiniEnabled",
                              AUTOTESTPRIVATE_SETCROSTINIENABLED)
 
  private:
   ~AutotestPrivateSetCrostiniEnabledFunction() override;
   ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateSetCrostiniEnabledFunction);
 };
 
 class AutotestPrivateRunCrostiniInstallerFunction
     : public UIThreadExtensionFunction {
  public:
-  AutotestPrivateRunCrostiniInstallerFunction() = default;
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.runCrostiniInstaller",
                              AUTOTESTPRIVATE_RUNCROSTINIINSTALLER)
 
  private:
   ~AutotestPrivateRunCrostiniInstallerFunction() override;
   ResponseAction Run() override;
-#if defined(OS_CHROMEOS)
-  void CrostiniRestarted(crostini::ConciergeClientResult);
-#endif
 
-  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateRunCrostiniInstallerFunction);
+  void CrostiniRestarted(crostini::ConciergeClientResult);
 };
 
 class AutotestPrivateRunCrostiniUninstallerFunction
     : public UIThreadExtensionFunction {
  public:
-  AutotestPrivateRunCrostiniUninstallerFunction() = default;
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.runCrostiniUninstaller",
                              AUTOTESTPRIVATE_RUNCROSTINIUNINSTALLER)
 
  private:
   ~AutotestPrivateRunCrostiniUninstallerFunction() override;
   ResponseAction Run() override;
-#if defined(OS_CHROMEOS)
-  void CrostiniRemoved(crostini::ConciergeClientResult);
-#endif
 
-  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateRunCrostiniUninstallerFunction);
+  void CrostiniRemoved(crostini::ConciergeClientResult);
 };
 
 class AutotestPrivateTakeScreenshotFunction : public UIThreadExtensionFunction {
  public:
-  AutotestPrivateTakeScreenshotFunction() = default;
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.takeScreenshot",
                              AUTOTESTPRIVATE_TAKESCREENSHOT)
 
  private:
   ~AutotestPrivateTakeScreenshotFunction() override;
   ResponseAction Run() override;
-#if defined(OS_CHROMEOS)
+
   void ScreenshotTaken(std::unique_ptr<ui::ScreenshotGrabber> grabber,
                        ui::ScreenshotResult screenshot_result,
                        scoped_refptr<base::RefCountedMemory> png_data);
-#endif
-  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateTakeScreenshotFunction);
 };
 
 class AutotestPrivateGetPrinterListFunction : public UIThreadExtensionFunction {
  public:
-  AutotestPrivateGetPrinterListFunction() = default;
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getPrinterList",
                              AUTOTESTPRIVATE_GETPRINTERLIST)
 
  private:
-#if defined(OS_CHROMEOS)
-  static std::string GetPrinterType(
-      chromeos::CupsPrintersManager::PrinterClass type);
-#endif
   ~AutotestPrivateGetPrinterListFunction() override;
   ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateGetPrinterListFunction);
 };
 
 class AutotestPrivateUpdatePrinterFunction : public UIThreadExtensionFunction {
  public:
-  AutotestPrivateUpdatePrinterFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.updatePrinter",
                              AUTOTESTPRIVATE_UPDATEPRINTER)
 
  private:
   ~AutotestPrivateUpdatePrinterFunction() override;
   ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateUpdatePrinterFunction);
 };
 
 class AutotestPrivateRemovePrinterFunction : public UIThreadExtensionFunction {
  public:
-  AutotestPrivateRemovePrinterFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.removePrinter",
                              AUTOTESTPRIVATE_REMOVEPRINTER)
 
  private:
   ~AutotestPrivateRemovePrinterFunction() override;
   ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateRemovePrinterFunction);
 };
 
 class AutotestPrivateBootstrapMachineLearningServiceFunction
@@ -381,20 +344,13 @@ class AutotestPrivateBootstrapMachineLearningServiceFunction
  private:
   ~AutotestPrivateBootstrapMachineLearningServiceFunction() override;
   ResponseAction Run() override;
-#if defined(OS_CHROMEOS)
+
   // Callbacks for a basic Mojo call to MachineLearningService.LoadModel.
   void ModelLoaded(chromeos::machine_learning::mojom::LoadModelResult result);
   void ConnectionError();
 
   chromeos::machine_learning::mojom::ModelPtr model_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(
-      AutotestPrivateBootstrapMachineLearningServiceFunction);
 };
-
-// Don't kill the browser when we're in a browser test.
-void SetAutotestPrivateTest();
 
 // The profile-keyed service that manages the autotestPrivate extension API.
 class AutotestPrivateAPI : public BrowserContextKeyedAPI {
