@@ -17,7 +17,6 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -40,11 +39,9 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_folder_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
-#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_edit_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -59,7 +56,6 @@
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "skia/ext/skia_utils_ios.h"
@@ -137,30 +133,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return urls;
 }
 
-// Shadow opacity for the NavigationController Toolbar.
-const CGFloat kShadowOpacity = 0.12f;
-// Shadow radius for the NavigationController Toolbar.
-const CGFloat kShadowRadius = 12.0f;
 }  // namespace
-
-// An AlertCoordinator with the "Action Sheet" style that does not provide an
-// anchor rect to its UIPopoverPresentationController. This is used by the
-// legacy bookmarks implementation in order to consistently render as an action
-// sheet and not as a popover.
-@interface LegacyBookmarksActionSheetCoordinator : AlertCoordinator
-@end
-
-@implementation LegacyBookmarksActionSheetCoordinator
-
-- (UIAlertController*)alertControllerWithTitle:(NSString*)title
-                                       message:(NSString*)message {
-  return [UIAlertController
-      alertControllerWithTitle:title
-                       message:message
-                preferredStyle:UIAlertControllerStyleActionSheet];
-}
-
-@end
 
 @interface BookmarkHomeViewController ()<BookmarkFolderViewControllerDelegate,
                                          BookmarkHomeConsumer,
@@ -290,15 +263,8 @@ const CGFloat kShadowRadius = 12.0f;
                   browserState:(ios::ChromeBrowserState*)browserState
                     dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(browserState);
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    self =
-        [super initWithTableViewStyle:UITableViewStylePlain
-                          appBarStyle:ChromeTableViewControllerStyleNoAppBar];
-  } else {
-    self =
-        [super initWithTableViewStyle:UITableViewStylePlain
-                          appBarStyle:ChromeTableViewControllerStyleWithAppBar];
-  }
+  self = [super initWithTableViewStyle:UITableViewStylePlain
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _browserState = browserState->GetOriginalChromeBrowserState();
     _loader = loader;
@@ -329,12 +295,11 @@ const CGFloat kShadowRadius = 12.0f;
   DCHECK_EQ(_rootNode, self.bookmarks->root_node());
 
   NSMutableArray<BookmarkHomeViewController*>* stack = [NSMutableArray array];
-  // On UIRefresh we need to configure the root controller Navigationbar at this
-  // time when reconstructing from cache, or there will be a loading flicker if
-  // this gets done on viewDidLoad.
-  if (experimental_flags::IsBookmarksUIRebootEnabled())
-    [self setupNavigationForBookmarkHomeViewController:self
-                                     usingBookmarkNode:_rootNode];
+  // Configure the root controller Navigationbar at this time when
+  // reconstructing from cache, or there will be a loading flicker if this gets
+  // done on viewDidLoad.
+  [self setupNavigationForBookmarkHomeViewController:self
+                                   usingBookmarkNode:_rootNode];
   [stack addObject:self];
 
   int64_t cachedFolderID;
@@ -371,12 +336,11 @@ const CGFloat kShadowRadius = 12.0f;
 
     BookmarkHomeViewController* controller =
         [self createControllerWithRootFolder:node];
-    // On UIRefresh we need to configure the controller's Navigationbar at this
-    // time when reconstructing from cache, or there will be a loading flicker
-    // if this gets done on viewDidLoad.
-    if (experimental_flags::IsBookmarksUIRebootEnabled())
-      [self setupNavigationForBookmarkHomeViewController:controller
-                                       usingBookmarkNode:node];
+    // Configure the controller's Navigationbar at this time when
+    // reconstructing from cache, or there will be a loading flicker if this
+    // gets done on viewDidLoad.
+    [self setupNavigationForBookmarkHomeViewController:controller
+                                     usingBookmarkNode:node];
     if (nodeID == cachedFolderID) {
       controller.cachedIndexPathRow = cachedIndexPathRow;
     }
@@ -391,75 +355,63 @@ const CGFloat kShadowRadius = 12.0f;
   [super viewDidLoad];
 
   // Set Navigation Bar, Toolbar and TableView appearance.
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    self.navigationController.navigationBarHidden = NO;
-    self.navigationController.toolbar.translucent = YES;
-    // Add a tableFooterView in order to disable separators at the bottom of the
-    // tableView.
-    self.tableView.tableFooterView = [[UIView alloc] init];
-  } else {
-    self.navigationController.navigationBarHidden = YES;
-    self.navigationController.toolbar.translucent = NO;
-    self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
-    self.navigationController.toolbar.layer.shadowRadius = kShadowRadius;
-    self.navigationController.toolbar.layer.shadowOpacity = kShadowOpacity;
-    // Disable separators while the loading spinner is showing.
-    // |loadBookmarkView| will bring them back if needed.
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-  }
+  self.navigationController.navigationBarHidden = NO;
+  self.navigationController.toolbar.translucent = YES;
+  // Add a tableFooterView in order to disable separators at the bottom of the
+  // tableView.
+  self.tableView.tableFooterView = [[UIView alloc] init];
+
   self.navigationController.toolbar.accessibilityIdentifier =
       kBookmarkHomeUIToolbarIdentifier;
 
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    // SearchController Configuration.
-    // Init the searchController with nil so the results are displayed on the
-    // same TableView.
-    self.searchController =
-        [[UISearchController alloc] initWithSearchResultsController:nil];
-    self.searchController.dimsBackgroundDuringPresentation = NO;
-    self.searchController.searchBar.userInteractionEnabled = NO;
-    self.searchController.delegate = self;
-    self.searchController.searchResultsUpdater = self;
-    self.searchController.searchBar.backgroundColor = [UIColor clearColor];
-    self.searchController.searchBar.accessibilityIdentifier =
-        kBookmarkHomeSearchBarIdentifier;
+  // SearchController Configuration.
+  // Init the searchController with nil so the results are displayed on the
+  // same TableView.
+  self.searchController =
+      [[UISearchController alloc] initWithSearchResultsController:nil];
+  self.searchController.dimsBackgroundDuringPresentation = NO;
+  self.searchController.searchBar.userInteractionEnabled = NO;
+  self.searchController.delegate = self;
+  self.searchController.searchResultsUpdater = self;
+  self.searchController.searchBar.backgroundColor = [UIColor clearColor];
+  self.searchController.searchBar.accessibilityIdentifier =
+      kBookmarkHomeSearchBarIdentifier;
 
-    // UIKit needs to know which controller will be presenting the
-    // searchController. If we don't add this trying to dismiss while
-    // SearchController is active will fail.
-    self.definesPresentationContext = YES;
+  // UIKit needs to know which controller will be presenting the
+  // searchController. If we don't add this trying to dismiss while
+  // SearchController is active will fail.
+  self.definesPresentationContext = YES;
 
-    self.scrimView = [[UIControl alloc] initWithFrame:self.tableView.bounds];
-    self.scrimView.backgroundColor =
-        [UIColor colorWithWhite:0
-                          alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
-    self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.scrimView.autoresizingMask =
-        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    self.scrimView.accessibilityIdentifier = kBookmarkHomeSearchScrimIdentifier;
-    [self.scrimView addTarget:self
-                       action:@selector(dismissSearchController:)
-             forControlEvents:UIControlEventAllTouchEvents];
+  self.scrimView = [[UIControl alloc] initWithFrame:self.tableView.bounds];
+  self.scrimView.backgroundColor =
+      [UIColor colorWithWhite:0
+                        alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
+  self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.scrimView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  self.scrimView.accessibilityIdentifier = kBookmarkHomeSearchScrimIdentifier;
+  [self.scrimView addTarget:self
+                     action:@selector(dismissSearchController:)
+           forControlEvents:UIControlEventAllTouchEvents];
 
-    // For iOS 11 and later, place the search bar in the navigation bar.
-    // Otherwise place the search bar in the table view's header.
-    if (@available(iOS 11, *)) {
-      self.navigationItem.searchController = self.searchController;
-      self.navigationItem.hidesSearchBarWhenScrolling = NO;
+  // For iOS 11 and later, place the search bar in the navigation bar.
+  // Otherwise place the search bar in the table view's header.
+  if (@available(iOS 11, *)) {
+    self.navigationItem.searchController = self.searchController;
+    self.navigationItem.hidesSearchBarWhenScrolling = NO;
 
-      // Center search bar vertically so it looks centered in the header when
-      // searching.  The cancel button is centered / decentered on
-      // viewWillAppear and viewDidDisappear.
-      UIOffset offset =
-          UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-      self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
-          offset;
-    } else {
-      self.tableView.tableHeaderView = self.searchController.searchBar;
-    }
-
-    self.searchTerm = @"";
+    // Center search bar vertically so it looks centered in the header when
+    // searching.  The cancel button is centered / decentered on
+    // viewWillAppear and viewDidDisappear.
+    UIOffset offset =
+        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+    self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
+        offset;
+  } else {
+    self.tableView.tableHeaderView = self.searchController.searchBar;
   }
+
+  self.searchTerm = @"";
 
   if (self.bookmarks->loaded()) {
     [self loadBookmarkViews];
@@ -571,10 +523,6 @@ const CGFloat kShadowRadius = 12.0f;
   // line will also create a default footer of height 30.
   self.tableView.sectionFooterHeight = 1;
   self.sharedState.tableView.allowsMultipleSelectionDuringEditing = YES;
-  if (!experimental_flags::IsBookmarksUIRebootEnabled()) {
-    self.sharedState.tableView.separatorStyle =
-        UITableViewCellSeparatorStyleNone;
-  }
 
   UILongPressGestureRecognizer* longPressRecognizer =
       [[UILongPressGestureRecognizer alloc]
@@ -600,9 +548,7 @@ const CGFloat kShadowRadius = 12.0f;
     [self setupUIStackCacheIfApplicable];
   }
 
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    self.searchController.searchBar.userInteractionEnabled = YES;
-  }
+  self.searchController.searchBar.userInteractionEnabled = YES;
 
   DCHECK(self.bookmarks->loaded());
   DCHECK([self isViewLoaded]);
@@ -620,8 +566,7 @@ const CGFloat kShadowRadius = 12.0f;
 #pragma mark - BookmarkHomeConsumer
 
 - (void)refreshContents {
-  if (experimental_flags::IsBookmarksUIRebootEnabled() &&
-      self.sharedState.currentlyShowingSearchResults) {
+  if (self.sharedState.currentlyShowingSearchResults) {
     NSString* noResults = l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS);
     [self.mediator computeBookmarkTableViewDataMatching:self.searchTerm
                              orShowMessageWhenNoResults:noResults];
@@ -1084,24 +1029,12 @@ const CGFloat kShadowRadius = 12.0f;
             (BookmarkHomeViewController*)viewController
                                    usingBookmarkNode:
                                        (const bookmarks::BookmarkNode*)node {
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    viewController.navigationItem.leftBarButtonItem.action = @selector(back);
-    // Disable large titles on every VC but the root controller.
-    if (@available(iOS 11, *)) {
-      if (node != self.bookmarks->root_node()) {
-        viewController.navigationItem.largeTitleDisplayMode =
-            UINavigationItemLargeTitleDisplayModeNever;
-      }
-    }
-  } else {
-    viewController.navigationController.navigationBarHidden = YES;
-    if (viewController.navigationController.viewControllers.count > 1) {
-      // Add custom back button.
-      UIBarButtonItem* backButton =
-          [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
-                                              target:self
-                                              action:@selector(back)];
-      viewController.navigationItem.leftBarButtonItem = backButton;
+  viewController.navigationItem.leftBarButtonItem.action = @selector(back);
+  // Disable large titles on every VC but the root controller.
+  if (@available(iOS 11, *)) {
+    if (node != self.bookmarks->root_node()) {
+      viewController.navigationItem.largeTitleDisplayMode =
+          UINavigationItemLargeTitleDisplayModeNever;
     }
   }
 
@@ -1221,11 +1154,9 @@ const CGFloat kShadowRadius = 12.0f;
   self.sharedState.currentlyInEditMode = editing;
   [self setContextBarState:editing ? BookmarksContextBarBeginSelection
                                    : BookmarksContextBarDefault];
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    self.searchController.searchBar.userInteractionEnabled = !editing;
-    self.searchController.searchBar.alpha =
-        editing ? kTableViewNavigationAlphaForDisabledSearchBar : 1.0;
-  }
+  self.searchController.searchBar.userInteractionEnabled = !editing;
+  self.searchController.searchBar.alpha =
+      editing ? kTableViewNavigationAlphaForDisabledSearchBar : 1.0;
 }
 
 // Row selection of the tableView will be cleared after reloadData.  This
@@ -1479,18 +1410,11 @@ const CGFloat kShadowRadius = 12.0f;
   // one node is selected.
   DCHECK(nodes.size() > 0);
 
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
-        initWithBaseViewController:self
-                             title:nil
-                           message:nil
-                     barButtonItem:self.moreButton];
-  } else {
-    self.actionSheetCoordinator = [[LegacyBookmarksActionSheetCoordinator alloc]
-        initWithBaseViewController:self
-                             title:nil
-                           message:nil];
-  }
+  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self
+                           title:nil
+                         message:nil
+                   barButtonItem:self.moreButton];
 
   switch (self.contextBarState) {
     case BookmarksContextBarSingleURLSelection:
@@ -1776,40 +1700,25 @@ const CGFloat kShadowRadius = 12.0f;
               backgroundColor:(UIColor*)backgroundColor
                     textColor:(UIColor*)textColor
                  fallbackText:(NSString*)fallbackText {
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(
-        [self.sharedState.tableView cellForRowAtIndexPath:indexPath]);
-    if (!URLCell)
-      return;
-    if (image)
-      [URLCell.faviconView
-          configureWithAttributes:[FaviconAttributes
-                                      attributesWithImage:image]];
-    else {
-      // UI Refresh fallback colors are default fixed.
-      textColor =
-          [UIColor colorWithWhite:kFallbackIconDefaultTextColorWhitePercentage
-                            alpha:1.0];
-      backgroundColor = UIColorFromRGB(kFallbackIconDefaultBackgroundColor);
-      [URLCell.faviconView
-          configureWithAttributes:[FaviconAttributes
-                                      attributesWithMonogram:fallbackText
-                                                   textColor:textColor
-                                             backgroundColor:backgroundColor
-                                      defaultBackgroundColor:NO]];
-    }
+  TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(
+      [self.sharedState.tableView cellForRowAtIndexPath:indexPath]);
+  if (!URLCell)
+    return;
+  if (image) {
+    [URLCell.faviconView
+        configureWithAttributes:[FaviconAttributes attributesWithImage:image]];
   } else {
-    BookmarkTableCell* cell =
-        [self.sharedState.tableView cellForRowAtIndexPath:indexPath];
-    if (!cell)
-      return;
-    if (image) {
-      [cell setImage:image];
-    } else {
-      [cell setPlaceholderText:fallbackText
-                     textColor:textColor
-               backgroundColor:backgroundColor];
-    }
+    // Fallback colors are default fixed.
+    textColor =
+        [UIColor colorWithWhite:kFallbackIconDefaultTextColorWhitePercentage
+                          alpha:1.0];
+    backgroundColor = UIColorFromRGB(kFallbackIconDefaultBackgroundColor);
+    [URLCell.faviconView
+        configureWithAttributes:[FaviconAttributes
+                                    attributesWithMonogram:fallbackText
+                                                 textColor:textColor
+                                           backgroundColor:backgroundColor
+                                    defaultBackgroundColor:NO]];
   }
 }
 
@@ -1897,19 +1806,12 @@ const CGFloat kShadowRadius = 12.0f;
     return;
   }
 
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
-        initWithBaseViewController:self
-                             title:nil
-                           message:nil
-                              rect:CGRectMake(touchPoint.x, touchPoint.y, 1, 1)
-                              view:self.tableView];
-  } else {
-    self.actionSheetCoordinator = [[LegacyBookmarksActionSheetCoordinator alloc]
-        initWithBaseViewController:self
-                             title:nil
-                           message:nil];
-  }
+  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self
+                           title:nil
+                         message:nil
+                            rect:CGRectMake(touchPoint.x, touchPoint.y, 1, 1)
+                            view:self.tableView];
 
   if (node->is_url()) {
     [self configureCoordinator:self.actionSheetCoordinator
@@ -1992,32 +1894,19 @@ const CGFloat kShadowRadius = 12.0f;
   if (item.type == BookmarkHomeItemTypeBookmark) {
     BookmarkHomeNodeItem* nodeItem =
         base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
-    if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-      if (nodeItem.bookmarkNode->is_folder() &&
-          nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
-        TableViewBookmarkFolderCell* tableCell =
-            base::mac::ObjCCastStrict<TableViewBookmarkFolderCell>(cell);
-        // Delay starting edit, so that the cell is fully created. This is
-        // needed when scrolling away and then back into the editingCell,
-        // without the delay the cell will resign first responder before its
-        // created.
-        dispatch_async(dispatch_get_main_queue(), ^{
-          self.sharedState.editingFolderCell = tableCell;
-          [tableCell startEdit];
-          tableCell.textDelegate = self;
-        });
-      }
-    } else {
-      BookmarkTableCell* tableCell =
-          base::mac::ObjCCastStrict<BookmarkTableCell>(cell);
-      if (nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
-        // Delay starting edit, so that the cell is fully created.
-        dispatch_async(dispatch_get_main_queue(), ^{
-          self.sharedState.editingFolderCell = tableCell;
-          [tableCell startEdit];
-          tableCell.textDelegate = self;
-        });
-      }
+    if (nodeItem.bookmarkNode->is_folder() &&
+        nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
+      TableViewBookmarkFolderCell* tableCell =
+          base::mac::ObjCCastStrict<TableViewBookmarkFolderCell>(cell);
+      // Delay starting edit, so that the cell is fully created. This is
+      // needed when scrolling away and then back into the editingCell,
+      // without the delay the cell will resign first responder before its
+      // created.
+      dispatch_async(dispatch_get_main_queue(), ^{
+        self.sharedState.editingFolderCell = tableCell;
+        [tableCell startEdit];
+        tableCell.textDelegate = self;
+      });
     }
 
     // Cancel previous load attempts.
@@ -2122,13 +2011,6 @@ const CGFloat kShadowRadius = 12.0f;
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (!experimental_flags::IsBookmarksUIRebootEnabled()) {
-    NSInteger sectionIdentifier = [self.sharedState.tableViewModel
-        sectionIdentifierForSection:indexPath.section];
-    if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
-      return kEstimatedRowHeight;
-    }
-  }
   return UITableViewAutomaticDimension;
 }
 
