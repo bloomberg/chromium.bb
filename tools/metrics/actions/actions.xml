@@ -17908,6 +17908,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signout_FromUserMenu">
+  <owner>droger@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    Recorded when the user is signed into Chrome, but not syncing, and clicks
+    the sign out button in the user menu. This is only recorded when Desktop
+    Identity Consistency is enabled.
+  </description>
+</action>
+
 <action name="Signin_Undo_Signin">
   <owner>gogerald@chromium.org</owner>
   <description>
