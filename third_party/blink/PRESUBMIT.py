@@ -94,26 +94,34 @@ def _CommonChecks(input_api, output_api):
     return results
 
 
-def _CheckStyle(input_api, output_api):
-    style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-                                                'tools', 'check_blink_style.py')
-    args = [input_api.python_executable, style_checker_path, '--diff-files']
+def _FilterPaths(input_api):
+    """Returns input files with certain paths removed."""
     files = []
     for f in input_api.AffectedFiles():
         file_path = f.LocalPath()
-        # Filter out changes in LayoutTests.
-        if 'web_tests' + input_api.os_path.sep in file_path and 'TestExpectations' not in file_path:
+        # Filter out changes in web_tests/.
+        if ('web_tests' + input_api.os_path.sep in file_path
+            and 'TestExpectations' not in file_path):
             continue
         if '/PRESUBMIT' in file_path:
             continue
         files.append(input_api.os_path.join('..', '..', file_path))
+    return files
+
+
+def _CheckStyle(input_api, output_api):
+    files = _FilterPaths(input_api)
     # Do not call check_blink_style.py with empty affected file list if all
     # input_api.AffectedFiles got filtered.
     if not files:
         return []
-    args += files
-    results = []
 
+    style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                                'tools', 'check_blink_style.py')
+    args = [input_api.python_executable, style_checker_path, '--diff-files']
+    args += files
+
+    results = []
     try:
         child = input_api.subprocess.Popen(args,
                                            stderr=input_api.subprocess.PIPE)
