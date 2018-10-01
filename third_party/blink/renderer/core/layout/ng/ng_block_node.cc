@@ -589,7 +589,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
     block_flow->UpdateIsSelfCollapsing();
 
-    if (block_flow->CreatesNewFormattingContext())
+    if (constraint_space.IsNewFormattingContext())
       block_flow->AddOverflowFromFloats();
   }
 }
