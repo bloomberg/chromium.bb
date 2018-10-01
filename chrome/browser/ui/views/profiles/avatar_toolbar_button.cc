@@ -68,11 +68,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
         AccountTrackerServiceFactory::GetForProfile(profile_));
   }
 
-  // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
-  // is hard to read for user avatars. This constant is correspondingly smaller
-  // than GetLayoutInsets(TOOLBAR_BUTTON).
-  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-    SetLayoutInsets(GetLayoutInsets(TOOLBAR_BUTTON) - gfx::Insets(2));
+  SetInsets();
 
   // Activate on press for left-mouse-button only to mimic other MenuButtons
   // without drag-drop actions (specifically the adjacent browser menu).
@@ -102,9 +98,11 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   // outside as GetThemeProvider() is not available until the button is added to
   // ToolbarView's hierarchy.
   UpdateText();
+
+  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
-AvatarToolbarButton::~AvatarToolbarButton() = default;
+AvatarToolbarButton::~AvatarToolbarButton() {}
 
 void AvatarToolbarButton::UpdateIcon() {
   SetImage(views::Button::STATE_NORMAL, GetAvatarIcon());
@@ -191,6 +189,11 @@ void AvatarToolbarButton::OnAccountImageUpdated(const std::string& account_id,
 
 void AvatarToolbarButton::OnAccountRemoved(const AccountInfo& info) {
   UpdateIcon();
+}
+
+void AvatarToolbarButton::OnMdModeChanged() {
+  SetInsets();
+  PreferredSizeChanged();
 }
 
 bool AvatarToolbarButton::IsIncognito() const {
@@ -330,4 +333,13 @@ AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
   }
 #endif  // !defined(OS_CHROMEOS)
   return SyncState::kNormal;
+}
+
+void AvatarToolbarButton::SetInsets() {
+  // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
+  // is hard to read for user avatars. This constant is correspondingly smaller
+  // than GetLayoutInsets(TOOLBAR_BUTTON).
+  SetLayoutInsets(ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+                      ? gfx::Insets()
+                      : GetLayoutInsets(TOOLBAR_BUTTON) - gfx::Insets(2));
 }

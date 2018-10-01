@@ -109,6 +109,9 @@ class ToolbarButton : public views::LabelButton,
   // Callback for MenuModelAdapter.
   void OnMenuClosed();
 
+  // views::View:
+  void Layout() override;
+
   // views::ImageButton:
   const char* GetClassName() const override;
 

@@ -50,11 +50,6 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
 
   set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
 
-  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
-  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
-  set_ink_drop_corner_radii(radii, radii);
-
   SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
   SetHorizontalAlignment(gfx::ALIGN_RIGHT);
@@ -192,8 +187,7 @@ void ToolbarButton::OnMouseReleased(const ui::MouseEvent& event) {
     show_menu_factory_.InvalidateWeakPtrs();
 }
 
-void ToolbarButton::OnMouseCaptureLost() {
-}
+void ToolbarButton::OnMouseCaptureLost() {}
 
 void ToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
   // Starting a drag results in a MouseExited, we need to ignore it.
@@ -336,6 +330,15 @@ void ToolbarButton::OnMenuClosed() {
 
   menu_runner_.reset();
   menu_model_adapter_.reset();
+}
+
+void ToolbarButton::Layout() {
+  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
+  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
+  set_ink_drop_corner_radii(radii, radii);
+
+  views::LabelButton::Layout();
 }
 
 const char* ToolbarButton::GetClassName() const {
