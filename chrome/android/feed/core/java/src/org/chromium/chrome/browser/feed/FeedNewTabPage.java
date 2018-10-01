@@ -18,11 +18,13 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 
+import com.google.android.libraries.feed.api.common.ThreadUtils;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.Header;
 import com.google.android.libraries.feed.api.stream.NonDismissibleHeader;
 import com.google.android.libraries.feed.api.stream.Stream;
+import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecycleListener;
 import com.google.android.libraries.feed.host.action.ActionApi;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.SnackbarApi;
@@ -300,6 +302,9 @@ public class FeedNewTabPage extends NewTabPage {
         FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
         assert feedProcessScope != null;
 
+        FeedAppLifecycle appLifecycle = FeedProcessScopeFactory.getFeedAppLifecycle();
+        appLifecycle.onNTPOpened();
+
         Activity activity = mTab.getActivity();
         Profile profile = mTab.getProfile();
 
@@ -423,8 +428,15 @@ public class FeedNewTabPage extends NewTabPage {
     @VisibleForTesting
     public static void setInTestMode(boolean inTestMode) {
         if (inTestMode) {
-            FeedProcessScopeFactory.createFeedProcessScopeForTesting(new TestFeedScheduler(),
-                    new TestNetworkClient(), new TestFeedOfflineIndicator());
+            FeedScheduler feedScheduler = new TestFeedScheduler();
+            FeedAppLifecycleListener lifecycleListener =
+                    new FeedAppLifecycleListener(new ThreadUtils());
+            Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
+            FeedAppLifecycle feedAppLifecycle = new FeedAppLifecycle(
+                    lifecycleListener, new FeedLifecycleBridge(profile), feedScheduler);
+            FeedProcessScopeFactory.createFeedProcessScopeForTesting(feedScheduler,
+                    new TestNetworkClient(), new TestFeedOfflineIndicator(), feedAppLifecycle,
+                    lifecycleListener);
         } else {
             FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
         }

@@ -29,6 +29,7 @@ public class FeedProcessScopeFactory {
     private static boolean sIsDisableForPolicy =
             !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
     private static PrefChangeRegistrar sPrefChangeRegistrar;
+    private static FeedAppLifecycle sFeedAppLifecycle;
     private static FeedProcessScope sFeedProcessScope;
     private static FeedScheduler sFeedScheduler;
     private static FeedOfflineIndicator sFeedOfflineIndicator;
@@ -60,6 +61,17 @@ public class FeedProcessScopeFactory {
         return sFeedOfflineIndicator;
     }
 
+    /*
+     * @return The global instance of {@link FeedAppLifecycle} for the process.
+     *         Null if the Feed is disabled.
+     */
+    public static @Nullable FeedAppLifecycle getFeedAppLifecycle() {
+        if (sFeedAppLifecycle == null) {
+            initialize();
+        }
+        return sFeedAppLifecycle;
+    }
+
     /**
      * @return Whether the dependencies provided by this class are allowed to be created. The feed
      *         process is disabled if supervised user or enterprise policy has once been added
@@ -71,7 +83,8 @@ public class FeedProcessScopeFactory {
     }
 
     private static void initialize() {
-        assert sFeedProcessScope == null && sFeedScheduler == null && sFeedOfflineIndicator == null;
+        assert sFeedProcessScope == null && sFeedScheduler == null && sFeedOfflineIndicator == null
+                && sFeedAppLifecycle == null;
         if (!isFeedProcessEnabled()) return;
 
         sPrefChangeRegistrar = new PrefChangeRegistrar();
@@ -103,6 +116,9 @@ public class FeedProcessScopeFactory {
 
         sFeedOfflineIndicator =
                 new FeedOfflineBridge(profile, sFeedProcessScope.getKnownContentApi());
+
+        sFeedAppLifecycle = new FeedAppLifecycle(sFeedProcessScope.getAppLifecycleListener(),
+                new FeedLifecycleBridge(profile), sFeedScheduler);
     }
 
     private static Configuration createConfiguration() {
@@ -124,10 +140,9 @@ public class FeedProcessScopeFactory {
      */
     @VisibleForTesting
     static void createFeedProcessScopeForTesting(FeedScheduler feedScheduler,
-            NetworkClient networkClient, FeedOfflineIndicator feedOfflineIndicator) {
+            NetworkClient networkClient, FeedOfflineIndicator feedOfflineIndicator,
+            FeedAppLifecycle feedAppLifecycle, FeedAppLifecycleListener lifecycleListener) {
         Configuration configHostApi = createConfiguration();
-        FeedAppLifecycleListener lifecycleListener =
-                new FeedAppLifecycleListener(new ThreadUtils());
         sFeedScheduler = feedScheduler;
         sFeedProcessScope = new FeedProcessScope
                                     .Builder(configHostApi, Executors.newSingleThreadExecutor(),
@@ -136,6 +151,7 @@ public class FeedProcessScopeFactory {
                                             ContextUtils.getApplicationContext())
                                     .build();
         sFeedOfflineIndicator = feedOfflineIndicator;
+        sFeedAppLifecycle = feedAppLifecycle;
     }
 
     /** Use supplied NetworkClient instead of real one, for tests. */
@@ -183,6 +199,10 @@ public class FeedProcessScopeFactory {
         if (sFeedOfflineIndicator != null) {
             sFeedOfflineIndicator.destroy();
             sFeedOfflineIndicator = null;
+        }
+        if (sFeedAppLifecycle != null) {
+            sFeedAppLifecycle.destroy();
+            sFeedAppLifecycle = null;
         }
     }
 }

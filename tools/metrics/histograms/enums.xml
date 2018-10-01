@@ -1419,6 +1419,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="17" label="Window Exit Presentation Mode"/>
 </enum>
 
+<enum name="AppLifecycleEvent">
+  <int value="0" label="Enter Foreground"/>
+  <int value="1" label="Enter Background"/>
+  <int value="2" label="Clear All"/>
+  <int value="3" label="Initialize"/>
+</enum>
+
 <enum name="AppListAppMovingType">
   <int value="0" label="MOVE_INTO_FOLDER"/>
   <int value="1" label="MOVE_OUT_OF_FOLDER"/>

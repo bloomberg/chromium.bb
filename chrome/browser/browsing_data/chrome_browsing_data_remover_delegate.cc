@@ -104,12 +104,14 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/customtabs/origin_verifier.h"
+#include "chrome/browser/android/feed/feed_lifecycle_bridge.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "components/feed/buildflags.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "sql/database.h"
@@ -896,6 +898,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         ContentSuggestionsServiceFactory::GetForProfileIfExists(profile_);
     if (content_suggestions_service)
       content_suggestions_service->ClearAllCachedSuggestions();
+
+#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
+    if (base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions))
+      feed::FeedLifecycleBridge::ClearCachedData();
+#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
+#endif  // defined(OS_ANDROID)
 
     // |ui_nqe_service| may be null if |profile_| is not a regular profile.
     UINetworkQualityEstimatorService* ui_nqe_service =
