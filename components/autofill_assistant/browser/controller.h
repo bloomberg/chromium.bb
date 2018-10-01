@@ -48,6 +48,8 @@ class Controller : public ScriptExecutorDelegate,
   WebController* GetWebController() override;
   ClientMemory* GetClientMemory() override;
   const std::map<std::string, std::string>& GetParameters() override;
+  autofill::PersonalDataManager* GetPersonalDataManager() override;
+  content::WebContents* GetWebContents() override;
 
  private:
   friend ControllerTest;

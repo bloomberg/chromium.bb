@@ -13,8 +13,13 @@
 class GURL;
 
 namespace autofill {
-class AutofillProfile;
-}
+class CreditCard;
+class PersonalDataManager;
+}  // namespace autofill
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace autofill_assistant {
 class ClientMemory;
@@ -54,9 +59,10 @@ class ActionDelegate {
   virtual void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) = 0;
 
-  // Fill the card form given by |selectors| with the given card |guid| in
-  // personal data manager.
-  virtual void FillCardForm(const std::string& guid,
+  // Fill the card form given by |selectors| with the given |card| and its
+  // |cvc|. Return result asynchronously through |callback|.
+  virtual void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
+                            const base::string16& cvc,
                             const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback) = 0;
 
@@ -82,10 +88,6 @@ class ActionDelegate {
                              const std::string& value,
                              base::OnceCallback<void(bool)> callback) = 0;
 
-  // Get the AutofillProfile with ID |guid|, or nullptr if it doesn't exist.
-  virtual const autofill::AutofillProfile* GetAutofillProfile(
-      const std::string& guid) = 0;
-
   // Given an element |selectors| on the page as the root element, build a node
   // tree using the output parameter |node_tree_out| as a starting node.
   virtual void BuildNodeTree(const std::vector<std::string>& selectors,
@@ -105,6 +107,12 @@ class ActionDelegate {
 
   // Return the current ClientMemory.
   virtual ClientMemory* GetClientMemory() = 0;
+
+  // Get current personal data manager.
+  virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
+
+  // Get associated web contents.
+  virtual content::WebContents* GetWebContents() = 0;
 
  protected:
   ActionDelegate() = default;

@@ -10,12 +10,82 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/payments/full_card_request.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "content/public/browser/web_contents.h"
 
 namespace autofill_assistant {
+
+namespace {
+// Self-deleting requester of full card details, including full PAN and the CVC
+// number.
+class SelfDeleteFullCardRequester
+    : public autofill::payments::FullCardRequest::ResultDelegate {
+ public:
+  SelfDeleteFullCardRequester() : weak_ptr_factory_(this) {}
+
+  using GetFullCardCallback =
+      base::OnceCallback<void(std::unique_ptr<autofill::CreditCard>,
+                              const base::string16& cvc)>;
+  void GetFullCard(content::WebContents* web_contents,
+                   autofill::CreditCard* card,
+                   GetFullCardCallback callback) {
+    DCHECK(card);
+    callback_ = std::move(callback);
+
+    autofill::ContentAutofillDriverFactory* factory =
+        autofill::ContentAutofillDriverFactory::FromWebContents(web_contents);
+    if (!factory) {
+      OnFullCardRequestFailed();
+      return;
+    }
+
+    autofill::ContentAutofillDriver* driver =
+        factory->DriverForFrame(web_contents->GetMainFrame());
+    if (!driver) {
+      OnFullCardRequestFailed();
+      return;
+    }
+
+    driver->autofill_manager()->GetOrCreateFullCardRequest()->GetFullCard(
+        *card, autofill::AutofillClient::UNMASK_FOR_AUTOFILL,
+        weak_ptr_factory_.GetWeakPtr(),
+        driver->autofill_manager()->GetAsFullCardRequestUIDelegate());
+  }
+
+ private:
+  ~SelfDeleteFullCardRequester() override {}
+
+  // payments::FullCardRequest::ResultDelegate:
+  void OnFullCardRequestSucceeded(
+      const autofill::payments::FullCardRequest& /* full_card_request */,
+      const autofill::CreditCard& card,
+      const base::string16& cvc) override {
+    std::move(callback_).Run(std::make_unique<autofill::CreditCard>(card), cvc);
+    delete this;
+  }
+
+  // payments::FullCardRequest::ResultDelegate:
+  void OnFullCardRequestFailed() override {
+    // Failed might because of cancel, so return nullptr to notice caller.
+    std::move(callback_).Run(nullptr, base::string16());
+    delete this;
+  }
+
+  GetFullCardCallback callback_;
+
+  base::WeakPtrFactory<SelfDeleteFullCardRequester> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(SelfDeleteFullCardRequester);
+};
+
+}  // namespace
 
 AutofillAction::AutofillAction(const ActionProto& proto)
     : Action(proto), pending_set_field_value_(0), weak_ptr_factory_(this) {
@@ -129,15 +199,38 @@ void AutofillAction::FillFormWithData(const std::string& guid,
                                       ActionDelegate* delegate) {
   DCHECK(!selectors_.empty());
   if (is_autofill_card_) {
-    delegate->FillCardForm(
-        guid, selectors_,
-        base::BindOnce(&AutofillAction::OnFormFilled,
-                       weak_ptr_factory_.GetWeakPtr(), guid, delegate));
+    autofill::CreditCard* card =
+        delegate->GetPersonalDataManager()->GetCreditCardByGUID(guid);
+    DCHECK(card);
+    // TODO(crbug.com/806868): Consider refactoring SelfDeleteFullCardRequester
+    // so as to unit test it.
+    (new SelfDeleteFullCardRequester())
+        ->GetFullCard(delegate->GetWebContents(), card,
+                      base::BindOnce(&AutofillAction::OnGetFullCard,
+                                     weak_ptr_factory_.GetWeakPtr(), delegate));
     return;
   }
 
   delegate->FillAddressForm(
       guid, selectors_,
+      base::BindOnce(&AutofillAction::OnFormFilled,
+                     weak_ptr_factory_.GetWeakPtr(), guid, delegate));
+}
+
+void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
+                                   std::unique_ptr<autofill::CreditCard> card,
+                                   const base::string16& cvc) {
+  if (!card) {
+    // TODO(crbug.com/806868): The failure might because of cancel, then ask to
+    // choose a card again.
+    UpdateProcessedAction(false);
+    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
+    return;
+  }
+
+  std::string guid = card->guid();
+  delegate->FillCardForm(
+      std::move(card), cvc, selectors_,
       base::BindOnce(&AutofillAction::OnFormFilled,
                      weak_ptr_factory_.GetWeakPtr(), guid, delegate));
 }
@@ -208,7 +301,8 @@ void AutofillAction::OnGetRequiredFieldValue(
     }
   }
 
-  const autofill::AutofillProfile* profile = delegate->GetAutofillProfile(guid);
+  const autofill::AutofillProfile* profile =
+      delegate->GetPersonalDataManager()->GetProfileByGUID(guid);
   DCHECK(profile);
 
   // We process all fields with an empty value in order to perform the fallback

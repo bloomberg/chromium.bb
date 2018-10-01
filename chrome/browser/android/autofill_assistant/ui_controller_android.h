@@ -39,6 +39,7 @@ class UiControllerAndroid : public UiController, public Client {
 
   // Overrides Client:
   std::string GetApiKey() override;
+  autofill::PersonalDataManager* GetPersonalDataManager() override;
   std::string GetServerUrl() override;
   UiController* GetUiController() override;
 

@@ -59,6 +59,12 @@ class ScriptExecutorTest : public testing::Test, public ScriptExecutorDelegate {
     return parameters_;
   }
 
+  autofill::PersonalDataManager* GetPersonalDataManager() override {
+    return nullptr;
+  }
+
+  content::WebContents* GetWebContents() override { return nullptr; }
+
   std::string Serialize(const google::protobuf::MessageLite& message) {
     std::string output;
     message.SerializeToString(&output);

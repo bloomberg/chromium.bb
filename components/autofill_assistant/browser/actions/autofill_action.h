@@ -16,6 +16,7 @@
 
 namespace autofill {
 class AutofillProfile;
+class CreditCard;
 }
 
 namespace autofill_assistant {
@@ -39,6 +40,11 @@ class AutofillAction : public Action {
   // Fill the form using data with GUID |guid|. Return whether filling succeeded
   // or not through |callback|.
   void FillFormWithData(const std::string& guid, ActionDelegate* delegate);
+
+  // Called after getting full credit card with its cvc.
+  void OnGetFullCard(ActionDelegate* delegate,
+                     std::unique_ptr<autofill::CreditCard> card,
+                     const base::string16& cvc);
 
   // Called when the form has been filled.
   void OnFormFilled(const std::string& guid,

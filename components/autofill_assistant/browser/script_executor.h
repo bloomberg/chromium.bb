@@ -61,7 +61,8 @@ class ScriptExecutor : public ActionDelegate {
                        base::OnceCallback<void(bool)> callback) override;
   void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) override;
-  void FillCardForm(const std::string& guid,
+  void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
+                    const base::string16& cvc,
                     const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
   void SelectOption(const std::vector<std::string>& selectors,
@@ -75,8 +76,6 @@ class ScriptExecutor : public ActionDelegate {
   void SetFieldValue(const std::vector<std::string>& selectors,
                      const std::string& value,
                      base::OnceCallback<void(bool)> callback) override;
-  const autofill::AutofillProfile* GetAutofillProfile(
-      const std::string& guid) override;
   void BuildNodeTree(const std::vector<std::string>& selectors,
                      NodeProto* node_tree_out,
                      base::OnceCallback<void(bool)> callback) override;
@@ -84,6 +83,8 @@ class ScriptExecutor : public ActionDelegate {
   void Shutdown() override;
   void Restart() override;
   ClientMemory* GetClientMemory() override;
+  autofill::PersonalDataManager* GetPersonalDataManager() override;
+  content::WebContents* GetWebContents() override;
 
  private:
   void OnGetActions(bool result, const std::string& response);

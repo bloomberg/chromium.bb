@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/mock_client_memory.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
@@ -22,6 +23,41 @@ using ::testing::ElementsAre;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrNe;
+
+class MockPersonalDataManager : public autofill::PersonalDataManager {
+ public:
+  MockPersonalDataManager() : PersonalDataManager("en-US") {}
+  ~MockPersonalDataManager() override{};
+
+  // PersonalDataManager:
+  std::string SaveImportedProfile(
+      const autofill::AutofillProfile& profile) override {
+    std::vector<autofill::AutofillProfile> profiles;
+    std::string merged_guid =
+        MergeProfile(profile, &profiles_, "en-US", &profiles);
+    if (merged_guid == profile.guid())
+      profiles_.push_back(std::make_unique<autofill::AutofillProfile>(profile));
+    return merged_guid;
+  }
+
+  autofill::AutofillProfile* GetProfileByGUID(
+      const std::string& guid) override {
+    autofill::AutofillProfile* result = nullptr;
+    for (const auto& profile : profiles_) {
+      if (profile->guid() != guid)
+        continue;
+      result = profile.get();
+      break;
+    }
+
+    return result;
+  }
+
+ private:
+  std::vector<std::unique_ptr<autofill::AutofillProfile>> profiles_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPersonalDataManager);
+};
 
 // A callback that expects to be called immediately.
 //
@@ -59,12 +95,14 @@ class AutofillActionTest : public testing::Test {
                                       autofill::test::kEmptyOrigin);
     autofill::test::SetProfileInfo(&profile, kFirstName, "", kLastName, kEmail,
                                    "", "", "", "", "", "", "", "");
-    autofill_profile_ = std::move(profile);
+    autofill_profile_guid_ = profile.guid();
+    personal_data_manager_ = std::make_unique<MockPersonalDataManager>();
+    personal_data_manager_->SaveImportedProfile(profile);
 
     ON_CALL(mock_action_delegate_, GetClientMemory)
         .WillByDefault(Return(&mock_client_memory_));
-    ON_CALL(mock_action_delegate_, GetAutofillProfile(autofill_profile_.guid()))
-        .WillByDefault(Return(&autofill_profile_));
+    ON_CALL(mock_action_delegate_, GetPersonalDataManager)
+        .WillByDefault(Return(personal_data_manager_.get()));
   }
 
  protected:
@@ -102,7 +140,8 @@ class AutofillActionTest : public testing::Test {
 
   MockActionDelegate mock_action_delegate_;
   MockClientMemory mock_client_memory_;
-  autofill::AutofillProfile autofill_profile_;
+  std::string autofill_profile_guid_;
+  std::unique_ptr<autofill::PersonalDataManager> personal_data_manager_;
 };
 
 TEST_F(AutofillActionTest, FillManually) {
@@ -128,41 +167,6 @@ TEST_F(AutofillActionTest, FillManually) {
   EXPECT_FALSE(ProcessAction(action_proto));
 }
 
-TEST_F(AutofillActionTest, FillCardFormFails) {
-  InSequence seq;
-
-  ActionProto action_proto = CreateUseCardAction();
-
-  // Return a fake selected card.
-  EXPECT_CALL(mock_client_memory_, selected_card())
-      .WillOnce(Return(autofill_profile_.guid()));
-
-  // Autofill fails.
-  EXPECT_CALL(mock_action_delegate_,
-              OnFillCardForm(autofill_profile_.guid(), _, _))
-      .WillOnce(RunOnceCallback<2>(false));
-
-  EXPECT_FALSE(ProcessAction(action_proto));
-}
-
-TEST_F(AutofillActionTest, FillCardFormSucceeds) {
-  InSequence seq;
-
-  ActionProto action_proto = CreateUseCardAction();
-
-  // Return a fake selected card.
-  EXPECT_CALL(mock_client_memory_, selected_card())
-      .WillOnce(Return(autofill_profile_.guid()));
-
-  // Autofill succeeds.
-  EXPECT_CALL(
-      mock_action_delegate_,
-      OnFillCardForm(autofill_profile_.guid(), ElementsAre(kFakeSelector), _))
-      .WillOnce(RunOnceCallback<2>(true));
-
-  EXPECT_TRUE(ProcessAction(action_proto));
-}
-
 TEST_F(AutofillActionTest, ValidationSucceeds) {
   InSequence seq;
 
@@ -178,12 +182,12 @@ TEST_F(AutofillActionTest, ValidationSucceeds) {
 
   // Return a fake selected address.
   EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
-      .WillOnce(Return(autofill_profile_.guid()));
+      .WillOnce(Return(autofill_profile_guid_));
 
   // Autofill succeeds.
-  EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(autofill_profile_.guid(),
-                                ElementsAre(kFakeSelector), _))
+  EXPECT_CALL(
+      mock_action_delegate_,
+      OnFillAddressForm(autofill_profile_guid_, ElementsAre(kFakeSelector), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation succeeds.
@@ -213,12 +217,12 @@ TEST_F(AutofillActionTest, FallbackFails) {
 
   // Return a fake selected address.
   EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
-      .WillOnce(Return(autofill_profile_.guid()));
+      .WillOnce(Return(autofill_profile_guid_));
 
   // Autofill succeeds.
-  EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(autofill_profile_.guid(),
-                                ElementsAre(kFakeSelector), _))
+  EXPECT_CALL(
+      mock_action_delegate_,
+      OnFillAddressForm(autofill_profile_guid_, ElementsAre(kFakeSelector), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation fails when getting FIRST_NAME.
@@ -254,12 +258,12 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
 
   // Return a fake selected address.
   EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
-      .WillOnce(Return(autofill_profile_.guid()));
+      .WillOnce(Return(autofill_profile_guid_));
 
   // Autofill succeeds.
-  EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(autofill_profile_.guid(),
-                                ElementsAre(kFakeSelector), _))
+  EXPECT_CALL(
+      mock_action_delegate_,
+      OnFillAddressForm(autofill_profile_guid_, ElementsAre(kFakeSelector), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation fails when getting FIRST_NAME.
