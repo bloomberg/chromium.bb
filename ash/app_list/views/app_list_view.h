@@ -133,7 +133,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void SetAppListOverlayVisible(bool visible);
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
   bool CanProcessEventsWithinSubtree() const override;
@@ -212,6 +211,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // state. [0.0, 1.0] means the progress between closed and peeking state,
   // while [1.0, 2.0] means the progress between peeking and fullscreen state.
   float GetAppListTransitionProgress() const;
+
+  // Returns the height of app list in fullscreen state.
+  int GetFullscreenStateHeight() const;
 
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
@@ -336,6 +338,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Returns true if scroll events should be ignored.
   bool ShouldIgnoreScrollEvents();
+
+  // Returns preferred fullscreen widget bounds in parent window. Note that this
+  // function should only be called after the widget is initialized.
+  gfx::Rect GetPreferredWidgetBounds();
 
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.

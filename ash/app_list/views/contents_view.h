@@ -157,9 +157,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void TransitionChanged() override;
   void TransitionEnded() override;
 
-  // Returns the size of current display.
-  gfx::Size GetDisplaySize() const;
-
   // Starts the fade out animation when the app list is closed.
   void FadeOutOnClose(base::TimeDelta animation_duration);
 
