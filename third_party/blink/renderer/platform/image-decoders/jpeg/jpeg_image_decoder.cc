@@ -41,6 +41,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
 
@@ -98,6 +99,64 @@ void RecordJpegImageArea(const blink::IntSize& size) {
   // saturated_cast.
   image_area_histogram.Count(
       base::saturated_cast<base::HistogramBase::Sample>(size.Area()));
+}
+
+// Extracts the JPEG color space of an image for UMA purposes given |info| which
+// is assumed to have gone through a jpeg_read_header(). When the color space is
+// YCbCr, we also extract the chroma subsampling. The caveat is that the
+// extracted color space is really libjpeg_turbo's guess. According to
+// libjpeg.txt, "[t]he JPEG color space, unfortunately, is something of a guess
+// since the JPEG standard proper does not provide a way to record it. In
+// practice most files adhere to the JFIF or Adobe conventions, and the decoder
+// will recognize these correctly."
+blink::BitmapImageMetrics::JpegColorSpace ExtractUMAJpegColorSpace(
+    const jpeg_decompress_struct& info) {
+  switch (info.jpeg_color_space) {
+    case JCS_GRAYSCALE:
+      return blink::BitmapImageMetrics::JpegColorSpace::kGrayscale;
+    case JCS_RGB:
+      return blink::BitmapImageMetrics::JpegColorSpace::kRGB;
+    case JCS_CMYK:
+      return blink::BitmapImageMetrics::JpegColorSpace::kCMYK;
+    case JCS_YCCK:
+      return blink::BitmapImageMetrics::JpegColorSpace::kYCCK;
+    case JCS_YCbCr:
+      // The following logic is mostly reused from YuvSubsampling(). However,
+      // here we use |info.comp_info| instead of |info.cur_comp_info| to read
+      // the components from the SOF instead of the first scan. We also don't
+      // care about |info.scale_denom|.
+      // TODO: can we use this same logic in YuvSubsampling()?
+      if (info.num_components == 3 && info.comp_info &&
+          info.comp_info[1].h_samp_factor == 1 &&
+          info.comp_info[1].v_samp_factor == 1 &&
+          info.comp_info[2].h_samp_factor == 1 &&
+          info.comp_info[2].v_samp_factor == 1) {
+        const int h = info.comp_info[0].h_samp_factor;
+        const int v = info.comp_info[0].v_samp_factor;
+        if (v == 1) {
+          switch (h) {
+            case 1:
+              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr444;
+            case 2:
+              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr422;
+            case 4:
+              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr411;
+          }
+        } else if (v == 2) {
+          switch (h) {
+            case 1:
+              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr440;
+            case 2:
+              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr420;
+            case 4:
+              return blink::BitmapImageMetrics::JpegColorSpace::kYCbCr410;
+          }
+        }
+      }
+      return blink::BitmapImageMetrics::JpegColorSpace::kYCbCrOther;
+    default:
+      return blink::BitmapImageMetrics::JpegColorSpace::kUnknown;
+  }
 }
 
 }  // namespace
@@ -653,6 +712,8 @@ class JPEGImageReader final {
       case JPEG_DONE:
         // Finish decompression.
         RecordJpegImageArea(decoder_->Size());
+        BitmapImageMetrics::CountJpegColorSpace(
+            ExtractUMAJpegColorSpace(info_));
         return jpeg_finish_decompress(&info_);
     }
 
