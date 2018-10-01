@@ -5,8 +5,8 @@
 // A base test fixture for mocking sync and signin infrastructure. Used for
 // testing sync-related code.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_SYNC_USERNAME_TEST_BASE_H_
-#define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_SYNC_USERNAME_TEST_BASE_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SYNC_USERNAME_TEST_BASE_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SYNC_USERNAME_TEST_BASE_H_
 
 #include <string>
 
@@ -78,4 +78,4 @@ class SyncUsernameTestBase : public testing::Test {
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_SYNC_USERNAME_TEST_BASE_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SYNC_USERNAME_TEST_BASE_H_

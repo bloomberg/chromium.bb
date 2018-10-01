@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/sync/browser/password_sync_util.h"
+#include "components/password_manager/core/browser/password_sync_util.h"
 
 #include <stddef.h>
 
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/sync/browser/sync_username_test_base.h"
+#include "components/password_manager/core/browser/sync_username_test_base.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

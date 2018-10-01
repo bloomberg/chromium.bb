@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MODEL_WORKER_H_
-#define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MODEL_WORKER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MODEL_WORKER_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MODEL_WORKER_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -42,4 +42,4 @@ class PasswordModelWorker : public syncer::ModelSafeWorker {
 
 }  // namespace browser_sync
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MODEL_WORKER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MODEL_WORKER_H_

@@ -265,7 +265,6 @@ ios_web_view_deps = [
   "//components/password_manager/core/browser/form_parsing:form_parsing",
   "//components/password_manager/core/common",
   "//components/password_manager/ios",
-  "//components/password_manager/sync/browser",
   "//components/pref_registry",
   "//components/prefs",
   "//components/proxy_config",
