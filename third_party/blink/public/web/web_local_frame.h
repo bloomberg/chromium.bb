@@ -237,28 +237,6 @@ class WebLocalFrame : public WebFrame {
                               const WebURL& unreachable_url = WebURL(),
                               bool replace = false) = 0;
 
-  // Calls CommitDataNavigationWithRequest with a WebURLRequest that is built
-  // either 1) based on the previous, provisional request (if |replace| is true
-  // and |unreachable_url| is present) or 2) constructed from scratch otherwise.
-  //
-  // |base_url| indicates the security origin and is used to resolve links in
-  // the committed document.
-  //
-  // Please see documentation of CommitDataNavigationWithRequest for description
-  // of other parameters.
-  virtual void CommitDataNavigation(
-      const WebData& data,
-      const WebString& mime_type,
-      const WebString& text_encoding,
-      const WebURL& base_url,
-      const WebURL& unreachable_url,
-      bool replace,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) = 0;
-
   // Navigates to the given |data| with specified |mime_type| and optional
   // |text_encoding|.
   //
@@ -268,10 +246,9 @@ class WebLocalFrame : public WebFrame {
   // If |replace| is false, then this data will be loaded as a normal
   // navigation.  Otherwise, the current history item will be replaced.
   //
-  // This method can be called instead of CommitDataNavigation when a
-  // ResourceRequest has already been precomputed (e.g. when trying to commit an
-  // error page, while mimicking the original failed request).
-  virtual void CommitDataNavigationWithRequest(
+  // Request's url indicates the security origin and is used as a base
+  // url to resolve links in the committed document.
+  virtual void CommitDataNavigation(
       const WebURLRequest&,
       const WebData&,
       const WebString& mime_type,
