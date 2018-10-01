@@ -508,11 +508,6 @@ source_set("unit_tests") {
       "//components/safe_browsing/common:safe_browsing_prefs",
     ]
   }
-
-  if (is_ios) {
-    deps +=
-        [ "//components/password_manager/core/browser/form_parsing:unit_tests" ]
-  }
 }
 
 fuzzer_test("csv_reader_fuzzer") {
