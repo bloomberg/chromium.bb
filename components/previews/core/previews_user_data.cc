@@ -15,13 +15,12 @@ PreviewsUserData::PreviewsUserData(uint64_t page_id) : page_id_(page_id) {}
 
 PreviewsUserData::~PreviewsUserData() {}
 
+PreviewsUserData::PreviewsUserData(const PreviewsUserData& previews_user_data) =
+    default;
+
 std::unique_ptr<PreviewsUserData> PreviewsUserData::DeepCopy() const {
-  std::unique_ptr<PreviewsUserData> copy(new PreviewsUserData(page_id_));
-  copy->data_savings_inflation_percent_ = data_savings_inflation_percent_;
-  copy->cache_control_no_transform_directive_ =
-      cache_control_no_transform_directive_;
-  copy->SetCommittedPreviewsType(committed_previews_type_);
-  return copy;
+  // Raw new to avoid friending std::make_unique.
+  return base::WrapUnique(new PreviewsUserData(*this));
 }
 
 PreviewsUserData* PreviewsUserData::GetData(const net::URLRequest& request) {
