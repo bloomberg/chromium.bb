@@ -18,7 +18,7 @@ enum SpeechSynthesisErrorCode {
     "not-allowed",
 };
 
-// https://w3c.github.io/speech-api/#enumdef-speechsynthesiserrorcode
+// https://w3c.github.io/speech-api/#speechsynthesiserrorevent
 [
     Exposed=Window,
     Constructor(DOMString type, SpeechSynthesisErrorEventInit eventInitDict),
