@@ -118,6 +118,29 @@ public class SyncCustomizationFragmentTest {
         ThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
     }
 
+    /**
+     * Minimal test fixture to debug flakiness in the actual tests.
+     * TODO(crbug.com/879246): Remove after investigation.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    public void testSetupOnly() {
+        mSyncTestRule.setUpTestAccountAndSignIn();
+    }
+
+    /**
+     * Minimal test fixture to debug flakiness in the actual tests.
+     * TODO(crbug.com/879246): Remove after investigation.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    public void testSetupAndWaitForSyncActive() {
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        SyncTestUtil.waitForSyncActive();
+    }
+
     @Test
     @SmallTest
     @Feature({"Sync"})
