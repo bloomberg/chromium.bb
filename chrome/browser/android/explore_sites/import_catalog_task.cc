@@ -36,7 +36,7 @@ VALUES
 bool ImportCatalogSync(std::string version_token,
                        std::unique_ptr<Catalog> catalog_proto,
                        sql::Database* db) {
-  if (!db || !catalog_proto)
+  if (!db || !catalog_proto || version_token.empty())
     return false;
 
   sql::Transaction transaction(db);

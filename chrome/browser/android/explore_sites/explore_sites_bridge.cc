@@ -31,8 +31,16 @@ namespace {
 
 void CatalogReady(ScopedJavaGlobalRef<jobject>(j_result_obj),
                   ScopedJavaGlobalRef<jobject>(j_callback_obj),
+                  GetCatalogStatus status,
                   std::unique_ptr<std::vector<ExploreSitesCategory>> result) {
   JNIEnv* env = base::android::AttachCurrentThread();
+  // TODO(dewittj): Pass along the status to Java land.
+  if (status == GetCatalogStatus::kNoCatalog) {
+    // Don't fill in the result, just return empty.
+    base::android::RunObjectCallbackAndroid(j_callback_obj, j_result_obj);
+    return;
+  }
+
   if (!result) {
     DLOG(ERROR) << "Unable to fetch the ExploreSites catalog!";
     base::android::RunObjectCallbackAndroid(j_callback_obj, nullptr);

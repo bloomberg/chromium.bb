@@ -42,7 +42,9 @@ class ExploreSitesServiceImplTest : public testing::Test {
 
   void UpdateCatalogDoneCallback(bool success) { success_ = success; }
   void CatalogCallback(
+      GetCatalogStatus status,
       std::unique_ptr<std::vector<ExploreSitesCategory>> categories) {
+    database_status_ = status;
     if (categories != nullptr) {
       database_categories_ = std::move(categories);
     }
@@ -50,6 +52,7 @@ class ExploreSitesServiceImplTest : public testing::Test {
 
   bool success() { return success_; }
 
+  GetCatalogStatus database_status() { return database_status_; }
   std::vector<ExploreSitesCategory>* database_categories() {
     return database_categories_.get();
   }
@@ -71,6 +74,7 @@ class ExploreSitesServiceImplTest : public testing::Test {
 
   std::unique_ptr<explore_sites::ExploreSitesServiceImpl> service_;
   bool success_;
+  GetCatalogStatus database_status_;
   std::unique_ptr<std::vector<ExploreSitesCategory>> database_categories_;
   std::string test_data_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -117,6 +121,7 @@ ExploreSitesServiceImplTest::GetPendingRequest(size_t index) {
 std::string ExploreSitesServiceImplTest::CreateTestDataProto() {
   std::string serialized_protobuf;
   explore_sites::GetCatalogResponse catalog_response;
+  catalog_response.set_version_token("abcd");
   explore_sites::Catalog* catalog = catalog_response.mutable_catalog();
   explore_sites::Category* category = catalog->add_categories();
   explore_sites::Site* site1 = category->add_sites();
@@ -169,11 +174,9 @@ TEST_F(ExploreSitesServiceImplTest, UpdateCatalogFromNetwork) {
   // TODO(petewil): Fix get catalog so it always returns data if it has some.
   service()->GetCatalog(base::BindOnce(
       &ExploreSitesServiceImplTest::CatalogCallback, base::Unretained(this)));
-  // Second call is to get the actual catalog sata into the update callback.
-  service()->GetCatalog(base::BindOnce(
-      &ExploreSitesServiceImplTest::CatalogCallback, base::Unretained(this)));
   PumpLoop();
 
+  EXPECT_EQ(GetCatalogStatus::kSuccess, database_status());
   EXPECT_NE(nullptr, database_categories());
   EXPECT_EQ(1U, database_categories()->size());
 
