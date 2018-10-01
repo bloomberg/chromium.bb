@@ -37,10 +37,10 @@ class DevToolsSession : public protocol::FrontendChannel,
   void SetBrowserOnly(bool browser_only);
 
   void AddHandler(std::unique_ptr<protocol::DevToolsDomainHandler> handler);
-  // TODO(dgozman): maybe combine this with AttachToAgent?
-  void SetRenderer(int process_host_id, RenderFrameHostImpl* frame_host);
 
-  void AttachToAgent(const blink::mojom::DevToolsAgentAssociatedPtr& agent);
+  void AttachToAgent(blink::mojom::DevToolsAgent* agent,
+                     int process_host_id,
+                     RenderFrameHostImpl* frame_host);
   void DispatchProtocolMessage(
       const std::string& message,
       std::unique_ptr<base::DictionaryValue> parsed_message);

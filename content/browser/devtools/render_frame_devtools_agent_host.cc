@@ -17,6 +17,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_manager.h"
+#include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
@@ -58,6 +59,7 @@
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/web/devtools_agent.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -429,12 +431,8 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
 
 bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
                                                  TargetRegistry* registry) {
-  if (!ShouldAllowSession(session, frame_host_))
+  if (!ShouldAllowSession(session))
     return false;
-
-  session->SetRenderer(frame_host_ ? frame_host_->GetProcess()->GetID()
-                                   : ChildProcessHost::kInvalidUniqueID,
-                       frame_host_);
 
   protocol::EmulationHandler* emulation_handler =
       new protocol::EmulationHandler();
@@ -467,10 +465,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
         new protocol::TracingHandler(frame_tree_node_, GetIOContext())));
   }
 
-  if (EnsureAgent())
-    session->AttachToAgent(agent_ptr_);
-
-  if (sessions().size() == 1) {
+  if (sessions().empty()) {
     bool use_video_capture_api = true;
 #ifdef OS_ANDROID
     // Video capture API cannot be used on Android WebView.
@@ -518,9 +513,7 @@ void RenderFrameDevToolsAgentHost::InspectElement(RenderFrameHost* frame_host,
           view->TransformRootPointToViewCoordSpace(gfx::PointF(point)));
     }
   }
-
-  if (host->EnsureAgent())
-    host->agent_ptr_->InspectElement(point);
+  host->GetRendererChannel()->InspectElement(point);
 }
 
 RenderFrameDevToolsAgentHost::~RenderFrameDevToolsAgentHost() {
@@ -577,7 +570,7 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
       render_frame_alive_ = true;
       for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
         inspector->TargetReloadedAfterCrash();
-      MaybeReattachToRenderFrame();
+      UpdateRendererChannel(IsAttached());
     }
     return;
   }
@@ -592,11 +585,10 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
     RevokePolicy();
 
   frame_host_ = frame_host;
-  agent_ptr_.reset();
 
   std::vector<DevToolsSession*> restricted_sessions;
   for (DevToolsSession* session : sessions()) {
-    if (!ShouldAllowSession(session, frame_host))
+    if (!ShouldAllowSession(session))
       restricted_sessions.push_back(session);
   }
   if (!restricted_sessions.empty())
@@ -608,21 +600,9 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
       inspector->TargetReloadedAfterCrash();
   }
 
-  if (IsAttached()) {
+  if (IsAttached())
     GrantPolicy();
-    for (DevToolsSession* session : sessions()) {
-      session->SetRenderer(frame_host ? frame_host->GetProcess()->GetID() : -1,
-                           frame_host);
-    }
-    MaybeReattachToRenderFrame();
-  }
-}
-
-void RenderFrameDevToolsAgentHost::MaybeReattachToRenderFrame() {
-  if (!EnsureAgent())
-    return;
-  for (DevToolsSession* session : sessions())
-    session->AttachToAgent(agent_ptr_);
+  UpdateRendererChannel(IsAttached());
 }
 
 void RenderFrameDevToolsAgentHost::GrantPolicy() {
@@ -696,7 +676,7 @@ void RenderFrameDevToolsAgentHost::FrameDeleted(RenderFrameHost* rfh) {
 void RenderFrameDevToolsAgentHost::RenderFrameDeleted(RenderFrameHost* rfh) {
   if (rfh == frame_host_) {
     render_frame_alive_ = false;
-    agent_ptr_.reset();
+    UpdateRendererChannel(IsAttached());
   }
 }
 
@@ -706,7 +686,7 @@ void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
     RevokePolicy();
   ForceDetachAllSessions();
   frame_host_ = nullptr;
-  agent_ptr_.reset();
+  UpdateRendererChannel(IsAttached());
   SetFrameTreeNode(nullptr);
   Release();
 }
@@ -939,12 +919,14 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
   }
 }
 
-bool RenderFrameDevToolsAgentHost::EnsureAgent() {
-  if (!frame_host_ || !render_frame_alive_)
-    return false;
-  if (!agent_ptr_)
-    frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(&agent_ptr_);
-  return true;
+void RenderFrameDevToolsAgentHost::UpdateRendererChannel(bool force) {
+  blink::mojom::DevToolsAgentAssociatedPtr agent_ptr;
+  if (frame_host_ && render_frame_alive_ && force)
+    frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(&agent_ptr);
+  int process_id = frame_host_ ? frame_host_->GetProcess()->GetID()
+                               : ChildProcessHost::kInvalidUniqueID;
+  GetRendererChannel()->SetRenderer(std::move(agent_ptr), process_id,
+                                    frame_host_);
 }
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {
@@ -952,16 +934,15 @@ bool RenderFrameDevToolsAgentHost::IsChildFrame() {
 }
 
 bool RenderFrameDevToolsAgentHost::ShouldAllowSession(
-    DevToolsSession* session,
-    RenderFrameHostImpl* frame_host) {
+    DevToolsSession* session) {
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->delegate() && frame_host) {
-    if (!manager->delegate()->AllowInspectingRenderFrameHost(frame_host))
+  if (manager->delegate() && frame_host_) {
+    if (!manager->delegate()->AllowInspectingRenderFrameHost(frame_host_))
       return false;
   }
   const bool is_webui =
-      frame_host && (frame_host->web_ui() || frame_host->pending_web_ui());
-  if (!session->client()->MayAttachToRenderer(frame_host, is_webui))
+      frame_host_ && (frame_host_->web_ui() || frame_host_->pending_web_ui());
+  if (!session->client()->MayAttachToRenderer(frame_host_, is_webui))
     return false;
   return true;
 }

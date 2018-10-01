@@ -73,19 +73,15 @@ std::vector<EmulationHandler*> EmulationHandler::ForAgentHost(
       host, Emulation::Metainfo::domainName);
 }
 
-void EmulationHandler::InitRenderer(int process_host_id,
-                                    RenderFrameHostImpl* frame_host) {
+void EmulationHandler::SetRenderer(int process_host_id,
+                                   RenderFrameHostImpl* frame_host) {
+  if (host_ == frame_host)
+    return;
   host_ = frame_host;
   if (touch_emulation_enabled_)
     UpdateTouchEventEmulationState();
-}
-
-void EmulationHandler::UpdateRenderer(int process_host_id,
-                                      RenderFrameHostImpl* frame_host) {
-  if (host_ == frame_host)
-    return;
-  InitRenderer(process_host_id, frame_host);
-  UpdateDeviceEmulationState();
+  if (device_emulation_enabled_)
+    UpdateDeviceEmulationState();
 }
 
 void EmulationHandler::Wire(UberDispatcher* dispatcher) {
@@ -98,8 +94,10 @@ Response EmulationHandler::Disable() {
     UpdateTouchEventEmulationState();
   }
   user_agent_ = std::string();
-  device_emulation_enabled_ = false;
-  UpdateDeviceEmulationState();
+  if (device_emulation_enabled_) {
+    device_emulation_enabled_ = false;
+    UpdateDeviceEmulationState();
+  }
   return Response::OK();
 }
 

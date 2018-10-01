@@ -58,24 +58,28 @@ void DevToolsSession::Dispose() {
 void DevToolsSession::AddHandler(
     std::unique_ptr<protocol::DevToolsDomainHandler> handler) {
   handler->Wire(dispatcher_.get());
-  handler->InitRenderer(process_host_id_, host_);
   handlers_[handler->name()] = std::move(handler);
-}
-
-void DevToolsSession::SetRenderer(int process_host_id,
-                                  RenderFrameHostImpl* frame_host) {
-  process_host_id_ = process_host_id;
-  host_ = frame_host;
-  for (auto& pair : handlers_)
-    pair.second->UpdateRenderer(process_host_id_, host_);
 }
 
 void DevToolsSession::SetBrowserOnly(bool browser_only) {
   browser_only_ = browser_only;
 }
 
-void DevToolsSession::AttachToAgent(
-    const blink::mojom::DevToolsAgentAssociatedPtr& agent) {
+void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent,
+                                    int process_host_id,
+                                    RenderFrameHostImpl* frame_host) {
+  process_host_id_ = process_host_id;
+  host_ = frame_host;
+  for (auto& pair : handlers_)
+    pair.second->SetRenderer(process_host_id_, host_);
+
+  if (!agent) {
+    binding_.Close();
+    session_ptr_.reset();
+    io_session_ptr_.reset();
+    return;
+  }
+
   blink::mojom::DevToolsSessionHostAssociatedPtrInfo host_ptr_info;
   binding_.Bind(mojo::MakeRequest(&host_ptr_info));
   agent->AttachDevToolsSession(

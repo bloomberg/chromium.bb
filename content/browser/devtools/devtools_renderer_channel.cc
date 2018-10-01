@@ -1,0 +1,45 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/devtools/devtools_renderer_channel.h"
+
+#include "content/browser/devtools/devtools_agent_host_impl.h"
+#include "content/browser/devtools/devtools_session.h"
+#include "content/public/common/child_process_host.h"
+#include "ui/gfx/geometry/point.h"
+
+namespace content {
+
+DevToolsRendererChannel::DevToolsRendererChannel(DevToolsAgentHostImpl* owner)
+    : owner_(owner), process_id_(ChildProcessHost::kInvalidUniqueID) {}
+
+DevToolsRendererChannel::~DevToolsRendererChannel() = default;
+
+void DevToolsRendererChannel::SetRenderer(
+    blink::mojom::DevToolsAgentAssociatedPtr agent_ptr,
+    int process_id,
+    RenderFrameHostImpl* frame_host) {
+  agent_ptr_ = std::move(agent_ptr);
+  process_id_ = process_id;
+  frame_host_ = frame_host;
+  for (DevToolsSession* session : owner_->sessions())
+    session->AttachToAgent(agent_ptr_.get(), process_id_, frame_host_);
+}
+
+void DevToolsRendererChannel::AttachSession(DevToolsSession* session) {
+  if (!agent_ptr_)
+    owner_->UpdateRendererChannel(true /* force */);
+  session->AttachToAgent(agent_ptr_.get(), process_id_, frame_host_);
+}
+
+void DevToolsRendererChannel::InspectElement(const gfx::Point& point) {
+  if (!agent_ptr_)
+    owner_->UpdateRendererChannel(true /* force */);
+  // Previous call might update |agent_ptr_| via SetRenderer(),
+  // so we should check it again.
+  if (agent_ptr_)
+    agent_ptr_->InspectElement(point);
+}
+
+}  // namespace content

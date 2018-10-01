@@ -21,7 +21,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/web/devtools_agent.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -165,6 +164,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
                      TargetRegistry* registry) override;
   void DetachSession(DevToolsSession* session) override;
   void InspectElement(RenderFrameHost* frame_host, int x, int y) override;
+  void UpdateRendererChannel(bool force) override;
 
   // WebContentsObserver overrides.
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
@@ -185,13 +185,11 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void OnSwapCompositorFrame(const IPC::Message& message);
   void DestroyOnRenderFrameGone();
   void UpdateFrameHost(RenderFrameHostImpl* frame_host);
-  void MaybeReattachToRenderFrame();
   void GrantPolicy();
   void RevokePolicy();
   void SetFrameTreeNode(FrameTreeNode* frame_tree_node);
 
-  bool ShouldAllowSession(DevToolsSession* session,
-                          RenderFrameHostImpl* frame_host);
+  bool ShouldAllowSession(DevToolsSession* session);
 
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
@@ -199,7 +197,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void SynchronousSwapCompositorFrame(
       viz::CompositorFrameMetadata frame_metadata);
-  bool EnsureAgent();
 
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
@@ -208,7 +205,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   // The active host we are talking to.
   RenderFrameHostImpl* frame_host_ = nullptr;
-  blink::mojom::DevToolsAgentAssociatedPtr agent_ptr_;
   base::flat_set<NavigationHandleImpl*> navigation_handles_;
   bool render_frame_alive_ = false;
 

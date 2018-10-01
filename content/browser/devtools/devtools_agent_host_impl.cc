@@ -115,7 +115,8 @@ DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   return result;
 }
 
-DevToolsAgentHostImpl::DevToolsAgentHostImpl(const std::string& id) : id_(id) {
+DevToolsAgentHostImpl::DevToolsAgentHostImpl(const std::string& id)
+    : id_(id), renderer_channel_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -179,15 +180,12 @@ DevToolsSession* DevToolsAgentHostImpl::SessionByClient(
 bool DevToolsAgentHostImpl::InnerAttachClient(DevToolsAgentHostClient* client,
                                               TargetRegistry* registry) {
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
-  DevToolsSession* session = new DevToolsSession(this, client);
-  sessions_.insert(session);
-  session_by_client_[client].reset(session);
-  if (!AttachSession(session, registry)) {
-    sessions_.erase(session);
-    session_by_client_.erase(client);
+  auto session = std::make_unique<DevToolsSession>(this, client);
+  if (!AttachSession(session.get(), registry))
     return false;
-  }
-
+  renderer_channel_.AttachSession(session.get());
+  sessions_.insert(session.get());
+  session_by_client_[client] = std::move(session);
   if (sessions_.size() == 1)
     NotifyAttached();
   DevToolsManager* manager = DevToolsManager::GetInstance();
@@ -340,6 +338,8 @@ bool DevToolsAgentHostImpl::AttachSession(DevToolsSession* session,
 }
 
 void DevToolsAgentHostImpl::DetachSession(DevToolsSession* session) {}
+
+void DevToolsAgentHostImpl::UpdateRendererChannel(bool force) {}
 
 // static
 void DevToolsAgentHost::DetachAllClients() {
