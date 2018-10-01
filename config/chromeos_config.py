@@ -4151,21 +4151,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.AddWithoutTemplate(
-      'som-dispatcher',
-      site_config.templates.internal,
-      site_config.templates.no_hwtest_builder,
-      site_config.templates.no_vmtest_builder,
-      display_label=config_lib.DISPLAY_LABEL_UTILITY,
-      description=('Updates alerts displayed on SoM website. go/som/chromeos'),
-      build_type=constants.GENERIC_TYPE,
-      boards=[],
-      builder_class_name='alert_builders.SomDispatcherBuilder',
-      active_waterfall=constants.WATERFALL_SWARMING,
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-      schedule='with 3m interval',
-  )
-
-  site_config.AddWithoutTemplate(
       'config-updater',
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
