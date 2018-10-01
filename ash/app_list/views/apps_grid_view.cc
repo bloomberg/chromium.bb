@@ -603,32 +603,47 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
   drag_view_->SetPosition(drag_view_start_ + drag_vector);
 
   last_drag_point_ = point;
-  const GridIndex last_reorder_drop_target = reorder_drop_target_;
-  const GridIndex last_folder_drop_target = folder_drop_target_;
-  DropAttempt last_drop_attempt = drop_attempt_;
-  CalculateDropTarget();
+  const GridIndex last_drop_target = drop_target_;
+  DropTargetRegion last_drop_target_region = drop_target_region_;
+  UpdateDropTargetRegion();
 
   MaybeStartPageFlipTimer(last_drag_point_);
 
-  if (last_folder_drop_target != folder_drop_target_ ||
-      last_reorder_drop_target != reorder_drop_target_ ||
-      last_drop_attempt != drop_attempt_) {
-    if (drop_attempt_ == DROP_FOR_REORDER) {
-      folder_dropping_timer_.Stop();
-      reorder_timer_.Start(FROM_HERE,
-                           base::TimeDelta::FromMilliseconds(kReorderDelay),
-                           this, &AppsGridView::OnReorderTimer);
-    } else if (drop_attempt_ == DROP_FOR_FOLDER) {
+  if (last_drop_target != drop_target_ ||
+      last_drop_target_region != drop_target_region_) {
+    if (drop_target_region_ == ON_ITEM && DraggedItemCanEnterFolder() &&
+        DropTargetIsValidFolder()) {
       reorder_timer_.Stop();
       folder_dropping_timer_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(
               AppListConfig::instance().folder_dropping_delay()),
           this, &AppsGridView::OnFolderDroppingTimer);
+    } else if ((drop_target_region_ == ON_ITEM ||
+                drop_target_region_ == NEAR_ITEM) &&
+               !folder_delegate_) {
+      folder_dropping_timer_.Stop();
+
+      // If the drag changes regions from |BETWEEN_ITEMS| to |NEAR_ITEM| the
+      // timer should reset, so that we gain the extra time from hovering near
+      // the item
+      if (last_drop_target_region == BETWEEN_ITEMS)
+        reorder_timer_.Stop();
+      reorder_timer_.Start(FROM_HERE,
+                           base::TimeDelta::FromMilliseconds(kReorderDelay * 5),
+                           this, &AppsGridView::OnReorderTimer);
+    } else if (drop_target_region_ != NO_TARGET) {
+      // If none of the above cases evaluated true, then all of the possible
+      // drop regions should result in a fast reorder.
+      folder_dropping_timer_.Stop();
+      reorder_timer_.Start(FROM_HERE,
+                           base::TimeDelta::FromMilliseconds(kReorderDelay),
+                           this, &AppsGridView::OnReorderTimer);
     }
 
     // Reset the previous drop target.
-    SetAsFolderDroppingTarget(last_folder_drop_target, false);
+    if (last_drop_target_region == ON_ITEM)
+      SetAsFolderDroppingTarget(last_drop_target, false);
   }
 }
 
@@ -675,14 +690,14 @@ void AppsGridView::EndDrag(bool cancel) {
 
     if (!cancel && dragging()) {
       // Regular drag ending path, ie, not for reparenting.
-      CalculateDropTarget();
-      if (EnableFolderDragDropUI() && drop_attempt_ == DROP_FOR_FOLDER &&
-          IsValidIndex(folder_drop_target_)) {
-        MoveItemToFolder(drag_view_, folder_drop_target_);
+      UpdateDropTargetRegion();
+      if (drop_target_region_ == ON_ITEM && DraggedItemCanEnterFolder() &&
+          DropTargetIsValidFolder()) {
+        MoveItemToFolder(drag_view_, drop_target_);
         folder_item_view =
-            GetViewDisplayedAtSlotOnCurrentPage(folder_drop_target_.slot);
-      } else if (IsValidReorderTargetIndex(reorder_drop_target_)) {
-        MoveItemInModel(drag_view_, reorder_drop_target_);
+            GetViewDisplayedAtSlotOnCurrentPage(drop_target_.slot);
+      } else if (IsValidReorderTargetIndex(drop_target_)) {
+        MoveItemInModel(drag_view_, drop_target_);
       }
     }
   }
@@ -696,7 +711,7 @@ void AppsGridView::EndDrag(bool cancel) {
       if (landed_in_drag_and_drop_host) {
         // Move the item directly to the target location, avoiding the
         // "zip back" animation if the user was pinning it to the shelf.
-        int i = reorder_drop_target_.slot;
+        int i = drop_target_.slot;
         gfx::Rect bounds = view_model_.ideal_bounds(i);
         drag_view_->SetBoundsRect(bounds);
       }
@@ -706,7 +721,7 @@ void AppsGridView::EndDrag(bool cancel) {
     }
   }
 
-  SetAsFolderDroppingTarget(folder_drop_target_, false);
+  SetAsFolderDroppingTarget(drop_target_, false);
   ClearDragState();
   UpdatePaging();
   AnimateToIdealBounds();
@@ -819,10 +834,9 @@ bool AppsGridView::IsDragViewMoved(const AppListItemView& view) const {
 }
 
 void AppsGridView::ClearDragState() {
-  drop_attempt_ = DROP_FOR_NONE;
+  drop_target_region_ = NO_TARGET;
   drag_pointer_ = NONE;
-  reorder_drop_target_ = GridIndex();
-  folder_drop_target_ = GridIndex();
+  drop_target_ = GridIndex();
   reorder_placeholder_ = GridIndex();
   drag_start_grid_view_ = gfx::Point();
   drag_start_page_ = -1;
@@ -1361,7 +1375,7 @@ void AppsGridView::ExtractDragLocation(const gfx::Point& root_location,
   drag_point->set_x(GetMirroredXInView(drag_point->x()));
 }
 
-void AppsGridView::CalculateDropTarget() {
+void AppsGridView::UpdateDropTargetRegion() {
   DCHECK(drag_view_);
 
   gfx::Point point = drag_view_->GetIconBounds().CenterPoint();
@@ -1369,54 +1383,32 @@ void AppsGridView::CalculateDropTarget() {
   // Ensure that the drop target location is correct if RTL.
   point.set_x(GetMirroredXInView(point.x()));
   if (IsPointWithinDragBuffer(point)) {
-    if (EnableFolderDragDropUI() &&
-        CalculateFolderDropTarget(point, &folder_drop_target_)) {
-      drop_attempt_ = DROP_FOR_FOLDER;
+    if (DragPointIsOverItem(point)) {
+      drop_target_region_ = ON_ITEM;
+      drop_target_ = GetNearestTileIndexForPoint(point);
       return;
     }
 
-    if (CalculateReorderDropTarget(point, &reorder_drop_target_)) {
-      drop_attempt_ = DROP_FOR_REORDER;
-      return;
-    }
+    UpdateDropTargetForReorder(point);
+    drop_target_region_ = DragIsCloseToItem() ? NEAR_ITEM : BETWEEN_ITEMS;
+    return;
   }
 
   // Reset the reorder target to the original position if the cursor is outside
   // the drag buffer or an item is dragged to a full page either from a folder
   // or another page.
   if (IsDraggingForReparentInRootLevelGridView()) {
-    drop_attempt_ = DROP_FOR_NONE;
+    drop_target_region_ = NO_TARGET;
     return;
   }
 
-  reorder_drop_target_ = drag_view_init_index_;
-  drop_attempt_ = DROP_FOR_REORDER;
+  drop_target_ = drag_view_init_index_;
+  drop_target_region_ = DragIsCloseToItem() ? NEAR_ITEM : BETWEEN_ITEMS;
 }
 
-bool AppsGridView::CalculateFolderDropTarget(const gfx::Point& point,
-                                             GridIndex* drop_target) const {
-  // Folders can't be dropped into other folders.
-  if (IsFolderItem(drag_view_->item()))
-    return false;
-
-  // A folder drop shouldn't happen on the reorder placeholder since that would
-  // be merging an item with itself.
-  GridIndex nearest_tile_index(GetNearestTileIndexForPoint(point));
-  if (!IsValidIndex(nearest_tile_index) ||
-      nearest_tile_index == reorder_placeholder_) {
-    return false;
-  }
-
-  int distance_to_tile_center =
-      (point - GetExpectedTileBounds(nearest_tile_index).CenterPoint())
-          .Length();
-  if (distance_to_tile_center >
-      AppListConfig::instance().folder_dropping_circle_radius()) {
-    return false;
-  }
-
+bool AppsGridView::DropTargetIsValidFolder() {
   AppListItemView* target_view =
-      GetViewDisplayedAtSlotOnCurrentPage(nearest_tile_index.slot);
+      GetViewDisplayedAtSlotOnCurrentPage(drop_target_.slot);
   if (!target_view)
     return false;
 
@@ -1431,53 +1423,112 @@ bool AppsGridView::CalculateFolderDropTarget(const gfx::Point& point,
     return false;
   }
 
-  *drop_target = nearest_tile_index;
-  DCHECK(IsValidIndex(*drop_target));
+  if (!IsValidIndex(drop_target_))
+    return false;
+
   return true;
 }
 
-bool AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
-                                              GridIndex* drop_target) const {
+bool AppsGridView::DragPointIsOverItem(const gfx::Point& point) {
+  // The reorder placeholder shouldn't count as a unique item
+  GridIndex nearest_tile_index(GetNearestTileIndexForPoint(point));
+  if (!IsValidIndex(nearest_tile_index) ||
+      nearest_tile_index == reorder_placeholder_) {
+    return false;
+  }
+
+  int distance_to_tile_center =
+      (point - GetExpectedTileBounds(nearest_tile_index).CenterPoint())
+          .Length();
+  if (distance_to_tile_center >
+      AppListConfig::instance().folder_dropping_circle_radius()) {
+    return false;
+  }
+
+  return true;
+}
+
+bool AppsGridView::DraggedItemCanEnterFolder() {
+  if (!IsFolderItem(drag_view_->item()) && !folder_delegate_)
+    return true;
+  return false;
+}
+
+void AppsGridView::UpdateDropTargetForReorder(const gfx::Point& point) {
   gfx::Rect bounds = GetContentsBounds();
   bounds.Inset(GetTilePadding());
-  GridIndex grid_index = GetNearestTileIndexForPoint(point);
+  GridIndex nearest_tile_index = GetNearestTileIndexForPoint(point);
   gfx::Point reorder_placeholder_center =
       GetExpectedTileBounds(reorder_placeholder_).CenterPoint();
 
   int x_offset_direction = 0;
-  if (grid_index == reorder_placeholder_) {
+  if (nearest_tile_index == reorder_placeholder_) {
     x_offset_direction = reorder_placeholder_center.x() <= point.x() ? -1 : 1;
   } else {
-    x_offset_direction = reorder_placeholder_ < grid_index ? -1 : 1;
+    x_offset_direction = reorder_placeholder_ < nearest_tile_index ? -1 : 1;
   }
 
   const gfx::Size total_tile_size = GetTotalTileSize();
-  int row = grid_index.slot / cols_;
+  int row = nearest_tile_index.slot / cols_;
 
   // Offset the target column based on the direction of the target. This will
   // result in earlier targets getting their reorder zone shifted backwards
   // and later targets getting their reorder zones shifted forwards.
   //
-  // This makes eordering feel like the user is slotting items into the spaces
+  // This makes reordering feel like the user is slotting items into the spaces
   // between apps.
   int x_offset = x_offset_direction *
                  (total_tile_size.width() / 2 -
                   AppListConfig::instance().folder_dropping_circle_radius());
   int col = (point.x() - bounds.x() + x_offset) / total_tile_size.width();
   col = base::ClampToRange(col, 0, cols_ - 1);
-  *drop_target =
+  drop_target_ =
       std::min(GridIndex(pagination_model_.selected_page(), row * cols_ + col),
                GetLastTargetIndexOfPage(pagination_model_.selected_page()));
 
-  DCHECK(IsValidReorderTargetIndex(*drop_target));
-  return true;
+  DCHECK(IsValidReorderTargetIndex(drop_target_));
+}
+
+bool AppsGridView::DragIsCloseToItem() {
+  DCHECK(drag_view_);
+
+  gfx::Point point = drag_view_->GetIconBounds().CenterPoint();
+  views::View::ConvertPointToTarget(drag_view_, this, &point);
+  // Ensure that the drop target location is correct if RTL.
+  point.set_x(GetMirroredXInView(point.x()));
+
+  GridIndex nearest_tile_index = GetNearestTileIndexForPoint(point);
+
+  if (nearest_tile_index == reorder_placeholder_)
+    return false;
+
+  const int distance_to_tile_center =
+      (point - GetExpectedTileBounds(nearest_tile_index).CenterPoint())
+          .Length();
+
+  // The minimum of |forty_percent_icon_spacing| and |double_icon_radius| is
+  // chosen to give an acceptable spacing on displays of any resolution: when
+  // items are very close together, using |forty_percent_icon_spacing| will
+  // prevent overlap and leave a reasonable gap, whereas when icons are very far
+  // apart, using |double_icon_radius| will prevent us from juding an overly
+  // large region as 'nearby'
+  const int forty_percent_icon_spacing =
+      (AppListConfig::instance().grid_tile_width() +
+       horizontal_tile_padding_ * 2) *
+      0.4;
+  const int double_icon_radius =
+      AppListConfig::instance().folder_dropping_circle_radius() * 2;
+  const int minimum_drag_distance_for_reorder =
+      std::min(forty_percent_icon_spacing, double_icon_radius);
+
+  if (distance_to_tile_center < minimum_drag_distance_for_reorder)
+    return true;
+  return false;
 }
 
 void AppsGridView::OnReorderTimer() {
-  if (drop_attempt_ == DROP_FOR_REORDER) {
-    reorder_placeholder_ = reorder_drop_target_;
-    AnimateToIdealBounds();
-  }
+  reorder_placeholder_ = drop_target_;
+  AnimateToIdealBounds();
 }
 
 void AppsGridView::OnFolderItemReparentTimer() {
@@ -1497,8 +1548,7 @@ void AppsGridView::OnFolderItemReparentTimer() {
 }
 
 void AppsGridView::OnFolderDroppingTimer() {
-  if (drop_attempt_ == DROP_FOR_FOLDER)
-    SetAsFolderDroppingTarget(folder_drop_target_, true);
+  SetAsFolderDroppingTarget(drop_target_, true);
 }
 
 void AppsGridView::UpdateDragStateInsideFolder(Pointer pointer,
@@ -1745,7 +1795,7 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
       ->NotifyOfDraggedItem(nullptr);
 
   DCHECK(IsDraggingForReparentInRootLevelGridView());
-  bool cancel_reparent = cancel_drag || drop_attempt_ == DROP_FOR_NONE;
+  bool cancel_reparent = cancel_drag || drop_target_region_ == NO_TARGET;
 
   // This is the folder view to drop an item into. Cache the |drag_view_|'s item
   // and its bounds for later use in folder dropping animation.
@@ -1754,25 +1804,24 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
   const gfx::Rect drag_source_bounds(drag_view_->bounds());
 
   if (!events_forwarded_to_drag_drop_host && !cancel_reparent) {
-    CalculateDropTarget();
-    if (drop_attempt_ == DROP_FOR_REORDER &&
-        IsValidReorderTargetIndex(reorder_drop_target_)) {
-      ReparentItemForReorder(drag_view_, reorder_drop_target_);
-    } else if (drop_attempt_ == DROP_FOR_FOLDER &&
-               IsValidIndex(folder_drop_target_)) {
-      cancel_reparent =
-          !ReparentItemToAnotherFolder(drag_view_, folder_drop_target_);
+    UpdateDropTargetRegion();
+    if (drop_target_region_ == ON_ITEM && DropTargetIsValidFolder() &&
+        DraggedItemCanEnterFolder()) {
+      cancel_reparent = !ReparentItemToAnotherFolder(drag_view_, drop_target_);
       if (!cancel_reparent) {
         folder_item_view =
-            GetViewDisplayedAtSlotOnCurrentPage(folder_drop_target_.slot);
+            GetViewDisplayedAtSlotOnCurrentPage(drop_target_.slot);
       }
+    } else if (drop_target_region_ != NO_TARGET &&
+               IsValidReorderTargetIndex(drop_target_)) {
+      ReparentItemForReorder(drag_view_, drop_target_);
     } else {
       NOTREACHED();
     }
     SetViewHidden(drag_view_, false /* show */, true /* no animate */);
   }
 
-  SetAsFolderDroppingTarget(folder_drop_target_, false);
+  SetAsFolderDroppingTarget(drop_target_, false);
   if (!cancel_reparent) {
     // By setting |drag_view_| to NULL here, we prevent ClearDragState() from
     // cleaning up the newly created AppListItemView, effectively claiming
@@ -1805,7 +1854,7 @@ void AppsGridView::EndDragForReparentInHiddenFolderGridView() {
     drag_and_drop_host_->DestroyDragIconProxy();
   }
 
-  SetAsFolderDroppingTarget(folder_drop_target_, false);
+  SetAsFolderDroppingTarget(drop_target_, false);
   ClearDragState();
 }
 
@@ -2537,7 +2586,7 @@ void AppsGridView::TotalPagesChanged() {}
 
 void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
   if (dragging()) {
-    CalculateDropTarget();
+    UpdateDropTargetRegion();
     Layout();
     MaybeStartPageFlipTimer(last_drag_point_);
   } else {
@@ -2598,11 +2647,6 @@ void AppsGridView::SetViewHidden(AppListItemView* view,
 void AppsGridView::OnImplicitAnimationsCompleted() {
   if (layer()->opacity() == 0.0f)
     SetVisible(false);
-}
-
-bool AppsGridView::EnableFolderDragDropUI() {
-  // Enable drag and drop folder UI only if it is at the app list root level.
-  return !folder_delegate_;
 }
 
 GridIndex AppsGridView::GetNearestTileIndexForPoint(
