@@ -147,6 +147,9 @@ base::string16 GetUserItemAccessibleString(int user_index) {
       Shell::Get()->session_controller()->GetUserSession(user_index);
   DCHECK(user_session);
 
+  if (user_session->user_info->type == user_manager::USER_TYPE_GUEST)
+    return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL);
+
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_USER_INFO_ACCESSIBILITY,
       base::UTF8ToUTF16(user_session->user_info->display_name),
