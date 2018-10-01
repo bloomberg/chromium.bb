@@ -181,6 +181,9 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   // activity time that is slightly in the future.
   base::TimeDelta max_stored_future_activity_interval_;
 
+  // Updates the child's active time.
+  void UpdateChildUsageTime();
+
  private:
   class ActivityStorage;
 
@@ -248,9 +251,6 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   // reports.
   bool IncludeEmailsInActivityReports() const;
 
-  // Updates the child's active time.
-  void UpdateChildUsageTime();
-
   // Pref service that is mainly used to store activity periods for reporting.
   PrefService* const pref_service_;
 
@@ -272,6 +272,7 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   int duration_for_last_reported_day_ = 0;
 
   base::RepeatingTimer idle_poll_timer_;
+  base::RepeatingTimer update_child_usage_timer_;
   base::RepeatingTimer resource_usage_sampling_timer_;
 
   std::string os_version_;

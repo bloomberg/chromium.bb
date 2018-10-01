@@ -113,6 +113,10 @@ const char kCPUTempFilePattern[] = "temp*_input";
 // '<day_timestamp>:<BASE64 encoded user email>'
 constexpr char kActivityKeySeparator = ':';
 
+// How often the child's usage time is stored.
+static constexpr base::TimeDelta kUpdateChildActiveTimeInterval =
+    base::TimeDelta::FromSeconds(30);
+
 // Helper function (invoked via blocking pool) to fetch information about
 // mounted disks.
 std::vector<em::VolumeInfo> GetVolumeInfo(
@@ -793,6 +797,9 @@ DeviceStatusCollector::DeviceStatusCollector(
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds), this,
                          &DeviceStatusCollector::CheckIdleState);
+  update_child_usage_timer_.Start(FROM_HERE, kUpdateChildActiveTimeInterval,
+                                  this,
+                                  &DeviceStatusCollector::UpdateChildUsageTime);
   resource_usage_sampling_timer_.Start(
       FROM_HERE, TimeDelta::FromSeconds(kResourceUsageSampleIntervalSeconds),
       this, &DeviceStatusCollector::SampleResourceUsage);

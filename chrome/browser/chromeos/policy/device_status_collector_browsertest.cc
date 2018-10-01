@@ -145,6 +145,8 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     SetBaselineTime(Time::Now().LocalMidnight() + activity_day_start + kHour);
   }
 
+  void UpdateUsageTime() { UpdateChildUsageTime(); }
+
   void Simulate(ui::IdleState* states, int len) {
     for (int i = 0; i < len; i++)
       IdleStateCallback(states[i]);
@@ -427,7 +429,8 @@ class DeviceStatusCollectorTest : public testing::Test {
     kEnterSleep,
     kLeaveSleep,
     kEnterSessionActive,
-    kLeaveSessionActive
+    kLeaveSessionActive,
+    kPeriodicCheckTriggered
   };
 
   void SimulateStateChanges(DeviceStateTransitions* states, int len) {
@@ -459,6 +462,9 @@ class DeviceStatusCollectorTest : public testing::Test {
         case DeviceStateTransitions::kLeaveSessionActive:
           session_manager::SessionManager::Get()->SetSessionState(
               session_manager::SessionState::LOCKED);
+          break;
+        case DeviceStateTransitions::kPeriodicCheckTriggered:
+          status_collector_->UpdateUsageTime();
           break;
       }
     }
@@ -2422,8 +2428,12 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
        ReportingActivityTimesSessionTransistions) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
       DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
       DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
       DeviceStateTransitions::kLeaveSessionActive};
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
@@ -2431,7 +2441,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   GetStatus();
 
   ASSERT_EQ(1, device_status_.active_period_size());
-  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
+  EXPECT_EQ(5 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
   EXPECT_EQ(
       5 * ActivePeriodMilliseconds(),
@@ -2444,7 +2454,11 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
        ReportingActivityTimesSleepTransistions) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kEnterSleep, DeviceStateTransitions::kLeaveSleep,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
+      DeviceStateTransitions::kEnterSleep,
+      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
+      DeviceStateTransitions::kLeaveSleep,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
       DeviceStateTransitions::kLeaveSessionActive};
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
@@ -2452,7 +2466,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   GetStatus();
 
   ASSERT_EQ(1, device_status_.active_period_size());
-  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
+  EXPECT_EQ(4 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
   EXPECT_EQ(
       4 * ActivePeriodMilliseconds(),
@@ -2465,8 +2479,13 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
        ReportingActivityTimesIdleTransitions) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
       DeviceStateTransitions::kEnterIdleState,
+      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
+      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
       DeviceStateTransitions::kLeaveIdleState,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
       DeviceStateTransitions::kLeaveSessionActive};
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
@@ -2474,7 +2493,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   GetStatus();
 
   ASSERT_EQ(1, device_status_.active_period_size());
-  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
+  EXPECT_EQ(5 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
   EXPECT_EQ(
       5 * ActivePeriodMilliseconds(),
@@ -2489,9 +2508,13 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
 
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
       DeviceStateTransitions::kLeaveSessionActive,
       DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
       DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
       DeviceStateTransitions::kEnterSessionActive,
       DeviceStateTransitions::kLeaveSessionActive};
   SimulateStateChanges(test_states,
@@ -2510,7 +2533,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
 
   GetStatus();
-  EXPECT_EQ(6 * ActivePeriodMilliseconds(),
+  EXPECT_EQ(12 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
   EXPECT_EQ(
       12 * ActivePeriodMilliseconds(),
@@ -2523,16 +2546,21 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
 
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
       DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
+      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
       DeviceStateTransitions::kEnterSessionActive,
       DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
       DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
       DeviceStateTransitions::kLeaveSessionActive};
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
   GetStatus();
   EXPECT_EQ(1, device_status_.active_period_size());
-  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
+  EXPECT_EQ(5 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
   EXPECT_EQ(
       5 * ActivePeriodMilliseconds(),
