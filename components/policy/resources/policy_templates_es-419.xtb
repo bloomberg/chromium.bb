@@ -1597,7 +1597,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5457924070961220141">Te permite configurar el procesador HTML predeterminado cuando se instala <ph name="PRODUCT_FRAME_NAME" />. La configuración predeterminada que se usa cuando esta política no se configura es permitir que el navegador del host realice la representación, pero puedes anular esta opción y hacer que <ph name="PRODUCT_FRAME_NAME" /> muestre páginas HTML de forma predeterminada.</translation>
 <translation id="5464816904705580310">Permite establecer parámetros de configuración para los usuarios administrados.</translation>
 <translation id="546726650689747237">Demora de atenuación de pantalla con alimentación de CA</translation>
-<translation id="5469143988693423708">Se permite que el usuario ejecute Crostini</translation>
+<translation id="5469143988693423708">Permitir que el usuario ejecute Crostini</translation>
 <translation id="5469825884154817306">Bloquear imágenes en estos sitios</translation>
 <translation id="5475361623548884387">Habilitar la impresión</translation>
 <translation id="547601067149622666">No permitir anuncios en sitios con anuncios intrusivos</translation>
