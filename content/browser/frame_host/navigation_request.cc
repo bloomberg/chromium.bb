@@ -982,7 +982,7 @@ void NavigationRequest::OnResponseStarted(
   // `ShouldPropagateUserActivation` requirements (same eTLD+1).
   // There are two different checks:
   // 1. if the `frame_tree_node_` has an origin and is following the rules above
-  //    with the target URL, it is used and the bit is set iif the navigation is
+  //    with the target URL, it is used and the bit is set if the navigation is
   //    renderer initiated and the `frame_tree_node_` had a gesture. This should
   //    apply to same page navigations and is preferred over using the referrer
   //    as it can be changed.
@@ -996,7 +996,8 @@ void NavigationRequest::OnResponseStarted(
     request_params_.was_activated = WasActivatedOption::kNo;
 
     if (navigation_handle_->IsRendererInitiated() &&
-        frame_tree_node_->has_received_user_gesture() &&
+        (frame_tree_node_->has_received_user_gesture() ||
+         frame_tree_node_->has_received_user_gesture_before_nav()) &&
         ShouldPropagateUserActivation(
             frame_tree_node_->current_origin(),
             url::Origin::Create(navigation_handle_->GetURL()))) {
