@@ -155,11 +155,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
 
-// remove after rebaselining svg layout tests
-#ifndef SK_SUPPORT_LEGACY_SVG_ARC_TO
-#define SK_SUPPORT_LEGACY_SVG_ARC_TO
-#endif
-
 // Max. verb count for paths rendered by the edge-AA tessellating path renderer.
 #define GR_AA_TESSELLATOR_MAX_VERB_COUNT 100
 
