@@ -138,12 +138,35 @@ class TitleView : public views::View, public views::ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(TitleView);
 };
 
+// Used as a Shell pre-target handler to notify PaletteTray of stylus events.
+class StylusEventHandler : public ui::EventHandler {
+ public:
+  explicit StylusEventHandler(PaletteTray* tray) : palette_tray_(tray) {
+    Shell::Get()->AddPreTargetHandler(this);
+  }
+
+  ~StylusEventHandler() override { Shell::Get()->RemovePreTargetHandler(this); }
+
+  // ui::EventHandler:
+  void OnTouchEvent(ui::TouchEvent* event) override {
+    if (event->pointer_details().pointer_type ==
+        ui::EventPointerType::POINTER_TYPE_PEN) {
+      palette_tray_->OnStylusEvent(*event);
+    }
+  }
+
+ private:
+  PaletteTray* palette_tray_;
+  DISALLOW_COPY_AND_ASSIGN(StylusEventHandler);
+};
+
 }  // namespace
 
 PaletteTray::PaletteTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
-      palette_tool_manager_(new PaletteToolManager(this)),
+      palette_tool_manager_(std::make_unique<PaletteToolManager>(this)),
       welcome_bubble_(std::make_unique<PaletteWelcomeBubble>(this)),
+      stylus_event_handler_(std::make_unique<StylusEventHandler>(this)),
       scoped_session_observer_(this),
       weak_factory_(this) {
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
@@ -158,7 +181,6 @@ PaletteTray::PaletteTray(Shelf* shelf)
   tray_container()->AddChildView(icon_);
 
   Shell::Get()->AddShellObserver(this);
-  Shell::Get()->AddPointerWatcher(this, views::PointerWatcherEventTypes::BASIC);
 }
 
 PaletteTray::~PaletteTray() {
@@ -167,7 +189,6 @@ PaletteTray::~PaletteTray() {
 
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->RemovePointerWatcher(this);
 }
 
 // static
@@ -199,6 +220,24 @@ bool PaletteTray::ShouldShowPalette() const {
           stylus_utils::IsPaletteEnabledOnEveryDisplay());
 }
 
+void PaletteTray::OnStylusEvent(const ui::TouchEvent& event) {
+  if (!HasSeenStylus() && local_state_pref_service_)
+    local_state_pref_service_->SetBoolean(prefs::kHasSeenStylus, true);
+
+  // Attempt to show the welcome bubble.
+  if (!welcome_bubble_->HasBeenShown() && active_user_pref_service_) {
+    // If a stylus event is detected on the palette tray, the user already knows
+    // about the tray and there is no need to show them the welcome bubble.
+    if (!GetBoundsInScreen().Contains(event.target()->GetScreenLocation(event)))
+      welcome_bubble_->ShowIfNeeded();
+    else
+      welcome_bubble_->MarkAsShown();
+  }
+
+  if (HasSeenStylus() && welcome_bubble_->HasBeenShown())
+    stylus_event_handler_.reset();
+}
+
 void PaletteTray::OnActiveUserPrefServiceChanged(PrefService* pref_service) {
   active_user_pref_service_ = pref_service;
   pref_change_registrar_user_ = std::make_unique<PrefChangeRegistrar>();
@@ -216,13 +255,13 @@ void PaletteTray::OnActiveUserPrefServiceChanged(PrefService* pref_service) {
   // showing the bubble if the device has never and may never be used with
   // stylus).
   if (HasSeenStylus() && !stylus_utils::HasInternalStylus())
-    welcome_bubble_->ShowIfNeeded(false /* shown_by_stylus */);
+    welcome_bubble_->ShowIfNeeded();
 }
 
 void PaletteTray::OnSessionStateChanged(session_manager::SessionState state) {
   UpdateIconVisibility();
   if (HasSeenStylus() && !stylus_utils::HasInternalStylus())
-    welcome_bubble_->ShowIfNeeded(false /* shown_by_stylus */);
+    welcome_bubble_->ShowIfNeeded();
 }
 
 void PaletteTray::OnLockStateChanged(bool locked) {
@@ -302,7 +341,7 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
     // Show the palette welcome bubble if the auto open palette setting is not
     // turned on, if the bubble has not been shown before (|welcome_bubble_|
     // will be nullptr if the bubble has been shown before).
-    welcome_bubble_->ShowIfNeeded(false /* shown_by_stylus */);
+    welcome_bubble_->ShowIfNeeded();
   }
 
   // Disable any active modes if the stylus has been inserted.
@@ -388,29 +427,6 @@ void PaletteTray::OnActiveToolChanged() {
 
 aura::Window* PaletteTray::GetWindow() {
   return shelf()->GetWindow();
-}
-
-void PaletteTray::OnPointerEventObserved(const ui::PointerEvent& event,
-                                         const gfx::Point& location_in_screen,
-                                         gfx::NativeView target) {
-  if (event.pointer_details().pointer_type !=
-      ui::EventPointerType::POINTER_TYPE_PEN) {
-    return;
-  }
-
-  // If a stylus has never been seen before and a stylus event is received, mark
-  // the |kHasSeenStylus| pref as true and attempt to show the welcome bubble.
-  if (!HasSeenStylus()) {
-    if (local_state_pref_service_)
-      local_state_pref_service_->SetBoolean(prefs::kHasSeenStylus, true);
-
-    if (active_user_pref_service_)
-      welcome_bubble_->ShowIfNeeded(true /* shown_by_stylus */);
-  } else if (GetBoundsInScreen().Contains(location_in_screen)) {
-    // If a stylus event is detected on the palette tray, the user already knows
-    // about the tray and there is no need to show them the welcome bubble.
-    welcome_bubble_->MarkAsShown();
-  }
 }
 
 void PaletteTray::AnchorUpdated() {
