@@ -10,6 +10,7 @@ library chromium.web;
 struct NavigationEvent {
   string? url;
   string? title;
+  bool is_error;
 };
 
 // Interface supplied by the embedder for receiving notifications about
