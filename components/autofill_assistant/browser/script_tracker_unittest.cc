@@ -61,6 +61,12 @@ class ScriptTrackerTest : public testing::Test,
     return parameters_;
   }
 
+  autofill::PersonalDataManager* GetPersonalDataManager() override {
+    return nullptr;
+  }
+
+  content::WebContents* GetWebContents() override { return nullptr; }
+
   // Overrides ScriptTracker::Listener
   void OnRunnableScriptsChanged(
       const std::vector<ScriptHandle>& runnable_scripts) override {

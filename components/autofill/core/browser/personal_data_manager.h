@@ -148,7 +148,7 @@ class PersonalDataManager : public KeyedService,
   // Returns the profile with the specified |guid|, or nullptr if there is no
   // profile with the specified |guid|. Both web and auxiliary profiles may
   // be returned.
-  AutofillProfile* GetProfileByGUID(const std::string& guid);
+  virtual AutofillProfile* GetProfileByGUID(const std::string& guid);
 
   // Returns the profile with the specified |guid| from the given |profiles|, or
   // nullptr if there is no profile with the specified |guid|.

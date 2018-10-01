@@ -49,6 +49,14 @@ const std::map<std::string, std::string>& Controller::GetParameters() {
   return *parameters_;
 }
 
+autofill::PersonalDataManager* Controller::GetPersonalDataManager() {
+  return client_->GetPersonalDataManager();
+}
+
+content::WebContents* Controller::GetWebContents() {
+  return web_contents();
+}
+
 Controller::Controller(
     content::WebContents* web_contents,
     std::unique_ptr<Client> client,

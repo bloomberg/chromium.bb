@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
@@ -70,10 +70,11 @@ void ScriptExecutor::ChooseCard(
   delegate_->GetUiController()->ChooseCard(std::move(callback));
 }
 
-void ScriptExecutor::FillCardForm(const std::string& guid,
+void ScriptExecutor::FillCardForm(std::unique_ptr<autofill::CreditCard> card,
+                                  const base::string16& cvc,
                                   const std::vector<std::string>& selectors,
                                   base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->FillCardForm(guid, selectors,
+  delegate_->GetWebController()->FillCardForm(std::move(card), cvc, selectors,
                                               std::move(callback));
 }
 
@@ -102,12 +103,6 @@ void ScriptExecutor::SetFieldValue(const std::vector<std::string>& selectors,
                                                std::move(callback));
 }
 
-const autofill::AutofillProfile* ScriptExecutor::GetAutofillProfile(
-    const std::string& guid) {
-  // TODO(crbug.com/806868): Implement GetAutofillProfile.
-  return nullptr;
-}
-
 void ScriptExecutor::BuildNodeTree(const std::vector<std::string>& selectors,
                                    NodeProto* node_tree_out,
                                    base::OnceCallback<void(bool)> callback) {
@@ -129,6 +124,14 @@ void ScriptExecutor::Restart() {
 
 ClientMemory* ScriptExecutor::GetClientMemory() {
   return delegate_->GetClientMemory();
+}
+
+autofill::PersonalDataManager* ScriptExecutor::GetPersonalDataManager() {
+  return delegate_->GetPersonalDataManager();
+}
+
+content::WebContents* ScriptExecutor::GetWebContents() {
+  return delegate_->GetWebContents();
 }
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {

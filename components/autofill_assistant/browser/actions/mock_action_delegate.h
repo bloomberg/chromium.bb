@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -54,10 +55,11 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(OnChooseCard,
                void(base::OnceCallback<void(const std::string&)>& callback));
 
-  void FillCardForm(const std::string& guid,
+  void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
+                    const base::string16& cvc,
                     const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override {
-    OnFillCardForm(guid, selectors, callback);
+    OnFillCardForm(card->guid(), selectors, callback);
   }
 
   MOCK_METHOD3(OnFillCardForm,
@@ -92,8 +94,6 @@ class MockActionDelegate : public ActionDelegate {
                void(const std::vector<std::string>& selectors,
                     const std::string& value,
                     base::OnceCallback<void(bool)>& callback));
-  MOCK_METHOD1(GetAutofillProfile,
-               const autofill::AutofillProfile*(const std::string& guid));
   MOCK_METHOD3(BuildNodeTree,
                void(const std::vector<std::string>& selectors,
                     NodeProto* node_tree_out,
@@ -102,6 +102,8 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(Restart, void());
   MOCK_METHOD0(GetClientMemory, ClientMemory*());
+  MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
+  MOCK_METHOD0(GetWebContents, content::WebContents*());
 };
 
 }  // namespace autofill_assistant

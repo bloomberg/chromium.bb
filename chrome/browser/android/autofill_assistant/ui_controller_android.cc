@@ -13,6 +13,8 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/channel_info.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/variations/variations_associated_data.h"
@@ -143,6 +145,11 @@ std::string UiControllerAndroid::GetApiKey() {
         switches::kAutofillAssistantServerKey);
   }
   return api_key;
+}
+
+autofill::PersonalDataManager* UiControllerAndroid::GetPersonalDataManager() {
+  return autofill::PersonalDataManagerFactory::GetForProfile(
+      ProfileManager::GetLastUsedProfile());
 }
 
 std::string UiControllerAndroid::GetServerUrl() {

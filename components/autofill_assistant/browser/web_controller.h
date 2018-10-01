@@ -17,6 +17,10 @@
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 
+namespace autofill {
+class CreditCard;
+}  // namespace autofill
+
 namespace content {
 class WebContents;
 class RenderFrameHost;
@@ -66,9 +70,10 @@ class WebController {
                                const std::vector<std::string>& selectors,
                                base::OnceCallback<void(bool)> callback);
 
-  // Fill the card form given by |selectors| with the given card |guid| in
-  // personal data manager.
-  virtual void FillCardForm(const std::string& guid,
+  // Fill the card form given by |selectors| with the given |card| and its
+  // |cvc|.
+  virtual void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
+                            const base::string16& cvc,
                             const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback);
 
@@ -121,6 +126,18 @@ class WebController {
   };
   using FindElementCallback =
       base::OnceCallback<void(std::unique_ptr<FindElementResult>)>;
+
+  struct FillFormInputData {
+    FillFormInputData();
+    ~FillFormInputData();
+
+    // Data for filling address form.
+    std::string autofill_data_guid;
+
+    // Data for filling card form.
+    std::unique_ptr<autofill::CreditCard> card;
+    base::string16 cvc;
+  };
 
   void OnFindElementForClick(base::OnceCallback<void(bool)> callback,
                              std::unique_ptr<FindElementResult> result);
@@ -178,18 +195,18 @@ class WebController {
   void OnResult(const std::string& result,
                 base::OnceCallback<void(const std::string&)> callback);
   void OnFindElementForFillingForm(
-      const std::string& autofill_data_guid,
+      std::unique_ptr<FillFormInputData> data_to_autofill,
       const std::vector<std::string>& selectors,
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<FindElementResult> element_result);
   void OnClickObjectForFillingForm(
-      const std::string& autofill_data_guid,
+      std::unique_ptr<FillFormInputData> data_to_autofill,
       const std::vector<std::string>& selectors,
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<FindElementResult> element_result,
       bool click_result);
   void OnGetFormAndFieldDataForFillingForm(
-      const std::string& autofill_data_guid,
+      std::unique_ptr<FillFormInputData> data_to_autofill,
       base::OnceCallback<void(bool)> callback,
       content::RenderFrameHost* container_frame_host,
       const autofill::FormData& form_data,

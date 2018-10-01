@@ -40,6 +40,9 @@ class FakeClient : public Client {
 
   // Implements Client
   std::string GetApiKey() override { return ""; }
+  autofill::PersonalDataManager* GetPersonalDataManager() override {
+    return nullptr;
+  }
   std::string GetServerUrl() override { return ""; }
   UiController* GetUiController() override { return ui_controller_.get(); }
 
