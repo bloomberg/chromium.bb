@@ -9,14 +9,15 @@ if (enable_feed_in_chrome) {
   feed_deps = [ "//third_party/feed:feed_lib_java" ]
 
   feed_java_sources = [
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedAppLifecycle.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedBasicLogging.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentStorage.java",
-    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedEventReporter.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedImageLoader.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedImageLoaderBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedJournalBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedJournalStorage.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedLifecycleBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedLoggingBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedNetworkBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedNewTabPage.java",
@@ -46,6 +47,7 @@ if (enable_feed_in_chrome) {
   ]
 
   feed_test_java_sources = [
+    "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedAppLifecycleTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedNetworkBridgeConformanceTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedNewTabPageTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedSchedulerBridgeConformanceTest.java",
@@ -59,8 +61,9 @@ if (enable_feed_in_chrome) {
 } else {
   feed_deps = []
   feed_java_sources = [
+    "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedAppLifecycle.java",
     "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedNewTabPage.java",
-    "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedEventReporter.java",
+    "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedProcessScopeFactory.java",
   ]
   feed_srcjar_deps = []
 }

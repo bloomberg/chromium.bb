@@ -78,7 +78,7 @@ import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitor;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitorDelegate;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.feed.FeedEventReporter;
+import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -625,6 +625,12 @@ public class ChromeTabbedActivity
                 ToolbarButtonInProductHelpController.maybeShowColdStartIPH(this);
             }
 
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
+                // We call getFeedAppLifecycle() here to ensure the app lifecycle is created so that
+                // it can start listening for state changes.
+                FeedProcessScopeFactory.getFeedAppLifecycle();
+            }
+
             super.finishNativeInitialization();
         } finally {
             TraceEvent.end("ChromeTabbedActivity.finishNativeInitialization");
@@ -670,15 +676,14 @@ public class ChromeTabbedActivity
         mLocaleManager.setSnackbarManager(getSnackbarManager());
         mLocaleManager.startObservingPhoneChanges();
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
-            FeedEventReporter.onBrowserForegrounded();
-        } else {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
             if (isWarmOnResume()) {
                 SuggestionsEventReporterBridge.onActivityWarmResumed();
             } else {
                 SuggestionsEventReporterBridge.onColdStart();
             }
         }
+
         if (!isWarmOnResume()) {
             SuggestionsMetrics.recordArticlesListVisible();
         }

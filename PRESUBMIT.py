@@ -600,6 +600,7 @@ _JAVA_MULTIPLE_DEFINITION_EXCLUDED_PATHS = [
     r".*[\\/]BuildHooksAndroidImpl\.java",
     r".*[\\/]LicenseContentProvider\.java",
     r".*[\\/]PlatformServiceBridgeImpl.java",
+    r".*chrome[\\\/]android[\\\/]feed[\\\/]dummy[\\\/].*\.java",
 ]
 
 # These paths contain test data and other known invalid JSON files.
