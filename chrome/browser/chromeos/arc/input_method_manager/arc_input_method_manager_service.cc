@@ -20,11 +20,14 @@
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
+#include "components/arc/common/ime_struct_traits.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ime_bridge.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace arc {
 
@@ -89,15 +92,17 @@ class ArcInputMethodManagerServiceFactory
 class ArcInputMethodManagerService::ArcProxyInputMethodObserver
     : public input_method::InputMethodEngineBase::Observer {
  public:
-  ArcProxyInputMethodObserver() = default;
+  explicit ArcProxyInputMethodObserver(ArcInputMethodManagerService* owner)
+      : owner_(owner) {}
   ~ArcProxyInputMethodObserver() override = default;
 
   // input_method::InputMethodEngineBase::Observer overrides:
-  // TODO(yhanada): Implement below methods to forward those events to ARC.
   void OnActivate(const std::string& engine_id) override {}
   void OnFocus(
-      const ui::IMEEngineHandlerInterface::InputContext& context) override {}
-  void OnBlur(int context_id) override {}
+      const ui::IMEEngineHandlerInterface::InputContext& context) override {
+    owner_->Focus(context.id);
+  }
+  void OnBlur(int context_id) override { owner_->Blur(); }
   void OnKeyEvent(
       const std::string& engine_id,
       const input_method::InputMethodEngineBase::KeyboardEvent& event,
@@ -105,21 +110,32 @@ class ArcInputMethodManagerService::ArcProxyInputMethodObserver
   void OnReset(const std::string& engine_id) override {}
   void OnDeactivated(const std::string& engine_id) override {}
   void OnCompositionBoundsChanged(
-      const std::vector<gfx::Rect>& bounds) override {}
+      const std::vector<gfx::Rect>& bounds) override {
+    owner_->UpdateTextInputState();
+  }
   bool IsInterestedInKeyEvent() const override { return false; }
   void OnSurroundingTextChanged(const std::string& engine_id,
                                 const std::string& text,
                                 int cursor_pos,
                                 int anchor_pos,
-                                int offset_pos) override {}
+                                int offset_pos) override {
+    owner_->UpdateTextInputState();
+  }
   void OnInputContextUpdate(
-      const ui::IMEEngineHandlerInterface::InputContext& context) override {}
+      const ui::IMEEngineHandlerInterface::InputContext& context) override {
+    owner_->UpdateTextInputState();
+  }
   void OnCandidateClicked(
       const std::string& component_id,
       int candidate_id,
       input_method::InputMethodEngineBase::MouseButtonEvent button) override {}
   void OnMenuItemActivated(const std::string& component_id,
                            const std::string& menu_id) override {}
+
+ private:
+  ArcInputMethodManagerService* const owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcProxyInputMethodObserver);
 };
 
 class ArcInputMethodManagerService::TabletModeObserver
@@ -170,8 +186,9 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
   imm->AddObserver(this);
   imm->AddImeMenuObserver(this);
 
-  proxy_ime_engine_->Initialize(std::make_unique<ArcProxyInputMethodObserver>(),
-                                proxy_ime_extension_id_.c_str(), profile_);
+  proxy_ime_engine_->Initialize(
+      std::make_unique<ArcProxyInputMethodObserver>(this),
+      proxy_ime_extension_id_.c_str(), profile_);
 
   // TabletModeClient should be already created here because it's created in
   // PreProfileInit() and this service is created in PostProfileInit().
@@ -352,6 +369,11 @@ void ArcInputMethodManagerService::InputMethodChanged(
   SwitchImeTo(state->GetCurrentInputMethod().id());
 }
 
+InputConnectionImpl*
+ArcInputMethodManagerService::GetInputConnectionForTesting() {
+  return active_connection_.get();
+}
+
 void ArcInputMethodManagerService::EnableIme(const std::string& ime_id,
                                              bool enable) {
   auto component_id =
@@ -378,6 +400,28 @@ void ArcInputMethodManagerService::SwitchImeTo(const std::string& ime_id) {
     component_id = kChromeOSIMEIdInArcContainer;
   imm_bridge_->SendSwitchImeTo(
       component_id, base::BindOnce(&SwitchImeToCallback, ime_id, component_id));
+}
+
+void ArcInputMethodManagerService::Focus(int context_id) {
+  DCHECK(!active_connection_);
+  active_connection_ = std::make_unique<InputConnectionImpl>(
+      proxy_ime_engine_.get(), imm_bridge_.get(), context_id);
+  mojom::InputConnectionPtr connection_ptr;
+  active_connection_->Bind(&connection_ptr);
+
+  imm_bridge_->SendFocus(std::move(connection_ptr),
+                         active_connection_->GetTextInputState(false));
+}
+
+void ArcInputMethodManagerService::Blur() {
+  active_connection_.reset();
+}
+
+void ArcInputMethodManagerService::UpdateTextInputState() {
+  if (!active_connection_)
+    return;
+  active_connection_->UpdateTextInputState(
+      false /* is_input_state_update_requested */);
 }
 
 chromeos::input_method::InputMethodDescriptor

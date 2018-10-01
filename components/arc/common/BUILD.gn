@@ -100,4 +100,15 @@ if (is_chromeos) {
       "//ui/gfx/geometry/mojo",
     ]
   }
+
+  source_set("struct_traits") {
+    sources = [
+      "ime_struct_traits.h",
+    ]
+
+    deps = [
+      ":common",
+      "//ui/base/ime:text_input_types",
+    ]
+  }
 }

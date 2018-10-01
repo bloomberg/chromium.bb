@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
+#include "chrome/browser/chromeos/arc/input_method_manager/input_connection_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "components/arc/common/input_method_manager.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -66,6 +67,8 @@ class ArcInputMethodManagerService
                           Profile* profile,
                           bool show_message) override;
 
+  InputConnectionImpl* GetInputConnectionForTesting();
+
  private:
   class ArcProxyInputMethodObserver;
   class TabletModeObserver;
@@ -74,6 +77,11 @@ class ArcInputMethodManagerService
   void SwitchImeTo(const std::string& ime_id);
   chromeos::input_method::InputMethodDescriptor BuildInputMethodDescriptor(
       const mojom::ImeInfo* info);
+  void Focus(int input_context_id);
+  void Blur();
+  void UpdateTextInputState();
+  mojom::TextInputStatePtr GetTextInputState(
+      bool is_input_state_update_requested);
 
   // Removes ARC IME from IME related prefs that are current active IME pref,
   // previous active IME pref, enabled IME list pref and preloading IME list
@@ -97,6 +105,8 @@ class ArcInputMethodManagerService
   // proxy IME.
   const std::string proxy_ime_extension_id_;
   std::unique_ptr<chromeos::InputMethodEngine> proxy_ime_engine_;
+
+  std::unique_ptr<InputConnectionImpl> active_connection_;
 
   std::unique_ptr<TabletModeObserver> tablet_mode_observer_;
 
