@@ -78,10 +78,10 @@ size_t HpackEntry::Size() const {
 }
 
 SpdyString HpackEntry::GetDebugString() const {
-  return SpdyStringPrintf(
-      "{ name: \"%.*s\", value: \"%.*s\", index: %d %s }", name_ref_.size(),
-      name_ref_.data(), value_ref_.size(), value_ref_.data(), insertion_index_,
-      (IsStatic() ? " static" : (IsLookup() ? " lookup" : " dynamic")));
+  return SpdyStrCat(
+      "{ name: \"", name_ref_, "\", value: \"", value_ref_,
+      "\", index: ", insertion_index_, " ",
+      (IsStatic() ? " static" : (IsLookup() ? " lookup" : " dynamic")), " }");
 }
 
 size_t HpackEntry::EstimateMemoryUsage() const {
