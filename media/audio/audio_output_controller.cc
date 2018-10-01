@@ -96,6 +96,7 @@ AudioOutputController::AudioOutputController(
       params_(params),
       handler_(handler),
       task_runner_(audio_manager->GetTaskRunner()),
+      construction_time_(base::TimeTicks::Now()),
       output_device_id_(output_device_id),
       stream_(NULL),
       diverting_to_stream_(NULL),
@@ -118,6 +119,8 @@ AudioOutputController::~AudioOutputController() {
   CHECK_EQ(kClosed, state_);
   CHECK_EQ(nullptr, stream_);
   CHECK(duplication_targets_.empty());
+  UMA_HISTOGRAM_LONG_TIMES("Media.AudioOutputController.LifeTime",
+                           base::TimeTicks::Now() - construction_time_);
 }
 
 // static

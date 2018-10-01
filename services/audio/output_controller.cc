@@ -127,6 +127,7 @@ OutputController::OutputController(
       params_(params),
       handler_(handler),
       task_runner_(audio_manager->GetTaskRunner()),
+      construction_time_(base::TimeTicks::Now()),
       output_device_id_(output_device_id),
       stream_(NULL),
       disable_local_output_(false),
@@ -153,6 +154,8 @@ OutputController::~OutputController() {
   DCHECK_EQ(nullptr, stream_);
   DCHECK(snoopers_.empty());
   DCHECK(should_duplicate_.IsZero());
+  UMA_HISTOGRAM_LONG_TIMES("Media.AudioOutputController.LifeTime",
+                           base::TimeTicks::Now() - construction_time_);
 }
 
 bool OutputController::Create(bool is_for_device_change) {
