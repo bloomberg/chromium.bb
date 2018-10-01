@@ -543,7 +543,6 @@ body.capturing.grid #preview-grid-horizontal {
   border-bottom-width: 3px;
   border-top-width: 3px;
   -webkit-transform: translateY(-50%) scaleY(0.33333);
-  transition: transform 500ms;
 }
 
 #preview-grid-vertical {
@@ -561,6 +560,10 @@ body.capturing.grid #preview-grid-vertical {
   border-left-width: 3px;
   border-right-width: 3px;
   -webkit-transform: translateX(-50%) scaleX(0.33333);
+}
+
+#preview-grid-horizontal.animate,
+#preview-grid-vertical.animate {
   transition: transform 500ms;
 }
 
