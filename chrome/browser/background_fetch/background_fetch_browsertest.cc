@@ -506,6 +506,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   EXPECT_EQ(offline_item.title, GetExpectedTitle(kSingleFileDownloadTitle));
   EXPECT_EQ(offline_item.filter, OfflineItemFilter::FILTER_OTHER);
   EXPECT_TRUE(offline_item.is_transient);
+  EXPECT_TRUE(offline_item.is_resumable);
   EXPECT_FALSE(offline_item.is_suggested);
   EXPECT_FALSE(offline_item.is_off_the_record);
 
@@ -517,7 +518,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   // Change-detector tests for values we might want to provide or change.
   EXPECT_TRUE(offline_item.description.empty());
   EXPECT_TRUE(offline_item.page_url.is_empty());
-  EXPECT_FALSE(offline_item.is_resumable);
   EXPECT_FALSE(offline_item.is_off_the_record);
 }
 
