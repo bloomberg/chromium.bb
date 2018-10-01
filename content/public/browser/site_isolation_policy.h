@@ -38,10 +38,6 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   static void PopulateURLLoaderFactoryParamsPtrForCORB(
       network::mojom::URLLoaderFactoryParams* params);
 
-  // Returns true if third-party subframes of a page should be kept in a
-  // different process from the main frame.
-  static bool IsTopDocumentIsolationEnabled();
-
   // Returns true if isolated origins feature is enabled.
   static bool AreIsolatedOriginsEnabled();
 

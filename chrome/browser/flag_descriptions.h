@@ -1127,9 +1127,6 @@ extern const char kTopChromeMdMaterialRefreshDynamic[];
 extern const char kThreadedScrollingName[];
 extern const char kThreadedScrollingDescription[];
 
-extern const char kTopDocumentIsolationName[];
-extern const char kTopDocumentIsolationDescription[];
-
 extern const char kTopSitesFromSiteEngagementName[];
 extern const char kTopSitesFromSiteEngagementDescription[];
 

@@ -375,14 +375,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         bool* is_renderer_initiated,
                                         content::Referrer* referrer) {}
 
-  // Allows the embedder to override top document isolation for specific frames.
-  // |url| is the URL being loaded in the subframe, and |parent_site_instance|
-  // is the SiteInstance of the parent frame. Called only for subframes and only
-  // when top document isolation mode is enabled.
-  virtual bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
-      const GURL& url,
-      SiteInstance* parent_site_instance);
-
   // Temporary hack to determine whether to skip OOPIFs on the new tab page.
   // TODO(creis): Remove when https://crbug.com/566091 is fixed.
   virtual bool ShouldStayInParentProcessForNTP(

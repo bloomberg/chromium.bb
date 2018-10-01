@@ -69,18 +69,6 @@ void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
 }
 
 // static
-bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
-  // --site-per-process trumps --top-document-isolation.
-  if (UseDedicatedProcessesForAllSites())
-    return false;
-
-  // The feature needs to be checked last, because checking the feature
-  // activates the field trial and assigns the client either to a control or an
-  // experiment group - such assignment should be final.
-  return base::FeatureList::IsEnabled(::features::kTopDocumentIsolation);
-}
-
-// static
 bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
   // NOTE: Because it is possible for --isolate-origins to be isolating origins
   // at a finer-than-site granularity, we do not suppress --isolate-origins when
@@ -114,8 +102,7 @@ bool SiteIsolationPolicy::ShouldPdfCompositorBeEnabledForOopifs() {
   // where OOPIF is used such as isolate-extensions, but should be good for
   // feature testing purpose. Eventually, we will remove this check and use pdf
   // compositor service by default for printing.
-  return AreIsolatedOriginsEnabled() || IsTopDocumentIsolationEnabled() ||
-         UseDedicatedProcessesForAllSites();
+  return AreIsolatedOriginsEnabled() || UseDedicatedProcessesForAllSites();
 }
 
 // static

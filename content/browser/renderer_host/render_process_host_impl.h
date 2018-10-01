@@ -318,7 +318,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // handles all cases.  These cases include:
   // - process-per-site: see
   //   RegisterSoleProcessHostForSite/GetSoleProcessHostForSite.
-  // - TDI: see GetDefaultSubframeProcessHost.
   // - REUSE_PENDING_OR_COMMITTED reuse policy (for ServiceWorkers and OOPIFs):
   //   see FindReusableProcessHostForSiteInstance.
   // - normal process reuse when over process limit:  see
@@ -577,12 +576,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void RecordKeepAliveDuration(RenderProcessHost::KeepAliveClientType,
                                base::TimeTicks start,
                                base::TimeTicks end);
-
-  // Returns the default subframe RenderProcessHost to use for |site_instance|.
-  static RenderProcessHost* GetDefaultSubframeProcessHost(
-      BrowserContext* browser_context,
-      SiteInstanceImpl* site_instance,
-      bool is_for_guests_only);
 
   // Get an existing RenderProcessHost associated with the given browser
   // context, if possible.  The renderer process is chosen randomly from

@@ -4,6 +4,10 @@
 
 #include "content/browser/process_internals/process_internals_handler_impl.h"
 
+#include <utility>
+#include <vector>
+
+#include "base/strings/string_piece.h"
 #include "content/browser/process_internals/process_internals.mojom.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
@@ -21,8 +25,6 @@ void ProcessInternalsHandlerImpl::GetIsolationMode(
   std::vector<base::StringPiece> modes;
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
     modes.push_back("Site Per Process");
-  if (SiteIsolationPolicy::IsTopDocumentIsolationEnabled())
-    modes.push_back("Top Document Isolation");
   if (SiteIsolationPolicy::AreIsolatedOriginsEnabled())
     modes.push_back("Isolate Origins");
 
