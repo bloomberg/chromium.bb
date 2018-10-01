@@ -168,6 +168,7 @@ HistogramBase* Histogram::Factory::Build() {
       return DummyHistogram::GetInstance();
     // To avoid racy destruction at shutdown, the following will be leaked.
     const BucketRanges* created_ranges = CreateRanges();
+    CHECK(created_ranges->HasValidChecksum()) << name_;
 
 // Temporary check for https://crbug.com/836238
 #if defined(OS_WIN)  // Only Windows has a debugger that makes this useful.
@@ -206,13 +207,17 @@ HistogramBase* Histogram::Factory::Build() {
         DEBUG_ALIAS_FOR_CSTR(h_name, name_.c_str(), 100);
         HistogramType h_type = histogram_type_;
         uint32_t b_count = bucket_count_;
-        size_t c_count = recreated_ranges->size() - 1;
+        size_t c_count = created_ranges->size() - 1;
         size_t r_count = recreated_ranges->size() - 1;
+        bool c_valid = created_ranges->HasValidChecksum();
+        bool r_valid = recreated_ranges->HasValidChecksum();
         CHECK(recreated_ranges->Equals(created_ranges)) << name_;
         debug::Alias(&h_type);
         debug::Alias(&b_count);
         debug::Alias(&c_count);
         debug::Alias(&r_count);
+        debug::Alias(&c_valid);
+        debug::Alias(&r_valid);
         CHECK(false) << name_;
       }
     }
@@ -241,11 +246,15 @@ HistogramBase* Histogram::Factory::Build() {
         uint32_t b_count = bucket_count_;
         size_t c_count = recreated_ranges->size() - 1;
         size_t r_count = registered_ranges->size() - 1;
+        bool c_valid = recreated_ranges->HasValidChecksum();
+        bool r_valid = registered_ranges->HasValidChecksum();
         CHECK(recreated_ranges->Equals(registered_ranges)) << name_;
         debug::Alias(&h_type);
         debug::Alias(&b_count);
         debug::Alias(&c_count);
         debug::Alias(&r_count);
+        debug::Alias(&c_valid);
+        debug::Alias(&r_valid);
         CHECK(false) << name_;
       }
     }
