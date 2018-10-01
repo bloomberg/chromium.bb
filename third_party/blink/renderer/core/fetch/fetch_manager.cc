@@ -192,7 +192,7 @@ class SRIBytesConsumer final : public BytesConsumer {
   }
 
  private:
-  Member<BytesConsumer> underlying_;
+  TraceWrapperMember<BytesConsumer> underlying_;
   Member<Client> client_;
   bool is_cancelled_ = false;
 };
