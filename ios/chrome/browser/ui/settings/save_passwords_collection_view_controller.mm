@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/alpha_animated_collection_view_flow_layout.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
@@ -216,7 +217,8 @@ initWithActivityItems:(NSArray*)activityItems
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  MDCCollectionViewFlowLayout* layout =
+      [[AlphaAnimatedCollectionViewFlowLayout alloc] init];
   self =
       [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
