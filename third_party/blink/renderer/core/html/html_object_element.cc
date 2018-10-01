@@ -72,7 +72,7 @@ void HTMLObjectElement::Trace(blink::Visitor* visitor) {
 const HashSet<AtomicString>& HTMLObjectElement::GetCheckedAttributeNames()
     const {
   DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set,
-                      ({"data", "codeBase"}));
+                      ({"data", "codebase"}));
   return attribute_set;
 }
 
