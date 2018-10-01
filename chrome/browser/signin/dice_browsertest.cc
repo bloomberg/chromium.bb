@@ -782,7 +782,12 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutAllAccounts) {
 
 // Checks that Dice request header is not set from request from WebUI.
 // See https://crbug.com/428396
-IN_PROC_BROWSER_TEST_F(DiceBrowserTest, NoDiceFromWebUI) {
+#if defined(OS_WIN)
+#define MAYBE_NoDiceFromWebUI DISABLED_NoDiceFromWebUI
+#else
+#define MAYBE_NoDiceFromWebUI NoDiceFromWebUI
+#endif
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_NoDiceFromWebUI) {
   // Navigate to Gaia and from the native tab, which uses an extension.
   ui_test_utils::NavigateToURL(browser(), GURL("chrome:chrome-signin"));
 
