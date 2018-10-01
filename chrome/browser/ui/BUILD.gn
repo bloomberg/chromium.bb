@@ -120,8 +120,6 @@ jumbo_split_static_library("ui") {
       "cocoa/single_web_contents_dialog_manager_cocoa.mm",
       "cocoa/ssl_client_certificate_selector_cocoa.h",
       "cocoa/ssl_client_certificate_selector_cocoa.mm",
-      "cocoa/tab_contents/favicon_util_mac.h",
-      "cocoa/tab_contents/favicon_util_mac.mm",
       "cocoa/tab_contents/overlayable_contents_controller.h",
       "cocoa/tab_contents/overlayable_contents_controller.mm",
       "cocoa/tab_contents/tab_contents_controller.h",
