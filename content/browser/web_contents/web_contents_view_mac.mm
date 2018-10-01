@@ -108,6 +108,9 @@ WebContentsViewMac::WebContentsViewMac(WebContentsImpl* web_contents,
     : web_contents_(web_contents), delegate_(delegate) {}
 
 WebContentsViewMac::~WebContentsViewMac() {
+  if (views_host_)
+    views_host_->OnHostableViewDestroying();
+  DCHECK(!views_host_);
   // This handles the case where a renderer close call was deferred
   // while the user was operating a UI control which resulted in a
   // close.  In that case, the Cocoa view outlives the
@@ -354,7 +357,8 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
 
   // Add the RenderWidgetHostView to the ui::Layer heirarchy.
   child_views_.push_back(view->GetWeakPtr());
-  SetParentUiLayer(parent_ui_layer_);
+  if (views_host_)
+    SetParentUiLayer(views_host_->GetUiLayer());
 
   // Fancy layout comes later; for now just make it our size and resize it
   // with us. In case there are other siblings of the content area, we want
@@ -431,7 +435,6 @@ void WebContentsViewMac::CloseTab() {
 }
 
 void WebContentsViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
-  parent_ui_layer_ = parent_ui_layer;
   // Remove any child NSViews that have been destroyed.
   for (auto iter = child_views_.begin(); iter != child_views_.end();) {
     if (*iter)
@@ -439,6 +442,26 @@ void WebContentsViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
     else
       iter = child_views_.erase(iter);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WebContentsViewMac, ViewsHostableView:
+
+void WebContentsViewMac::OnViewsHostableAttached(
+    ViewsHostableView::Host* host) {
+  views_host_ = host;
+
+  SetParentUiLayer(views_host_->GetUiLayer());
+  [cocoa_view_
+      setAccessibilityParentElement:views_host_->GetAccessibilityElement()];
+}
+
+void WebContentsViewMac::OnViewsHostableDetached() {
+  DCHECK(views_host_);
+  views_host_ = nullptr;
+
+  SetParentUiLayer(nullptr);
+  [cocoa_view_ setAccessibilityParentElement:nil];
 }
 
 }  // namespace content
@@ -655,11 +678,6 @@ void WebContentsViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
       FocusThroughTabTraversal(direction == NSSelectingPrevious);
 }
 
-- (void)cr_setParentUiLayer:(ui::Layer*)parentUiLayer {
-  if (webContentsView_)
-    webContentsView_->SetParentUiLayer(parentUiLayer);
-}
-
 - (void)updateWebContentsVisibility {
   WebContentsImpl* webContents = [self webContents];
   if (!webContents || webContents->IsBeingDestroyed())
@@ -724,9 +742,13 @@ void WebContentsViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
   [self updateWebContentsVisibility];
 }
 
-// AccessibilityHostable protocol implementation.
 - (void)setAccessibilityParentElement:(id)accessibilityParent {
   accessibilityParent_.reset([accessibilityParent retain]);
+}
+
+// ViewsHostable protocol implementation.
+- (ui::ViewsHostableView*)viewsHostableView {
+  return webContentsView_;
 }
 
 // NSAccessibility informal protocol implementation.
