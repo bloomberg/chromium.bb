@@ -1105,7 +1105,6 @@ def _CreatePakObjectMap(object_paths_by_name):
   for name in object_paths_by_name:
     if name.startswith(PREFIX):
       pak_id = int(name[id_start_idx:id_end_idx])
-      logging.info('PAK ID: %d', pak_id)
       object_paths_by_pak_id[pak_id] = object_paths_by_name[name]
   return object_paths_by_pak_id
 
