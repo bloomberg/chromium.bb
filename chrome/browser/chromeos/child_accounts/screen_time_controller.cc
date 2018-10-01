@@ -32,8 +32,6 @@ constexpr base::TimeDelta kWarningNotificationTimeout =
     base::TimeDelta::FromMinutes(5);
 constexpr base::TimeDelta kExitNotificationTimeout =
     base::TimeDelta::FromMinutes(1);
-constexpr base::TimeDelta kScreenTimeUsageUpdateFrequency =
-    base::TimeDelta::FromMinutes(1);
 
 // The notification id. All the time limit notifications share the same id so
 // that a subsequent notification can replace the previous one.
@@ -57,9 +55,6 @@ constexpr char kScreenStateLastStateChanged[] = "last_state_changed";
 
 // static
 void ScreenTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterTimePref(prefs::kCurrentScreenStartTime, base::Time());
-  registry->RegisterTimePref(prefs::kFirstScreenStartTime, base::Time());
-  registry->RegisterIntegerPref(prefs::kScreenTimeMinutesUsed, 0);
   registry->RegisterDictionaryPref(prefs::kUsageTimeLimit);
   registry->RegisterDictionaryPref(prefs::kScreenTimeLastState);
 }
@@ -79,18 +74,11 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
 ScreenTimeController::~ScreenTimeController() {
   session_manager::SessionManager::Get()->RemoveObserver(this);
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
-  SaveScreenTimeProgressBeforeExit();
 }
 
-base::TimeDelta ScreenTimeController::GetScreenTimeDuration() const {
-  base::TimeDelta previous_duration = base::TimeDelta::FromMinutes(
-      pref_service_->GetInteger(prefs::kScreenTimeMinutesUsed));
-  if (current_screen_start_time_.is_null())
-    return previous_duration;
-
-  base::TimeDelta current_screen_duration =
-      base::Time::Now() - current_screen_start_time_;
-  return current_screen_duration + previous_duration;
+base::TimeDelta ScreenTimeController::GetScreenTimeDuration() {
+  return ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
+      ->GetChildScreenTime();
 }
 
 void ScreenTimeController::CheckTimeLimit(const std::string& source) {
@@ -107,27 +95,8 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   const base::DictionaryValue* time_limit =
       pref_service_->GetDictionary(prefs::kUsageTimeLimit);
 
-  // Refresh the screen time usage when needed.
-  // |first_screen_start_time_| is retrieved from prefs::kFirstScreenStartTime
-  // which stores the timestamp of last screen time reset.
-  base::TimeDelta used_time = GetScreenTimeDuration();
-  base::Time reset_time = usage_time_limit::GetExpectedResetTime(
-      time_limit->CreateDeepCopy(), now, &time_zone);
-  if (reset_time - first_screen_start_time_ >= base::TimeDelta::FromDays(1)) {
-    VLOG(1) << "Reset screen time now.";
-    RefreshScreenLimit();
-    used_time = base::TimeDelta::FromMinutes(0);
-  } else {
-    VLOG(1) << "Scheduling screen reset timer in " << reset_time - now;
-    reset_screen_time_timer_.Start(
-        FROM_HERE, reset_time - now,
-        base::BindRepeating(&ScreenTimeController::CheckTimeLimit,
-                            base::Unretained(this),
-                            "reset_screen_time_timer_"));
-  }
-
   usage_time_limit::State state = usage_time_limit::GetState(
-      time_limit->CreateDeepCopy(), used_time, first_screen_start_time_, now,
+      time_limit->CreateDeepCopy(), GetScreenTimeDuration(), now, now,
       &time_zone, last_state);
   SaveCurrentStateToPref(state);
 
@@ -180,11 +149,15 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
     }
   }
 
-  if (!state.next_state_change_time.is_null()) {
+  base::Time next_get_state_time =
+      std::min(state.next_state_change_time,
+               usage_time_limit::GetExpectedResetTime(
+                   time_limit->CreateDeepCopy(), now, &time_zone));
+  if (!next_get_state_time.is_null()) {
     VLOG(1) << "Scheduling state change timer in "
             << state.next_state_change_time - now;
     next_state_timer_.Start(
-        FROM_HERE, state.next_state_change_time - now,
+        FROM_HERE, next_get_state_time - now,
         base::BindRepeating(&ScreenTimeController::CheckTimeLimit,
                             base::Unretained(this), "next_state_timer_"));
   }
@@ -243,17 +216,6 @@ void ScreenTimeController::ShowNotification(
       ->Display(NotificationHandler::Type::TRANSIENT, *notification);
 }
 
-void ScreenTimeController::RefreshScreenLimit() {
-  base::Time now = base::Time::Now();
-  pref_service_->SetTime(prefs::kFirstScreenStartTime, now);
-  pref_service_->SetTime(prefs::kCurrentScreenStartTime, now);
-  pref_service_->SetInteger(prefs::kScreenTimeMinutesUsed, 0);
-  pref_service_->CommitPendingWrite();
-
-  first_screen_start_time_ = now;
-  current_screen_start_time_ = now;
-}
-
 void ScreenTimeController::OnPolicyChanged() {
   CheckTimeLimit("OnPolicyChanged");
 }
@@ -261,33 +223,12 @@ void ScreenTimeController::OnPolicyChanged() {
 void ScreenTimeController::ResetStateTimers() {
   VLOG(1) << "Stopping state timers";
   next_state_timer_.Stop();
-  reset_screen_time_timer_.Stop();
 }
 
 void ScreenTimeController::ResetInSessionTimers() {
   VLOG(1) << "Stopping in-session timers";
   warning_notification_timer_.Stop();
   exit_notification_timer_.Stop();
-  save_screen_time_timer_.Stop();
-}
-
-void ScreenTimeController::SaveScreenTimeProgressBeforeExit() {
-  VLOG(1) << "Saving screen time progress before exiting";
-  pref_service_->SetInteger(prefs::kScreenTimeMinutesUsed,
-                            GetScreenTimeDuration().InMinutes());
-  pref_service_->ClearPref(prefs::kCurrentScreenStartTime);
-  pref_service_->CommitPendingWrite();
-  current_screen_start_time_ = base::Time();
-  ResetInSessionTimers();
-}
-
-void ScreenTimeController::SaveScreenTimeProgressPeriodically() {
-  pref_service_->SetInteger(prefs::kScreenTimeMinutesUsed,
-                            GetScreenTimeDuration().InMinutes());
-  current_screen_start_time_ = base::Time::Now();
-  pref_service_->SetTime(prefs::kCurrentScreenStartTime,
-                         current_screen_start_time_);
-  pref_service_->CommitPendingWrite();
 }
 
 void ScreenTimeController::SaveCurrentStateToPref(
@@ -416,40 +357,9 @@ void ScreenTimeController::OnSessionStateChanged() {
       UpdateTimeLimitsMessage(true /*visible*/, next_unlock_time_.value());
       next_unlock_time_.reset();
     }
-    SaveScreenTimeProgressBeforeExit();
+    ResetInSessionTimers();
   } else if (session_state == session_manager::SessionState::ACTIVE) {
-    base::Time now = base::Time::Now();
-    const base::Time first_screen_start_time =
-        pref_service_->GetTime(prefs::kFirstScreenStartTime);
-    if (first_screen_start_time.is_null()) {
-      pref_service_->SetTime(prefs::kFirstScreenStartTime, now);
-      first_screen_start_time_ = now;
-    } else {
-      first_screen_start_time_ = first_screen_start_time;
-    }
-
-    const base::Time current_screen_start_time =
-        pref_service_->GetTime(prefs::kCurrentScreenStartTime);
-    if (!current_screen_start_time.is_null() &&
-        current_screen_start_time < now &&
-        (now - current_screen_start_time) <
-            2 * kScreenTimeUsageUpdateFrequency) {
-      current_screen_start_time_ = current_screen_start_time;
-    } else {
-      // If kCurrentScreenStartTime is not set or it's been too long since the
-      // last update, set the time to now.
-      current_screen_start_time_ = now;
-    }
-    pref_service_->SetTime(prefs::kCurrentScreenStartTime,
-                           current_screen_start_time_);
-    pref_service_->CommitPendingWrite();
     CheckTimeLimit("OnSessionStateChanged");
-
-    save_screen_time_timer_.Start(
-        FROM_HERE, kScreenTimeUsageUpdateFrequency,
-        base::BindRepeating(
-            &ScreenTimeController::SaveScreenTimeProgressPeriodically,
-            base::Unretained(this)));
   }
 }
 
