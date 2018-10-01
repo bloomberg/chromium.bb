@@ -88,6 +88,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void ContextMenuItemSelected(const std::string& id,
                                int command_id,
                                int event_flags) override;
+  syncer::StringOrdinal GetFirstAvailablePosition() const override;
 
   // Methods for AppListSyncableService:
   void AddItemToOemFolder(

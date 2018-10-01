@@ -67,8 +67,7 @@ ChromeAppListItem::ChromeAppListItem(Profile* profile,
       profile_(profile),
       model_updater_(model_updater) {}
 
-ChromeAppListItem::~ChromeAppListItem() {
-}
+ChromeAppListItem::~ChromeAppListItem() = default;
 
 void ChromeAppListItem::SetIsInstalling(bool is_installing) {
   AppListModelUpdater* updater = model_updater();
@@ -146,19 +145,29 @@ void ChromeAppListItem::UpdateFromSync(
     SetName(sync_item->item_name);
 }
 
-void ChromeAppListItem::SetDefaultPositionIfApplicable() {
+void ChromeAppListItem::SetDefaultPositionIfApplicable(
+    AppListModelUpdater* model_updater) {
   syncer::StringOrdinal page_ordinal;
   syncer::StringOrdinal launch_ordinal;
   extensions::AppSorting* app_sorting = GetAppSorting();
-  if (!app_sorting->GetDefaultOrdinals(id(), &page_ordinal,
-                                       &launch_ordinal) ||
-      !page_ordinal.IsValid() || !launch_ordinal.IsValid()) {
-    app_sorting->EnsureValidOrdinals(id(), syncer::StringOrdinal());
-    page_ordinal = app_sorting->GetPageOrdinal(id());
-    launch_ordinal = app_sorting->GetAppLaunchOrdinal(id());
+  if (app_sorting->GetDefaultOrdinals(id(), &page_ordinal, &launch_ordinal) &&
+      page_ordinal.IsValid() && launch_ordinal.IsValid()) {
+    // Set the default position if it exists.
+    SetPosition(syncer::StringOrdinal(page_ordinal.ToInternalValue() +
+                                      launch_ordinal.ToInternalValue()));
+    return;
   }
-  DCHECK(page_ordinal.IsValid());
-  DCHECK(launch_ordinal.IsValid());
+
+  if (model_updater) {
+    // Set the first available position in the app list.
+    SetPosition(model_updater->GetFirstAvailablePosition());
+    return;
+  }
+
+  // Set the natural position.
+  app_sorting->EnsureValidOrdinals(id(), syncer::StringOrdinal());
+  page_ordinal = app_sorting->GetPageOrdinal(id());
+  launch_ordinal = app_sorting->GetAppLaunchOrdinal(id());
   SetPosition(syncer::StringOrdinal(page_ordinal.ToInternalValue() +
                                     launch_ordinal.ToInternalValue()));
 }

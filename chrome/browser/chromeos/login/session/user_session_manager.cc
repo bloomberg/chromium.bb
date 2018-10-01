@@ -70,7 +70,6 @@
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
@@ -1285,6 +1284,12 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
   BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
+  // Associates AppListClient with the current active profile.
+  // Make sure AppListClient is active when AppListSyncableService builds model
+  // to avoid oem folder being created with invalid position. Note we should put
+  // this call before OAuth check in case of gaia sign in.
+  AppListClientImpl::GetInstance()->UpdateProfile();
+
   if (user_context_.IsUsingOAuth()) {
     // Retrieve the policy that indicates whether to continue copying
     // authentication cookies set by a SAML IdP on subsequent logins after the
@@ -1682,9 +1687,8 @@ void UserSessionManager::InitRlzImpl(Profile* profile,
   // Negative ping delay means to send ping immediately after a first search is
   // recorded.
   bool send_ping_immediately = ping_delay < 0;
-  base::TimeDelta delay =
-      base::TimeDelta::FromSeconds(abs(ping_delay)) -
-          params.time_since_oobe_completion;
+  base::TimeDelta delay = base::TimeDelta::FromSeconds(abs(ping_delay)) -
+                          params.time_since_oobe_completion;
   rlz::RLZTracker::SetRlzDelegate(
       base::WrapUnique(new ChromeRLZTrackerDelegate));
   rlz::RLZTracker::InitRlzDelayed(
@@ -2061,9 +2065,6 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
     profile->GetPrefs()->ClearPref(prefs::kShowSyncSettingsOnSessionStart);
     chrome::ShowSettingsSubPageForProfile(profile, "syncSetup");
   }
-
-  // Associates AppListClient with the current active profile.
-  AppListClientImpl::GetInstance()->UpdateProfile();
 }
 
 void UserSessionManager::RespectLocalePreferenceWrapper(
