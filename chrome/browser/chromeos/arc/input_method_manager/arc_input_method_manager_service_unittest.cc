@@ -748,8 +748,7 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
   InputConnectionImpl* connection = service()->GetInputConnectionForTesting();
   ASSERT_NE(nullptr, connection);
   connection->CommitText(base::ASCIIToUTF16("text"), 0);
-  // It's called from both of FinishComposingText() and CommitText().
-  EXPECT_EQ(2, test_context_handler.commit_text_call_count());
+  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
   // Trigger an observer method to trigger text input state updating.
   engine_handler->SetSurroundingText("", 0, 0, 0);
   EXPECT_EQ(1, bridge()->update_text_input_state_calls_count_);
@@ -763,9 +762,20 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
   connection->FinishComposingText();
   EXPECT_EQ(1, test_context_handler.commit_text_call_count());
 
+  base::string16 text = base::ASCIIToUTF16("text");
   test_context_handler.Reset();
-  connection->SetComposingText(base::ASCIIToUTF16("text"), 0);
+  connection->SetComposingText(text, 0);
   EXPECT_EQ(1, test_context_handler.update_preedit_text_call_count());
+  EXPECT_EQ(
+      text,
+      test_context_handler.last_update_composition_arg().composition_text.text);
+  // Committing the composing text calls ClearComposition() and CommitText().
+  connection->CommitText(base::ASCIIToUTF16("text"), 0);
+  EXPECT_EQ(2, test_context_handler.update_preedit_text_call_count());
+  EXPECT_EQ(
+      base::ASCIIToUTF16(""),
+      test_context_handler.last_update_composition_arg().composition_text.text);
+  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
 
   engine_handler->FocusOut();
 

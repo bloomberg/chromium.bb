@@ -76,10 +76,10 @@ void InputConnectionImpl::CommitText(const base::string16& text,
                                      int new_cursor_pos) {
   StartStateUpdateTimer();
 
-  // Confirm the current composing text at first.
-  FinishComposingTextInternal();
-
   std::string error;
+  // Clear the current composing text at first.
+  if (!ime_engine_->ClearComposition(input_context_id_, &error))
+    LOG(ERROR) << "ClearComposition failed: error=\"" << error << "\"";
   if (!ime_engine_->CommitText(input_context_id_,
                                base::UTF16ToUTF8(text).c_str(), &error))
     LOG(ERROR) << "CommitText failed: error=\"" << error << "\"";
@@ -103,7 +103,15 @@ void InputConnectionImpl::DeleteSurroundingText(int before, int after) {
 
 void InputConnectionImpl::FinishComposingText() {
   StartStateUpdateTimer();
-  FinishComposingTextInternal();
+
+  std::string error;
+  if (!ime_engine_->CommitText(input_context_id_,
+                               base::UTF16ToUTF8(composing_text_).c_str(),
+                               &error)) {
+    LOG(ERROR) << "FinishComposingText: CommitText() failed, error=\"" << error
+               << "\"";
+  }
+  composing_text_.clear();
 }
 
 void InputConnectionImpl::SetComposingText(const base::string16& text,
@@ -140,17 +148,6 @@ void InputConnectionImpl::StartStateUpdateTimer() {
       base::BindOnce(&InputConnectionImpl::UpdateTextInputState,
                      base::Unretained(this),
                      true /* is_input_state_update_requested */));
-}
-
-void InputConnectionImpl::FinishComposingTextInternal() {
-  std::string error;
-  if (!ime_engine_->CommitText(input_context_id_,
-                               base::UTF16ToUTF8(composing_text_).c_str(),
-                               &error)) {
-    LOG(ERROR) << "FinishComposingText: CommitText() failed, error=\"" << error
-               << "\"";
-  }
-  composing_text_.clear();
 }
 
 }  // namespace arc
