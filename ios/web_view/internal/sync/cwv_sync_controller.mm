@@ -23,6 +23,42 @@
 #error "This file requires ARC support."
 #endif
 
+NSErrorDomain const CWVSyncErrorDomain =
+    @"org.chromium.chromewebview.SyncErrorDomain";
+
+namespace {
+CWVSyncError CWVConvertGoogleServiceAuthErrorStateToCWVSyncError(
+    GoogleServiceAuthError::State state) {
+  switch (state) {
+    case GoogleServiceAuthError::NONE:
+      return CWVSyncErrorNone;
+    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
+      return CWVSyncErrorInvalidGAIACredentials;
+    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
+      return CWVSyncErrorUserNotSignedUp;
+    case GoogleServiceAuthError::CONNECTION_FAILED:
+      return CWVSyncErrorConnectionFailed;
+    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
+      return CWVSyncErrorServiceUnavailable;
+    case GoogleServiceAuthError::REQUEST_CANCELED:
+      return CWVSyncErrorRequestCanceled;
+    case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
+      return CWVSyncErrorUnexpectedServiceResponse;
+    // The following errors are unexpected on iOS.
+    case GoogleServiceAuthError::CAPTCHA_REQUIRED:
+    case GoogleServiceAuthError::ACCOUNT_DELETED:
+    case GoogleServiceAuthError::ACCOUNT_DISABLED:
+    case GoogleServiceAuthError::TWO_FACTOR:
+    case GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED:
+    case GoogleServiceAuthError::SERVICE_ERROR:
+    case GoogleServiceAuthError::WEB_LOGIN_REQUIRED:
+    case GoogleServiceAuthError::NUM_STATES:
+      NOTREACHED();
+      return CWVSyncErrorNone;
+  }
+}
+}  // namespace
+
 @interface CWVSyncController ()
 
 // Called by WebViewSyncServiceObserverBridge's |OnSyncConfigurationCompleted|.
@@ -223,6 +259,19 @@ initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
     return;
   }
   [_delegate syncController:self didStopSyncWithReason:reason];
+}
+
+- (void)didUpdateAuthError:(const GoogleServiceAuthError&)authError {
+  CWVSyncError code =
+      CWVConvertGoogleServiceAuthErrorStateToCWVSyncError(authError.state());
+  if (code != CWVSyncErrorNone) {
+    if ([_delegate
+            respondsToSelector:@selector(syncController:didFailWithError:)]) {
+      NSError* error =
+          [NSError errorWithDomain:CWVSyncErrorDomain code:code userInfo:nil];
+      [_delegate syncController:self didFailWithError:error];
+    }
+  }
 }
 
 @end

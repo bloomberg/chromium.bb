@@ -8,6 +8,7 @@
 #include <set>
 
 #include "components/signin/core/browser/signin_metrics.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/web_view/internal/signin/web_view_profile_oauth2_token_service_ios_provider_impl.h"
 #import "ios/web_view/public/cwv_sync_controller.h"
 
@@ -37,6 +38,9 @@ initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
 
 // Called by IOSWebViewSigninClient when signing out.
 - (void)didSignoutWithSourceMetric:(signin_metrics::ProfileSignout)metric;
+
+// Called by IOSWebViewSigninClient when auth error changes.
+- (void)didUpdateAuthError:(const GoogleServiceAuthError&)authError;
 
 @end
 
