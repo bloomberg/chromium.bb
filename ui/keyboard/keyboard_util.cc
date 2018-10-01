@@ -222,8 +222,11 @@ bool IsGestureTypingEnabled() {
 }
 
 bool IsGestureEditingEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableGestureEditing);
+  // TODO(https://crbug.com/890134): Gesture editing is not implemented in the
+  // new UI.
+  return !IsVirtualKeyboardMdUiEnabled() &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableGestureEditing);
 }
 
 bool IsImeServiceEnabled() {
