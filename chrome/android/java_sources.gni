@@ -1502,7 +1502,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/toolbar/MenuButton.java",
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarButtonSlotData.java",
   "java/src/org/chromium/chrome/browser/toolbar/HomePageButton.java",
-  "java/src/org/chromium/chrome/browser/toolbar/IncognitoToggleTabLayout.java",
   "java/src/org/chromium/chrome/browser/toolbar/KeyboardNavigationListener.java",
   "java/src/org/chromium/chrome/browser/toolbar/ScrollingBottomViewResourceFrameLayout.java",
   "java/src/org/chromium/chrome/browser/toolbar/TabSwitcherButtonViewBinder.java",
