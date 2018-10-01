@@ -224,14 +224,15 @@ static int obudec_read_one_obu(FILE *f, uint8_t **obu_buffer,
   size_t obu_payload_length = 0;
   size_t available_buffer_capacity = *obu_buffer_capacity - obu_bytes_buffered;
 
-  if (available_buffer_capacity < OBU_MAX_HEADER_SIZE &&
-      obudec_grow_buffer(AOMMAX(*obu_buffer_capacity, OBU_MAX_HEADER_SIZE),
-                         obu_buffer, obu_buffer_capacity) != 0) {
-    *obu_length = bytes_read;
-    return -1;
+  if (available_buffer_capacity < OBU_MAX_HEADER_SIZE) {
+    if (obudec_grow_buffer(AOMMAX(*obu_buffer_capacity, OBU_MAX_HEADER_SIZE),
+                           obu_buffer, obu_buffer_capacity) != 0) {
+      *obu_length = bytes_read;
+      return -1;
+    }
+    available_buffer_capacity +=
+        AOMMAX(*obu_buffer_capacity, OBU_MAX_HEADER_SIZE);
   }
-  available_buffer_capacity +=
-      AOMMAX(*obu_buffer_capacity, OBU_MAX_HEADER_SIZE);
 
   const int status = obudec_read_obu_header_and_size(
       f, available_buffer_capacity, is_annexb, *obu_buffer + obu_bytes_buffered,
