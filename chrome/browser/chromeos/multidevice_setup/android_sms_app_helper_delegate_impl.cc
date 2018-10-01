@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "extensions/common/constants.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -29,11 +32,16 @@ AndroidSmsAppHelperDelegateImpl::AndroidSmsAppHelperDelegateImpl(
     : pending_app_manager_(
           &web_app::WebAppProvider::Get(profile)->pending_app_manager()),
       profile_(profile),
+      host_content_settings_map_(
+          HostContentSettingsMapFactory::GetForProfile(profile)),
       weak_ptr_factory_(this) {}
 
 AndroidSmsAppHelperDelegateImpl::AndroidSmsAppHelperDelegateImpl(
-    web_app::PendingAppManager* pending_app_manager)
-    : pending_app_manager_(pending_app_manager), weak_ptr_factory_(this) {}
+    web_app::PendingAppManager* pending_app_manager,
+    HostContentSettingsMap* host_content_settings_map)
+    : pending_app_manager_(pending_app_manager),
+      host_content_settings_map_(host_content_settings_map),
+      weak_ptr_factory_(this) {}
 
 AndroidSmsAppHelperDelegateImpl::~AndroidSmsAppHelperDelegateImpl() = default;
 
@@ -88,6 +96,14 @@ void AndroidSmsAppHelperDelegateImpl::OnAppInstalled(
     const GURL& app_url,
     web_app::InstallResultCode code) {
   if (code == web_app::InstallResultCode::kSuccess) {
+    // Pre-Grant notification permission for Messages.
+    host_content_settings_map_->SetWebsiteSettingDefaultScope(
+        chromeos::android_sms::GetAndroidMessagesURL(),
+        GURL() /* top_level_url */,
+        ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+        content_settings::ResourceIdentifier(),
+        std::make_unique<base::Value>(ContentSetting::CONTENT_SETTING_ALLOW));
+
     PA_LOG(INFO) << "Messages app installed! URL: " << app_url;
     if (launch_on_install)
       LaunchAndroidSmsApp();
