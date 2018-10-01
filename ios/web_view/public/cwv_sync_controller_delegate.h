@@ -27,8 +27,12 @@ typedef NS_ENUM(NSInteger, CWVStopSyncReason) {
 // property to see if |unlockWithPassphrase:| is necessary.
 - (void)syncControllerDidStartSync:(CWVSyncController*)syncController;
 
-// Called after the sync was stopped.
-// |reason| Indicates why sync was stopped.
+// Called when sync fails. |error|'s code is a CWVSyncError.
+// May need to call |stopSyncAndClearIdentity| and try starting again later.
+- (void)syncController:(CWVSyncController*)syncController
+      didFailWithError:(NSError*)error;
+
+// Called after sync was stopped. |reason| Indicates why sync was stopped.
 - (void)syncController:(CWVSyncController*)syncController
     didStopSyncWithReason:(CWVStopSyncReason)reason;
 

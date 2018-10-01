@@ -104,7 +104,9 @@ std::unique_ptr<GaiaAuthFetcher> IOSWebViewSigninClient::CreateGaiaAuthFetcher(
                                            url_loader_factory);
 }
 
-void IOSWebViewSigninClient::OnErrorChanged() {}
+void IOSWebViewSigninClient::OnErrorChanged() {
+  [sync_controller_ didUpdateAuthError:signin_error_controller_->auth_error()];
+}
 
 void IOSWebViewSigninClient::SetSyncController(
     CWVSyncController* sync_controller) {
