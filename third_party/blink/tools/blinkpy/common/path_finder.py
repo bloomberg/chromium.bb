@@ -50,6 +50,12 @@ def add_blinkpy_thirdparty_dir_to_sys_path():
         sys.path.append(path)
 
 
+def add_depot_tools_dir_to_os_path():
+    path = get_depot_tools_dir()
+    if path not in os.environ['PATH']:
+        os.environ['PATH'] += os.pathsep + path
+
+
 def get_bindings_scripts_dir():
     return os.path.join(get_source_dir(), 'bindings', 'scripts')
 
@@ -60,6 +66,10 @@ def get_blink_dir():
 
 def get_chromium_src_dir():
     return os.path.dirname(os.path.dirname(get_blink_dir()))
+
+
+def get_depot_tools_dir():
+    return os.path.join(get_chromium_src_dir(), 'third_party', 'depot_tools')
 
 
 def get_source_dir():
