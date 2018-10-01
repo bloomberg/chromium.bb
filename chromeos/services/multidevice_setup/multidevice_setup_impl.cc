@@ -115,6 +115,7 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
       android_sms_app_installing_host_observer_(
           AndroidSmsAppInstallingStatusObserver::Factory::Get()->BuildInstance(
               host_status_provider_.get(),
+              feature_state_manager_.get(),
               std::move(android_sms_app_helper_delegate))),
       auth_token_validator_(auth_token_validator) {
   host_status_provider_->AddObserver(this);
