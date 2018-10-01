@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
@@ -119,47 +120,31 @@ ServiceWorkerDevToolsAgentHost::~ServiceWorkerDevToolsAgentHost() {
 
 bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
                                                    TargetRegistry* registry) {
-  if (state_ == WORKER_READY) {
-    if (sessions().size() == 1) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&SetDevToolsAttachedOnIO, context_weak_, version_id_,
-                         true));
-    }
-    session->SetRenderer(worker_process_id_, nullptr);
-    session->AttachToAgent(agent_ptr_);
-  }
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
   session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(
       GetId(), devtools_worker_token_, GetIOContext())));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
+  if (state_ == WORKER_READY && sessions().empty())
+    UpdateIsAttached(true);
   return true;
 }
 
 void ServiceWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
-  if (state_ == WORKER_READY && sessions().empty()) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(&SetDevToolsAttachedOnIO,
-                                            context_weak_, version_id_, false));
-  }
+  if (state_ == WORKER_READY && sessions().empty())
+    UpdateIsAttached(false);
 }
 
 void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
     blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info) {
   DCHECK_EQ(WORKER_NOT_READY, state_);
   state_ = WORKER_READY;
-  agent_ptr_.Bind(std::move(devtools_agent_ptr_info));
-  if (!sessions().empty()) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(&SetDevToolsAttachedOnIO,
-                                            context_weak_, version_id_, true));
-  }
-
-  for (DevToolsSession* session : sessions()) {
-    session->SetRenderer(worker_process_id_, nullptr);
-    session->AttachToAgent(agent_ptr_);
-  }
+  blink::mojom::DevToolsAgentAssociatedPtr agent_ptr;
+  agent_ptr.Bind(std::move(devtools_agent_ptr_info));
+  GetRendererChannel()->SetRenderer(std::move(agent_ptr), worker_process_id_,
+                                    nullptr);
+  if (!sessions().empty())
+    UpdateIsAttached(true);
 }
 
 void ServiceWorkerDevToolsAgentHost::WorkerRestarted(int worker_process_id,
@@ -170,18 +155,24 @@ void ServiceWorkerDevToolsAgentHost::WorkerRestarted(int worker_process_id,
   worker_route_id_ = worker_route_id;
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetReloadedAfterCrash();
-  for (DevToolsSession* session : sessions())
-    session->SetRenderer(worker_process_id_, nullptr);
 }
 
 void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
   DCHECK_NE(WORKER_TERMINATED, state_);
   state_ = WORKER_TERMINATED;
-  agent_ptr_.reset();
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetCrashed();
-  for (DevToolsSession* session : sessions())
-    session->SetRenderer(-1, nullptr);
+  GetRendererChannel()->SetRenderer(nullptr, ChildProcessHost::kInvalidUniqueID,
+                                    nullptr);
+  if (!sessions().empty())
+    UpdateIsAttached(false);
+}
+
+void ServiceWorkerDevToolsAgentHost::UpdateIsAttached(bool attached) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&SetDevToolsAttachedOnIO, context_weak_, version_id_,
+                     attached));
 }
 
 }  // namespace content

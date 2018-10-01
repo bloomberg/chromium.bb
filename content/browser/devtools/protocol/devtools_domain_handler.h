@@ -18,18 +18,12 @@ class DevToolsDomainHandler {
   explicit DevToolsDomainHandler(const std::string& name);
   virtual ~DevToolsDomainHandler();
 
-  virtual void InitRenderer(int process_host_id,
-                            RenderFrameHostImpl* frame_host);
-  virtual void UpdateRenderer(int process_host_id,
-                              RenderFrameHostImpl* frame_host);
+  virtual void SetRenderer(int process_host_id,
+                           RenderFrameHostImpl* frame_host);
   virtual void Wire(UberDispatcher* dispatcher);
   virtual Response Disable();
 
   const std::string& name() const { return name_; }
-
- protected:
-  virtual void SetRenderer(int process_host_id,
-                           RenderFrameHostImpl* frame_host);
 
  private:
   std::string name_;
