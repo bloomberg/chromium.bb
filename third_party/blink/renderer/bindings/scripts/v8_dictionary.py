@@ -137,9 +137,10 @@ def member_context(dictionary, member):
         return cpp_default_value, v8_default_value
 
     cpp_default_value, v8_default_value = default_values()
-    cpp_value = member.name + 'CppValue'
-    v8_value = member.name + 'Value'
-    has_value_or_default = member.name + 'HasValueOrDefault'
+    snake_case_name = to_snake_case(member.name)
+    cpp_value = snake_case_name + "_cpp_value"
+    v8_value = snake_case_name + "_value"
+    has_value_or_default = snake_case_name + "_has_value_or_default"
     getter_name = getter_name_for_dictionary_member(member)
     is_deprecated_dictionary = unwrapped_idl_type.name == 'Dictionary'
 
