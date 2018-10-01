@@ -272,22 +272,43 @@ void AssistantInteractionController::OnInteractionFinished(
   // device hotword loss, for example, but can also occur if the interaction
   // errors out. In these cases we still need to commit the pending query as
   // this is a prerequisite step to being able to finalize the pending response.
-  if (model_.pending_query().type() != AssistantQueryType::kNull) {
+  if (model_.pending_query().type() != AssistantQueryType::kNull)
     model_.CommitPendingQuery();
+
+  // It's possible that the pending response has already been finalized. This
+  // occurs if the response contained TTS, as we flush the response to the UI
+  // when TTS is started to reduce latency.
+  if (!model_.pending_response())
+    return;
+
+  // Some interaction resolutions require special handling.
+  switch (resolution) {
+    case AssistantInteractionResolution::kError:
+      // In the case of error, we show an appropriate message to the user.
+      model_.pending_response()->AddUiElement(
+          std::make_unique<AssistantTextElement>(
+              l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_ERROR_GENERIC)));
+      break;
+    case AssistantInteractionResolution::kMultiDeviceHotwordLoss:
+      // In the case of hotword loss to another device, we show an appropriate
+      // message to the user.
+      model_.pending_response()->AddUiElement(
+          std::make_unique<AssistantTextElement>(l10n_util::GetStringUTF8(
+              IDS_ASH_ASSISTANT_MULTI_DEVICE_HOTWORD_LOSS)));
+      break;
+    case AssistantInteractionResolution::kMicTimeout:
+      // Interactions resolving due to mic timeout are already handled above
+      // outside the switch.
+      NOTREACHED();
+      break;
+    case AssistantInteractionResolution::kInterruption:  // fallthrough
+    case AssistantInteractionResolution::kNormal:
+      // No special handling required.
+      break;
   }
 
-  // If the interaction was finished due to multi-device hotword loss, we want
-  // to show an appropriate message to the user.
-  if (resolution == AssistantInteractionResolution::kMultiDeviceHotwordLoss) {
-    model_.pending_response()->AddUiElement(
-        std::make_unique<AssistantTextElement>(l10n_util::GetStringUTF8(
-            IDS_ASH_ASSISTANT_MULTI_DEVICE_HOTWORD_LOSS)));
-  }
-
-  // The interaction has finished, so we finalize the pending response if it
-  // hasn't already been finalized.
-  if (model_.pending_response())
-    model_.FinalizePendingResponse();
+  // Finalize the pending response to flush it to the UI.
+  model_.FinalizePendingResponse();
 }
 
 void AssistantInteractionController::OnHtmlResponse(
