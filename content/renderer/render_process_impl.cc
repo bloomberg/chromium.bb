@@ -131,10 +131,11 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfHasSwitch(switches::kDisableJavaScriptHarmonyShipping,
                        "--noharmony-shipping");
   SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
-  SetV8FlagIfFeature(features::kModuleScriptsDynamicImport,
-                     "--harmony-dynamic-import");
-  SetV8FlagIfFeature(features::kModuleScriptsImportMetaUrl,
-                     "--harmony-import-meta");
+
+  constexpr char kModuleFlags[] =
+      "--harmony-dynamic-import --harmony-import-meta";
+  v8::V8::SetFlagsFromString(kModuleFlags, sizeof(kModuleFlags));
+
   SetV8FlagIfFeature(features::kAsmJsToWebAssembly, "--validate-asm");
   SetV8FlagIfNotFeature(features::kAsmJsToWebAssembly, "--no-validate-asm");
 
