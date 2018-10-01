@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/strings/string16.h"
+#include "base/thread_annotations.h"
 #include "media/midi/midi_manager.h"
 
 namespace midi {
@@ -52,10 +53,10 @@ class MIDI_EXPORT MidiManagerWinrt final : public MidiManager {
   base::Lock lazy_init_member_lock_;
 
   // All operations to Midi{In|Out}PortManager should be done on kComTaskRunner.
-  std::unique_ptr<MidiInPortManager>
-      port_manager_in_;  // GUARDED_BY(lazy_init_member_lock_)
-  std::unique_ptr<MidiOutPortManager>
-      port_manager_out_;  // GUARDED_BY(lazy_init_member_lock_)
+  std::unique_ptr<MidiInPortManager> port_manager_in_
+      GUARDED_BY(lazy_init_member_lock_);
+  std::unique_ptr<MidiOutPortManager> port_manager_out_
+      GUARDED_BY(lazy_init_member_lock_);
 
   // Incremented when a MidiPortManager is ready.
   uint8_t port_manager_ready_count_ = 0;

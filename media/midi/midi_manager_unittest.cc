@@ -59,13 +59,9 @@ class FakeMidiManager : public MidiManager {
     CompleteInitialization(result);
   }
 
-  size_t GetClientCount() const {
-    return clients_size_for_testing();
-  }
+  size_t GetClientCount() { return GetClientCountForTesting(); }
 
-  size_t GetPendingClientCount() const {
-    return pending_clients_size_for_testing();
-  }
+  size_t GetPendingClientCount() { return GetPendingClientCountForTesting(); }
 
   bool IsInitialized() const { return initialized_; }
 

@@ -850,6 +850,7 @@ void MidiManagerWinrt::SendOnComRunner(uint32_t port_index,
                                        const std::vector<uint8_t>& data) {
   DCHECK(service()->task_service()->IsOnTaskRunner(kComTaskRunner));
 
+  base::AutoLock auto_lock(lazy_init_member_lock_);
   MidiPort<IMidiOutPort>* port = port_manager_out_->GetPortByIndex(port_index);
   if (!(port && port->handle)) {
     VLOG(1) << "Port not available: " << port_index;
