@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "chromeos/services/multidevice_setup/feature_state_manager.h"
 #include "chromeos/services/multidevice_setup/host_status_provider.h"
 
 namespace chromeos {
@@ -17,11 +18,9 @@ class AndroidSmsAppHelperDelegate;
 
 // Listens for status changes in multidevice state and installs the Android
 // Messages PWA if needed.
-//
-// TODO(crbug.com/884290): Also observe FeatureStateManager to make sure
-// Messages is supported.
 class AndroidSmsAppInstallingStatusObserver
-    : public HostStatusProvider::Observer {
+    : public HostStatusProvider::Observer,
+      public FeatureStateManager::Observer {
  public:
   class Factory {
    public:
@@ -30,6 +29,7 @@ class AndroidSmsAppInstallingStatusObserver
     virtual ~Factory();
     virtual std::unique_ptr<AndroidSmsAppInstallingStatusObserver>
     BuildInstance(HostStatusProvider* host_status_provider,
+                  FeatureStateManager* feature_state_manager,
                   std::unique_ptr<AndroidSmsAppHelperDelegate>
                       android_sms_app_helper_delegate);
 
@@ -42,6 +42,7 @@ class AndroidSmsAppInstallingStatusObserver
  private:
   AndroidSmsAppInstallingStatusObserver(
       HostStatusProvider* host_status_provider,
+      FeatureStateManager* feature_state_manager,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate);
 
@@ -49,7 +50,14 @@ class AndroidSmsAppInstallingStatusObserver
   void OnHostStatusChange(const HostStatusProvider::HostStatusWithDevice&
                               host_status_with_device) override;
 
+  // FeatureStateManager:;Observer:
+  void OnFeatureStatesChange(
+      const FeatureStateManager::FeatureStatesMap& feature_states_map) override;
+
+  void InstallPwaIfNeeded();
+
   HostStatusProvider* host_status_provider_;
+  FeatureStateManager* feature_state_manager_;
   std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppInstallingStatusObserver);

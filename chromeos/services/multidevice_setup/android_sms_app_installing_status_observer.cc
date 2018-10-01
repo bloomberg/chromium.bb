@@ -39,37 +39,64 @@ AndroidSmsAppInstallingStatusObserver::Factory::~Factory() = default;
 std::unique_ptr<AndroidSmsAppInstallingStatusObserver>
 AndroidSmsAppInstallingStatusObserver::Factory::BuildInstance(
     HostStatusProvider* host_status_provider,
+    FeatureStateManager* feature_state_manager,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate) {
   return base::WrapUnique(new AndroidSmsAppInstallingStatusObserver(
-      host_status_provider, std::move(android_sms_app_helper_delegate)));
+      host_status_provider, feature_state_manager,
+      std::move(android_sms_app_helper_delegate)));
 }
 
 AndroidSmsAppInstallingStatusObserver::
     ~AndroidSmsAppInstallingStatusObserver() {
   host_status_provider_->RemoveObserver(this);
+  feature_state_manager_->RemoveObserver(this);
 }
 
 AndroidSmsAppInstallingStatusObserver::AndroidSmsAppInstallingStatusObserver(
     HostStatusProvider* host_status_provider,
+    FeatureStateManager* feature_state_manager,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate)
     : host_status_provider_(host_status_provider),
+      feature_state_manager_(feature_state_manager),
       android_sms_app_helper_delegate_(
           std::move(android_sms_app_helper_delegate)) {
   host_status_provider_->AddObserver(this);
+  feature_state_manager_->AddObserver(this);
+  InstallPwaIfNeeded();
+}
+
+void AndroidSmsAppInstallingStatusObserver::InstallPwaIfNeeded() {
+  mojom::FeatureState feature_state =
+      feature_state_manager_->GetFeatureStates()[mojom::Feature::kMessages];
+  if (feature_state == mojom::FeatureState::kProhibitedByPolicy ||
+      feature_state == mojom::FeatureState::kNotSupportedByChromebook ||
+      feature_state == mojom::FeatureState::kNotSupportedByPhone) {
+    return;
+  }
+
+  mojom::HostStatus status(
+      host_status_provider_->GetHostWithStatus().host_status());
+  if (status !=
+          mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation &&
+      status != mojom::HostStatus::kHostVerified) {
+    return;
+  }
+
+  // This call is re-entrant. If the app is already installed, it will just
+  // fail silently, which is fine.
+  android_sms_app_helper_delegate_->InstallAndroidSmsApp();
 }
 
 void AndroidSmsAppInstallingStatusObserver::OnHostStatusChange(
     const HostStatusProvider::HostStatusWithDevice& host_status_with_device) {
-  mojom::HostStatus status(host_status_with_device.host_status());
-  if (status ==
-          mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation ||
-      status == mojom::HostStatus::kHostVerified) {
-    // This call is re-entrant. If the app is already installed, it will just
-    // fail silently, which is fine.
-    android_sms_app_helper_delegate_->InstallAndroidSmsApp();
-  }
+  InstallPwaIfNeeded();
+}
+
+void AndroidSmsAppInstallingStatusObserver::OnFeatureStatesChange(
+    const FeatureStateManager::FeatureStatesMap& feature_states_map) {
+  InstallPwaIfNeeded();
 }
 
 }  // namespace multidevice_setup

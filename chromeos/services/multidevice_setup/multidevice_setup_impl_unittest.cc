@@ -398,8 +398,10 @@ class FakeAndroidSmsAppInstallingStatusObserverFactory
  public:
   FakeAndroidSmsAppInstallingStatusObserverFactory(
       FakeHostStatusProviderFactory* fake_host_status_provider_factory,
+      FakeFeatureStateManagerFactory* fake_feature_state_manager_factory,
       AndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate)
       : fake_host_status_provider_factory_(fake_host_status_provider_factory),
+        fake_feature_state_manager_factory_(fake_feature_state_manager_factory),
         expected_android_sms_app_helper_delegate_(
             expected_android_sms_app_helper_delegate) {}
 
@@ -409,10 +411,13 @@ class FakeAndroidSmsAppInstallingStatusObserverFactory
   // AndroidSmsAppInstallingStatusObserver::Factory:
   std::unique_ptr<AndroidSmsAppInstallingStatusObserver> BuildInstance(
       HostStatusProvider* host_status_provider,
+      FeatureStateManager* feature_state_manager,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate) override {
     EXPECT_EQ(fake_host_status_provider_factory_->instance(),
               host_status_provider);
+    EXPECT_EQ(fake_feature_state_manager_factory_->instance(),
+              feature_state_manager);
     EXPECT_EQ(expected_android_sms_app_helper_delegate_,
               android_sms_app_helper_delegate.get());
     // Only check inputs and return nullptr. We do not want to trigger the
@@ -421,6 +426,7 @@ class FakeAndroidSmsAppInstallingStatusObserverFactory
   }
 
   FakeHostStatusProviderFactory* fake_host_status_provider_factory_;
+  FakeFeatureStateManagerFactory* fake_feature_state_manager_factory_;
   AndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAndroidSmsAppInstallingStatusObserverFactory);
@@ -514,6 +520,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
     fake_android_sms_app_installing_status_observer_factory_ =
         std::make_unique<FakeAndroidSmsAppInstallingStatusObserverFactory>(
             fake_host_status_provider_factory_.get(),
+            fake_feature_state_manager_factory_.get(),
             fake_android_sms_app_helper_delegate.get());
     AndroidSmsAppInstallingStatusObserver::Factory::SetFactoryForTesting(
         fake_android_sms_app_installing_status_observer_factory_.get());
