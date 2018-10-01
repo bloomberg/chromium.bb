@@ -952,10 +952,10 @@ void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
                                        const WebURL& unreachable_url,
                                        bool replace) {
   DCHECK(GetFrame());
-  CommitDataNavigation(data, WebString::FromUTF8("text/html"),
-                       WebString::FromUTF8("UTF-8"), base_url, unreachable_url,
-                       replace, WebFrameLoadType::kStandard, WebHistoryItem(),
-                       false, nullptr, nullptr);
+  CommitDataNavigation(
+      WebURLRequest(base_url), data, WebString::FromUTF8("text/html"),
+      WebString::FromUTF8("UTF-8"), unreachable_url, replace,
+      WebFrameLoadType::kStandard, WebHistoryItem(), false, nullptr, nullptr);
 }
 
 void WebLocalFrameImpl::StopLoading() {
@@ -2125,58 +2125,6 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
 }
 
 void WebLocalFrameImpl::CommitDataNavigation(
-    const WebData& data,
-    const WebString& mime_type,
-    const WebString& text_encoding,
-    const WebURL& base_url,
-    const WebURL& unreachable_url,
-    bool replace,
-    WebFrameLoadType web_frame_load_type,
-    const WebHistoryItem& item,
-    bool is_client_redirect,
-    std::unique_ptr<WebNavigationParams> navigation_params,
-    std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) {
-  DCHECK(GetFrame());
-
-  // TODO(dgozman): this whole logic of rewriting the params is odd,
-  // and should be moved to the callsites instead.
-  ResourceRequest request;
-  HistoryItem* history_item = item;
-  DocumentLoader* provisional_document_loader =
-      GetFrame()->Loader().GetProvisionalDocumentLoader();
-  // If we are loading substitute data to replace an existing load, then
-  // inherit all of the properties of that original request. This way,
-  // reload will re-attempt the original request. It is essential that
-  // we only do this when there is an |unreachable_url| since a non-empty
-  // |unreachable_url| informs FrameLoader::CommitNavigation to load
-  // |unreachable_url| instead of the currently loaded URL.
-  if (replace && !unreachable_url.IsEmpty() && provisional_document_loader) {
-    request = provisional_document_loader->OriginalRequest();
-
-    // When replacing a failed back/forward provisional navigation with an error
-    // page, retain the HistoryItem for the failed provisional navigation
-    // and reuse it for the error page navigation.
-    WebFrameLoadType previous_load_type =
-        provisional_document_loader->LoadType();
-    if (previous_load_type == WebFrameLoadType::kBackForward &&
-        provisional_document_loader->GetHistoryItem()) {
-      history_item = provisional_document_loader->GetHistoryItem();
-      web_frame_load_type = WebFrameLoadType::kBackForward;
-    } else if (previous_load_type == WebFrameLoadType::kReload ||
-               previous_load_type == WebFrameLoadType::kReloadBypassingCache) {
-      web_frame_load_type = previous_load_type;
-    }
-  }
-  request.SetURL(base_url);
-
-  CommitDataNavigationWithRequest(
-      WrappedResourceRequest(request), data, mime_type, text_encoding,
-      unreachable_url, replace, web_frame_load_type, history_item,
-      is_client_redirect, std::move(navigation_params),
-      std::move(navigation_data));
-}
-
-void WebLocalFrameImpl::CommitDataNavigationWithRequest(
     const WebURLRequest& request,
     const WebData& data,
     const WebString& mime_type,

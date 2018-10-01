@@ -1190,7 +1190,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void LoadDataURL(
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
-      blink::WebLocalFrame* frame,
       blink::WebFrameLoadType load_type,
       blink::WebHistoryItem item_for_history_navigation,
       bool is_client_redirect,

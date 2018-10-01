@@ -2862,7 +2862,7 @@ void RenderFrameImpl::LoadNavigationErrorPageInternal(
   // should not inherit the cache mode from |failed_request|).
   new_request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
 
-  frame_->CommitDataNavigationWithRequest(
+  frame_->CommitDataNavigation(
       new_request, error_html, "text/html", "UTF-8", error_url, replace,
       frame_load_type, history_item, is_client_redirect,
       std::move(navigation_params), std::move(navigation_data));
@@ -3313,7 +3313,7 @@ void RenderFrameImpl::CommitNavigation(
     should_load_data_url |= !request_params.data_url_as_string.empty();
 #endif
     if (is_main_frame_ && should_load_data_url) {
-      LoadDataURL(common_params, request_params, frame_, load_type,
+      LoadDataURL(common_params, request_params, load_type,
                   item_for_history_navigation, is_client_redirect,
                   std::move(document_state));
     } else {
@@ -6865,7 +6865,6 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
 void RenderFrameImpl::LoadDataURL(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
-    WebLocalFrame* frame,
     blink::WebFrameLoadType load_type,
     blink::WebHistoryItem item_for_history_navigation,
     bool is_client_redirect,
@@ -6895,9 +6894,9 @@ void RenderFrameImpl::LoadDataURL(
     bool replace = load_type == WebFrameLoadType::kReloadBypassingCache ||
                    load_type == WebFrameLoadType::kReload;
 
-    frame->CommitDataNavigation(
-        WebData(data.c_str(), data.length()), WebString::FromUTF8(mime_type),
-        WebString::FromUTF8(charset), base_url,
+    frame_->CommitDataNavigation(
+        WebURLRequest(base_url), WebData(data.c_str(), data.length()),
+        WebString::FromUTF8(mime_type), WebString::FromUTF8(charset),
         // Needed so that history-url-only changes don't become reloads.
         common_params.history_url_for_data_url, replace, load_type,
         item_for_history_navigation, is_client_redirect,
