@@ -78,12 +78,14 @@
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/resource_scheduler.h"
 #include "services/network/resource_scheduler_params_manager.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
@@ -632,9 +634,8 @@ class ShareableFileReleaseWaiter {
 };
 
 enum class TestMode {
-  kOutOfBlinkCorsWithServicification,
-  kOutOfBlinkCorsWithoutServicification,
-  kWithoutOutOfBlinkCorsAndServicification,
+  kWithoutOutOfBlinkCors,
+  kWithOutOfBlinkCors,
 };
 
 class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
@@ -651,6 +652,23 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
         use_test_ssl_certificate_(false),
         send_data_received_acks_(false),
         auto_advance_(false) {
+    switch (GetParam()) {
+      case TestMode::kWithoutOutOfBlinkCors:
+        scoped_feature_list_.InitWithFeatures(
+            // Enabled features
+            {},
+            // Disabled features
+            {network::features::kOutOfBlinkCORS});
+        break;
+      case TestMode::kWithOutOfBlinkCors:
+        scoped_feature_list_.InitWithFeatures(
+            // Enabled features
+            {network::features::kOutOfBlinkCORS,
+             blink::features::kServiceWorkerServicification},
+            // Disabled features
+            {});
+        break;
+    }
     host_.SetLoaderDelegate(&loader_delegate_);
     browser_context_.reset(new TestBrowserContext());
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
@@ -890,6 +908,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
   RenderViewHostTestEnabler render_view_host_test_enabler_;
   bool auto_advance_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 void ResourceDispatcherHostTest::MakeTestRequest(
@@ -1074,6 +1093,7 @@ TEST_P(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
   loader = nullptr;
 
   // From the renderer's perspective, the request was cancelled.
+  content::RunAllTasksUntilIdle();
   client.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
 
@@ -1118,8 +1138,8 @@ TEST_P(ResourceDispatcherHostTest, DeletedFilterDetached) {
   DCHECK_EQ(filter_.get(), info_prefetch->requester_info()->filter());
   filter_->OnChannelClosing();
 
-  client1.RunUntilComplete();
-  EXPECT_EQ(net::ERR_ABORTED, client1.completion_status().error_code);
+  content::RunAllTasksUntilIdle();
+  DCHECK(IsAborted(client1));
 
   // But it continues detached.
   EXPECT_EQ(1, host_.pending_requests());
@@ -1167,8 +1187,8 @@ TEST_P(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
   EXPECT_EQ(1u, url_request->url_chain().size());
 
   // From the renderer's perspective, the request was cancelled.
-  client.RunUntilComplete();
-  EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
+  content::RunAllTasksUntilIdle();
+  DCHECK(IsAborted(client));
 
   content::RunAllTasksUntilIdle();
   // Verify that a redirect was followed.
@@ -2524,19 +2544,12 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeInterceptResponse(
   return nullptr;
 }
 
-INSTANTIATE_TEST_CASE_P(
-    OutOfBlinkCorsWithServicification,
-    ResourceDispatcherHostTest,
-    ::testing::Values(TestMode::kOutOfBlinkCorsWithServicification));
+INSTANTIATE_TEST_CASE_P(WithoutOutOfBlinkCors,
+                        ResourceDispatcherHostTest,
+                        ::testing::Values(TestMode::kWithoutOutOfBlinkCors));
 
-INSTANTIATE_TEST_CASE_P(
-    OutOfBlinkCorsWithoutServicification,
-    ResourceDispatcherHostTest,
-    ::testing::Values(TestMode::kOutOfBlinkCorsWithoutServicification));
-
-INSTANTIATE_TEST_CASE_P(
-    WithoutOutOfBlinkCorsAndServicification,
-    ResourceDispatcherHostTest,
-    ::testing::Values(TestMode::kWithoutOutOfBlinkCorsAndServicification));
+INSTANTIATE_TEST_CASE_P(WithOutOfBlinkCors,
+                        ResourceDispatcherHostTest,
+                        ::testing::Values(TestMode::kWithOutOfBlinkCors));
 
 }  // namespace content
