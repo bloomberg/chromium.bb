@@ -593,8 +593,9 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
   EXPECT_EQ(0, GetClientDownloadRequest()->archived_binary_size());
   EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
   ClientDownloadRequest::DownloadType expected_type =
-      type == ZIP ? ClientDownloadRequest_DownloadType_INVALID_ZIP
-                  : ClientDownloadRequest_DownloadType_INVALID_MAC_ARCHIVE;
+      type == ZIP
+          ? ClientDownloadRequest_DownloadType_INVALID_ZIP
+          : ClientDownloadRequest_DownloadType_MAC_ARCHIVE_FAILED_PARSING;
   EXPECT_EQ(expected_type, GetClientDownloadRequest()->download_type());
   ClearClientDownloadRequest();
 

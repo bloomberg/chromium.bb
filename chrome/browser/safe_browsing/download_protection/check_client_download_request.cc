@@ -730,6 +730,7 @@ void CheckClientDownloadRequest::OnDmgAnalysisFinished(
   } else {
     base::UmaHistogramSparse("SBClientDownload.DmgFileFailureByType",
                              uma_file_type);
+    type_ = ClientDownloadRequest::MAC_ARCHIVE_FAILED_PARSING;
   }
 
   if (archived_executable_) {
@@ -744,16 +745,6 @@ void CheckClientDownloadRequest::OnDmgAnalysisFinished(
 
   UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractDmgFeaturesTime",
                       base::TimeTicks::Now() - dmg_analysis_start_time_);
-
-  if (!archived_executable_) {
-    if (!results.success) {
-      type_ = ClientDownloadRequest::INVALID_MAC_ARCHIVE;
-    } else {
-      PostFinishTask(DownloadCheckResult::SAFE,
-                     REASON_ARCHIVE_WITHOUT_BINARIES);
-      return;
-    }
-  }
 
   OnFileFeatureExtractionDone();
 }
