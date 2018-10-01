@@ -189,7 +189,7 @@ void PaymentRequestDialogView::ShowPaymentHandlerScreen(
 
 void PaymentRequestDialogView::RetryDialog() {
   HideProcessingSpinner();
-  ShowInitialPaymentSheet();
+  GoBackToPaymentSheet();
 
   if (request_->spec()->has_shipping_address_error()) {
     autofill::AutofillProfile* profile =
