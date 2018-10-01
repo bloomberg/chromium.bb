@@ -218,7 +218,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void ShowAnimation();
 
   // Disables highlights and calls Hide on the slide animation, should not be
-  // called directly, use AnimateIn() instead, which handles label visibility.
+  // called directly, use AnimateOut() instead, which handles label visibility.
   void HideAnimation();
 
   // The contents of the bubble.
