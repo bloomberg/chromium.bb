@@ -1010,9 +1010,6 @@ class HoldPointerOnScrollHandler : public ui::test::TestEventHandler {
 // Tests that touch-move events don't contribute to an in-progress scroll
 // gesture if touch-move events are being held by the dispatcher.
 TEST_P(WindowEventDispatcherTest, TouchMovesHeldOnScroll) {
-  // TODO(sky): fails with mus. https://crbug.com/866502
-  if (GetParam() == Env::Mode::MUS)
-    return;
   EventFilterRecorder recorder;
   root_window()->AddPreTargetHandler(&recorder);
   test::TestWindowDelegate delegate;
@@ -2282,7 +2279,9 @@ class WindowEventDispatcherTestInHighDPI : public WindowEventDispatcherTest {
 };
 
 TEST_P(WindowEventDispatcherTestInHighDPI, EventLocationTransform) {
-  // TODO(sky): fails with mus. https://crbug.com/866502
+  // This test is only applicable to LOCAL mode as it's setting a device scale
+  // factor and expecting events to be transformed while routing the event
+  // directly through host(). In MUS mode the window-service does the scaling.
   if (GetParam() == Env::Mode::MUS)
     return;
 
@@ -2322,9 +2321,12 @@ TEST_P(WindowEventDispatcherTestInHighDPI, EventLocationTransform) {
 }
 
 TEST_P(WindowEventDispatcherTestInHighDPI, TouchMovesHeldOnScroll) {
-  // TODO(sky): fails with mus. https://crbug.com/866502
+  // This test is only applicable to LOCAL mode as it's setting a device scale
+  // factor and expecting events to be transformed while routing the event
+  // directly through host(). In MUS mode the window-service does the scaling.
   if (GetParam() == Env::Mode::MUS)
     return;
+
   EventFilterRecorder recorder;
   root_window()->AddPreTargetHandler(&recorder);
   test::TestWindowDelegate delegate;
@@ -2394,9 +2396,12 @@ class TriggerNestedLoopOnRightMousePress : public ui::test::TestEventHandler {
 // correctly.
 TEST_P(WindowEventDispatcherTestInHighDPI,
        EventsTransformedInRepostedEventTriggeredNestedLoop) {
-  // TODO(sky): fails with mus. https://crbug.com/866502
+  // This test is only applicable to LOCAL mode as it's setting a device scale
+  // factor and expecting events to be transformed while routing the event
+  // directly through host(). In MUS mode the window-service does the scaling.
   if (GetParam() == Env::Mode::MUS)
     return;
+
   std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), NULL));
   // Make sure the window is visible.
   RunAllPendingInMessageLoop();
@@ -2851,7 +2856,9 @@ TEST_P(WindowEventDispatcherTest, TouchMovesMarkedWhenCausingScroll) {
 // cursor's position in root coordinates has changed (e.g. when the displays's
 // scale factor changed). Test that hover effects are properly updated.
 TEST_P(WindowEventDispatcherTest, OnCursorMovedToRootLocationUpdatesHover) {
-  // TODO(sky): fails with mus. https://crbug.com/866502
+  // This test is only applicable to LOCAL mode as it's setting a device scale
+  // factor and expecting events to be transformed while routing the event
+  // directly through host(). In MUS mode the window-service does the scaling.
   if (GetParam() == Env::Mode::MUS)
     return;
 
