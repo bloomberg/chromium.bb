@@ -10,19 +10,6 @@
 <dom-module id="print-preview-other-options-settings">
   <template>
     <style include="print-preview-shared cr-hidden-style">
-      print-preview-settings-section {
-        margin-bottom: 0;
-        margin-top: 0;
-      }
-
-      print-preview-settings-section.last-visible {
-        margin-bottom: 8px;
-      }
-
-      print-preview-settings-section.first-visible {
-        margin-top: 8px;
-      }
-
       print-preview-settings-section:not(.first-visible) .title {
         display: none;
       }
@@ -30,7 +17,7 @@
     <template is="dom-repeat" items="[[options_]]">
       <print-preview-settings-section managed="[[item.managed]]"
           show-policy-on-end hidden$="[[!item.available]]"
-          class$="[[getClass_(index, firstIndex_, lastIndex_)]]">
+          class$="[[getClass_(index, firstIndex_)]]">
         <div slot="title">
           <span class="title">$i18n{optionsLabel}</span>
         </div>
