@@ -38,7 +38,9 @@ enum class DownloadMimeTypeResult {
   VirtualContactFile = 6,
   // text/calendar MIME type.
   iCalendar = 7,
-  kMaxValue = iCalendar,
+  // model/usd MIME type.
+  UniversalSceneDescription = 8,
+  kMaxValue = UniversalSceneDescription,
 };
 
 // Keyed Service which acts as web::DownloadController delegate and routes

@@ -39,6 +39,9 @@ DownloadMimeTypeResult GetUmaResult(const std::string& mime_type) {
   if (mime_type == "text/calendar")
     return DownloadMimeTypeResult::iCalendar;
 
+  if (mime_type == "model/usd")
+    return DownloadMimeTypeResult::UniversalSceneDescription;
+
   return DownloadMimeTypeResult::Other;
 }
 }  // namespace
