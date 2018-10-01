@@ -16,7 +16,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
@@ -871,8 +870,7 @@ TEST_F(PasswordStoreTest, GetLoginsForSameOrganizationName) {
   store->ShutdownOnUIThread();
 }
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 TEST_F(PasswordStoreTest, CheckPasswordReuse) {
   static constexpr PasswordFormData kTestCredentials[] = {
       {PasswordForm::SCHEME_HTML, "https://www.google.com",
@@ -918,9 +916,7 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
 
   store->ShutdownOnUIThread();
 }
-#endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       std::make_unique<LoginDatabase>(test_login_db_file_path())));

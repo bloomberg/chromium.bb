@@ -9,15 +9,14 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/password_reuse_defines.h"
 #include "components/password_manager/sync/browser/sync_username_test_base.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(OS_IOS)
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#endif  // !OS_IOS
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#include "components/safe_browsing/common/safe_browsing_prefs.h"  // nogncheck
+#endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
 
 using autofill::PasswordForm;
 

@@ -14,6 +14,11 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#include "components/password_manager/core/browser/password_hash_data.h"  // nogncheck
+#include "components/password_manager/core/browser/password_reuse_detector_consumer.h"  // nogncheck
+#endif
+
 namespace password_manager {
 
 // This template allows creating methods with signature conforming to
@@ -80,8 +85,7 @@ class MockPasswordStoreObserver : public PasswordStore::Observer {
   MOCK_METHOD1(OnLoginsChanged, void(const PasswordStoreChangeList& changes));
 };
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 class MockPasswordReuseDetectorConsumer : public PasswordReuseDetectorConsumer {
  public:
   MockPasswordReuseDetectorConsumer();
