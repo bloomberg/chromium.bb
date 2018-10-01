@@ -377,6 +377,17 @@ class VideoCaptureDeviceTest
     return true;
   }
 
+  gfx::Size GetSupportedCaptureSize(
+      const VideoCaptureDeviceDescriptor& device) {
+    VideoCaptureFormats supported_formats;
+    video_capture_device_factory_->GetSupportedFormats(device,
+                                                       &supported_formats);
+    if (supported_formats.size() == 0)
+      return gfx::Size(0, 0);
+
+    return supported_formats.begin()->frame_size;
+  }
+
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer initialize_com_;
 #endif
@@ -615,6 +626,10 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
   if (!descriptor)
     return;
 
+  const gfx::Size frame_size = GetSupportedCaptureSize(*descriptor);
+  if (frame_size == gfx::Size(0, 0))
+    return;
+
 #if defined(OS_ANDROID)
   // TODO(mcasas): fails on Lollipop devices, reconnect https://crbug.com/646840
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
@@ -631,7 +646,7 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
   EXPECT_CALL(*video_capture_client_, OnStarted());
 
   VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(320, 240);
+  capture_params.requested_format.frame_size = frame_size;
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
   device->AllocateAndStart(capture_params, std::move(video_capture_client_));
@@ -657,6 +672,10 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_GetPhotoState) {
   if (!descriptor)
     return;
 
+  const gfx::Size frame_size = GetSupportedCaptureSize(*descriptor);
+  if (frame_size == gfx::Size(0, 0))
+    return;
+
 #if defined(OS_ANDROID)
   // TODO(mcasas): fails on Lollipop devices, reconnect https://crbug.com/646840
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
@@ -673,7 +692,7 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_GetPhotoState) {
   EXPECT_CALL(*video_capture_client_, OnStarted());
 
   VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(320, 240);
+  capture_params.requested_format.frame_size = frame_size;
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
   device->AllocateAndStart(capture_params, std::move(video_capture_client_));
