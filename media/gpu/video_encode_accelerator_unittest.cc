@@ -1566,6 +1566,7 @@ void VEAClient::UpdateTestStreamData(bool mid_stream_bitrate_switch,
 }
 
 double VEAClient::frames_per_second() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(num_encoded_frames_ != 0UL);
   base::TimeDelta duration = last_frame_ready_time_ - first_frame_start_time_;
   return num_encoded_frames_ / duration.InSecondsF();
@@ -1626,6 +1627,7 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
 }
 
 void VEAClient::VerifyOutputTimestamp(base::TimeDelta timestamp) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // One input frame may be mapped to multiple output frames, so the current
   // timestamp should be equal to previous timestamp or the top of
   // frame_timestamps_.
@@ -1929,6 +1931,7 @@ bool VEAClient::HandleEncodedFrame(bool keyframe,
 }
 
 void VEAClient::LogPerf() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   g_env->LogToFile("Measured encoder FPS",
                    base::StringPrintf("%.3f", frames_per_second()));
 
@@ -2000,11 +2003,13 @@ void VEAClient::FlushTimeout() {
 }
 
 void VEAClient::VerifyMinFPS() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (test_perf_)
     EXPECT_GE(frames_per_second(), kMinPerfFPS);
 }
 
 void VEAClient::VerifyStreamProperties() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(num_frames_since_last_check_ > 0UL);
   LOG_ASSERT(encoded_stream_size_since_last_check_ > 0UL);
   unsigned int bitrate = static_cast<unsigned int>(
@@ -2025,8 +2030,8 @@ void VEAClient::VerifyStreamProperties() {
 }
 
 void VEAClient::WriteIvfFileHeader() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   IvfFileHeader header = {};
-
   memcpy(header.signature, kIvfHeaderSignature, sizeof(header.signature));
   header.version = 0;
   header.header_size = sizeof(header);
@@ -2046,6 +2051,7 @@ void VEAClient::WriteIvfFileHeader() {
 }
 
 void VEAClient::WriteIvfFrameHeader(int frame_index, size_t frame_size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   IvfFrameHeader header = {};
 
   header.frame_size = static_cast<uint32_t>(frame_size);
@@ -2145,6 +2151,7 @@ void SimpleVEAClientBase::RequireBitstreamBuffers(
 
 void SimpleVEAClientBase::FeedEncoderWithOutput(base::SharedMemory* shm,
                                                 size_t output_size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!has_encoder())
     return;
 
