@@ -54,13 +54,13 @@
             android:gravity="center_vertical"
             android:inputType="text"
             android:singleLine="true" />
-        <android.support.v7.widget.AppCompatImageView
+        <org.chromium.chrome.browser.widget.TintedImageView
             android:id="@+id/voice_search_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/accessibility_toolbar_btn_mic"
             android:src="@drawable/btn_mic"
-            app:tint="@color/dark_mode_tint" />
+            app:chrometint="@color/dark_mode_tint" />
     </view>
 
     <ViewStub

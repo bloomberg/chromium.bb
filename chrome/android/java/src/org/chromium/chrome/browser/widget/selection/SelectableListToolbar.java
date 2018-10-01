@@ -16,7 +16,6 @@ import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -45,6 +44,7 @@ import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.NumberRollView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -98,7 +98,7 @@ public class SelectableListToolbar<E>
     private LinearLayout mSearchView;
     private EditText mSearchText;
     private EditText mSearchEditText;
-    private AppCompatImageButton mClearTextButton;
+    private TintedImageButton mClearTextButton;
     private SearchDelegate mSearchDelegate;
     private boolean mSearchEnabled;
     private boolean mIsVrEnabled;
@@ -296,7 +296,7 @@ public class SelectableListToolbar<E>
             public void afterTextChanged(Editable s) {}
         });
 
-        mClearTextButton = (AppCompatImageButton) findViewById(R.id.clear_text_button);
+        mClearTextButton = (TintedImageButton) findViewById(R.id.clear_text_button);
         mClearTextButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

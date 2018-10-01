@@ -11,9 +11,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
@@ -32,6 +30,7 @@ import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -101,7 +100,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private TextView mDownloadStatusView;
     private TextView mDownloadPercentageView;
     private MaterialProgressBar mProgressView;
-    private AppCompatImageButton mPauseResumeButton;
+    private TintedImageButton mPauseResumeButton;
     private View mCancelButton;
 
     /**
@@ -155,7 +154,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mDownloadStatusView = (TextView) findViewById(R.id.status_view);
         mDownloadPercentageView = (TextView) findViewById(R.id.percentage_view);
 
-        mPauseResumeButton = (AppCompatImageButton) findViewById(R.id.pause_button);
+        mPauseResumeButton = (TintedImageButton) findViewById(R.id.pause_button);
         mCancelButton = findViewById(R.id.cancel_button);
 
         mMoreButton.setDelegate(this);
@@ -344,7 +343,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             mIconView.getBackground().setLevel(
                     getResources().getInteger(R.integer.list_item_level_selected));
             mIconView.setImageDrawable(mCheckDrawable);
-            ImageViewCompat.setImageTintList(mIconView, mCheckedIconForegroundColorList);
+            mIconView.setTint(mCheckedIconForegroundColorList);
             mCheckDrawable.start();
         } else if (mThumbnailBitmap != null) {
             assert !mThumbnailBitmap.isRecycled();
@@ -353,13 +352,13 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
                     Bitmap.createScaledBitmap(mThumbnailBitmap, mIconSize, mIconSize, false),
                     getResources().getDimensionPixelSize(
                             R.dimen.list_item_start_icon_corner_radius)));
-            ImageViewCompat.setImageTintList(mIconView, null);
+            mIconView.setTint(null);
         } else {
             mIconView.setBackgroundResource(mIconBackgroundResId);
             mIconView.getBackground().setLevel(
                     getResources().getInteger(R.integer.list_item_level_default));
             mIconView.setImageResource(mIconResId);
-            ImageViewCompat.setImageTintList(mIconView, mIconForegroundColorList);
+            mIconView.setTint(mIconForegroundColorList);
         }
     }
 

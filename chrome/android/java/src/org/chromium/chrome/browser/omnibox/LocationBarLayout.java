@@ -22,9 +22,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -79,6 +77,7 @@ import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -111,10 +110,10 @@ public class LocationBarLayout extends FrameLayout
     private ScrimParams mScrimParams;
 
     protected ImageView mNavigationButton;
-    protected AppCompatImageButton mSecurityButton;
+    protected TintedImageButton mSecurityButton;
     protected TextView mVerboseStatusTextView;
-    protected AppCompatImageButton mDeleteButton;
-    protected AppCompatImageButton mMicButton;
+    protected TintedImageButton mDeleteButton;
+    protected TintedImageButton mMicButton;
     protected View mUrlBar;
     private final boolean mIsTablet;
 
@@ -396,12 +395,12 @@ public class LocationBarLayout extends FrameLayout
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
         mNavigationButtonType = mIsTablet ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
 
-        mSecurityButton = (AppCompatImageButton) findViewById(R.id.security_button);
+        mSecurityButton = (TintedImageButton) findViewById(R.id.security_button);
         mSecurityIconResource = 0;
 
         mVerboseStatusTextView = (TextView) findViewById(R.id.location_bar_verbose_status);
 
-        mDeleteButton = (AppCompatImageButton) findViewById(R.id.delete_button);
+        mDeleteButton = (TintedImageButton) findViewById(R.id.delete_button);
 
         mUrlBar = findViewById(R.id.url_bar);
         mUrlCoordinator = new UrlBarCoordinator((UrlBar) mUrlBar);
@@ -410,7 +409,7 @@ public class LocationBarLayout extends FrameLayout
         mSuggestionItems = new ArrayList<OmniboxResultItem>();
         mSuggestionListAdapter = new OmniboxResultsAdapter(getContext(), mSuggestionItems);
 
-        mMicButton = (AppCompatImageButton) findViewById(R.id.mic_button);
+        mMicButton = (TintedImageButton) findViewById(R.id.mic_button);
 
         mUrlActionContainer = (LinearLayout) findViewById(R.id.url_action_container);
 
@@ -1017,8 +1016,7 @@ public class LocationBarLayout extends FrameLayout
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
             mSecurityButton.setImageResource(id);
-            ImageViewCompat.setImageTintList(
-                    mSecurityButton, mToolbarDataProvider.getSecurityIconColorStateList());
+            mSecurityButton.setTint(mToolbarDataProvider.getSecurityIconColorStateList());
         }
 
         int contentDescriptionId = getToolbarDataProvider().getSecurityIconContentDescription();
@@ -2125,8 +2123,8 @@ public class LocationBarLayout extends FrameLayout
         if (updateUseDarkColors()) updateSecurityIcon();
         int id = mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
         ColorStateList colorStateList = AppCompatResources.getColorStateList(getContext(), id);
-        ImageViewCompat.setImageTintList(mMicButton, colorStateList);
-        ImageViewCompat.setImageTintList(mDeleteButton, colorStateList);
+        mMicButton.setTint(colorStateList);
+        mDeleteButton.setTint(colorStateList);
 
         setNavigationButtonType(mNavigationButtonType);
 
