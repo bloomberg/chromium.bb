@@ -284,10 +284,17 @@ void SigninManager::Initialize(PrefService* local_state) {
   std::string user = account_id.empty() ? std::string() :
       account_tracker_service()->GetAccountInfo(account_id).email;
   if ((!account_id.empty() && !IsAllowedUsername(user)) || !IsSigninAllowed()) {
-    // User is signed in, but the username is invalid - the administrator must
-    // have changed the policy since the last signin, so sign out the user.
-    SignOut(signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN,
-            signin_metrics::SignoutDelete::IGNORE_METRIC);
+    // User is signed in, but the username is invalid or signin is no longer
+    // allowed, so the user must be sign out.
+    //
+    // This may happen in the following cases:
+    //   a. The user has toggled off signin allowed in settings.
+    //   b. The administrator changed the policy since the last signin.
+    //
+    // Note: The token service has not yet loaded its credentials, so accounts
+    // cannot be revoked here.
+    SignOutAndKeepAllAccounts(signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN,
+                              signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
 
   if (account_tracker_service()->GetMigrationState() ==

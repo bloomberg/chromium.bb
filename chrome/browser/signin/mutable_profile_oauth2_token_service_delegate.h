@@ -123,6 +123,9 @@ class MutableProfileOAuth2TokenServiceDelegate
   FRIEND_TEST_ALL_PREFIXES(
       MutableProfileOAuth2TokenServiceDelegateTest,
       PersistenceLoadCredentialsEmptyPrimaryAccountId_DiceEnabled);
+  FRIEND_TEST_ALL_PREFIXES(
+      MutableProfileOAuth2TokenServiceDelegateTest,
+      LoadCredentialsClearsTokenDBWhenNoPrimaryAccount_DiceDisabled);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            PersistenceLoadCredentials);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
