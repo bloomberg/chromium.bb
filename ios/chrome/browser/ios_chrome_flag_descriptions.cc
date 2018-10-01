@@ -280,15 +280,6 @@ const char kWebPageTextAccessibilityDescription[] =
     "When enabled, text in web pages will respect the user's Dynamic Type "
     "setting.";
 
-const char kWebPaymentsName[] = "Web Payments";
-const char kWebPaymentsDescription[] =
-    "Enable Payment Request API integration, a JavaScript API for merchants.";
-
-const char kWebPaymentsNativeAppsName[] = "Web Payments Native Apps";
-const char kWebPaymentsNativeAppsDescription[] =
-    "Enable third party iOS native apps as payments methods within Payment "
-    "Request.";
-
 const char kWKHTTPSystemCookieStoreName[] = "Use WKHTTPSystemCookieStore.";
 const char kWKHTTPSystemCookieStoreDescription[] =
     "Use WKHTTPCookieStore backed store for main context URL requests.";

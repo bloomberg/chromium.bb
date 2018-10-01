@@ -39,7 +39,6 @@
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/infobars/core/infobar_manager.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
-#include "components/payments/core/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -2375,14 +2374,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _externalSearchCoordinator = [[ExternalSearchCoordinator alloc] init];
   _externalSearchCoordinator.dispatcher = _dispatcher;
 
-  if (base::FeatureList::IsEnabled(payments::features::kWebPayments)) {
-    _paymentRequestManager = [[PaymentRequestManager alloc]
-        initWithBaseViewController:self
-                      browserState:_browserState
-                        dispatcher:self.dispatcher];
-    [_paymentRequestManager setToolbarModel:_toolbarModel.get()];
-    [_paymentRequestManager setActiveWebState:[_model currentTab].webState];
-  }
+  _paymentRequestManager = [[PaymentRequestManager alloc]
+      initWithBaseViewController:self
+                    browserState:_browserState
+                      dispatcher:self.dispatcher];
+  [_paymentRequestManager setToolbarModel:_toolbarModel.get()];
+  [_paymentRequestManager setActiveWebState:[_model currentTab].webState];
 }
 
 // Set the frame for the various views. View must be loaded.
