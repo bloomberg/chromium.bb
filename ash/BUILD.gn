@@ -1466,8 +1466,6 @@ component("ash_with_content") {
     "content/keyboard_overlay/keyboard_overlay_delegate.h",
     "content/keyboard_overlay/keyboard_overlay_view.cc",
     "content/keyboard_overlay/keyboard_overlay_view.h",
-    "content/screen_orientation_delegate_chromeos.cc",
-    "content/screen_orientation_delegate_chromeos.h",
   ]
 
   defines = [ "ASH_WITH_CONTENT_IMPLEMENTATION" ]
@@ -1619,7 +1617,7 @@ copy("dbus_service_files") {
 # need or use content and should be placed in |ash_unittests| instead.
 test("ash_content_unittests") {
   sources = [
-    "content/display/screen_orientation_controller_chromeos_unittest.cc",
+    "content/display/screen_orientation_controller_unittest.cc",
     "content/keyboard_overlay/keyboard_overlay_delegate_unittest.cc",
     "content/keyboard_overlay/keyboard_overlay_view_unittest.cc",
     "test/ash_unittests.cc",

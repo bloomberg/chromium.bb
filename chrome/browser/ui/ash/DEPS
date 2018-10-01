@@ -49,6 +49,10 @@ specific_include_rules = {
     # https://crbug.com/665064
     "+ash/shell_delegate.h",
   ],
+  "screen_orientation_delegate_chromeos.cc": [
+    "+ash/display/screen_orientation_controller.h",
+    "+ash/shell.h",
+  ],
   # For ash::Shell::GetContainer (!mash)
   "system_tray_client\.cc": [
     "+ash/shell.h",
