@@ -25,12 +25,6 @@ class ClientNativePixmapFactoryWayland : public gfx::ClientNativePixmapFactory {
                                 gfx::BufferUsage usage) const override {
     OzonePlatform::PlatformProperties properties =
         OzonePlatform::GetInstance()->GetPlatformProperties();
-    if (properties.supported_buffer_formats.empty()) {
-      // If the compositor did not announce supported buffer formats, do our
-      // best and assume those are supported.
-      return dmabuf_factory_->IsConfigurationSupported(format, usage);
-    }
-
     for (auto buffer_format : properties.supported_buffer_formats) {
       if (buffer_format == format)
         return dmabuf_factory_->IsConfigurationSupported(format, usage);
