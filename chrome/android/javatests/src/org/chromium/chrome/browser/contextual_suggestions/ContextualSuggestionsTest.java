@@ -274,6 +274,7 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
+    @DisabledTest(message = "https://crbug.com/890947")
     public void testInProductHelp() throws InterruptedException, TimeoutException {
         assertTrue(
                 "Help bubble should be showing.", mMediator.getHelpBubbleForTesting().isShowing());
