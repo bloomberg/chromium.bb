@@ -23,13 +23,13 @@ struct ExtractVideoFrameResult {
   VideoDecoderConfig decoder_config;
 };
 
-void OnThumbnailGenerated(ExtractVideoFrameResult* result,
-                          base::RepeatingClosure quit_closure,
-                          bool success,
-                          const std::vector<uint8_t>& encoded_frame,
-                          const VideoDecoderConfig& decoder_config) {
+void OnFrameExtracted(ExtractVideoFrameResult* result,
+                      base::RepeatingClosure quit_closure,
+                      bool success,
+                      std::vector<uint8_t> encoded_frame,
+                      const VideoDecoderConfig& decoder_config) {
   result->success = success;
-  result->encoded_frame = encoded_frame;
+  result->encoded_frame = std::move(encoded_frame);
   result->decoder_config = decoder_config;
 
   quit_closure.Run();
@@ -65,7 +65,7 @@ TEST_F(VideoFrameExtractorTest, ExtractVideoFrame) {
   ExtractVideoFrameResult result;
   base::RunLoop loop;
   extractor()->Start(
-      base::BindOnce(&OnThumbnailGenerated, &result, loop.QuitClosure()));
+      base::BindOnce(&OnFrameExtracted, &result, loop.QuitClosure()));
   loop.Run();
   EXPECT_TRUE(result.success);
   EXPECT_GT(result.encoded_frame.size(), 0u);

@@ -39,6 +39,12 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
       const gfx::Size& dimensions,
       base::TimeDelta timestamp);
 
+  // Creates a YUV frame backed by shared memory from in-memory YUV frame.
+  // Internally the data from in-memory YUV frame will be copied to a
+  // consecutive block in shared memory. Will return null on failure.
+  static scoped_refptr<MojoSharedBufferVideoFrame> CreateFromYUVFrame(
+      const VideoFrame& frame);
+
   // Creates a MojoSharedBufferVideoFrame that uses the memory in |handle|.
   // This will take ownership of |handle|, so the caller can no longer use it.
   // |mojo_shared_buffer_done_cb|, if not null, is called on destruction,

@@ -225,4 +225,28 @@ TEST(MojoSharedBufferVideoFrameTest, InterleavedData) {
   EXPECT_TRUE(frame->data(VideoFrame::kVPlane));
 }
 
+TEST(MojoSharedBufferVideoFrameTest, YUVFrameToMojoFrame) {
+  std::vector<uint8_t> data = std::vector<uint8_t>(12, 1u);
+  const auto pixel_format = VideoPixelFormat::PIXEL_FORMAT_I420;
+  const auto size = gfx::Size(1, 1);
+  scoped_refptr<VideoFrame> frame = VideoFrame::WrapExternalYuvData(
+      pixel_format, size, gfx::Rect(1, 1), size, 4, 4, 4, &data[0], &data[4],
+      &data[8], base::TimeDelta());
+  auto mojo_frame = MojoSharedBufferVideoFrame::CreateFromYUVFrame(*frame);
+  EXPECT_TRUE(mojo_frame);
+
+  const size_t u_offset =
+      VideoFrame::PlaneSize(pixel_format, VideoFrame::kYPlane, size).GetArea();
+  const size_t v_offset =
+      u_offset +
+      VideoFrame::PlaneSize(pixel_format, VideoFrame::kUPlane, size).GetArea();
+
+  // Verifies mapped size and offset.
+  EXPECT_EQ(mojo_frame->MappedSize(),
+            frame->AllocationSize(pixel_format, size));
+  EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kYPlane), 0u);
+  EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kUPlane), u_offset);
+  EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kVPlane), v_offset);
+}
+
 }  // namespace media

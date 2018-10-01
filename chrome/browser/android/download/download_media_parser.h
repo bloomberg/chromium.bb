@@ -26,10 +26,10 @@ class GpuVideoAcceleratorFactories;
 class MediaInterfaceProvider;
 class MojoVideoDecoder;
 class VideoDecoderConfig;
+class VideoThumbnailDecoder;
 }  // namespace media
 
 class SkBitmap;
-class VideoFrameThumbnailConverter;
 
 // Parse local media files, including media metadata and thumbnails.
 // Metadata is always parsed in utility process for both audio and video files.
@@ -69,27 +69,21 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
 
   // Retrieves an encoded video frame.
   void RetrieveEncodedVideoFrame();
-  void OnEncodedVideoFrameRetrieved(bool success,
-                                    const std::vector<uint8_t>& data,
-                                    const media::VideoDecoderConfig& config);
+  void OnVideoFrameRetrieved(bool success,
+                             chrome::mojom::VideoFrameDataPtr video_frame_data,
+                             const media::VideoDecoderConfig& config);
 
   // Decodes the video frame.
   void OnGpuVideoAcceleratorFactoriesReady(
       std::unique_ptr<media::GpuVideoAcceleratorFactories>);
   void DecodeVideoFrame();
-  void OnVideoDecoderInitialized(bool success);
-  void OnVideoBufferDecoded(media::DecodeStatus status);
-  void OnEosBufferDecoded(media::DecodeStatus status);
-  void OnVideoFrameDecoded(
-      const scoped_refptr<media::VideoFrame>& decoded_frame);
-  media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
-  void OnDecoderConnectionError();
+  void OnVideoFrameDecoded(scoped_refptr<media::VideoFrame> decoded_frame);
 
   // Renders the video frame to bitmap.
-  void RenderVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame);
-  void OnBitmapGenerated(std::unique_ptr<VideoFrameThumbnailConverter>,
-                         bool success,
-                         SkBitmap bitmap);
+  void RenderVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
+
+  media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
+  void OnDecoderConnectionError();
 
   // Overlays media data source read operation. Gradually read data from media
   // file.
@@ -106,21 +100,21 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
   ParseCompleteCB parse_complete_cb_;
   chrome::mojom::MediaMetadataPtr metadata_;
 
-  // Poster images obtained with |metadata_|.
-  std::vector<metadata::AttachedImage> attached_images_;
-
+  // Used to read media files chunks to feed to IPC channel.
   std::unique_ptr<chrome::mojom::MediaDataSource> media_data_source_;
 
   // The task runner to do blocking disk IO.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
-  // Encoded video frame to be decoded. This data can be large for high
-  // resolution video, should be std::move or cleared whenever possible.
-  std::vector<uint8_t> encoded_data_;
+  // Cached video frame data, which contains either encoded frame or decoded
+  // video frame. Encoded frame is extracted with ffmpeg, the data can be large
+  // for high resolution video.
+  chrome::mojom::VideoFrameDataPtr video_frame_data_;
 
-  // Objects used to decode the video into media::VideoFrame.
+  // Objects used to decode the video into media::VideoFrame with
+  // MojoVideoDecoder.
   media::VideoDecoderConfig config_;
-  std::unique_ptr<media::MojoVideoDecoder> decoder_;
+  std::unique_ptr<media::VideoThumbnailDecoder> decoder_;
   media::mojom::InterfaceFactoryPtr media_interface_factory_;
   std::unique_ptr<media::MediaInterfaceProvider> media_interface_provider_;
   std::unique_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_;

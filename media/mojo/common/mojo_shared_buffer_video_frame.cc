@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace media {
 
@@ -54,6 +55,64 @@ MojoSharedBufferVideoFrame::CreateDefaultI420(const gfx::Size& dimensions,
                 allocation_size, 0 /* y_offset */, coded_size.GetArea(),
                 coded_size.GetArea() * 5 / 4, coded_size.width(),
                 coded_size.width() / 2, coded_size.width() / 2, timestamp);
+}
+
+scoped_refptr<MojoSharedBufferVideoFrame>
+MojoSharedBufferVideoFrame::CreateFromYUVFrame(const VideoFrame& frame) {
+  DCHECK_EQ(VideoFrame::NumPlanes(frame.format()), 3u);
+
+  // The data from |frame| may not be consecutive between planes. Copy data
+  // into a shared memory buffer which is tightly packed.
+  size_t allocation_size =
+      VideoFrame::AllocationSize(frame.format(), frame.coded_size());
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(allocation_size);
+
+  const size_t y_size =
+      VideoFrame::PlaneSize(frame.format(), VideoFrame::kYPlane,
+                            frame.coded_size())
+          .GetArea();
+  const size_t u_size =
+      VideoFrame::PlaneSize(frame.format(), VideoFrame::kUPlane,
+                            frame.coded_size())
+          .GetArea();
+  const size_t v_size =
+      VideoFrame::PlaneSize(frame.format(), VideoFrame::kVPlane,
+                            frame.coded_size())
+          .GetArea();
+
+  // Computes the offset of planes in shared memory buffer.
+  const size_t y_offset = 0u;
+  const size_t u_offset = y_offset + y_size;
+  const size_t v_offset = y_offset + y_size + u_size;
+
+  // Create a mojo video frame backed by shared memory, so it can be sent to
+  // the browser process.
+  scoped_refptr<MojoSharedBufferVideoFrame> mojo_frame =
+      MojoSharedBufferVideoFrame::Create(
+          frame.format(), frame.coded_size(), frame.visible_rect(),
+          frame.natural_size(), std::move(handle), allocation_size, y_offset,
+          u_offset, v_offset, frame.stride(VideoFrame::kYPlane),
+          frame.stride(VideoFrame::kUPlane), frame.stride(VideoFrame::kVPlane),
+          frame.timestamp());
+
+  // Copy Y plane.
+  memcpy(mojo_frame->shared_buffer_data(),
+         static_cast<const void*>(frame.data(VideoFrame::kYPlane)), y_size);
+
+  // Copy U plane.
+  memcpy(mojo_frame->shared_buffer_data() + u_offset,
+         static_cast<const void*>(frame.data(VideoFrame::kUPlane)), u_size);
+
+  // Copy V plane.
+  memcpy(mojo_frame->shared_buffer_data() + v_offset,
+         static_cast<const void*>(frame.data(VideoFrame::kVPlane)), v_size);
+
+  // TODO(xingliu): Maybe also copy the alpha plane in
+  // |MojoSharedBufferVideoFrame|. The alpha plane is ignored here, but
+  // the |shared_memory| should contain the space for alpha plane.
+
+  return mojo_frame;
 }
 
 // static
