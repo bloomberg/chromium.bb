@@ -538,18 +538,6 @@ void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInline()) << layout_object;
   if (TryMarkLineBoxDirtyFor(layout_object))
     return;
-  if (layout_object.IsLayoutInline()) {
-    bool marked = false;
-    for (LayoutObject* runner = layout_object.NextInPreOrder(&layout_object);
-         runner; runner = runner->NextInPreOrder(&layout_object)) {
-      if (runner->IsFloatingOrOutOfFlowPositioned())
-        continue;
-      if (TryMarkLineBoxDirtyFor(*runner))
-        marked = true;
-    }
-    if (marked)
-      return;
-  }
   // Since |layout_object| isn't in fragment tree, check preceding siblings.
   // Note: Once we reuse lines below dirty lines, we should check next siblings.
   for (LayoutObject* previous = layout_object.PreviousSibling(); previous;
@@ -589,19 +577,14 @@ void NGPaintFragment::MarkLineBoxDirty() {
 
 bool NGPaintFragment::TryMarkLineBoxDirtyFor(
     const LayoutObject& layout_object) {
-  if (!layout_object.IsInLayoutNGInlineFormattingContext())
-    return false;
-  const auto& range = InlineFragmentsFor(&layout_object);
-  if (range.IsEmpty())
-    return false;
-  NGPaintFragment* last_parent = nullptr;
-  for (NGPaintFragment* fragment : range) {
-    if (last_parent == fragment->Parent())
-      continue;
-    fragment->MarkLineBoxDirty();
-    last_parent = fragment->Parent();
+  // Once we reuse lines below dirty lines, we should mark lines for all
+  // inline fragments.
+  NGPaintFragment* const first_fragment = layout_object.FirstInlineFragment();
+  if (first_fragment) {
+    first_fragment->MarkLineBoxDirty();
+    return true;
   }
-  return true;
+  return false;
 }
 
 void NGPaintFragment::SetShouldDoFullPaintInvalidationRecursively() {
