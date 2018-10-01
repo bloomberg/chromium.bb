@@ -36,7 +36,6 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
@@ -396,15 +395,6 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  scoped_refptr<Extension> CreateExtension(
-      Manifest::Location location,
-      const std::string& data,
-      const std::string& id) {
-    std::unique_ptr<base::DictionaryValue> parsed_manifest(
-        api_test_utils::ParseDictionary(data));
-    return api_test_utils::CreateExtension(location, parsed_manifest.get(), id);
-  }
-
   ExtensionService* service_;
 
  private:
