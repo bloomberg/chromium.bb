@@ -34,11 +34,8 @@
 #include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #endif
 
-namespace {
-
-constexpr gfx::Size kButtonSize(28, 28);
-
-}  // namespace
+// static
+const gfx::Size NewTabButton::kButtonSize{28, 28};
 
 NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
     : views::ImageButton(listener), tab_strip_(tab_strip) {
@@ -57,14 +54,6 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
 
   SetFocusPainter(nullptr);
   SetInstallFocusRingOnFocus(true);
-
-  // The button is placed vertically exactly in the center of the tabstrip.
-  const int extra_vertical_space = GetLayoutConstant(TAB_HEIGHT) -
-                                   GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) -
-                                   kButtonSize.height();
-  constexpr int kHorizontalInset = 8;
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(
-      extra_vertical_space / 2, kHorizontalInset, 0, kHorizontalInset)));
 }
 
 NewTabButton::~NewTabButton() {
