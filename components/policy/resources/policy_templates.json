@@ -13308,6 +13308,29 @@
       When this policy is set to disabled or not set, no extensions are allowed to use the Enterprise Hardware Platform API.
       This policy also applies to component extensions such as the Hangout Services extension.''',
     },
+    {
+      'name': 'VpnConfigAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:71-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 485,
+      'caption': '''Allow the user to manage VPN connections''',
+      'tags': [],
+      'desc': '''Allow the user to manage VPN connections.
+
+      If this policy is set to false, all <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> user interfaces that would allow the user to disconnect or modify VPN connections are disabled.
+
+      If this policy is unset or set to true, users can disconnect or modify VPN connections as usual.
+
+      If the VPN connection is created via a VPN app, the UI inside the app remains unaffected by this policy. Therefore, the user might still be able to use the app to modify the VPN connection.
+
+      This policy is meant to be used together with the "Always on VPN" feature, that lets the admin decide to establish a VPN connection on boot.''',
+    },
   ],
 
   'messages': {
@@ -13449,5 +13472,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 484
+  'highest_id_currently_used': 485
 }

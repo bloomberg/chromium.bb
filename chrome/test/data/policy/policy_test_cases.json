@@ -4044,5 +4044,14 @@
     "pref_mappings": [
       { "pref": "enterprise_reporting.report_user_id_data" }
     ]
+  },
+
+  "VpnConfigAllowed": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "VpnConfigAllowed": false },
+    "pref_mappings": [
+      { "pref": "vpn_config_allowed" }
+    ]
   }
 }

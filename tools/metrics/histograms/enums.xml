@@ -14590,6 +14590,7 @@ Called by update_net_error_codes.py.-->
   <int value="482" label="DeviceUnaffiliatedCrostiniAllowed"/>
   <int value="483" label="EnterpriseHardwarePlatformAPIEnabled"/>
   <int value="484" label="ReportCrostiniUsageEnabled"/>
+  <int value="485" label="VpnConfigAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
