@@ -55,7 +55,7 @@ void CatalogReady(ScopedJavaGlobalRef<jobject>(j_result_obj),
 
 void ImageReady(ScopedJavaGlobalRef<jobject>(j_callback_obj),
                 std::unique_ptr<SkBitmap> bitmap) {
-  if (!bitmap) {
+  if (!bitmap || bitmap->isNull()) {
     DVLOG(1) << "Site icon is empty.";
     base::android::RunObjectCallbackAndroid(j_callback_obj, nullptr);
     return;
