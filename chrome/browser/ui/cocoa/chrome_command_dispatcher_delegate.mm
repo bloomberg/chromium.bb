@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
-#import "chrome/browser/ui/cocoa/browser_window_views_mac.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/content_accelerators/accelerator_util.h"
 #include "ui/views/widget/widget.h"
