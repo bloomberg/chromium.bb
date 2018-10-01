@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("current_version/current_version.gni")
 import("manifest_processor.gni")
-import("shell_apk_version.gni")
 
 android_resources("new_splash_resources") {
   custom_package = "org.chromium.webapk.shell_apk.h2o"
@@ -84,7 +84,7 @@ template("webapk_tmpl") {
     }
     output = _manifest_output
 
-    extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
+    extra_variables = [ "shell_apk_version=$current_shell_apk_version" ]
   }
 
   android_resources(_resources_target_name) {
