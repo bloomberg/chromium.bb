@@ -1792,7 +1792,6 @@ jumbo_split_static_library("browser") {
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
-    "//components/password_manager/sync/browser",
     "//components/payments/core",
     "//components/policy:generated",
     "//components/policy/content/",

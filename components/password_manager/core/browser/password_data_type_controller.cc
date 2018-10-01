@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/sync/browser/password_data_type_controller.h"
+#include "components/password_manager/core/browser/password_data_type_controller.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"

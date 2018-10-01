@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_SYNC_UTIL_H_
-#define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_SYNC_UTIL_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNC_UTIL_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNC_UTIL_H_
 
 #include <string>
 
@@ -52,4 +52,4 @@ bool ShouldSaveEnterprisePasswordHash(const autofill::PasswordForm& form,
 }  // namespace sync_util
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_SYNC_UTIL_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNC_UTIL_H_
