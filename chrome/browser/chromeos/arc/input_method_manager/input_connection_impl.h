@@ -49,7 +49,6 @@ class InputConnectionImpl : public mojom::InputConnection {
   // update surely. Some implementations of TextInputClient are synchronous. If
   // starting timer is after API call, the timer won't be cancelled.
   void StartStateUpdateTimer();
-  void FinishComposingTextInternal();
 
   chromeos::InputMethodEngine* const ime_engine_;  // Not owned
   ArcInputMethodManagerBridge* const imm_bridge_;  // Not owned
