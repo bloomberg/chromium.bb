@@ -182,7 +182,7 @@ class CompositorDependencies {
     // Set up a callback to automatically re-connect if we lose our
     // connection.
     host_frame_sink_manager.SetConnectionLostCallback(base::BindRepeating(
-        []() { CompositorDependencies::Get().CreateVizFrameSinkManager(); }));
+        []() { CompositorDependencies::Get().OnVizFrameSinkManagerLost(); }));
 
     BrowserMainLoop::GetInstance()
         ->gpu_channel_establish_factory()
@@ -233,8 +233,8 @@ class CompositorDependencies {
       CreateVizFrameSinkManager();
     }
 
-    // Unretained is safe as CompositorDependencies is a static instance which
-    // is leaked at the end.
+    // Ensure we're in the correct state at start up.
+    OnApplicationStateChange(app_listener_.GetState());
   }
 
   void OnReadyToConnectVizFrameSinkManagerOnMainThread(
@@ -268,6 +268,21 @@ class CompositorDependencies {
     if (gpu_process_host) {
       gpu_process_host->gpu_host()->ConnectFrameSinkManager(std::move(request),
                                                             std::move(client));
+    }
+  }
+
+  void OnVizFrameSinkManagerLost() {
+    needs_recreate_viz_frame_sink_manager_ = true;
+    TryRecreateVizFrameSinkManagerIfNeeded();
+  }
+
+  void TryRecreateVizFrameSinkManagerIfNeeded() {
+    // We don't recreate the frame sink manager if backgrounded, as the OS may
+    // repeatedly kill the resulting process. Instead wait until we come to the
+    // foreground.
+    if (needs_recreate_viz_frame_sink_manager_ && application_is_foreground_) {
+      needs_recreate_viz_frame_sink_manager_ = false;
+      CreateVizFrameSinkManager();
     }
   }
 
@@ -314,12 +329,15 @@ class CompositorDependencies {
         GpuDataManagerImpl::GetInstance()->SetApplicationVisible(true);
         SendOnForegroundedToGpuService();
         low_end_background_cleanup_task_.Cancel();
+        application_is_foreground_ = true;
+        TryRecreateVizFrameSinkManagerIfNeeded();
         break;
       case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
       case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
         GpuDataManagerImpl::GetInstance()->SetApplicationVisible(false);
         SendOnBackgroundedToGpuService();
         EnqueueLowEndBackgroundCleanup();
+        application_is_foreground_ = false;
     }
   }
 
@@ -329,6 +347,8 @@ class CompositorDependencies {
 
   // An instance of Android AppListener.
   base::android::ApplicationStatusListener app_listener_;
+  bool application_is_foreground_ = true;
+  bool needs_recreate_viz_frame_sink_manager_ = false;
 };
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
