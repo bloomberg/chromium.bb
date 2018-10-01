@@ -84,6 +84,7 @@ class ScriptExecutor : public ActionDelegate {
   void Shutdown() override;
   void Restart() override;
   ClientMemory* GetClientMemory() override;
+  void StopCurrentScript(const std::string& message) override;
 
  private:
   void OnGetActions(bool result, const std::string& response);
@@ -101,6 +102,7 @@ class ScriptExecutor : public ActionDelegate {
   std::vector<ProcessedActionProto> processed_actions_;
   std::string last_server_payload_;
   AtEnd at_end_;
+  bool should_stop_script_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);
