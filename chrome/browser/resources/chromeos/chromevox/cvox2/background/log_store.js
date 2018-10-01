@@ -56,13 +56,16 @@ TextLog.prototype = {
   },
 };
 
-/** @enum {string} */
+/**
+ * Filter type checkboxes are shown in this order at the log page.
+ * @enum {string}
+ */
 TextLog.LogType = {
   SPEECH: 'speech',
-  EARCON: 'earcon',
-  BRAILLE: 'braille',
   SPEECH_RULE: 'speechRule',
+  BRAILLE: 'braille',
   BRAILLE_RULE: 'brailleRule',
+  EARCON: 'earcon',
   EVENT: 'event',
 };
 
