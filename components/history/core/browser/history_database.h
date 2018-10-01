@@ -87,6 +87,9 @@ class HistoryDatabase : public DownloadDatabase,
   // called once and only upon successful Init.
   void ComputeDatabaseMetrics(const base::FilePath& filename);
 
+  // Counts the number of unique Hosts visited in the last month.
+  int CountUniqueHostsVisitedLastMonth();
+
   // Computes the |num_hosts| most-visited hostnames in the past 30 days. See
   // history_service.h for details.
   TopHostsList TopHosts(size_t num_hosts);

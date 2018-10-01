@@ -288,6 +288,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   HistoryCountResult GetHistoryCount(const base::Time& begin_time,
                                      const base::Time& end_time);
 
+  // Returns the number of hosts visited in the last month.
+  HistoryCountResult CountUniqueHostsVisitedLastMonth();
+
   // Favicon -------------------------------------------------------------------
 
   void GetFavicon(

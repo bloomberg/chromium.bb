@@ -28,6 +28,8 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -878,4 +880,56 @@ TEST_F(HistoryServiceTest, ProcessTimeRangeDeleteDirective) {
   EXPECT_EQ(2, syncer::SyncDataRemote(sync_changes[1].sync_data()).GetId());
 }
 
+// Helper to add a page with specified days back in the past.
+void AddPageInThePast(HistoryService* history,
+                      const std::string& url_spec,
+                      int days_back) {
+  const GURL url(url_spec);
+  base::Time time_in_the_past =
+      base::Time::Now() - base::TimeDelta::FromDays(days_back);
+  history->AddPage(url, time_in_the_past, nullptr, 0, GURL(),
+                   history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                   history::SOURCE_BROWSED, false);
+}
+
+// Helper to contain a callback and run loop logic.
+int GetMonthlyHostCountHelper(HistoryService* history,
+                              base::CancelableTaskTracker* tracker) {
+  base::RunLoop run_loop;
+  int count = 0;
+  history->CountUniqueHostsVisitedLastMonth(
+      base::BindLambdaForTesting([&](HistoryCountResult result) {
+        count = result.count;
+        run_loop.Quit();
+      }),
+      tracker);
+  run_loop.Run();
+  return count;
+}
+
+// Counts hosts visited in the last month.
+TEST_F(HistoryServiceTest, CountMonthlyVisitedHosts) {
+  base::HistogramTester histogram_tester;
+  HistoryService* history = history_service_.get();
+  ASSERT_TRUE(history);
+
+  AddPageInThePast(history, "http://www.google.com/", 0);
+  EXPECT_EQ(1, GetMonthlyHostCountHelper(history, &tracker_));
+
+  AddPageInThePast(history, "http://www.google.com/foo", 1);
+  AddPageInThePast(history, "https://www.google.com/foo", 5);
+  AddPageInThePast(history, "https://www.gmail.com/foo", 10);
+  // Expect 2 because only host part of URL counts.
+  EXPECT_EQ(2, GetMonthlyHostCountHelper(history, &tracker_));
+
+  AddPageInThePast(history, "https://www.gmail.com/foo", 31);
+  // Count should not change since URL added is older than a month.
+  EXPECT_EQ(2, GetMonthlyHostCountHelper(history, &tracker_));
+
+  AddPageInThePast(history, "https://www.yahoo.com/foo", 29);
+  EXPECT_EQ(3, GetMonthlyHostCountHelper(history, &tracker_));
+
+  // The time required to compute host count is reported on each computation.
+  histogram_tester.ExpectTotalCount("History.DatabaseMonthlyHostCountTime", 4);
+}
 }  // namespace history
