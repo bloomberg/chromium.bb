@@ -327,11 +327,10 @@ void LoginPasswordView::TestApi::set_immediately_hover_easy_unlock_icon() {
 LoginPasswordView::LoginPasswordView() {
   Shell::Get()->ime_controller()->AddObserver(this);
 
-  auto root_layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto* root_layout = SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   root_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(std::move(root_layout));
 
   password_row_ = new NonAccessibleView();
 
