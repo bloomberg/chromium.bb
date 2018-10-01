@@ -139,8 +139,8 @@ GURL GetURLWithFragment(const GURL& url, base::StringPiece fragment) {
 // blink/renderer/core/loader/subresource_filter.cc
 constexpr const char kBlinkDisallowSubframeConsoleMessageFormat[] =
     "Chrome blocked resource %s on this site because this site tends to show "
-    "ads that interrupt, distract, or prevent user control. Learn more at "
-    "https://www.chromestatus.com/feature/5738264052891648";
+    "ads that interrupt, distract, mislead, or prevent user control. Learn "
+    "more at https://www.chromestatus.com/feature/5738264052891648";
 
 }  // namespace
 

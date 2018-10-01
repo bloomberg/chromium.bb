@@ -2919,11 +2919,11 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLERS_BLOCKED" desc="The block label for protocol handlers in site settings.">
     Do not allow any site to handle protocols
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK" desc="The block label for ads in site settings.">
-    Blocked on sites that tend to show intrusive ads
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK" desc="A subtitle for the ‘Ads’ setting. ‘Blocked’ refers to ads being blocked.">
+    Blocked on sites that show intrusive or misleading ads
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK_RECOMMENDED" desc="The block label for ads in site settings (with the 'recommended' suffix).">
-    Blocked on sites that tend to show intrusive ads (recommended)
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK_RECOMMENDED" desc="A label for the ‘Ads’ setting toggle. ‘Blocked’ refers to ads being blocked.">
+    Blocked on sites that show intrusive or misleading ads (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SOUND_ALLOW" desc="The allow label for sound in site settings.">
     Allow sites to play sound
@@ -3031,8 +3031,11 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_SOURCE_DRM_DISABLED" desc="A label shown when the protected content / protected media identifier permission on the Site Details page is disabled because the user has turned off using unique identifiers to access protected content.">
     To change this setting, first <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>turn on identifiers<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK_SINGULAR" desc="A label shown when the Ads permission on the Site Details page is blocked by the user, but the site is not blacklisted for having bad ads.">
-    Block if site tends to show intrusive ads
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK_BLACKLISTED_SINGULAR" desc="A subtitle for the ‘Ads’ setting, shown if a website is known to show ads that have a poor user experience (intrusive, misleading) and is blocked from showing ads by Chrome.">
+    Site shows intrusive or misleading ads
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK_NOT_BLACKLISTED_SINGULAR" desc="A subtitle for the ‘Ads’ setting, shown if user chooses to Block ads. ‘Block’ refers to the blocking of ads.">
+    Block if site shows intrusive or misleading ads
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SOURCE_KILL_SWITCH" desc="A label shown when a permission on the Site Details page is temporarily blocked for the user's safety.">
     Temporarily blocked to protect your security
