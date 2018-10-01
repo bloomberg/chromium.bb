@@ -56,11 +56,6 @@ void LayoutNGFieldset::AddChild(LayoutObject* new_child,
     // TODO(mstensho): Inherit all properties listed here:
     // https://html.spec.whatwg.org/multipage/rendering.html#the-fieldset-and-legend-elements
 
-    // We need to enter legacy layout from this point on, if ...
-    if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled() &&
-        new_style->SpecifiesColumns())
-      new_style->SetForceLegacyLayout(true);
-
     fieldset_content = LayoutBlock::CreateAnonymousWithParentAndDisplay(
         this, new_style->Display());
     fieldset_content->SetStyle(std::move(new_style));
