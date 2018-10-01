@@ -28,10 +28,6 @@ namespace printing {
 
 namespace {
 
-int Round(double x) {
-  return static_cast<int>(x + 0.5);
-}
-
 // Sets the page sizes for a |PrintSettings| object.  |width| and |height|
 // arguments should be in device units.
 void SetSizes(PrintSettings* settings, int dpi, int width, int height) {
@@ -128,8 +124,8 @@ void PrintingContextAndroid::AskUserForSettingsReply(
   int dpi = Java_PrintingContext_getDpi(env, j_printing_context_);
   int width = Java_PrintingContext_getWidth(env, j_printing_context_);
   int height = Java_PrintingContext_getHeight(env, j_printing_context_);
-  width = Round(ConvertUnitDouble(width, kMilsPerInch, 1.0) * dpi);
-  height = Round(ConvertUnitDouble(height, kMilsPerInch, 1.0) * dpi);
+  width = ConvertUnit(width, kMilsPerInch, dpi);
+  height = ConvertUnit(height, kMilsPerInch, dpi);
   SetSizes(&settings_, dpi, width, height);
 
   std::move(callback_).Run(OK);
