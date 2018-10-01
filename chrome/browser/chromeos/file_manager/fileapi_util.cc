@@ -357,9 +357,10 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
         storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
             storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
             storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-        base::Bind(&ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
-                       OnGotMetadataOnIOThread,
-                   base::Unretained(this), base::Passed(&lifetime), it));
+        base::BindOnce(
+            &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
+                OnGotMetadataOnIOThread,
+            base::Unretained(this), std::move(lifetime), it));
   }
 
   // Callback invoked after GetMetadata.
@@ -423,7 +424,7 @@ void GetMetadataForPathOnIoThread(
     storage::FileSystemOperationRunner::GetMetadataCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   file_system_context->operation_runner()->GetMetadata(internal_url, fields,
-                                                       callback);
+                                                       std::move(callback));
 }
 
 }  // namespace
@@ -577,7 +578,7 @@ std::unique_ptr<base::ListValue> ConvertEntryDefinitionListToListValue(
 void CheckIfDirectoryExists(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const base::FilePath& directory_path,
-    const storage::FileSystemOperationRunner::StatusCallback& callback) {
+    storage::FileSystemOperationRunner::StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   storage::ExternalFileSystemBackend* const backend =
@@ -589,14 +590,15 @@ void CheckIfDirectoryExists(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CheckIfDirectoryExistsOnIoThread, file_system_context,
-                     internal_url, google_apis::CreateRelayCallback(callback)));
+                     internal_url,
+                     google_apis::CreateRelayCallback(std::move(callback))));
 }
 
 void GetMetadataForPath(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const base::FilePath& entry_path,
     int fields,
-    const storage::FileSystemOperationRunner::GetMetadataCallback& callback) {
+    storage::FileSystemOperationRunner::GetMetadataCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   storage::ExternalFileSystemBackend* const backend =
@@ -609,7 +611,7 @@ void GetMetadataForPath(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&GetMetadataForPathOnIoThread, file_system_context,
                      internal_url, fields,
-                     google_apis::CreateRelayCallback(callback)));
+                     google_apis::CreateRelayCallback(std::move(callback))));
 }
 
 storage::FileSystemURL CreateIsolatedURLFromVirtualPath(

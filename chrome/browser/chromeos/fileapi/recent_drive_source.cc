@@ -28,24 +28,25 @@ namespace chromeos {
 namespace {
 
 void OnGetMetadataOnIOThread(
-    const storage::FileSystemOperation::GetMetadataCallback& callback,
+    storage::FileSystemOperation::GetMetadataCallback callback,
     base::File::Error result,
     const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, result, info));
+                           base::BindOnce(std::move(callback), result, info));
 }
 
 void GetMetadataOnIOThread(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const storage::FileSystemURL& url,
     int fields,
-    const storage::FileSystemOperation::GetMetadataCallback& callback) {
+    storage::FileSystemOperation::GetMetadataCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   file_system_context->operation_runner()->GetMetadata(
-      url, fields, base::Bind(&OnGetMetadataOnIOThread, callback));
+      url, fields,
+      base::BindOnce(&OnGetMetadataOnIOThread, std::move(callback)));
 }
 
 }  // namespace
@@ -139,8 +140,8 @@ void RecentDriveSource::OnSearchMetadata(
             &GetMetadataOnIOThread,
             base::WrapRefCounted(params_.value().file_system_context()), url,
             storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-            base::Bind(&RecentDriveSource::OnGetMetadata,
-                       weak_ptr_factory_.GetWeakPtr(), url)));
+            base::BindOnce(&RecentDriveSource::OnGetMetadata,
+                           weak_ptr_factory_.GetWeakPtr(), url)));
   }
 
   if (num_inflight_stats_ == 0)

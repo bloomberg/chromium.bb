@@ -33,12 +33,12 @@ void RecursiveOperationDelegate::Cancel() {
 void RecursiveOperationDelegate::StartRecursiveOperation(
     const FileSystemURL& root,
     ErrorBehavior error_behavior,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK(pending_directory_stack_.empty());
   DCHECK(pending_files_.empty());
 
   error_behavior_ = error_behavior;
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   TryProcessFile(root);
 }
@@ -221,13 +221,13 @@ void RecursiveOperationDelegate::DidPostProcessDirectory(
 
 void RecursiveOperationDelegate::Done(base::File::Error error) {
   if (canceled_ && error == base::File::FILE_OK) {
-    callback_.Run(base::File::FILE_ERROR_ABORT);
+    std::move(callback_).Run(base::File::FILE_ERROR_ABORT);
   } else {
     if (error_behavior_ == FileSystemOperation::ERROR_BEHAVIOR_SKIP &&
         failed_some_operations_)
-      callback_.Run(base::File::FILE_ERROR_FAILED);
+      std::move(callback_).Run(base::File::FILE_ERROR_FAILED);
     else
-      callback_.Run(error);
+      std::move(callback_).Run(error);
   }
 }
 
