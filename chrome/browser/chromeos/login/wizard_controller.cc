@@ -250,6 +250,15 @@ bool IsBootstrappingMaster() {
       chromeos::switches::kOobeBootstrappingMaster);
 }
 
+bool IsPublicSessionOrEphemeralLogin() {
+    const user_manager::UserManager* user_manager =
+        user_manager::UserManager::Get();
+    return user_manager->IsLoggedInAsPublicAccount() ||
+           (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
+            user_manager->GetActiveUser()->GetType() !=
+                user_manager::USER_TYPE_REGULAR);
+}
+
 bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
   if (!network || !network->IsConnectedState())
     return false;
@@ -685,12 +694,9 @@ void WizardController::ShowFingerprintSetupScreen() {
 
 void WizardController::ShowMarketingOptInScreen() {
   // Skip the screen for public sessions and non-regular ephemeral users.
-  const user_manager::UserManager* user_manager =
-      user_manager::UserManager::Get();
-  if (user_manager->IsLoggedInAsPublicAccount() ||
-      (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
-       user_manager->GetActiveUser()->GetType() !=
-           user_manager::USER_TYPE_REGULAR)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableMarketingOptInScreen) ||
+      IsPublicSessionOrEphemeralLogin()) {
     OnMarketingOptInFinished();
     return;
   }
