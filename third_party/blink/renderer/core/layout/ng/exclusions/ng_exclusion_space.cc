@@ -466,6 +466,12 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
         CollectSolidEdges(shelf_copy->line_right_edges, new_shelf.block_offset,
                           &new_shelf.line_right_edges);
 
+        // The new shelf adopts the copy exclusions. This may contain
+        // exclusions which are above this shelf, however we'll filter these
+        // out when/if we need to calculate the line opportunity.
+        new_shelf.shape_exclusions = std::move(shelf_copy->shape_exclusions);
+        new_shelf.has_shape_exclusions = shelf_copy->has_shape_exclusions;
+
         // If we didn't find any edges, the line_left/line_right of the shelf
         // are pushed out to be the minimum/maximum.
         new_shelf.line_left = new_shelf.line_left_edges.IsEmpty()
