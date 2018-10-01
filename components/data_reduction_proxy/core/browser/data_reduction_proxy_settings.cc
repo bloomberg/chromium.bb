@@ -96,6 +96,9 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
         ->SetDataUsageReportingEnabled(true);
   }
 #endif  // defined(OS_ANDROID)
+
+  for (auto& observer : observers_)
+    observer.OnSettingsInitialized();
 }
 
 void DataReductionProxySettings::OnServiceInitialized() {
@@ -286,20 +289,20 @@ void DataReductionProxySettings::SetProxyRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   DCHECK(thread_checker_.CalledOnValidThread());
   proxy_request_headers_ = headers;
-  for (auto& observer : proxy_request_headers_observers_)
+  for (auto& observer : observers_)
     observer.OnProxyRequestHeadersChanged(headers);
 }
 
-void DataReductionProxySettings::AddProxyRequestHeadersObserver(
-    ProxyRequestHeadersObserver* observer) {
+void DataReductionProxySettings::AddDataReductionProxySettingsObserver(
+    DataReductionProxySettingsObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  proxy_request_headers_observers_.AddObserver(observer);
+  observers_.AddObserver(observer);
 }
 
-void DataReductionProxySettings::RemoveProxyRequestHeadersObserver(
-    ProxyRequestHeadersObserver* observer) {
+void DataReductionProxySettings::RemoveDataReductionProxySettingsObserver(
+    DataReductionProxySettingsObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  proxy_request_headers_observers_.RemoveObserver(observer);
+  observers_.RemoveObserver(observer);
 }
 
 DataReductionProxyEventStore* DataReductionProxySettings::GetEventStore()
