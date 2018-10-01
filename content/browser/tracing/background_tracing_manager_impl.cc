@@ -673,7 +673,7 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
       return TraceConfig("blink.console,v8", record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_NAVIGATION: {
       auto config = TraceConfig(
-          "benchmark,toplevel,ipc,base,browser,navigation,omnibox,"
+          "benchmark,toplevel,ipc,base,browser,navigation,omnibox,ui,"
           "safe_browsing,task_scheduler,"
           "disabled-by-default-task_scheduler_diagnostics,"
           "disabled-by-default-system_stats,disabled-by-default-cpu_profiler",
