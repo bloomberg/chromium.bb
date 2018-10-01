@@ -287,7 +287,7 @@ class PackageInfo(object):
     #
     try:
       cpv = portage_util.SplitCPV(fullnamerev)
-    except TypeError:
+    except ValueError:
       cpv = None
 
     # A bad package can either raise a TypeError exception or return None.

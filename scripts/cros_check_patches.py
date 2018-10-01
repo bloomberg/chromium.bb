@@ -102,7 +102,7 @@ class PatchReporter(object):
   def _ObservePatches(self, temp_space, deps_map):
     for cpv in deps_map:
       split = portage_util.SplitCPV(cpv)
-      if self.Ignored('%s/%s' % (split.category, split.package)):
+      if self.Ignored(split.cp):
         continue
       cmd = self.equery_cmd[:]
       cmd.extend(['which', cpv])

@@ -135,9 +135,9 @@ print(json.dumps(pkg_info))
   def _GetCP(cpv):
     """Returns the CP value for a given CPV string."""
     attrs = portage_util.SplitCPV(cpv, strict=False)
-    if not (attrs.category and attrs.package):
+    if not attrs.cp:
       raise ValueError('Cannot get CP value for %s' % cpv)
-    return os.path.join(attrs.category, attrs.package)
+    return attrs.cp
 
   @staticmethod
   def _InDB(cp, slot, db):

@@ -417,9 +417,8 @@ class PrebuiltUploader(object):
     if not self._packages:
       return False
     cpv = portage_util.SplitCPV(pkg['CPV'])
-    cp = '%s/%s' % (cpv.category, cpv.package)
-    self._found_packages.add(cp)
-    return cpv.package not in self._packages and cp not in self._packages
+    self._found_packages.add(cpv.cp)
+    return cpv.package not in self._packages and cpv.cp not in self._packages
 
   def _UploadPrebuilt(self, package_path, url_suffix):
     """Upload host or board prebuilt files to Google Storage space.

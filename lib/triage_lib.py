@@ -298,9 +298,8 @@ class CategorizeChanges(object):
 
     if packages_under_test is not None:
       # Strip the version of the package in packages_under_test.
-      cpv_list = [portage_util.SplitCPV(x) for x in packages_under_test]
-      packages_under_test = ['%s/%s' % (x.category, x.package) for x in
-                             cpv_list]
+      packages_under_test = [portage_util.SplitCPV(x).cp for x in
+                             packages_under_test]
 
     # Handles overlay changes.
     # ClassifyOverlayChanges only handles overlays visible to this

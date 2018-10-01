@@ -1129,13 +1129,65 @@ class ProjectMappingTest(cros_test_lib.TestCase):
 
   def testSplitCPV(self):
     """Test splitting CPV into components."""
+    # Test 1: Valid input.
     cpv = 'foo/bar-4.5.6_alpha-r6'
+    cp, ver, _ = cpv.split('-')
     cat, pv = cpv.split('/', 1)
+
     split_pv = portage_util.SplitPV(pv)
     split_cpv = portage_util.SplitCPV(cpv)
+
     self.assertEquals(split_cpv.category, cat)
+    self.assertEqual(cp, split_cpv.cp)
+    self.assertEqual('%s-%s' % (cp, ver), split_cpv.cpv)
     for k, v in split_pv._asdict().iteritems():
       self.assertEquals(getattr(split_cpv, k), v)
+
+    # Test 2: No category, valid pvr.
+    cpv = 'bar-pkg-1.2.3_rc4-r5'
+    split_cpv_ns = portage_util.SplitCPV(cpv, strict=False)
+
+    # Make sure strict parses correctly.
+    self.assertIsNone(portage_util.SplitCPV(cpv, strict=True))
+    self.assertIsNotNone(portage_util.SplitPV(cpv, strict=True))
+    # All category references should be None when not strict.
+    self.assertIsNotNone(split_cpv_ns)
+    self.assertIsNone(split_cpv_ns.category)
+    self.assertIsNone(split_cpv_ns.cp)
+    self.assertIsNone(split_cpv_ns.cpv)
+
+    # Test 3: No version or revision, valid cp.
+    cpv = 'cat-foo/bar-pkg'
+    split_cpv_ns = portage_util.SplitCPV(cpv, strict=False)
+
+    # Make sure strict parses correctly.
+    self.assertIsNone(portage_util.SplitCPV(cpv, strict=True))
+    self.assertIsNone(portage_util.SplitPV(cpv, strict=True))
+    # Category should get parsed out, and the rest assigned to package.
+    self.assertIsNotNone(split_cpv_ns)
+    self.assertEqual('cat-foo', split_cpv_ns.category)
+    self.assertEqual('bar-pkg', split_cpv_ns.package)
+    # The cp should just have category/package. In this case it's valid.
+    self.assertEqual('cat-foo/bar-pkg', split_cpv_ns.cp)
+
+    # Test 4: No version - skipped to valid revision.
+    cpv = 'cat-foo/bar-pkg-r5'
+    split_cpv_ns = portage_util.SplitCPV(cpv, strict=False)
+
+    # Make sure strict parses correctly.
+    self.assertIsNone(portage_util.SplitCPV(cpv, strict=True))
+    self.assertIsNone(portage_util.SplitPV(cpv, strict=True))
+    # Category should get parsed out, and the rest assigned to package.
+    self.assertIsNotNone(split_cpv_ns)
+    self.assertEqual('cat-foo', split_cpv_ns.category)
+    self.assertEqual('bar-pkg-r5', split_cpv_ns.package)
+    # The cp should just have category/package. Invalid in this case, but
+    # meeting expectations.
+    self.assertEqual('cat-foo/bar-pkg-r5', split_cpv_ns.cp)
+
+    cpv = 'invalid/format/package'
+    with self.assertRaises(ValueError):
+      portage_util.SplitCPV(cpv)
 
   def testFindWorkonProjects(self):
     """Test if we can find the list of workon projects."""
