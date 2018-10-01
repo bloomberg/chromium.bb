@@ -7,93 +7,9 @@
     "message": "ถ่ายภาพและบันทึกวิดีโอด้วยกล้อง",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "แอนดี้",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "ตาโต",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "ความงาม",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "ระบายสี",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "ฟังกี้",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "โทนสีเทา",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "หนังสือพิมพ์",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "ปกติ",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "หัวโต",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "กรามใหญ่",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "หัวกระต่าย",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "ซีเปีย",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "เรโทร '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "เรโทร '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "เรโทร '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "โฟโต้แล็บ",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "สมัยใหม่",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "หมุนวน",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "ทิลท์ชิฟต์",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "ภาพยนตร์",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "วินเทจ",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "วิญญาณ",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "ข้อผิดพลาดเกี่ยวกับระบบไฟล์",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "กล้องยังใช้งานไม่ได้ในขณะนี้",
@@ -107,13 +23,9 @@
     "message": "โหลดแกลเลอรีไม่ได้",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "เพิ่มแกลเลอรีไม่ได้",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "บันทึก $file$ ไม่ได้",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "ส่งออก $file$ ไม่ได้",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "บันทึกวิดีโอไม่ได้",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "บันทึกไฟล์ไม่ได้",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ถ่ายภาพไม่ได้",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "เริ่มบันทึกไม่ได้",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "ไม่ได้บันทึกรายการใดๆ",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "การเร่งฮาร์ดแวร์ไม่สามารถใช้งานได้",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "คอมพิวเตอร์อาจมีการ์ดจอที่ไม่สามารถใช้ร่วมกันได้ หรือมีไดรเวอร์เก่า",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "ไปที่แกลเลอรี",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "สลับเปิด/ปิดตัวกรอง",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "ลบ",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "บันทึกลงในดิสก์",
+    "message": "ส่งออกไปยังดิสก์",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -158,100 +66,64 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "ย้อนกลับ",
+    "message": "กลับ",
     "description": "Label for the back button."
-  },
-  "maximizeButton": {
-    "message": "ขยายใหญ่สุด",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "ปิด",
-    "description": "Text to speech label for the close button."
   },
   "galleryImages": {
     "message": "ภาพในแกลเลอรี",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "ถ่ายภาพ",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "หยุดถ่ายภาพ",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "เริ่มบันทึก",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "หยุดบันทึก",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "สลับเปิด/ปิดตัวจับเวลา",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "สลับมัลติช็อต",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "สลับกล้อง",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "เปลี่ยนเป็นบันทึกวิดีโอ",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "เปลี่ยนเป็นถ่ายภาพ",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "บันทึกวิดีโอเปิดอยู่",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "ถ่ายภาพเปิดอยู่",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "สลับเปิด/ปิดการมิเรอร์",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "ใช้เครื่องจับเวลา",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "สลับตาราง",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "ไม่ใช้เครื่องจับเวลา",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "ใช้มัลติช็อต",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "ไม่ใช้มัลติช็อต",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "ใช้การมิเรอร์",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "ไม่ใช้การมิเรอร์",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "ใช่",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "ไม่",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "สลับไมโครโฟน",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "ตกลง",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "ยกเลิก",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "คุณต้องการนำ $file$ ออกจริงๆ ใช่ไหม",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "เริ่มบันทึกไม่ได้",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "รูปภาพและวิดีโอที่ถ่ายจากกล้องจะย้ายไปยังโฟลเดอร์ \"ดาวน์โหลด\" คุณจะเข้าถึงรายการเหล่านี้ได้ในแอป Files\n\nแอปที่มีสิทธิ์ในพื้นที่เก็บข้อมูลจะเข้าถึงรูปภาพและวิดีโอของคุณได้",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "ถ่ายภาพไม่ได้",
-    "description": "Error message shown when failing to take photo."
   }
 }

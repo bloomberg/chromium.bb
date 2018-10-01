@@ -7,93 +7,9 @@
     "message": "カメラを使って写真や動画を撮影できます。",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "ポップアート",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "ビッグアイ",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "ビューティー",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "カラーライズ",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "ファンキー",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "グレースケール",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "ニュースペーパー",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "ノーマル",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "ビッグヘッド",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "ビッグジョー",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "バニーヘッド",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "セピア",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "30 年代レトロ",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "50 年代レトロ",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "60 年代レトロ",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "暗室",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "モダン",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "スワール",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "ティルトシフト",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "シネマ",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "ビンテージ",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "ゴースト",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "ファイル システム エラー。",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "現在、カメラは使用できません。",
@@ -107,13 +23,9 @@
     "message": "ギャラリーを読み込めません。",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "ギャラリーに追加できません。",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ を保存できません。",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "$file$ をエクスポートできません。",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "動画を撮影できません。",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "ファイルを保存できません。",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "写真を撮影できません。",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "録画を開始できません。",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "何も記録されていません。",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "ハードウェア アクセラレーションは使用できません。",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "お使いのパソコンで互換性のないグラフィック カードが使用されているか、ドライバが古い可能性があります。",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "ギャラリーに移動",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "フィルタを切り替える",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "削除",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "ディスクに保存",
+    "message": "ディスクにエクスポート",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "戻る",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "最大化",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "閉じる",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "ギャラリーの画像",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "写真を撮る",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "写真を撮影",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "写真の撮影を停止",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
-    "message": "録画開始",
-    "description": "Label for the red video recording button to start recording."
+    "message": "録画を開始",
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "録画を停止",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "タイマーを切り替える",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "マルチショットを切り替える",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "カメラを切り替える",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "動画の撮影に切り替える",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "写真の撮影に切り替える",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "動画の撮影は有効です",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "写真の撮影は有効です",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "ミラーリングを切り替える",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "タイマーは有効です",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "グリッドを切り替える",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "タイマーは無効です",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "マルチショットは有効です",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "マルチショットは無効です",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "ミラーリングは有効です",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "ミラーリングは無効です",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "はい",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "いいえ",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "マイクを切り替える",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "キャンセル",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "$file$ を削除してもよろしいですか？",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "録画を開始できません。",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "カメラで撮影した写真と動画を [ダウンロード] フォルダに移動します。これらの写真や動画には、[ファイル] からアクセスできます。\n\nまた、ストレージへのアクセスが許可されているアプリからも、これらの写真や動画にアクセスできます。",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "写真を撮影できません。",
-    "description": "Error message shown when failing to take photo."
   }
 }

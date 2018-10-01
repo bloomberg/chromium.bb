@@ -4,96 +4,12 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "உங்கள் கேமராவைப் பயன்படுத்தி படம் எடுக்கவும், வீடியோக்களைப் பதிவுசெய்யவும்.",
+    "message": "உங்கள் கேமராவைப் பயன்படுத்தி, படங்களை எடுக்கலாம், வீடியோக்களைப் பதிவுசெய்யலாம்.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "ஆன்டி",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "பெரிய கண்கள்",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "அழகு",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "வண்ணமயம்",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "ஃபங்கி",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "சாம்பல்நிறம்",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "செய்தித்தாள்",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "இயல்பானது",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "பெரிய தலை",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "பெரிய தாடை",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "முயல் தலை",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "பழுப்புநிறம்",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "ரெட்ரோ '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "ரெட்ரோ '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "ரெட்ரோ '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "பட ஆய்வகம்",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "நவீனம்",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "சுழல்",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "சில பகுதியை மங்கலாக்கு",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "சினிமா",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "விண்டேஜ்",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "பேய்",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "கோப்பு முறைமைப் பிழைகள்.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "உங்கள் கேமரா தற்போது கிடைக்கவில்லை.",
@@ -107,13 +23,9 @@
     "message": "கேலரியை ஏற்ற முடியவில்லை.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "கேலரியில் சேர்க்க முடியவில்லை.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ஐச் சேமிக்க முடியவில்லை.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "$file$ஐ இடமாற்ற முடியவில்லை.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "வீடியோவைப் பதிவுசெய்ய முடியவில்லை.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "கோப்பைச் சேமிக்க முடியவில்லை.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "படம் எடுக்க முடியவில்லை.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "பதிவுசெய்ய முடியவில்லை.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "எதுவும் பதிவு செய்யப்படவில்லை.",
+    "message": "எதுவும் பதிவுசெய்யப்படவில்லை.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
-  },
-  "errorMsgNoWebGL": {
-    "message": "வன்பொருள் விரைவுப்படுத்துதல் இல்லை.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "உங்கள் கணினியில் இணக்கமற்ற கிராஃபிக்ஸ் அட்டை அல்லது பழைய இயக்கிகள் இருக்கலாம்.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
     "message": "கேலரிக்குச் செல்",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "வடிப்பான்களை நிலைமாற்று",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "நீக்கு",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "வட்டில் சேமி",
+    "message": "வட்டுக்கு இடமாற்று",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -158,100 +66,64 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "முந்தையது",
+    "message": "பின்செல்",
     "description": "Label for the back button."
-  },
-  "maximizeButton": {
-    "message": "பெரிதாக்கு",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "மூடு",
-    "description": "Text to speech label for the close button."
   },
   "galleryImages": {
     "message": "கேலரி படங்கள்",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "படமெடு",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "படமெடுப்பதை நிறுத்து",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "பதிவுசெய்யத் தொடங்கு",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "பதிவுசெய்வதை நிறுத்து",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "டைமரை நிலைமாற்று",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "மல்டி-ஷாட்டை நிலைமாற்று",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "கேமராவை மாற்று",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
-    "message": "வீடியோ ரெக்கார்டு செய்யும் பயன்முறைக்கு மாறு",
+  "switchRecordVideoButton": {
+    "message": "வீடியோவைப் பதிவுசெய்யும் பயன்முறைக்கு மாறு",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "படம் எடுக்கும் பயன்முறைக்கு மாறு",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "வீடியோவைப் பதிவு செய்வது செயலில் உள்ளது",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "படம் எடுப்பது செயலில் உள்ளது",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "படமெடுக்கும் பயன்முறைக்கு மாறு",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "பிரதிபலித்தலை நிலைமாற்று",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "டைமர் செயலில் உள்ளது",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "கட்டத்தை நிலைமாற்று",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "டைமர் செயலற்ற நிலையில் உள்ளது",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "மல்டி-ஷாட் செயலில் உள்ளது",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "மல்டி-ஷாட் செயலற்ற நிலையில் உள்ளது",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "பிரதிபலித்தல் செயலில் உள்ளது",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "பிரதிபலித்தல் செயலற்ற நிலையில் உள்ளது",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "ஆம்",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "இல்லை",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "மைக்ரோஃபோனை நிலைமாற்று",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "சரி",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "ரத்துசெய்",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "$file$ஐ நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
@@ -264,7 +136,7 @@
     }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "$count$ உருப்படிகளை நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
+    "message": "$count$ உள்ளடக்கங்களை நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
       "count": {
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "பதிவுசெய்ய முடியவில்லை.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
-    "message": "கேமராவில் எடுக்கப்படும் படங்களும் வீடியோக்களும் பதிவிறக்கங்கள் கோப்புறைக்கு நகர்த்தப்படும். அவற்றை ‘கோப்புகள்’ என்பதில் பார்க்கலாம்.\n\nசேமிப்பக அனுமதிகள் உள்ள ஆப்ஸால் உங்கள் படங்களையும் வீடியோக்களையும் அணுக முடியும்.",
+    "message": "கேமராவில் எடுக்கப்படும் படங்களும் வீடியோக்களும் ‘பதிவிறக்கங்கள்’ கோப்புறைக்கு நகர்த்தப்படும். அவற்றை ‘கோப்புகள்’ என்பதில் பார்க்கலாம்.\n\nசேமிப்பக அனுமதிகள் உள்ள ஆப்ஸால் உங்கள் படங்களையும் வீடியோக்களையும் அணுக முடியும்.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "படம் எடுக்க முடியவில்லை.",
-    "description": "Error message shown when failing to take photo."
   }
 }

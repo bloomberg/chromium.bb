@@ -7,93 +7,9 @@
     "message": "Haz fotos y graba vídeos con la cámara.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy Warhol",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Ojos grandes",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Belleza",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Colorear",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Funky",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Escala de grises",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Periódico",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Normal",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Cabeza grande",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Mandíbula grande",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Cabeza de conejo",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Sepia",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Retro años 30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Retro años 50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Retro años 60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Laboratorio fotográfico",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Moderno",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Remolino",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Cambio de inclinación",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Cine",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Vintage",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Fantasma",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Errores del sistema de archivos.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Tu cámara no está disponible en este momento.",
@@ -107,13 +23,9 @@
     "message": "No se ha podido cargar la galería.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "No se ha podido añadir a la galería.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "No se ha podido guardar $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "No se ha podido exportar $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "No se ha podido grabar el vídeo.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "No se ha podido guardar el archivo.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "No se ha podido hacer la foto.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "No se ha podido empezar a grabar.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "No se ha grabado nada.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "La aceleración por hardware no está disponible.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Es posible que tu ordenador tenga una tarjeta gráfica incompatible o controladores antiguos.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Ir a la galería",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Alternar filtros",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Eliminar",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Guardar en disco",
+    "message": "Exportar a disco",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "Atrás",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Maximizar",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Cerrar",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Imágenes de la galería",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "Hacer una foto",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "Hacer foto",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Detener foto",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Iniciar grabación",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Detener grabación",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
-    "message": "Activar o desactivar el temporizador",
+    "message": "Activar o desactivar temporizador",
     "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleMultiButton": {
-    "message": "Activar o desactivar opción de disparo múltiple",
-    "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
     "message": "Cambiar de cámara",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Cambiar al modo de cámara de vídeo",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "Cambiar al modo de cámara",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Modo de cámara de vídeo activo",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Modo de cámara activo",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "Cambiar al modo de cámara de fotos",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Activar o desactivar proyección",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Temporizador activo",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Activar o desactivar cuadrícula",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Temporizador inactivo",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Disparo múltiple activo",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Disparo múltiple inactivo",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Proyección activa",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Proyección inactiva",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Sí",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "No",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Activar o desactivar micrófono",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "Aceptar",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Cancelar",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "¿Seguro que quieres quitar $file$?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "No se puede empezar a grabar.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Las fotos y los vídeos hechos con la cámara se moverán a la carpeta Descargas. Podrás acceder a ellos con la aplicación Archivos.\n\nLas aplicaciones con permiso de almacenamiento podrán acceder a tus fotos y vídeos.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "No se puede hacer la foto.",
-    "description": "Error message shown when failing to take photo."
   }
 }

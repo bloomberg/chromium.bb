@@ -7,93 +7,9 @@
     "message": "Τραβήξτε φωτογραφίες και βίντεο με την κάμερά σας.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Μεγάλα μάτια",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Ομορφιά",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Χρωματισμός",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Funky",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Κλίμακα του γκρι",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Εφημερίδα",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Κανονικό",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Μεγάλο κεφάλι",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Μεγάλο σαγόνι",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Κουνελάκι",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Σέπια",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Ρετρό '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Ρετρό '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Ρετρό '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Σκοτεινός θάλαμος",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Μοντέρνο",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Δίνη",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Εφέ Tilt Shift",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Κινηματογράφος",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Vintage",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Φάντασμα",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Αρχειοθετήστε σφάλματα συστήματος.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Η κάμερά σας δεν είναι διαθέσιμη προς το παρόν.",
@@ -107,13 +23,9 @@
     "message": "Δεν είναι δυνατή η φόρτωση του gallery.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Δεν είναι δυνατή η προσθήκη στο gallery.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Δεν είναι δυνατή η αποθήκευση του αρχείου $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Δεν είναι δυνατή η εξαγωγή του αρχείου $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Δεν είναι δυνατή η εγγραφή βίντεο.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Δεν είναι δυνατή η αποθήκευση του αρχείου.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Δεν είναι δυνατή η λήψη φωτογραφίας.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Δεν είναι δυνατή η έναρξη της εγγραφής.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Καμία εγγραφή.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Η επιτάχυνση υλικού δεν είναι διαθέσιμη.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Ο υπολογιστής σας μπορεί να διαθέτει μια μη συμβατή κάρτα γραφικών ή προγράμματα οδήγησης παλαιού τύπου.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Μετάβαση στο gallery",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Εναλλαγή φίλτρων",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Διαγραφή",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Αποθήκευση στο δίσκο",
+    "message": "Εξαγωγή σε δίσκο",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -158,100 +66,64 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Επιστροφή",
+    "message": "Πίσω",
     "description": "Label for the back button."
-  },
-  "maximizeButton": {
-    "message": "Μεγιστοποίηση",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Κλείσιμο",
-    "description": "Text to speech label for the close button."
   },
   "galleryImages": {
     "message": "Εικόνες gallery",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "Λήψη φωτογραφίας",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Διακοπή λήψης φωτογραφίας",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Έναρξη εγγραφής",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Διακοπή εγγραφής",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Εναλλαγή χρονομέτρου",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Εναλλαγή πολλαπλών λήψεων",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "Εναλλαγή κάμερας",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Μετάβαση στη λειτουργία εγγραφής βίντεο",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "Μετάβαση στη λειτουργία λήψης φωτογραφιών",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Η λειτουργία εγγραφής βίντεο είναι ενεργή",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Η λειτουργία λήψης φωτογραφιών είναι ενεργή",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "Μετάβαση στη λειτουργία λήψης φωτογραφίας",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Εναλλαγή κατοπτρισμού",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Χρονόμετρο ενεργό",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Εναλλαγή πλέγματος",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Χρονόμετρο ανενεργό",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Πολλαπλή λήψη ενεργή",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Πολλαπλή λήψη ανενεργή",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Κατοπτρισμός ενεργός",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Κατοπτρισμός ανενεργός",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Ναι",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Όχι",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Εναλλαγή μικροφώνου",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "ΟΚ",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Ακύρωση",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε το αρχείο $file$;",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Δεν είναι δυνατή η έναρξη της εγγραφής.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Οι φωτογραφίες και τα βίντεο που λήφθηκαν με την κάμερα θα μετακινηθούν στον φάκελο \"Λήψεις\". Μπορείτε να τα δείτε στα Αρχεία.\n\nΟι εφαρμογές με άδειες αποθηκευτικού χώρου θα έχουν πρόσβαση στις φωτογραφίες και τα βίντεό σας.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Δεν είναι δυνατή η λήψη φωτογραφίας.",
-    "description": "Error message shown when failing to take photo."
   }
 }

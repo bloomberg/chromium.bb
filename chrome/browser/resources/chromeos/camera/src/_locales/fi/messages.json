@@ -7,93 +7,9 @@
     "message": "Ota kuvia ja kuvaa videoita kameralla.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Isot silmät",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Kauneus",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Väritetty",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Omalaatuinen",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Harmaasävy",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Sanomalehti",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Normaali",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Iso pää",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Iso leuka",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Pupupää",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Seepia",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "30-luvun retro",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "50-luvun retro",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "60-luvun retro",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Valokuvalaboratorio",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Moderni",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Pyörre",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Kallistussiirto",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Elokuvateatteri",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Vintage",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Kummitus",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Tiedostojärjestelmän virheitä",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Kamerasi ei ole käytettävissä tällä hetkellä.",
@@ -107,13 +23,9 @@
     "message": "Gallerian lataus epäonnistui.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Galleriaan lisääminen epäonnistui.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Kohteen $file$ tallentaminen epäonnistui.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Tiedoston $file$ vieminen epäonnistui.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Videon kuvaaminen epäonnistui.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Tiedoston tallennus epäonnistui.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Kuvan ottaminen epäonnistui.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Tallennuksen aloittaminen epäonnistui.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Mitään ei kuvattu.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Laitteistokiihdytys ei ole käytettävissä.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Tietokoneessasi voi olla yhteensopimaton näytönohjain tai vanhoja ajureita.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Siirry galleriaan",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Suodattimet päälle/pois",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Poista",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Tallenna levylle",
+    "message": "Vie paikalliselle levylle",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,100 +69,64 @@
     "message": "Takaisin",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Suurenna",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Sulje",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Gallerian kuvat",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "Ota kuva",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "Ota valokuva",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Lopeta kuvan ottaminen",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Aloita kuvaaminen",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Lopeta kuvaaminen",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Ajastin päälle/pois",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Moniotos päälle/pois",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "Kamera päälle/pois",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Vaihda videon kuvaamiseen",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "Vaihda kuvan ottamiseen",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Videon kuvaaminen käytössä",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Kuvan ottaminen käytössä",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Peilikuva päälle/pois",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Ajastin käytössä",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Ruudukko päälle/pois",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Ajastin ei käytössä",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Moniotos käytössä",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Moniotos ei käytössä",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Peilikuva käytössä",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Peilikuva ei käytössä",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Kyllä",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Ei",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Mikrofoni päälle/pois",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Peruuta",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Haluatko varmasti poistaa kohteen $file$?",
+    "message": "Haluatko varmasti poistaa tiedoston $file$?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Tallennuksen aloittaminen epäonnistui.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Kameralla otetut kuvat ja videot siirretään Lataukset-kansioon. Voit käyttää niitä avaamalla Tiedostot.\n\nJos sovelluksella on tallennustilan käyttöoikeus, se voi käyttää kuvia ja videoita.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Kuvan ottaminen epäonnistui.",
-    "description": "Error message shown when failing to take photo."
   }
 }

@@ -4,96 +4,12 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Jäädvustage oma kaameraga pilte ja salvestage videoid.",
+    "message": "Jäädvustage oma kaameraga fotosid ja salvestage videoid.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Suured silmad",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Ilustatud",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Toonitud",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Stiilne",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Hallskaala",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Ajaleht",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Tavaline",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Suur pea",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Suur lõug",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Jänku pea",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Seepia",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Retro '30-ndad",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Retro '50-ndad",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Retro '60-ndad",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Fotolabor",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Moodne",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Keeris",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Makett",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Kinolik",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Klassikaline vana",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Kummitus",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Failisüsteemi vead.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Teie kaamera pole praegu saadaval.",
@@ -107,13 +23,9 @@
     "message": "Galerii laadimine ebaõnnestus.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Galeriisse lisamine ebaõnnestus.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Faili $file$ salvestamine ebaõnnestus.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Faili $file$ eksportimine ebaõnnestus.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Videot ei õnnestu salvestada.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Faili salvestamine ebaõnnestus.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Foto jäädvustamine ebaõnnestus.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Salvestamise alustamine ebaõnnestus.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Midagi pole salvestatud.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Riistvaraline kiirendus pole saadaval.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Teie arvuti graafikakaart võib olla ühildumatu või draiverid on vanad.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
-    "message": "Mine galeriisse",
+    "message": "Ava galerii",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Lülita filtrite vahel",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Kustuta",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Salvesta kettale",
+    "message": "Ekspordi kettale",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "Mine tagasi",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Maksimeeri",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Sule",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Galerii kujutised",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "Pildistage",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "Jäädvusta foto",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Peata foto jäädvustamine",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Alusta salvestamist",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Peata salvestamine",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Lülita taimer sisse/välja",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Lülita mitme pildi funktsioon sisse/välja",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "Vaheta kaamerat",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
-    "message": "Lülita video salvestamiseks",
+  "switchRecordVideoButton": {
+    "message": "Lülitu video salvestamise režiimile",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "Lülita pildistamiseks",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Video salvestamise funktsioon on aktiivne",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Pildistamise funktsioon on aktiivne",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "Lülitu foto jäädvustamise režiimile",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Lülita peegeldamine sisse/välja",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Taimer on aktiivne",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Lülita ruudustik sisse/välja",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Taimer pole aktiivne",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Mitme pildi funktsioon on aktiivne",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Mitme pildi funktsioon pole aktiivne",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Peegeldamine on aktiivne",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Peegeldamine pole aktiivne",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Jah",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Ei",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Lülita mikrofon sisse/välja",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Tühista",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Kas soovite kindlasti eemaldada faili $file$?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Salvestamist ei saa alustada.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Kaameraga tehtud fotod ja videod teisaldatakse kausta Allalaadimised. Pääsete neile juurde rakenduses Failid.\n\nSalvestusruumi kasutuse lubadega rakendustel on juurdepääs teie fotodele ja videotele.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Pilti ei saa jäädvustada.",
-    "description": "Error message shown when failing to take photo."
   }
 }

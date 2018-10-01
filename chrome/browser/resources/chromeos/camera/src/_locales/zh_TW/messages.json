@@ -4,96 +4,12 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "使用相機拍攝相片和錄製影片。",
+    "message": "使用相機拍攝相片及錄製影片。",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "普普風",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "大眼睛",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "美肌",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "上色",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "古怪",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "灰階",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "報紙",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "標準",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "大頭",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "戽斗",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "兔子頭",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "懷舊色調",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "30 年代懷舊風",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "50 年代懷舊風",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "60 年代懷舊風",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "相片研究室",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "現代",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "漩渦",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "移軸",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "電影",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "復古",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "重影",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "檔案系統錯誤。",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "你的相機目前無法使用。",
@@ -107,13 +23,9 @@
     "message": "無法載入圖片庫。",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "無法加入圖片庫。",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "無法儲存「$file$」。",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "無法匯出「$file$」。",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "無法錄影。",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "無法儲存檔案。",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "無法拍照。",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "無法開始錄影。",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "沒有任何錄製影片。",
+    "message": "未錄製任何內容。",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
-  },
-  "errorMsgNoWebGL": {
-    "message": "無法使用硬體加速功能。",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "電腦的顯示卡可能不相容，或是驅動程式版本過舊。",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
     "message": "前往圖片庫",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "切換濾鏡",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "刪除",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "儲存到磁碟",
+    "message": "匯出至磁碟",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "返回",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "最大化",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "關閉",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "圖片庫圖片",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "拍攝相片",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "拍照",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "停止拍照",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "開始錄製",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "停止錄製",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "切換計時器",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "切換連拍功能",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "切換相機",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "切換為錄影",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "切換為拍照",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "錄影功能已啟用",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "拍照功能已啟用",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "切換鏡像功能",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "計時器已啟用",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "切換格線",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "計時器已停用",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "連拍功能已啟用",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "連拍功能已停用",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "鏡像功能已啟用",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "鏡像功能已停用",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "是",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "否",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "切換麥克風",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "確定",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "取消",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "確定要移除「$file$」嗎？",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "無法開始錄影。",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
-    "message": "使用相機拍攝的相片和影片將移至「下載」資料夾，你可以在「檔案」中找到這些內容。\n\n具備儲存空間權限的應用程式將可存取你的相片和影片。",
+    "message": "使用相機拍攝的相片和影片將移至「下載內容」資料夾，你可以在「檔案」中存取這些內容。\n\n具備儲存空間權限的應用程式將可存取你的相片和影片。",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "無法拍攝相片。",
-    "description": "Error message shown when failing to take photo."
   }
 }

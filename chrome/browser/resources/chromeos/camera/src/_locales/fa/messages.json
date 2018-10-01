@@ -7,96 +7,12 @@
     "message": "با دوربینتان عکس بگیرید و فیلم‌برداری کنید.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "چشم درشت",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "زیبایی",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "رنگی کردن",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "غیرعادی",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "طیف خاکستری",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "روزنامه‌ای",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "معمولی",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "سر بزرگ",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "فک بزرگ",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "سر خرگوشی",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "سپیا",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "سبک دهه ۳۰",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "سبک دهه ۵۰",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "سبک دهه ۶۰",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "عکاسخانه‌ای",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "مدرن",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "چرخشی",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "تغییر شیب",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "سینمایی",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "قدیمی",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "شبح",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "خطاهایی در سیستم فایل.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "در حال حاضر دوربین شما در دسترس نیست.",
+    "message": "درحال‌حاضر دوربین شما در دسترس نیست.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
@@ -107,13 +23,9 @@
     "message": "بارگیری گالری انجام نشد.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "گالری اضافه نشد.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ ذخیره نشد.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "صادر کردن $file$ امکان‌پذیر نیست.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "فیلم‌برداری امکان‌پذیر نیست.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "ذخیره کردن فایل امکان‌پذیر نیست.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "عکس‌برداری امکان‌پذیر نیست.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "شروع ضبط امکان‌پذیر نیست.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "چیزی ضبط نشد.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "شتاب سخت‌افزاری دردسترس نیست.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "ممکن است کارت گرافیک رایانه‌تان سازگار نباشد یا درایورهای آن قدیمی باشند.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "رفتن به گالری",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "فعال یا غیرفعال کردن فیلترها",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "حذف",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "ذخیره در دیسک",
+    "message": "صادر کردن به دیسک",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -158,103 +66,67 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "برگشت به عقب",
+    "message": "برگشت",
     "description": "Label for the back button."
-  },
-  "maximizeButton": {
-    "message": "بزرگ کردن",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "بستن",
-    "description": "Text to speech label for the close button."
   },
   "galleryImages": {
     "message": "تصاویر گالری",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "عکس گرفتن",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "توقف عکس‌برداری",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "شروع ضبط",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "توقف ضبط",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "روشن/خاموش کردن تایمر",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "روشن/خاموش کردن ویژگی چند عکس",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "جابه‌جا شدن بین دوربین‌ها",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
-    "message": "جابه‌جا شدن به فیلم‌برداری",
+  "switchRecordVideoButton": {
+    "message": "رفتن به حالت فیلم‌برداری",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "جابه‌جا شدن به عکس گرفتن",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "فیلم‌بردای فعال است",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "عکس گرفتن فعال است",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "رفتن به حالت عکس‌برداری",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "روشن/خاموش کردن نمایش صفحه‌نمایش روی دستگاه دیگر",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "تایمر فعال",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "روشن/خاموش کردن حالت شطرنجی",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "تایمر غیرفعال",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "ویژگی چند عکس، فعال",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "ویژگی چند عکس، غیرفعال",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "نمایش صفحه نمایش روی دستگاه دیگر، فعال",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "نمایش صفحه نمایش روی دستگاه دیگر، غیرفعال",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "بله",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "خیر",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "روشن/خاموش کردن میکروفون",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "تأیید",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "لغو",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "آیا واقعاً می‌خواهید $file$ را حذف کنید؟",
+    "message": "واقعاً می‌خواهید $file$ حذف شود؟",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -264,7 +136,7 @@
     }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "آیا واقعاً می‌خواهید $count$ مورد را حذف کنید؟",
+    "message": "واقعاً می‌خواهید $count$ مورد حذف شود؟",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
       "count": {
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "شروع ضبط امکان‌پذیر نیست.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
-    "message": "عکس‌ها و ویدیوهایی که با دوربین گرفته شده است به پوشه «بارگیری‌ها» منتقل خواهد شد. می‌توانید در Files به آن‌ها دسترسی داشته باشید.\n\nبرنامه‌هایی که مجوز فضای ذخیره‌سازی دارند به عکس‌ها و ویدیوهای شما دسترسی خواهند داشت.",
+    "message": "عکس‌ها و ویدیوهایی که با دوربین گرفته شده است، به پوشه «بارگیری‌ها» منتقل خواهد شد. می‌توانید در Files به آن‌ها دسترسی داشته باشید.\n\nبرنامه‌هایی که مجوز فضای ذخیره‌سازی دارند، به عکس‌ها و ویدیوهای شما دسترسی خواهند داشت.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "عکس‌برداری امکان‌پذیر نیست.",
-    "description": "Error message shown when failing to take photo."
   }
 }

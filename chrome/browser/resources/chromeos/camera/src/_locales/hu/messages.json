@@ -4,99 +4,15 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Fényképeket és videókat készíthet a kamerával.",
+    "message": "Fotókat és videókat készíthet a kamerával.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "„Andy” effektus",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Nagy szemek",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Szépség",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Színezés",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "„Funky” effektus",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Szürkeárnyalat",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Újság",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Normál",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Nagy fej",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Nagy áll",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Nyuszifej",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Szépia",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "30-as évek retró stílusa",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "50-es évek retró stílusa",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "60-as évek retró stílusa",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Fotólabor",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Modern",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Örvény",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Képsík eltolása",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Mozi",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Régies",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Szellem",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Fájlrendszerbeli hibák.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "A kamera jelenleg nem áll rendelkezésre.",
+    "message": "A kamera jelenleg nem érhető el.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
@@ -107,13 +23,9 @@
     "message": "Nem sikerült betölteni a galériát.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Nem sikerült hozzáadni a galériához.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "A(z) $file$ mentése nem sikerült.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "A fájl ($file$) exportálása nem sikerült.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Nem lehet videót készíteni.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "A fájl mentése nem sikerült.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "A fotó elkészítése nem sikerült.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Nem sikerült elindítani a felvételt.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "A rendszer semmit nem rögzített.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "A hardveres gyorsítás nem áll rendelkezésre.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Számítógépében nem kompatibilis a grafikai kártya vagy régiek a meghajtók.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Ugrás a galériába",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Szűrők váltása",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Törlés",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Mentés lemezre",
+    "message": "Exportálás lemezre",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,100 +69,64 @@
     "message": "Vissza",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Maximalizálás",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Bezárás",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Galériaképek",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "Képkészítés",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "Fotó készítése",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Fotókészítés leállítása",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
-    "message": "Rögzítés megkezdése",
-    "description": "Label for the red video recording button to start recording."
+    "message": "Felvétel megkezdése",
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Felvétel leállítása",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
-    "message": "Időzítő állítása",
+    "message": "Időzítés be-/kikapcsolása",
     "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleMultiButton": {
-    "message": "Több felvétel készítésének be-/kikapcsolása",
-    "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
     "message": "Kamerák közötti váltás",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Váltás videófelvételre",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "Váltás fotókészítésre",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "A videófelvétel aktív",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "A fotókészítés aktív",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Tükrözés be-/kikapcsolása",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Az időzítő aktív",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Rács be-/kikapcsolása",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Az időzítő inaktív",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "A „Több felvétel készítése” funkció aktív",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "A „Több felvétel készítése” funkció inaktív",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "A tükrözés aktív",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "A tükrözés inaktív",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Igen",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Nem",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Mikrofon be-/kikapcsolása",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Mégse",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Biztosan eltávolítja a(z) $file$ fájlt?",
+    "message": "Biztosan eltávolítja a következő fájlt: $file$?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Nem sikerült elindítani a felvételt.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "A kamerával készített fotók és videók a Letöltések mappába kerülnek. A Fájlok alkalmazásban érheti el őket.\n\nA tárhelyengedéllyel rendelkező alkalmazások hozzáférnek fotóihoz és videóihoz.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Nem sikerült képet készíteni.",
-    "description": "Error message shown when failing to take photo."
   }
 }
