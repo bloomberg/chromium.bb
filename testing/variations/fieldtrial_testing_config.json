@@ -514,9 +514,7 @@
     "AudioService": [
         {
             "platforms": [
-                "linux",
-                "mac",
-                "windows"
+                "linux"
             ],
             "experiments": [
                 {
@@ -528,6 +526,26 @@
                         "AudioServiceAudioStreams",
                         "AudioServiceLaunchOnStartup",
                         "AudioServiceOutOfProcess"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "AudioProcess_LaunchOnStartup_Sandboxed_v7",
+                    "params": {
+                        "teardown_timeout_s": "0"
+                    },
+                    "enable_features": [
+                        "AudioServiceAudioStreams",
+                        "AudioServiceLaunchOnStartup",
+                        "AudioServiceOutOfProcess",
+                        "AudioServiceSandbox"
                     ]
                 }
             ]
