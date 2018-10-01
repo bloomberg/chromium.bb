@@ -66,8 +66,10 @@ chromium::web::NavigationEntry ConvertContentNavigationEntry(
     content::NavigationEntry* entry) {
   DCHECK(entry);
   chromium::web::NavigationEntry converted;
-  converted.title = base::UTF16ToUTF8(entry->GetTitle());
+  converted.title = base::UTF16ToUTF8(entry->GetTitleForDisplay());
   converted.url = entry->GetURL().spec();
+  converted.is_error =
+      entry->GetPageType() == content::PageType::PAGE_TYPE_ERROR;
   return converted;
 }
 
@@ -90,6 +92,10 @@ bool ComputeNavigationEvent(const chromium::web::NavigationEntry& old_entry,
     is_changed = true;
     computed_event->url = new_entry.url;
   }
+
+  computed_event->is_error = new_entry.is_error;
+  if (old_entry.is_error != new_entry.is_error)
+    is_changed = true;
 
   return is_changed;
 }
@@ -264,11 +270,9 @@ void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
     return;
   }
 
-  // TODO(kmarshall): Get NavigationEntry from NavigationController.
-  chromium::web::NavigationEntry current_navigation_state;
-  current_navigation_state.url = validated_url.spec();
-  current_navigation_state.title = base::UTF16ToUTF8(web_contents_->GetTitle());
-
+  chromium::web::NavigationEntry current_navigation_state =
+      ConvertContentNavigationEntry(
+          web_contents_->GetController().GetVisibleEntry());
   pending_navigation_event_is_dirty_ |=
       ComputeNavigationEvent(cached_navigation_state_, current_navigation_state,
                              &pending_navigation_event_);
