@@ -107,6 +107,11 @@ def GetSlavesAbortedBySelfDestructedMaster(master_build_id, db):
       master_build_id,
       message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
       message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)
+  # tentative fix for crbug.com/890651
+  if not messages:
+    logging.warning("No build message retrieved for master_build_id=%s" %
+                    master_build_id)
+    return set()
   slave_build_ids = [int(m['message_value']) for m in messages]
   build_statuses = db.GetBuildStatuses(slave_build_ids)
   return set(b['build_config'] for b in build_statuses)
