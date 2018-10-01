@@ -50,6 +50,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -71,6 +72,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/session_manager/session_manager_types.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -712,12 +714,17 @@ DeviceStatusCollector::DeviceStatusCollector(
       max_stored_future_activity_interval_(kMaxStoredFutureActivityInterval),
       pref_service_(pref_service),
       last_idle_check_(Time()),
+      last_active_check_(base::Time()),
+      last_state_active_(true),
       volume_info_fetcher_(volume_info_fetcher),
       cpu_statistics_fetcher_(cpu_statistics_fetcher),
       cpu_temp_fetcher_(cpu_temp_fetcher),
       android_status_fetcher_(android_status_fetcher),
       statistics_provider_(provider),
       cros_settings_(chromeos::CrosSettings::Get()),
+      power_manager_(
+          chromeos::DBusThreadManager::Get()->GetPowerManagerClient()),
+      session_manager_(session_manager::SessionManager::Get()),
       is_enterprise_reporting_(is_enterprise_reporting),
       task_runner_(nullptr),
       weak_factory_(this) {
@@ -768,6 +775,10 @@ DeviceStatusCollector::DeviceStatusCollector(
   running_kiosk_app_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportRunningKioskApp, callback);
 
+  // Watch for changes on the device state to calculate the child's active time.
+  power_manager_->AddObserver(this);
+  session_manager_->AddObserver(this);
+
   // Fetch the current values of the policies.
   UpdateReportingSettings();
 
@@ -807,7 +818,10 @@ DeviceStatusCollector::DeviceStatusCollector(
       activity_day_start);
 }
 
-DeviceStatusCollector::~DeviceStatusCollector() {}
+DeviceStatusCollector::~DeviceStatusCollector() {
+  power_manager_->RemoveObserver(this);
+  session_manager_->RemoveObserver(this);
+}
 
 // static
 void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -906,18 +920,18 @@ void DeviceStatusCollector::ClearCachedResourceUsage() {
 }
 
 void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
-  // Do nothing if device activity reporting is disabled.
-  if (!report_activity_times_)
+  // Do nothing if device activity reporting is disabled or if it's a child
+  // account. Usage time for child accounts are calculated differently.
+  if (!report_activity_times_ ||
+      user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
     return;
+  }
 
   Time now = GetCurrentTime();
 
   // For kiosk apps we report total uptime instead of active time.
   if (state == ui::IDLE_STATE_ACTIVE || IsKioskApp()) {
-    // Child user is the consumer user registered with DMServer and
-    // therefore eligible for non-enterprise reporting.
-    CHECK(is_enterprise_reporting_ ||
-          user_manager::UserManager::Get()->IsLoggedInAsChildUser());
+    CHECK(is_enterprise_reporting_);
     std::string user_email = GetUserForActivityReporting();
     // If it's been too long since the last report, or if the activity is
     // negative (which can happen when the clock changes), assume a single
@@ -937,6 +951,63 @@ void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
         max_stored_future_activity_interval_);
   }
   last_idle_check_ = now;
+}
+
+void DeviceStatusCollector::OnSessionStateChanged() {
+  UpdateChildUsageTime();
+  last_state_active_ =
+      session_manager::SessionManager::Get()->session_state() ==
+      session_manager::SessionState::ACTIVE;
+}
+
+void DeviceStatusCollector::ScreenIdleStateChanged(
+    const power_manager::ScreenIdleState& state) {
+  UpdateChildUsageTime();
+  // It is active if screen is on and if the session is also active.
+  last_state_active_ =
+      !state.off() && session_manager_->session_state() ==
+                          session_manager::SessionState::ACTIVE;
+}
+
+void DeviceStatusCollector::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
+  UpdateChildUsageTime();
+  // Device is going to be suspeded, so it won't be active.
+  last_state_active_ = false;
+}
+
+void DeviceStatusCollector::SuspendDone(const base::TimeDelta& sleep_duration) {
+  UpdateChildUsageTime();
+  // Device is returning from suspension, so it is considered active if the
+  // session is also active.
+  last_state_active_ = session_manager_->session_state() ==
+                       session_manager::SessionState::ACTIVE;
+}
+
+void DeviceStatusCollector::UpdateChildUsageTime() {
+  if (!report_activity_times_ ||
+      !user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
+    return;
+  }
+
+  if (last_active_check_.is_null()) {
+    last_active_check_ = GetCurrentTime();
+    return;
+  }
+
+  // Only child accounts should be using this method.
+  CHECK(user_manager::UserManager::Get()->IsLoggedInAsChildUser());
+
+  Time now = GetCurrentTime();
+  if (last_state_active_) {
+    activity_storage_->AddActivityPeriod(last_active_check_, now,
+                                         GetUserForActivityReporting());
+
+    activity_storage_->PruneActivityPeriods(
+        now, max_stored_past_activity_interval_,
+        max_stored_future_activity_interval_);
+  }
+  last_active_check_ = now;
 }
 
 std::unique_ptr<DeviceLocalAccount>
@@ -1069,6 +1140,9 @@ bool DeviceStatusCollector::IncludeEmailsInActivityReports() const {
 
 bool DeviceStatusCollector::GetActivityTimes(
     em::DeviceStatusReportRequest* status) {
+  if (user_manager::UserManager::Get()->IsLoggedInAsChildUser())
+    UpdateChildUsageTime();
+
   // If user reporting is off, data should be aggregated per day.
   // Signed-in user is reported in non-enterprise reporting.
   std::vector<ActivityStorage::ActivityPeriod> activity_times =

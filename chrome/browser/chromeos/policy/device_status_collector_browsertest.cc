@@ -46,7 +46,9 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
+#include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
@@ -385,6 +387,10 @@ class DeviceStatusCollectorTest : public testing::Test {
 
     chromeos::CrasAudioHandler::InitializeForTesting();
     chromeos::LoginState::Initialize();
+
+    fake_power_manager_client_ = new chromeos::FakePowerManagerClient;
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
+        base::WrapUnique(fake_power_manager_client_));
   }
 
   ~DeviceStatusCollectorTest() override {
@@ -413,6 +419,50 @@ class DeviceStatusCollectorTest : public testing::Test {
   void TearDown() override { settings_helper_.RestoreProvider(); }
 
  protected:
+  // States tracked to calculate a child's active time.
+  enum class DeviceStateTransitions {
+    kEnterIdleState,
+    kLeaveIdleState,
+    kEnterSleep,
+    kLeaveSleep,
+    kEnterSessionActive,
+    kLeaveSessionActive
+  };
+
+  void SimulateStateChanges(DeviceStateTransitions* states, int len) {
+    for (int i = 0; i < len; i++) {
+      switch (states[i]) {
+        case DeviceStateTransitions::kEnterIdleState: {
+          power_manager::ScreenIdleState state;
+          state.set_off(true);
+          fake_power_manager_client_->SendScreenIdleStateChanged(state);
+        } break;
+        case DeviceStateTransitions::kLeaveIdleState: {
+          power_manager::ScreenIdleState state;
+          state.set_off(false);
+          fake_power_manager_client_->SendScreenIdleStateChanged(state);
+        } break;
+        case DeviceStateTransitions::kEnterSleep:
+          fake_power_manager_client_->SendSuspendImminent(
+              power_manager::SuspendImminent_Reason_LID_CLOSED);
+          break;
+        case DeviceStateTransitions::kLeaveSleep:
+          fake_power_manager_client_->SendSuspendDone(
+              base::TimeDelta::FromSeconds(
+                  policy::DeviceStatusCollector::kIdlePollIntervalSeconds));
+          break;
+        case DeviceStateTransitions::kEnterSessionActive:
+          session_manager::SessionManager::Get()->SetSessionState(
+              session_manager::SessionState::ACTIVE);
+          break;
+        case DeviceStateTransitions::kLeaveSessionActive:
+          session_manager::SessionManager::Get()->SetSessionState(
+              session_manager::SessionState::LOCKED);
+          break;
+      }
+    }
+  }
+
   void AddMountPoint(const std::string& mount_point) {
     mount_point_map_.insert(DiskMountManager::MountPointMap::value_type(
         mount_point, DiskMountManager::MountPointInfo(
@@ -599,6 +649,13 @@ class DeviceStatusCollectorTest : public testing::Test {
   base::ScopedPathOverride user_data_dir_override_;
   chromeos::FakeUpdateEngineClient* const update_engine_client_;
   std::unique_ptr<base::RunLoop> run_loop_;
+
+  // Owned by chromeos::DBusThreadManager.
+  chromeos::FakePowerManagerClient* fake_power_manager_client_;
+
+  // This property is required to instantiate the session manager, a singleton
+  // which is used by the device status collector.
+  session_manager::SessionManager session_manager_;
 };
 
 TEST_F(DeviceStatusCollectorTest, AllIdle) {
@@ -2058,7 +2115,6 @@ class DeviceStatusCollectorNetworkInterfacesTest
 
   void TearDown() override {
     chromeos::NetworkHandler::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
   void VerifyNetworkReporting() {
@@ -2362,16 +2418,56 @@ class ConsumerDeviceStatusCollectorTimeLimitEnabledTest
 };
 
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ReportingActivityTimes) {
-  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
-                                 ui::IDLE_STATE_ACTIVE};
-  status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(ui::IdleState));
+       ReportingActivityTimesSessionTransistions) {
+  DeviceStateTransitions test_states[] = {
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kLeaveSessionActive};
+  SimulateStateChanges(test_states,
+                       sizeof(test_states) / sizeof(DeviceStateTransitions));
 
   GetStatus();
 
   ASSERT_EQ(1, device_status_.active_period_size());
-  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
+  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+  EXPECT_EQ(user_account_id_.GetUserEmail(),
+            device_status_.active_period(0).user_email());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
+       ReportingActivityTimesSleepTransistions) {
+  DeviceStateTransitions test_states[] = {
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kEnterSleep, DeviceStateTransitions::kLeaveSleep,
+      DeviceStateTransitions::kLeaveSessionActive};
+  SimulateStateChanges(test_states,
+                       sizeof(test_states) / sizeof(DeviceStateTransitions));
+
+  GetStatus();
+
+  ASSERT_EQ(1, device_status_.active_period_size());
+  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+  EXPECT_EQ(user_account_id_.GetUserEmail(),
+            device_status_.active_period(0).user_email());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
+       ReportingActivityTimesIdleTransitions) {
+  DeviceStateTransitions test_states[] = {
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kEnterIdleState,
+      DeviceStateTransitions::kLeaveIdleState,
+      DeviceStateTransitions::kLeaveSessionActive};
+  SimulateStateChanges(test_states,
+                       sizeof(test_states) / sizeof(DeviceStateTransitions));
+
+  GetStatus();
+
+  ASSERT_EQ(1, device_status_.active_period_size());
+  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
   EXPECT_EQ(user_account_id_.GetUserEmail(),
             device_status_.active_period(0).user_email());
@@ -2381,11 +2477,15 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
   EXPECT_TRUE(
       profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
 
-  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE,
-                                 ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
-                                 ui::IDLE_STATE_IDLE,   ui::IDLE_STATE_IDLE};
-  status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(ui::IdleState));
+  DeviceStateTransitions test_states[] = {
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kLeaveSessionActive};
+  SimulateStateChanges(test_states,
+                       sizeof(test_states) / sizeof(DeviceStateTransitions));
   EXPECT_FALSE(
       profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
 
@@ -2396,8 +2496,8 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
                          base::BindRepeating(&GetEmptyCPUStatistics),
                          base::BindRepeating(&GetEmptyCPUTempInfo),
                          base::BindRepeating(&GetEmptyAndroidStatus));
-  status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(ui::IdleState));
+  SimulateStateChanges(test_states,
+                       sizeof(test_states) / sizeof(DeviceStateTransitions));
 
   GetStatus();
   EXPECT_EQ(6 * ActivePeriodMilliseconds(),
@@ -2408,10 +2508,15 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
        ActivityNotWrittenToLocalState) {
   EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
 
-  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
-                                 ui::IDLE_STATE_ACTIVE};
-  status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(ui::IdleState));
+  DeviceStateTransitions test_states[] = {
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kLeaveSessionActive};
+  SimulateStateChanges(test_states,
+                       sizeof(test_states) / sizeof(DeviceStateTransitions));
   GetStatus();
   EXPECT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(3 * ActivePeriodMilliseconds(),
