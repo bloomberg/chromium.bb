@@ -7434,6 +7434,10 @@ interface TrustedTypePolicyFactory
     method createPolicy
     method getExposedPolicy
     method getPolicyNames
+    method isHTML
+    method isScript
+    method isScriptURL
+    method isURL
 interface TrustedURL
     attribute @@toStringTag
     method constructor
