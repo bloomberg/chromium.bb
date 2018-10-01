@@ -35,6 +35,7 @@ jumbo_component("geometry_skia") {
   public_deps = [
     ":gfx_export",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
   deps = [
     "//base",
     "//gpu/vulkan:buildflags",
@@ -231,6 +232,7 @@ jumbo_component("gfx") {
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
+    "//build/config/compiler:wexit_time_destructors",
   ]
 
   # This is part of the gfx component in the component build.
@@ -404,20 +406,6 @@ jumbo_component("color_space") {
   defines = [ "COLOR_SPACE_IMPLEMENTATION" ]
 }
 
-# Depend on this to use half_float.h without pulling in all of gfx.
-source_set("half_float") {
-  sources = [
-    "half_float.h",
-  ]
-
-  defines = [ "GFX_IMPLEMENTATION" ]
-
-  public_deps = [
-    ":gfx_export",
-    "//base",
-  ]
-}
-
 # Depend on this to use native_widget_types.h without pulling in all of gfx.
 source_set("native_widget_types") {
   public = [
@@ -451,6 +439,8 @@ source_set("selection_bound_sources") {
     "selection_bound.cc",
     "selection_bound.h",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   defines = [ "GFX_IMPLEMENTATION" ]
 
@@ -518,6 +508,8 @@ jumbo_source_set("memory_buffer_sources") {
       "gpu_memory_buffer.h",
     ]
   }
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   defines = [ "GFX_IMPLEMENTATION" ]
 
