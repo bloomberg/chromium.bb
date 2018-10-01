@@ -479,8 +479,8 @@ gfx::Size ContentsView::GetDefaultContentsSize() const {
 gfx::Size ContentsView::CalculatePreferredSize() const {
   // If shelf is set auto-hide, the work area will become fullscreen. The bottom
   // row of apps will be partially blocked by the shelf when it becomes shown.
-  // So always cut the shelf bounds from display bounds.
-  gfx::Size size = GetDisplaySize();
+  // So always cut the shelf bounds from widget bounds.
+  gfx::Size size = GetWidget()->GetNativeView()->bounds().size();
   if (!app_list_view_->is_side_shelf())
     size.set_height(size.height() - AppListConfig::instance().shelf_height());
   return size;
@@ -525,12 +525,6 @@ void ContentsView::TransitionChanged() {
 }
 
 void ContentsView::TransitionEnded() {}
-
-gfx::Size ContentsView::GetDisplaySize() const {
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestView(GetWidget()->GetNativeView())
-      .size();
-}
 
 void ContentsView::FadeOutOnClose(base::TimeDelta animation_duration) {
   DoAnimation(animation_duration, layer(), 0.0f);

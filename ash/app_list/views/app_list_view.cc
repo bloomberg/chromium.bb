@@ -450,10 +450,6 @@ void AppListView::SetAppListOverlayVisible(bool visible) {
   }
 }
 
-gfx::Size AppListView::CalculatePreferredSize() const {
-  return app_list_main_view_->GetPreferredSize();
-}
-
 void AppListView::OnPaint(gfx::Canvas* canvas) {
   views::WidgetDelegateView::OnPaint(canvas);
   if (!next_paint_callback_.is_null()) {
@@ -646,23 +642,6 @@ void AppListView::InitChildWidgets() {
 }
 
 void AppListView::InitializeFullscreen(gfx::NativeView parent) {
-  const display::Display display_nearest_view = GetDisplayNearestView();
-  const gfx::Rect display_work_area_bounds = display_nearest_view.work_area();
-
-  // Set the widget height to the shelf height to replace the shelf background
-  // on show animation with no flicker. In shelf mode we set the bounds to the
-  // top of the screen because the widget does not animate.
-  const int overlay_view_bounds_y = is_side_shelf_
-                                        ? display_work_area_bounds.y()
-                                        : display_work_area_bounds.bottom();
-  gfx::Rect app_list_overlay_view_bounds(
-      display_nearest_view.bounds().x(), overlay_view_bounds_y,
-      parent->bounds().width(), display_nearest_view.bounds().height());
-
-  // The app list container fills the screen, so convert to local coordinates.
-  gfx::Rect local_bounds = app_list_overlay_view_bounds;
-  local_bounds -= display_nearest_view.bounds().OffsetFromOrigin();
-
   fullscreen_widget_ = new views::Widget;
   views::Widget::InitParams app_list_overlay_view_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -683,7 +662,7 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent) {
   // intersection.
   // TODO(mash): Redesign this animation to position the widget to cover the
   // entire screen, then animate the layer up into position. crbug.com/768437
-  fullscreen_widget_->GetNativeView()->SetBounds(local_bounds);
+  fullscreen_widget_->GetNativeView()->SetBounds(GetPreferredWidgetBounds());
 
   overlay_view_ = new AppListOverlayView(0 /* no corners */);
 
@@ -808,23 +787,19 @@ void AppListView::EndDrag(const gfx::Point& location) {
       }
     }
   } else {
-    const int display_height = GetDisplayNearestView().size().height();
-    int app_list_y_for_state = 0;
+    const int fullscreen_height = GetFullscreenStateHeight();
     int app_list_height = 0;
     switch (app_list_state_) {
       case AppListViewState::FULLSCREEN_ALL_APPS:
       case AppListViewState::FULLSCREEN_SEARCH:
-        app_list_y_for_state = 0;
-        app_list_height = display_height;
+        app_list_height = fullscreen_height;
         break;
       case AppListViewState::HALF:
-        app_list_y_for_state = display_height - kHalfAppListHeight;
         app_list_height = kHalfAppListHeight;
         break;
       case AppListViewState::PEEKING: {
         const int peeking_height =
             AppListConfig::instance().peeking_app_list_height();
-        app_list_y_for_state = display_height - peeking_height;
         app_list_height = peeking_height;
         break;
       }
@@ -839,12 +814,12 @@ void AppListView::EndDrag(const gfx::Point& location) {
     ConvertPointToScreen(this, &location_in_screen_coordinates);
     const int drag_delta =
         initial_drag_point_.y() - location_in_screen_coordinates.y();
-    const int location_y_in_current_display =
+    const int location_y_in_current_work_area =
         location_in_screen_coordinates.y() -
-        GetDisplayNearestView().bounds().y();
+        GetDisplayNearestView().work_area().y();
     // If the drag ended near the bezel, close the app list and return early.
-    if (location_y_in_current_display >=
-        (display_height - kAppListBezelMargin)) {
+    if (location_y_in_current_work_area >=
+        (fullscreen_height - kAppListBezelMargin)) {
       Dismiss();
       return;
     }
@@ -1477,9 +1452,8 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   background_opacity_ = background_opacity;
   gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
   app_list_y_position_in_screen_ = std::min(
-      std::max(y_position_in_screen, GetDisplayNearestView().bounds().y()),
-      GetDisplayNearestView().bounds().bottom() -
-          AppListConfig::instance().shelf_height());
+      std::max(y_position_in_screen, GetDisplayNearestView().work_area().y()),
+      GetScreenBottom() - AppListConfig::instance().shelf_height());
   new_widget_bounds.set_y(app_list_y_position_in_screen_);
   gfx::NativeView native_view = fullscreen_widget_->GetNativeView();
   ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
@@ -1500,7 +1474,7 @@ PaginationModel* AppListView::GetAppsPaginationModel() {
 }
 
 gfx::Rect AppListView::GetAppInfoDialogBounds() const {
-  gfx::Rect app_info_bounds(GetDisplayNearestView().bounds());
+  gfx::Rect app_info_bounds(GetDisplayNearestView().work_area());
   app_info_bounds.ClampToCenteredSize(
       gfx::Size(kAppInfoDialogWidth, kAppInfoDialogHeight));
   return app_info_bounds;
@@ -1524,8 +1498,7 @@ int AppListView::GetScreenBottom() const {
 int AppListView::GetCurrentAppListHeight() const {
   if (!fullscreen_widget_)
     return AppListConfig::instance().shelf_height();
-  return GetDisplayNearestView().bounds().bottom() -
-         fullscreen_widget_->GetWindowBoundsInScreen().y();
+  return GetScreenBottom() - fullscreen_widget_->GetWindowBoundsInScreen().y();
 }
 
 float AppListView::GetAppListTransitionProgress() const {
@@ -1548,11 +1521,17 @@ float AppListView::GetAppListTransitionProgress() const {
   // Currently transition progress is between peeking and fullscreen state.
   // Calculate the progress of this transition.
   const float fullscreen_height_above_peeking =
-      GetDisplayNearestView().size().height() - peeking_height;
+      GetFullscreenStateHeight() - peeking_height;
   const float current_height_above_peeking = current_height - peeking_height;
   DCHECK_GT(fullscreen_height_above_peeking, 0);
   DCHECK_LE(current_height_above_peeking, fullscreen_height_above_peeking);
   return 1 + current_height_above_peeking / fullscreen_height_above_peeking;
+}
+
+int AppListView::GetFullscreenStateHeight() const {
+  const display::Display display = GetDisplayNearestView();
+  const gfx::Rect display_bounds = display.bounds();
+  return display_bounds.height() - display.work_area().y() + display_bounds.y();
 }
 
 bool AppListView::IsHomeLauncherEnabledInTabletMode() const {
@@ -1644,7 +1623,7 @@ bool AppListView::CloseKeyboardIfVisible() {
 void AppListView::OnDisplayMetricsChanged(const display::Display& display,
                                           uint32_t changed_metrics) {
   // Set the |fullscreen_widget_| size to fit the new display metrics.
-  fullscreen_widget_->SetSize(GetDisplayNearestView().size());
+  fullscreen_widget_->GetNativeView()->SetBounds(GetPreferredWidgetBounds());
 
   // Update the |fullscreen_widget_| bounds to accomodate the new work
   // area.
@@ -1712,6 +1691,27 @@ bool AppListView::ShouldIgnoreScrollEvents() {
   // changes or transtions.
   return fullscreen_widget_->GetLayer()->GetAnimator()->is_animating() ||
          GetRootAppsGridView()->pagination_model()->has_transition();
+}
+
+gfx::Rect AppListView::GetPreferredWidgetBounds() {
+  const display::Display display = GetDisplayNearestView();
+  const gfx::Rect work_area_bounds = display.work_area();
+
+  // Set the widget height to the shelf height to replace the shelf background
+  // on show animation with no flicker. In shelf mode we set the bounds to the
+  // top of the screen because the widget does not animate. Then convert to
+  // local coordinates since the app list container fills the screen.
+  const int overlay_view_bounds_y =
+      (is_side_shelf_ ? work_area_bounds.y() : work_area_bounds.bottom()) -
+      display.bounds().y();
+
+  // Use parent's width instead of display width to avoid 1 px gap (See
+  // https://crbug.com/884889).
+  CHECK(fullscreen_widget_);
+  aura::Window* parent = fullscreen_widget_->GetNativeView()->parent();
+  CHECK(parent);
+  return gfx::Rect(0, overlay_view_bounds_y, parent->bounds().width(),
+                   GetFullscreenStateHeight());
 }
 
 }  // namespace app_list
