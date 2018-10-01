@@ -492,6 +492,10 @@ TEST_F('PrintPreviewLinkContainerTest', 'HideInAppKioskMode', function() {
 TEST_F('PrintPreviewLinkContainerTest', 'SystemDialogLinkClick', function() {
   this.runMochaTest(link_container_test.TestNames.SystemDialogLinkClick);
 });
+
+TEST_F('PrintPreviewLinkContainerTest', 'InvalidState', function() {
+  this.runMochaTest(link_container_test.TestNames.InvalidState);
+});
 GEN('#endif');  // !defined(OS_CHROMEOS)
 
 GEN('#if defined(OS_MACOSX)');

@@ -860,33 +860,34 @@ cr.define('settings_sections_tests', function() {
               .$.userValue.inputElement;
       const fitToPageCheckbox = scalingElement.$$('#fit-to-page-checkbox');
 
-      const validateScalingState = (scalingValue, scalingValid, fitToPage) => {
-        // Invalid scalings are always set directly in the input, so no need to
-        // verify that the input matches them.
-        if (scalingValid) {
-          const scalingDisplay = fitToPage ?
-              page.documentInfo_.fitToPageScaling.toString() :
-              scalingValue;
-          assertEquals(scalingDisplay, scalingInput.value);
-        }
-        assertEquals(scalingValue, page.settings.scaling.value);
-        assertEquals(scalingValid, page.settings.scaling.valid);
-        assertEquals(fitToPage, fitToPageCheckbox.checked);
-        assertEquals(fitToPage, page.settings.fitToPage.value);
-      };
+      const validateScalingState =
+          (scalingValue, scalingValid, fitToPage, fitToPageDisplay) => {
+            // Invalid scalings are always set directly in the input, so no need
+            // to verify that the input matches them.
+            if (scalingValid) {
+              const scalingDisplay = fitToPage ?
+                  page.documentInfo_.fitToPageScaling.toString() :
+                  scalingValue;
+              assertEquals(scalingDisplay, scalingInput.value);
+            }
+            assertEquals(scalingValue, page.settings.scaling.value);
+            assertEquals(scalingValid, page.settings.scaling.valid);
+            assertEquals(fitToPageDisplay, fitToPageCheckbox.checked);
+            assertEquals(fitToPage, page.settings.fitToPage.value);
+          };
 
       // Set PDF so both scaling and fit to page are active.
       initDocumentInfo(true, false);
       assertFalse(scalingElement.hidden);
 
       // Default is 100
-      validateScalingState('100', true, false);
+      validateScalingState('100', true, false, false);
 
       // Change to 105
       triggerInputEvent(scalingInput, '105');
       return test_util.eventToPromise('input-change', scalingElement)
           .then(function() {
-            validateScalingState('105', true, false);
+            validateScalingState('105', true, false, false);
 
             // Change to fit to page. Should display fit to page scaling but not
             // alter the scaling setting.
@@ -897,7 +898,7 @@ cr.define('settings_sections_tests', function() {
           })
           .then(function(event) {
             assertEquals('fitToPage', event.detail);
-            validateScalingState('105', true, true);
+            validateScalingState('105', true, true, true);
 
             // Set scaling. Should uncheck fit to page and set the settings for
             // scaling and fit to page.
@@ -905,7 +906,7 @@ cr.define('settings_sections_tests', function() {
             return test_util.eventToPromise('input-change', scalingElement);
           })
           .then(function() {
-            validateScalingState('95', true, false);
+            validateScalingState('95', true, false, false);
 
             // Set scaling to something invalid. Should change setting validity
             // but not value.
@@ -913,7 +914,7 @@ cr.define('settings_sections_tests', function() {
             return test_util.eventToPromise('input-change', scalingElement);
           })
           .then(function() {
-            validateScalingState('95', false, false);
+            validateScalingState('95', false, false, false);
 
             // Check fit to page. Should set scaling valid.
             fitToPageCheckbox.checked = true;
@@ -923,7 +924,7 @@ cr.define('settings_sections_tests', function() {
           })
           .then(function(event) {
             assertEquals('fitToPage', event.detail);
-            validateScalingState('95', true, true);
+            validateScalingState('95', true, true, true);
 
             // Uncheck fit to page. Should reset scaling to last valid.
             fitToPageCheckbox.checked = false;
@@ -933,7 +934,45 @@ cr.define('settings_sections_tests', function() {
           })
           .then(function(event) {
             assertEquals('fitToPage', event.detail);
-            validateScalingState('95', true, false);
+            validateScalingState('95', true, false, false);
+
+            // Change to fit to page. Should display fit to page scaling but not
+            // alter the scaling setting.
+            fitToPageCheckbox.checked = true;
+            fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
+            return test_util.eventToPromise(
+                'update-checkbox-setting', scalingElement);
+          })
+          .then(function(event) {
+            assertEquals('fitToPage', event.detail);
+            validateScalingState('95', true, true, true);
+
+            // Enter something invalid in the scaling field. This should not
+            // change the stored value of scaling or fit to page, to avoid an
+            // unnecessary preview regeneration, but should display fit to page
+            // as unchecked.
+            triggerInputEvent(scalingInput, '9');
+            return test_util.eventToPromise('input-change', scalingElement);
+          })
+          .then(function() {
+            validateScalingState('95', false, true, false);
+
+            // Enter a blank value in the scaling field. This should not
+            // change the stored value of scaling or fit to page, to avoid an
+            // unnecessary preview regeneration.
+            triggerInputEvent(scalingInput, '');
+            return test_util.eventToPromise('input-change', scalingElement);
+          })
+          .then(function() {
+            validateScalingState('95', false, true, false);
+
+            // Entering something valid unsets fit to page and sets scaling
+            // valid to true.
+            triggerInputEvent(scalingInput, '90');
+            return test_util.eventToPromise('input-change', scalingElement);
+          })
+          .then(function() {
+            validateScalingState('90', true, false, false);
           });
     });
 
