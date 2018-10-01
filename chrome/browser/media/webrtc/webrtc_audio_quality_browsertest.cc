@@ -702,7 +702,7 @@ void WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
   DeleteFileUnlessTestFailed(recording, false);
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_MANUAL_TestCallQualityWithAudioFromFakeDevice \
   MANUAL_TestCallQualityWithAudioFromFakeDevice
 #else
@@ -720,7 +720,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
 #define MAYBE_MANUAL_TestCallQualityWithAudioFromWebAudio \
   MANUAL_TestCallQualityWithAudioFromWebAudio
 #else
-// Not implemented on Android, ChromeOS etc.
+// Not implemented on Android, ChromeOS etc. Temporary disabled on Mac
+// (https://crbug.com/882780).
 #define MAYBE_MANUAL_TestCallQualityWithAudioFromWebAudio \
   DISABLED_MANUAL_TestCallQualityWithAudioFromWebAudio
 #endif
@@ -835,12 +836,12 @@ void WebRtcAudioQualityBrowserTest::TestAutoGainControl(
   DeleteFileUnlessTestFailed(actual_files_dir, true);
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX)
 #define MAYBE_MANUAL_TestAutoGainControlOnLowAudio \
   MANUAL_TestAutoGainControlOnLowAudio
 #else
 // Not implemented on Android, ChromeOS etc. Temporary disabled on Windows
-// (https://crbug.com/850936).
+// (https://crbug.com/850936) and on Mac (https://crbug.com/882780).
 #define MAYBE_MANUAL_TestAutoGainControlOnLowAudio \
   DISABLED_MANUAL_TestAutoGainControlOnLowAudio
 #endif
@@ -855,12 +856,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
       TestAutoGainControl(kAudioCallWithoutEchoCancellation, "_with_agc"));
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX)
 #define MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff \
   MANUAL_TestAutoGainIsOffWithAudioProcessingOff
 #else
 // Not implemented on Android, ChromeOS etc. Temporary disabled on Windows
-// (https://crbug.com/850936).
+// (https://crbug.com/850936) and on Mac (https://crbug.com/882780).
 #define MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff \
   DISABLED_MANUAL_TestAutoGainIsOffWithAudioProcessingOff
 #endif
