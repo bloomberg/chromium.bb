@@ -1032,6 +1032,21 @@
             ]
         }
     ],
+    "BrowserScheduler": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "DetachTimeFg16x"
+                }
+            ]
+        }
+    ],
     "BundledConnectionHelp": [
         {
             "platforms": [
