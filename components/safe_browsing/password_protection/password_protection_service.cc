@@ -678,7 +678,7 @@ bool PasswordProtectionService::ParseVerdictEntry(
     int* out_verdict_received_time,
     LoginReputationClientResponse* out_verdict) {
   std::string serialized_verdict_proto;
-  if (!verdict_entry || !out_verdict)
+  if (!verdict_entry || !verdict_entry->is_dict() || !out_verdict)
     return false;
   base::Value* cache_creation_time_value =
       verdict_entry->FindKey(kCacheCreationTime);
