@@ -160,6 +160,11 @@ class CC_EXPORT LayerTreeSettings {
   // When false, sync tokens are expected to be present, and are verified,
   // before transfering gpu resources to the display compositor.
   bool delegated_sync_points_required = true;
+
+  // When true, LayerTreeHostImplClient will be posting a task to call
+  // DidReceiveCompositorFrameAck, used by the Compositor but not the
+  // LayerTreeView.
+  bool send_compositor_frame_ack = true;
 };
 
 }  // namespace cc

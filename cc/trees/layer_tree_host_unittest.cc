@@ -8917,5 +8917,40 @@ class LayerTreeHostTestNewLocalSurfaceIdForcesDraw : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNewLocalSurfaceIdForcesDraw);
 
+// Verifies that DidReceiveCompositorFrameAck does not get sent with PostTask
+// when not needed.
+class DidReceiveCompositorFrameAckNotSentWhenNotNeeded
+    : public LayerTreeHostTest {
+ public:
+  DidReceiveCompositorFrameAckNotSentWhenNotNeeded() {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->send_compositor_frame_ack = false;
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidReceiveCompositorFrameAck() override { ADD_FAILURE(); }
+
+  // DrawLayersOnThread gets called after the conditional call to
+  // DidReceiveCompositorFrameAck, so we wait for it to end the test.
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    if (!received_first_frame_) {
+      received_first_frame_ = true;
+      PostSetNeedsCommitToMainThread();
+    } else {
+      EndTest();
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  bool received_first_frame_ = false;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    DidReceiveCompositorFrameAckNotSentWhenNotNeeded);
+
 }  // namespace
 }  // namespace cc

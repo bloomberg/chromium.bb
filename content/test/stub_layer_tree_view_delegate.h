@@ -26,7 +26,6 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void DidCommitAndDrawCompositorFrame() override {}
   void DidCommitCompositorFrame() override {}
   void DidCompletePageScaleAnimation() override {}
-  void DidReceiveCompositorFrameAck() override {}
   bool IsClosing() const override;
   void RequestScheduleAnimation() override {}
   void UpdateVisualState() override {}

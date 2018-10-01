@@ -192,7 +192,7 @@ class CONTENT_EXPORT LayerTreeView
   void WillCommit() override;
   void DidCommit() override;
   void DidCommitAndDrawFrame() override;
-  void DidReceiveCompositorFrameAck() override;
+  void DidReceiveCompositorFrameAck() override {}
   void DidCompletePageScaleAnimation() override;
   void DidPresentCompositorFrame(
       uint32_t frame_token,

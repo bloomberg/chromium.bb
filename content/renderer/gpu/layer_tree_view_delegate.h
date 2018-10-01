@@ -65,10 +65,6 @@ class LayerTreeViewDelegate {
   // Called by the compositor when page scale animation completed.
   virtual void DidCompletePageScaleAnimation() = 0;
 
-  // Notifies that the last submitted CompositorFrame has been processed and
-  // will be displayed.
-  virtual void DidReceiveCompositorFrameAck() = 0;
-
   // Requests that a UMA and UKM metric be recorded for the total frame time.
   // Call this as soon as the total frame time becomes known for a given frame.
   // For example, ProxyMain::BeginMainFrame calls it immediately before aborting

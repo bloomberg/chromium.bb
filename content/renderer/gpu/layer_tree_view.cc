@@ -669,10 +669,6 @@ void LayerTreeView::DidCommitAndDrawFrame() {
   delegate_->DidCommitAndDrawCompositorFrame();
 }
 
-void LayerTreeView::DidReceiveCompositorFrameAck() {
-  delegate_->DidReceiveCompositorFrameAck();
-}
-
 void LayerTreeView::DidCompletePageScaleAnimation() {
   delegate_->DidCompletePageScaleAnimation();
 }
