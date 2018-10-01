@@ -307,7 +307,8 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
           changed_paths.update(os.path.join(generated_java_dir, f)
                                for f in changes.IterChangedSubpaths(srcjar))
         extracted_files = build_utils.ExtractAll(
-            srcjar, path=generated_java_dir, pattern='*.java')
+            srcjar, no_clobber=not incremental, path=generated_java_dir,
+            pattern='*.java')
         for path in extracted_files:
           # We want the path inside the srcjar so the viewer can have a tree
           # structure.
