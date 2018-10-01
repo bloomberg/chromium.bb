@@ -520,14 +520,15 @@
             ],
             "experiments": [
                 {
-                    "name": "AudioProcess_LaunchOnStartup_v6",
+                    "name": "AudioProcess_LaunchOnStartup_Sandboxed_v7",
                     "params": {
                         "teardown_timeout_s": "0"
                     },
                     "enable_features": [
                         "AudioServiceAudioStreams",
                         "AudioServiceLaunchOnStartup",
-                        "AudioServiceOutOfProcess"
+                        "AudioServiceOutOfProcess",
+                        "AudioServiceSandbox"
                     ]
                 }
             ]
