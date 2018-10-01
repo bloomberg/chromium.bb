@@ -22,9 +22,11 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -929,8 +931,23 @@ void RenderWidgetHostViewAura::DidStopFlinging() {
 }
 
 void RenderWidgetHostViewAura::TransformPointToRootSurface(gfx::PointF* point) {
-  aura::Window::ConvertPointToTarget(window_, window_->GetRootWindow(), point);
-  window_->GetRootWindow()->transform().TransformPoint(point);
+  aura::Window* root = window_->GetRootWindow();
+  aura::Window::ConvertPointToTarget(window_, root, point);
+  root->GetRootWindow()->transform().TransformPoint(point);
+
+// On ChromeOS, the root surface is the whole desktop. When using the
+// window-service converting to screen coordinates gives us that.
+#if defined(OS_CHROMEOS)
+  if (features::IsUsingWindowService()) {
+    aura::client::ScreenPositionClient* screen_client =
+        aura::client::GetScreenPositionClient(root);
+    if (screen_client) {
+      gfx::Point rounded_point(point->x(), point->y());
+      screen_client->ConvertPointToScreen(root, &rounded_point);
+      *point = gfx::PointF(rounded_point);
+    }
+  }
+#endif
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
@@ -1705,9 +1722,18 @@ bool RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
 }
 
 viz::FrameSinkId RenderWidgetHostViewAura::GetRootFrameSinkId() {
-  if (window_ && window_->GetHost() && window_->GetHost()->compositor())
-    return window_->GetHost()->compositor()->frame_sink_id();
-  return viz::FrameSinkId();
+  if (!window_ || !window_->GetHost() || !window_->GetHost()->compositor())
+    return viz::FrameSinkId();
+
+  // In single-process mash the root is provided by Ash. Have
+  // HostFrameSinkManager walk the tree to find the right root.
+  if (features::IsSingleProcessMash()) {
+    base::Optional<viz::FrameSinkId> root =
+        GetHostFrameSinkManager()->FindRootFrameSinkId(frame_sink_id_);
+    return root ? *root : viz::FrameSinkId();
+  }
+
+  return window_->GetHost()->compositor()->frame_sink_id();
 }
 
 viz::SurfaceId RenderWidgetHostViewAura::GetCurrentSurfaceId() const {

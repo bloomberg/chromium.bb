@@ -245,6 +245,23 @@ bool HostFrameSinkManager::IsFrameSinkHierarchyRegistered(
          base::ContainsValue(iter->second.children, child_frame_sink_id);
 }
 
+base::Optional<FrameSinkId> HostFrameSinkManager::FindRootFrameSinkId(
+    const FrameSinkId& start) const {
+  auto iter = frame_sink_data_map_.find(start);
+  if (iter == frame_sink_data_map_.end())
+    return base::nullopt;
+
+  if (iter->second.is_root)
+    return start;
+
+  for (const FrameSinkId& parent_id : iter->second.parents) {
+    base::Optional<FrameSinkId> root = FindRootFrameSinkId(parent_id);
+    if (root)
+      return root;
+  }
+  return base::nullopt;
+}
+
 void HostFrameSinkManager::DropTemporaryReference(const SurfaceId& surface_id) {
   frame_sink_manager_->DropTemporaryReference(surface_id);
 }
