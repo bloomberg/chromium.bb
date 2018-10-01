@@ -42,6 +42,22 @@ LogPage.init = function() {
   LogPage.backgroundWindow = chrome.extension.getBackgroundPage();
   LogPage.LogStore = LogPage.backgroundWindow.LogStore.getInstance();
 
+  /** Create filter checkboxes. */
+  for (var type of LogStore.logTypes()) {
+    var label = document.createElement('label');
+    var input = document.createElement('input');
+    input.id = type + 'Filter';
+    input.type = 'checkbox';
+    input.classList.add('log-filter');
+    label.appendChild(input);
+
+    var span = document.createElement('span');
+    span.textContent = type;
+    label.appendChild(span);
+
+    document.getElementById('logFilters').appendChild(label);
+  }
+
   var clearLogButton = document.getElementById('clearLog');
   clearLogButton.onclick = function(event) {
     LogPage.LogStore.clearLog();
@@ -59,7 +75,7 @@ LogPage.init = function() {
   var checkboxes = document.getElementsByClassName('log-filter');
   var filterEventListener = function(event) {
     var target = event.target;
-    LogPage.setFilterTypeEnabled(target.name, String(target.checked));
+    LogPage.setFilterTypeEnabled(target.id, String(target.checked));
     location.search = LogPage.createUrlParams();
   };
   for (var i = 0; i < checkboxes.length; i++)
