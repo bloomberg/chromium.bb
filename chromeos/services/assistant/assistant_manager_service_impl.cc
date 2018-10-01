@@ -51,7 +51,7 @@ constexpr char kScreenBrightnessDeviceSettingId[] = "BRIGHTNESS_LEVEL";
 constexpr char kTimerFireNotificationGroupId[] = "assistant/timer_fire";
 constexpr char kQueryDeeplinkPrefix[] = "googleassistant://send-query?q=";
 constexpr base::Feature kAssistantTimerNotificationFeature{
-    "ChromeOSAssistantTimerNotification", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ChromeOSAssistantTimerNotification", base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr float kDefaultSliderStep = 0.1f;
 }  // namespace
