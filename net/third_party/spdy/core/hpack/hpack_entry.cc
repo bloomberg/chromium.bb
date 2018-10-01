@@ -53,6 +53,8 @@ HpackEntry& HpackEntry::operator=(const HpackEntry& other) {
   insertion_index_ = other.insertion_index_;
   type_ = other.type_;
   if (type_ == LOOKUP) {
+    name_.clear();
+    value_.clear();
     name_ref_ = other.name_ref_;
     value_ref_ = other.value_ref_;
     return *this;
