@@ -1232,11 +1232,6 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     const blink::WebGestureEvent& gesture_event,
     const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location) {
-  // Temporary logging for https://crbug.com/824774.
-  static auto* target_source_key = base::debug::AllocateCrashKeyString(
-      "touchscreen-gesture-target-source", base::debug::CrashKeySize::Size32);
-  base::debug::SetCrashKeyString(target_source_key, "input");
-
   if (gesture_event.GetType() == blink::WebInputEvent::kGesturePinchBegin) {
     in_touchscreen_gesture_pinch_ = true;
     // If the root view wasn't already receiving the gesture stream, then we
@@ -1323,7 +1318,6 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // unique_touch_event_id of 0.
     touchscreen_gesture_target_.target = target;
     touchscreen_gesture_target_in_map_ = IsViewInMap(target);
-    base::debug::SetCrashKeyString(target_source_key, "touch_id=0");
     touchscreen_gesture_target_.delta =
         target_location.has_value()
             ? target_location.value() - gesture_event.PositionInWidget()
@@ -1350,7 +1344,6 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // this is the best we can do until we fix https://crbug.com/595422.
     touchscreen_gesture_target_.target = result.view;
     touchscreen_gesture_target_in_map_ = IsViewInMap(result.view);
-    base::debug::SetCrashKeyString(target_source_key, "no_matching_id");
     touchscreen_gesture_target_.delta = transformed_point - original_point;
   } else if (is_gesture_start) {
     touchscreen_gesture_target_ = gesture_target_it->second;
@@ -1382,26 +1375,6 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
   blink::WebGestureEvent event(gesture_event);
   event.SetPositionInWidget(event.PositionInWidget() +
                             touchscreen_gesture_target_.delta);
-  // Temporary logging for https://crbug.com/824774.
-  static auto* target_ptr_key = base::debug::AllocateCrashKeyString(
-      "touchscreen-gesture-target-ptr", base::debug::CrashKeySize::Size64);
-  base::debug::SetCrashKeyString(
-      target_ptr_key,
-      base::StringPrintf("%p", touchscreen_gesture_target_.target));
-  static auto* root_ptr_key = base::debug::AllocateCrashKeyString(
-      "touchscreen-gesture-root-ptr", base::debug::CrashKeySize::Size64);
-  base::debug::SetCrashKeyString(root_ptr_key,
-                                 base::StringPrintf("%p", root_view));
-  static auto* target_ptr_in_map_key = base::debug::AllocateCrashKeyString(
-      "touchscreen-gesture-target-in-map", base::debug::CrashKeySize::Size32);
-  base::debug::SetCrashKeyString(
-      target_ptr_in_map_key,
-      touchscreen_gesture_target_in_map_ ? "true" : "false");
-  static auto* map_size_key = base::debug::AllocateCrashKeyString(
-      "touchscreen-gesture-map-size", base::debug::CrashKeySize::Size32);
-  base::debug::SetCrashKeyString(
-      map_size_key,
-      base::StringPrintf("%u", static_cast<int>(owner_map_.size())));
 
   if (events_being_flushed_) {
     touchscreen_gesture_target_.target->host()
